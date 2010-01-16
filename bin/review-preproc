@@ -1,0 +1,125 @@
+#!/usr/bin/env ruby
+#
+# $Id: review-preproc 3761 2007-12-31 07:20:09Z aamine $
+#
+# Copyright (c) 1999-2007 Minero Aoki
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review/preprocessor'
+require 'review/unfold'
+require 'lineinput'
+require 'stringio'
+require 'fileutils'
+require 'optparse'
+
+def sigmain
+  Signal.trap(:PIPE, 'IGNORE')
+  Signal.trap(:INT) { exit 1 }
+  main
+rescue Errno::EPIPE
+  exit 0
+end
+
+def main
+  $KCODE = 'EUC' unless defined?(Encoding)
+
+  mode = :output
+  parser = OptionParser.new
+  parser.banner = "Usage: #{File.basename($0)} [-c|-d|-s|--replace] [<file>...]"
+  parser.on('-c', '--check', 'Check if preprocess is needed.') {
+    mode = :check
+  }
+  parser.on('-d', '--diff', 'Show diff from current file.') {
+    mode = :diff
+  }
+  parser.on('--replace', 'Replace file by preprocessed one.') {
+    mode = :replace
+  }
+  parser.on('-s', '--strip', 'Strip preprocessor tags.') {
+    mode = :strip
+  }
+  parser.on('--final', 'Unfold text and strip preprocessor tags.') {
+    mode = :final
+  }
+  parser.on('--help', 'Print this message and quit.') {
+    puts parser.help
+    exit 0
+  }
+  begin
+    parser.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts parser.help
+    exit 1
+  end
+
+  pp = ReVIEW::Preprocessor.new(ReVIEW::Repository.new)
+  current_file = nil
+  ARGV.each do |path|
+    current_file = path
+    case mode
+    when :output
+      File.open(path) {|f|
+        pp.process f, $stdout
+      }
+    when :replace
+      File.write "#{path}.pptmp", preproc(pp, path)
+      File.rename "#{path}.pptmp", path
+    when :diff, :check
+      tmp = '/tmp/review.pptmp'
+      begin
+        File.write tmp, preproc(pp, path)
+        if mode == :check
+          system "diff -qu #{path} #{tmp} >/dev/null || echo #{path}"
+        else
+          system "diff -u #{path} #{tmp}"
+        end
+      ensure
+        FileUtils.rm_f tmp
+      end
+    when :strip
+      File.open(path) {|f|
+        ReVIEW::Preprocessor::Strip.new(f).each do |line|
+          puts line
+        end
+      }
+    when :final
+      u = ReVIEW::Unfold.new
+      File.open(path) {|f|
+        u.unfold ReVIEW::Preprocessor::Strip.new(f), $stdout
+      }
+    else
+      raise "must not happen: #{mode}"
+    end
+  end
+rescue ReVIEW::Error => err
+  raise if $DEBUG
+  $stderr.puts err.message
+  exit 1
+end
+
+def preproc(pp, path)
+  buf = StringIO.new
+  File.open(path) {|f|
+    pp.process f, buf
+  }
+  buf.string
+end
+
+def File.write(path, str)
+  File.open(path, 'w') {|f|
+    f.write str
+  }
+end
+
+sigmain

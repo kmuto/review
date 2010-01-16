@@ -1,0 +1,140 @@
+#!/usr/bin/env ruby
+#
+# $Id: review-compile 4326 2010-01-12 14:10:17Z kmuto $
+#
+# Copyright (c) 1999-2007 Minero Aoki
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review/compiler'
+require 'review/book'
+require 'fileutils'
+require 'optparse'
+
+def main
+  Signal.trap(:INT) { exit 1 }
+  Signal.trap(:PIPE, "IGNORE")
+  _main
+rescue Errno::EPIPE
+  exit 0
+end
+
+def _main
+  $KCODE = 'EUC' unless defined?(Encoding)
+
+  mode = :files
+  basedir = nil
+  if /\Areview2/ =~ File.basename($0)
+    target = File.basename($0, '.rb').sub(/review2/, '')
+  else
+    target = nil
+  end
+  check_only = false
+
+  @@secnolevel = 2 # FIXME: these 4 parameters are only used by IDGBulder.
+  @@tableopt = nil
+  @@nolf = nil
+  @@chapref = nil
+
+  parser = OptionParser.new
+  parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
+  parser.on('-c', '--check', 'Check manuscript') {
+    check_only = true
+  }
+  parser.on('--level=LVL', 'Section level to append number.') {|lvl|
+    @@secnolevel = lvl.to_i
+  }
+  parser.on('--nolfinxml', 'Do not insert LF in XML.') {
+    @@nolf = true
+  }
+  parser.on('--table=WIDTH', 'Default table width.') {|tbl|
+    @@tableopt = tbl
+  }
+  parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec|
+    @@chapref = cdec
+  }
+  unless target
+    parser.on('--target=FMT', 'Target format.') {|fmt|
+      target = fmt
+    }
+  end
+  parser.on('-a', '--all', 'Compile all chapters.') {
+    mode = :dir
+    basedir = nil
+  }
+  parser.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
+    mode = :dir
+    basedir = path
+  }
+  parser.on('--help', 'Prints this message and quit.') {
+    puts parser.help
+    exit 0
+  }
+  begin
+    parser.parse!
+    unless target
+      if check_only
+        target = 'html'
+      else
+        raise OptionParser::ParseError, "no target given"
+      end
+    end
+  rescue OptionParser::ParseError => err
+    error err.message
+    $stderr.puts parser.help
+    exit 1
+  end
+
+  begin
+    compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
+    case mode
+    when :files
+      if ARGV.empty?
+        error 'no input'
+        exit 1
+      end
+      ReVIEW::Chapter.intern_pathes(ARGV).each do |chap|
+        result = compiler.compile(chap)
+        print result unless check_only
+      end
+    when :dir
+      book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
+      book.chapters.each do |chap|
+        str = compiler.compile(chap)
+        write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
+      end
+    else
+      raise "must not happen: #{mode}"
+    end
+  rescue ReVIEW::ApplicationError => err
+    raise if $DEBUG
+    error err.message
+    exit 1
+  end
+end
+
+def error(msg)
+  $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
+end
+
+def load_strategy_class(target, strict)
+  require "review/#{target}builder"
+  ReVIEW.const_get("#{target.upcase}Builder").new(strict)
+end
+
+def write(path, str)
+  File.open(path, 'w') {|f|
+    f.puts str
+  }
+end
+
+main

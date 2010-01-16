@@ -1,0 +1,161 @@
+#!/usr/bin/env ruby
+#
+# $Id: review-check 3760 2007-12-30 06:13:15Z aamine $
+#
+# Copyright (c) 1999-2007 Minero Aoki
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review/env'
+require 'optparse'
+
+def sigmain
+  Signal.trap(:INT) { exit 1 }
+  Signal.trap(:PIPE, 'IGNORE')
+  main
+rescue Errno::EPIPE
+  exit 0
+end
+
+def main
+  $KCODE = 'EUC' unless defined?(Encoding)
+
+  modes = nil
+  files = ARGV unless ARGV.empty?
+  parser = OptionParser.new
+  parser.on('-a', '--all-chapters', 'Check all chapters.') {
+    files = ReVIEW.env.chaps.map {|ent| ent.path }
+  }
+  parser.on('-s', '--section N', 'Check section N.') {|n|
+    ents = ReVIEW.env.parts[Integer(n) - 1] or
+        raise ReVIEW::ApplicationError, "section #{n} not exist"
+    files = ents.map {|ent| ent.path }
+  }
+  parser.on('--text', 'Check text.') {
+    (modes ||= []).push :text
+  }
+  parser.on('--help', 'print this message and quit.') {
+    puts parser.help
+    exit 0
+  }
+  begin
+    parser.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts parser.help
+    exit 1
+  end
+  unless files
+    $stderr.puts "no input"
+    exit 1
+  end
+  modes ||= [:text]
+
+  modes.each do |mode|
+    case mode
+    when :text
+      check_text files
+    else
+      raise 'must not happen'
+    end
+  end
+end
+
+def check_text(files)
+  re, neg = words_re(ReVIEW.env.reject_file)
+  files.each do |path|
+    File.open(path) {|f|
+      each_paragraph(f) do |para, lineno|
+        s = para.join('')
+        if m = re.match(s)
+          next if m[0] == $ReVIEW_utils_word_ok
+          next if neg and neg =~ s
+          str, offset = find_line(para, re)
+          printf "%s:%d: %s\n", path, lineno + offset, str
+        end
+      end
+    }
+  end
+end
+
+def find_line(lines, re)
+  # single line?
+  lines.each_with_index do |line, idx|
+    return line.gsub(re, '<<<\&>>>'), idx  if re =~ line
+  end
+
+  # multiple lines?
+  i = 0
+  while i < lines.size - 1
+    str = lines[i] + lines[i+1]
+    return str.gsub(re, '<<<\&>>>'), i  if re =~ str
+    i += 1
+  end
+
+  raise 'must not happen'
+end
+
+def words_re(rc)
+  words = []
+  nega = []
+  File.foreach(rc) do |line|
+    next  if line[0,1] == '#'
+    if / !/ =~ line
+      line, n = *line.split(/!/, 2)
+      nega.push n.strip
+    end
+    words.push line.strip
+  end
+  return Regexp.compile(words.join('|')),
+         nega.empty?() ? nil : Regexp.compile(nega.join('|'))
+end
+
+def each_paragraph(f)
+  $ReVIEW_utils_word_ok = nil
+  while line = f.gets
+    case line
+    when /\A\#@ok\((.*)\)/
+      $ReVIEW_utils_word_ok = $1
+    when /\A\#@/
+      ;
+    when %r[\A//caption\{(.*?)//\}]
+      yield [$1], f.filename, f.lineno
+    when %r<\A//\w.*\{\s*\z>
+      while line = f.gets
+        break if %r<//\}> === line
+      end
+    when /\A=/
+      yield [line.slice(/\A=+(?:\[.*?\])?\s+(.*)/, 1).strip], f.lineno
+    when /\A\s*\z/
+      # skip
+    else
+      buf = [line.strip]
+      lineno = f.lineno
+      while line = f.gets
+        break if line.strip.empty?
+        break if %r<\A(?:=|//[\w\}])> =~ line
+        next if %r<\A\#@> =~ line
+        buf.push line.strip
+      end
+      yield buf, lineno
+      $ReVIEW_utils_word_ok = nil
+    end
+  end
+end
+
+def each_paragraph_line(f, &block)
+  each_paragraph(f) do |para, *|
+    para.each(&block)
+  end
+end
+
+sigmain

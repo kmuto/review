@@ -1,0 +1,570 @@
+# -*- encoding: euc-jp -*-
+#
+# $Id: topbuilder.rb 4304 2009-07-01 12:03:39Z kmuto $
+#
+# Copyright (c) 2002-2006 Minero Aoki
+#               2008-2009 Minero Aoki, Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+#
+
+require 'review/builder'
+require 'review/textutils'
+
+module ReVIEW
+
+  class TOPBuilder < Builder
+
+    include TextUtils
+
+    [:i, :tt, :ttbold, :tti, :idx, :hidx, :dtp, :sup, :sub, :hint, :raw, :maru, :keytop, :labelref, :ref, :pageref, :u, :icon, :balloon].each {|e|
+      Compiler.definline(e)
+    }
+    Compiler.defsingle(:dtp, 1)
+    Compiler.defsingle(:raw, 1)
+    Compiler.defsingle(:indepimage, 1)
+    Compiler.defsingle(:label, 1)
+    Compiler.defsingle(:tsize, 1)
+
+    Compiler.defblock(:insn, 1)
+    Compiler.defblock(:flushright, 0)
+    Compiler.defblock(:note, 0..1)
+    Compiler.defblock(:memo, 0..1)
+    Compiler.defblock(:tip, 0..1)
+    Compiler.defblock(:info, 0..1)
+    Compiler.defblock(:planning, 0..1)
+    Compiler.defblock(:best, 0..1)
+    Compiler.defblock(:important, 0..1)
+    Compiler.defblock(:securty, 0..1)
+    Compiler.defblock(:caution, 0..1)
+    Compiler.defblock(:notice, 0..1)
+    Compiler.defblock(:point, 0..1)
+    Compiler.defblock(:reference, 0)
+    Compiler.defblock(:term, 0)
+    Compiler.defblock(:practice, 0)
+    Compiler.defblock(:box, 0..1)
+    Compiler.defblock(:expert, 0)
+    Compiler.defblock(:lead, 0)
+
+    def builder_init_file
+      @section = 0
+      @blank_seen = true
+      @choice = nil
+    end
+    private :builder_init_file
+
+    def print(s)
+      @blank_seen = false
+      super
+    end
+    private :print
+
+    def puts(s)
+      @blank_seen = false
+      super
+    end
+    private :puts
+
+    def blank
+      @output.puts unless @blank_seen
+      @blank_seen = true
+    end
+    private :blank
+
+    def result
+      @output.string
+    end
+
+    def warn(msg)
+      $stderr.puts "#{@location.filename}:#{@location.lineno}: warning: #{msg}"
+    end
+
+    def error(msg)
+      $stderr.puts "#{@location.filename}:#{@location.lineno}: error: #{msg}"
+    end
+
+    def messages
+      error_messages() + warning_messages()
+    end
+
+    def headline(level, label, caption)
+      # FIXME: handling label
+      blank
+      case level
+      when 1
+        puts "¢£H1¢£Âè#{@chapter.number}¾Ï¡¡#{caption}"
+      when 2
+        puts "¢£H2¢£#{@chapter.number}.#{@section += 1}¡¡#{caption}"
+      when 3
+        puts "¢£H3¢£#{caption}"
+      when 4
+        puts "¢£H4¢£#{caption}"
+      when 5
+        puts "¢£H5¢£#{caption}"
+      else
+        raise "caption level too deep or unsupported: #{level}"
+      end
+    end
+
+    def column_begin(level, label, caption)
+      blank
+      puts "¢¡¢ª³«»Ï:¥³¥é¥à¢«¢¡"
+      puts "¢£#{caption}"
+    end
+
+    def column_end(level)
+      puts "¢¡¢ª½ªÎ»:¥³¥é¥à¢«¢¡"
+      blank
+    end
+
+    def ul_begin
+      blank
+    end
+
+    def ul_item(lines)
+      print @choice.nil? ? "¡ü" : @choice
+      puts "\t#{lines.join('')}"
+    end
+
+    def ul_end
+      blank
+    end
+
+    def choice_single_begin
+      @choice = "¡û"
+      blank
+    end
+
+    def choice_single_end
+      @choice = nil
+      blank
+    end
+
+    def choice_multi_begin
+      @choice = "¢¢"
+      blank
+    end
+
+    def choice_multi_end
+      @choice = nil
+      blank
+    end
+
+    def ol_begin
+      blank
+      @olitem = 0
+    end
+
+    def ol_item(lines, num)
+      #puts "#{@olitem += 1}\t#{lines.join('')}"
+      puts "#{num}\t#{lines.join('')}"
+    end
+
+    def ol_end
+      blank
+      @olitem = nil
+    end
+
+    def dl_begin
+      blank
+    end
+
+    def dt(line)
+      puts "¡ú#{line}¡ù"
+    end
+
+    def dd(lines)
+      split_paragraph(lines).each do |paragraph|
+        puts "\t#{paragraph.gsub(/\n/, '')}"
+      end
+    end
+
+    def split_paragraph(lines)
+      lines.map {|line| line.strip }.join("\n").strip.split("\n\n")
+    end
+
+    def dl_end
+      blank
+    end
+
+    def paragraph(lines)
+      puts lines.join('')
+    end
+
+    def read(lines)
+      puts "¢¡¢ª³«»Ï:¥ê¡¼¥É¢«¢¡"
+      paragraph(lines)
+      puts "¢¡¢ª½ªÎ»:¥ê¡¼¥É¢«¢¡"
+    end
+
+    alias lead read
+
+    def inline_list(id)
+      "¥ê¥¹¥È#{@chapter.number}.#{@chapter.list(id).number}"
+    end
+
+    def list_header(id, caption)
+      blank
+      puts "¢¡¢ª³«»Ï:¥ê¥¹¥È¢«¢¡"
+      puts "¥ê¥¹¥È#{@chapter.number}.#{@chapter.list(id).number}¡¡#{caption}"
+      blank
+    end
+
+    def list_body(lines)
+      lines.each do |line|
+        puts line
+      end
+      puts "¢¡¢ª½ªÎ»:¥ê¥¹¥È¢«¢¡"
+      blank
+    end
+
+    def base_block(type, lines, caption = nil)
+      blank
+      puts "¢¡¢ª³«»Ï:#{type}¢«¢¡"
+      puts "¢£#{caption}" unless caption.nil?
+      puts lines.join("\n")
+      puts "¢¡¢ª½ªÎ»:#{type}¢«¢¡"
+      blank
+    end
+
+    def emlist(lines, caption = nil)
+      base_block "¥¤¥ó¥é¥¤¥ó¥ê¥¹¥È", lines, caption
+    end
+
+    def cmd(lines, caption = nil)
+      base_block "¥³¥Þ¥ó¥É", lines, caption
+    end
+
+    def quote(lines)
+      base_block "°úÍÑ", lines, nil
+    end
+
+    def inline_img(id)
+      "¿Þ#{@chapter.number}.#{@chapter.image(id).number}"
+    end
+
+    def image(lines, id, caption)
+      blank
+      puts "¢¡¢ª³«»Ï:¿Þ¢«¢¡"
+      puts "¿Þ#{@chapter.number}.#{@chapter.image(id).number}¡¡#{caption}"
+      blank
+      if @chapter.image(id).bound?
+        puts "¢¡¢ª#{@chapter.image(id).path}¢«¢¡"
+      else
+        lines.each do |line|
+          puts line
+        end
+      end
+      puts "¢¡¢ª½ªÎ»:¿Þ¢«¢¡"
+      blank
+    end
+
+    def inline_table(id)
+      "É½#{@chapter.number}.#{@chapter.table(id).number}"
+    end
+
+    def table_header(id, caption)
+      blank
+      puts "¢¡¢ª³«»Ï:É½¢«¢¡"
+      puts "É½#{@chapter.number}.#{@chapter.table(id).number}¡¡#{caption}"
+      blank
+    end
+
+    def table_begin(ncols)
+    end
+
+    def tr(rows)
+      puts rows.join("\t")
+    end
+
+    def th(str)
+      "¡ú#{str}¡ù"
+    end
+
+    def td(str)
+      str
+    end
+    
+    def table_end
+      puts "¢¡¢ª½ªÎ»:É½¢«¢¡"
+      blank
+    end
+
+    def comment(str)
+      puts "¢¡¢ªDTPÃ´ÅöÍÍ:#{str}¢«¢¡"
+    end
+
+    def inline_fn(id)
+      "¡ÚÃí#{@chapter.footnote(id).number}¡Û"
+    end
+
+    def footnote(id, str)
+      puts "¡ÚÃí#{@chapter.footnote(id).number}¡Û#{compile_inline(str)}"
+    end
+
+    def compile_kw(word, alt)
+      if alt
+      then "¡ú#{word}¡ù¡Ê#{alt.sub(/\A\s+/,"")}¡Ë"
+      else "¡ú#{word}¡ù"
+      end
+    end
+
+    def inline_chap(id)
+      #"¡ÖÂè#{super}¾Ï¡¡#{inline_title(id)}¡×"
+      # "Âè#{super}¾Ï"
+      super
+    end
+
+    def compile_ruby(base, ruby)
+      "#{base}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{base}¡×¤Ë¡Ö#{ruby}¡×¤È¥ë¥Ó¢«¢¡"
+    end
+
+    def inline_bou(str)
+      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤ËËµÅÀ¢«¢¡"
+    end
+
+    def inline_i(str)
+      "¢¥#{str}¡ù"
+    end
+
+    def inline_b(str)
+      "¡ú#{str}¡ù"
+    end
+
+    def inline_tt(str)
+      "¢¤#{str}¡ù"
+    end
+
+    def inline_ttbold(str)
+      "¡ú#{str}¡ù¢¡¢ªÅùÉý¥Õ¥©¥ó¥È¢«¢¡"
+    end
+
+    def inline_ttibold(str)
+      "¢¥#{str}¡ù¢¡¢ªÅùÉý¥Õ¥©¥ó¥È¢«¢¡"
+    end
+
+    def inline_u(str)
+      "¡÷#{str}¡÷¢¡¢ª¡÷¡Á¡÷ÉôÊ¬¤Ë²¼Àþ¢«¢¡"
+    end
+
+    def inline_icon(id)
+      "¢¡¢ª²èÁü #{@chapter.id}-#{id}.eps¢«¢¡"
+    end
+
+    def inline_ami(str)
+      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤ËÌÖ¥«¥±¢«¢¡"
+    end
+
+    def inline_sup(str)
+      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤Ï¾åÉÕ¤­¢«¢¡"
+    end
+
+    def inline_sub(str)
+      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤Ï²¼ÉÕ¤­¢«¢¡"
+    end
+
+    def inline_raw(str)
+      # FIXME
+      str
+    end
+
+    def inline_hint(str)
+      "¢¡¢ª¥Ò¥ó¥È¥¹¥¿¥¤¥ë¢«¢¡#{str}"
+    end
+
+    def inline_maru(str)
+      "#{str}¢¡¢ª´Ý¿ô»ú#{str}¢«¢¡"
+    end
+
+    def inline_idx(str)
+      "#{str}¢¡¢ªº÷°ú¹àÌÜ:#{str}¢«¢¡"
+    end
+
+    def inline_hidx(str)
+      "¢¡¢ªº÷°ú¹àÌÜ:#{str}¢«¢¡"
+    end
+
+    def inline_keytop(str)
+      "#{str}¢¡¢ª¥­¡¼¥È¥Ã¥×#{str}¢«¢¡"
+    end
+
+    def inline_labelref(idref)
+      %Q(¡Ö¢¡¢ª#{idref}¢«¢¡¡×) # Àá¡¢¹à¤ò»²¾È
+    end
+
+    alias inline_ref inline_labelref
+
+    def inline_pageref(idref)
+      %Q(¡ü¥Ú¡¼¥¸¢¡¢ª#{idref}¢«¢¡) # ¥Ú¡¼¥¸ÈÖ¹æ¤ò»²¾È
+    end
+
+    def inline_balloon(str)
+      %Q(\t¢«#{str.gsub(/@maru\[(\d+)\]/, inline_maru('\1'))})
+    end
+
+    def noindent
+      %Q(¢¡¢ª¥¤¥ó¥Ç¥ó¥È¤Ê¤·¢«¢¡)
+    end
+
+    def nonum_begin(level, label, caption)
+      puts "¢£H#{level}¢£#{caption}"
+    end
+
+    def nonum_end(level)
+    end
+
+    def circle_begin(level, label, caption)
+      puts "¡¦\t#{caption}"
+    end
+
+    def circle_end(level)
+    end
+
+    def flushright(lines)
+      base_block "±¦´ó¤»", lines, nil
+    end
+
+    def note(lines, caption = nil)
+      base_block "¥Î¡¼¥È", lines, caption
+    end
+
+    def memo(lines, caption = nil)
+      base_block "¥á¥â", lines, caption
+    end
+
+    def tip(lines, caption = nil)
+      base_block "TIP", lines, caption
+    end
+
+    def info(lines, caption = nil)
+      base_block "¾ðÊó", lines, caption
+    end
+
+    def planning(lines, caption = nil)
+      base_block "¥×¥é¥ó¥Ë¥ó¥°", lines, caption
+    end
+
+    def best(lines, caption = nil)
+      base_block "¥Ù¥¹¥È¥×¥é¥¯¥Æ¥£¥¹", lines, caption
+    end
+
+    def important(lines, caption = nil)
+      base_block "½ÅÍ×", lines, caption
+    end
+
+    def security(lines, caption = nil)
+      base_block "¥»¥­¥å¥ê¥Æ¥£", lines, caption
+    end
+
+    def caution(lines, caption = nil)
+      base_block "·Ù¹ð", lines, caption
+    end
+
+    def term(lines)
+      base_block "ÍÑ¸ì²òÀâ", lines, nil
+    end
+
+    def notice(lines, caption = nil)
+      base_block "Ãí°Õ", lines, caption
+    end
+
+    def point(lines, caption = nil)
+      base_block "¤³¤³¤¬¥Ý¥¤¥ó¥È", lines, caption
+    end
+
+    def reference(lines)
+      base_block "»²¹Í", lines, nil
+    end
+
+    def practice(lines)
+      base_block "Îý½¬ÌäÂê", lines, nil
+    end
+
+    def expert(lines)
+      base_block "¥¨¥­¥¹¥Ñ¡¼¥È¤Ë¿Ö¤±", lines, nil
+    end
+
+    def insn(lines, caption = nil)
+      base_block "½ñ¼°", lines, caption
+    end
+
+    alias box insn
+
+    def indepimage(id)
+      puts "¢¡¢ª²èÁü #{@chapter.id}-#{id}.eps¢«¢¡"
+    end
+
+    def label(id)
+      # FIXME
+      ""
+    end
+
+    def tsize(id)
+      # FIXME
+      ""
+    end
+
+    def dtp(str)
+      # FIXME
+    end
+
+    def inline_dtp(str)
+      # FIXME
+      ""
+    end
+    
+    def raw(str)
+      if str =~ /\A<\/(.+)>$/
+        case $1
+          when "emlist": puts "¢¡¢ª½ªÎ»:¥¤¥ó¥é¥¤¥ó¥ê¥¹¥È¢«¢¡"
+          when "cmd": puts "¢¡¢ª½ªÎ»:¥³¥Þ¥ó¥É¢«¢¡"
+          when "quote": puts "¢¡¢ª½ªÎ»:°úÍÑ¢«¢¡"
+          when "flushright": puts "¢¡¢ª½ªÎ»:±¦´ó¤»¢«¢¡"
+          when "note": puts "¢¡¢ª½ªÎ»:¥Î¡¼¥È¢«¢¡"
+          when "important": puts "¢¡¢ª½ªÎ»:½ÅÍ×¢«¢¡"
+          when "term": puts "¢¡¢ª½ªÎ»:ÍÑ¸ì²òÀâ¢«¢¡"
+          when "notice": puts "¢¡¢ª½ªÎ»:Ãí°Õ¢«¢¡"
+          when "point": puts "¢¡¢ª½ªÎ»:¤³¤³¤¬¥Ý¥¤¥ó¥È¢«¢¡"
+          when "reference": puts "¢¡¢ª½ªÎ»:»²¹Í¢«¢¡"
+          when "practice": puts "¢¡¢ª½ªÎ»:Îý½¬ÌäÂê¢«¢¡"
+          when "expert": puts "¢¡¢ª½ªÎ»:¥¨¥­¥¹¥Ñ¡¼¥È¤Ë¿Ö¤±¢«¢¡"
+          when "box": puts "¢¡¢ª½ªÎ»:½ñ¼°¢«¢¡"
+          when "insn": puts "¢¡¢ª½ªÎ»:½ñ¼°¢«¢¡"
+        end
+      elsif str =~ /\A<([^\/].+)>(?:<title[^>]>(.+)<\/title>)?(.*)/
+        case $1
+          when "emlist": puts "¢¡¢ª³«»Ï:¥¤¥ó¥é¥¤¥ó¥ê¥¹¥È¢«¢¡"
+          when "cmd": puts "¢¡¢ª³«»Ï:¥³¥Þ¥ó¥É¢«¢¡"
+          when "quote": puts "¢¡¢ª³«»Ï:°úÍÑ¢«¢¡"
+          when "flushright": puts "¢¡¢ª³«»Ï:±¦´ó¤»¢«¢¡"
+          when "note": puts "¢¡¢ª³«»Ï:¥Î¡¼¥È¢«¢¡"
+          when "important": puts "¢¡¢ª³«»Ï:½ÅÍ×¢«¢¡"
+          when "term": puts "¢¡¢ª³«»Ï:ÍÑ¸ì²òÀâ¢«¢¡"
+          when "notice": puts "¢¡¢ª³«»Ï:Ãí°Õ¢«¢¡"
+          when "point": puts "¢¡¢ª³«»Ï:¤³¤³¤¬¥Ý¥¤¥ó¥È¢«¢¡"
+          when "reference": puts "¢¡¢ª³«»Ï:»²¹Í¢«¢¡"
+          when "practice": puts "¢¡¢ª³«»Ï:Îý½¬ÌäÂê¢«¢¡"
+          when "expert": puts "¢¡¢ª³«»Ï:¥¨¥­¥¹¥Ñ¡¼¥È¤Ë¿Ö¤±¢«¢¡"
+          when "box": puts "¢¡¢ª³«»Ï:½ñ¼°¢«¢¡"
+          when "insn": puts "¢¡¢ª³«»Ï:½ñ¼°¢«¢¡"
+        end
+        puts "¢£#{$2}" unless $2.nil?
+        print $3
+      else
+        puts str
+      end
+    end
+    
+    def text(str)
+      str
+    end
+    
+    def nofunc_text(str)
+      str
+    end
+
+  end
+
+end   # module ReVIEW
