@@ -13,6 +13,9 @@ Sat Jan 16 23:12:56 2010  Kenshi Muto  <kmuto@debian.org>
 	  Support HTML layout.
 	  Support PART file.
 	  Change default internal character encoding to UTF-8.
+        * Add --inencoding and --outencoding option to specify
+          the encoding of source/dest file. Default is UTF-8.
+          It accepts UTF-8, EUC and SJIS.
 
 Tue Jan 12 11:13:39 2010  Kenshi Muto  <kmuto@debian.org>
 

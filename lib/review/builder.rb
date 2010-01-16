@@ -43,11 +43,23 @@ module ReVIEW
     end
 
     def print(*s)
-      @output.print(*s)
+      if @@outencoding =~ /^EUC$/i
+        @output.print(NKF.nkf("-W, -e", *s))
+      elsif @@outencoding =~ /^SJIS$/i
+        @output.print(NKF.nkf("-W, -s", *s))
+      else
+        @output.print(*s)
+      end
     end
 
     def puts(*s)
-      @output.puts(*s)
+      if @@outencoding =~ /^EUC$/i
+        @output.puts(NKF.nkf("-W, -e", *s))
+      elsif @@outencoding =~ /^SJIS$/i
+        @output.puts(NKF.nkf("-W, -s", *s))
+      else
+        @output.puts(*s)
+      end
     end
 
     def list(lines, id, caption)
