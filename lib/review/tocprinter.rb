@@ -11,6 +11,7 @@
 #
 
 require 'review/htmlutils'
+require 'review/htmllayout'
 
 module ReVIEW
 
@@ -79,40 +80,58 @@ module ReVIEW
 
     def print_book(book)
       return unless print?(1)
-      book.each_section do |chap|
-        name = "chap#{chap.number}"
-        label = "Âè#{chap.number}¾Ï #{chap.label}"
-        puts h2(a_name(escape_html(name), escape_html(label)))
-        return unless print?(2)
-        if print?(3)
-          print_chap_sections chap
-        else
-          print_chapter chap
+      html = ""
+      book.each_part do |part|
+        html << h1(part.name) if part.name
+        part.each_section do |chap|
+          if chap.number
+            name = "chap#{chap.number}"
+            label = "ç¬¬#{chap.number}ç«  #{chap.label}"
+            html << h2(a_name(escape_html(name), escape_html(label)))
+          else
+            label = "#{chap.label}"
+            html << h2(escape_html(label))
+          end
+          return unless print?(2)
+          if print?(3)
+            html << chap_sections_to_s(chap)
+          else
+            html << chapter_to_s(chap)
+          end
         end
       end
+      puts HTMLLayout.new(html, "ç›®æ¬¡", File.join(book.basedir, "layouts", "layout.erb")).result
     end
 
     private
 
-    def print_chap_sections(chap)
-      puts "<ol>"
+    def chap_sections_to_s(chap)
+      res = []
+      res << "<ol>"
       chap.each_section do |sec|
-        puts li(escape_html(sec.label))
+        res << li(escape_html(sec.label))
       end
-      puts "</ol>"
+      res << "</ol>"
+      return res.join("\n")
     end
 
-    def print_chapter(chap)
+    def print_chapter_to_s(chap)
+      res = []
       chap.each_section do |sec|
-        puts h3(escape_html(sec.label))
+        res << h3(escape_html(sec.label))
         next unless print?(4)
         next if sec.n_sections == 0
-        puts "<ul>"
+        res << "<ul>"
         sec.each_section do |node|
-          puts li(escape_html(node.label))
+          res << li(escape_html(node.label))
         end
-        puts "</ul>"
+        res << "</ul>"
       end
+      return res.join("\n")
+    end
+
+    def h1(label)
+      "<h1>#{label}</h1>"
     end
 
     def h2(label)
@@ -120,7 +139,7 @@ module ReVIEW
     end
 
     def h3(label)
-      "<h3>#{label}</h2>"
+      "<h3>#{label}</h3>"
     end
 
     def li(content)
@@ -136,7 +155,7 @@ module ReVIEW
   class IDGTOCPrinter < TOCPrinter
     def print_book(book)
       puts %Q(<?xml version="1.0" encoding="UTF-8"?>)
-      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1¡¡¥Ñ¡¼¥È1</title><?dtp level="0" section="Âè1Éô¡¡¥Ñ¡¼¥È1"?>) # FIXME: Éô¥¿¥¤¥È¥ë¤ò¼è¤ë¤Ë¤Ï¡© & Éô¤´¤È¤Ë·ë²Ì¤òÊ¬¤±¤ë¤Ë¤Ï¡©
+      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1ã€€ãƒ‘ãƒ¼ãƒˆ1</title><?dtp level="0" section="ç¬¬1éƒ¨ã€€ãƒ‘ãƒ¼ãƒˆ1"?>) # FIXME: éƒ¨ã‚¿ã‚¤ãƒˆãƒ«ã‚’å–ã‚‹ã«ã¯ï¼Ÿ & éƒ¨ã”ã¨ã«çµæœã‚’åˆ†ã‘ã‚‹ã«ã¯ï¼Ÿ
       puts %Q(<ul aid:pstyle='ul-partblock'>)
       print_children book
       puts %Q(</ul></doc>)
@@ -161,12 +180,12 @@ module ReVIEW
                "#{chapnumstr(node.number)}#{node.label}"
       else
         printf "<li>%-#{LABEL_LEN}s\n",
-               "  #{'   ' * (node.level - 1)}#{seq}¡¡#{node.label}</li>"
+               "  #{'   ' * (node.level - 1)}#{seq}ã€€#{node.label}</li>"
       end
     end
 
     def chapnumstr(n)
-      n ? sprintf('Âè%d¾Ï¡¡', n) : ''
+      n ? sprintf('ç¬¬%dç« ã€€', n) : ''
     end
 
     def volume_columns(level, volstr)

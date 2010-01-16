@@ -298,7 +298,7 @@ module ReVIEW
       macro('footnote', nofunc_text(@chapter.footnote(id).content.strip))
     end
 
-    BOUTEN = "¡¦"
+    BOUTEN = "ãƒ»"
 
     def inline_bou(str)
       str.split(//).map {|c| macro('ruby', escape(c), macro('textgt', BOUTEN)) }.join('\allowbreak')
@@ -322,6 +322,11 @@ module ReVIEW
     # index
     def inline_i(str)
       text(str) + index(str)
+    end
+
+    # bold
+    def inline_b(str)
+      macro('textbf', text(str))
     end
 
     def nofunc_text(str)
@@ -352,7 +357,7 @@ module ReVIEW
 
     def compile_kw(word, alt)
       if alt
-        macro('textgt', escape(word)) + "¡Ê#{escape(alt.strip)}¡Ë"
+        macro('textgt', escape(word)) + "ï¼ˆ#{escape(alt.strip)}ï¼‰"
       else
         macro('textgt', escape(word))
       end

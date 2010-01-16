@@ -1,5 +1,3 @@
-# -*- encoding: EUC-JP -*-
-#
 # $Id: htmlbuilder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
@@ -12,6 +10,7 @@
 
 require 'review/builder'
 require 'review/htmlutils'
+require 'review/htmllayout'
 require 'review/textutils'
 
 module ReVIEW
@@ -37,7 +36,13 @@ module ReVIEW
     private :builder_init_file
 
     def result
-      messages() + @output.string
+      layout_file = File.join(@book.basedir, "layouts", "layout.erb")
+      if File.exists?(layout_file)
+        messages() +
+          HTMLLayout.new(@output.string, @chapter.title, layout_file).result
+      else
+        messages() + @output.string
+      end
     end
 
     def warn(msg)
@@ -92,11 +97,12 @@ module ReVIEW
     end
 
     def column_begin(level, label, caption)
+      puts "<div class='column'>"
       headline(level, label, caption)   # FIXME
     end
 
     def column_end(level)
-      ;
+      puts '</div>'
     end
 
     def ul_begin
@@ -140,7 +146,7 @@ module ReVIEW
     end
 
     def paragraph(lines)
-      puts "<p>#{lines.join("\n")}</p>"
+      puts "<p>#{lines.join("")}</p>"
     end
 
     def read(lines)
@@ -148,23 +154,71 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-      puts %Q[<p class="toplabel">#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<p class="toplabel">リスト#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
     end
 
     def list_body(lines)
+      puts '<div class="caption-code">'
       puts '<pre class="list">'
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
+      puts '</div>'
     end
 
+    def source_header(caption)
+      puts %Q[<p class="toplabel">▼#{escape_html(caption)}</p>]
+    end
+
+    def source_body(lines)
+      puts '<div class="caption-code">'
+      puts '<pre class="source">'
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts '</pre>'
+      puts '</div>'
+    end
+
+    def listnum_body(lines)
+      puts '<div class="code">'
+      puts '<pre class="list">'
+      lines.each_with_index do |line, i|
+        puts detab((i+1).to_s.rjust(2) + ": " + line)
+      end
+      puts '</pre>'
+      puts '</div>'
+     end
+
     def emlist(lines)
-      quotedlist lines, 'emlist'
+      puts '<div class="code">'
+      puts '<pre class="emlist">'
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts '</pre>'
+      puts '</div>'
+    end
+
+    def emlistnum(lines)
+      puts '<div class="code">'
+      puts '<pre class="emlist">'
+      lines.each_with_index do |line, i|
+        puts detab((i+1).to_s.rjust(2) + ": " + line)
+      end
+      puts '</pre>'
+      puts '</div>'
     end
 
     def cmd(lines)
-      quotedlist lines, 'cmd'
+      puts '<div class="code">'
+      puts '<pre class="cmd">'
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts '</pre>'
+      puts '</div>'
     end
 
     def quotedlist(lines, css_class)
@@ -198,12 +252,12 @@ module ReVIEW
 
     def image_header(id, caption)
       puts %Q[<p class="botlabel">]
-      puts %Q[#{@chapter.image(id).number}: #{escape_html(caption)}]
+      puts %Q[図#{@chapter.image(id).number}: #{escape_html(caption)}]
       puts %Q[</p>]
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="toplabel">#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<p class="toplabel">表#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
     end
 
     def table_begin(ncols)
@@ -269,8 +323,30 @@ module ReVIEW
       ''
     end
 
+    def inline_code(str)
+      %Q(<span class="inline-code">#{str}</span>)
+    end
+
     def text(str)
       str
+    end
+
+    def bibpaper_header(id, caption)
+      puts %Q(<a name="bib-#{id}">)
+      puts "[#{@chapter.bibpaper(id).number}] #{caption}"
+      puts %Q(</a>)
+    end
+
+    def bibpaper_bibpaper(id, caption, lines)
+      puts %Q(<p>)
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts %Q(</p>)
+    end
+
+    def inline_bib(id)
+      %Q(<a href=".#{@book.bib_file.gsub(/re$/, "html")}\#bib-#{id}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
     def nofunc_text(str)

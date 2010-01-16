@@ -1,4 +1,20 @@
-Tue Jan 12 11:13:39 2010  Kenshi Muto  <kmuto@topstudio.co.jp>
+Sat Jan 16 23:12:56 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, bin/review-vol, doc/format.txt,
+	  lib/review/book.rb, lib/review/builder.rb,
+	  lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	  lib/review/htmllayout.rb, lib/review/idgxmlbuilder.rb,
+	  lib/review/index.rb, lib/review/latexbuilder.rb,
+	  lib/review/tocprinter.rb, lib/review/topbuilder.rb,
+	  lib/review/volume.rb: Merged most of Mr. Narhiro Nakamura's
+	  branch.
+	  New block //source, //listnum, //emlistnum, //bibpaper.
+	  New op @<code>.
+	  Support HTML layout.
+	  Support PART file.
+	  Change default internal character encoding to UTF-8.
+
+Tue Jan 12 11:13:39 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb, doc/format_idg.txt: New op @<uchar>.
 

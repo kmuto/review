@@ -1,4 +1,3 @@
-# -*- encoding: EUC-JP -*-
 #
 # $Id: builder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
@@ -31,6 +30,7 @@ module ReVIEW
       @chapter = chapter
       @location = location
       @output = StringIO.new
+      @book = ReVIEW.book
       builder_init_file
     end
 
@@ -57,6 +57,20 @@ module ReVIEW
         error "no such list: #{id}"
       end
       list_body lines
+    end
+
+    def listnum(lines, id, caption)
+      begin
+        list_header id, caption
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      listnum_body lines
+    end
+
+    def source(lines, caption)
+      source_header caption
+      source_body lines
     end
 
     def image(lines, id, caption_or_metric, caption = nil)
@@ -163,21 +177,21 @@ module ReVIEW
     end
 
     def inline_list(id)
-      "¥ê¥¹¥È#{@chapter.list(id).number}"
+      "ãƒªã‚¹ãƒˆ#{@chapter.list(id).number}"
     rescue KeyError
       error "unknown list: #{id}"
       nofunc_text("[UnknownList:#{id}]")
     end
 
     def inline_img(id)
-      "¿Þ#{@chapter.image(id).number}"
+      "å›³#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
     end
 
     def inline_table(id)
-      "É½#{@chapter.table(id).number}"
+      "è¡¨#{@chapter.table(id).number}"
     rescue KeyError
       error "unknown table: #{id}"
       nofunc_text("[UnknownTable:#{id}]")
@@ -206,6 +220,15 @@ module ReVIEW
 
     def text(str)
       str
+    end
+
+    def bibpaper(lines, id, caption)
+      puts "<div>"
+      bibpaper_header id, caption
+      unless lines.empty?
+        bibpaper_bibpaper id, caption, lines
+      end
+      puts "</div>"
     end
 
     def warn(msg)

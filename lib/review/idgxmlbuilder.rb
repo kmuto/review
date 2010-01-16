@@ -150,9 +150,9 @@ module ReVIEW
 
         print %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
         if @chapter.number.to_s =~ /\A\d+$/
-          prefix = "Âè#{@chapter.number}¾Ï¡¡"
+          prefix = "ç¬¬#{@chapter.number}ç« ã€€"
         elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
-          prefix = "#{@chapter.number}¡¡"
+          prefix = "#{@chapter.number}ã€€"
         end
         @section = 0
         @subsection = 0
@@ -168,7 +168,7 @@ module ReVIEW
         @section += 1
         print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
 
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}¡¡" : ""
+        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}ã€€" : ""
 
         @subsection = 0
         @subsubsection = 0
@@ -182,7 +182,7 @@ module ReVIEW
 
         @subsection += 1
         print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}¡¡" : ""
+        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}ã€€" : ""
 
         @subsubsection = 0
         @subsubsubsection = 0
@@ -194,7 +194,7 @@ module ReVIEW
 
         @subsubsection += 1
         print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}¡¡" : ""
+        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}ã€€" : ""
 
         @subsubsubsection = 0
       when 5
@@ -204,7 +204,7 @@ module ReVIEW
 
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) unless @secttags.nil?
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}¡¡" : ""
+        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}ã€€" : ""
       else
         raise "caption level too deep or unsupported: #{level}"
       end
@@ -293,19 +293,19 @@ module ReVIEW
 
     def inline_list(id)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        "<span type='list'>¥ê¥¹¥È#{@chapter.number}.#{@chapter.list(id).number}</span>"
+        "<span type='list'>ãƒªã‚¹ãƒˆ#{@chapter.number}.#{@chapter.list(id).number}</span>"
       else
-        "<span type='list'>¥ê¥¹¥È#{@chapter.list(id).number}</span>"
+        "<span type='list'>ãƒªã‚¹ãƒˆ#{@chapter.list(id).number}</span>"
       end
     end
 
     def list_header(id, caption)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
         puts %Q[<codelist>]
-        puts %Q[<caption>¥ê¥¹¥È#{@chapter.number}.#{@chapter.list(id).number}¡¡#{escape_html(caption)}</caption>]
+        puts %Q[<caption>ãƒªã‚¹ãƒˆ#{@chapter.number}.#{@chapter.list(id).number}ã€€#{escape_html(caption)}</caption>]
       else
         puts %Q[<codelist>]
-        puts %Q[<caption>¥ê¥¹¥È#{@chapter.list(id).number}¡¡#{escape_html(caption)}</caption>]
+        puts %Q[<caption>ãƒªã‚¹ãƒˆ#{@chapter.list(id).number}ã€€#{escape_html(caption)}</caption>]
       end
     end
 
@@ -344,17 +344,17 @@ module ReVIEW
 
     def inline_table(id)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        "<span type='table'>É½#{@chapter.number}.#{@chapter.table(id).number}</span>"
+        "<span type='table'>è¡¨#{@chapter.number}.#{@chapter.table(id).number}</span>"
       else
-        "<span type='table'>É½#{@chapter.table(id).number}</span>"
+        "<span type='table'>è¡¨#{@chapter.table(id).number}</span>"
       end
     end
 
     def inline_img(id)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        "<span type='image'>¿Ş#{@chapter.number}.#{@chapter.image(id).number}</span>"
+        "<span type='image'>å›³#{@chapter.number}.#{@chapter.image(id).number}</span>"
       else
-        "<span type='image'>¿Ş#{@chapter.image(id).number}</span>"
+        "<span type='image'>å›³#{@chapter.image(id).number}</span>"
       end
     end
 
@@ -380,14 +380,14 @@ module ReVIEW
 
     def image_header(id, caption)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        puts %Q[<caption>¿Ş#{@chapter.number}.#{@chapter.image(id).number}¡¡#{escape_html(caption)}</caption>]
+        puts %Q[<caption>å›³#{@chapter.number}.#{@chapter.image(id).number}ã€€#{escape_html(caption)}</caption>]
       else
-        puts %Q[<caption>¿Ş#{@chapter.image(id).number}¡¡#{escape_html(caption)}</caption>]
+        puts %Q[<caption>å›³#{@chapter.image(id).number}ã€€#{escape_html(caption)}</caption>]
       end
     end
 
     def table(lines, id = nil, caption = nil)
-#      puts %Q(<É½ xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
+#      puts %Q(<è¡¨ xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
       tablewidth = nil
       col = 0
       unless @@tableopt.nil?
@@ -501,15 +501,15 @@ module ReVIEW
 
     def table_header(id, caption)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        puts %Q[<caption>É½#{@chapter.number}.#{@chapter.table(id).number}¡¡#{escape_html(caption)}</caption>]
+        puts %Q[<caption>è¡¨#{@chapter.number}.#{@chapter.table(id).number}ã€€#{escape_html(caption)}</caption>]
       else
-        puts %Q[<caption>É½#{@chapter.table(id).number}¡¡#{escape_html(caption)}</caption>]
+        puts %Q[<caption>è¡¨#{@chapter.table(id).number}ã€€#{escape_html(caption)}</caption>]
       end
     end
 
     def table_begin(ncols)
-      #  aid:trows="" aid:tcols="" widths="Îó1¤ÎÉı, Îó2¤ÎÉı, ..."¤òdtpÌ¿Îá¤ÇÆş¤ì¤Æ¤ª¤¯
-#      puts %Q(<É½ xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
+      #  aid:trows="" aid:tcols="" widths="åˆ—1ã®å¹…, åˆ—2ã®å¹…, ..."ã‚’dtpå‘½ä»¤ã§å…¥ã‚Œã¦ãŠã
+#      puts %Q(<è¡¨ xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
     end
 
     def tr(rows)
@@ -519,20 +519,20 @@ module ReVIEW
 
     def th(str)
       # FIXME aid:ccolwidth=""
-      # FIXME str¤¬2²ó¥¨¥¹¥±¡¼¥×¤µ¤ì¤Æ¤¤¤ë
-#      %Q(<¥»¥ë aid:table="cell" aid:theader="" aid:crows="1" aid:ccols="1">#{str}</¥»¥ë>)
+      # FIXME strãŒ2å›ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã•ã‚Œã¦ã„ã‚‹
+#      %Q(<ã‚»ãƒ« aid:table="cell" aid:theader="" aid:crows="1" aid:ccols="1">#{str}</ã‚»ãƒ«>)
       %Q(<?dtp tablerow header?>#{str})
     end
 
     def td(str)
       # FIXME aid:ccolwidth=""
-      # FIXME str¤¬2²ó¥¨¥¹¥±¡¼¥×¤µ¤ì¤Æ¤¤¤ë
-#      %Q(<¥»¥ë aid:table="cell" aid:crows="1" aid:ccols="1">#{str}</¥»¥ë>)
+      # FIXME strãŒ2å›ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã•ã‚Œã¦ã„ã‚‹
+#      %Q(<ã‚»ãƒ« aid:table="cell" aid:crows="1" aid:ccols="1">#{str}</ã‚»ãƒ«>)
       str
     end
     
     def table_end
-#      puts '</É½>'
+#      puts '</è¡¨>'
       print "<?dtp tablerow last?>"
     end
 
@@ -541,7 +541,7 @@ module ReVIEW
     end
 
     def footnote(id, str)
-      # FIXME: inline_fn¤È¹ç¤ï¤»¤Æ½èÍıÉ¬Í×¡£2¥Ñ¡¼¥¹¤Î½èÍı¤ò¤¹¤Ù¤­¤«
+      # FIXME: inline_fnã¨åˆã‚ã›ã¦å‡¦ç†å¿…è¦ã€‚2ãƒ‘ãƒ¼ã‚¹ã®å‡¦ç†ã‚’ã™ã¹ãã‹
 #      puts %Q(<footnote id="#{id}" no="#{@chapter.footnote(id).number}">#{compile_inline(str)}</footnote>)
     end
 
@@ -557,7 +557,7 @@ module ReVIEW
       '<keyword>' +
         if alt
         #then escape_html(word + sprintf(@locale[:parens], alt.strip))
-        then escape_html(word + "¡Ê#{alt.strip}¡Ë")
+        then escape_html(word + "ï¼ˆ#{alt.strip}ï¼‰")
         else escape_html(word)
         end +
       '</keyword>' +
@@ -650,13 +650,13 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q(<ref idref='#{idref}'>¡Ö¡ü¡ü¡¡#{idref}¡×</ref>) # FIXME:ÀáÌ¾¤È¥¿¥¤¥È¥ë¤â¹ş¤ß¤ÇÍ×½ĞÎÏ
+      %Q(<ref idref='#{idref}'>ã€Œâ—â—ã€€#{idref}ã€</ref>) # FIXME:ç¯€åã¨ã‚¿ã‚¤ãƒˆãƒ«ã‚‚è¾¼ã¿ã§è¦å‡ºåŠ›
     end
 
     alias inline_ref inline_labelref
 
     def inline_pageref(idref)
-      %Q(<pageref idref='#{idref}'>¡ü¥Ú¡¼¥¸</pageref>) # ¥Ú¡¼¥¸ÈÖ¹æ¤ò»²¾È
+      %Q(<pageref idref='#{idref}'>â—ãƒšãƒ¼ã‚¸</pageref>) # ãƒšãƒ¼ã‚¸ç•ªå·ã‚’å‚ç…§
     end
 
     def inline_balloon(str)
@@ -672,7 +672,7 @@ module ReVIEW
     end
 
     def linebreak
-      # FIXME:p¤¬ÊÄ¤¸¤Á¤ã¤Ã¤Æ¤ë¤Î¤Ç°ìÅÙÌá¤é¤Ê¤¤¤È¤¤¤±¤Ê¤¤¤¬¡¢Æñ¤·¤¤¡Ä¡£
+      # FIXME:pãŒé–‰ã˜ã¡ã‚ƒã£ã¦ã‚‹ã®ã§ä¸€åº¦æˆ»ã‚‰ãªã„ã¨ã„ã‘ãªã„ãŒã€é›£ã—ã„â€¦ã€‚
       puts "<br />"
     end
 
@@ -910,7 +910,7 @@ module ReVIEW
     end
 
     def inline_chapref(id)
-      chs = ["", "¡Ö", "¡×"]
+      chs = ["", "ã€Œ", "ã€"]
       unless @@chapref.nil?
         _chs = NKF.nkf("-e", @@chapref).split(",")
         if _chs.size != 3

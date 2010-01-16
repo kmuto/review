@@ -1,5 +1,3 @@
-# -*- encoding: EUC-JP -*-
-#
 # $Id: index.rb 4300 2009-06-21 23:45:49Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
@@ -70,7 +68,7 @@ module ReVIEW
     end
 
     def number(id)
-      "Âè#{@index.fetch(id).number}¾Ï"
+      "ç¬¬#{@index.fetch(id).number}ç« "
     end
 
     def title(id)
@@ -78,14 +76,14 @@ module ReVIEW
     end
 
     def display_string(id)
-      "#{number(id)}¡Ö#{title(id)}¡×"
+      "#{number(id)}ã€Œ#{title(id)}ã€"
     end
   end
 
 
   class ListIndex < Index
     def ListIndex.item_type
-      'list'
+      '(list|listnum)'
     end
   end
 
@@ -193,4 +191,19 @@ module ReVIEW
     end
   end
 
+  class BibpaperIndex < Index
+    Item = Struct.new(:id, :number, :caption)
+
+    def BibpaperIndex.parse(src)
+      items = []
+      seq = 1
+      src.grep(%r<^//bibpaper>) do |line|
+        if m = /\[(.*?)\]\[(.*)\]/.match(line)
+          items.push Item.new(m[1], seq, m[2])
+        end
+        seq += 1
+      end
+      new(items)
+    end
+  end
 end

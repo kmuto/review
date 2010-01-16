@@ -29,7 +29,7 @@ rescue Errno::EPIPE
 end
 
 def _main
-  $KCODE = 'EUC' unless defined?(Encoding)
+  $KCODE = 'UTF-8' unless defined?(Encoding)
 
   mode = :files
   basedir = nil
@@ -44,9 +44,13 @@ def _main
   @@tableopt = nil
   @@nolf = nil
   @@chapref = nil
+  @@encoding = "UTF-8"
 
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
+  parser.on('-k=ENCODING', '--encoding=ENCODING', 'Set output encoding. Default is UTF-8.') {|enc|
+    @@encoding = enc
+  }
   parser.on('-c', '--check', 'Check manuscript') {
     check_only = true
   }

@@ -1,5 +1,3 @@
-# -*- encodin: EUC-JP -*-
-#
 # $Id: compiler.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
@@ -132,6 +130,10 @@ module ReVIEW
     defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true
+    defblock :source, 1
+    defblock :listnum, 2
+    defblock :emlistnum, 0..1
+    defblock :bibpaper, 2..3, true
 
     defsingle :footnote, 2
     defsingle :comment, 1
@@ -152,6 +154,8 @@ module ReVIEW
     definline :ami
     definline :b
     definline :dtp
+    definline :code
+    definline :bib
 
     private
 
@@ -165,9 +169,9 @@ module ReVIEW
           compile_headline f.gets
         when %r<\A\s+\*>
           compile_ulist f
-        when %r<\A\s+¢¢>
+        when %r<\A\s+â–¡>
           compile_multichoice f
-        when %r<\A\s+¡û>
+        when %r<\A\s+â—‹>
           compile_singlechoice f
         when %r<\A\s+\d+\.>
           compile_olist f
@@ -267,9 +271,9 @@ module ReVIEW
 
     def compile_multichoice(f)
       @strategy.choice_multi_begin
-      f.while_match(/\A\s+¢¢/) do |line|
-        buf = [text(line.sub(/¢¢/, '').strip)]
-        f.while_match(/\A\s+(?!¢¢)\S/) do |cont|
+      f.while_match(/\A\s+â–¡/) do |line|
+        buf = [text(line.sub(/â–¡/, '').strip)]
+        f.while_match(/\A\s+(?!â–¡)\S/) do |cont|
           buf.push text(cont.strip)
         end
         @strategy.ul_item buf
@@ -279,9 +283,9 @@ module ReVIEW
 
     def compile_singlechoice(f)
       @strategy.choice_single_begin
-      f.while_match(/\A\s+¡û/) do |line|
-        buf = [text(line.sub(/¡û/, '').strip)]
-        f.while_match(/\A\s+(?!¡û)\S/) do |cont|
+      f.while_match(/\A\s+â—‹/) do |line|
+        buf = [text(line.sub(/â—‹/, '').strip)]
+        f.while_match(/\A\s+(?!â—‹)\S/) do |cont|
           buf.push text(cont.strip)
         end
         @strategy.ul_item buf

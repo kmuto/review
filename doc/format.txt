@@ -116,6 +116,49 @@ RD や各種 Wiki の文法をとりいれて簡素化しています。
 する場合は、//list で指定した識別子を使って「@<list>{main}」
 と表記します。
 
+ソースコードの引用
+
+ソースコードを引用する場合、ファイル名が必要です。
+
+[例]
+
+  //source[/hello/world.rb]{
+   puts "hello world!"
+  //}
+
+■行番号付きキャプションありリスト
+
+キャプションありのリスト(list)で自動的に行番号がつきます。
+
+[例]
+
+  //listnum[hello][ハローワールド]{
+   puts "hello world!"
+  //}
+
+参照方法はlistと変わりません。
+
+[例]
+
+  ..は@<list>{hello}をみてください。
+
+■行番号付きキャプションなしリスト
+
+キャプション無しのリスト(emlist)で自動的に行番号がつきます。
+
+[例]
+
+  //emlistnum{
+   puts "hello world!"
+  //}
+
+■本文中でのソースコード引用
+本文中でソースコードを引用して記述します。
+
+[例]
+
+  @<code>{p = obj.ref_cnt}
+
 ■ コマンドラインのキャプチャ
 
 コマンドラインの操作を示すときは //cmd{ 〜 //} を使います。
@@ -206,6 +249,28 @@ RD や各種 Wiki の文法をとりいれて簡素化しています。
 
 本文中の「@<fn>{site}」は脚注番号に置換され、「本書のサポート
 サイト……」という文は実際の脚注に変換されます。
+
+■参考文献の定義
+
+参考文献は同一ディレクトリ内の bib.re に定義します。
+//bibpaper[site][キャプション]{..コメント..}
+コメントが無い場合も定義可能です。
+//bibpaper[site][キャプション]
+
+[例]
+
+  //bibpaper[lins][Lins, 1991]{
+  Refael D. Lins. A shared memory architecture for parallel study of
+  algorithums for cyclic reference_counting. Technical Report 92,
+  Computing Laboratory, The University of Kent at Canterbury , August
+  1991
+  //}
+
+本文中で参考文献を参照したい場合は次のようにしてください。
+
+[例]
+
+  …という研究が知られています(@<bib>{lins})
 
 ■ リード文
 
@@ -311,3 +376,45 @@ ReVIEW は任意のブロックを追加可能なので、本によって専用ブロックを
 
 #@mapoutput(コマンド) 〜 #@end
     コマンドを実行して、その出力結果を展開する。
+
+■HTMLのレイアウト機能
+
+CHAPSファイルが置かれているディレクトリに layout/layout.erb
+を置くとその html を ERB で評価します。
+
+[例]
+
+  <html>
+    <head>
+      <title><%= title %></title>
+    </head>
+[例]
+
+  <html>
+    <head>
+      <title><%= title %></title>
+    </head>
+    <body>
+      <%= body %>
+      <hr/>
+    </body>
+  </html>
+
+■部タイトル取得(目次生成機能)
+
+PART ファイルに定義してください。
+PART ファイルは CHAPS の部わけと対応しています。
+
+[例]
+
+CHAPS:
+  intro.re
+  
+  start.re
+
+  end.re
+
+PART:
+  (序章なので空行)
+  はじまりの部
+  おわりの部

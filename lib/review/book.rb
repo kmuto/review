@@ -66,6 +66,8 @@ module ReVIEW
     extend Forwardable
     def_delegators '@parameters',
                    :chapter_file,
+                   :part_file,
+                   :bib_file,
                    :index_file,
                    :reject_file,
                    :nocode_file,
@@ -118,6 +120,22 @@ module ReVIEW
       Dir.glob("#{@basedir}/*#{ext()}").sort.join("\n")
     end
 
+    def read_PART
+      @read_PART ||= File.read("#{@basedir}/#{part_file}")
+    end
+
+    def part_exist?
+      File.exist?("#{@basedir}/#{part_file}")
+    end
+
+    def read_bib
+      File.read("#{@basedir}/#{bib_file}")
+    end
+
+    def bib_exist?
+      File.exist?("#{@basedir}/#{bib_file}")
+    end
+
     def prefaces
       if File.file?("#{@basedir}/#{predef_file}")
         begin
@@ -162,14 +180,19 @@ module ReVIEW
     def parse_chapters
       part = 0
       num = 0
-      read_CHAPS()\
+      chap = read_CHAPS()\
           .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
           .map {|part_chunk|
             chaps = part_chunk.split.map {|chapid|
               Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
             }
-            Part.new((part += 1), chaps)
+            if part_exist? && read_PART.split("\n").size >= part
+              Part.new((part += 1), chaps, read_PART.split("\n")[part-1])
+            else
+              Part.new((part += 1), chaps)
+            end
           }
+      return chap
     end
 
     def mkpart_from_namelistfile(path)
@@ -246,6 +269,8 @@ module ReVIEW
       mod.module_eval File.read(path), path
       new(
         :chapter_file => const_get_safe(mod, :CHAPS_FILE),
+        :part_file    => const_get_safe(mod, :PART_FILE),
+        :bib_file     => const_get_safe(mod, :BIB_FILE),
         :index_file   => const_get_safe(mod, :INDEX_FILE),
         :reject_file  => const_get_safe(mod, :REJECT_FILE) ||
                          const_get_safe(mod, :WORDS_FILE),
@@ -280,6 +305,7 @@ module ReVIEW
 
     def initialize(params = {})
       @chapter_file = params[:chapter_file] || 'CHAPS'
+      @part_file = params[:part_file]       || 'CHAPS'
       @index_file   = params[:index_file]   || 'INDEX'
       @reject_file  = params[:reject_file]  || 'REJECT'
       @nocode_file  = params[:nocode_file]  || 'NOCODE'
@@ -290,6 +316,7 @@ module ReVIEW
       @image_dir    = params[:image_dir]    || 'images'
       @image_types  = unify_exts(params[:image_types]  ||
                                  %w( eps tif tiff png bmp jpg jpeg gif ))
+      @bib_file  = params[:bib_file]        || "bib#{@ext}"
     end
 
     def unify_exts(list)
@@ -306,6 +333,8 @@ module ReVIEW
     end
 
     path_param  :chapter_file
+    path_param  :part_file
+    path_param  :bib_file
     path_param  :index_file
     path_param  :reject_file
     path_param  :nocode_file
@@ -324,29 +353,37 @@ module ReVIEW
     MetricData = Struct.new(:n_lines, :n_columns)
 
     def PageMetric.a5
-      new(46, 80, 30, 74)
+      new(46, 80, 30, 74, 1)
+    end
+
+    def PageMetric.b5
+      new(46, 80, 30, 74, 2)
     end
   
-    def initialize(list_lines, list_columns, text_lines, text_columns)
+    def initialize(list_lines, list_columns, text_lines, text_columns, page_per_kbyte)
       @list = MetricData.new(list_lines, list_columns)
       @text = MetricData.new(text_lines, text_columns)
+      @page_per_kbyte = page_per_kbyte
     end
 
     attr_reader :list
     attr_reader :text
+    attr_reader :page_per_kbyte
 
   end
 
 
   class Part
 
-    def initialize(number, chapters)
+    def initialize(number, chapters, name="")
       @number = number
       @chapters = chapters
+      @name = name
     end
 
     attr_reader :number
     attr_reader :chapters
+    attr_reader :name
 
     def each_chapter(&block)
       @chapters.each(&block)
@@ -484,6 +521,14 @@ module ReVIEW
                                         @book.image_types)
     end
 
+    def bibpaper(id)
+      bibpaper_index()[id]
+    end
+
+    def bibpaper_index
+      raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
+      @bibpaper_index ||= BibpaperIndex.parse(@book.read_bib.lines.to_a)
+    end
   end
 
 end

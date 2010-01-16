@@ -47,8 +47,12 @@ module ReVIEW
       (@bytes.to_f / 1024).ceil
     end
 
+    def page
+      (kbytes.to_f/ReVIEW.book.page_metric.page_per_kbyte).ceil
+    end
+
     def to_s
-      "#{kbytes()}KB #{@chars}C #{@lines}L"
+      "#{kbytes()}KB #{@chars}C #{@lines}L #{page()}P"
     end
 
     def +(other)

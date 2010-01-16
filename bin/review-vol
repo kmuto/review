@@ -51,13 +51,13 @@ def main
       puts '    --------------------'
       print_volume part.volume
     end
-    puts '========================'
+    puts '============================='
     print_volume book.volume #puts "Total #{book.volume}"
   else
     book.each_chapter do |chap|
       print_chapter_volume chap
     end
-    puts '========================'
+    puts '============================='
     print_volume book.volume #puts "Total #{book.volume}"
   end
 rescue ReVIEW::ApplicationError, Errno::ENOENT => err
@@ -68,13 +68,13 @@ end
 
 def print_chapter_volume(chap)
   vol = chap.volume
-  printf "%s %3dKB %6dC %5dL  %s %-s\n",
-         chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines,
-         "#{chap.name} ".ljust(16, '.'), chap.title
+  printf "%s %3dKB %6dC %5dL %3dP %s %-s\n",
+         chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines, vol.page,
+         "#{chap.name} ".ljust(25, '.'), chap.title
 end
 
 def print_volume(vol)
-  printf "    %3dKB %6dC %5dL\n", vol.kbytes, vol.chars, vol.lines
+  printf "    %3dKB %6dC %5dL %3dP\n", vol.kbytes, vol.chars, vol.lines, vol.page
 end
 
 def chapnumstr(n)

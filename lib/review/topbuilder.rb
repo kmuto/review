@@ -1,5 +1,3 @@
-# -*- encoding: euc-jp -*-
-#
 # $Id: topbuilder.rb 4304 2009-07-01 12:03:39Z kmuto $
 #
 # Copyright (c) 2002-2006 Minero Aoki
@@ -94,15 +92,15 @@ module ReVIEW
       blank
       case level
       when 1
-        puts "¢£H1¢£Âè#{@chapter.number}¾Ï¡¡#{caption}"
+        puts "â– H1â– ç¬¬#{@chapter.number}ç« ã€€#{caption}"
       when 2
-        puts "¢£H2¢£#{@chapter.number}.#{@section += 1}¡¡#{caption}"
+        puts "â– H2â– #{@chapter.number}.#{@section += 1}ã€€#{caption}"
       when 3
-        puts "¢£H3¢£#{caption}"
+        puts "â– H3â– #{caption}"
       when 4
-        puts "¢£H4¢£#{caption}"
+        puts "â– H4â– #{caption}"
       when 5
-        puts "¢£H5¢£#{caption}"
+        puts "â– H5â– #{caption}"
       else
         raise "caption level too deep or unsupported: #{level}"
       end
@@ -110,12 +108,12 @@ module ReVIEW
 
     def column_begin(level, label, caption)
       blank
-      puts "¢¡¢ª³«»Ï:¥³¥é¥à¢«¢¡"
-      puts "¢£#{caption}"
+      puts "â—†â†’é–‹å§‹:ã‚³ãƒ©ãƒ â†â—†"
+      puts "â– #{caption}"
     end
 
     def column_end(level)
-      puts "¢¡¢ª½ªÎ»:¥³¥é¥à¢«¢¡"
+      puts "â—†â†’çµ‚äº†:ã‚³ãƒ©ãƒ â†â—†"
       blank
     end
 
@@ -124,7 +122,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      print @choice.nil? ? "¡ü" : @choice
+      print @choice.nil? ? "â—" : @choice
       puts "\t#{lines.join('')}"
     end
 
@@ -133,7 +131,7 @@ module ReVIEW
     end
 
     def choice_single_begin
-      @choice = "¡û"
+      @choice = "â—‹"
       blank
     end
 
@@ -143,7 +141,7 @@ module ReVIEW
     end
 
     def choice_multi_begin
-      @choice = "¢¢"
+      @choice = "â–¡"
       blank
     end
 
@@ -172,7 +170,7 @@ module ReVIEW
     end
 
     def dt(line)
-      puts "¡ú#{line}¡ù"
+      puts "â˜…#{line}â˜†"
     end
 
     def dd(lines)
@@ -194,21 +192,21 @@ module ReVIEW
     end
 
     def read(lines)
-      puts "¢¡¢ª³«»Ï:¥ê¡¼¥É¢«¢¡"
+      puts "â—†â†’é–‹å§‹:ãƒªãƒ¼ãƒ‰â†â—†"
       paragraph(lines)
-      puts "¢¡¢ª½ªÎ»:¥ê¡¼¥É¢«¢¡"
+      puts "â—†â†’çµ‚äº†:ãƒªãƒ¼ãƒ‰â†â—†"
     end
 
     alias lead read
 
     def inline_list(id)
-      "¥ê¥¹¥È#{@chapter.number}.#{@chapter.list(id).number}"
+      "ãƒªã‚¹ãƒˆ#{@chapter.number}.#{@chapter.list(id).number}"
     end
 
     def list_header(id, caption)
       blank
-      puts "¢¡¢ª³«»Ï:¥ê¥¹¥È¢«¢¡"
-      puts "¥ê¥¹¥È#{@chapter.number}.#{@chapter.list(id).number}¡¡#{caption}"
+      puts "â—†â†’é–‹å§‹:ãƒªã‚¹ãƒˆâ†â—†"
+      puts "ãƒªã‚¹ãƒˆ#{@chapter.number}.#{@chapter.list(id).number}ã€€#{caption}"
       blank
     end
 
@@ -216,59 +214,59 @@ module ReVIEW
       lines.each do |line|
         puts line
       end
-      puts "¢¡¢ª½ªÎ»:¥ê¥¹¥È¢«¢¡"
+      puts "â—†â†’çµ‚äº†:ãƒªã‚¹ãƒˆâ†â—†"
       blank
     end
 
     def base_block(type, lines, caption = nil)
       blank
-      puts "¢¡¢ª³«»Ï:#{type}¢«¢¡"
-      puts "¢£#{caption}" unless caption.nil?
+      puts "â—†â†’é–‹å§‹:#{type}â†â—†"
+      puts "â– #{caption}" unless caption.nil?
       puts lines.join("\n")
-      puts "¢¡¢ª½ªÎ»:#{type}¢«¢¡"
+      puts "â—†â†’çµ‚äº†:#{type}â†â—†"
       blank
     end
 
     def emlist(lines, caption = nil)
-      base_block "¥¤¥ó¥é¥¤¥ó¥ê¥¹¥È", lines, caption
+      base_block "ã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ãƒªã‚¹ãƒˆ", lines, caption
     end
 
     def cmd(lines, caption = nil)
-      base_block "¥³¥Ş¥ó¥É", lines, caption
+      base_block "ã‚³ãƒãƒ³ãƒ‰", lines, caption
     end
 
     def quote(lines)
-      base_block "°úÍÑ", lines, nil
+      base_block "å¼•ç”¨", lines, nil
     end
 
     def inline_img(id)
-      "¿Ş#{@chapter.number}.#{@chapter.image(id).number}"
+      "å›³#{@chapter.number}.#{@chapter.image(id).number}"
     end
 
     def image(lines, id, caption)
       blank
-      puts "¢¡¢ª³«»Ï:¿Ş¢«¢¡"
-      puts "¿Ş#{@chapter.number}.#{@chapter.image(id).number}¡¡#{caption}"
+      puts "â—†â†’é–‹å§‹:å›³â†â—†"
+      puts "å›³#{@chapter.number}.#{@chapter.image(id).number}ã€€#{caption}"
       blank
       if @chapter.image(id).bound?
-        puts "¢¡¢ª#{@chapter.image(id).path}¢«¢¡"
+        puts "â—†â†’#{@chapter.image(id).path}â†â—†"
       else
         lines.each do |line|
           puts line
         end
       end
-      puts "¢¡¢ª½ªÎ»:¿Ş¢«¢¡"
+      puts "â—†â†’çµ‚äº†:å›³â†â—†"
       blank
     end
 
     def inline_table(id)
-      "É½#{@chapter.number}.#{@chapter.table(id).number}"
+      "è¡¨#{@chapter.number}.#{@chapter.table(id).number}"
     end
 
     def table_header(id, caption)
       blank
-      puts "¢¡¢ª³«»Ï:É½¢«¢¡"
-      puts "É½#{@chapter.number}.#{@chapter.table(id).number}¡¡#{caption}"
+      puts "â—†â†’é–‹å§‹:è¡¨â†â—†"
+      puts "è¡¨#{@chapter.number}.#{@chapter.table(id).number}ã€€#{caption}"
       blank
     end
 
@@ -280,7 +278,7 @@ module ReVIEW
     end
 
     def th(str)
-      "¡ú#{str}¡ù"
+      "â˜…#{str}â˜†"
     end
 
     def td(str)
@@ -288,81 +286,81 @@ module ReVIEW
     end
     
     def table_end
-      puts "¢¡¢ª½ªÎ»:É½¢«¢¡"
+      puts "â—†â†’çµ‚äº†:è¡¨â†â—†"
       blank
     end
 
     def comment(str)
-      puts "¢¡¢ªDTPÃ´ÅöÍÍ:#{str}¢«¢¡"
+      puts "â—†â†’DTPæ‹…å½“æ§˜:#{str}â†â—†"
     end
 
     def inline_fn(id)
-      "¡ÚÃí#{@chapter.footnote(id).number}¡Û"
+      "ã€æ³¨#{@chapter.footnote(id).number}ã€‘"
     end
 
     def footnote(id, str)
-      puts "¡ÚÃí#{@chapter.footnote(id).number}¡Û#{compile_inline(str)}"
+      puts "ã€æ³¨#{@chapter.footnote(id).number}ã€‘#{compile_inline(str)}"
     end
 
     def compile_kw(word, alt)
       if alt
-      then "¡ú#{word}¡ù¡Ê#{alt.sub(/\A\s+/,"")}¡Ë"
-      else "¡ú#{word}¡ù"
+      then "â˜…#{word}â˜†ï¼ˆ#{alt.sub(/\A\s+/,"")}ï¼‰"
+      else "â˜…#{word}â˜†"
       end
     end
 
     def inline_chap(id)
-      #"¡ÖÂè#{super}¾Ï¡¡#{inline_title(id)}¡×"
-      # "Âè#{super}¾Ï"
+      #"ã€Œç¬¬#{super}ç« ã€€#{inline_title(id)}ã€"
+      # "ç¬¬#{super}ç« "
       super
     end
 
     def compile_ruby(base, ruby)
-      "#{base}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{base}¡×¤Ë¡Ö#{ruby}¡×¤È¥ë¥Ó¢«¢¡"
+      "#{base}â—†â†’DTPæ‹…å½“æ§˜:ã€Œ#{base}ã€ã«ã€Œ#{ruby}ã€ã¨ãƒ«ãƒ“â†â—†"
     end
 
     def inline_bou(str)
-      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤ËËµÅÀ¢«¢¡"
+      "#{str}â—†â†’DTPæ‹…å½“æ§˜:ã€Œ#{str}ã€ã«å‚ç‚¹â†â—†"
     end
 
     def inline_i(str)
-      "¢¥#{str}¡ù"
+      "â–²#{str}â˜†"
     end
 
     def inline_b(str)
-      "¡ú#{str}¡ù"
+      "â˜…#{str}â˜†"
     end
 
     def inline_tt(str)
-      "¢¤#{str}¡ù"
+      "â–³#{str}â˜†"
     end
 
     def inline_ttbold(str)
-      "¡ú#{str}¡ù¢¡¢ªÅùÉı¥Õ¥©¥ó¥È¢«¢¡"
+      "â˜…#{str}â˜†â—†â†’ç­‰å¹…ãƒ•ã‚©ãƒ³ãƒˆâ†â—†"
     end
 
     def inline_ttibold(str)
-      "¢¥#{str}¡ù¢¡¢ªÅùÉı¥Õ¥©¥ó¥È¢«¢¡"
+      "â–²#{str}â˜†â—†â†’ç­‰å¹…ãƒ•ã‚©ãƒ³ãƒˆâ†â—†"
     end
 
     def inline_u(str)
-      "¡÷#{str}¡÷¢¡¢ª¡÷¡Á¡÷ÉôÊ¬¤Ë²¼Àş¢«¢¡"
+      "ï¼ #{str}ï¼ â—†â†’ï¼ ã€œï¼ éƒ¨åˆ†ã«ä¸‹ç·šâ†â—†"
     end
 
     def inline_icon(id)
-      "¢¡¢ª²èÁü #{@chapter.id}-#{id}.eps¢«¢¡"
+      "â—†â†’ç”»åƒ #{@chapter.id}-#{id}.epsâ†â—†"
     end
 
     def inline_ami(str)
-      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤ËÌÖ¥«¥±¢«¢¡"
+      "#{str}â—†â†’DTPæ‹…å½“æ§˜:ã€Œ#{str}ã€ã«ç¶²ã‚«ã‚±â†â—†"
     end
 
     def inline_sup(str)
-      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤Ï¾åÉÕ¤­¢«¢¡"
+      "#{str}â—†â†’DTPæ‹…å½“æ§˜:ã€Œ#{str}ã€ã¯ä¸Šä»˜ãâ†â—†"
     end
 
     def inline_sub(str)
-      "#{str}¢¡¢ªDTPÃ´ÅöÍÍ:¡Ö#{str}¡×¤Ï²¼ÉÕ¤­¢«¢¡"
+      "#{str}â—†â†’DTPæ‹…å½“æ§˜:ã€Œ#{str}ã€ã¯ä¸‹ä»˜ãâ†â—†"
     end
 
     def inline_raw(str)
@@ -371,67 +369,67 @@ module ReVIEW
     end
 
     def inline_hint(str)
-      "¢¡¢ª¥Ò¥ó¥È¥¹¥¿¥¤¥ë¢«¢¡#{str}"
+      "â—†â†’ãƒ’ãƒ³ãƒˆã‚¹ã‚¿ã‚¤ãƒ«â†â—†#{str}"
     end
 
     def inline_maru(str)
-      "#{str}¢¡¢ª´İ¿ô»ú#{str}¢«¢¡"
+      "#{str}â—†â†’ä¸¸æ•°å­—#{str}â†â—†"
     end
 
     def inline_idx(str)
-      "#{str}¢¡¢ªº÷°ú¹àÌÜ:#{str}¢«¢¡"
+      "#{str}â—†â†’ç´¢å¼•é …ç›®:#{str}â†â—†"
     end
 
     def inline_hidx(str)
-      "¢¡¢ªº÷°ú¹àÌÜ:#{str}¢«¢¡"
+      "â—†â†’ç´¢å¼•é …ç›®:#{str}â†â—†"
     end
 
     def inline_keytop(str)
-      "#{str}¢¡¢ª¥­¡¼¥È¥Ã¥×#{str}¢«¢¡"
+      "#{str}â—†â†’ã‚­ãƒ¼ãƒˆãƒƒãƒ—#{str}â†â—†"
     end
 
     def inline_labelref(idref)
-      %Q(¡Ö¢¡¢ª#{idref}¢«¢¡¡×) # Àá¡¢¹à¤ò»²¾È
+      %Q(ã€Œâ—†â†’#{idref}â†â—†ã€) # ç¯€ã€é …ã‚’å‚ç…§
     end
 
     alias inline_ref inline_labelref
 
     def inline_pageref(idref)
-      %Q(¡ü¥Ú¡¼¥¸¢¡¢ª#{idref}¢«¢¡) # ¥Ú¡¼¥¸ÈÖ¹æ¤ò»²¾È
+      %Q(â—ãƒšãƒ¼ã‚¸â—†â†’#{idref}â†â—†) # ãƒšãƒ¼ã‚¸ç•ªå·ã‚’å‚ç…§
     end
 
     def inline_balloon(str)
-      %Q(\t¢«#{str.gsub(/@maru\[(\d+)\]/, inline_maru('\1'))})
+      %Q(\tâ†#{str.gsub(/@maru\[(\d+)\]/, inline_maru('\1'))})
     end
 
     def noindent
-      %Q(¢¡¢ª¥¤¥ó¥Ç¥ó¥È¤Ê¤·¢«¢¡)
+      %Q(â—†â†’ã‚¤ãƒ³ãƒ‡ãƒ³ãƒˆãªã—â†â—†)
     end
 
     def nonum_begin(level, label, caption)
-      puts "¢£H#{level}¢£#{caption}"
+      puts "â– H#{level}â– #{caption}"
     end
 
     def nonum_end(level)
     end
 
     def circle_begin(level, label, caption)
-      puts "¡¦\t#{caption}"
+      puts "ãƒ»\t#{caption}"
     end
 
     def circle_end(level)
     end
 
     def flushright(lines)
-      base_block "±¦´ó¤»", lines, nil
+      base_block "å³å¯„ã›", lines, nil
     end
 
     def note(lines, caption = nil)
-      base_block "¥Î¡¼¥È", lines, caption
+      base_block "ãƒãƒ¼ãƒˆ", lines, caption
     end
 
     def memo(lines, caption = nil)
-      base_block "¥á¥â", lines, caption
+      base_block "ãƒ¡ãƒ¢", lines, caption
     end
 
     def tip(lines, caption = nil)
@@ -439,61 +437,61 @@ module ReVIEW
     end
 
     def info(lines, caption = nil)
-      base_block "¾ğÊó", lines, caption
+      base_block "æƒ…å ±", lines, caption
     end
 
     def planning(lines, caption = nil)
-      base_block "¥×¥é¥ó¥Ë¥ó¥°", lines, caption
+      base_block "ãƒ—ãƒ©ãƒ³ãƒ‹ãƒ³ã‚°", lines, caption
     end
 
     def best(lines, caption = nil)
-      base_block "¥Ù¥¹¥È¥×¥é¥¯¥Æ¥£¥¹", lines, caption
+      base_block "ãƒ™ã‚¹ãƒˆãƒ—ãƒ©ã‚¯ãƒ†ã‚£ã‚¹", lines, caption
     end
 
     def important(lines, caption = nil)
-      base_block "½ÅÍ×", lines, caption
+      base_block "é‡è¦", lines, caption
     end
 
     def security(lines, caption = nil)
-      base_block "¥»¥­¥å¥ê¥Æ¥£", lines, caption
+      base_block "ã‚»ã‚­ãƒ¥ãƒªãƒ†ã‚£", lines, caption
     end
 
     def caution(lines, caption = nil)
-      base_block "·Ù¹ğ", lines, caption
+      base_block "è­¦å‘Š", lines, caption
     end
 
     def term(lines)
-      base_block "ÍÑ¸ì²òÀâ", lines, nil
+      base_block "ç”¨èªè§£èª¬", lines, nil
     end
 
     def notice(lines, caption = nil)
-      base_block "Ãí°Õ", lines, caption
+      base_block "æ³¨æ„", lines, caption
     end
 
     def point(lines, caption = nil)
-      base_block "¤³¤³¤¬¥İ¥¤¥ó¥È", lines, caption
+      base_block "ã“ã“ãŒãƒã‚¤ãƒ³ãƒˆ", lines, caption
     end
 
     def reference(lines)
-      base_block "»²¹Í", lines, nil
+      base_block "å‚è€ƒ", lines, nil
     end
 
     def practice(lines)
-      base_block "Îı½¬ÌäÂê", lines, nil
+      base_block "ç·´ç¿’å•é¡Œ", lines, nil
     end
 
     def expert(lines)
-      base_block "¥¨¥­¥¹¥Ñ¡¼¥È¤Ë¿Ö¤±", lines, nil
+      base_block "ã‚¨ã‚­ã‚¹ãƒ‘ãƒ¼ãƒˆã«è¨Šã‘", lines, nil
     end
 
     def insn(lines, caption = nil)
-      base_block "½ñ¼°", lines, caption
+      base_block "æ›¸å¼", lines, caption
     end
 
     alias box insn
 
     def indepimage(id)
-      puts "¢¡¢ª²èÁü #{@chapter.id}-#{id}.eps¢«¢¡"
+      puts "â—†â†’ç”»åƒ #{@chapter.id}-#{id}.epsâ†â—†"
     end
 
     def label(id)
@@ -518,39 +516,39 @@ module ReVIEW
     def raw(str)
       if str =~ /\A<\/(.+)>$/
         case $1
-          when "emlist": puts "¢¡¢ª½ªÎ»:¥¤¥ó¥é¥¤¥ó¥ê¥¹¥È¢«¢¡"
-          when "cmd": puts "¢¡¢ª½ªÎ»:¥³¥Ş¥ó¥É¢«¢¡"
-          when "quote": puts "¢¡¢ª½ªÎ»:°úÍÑ¢«¢¡"
-          when "flushright": puts "¢¡¢ª½ªÎ»:±¦´ó¤»¢«¢¡"
-          when "note": puts "¢¡¢ª½ªÎ»:¥Î¡¼¥È¢«¢¡"
-          when "important": puts "¢¡¢ª½ªÎ»:½ÅÍ×¢«¢¡"
-          when "term": puts "¢¡¢ª½ªÎ»:ÍÑ¸ì²òÀâ¢«¢¡"
-          when "notice": puts "¢¡¢ª½ªÎ»:Ãí°Õ¢«¢¡"
-          when "point": puts "¢¡¢ª½ªÎ»:¤³¤³¤¬¥İ¥¤¥ó¥È¢«¢¡"
-          when "reference": puts "¢¡¢ª½ªÎ»:»²¹Í¢«¢¡"
-          when "practice": puts "¢¡¢ª½ªÎ»:Îı½¬ÌäÂê¢«¢¡"
-          when "expert": puts "¢¡¢ª½ªÎ»:¥¨¥­¥¹¥Ñ¡¼¥È¤Ë¿Ö¤±¢«¢¡"
-          when "box": puts "¢¡¢ª½ªÎ»:½ñ¼°¢«¢¡"
-          when "insn": puts "¢¡¢ª½ªÎ»:½ñ¼°¢«¢¡"
+          when "emlist": puts "â—†â†’çµ‚äº†:ã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ãƒªã‚¹ãƒˆâ†â—†"
+          when "cmd": puts "â—†â†’çµ‚äº†:ã‚³ãƒãƒ³ãƒ‰â†â—†"
+          when "quote": puts "â—†â†’çµ‚äº†:å¼•ç”¨â†â—†"
+          when "flushright": puts "â—†â†’çµ‚äº†:å³å¯„ã›â†â—†"
+          when "note": puts "â—†â†’çµ‚äº†:ãƒãƒ¼ãƒˆâ†â—†"
+          when "important": puts "â—†â†’çµ‚äº†:é‡è¦â†â—†"
+          when "term": puts "â—†â†’çµ‚äº†:ç”¨èªè§£èª¬â†â—†"
+          when "notice": puts "â—†â†’çµ‚äº†:æ³¨æ„â†â—†"
+          when "point": puts "â—†â†’çµ‚äº†:ã“ã“ãŒãƒã‚¤ãƒ³ãƒˆâ†â—†"
+          when "reference": puts "â—†â†’çµ‚äº†:å‚è€ƒâ†â—†"
+          when "practice": puts "â—†â†’çµ‚äº†:ç·´ç¿’å•é¡Œâ†â—†"
+          when "expert": puts "â—†â†’çµ‚äº†:ã‚¨ã‚­ã‚¹ãƒ‘ãƒ¼ãƒˆã«è¨Šã‘â†â—†"
+          when "box": puts "â—†â†’çµ‚äº†:æ›¸å¼â†â—†"
+          when "insn": puts "â—†â†’çµ‚äº†:æ›¸å¼â†â—†"
         end
       elsif str =~ /\A<([^\/].+)>(?:<title[^>]>(.+)<\/title>)?(.*)/
         case $1
-          when "emlist": puts "¢¡¢ª³«»Ï:¥¤¥ó¥é¥¤¥ó¥ê¥¹¥È¢«¢¡"
-          when "cmd": puts "¢¡¢ª³«»Ï:¥³¥Ş¥ó¥É¢«¢¡"
-          when "quote": puts "¢¡¢ª³«»Ï:°úÍÑ¢«¢¡"
-          when "flushright": puts "¢¡¢ª³«»Ï:±¦´ó¤»¢«¢¡"
-          when "note": puts "¢¡¢ª³«»Ï:¥Î¡¼¥È¢«¢¡"
-          when "important": puts "¢¡¢ª³«»Ï:½ÅÍ×¢«¢¡"
-          when "term": puts "¢¡¢ª³«»Ï:ÍÑ¸ì²òÀâ¢«¢¡"
-          when "notice": puts "¢¡¢ª³«»Ï:Ãí°Õ¢«¢¡"
-          when "point": puts "¢¡¢ª³«»Ï:¤³¤³¤¬¥İ¥¤¥ó¥È¢«¢¡"
-          when "reference": puts "¢¡¢ª³«»Ï:»²¹Í¢«¢¡"
-          when "practice": puts "¢¡¢ª³«»Ï:Îı½¬ÌäÂê¢«¢¡"
-          when "expert": puts "¢¡¢ª³«»Ï:¥¨¥­¥¹¥Ñ¡¼¥È¤Ë¿Ö¤±¢«¢¡"
-          when "box": puts "¢¡¢ª³«»Ï:½ñ¼°¢«¢¡"
-          when "insn": puts "¢¡¢ª³«»Ï:½ñ¼°¢«¢¡"
+          when "emlist": puts "â—†â†’é–‹å§‹:ã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ãƒªã‚¹ãƒˆâ†â—†"
+          when "cmd": puts "â—†â†’é–‹å§‹:ã‚³ãƒãƒ³ãƒ‰â†â—†"
+          when "quote": puts "â—†â†’é–‹å§‹:å¼•ç”¨â†â—†"
+          when "flushright": puts "â—†â†’é–‹å§‹:å³å¯„ã›â†â—†"
+          when "note": puts "â—†â†’é–‹å§‹:ãƒãƒ¼ãƒˆâ†â—†"
+          when "important": puts "â—†â†’é–‹å§‹:é‡è¦â†â—†"
+          when "term": puts "â—†â†’é–‹å§‹:ç”¨èªè§£èª¬â†â—†"
+          when "notice": puts "â—†â†’é–‹å§‹:æ³¨æ„â†â—†"
+          when "point": puts "â—†â†’é–‹å§‹:ã“ã“ãŒãƒã‚¤ãƒ³ãƒˆâ†â—†"
+          when "reference": puts "â—†â†’é–‹å§‹:å‚è€ƒâ†â—†"
+          when "practice": puts "â—†â†’é–‹å§‹:ç·´ç¿’å•é¡Œâ†â—†"
+          when "expert": puts "â—†â†’é–‹å§‹:ã‚¨ã‚­ã‚¹ãƒ‘ãƒ¼ãƒˆã«è¨Šã‘â†â—†"
+          when "box": puts "â—†â†’é–‹å§‹:æ›¸å¼â†â—†"
+          when "insn": puts "â—†â†’é–‹å§‹:æ›¸å¼â†â—†"
         end
-        puts "¢£#{$2}" unless $2.nil?
+        puts "â– #{$2}" unless $2.nil?
         print $3
       else
         puts str
