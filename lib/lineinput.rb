@@ -7,6 +7,7 @@
 # You can distribute/modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
+require 'nkf'
 
 class LineInput
 
@@ -36,6 +37,11 @@ class LineInput
     end
     return nil if @eof_p   # to avoid ARGF blocking.
     line = @input.gets
+    if @@inencoding =~ /^EUC$/i
+      line = NKF.nkf("-E -w", line) unless line.nil?
+    elsif @@inencoding =~ /^SJIS$/i
+      line = NKF.nkf("-S -w", line) unless line.nil?
+    end
     @eof_p = true unless line
     @lineno += 1
     line

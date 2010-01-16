@@ -22,10 +22,20 @@ module ReVIEW
     end
 
     def warn(msg)
+      if @@outencoding =~ /^EUC$/
+        msg = NKF.nkf("-W -e", msg)
+      elsif @@outencoding =~ /^SJIS$/
+        msg = NKF.nkf("-W -s", msg)
+      end
       $stderr.puts "#{location()}: warning: #{msg}"
     end
 
     def error(msg)
+      if @@outencoding =~ /^EUC$/
+        msg = NKF.nkf("-W -e", msg)
+      elsif @@outencoding =~ /^SJIS$/
+        msg = NKF.nkf("-W -s", msg)
+      end
       @errutils_err = true
       raise ApplicationError, "#{location()}: #{msg}"
     end
