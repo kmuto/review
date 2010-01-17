@@ -1,3 +1,8 @@
+Sun Jan 17 16:11:37 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: Support //source, //listnum,
+	  //emlistnum, //bibpaper, @<bib>, @<code>.
+
 Sun Jan 17 11:05:26 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, lib/review/idgxmlbuilder.rb,
@@ -17,7 +22,7 @@ Sat Jan 16 23:12:56 2010  Kenshi Muto  <kmuto@debian.org>
 	  lib/review/volume.rb: Merged most of Mr. Narihiro Nakamura's
 	  branch.
 	  New block //source, //listnum, //emlistnum, //bibpaper.
-	  New op @<code>.
+	  New op @<bib>, @<code>.
 	  Support HTML layout.
 	  Support PART file.
 	  Change default internal character encoding to UTF-8.

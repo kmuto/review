@@ -1,5 +1,3 @@
-# -*- encoding: euc-japan -*-
-#
 # $Id: idgxmlbuilder.rb 3761 2007-12-31 07:20:09Z aamine $
 #
 # Copyright (c) 2002-2007 Minero Aoki
@@ -320,6 +318,23 @@ module ReVIEW
 
     def emlist(lines, caption = nil)
       quotedlist lines, 'emlist', caption
+    end
+
+    def emlistnum(lines, caption = nil)
+      _lines = []
+      lines.each_with_index do |line, i|
+        _lines << detab("<span type='lineno'>" + (i+1).to_s.rjust(2) + ": </span>" + line)
+      end
+      quotedlist _lines, 'emlist', caption
+    end
+
+    def listnum_body(lines)
+      print %Q(<pre>)
+      lines.each_with_index do |line, i|
+        print detab("<span type='lineno'>" + (i+1).to_s.rjust(2) + ": </span>" + line)
+        print "\n"
+      end
+      puts "</pre></codelist>"
     end
 
     def cmd(lines, caption = nil)
@@ -902,6 +917,10 @@ module ReVIEW
       "<?dtp #{str} ?>"
     end
 
+    def inline_code(str)
+      %Q(<tt type='inline-code'>#{escape_html(str)}</tt>)
+    end
+
     def rawblock(lines)
       no = 1
       lines.each {|l|
@@ -919,10 +938,6 @@ module ReVIEW
       str
     end
 
-    def nofunc_text(str)
-      escape_html(str)
-    end
-
     def inline_chapref(id)
       chs = ["", "「", "」"]
       unless @@chapref.nil?
@@ -938,6 +953,47 @@ module ReVIEW
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def source_header(caption)
+      puts %Q[<source>]
+      puts %Q[<caption>#{escape_html(caption)}</caption>]
+    end
+
+    def source_body(lines)
+      puts %Q[<pre>]
+      lines.each do |line|
+        print detab(line)
+        print "\n"
+      end
+      puts %Q[</pre></source>]
+    end
+
+    def bibpaper(lines, id, caption)
+      bibpaper_header id, caption
+      unless lines.empty?
+        bibpaper_bibpaper id, caption, lines
+      end
+      puts %Q(</bibitem>)
+    end
+
+    def bibpaper_header(id, caption)
+      puts %Q(<bibitem id="bib-#{id}">)
+      puts "<caption><span type='bibno'>[#{@chapter.bibpaper(id).number}] </span>#{escape_html(caption)}</caption>"
+    end
+
+    def bibpaper_bibpaper(id, caption, lines)
+      lines.each do |line|
+        puts detab(line)
+      end
+    end
+
+    def inline_bib(id)
+      %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
+    end
+
+    def nofunc_text(str)
+      escape_html(str)
     end
 
   end
