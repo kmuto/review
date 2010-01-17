@@ -3,7 +3,7 @@
 # $Id: idgxmlbuilder.rb 3761 2007-12-31 07:20:09Z aamine $
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2009 Minero Aoki,Kenshi Muto
+#               2008-2010 Minero Aoki,Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -366,7 +366,11 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
+      if @@subdirmode.nil?
+        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
+      else
+        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
+      end
       puts "<img>"
       print %Q[<pre aid:pstyle="dummyimage">]
       lines.each do |line|
@@ -637,8 +641,13 @@ module ReVIEW
     end
 
     def inline_icon(id)
-      warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
-      %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" type='inline'/>]
+      if @@subdirmode.nil?
+        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
+        %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" type='inline'/>]
+      else
+        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
+        %Q[<Image href="file://images/#{@chapter.id}/#{id}.eps" type='inline'/>]
+      end
     end
 
     def inline_bou(str)
@@ -865,9 +874,14 @@ module ReVIEW
     end
 
     def indepimage(id)
-      warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
       puts "<img>"
-      puts %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" />] # FIXME
+      if @@subdirmode.nil?
+        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
+        puts %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" />]
+      else
+        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
+        puts %Q[<Image href="file://images/#{@chapter.id}/#{id}.eps" />]
+      end
       puts "</img>"
     end
 

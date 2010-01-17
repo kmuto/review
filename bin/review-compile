@@ -46,6 +46,7 @@ def _main
   @@chapref = nil
   @@inencoding = "UTF-8"
   @@outencoding = "UTF-8"
+  @@subdirmode = nil
 
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
@@ -69,6 +70,9 @@ def _main
   }
   parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec|
     @@chapref = cdec
+  }
+  parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') {
+    @@subdirmode = true
   }
   unless target
     parser.on('--target=FMT', 'Target format.') {|fmt|

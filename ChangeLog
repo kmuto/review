@@ -1,3 +1,11 @@
+Sun Jan 17 11:05:26 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, lib/review/idgxmlbuilder.rb,
+	  lib/review/index.rb: Add --subdirmode option.
+	  If the option is specified, ReVIEW finds images from
+	  images/<chapname>/<id>.<ext> instead of
+	  images/<chapname>-<id>.<ext>.
+
 Sat Jan 16 23:12:56 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, bin/review-vol, doc/format.txt,

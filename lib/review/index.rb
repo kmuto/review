@@ -153,16 +153,27 @@ module ReVIEW
 
     # internal use only
     def find_pathes(id)
-      re = /\A#{@chapid}-#{id}(?i:#{@types.join('|')})\z/x
-      entries().select {|ent| re =~ ent }\
-          .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-          .map {|ent| "#{@basedir}/#{ent}" }
+      if @@subdirmode.nil?
+        re = /\A#{@chapid}-#{id}(?i:#{@types.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
+            .map {|ent| "#{@basedir}/#{ent}" }
+      else
+        re = /\A#{id}(?i:#{@types.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
+            .map {|ent| "#{@basedir}/#{@chapid}/#{ent}" }
+      end
     end
 
     private
 
     def entries
-      @entries ||= Dir.entries(@basedir)
+      if @@subdirmode.nil?
+        @entries ||= Dir.entries(@basedir)
+      else
+        @entries ||= Dir.entries(File.join(@basedir, @chapid))
+      end
     rescue Errno::ENOENT
       @entries = []
     end
