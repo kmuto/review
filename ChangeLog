@@ -14,7 +14,7 @@ Sat Jan 16 23:12:56 2010  Kenshi Muto  <kmuto@debian.org>
 	  lib/review/htmllayout.rb, lib/review/idgxmlbuilder.rb,
 	  lib/review/index.rb, lib/review/latexbuilder.rb,
 	  lib/review/tocprinter.rb, lib/review/topbuilder.rb,
-	  lib/review/volume.rb: Merged most of Mr. Narhiro Nakamura's
+	  lib/review/volume.rb: Merged most of Mr. Narihiro Nakamura's
 	  branch.
 	  New block //source, //listnum, //emlistnum, //bibpaper.
 	  New op @<code>.
