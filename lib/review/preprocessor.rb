@@ -26,6 +26,8 @@ module ReVIEW
         msg = NKF.nkf("-W -e", msg)
       elsif @@outencoding =~ /^SJIS$/
         msg = NKF.nkf("-W -s", msg)
+      elsif @@outencoding =~ /^JIS$/
+        msg = NKF.nkf("-W -j", msg)
       end
       $stderr.puts "#{location()}: warning: #{msg}"
     end
@@ -35,6 +37,8 @@ module ReVIEW
         msg = NKF.nkf("-W -e", msg)
       elsif @@outencoding =~ /^SJIS$/
         msg = NKF.nkf("-W -s", msg)
+      elsif @@outencoding =~ /^JIS$/
+        msg = NKF.nkf("-W -j", msg)
       end
       @errutils_err = true
       raise ApplicationError, "#{location()}: #{msg}"

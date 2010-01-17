@@ -18,14 +18,23 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/book'
 require 'review/exception'
 require 'optparse'
+require 'nkf'
 
 def main
-  $KCODE = 'EUC' unless defined?(Encoding)
+  $KCODE = 'UTF-8' unless defined?(Encoding)
+  @@inencoding = "UTF-8"
+  @@outencoding = "UTF-8"
 
   part_sensitive = false
   parser = OptionParser.new
   parser.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
     part_sensitive = true
+  }
+  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
+    @@inencoding = enc
+  }
+  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
+    @@outencoding = enc
   }
   parser.on('--help', 'Print this message and quit') {
     puts parser.help
@@ -68,9 +77,17 @@ end
 
 def print_chapter_volume(chap)
   vol = chap.volume
+  title = chap.title
+  if @@outencoding =~ /^EUC$/i
+    title = NKF.nkf("-W -e", title)
+  elsif @@outencoding =~ /^SJIS$/i
+    title = NKF.nkf("-W -s", title)
+  elsif @@outencoding =~ /^JIS$/i
+    title = NKF.nkf("-W -j", title)
+  end
   printf "%s %3dKB %6dC %5dL %3dP %s %-s\n",
          chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines, vol.page,
-         "#{chap.name} ".ljust(25, '.'), chap.title
+         "#{chap.name} ".ljust(25, '.'), title
 end
 
 def print_volume(vol)

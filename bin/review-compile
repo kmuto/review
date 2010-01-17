@@ -49,7 +49,7 @@ def _main
 
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
-  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
+  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
     @@inencoding = enc
   }
   parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|

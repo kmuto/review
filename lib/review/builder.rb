@@ -11,6 +11,7 @@
 require 'review/index'
 require 'review/exception'
 require 'stringio'
+require 'nkf'
 
 module ReVIEW
 
@@ -47,6 +48,8 @@ module ReVIEW
         @output.print(NKF.nkf("-W, -e", *s))
       elsif @@outencoding =~ /^SJIS$/i
         @output.print(NKF.nkf("-W, -s", *s))
+      elsif @@outencoding =~ /^JIS$/i
+        @output.print(NKF.nkf("-W, -j", *s))
       else
         @output.print(*s)
       end
@@ -57,6 +60,8 @@ module ReVIEW
         @output.puts(NKF.nkf("-W, -e", *s))
       elsif @@outencoding =~ /^SJIS$/i
         @output.puts(NKF.nkf("-W, -s", *s))
+      elsif @@outencoding =~ /^JIS$/i
+        @output.puts(NKF.nkf("-W, -j", *s))
       else
         @output.puts(*s)
       end

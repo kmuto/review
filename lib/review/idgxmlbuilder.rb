@@ -912,7 +912,7 @@ module ReVIEW
     def inline_chapref(id)
       chs = ["", "「", "」"]
       unless @@chapref.nil?
-        _chs = NKF.nkf("-e", @@chapref).split(",")
+        _chs = NKF.nkf("-w", @@chapref).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else

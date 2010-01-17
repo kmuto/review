@@ -15,6 +15,7 @@ require 'review/volume'
 require 'review/exception'
 require 'review/compat'
 require 'forwardable'
+require 'nkf'
 
 module ReVIEW
 
@@ -463,6 +464,15 @@ module ReVIEW
 
     def title
       @title ||= open {|f| f.gets.sub(/\A=+/, '').strip }
+      if @@inencoding =~ /^EUC$/
+        @title = NKF.nkf("-E -w", @title)
+      elsif @@inencoding =~ /^SJIS$/
+        @title = NKF.nkf("-S -w", @title)
+      elsif @@inencoding =~ /^JIS$/
+        @title = NKF.nkf("-J -w", @title)
+      else
+        @title = NKF.nkf("-w", @title)
+      end
     end
 
     def size
@@ -479,7 +489,15 @@ module ReVIEW
     end
 
     def content
-      @content = File.read(path())
+      if @@inencoding =~ /^EUC$/i
+        @content = NKF.nkf("-E -w", File.read(path()))
+      elsif @@inencoding =~ /^SJIS$/i
+        @content = NKF.nkf("-S -w", File.read(path()))
+      elsif @@inencoding =~ /^JIS$/i
+        @content = NKF.nkf("-J -w", File.read(path()))
+      else
+        @content = NKF.nkf("-w", File.read(path())) # auto detect
+      end
     end
 
     def lines
