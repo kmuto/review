@@ -680,7 +680,7 @@ module ReVIEW
     alias inline_ref inline_labelref
 
     def inline_pageref(idref)
-      %Q(<pageref idref='#{idref}'>●ページ</pageref>) # ページ番号を参照
+      %Q(<pageref idref='#{idref}'>●●</pageref>) # ページ番号を参照
     end
 
     def inline_balloon(str)
