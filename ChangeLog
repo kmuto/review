@@ -1,3 +1,7 @@
+Fri Apr 16 19:31:49 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-validate: add new tool for simple validaton.
+
 Fri Apr 16 19:00:29 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: Remove literal 'page' string from

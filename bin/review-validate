@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+# Copyright (c) 2010 Kenshi Muto
+#
+# This program is free software
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+# simple validator for ReVIEW
+
+block = nil
+maxcolcount = 0
+colcount = 0
+ln = 0
+
+ARGF.each {|line|
+  ln = ln + 1
+  if line =~ /\A\/\/([a-z]+).+\{/
+    # block
+    _block = $1
+    puts "#{ln}: block #{_block} started, but previous block #{block} didn't close yet." unless block.nil?
+    block = _block
+  elsif line =~ /\A\/\/\}/
+    puts "#{ln}: block seen ended, but not opened." if block.nil?
+    block = nil
+    maxcolcount = 0
+    colcount = 0
+  elsif line =~ /\A(\d+\.)\s+/
+    # number
+    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
+      puts "#{ln}: found $1 without the head space. Is it correct?"
+    end
+  elsif line =~ /\A\*\s+/
+    # itemize
+    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
+      puts "#{ln}: found '*' without the head space. Is it correct?"
+    end
+  elsif block == "table"
+    if line !~ /\A\-\-\-\-\-/
+      # table
+      colcount = line.split("\t").size
+      maxcolcount = colcount if maxcolcount == 0
+      puts "#{ln}: the number of table columns seems mismatch. (#{maxcolcount} != #{colcount})" if colcount != maxcolcount
+    end
+  end
+}
