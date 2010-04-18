@@ -36,6 +36,10 @@ ARGF.each {|line|
     unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
       puts "#{ln}: found '*' without the head space. Is it correct?"
     end
+  elsif line =~ /\A\s+(\d+\.)\s+/ && line =~ /\A\s+\*\s+/
+    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
+      puts "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
+    end
   elsif block == "table"
     if line !~ /\A\-\-\-\-\-/
       # table

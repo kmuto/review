@@ -1,3 +1,7 @@
+Sun Apr 18 17:15:04 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-validate: check itemized/numbered list in block.
+
 Fri Apr 16 19:31:49 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-validate: add new tool for simple validaton.
