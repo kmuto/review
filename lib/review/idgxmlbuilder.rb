@@ -342,7 +342,7 @@ module ReVIEW
     end
 
     def quotedlist(lines, css_class, caption)
-      print %Q[<list>]
+      print %Q[<list type='#{css_class}'>]
       puts "<caption aid:pstyle='#{css_class}-title'>#{escape_html(caption)}</caption>" unless caption.nil?
       print %Q[<pre>]
       lines.each do |line|
