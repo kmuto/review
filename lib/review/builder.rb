@@ -128,15 +128,15 @@ module ReVIEW
       table_begin rows.first.size
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(compile_inline(s)) }
+          tr rows.shift.map {|s| th(s) }
         end
         rows.each do |cols|
-          tr cols.map {|s| td(compile_inline(s)) }
+          tr cols.map {|s| td(s) }
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(compile_inline(h))] + cs.map {|s| td(compile_inline(s)) }
+          tr [th(h)] + cs.map {|s| td(s) }
         end
       end
       table_end
