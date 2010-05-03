@@ -288,6 +288,13 @@ module ReVIEW
       puts %Q(<p class="comment"><a name="fn-#{id}">#{escape_html(str)}</a></p>)
     end
 
+    def numberlessimage(id, caption)
+      puts %Q[<p class="image">]
+      puts %Q[<img src="#{@chapter.image(id).path}" alt="(#{escape_html(caption)})">]
+      puts %Q[</p>]
+      image_header id, caption
+    end
+
     def inline_fn(id)
       %Q(<a href="\#fn-#{id}">*#{@chapter.footnote(id).number}</a>)
     end

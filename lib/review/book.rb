@@ -432,6 +432,7 @@ module ReVIEW
       @table_index = nil
       @footnote_index = nil
       @image_index = nil
+      @numberless_image_index = nil
     end
 
     def env
@@ -530,7 +531,15 @@ module ReVIEW
     end
 
     def image(id)
-      image_index()[id]
+      return image_index()[id] if image_index().has_key?(id)
+      numberless_image_index()[id]
+    end
+
+    def numberless_image_index
+      @numberless_image_index ||=
+        NumberlessImageIndex.parse(lines(), id(),
+                                   "#{book.basedir}#{@book.image_dir}",
+                                   @book.image_types)
     end
 
     def image_index

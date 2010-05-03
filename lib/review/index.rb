@@ -59,6 +59,10 @@ module ReVIEW
     def each(&block)
       @items.each(&block)
     end
+
+    def has_key?(id)
+      return @index.has_key?(id)
+    end
   end
 
 
@@ -215,6 +219,24 @@ module ReVIEW
         seq += 1
       end
       new(items)
+    end
+  end
+
+  class NumberlessImageIndex < ImageIndex
+    class Item < ImageIndex::Item
+      def initialize(id, number)
+        @id = id
+        @number = ""
+        @pathes = nil
+      end
+    end
+
+    def NumberlessImageIndex.item_type
+      'numberlessimage'
+    end
+
+    def number(id)
+      ""
     end
   end
 end

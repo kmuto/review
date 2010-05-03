@@ -140,6 +140,7 @@ module ReVIEW
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
+    defsingle :numberlessimage, 2
 
     definline :chapref
     definline :chap
