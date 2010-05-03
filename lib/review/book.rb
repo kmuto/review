@@ -433,6 +433,7 @@ module ReVIEW
       @footnote_index = nil
       @image_index = nil
       @numberless_image_index = nil
+      @headline_index = nil
     end
 
     def env
@@ -556,6 +557,17 @@ module ReVIEW
       raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
       @bibpaper_index ||= BibpaperIndex.parse(@book.read_bib.lines.to_a)
     end
-  end
 
+    def headline(caption)
+      headline_index()[caption]
+    end
+
+    def headline_index
+      @headline_index ||= HeadlineIndex.parse(lines(), self)
+    end
+
+    def on_CHAPS?
+      @book.read_CHAPS().lines.map(&:strip).include?(id() + @book.ext())
+    end
+  end
 end

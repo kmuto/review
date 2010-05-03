@@ -47,6 +47,7 @@ def _main
   @@inencoding = "UTF-8"
   @@outencoding = "UTF-8"
   @@subdirmode = nil
+  @@hdnumberingmode = nil
 
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
@@ -73,6 +74,9 @@ def _main
   }
   parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') {
     @@subdirmode = true
+  }
+  parser.on('--hdnumberingmode', 'Output numbering headlines.') {
+    @@hdnumberingmode = true
   }
   unless target
     parser.on('--target=FMT', 'Target format.') {|fmt|

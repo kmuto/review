@@ -248,6 +248,13 @@ module ReVIEW
       puts "</div>"
     end
 
+    def inline_hd(id)
+      m = /\A(\w+)\|(.+)/.match(id)
+      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      return inline_hd_chap(chapter, m[2]) if chapter
+      return inline_hd_chap(@chapter, id)
+    end
+
     def warn(msg)
       $stderr.puts "#{@location}: warning: #{msg}"
     end

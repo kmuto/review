@@ -356,6 +356,10 @@ module ReVIEW
       %Q(<a href=".#{@book.bib_file.gsub(/re$/, "html")}\#bib-#{id}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
+    def inline_hd_chap(chap, id)
+      "「#{chap.headline_index.number(id)} #{chap.headline(id).caption}」"
+    end
+
     def nofunc_text(str)
       escape_html(str)
     end
