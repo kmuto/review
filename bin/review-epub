@@ -1,0 +1,117 @@
+#!/usr/bin/env ruby
+#
+# Copyright (c) 2010 Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+require 'tmpdir'
+require 'fileutils'
+tmp = Dir.mktmpdir
+bookname = "sample"
+
+identifier = "urn:uuid:www.aozora.gr.jp_#{bookname}"
+
+# MIME type
+File.open("#{tmp}/#{bookname}/mimetype", "w") {|f|
+  f.puts "application/epub+zip"
+}
+
+# container
+File.mkdir("#{tmp}/#{bookname}/META-INF")
+File.open("#{tmp}/#{bookname}/META-INF/container.xml", "w") {|f|
+  f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
+  <rootfiles>
+    <rootfile full-path="#{bookname}.opf" media-type="application/oebps-package+xml" />
+  </rootfiles>
+</container>
+EOT
+}
+
+# opf (meta info)
+# FIXME:メタ情報
+File.mkdir("#{tmp}/#{bookname}/OEBPS")
+File.mkdir("#{tmp}/#{bookname}/OEBPS/images") #FIXME
+File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.opf", "w") {|f|
+  f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+ <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+   <dc:title>赤いくつ</dc:title>
+   <dc:creator opf:role="aut">ハンス・クリスティアン・アンデルセン　Hans Christian Andersen</dc:creator>
+   <dc:contributor opf:role="trl">楠山正雄訳</dc:contributor>
+   <dc:contributor opf:role="prt">naoki.sato.name</dc:contributor>
+   <dc:language>ja</dc:language>
+   <dc:publisher>Aozora Bunko (青空文庫)</dc:publisher>
+   <dc:identifier id="BookId">#{identifier}</dc:identifier>
+ </metadata>
+ <manifest>
+  <item id="ncx" href="#{bookname}.ncx" media-type="text/xml" />
+  <item id="style" href="OEBPS/default.css" media-type="text/css" />
+  <item id="#{bookname}" href="OEBPS/#{bookname}.html" media-type="application/xhtml+xml" />
+  <item id="img_fig42378_01" href="OEBPS/images/fig42378_01.png" media-type="image/png"/>
+  <item id="img_fig42378_02" href="OEBPS/images/fig42378_02.png" media-type="image/png"/>
+ </manifest>
+ <spine toc="ncx">
+  <itemref idref="#{bookname}" />
+ </spine>
+</package>
+EOT
+}
+
+# ncx (toc)
+# FIXME:目次。
+File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.ncx", "w") {|f|
+  f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head>
+    <meta name="dtb:uid" content="www.aozora.gr.jp_#{bookname}"/>
+    <meta name="dtb:depth" content="1"/>
+    <meta name="dtb:totalPageCount" content="0"/>
+    <meta name="dtb:maxPageNumber" content="0"/>
+  </head>
+  <docTitle>
+    <text>赤いくつ</text>
+  </docTitle>
+  <docAuthor>
+	<text>ハンス・クリスティアン・アンデルセン　Hans Christian Andersen</text>
+  </docAuthor>
+  <navMap>
+    <navPoint id="#{bookname}" playOrder="1">
+      <navLabel>
+        <text>contents</text>
+      </navLabel>
+      <content src="OEBPS/#{bookname}.html"/>
+    </navPoint>
+  </navMap>
+</ncx>
+EOT
+}
+
+# XHTML
+puts <<EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<body>
+EOT
+#FIXME:review変換と反映
+puts <<EOT
+</body>
+</html>
+EOT
+
+# stylesheet
+File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|
+# FIXME: スタイルシート
+}
+
+puts tmp
+
+# FIXME:Zipファイルの作成。mimetypeは圧縮しないようにする
+
+#FileUtils.rm_r(tmp)
