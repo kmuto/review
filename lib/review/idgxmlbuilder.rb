@@ -58,11 +58,13 @@ module ReVIEW
 
     def builder_init(no_error = false)
       @no_error = no_error
-
-      alias puts print unless @@nolf.nil?
-
     end
     private :builder_init
+
+    def setParameter(param)
+      @param = param
+      alias puts print unless @param["nolf"].nil?
+    end
 
     def builder_init_file
       @warns = []
@@ -207,7 +209,7 @@ module ReVIEW
         raise "caption level too deep or unsupported: #{level}"
       end
 
-      prefix = "" if (level.to_i > @@secnolevel)
+      prefix = "" if (level.to_i > @param["secnolevel"])
       label = label.nil? ? "" : " id=\"#{label}\""
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{escape_html(caption)}</title><?dtp level="#{level}" section="#{prefix}#{escape_html(caption)}"?>)
     end
@@ -381,7 +383,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      if @@subdirmode.nil?
+      if @param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
       else
         warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
@@ -409,8 +411,8 @@ module ReVIEW
 #      puts %Q(<表 xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
       tablewidth = nil
       col = 0
-      unless @@tableopt.nil?
-        tablewidth = @@tableopt.split(",")[0].to_f / 0.351 # mm -> pt
+      unless @param["tableopt"].nil?
+        tablewidth = @param["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
       end
       puts "<table>"
       rows = []
@@ -601,7 +603,7 @@ module ReVIEW
     end
 
     def inline_hint(str)
-      if @@nolf.nil?
+      if @param["nolf"].nil?
         %Q(\n<hint>#{escape_html(str)}</hint>)
       else
         %Q(<hint>#{escape_html(str)}</hint>)
@@ -656,7 +658,7 @@ module ReVIEW
     end
 
     def inline_icon(id)
-      if @@subdirmode.nil?
+      if @param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
         %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" type='inline'/>]
       else
@@ -890,7 +892,7 @@ module ReVIEW
 
     def indepimage(id)
       puts "<img>"
-      if @@subdirmode.nil?
+      if @param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
         puts %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" />]
       else
@@ -948,8 +950,8 @@ module ReVIEW
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless @@chapref.nil?
-        _chs = NKF.nkf("-w", @@chapref).split(",")
+      unless @param["chapref"].nil?
+        _chs = NKF.nkf("-w", @param["chapref"]).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
