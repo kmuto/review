@@ -10,20 +10,103 @@
 
 require 'tmpdir'
 require 'fileutils'
-tmp = Dir.mktmpdir
-bookname = "sample"
+require 'yaml'
+require 'optparse'
 
-identifier = "urn:uuid:www.aozora.gr.jp_#{bookname}"
+def main
+  values = {
+    "bookname"=> "sample",
+    "booktitle" => "ReVIEW EPUBサンプル",
+    "author" => nil,
+    "urnid" => "example.jp",
+    "stylesheet" => "stylesheet.css",
+    "params" => "",
+  }
 
-# MIME type
-File.open("#{tmp}/#{bookname}/mimetype", "w") {|f|
-  f.puts "application/epub+zip"
-}
+  if ARGV.size == 1
+    values = values.merge(YAML.load_file(ARGV[0]))
+  end
+  
+  bookname = values["bookname"]
 
-# container
-File.mkdir("#{tmp}/#{bookname}/META-INF")
-File.open("#{tmp}/#{bookname}/META-INF/container.xml", "w") {|f|
-  f.puts <<EOT
+  if File.exist?("#{bookname}.epub")
+    STDERR.puts "#{bookname}.epub exists. Please remove or rename first."
+    exit 1
+  end
+  if File.exist?("#{bookname}")
+    STDERR.puts "#{bookname} directory exists. Please remove or rename first."
+    exit 1
+  end
+
+  #tmp = Dir.mktmpdir
+  tmp="."
+  Dir.mkdir("#{tmp}/#{bookname}")
+  identifier = "urn:uuid:#{values["urnid"]}_#{bookname}"
+  puts tmp
+  
+  # MIME type
+  File.open("#{tmp}/#{bookname}/mimetype", "w") {|f|
+    f.puts "application/epub+zip"
+  }
+  
+  Dir.mkdir("#{tmp}/#{bookname}/OEBPS")
+  # XHTML
+  pre = 0
+  body = 0
+  post = 0
+  @manifeststr = ""
+  
+  if File.exists?("PREDEF")
+    File.open("PREDEF") {|chaps|
+      chaps.each_line {|l|
+        next if l =~ /^#/
+        pre = pre + 1
+        fork {
+          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
+          exec("review-compile --target=epub #{values["params"]} #{l}")
+        }
+        Process.waitall
+        @manifeststr << %Q(<item id="pre#{pre}" href="OEBPS/pre#{pre}.html" media-type="application/xhtml+xml" />\n)
+      }
+    }
+  end
+  if File.exists?("CHAPS")
+    File.open("CHAPS") {|chaps|
+      chaps.each_line {|l|
+        body = body + 1
+        next if l =~ /^#/
+        fork {
+          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
+          exec("review-compile --target=epub #{values["params"]} #{l}")
+        }
+        Process.waitall
+        @manifeststr << %Q(<item id="chap#{body}" href="OEBPS/chap#{body}.html" media-type="application/xhtml+xml" />\n)
+      }
+    }
+  end
+  if File.exists?("POSTDEF")
+    File.open("POSTDEF") {|chaps|
+      chaps.each_line {|l|
+        next if l =~ /^#/
+        post = post + 1
+        fork {
+          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
+          exec("review-compile --target=epub #{values["params"]} #{l}")
+        }
+        Process.waitall
+        @manifeststr << %Q(<item id="post#{post}" href="OEBPS/post#{post}.html" media-type="application/xhtml+xml" />\n)
+      }
+    }
+  end
+  if File.exist?("images")
+    Dir.mkdir("#{tmp}/#{bookname}/OEBPS/images")
+    copyImagesToDir("images", "#{tmp}/#{bookname}/OEBPS/images")
+  end
+  
+  # container
+  Dir.mkdir("#{tmp}/#{bookname}/META-INF")
+  File.open("#{tmp}/#{bookname}/META-INF/container.xml", "w") {|f|
+    f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
   <rootfiles>
@@ -31,87 +114,108 @@ File.open("#{tmp}/#{bookname}/META-INF/container.xml", "w") {|f|
   </rootfiles>
 </container>
 EOT
-}
+  }
 
 # opf (meta info)
-# FIXME:メタ情報
-File.mkdir("#{tmp}/#{bookname}/OEBPS")
-File.mkdir("#{tmp}/#{bookname}/OEBPS/images") #FIXME
-File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.opf", "w") {|f|
-  f.puts <<EOT
+  # FIXME:メタ情報
+  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.opf", "w") {|f|
+    f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-   <dc:title>赤いくつ</dc:title>
-   <dc:creator opf:role="aut">ハンス・クリスティアン・アンデルセン　Hans Christian Andersen</dc:creator>
-   <dc:contributor opf:role="trl">楠山正雄訳</dc:contributor>
-   <dc:contributor opf:role="prt">naoki.sato.name</dc:contributor>
+   <dc:title>#{values["booktitle"]}</dc:title>
+   <dc:creator opf:role="aut">#{values["author"].nil? ? "" : values["author"]}</dc:creator>
    <dc:language>ja</dc:language>
-   <dc:publisher>Aozora Bunko (青空文庫)</dc:publisher>
    <dc:identifier id="BookId">#{identifier}</dc:identifier>
  </metadata>
  <manifest>
   <item id="ncx" href="#{bookname}.ncx" media-type="text/xml" />
   <item id="style" href="OEBPS/default.css" media-type="text/css" />
   <item id="#{bookname}" href="OEBPS/#{bookname}.html" media-type="application/xhtml+xml" />
-  <item id="img_fig42378_01" href="OEBPS/images/fig42378_01.png" media-type="image/png"/>
-  <item id="img_fig42378_02" href="OEBPS/images/fig42378_02.png" media-type="image/png"/>
+EOT
+    f.puts @manifeststr
+    f.puts <<EOT
  </manifest>
  <spine toc="ncx">
   <itemref idref="#{bookname}" />
  </spine>
 </package>
 EOT
-}
+  }
 
-# ncx (toc)
-# FIXME:目次。
-File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.ncx", "w") {|f|
-  f.puts <<EOT
+  # ncx (toc) # FIXME
+  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.ncx", "w") {|f|
+    f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
-    <meta name="dtb:uid" content="www.aozora.gr.jp_#{bookname}"/>
+    <meta name="dtb:uid" content="#{identifier}"/>
     <meta name="dtb:depth" content="1"/>
     <meta name="dtb:totalPageCount" content="0"/>
     <meta name="dtb:maxPageNumber" content="0"/>
   </head>
   <docTitle>
-    <text>赤いくつ</text>
+    <text>#{values["booktitle"]}</text>
   </docTitle>
   <docAuthor>
-	<text>ハンス・クリスティアン・アンデルセン　Hans Christian Andersen</text>
+	<text>#{values["author"].nil? ? "" : values["author"]}</text>
   </docAuthor>
   <navMap>
     <navPoint id="#{bookname}" playOrder="1">
       <navLabel>
-        <text>contents</text>
+        <text>Contents</text>
       </navLabel>
       <content src="OEBPS/#{bookname}.html"/>
     </navPoint>
   </navMap>
 </ncx>
 EOT
-}
+  }
+  
+  # Cover page # FIXME
 
-# XHTML
-puts <<EOT
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
-<body>
-EOT
-#FIXME:review変換と反映
-puts <<EOT
-</body>
-</html>
-EOT
+  # stylesheet
+  File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|
+    # FIXME: スタイルシート
+  }
+  
+  # Zip epubファイルの作成。mimetypeは圧縮しないようにする
+  fork {
+    basedir = Dir.pwd
+    Dir.chdir("#{tmp}") {|d|
+      exec("zip -r -n mimetype #{basedir}/#{bookname}.epub #{bookname}")
+    }
+  }
+  Process.waitall
+  
+  #FileUtils.rm_r(tmp)
+end
 
-# stylesheet
-File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|
-# FIXME: スタイルシート
-}
+def copyImagesToDir(dirname, copybase)
+  Dir.open(dirname) {|dir|
+    dir.each {|fname|
+      next if fname =~ /^\./
+      if FileTest.directory?("#{dirname}/#{fname}")
+        copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
+      else
+        if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
+          Dir.mkdir(copybase) unless File.exist?(copybase)
+          FileUtils.ln "#{dirname}/#{fname}", copybase
+          figid = fname.sub(/\.(png|gif|jpg|jpeg|svg)$/, '')
+          mime = nil
+          case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
+            when "png": mime = "image/png"
+            when "gif": mime = "image/gif"
+            when "jpg", "jpeg": mime = "image/jpeg"
+            when "svg": mime = "image/svg+xml"
+          else
+            raise "unsupported type #{fname}"
+          end
+          @manifeststr << %Q(<item id="fig-#{figid}" href="OEBPS/#{dirname}/#{fname}" media-type="#{mime}" />\n)
+        end
+      end
+    }
+  }
+end
 
-puts tmp
-
-# FIXME:Zipファイルの作成。mimetypeは圧縮しないようにする
-
-#FileUtils.rm_r(tmp)
+main
