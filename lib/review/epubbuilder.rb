@@ -1,7 +1,7 @@
-# $Id: htmlbuilder.rb 4268 2009-05-27 04:17:08Z kmuto $
+# epubbuilder.rb
+#   derived from htmlbuider.rb
 #
-# Copyright (c) 2002-2007 Minero Aoki
-#               2008-2009 Minero Aoki, Kenshi Muto
+# Copyright (c) 2010 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -15,7 +15,7 @@ require 'review/textutils'
 
 module ReVIEW
 
-  class HTMLBuilder < Builder
+  class EPUBBuilder < Builder
 
     include TextUtils
     include HTMLUtils
