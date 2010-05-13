@@ -1,3 +1,8 @@
+Thu May 13 16:40:30 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb, lib/review/index.rb: use a parameter
+	  hash instead of global parameter.
+
 Thu May 13 14:25:08 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* doc/format.txt: Fix a typo. layout/ -> layouts/

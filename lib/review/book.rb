@@ -109,6 +109,8 @@ module ReVIEW
 
     def chapter_index
       @chapter_index ||= ChapterIndex.new(chapters())
+      @chapter_index.setParameter(@param)
+      @chapter_index
     end
 
     def chapter(id)
@@ -519,6 +521,8 @@ module ReVIEW
 
     def list_index
       @list_index ||= ListIndex.parse(lines())
+      @list_index.setParameter(@param)
+      @list_index
     end
 
     def table(id)
@@ -527,6 +531,8 @@ module ReVIEW
 
     def table_index
       @table_index ||= TableIndex.parse(lines())
+      @table_index.setParameter(@param)
+      @table_index
     end
 
     def footnote(id)
@@ -535,6 +541,8 @@ module ReVIEW
 
     def footnote_index
       @footnote_index ||= FootnoteIndex.parse(lines())
+      @footnote_index.setParameter(@param)
+      @footnote_index
     end
 
     def image(id)
@@ -545,6 +553,8 @@ module ReVIEW
       @image_index ||= ImageIndex.parse(lines(), id(),
                                         "#{book.basedir}#{@book.image_dir}",
                                         @book.image_types)
+      @image_index.setParameter(@param)
+      @image_index
     end
 
     def bibpaper(id)
@@ -554,6 +564,8 @@ module ReVIEW
     def bibpaper_index
       raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
       @bibpaper_index ||= BibpaperIndex.parse(@book.read_bib.lines.to_a)
+      @bibpaper_index.setParameter(@param)
+      @bibpaper_index
     end
   end
 
