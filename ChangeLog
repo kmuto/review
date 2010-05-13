@@ -1,3 +1,11 @@
+Thu May 13 14:15:34 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: initial epub maker (under development)
+	* lib/review/epubbuilder.rb: initial epub builder.
+	* bin/review-compile, lib/review/*.rb: use a parameter hash
+	  instead of global parameter.
+	* lib/review/book.rb: allow SVG as image files.
+
 Fri Apr 30 21:59:34 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: add 'type' attribute in list
