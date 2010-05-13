@@ -379,7 +379,7 @@ ReVIEW は任意のブロックを追加可能なので、本によって専用ブロックを
 
 ■HTMLのレイアウト機能
 
-CHAPSファイルが置かれているディレクトリに layout/layout.erb
+CHAPSファイルが置かれているディレクトリに layouts/layout.erb
 を置くとその html を ERB で評価します。
 
 [例]

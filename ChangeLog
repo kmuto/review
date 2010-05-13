@@ -1,3 +1,7 @@
+Thu May 13 14:25:08 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/format.txt: Fix a typo. layout/ -> layouts/
+
 Thu May 13 14:15:34 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-epubmaker: initial epub maker (under development)
