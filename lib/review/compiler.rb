@@ -42,8 +42,14 @@ module ReVIEW
 
     attr_reader :strategy
 
+    def setParameter(param)
+      @param = param
+      @strategy.setParameter(@param)
+    end
+
     def compile(chap)
       @chapter = chap
+      @chapter.setParameter(@param)
       do_compile
       @strategy.result
     end

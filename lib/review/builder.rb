@@ -26,6 +26,10 @@ module ReVIEW
     end
     private :builder_init
 
+    def setParameter(param)
+      @param = param
+    end
+
     def bind(compiler, chapter, location)
       @compiler = compiler
       @chapter = chapter
@@ -44,11 +48,11 @@ module ReVIEW
     end
 
     def print(*s)
-      if @@outencoding =~ /^EUC$/i
+      if @param["outencoding"] =~ /^EUC$/i
         @output.print(NKF.nkf("-W, -e", *s))
-      elsif @@outencoding =~ /^SJIS$/i
+      elsif @param["outencoding"] =~ /^SJIS$/i
         @output.print(NKF.nkf("-W, -s", *s))
-      elsif @@outencoding =~ /^JIS$/i
+      elsif @param["outencoding"] =~ /^JIS$/i
         @output.print(NKF.nkf("-W, -j", *s))
       else
         @output.print(*s)
@@ -56,11 +60,11 @@ module ReVIEW
     end
 
     def puts(*s)
-      if @@outencoding =~ /^EUC$/i
+      if @param["outencoding"] =~ /^EUC$/i
         @output.puts(NKF.nkf("-W, -e", *s))
-      elsif @@outencoding =~ /^SJIS$/i
+      elsif @param["outencoding"] =~ /^SJIS$/i
         @output.puts(NKF.nkf("-W, -s", *s))
-      elsif @@outencoding =~ /^JIS$/i
+      elsif @param["outencoding"] =~ /^JIS$/i
         @output.puts(NKF.nkf("-W, -j", *s))
       else
         @output.puts(*s)

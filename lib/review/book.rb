@@ -44,6 +44,10 @@ module ReVIEW
       end
     end
 
+    def setParameter(param)
+      @param = param
+    end
+
     @basedir_seen = {}
 
     def Book.update_rubyenv(dir)
@@ -434,6 +438,10 @@ module ReVIEW
       @image_index = nil
     end
 
+    def setParameter(param)
+      @param = param
+    end
+
     def env
       @book
     end
@@ -464,11 +472,11 @@ module ReVIEW
 
     def title
       @title ||= open {|f| f.gets.sub(/\A=+/, '').strip }
-      if @@inencoding =~ /^EUC$/
+      if @param["inencoding"] =~ /^EUC$/
         @title = NKF.nkf("-E -w", @title)
-      elsif @@inencoding =~ /^SJIS$/
+      elsif @param["inencoding"] =~ /^SJIS$/
         @title = NKF.nkf("-S -w", @title)
-      elsif @@inencoding =~ /^JIS$/
+      elsif @param["inencoding"] =~ /^JIS$/
         @title = NKF.nkf("-J -w", @title)
       else
         @title = NKF.nkf("-w", @title)
@@ -489,11 +497,11 @@ module ReVIEW
     end
 
     def content
-      if @@inencoding =~ /^EUC$/i
+      if @param["inencoding"] =~ /^EUC$/i
         @content = NKF.nkf("-E -w", File.read(path()))
-      elsif @@inencoding =~ /^SJIS$/i
+      elsif @param["inencoding"] =~ /^SJIS$/i
         @content = NKF.nkf("-S -w", File.read(path()))
-      elsif @@inencoding =~ /^JIS$/i
+      elsif @param["inencoding"] =~ /^JIS$/i
         @content = NKF.nkf("-J -w", File.read(path()))
       else
         @content = NKF.nkf("-w", File.read(path())) # auto detect

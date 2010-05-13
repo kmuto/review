@@ -40,39 +40,41 @@ def _main
   end
   check_only = false
 
-  @@secnolevel = 2 # FIXME: these 4 parameters are only used by IDGBulder.
-  @@tableopt = nil
-  @@nolf = nil
-  @@chapref = nil
-  @@inencoding = "UTF-8"
-  @@outencoding = "UTF-8"
-  @@subdirmode = nil
+  param = {
+    "secnolevel" => 2,    # for IDGXMLBuilder
+    "tableopt" => nil,    # for IDGXMLBuilder
+    "nolf" => nil,        # for IDGXMLBuilder
+    "chapref" => nil,     # for IDGXMLBuilder
+    "inencoding" => "UTF-8",
+    "outencoding" => "UTF-8",
+    "subdirmode" => nil,
+  }
 
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
   parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    @@inencoding = enc
+    param["inencoding"] = enc
   }
   parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    @@outencoding = enc
+    param["outencoding"] = enc
   }
   parser.on('-c', '--check', 'Check manuscript') {
     check_only = true
   }
   parser.on('--level=LVL', 'Section level to append number.') {|lvl|
-    @@secnolevel = lvl.to_i
+    param["secnolevel"] = lvl.to_i
   }
   parser.on('--nolfinxml', 'Do not insert LF in XML.') {
-    @@nolf = true
+    param["nolf"] = true
   }
   parser.on('--table=WIDTH', 'Default table width.') {|tbl|
-    @@tableopt = tbl
+    param["tableopt"] = tbl
   }
   parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec|
-    @@chapref = cdec
+    param["chapref"] = cdec
   }
   parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') {
-    @@subdirmode = true
+    param["subdirmode"] = true
   }
   unless target
     parser.on('--target=FMT', 'Target format.') {|fmt|
@@ -108,6 +110,7 @@ def _main
 
   begin
     compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
+    compiler.setParameter(param)
     case mode
     when :files
       if ARGV.empty?
@@ -115,12 +118,15 @@ def _main
         exit 1
       end
       ReVIEW::Chapter.intern_pathes(ARGV).each do |chap|
+        chap.setParameter(param)
         result = compiler.compile(chap)
         print result unless check_only
       end
     when :dir
       book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
+      book.setParameter(param)
       book.chapters.each do |chap|
+        chap.setParameter(param)
         str = compiler.compile(chap)
         write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
       end
