@@ -913,6 +913,14 @@ module ReVIEW
       print %Q(<?dtp #{str} ?>)
     end
 
+    def hr
+      print "<hr/>"
+    end
+
+    def bpo(lines)
+      puts %Q[<bpo>#{lines.join("\n")}</bpo>]
+    end
+
     def inline_dtp(str)
       "<?dtp #{str} ?>"
     end

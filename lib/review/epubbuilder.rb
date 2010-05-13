@@ -12,28 +12,15 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/htmllayout'
 require 'review/textutils'
+require 'review/htmlbuilder'
 
 module ReVIEW
 
-  class EPUBBuilder < Builder
-
-    include TextUtils
-    include HTMLUtils
+  class EPUBBuilder < HTMLBuilder
 
     def extname
       '.html'
     end
-
-    def builder_init(no_error = false)
-      @no_error = no_error
-    end
-    private :builder_init
-
-    def builder_init_file
-      @warns = []
-      @errors = []
-    end
-    private :builder_init_file
 
     def result
       layout_file = File.join(@book.basedir, "layouts", "layout.erb")
@@ -41,58 +28,25 @@ module ReVIEW
         messages() +
           HTMLLayout.new(@output.string, @chapter.title, layout_file).result
       else
-        messages() + @output.string
-      end
-    end
+        # FIXME
+        header = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops=" http://www.idpf.org/2007/ops" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Tyle" content="text/css"/>
+  <meta name="generator" content="ReVIEW"/>
+  <title>#{@chapter.title}</title>
 
-    def warn(msg)
-      if @no_error
-        @warns.push [@location.filename, @location.lineno, msg]
-        puts "----WARNING: #{escape_html(msg)}----"
-      else
-        $stderr.puts "#{@location}: warning: #{msg}"
-      end
-    end
-
-    def error(msg)
-      if @no_error
-        @errors.push [@location.filename, @location.lineno, msg]
-        puts "----ERROR: #{escape_html(msg)}----"
-      else
-        $stderr.puts "#{@location}: error: #{msg}"
-      end
-    end
-
-    def messages
-      error_messages() + warning_messages()
-    end
-
-    def error_messages
-      return '' if @errors.empty?
-      "<h2>Syntax Errors</h2>\n" +
-      "<ul>\n" +
-      @errors.map {|file, line, msg|
-        "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
-      }.join('') +
-      "</ul>\n"
-    end
-
-    def warning_messages
-      return '' if @warns.empty?
-      "<h2>Warnings</h2>\n" +
-      "<ul>\n" +
-      @warns.map {|file, line, msg|
-        "<li>#{escape_html(file)}:#{line}: #{escape_html(msg)}</li>\n"
-      }.join('') +
-      "</ul>\n"
-    end
-
-    def headline(level, label, caption)
-      puts '' if level > 1
-      if label.nil?
-        puts "<h#{level}>#{caption}</h#{level}>"
-      else
-        puts "<h#{level} id='#{label}'>#{caption}</h#{level}>"
+</head>
+<body>
+EOT
+        footer = <<EOT
+</body>
+</html>
+EOT
+        header + messages() + @output.string + footer
       end
     end
 
@@ -105,90 +59,65 @@ module ReVIEW
       puts '</div>'
     end
 
-    def ul_begin
-      puts '<ul>'
-    end
-
-    def ul_item(lines)
-      puts "<li>#{lines.join("\n")}</li>"
-    end
-
-    def ul_end
-      puts '</ul>'
-    end
-
-    def ol_begin
-      puts '<ol>'
-    end
-
-    def ol_item(lines, num)
-      puts "<li>#{lines.join("\n")}</li>"
-    end
-
-    def ol_end
-      puts '</ol>'
-    end
-
-    def dl_begin
-      puts '<dl>'
-    end
-
-    def dt(line)
-      puts "<dt>#{line}</dt>"
-    end
-
-    def dd(lines)
-      puts "<dd>#{lines.join("\n")}</dd>"
-    end
-
-    def dl_end
-      puts '</dl>'
-    end
-
-    def paragraph(lines)
-      puts "<p>#{lines.join("")}</p>"
-    end
-
-    def read(lines)
-      puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
+    def list(lines, id, caption)
+      puts '<div class="caption-code">'
+      begin
+        list_header id, caption
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      list_body lines
+      puts '</div>'
     end
 
     def list_header(id, caption)
-      puts %Q[<p class="toplabel">リスト#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<caption class="list">リスト#{@chapter.list(id).number}: #{escape_html(caption)}</caption>]
     end
 
     def list_body(lines)
-      puts '<div class="caption-code">'
       puts '<pre class="list">'
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
+    end
+
+    def source(lines, caption)
+      puts '<div class="caption-code">'
+      source_header caption
+      source_body lines
       puts '</div>'
     end
 
     def source_header(caption)
-      puts %Q[<p class="toplabel">▼#{escape_html(caption)}</p>]
+      puts %Q[<caption class="source">#{escape_html(caption)}</caption>]
     end
 
     def source_body(lines)
-      puts '<div class="caption-code">'
       puts '<pre class="source">'
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
+    end
+
+    def listnum(lines, id, caption)
+      puts '<div class="code">'
+      begin
+        list_header id, caption
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      listnum_body lines
       puts '</div>'
     end
 
     def listnum_body(lines)
-      puts '<div class="code">'
       puts '<pre class="list">'
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
       puts '</pre>'
-      puts '</div>'
      end
 
     def emlist(lines)
@@ -235,29 +164,74 @@ module ReVIEW
     end
 
     def image_image(id, metric, caption)
-      puts %Q[<p class="image">]
+      puts %Q[<div class="image">]
       puts %Q[<img src="#{@chapter.image(id).path}" alt="(#{escape_html(caption)})">]
-      puts %Q[</p>]
       image_header id, caption
+      puts %Q[</div>]
     end
 
     def image_dummy(id, caption, lines)
+      puts %Q[<div class="image">]
       puts %Q[<pre class="dummyimage">]
       lines.each do |line|
         puts detab(line)
       end
       puts %Q[</pre>]
       image_header id, caption
+      puts %Q[</div>]
     end
 
     def image_header(id, caption)
-      puts %Q[<p class="botlabel">]
+      puts %Q[<caption class="image">]
       puts %Q[図#{@chapter.image(id).number}: #{escape_html(caption)}]
-      puts %Q[</p>]
+      puts %Q[</caption>]
+    end
+
+    def table(lines, id = nil, caption = nil)
+      rows = []
+      sepidx = nil
+      lines.each_with_index do |line, idx|
+        if /\A[\=\-]{12}/ =~ line
+          # just ignore
+          #error "too many table separator" if sepidx
+          sepidx ||= idx
+          next
+        end
+        rows.push line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') }
+      end
+      rows = adjust_n_cols(rows)
+
+      table_begin rows.first.size
+      begin
+        table_header id, caption unless caption.nil?
+      rescue KeyError => err
+        error "no such table: #{id}"
+      end
+      return if rows.empty?
+      if sepidx
+        puts "<thead>"
+        sepidx.times do
+          tr rows.shift.map {|s| th(compile_inline(s)) }
+        end
+        puts "</thead>"
+        puts "<tbody>"
+        rows.each do |cols|
+          tr cols.map {|s| td(compile_inline(s)) }
+        end
+        puts "</tbody>"
+      else
+        puts "<tbody>"
+        rows.each do |cols|
+          h, *cs = *cols
+          tr [th(compile_inline(h))] + cs.map {|s| td(compile_inline(s)) }
+        end
+        puts "</tbody>"
+      end
+      table_end
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="toplabel">表#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<caption="table">表#{@chapter.table(id).number}: #{escape_html(caption)}</caption>]
     end
 
     def table_begin(ncols)
@@ -285,7 +259,19 @@ module ReVIEW
     end
 
     def footnote(id, str)
-      puts %Q(<p class="comment"><a name="fn-#{id}">#{escape_html(str)}</a></p>)
+      puts %Q(<div class="footnote"><p class="footnote"><a name="fn-#{id}">#{escape_html(str)}</a></p></div>)
+    end
+
+    def hr
+      puts "<hr/>"
+    end
+
+    def bpo(lines)
+      puts "<bpo>"
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts "</bpo>"
     end
 
     def inline_fn(id)
@@ -293,7 +279,7 @@ module ReVIEW
     end
 
     def compile_ruby(base, ruby)
-      escape_html(base)   # tmp
+      %Q[<ruby><rb>{escape_html(base)}</rb><rp>(</rp><rt>#{ruby}</rt><rp>)</rp></ruby>]
     end
 
     def compile_kw(word, alt)
@@ -315,7 +301,7 @@ module ReVIEW
     end
 
     def inline_ami(str)
-      escape_html(str)   # tmp
+      %Q(<span class="ami">#{escape_html(str)}</span>)
     end
 
     def inline_dtp(arg)
@@ -351,6 +337,74 @@ module ReVIEW
 
     def nofunc_text(str)
       escape_html(str)
+    end
+
+    def inline_asis(str, tag)
+      %Q(<#{tag}>#{escape_html(str)}</#{tag}>)
+    end
+
+    def inline_abbr(str)
+      inline_asis(str, "abbr")
+    end
+
+    def inline_acronym(str)
+      inline_asis(str, "acronym")
+    end
+
+    def inline_cite(str)
+      inline_asis(str, "cite")
+    end
+
+    def inline_dfn(str)
+      inline_asis(str, "dfn")
+    end
+
+    def inline_em(str)
+      inline_asis(str, "em")
+    end
+
+    def inline_kbd(str)
+      inline_asis(str, "kbd")
+    end
+
+    def inline_samp(str)
+      inline_asis(str, "samp")
+    end
+
+    def inline_strong(str)
+      inline_asis(str, "strong")
+    end
+
+    def inline_var(str)
+      inline_asis(str, "var")
+    end
+
+    def inline_big(str)
+      inline_asis(str, "big")
+    end
+
+    def inline_small(str)
+      inline_asis(str, "small")
+    end
+
+    def inline_sub(str)
+      inline_asis(str, "sub")
+    end
+
+    def inline_sup(str)
+      inline_asis(str, "sup")
+    end
+
+    def inline_tt(str)
+      inline_asis(str, "tt")
+    end
+
+    def inline_del(str)
+      inline_asis(str, "del")
+    end
+
+    def inline_ins(str)
+      inline_asis(str, "ins")
     end
 
   end

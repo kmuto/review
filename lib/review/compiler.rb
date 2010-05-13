@@ -134,12 +134,16 @@ module ReVIEW
     defblock :listnum, 2
     defblock :emlistnum, 0..1
     defblock :bibpaper, 2..3, true
+    defblock :address, 0
+    defblock :blockquote, 0
+    defblock :bpo, 0
 
     defsingle :footnote, 2
     defsingle :comment, 1
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
+    defsingle :hr, 0
 
     definline :chapref
     definline :chap
@@ -156,6 +160,25 @@ module ReVIEW
     definline :dtp
     definline :code
     definline :bib
+
+    definline :abbr
+    definline :acronym
+    definline :cite
+    definline :dfn
+    definline :em
+    definline :kbd
+    definline :q
+    definline :samp
+    definline :strong
+    definline :var
+    definline :big
+    definline :small
+    definline :del
+    definline :ins
+    definline :sup
+    definline :sub
+    definline :tt
+    definline :i
 
     private
 
@@ -383,7 +406,7 @@ module ReVIEW
     end
 
     def compile_unknown_command(args, lines)
-      @strategy.uknown_command args, lines
+      @strategy.unknown_command args, lines
     end
 
     def compile_block(syntax, args, lines)
