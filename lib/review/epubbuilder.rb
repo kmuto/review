@@ -18,6 +18,8 @@ module ReVIEW
 
   class EPUBBuilder < HTMLBuilder
 
+    Compiler.defsingle(:indepimage, 1)
+
     def extname
       '.html'
     end
@@ -120,8 +122,9 @@ EOT
       puts '</pre>'
      end
 
-    def emlist(lines)
+    def emlist(lines, caption = nil)
       puts '<div class="code">'
+      puts %Q(<caption class="emlist">#{caption}</caption>) unless caption.nil?
       puts '<pre class="emlist">'
       lines.each do |line|
         puts detab(line)
@@ -272,6 +275,16 @@ EOT
         puts detab(line)
       end
       puts "</bpo>"
+    end
+
+    def flushright(lines)
+      puts "<p align='right'>#{lines.join("\n")}</p>"
+    end
+
+    def note(lines, caption = nil)
+      puts '<div class="note">'
+      puts "<caption class='note'>#{escape_html(caption)}</caption>" unless caption.nil?
+      puts "#{lines.join("\n")}</div>"
     end
 
     def inline_fn(id)

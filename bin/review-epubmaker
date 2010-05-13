@@ -172,11 +172,35 @@ EOT
 EOT
   }
   
-  # Cover page # FIXME
+  # Cover page # FIXME。テンプレートから読むようにすべき
+  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.html", "w") {|f|
+f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops=" http://www.idpf.org/2007/ops" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Tyle" content="text/css"/>
+  <meta name="generator" content="ReVIEW"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+<h1>#{values["booktitle"]}</h1>
+</body>
+</html>
+EOT
+  }
 
   # stylesheet
   File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|
     # FIXME: スタイルシート
+    f.puts <<EOT
+/* sample style sheet for epub */
+@charset "utf-8";
+
+body {
+}
+EOT
   }
   
   # Zip epubファイルの作成。mimetypeは圧縮しないようにする

@@ -30,8 +30,6 @@ module ReVIEW
     Compiler.defsingle(:tsize, 1)
 
     Compiler.defblock(:insn, 0..1)
-    Compiler.defblock(:flushright, 0)
-    Compiler.defblock(:note, 0..1)
     Compiler.defblock(:memo, 0..1)
     Compiler.defblock(:tip, 0..1)
     Compiler.defblock(:info, 0..1)
