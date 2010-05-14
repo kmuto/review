@@ -12,15 +12,17 @@ require 'tmpdir'
 require 'fileutils'
 require 'yaml'
 require 'optparse'
+require 'rexml/document'
 
 def main
-  values = {
-    "bookname"=> "sample",
+  values = { # These parameters can be overridden by YAML file.
+    "bookname"=> "sample", # it defines epub file name also
     "booktitle" => "ReVIEW EPUBサンプル",
-    "author" => nil,
-    "urnid" => "example.jp",
-    "stylesheet" => "stylesheet.css",
-    "params" => "",
+    "author" => "吟遊詩人",
+    "urnid" => "example.jp", # just used for unique ID
+    "stylesheet" => "stylesheet.css", # stylesheet file
+    "coverfile" => nil, # content file of body of cover page
+    "params" => "", # specify review2epub parameters
   }
 
   if ARGV.size == 1
@@ -38,11 +40,10 @@ def main
     exit 1
   end
 
-  #tmp = Dir.mktmpdir
-  tmp="."
-  Dir.mkdir("#{tmp}/#{bookname}")
   identifier = "urn:uuid:#{values["urnid"]}_#{bookname}"
-  puts tmp
+
+  tmp = @debug.nil? ? Dir.mktmpdir : "."
+  Dir.mkdir("#{tmp}/#{bookname}")
   
   # MIME type
   File.open("#{tmp}/#{bookname}/mimetype", "w") {|f|
@@ -55,18 +56,24 @@ def main
   body = 0
   post = 0
   @manifeststr = ""
+  @ncxstr = ""
+  @tocstr = ""
+  toccount = 1
   
   if File.exists?("PREDEF")
     File.open("PREDEF") {|chaps|
       chaps.each_line {|l|
         next if l =~ /^#/
         pre = pre + 1
+        toccount = toccount + 1
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
           exec("review-compile --target=epub #{values["params"]} #{l}")
         }
         Process.waitall
-        @manifeststr << %Q(<item id="pre#{pre}" href="OEBPS/pre#{pre}.html" media-type="application/xhtml+xml" />\n)
+        @manifeststr << %Q(<item id="pre#{pre}" href="pre#{pre}.html" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="pre#{pre}" />\n)
+        @tocstr << %Q[<navPoint id="pre#{pre}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")}</text></navLabel>\n<content src="pre#{pre}.html"/>\n</navPoint>\n]
       }
     }
   end
@@ -74,13 +81,16 @@ def main
     File.open("CHAPS") {|chaps|
       chaps.each_line {|l|
         body = body + 1
+        toccount = toccount + 1
         next if l =~ /^#/
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
           exec("review-compile --target=epub #{values["params"]} #{l}")
         }
         Process.waitall
-        @manifeststr << %Q(<item id="chap#{body}" href="OEBPS/chap#{body}.html" media-type="application/xhtml+xml" />\n)
+        @manifeststr << %Q(<item id="chap#{body}" href="chap#{body}.html" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="chap#{body}" />\n)
+        @tocstr << %Q[<navPoint id="chap#{body}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")}</text></navLabel>\n<content src="chap#{body}.html"/>\n</navPoint>\n]
       }
     }
   end
@@ -89,12 +99,15 @@ def main
       chaps.each_line {|l|
         next if l =~ /^#/
         post = post + 1
+        toccount = toccount + 1
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
           exec("review-compile --target=epub #{values["params"]} #{l}")
         }
         Process.waitall
-        @manifeststr << %Q(<item id="post#{post}" href="OEBPS/post#{post}.html" media-type="application/xhtml+xml" />\n)
+        @manifeststr << %Q(<item id="post#{post}" href="post#{post}.html" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="post#{post}" />\n)
+        @tocstr << %Q[<navPoint id="post#{post}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/post#{post}.html")}</text></navLabel>\n<content src="post#{post}.html"/>\n</navPoint>\n]
       }
     }
   end
@@ -110,7 +123,7 @@ def main
 <?xml version="1.0" encoding="UTF-8"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
   <rootfiles>
-    <rootfile full-path="#{bookname}.opf" media-type="application/oebps-package+xml" />
+    <rootfile full-path="OEBPS/#{bookname}.opf" media-type="application/oebps-package+xml" />
   </rootfiles>
 </container>
 EOT
@@ -130,20 +143,23 @@ EOT
  </metadata>
  <manifest>
   <item id="ncx" href="#{bookname}.ncx" media-type="text/xml" />
-  <item id="style" href="OEBPS/default.css" media-type="text/css" />
-  <item id="#{bookname}" href="OEBPS/#{bookname}.html" media-type="application/xhtml+xml" />
+  <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
+  <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
 EOT
     f.puts @manifeststr
     f.puts <<EOT
  </manifest>
  <spine toc="ncx">
   <itemref idref="#{bookname}" />
+EOT
+    f.puts @ncxstr
+    f.puts <<EOT
  </spine>
 </package>
 EOT
   }
 
-  # ncx (toc) # FIXME
+  # ncx (toc)
   File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.ncx", "w") {|f|
     f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -167,25 +183,42 @@ EOT
       </navLabel>
       <content src="OEBPS/#{bookname}.html"/>
     </navPoint>
+EOT
+    f.puts @tocstr
+    f.puts <<EOT
   </navMap>
 </ncx>
 EOT
   }
   
-  # Cover page # FIXME。テンプレートから読むようにすべき
+  # Cover page
   File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.html", "w") {|f|
-f.puts <<EOT
+    f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops=" http://www.idpf.org/2007/ops" xml:lang="ja" lang="ja">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Tyle" content="text/css"/>
-  <meta name="generator" content="ReVIEW"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
   <title>#{values["booktitle"]}</title>
 </head>
 <body>
+EOT
+    if !values["coverfile"].nil? && File.exist?(values["coverfile"])
+      File.open(values["coverfile"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
 <h1>#{values["booktitle"]}</h1>
+EOT
+    end
+
+    f.puts <<EOT
 </body>
 </html>
 EOT
@@ -202,17 +235,27 @@ body {
 }
 EOT
   }
+  if File.exist?(values["stylesheet"])
+    FileUtils.ln values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
+  end
   
   # Zip epubファイルの作成。mimetypeは圧縮しないようにする
   fork {
     basedir = Dir.pwd
-    Dir.chdir("#{tmp}") {|d|
-      exec("zip -r -n mimetype #{basedir}/#{bookname}.epub #{bookname}")
+    Dir.chdir("#{tmp}/#{bookname}") {|d|
+      exec("zip #{basedir}/#{bookname}.epub mimetype")
+    }
+  }
+  Process.waitall
+  fork {
+    basedir = Dir.pwd
+    Dir.chdir("#{tmp}/#{bookname}") {|d|
+      exec("zip -r #{basedir}/#{bookname}.epub META-INF OEBPS")
     }
   }
   Process.waitall
   
-  #FileUtils.rm_r(tmp)
+  FileUtils.rm_r(tmp) if @debug.nil?
 end
 
 def copyImagesToDir(dirname, copybase)
@@ -235,11 +278,18 @@ def copyImagesToDir(dirname, copybase)
           else
             raise "unsupported type #{fname}"
           end
-          @manifeststr << %Q(<item id="fig-#{figid}" href="OEBPS/#{dirname}/#{fname}" media-type="#{mime}" />\n)
+          @manifeststr << %Q(<item id="fig-#{figid}" href="#{dirname}/#{fname}" media-type="#{mime}" />\n)
         end
       end
     }
   }
 end
 
+def getTitle(filename)
+  File.open(filename) {|f|
+    return REXML::Document.new(f).elements["//html/head/title"].text
+  }
+end
+
+@debug = 1
 main

@@ -1,3 +1,8 @@
+Fri May 14 12:29:53 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: Add toc, cover feature. Fix a link.
+	  Now it works minimum.
+
 Thu May 13 16:40:30 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/book.rb, lib/review/index.rb: use a parameter
