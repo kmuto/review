@@ -20,6 +20,15 @@ module ReVIEW
 
     Compiler.defsingle(:indepimage, 1)
 
+    def builder_init(no_error = false)
+      @no_error = no_error
+      @section = 0
+      @subsection = 0
+      @subsubsection = 0
+      @subsubsubsection = 0
+    end
+    private :builder_init
+
     def extname
       '.html'
     end
@@ -40,7 +49,6 @@ module ReVIEW
   <meta http-equiv="Content-Style-Tyle" content="text/css"/>
   <meta name="generator" content="ReVIEW"/>
   <title>#{@chapter.title}</title>
-
 </head>
 <body>
 EOT
@@ -49,6 +57,73 @@ EOT
 </html>
 EOT
         header + messages() + @output.string + footer
+      end
+    end
+
+    def headline(level, label, caption)
+      prefix = ""
+      case level
+      when 1
+        @section = 0
+        @subsection = 0
+        @subsubsection = 0
+        @subsubsubsection = 0
+        if @param["secnolevel"] >= 1
+          if @chapter.number.to_s =~ /\A\d+$/
+            prefix = "第#{@chapter.number}章　"
+          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+            prefix = "#{@chapter.number}　"
+          end
+        end
+      when 2
+        @section += 1
+        @subsection = 0
+        @subsubsection = 0
+        @subsubsubsection = 0
+        if @param["secnolevel"] >= 2
+          if @chapter.number.to_s =~ /\A\d+$/
+            prefix = "#{@chapter.number}.#{@section}　"
+          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+            prefix = "#{@chapter.number}.#{@section}　"
+          end
+        end
+      when 3
+        @subsection += 1
+        @subsubsection = 0
+        @subsubsubsection = 0
+        if @param["secnolevel"] >= 3
+          if @chapter.number.to_s =~ /\A\d+$/
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
+          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
+          end
+        end
+      when 4
+        @subsubsection += 1
+        @subsubsubsection = 0
+        if @param["secnolevel"] >= 4
+          if @chapter.number.to_s =~ /\A\d+$/
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
+          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
+          end
+        end
+      when 5
+        @subsubsubsection += 1
+        if @param["secnolevel"] >= 5
+          if @chapter.number.to_s =~ /\A\d+$/
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
+          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
+          end
+        end
+      end
+
+      puts '' if level > 1
+      if label.nil?
+        puts "<h#{level}>#{prefix}#{caption}</h#{level}>"
+      else
+        puts "<h#{level} id='#{label}'>#{prefix}#{caption}</h#{level}>"
       end
     end
 
@@ -73,7 +148,7 @@ EOT
     end
 
     def list_header(id, caption)
-      puts %Q[<caption class="list">リスト#{@chapter.list(id).number}: #{escape_html(caption)}</caption>]
+      puts %Q[<caption class="list">リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</caption>]
     end
 
     def list_body(lines)
@@ -186,7 +261,7 @@ EOT
 
     def image_header(id, caption)
       puts %Q[<caption class="image">]
-      puts %Q[図#{@chapter.image(id).number}: #{escape_html(caption)}]
+      puts %Q[図#{getChap}#{@chapter.image(id).number}: #{escape_html(caption)}]
       puts %Q[</caption>]
     end
 
@@ -234,7 +309,7 @@ EOT
     end
 
     def table_header(id, caption)
-      puts %Q[<caption="table">表#{@chapter.table(id).number}: #{escape_html(caption)}</caption>]
+      puts %Q[<caption="table">表#{getChap}#{@chapter.table(id).number}: #{escape_html(caption)}</caption>]
     end
 
     def table_begin(ncols)
@@ -262,7 +337,7 @@ EOT
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote"><a name="fn-#{id}">#{escape_html(str)}</a></p></div>)
+      puts %Q(<div class="footnote"><p class="footnote"><a name="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
     end
 
     def hr
@@ -352,6 +427,27 @@ EOT
       escape_html(str)
     end
 
+    def inline_list(id)
+      "リスト#{getChap}#{@chapter.list(id).number}"
+    rescue KeyError
+      error "unknown list: #{id}"
+      nofunc_text("[UnknownList:#{id}]")
+    end
+
+    def inline_img(id)
+      "図#{getChap}#{@chapter.image(id).number}"
+    rescue KeyError
+      error "unknown image: #{id}"
+      nofunc_text("[UnknownImage:#{id}]")
+    end
+
+    def inline_table(id)
+      "表#{getChap}#{@chapter.table(id).number}"
+    rescue KeyError
+      error "unknown table: #{id}"
+      nofunc_text("[UnknownTable:#{id}]")
+    end
+
     def inline_asis(str, tag)
       %Q(<#{tag}>#{escape_html(str)}</#{tag}>)
     end
@@ -420,6 +516,12 @@ EOT
       inline_asis(str, "ins")
     end
 
+    def getChap
+      if @param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
+        return "#{@chapter.number}."
+      end
+      return ""
+    end
   end
 
 end   # module ReVIEW

@@ -41,7 +41,7 @@ def _main
   check_only = false
 
   param = {
-    "secnolevel" => 2,    # for IDGXMLBuilder
+    "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
     "tableopt" => nil,    # for IDGXMLBuilder
     "nolf" => nil,        # for IDGXMLBuilder
     "chapref" => nil,     # for IDGXMLBuilder

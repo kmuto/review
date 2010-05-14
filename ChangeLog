@@ -1,3 +1,8 @@
+Fri May 14 15:24:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: Support --level as same as
+	  idgxmlbuilder.
+
 Fri May 14 12:29:53 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-epubmaker: Add toc, cover feature. Fix a link.
