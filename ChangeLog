@@ -1,3 +1,7 @@
+Fri May 14 16:09:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: Pass more meta info to opf file.
+
 Fri May 14 15:24:41 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/epubbuilder.rb: Support --level as same as

@@ -18,7 +18,19 @@ def main
   values = { # These parameters can be overridden by YAML file.
     "bookname"=> "sample", # it defines epub file name also
     "booktitle" => "ReVIEW EPUBサンプル",
-    "author" => "吟遊詩人",
+    "aut" => "吟遊詩人", # author
+    "prt" => nil, # printer(publisher)
+    "asn" => nil, # associated name
+    "ant" => nil, # bibliographic antecedent
+    "clb" => nil, # Collaborator
+    "edt" => nil, # Editor
+    "dsr" => nil, # Designer
+    "ill" => nil, # Illustrator
+    "pht" => nil, # Photographer
+    "trl" => nil, # Translator
+    "date" => nil, # publishing date
+    "rights" => nil, # Copyright messages
+    "description" => nil, # Description
     "urnid" => "example.jp", # just used for unique ID
     "stylesheet" => "stylesheet.css", # stylesheet file
     "coverfile" => nil, # content file of body of cover page
@@ -137,7 +149,27 @@ EOT
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
    <dc:title>#{values["booktitle"]}</dc:title>
-   <dc:creator opf:role="aut">#{values["author"].nil? ? "" : values["author"]}</dc:creator>
+EOT
+
+   f.puts %Q(<dc:creator opf:role="aut">#{values["aut"]}</dc:creator>) unless values["aut"].nil? # FIXME: support multiple members
+
+   f.puts %Q(<dc:publisher opf:role="prt">#{values["prt"]}</dc:publisher>) unless values["prt"].nil?
+
+   f.puts %Q(<dc:date>#{values["date"]}</dc:date>) unless values["date"].nil?
+   f.puts %Q(<dc:rights>#{values["rights"]}</dc:rights>) unless values["rights"].nil?
+
+   f.puts %Q(<dc:contributor opf:role="asn">#{values["asn"]}</dc:contributor>) unless values["asn"].nil?
+   f.puts %Q(<dc:contributor opf:role="ant">#{values["ant"]}</dc:contributor>) unless values["ant"].nil?
+   f.puts %Q(<dc:contributor opf:role="clb">#{values["clb"]}</dc:contributor>) unless values["clb"].nil?
+   f.puts %Q(<dc:contributor opf:role="edt">#{values["edt"]}</dc:contributor>) unless values["edt"].nil?
+   f.puts %Q(<dc:contributor opf:role="dsr">#{values["dsr"]}</dc:contributor>) unless values["dsr"].nil?
+   f.puts %Q(<dc:contributor opf:role="ill">#{values["ill"]}</dc:contributor>) unless values["ill"].nil?
+   f.puts %Q(<dc:contributor opf:role="pht">#{values["pht"]}</dc:contributor>) unless values["pht"].nil?
+   f.puts %Q(<dc:contributor opf:role="trl">#{values["trl"]}</dc:contributor>) unless values["trl"].nil?
+
+   f.puts %Q(<dc:description>#{values["description"]}</dc:description>) unless values["description"].nil?
+
+    f.puts <<EOT
    <dc:language>ja</dc:language>
    <dc:identifier id="BookId">#{identifier}</dc:identifier>
  </metadata>
@@ -174,7 +206,7 @@ EOT
     <text>#{values["booktitle"]}</text>
   </docTitle>
   <docAuthor>
-	<text>#{values["author"].nil? ? "" : values["author"]}</text>
+	<text>#{values["aut"].nil? ? "" : values["aut"]}</text>
   </docAuthor>
   <navMap>
     <navPoint id="#{bookname}" playOrder="1">
