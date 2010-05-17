@@ -18,6 +18,10 @@ module ReVIEW
 
   class EPUBBuilder < HTMLBuilder
 
+    [:u].each {|e|
+      Compiler.definline(e)
+    }
+
     Compiler.defsingle(:indepimage, 1)
     Compiler.defsingle(:tsize, 1)
 
@@ -431,6 +435,10 @@ EOT
       puts %Q(</p>)
     end
 
+    def noindent
+      # dummy
+    end
+
     def inline_bib(id)
       %Q(<a href=".#{@book.bib_file.gsub(/re$/, "html")}\#bib-#{id}">[#{@chapter.bibpaper(id).number}]</a>)
     end
@@ -526,6 +534,10 @@ EOT
 
     def inline_ins(str)
       inline_asis(str, "ins")
+    end
+
+    def inline_u(str)
+      %Q(<span class="u">#{escape_html(str)}</span>)
     end
 
     def getChap
