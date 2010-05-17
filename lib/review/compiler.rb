@@ -130,6 +130,7 @@ module ReVIEW
     end
 
     defblock :read, 0
+    defblock :lead, 0
     defblock :list, 2
     defblock :emlist, 0..1
     defblock :cmd, 0..1

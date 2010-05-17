@@ -19,6 +19,7 @@ module ReVIEW
   class EPUBBuilder < HTMLBuilder
 
     Compiler.defsingle(:indepimage, 1)
+    Compiler.defsingle(:tsize, 1)
 
     def builder_init(no_error = false)
       @no_error = no_error
@@ -134,6 +135,10 @@ EOT
 
     def column_end(level)
       puts '</div>'
+    end
+
+    def tsize(str)
+      # null
     end
 
     def list(lines, id, caption)

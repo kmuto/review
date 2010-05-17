@@ -1,3 +1,9 @@
+Mon May 17 11:02:33 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	  lib/review/epubbuilder.rb: add //lead as alias of read.
+	  Support dummy //tsize on epubbuilder.
+
 Fri May 14 16:09:41 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-epubmaker: Pass more meta info to opf file.

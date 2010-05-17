@@ -153,6 +153,10 @@ module ReVIEW
       puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
     end
 
+    def lead(lines)
+      read(lines)
+    end
+
     def list_header(id, caption)
       puts %Q[<p class="toplabel">リスト#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
     end
