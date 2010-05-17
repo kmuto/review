@@ -1,3 +1,8 @@
+Mon May 17 12:14:48 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb: Skip any contents except \A=+
+	  when taking a title.
+
 Mon May 17 12:05:41 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, epubbuilder.rb: add --stylesheet=file

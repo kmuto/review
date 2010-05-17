@@ -473,7 +473,15 @@ module ReVIEW
     alias id name
 
     def title
-      @title ||= open {|f| f.gets.sub(/\A=+/, '').strip }
+      @title = ""
+      open {|f|
+        f.each_line {|l|
+          if l =~ /\A=+/
+            @title = l.sub(/\A=+/, '').strip
+            break
+          end
+        }
+      }
       if @param["inencoding"] =~ /^EUC$/
         @title = NKF.nkf("-E -w", @title)
       elsif @param["inencoding"] =~ /^SJIS$/
