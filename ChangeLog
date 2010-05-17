@@ -1,3 +1,7 @@
+Mon May 17 11:06:46 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: treat comment as HTML comment.
+
 Mon May 17 11:02:33 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,

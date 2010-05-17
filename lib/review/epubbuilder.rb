@@ -338,7 +338,7 @@ EOT
     end
 
     def comment(str)
-      puts %Q(<p class="comment">[Comment] #{escape_html(str)}</p>)
+      puts %Q(<!-- #{escape_html(str)} -->)
     end
 
     def footnote(id, str)
