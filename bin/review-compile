@@ -48,6 +48,7 @@ def _main
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8",
     "subdirmode" => nil,
+    "stylesheet" => nil,  # for EPUBBuilder
   }
 
   parser = OptionParser.new
@@ -75,6 +76,9 @@ def _main
   }
   parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') {
     param["subdirmode"] = true
+  }
+  parser.on('--stylesheet=file', 'Stylesheet file for EPUB.') {|file|
+    param["stylesheet"] = file
   }
   unless target
     parser.on('--target=FMT', 'Target format.') {|fmt|

@@ -48,6 +48,13 @@ module ReVIEW
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Tyle" content="text/css"/>
+EOT
+        unless @param["stylesheet"].nil?
+          header += <<EOT
+  <link rel="stylesheet" type="text/css" href="#{@param["stylesheet"]}"/>
+EOT
+        end
+        header += <<EOT
   <meta name="generator" content="ReVIEW"/>
   <title>#{@chapter.title}</title>
 </head>
