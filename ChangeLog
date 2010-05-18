@@ -1,3 +1,8 @@
+Tue May 18 11:16:57 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb, bin/review-epubbuilder:
+	  fix a typo around meta information.
+
 Mon May 17 22:06:50 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/epubbuilder.rb: Add //noindent, @<u>.
