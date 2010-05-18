@@ -164,7 +164,7 @@ EOT
     end
 
     def list_header(id, caption)
-      puts %Q[<caption class="list">リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</caption>]
+      puts %Q[<p class="listcaption">リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
     end
 
     def list_body(lines)
@@ -183,7 +183,7 @@ EOT
     end
 
     def source_header(caption)
-      puts %Q[<caption class="source">#{escape_html(caption)}</caption>]
+      puts %Q[<p class="sourcecaption">#{escape_html(caption)}</p>]
     end
 
     def source_body(lines)
@@ -215,7 +215,7 @@ EOT
 
     def emlist(lines, caption = nil)
       puts '<div class="code">'
-      puts %Q(<caption class="emlist">#{caption}</caption>) unless caption.nil?
+      puts %Q(<p class="emlistcaption">#{caption}</p>) unless caption.nil?
       puts '<pre class="emlist">'
       lines.each do |line|
         puts detab(line)
@@ -276,9 +276,9 @@ EOT
     end
 
     def image_header(id, caption)
-      puts %Q[<caption class="image">]
+      puts %Q[<p class="imagecaption">]
       puts %Q[図#{getChap}#{@chapter.image(id).number}: #{escape_html(caption)}]
-      puts %Q[</caption>]
+      puts %Q[</p>]
     end
 
     def table(lines, id = nil, caption = nil)
@@ -295,37 +295,31 @@ EOT
       end
       rows = adjust_n_cols(rows)
 
-      table_begin rows.first.size
       begin
         table_header id, caption unless caption.nil?
       rescue KeyError => err
         error "no such table: #{id}"
       end
+      table_begin rows.first.size
       return if rows.empty?
       if sepidx
-        puts "<thead>"
         sepidx.times do
           tr rows.shift.map {|s| th(compile_inline(s)) }
         end
-        puts "</thead>"
-        puts "<tbody>"
         rows.each do |cols|
           tr cols.map {|s| td(compile_inline(s)) }
         end
-        puts "</tbody>"
       else
-        puts "<tbody>"
         rows.each do |cols|
           h, *cs = *cols
           tr [th(compile_inline(h))] + cs.map {|s| td(compile_inline(s)) }
         end
-        puts "</tbody>"
       end
       table_end
     end
 
     def table_header(id, caption)
-      puts %Q[<caption="table">表#{getChap}#{@chapter.table(id).number}: #{escape_html(caption)}</caption>]
+      puts %Q[<p class="tablecaption">表#{getChap}#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
     end
 
     def table_begin(ncols)
@@ -374,7 +368,7 @@ EOT
 
     def note(lines, caption = nil)
       puts '<div class="note">'
-      puts "<caption class='note'>#{escape_html(caption)}</caption>" unless caption.nil?
+      puts "<p class='notecaption'>#{escape_html(caption)}</p>" unless caption.nil?
       puts "#{lines.join("\n")}</div>"
     end
 
