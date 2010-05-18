@@ -213,7 +213,7 @@ EOT
       <navLabel>
         <text>Contents</text>
       </navLabel>
-      <content src="OEBPS/#{bookname}.html"/>
+      <content src="#{bookname}.html"/>
     </navPoint>
 EOT
     f.puts @tocstr

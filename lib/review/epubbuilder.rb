@@ -59,7 +59,7 @@ EOT
 EOT
         end
         header += <<EOT
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
   <title>#{@chapter.title}</title>
 </head>
 <body>
