@@ -1,3 +1,8 @@
+Fri May 21 16:50:12 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-index, lib/review/tocprinter.rb: Support
+	  --inencoding and --outencoding.
+
 Fri May 21 16:21:14 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/epubbuilder.rb: Add //linebreak and //pagebreak.
