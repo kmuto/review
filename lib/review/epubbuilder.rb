@@ -354,6 +354,14 @@ EOT
       puts "<hr/>"
     end
 
+    def linebreak
+      puts "<br />"
+    end
+
+    def pagebreak
+      puts %Q(<br class="pagebreak" />)
+    end
+
     def bpo(lines)
       puts "<bpo>"
       lines.each do |line|

@@ -1,3 +1,7 @@
+Fri May 21 16:21:14 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: Add //linebreak and //pagebreak.
+
 Fri May 21 16:17:05 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* doc/sample.css, sample.yaml: Add sample files for
