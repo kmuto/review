@@ -122,6 +122,14 @@ module ReVIEW
       blank
     end
 
+    def parasep()
+      puts '\\parasep'
+    end
+
+    def read(lines)
+      latex_block 'quotation', lines
+    end
+
     def emlist(lines)
       blank
       puts '\begin{reviewemlist}'
