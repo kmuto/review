@@ -1,0 +1,91 @@
+@charset "utf-8";
+
+h1 {
+    color: #000080;
+    font-weight: bold;
+    text-align: center;
+}
+
+h2 {
+    color: #000080;
+    font-weight: bold;
+    border-bottom: dotted 1px #000080;
+    margin-top: 1em;
+}
+
+h3 {
+    color: #000080;
+    border-bottom: dotted 1px #000080;
+    margin-top: 1em;
+}
+
+p.lead {
+    padding: 1em;
+    background: #c0c0ff;
+}
+
+p.footnote {
+    font-size: xx-small;
+    padding: 1em;
+    background: #d0d0d0;
+}
+
+p.sourcecaption {
+    font-weight: bold;
+    text-align: center;
+}
+p.imagecaption {
+    font-weight: bold;
+    text-align: center;
+}
+p.listcaption {
+    font-weight: bold;
+    text-align: center;
+}
+p.emlistcaption {
+    font-weight: bold;
+    text-align: center;
+}
+p.tablecaption {
+    font-weight: bold;
+    text-align: center;
+}
+p.notecaption {
+    font-weight: bold;
+    text-align: center;
+}
+
+img {
+    text-align: center;
+}
+
+table {
+    border: solid 1px #000000;
+    width: 90%;
+    margin-bottom: 1em;
+}
+
+th {
+    border-bottom: solid 1px #000000;
+    background: #800000;
+    color: #ffffff;
+}
+
+span.kw {
+    font-weight: bold;
+}
+
+div.column {
+    padding: 0.5em;
+    background: #ffd0d0;
+    border: dotted 2px #808080;
+}
+
+div.image {
+  text-align: center;
+}
+
+div h5 {
+    font-size: larger;
+    border-bottom: solid 1px #000000;
+}

@@ -1,3 +1,8 @@
+Fri May 21 16:17:05 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/sample.css, sample.yaml: Add sample files for
+	  review-epubmaker.
+
 Fri May 21 15:53:41 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-check: modify to use lib/review/book instead of
