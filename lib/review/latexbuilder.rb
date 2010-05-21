@@ -241,7 +241,7 @@ module ReVIEW
     end
 
     def quote(lines)
-      latex_block 'quote', lines
+      latex_block 'quotation', lines
     end
 
     def center(lines)
