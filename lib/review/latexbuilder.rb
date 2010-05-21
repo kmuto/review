@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # $Id: latexbuilder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
@@ -63,7 +64,7 @@ module ReVIEW
 
     def headline(level, label, caption)
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level], caption)
+      puts macro(HEADLINE[level], escape(caption))
     end
 
     def ul_begin
