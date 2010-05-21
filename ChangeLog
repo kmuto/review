@@ -1,3 +1,9 @@
+Fri May 21 15:53:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-check: modify to use lib/review/book instead of
+	  lib/review/env. Support --inencoding and --outencoding
+	  options.
+
 Tue May 18 16:20:51 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/epubbuilder.rb: use <p> instead of <caption>.

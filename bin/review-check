@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 #
-# $Id: review-check 3760 2007-12-30 06:13:15Z aamine $
 #
 # Copyright (c) 1999-2007 Minero Aoki
+# Copyright (c) 2010 Kenshi Muto, Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -15,8 +15,9 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/env'
+require 'review/book'
 require 'optparse'
+require 'nkf'
 
 def sigmain
   Signal.trap(:INT) { exit 1 }
@@ -27,13 +28,23 @@ rescue Errno::EPIPE
 end
 
 def main
-  $KCODE = 'EUC' unless defined?(Encoding)
+  $KCODE = 'UTF-8' unless defined?(Encoding)
+  @param = {
+    "inencoding" => "UTF-8",
+    "outencoding" => "UTF-8"
+  }
 
   modes = nil
   files = ARGV unless ARGV.empty?
   parser = OptionParser.new
+  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
+    @param["inencoding"] = enc
+  }
+  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
+    @param["outencoding"] = enc
+  }
   parser.on('-a', '--all-chapters', 'Check all chapters.') {
-    files = ReVIEW.env.chaps.map {|ent| ent.path }
+    files = ReVIEW.book.chapters.map {|ent| ent.path }
   }
   parser.on('-s', '--section N', 'Check section N.') {|n|
     ents = ReVIEW.env.parts[Integer(n) - 1] or
@@ -71,7 +82,7 @@ def main
 end
 
 def check_text(files)
-  re, neg = words_re(ReVIEW.env.reject_file)
+  re, neg = words_re(ReVIEW.book.basedir + ReVIEW.book.reject_file)
   files.each do |path|
     File.open(path) {|f|
       each_paragraph(f) do |para, lineno|
@@ -80,7 +91,16 @@ def check_text(files)
           next if m[0] == $ReVIEW_utils_word_ok
           next if neg and neg =~ s
           str, offset = find_line(para, re)
-          printf "%s:%d: %s\n", path, lineno + offset, str
+          out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
+          if @param["outencoding"] =~ /^EUC$/
+            print NKF.nkf("-e", out)
+          elsif @param["outencoding"] =~ /^SJIS$/
+            print NKF.nkf("-s", out)
+          elsif @param["outencoding"] =~ /^JIS$/
+            print NKF.nkf("-j", out)
+          else
+            print out
+          end
         end
       end
     }
@@ -122,6 +142,15 @@ end
 def each_paragraph(f)
   $ReVIEW_utils_word_ok = nil
   while line = f.gets
+    if @param["inencoding"] =~ /^EUC$/
+      line = NKF.nkf("-E -w", line)
+    elsif @param["inencoding"] =~ /SJIS$/
+      line = NKF.nkf("-S -w", line)
+    elsif @param["inencoding"] =~ /^JIS$/
+      line = NKF.nkf("-J -w", line)
+    else
+      line = NKF.nkf("-w", line)
+    end
     case line
     when /\A\#@ok\((.*)\)/
       $ReVIEW_utils_word_ok = $1
