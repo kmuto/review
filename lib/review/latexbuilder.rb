@@ -57,9 +57,9 @@ module ReVIEW
 
     HEADLINE = {
       1 => 'chapter',
-      2 => 'section',
-      3 => 'subsection',
-      4 => 'subsubsection'
+      2 => 'section*',
+      3 => 'subsection*',
+      4 => 'subsubsection*'
     }
 
     def headline(level, label, caption)
