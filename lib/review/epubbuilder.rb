@@ -133,9 +133,9 @@ EOT
 
       puts '' if level > 1
       if label.nil?
-        puts "<h#{level}>#{prefix}#{caption}</h#{level}>"
+        puts "<h#{level}>#{prefix}#{escape_html(caption)}</h#{level}>"
       else
-        puts "<h#{level} id='#{label}'>#{prefix}#{caption}</h#{level}>"
+        puts "<h#{level} id='#{label}'>#{prefix}#{escape_html(caption)}</h#{level}>"
       end
     end
 

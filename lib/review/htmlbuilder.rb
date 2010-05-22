@@ -90,9 +90,9 @@ module ReVIEW
     def headline(level, label, caption)
       puts '' if level > 1
       if label.nil?
-        puts "<h#{level}>#{caption}</h#{level}>"
+        puts "<h#{level}>#{escape_html(caption)}</h#{level}>"
       else
-        puts "<h#{level} id='#{label}'>#{caption}</h#{level}>"
+        puts "<h#{level} id='#{label}'>#{escape_html(caption)}</h#{level}>"
       end
     end
 
