@@ -154,7 +154,6 @@ module ReVIEW
     defsingle :pagebreak, 0
     defsingle :hr, 0
     defsingle :parasep, 0
-    defsingle :mainmatter, 0
 
     definline :chapref
     definline :chap
