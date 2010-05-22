@@ -127,6 +127,10 @@ module ReVIEW
       puts '\\parasep'
     end
 
+    def mainmatter()
+      puts '\\mainmatter'
+    end
+
     def read(lines)
       latex_block 'quotation', lines
     end

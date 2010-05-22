@@ -149,6 +149,14 @@ module ReVIEW
       puts "<p>#{lines.join("")}</p>"
     end
 
+    def parasep()
+      puts '<br />'
+    end
+
+    def mainmatter()
+      puts '<!-- main -->'
+    end
+
     def read(lines)
       puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
     end
