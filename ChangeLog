@@ -1,3 +1,11 @@
+Mon May 24 14:22:18 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: specify explicitly -0 (uncompress) option
+	  for mimetype.
+	* lib/review/epubbuilder.rb: remove prefix ./ from img href attribute.
+	* bin/review2idgxml, bin/review2top: removed. These files were added
+	  accidentally.
+
 Sat May 22 15:38:18 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge takahashim's branch. (279fecca05cdc1cdde5d156215785da6da6c2f11)

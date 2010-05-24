@@ -259,7 +259,7 @@ EOT
 
     def image_image(id, metric, caption)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path}" alt="(#{escape_html(caption)})" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="(#{escape_html(caption)})" />]
       image_header id, caption
       puts %Q[</div>]
     end
