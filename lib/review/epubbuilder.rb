@@ -72,8 +72,7 @@ EOT
       end
     end
 
-    def headline(level, label, caption)
-      prefix = ""
+    def headline_prefix(level)
       case level
       when 1
         @section = 0
@@ -130,7 +129,12 @@ EOT
           end
         end
       end
+      prefix
+    end
+    private :headline_prefix
 
+    def headline(level, label, caption)
+      prefix = headline_prefix(level)
       puts '' if level > 1
       if label.nil?
         puts "<h#{level}>#{prefix}#{escape_html(caption)}</h#{level}>"
