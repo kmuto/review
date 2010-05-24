@@ -38,6 +38,10 @@ module ReVIEW
       '.html'
     end
 
+    def raw_result
+      @output.string
+    end
+
     def result
       layout_file = File.join(@book.basedir, "layouts", "layout.erb")
       if File.exists?(layout_file)
