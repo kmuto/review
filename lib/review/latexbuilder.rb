@@ -62,8 +62,12 @@ module ReVIEW
     }
 
     def headline(level, label, caption)
+      prefix = ""
+      if level > @param["secnolevel"]
+        prefix = "*"
+      end
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level], escape(caption))
+      puts macro(HEADLINE[level]+prefix, escape(caption))
     end
 
     def ul_begin

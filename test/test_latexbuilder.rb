@@ -31,7 +31,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_headline_level1_without_secno
     @param["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|\\chapter{this is test.}\n|, @builder.result
+    assert_equal %Q|\\chapter*{this is test.}\n|, @builder.result
   end
 
   def test_headline_level2
@@ -41,7 +41,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level3
     @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\\subsection{this is test.}\n|, @builder.result
+    assert_equal %Q|\\subsection*{this is test.}\n|, @builder.result
   end
 
 
