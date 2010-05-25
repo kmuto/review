@@ -70,6 +70,25 @@ module ReVIEW
       puts macro(HEADLINE[level]+prefix, escape(caption))
     end
 
+    def column_begin(level, label, caption)
+      blank
+      ## puts '\vspace{2zw}' 
+      puts '\begin{center}'
+      puts '\begin{minipage}{0.9\linewidth}'
+      puts '\begin{framed}'
+      puts '\setlength{\FrameSep}{2zw}'
+
+      headline(level, label, caption)   # FIXME
+    end
+
+    def column_end(level)
+      puts '\end{framed}'
+      puts '\end{minipage}'
+      puts '\end{center}'
+      ## puts '\vspace{2zw}'
+      blank
+    end
+
     def ul_begin
       blank
       puts '\begin{itemize}'
