@@ -298,7 +298,7 @@ module ReVIEW
     end
 
     def label(id)
-      macro('label', id)
+      puts macro('label', id)
     end
 
     def pagebreak
@@ -400,7 +400,7 @@ module ReVIEW
 
     def compile_href(url, label)
       label ||=  url
-      if /\A[(a-z)+:]/ =~ url
+      if /\A[a-z]+:/ =~ url
         macro("href", url, label)
       else
         macro("ref", url)
