@@ -50,4 +50,20 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|\\subsection{this is test.}\n|, @builder.result
   end
+
+  def test_label
+    @builder.label("label_test")
+    assert_equal %Q|\\label{label_test}\n|, @builder.result
+  end
+
+  def test_href
+    ret = @builder.compile_href("http://github.com", "GitHub")
+    assert_equal %Q|\\href{http://github.com}{GitHub}|, ret
+  end
+
+  def test_href_without_label
+    ret = @builder.compile_href("http://github.com",nil)
+    assert_equal %Q|\\href{http://github.com}{http://github.com}|, ret
+  end
+
 end
