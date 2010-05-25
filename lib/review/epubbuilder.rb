@@ -77,12 +77,14 @@ EOT
     end
 
     def headline_prefix(level)
+      anchor = ""
       case level
       when 1
         @section = 0
         @subsection = 0
         @subsubsection = 0
         @subsubsubsection = 0
+        anchor = "#{@chapter.number}"
         if @param["secnolevel"] >= 1
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "第#{@chapter.number}章　"
@@ -95,6 +97,7 @@ EOT
         @subsection = 0
         @subsubsection = 0
         @subsubsubsection = 0
+        anchor = "#{@chapter.number}-#{@section}"
         if @param["secnolevel"] >= 2
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}　"
@@ -106,6 +109,7 @@ EOT
         @subsection += 1
         @subsubsection = 0
         @subsubsubsection = 0
+        anchor = "#{@chapter.number}-#{@section}-#{@subsection}"
         if @param["secnolevel"] >= 3
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
@@ -116,6 +120,7 @@ EOT
       when 4
         @subsubsection += 1
         @subsubsubsection = 0
+        anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}"
         if @param["secnolevel"] >= 4
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
@@ -125,6 +130,7 @@ EOT
         end
       when 5
         @subsubsubsection += 1
+        anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}-#{@subsubsubsection}"
         if @param["secnolevel"] >= 5
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
@@ -133,13 +139,14 @@ EOT
           end
         end
       end
-      prefix
+      [prefix, anchor]
     end
     private :headline_prefix
 
     def headline(level, label, caption)
-      prefix = headline_prefix(level)
+      prefix, anchor = headline_prefix(level)
       puts '' if level > 1
+      print "<a name=\"h#{anchor}\" />" unless anchor.empty?
       if label.nil?
         puts "<h#{level}>#{prefix}#{escape_html(caption)}</h#{level}>"
       else

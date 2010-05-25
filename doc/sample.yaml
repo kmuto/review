@@ -30,5 +30,7 @@ aut: 吟遊詩人
 urnid: example.jp
 # CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること)
 stylesheet: sample.css
+# 目次として抽出するレベル
+toclevel: 3
 # review-compileに渡すパラメータ
 params: --stylesheet=sample.css

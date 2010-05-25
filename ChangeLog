@@ -1,3 +1,8 @@
+Tue May 25 14:40:53 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, lib/review/epubbuider.rb, doc/sample.yaml:
+	  add toc into epub.
+
 Tue May 25 11:37:54 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge takahashim's branch (2d2944a63fae79586c3c1bf70aeed6e293f36393)

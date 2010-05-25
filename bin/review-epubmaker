@@ -35,6 +35,7 @@ def main
     "stylesheet" => "stylesheet.css", # stylesheet file
     "coverfile" => nil, # content file of body of cover page
     "params" => "", # specify review2epub parameters
+    "toclevel" => 3, # level of toc
   }
 
   if ARGV.size == 1
@@ -70,7 +71,8 @@ def main
   @manifeststr = ""
   @ncxstr = ""
   @tocstr = ""
-  toccount = 1
+  @tocdesc = Array.new
+  toccount = 2
   
   if File.exists?("PREDEF")
     File.open("PREDEF") {|chaps|
@@ -83,6 +85,7 @@ def main
           exec("review-compile --target=epub #{values["params"]} #{l}")
         }
         Process.waitall
+        getanchors("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
         @manifeststr << %Q(<item id="pre#{pre}" href="pre#{pre}.html" media-type="application/xhtml+xml" />\n)
         @ncxstr << %Q(<itemref idref="pre#{pre}" />\n)
         @tocstr << %Q[<navPoint id="pre#{pre}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")}</text></navLabel>\n<content src="pre#{pre}.html"/>\n</navPoint>\n]
@@ -100,6 +103,7 @@ def main
           exec("review-compile --target=epub #{values["params"]} #{l}")
         }
         Process.waitall
+        getanchors("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
         @manifeststr << %Q(<item id="chap#{body}" href="chap#{body}.html" media-type="application/xhtml+xml" />\n)
         @ncxstr << %Q(<itemref idref="chap#{body}" />\n)
         @tocstr << %Q[<navPoint id="chap#{body}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")}</text></navLabel>\n<content src="chap#{body}.html"/>\n</navPoint>\n]
@@ -117,6 +121,7 @@ def main
           exec("review-compile --target=epub #{values["params"]} #{l}")
         }
         Process.waitall
+        getanchors("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
         @manifeststr << %Q(<item id="post#{post}" href="post#{post}.html" media-type="application/xhtml+xml" />\n)
         @ncxstr << %Q(<itemref idref="post#{post}" />\n)
         @tocstr << %Q[<navPoint id="post#{post}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/post#{post}.html")}</text></navLabel>\n<content src="post#{post}.html"/>\n</navPoint>\n]
@@ -177,12 +182,14 @@ EOT
   <item id="ncx" href="#{bookname}.ncx" media-type="text/xml" />
   <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
   <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
+  <item id="toc" href="toc.html" media-type="application/xhtml+xml" />
 EOT
     f.puts @manifeststr
     f.puts <<EOT
  </manifest>
  <spine toc="ncx">
   <itemref idref="#{bookname}" />
+  <itemref idref="toc" />
 EOT
     f.puts @ncxstr
     f.puts <<EOT
@@ -211,9 +218,15 @@ EOT
   <navMap>
     <navPoint id="#{bookname}" playOrder="1">
       <navLabel>
-        <text>Contents</text>
+        <text>#{bookname}</text>
       </navLabel>
       <content src="#{bookname}.html"/>
+    </navPoint>
+    <navPoint id="toc" playOrder="2">
+      <navLabel>
+        <text>目次</text>
+      </navLabel>
+      <content src="toc.html"/>
     </navPoint>
 EOT
     f.puts @tocstr
@@ -256,9 +269,52 @@ EOT
 EOT
   }
 
+  # Toc page
+  File.open("#{tmp}/#{bookname}/OEBPS/toc.html", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops=" http://www.idpf.org/2007/ops" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>目次</title>
+</head>
+<body>
+<h1>目次</h1>
+<ul class=\"toc-h1\">
+EOT
+
+    current = 1
+    @tocdesc.each {|item|
+      level, file, id, content = item
+      # values["level"]
+      next if level > values["toclevel"].to_i
+      if level > current
+        f.puts "<ul class=\"toc-h#{level}\">"
+        current = level
+      elsif level < current
+        f.puts "</ul>"
+        current = level
+      end
+      f.puts "<li><a href=\"#{file}##{id}\">#{content}</a></li>"
+    }
+
+    (current - 1).downto(1) {|n|
+      f.puts "</ul>"
+    }
+
+    f.puts <<EOT
+</ul>
+</body>
+</html>
+EOT
+  }
+
   # stylesheet
   File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|
-    # FIXME: スタイルシート
     f.puts <<EOT
 /* sample style sheet for epub */
 @charset "utf-8";
@@ -320,6 +376,18 @@ end
 def getTitle(filename)
   File.open(filename) {|f|
     return REXML::Document.new(f).elements["//html/head/title"].text
+  }
+end
+
+def getanchors(filename)
+  File.open(filename) {|f|
+    file = filename.sub(/.+\//, '')
+    f.each_line {|l|
+      if l =~ /\A<a name=\"(.+?)\" \/><h(\d)>(.+?)<\/h/
+        # level, ID, content
+        @tocdesc << [$2.to_i, file, $1, $3]
+      end
+    }
   }
 end
 
