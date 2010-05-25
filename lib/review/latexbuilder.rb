@@ -394,6 +394,11 @@ module ReVIEW
       end
     end
 
+    def compile_href(url, label)
+      label ||=  url
+      macro("href", url, label)
+    end
+
   end
 
 end
