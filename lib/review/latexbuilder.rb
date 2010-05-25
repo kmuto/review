@@ -56,14 +56,18 @@ module ReVIEW
 
     HEADLINE = {
       1 => 'chapter',
-      2 => 'section*',
-      3 => 'subsection*',
-      4 => 'subsubsection*'
+      2 => 'section',
+      3 => 'subsection',
+      4 => 'subsubsection'
     }
 
     def headline(level, label, caption)
+      prefix = ""
+      if level > @param["secnolevel"]
+        prefix = "*"
+      end
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level], escape(caption))
+      puts macro(HEADLINE[level]+prefix, escape(caption))
     end
 
     def ul_begin
