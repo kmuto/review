@@ -204,7 +204,9 @@ module ReVIEW
         puts macro('includegraphics', @chapter.image(id).path)
       end
       puts macro('label', image_label(id))
-      puts macro('caption', text(caption))
+      if !caption.empty?
+        puts macro('caption', text(caption))
+      end
       puts '\end{reviewimage}'
     end
 
