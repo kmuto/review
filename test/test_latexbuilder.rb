@@ -66,4 +66,9 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\href{http://github.com}{http://github.com}|, ret
   end
 
+  def test_href_with_underscore
+    ret = @builder.compile_href("http://example.com/aaa/bbb", "AAA_BBB")
+    assert_equal %Q|\\href{http://example.com/aaa/bbb}{AAA\\symbol{\"5F}BBB}|, ret
+  end
+
 end
