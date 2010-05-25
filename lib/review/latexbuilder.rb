@@ -1,8 +1,8 @@
 #
-# $Id: latexbuilder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
+#               2010  Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -400,7 +400,7 @@ module ReVIEW
 
     def compile_href(url, label)
       label ||=  url
-      if /\A[a-z]+:/ =~ url
+      if /\A[a-z]+:\/\// =~ url
         macro("href", url, label)
       else
         macro("ref", url)

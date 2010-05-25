@@ -1,3 +1,11 @@
+Tue May 25 20:53:44 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (1feedbcc1cf385af347b2ba398e7f10e70bb8be3)
+	  - add tests of label and href in epubbuilder
+	  - add tests of label and href in latexbuilder
+	  - add //label op and support \ref in latexbuilder
+	  - add @<href> for latexbuilder
+
 Tue May 25 15:17:23 2010  Kenshi Muto  <kmuto@topstudio.co.jp>
 
 	* lib/review/builder.rb, lib/review/compiler.rb,
