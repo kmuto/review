@@ -154,6 +154,7 @@ module ReVIEW
     defsingle :pagebreak, 0
     defsingle :hr, 0
     defsingle :parasep, 0
+    defsingle :label, 1
 
     definline :chapref
     definline :chap
@@ -170,6 +171,7 @@ module ReVIEW
     definline :dtp
     definline :code
     definline :bib
+    definline :href
 
     definline :abbr
     definline :acronym

@@ -26,7 +26,6 @@ module ReVIEW
     Compiler.defsingle(:dtp, 1)
     Compiler.defsingle(:raw, 1)
     Compiler.defsingle(:indepimage, 1)
-    Compiler.defsingle(:label, 1)
     Compiler.defsingle(:tsize, 1)
 
     Compiler.defblock(:insn, 0..1)
@@ -586,6 +585,10 @@ module ReVIEW
         else
           ""
         end
+    end
+
+    def compile_href(url, label)
+      %Q(<a linkurl='#{url}'>#{label.nil? ? url : label}</a>)
     end
 
     def inline_sup(str)

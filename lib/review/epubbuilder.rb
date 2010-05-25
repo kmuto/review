@@ -369,6 +369,10 @@ EOT
       puts "<hr/>"
     end
 
+    def label(id)
+      puts %Q(<a name="#{id}" />)
+    end
+
     def linebreak
       puts "<br />"
     end
@@ -411,6 +415,10 @@ EOT
         else escape_html(word)
         end +
       '</span>'
+    end
+
+    def compile_href(url, label)
+      %Q(<a href="#{url}" class="link">#{label.nil? ? url : label}</a>)
     end
 
     def inline_i(str)

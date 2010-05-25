@@ -1,3 +1,9 @@
+Tue May 25 15:17:23 2010  Kenshi Muto  <kmuto@topstudio.co.jp>
+
+	* lib/review/builder.rb, lib/review/compiler.rb,
+	  lib/review/idgxmlbuilder.rb, lib/review/epubbuilder.rb:
+	  add @<href> and //label op.
+
 Tue May 25 14:40:53 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-epubmaker, lib/review/epubbuider.rb, doc/sample.yaml:

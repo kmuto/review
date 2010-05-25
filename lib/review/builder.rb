@@ -239,6 +239,12 @@ module ReVIEW
       compile_kw(word, alt)
     end
 
+    def inline_href(arg)
+      url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
+      url = url.gsub(/\\,/, ",").strip
+      compile_href(url, label)
+    end
+
     def text(str)
       str
     end

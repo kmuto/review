@@ -418,3 +418,17 @@ PART:
   (序章なので空行)
   はじまりの部
   おわりの部
+
+■リンク
+
+Web ハイパーリンクを記述するには、リンクに @<href>、アンカーに //label
+を使います。リンクの書式は @<href>{URL, 文字表現} で、「, 文字表現」を
+省略すると URL がそのまま使われます。URL 中に , を使いたいときには、\,
+と表記してください。
+
+[例]
+@<href>{http://github.com/, GitHub}
+@<href>{http://www.google.com/}
+@<href>{#point1, ドキュメント内ポイント}
+@<href>{chap1.html#point1, ドキュメント内ポイント}
+//label[point1]
