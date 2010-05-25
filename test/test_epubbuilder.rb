@@ -50,4 +50,20 @@ class EPUBBuidlerTest < Test::Unit::TestCase
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|\n<a name="h1-0-1" /><h3 id='test'>1.0.1　this is test.</h3>\n|, @builder.raw_result
   end
+
+  def test_label
+    @builder.label("label_test")
+    assert_equal %Q|<a name="label_test" />\n|, @builder.raw_result
+  end
+
+  def test_href
+    ret = @builder.compile_href("http://github.com", "GitHub")
+    assert_equal %Q|<a href="http://github.com" class="link">GitHub</a>|, ret
+  end
+
+  def test_href_without_label
+    ret = @builder.compile_href("http://github.com",nil)
+    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, ret
+  end
+
 end
