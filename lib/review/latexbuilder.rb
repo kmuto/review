@@ -332,7 +332,7 @@ module ReVIEW
     end
 
     def inline_fn(id)
-      macro('footnote', nofunc_text(@chapter.footnote(id).content.strip))
+      macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
     end
 
     BOUTEN = "・"
