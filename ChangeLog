@@ -1,3 +1,10 @@
+Tue May 25 11:37:54 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (2d2944a63fae79586c3c1bf70aeed6e293f36393)
+	  - lib/review/latexbuilder.rb: supported secnolevel.
+	  - test/: added tests.
+	  - refactoring a method headline()
+
 Mon May 24 14:22:18 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-epubmaker: specify explicitly -0 (uncompress) option
