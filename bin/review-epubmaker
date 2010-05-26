@@ -182,18 +182,25 @@ EOT
   <item id="ncx" href="#{bookname}.ncx" media-type="text/xml" />
   <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
   <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
+  <item id="top" href="top.html" media-type="application/xhtml+xml" />
   <item id="toc" href="toc.html" media-type="application/xhtml+xml" />
 EOT
     f.puts @manifeststr
     f.puts <<EOT
  </manifest>
  <spine toc="ncx">
-  <itemref idref="#{bookname}" />
+  <itemref idref="#{bookname}" linear="no" />
+  <itemref idref="top" />
   <itemref idref="toc" />
 EOT
     f.puts @ncxstr
     f.puts <<EOT
  </spine>
+ <guide>
+  <reference type="cover" title="表紙" href="#{bookname}.html"/>
+  <reference type="title-page" title="Title Page" href="top.html"/>
+  <reference type="toc" title="目次" href="toc.html"/>
+ </guide>
 </package>
 EOT
   }
@@ -216,9 +223,9 @@ EOT
 	<text>#{values["aut"].nil? ? "" : values["aut"]}</text>
   </docAuthor>
   <navMap>
-    <navPoint id="#{bookname}" playOrder="1">
+    <navPoint id="top" playOrder="1">
       <navLabel>
-        <text>#{bookname}</text>
+        <text>#{values["booktitle"]}</text>
       </navLabel>
       <content src="#{bookname}.html"/>
     </navPoint>
@@ -268,6 +275,57 @@ EOT
 </html>
 EOT
   }
+
+
+  # Title page
+  File.open("#{tmp}/#{bookname}/OEBPS/top.html", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops=" http://www.idpf.org/2007/ops" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+    if !values["titlepagefile"].nil? && File.exist?(values["titlepagefile"])
+      File.open(values["titlepagefile"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
+<h1 class="tp-title">#{values["booktitle"]}</h1>
+EOT
+      if values["aut"]
+        f.puts <<EOT
+<br/>
+<br/>
+<h2 class="tp-author">#{values["aut"]}</h2>
+EOT
+      end
+      if values["prt"]
+        f.puts <<EOT
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 class="tp-publisher">#{values["prt"]}</h3>
+EOT
+      end
+    end
+
+    f.puts <<EOT
+</body>
+</html>
+EOT
+  }
+
 
   # Toc page
   File.open("#{tmp}/#{bookname}/OEBPS/toc.html", "w") {|f|
