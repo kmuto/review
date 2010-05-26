@@ -1,3 +1,12 @@
+Wed May 26 15:46:05 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (4d23d423b4081558880d9f56d7b4d83ea231bd4a).
+	  - fix to use inline tag in footnote of latexbuilder
+	  - fixed escaping in href
+	  - do not show any caption if caption words is empty
+	* lib/review/latexbuilder.rb: use level 2 as temporary level for
+	  columns.
+
 Tue May 25 20:53:44 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge takahashim's branch (1feedbcc1cf385af347b2ba398e7f10e70bb8be3)

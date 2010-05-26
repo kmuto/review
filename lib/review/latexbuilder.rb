@@ -78,7 +78,7 @@ module ReVIEW
       puts '\begin{framed}'
       puts '\setlength{\FrameSep}{2zw}'
 
-      headline(level, label, caption)   # FIXME
+      headline(2, label, caption)   # FIXME
     end
 
     def column_end(level)
@@ -152,6 +152,8 @@ module ReVIEW
     def read(lines)
       latex_block 'quotation', lines
     end
+
+    alias lead read
 
     def emlist(lines)
       blank
@@ -370,7 +372,7 @@ module ReVIEW
       escape(str)
     end
 
-    def tt(str)
+    def inline_tt(str)
       macro('texttt', escape(str))
     end
 
@@ -407,6 +409,10 @@ module ReVIEW
       else
         macro("ref", url)
       end
+    end
+
+    def tsize(str)
+      # dummy
     end
 
   end
