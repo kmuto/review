@@ -32,5 +32,7 @@ urnid: example.jp
 stylesheet: sample.css
 # 目次として抽出するレベル
 toclevel: 3
+# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
+posthook: hook.sh
 # review-compileに渡すパラメータ
 params: --stylesheet=sample.css

@@ -24,9 +24,7 @@ module ReVIEW
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
-    Compiler.defsingle(:raw, 1)
     Compiler.defsingle(:indepimage, 1)
-    Compiler.defsingle(:tsize, 1)
 
     Compiler.defblock(:insn, 0..1)
     Compiler.defblock(:memo, 0..1)
@@ -939,10 +937,6 @@ module ReVIEW
         print "\n" unless lines.length == no
         no = no + 1
       }
-    end
-
-    def raw(str)
-      print str.gsub("\\n", "\n")
     end
 
     def text(str)

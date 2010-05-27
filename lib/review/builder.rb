@@ -258,6 +258,10 @@ module ReVIEW
       puts "</div>"
     end
 
+    def raw(str)
+      print str.gsub("\\n", "\n")
+    end
+
     def warn(msg)
       $stderr.puts "#{@location}: warning: #{msg}"
     end
