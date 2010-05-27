@@ -1,3 +1,13 @@
+Thu May 27 12:57:39 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: support posthook.
+	* doc/sample.yaml: support posthook.
+	* lib/review/compiler.rb: support //raw.
+	* lib/review/epubbuilder.rb: support //memo, //tip, //info,
+	  //planning, //best, //important, //security, //caution,
+	  //notice, //point, //shoot, and @<tti>.
+	* lib/review/idgxmlbuilder.rb: move //raw to compiler.rb.
+
 Wed May 26 15:46:05 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge takahashim's branch (4d23d423b4081558880d9f56d7b4d83ea231bd4a).

@@ -36,10 +36,13 @@ def main
     "coverfile" => nil, # content file of body of cover page
     "params" => "", # specify review2epub parameters
     "toclevel" => 3, # level of toc
+    "posthook" => nil, # command path of post hook
   }
+  yamlfile = ""
 
   if ARGV.size == 1
     values = values.merge(YAML.load_file(ARGV[0]))
+    yamlfile = ARGV[0]
   end
   
   bookname = values["bookname"]
@@ -147,7 +150,6 @@ EOT
   }
 
 # opf (meta info)
-  # FIXME:メタ情報
   File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.opf", "w") {|f|
     f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -325,6 +327,14 @@ EOT
   }
   if File.exist?(values["stylesheet"])
     FileUtils.ln values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
+  end
+
+  # hook
+  if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
+    fork {
+      exec(values["posthook"], "#{tmp}/#{bookname}", Dir.pwd, yamlfile)
+    }
+    Process.waitall
   end
   
   # Zip epubファイルの作成。mimetypeは圧縮しないようにする

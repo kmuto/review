@@ -18,12 +18,22 @@ module ReVIEW
 
   class EPUBBuilder < HTMLBuilder
 
-    [:u].each {|e|
+    [:u, :tti].each {|e|
       Compiler.definline(e)
     }
 
     Compiler.defsingle(:indepimage, 1)
-    Compiler.defsingle(:tsize, 1)
+    Compiler.defblock(:memo, 0..1)
+    Compiler.defblock(:tip, 0..1)
+    Compiler.defblock(:info, 0..1)
+    Compiler.defblock(:planning, 0..1)
+    Compiler.defblock(:best, 0..1)
+    Compiler.defblock(:important, 0..1)
+    Compiler.defblock(:security, 0..1)
+    Compiler.defblock(:caution, 0..1)
+    Compiler.defblock(:notice, 0..1)
+    Compiler.defblock(:point, 0..1)
+    Compiler.defblock(:shoot, 0..1)
 
     def builder_init(no_error = false)
       @no_error = no_error
@@ -165,6 +175,61 @@ EOT
 
     def tsize(str)
       # null
+    end
+
+    def captionblock(type, lines, caption)
+      puts "<div class=\"#{type}\">"
+      unless caption.nil?
+        puts "<p class=\"#{type}-title\">#{escape_html(caption)}</p>"
+      end
+      lines.each {|l|
+        puts "<p>#{l}</p>"
+      }
+      puts '</div>'
+    end
+
+    def memo(lines, caption = nil)
+      captionblock("memo", lines, caption)
+    end
+
+    def tip(lines, caption = nil)
+      captionblock("tip", lines, caption)
+    end
+
+    def info(lines, caption = nil)
+      captionblock("info", lines, caption)
+    end
+
+    def planning(lines, caption = nil)
+      captionblock("planning", lines, caption)
+    end
+
+    def best(lines, caption = nil)
+      captionblock("best", lines, caption)
+    end
+
+    def important(lines, caption = nil)
+      captionblock("important", lines, caption)
+    end
+
+    def security(lines, caption = nil)
+      captionblock("security", lines, caption)
+    end
+
+    def caution(lines, caption = nil)
+      captionblock("caution", lines, caption)
+    end
+
+    def notice(lines, caption = nil)
+      captionblock("notice", lines, caption)
+    end
+
+    def point(lines, caption = nil)
+      captionblock("point", lines, caption)
+    end
+
+    def shot(lines, caption = nil)
+      captionblock("shoot", lines, caption)
     end
 
     def list(lines, id, caption)
@@ -431,6 +496,10 @@ EOT
 
     def inline_ami(str)
       %Q(<span class="ami">#{escape_html(str)}</span>)
+    end
+
+    def inline_tti(str)
+      %Q(<tt><i>#{escape_html(str)}</i></tt>)
     end
 
     def inline_dtp(arg)

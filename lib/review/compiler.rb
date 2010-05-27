@@ -155,6 +155,7 @@ module ReVIEW
     defsingle :hr, 0
     defsingle :parasep, 0
     defsingle :label, 1
+    defsingle :raw, 1
     defsingle :tsize, 1
 
     definline :chapref
