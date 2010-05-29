@@ -160,7 +160,7 @@ EOT
 
    f.puts %Q(<dc:creator opf:role="aut">#{values["aut"]}</dc:creator>) unless values["aut"].nil? # FIXME: support multiple members
 
-   f.puts %Q(<dc:publisher opf:role="prt">#{values["prt"]}</dc:publisher>) unless values["prt"].nil?
+   f.puts %Q(<dc:publisher>#{values["prt"]}</dc:publisher>) unless values["prt"].nil?
 
    f.puts %Q(<dc:date>#{values["date"]}</dc:date>) unless values["date"].nil?
    f.puts %Q(<dc:rights>#{values["rights"]}</dc:rights>) unless values["rights"].nil?
@@ -181,7 +181,7 @@ EOT
    <dc:identifier id="BookId">#{identifier}</dc:identifier>
  </metadata>
  <manifest>
-  <item id="ncx" href="#{bookname}.ncx" media-type="text/xml" />
+  <item id="ncx" href="#{bookname}.ncx" media-type="application/x-dtbncx+xml" />
   <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
   <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
   <item id="top" href="top.html" media-type="application/xhtml+xml" />
