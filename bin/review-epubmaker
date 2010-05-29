@@ -352,23 +352,36 @@ EOT
 EOT
 
     current = 1
+    init_item = true
     @tocdesc.each {|item|
       level, file, id, content = item
       # values["level"]
       next if level > values["toclevel"].to_i
       if level > current
+        f.puts ""
         f.puts "<ul class=\"toc-h#{level}\">"
         current = level
       elsif level < current
+        f.puts "</li>"
         f.puts "</ul>"
+        f.puts "</li>"
         current = level
+      elsif init_item
+        # noop
+      else
+        f.puts "</li>"
       end
-      f.puts "<li><a href=\"#{file}##{id}\">#{content}</a></li>"
+      f.write "<li><a href=\"#{file}##{id}\">#{content}</a>"
+      init_item = false
     }
 
     (current - 1).downto(1) {|n|
+      f.puts "</li>"
       f.puts "</ul>"
     }
+    if !init_item
+      f.puts "</li>"
+    end
 
     f.puts <<EOT
 </ul>
