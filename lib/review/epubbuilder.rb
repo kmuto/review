@@ -156,11 +156,14 @@ EOT
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
       puts '' if level > 1
-      print "<a name=\"h#{anchor}\" />" unless anchor.empty?
+      a_id = ""
+      unless anchor.empty?
+        a_id = "<a id=\"h#{anchor}\" />"
+      end
       if label.nil?
-        puts "<h#{level}>#{prefix}#{escape_html(caption)}</h#{level}>"
+        puts "<h#{level}>#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>"
       else
-        puts "<h#{level} id='#{label}'>#{prefix}#{escape_html(caption)}</h#{level}>"
+        puts "<h#{level} id='#{label}'>#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>"
       end
     end
 
@@ -427,7 +430,7 @@ EOT
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote"><a name="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
+      puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
     end
 
     def hr
@@ -435,7 +438,7 @@ EOT
     end
 
     def label(id)
-      puts %Q(<a name="#{id}" />)
+      puts %Q(<a id="#{id}" />)
     end
 
     def linebreak
@@ -516,7 +519,7 @@ EOT
     end
 
     def bibpaper_header(id, caption)
-      puts %Q(<a name="bib-#{id}">)
+      puts %Q(<a id="bib-#{id}">)
       puts "[#{@chapter.bibpaper(id).number}] #{caption}"
       puts %Q(</a>)
     end
