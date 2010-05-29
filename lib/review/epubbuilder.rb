@@ -483,7 +483,7 @@ EOT
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{url}" class="link">#{label.nil? ? url : label}</a>)
+      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
     end
 
     def inline_i(str)
