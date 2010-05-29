@@ -306,17 +306,21 @@ EOT
 EOT
       if values["aut"]
         f.puts <<EOT
-<br/>
-<br/>
+<p>
+<br />
+<br />
+</p>
 <h2 class="tp-author">#{values["aut"]}</h2>
 EOT
       end
       if values["prt"]
         f.puts <<EOT
-<br/>
-<br/>
-<br/>
-<br/>
+<p>
+<br />
+<br />
+<br />
+<br />
+</p>
 <h3 class="tp-publisher">#{values["prt"]}</h3>
 EOT
       end
