@@ -1,3 +1,16 @@
+Sun May 30 11:18:55 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (2d7e0036d1311c8d1ca5)
+	- use id, not name in <a> element (for valid XHTML 1.1)
+	- fix zip format (from epubcheck)
+	- lang attr should not be used in xhtml 1.1 (use only xml:lang attr)
+	- fix invalid <ul> and <li> tags in toc.html
+	- escape value of href attributes in @<href>
+	- fix media-type and opf:role in OPF file
+	- <br/> should be in block element like <p>
+	- fix invalid URL(in namespace)
+	- hide cover page in navigation and add title page to show
+
 Thu May 27 12:57:39 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-epubmaker: support posthook.
