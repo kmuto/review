@@ -1,3 +1,8 @@
+Tue Jun  1 07:24:47 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (5842b55c130e1f33fb58350e9c4778ac46a87e0f).
+	- add coverimage attribute in YAML file (to use it as iTunes artwork)
+
 Sun May 30 11:18:55 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge takahashim's branch (2d7e0036d1311c8d1ca5)
