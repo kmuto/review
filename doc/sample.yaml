@@ -26,6 +26,8 @@ aut: 吟遊詩人
 #
 # coverfile: カバーページのbody要素内に挿入する内容を記述したファイル名
 #
+# coverimage: カバー用画像。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
+#
 # 固有IDに使用するドメイン
 urnid: example.jp
 # CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること)
