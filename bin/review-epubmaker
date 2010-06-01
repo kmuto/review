@@ -176,6 +176,9 @@ EOT
 
    f.puts %Q(<dc:description>#{values["description"]}</dc:description>) unless values["description"].nil?
 
+    if values["coverimage"]
+      f.puts %Q(<meta name="cover" content="#{getFigId(values["coverimage"])}"/>)
+    end
     f.puts <<EOT
    <dc:language>ja</dc:language>
    <dc:identifier id="BookId">#{identifier}</dc:identifier>
@@ -441,7 +444,7 @@ def copyImagesToDir(dirname, copybase)
         if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
           Dir.mkdir(copybase) unless File.exist?(copybase)
           FileUtils.ln "#{dirname}/#{fname}", copybase
-          figid = fname.sub(/\.(png|gif|jpg|jpeg|svg)$/, '')
+          figid = getFigId(fname)
           mime = nil
           case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
             when "png": mime = "image/png"
@@ -451,11 +454,16 @@ def copyImagesToDir(dirname, copybase)
           else
             raise "unsupported type #{fname}"
           end
-          @manifeststr << %Q(<item id="fig-#{figid}" href="#{dirname}/#{fname}" media-type="#{mime}" />\n)
+          @manifeststr << %Q(<item id="#{figid}" href="#{dirname}/#{fname}" media-type="#{mime}" />\n)
         end
       end
     }
   }
+end
+
+def getFigId(filename)
+  figid = filename.sub(/\.(png|gif|jpg|jpeg|svg)$/, '')
+  "fig-#{figid}"
 end
 
 def getTitle(filename)
