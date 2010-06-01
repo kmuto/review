@@ -291,7 +291,7 @@ module ReVIEW
     end
 
     def comment(str)
-      puts "◆→DTP担当様:#{str}←◆"
+      puts "◆→DTP担当:#{str}←◆"
     end
 
     def inline_fn(id)
@@ -316,11 +316,11 @@ module ReVIEW
     end
 
     def compile_ruby(base, ruby)
-      "#{base}◆→DTP担当様:「#{base}」に「#{ruby}」とルビ←◆"
+      "#{base}◆→DTP担当:「#{base}」に「#{ruby}」とルビ←◆"
     end
 
     def inline_bou(str)
-      "#{str}◆→DTP担当様:「#{str}」に傍点←◆"
+      "#{str}◆→DTP担当:「#{str}」に傍点←◆"
     end
 
     def inline_i(str)
@@ -336,11 +336,15 @@ module ReVIEW
     end
 
     def inline_ttbold(str)
-      "★#{str}☆◆→等幅フォント←◆"
+      "★#{str}☆◆→等幅フォント太字←◆"
+    end
+
+    def inline_tti(str)
+      "▲#{str}☆◆→等幅フォントイタ←◆"
     end
 
     def inline_ttibold(str)
-      "▲#{str}☆◆→等幅フォント←◆"
+      "▲#{str}☆◆→等幅フォント太字イタ←◆"
     end
 
     def inline_u(str)
@@ -352,15 +356,15 @@ module ReVIEW
     end
 
     def inline_ami(str)
-      "#{str}◆→DTP担当様:「#{str}」に網カケ←◆"
+      "#{str}◆→DTP担当:「#{str}」に網カケ←◆"
     end
 
     def inline_sup(str)
-      "#{str}◆→DTP担当様:「#{str}」は上付き←◆"
+      "#{str}◆→DTP担当:「#{str}」は上付き←◆"
     end
 
     def inline_sub(str)
-      "#{str}◆→DTP担当様:「#{str}」は下付き←◆"
+      "#{str}◆→DTP担当:「#{str}」は下付き←◆"
     end
 
     def inline_raw(str)

@@ -1,3 +1,7 @@
+Tue Jun  1 13:29:55 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/topbuilder.rb: add @<tti> op. modify some strings.
+
 Sun May 30 11:18:55 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge takahashim's branch (2d7e0036d1311c8d1ca5)
