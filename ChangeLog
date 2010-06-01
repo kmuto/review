@@ -1,13 +1,15 @@
-<<<<<<< HEAD:ChangeLog
+Tue Jun  1 13:37:09 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* test/test_epubbuilder.rb: fix test string.
+
 Tue Jun  1 13:29:55 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/topbuilder.rb: add @<tti> op. modify some strings.
-=======
+
 Tue Jun  1 07:24:47 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge takahashim's branch (5842b55c130e1f33fb58350e9c4778ac46a87e0f).
 	- add coverimage attribute in YAML file (to use it as iTunes artwork)
->>>>>>> 25eea88e9b58329835adc6ba5d4fb41d1d2a464a:ChangeLog
 
 Sun May 30 11:18:55 2010  Kenshi Muto  <kmuto@debian.org>
 
