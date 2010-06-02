@@ -36,6 +36,7 @@ def main
     "coverfile" => nil, # content file of body of cover page
     "params" => "", # specify review2epub parameters
     "toclevel" => 3, # level of toc
+    "secnolevel" => 2, # level of section #
     "posthook" => nil, # command path of post hook
   }
   yamlfile = ""
@@ -85,7 +86,7 @@ def main
         toccount = toccount + 1
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
-          exec("review-compile --target=epub #{values["params"]} #{l}")
+          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
         getanchors("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
@@ -103,7 +104,7 @@ def main
         next if l =~ /^#/
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
-          exec("review-compile --target=epub #{values["params"]} #{l}")
+          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
         getanchors("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
@@ -121,7 +122,7 @@ def main
         toccount = toccount + 1
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
-          exec("review-compile --target=epub #{values["params"]} #{l}")
+          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
         getanchors("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
@@ -241,7 +242,27 @@ EOT
       <content src="toc.html"/>
     </navPoint>
 EOT
-    f.puts @tocstr
+#    f.puts @tocstr
+
+    nav_count = 3  ## next of toc
+    @tocdesc.each {|item|
+      level, file, id, content = item
+      # values["level"]
+      next if level > values["toclevel"].to_i
+      indent = ""
+      if level > values["secnolevel"].to_i
+        indent = "- "
+      end
+      f.puts <<EOT
+    <navPoint id="navPoint-#{nav_count}" playOrder="#{nav_count}">
+      <navLabel>
+        <text>#{indent}#{content}</text>
+      </navLabel>
+      <content src="#{file}##{id}"/>
+    </navPoint>
+EOT
+      nav_count += 1
+    }
     f.puts <<EOT
   </navMap>
 </ncx>
