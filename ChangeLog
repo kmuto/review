@@ -1,3 +1,8 @@
+Thu Jun  3 00:45:16 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmake: support secnolevel
+	* doc/sample.yaml: add secnolevel sample
+
 Tue Jun  1 13:37:09 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* test/test_epubbuilder.rb: fix test string.
