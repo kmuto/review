@@ -18,7 +18,7 @@ module ReVIEW
 
   class EPUBBuilder < HTMLBuilder
 
-    [:u, :tti].each {|e|
+    [:u, :tti, :idx, :hidx].each {|e|
       Compiler.definline(e)
     }
 
@@ -482,7 +482,7 @@ EOT
         then escape_html(word + " (#{alt.strip})")
         else escape_html(word)
         end +
-      '</span>'
+      "</span><!-- IDX:#{escape_html(word)} -->"
     end
 
     def compile_href(url, label)
@@ -512,6 +512,14 @@ EOT
 
     def inline_code(str)
       %Q(<span class="inline-code">#{str}</span>)
+    end
+
+    def inline_idx(str)
+      %Q(#{escape_html(str)}<!-- IDX:#{escape_html(str)} -->)
+    end
+
+    def inline_hidx(str)
+      %Q(<!-- IDX:#{escape_html(str)} -->)
     end
 
     def text(str)

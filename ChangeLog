@@ -1,3 +1,7 @@
+Wed Jun  9 16:19:57 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: support @<idx> and @<hidx>.
+
 Thu Jun  3 00:45:16 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-epubmake: support secnolevel
