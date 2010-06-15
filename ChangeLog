@@ -1,3 +1,9 @@
+Tue Jun 15 13:24:07 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, doc/sample.yaml: add mytoc
+	  flag to control whether making own toc or not.
+	* bin/review-epubmaker add takahashim to copyright holder.
+
 Tue Jun 15 12:52:12 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-epubmaker: use copy instead of link.

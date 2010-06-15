@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2010 Kenshi Muto
+# Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -34,6 +34,7 @@ def main
     "urnid" => "example.jp", # just used for unique ID
     "stylesheet" => "stylesheet.css", # stylesheet file
     "coverfile" => nil, # content file of body of cover page
+    "mytoc" => nil, # whether make own table of contents or not
     "params" => "", # specify review2epub parameters
     "toclevel" => 3, # level of toc
     "secnolevel" => 2, # level of section #
@@ -75,7 +76,6 @@ def main
   post = 0
   @manifeststr = ""
   @ncxstr = ""
-  @tocstr = ""
   @tocdesc = Array.new
   toccount = 2
   
@@ -93,7 +93,6 @@ def main
         getanchors("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
         @manifeststr << %Q(<item id="pre#{pre}" href="pre#{pre}.html" media-type="application/xhtml+xml" />\n)
         @ncxstr << %Q(<itemref idref="pre#{pre}" />\n)
-        @tocstr << %Q[<navPoint id="pre#{pre}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")}</text></navLabel>\n<content src="pre#{pre}.html"/>\n</navPoint>\n]
       }
     }
   end
@@ -111,7 +110,6 @@ def main
         getanchors("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
         @manifeststr << %Q(<item id="chap#{body}" href="chap#{body}.html" media-type="application/xhtml+xml" />\n)
         @ncxstr << %Q(<itemref idref="chap#{body}" />\n)
-        @tocstr << %Q[<navPoint id="chap#{body}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")}</text></navLabel>\n<content src="chap#{body}.html"/>\n</navPoint>\n]
       }
     }
   end
@@ -129,7 +127,6 @@ def main
         getanchors("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
         @manifeststr << %Q(<item id="post#{post}" href="post#{post}.html" media-type="application/xhtml+xml" />\n)
         @ncxstr << %Q(<itemref idref="post#{post}" />\n)
-        @tocstr << %Q[<navPoint id="post#{post}" playOrder="#{toccount}">\n<navLabel><text>#{getTitle("#{tmp}/#{bookname}/OEBPS/post#{post}.html")}</text></navLabel>\n<content src="post#{post}.html"/>\n</navPoint>\n]
       }
     }
   end
@@ -190,8 +187,14 @@ EOT
   <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
   <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
   <item id="top" href="top.html" media-type="application/xhtml+xml" />
+EOT
+
+    unless values["mytoc"].nil?
+      f.puts <<EOT
   <item id="toc" href="toc.html" media-type="application/xhtml+xml" />
 EOT
+    end
+
     f.puts @manifeststr
     f.puts <<EOT
  </manifest>
@@ -206,7 +209,13 @@ EOT
  <guide>
   <reference type="cover" title="表紙" href="#{bookname}.html"/>
   <reference type="title-page" title="Title Page" href="top.html"/>
+EOT
+    unless values["mytoc"].nil?
+      f.puts <<EOT
   <reference type="toc" title="目次" href="toc.html"/>
+EOT
+    end
+    f.puts <<EOT
  </guide>
 </package>
 EOT
@@ -236,6 +245,12 @@ EOT
       </navLabel>
       <content src="#{bookname}.html"/>
     </navPoint>
+EOT
+
+    nav_count = 2
+
+    unless values["mytoc"].nil?
+      f.puts <<EOT
     <navPoint id="toc" playOrder="2">
       <navLabel>
         <text>目次</text>
@@ -243,9 +258,9 @@ EOT
       <content src="toc.html"/>
     </navPoint>
 EOT
-#    f.puts @tocstr
-
-    nav_count = 3  ## next of toc
+      nav_count = 3
+    end
+    
     @tocdesc.each {|item|
       level, file, id, content = item
       # values["level"]
@@ -357,10 +372,10 @@ EOT
 EOT
   }
 
-
-  # Toc page
-  File.open("#{tmp}/#{bookname}/OEBPS/toc.html", "w") {|f|
-    f.puts <<EOT
+  # Additional toc page
+  unless values["mytoc"].nil?
+    File.open("#{tmp}/#{bookname}/OEBPS/toc.html", "w") {|f|
+      f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
@@ -376,44 +391,45 @@ EOT
 <ul class=\"toc-h1\">
 EOT
 
-    current = 1
-    init_item = true
-    @tocdesc.each {|item|
-      level, file, id, content = item
-      # values["level"]
-      next if level > values["toclevel"].to_i
-      if level > current
-        f.puts ""
-        f.puts "<ul class=\"toc-h#{level}\">"
-        current = level
-      elsif level < current
+      current = 1
+      init_item = true
+      @tocdesc.each {|item|
+        level, file, id, content = item
+        # values["level"]
+        next if level > values["toclevel"].to_i
+        if level > current
+          f.puts ""
+          f.puts "<ul class=\"toc-h#{level}\">"
+          current = level
+        elsif level < current
+          f.puts "</li>"
+          f.puts "</ul>"
+          f.puts "</li>"
+          current = level
+        elsif init_item
+          # noop
+        else
+          f.puts "</li>"
+        end
+        f.write "<li><a href=\"#{file}##{id}\">#{content}</a>"
+        init_item = false
+      }
+
+      (current - 1).downto(1) {|n|
         f.puts "</li>"
         f.puts "</ul>"
-        f.puts "</li>"
-        current = level
-      elsif init_item
-        # noop
-      else
+      }
+      if !init_item
         f.puts "</li>"
       end
-      f.write "<li><a href=\"#{file}##{id}\">#{content}</a>"
-      init_item = false
-    }
 
-    (current - 1).downto(1) {|n|
-      f.puts "</li>"
-      f.puts "</ul>"
-    }
-    if !init_item
-      f.puts "</li>"
-    end
-
-    f.puts <<EOT
+      f.puts <<EOT
 </ul>
 </body>
 </html>
 EOT
-  }
+    }
+  end
 
   # stylesheet
   File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|

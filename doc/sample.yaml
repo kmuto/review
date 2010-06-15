@@ -36,8 +36,10 @@ stylesheet: sample.css
 toclevel: 3
 # セクション番号を表示するレベル
 secnolevel: 2
+# EPUB標準の目次以外に目次を作成するか
+# mytoc: nil
 # XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
-posthook: hook.sh
+# posthook: hook.sh
 # review-compileに渡すパラメータ
 params: --stylesheet=sample.css
 # デバッグフラグ。nilのときには一時ファイルをカレントディレクトリに作成し、削除もしない
