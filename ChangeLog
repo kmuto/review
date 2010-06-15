@@ -1,3 +1,8 @@
+Tue Jun 15 12:48:36 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, doc/sample.yaml: handle debug
+	  flag by YAML file.
+
 Wed Jun  9 16:19:57 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/epubbuilder.rb: support @<idx> and @<hidx>.

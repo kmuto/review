@@ -40,3 +40,5 @@ secnolevel: 2
 posthook: hook.sh
 # review-compileに渡すパラメータ
 params: --stylesheet=sample.css
+# デバッグフラグ。nilのときには一時ファイルをカレントディレクトリに作成し、削除もしない
+# debug: nil

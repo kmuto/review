@@ -38,6 +38,7 @@ def main
     "toclevel" => 3, # level of toc
     "secnolevel" => 2, # level of section #
     "posthook" => nil, # command path of post hook
+    "debug" => nil, # debug flag
   }
   yamlfile = ""
 
@@ -59,7 +60,7 @@ def main
 
   identifier = "urn:uuid:#{values["urnid"]}_#{bookname}"
 
-  tmp = @debug.nil? ? Dir.mktmpdir : "."
+  tmp = values["debug"].nil? ? Dir.mktmpdir : "."
   Dir.mkdir("#{tmp}/#{bookname}")
   
   # MIME type
@@ -452,7 +453,7 @@ EOT
   }
   Process.waitall
   
-  FileUtils.rm_r(tmp) if @debug.nil?
+  FileUtils.rm_r(tmp) if values["debug"].nil?
 end
 
 def copyImagesToDir(dirname, copybase)
@@ -505,5 +506,4 @@ def getanchors(filename)
   }
 end
 
-@debug = 1
 main
