@@ -426,7 +426,7 @@ body {
 EOT
   }
   if File.exist?(values["stylesheet"])
-    FileUtils.ln values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
+    FileUtils.cp values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
   end
 
   # hook
@@ -465,7 +465,7 @@ def copyImagesToDir(dirname, copybase)
       else
         if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
           Dir.mkdir(copybase) unless File.exist?(copybase)
-          FileUtils.ln "#{dirname}/#{fname}", copybase
+          FileUtils.cp "#{dirname}/#{fname}", copybase
           figid = getFigId(fname)
           mime = nil
           case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
