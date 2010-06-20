@@ -442,18 +442,22 @@ module ReVIEW
 
     def text(str)
       return '' if str.empty?
-      words = str.split(/(@<\w+>\{(?:[^\}\\]+|\\.)*\})/, -1)
-      unless words.size / 2 == str.scan(/@<\w+>/).size
+      words = str.split(/([^@]@<\w+>\{(?:[^\}\\]+|\\.)*\})/, -1)
+      unless words.size / 2 == str.scan(/[^@]@<\w+>/).size
         error "`@<xxx>' seen but is not valid inline op: #{str.inspect}"
       end
-      result = @strategy.nofunc_text(words.shift)
+      result = @strategy.nofunc_text(unescape_inline(words.shift))
       until words.empty?
         result << compile_inline(words.shift.gsub(/\\\}/, '}'))
-        result << @strategy.nofunc_text(words.shift)
+        result << @strategy.nofunc_text(unescape_inline(words.shift))
       end
       result
     end
     public :text   # called from strategy
+
+    def unescape_inline(str)
+      str.gsub(/@@<(\w+)>/){ "@<#{$1}>"}
+    end
 
     def compile_inline(str)
       op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
