@@ -194,6 +194,8 @@ module ReVIEW
     definline :tt
     definline :i
 
+    definline :raw
+
     private
 
     def do_compile
