@@ -160,10 +160,14 @@ EOT
       unless anchor.empty?
         a_id = "<a id=\"h#{anchor}\" />"
       end
-      if label.nil?
-        puts "<h#{level}>#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>"
+      if caption.empty?
+        puts a_id unless label.nil?
       else
-        puts "<h#{level} id='#{label}'>#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>"
+        if label.nil?
+          puts "<h#{level}>#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>"
+        else
+          puts "<h#{level} id='#{label}'>#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>"
+        end
       end
     end
 
@@ -173,6 +177,24 @@ EOT
     end
 
     def column_end(level)
+      puts '</div>'
+    end
+
+    def ref_begin(level, label, caption)
+      print "<div class='reference'>"
+      headline(level, label, caption)
+    end
+
+    def ref_end(level)
+      puts '</div>'
+    end
+
+    def sup_begin(level, label, caption)
+      print "<div class='supplement'>"
+      headline(level, label, caption)
+    end
+
+    def sup_end(level)
       puts '</div>'
     end
 
@@ -643,6 +665,11 @@ EOT
 
     def inline_u(str)
       %Q(<span class="u">#{escape_html(str)}</span>)
+    end
+
+    def inline_recipe(str)
+      # FIXME
+      %Q(<span class="recipe">「#{escape_html(str)}」</span>)
     end
 
     def getChap

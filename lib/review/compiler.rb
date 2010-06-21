@@ -1,6 +1,6 @@
-# $Id: compiler.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
+# Copyright (c) 2009-2010 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -174,6 +174,7 @@ module ReVIEW
     definline :code
     definline :bib
     definline :href
+    definline :recipe
 
     definline :abbr
     definline :acronym

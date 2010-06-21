@@ -1,7 +1,6 @@
-# $Id: idgxmlbuilder.rb 3761 2007-12-31 07:20:09Z aamine $
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2010 Minero Aoki,Kenshi Muto
+#               2008-2010 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -764,6 +763,30 @@ module ReVIEW
       puts "</insideoutcolumn>"
     end
 
+    def ref_begin(level, label, caption)
+      if !label.nil?
+        puts "<reference id='#{label}'>"
+      else
+        puts "<reference>"
+      end
+    end
+
+    def ref_end(level)
+      puts "</reference>"
+    end
+
+    def sup_begin(level, label, caption)
+      if !label.nil?
+        puts "<supplement id='#{label}'>"
+      else
+        puts "<supplement>"
+      end
+    end
+
+    def sup_end(level)
+      puts "</supplement>"
+    end
+
     def flushright(lines)
       puts "<p align='right'>#{lines.join("\n")}</p>"
     end
@@ -995,6 +1018,11 @@ module ReVIEW
 
     def inline_bib(id)
       %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
+    end
+
+    def inline_recipe(id)
+      # FIXME
+      %Q(<recipe idref="#{escape_html(id)}">[XXX]「#{escape_html(id)}」\tp.XX</recipe>)
     end
 
     def nofunc_text(str)
