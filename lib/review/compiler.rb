@@ -443,13 +443,18 @@ module ReVIEW
     def text(str)
       return '' if str.empty?
       words = str.split(/(@<\w+>\{(?:[^\}\\]+|\\.)*\})/, -1)
-      unless words.size / 2 == str.scan(/@<\w+>/).size
-        error "`@<xxx>' seen but is not valid inline op: #{str.inspect}"
+      word = words.shift
+      if /@<\w+>/ =~ word
+        warn "`@<xxx>' seen but is not valid inline op: #{word.inspect}"
       end
-      result = @strategy.nofunc_text(words.shift)
+      result = @strategy.nofunc_text(word)
       until words.empty?
         result << compile_inline(words.shift.gsub(/\\\}/, '}'))
-        result << @strategy.nofunc_text(words.shift)
+        word = words.shift
+        if /@<\w+>/ =~ word
+          warn "`@<xxx>' seen but is not valid inline op: #{word.inspect}"
+        end
+        result << @strategy.nofunc_text(word)
       end
       result
     end
