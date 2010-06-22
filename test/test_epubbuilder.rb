@@ -66,4 +66,8 @@ class EPUBBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, ret
   end
 
+  def test_inline_raw
+    ret = @builder.inline_raw("@<tt>{inline}")
+    assert_equal %Q|@&lt;tt&gt;{inline}|, ret
+  end
 end

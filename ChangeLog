@@ -1,3 +1,9 @@
+Tue Jun 22 21:49:10 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb: ignore invalid inline op error
+	  when it is in @<raw> op.
+	* test/test_epubbuilder.rb: add @<raw> op test.
+
 Mon Jun 21 12:12:43 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/builder.rb, lib/review/compiler.rb,

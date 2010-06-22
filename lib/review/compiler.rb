@@ -444,8 +444,8 @@ module ReVIEW
     def text(str)
       return '' if str.empty?
       words = str.split(/(@<\w+>\{(?:[^\}\\]+|\\.)*\})/, -1)
-      unless words.size / 2 == str.scan(/@<\w+>/).size
-        error "`@<xxx>' seen but is not valid inline op: #{str.inspect}"
+      words.each do |w|
+        error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
       end
       result = @strategy.nofunc_text(words.shift)
       until words.empty?
