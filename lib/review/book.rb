@@ -44,6 +44,10 @@ module ReVIEW
       end
     end
 
+    def setParameter(param)
+      @param = param
+    end
+
     @basedir_seen = {}
 
     def Book.update_rubyenv(dir)
@@ -105,6 +109,8 @@ module ReVIEW
 
     def chapter_index
       @chapter_index ||= ChapterIndex.new(chapters())
+      @chapter_index.setParameter(@param)
+      @chapter_index
     end
 
     def chapter(id)
@@ -316,7 +322,7 @@ module ReVIEW
       @ext          = params[:ext]          || '.re'
       @image_dir    = params[:image_dir]    || 'images'
       @image_types  = unify_exts(params[:image_types]  ||
-                                 %w( eps tif tiff png bmp jpg jpeg gif ))
+                                 %w( eps tif tiff png bmp jpg jpeg gif svg ))
       @bib_file  = params[:bib_file]        || "bib#{@ext}"
     end
 
@@ -436,6 +442,10 @@ module ReVIEW
       @headline_index = nil
     end
 
+    def setParameter(param)
+      @param = param
+    end
+
     def env
       @book
     end
@@ -465,12 +475,20 @@ module ReVIEW
     alias id name
 
     def title
-      @title ||= open {|f| f.gets.sub(/\A=+/, '').strip }
-      if @@inencoding =~ /^EUC$/
+      @title = ""
+      open {|f|
+        f.each_line {|l|
+          if l =~ /\A=+/
+            @title = l.sub(/\A=+/, '').strip
+            break
+          end
+        }
+      }
+      if @param["inencoding"] =~ /^EUC$/
         @title = NKF.nkf("-E -w", @title)
-      elsif @@inencoding =~ /^SJIS$/
+      elsif @param["inencoding"] =~ /^SJIS$/
         @title = NKF.nkf("-S -w", @title)
-      elsif @@inencoding =~ /^JIS$/
+      elsif @param["inencoding"] =~ /^JIS$/
         @title = NKF.nkf("-J -w", @title)
       else
         @title = NKF.nkf("-w", @title)
@@ -491,11 +509,11 @@ module ReVIEW
     end
 
     def content
-      if @@inencoding =~ /^EUC$/i
+      if @param["inencoding"] =~ /^EUC$/i
         @content = NKF.nkf("-E -w", File.read(path()))
-      elsif @@inencoding =~ /^SJIS$/i
+      elsif @param["inencoding"] =~ /^SJIS$/i
         @content = NKF.nkf("-S -w", File.read(path()))
-      elsif @@inencoding =~ /^JIS$/i
+      elsif @param["inencoding"] =~ /^JIS$/i
         @content = NKF.nkf("-J -w", File.read(path()))
       else
         @content = NKF.nkf("-w", File.read(path())) # auto detect
@@ -513,6 +531,8 @@ module ReVIEW
 
     def list_index
       @list_index ||= ListIndex.parse(lines())
+      @list_index.setParameter(@param)
+      @list_index
     end
 
     def table(id)
@@ -521,6 +541,8 @@ module ReVIEW
 
     def table_index
       @table_index ||= TableIndex.parse(lines())
+      @table_index.setParameter(@param)
+      @table_index
     end
 
     def footnote(id)
@@ -529,6 +551,8 @@ module ReVIEW
 
     def footnote_index
       @footnote_index ||= FootnoteIndex.parse(lines())
+      @footnote_index.setParameter(@param)
+      @footnote_index
     end
 
     def image(id)
@@ -547,6 +571,8 @@ module ReVIEW
       @image_index ||= ImageIndex.parse(lines(), id(),
                                         "#{book.basedir}#{@book.image_dir}",
                                         @book.image_types)
+      @image_index.setParameter(@param)
+      @image_index
     end
 
     def bibpaper(id)
@@ -556,6 +582,8 @@ module ReVIEW
     def bibpaper_index
       raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
       @bibpaper_index ||= BibpaperIndex.parse(@book.read_bib.lines.to_a)
+      @bibpaper_index.setParameter(@param)
+      @bibpaper_index
     end
 
     def headline(caption)

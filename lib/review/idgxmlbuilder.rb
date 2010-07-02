@@ -1,7 +1,6 @@
-# $Id: idgxmlbuilder.rb 3761 2007-12-31 07:20:09Z aamine $
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2010 Minero Aoki,Kenshi Muto
+#               2008-2010 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -24,14 +23,9 @@ module ReVIEW
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
-    Compiler.defsingle(:raw, 1)
     Compiler.defsingle(:indepimage, 1)
-    Compiler.defsingle(:label, 1)
-    Compiler.defsingle(:tsize, 1)
 
     Compiler.defblock(:insn, 0..1)
-    Compiler.defblock(:flushright, 0)
-    Compiler.defblock(:note, 0..1)
     Compiler.defblock(:memo, 0..1)
     Compiler.defblock(:tip, 0..1)
     Compiler.defblock(:info, 0..1)
@@ -58,11 +52,13 @@ module ReVIEW
 
     def builder_init(no_error = false)
       @no_error = no_error
-
-      alias puts print unless @@nolf.nil?
-
     end
     private :builder_init
+
+    def setParameter(param)
+      @param = param
+      alias puts print unless @param["nolf"].nil?
+    end
 
     def builder_init_file
       @warns = []
@@ -207,7 +203,7 @@ module ReVIEW
         raise "caption level too deep or unsupported: #{level}"
       end
 
-      prefix = "" if (level.to_i > @@secnolevel)
+      prefix = "" if (level.to_i > @param["secnolevel"])
       label = label.nil? ? "" : " id=\"#{label}\""
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{escape_html(caption)}</title><?dtp level="#{level}" section="#{prefix}#{escape_html(caption)}"?>)
     end
@@ -381,7 +377,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      if @@subdirmode.nil?
+      if @param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
       else
         warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
@@ -409,8 +405,8 @@ module ReVIEW
 #      puts %Q(<表 xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
       tablewidth = nil
       col = 0
-      unless @@tableopt.nil?
-        tablewidth = @@tableopt.split(",")[0].to_f / 0.351 # mm -> pt
+      unless @param["tableopt"].nil?
+        tablewidth = @param["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
       end
       puts "<table>"
       rows = []
@@ -588,6 +584,10 @@ module ReVIEW
         end
     end
 
+    def compile_href(url, label)
+      %Q(<a linkurl='#{url}'>#{label.nil? ? url : label}</a>)
+    end
+
     def inline_sup(str)
       %Q(<sup>#{escape_html(str)}</sup>)
     end
@@ -601,7 +601,7 @@ module ReVIEW
     end
 
     def inline_hint(str)
-      if @@nolf.nil?
+      if @param["nolf"].nil?
         %Q(\n<hint>#{escape_html(str)}</hint>)
       else
         %Q(<hint>#{escape_html(str)}</hint>)
@@ -656,7 +656,7 @@ module ReVIEW
     end
 
     def inline_icon(id)
-      if @@subdirmode.nil?
+      if @param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
         %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" type='inline'/>]
       else
@@ -761,6 +761,30 @@ module ReVIEW
 
     def insideout_end(level)
       puts "</insideoutcolumn>"
+    end
+
+    def ref_begin(level, label, caption)
+      if !label.nil?
+        puts "<reference id='#{label}'>"
+      else
+        puts "<reference>"
+      end
+    end
+
+    def ref_end(level)
+      puts "</reference>"
+    end
+
+    def sup_begin(level, label, caption)
+      if !label.nil?
+        puts "<supplement id='#{label}'>"
+      else
+        puts "<supplement>"
+      end
+    end
+
+    def sup_end(level)
+      puts "</supplement>"
     end
 
     def flushright(lines)
@@ -890,7 +914,7 @@ module ReVIEW
 
     def indepimage(id)
       puts "<img>"
-      if @@subdirmode.nil?
+      if @param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
         puts %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" />]
       else
@@ -913,6 +937,14 @@ module ReVIEW
       print %Q(<?dtp #{str} ?>)
     end
 
+    def hr
+      print "<hr/>"
+    end
+
+    def bpo(lines)
+      puts %Q[<bpo>#{lines.join("\n")}</bpo>]
+    end
+
     def inline_dtp(str)
       "<?dtp #{str} ?>"
     end
@@ -930,18 +962,14 @@ module ReVIEW
       }
     end
 
-    def raw(str)
-      print str.gsub("\\n", "\n")
-    end
-
     def text(str)
       str
     end
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless @@chapref.nil?
-        _chs = NKF.nkf("-w", @@chapref).split(",")
+      unless @param["chapref"].nil?
+        _chs = NKF.nkf("-w", @param["chapref"]).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
@@ -990,6 +1018,11 @@ module ReVIEW
 
     def inline_bib(id)
       %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
+    end
+
+    def inline_recipe(id)
+      # FIXME
+      %Q(<recipe idref="#{escape_html(id)}">[XXX]「#{escape_html(id)}」\tp.XX</recipe>)
     end
 
     def nofunc_text(str)

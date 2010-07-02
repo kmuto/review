@@ -1,0 +1,46 @@
+# review-epubmaker向けの設定ファイルの例。
+# yamlファイルをReVIEWファイルのある場所に置き、
+# 「review-epubmaker yamlファイル」を実行すると、<bookname>.epubファイルが
+# 生成されます。
+# このファイルはUTF-8エンコーディングで記述してください。
+
+# ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
+bookname: sample
+# 書名
+booktitle: ReVIEW EPUBサンプル
+# 著者
+aut: 吟遊詩人
+# 以下はオプション
+# prt: 出版社
+# asn: Associated name
+# ant: Bibliographic antecedent
+# clb: 貢献者
+# edt: 編集者
+# dsr: デザイナ
+# ill: イラストレータ
+# pht: 撮影者
+# trl: 翻訳者
+# date: 刊行日
+# rights: 権利表記
+# description: ブックの説明
+#
+# coverfile: カバーページのbody要素内に挿入する内容を記述したファイル名
+#
+# coverimage: カバー用画像。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
+#
+# 固有IDに使用するドメイン
+urnid: example.jp
+# CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること)
+stylesheet: sample.css
+# 目次として抽出するレベル
+toclevel: 3
+# セクション番号を表示するレベル
+secnolevel: 2
+# EPUB標準の目次以外に目次を作成するか
+# mytoc: nil
+# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
+# posthook: hook.sh
+# review-compileに渡すパラメータ
+params: --stylesheet=sample.css
+# デバッグフラグ。nilのときには一時ファイルをカレントディレクトリに作成し、削除もしない
+# debug: nil

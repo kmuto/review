@@ -1,0 +1,525 @@
+#!/usr/bin/env ruby
+#
+# Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+require 'tmpdir'
+require 'fileutils'
+require 'yaml'
+require 'optparse'
+require 'rexml/document'
+
+def main
+  values = { # These parameters can be overridden by YAML file.
+    "bookname"=> "sample", # it defines epub file name also
+    "booktitle" => "ReVIEW EPUBサンプル",
+    "aut" => "吟遊詩人", # author
+    "prt" => nil, # printer(publisher)
+    "asn" => nil, # associated name
+    "ant" => nil, # bibliographic antecedent
+    "clb" => nil, # Collaborator
+    "edt" => nil, # Editor
+    "dsr" => nil, # Designer
+    "ill" => nil, # Illustrator
+    "pht" => nil, # Photographer
+    "trl" => nil, # Translator
+    "date" => nil, # publishing date
+    "rights" => nil, # Copyright messages
+    "description" => nil, # Description
+    "urnid" => "example.jp", # just used for unique ID
+    "stylesheet" => "stylesheet.css", # stylesheet file
+    "coverfile" => nil, # content file of body of cover page
+    "mytoc" => nil, # whether make own table of contents or not
+    "params" => "", # specify review2epub parameters
+    "toclevel" => 3, # level of toc
+    "secnolevel" => 2, # level of section #
+    "posthook" => nil, # command path of post hook
+    "debug" => nil, # debug flag
+  }
+  yamlfile = ""
+
+  if ARGV.size == 1
+    values = values.merge(YAML.load_file(ARGV[0]))
+    yamlfile = ARGV[0]
+  end
+  
+  bookname = values["bookname"]
+
+  if File.exist?("#{bookname}.epub")
+    STDERR.puts "#{bookname}.epub exists. Please remove or rename first."
+    exit 1
+  end
+  if File.exist?("#{bookname}")
+    STDERR.puts "#{bookname} directory exists. Please remove or rename first."
+    exit 1
+  end
+
+  identifier = "urn:uuid:#{values["urnid"]}_#{bookname}"
+
+  tmp = values["debug"].nil? ? Dir.mktmpdir : "."
+  Dir.mkdir("#{tmp}/#{bookname}")
+  
+  # MIME type
+  File.open("#{tmp}/#{bookname}/mimetype", "w") {|f|
+    f.puts "application/epub+zip"
+  }
+  
+  Dir.mkdir("#{tmp}/#{bookname}/OEBPS")
+  # XHTML
+  pre = 0
+  body = 0
+  post = 0
+  @manifeststr = ""
+  @ncxstr = ""
+  @tocdesc = Array.new
+  toccount = 2
+  
+  if File.exists?("PREDEF")
+    File.open("PREDEF") {|chaps|
+      chaps.each_line {|l|
+        next if l =~ /^#/
+        pre = pre + 1
+        toccount = toccount + 1
+        fork {
+          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
+          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+        }
+        Process.waitall
+        getanchors("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
+        @manifeststr << %Q(<item id="pre#{pre}" href="pre#{pre}.html" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="pre#{pre}" />\n)
+      }
+    }
+  end
+  if File.exists?("CHAPS")
+    File.open("CHAPS") {|chaps|
+      chaps.each_line {|l|
+        body = body + 1
+        toccount = toccount + 1
+        next if l =~ /^#/
+        fork {
+          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
+          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+        }
+        Process.waitall
+        getanchors("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
+        @manifeststr << %Q(<item id="chap#{body}" href="chap#{body}.html" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="chap#{body}" />\n)
+      }
+    }
+  end
+  if File.exists?("POSTDEF")
+    File.open("POSTDEF") {|chaps|
+      chaps.each_line {|l|
+        next if l =~ /^#/
+        post = post + 1
+        toccount = toccount + 1
+        fork {
+          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
+          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+        }
+        Process.waitall
+        getanchors("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
+        @manifeststr << %Q(<item id="post#{post}" href="post#{post}.html" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="post#{post}" />\n)
+      }
+    }
+  end
+  if File.exist?("images")
+    Dir.mkdir("#{tmp}/#{bookname}/OEBPS/images")
+    copyImagesToDir("images", "#{tmp}/#{bookname}/OEBPS/images")
+  end
+  
+  # container
+  Dir.mkdir("#{tmp}/#{bookname}/META-INF")
+  File.open("#{tmp}/#{bookname}/META-INF/container.xml", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
+  <rootfiles>
+    <rootfile full-path="OEBPS/#{bookname}.opf" media-type="application/oebps-package+xml" />
+  </rootfiles>
+</container>
+EOT
+  }
+
+# opf (meta info)
+  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.opf", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+ <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+   <dc:title>#{values["booktitle"]}</dc:title>
+EOT
+
+   f.puts %Q(<dc:creator opf:role="aut">#{values["aut"]}</dc:creator>) unless values["aut"].nil? # FIXME: support multiple members
+
+   f.puts %Q(<dc:publisher>#{values["prt"]}</dc:publisher>) unless values["prt"].nil?
+
+   f.puts %Q(<dc:date>#{values["date"]}</dc:date>) unless values["date"].nil?
+   f.puts %Q(<dc:rights>#{values["rights"]}</dc:rights>) unless values["rights"].nil?
+
+   f.puts %Q(<dc:contributor opf:role="asn">#{values["asn"]}</dc:contributor>) unless values["asn"].nil?
+   f.puts %Q(<dc:contributor opf:role="ant">#{values["ant"]}</dc:contributor>) unless values["ant"].nil?
+   f.puts %Q(<dc:contributor opf:role="clb">#{values["clb"]}</dc:contributor>) unless values["clb"].nil?
+   f.puts %Q(<dc:contributor opf:role="edt">#{values["edt"]}</dc:contributor>) unless values["edt"].nil?
+   f.puts %Q(<dc:contributor opf:role="dsr">#{values["dsr"]}</dc:contributor>) unless values["dsr"].nil?
+   f.puts %Q(<dc:contributor opf:role="ill">#{values["ill"]}</dc:contributor>) unless values["ill"].nil?
+   f.puts %Q(<dc:contributor opf:role="pht">#{values["pht"]}</dc:contributor>) unless values["pht"].nil?
+   f.puts %Q(<dc:contributor opf:role="trl">#{values["trl"]}</dc:contributor>) unless values["trl"].nil?
+
+   f.puts %Q(<dc:description>#{values["description"]}</dc:description>) unless values["description"].nil?
+
+    if values["coverimage"]
+      f.puts %Q(<meta name="cover" content="#{getFigId(values["coverimage"])}"/>)
+    end
+    f.puts <<EOT
+   <dc:language>ja</dc:language>
+   <dc:identifier id="BookId">#{identifier}</dc:identifier>
+ </metadata>
+ <manifest>
+  <item id="ncx" href="#{bookname}.ncx" media-type="application/x-dtbncx+xml" />
+  <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
+  <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
+  <item id="top" href="top.html" media-type="application/xhtml+xml" />
+EOT
+
+    unless values["mytoc"].nil?
+      f.puts <<EOT
+  <item id="toc" href="toc.html" media-type="application/xhtml+xml" />
+EOT
+    end
+
+    f.puts @manifeststr
+    f.puts <<EOT
+ </manifest>
+ <spine toc="ncx">
+  <itemref idref="#{bookname}" linear="no" />
+  <itemref idref="top" />
+  <itemref idref="toc" />
+EOT
+    f.puts @ncxstr
+    f.puts <<EOT
+ </spine>
+ <guide>
+  <reference type="cover" title="表紙" href="#{bookname}.html"/>
+  <reference type="title-page" title="Title Page" href="top.html"/>
+EOT
+    unless values["mytoc"].nil?
+      f.puts <<EOT
+  <reference type="toc" title="目次" href="toc.html"/>
+EOT
+    end
+    f.puts <<EOT
+ </guide>
+</package>
+EOT
+  }
+
+  # ncx (toc)
+  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.ncx", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head>
+    <meta name="dtb:uid" content="#{identifier}"/>
+    <meta name="dtb:depth" content="1"/>
+    <meta name="dtb:totalPageCount" content="0"/>
+    <meta name="dtb:maxPageNumber" content="0"/>
+  </head>
+  <docTitle>
+    <text>#{values["booktitle"]}</text>
+  </docTitle>
+  <docAuthor>
+	<text>#{values["aut"].nil? ? "" : values["aut"]}</text>
+  </docAuthor>
+  <navMap>
+    <navPoint id="top" playOrder="1">
+      <navLabel>
+        <text>#{values["booktitle"]}</text>
+      </navLabel>
+      <content src="#{bookname}.html"/>
+    </navPoint>
+EOT
+
+    nav_count = 2
+
+    unless values["mytoc"].nil?
+      f.puts <<EOT
+    <navPoint id="toc" playOrder="2">
+      <navLabel>
+        <text>目次</text>
+      </navLabel>
+      <content src="toc.html"/>
+    </navPoint>
+EOT
+      nav_count = 3
+    end
+    
+    @tocdesc.each {|item|
+      level, file, id, content = item
+      # values["level"]
+      next if level > values["toclevel"].to_i
+      indent = ""
+      if level > values["secnolevel"].to_i
+        indent = "- "
+      end
+      f.puts <<EOT
+    <navPoint id="navPoint-#{nav_count}" playOrder="#{nav_count}">
+      <navLabel>
+        <text>#{indent}#{content}</text>
+      </navLabel>
+      <content src="#{file}##{id}"/>
+    </navPoint>
+EOT
+      nav_count += 1
+    }
+    f.puts <<EOT
+  </navMap>
+</ncx>
+EOT
+  }
+  
+  # Cover page
+  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.html", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+    if !values["coverfile"].nil? && File.exist?(values["coverfile"])
+      File.open(values["coverfile"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
+<h1>#{values["booktitle"]}</h1>
+EOT
+    end
+
+    f.puts <<EOT
+</body>
+</html>
+EOT
+  }
+
+
+  # Title page
+  File.open("#{tmp}/#{bookname}/OEBPS/top.html", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+    if !values["titlepagefile"].nil? && File.exist?(values["titlepagefile"])
+      File.open(values["titlepagefile"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
+<h1 class="tp-title">#{values["booktitle"]}</h1>
+EOT
+      if values["aut"]
+        f.puts <<EOT
+<p>
+<br />
+<br />
+</p>
+<h2 class="tp-author">#{values["aut"]}</h2>
+EOT
+      end
+      if values["prt"]
+        f.puts <<EOT
+<p>
+<br />
+<br />
+<br />
+<br />
+</p>
+<h3 class="tp-publisher">#{values["prt"]}</h3>
+EOT
+      end
+    end
+
+    f.puts <<EOT
+</body>
+</html>
+EOT
+  }
+
+  # Additional toc page
+  unless values["mytoc"].nil?
+    File.open("#{tmp}/#{bookname}/OEBPS/toc.html", "w") {|f|
+      f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>目次</title>
+</head>
+<body>
+<h1>目次</h1>
+<ul class=\"toc-h1\">
+EOT
+
+      current = 1
+      init_item = true
+      @tocdesc.each {|item|
+        level, file, id, content = item
+        # values["level"]
+        next if level > values["toclevel"].to_i
+        if level > current
+          f.puts ""
+          f.puts "<ul class=\"toc-h#{level}\">"
+          current = level
+        elsif level < current
+          f.puts "</li>"
+          f.puts "</ul>"
+          f.puts "</li>"
+          current = level
+        elsif init_item
+          # noop
+        else
+          f.puts "</li>"
+        end
+        f.write "<li><a href=\"#{file}##{id}\">#{content}</a>"
+        init_item = false
+      }
+
+      (current - 1).downto(1) {|n|
+        f.puts "</li>"
+        f.puts "</ul>"
+      }
+      if !init_item
+        f.puts "</li>"
+      end
+
+      f.puts <<EOT
+</ul>
+</body>
+</html>
+EOT
+    }
+  end
+
+  # stylesheet
+  File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|
+    f.puts <<EOT
+/* sample style sheet for epub */
+@charset "utf-8";
+
+body {
+}
+EOT
+  }
+  if File.exist?(values["stylesheet"])
+    FileUtils.cp values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
+  end
+
+  # hook
+  if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
+    fork {
+      exec(values["posthook"], "#{tmp}/#{bookname}", Dir.pwd, yamlfile)
+    }
+    Process.waitall
+  end
+  
+  # Zip epubファイルの作成。mimetypeは圧縮しないようにする
+  fork {
+    basedir = Dir.pwd
+    Dir.chdir("#{tmp}/#{bookname}") {|d|
+      exec("zip -0X #{basedir}/#{bookname}.epub mimetype")
+    }
+  }
+  Process.waitall
+  fork {
+    basedir = Dir.pwd
+    Dir.chdir("#{tmp}/#{bookname}") {|d|
+      exec("zip -Xr9D #{basedir}/#{bookname}.epub META-INF OEBPS")
+    }
+  }
+  Process.waitall
+  
+  FileUtils.rm_r(tmp) if values["debug"].nil?
+end
+
+def copyImagesToDir(dirname, copybase)
+  Dir.open(dirname) {|dir|
+    dir.each {|fname|
+      next if fname =~ /^\./
+      if FileTest.directory?("#{dirname}/#{fname}")
+        copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
+      else
+        if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
+          Dir.mkdir(copybase) unless File.exist?(copybase)
+          FileUtils.cp "#{dirname}/#{fname}", copybase
+          figid = getFigId(fname)
+          mime = nil
+          case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
+            when "png": mime = "image/png"
+            when "gif": mime = "image/gif"
+            when "jpg", "jpeg": mime = "image/jpeg"
+            when "svg": mime = "image/svg+xml"
+          else
+            raise "unsupported type #{fname}"
+          end
+          @manifeststr << %Q(<item id="#{figid}" href="#{dirname}/#{fname}" media-type="#{mime}" />\n)
+        end
+      end
+    }
+  }
+end
+
+def getFigId(filename)
+  figid = filename.sub(/\.(png|gif|jpg|jpeg|svg)$/, '')
+  "fig-#{figid}"
+end
+
+def getTitle(filename)
+  File.open(filename) {|f|
+    return REXML::Document.new(f).elements["//html/head/title"].text
+  }
+end
+
+def getanchors(filename)
+  File.open(filename) {|f|
+    file = filename.sub(/.+\//, '')
+    f.each_line {|l|
+      if l =~ /\A<h(\d)><a id=\"(.+?)\" \/>(.+?)<\/h/
+        # level, ID, content
+        @tocdesc << [$1.to_i, file, $2, $3]
+      end
+    }
+  }
+end
+
+main

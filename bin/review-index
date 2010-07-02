@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
 #
-# $Id: review-index 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 1999-2007 Minero Aoki
-#               2008-2009 Minero Aoki, Kenshi Muto
+#               2008-2010 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -30,12 +29,23 @@ rescue Errno::EPIPE
 end
 
 def _main
-  $KCODE = 'EUC' unless defined?(Encoding)
+  $KCODE = 'UTF-8' unless defined?(Encoding)
 
   printer_class = ReVIEW::TextTOCPrinter
   source = nil
   upper = ReVIEW::TOCPrinter.default_upper_level
+  param = {
+    "inencoding" => "UTF-8",
+    "outencoding" => "UTF-8"
+  }
+
   parser = OptionParser.new
+  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
+    param["inencoding"] = enc
+  }
+  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
+    param["outencoding"] = enc
+  }
   parser.on('-a', '--all', 'print all chapters.') {
     begin
       source = ReVIEW.book
@@ -83,7 +93,7 @@ def _main
   end
 
   begin
-    printer_class.new(upper).print_book source
+    printer_class.new(upper, param).print_book source
   rescue ReVIEW::Error, Errno::ENOENT => err
     raise if $DEBUG
     error_exit err.message

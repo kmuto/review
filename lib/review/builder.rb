@@ -1,5 +1,4 @@
 #
-# $Id: builder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2009 Minero Aoki
 #
@@ -26,6 +25,10 @@ module ReVIEW
     end
     private :builder_init
 
+    def setParameter(param)
+      @param = param
+    end
+
     def bind(compiler, chapter, location)
       @compiler = compiler
       @chapter = chapter
@@ -44,11 +47,11 @@ module ReVIEW
     end
 
     def print(*s)
-      if @@outencoding =~ /^EUC$/i
+      if @param["outencoding"] =~ /^EUC$/i
         @output.print(NKF.nkf("-W, -e", *s))
-      elsif @@outencoding =~ /^SJIS$/i
+      elsif @param["outencoding"] =~ /^SJIS$/i
         @output.print(NKF.nkf("-W, -s", *s))
-      elsif @@outencoding =~ /^JIS$/i
+      elsif @param["outencoding"] =~ /^JIS$/i
         @output.print(NKF.nkf("-W, -j", *s))
       else
         @output.print(*s)
@@ -56,11 +59,11 @@ module ReVIEW
     end
 
     def puts(*s)
-      if @@outencoding =~ /^EUC$/i
+      if @param["outencoding"] =~ /^EUC$/i
         @output.puts(NKF.nkf("-W, -e", *s))
-      elsif @@outencoding =~ /^SJIS$/i
+      elsif @param["outencoding"] =~ /^SJIS$/i
         @output.puts(NKF.nkf("-W, -s", *s))
-      elsif @@outencoding =~ /^JIS$/i
+      elsif @param["outencoding"] =~ /^JIS$/i
         @output.puts(NKF.nkf("-W, -j", *s))
       else
         @output.puts(*s)
@@ -235,6 +238,12 @@ module ReVIEW
       compile_kw(word, alt)
     end
 
+    def inline_href(arg)
+      url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
+      url = url.gsub(/\\,/, ",").strip
+      compile_href(url, label)
+    end
+
     def text(str)
       str
     end
@@ -253,6 +262,10 @@ module ReVIEW
       chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
       return inline_hd_chap(chapter, m[2]) if chapter
       return inline_hd_chap(@chapter, id)
+    end
+
+    def raw(str)
+      print str.gsub("\\n", "\n")
     end
 
     def warn(msg)

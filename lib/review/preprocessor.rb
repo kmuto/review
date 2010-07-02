@@ -2,6 +2,7 @@
 # $Id: preprocessor.rb 4250 2009-05-24 14:03:01Z aamine $
 #
 # Copyright (c) 2002-2009 Minero Aoki
+# Copyright (c) 2010 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -22,22 +23,22 @@ module ReVIEW
     end
 
     def warn(msg)
-      if @@outencoding =~ /^EUC$/
+      if @param["outencoding"] =~ /^EUC$/
         msg = NKF.nkf("-W -e", msg)
-      elsif @@outencoding =~ /^SJIS$/
+      elsif @param["outencoding"] =~ /^SJIS$/
         msg = NKF.nkf("-W -s", msg)
-      elsif @@outencoding =~ /^JIS$/
+      elsif @param["outencoding"] =~ /^JIS$/
         msg = NKF.nkf("-W -j", msg)
       end
       $stderr.puts "#{location()}: warning: #{msg}"
     end
 
     def error(msg)
-      if @@outencoding =~ /^EUC$/
+      if @param["outencoding"] =~ /^EUC$/
         msg = NKF.nkf("-W -e", msg)
-      elsif @@outencoding =~ /^SJIS$/
+      elsif @param["outencoding"] =~ /^SJIS$/
         msg = NKF.nkf("-W -s", msg)
-      elsif @@outencoding =~ /^JIS$/
+      elsif @param["outencoding"] =~ /^JIS$/
         msg = NKF.nkf("-W -j", msg)
       end
       @errutils_err = true
@@ -100,6 +101,10 @@ module ReVIEW
 
     def initialize(repo)
       @repository = repo
+    end
+
+    def setParameter(param)
+      @param = param
     end
 
     def process(inf, outf)

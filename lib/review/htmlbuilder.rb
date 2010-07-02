@@ -90,9 +90,9 @@ module ReVIEW
     def headline(level, label, caption)
       puts '' if level > 1
       if label.nil?
-        puts "<h#{level}>#{caption}</h#{level}>"
+        puts "<h#{level}>#{escape_html(caption)}</h#{level}>"
       else
-        puts "<h#{level} id='#{label}'>#{caption}</h#{level}>"
+        puts "<h#{level} id='#{label}'>#{escape_html(caption)}</h#{level}>"
       end
     end
 
@@ -149,8 +149,16 @@ module ReVIEW
       puts "<p>#{lines.join("")}</p>"
     end
 
+    def parasep()
+      puts '<br />'
+    end
+
     def read(lines)
       puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
+    end
+
+    def lead(lines)
+      read(lines)
     end
 
     def list_header(id, caption)
@@ -377,6 +385,10 @@ QUOTE
 
     def inline_hd_chap(chap, id)
       "「#{chap.headline_index.number(id)} #{chap.headline(id).caption}」"
+    end
+
+    def inline_raw(str)
+      escape_html(str)
     end
 
     def nofunc_text(str)

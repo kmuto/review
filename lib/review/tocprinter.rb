@@ -12,6 +12,7 @@
 
 require 'review/htmlutils'
 require 'review/htmllayout'
+require 'nkf'
 
 module ReVIEW
 
@@ -21,14 +22,36 @@ module ReVIEW
       99   # no one use 99 level nest
     end
 
-    def initialize(print_upper)
+    def initialize(print_upper, param)
       @print_upper = print_upper
+      @param = param
     end
 
     def print?(level)
       level <= @print_upper
     end
 
+    def nkffilter(line)
+      inc = ""
+      outc = "-w"
+      if @param["inencoding"] =~ /^EUC$/
+        inc = "-E"
+      elsif @param["inencoding"] =~ /^SJIS$/
+        inc = "-S"
+      elsif @param["inencoding"]  =~ /^JIS$/
+        inc = "-J"
+      end
+      
+      if @param["outencoding"] =~ /^EUC$/
+        outc = "-e"
+      elsif @param["outencoding"] =~ /^SJIS$/
+        outc = "-s"
+      elsif @param["outencoding"]  =~ /^JIS$/
+        outc = "-j"
+      end
+      
+      NKF.nkf("#{inc} #{outc}", line)
+    end
   end
 
 
@@ -53,11 +76,11 @@ module ReVIEW
         printf "%3s %3dKB %6dC %5dL  %s (%s)\n",
                chapnumstr(node.number),
                vol.kbytes, vol.chars, vol.lines,
-               node.label, node.chapter_id
+               nkffilter(node.label), node.chapter_id
       else
         printf "%17s %5dL  %s\n",
                '', node.estimated_lines,
-               "  #{'   ' * (node.level - 1)}#{number} #{node.label}"
+               nkffilter("  #{'   ' * (node.level - 1)}#{number} #{node.label}")
       end
     end
 
@@ -155,7 +178,7 @@ module ReVIEW
   class IDGTOCPrinter < TOCPrinter
     def print_book(book)
       puts %Q(<?xml version="1.0" encoding="UTF-8"?>)
-      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
+      puts nkffilter(%Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>)) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
       puts %Q(<ul aid:pstyle='ul-partblock'>)
       print_children book
       puts %Q(</ul></doc>)
@@ -177,15 +200,15 @@ module ReVIEW
       if node.chapter?
         vol = node.volume
         printf "<li aid:pstyle='ul-part'>%s</li>\n",
-               "#{chapnumstr(node.number)}#{node.label}"
+               nkffilter("#{chapnumstr(node.number)}#{node.label}")
       else
         printf "<li>%-#{LABEL_LEN}s\n",
-               "  #{'   ' * (node.level - 1)}#{seq}　#{node.label}</li>"
+               nkffilter("  #{'   ' * (node.level - 1)}#{seq}　#{node.label}</li>")
       end
     end
 
     def chapnumstr(n)
-      n ? sprintf('第%d章　', n) : ''
+      n ? nkffilter(sprintf('第%d章　', n)) : ''
     end
 
     def volume_columns(level, volstr)

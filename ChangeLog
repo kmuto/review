@@ -1,3 +1,222 @@
+Tue Jun 22 21:49:10 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb: ignore invalid inline op error
+	  when it is in @<raw> op.
+	* test/test_epubbuilder.rb: add @<raw> op test.
+
+Mon Jun 21 12:12:43 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/builder.rb, lib/review/compiler.rb,
+	  lib/review/idgxmlbuilder.rb, lib/review/epubbuilder.rb:
+
+Tue Jun 15 16:34:55 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/preprocessor.rb, bin/review-preproc: support
+	  input/output encoding.
+
+Tue Jun 15 13:24:07 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, doc/sample.yaml: add mytoc
+	  flag to control whether making own toc or not.
+	* bin/review-epubmaker add takahashim to copyright holder.
+
+Tue Jun 15 12:52:12 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: use copy instead of link.
+
+Tue Jun 15 12:48:36 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, doc/sample.yaml: handle debug
+	  flag by YAML file.
+
+Wed Jun  9 16:19:57 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: support @<idx> and @<hidx>.
+
+Thu Jun  3 00:45:16 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmake: support secnolevel
+	* doc/sample.yaml: add secnolevel sample
+
+Tue Jun  1 13:37:09 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* test/test_epubbuilder.rb: fix test string.
+
+Tue Jun  1 13:29:55 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/topbuilder.rb: add @<tti> op. modify some strings.
+
+Tue Jun  1 07:24:47 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (5842b55c130e1f33fb58350e9c4778ac46a87e0f).
+	- add coverimage attribute in YAML file (to use it as iTunes artwork)
+
+Sun May 30 11:18:55 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (2d7e0036d1311c8d1ca5)
+	- use id, not name in <a> element (for valid XHTML 1.1)
+	- fix zip format (from epubcheck)
+	- lang attr should not be used in xhtml 1.1 (use only xml:lang attr)
+	- fix invalid <ul> and <li> tags in toc.html
+	- escape value of href attributes in @<href>
+	- fix media-type and opf:role in OPF file
+	- <br/> should be in block element like <p>
+	- fix invalid URL(in namespace)
+	- hide cover page in navigation and add title page to show
+
+Thu May 27 12:57:39 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: support posthook.
+	* doc/sample.yaml: support posthook.
+	* lib/review/compiler.rb: support //raw.
+	* lib/review/epubbuilder.rb: support //memo, //tip, //info,
+	  //planning, //best, //important, //security, //caution,
+	  //notice, //point, //shoot, and @<tti>.
+	* lib/review/idgxmlbuilder.rb: move //raw to compiler.rb.
+
+Wed May 26 15:46:05 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (4d23d423b4081558880d9f56d7b4d83ea231bd4a).
+	  - fix to use inline tag in footnote of latexbuilder
+	  - fixed escaping in href
+	  - do not show any caption if caption words is empty
+	* lib/review/latexbuilder.rb: use level 2 as temporary level for
+	  columns.
+
+Tue May 25 20:53:44 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (1feedbcc1cf385af347b2ba398e7f10e70bb8be3)
+	  - add tests of label and href in epubbuilder
+	  - add tests of label and href in latexbuilder
+	  - add //label op and support \ref in latexbuilder
+	  - add @<href> for latexbuilder
+
+Tue May 25 15:17:23 2010  Kenshi Muto  <kmuto@topstudio.co.jp>
+
+	* lib/review/builder.rb, lib/review/compiler.rb,
+	  lib/review/idgxmlbuilder.rb, lib/review/epubbuilder.rb:
+	  add @<href> and //label op.
+
+Tue May 25 14:40:53 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, lib/review/epubbuider.rb, doc/sample.yaml:
+	  add toc into epub.
+
+Tue May 25 11:37:54 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch (2d2944a63fae79586c3c1bf70aeed6e293f36393)
+	  - lib/review/latexbuilder.rb: supported secnolevel.
+	  - test/: added tests.
+	  - refactoring a method headline()
+
+Mon May 24 14:22:18 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: specify explicitly -0 (uncompress) option
+	  for mimetype.
+	* lib/review/epubbuilder.rb: remove prefix ./ from img href attribute.
+	* bin/review2idgxml, bin/review2top: removed. These files were added
+	  accidentally.
+
+Sat May 22 15:38:18 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge takahashim's branch. (279fecca05cdc1cdde5d156215785da6da6c2f11)
+	  - lib/review/htmlbuilder.rb: escape titles of header.
+	    add //parasep.
+	  - lib/review/epubbuilder.rb: escape titles of header.
+	  - lib/review/latexbuilder.rb: don't show the number of
+	    sections.
+	    use quotation env. for //quote.
+	    add //parasep and //read.
+
+Fri May 21 16:50:12 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-index, lib/review/tocprinter.rb: Support
+	  --inencoding and --outencoding.
+
+Fri May 21 16:21:14 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: Add //linebreak and //pagebreak.
+
+Fri May 21 16:17:05 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/sample.css, sample.yaml: Add sample files for
+	  review-epubmaker.
+
+Fri May 21 15:53:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-check: modify to use lib/review/book instead of
+	  lib/review/env. Support --inencoding and --outencoding
+	  options.
+
+Tue May 18 16:20:51 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: use <p> instead of <caption>.
+
+Tue May 18 11:16:57 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb, bin/review-epubbuilder:
+	  fix a typo around meta information.
+
+Mon May 17 22:06:50 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: Add //noindent, @<u>.
+
+Mon May 17 15:55:35 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb, bin/review-vol: Fix review-vol to pass
+	  parameters correctly.
+
+Mon May 17 12:14:48 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb: Skip any contents except \A=+
+	  when taking a title.
+
+Mon May 17 12:05:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, epubbuilder.rb: add --stylesheet=file
+	  option.
+
+Mon May 17 11:06:46 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: treat comment as HTML comment.
+
+Mon May 17 11:02:33 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	  lib/review/epubbuilder.rb: add //lead as alias of read.
+	  Support dummy //tsize on epubbuilder.
+
+Fri May 14 16:09:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: Pass more meta info to opf file.
+
+Fri May 14 15:24:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: Support --level as same as
+	  idgxmlbuilder.
+
+Fri May 14 12:29:53 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: Add toc, cover feature. Fix a link.
+	  Now it works minimum.
+
+Thu May 13 16:40:30 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb, lib/review/index.rb: use a parameter
+	  hash instead of global parameter.
+
+Thu May 13 14:25:08 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/format.txt: Fix a typo. layout/ -> layouts/
+
+Thu May 13 14:15:34 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker: initial epub maker (under development)
+	* lib/review/epubbuilder.rb: initial epub builder.
+	* bin/review-compile, lib/review/*.rb: use a parameter hash
+	  instead of global parameter.
+	* lib/review/book.rb: allow SVG as image files.
+
 Fri Apr 30 21:59:34 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: add 'type' attribute in list

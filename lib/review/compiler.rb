@@ -1,6 +1,6 @@
-# $Id: compiler.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
+# Copyright (c) 2009-2010 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -42,8 +42,14 @@ module ReVIEW
 
     attr_reader :strategy
 
+    def setParameter(param)
+      @param = param
+      @strategy.setParameter(@param)
+    end
+
     def compile(chap)
       @chapter = chap
+      @chapter.setParameter(@param)
       do_compile
       @strategy.result
     end
@@ -124,6 +130,7 @@ module ReVIEW
     end
 
     defblock :read, 0
+    defblock :lead, 0
     defblock :list, 2
     defblock :emlist, 0..1
     defblock :cmd, 0..1
@@ -137,12 +144,23 @@ module ReVIEW
     defblock :doorquote, 1
     defblock :talk, 0
 
+    defblock :address, 0
+    defblock :blockquote, 0
+    defblock :bpo, 0
+    defblock :flushright, 0
+    defblock :note, 0..1
+
     defsingle :footnote, 2
     defsingle :comment, 1
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
     defsingle :numberlessimage, 2
+    defsingle :hr, 0
+    defsingle :parasep, 0
+    defsingle :label, 1
+    defsingle :raw, 1
+    defsingle :tsize, 1
 
     definline :chapref
     definline :chap
@@ -160,6 +178,28 @@ module ReVIEW
     definline :code
     definline :bib
     definline :hd
+    definline :href
+    definline :recipe
+
+    definline :abbr
+    definline :acronym
+    definline :cite
+    definline :dfn
+    definline :em
+    definline :kbd
+    definline :q
+    definline :samp
+    definline :strong
+    definline :var
+    definline :big
+    definline :small
+    definline :del
+    definline :ins
+    definline :sup
+    definline :sub
+    definline :tt
+    definline :i
+    definline :raw
 
     private
 
@@ -397,7 +437,7 @@ module ReVIEW
     end
 
     def compile_unknown_command(args, lines)
-      @strategy.uknown_command args, lines
+      @strategy.unknown_command args, lines
     end
 
     def compile_block(syntax, args, lines)
@@ -418,8 +458,8 @@ module ReVIEW
     def text(str)
       return '' if str.empty?
       words = str.split(/(@<\w+>\{(?:[^\}\\]+|\\.)*\})/, -1)
-      unless words.size / 2 == str.scan(/@<\w+>/).size
-        error "`@<xxx>' seen but is not valid inline op: #{str.inspect}"
+      words.each do |w|
+        error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
       end
       result = @strategy.nofunc_text(words.shift)
       until words.empty?

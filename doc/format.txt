@@ -379,7 +379,7 @@ ReVIEW は任意のブロックを追加可能なので、本によって専用ブロックを
 
 ■HTMLのレイアウト機能
 
-CHAPSファイルが置かれているディレクトリに layout/layout.erb
+CHAPSファイルが置かれているディレクトリに layouts/layout.erb
 を置くとその html を ERB で評価します。
 
 [例]
@@ -419,7 +419,6 @@ PART:
   はじまりの部
   おわりの部
 
-
 ■番号が振られていない図
 
 番号が振られていない画像ファイル生成します。
@@ -442,3 +441,17 @@ PART:
 [例]
 
   @<hd>{preface|はじめに|まずわ}
+
+■リンク
+
+Web ハイパーリンクを記述するには、リンクに @<href>、アンカーに //label
+を使います。リンクの書式は @<href>{URL, 文字表現} で、「, 文字表現」を
+省略すると URL がそのまま使われます。URL 中に , を使いたいときには、\,
+と表記してください。
+
+[例]
+@<href>{http://github.com/, GitHub}
+@<href>{http://www.google.com/}
+@<href>{#point1, ドキュメント内ポイント}
+@<href>{chap1.html#point1, ドキュメント内ポイント}
+//label[point1]

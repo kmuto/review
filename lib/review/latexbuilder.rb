@@ -1,8 +1,8 @@
 #
-# $Id: latexbuilder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
+#               2010  Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -62,8 +62,31 @@ module ReVIEW
     }
 
     def headline(level, label, caption)
+      prefix = ""
+      if level > @param["secnolevel"]
+        prefix = "*"
+      end
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level], caption)
+      puts macro(HEADLINE[level]+prefix, escape(caption))
+    end
+
+    def column_begin(level, label, caption)
+      blank
+      ## puts '\vspace{2zw}' 
+      puts '\begin{center}'
+      puts '\begin{minipage}{0.9\linewidth}'
+      puts '\begin{framed}'
+      puts '\setlength{\FrameSep}{2zw}'
+
+      headline(2, label, caption)   # FIXME
+    end
+
+    def column_end(level)
+      puts '\end{framed}'
+      puts '\end{minipage}'
+      puts '\end{center}'
+      ## puts '\vspace{2zw}'
+      blank
     end
 
     def ul_begin
@@ -122,6 +145,16 @@ module ReVIEW
       blank
     end
 
+    def parasep()
+      puts '\\parasep'
+    end
+
+    def read(lines)
+      latex_block 'quotation', lines
+    end
+
+    alias lead read
+
     def emlist(lines)
       blank
       puts '\begin{reviewemlist}'
@@ -173,7 +206,9 @@ module ReVIEW
         puts macro('includegraphics', @chapter.image(id).path)
       end
       puts macro('label', image_label(id))
-      puts macro('caption', text(caption))
+      if !caption.empty?
+        puts macro('caption', text(caption))
+      end
       puts '\end{reviewimage}'
     end
 
@@ -233,7 +268,7 @@ module ReVIEW
     end
 
     def quote(lines)
-      latex_block 'quote', lines
+      latex_block 'quotation', lines
     end
 
     def center(lines)
@@ -266,6 +301,10 @@ module ReVIEW
       puts "% #{str}"
     end
 
+    def label(id)
+      puts macro('label', id)
+    end
+
     def pagebreak
       puts '\pagebreak'
     end
@@ -295,7 +334,7 @@ module ReVIEW
     end
 
     def inline_fn(id)
-      macro('footnote', nofunc_text(@chapter.footnote(id).content.strip))
+      macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
     end
 
     BOUTEN = "・"
@@ -333,7 +372,7 @@ module ReVIEW
       escape(str)
     end
 
-    def tt(str)
+    def inline_tt(str)
       macro('texttt', escape(str))
     end
 
@@ -361,6 +400,19 @@ module ReVIEW
       else
         macro('textgt', escape(word))
       end
+    end
+
+    def compile_href(url, label)
+      label ||=  url
+      if /\A[a-z]+:\/\// =~ url
+        macro("href", url, escape(label))
+      else
+        macro("ref", url)
+      end
+    end
+
+    def tsize(str)
+      # dummy
     end
 
   end

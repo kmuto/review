@@ -2,6 +2,7 @@
 #
 # $Id: review-preproc 3761 2007-12-31 07:20:09Z aamine $
 #
+# Copyright (c) 2010 Minero Aoki, Kenshi Muto
 # Copyright (c) 1999-2007 Minero Aoki
 #
 # This program is free software.
@@ -31,11 +32,24 @@ rescue Errno::EPIPE
 end
 
 def main
-  $KCODE = 'EUC' unless defined?(Encoding)
+  $KCODE = 'UTF-8' unless defined?(Encoding)
+
+  param = {
+    "inencoding" => "UTF-8",
+    "outencoding" => "UTF-8",
+  }
 
   mode = :output
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [-c|-d|-s|--replace] [<file>...]"
+  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and
+SJIS)') {|enc|
+    param["inencoding"] = enc
+  }
+  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC
+, JIS, and SJIS)') {|enc|
+    param["outencoding"] = enc
+  }
   parser.on('-c', '--check', 'Check if preprocess is needed.') {
     mode = :check
   }
@@ -64,6 +78,7 @@ def main
   end
 
   pp = ReVIEW::Preprocessor.new(ReVIEW::Repository.new)
+  pp.setParameter(param)
   current_file = nil
   ARGV.each do |path|
     current_file = path
