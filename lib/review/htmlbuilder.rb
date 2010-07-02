@@ -231,7 +231,26 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      puts "<blockquote>#{lines.join("\n")}</blockquote>"
+      puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
+    end
+
+    def doorquote(lines, ref)
+      puts <<-QUOTE
+<blockquote style='text-align:right;'>
+  <pre>
+#{lines.join("\n")}
+
+#{ref}より</pre>
+</blockquote>
+QUOTE
+    end
+
+    def talk(lines)
+      puts '<div class="talk">'
+      puts '<pre>'
+      puts "#{lines.join("\n")}"
+      puts '</pre>'
+      puts '</div>'
     end
 
     def image_image(id, metric, caption)

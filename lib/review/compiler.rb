@@ -134,6 +134,8 @@ module ReVIEW
     defblock :listnum, 2
     defblock :emlistnum, 0..1
     defblock :bibpaper, 2..3, true
+    defblock :doorquote, 1
+    defblock :talk, 0
 
     defsingle :footnote, 2
     defsingle :comment, 1
