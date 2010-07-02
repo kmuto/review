@@ -395,6 +395,9 @@ QUOTE
       escape_html(str)
     end
 
+    def compile_href(url, label)
+      %Q(<a href='#{url}'>#{label.nil? ? url : label}</a>)
+    end
   end
 
 end   # module ReVIEW
