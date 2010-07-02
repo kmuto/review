@@ -270,7 +270,7 @@ module ReVIEW
         while @tagged_section.last and @tagged_section.last[1] >= level
           close_tagged_section(* @tagged_section.pop)
         end
-        if @@hdnumberingmode
+        if @strategy.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
         end
         @strategy.headline level, label, @strategy.text(caption)

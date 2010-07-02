@@ -16,6 +16,8 @@ module ReVIEW
 
   class Builder
 
+    attr_reader :param
+
     def initialize(strict = false, *args)
       @strict = strict
       builder_init(*args)
