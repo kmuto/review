@@ -1,3 +1,9 @@
+Sat Jul  3 22:50:40 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, lib/review/idgxmlbuilder.rb:
+	  add --listinfo parameter to make decorating program
+	  list easier.
+
 Tue Jun 22 21:49:10 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb: ignore invalid inline op error

@@ -341,9 +341,18 @@ module ReVIEW
       print %Q[<list type='#{css_class}'>]
       puts "<caption aid:pstyle='#{css_class}-title'>#{escape_html(caption)}</caption>" unless caption.nil?
       print %Q[<pre>]
+      no = 1
       lines.each do |line|
+        unless @param["listinfo"].nil?
+          print "<listinfo line=\"#{no}\""
+          print " begin=\"1\"" if no == 1
+          print " end=\"#{no}\"" if no == lines.size
+          print ">"
+        end
         print detab(line)
         print "\n"
+        print "</listinfo>" unless @param["listinfo"].nil?
+        no += 1
       end
       puts '</pre></list>'
     end

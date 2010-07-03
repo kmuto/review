@@ -65,11 +65,14 @@ def _main
   parser.on('--level=LVL', 'Section level to append number.') {|lvl|
     param["secnolevel"] = lvl.to_i
   }
-  parser.on('--nolfinxml', 'Do not insert LF in XML.') {
+  parser.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') {
     param["nolf"] = true
   }
-  parser.on('--table=WIDTH', 'Default table width.') {|tbl|
+  parser.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl|
     param["tableopt"] = tbl
+  }
+  parser.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') {
+    param["listinfo"] = true
   }
   parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec|
     param["chapref"] = cdec
@@ -77,7 +80,7 @@ def _main
   parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') {
     param["subdirmode"] = true
   }
-  parser.on('--stylesheet=file', 'Stylesheet file for EPUB.') {|file|
+  parser.on('--stylesheet=file', 'Stylesheet file for EPUB. (epub)') {|file|
     param["stylesheet"] = file
   }
   unless target
