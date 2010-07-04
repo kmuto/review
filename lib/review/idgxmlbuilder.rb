@@ -909,7 +909,20 @@ module ReVIEW
       else
         puts %Q[<insn><floattitle type="insn">#{escape_html(caption)}</floattitle>]
       end
-      puts "<p>#{lines.join("\n")}</p></insn>"
+      no = 1
+      lines.each do |line|
+        unless @param["listinfo"].nil?
+          print "<listinfo line=\"#{no}\""
+          print " begin=\"1\"" if no == 1
+          print " end=\"#{no}\"" if no == lines.size
+          print ">"
+        end
+        print detab(line)
+        print "\n"
+        print "</listinfo>" unless @param["listinfo"].nil?
+        no += 1
+      end
+      puts "</insn>"
     end
 
     def box(lines, caption = nil)
@@ -918,7 +931,20 @@ module ReVIEW
       else
         puts %Q[<box><caption aid:pstyle="box-title">#{escape_html(caption)}</caption>]
       end
-      puts "#{lines.join("\n")}</box>"
+      no = 1
+      lines.each do |line|
+        unless @param["listinfo"].nil?
+          print "<listinfo line=\"#{no}\""
+          print " begin=\"1\"" if no == 1
+          print " end=\"#{no}\"" if no == lines.size
+          print ">"
+        end
+        print detab(line)
+        print "\n"
+        print "</listinfo>" unless @param["listinfo"].nil?
+        no += 1
+      end
+      puts "</box>"
     end
 
     def indepimage(id)

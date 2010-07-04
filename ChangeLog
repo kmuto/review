@@ -1,3 +1,8 @@
+Sun Jul  4 22:28:44 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: support --listinfo in
+	  //box and //insn.
+
 Sat Jul  3 22:50:40 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, lib/review/idgxmlbuilder.rb:
