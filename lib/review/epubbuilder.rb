@@ -180,6 +180,15 @@ EOT
       puts '</div>'
     end
 
+    def xcolumn_begin(level, label, caption)
+      puts "<div class='xcolumn'>"
+      headline(level, label, caption)   # FIXME
+    end
+
+    def xcolumn_end(level)
+      puts '</div>'
+    end
+
     def ref_begin(level, label, caption)
       print "<div class='reference'>"
       headline(level, label, caption)

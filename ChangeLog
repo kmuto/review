@@ -1,3 +1,8 @@
+Mon Jul  5 14:42:49 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb, lib/review/epubbuilder.rb:
+	  add =[xcolumn] column.
+
 Sun Jul  4 22:28:44 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: support --listinfo in

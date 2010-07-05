@@ -736,6 +736,15 @@ module ReVIEW
       puts "</column>"
     end
 
+    def xcolumn_begin(level, label, caption)
+      print "<xcolumn>"
+      puts %Q(<title aid:pstyle="xcolumn-title">#{escape_html(caption)}</title>)
+    end
+
+    def xcolumn_end(level)
+      puts "</xcolumn>"
+    end
+
     def world_begin(level, label, caption)
       print "<worldcolumn>"
       puts %Q(<title aid:pstyle="worldcolumn-title">#{escape_html(caption)}</title>)
