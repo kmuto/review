@@ -8,7 +8,7 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "review"
     gem.summary = %Q{ReVIEW: a easy-to-use digital publishing system}
-    gem.description = %Q{ReVIEW is a digital publishing system for books and ebooks. It supports InDesin, EPUB and LaTeX.}
+    gem.description = %Q{ReVIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.}
     gem.email = "kmuto@debian.org"
     gem.homepage = "http://github.com/kmuto/review"
     gem.authors = ["kmuto", "takahashim"]
