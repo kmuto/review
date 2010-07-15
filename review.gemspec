@@ -61,6 +61,7 @@ Gem::Specification.new do |s|
      "lib/review/topbuilder.rb",
      "lib/review/unfold.rb",
      "lib/review/volume.rb",
+     "review.gemspec",
      "setup.rb",
      "test/test_epubbuilder.rb",
      "test/test_helper.rb",
