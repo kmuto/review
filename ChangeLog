@@ -1,3 +1,13 @@
+Sun Aug  8 17:18:03 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* Merge nari's branch. 27a35652ecb5a94d5b36
+	  - lib/review/htmlbuilder.rb: add @<doorquote>, @<talk>
+	  - lib/review/htmlbuilder.rb: support @<href>.
+	  - lib/review/builder.rb: move param parameter to global.
+	  - lib/review/compiler.rb: replace @@hdnumberingmode by @strategy.param.
+	* lib/review/epubbuilder.rb: add @<doorquote>, @<talk>
+	* 
+
 Sun Aug  8 17:01:48 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb, lib/review/epubbuilder.rb: support //box

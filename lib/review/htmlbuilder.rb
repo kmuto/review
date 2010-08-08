@@ -396,7 +396,7 @@ QUOTE
     end
 
     def compile_href(url, label)
-      %Q(<a href='#{url}'>#{label.nil? ? url : label}</a>)
+      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
     end
   end
 
