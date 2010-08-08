@@ -253,20 +253,20 @@ module ReVIEW
     end
 
     def compile_headline(line)
-      @headline_indexs ||= [@chapter.number.to_i-1]
+      @headline_indexs ||= [@chapter.number.to_i - 1]
       m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
       level = m[1].size
       tag = m[2]
       label = m[3]
       caption = m[4].strip
-      index = level-1
+      index = level - 1
       if tag
         open_tagged_section tag, level, label, caption
       else
-        if @headline_indexs.size > (index+1)
-          @headline_indexs = @headline_indexs.take(index+1)
+        if @headline_indexs.size > (index + 1)
+          @headline_indexs = @headline_indexs.take(index + 1)
         end
-        @headline_indexs << 0 if @headline_indexs[index].nil?
+        @headline_indexs[index] << 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
         while @tagged_section.last and @tagged_section.last[1] >= level
           close_tagged_section(* @tagged_section.pop)

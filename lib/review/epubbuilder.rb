@@ -706,6 +706,14 @@ QUOTE
       %Q(<span class="u">#{escape_html(str)}</span>)
     end
 
+    def inline_hd_chap(chap, id)
+      "「#{chap.headline_index.number(id)} #{chap.headline(id).caption}」"
+    end
+
+    def inline_raw(str)
+      escape_html(str)
+    end
+
     def inline_recipe(str)
       # FIXME
       %Q(<span class="recipe">「#{escape_html(str)}」</span>)

@@ -254,11 +254,11 @@ module ReVIEW
       src.each do |line|
         if m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
           next if m[2] == 'column'
-          index = m[1].size-2
+          index = m[1].size - 2
           if index >= 0
-            if indexs.size > (index+1)
-              indexs = indexs.take(index+1)
-              headlines = headlines.take(index+1)
+            if indexs.size > (index + 1)
+              indexs = indexs.take(index + 1)
+              headlines = headlines.take(index + 1)
             end
             indexs << 0 if indexs[index].nil?
             indexs[index] += 1
