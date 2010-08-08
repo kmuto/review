@@ -63,6 +63,10 @@ module ReVIEW
     def each(&block)
       @items.each(&block)
     end
+
+    def has_key?(id)
+      return @index.has_key?(id)
+    end
   end
 
 
@@ -219,6 +223,65 @@ module ReVIEW
         seq += 1
       end
       new(items)
+    end
+  end
+
+  class NumberlessImageIndex < ImageIndex
+    class Item < ImageIndex::Item
+      def initialize(id, number)
+        @id = id
+        @number = ""
+        @pathes = nil
+      end
+    end
+
+    def NumberlessImageIndex.item_type
+      'numberlessimage'
+    end
+
+    def number(id)
+      ""
+    end
+  end
+
+  class HeadlineIndex < Index
+    Item = Struct.new(:id, :number, :caption)
+
+    def HeadlineIndex.parse(src, chap)
+      items = []
+      indexs = []
+      headlines = []
+      src.each do |line|
+        if m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
+          next if m[2] == 'column'
+          index = m[1].size-2
+          if index >= 0
+            if indexs.size > (index+1)
+              indexs = indexs.take(index+1)
+              headlines = headlines.take(index+1)
+            end
+            indexs << 0 if indexs[index].nil?
+            indexs[index] += 1
+            headlines[index] = m[4].strip
+            items.push Item.new(headlines.join("|"), indexs.dup, m[4].strip)
+          end
+        end
+      end
+      new(items, chap)
+    end
+
+    def initialize(items, chap)
+      @items = items
+      @chap = chap
+      @index = {}
+      items.each do |i|
+        warn "warning: duplicate ID: #{i.id}" unless @index[i.id].nil?
+        @index[i.id] = i
+      end
+    end
+
+    def number(id)
+      return ([@chap.number] + @index.fetch(id).number).join(".")
     end
   end
 end

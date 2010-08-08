@@ -16,6 +16,8 @@ module ReVIEW
 
   class Builder
 
+    attr_reader :param
+
     def initialize(strict = false, *args)
       @strict = strict
       builder_init(*args)
@@ -131,15 +133,15 @@ module ReVIEW
       table_begin rows.first.size
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(compile_inline(s)) }
+          tr rows.shift.map {|s| th(s) }
         end
         rows.each do |cols|
-          tr cols.map {|s| td(compile_inline(s)) }
+          tr cols.map {|s| td(s) }
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(compile_inline(h))] + cs.map {|s| td(compile_inline(s)) }
+          tr [th(h)] + cs.map {|s| td(s) }
         end
       end
       table_end
@@ -255,6 +257,13 @@ module ReVIEW
         bibpaper_bibpaper id, caption, lines
       end
       puts "</div>"
+    end
+
+    def inline_hd(id)
+      m = /\A(\w+)\|(.+)/.match(id)
+      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      return inline_hd_chap(chapter, m[2]) if chapter
+      return inline_hd_chap(@chapter, id)
     end
 
     def raw(str)

@@ -239,7 +239,26 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      puts "<blockquote>#{lines.join("\n")}</blockquote>"
+      puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
+    end
+
+    def doorquote(lines, ref)
+      puts <<-QUOTE
+<blockquote style='text-align:right;'>
+  <pre>
+#{lines.join("\n")}
+
+#{ref}より</pre>
+</blockquote>
+QUOTE
+    end
+
+    def talk(lines)
+      puts '<div class="talk">'
+      puts '<pre>'
+      puts "#{lines.join("\n")}"
+      puts '</pre>'
+      puts '</div>'
     end
 
     def image_image(id, metric, caption)
@@ -294,6 +313,13 @@ module ReVIEW
 
     def footnote(id, str)
       puts %Q(<p class="comment"><a name="fn-#{id}">#{escape_html(str)}</a></p>)
+    end
+
+    def numberlessimage(id, caption)
+      puts %Q[<p class="image">]
+      puts %Q[<img src="#{@chapter.image(id).path}" alt="(#{escape_html(caption)})">]
+      puts %Q[</p>]
+      image_header id, caption
     end
 
     def inline_fn(id)
@@ -357,6 +383,10 @@ module ReVIEW
       %Q(<a href=".#{@book.bib_file.gsub(/re$/, "html")}\#bib-#{id}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
+    def inline_hd_chap(chap, id)
+      "「#{chap.headline_index.number(id)} #{chap.headline(id).caption}」"
+    end
+
     def inline_raw(str)
       escape_html(str)
     end
@@ -365,6 +395,9 @@ module ReVIEW
       escape_html(str)
     end
 
+    def compile_href(url, label)
+      %Q(<a href='#{url}'>#{label.nil? ? url : label}</a>)
+    end
   end
 
 end   # module ReVIEW
