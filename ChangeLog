@@ -1,3 +1,9 @@
+Sun Aug  8 17:01:48 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb, lib/review/epubbuilder.rb: support //box
+	  as global environment.
+	* lib/review/epubbuilder.rb: support @<icon>.
+
 Mon Jul  5 14:42:49 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb, lib/review/epubbuilder.rb:

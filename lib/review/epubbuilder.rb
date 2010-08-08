@@ -18,7 +18,7 @@ module ReVIEW
 
   class EPUBBuilder < HTMLBuilder
 
-    [:u, :tti, :idx, :hidx].each {|e|
+    [:u, :tti, :idx, :hidx, :icon].each {|e|
       Compiler.definline(e)
     }
 
@@ -264,6 +264,17 @@ EOT
 
     def shot(lines, caption = nil)
       captionblock("shoot", lines, caption)
+    end
+
+    def box(lines, caption = nil)
+      puts '<div class="syntax">'
+      puts %Q[<p class="syntaxcaption">#{escape_html(caption)}</p>] unless caption.nil?
+      puts '<pre class="syntax">'
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts '</pre>'
+      puts '</div>'
     end
 
     def list(lines, id, caption)
@@ -681,12 +692,41 @@ EOT
       %Q(<span class="recipe">「#{escape_html(str)}」</span>)
     end
 
+    def inline_icon(id)
+      %Q[<img src=".#{@book.image_dir}#{find_pathes(id)[0].sub(/\A\.\//, "/")}" alt="[#{id}]" />]
+    end
+
     def getChap
       if @param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
         return "#{@chapter.number}."
       end
       return ""
     end
+
+    def find_pathes(id)
+      if @param["subdirmode"].nil?
+        re = /\A#{@chapter.name}-#{id}(?i:#{@book.image_types.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+        .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
+        .map {|ent| "#{@book.basedir}/#{ent}" }
+      else
+        re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+        .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
+        .map {|ent| "#{@book.asedir}/#{@chapter.name}/#{ent}" }
+      end
+    end
+    
+    def entries
+      if @param["subdirmode"].nil?
+        @entries ||= Dir.entries(@book.basedir + @book.image_dir)
+      else
+        @entries ||= Dir.entries(File.join(@book.basedir + @book.image_dir, @chapter.name))
+      end
+    rescue Errno::ENOENT
+    @entries = []
+    end
+    
   end
 
 end   # module ReVIEW
