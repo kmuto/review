@@ -157,7 +157,9 @@ EOT
       prefix, anchor = headline_prefix(level)
       puts '' if level > 1
       a_id = ""
-      unless anchor.empty?
+      if anchor.empty?
+        a_id = "<a id=\"h\" />"
+      else
         a_id = "<a id=\"h#{anchor}\" />"
       end
       if caption.empty?
