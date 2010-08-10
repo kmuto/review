@@ -18,7 +18,7 @@ class LineInput
   end
 
   def inspect
-    "\#<#{self.class} file=#{@f.inspect} line=#{lineno()}>"
+    "\#<#{self.class} file=#{@input.inspect} line=#{lineno()}>"
   end
 
   def eof?
