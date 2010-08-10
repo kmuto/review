@@ -41,7 +41,6 @@ module ReVIEW
     Compiler.defblock(:term, 0)
     Compiler.defblock(:link, 0..1)
     Compiler.defblock(:practice, 0)
-    Compiler.defblock(:box, 0..1)
     Compiler.defblock(:expert, 0)
     Compiler.defblock(:lead, 0)
     Compiler.defblock(:rawblock, 0)

@@ -141,17 +141,22 @@ module ReVIEW
     defblock :listnum, 2
     defblock :emlistnum, 0..1
     defblock :bibpaper, 2..3, true
+    defblock :doorquote, 1
+    defblock :talk, 0
+
     defblock :address, 0
     defblock :blockquote, 0
     defblock :bpo, 0
     defblock :flushright, 0
     defblock :note, 0..1
+    defblock :box, 0..1
 
     defsingle :footnote, 2
     defsingle :comment, 1
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
+    defsingle :numberlessimage, 2
     defsingle :hr, 0
     defsingle :parasep, 0
     defsingle :label, 1
@@ -173,6 +178,7 @@ module ReVIEW
     definline :dtp
     definline :code
     definline :bib
+    definline :hd
     definline :href
     definline :recipe
 
@@ -194,7 +200,6 @@ module ReVIEW
     definline :sub
     definline :tt
     definline :i
-
     definline :raw
 
     private
@@ -248,17 +253,27 @@ module ReVIEW
     end
 
     def compile_headline(line)
+      @headline_indexs ||= [@chapter.number.to_i - 1]
       m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
       level = m[1].size
       tag = m[2]
       label = m[3]
       caption = m[4].strip
-      while @tagged_section.last and @tagged_section.last[1] >= level
-        close_tagged_section(* @tagged_section.pop)
-      end
+      index = level - 1
       if tag
         open_tagged_section tag, level, label, caption
       else
+        if @headline_indexs.size > (index + 1)
+          @headline_indexs = @headline_indexs.take(index + 1)
+        end
+        @headline_indexs[index] = 0 if @headline_indexs[index].nil?
+        @headline_indexs[index] += 1
+        while @tagged_section.last and @tagged_section.last[1] >= level
+          close_tagged_section(* @tagged_section.pop)
+        end
+        if @strategy.param["hdnumberingmode"]
+          caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
+        end
         @strategy.headline level, label, @strategy.text(caption)
       end
     end

@@ -83,6 +83,9 @@ def _main
   parser.on('--stylesheet=file', 'Stylesheet file for EPUB. (epub)') {|file|
     param["stylesheet"] = file
   }
+  parser.on('--hdnumberingmode', 'Output numbering headlines.') {
+    @@hdnumberingmode = true
+  }
   unless target
     parser.on('--target=FMT', 'Target format.') {|fmt|
       target = fmt

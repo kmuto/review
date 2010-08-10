@@ -438,6 +438,8 @@ module ReVIEW
       @table_index = nil
       @footnote_index = nil
       @image_index = nil
+      @numberless_image_index = nil
+      @headline_index = nil
     end
 
     def setParameter(param)
@@ -554,7 +556,15 @@ module ReVIEW
     end
 
     def image(id)
-      image_index()[id]
+      return image_index()[id] if image_index().has_key?(id)
+      numberless_image_index()[id]
+    end
+
+    def numberless_image_index
+      @numberless_image_index ||=
+        NumberlessImageIndex.parse(lines(), id(),
+                                   "#{book.basedir}#{@book.image_dir}",
+                                   @book.image_types)
     end
 
     def image_index
@@ -575,6 +585,17 @@ module ReVIEW
       @bibpaper_index.setParameter(@param)
       @bibpaper_index
     end
-  end
 
+    def headline(caption)
+      headline_index()[caption]
+    end
+
+    def headline_index
+      @headline_index ||= HeadlineIndex.parse(lines(), self)
+    end
+
+    def on_CHAPS?
+      @book.read_CHAPS().lines.map(&:strip).include?(id() + @book.ext())
+    end
+  end
 end
