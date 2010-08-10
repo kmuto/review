@@ -17,5 +17,5 @@ module ReVIEW
   class CompileError < ApplicationError; end
   class SyntaxError < CompileError; end
   class FileNotFound < ApplicationError; end
-
+  class KeyError <  CompileError; end
 end
