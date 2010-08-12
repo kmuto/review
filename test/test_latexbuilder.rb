@@ -71,4 +71,19 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\href{http://example.com/aaa/bbb}{AAA\\symbol{\"5F}BBB}|, ret
   end
 
+  def test_normal_text
+    ret = @builder.text("abcde. xyz123.")
+    assert_equal %Q|abcde. xyz123.|, ret
+  end
+
+  def test_escaped_text
+    ret = @builder.text("a<>b&c\de. xyz[]123.")
+    assert_equal %Q|a<>b&c\de. xyz[]123.|, ret
+  end
+
+  def test_escape
+    ret = @builder.instance_eval{escape("a<>b&c\\de. xyz[]123.")}
+    assert_equal %Q|a\\symbol{"3C}\\symbol{"3E}b\\&c\\symbol{"5C}de. xyz[]123.|, ret
+  end
+
 end
