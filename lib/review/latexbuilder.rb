@@ -21,6 +21,8 @@ module ReVIEW
     include LaTeXUtils
     include TextUtils
 
+    Compiler.defblock(:memo, 0..1)
+
     def extname
       '.tex'
     end
@@ -58,7 +60,8 @@ module ReVIEW
       1 => 'chapter',
       2 => 'section',
       3 => 'subsection',
-      4 => 'subsubsection'
+      4 => 'subsubsection',
+      5 => 'paragraph'
     }
 
     def headline(level, label, caption)
@@ -72,6 +75,8 @@ module ReVIEW
 
     def column_begin(level, label, caption)
       blank
+      puts "\\begin{reviewcolumn}\n\\reviewcolumnhead{#{label}}{#{escape(caption)}}"
+=begin
       ## puts '\vspace{2zw}' 
       puts '\begin{center}'
       puts '\begin{minipage}{0.9\linewidth}'
@@ -79,14 +84,34 @@ module ReVIEW
       puts '\setlength{\FrameSep}{2zw}'
 
       headline(2, label, caption)   # FIXME
+=end
+
     end
 
     def column_end(level)
+      puts "\\end{reviewcolumn}"
+=begin
       puts '\end{framed}'
       puts '\end{minipage}'
       puts '\end{center}'
       ## puts '\vspace{2zw}'
+=end
       blank
+    end
+
+    def minicolumn(type, lines, caption)
+      puts "\\begin{reviewminicolumn}\n"
+      unless caption.nil?
+        puts "\\reviewminicolumntitle{#{escape(caption)}}\n"
+      end
+      lines.each {|l|
+        puts l
+      }
+      puts "\\end{reviewminicolumn}\n"
+    end
+
+    def memo(lines, caption = nil)
+      minicolumn("memo", lines, caption)
     end
 
     def ul_begin
@@ -237,7 +262,7 @@ module ReVIEW
     private :image_label
 
     def table_header(id, caption)
-      puts macro('reviewtablecaption', "#{@chapter.number}.#{@chapter.table(id).number}", text(caption))
+      puts macro('reviewtablecaption', "#{@chapter.number}.#{@chapter.table(id).number}", escape(caption))
     end
 
     def table_begin(ncols)
@@ -360,12 +385,12 @@ module ReVIEW
 
     # index
     def inline_i(str)
-      text(str) + index(str)
+      escape(str) + index(str)
     end
 
     # bold
     def inline_b(str)
-      macro('textbf', text(str))
+      macro('textbf', escape(str))
     end
 
     def nofunc_text(str)
@@ -374,6 +399,10 @@ module ReVIEW
 
     def inline_tt(str)
       macro('texttt', escape(str))
+    end
+
+    def inline_raw(str)
+      escape(str)
     end
 
     def index(str)
