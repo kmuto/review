@@ -181,6 +181,7 @@ module ReVIEW
     definline :hd
     definline :href
     definline :recipe
+    definline :u
 
     definline :abbr
     definline :acronym
