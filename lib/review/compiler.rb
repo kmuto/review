@@ -239,7 +239,7 @@ module ReVIEW
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
           if block_open?(line)
             warn "skipping block..."
-            read_block(f)
+            read_block(f, nil)
           end
         else
           if f.peek.strip.empty?
@@ -387,7 +387,7 @@ module ReVIEW
       line = f.gets
       name = line.slice(/[a-z]+/).intern
       args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'))
-      lines = block_open?(line) ? read_block(f) : nil
+      lines = block_open?(line) ? read_block(f, name) : nil
       return name, args, lines
     end
 
@@ -395,11 +395,15 @@ module ReVIEW
       line.rstrip[-1,1] == '{'
     end
 
-    def read_block(f)
+    def read_block(f, name)
       head = f.lineno
       buf = []
       f.until_match(%r<\A//\}>) do |line|
-        buf.push text(line.rstrip)
+        if preformatted? name
+          buf.push line.rstrip
+        else
+          buf.push text(line.rstrip)
+        end
       end
       unless %r<\A//\}> =~ f.peek
         error "unexpected EOF (block begins at: #{head})"
@@ -407,6 +411,10 @@ module ReVIEW
       end
       f.gets   # discard terminator
       buf
+    end
+
+    def preformatted?(name)
+      [:emlist, :list, :emlistnum, :listnum, :cmd].include? name
     end
 
     def parse_args(str)
