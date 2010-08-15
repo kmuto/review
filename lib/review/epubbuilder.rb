@@ -493,7 +493,7 @@ QUOTE
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
+      puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}]</a> #{escape_html(str)}</p></div>)
     end
 
     def hr
