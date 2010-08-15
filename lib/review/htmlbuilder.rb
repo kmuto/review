@@ -153,8 +153,16 @@ module ReVIEW
       puts '<br />'
     end
 
+    def multi_paragraph(lines)
+      lines.each do |line|
+        puts "<p>#{line}</p>"
+      end
+    end
+
     def read(lines)
-      puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
+      puts '<div class="lead">'
+      multi_paragraph(lines)
+      puts '</div>'
     end
 
     def lead(lines)
@@ -239,7 +247,9 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
+      puts "<blockquote>"
+      multi_paragraph(lines)
+      puts "</blockquote>"
     end
 
     def doorquote(lines, ref)
