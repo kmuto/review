@@ -427,7 +427,7 @@ QUOTE
       puts %Q[</p>]
     end
 
-    def table(lines, id = nil, caption = nil)
+    def table(lines, id = nil, caption = nil, preamble = nil)
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -441,13 +441,17 @@ QUOTE
       end
       rows = adjust_n_cols(rows)
 
+      table_div_begin id
+
+      table_begin rows.first.size
+      return if rows.empty?
+
       begin
         table_header id, caption unless caption.nil?
       rescue KeyError => err
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
-      return if rows.empty?
+
       if sepidx
         sepidx.times do
           tr rows.shift.map {|s| th(compile_inline(s)) }
@@ -462,6 +466,12 @@ QUOTE
         end
       end
       table_end
+
+      table_div_end
+    end
+
+    def table_div_begin(id)
+      puts %Q[<div class="table" id="#{id}">]
     end
 
     def table_header(id, caption)
@@ -486,6 +496,10 @@ QUOTE
     
     def table_end
       puts '</table>'
+    end
+
+    def table_div_end
+      puts '</div>'
     end
 
     def comment(str)
