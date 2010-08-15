@@ -110,7 +110,7 @@ module ReVIEW
       end
     end
 
-    def table(lines, id = nil, caption = nil)
+    def table(lines, id = nil, caption = nil, preamble = nil)
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -130,7 +130,7 @@ module ReVIEW
         error "no such table: #{id}"
       end
       return if rows.empty?
-      table_begin rows.first.size
+      table_begin rows.first.size, preamble
       if sepidx
         sepidx.times do
           tr rows.shift.map {|s| th(s) }

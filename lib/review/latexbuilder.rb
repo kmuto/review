@@ -265,8 +265,12 @@ module ReVIEW
       puts macro('reviewtablecaption', "#{@chapter.number}.#{@chapter.table(id).number}", escape(caption))
     end
 
-    def table_begin(ncols)
-      puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
+    def table_begin(ncols, preamble)
+      if preamble
+        puts macro('begin', 'reviewtable', preamble)
+      else
+        puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
+      end
       puts '\hline'
     end
 

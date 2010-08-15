@@ -134,7 +134,7 @@ module ReVIEW
     defblock :list, 2
     defblock :emlist, 0..1
     defblock :cmd, 0..1
-    defblock :table, 0..2
+    defblock :table, 0..3
     defblock :quote, 0
     defblock :image, 2..3, true
     defblock :source, 1
