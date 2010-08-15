@@ -270,7 +270,7 @@ EOT
 
     def box(lines, caption = nil)
       puts '<div class="syntax">'
-      puts %Q[<p class="syntaxcaption">#{escape_html(caption)}</p>] unless caption.nil?
+      puts %Q[<p class="caption">#{escape_html(caption)}</p>] unless caption.nil?
       puts '<pre class="syntax">'
       lines.each do |line|
         puts detab(line)
@@ -291,7 +291,7 @@ EOT
     end
 
     def list_header(id, caption)
-      puts %Q[<p class="listcaption">リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<p class="caption">リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
     end
 
     def list_body(lines)
@@ -310,7 +310,7 @@ EOT
     end
 
     def source_header(caption)
-      puts %Q[<p class="sourcecaption">#{escape_html(caption)}</p>]
+      puts %Q[<p class="caption">#{escape_html(caption)}</p>]
     end
 
     def source_body(lines)
@@ -342,7 +342,7 @@ EOT
 
     def emlist(lines, caption = nil)
       puts '<div class="code">'
-      puts %Q(<p class="emlistcaption">#{caption}</p>) unless caption.nil?
+      puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
       puts '<pre class="emlist">'
       lines.each do |line|
         puts detab(escape_html(line))
@@ -422,7 +422,7 @@ QUOTE
     end
 
     def image_header(id, caption)
-      puts %Q[<p class="imagecaption">]
+      puts %Q[<p class="caption">]
       puts %Q[図#{getChap}#{@chapter.image(id).number}: #{escape_html(caption)}]
       puts %Q[</p>]
     end
@@ -465,7 +465,7 @@ QUOTE
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="tablecaption">表#{getChap}#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<caption>表#{getChap}#{@chapter.table(id).number}: #{escape_html(caption)}</caption>]
     end
 
     def table_begin(ncols)
@@ -526,7 +526,7 @@ QUOTE
 
     def note(lines, caption = nil)
       puts '<div class="note">'
-      puts "<p class='notecaption'>#{escape_html(caption)}</p>" unless caption.nil?
+      puts "<p class='caption'>#{escape_html(caption)}</p>" unless caption.nil?
       puts "#{lines.join("\n")}</div>"
     end
 
