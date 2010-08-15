@@ -261,6 +261,9 @@ module ReVIEW
       caption = m[4].strip
       index = level - 1
       if tag
+        while @tagged_section.last and @tagged_section.last[1] >= level
+          close_tagged_section(* @tagged_section.pop)
+        end
         open_tagged_section tag, level, label, caption
       else
         if @headline_indexs.size > (index + 1)
