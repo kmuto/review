@@ -8,7 +8,9 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
+require 'tmpdir'
 require 'yaml'
+require 'fileutils'
 
 def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
@@ -20,7 +22,7 @@ def usage
   exit 0
 end
 
-def check_book
+def check_book(values)
   pdf_file = values["bookname"]+".pdf"
   if File.exists? pdf_file
     error "file already exists:#{pdf_file}"
@@ -45,6 +47,13 @@ def main
   path = build_path(values)
   Dir.mkdir(path)
 
+  pre = 0
+  body = 0
+  post = 0
+  @pre_str = ""
+  @chap_str = ""
+  @post_str = ""
+  toccount = 2
 
   if File.exists?("PREDEF")
     File.open("PREDEF") {|chaps|
@@ -54,10 +63,10 @@ def main
         toccount = toccount + 1
         fork {
           STDOUT.reopen("#{path}/pre#{pre}.tex")
-          exec("review-compile --target=latex --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+          exec("review-compile --target=latex --level=1 #{values["params"]} #{l}")
         }
         Process.waitall
-        @pre_str << %Q|\input{pre#{pre}.tex}\n|
+        @pre_str << %Q|\\input{pre#{pre}.tex}\n|
       }
     }
   end
@@ -72,7 +81,7 @@ def main
           exec("review-compile --target=latex --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
-        @chap_str << %Q|\input{chap#{body}.tex}\n|
+        @chap_str << %Q|\\input{chap#{body}.tex}\n|
       }
     }
   end
@@ -84,17 +93,24 @@ def main
         toccount = toccount + 1
         fork {
           STDOUT.reopen("#{path}/post#{post}.tex")
-          exec("review-compile --target=latex --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+          exec("review-compile --target=latex --level=1 #{values["params"]} #{l}")
         }
         Process.waitall
-        @post_str << %Q|\input{post#{post}.tex}\n|
+        @post_str << %Q|\\input{post#{post}.tex}\n|
       }
     }
   end
   values["pre_str"] = @pre_str
   values["chap_str"] = @chap_str
   values["post_str"] = @post_str
+
+  values["usepackage"] = ""
+  if values["texstyle"]
+    values["usepackage"] = "\\usepackage{#{values['texstyle']}}"
+  end
+
   copy_images("./images", "#{path}/images")
+  copyStyToDir(Dir.pwd + "/sty", path)
 
   Dir.chdir(path) {
     template = get_template(values)
@@ -106,11 +122,15 @@ def main
     }
     Process.waitall
     fork {
-      exec("dvipdfmx book.dvi")
+      exec("platex book.tex")
+    }
+    Process.waitall
+    fork {
+      exec("dvipdfmx -d 5 book.dvi")
     }
     Process.waitall
   }
-  File.cp("#{path}/book.pdf", basedir)
+  FileUtils.cp("#{path}/book.pdf", basedir)
 
 end
 
@@ -129,145 +149,203 @@ end
 
 def get_template(values)
   str = <<EOB
-\documentclass[oneside]{jsbook}
-\usepackage[deluxe]{otf}
-\usepackage[dvipdfmx]{color}
-\usepackage[dvipdfmx]{graphicx}
-\usepackage{framed}
-\usepackage{wrapfig}
-\definecolor{shadecolor}{gray}{0.9}
-\usepackage{eclbkbox}
+\\documentclass[oneside]{jsbook}
+\\usepackage[deluxe]{otf}
+\\usepackage[dvipdfmx]{color}
+\\usepackage[dvipdfmx]{graphicx}
+\\usepackage{framed}
+\\usepackage{wrapfig}
+\\definecolor{shadecolor}{gray}{0.9}
+\\usepackage{eclbkbox}
 
-\usepackage{ascmac}
+\\usepackage{ascmac}
 
-\usepackage{float}
+\\usepackage{float}
 
-\usepackage{tatsumacro}
+#{values["usepackage"]}
 
-\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
-%\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
+\\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
+%\\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
 
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\renewcommand{\chaptermark}[1]{\markboth{第\ \thechapter\ 章~#1}{}}
+\\usepackage{fancyhdr}
+\\pagestyle{fancy}
+\\lhead{\\gtfamily\\sffamily\\bfseries\\upshape \\leftmark}
+\\chead{}
+\\rhead{\\gtfamily\\sffamily\\bfseries\\upshape \\rightmark}
 
-\renewcommand{\headfont}{\gtfamily\sffamily\bfseries}
+\\renewcommand{\\chaptermark}[1]{\\markboth{第\\ \\thechapter\\ 章~#1}{}}
 
-\newcommand{\parasep}{\vspace*{3zh}}
-\setlength{\footskip}{30pt}
+\\renewcommand{\\headfont}{\\gtfamily\\sffamily\\bfseries}
 
-\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+\\newcommand{\\parasep}{\\vspace*{3zh}}
+\\setlength{\\footskip}{30pt}
+
+\\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={#{values["booktitle"]}},%
             pdfauthor={#{values["aut"]}}]{hyperref}
 
 %% Bookmarkの文字化け対策（日本語向け）
-\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
-  \AtBeginDvi{\special{pdf:tounicode EUC-UCS2}}%
-\else
-  \AtBeginDvi{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-\fi
+\\ifnum 46273=\\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
+  \\AtBeginDvi{\\special{pdf:tounicode EUC-UCS2}}%
+\\else
+  \\AtBeginDvi{\\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
+\\fi
 
-\newcommand{\mytitle}[1]{%
-  \title{\usefont{T1}{pag}{b}{n} \Huge\gtfamily\ebseries #1\vspace*{10zh}}}
-%  \title{\usefont{T1}{pag}{b}{n} \Huge\gtfamily\ebseries #1\vspace*{5zh}}}
-\newcommand{\myauthor}[1]{%
-  \author{\usefont{T1}{pag}{m}{n} \gtfamily \huge #1\vspace*{1zh}}}
-\newcommand{\mydate}[1]{%
-  \date{\usefont{T1}{pag}{m}{n} \gtfamily #1 \hspace{2zw}#{values["prt"]}　発行}}
+\\newcommand{\\mytitle}[1]{%
+  \\title{\\usefont{T1}{pag}{b}{n} \\Huge\\gtfamily\\ebseries #1\\vspace*{10zh}}}
+%  \\title{\\usefont{T1}{pag}{b}{n} \\Huge\\gtfamily\\ebseries #1\\vspace*{5zh}}}
+\\newcommand{\\myauthor}[1]{%
+  \\author{\\usefont{T1}{pag}{m}{n} \\gtfamily \\huge #1\\vspace*{1zh} 著}}
+\\newcommand{\\mydate}[1]{%
+  \\date{\\usefont{T1}{pag}{m}{n} \\gtfamily #1 \\hspace{2zw}#{values["prt"]}　発行}}
 
-\newenvironment{reviewimage}{%
-  \begin{figure}[H]
-    \begin{center}}{%
-    \end{center}
-  \end{figure}}
+\\newenvironment{reviewimage}{%
+  \\begin{figure}[H]
+    \\begin{center}}{%
+    \\end{center}
+  \\end{figure}}
 
-\newenvironment{reviewemlist}{%
-  \begin{shaded}}{%
-  \end{shaded}}
+\\newenvironment{reviewdummyimage}{%
+  \\begin{figure}[H]
+    \\begin{center}}{%
+    \\end{center}
+  \\end{figure}}
 
-\newenvironment{reviewlist}{%
-  \begin{quote}}{%
-  \end{quote}}
+\\newenvironment{reviewemlist}{%
+  \\small\\setlength{\\baselineskip}{1.3zw} \\begin{shaded}}{%
+  \\end{shaded}}
 
-\newenvironment{reviewcmd}{%
-  \begin{quote}}{%
-  \end{quote}}
+\\newenvironment{reviewlist}{%
+  \\small\\setlength{\\baselineskip}{1.3zw} \\begin{quote}}{%
+  \\end{quote}}
 
-\newenvironment{reviewtable}{%
-  \begin{quote}
-    \begin{tabular}}{%
-    \end{tabular}
-  \end{quote}}
+\\newenvironment{reviewcmd}{%
+  \\small\\setlength{\\baselineskip}{1.2zw}}{%
+  }
 
-\newenvironment{reviewcolumn}[2]{%
-  %%\begin{center}
-   %% \begin{minipage}{0.9\linewidth}
-     \begin{framed}
-%    \begin{breakbox}
-   %%     \setlength{\FrameSep}{2zw}}{%
+\\newenvironment{reviewtable}{%
+  \\begin{center}\\small\\setlength{\\baselineskip}{1.2zw}
+    \\begin{tabular}}{%
+    \\end{tabular}
+  \\end{center}}
+
+\\newenvironment{reviewcolumn}{%
+  %%\\begin{center}
+   %% \\begin{minipage}{0.9\\linewidth}
+     \\begin{framed}
+%    \\begin{breakbox}
+   %%     \\setlength{\\FrameSep}{2zw}}{%
    }{%
-%    \end{breakbox}
-      \end{framed}
-   %% \end{minipage}
-  %%\end{center}
-  \vspace{2zw}}
+%    \\end{breakbox}
+      \\end{framed}
+   %% \\end{minipage}
+  %%\\end{center}
+  \\vspace{2zw}}
 
-\newcommand{\reviewcolumnhead}[2]{%
-  \Large #2}
+\\newcommand{\\reviewcolumnhead}[2]{%
+{\\noindent\\large ■コラム: #2}}
 
-\newcommand{\reviewtablecaption}[2]{%
+\\newcommand{\\reviewtablecaption}[2]{%
 }
 
-\newcommand{\reviewlistcaption}[2]{%
+\\newcommand{\\reviewlistcaption}[2]{%
 }
 
-\newcommand{\reviewimageref}[1]{%
+\\newcommand{\\reviewimageref}[1]{%
   図 #1}
+\\newcommand{\\reviewlistref}[1]{%
+  リスト #1}
 
-\newcommand{\reviewminicolumntitle}[1]{%
-  {コラム：\large #1}\\}
+\\newcommand{\\reviewminicolumntitle}[1]{%
+  {\\large ■メモ：#1}\\\\}
 
-\newenvironment{reviewminicolumn}{%
- \begin{quote}
-  \begin{screen}}{%
-  \end{screen}
-  \end{quote}}
-
-
-
-\usepackage[T1]{fontenc}
-
-\begin{document}
-
-\usefont{T1}{phv}{m}{n}
-\mgfamily
+\\newenvironment{reviewminicolumn}{%
+ \\begin{quote}
+  \\begin{screen}}{%
+  \\end{screen}
+  \\end{quote}}
 
 
-\mytitle{#{values["booktitle"]}}
-\myauthor{#{values[aut]}}
-\mydate{\today 版}
 
-\maketitle
+\\usepackage[T1]{fontenc}
 
-\frontmatter
-\tableofcontents
+\\begin{document}
+
+\\usefont{T1}{phv}{m}{n}
+\\mgfamily
+
+
+\\mytitle{#{values["booktitle"]}}
+\\myauthor{#{values["aut"]}}
+\\mydate{#{values["date"]} 版}
+
+\\maketitle
+
+\\frontmatter
 
 %% preface
 #{values["pre_str"]}
 
-\mainmatter
+\\tableofcontents
+
+\\mainmatter
 
 #{values["chap_str"]}
 
-\backmatter
+\\backmatter
 
 #{values["post_str"]}
 
-\end{document}
+%% okuduke
+\\clearpage
+\\thispagestyle{empty}
+
+\\vspace*{\\fill}
+
+{\\noindent\\usefont{T1}{pag}{b}{n}\\Large\\gtfamily\\ebseries #{values["booktitle"]}} \\\\
+\\rule[8pt]{14cm}{1pt} \\\\
+\\begin{tabular}{ll}
+発行日 & #{values["date"]} \\\\
+著　者 & #{values["aut"]} \\\\
+編集者 & #{values["edt"]} \\\\
+発行所 & #{values["prt"]} \\\\
+\\end{tabular}
+　\\\\
+\\rule[0pt]{14cm}{1pt} \\\\
+#{values["rights"]} \\\\
+
+\\end{document}
 
 EOB
 end
 
+def copyImagesToDir(dirname, copybase)
+  Dir.open(dirname) {|dir|
+    dir.each {|fname|
+      next if fname =~ /^\./
+      if FileTest.directory?("#{dirname}/#{fname}")
+        copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
+      else
+        if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
+          Dir.mkdir(copybase) unless File.exist?(copybase)
+          FileUtils.cp "#{dirname}/#{fname}", copybase
+        end
+      end
+    }
+  }
+end
+
+def copyStyToDir(dirname, copybase)
+  Dir.open(dirname) {|dir|
+    dir.each {|fname|
+      next if fname =~ /^\./
+      if fname =~ /\.(sty)$/i
+        Dir.mkdir(copybase) unless File.exist?(copybase)
+        FileUtils.cp "#{dirname}/#{fname}", copybase
+      end
+    }
+  }
+end
 
 
 main
