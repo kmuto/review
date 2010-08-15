@@ -297,7 +297,7 @@ EOT
     def list_body(lines)
       puts '<pre class="list">'
       lines.each do |line|
-        puts detab(line)
+        puts detab(escape_html(line))
       end
       puts '</pre>'
     end
@@ -316,7 +316,7 @@ EOT
     def source_body(lines)
       puts '<pre class="source">'
       lines.each do |line|
-        puts detab(line)
+        puts detab(escape_html(line))
       end
       puts '</pre>'
     end
@@ -335,7 +335,7 @@ EOT
     def listnum_body(lines)
       puts '<pre class="list">'
       lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
+        puts detab((i+1).to_s.rjust(2) + ": " + escape_html(line))
       end
       puts '</pre>'
      end
@@ -345,7 +345,7 @@ EOT
       puts %Q(<p class="emlistcaption">#{caption}</p>) unless caption.nil?
       puts '<pre class="emlist">'
       lines.each do |line|
-        puts detab(line)
+        puts detab(escape_html(line))
       end
       puts '</pre>'
       puts '</div>'
@@ -355,7 +355,7 @@ EOT
       puts '<div class="code">'
       puts '<pre class="emlist">'
       lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
+        puts detab((i+1).to_s.rjust(2) + ": " + escape_html(line))
       end
       puts '</pre>'
       puts '</div>'
@@ -365,7 +365,7 @@ EOT
       puts '<div class="code">'
       puts '<pre class="cmd">'
       lines.each do |line|
-        puts detab(line)
+        puts detab(escape_html(line))
       end
       puts '</pre>'
       puts '</div>'
@@ -374,7 +374,7 @@ EOT
     def quotedlist(lines, css_class)
       puts %Q[<blockquote><pre class="#{css_class}">]
       lines.each do |line|
-        puts detab(line)
+        puts detab(escape_html(line))
       end
       puts '</pre></blockquote>'
     end
@@ -414,7 +414,7 @@ QUOTE
       puts %Q[<div class="image">]
       puts %Q[<pre class="dummyimage">]
       lines.each do |line|
-        puts detab(line)
+        puts detab(escape_html(line))
       end
       puts %Q[</pre>]
       image_header id, caption
