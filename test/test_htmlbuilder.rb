@@ -38,19 +38,5 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n<h3 id='test'>this is test.</h3>\n|, @builder.result
   end
 
-  def test_normal_text
-    ret = @builder.text("abcde. xyz123.")
-    assert_equal %Q|abcde. xyz123.|, ret
-  end
-
-  def test_escaped_text
-    ret = @builder.text("a<>b&c\de. xyz[]123.")
-    assert_equal %Q|a<>b&c\de. xyz[]123.|, ret
-  end
-
-  def test_escape_html
-    ret = @builder.instance_eval{escape_html("a<>b&c\\de. xyz[]123.")}
-    assert_equal %Q|a&lt;&gt;b&amp;c\\de. xyz[]123.|, ret
-  end
 
 end

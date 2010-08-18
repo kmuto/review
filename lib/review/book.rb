@@ -45,7 +45,7 @@ module ReVIEW
     end
 
     def setParameter(param)
-      @param = Parameters.new(param)
+      @param = param
     end
 
     @basedir_seen = {}
@@ -63,13 +63,13 @@ module ReVIEW
 
     def initialize(basedir, parameters = Parameters.default)
       @basedir = basedir
-      @param = parameters
+      @parameters = parameters
       @parts = nil
       @chapter_index = nil
     end
 
     extend Forwardable
-    def_delegators '@param',
+    def_delegators '@parameters',
                    :chapter_file,
                    :part_file,
                    :bib_file,

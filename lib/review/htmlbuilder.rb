@@ -153,16 +153,8 @@ module ReVIEW
       puts '<br />'
     end
 
-    def multi_paragraph(lines)
-      lines.each do |line|
-        puts "<p>#{line}</p>"
-      end
-    end
-
     def read(lines)
-      puts '<div class="lead">'
-      multi_paragraph(lines)
-      puts '</div>'
+      puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
     end
 
     def lead(lines)
@@ -247,9 +239,7 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      puts "<blockquote>"
-      multi_paragraph(lines)
-      puts "</blockquote>"
+      puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
     end
 
     def doorquote(lines, ref)
@@ -367,20 +357,6 @@ QUOTE
       ''
     end
 
-    def inline_tt(arg)
-      %Q(<tt>#{escape_html(arg)}</tt>)
-    end
-
-    def inline_recipe(rid)
-      # FIXME
-      %Q(<span class="recipe" >[XXX]「#{escape_html(rid)}」\tp.XX</span>)
-    end
-
-    def inline_u(arg)
-      # IGNORE
-      ''
-    end
-
     def inline_code(str)
       %Q(<span class="inline-code">#{str}</span>)
     end
@@ -422,11 +398,6 @@ QUOTE
     def compile_href(url, label)
       %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
     end
-
-    def tsize(str)
-      #ignore
-    end
-
   end
 
 end   # module ReVIEW

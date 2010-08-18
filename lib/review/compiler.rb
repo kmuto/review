@@ -134,7 +134,7 @@ module ReVIEW
     defblock :list, 2
     defblock :emlist, 0..1
     defblock :cmd, 0..1
-    defblock :table, 0..3
+    defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true
     defblock :source, 1
@@ -181,7 +181,6 @@ module ReVIEW
     definline :hd
     definline :href
     definline :recipe
-    definline :u
 
     definline :abbr
     definline :acronym
@@ -240,7 +239,7 @@ module ReVIEW
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
           if block_open?(line)
             warn "skipping block..."
-            read_block(f, nil)
+            read_block(f)
           end
         else
           if f.peek.strip.empty?
@@ -262,9 +261,6 @@ module ReVIEW
       caption = m[4].strip
       index = level - 1
       if tag
-        while @tagged_section.last and @tagged_section.last[1] >= level
-          close_tagged_section(* @tagged_section.pop)
-        end
         open_tagged_section tag, level, label, caption
       else
         if @headline_indexs.size > (index + 1)
@@ -388,7 +384,7 @@ module ReVIEW
       line = f.gets
       name = line.slice(/[a-z]+/).intern
       args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'))
-      lines = block_open?(line) ? read_block(f, name) : nil
+      lines = block_open?(line) ? read_block(f) : nil
       return name, args, lines
     end
 
@@ -396,15 +392,11 @@ module ReVIEW
       line.rstrip[-1,1] == '{'
     end
 
-    def read_block(f, name)
+    def read_block(f)
       head = f.lineno
       buf = []
       f.until_match(%r<\A//\}>) do |line|
-        if preformatted? name
-          buf.push line.rstrip
-        else
-          buf.push text(line.rstrip)
-        end
+        buf.push text(line.rstrip)
       end
       unless %r<\A//\}> =~ f.peek
         error "unexpected EOF (block begins at: #{head})"
@@ -412,10 +404,6 @@ module ReVIEW
       end
       f.gets   # discard terminator
       buf
-    end
-
-    def preformatted?(name)
-      [:emlist, :list, :emlistnum, :listnum, :cmd].include? name
     end
 
     def parse_args(str)
