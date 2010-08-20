@@ -1,3 +1,7 @@
+Fri Aug 20 14:20:03 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* doc/memo-reviewspec.txt: add document for design of review format.
+
 Sun Aug  8 17:18:03 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* Merge nari's branch. 27a35652ecb5a94d5b36
