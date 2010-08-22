@@ -411,7 +411,20 @@ module ReVIEW
     private
 
     def file_descripter(fname)
-      @repository[fname] ||= parse_file(fname)
+      return @repository[fname] if @repository[fname]
+
+      @repository[fname] = git?(fname) ? parse_git_blob(fname) : parse_file(fname)
+    end
+
+    def git?(fname)
+      fname =~ /\Agit\|/
+    end
+
+    def parse_git_blob(g_obj)
+      IO.popen('git show ' + g_obj.sub(/\Agit\|/, ''), 'r') do |f|
+        init_ErrorUtils f
+        return _parse_file(f)
+      end
     end
 
     def parse_file(fname)
