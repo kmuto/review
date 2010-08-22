@@ -3,9 +3,9 @@
 == 記法の種類
 
  * 段落（本文）
- * 見出し（章・節・項・段）※4レベルまで？
- * コラム（見出しの変形）
- * 各種リスト（箇条書き、番号つき箇条書き、用語リスト）
+ * 見出し（章・節・項・段・小段）※5レベルまで←段の下の正式な呼称が不明
+ * コラム（見出しの変形）※基本的に正式サポートはcolumnのみ
+ * 各種リスト（箇条書き、番号つき箇条書き、用語リスト）※ただし、用語リストは構文および動作がわかりにくいので非推奨
  * 各種タグ（ブロックつき・ブロックなし）
  * 各種インライン
  * 著者用タグ（プリプロセッサ）
@@ -16,30 +16,30 @@
  * インラインの入れ子は不可
  * ブロック内でのインラインの使用は可
  * インラインのエスケープには@<raw>を使う
- * ブロックのエスケープは困難なので行頭ではないところに書く？
+ * ブロックのエスケープは困難なので、行頭ではないところに書くか、全角／／にしておいて後で置換するなどの対処をユーザ自身にしてもらう
 
 === 記法の課題（非互換）
 
  * ブロック内での段落の使用は許すか？
     * 現状ではLATEXBuilderは可、HTMLBuilderは不可
-    * quoteブロック、leadブロックでは使えるようにしたい
+    * quoteブロック、leadブロックでは使えるようにしたい ※後方互換性を破壊する、ブロック名によって処理が違う(listとleadでの違いなど)のがややこしいといった問題あり。
  * listブロックやemlistブロック、cmdブロック内でのインラインは許すか？
-    * 現状ではLATEXBuilderでは不可、HTMLBuilderでは可
+    * 現状ではLATEXBuilderでは不可、HTMLBuilder/EPUBBuilder、IDGXMLBuilder、TOPBuilderでは可 ※LaTeXでどうするかについてのみ検討課題
     * LaTeXはvarbatim環境を使っているので無理？？ ←alltt環境なら可能？
 
 == 生成されるフォーマットについて
 
- * HTML(バージョンは？Layoutにおまかせ？)
- * EPUB(HTMLのバージョンは基本XHTML1.1でよい？)
+ * HTML(バージョンは？Layoutにおまかせ？) ※HTML5になるとlayoutだけでは処理できなくなる可能性。フラグの導入を要検討
+ * EPUB(HTMLのバージョンはXHTML1.1) ※iPadのiBooksをリファレンスプラットフォームに。変なところはあるものの、現時点では一番まっとうなビューア
  * LaTeX(dvipdfmxでPDFに変換)
- * IDGXML
- * (TOPBuilder記法？)
- * (EWB記法←サポートする・できる？)
+ * IDGXML (Adobe InDesign CS2以降向けXML形式)
+ * (TOPBuilder記法？) ※ほぼプレインテキスト化したい場合の形式。EPUB/IDGXMLに遅れてのサポート
+ * (EWB記法←サポートする・できる？) ←捨てよう
 
 == 利用できるタグ記法
 
 全フォーマットで原則サポートしている（べき）基本記法と、それ以外の拡張記法に分ける。
-(基本はHTMLBuilderとLATEXBuilderの実装状況から判断)
+(基本はHTMLBuilderとLATEXBuilderの実装状況から判断)←HTMLBuilderはobsolete、EPUBBuilderで置き換え(いずれrename)。kmutoはEPUBBuilderとIDGXMLBuilderをコアコンポーネントと位置付けている。
 
 === 基本
 
@@ -52,14 +52,27 @@
  * image
 
  * footnote
- * (comment) ※ HTMLはdivで出力、LaTeXは%でコメントアウトで解釈が違う？
-
+ * (comment) ※ HTMLはdivで出力、LaTeXは%でコメントアウトで解釈が違う？ ←//commmentはできるだけ避けたい。変換後データにコメントを入れたいという場面は少ないはずなので、#@#の使用を強く推奨
 
 === 拡張
 
- * noindent  ※HTML非対応
- * linebreak  ※HTML非対応、EPUBBuilderで<br/>で対応
- * pagebreak  ※HTML非対応、EPUBBuilderで<br class="pagebreak" />で対応
+==== 準基本
+
+基本化への開発を重点的に進める。
+
+ * noindent  ※HTML非対応 ←IDGXMLでは頻度が高く、HTMLでもCSSで対処できるので、基本に近い拡張
+ * flushright  ※LaTeXでは「right」になってる？？ ←flushrightにしません?
+ * box(insn)  ※LaTeX非対応
+ * indepimage ※LaTeX非対応
+ * label  ※HTML非対応、EPUBBuilderで<a id="..." />で対応。hrefをサポートするならこの基本化は必須
+ * raw  ※LaTeX非対応
+ * tsize  ※LaTeX非対応←いずれほしくなる気もする。mm単位
+ * =+[nonum] 番号が標準で付くレベルでの番号なし見出し ※IDGXMLで実装
+
+==== 基本化の難しそうなもの・時間のかかりそうなもの
+
+ * linebreak  ※HTML非対応、EPUBBuilderで<br/>で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
+ * pagebreak  ※HTML非対応、EPUBBuilderで<br class="pagebreak" />で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
  * source  ※LaTeX非対応
  * listnum  ※LaTeX非対応
  * emlistnum  ※LaTeX非対応
@@ -69,17 +82,10 @@
  * address  ※LaTeX非対応
  * blockquote  ※LaTeX非対応
  * bpo  ※LaTeX非対応
- * flushright  ※LaTeXでは「right」になってる？？
- * note  ※LaTeX非対応
- * box  ※LaTeX非対応
-
+ * note,memo,tip,info,planning,best,important,security,caution,notice,point,shoot,term,link,practice,reference,expert  ※LaTeX非対応←一部は書籍固有すぎるが、いくかは基本化していきたいところ
  * numberlessimage  ※LaTeX非対応
  * hr  ※LaTeX非対応
  * parasep  ※HTMLでは<br/>で対応
- * label  ※HTML非対応、EPUBBuilderで<a id="..." />で対応
- * raw  ※LaTeX非対応
- * tsize  ※LaTeX非対応
-
 
 == 利用できるインライン記法
 
@@ -100,37 +106,71 @@
 
 === 拡張
 
- * ruby  ※HTML非対応、EPUBBuilderで実装
- * bou  ※HTML非対応
- * ami  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
+==== 準基本
 
- * dtp  ※LaTeX非対応
+基本化への開発を重点的に進める。
+
+ * ruby  ※HTML非対応、EPUBBuilder、IDGXMLで実装
+ * bou  ※HTML非対応
+ * ami  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
+ * dtp  ※LaTeX非対応←EPUBBuilder、IDGXMLで実装。LaTeXでは単に無視またはコメントにするのがよいと思う
  * code  ※LaTeX非対応
+ * tt  ※HTML非対応、IDGXML、EPUBBuilderで実装
+ * i  ※HTMLでは<i>...</i>で、LaTeXでは\indexで実装？？←まずいので\itか\emにしたほうが
+ * sup  ※LaTeX非対応←_{}でできる?
+ * sub  ※LaTeX非対応←^{}でできる?
+ * em  ※LaTeX非対応
+ * strong  ※LaTeX非対応
+ * u  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
+ * icon  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装←文中に画像を入れたくなるケースは多そうなので、いずれ対応せざるを得ない
+ * idx  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
+ * hidx  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
+ * uchar ※IDGXMLで実装。HTML/EPUBBuilderでも簡単に実装できそう。LaTeXではOTFパッケージ必要?
+ * labelref ※IDGXMLで中途半端に実装
+
+==== 基本化の難しそうなもの・時間のかかりそうなもの
+
  * bib  ※LaTeX非対応
  * hd  ※LaTeX非対応
  * recipe  ※LaTeX非対応
-
  * abbr  ※LaTeX非対応
  * acronym  ※LaTeX非対応
  * cite  ※LaTeX非対応
- * em  ※LaTeX非対応
  * kbd  ※LaTeX非対応
  * q  ※LaTeX非対応
  * samp  ※LaTeX非対応
- * strong  ※LaTeX非対応
  * var  ※LaTeX非対応
  * big  ※LaTeX非対応
  * small  ※LaTeX非対応
  * del  ※LaTeX非対応
  * ins  ※LaTeX非対応
- * sup  ※LaTeX非対応
- * sub  ※LaTeX非対応
- * tt  ※HTML非対応、EPUBBuilderで実装
- * i  ※HTMLでは<i>...</i>で、LaTeXでは\indexで実装？？
  * raw  ※LaTeX非対応
+ * tti  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
+ * maru ※IDGXML実装
+ * balloon ※IDGXML実装
+ * keytop ※IDGXML実装
 
- * u  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
- * tti  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
- * idx  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
- * hidx  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
- * icon  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
+== 利用できるプリプロセッサ命令
+
+こちらも基本記法と拡張記法に分ける。
+
+=== 基本
+
+ * mapfile
+ * maprange
+ * mapoutput
+
+=== 拡張
+
+==== 準基本
+
+==== 基本化の難しそうなもの・時間のかかりそうなもの
+
+ * warn
+ * ok
+ * require
+ * provide
+
+== その他検討課題
+
+ * PARTの正式サポート
