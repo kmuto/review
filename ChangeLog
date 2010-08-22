@@ -1,3 +1,11 @@
+Sun Aug 22 23:08:59 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubbuilder.rb: remove escape_html from table to
+	  avoid double escaping. add @<dtp> op.
+	* test/test_epubbuilder.rb: add test for table to avoid double
+	  escaping.
+	* test/test_idgxmlbuilder.rb: add test unit for IDGXML builder.
+
 Fri Aug 20 14:20:03 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* doc/memo-reviewspec.txt: add document for design of review format.

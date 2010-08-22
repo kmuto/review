@@ -18,7 +18,7 @@ module ReVIEW
 
   class EPUBBuilder < HTMLBuilder
 
-    [:u, :tti, :idx, :hidx, :icon].each {|e|
+    [:u, :tti, :idx, :hidx, :icon, :dtp].each {|e|
       Compiler.definline(e)
     }
 
@@ -448,15 +448,15 @@ QUOTE
       return if rows.empty?
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(compile_inline(s)) }
+          tr rows.shift.map {|s| th(s) }
         end
         rows.each do |cols|
-          tr cols.map {|s| td(compile_inline(s)) }
+          tr cols.map {|s| td(s) }
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(compile_inline(h))] + cs.map {|s| td(compile_inline(s)) }
+          tr [th(h)] + cs.map {|s| td(s) }
         end
       end
       table_end
@@ -566,9 +566,8 @@ QUOTE
       %Q(<tt><i>#{escape_html(str)}</i></tt>)
     end
 
-    def inline_dtp(arg)
-      # ignore all
-      ''
+    def inline_dtp(str)
+      "<?dtp #{str} ?>"
     end
 
     def inline_code(str)
