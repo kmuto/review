@@ -175,4 +175,23 @@ class ChapterTest < Test::Unit::TestCase
     ch.setParameter({})
     assert_equal lines, ch.lines # XXX: OK?
   end
+
+  def test_valume
+    content = "abc\ndef"
+    tf1 = Tempfile.new('chapter_test1')
+    tf1.print content
+    tf1.close
+    tf2 = Tempfile.new('chapter_test2')
+    tf2.print content
+    tf2.print content
+    tf2.close
+
+    ch = Chapter.new(nil, nil, nil, tf1.path)
+    assert ch.volume
+    assert_equal content.gsub(/\s/, '').size, ch.volume.bytes
+
+    ch = Chapter.new(nil, nil, nil, tf1.path, tf2)
+    assert ch.volume
+    assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?
+  end
 end
