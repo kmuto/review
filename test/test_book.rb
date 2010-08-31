@@ -451,6 +451,28 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
+  def test_chapters
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
+       'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+      chapters = book.chapters
+      assert_equal 5, chapters.size
+
+      ch_names = %w(preface ch1 ch2 ch3 postscript)
+      tmp = []
+      book.each_chapter {|ch| tmp << ch.name }
+      assert_equal ch_names, tmp
+
+      ch_names.each do |name|
+        assert book.chapter(name)
+        assert_equal name, book.chapter(name).name
+      end
+
+      assert_raises IndexError do
+        book.chapter('not exist')
+      end
+    end
+  end
+
   def test_basedir
     Dir.mktmpdir do |dir|
       book = Book.new(dir)
