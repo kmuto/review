@@ -296,6 +296,81 @@ class BookTest < Test::Unit::TestCase
       end
     end
   end
+
+  def test_postscripts
+    mktmpbookdir do |dir, book, files|
+      assert_equal nil, book.postscripts
+    end
+
+    mktmpbookdir 'appendix.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.postscripts
+      assert_equal '', book.postscripts.name
+      assert_equal 1, book.postscripts.chapters.size
+      assert_equal "appendix", book.postscripts.chapters.first.name
+      assert_equal files['appendix.re'], book.postscripts.chapters.first.path
+    end
+
+    mktmpbookdir 'postscript.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.postscripts
+      assert_equal '', book.postscripts.name
+      assert_equal 1, book.postscripts.chapters.size
+      assert_equal "postscript", book.postscripts.chapters.first.name
+      assert_equal files['postscript.re'], book.postscripts.chapters.first.path
+    end
+
+    mktmpbookdir 'appendix.re' => '',
+       'postscript.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.postscripts
+      assert_equal '', book.postscripts.name
+      assert_equal 2, book.postscripts.chapters.size
+      assert_equal "appendix", book.postscripts.chapters.first.name
+      assert_equal files['appendix.re'], book.postscripts.chapters.first.path
+      assert_equal "postscript", book.postscripts.chapters.last.name
+      assert_equal files['postscript.re'], book.postscripts.chapters.last.path
+    end
+
+    mktmpbookdir 'preface.re' => '',
+        'POSTDEF' => '' do |dir, book, files|
+      assert_equal nil, book.postscripts # XXX: OK?
+    end
+
+    mktmpbookdir 'POSTDEF' => '' do |dir, book, files|
+      assert_equal nil, book.postscripts
+    end
+
+    mktmpbookdir 'POSTDEF' => 'chapter1',
+       'chapter1.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.postscripts
+      assert_equal '', book.postscripts.name
+      assert_equal 1, book.postscripts.chapters.size
+      assert_equal "chapter1", book.postscripts.chapters.first.name
+      assert_equal files['chapter1.re'], book.postscripts.chapters.first.path
+    end
+
+    mktmpbookdir 'POSTDEF' => "chapter1\n\nchapter2",
+       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.postscripts
+      assert_equal '', book.postscripts.name
+      assert_equal 2, book.postscripts.chapters.size
+      assert_equal "chapter1", book.postscripts.chapters.first.name
+      assert_equal files['chapter1.re'], book.postscripts.chapters.first.path
+      assert_equal "chapter2", book.postscripts.chapters.last.name
+      assert_equal files['chapter2.re'], book.postscripts.chapters.last.path
+    end
+
+    mktmpbookdir 'POSTDEF' => "chapter1 chapter2",
+       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.postscripts
+      assert_equal '', book.postscripts.name
+      assert_equal 2, book.postscripts.chapters.size # XXX: OK?
+    end
+
+    mktmpbookdir 'POSTDEF' => 'not_exist' do |dir, book, files|
+      assert_raises FileNotFound do
+        assert_equal nil, book.postscripts
+      end
+    end
+  end
 end
 
 class ChapterTest < Test::Unit::TestCase
