@@ -252,6 +252,7 @@ class BookTest < Test::Unit::TestCase
       assert_equal 1, book.prefaces.chapters.size
       assert_equal "preface", book.prefaces.chapters.first.name
       assert_equal files['preface.re'], book.prefaces.chapters.first.path
+      assert_equal nil, book.prefaces.chapters.first.number
     end
 
     mktmpbookdir 'preface.re' => '',
@@ -308,6 +309,7 @@ class BookTest < Test::Unit::TestCase
       assert_equal 1, book.postscripts.chapters.size
       assert_equal "appendix", book.postscripts.chapters.first.name
       assert_equal files['appendix.re'], book.postscripts.chapters.first.path
+      assert_equal nil, book.postscripts.chapters.first.number
     end
 
     mktmpbookdir 'postscript.re' => '' do |dir, book, files|
@@ -316,6 +318,7 @@ class BookTest < Test::Unit::TestCase
       assert_equal 1, book.postscripts.chapters.size
       assert_equal "postscript", book.postscripts.chapters.first.name
       assert_equal files['postscript.re'], book.postscripts.chapters.first.path
+      assert_equal nil, book.postscripts.chapters.first.number
     end
 
     mktmpbookdir 'appendix.re' => '',
@@ -325,8 +328,10 @@ class BookTest < Test::Unit::TestCase
       assert_equal 2, book.postscripts.chapters.size
       assert_equal "appendix", book.postscripts.chapters.first.name
       assert_equal files['appendix.re'], book.postscripts.chapters.first.path
+      assert_equal nil, book.postscripts.chapters.first.number
       assert_equal "postscript", book.postscripts.chapters.last.name
       assert_equal files['postscript.re'], book.postscripts.chapters.last.path
+      assert_equal nil, book.postscripts.chapters.last.number
     end
 
     mktmpbookdir 'preface.re' => '',
@@ -375,28 +380,74 @@ class BookTest < Test::Unit::TestCase
   def test_parts
     mktmpbookdir do |dir, book, files|
       assert book.parts.empty?
+      assert !book.part(0)
+      assert !book.part(1)
       assert !book.no_part?
+
+      tmp = []
+      book.each_part { tmp << true }
+      assert tmp.empty?
     end
 
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3" do |dir, book, files|
       parts = book.parts
       assert_equal 2, parts.size
+      assert !book.part(0)
+      assert book.part(1)
+      assert book.part(2)
+      assert !book.part(3)
       assert !book.no_part? # XXX: OK?
+
+      tmp = []
+      book.each_part {|p| tmp << p.number }
+      assert_equal [1, 2], tmp
     end
 
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
        'preface.re' => '' do |dir, book, files|
       parts = book.parts
       assert_equal 3, parts.size
+      assert book.part(1)
+      assert book.part(2)
+      assert !book.part(3)
+      assert book.part(nil) # XXX: OK?
       assert_equal 'preface', parts.first.chapters.first.name
+
+      tmp = []
+      book.each_part {|p| tmp << p.number }
+      assert_equal [nil, 1, 2], tmp
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
+       'postscript.re' => '' do |dir, book, files|
+      parts = book.parts
+      assert_equal 3, parts.size
+      assert book.part(1)
+      assert book.part(2)
+      assert !book.part(3)
+      assert book.part(nil) # XXX: OK?
+      assert_equal 'postscript', parts.last.chapters.last.name
+
+      tmp = []
+      book.each_part {|p| tmp << p.number }
+      assert_equal [1, 2, nil], tmp
     end
 
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
        'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
       parts = book.parts
       assert_equal 4, parts.size
+      assert book.part(1)
+      assert book.part(2)
+      assert !book.part(3)
+      assert !book.part(4)
+      assert book.part(nil) # XXX: OK?
       assert_equal 'preface', parts.first.chapters.first.name
       assert_equal 'postscript', parts.last.chapters.last.name
+
+      tmp = []
+      book.each_part {|p| tmp << p.number }
+      assert_equal [nil, 1, 2, nil], tmp
     end
   end
 
