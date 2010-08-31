@@ -110,7 +110,7 @@ class BookTest < Test::Unit::TestCase
       assert_equal 0, parts.size
     end
 
-    mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re\n" do |dir, book, files|
+    mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2\n" do |dir, book, files|
       parts = book.instance_eval { parse_chapters }
       assert_equal 1, parts.size
 
@@ -120,7 +120,7 @@ class BookTest < Test::Unit::TestCase
       chaps = parts[0].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
         [1, 'chapter1', File.join(dir, 'chapter1.re')],
-        [2, 'chapter2', File.join(dir, 'chapter2.re')],
+        [2, 'chapter2', File.join(dir, 'chapter2')],
       ]
       assert_equal expect, chaps
     end
@@ -280,6 +280,13 @@ EOC
       assert_raises FileNotFound do
         assert_equal nil, book.prefaces
       end
+    end
+
+    mktmpbookdir 'PREDEF' => 'chapter1.re',
+       'chapter1.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.prefaces
+      assert_equal '', book.prefaces.name
+      assert_equal 1, book.prefaces.chapters.size
     end
   end
 
