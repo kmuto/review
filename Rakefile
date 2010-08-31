@@ -31,6 +31,17 @@ Rake::TestTask.new("test") do |t|
 	t.verbose = true
 end
 
+begin
+  require 'rcov/rcovtask'
+  Rcov::RcovTask.new do |t|
+    t.rcov_opts << '-x /gems/'
+    t.libs << 'test'
+    t.pattern = 'test/test_*.rb'
+    t.verbose = true
+  end
+rescue LoadError
+end
+
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
