@@ -372,6 +372,34 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
+  def test_parts
+    mktmpbookdir do |dir, book, files|
+      assert book.parts.empty?
+      assert !book.no_part?
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3" do |dir, book, files|
+      parts = book.parts
+      assert_equal 2, parts.size
+      assert !book.no_part? # XXX: OK?
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
+       'preface.re' => '' do |dir, book, files|
+      parts = book.parts
+      assert_equal 3, parts.size
+      assert_equal 'preface', parts.first.chapters.first.name
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
+       'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+      parts = book.parts
+      assert_equal 4, parts.size
+      assert_equal 'preface', parts.first.chapters.first.name
+      assert_equal 'postscript', parts.last.chapters.last.name
+    end
+  end
+
   def test_basedir
     Dir.mktmpdir do |dir|
       book = Book.new(dir)
