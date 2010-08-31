@@ -75,7 +75,7 @@ class LineInputTest < Test::Unit::TestCase
       ["", 0, nil],
       ["\n \n  \nabc", 3, 'abc'],
       ["\t", 1, nil],
-      ["\xa1\xa1", 0, "\xa1\xa1"], # EUC-JP Á´³Ñ¶õÇò
+      ["\xa1\xa1", 0, "\xa1\xa1"], # EUC-JP å…¨è§’ç©ºç™½
     ].each do |text, n, rest|
       li = LineInput.new(StringIO.new(text))
       assert_equal n, li.skip_blank_lines
