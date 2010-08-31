@@ -473,6 +473,12 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
+  def test_volume
+    mktmpbookdir do |dir, book, files|
+      assert book.volume
+    end
+  end
+
   def test_basedir
     Dir.mktmpdir do |dir|
       book = Book.new(dir)
