@@ -227,6 +227,75 @@ class BookTest < Test::Unit::TestCase
       end
     end
   end
+
+  def mktmpbookdir(files = {})
+    created_files = {}
+    Dir.mktmpdir do |dir|
+      files.each_pair do |basename, content|
+        path = File.join(dir, basename)
+        File.open(path, 'w') {|o| o.print content }
+        created_files[basename] = path
+      end
+      book = Book.new(dir)
+      yield(dir, book, created_files)
+    end
+  end
+
+  def test_prefaces
+    mktmpbookdir do |dir, book, files|
+      assert_equal nil, book.prefaces
+    end
+
+    mktmpbookdir 'preface.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.prefaces
+      assert_equal '', book.prefaces.name
+      assert_equal 1, book.prefaces.chapters.size
+      assert_equal "preface", book.prefaces.chapters.first.name
+      assert_equal files['preface.re'], book.prefaces.chapters.first.path
+    end
+
+    mktmpbookdir 'preface.re' => '',
+        'PREDEF' => '' do |dir, book, files|
+      assert_equal nil, book.prefaces # XXX: OK?
+    end
+
+    mktmpbookdir 'PREDEF' => '' do |dir, book, files|
+      assert_equal nil, book.prefaces
+    end
+
+    mktmpbookdir 'PREDEF' => 'chapter1',
+       'chapter1.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.prefaces
+      assert_equal '', book.prefaces.name
+      assert_equal 1, book.prefaces.chapters.size
+      assert_equal "chapter1", book.prefaces.chapters.first.name
+      assert_equal files['chapter1.re'], book.prefaces.chapters.first.path
+    end
+
+    mktmpbookdir 'PREDEF' => "chapter1\n\nchapter2",
+       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.prefaces
+      assert_equal '', book.prefaces.name
+      assert_equal 2, book.prefaces.chapters.size
+      assert_equal "chapter1", book.prefaces.chapters.first.name
+      assert_equal files['chapter1.re'], book.prefaces.chapters.first.path
+      assert_equal "chapter2", book.prefaces.chapters.last.name
+      assert_equal files['chapter2.re'], book.prefaces.chapters.last.path
+    end
+
+    mktmpbookdir 'PREDEF' => "chapter1 chapter2",
+       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+      assert_kind_of Part, book.prefaces
+      assert_equal '', book.prefaces.name
+      assert_equal 2, book.prefaces.chapters.size # XXX: OK?
+    end
+
+    mktmpbookdir 'PREDEF' => 'not_exist' do |dir, book, files|
+      assert_raises FileNotFound do
+        assert_equal nil, book.prefaces
+      end
+    end
+  end
 end
 
 class ChapterTest < Test::Unit::TestCase
