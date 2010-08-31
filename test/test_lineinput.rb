@@ -3,9 +3,6 @@ require 'lineinput'
 require 'tempfile'
 
 class LineInputTest < Test::Unit::TestCase
-  def setup
-  end
-
   def test_initialize
     io = StringIO.new
     li = LineInput.new(io)
