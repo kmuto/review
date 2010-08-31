@@ -371,6 +371,13 @@ class BookTest < Test::Unit::TestCase
       end
     end
   end
+
+  def test_basedir
+    Dir.mktmpdir do |dir|
+      book = Book.new(dir)
+      assert_equal dir, book.basedir
+    end
+  end
 end
 
 class ChapterTest < Test::Unit::TestCase
