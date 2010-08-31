@@ -5,6 +5,14 @@ require 'tempfile'
 
 include ReVIEW
 
+class BookTest < Test::Unit::TestCase
+  def test_s_load_default
+    Dir.chdir(File.dirname(__FILE__)) do
+      assert Book.load_default
+    end
+  end
+end
+
 class ChapterTest < Test::Unit::TestCase
   def setup
     @utf8_str = "\xe3\x81\x82\xe3\x81\x84\xe3\x81\x86\xe3\x81\x88\xe3\x81\x8a" # "あいうえお"
