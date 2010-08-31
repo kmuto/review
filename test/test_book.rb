@@ -1,7 +1,9 @@
 require 'test_helper'
 require 'review/book'
+
 require 'stringio'
 require 'tempfile'
+require 'tmpdir'
 
 include ReVIEW
 
@@ -9,6 +11,73 @@ class BookTest < Test::Unit::TestCase
   def test_s_load_default
     Dir.chdir(File.dirname(__FILE__)) do
       assert Book.load_default
+    end
+  end
+
+  def test_ext
+    book = Book.new(File.dirname(__FILE__))
+    assert_equal '.re', book.ext
+  end
+
+  def test_read_CHAPS
+    Dir.mktmpdir do |dir|
+      book = Book.new(dir)
+      assert_equal "", book.read_CHAPS
+
+      chaps_path = File.join(dir, 'CHAPS')
+      re1_path = File.join(dir, "123#{book.ext}")
+      re2_path = File.join(dir, "456#{book.ext}")
+
+      File.open(chaps_path, 'w') {|o| o.print "abc\n" }
+      File.open(re1_path, 'w') {|o| o.print "123\n" }
+      File.open(re2_path, 'w') {|o| o.print "456\n" }
+
+      assert_equal "abc\n", book.read_CHAPS
+
+      File.unlink(chaps_path)
+      assert_equal "#{re1_path}\n#{re2_path}", book.read_CHAPS # XXX: OK?
+
+      File.unlink(re1_path)
+      assert_equal "#{re2_path}", book.read_CHAPS # XXX: OK?
+
+      File.unlink(re2_path)
+      assert_equal "", book.read_CHAPS
+    end
+  end
+
+  def test_read_PART
+    Dir.mktmpdir do |dir|
+      book = Book.new(dir)
+      assert !book.part_exist?
+      assert_raises Errno::ENOENT do # XXX: OK?
+        book.read_PART
+      end
+
+      chaps_path = File.join(dir, 'CHAPS')
+      chaps_content = "abc\n"
+      File.open(chaps_path, 'w') {|o| o.print chaps_content }
+
+      assert book.part_exist?
+      assert_equal chaps_content, book.read_PART
+
+      File.open(chaps_path, 'w') {|o| o.print "XYZ\n" }
+      assert_equal chaps_content, book.read_PART
+    end
+  end
+
+  def test_read_bib
+    Dir.mktmpdir do |dir|
+      book = Book.new(dir)
+      assert !book.bib_exist?
+      assert_raises Errno::ENOENT do # XXX: OK?
+        book.read_bib
+      end
+
+      bib_path = File.join(dir, "bib#{book.ext}")
+      File.open(bib_path, 'w') {|o| o.print "abc\n" }
+
+      assert book.bib_exist?
+      assert_equal "abc\n", book.read_bib
     end
   end
 end
