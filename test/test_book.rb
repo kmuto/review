@@ -35,10 +35,10 @@ class BookTest < Test::Unit::TestCase
       assert_equal "abc\n", book.read_CHAPS
 
       File.unlink(chaps_path)
-      assert_equal "#{re1_path}\n#{re2_path}", book.read_CHAPS # XXX: OK?
+      assert_equal "#{re1_path}\n#{re2_path}", book.read_CHAPS
 
       File.unlink(re1_path)
-      assert_equal "#{re2_path}", book.read_CHAPS # XXX: OK?
+      assert_equal "#{re2_path}", book.read_CHAPS
 
       File.unlink(re2_path)
       assert_equal "", book.read_CHAPS
@@ -78,6 +78,153 @@ class BookTest < Test::Unit::TestCase
 
       assert book.bib_exist?
       assert_equal "abc\n", book.read_bib
+    end
+  end
+
+  def test_setParameter
+    book = Book.new(File.dirname(__FILE__))
+    book.setParameter(:test)
+    assert_equal :test, book.instance_eval {@param}
+  end
+
+  def test_parse_chapters
+    Dir.mktmpdir do |dir|
+      book = Book.new(dir)
+      chaps_path = File.join(dir, 'CHAPS')
+      File.open(chaps_path, 'w') do |o|
+      end
+
+      parts = book.instance_eval { parse_chapters }
+      assert_equal 0, parts.size
+    end
+
+    Dir.mktmpdir do |dir|
+      book = Book.new(dir)
+      chaps_path = File.join(dir, 'CHAPS')
+      File.open(chaps_path, 'w') do |o|
+        o.puts 'chapter1.re'
+        o.puts 'chapter2.re'
+      end
+
+      parts = book.instance_eval { parse_chapters }
+      assert_equal 1, parts.size
+
+      assert_equal 1, parts[0].number
+      assert_equal 'chapter1.re', parts[0].name # XXX: OK?
+      assert_equal 2, parts[0].chapters.size
+      chaps = parts[0].chapters.map {|ch| [ch.number, ch.name, ch.path] }
+      expect = [
+        [1, 'chapter1', File.join(dir, 'chapter1.re')],
+        [2, 'chapter2', File.join(dir, 'chapter2.re')],
+      ]
+      assert_equal expect, chaps
+    end
+
+    Dir.mktmpdir do |dir|
+      book = Book.new(dir)
+      chaps_path = File.join(dir, 'CHAPS')
+      File.open(chaps_path, 'w') do |o|
+        # 1st part
+        o.puts 'part1_chapter1.re'
+        o.puts 'part1_chapter2.re'
+        o.puts
+        o.puts
+        # 2nd part
+        o.puts 'part2_chapter1.re'
+        o.puts 'part2_chapter2.re'
+        o.puts 'part2_chapter3.re'
+        o.puts
+        # 3rd part
+        o.puts 'part3_chapter1.re'
+      end
+
+      parts = book.instance_eval { parse_chapters }
+      assert_equal 3, parts.size
+
+      assert_equal 1, parts[0].number
+      assert_equal 'part1_chapter1.re', parts[0].name
+      assert_equal 2, parts[0].chapters.size
+      chaps = parts[0].chapters.map {|ch| [ch.number, ch.name, ch.path] }
+      expect = [
+        [1, 'part1_chapter1', File.join(dir, 'part1_chapter1.re')],
+        [2, 'part1_chapter2', File.join(dir, 'part1_chapter2.re')],
+      ]
+      assert_equal expect, chaps
+
+      assert_equal 2, parts[1].number
+      assert_equal 'part1_chapter2.re', parts[1].name # XXX: OK?
+      assert_equal 3, parts[1].chapters.size
+      chaps = parts[1].chapters.map {|ch| [ch.number, ch.name, ch.path] }
+      expect = [
+        [3, 'part2_chapter1', File.join(dir, 'part2_chapter1.re')],
+        [4, 'part2_chapter2', File.join(dir, 'part2_chapter2.re')],
+        [5, 'part2_chapter3', File.join(dir, 'part2_chapter3.re')],
+      ]
+      assert_equal expect, chaps
+
+      assert_equal 3, parts[2].number
+      assert_equal '',                  parts[2].name # XXX: OK?
+      assert_equal 1, parts[2].chapters.size
+      chaps = parts[2].chapters.map {|ch| [ch.number, ch.name, ch.path] }
+      expect = [
+        [6, 'part3_chapter1', File.join(dir, 'part3_chapter1.re')],
+      ]
+      assert_equal expect, chaps
+    end
+  end
+
+  def test_parse_chpaters_with_parts_file
+    n_test = 0
+    [
+      [
+        # 期待されるパートの数, :chapter_fileの内容, :part_fileの内容, 期待されるパートタイトルのリスト
+        2,
+        "part1_chapter1.re\n\npart2_chpater1.re\n",
+        "part1\npart2\npart3\n",
+        %w(part1 part2),
+      ],
+      [
+        3,
+        "part1_chapter1.re\n\npart2_chapter1.re\n\npart3_chapter1.re",
+        "part1\n",
+        [
+          "part1",
+          nil, # XXX: OK?
+          ""
+        ],
+      ],
+      [
+        1,
+        "part1_chapter1.re\n",
+        "",
+        [
+          nil, # XXX: OK?
+        ],
+      ],
+      [
+        1,
+        "part1_chapter1.re\n",
+        nil,
+        [
+          "",
+        ],
+      ],
+    ].each do |n_parts, chaps_text, parts_text, part_names|
+      n_test += 1
+      Dir.mktmpdir do |dir|
+        params = Parameters.new(:part_file => 'PARTS')
+        book = Book.new(dir, params)
+        chaps_path = File.join(dir, 'CHAPS')
+        File.open(chaps_path, 'w') {|o| o.print chaps_text }
+        unless parts_text.nil?
+          parts_path = File.join(dir, 'PARTS')
+          File.open(parts_path, 'w') {|o| o.print parts_text }
+        end
+
+        parts = book.instance_eval { parse_chapters }
+        assert_equal n_parts, parts.size, "\##{n_test}"
+        assert_equal part_names, parts.map {|p| p.name }, "\##{n_test}"
+      end
     end
   end
 end
