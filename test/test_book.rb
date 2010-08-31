@@ -7,7 +7,24 @@ require 'tmpdir'
 
 include ReVIEW
 
+module BookTestHelper
+  def mktmpbookdir(files = {})
+    created_files = {}
+    Dir.mktmpdir do |dir|
+      files.each_pair do |basename, content|
+        path = File.join(dir, basename)
+        File.open(path, 'w') {|o| o.print content }
+        created_files[basename] = path
+      end
+      book = Book.new(dir)
+      yield(dir, book, created_files)
+    end
+  end
+end
+
 class BookTest < Test::Unit::TestCase
+  include BookTestHelper
+
   def test_s_load_default
     Dir.chdir(File.dirname(__FILE__)) do
       assert Book.load_default
@@ -88,24 +105,12 @@ class BookTest < Test::Unit::TestCase
   end
 
   def test_parse_chapters
-    Dir.mktmpdir do |dir|
-      book = Book.new(dir)
-      chaps_path = File.join(dir, 'CHAPS')
-      File.open(chaps_path, 'w') do |o|
-      end
-
+    mktmpbookdir 'CHAPS' => '' do |dir, book, files|
       parts = book.instance_eval { parse_chapters }
       assert_equal 0, parts.size
     end
 
-    Dir.mktmpdir do |dir|
-      book = Book.new(dir)
-      chaps_path = File.join(dir, 'CHAPS')
-      File.open(chaps_path, 'w') do |o|
-        o.puts 'chapter1.re'
-        o.puts 'chapter2.re'
-      end
-
+    mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re\n" do |dir, book, files|
       parts = book.instance_eval { parse_chapters }
       assert_equal 1, parts.size
 
@@ -120,24 +125,17 @@ class BookTest < Test::Unit::TestCase
       assert_equal expect, chaps
     end
 
-    Dir.mktmpdir do |dir|
-      book = Book.new(dir)
-      chaps_path = File.join(dir, 'CHAPS')
-      File.open(chaps_path, 'w') do |o|
-        # 1st part
-        o.puts 'part1_chapter1.re'
-        o.puts 'part1_chapter2.re'
-        o.puts
-        o.puts
-        # 2nd part
-        o.puts 'part2_chapter1.re'
-        o.puts 'part2_chapter2.re'
-        o.puts 'part2_chapter3.re'
-        o.puts
-        # 3rd part
-        o.puts 'part3_chapter1.re'
-      end
+    mktmpbookdir 'CHAPS' => <<EOC do |dir, book, files|
+part1_chapter1.re
+part1_chapter2.re
 
+
+part2_chapter1.re
+part2_chapter2.re
+part2_chapter3.re
+
+part3_chapter1.re
+EOC
       parts = book.instance_eval { parse_chapters }
       assert_equal 3, parts.size
 
@@ -225,19 +223,6 @@ class BookTest < Test::Unit::TestCase
         assert_equal n_parts, parts.size, "\##{n_test}"
         assert_equal part_names, parts.map {|p| p.name }, "\##{n_test}"
       end
-    end
-  end
-
-  def mktmpbookdir(files = {})
-    created_files = {}
-    Dir.mktmpdir do |dir|
-      files.each_pair do |basename, content|
-        path = File.join(dir, basename)
-        File.open(path, 'w') {|o| o.print content }
-        created_files[basename] = path
-      end
-      book = Book.new(dir)
-      yield(dir, book, created_files)
     end
   end
 
