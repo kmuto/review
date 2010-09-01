@@ -552,6 +552,8 @@ class PartTest < Test::Unit::TestCase
 end
 
 class ChapterTest < Test::Unit::TestCase
+  include BookTestHelper
+
   def setup
     @utf8_str = "\xe3\x81\x82\xe3\x81\x84\xe3\x81\x86\xe3\x81\x88\xe3\x81\x8a" # "あいうえお"
     @eucjp_str = "\xa4\xa2\xa4\xa4\xa4\xa6\xa4\xa8\xa4\xaa"
@@ -739,5 +741,27 @@ class ChapterTest < Test::Unit::TestCase
     ch = Chapter.new(nil, nil, nil, tf1.path, tf2)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?
+  end
+
+  def test_on_CHAPS?
+    mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re",
+        'chapter1.re' => '12345', 'preface.re' => 'abcde' do |dir, book, files|
+      ch1 = Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
+      pre = Chapter.new(book, nil, 'preface', files['preface.re'])
+
+      assert ch1.on_CHAPS?
+      assert !pre.on_CHAPS?
+
+      ch2_path = File.join(dir, 'chapter2.er')
+      File.open(ch2_path, 'w') {}
+      ch2 = Chapter.new(book, 2, 'chapter2', ch2_path)
+
+      ch3_path = File.join(dir, 'chapter3.er')
+      File.open(ch3_path, 'w') {}
+      ch3 = Chapter.new(book, 3, 'chapter3', ch3_path)
+
+      assert ch2.on_CHAPS?
+      assert !ch3.on_CHAPS?
+    end
   end
 end
