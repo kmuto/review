@@ -764,4 +764,141 @@ class ChapterTest < Test::Unit::TestCase
       assert !ch3.on_CHAPS?
     end
   end
+
+  def test_list_index
+    do_test_index(<<E, ListIndex, :list_index, :list)
+//list
+//listnum [abc]
+//list [def]
+//table [def]
+//table [others]
+E
+  end
+
+  def test_table_index
+    do_test_index(<<E, TableIndex, :table_index, :table)
+//table
+//table [abc]
+//table [def]
+//list [def]
+//list [others]
+E
+  end
+
+  def test_footnote_index
+    content = <<E
+//footnote
+//footnote [abc][text...]
+//footnote [def][text...]
+//footnote [xyz]
+//list [def]
+//list [others]
+E
+    do_test_index(content, FootnoteIndex, :footnote_index, :footnote) do |ch|
+      assert_raises IndexError do
+        ch.footnote('xyz')
+      end
+    end
+  end
+
+  def test_bibpaper
+    do_test_index(<<E, BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib.re')
+//bibpaper
+//bibpaper [abc][text...]
+//bibpaper [def][text...]
+//bibpaper [xyz]
+//list [def]
+//list [others]
+E
+    assert_raises FileNotFound do
+      do_test_index('', BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib')
+    end
+  end
+
+  def test_headline_index
+    do_test_index(<<E, HeadlineIndex, :headline_index, :headline, :propagate => false)
+==
+== abc
+== def
+=== def
+//table others
+E
+  end
+
+  def test_image
+    do_test_index(<<E, ImageIndex, :image_index, :image)
+//image
+//image [abc]
+//image [def]
+//list [def]
+//list [others]
+E
+
+    do_test_index(<<E, NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
+//numberlessimage
+//numberlessimage [abc]
+//numberlessimage [def]
+//list [def]
+//list [others]
+E
+
+    do_test_index(<<E, ImageIndex, :image_index, :image)
+//image
+//numberlessimage [abc]
+//image [def]
+//list [def]
+//list [others]
+E
+
+    do_test_index(<<E, NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
+//image
+//numberlessimage [abc]
+//image [def]
+//list [def]
+//list [others]
+E
+  end
+
+  def do_test_index(content, klass, list_method, ref_method, opts = {})
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, opts[:filename] || 'chapter.re')
+
+      book = Book.new(dir)
+
+      ch = nil
+      File.open(path, 'w') do |o|
+        o.print content
+        ch = Chapter.new(book, 1, 'chapter', o.path)
+      end
+
+      ch.setParameter({:__test__ => 54321})
+      assert_kind_of klass, ch.__send__(list_method)
+      tmp = ch.__send__(list_method).instance_eval do
+        if @param
+          @param[:__test__]
+        else
+          @param
+        end
+      end
+      if opts[:propagate] == false
+        assert_equal nil, tmp
+      else
+        assert_equal 54321, tmp
+      end
+
+      assert ch.__send__(ref_method, 'abc')
+      assert ch.__send__(ref_method, 'def')
+      assert_raises IndexError do
+        ch.__send__(ref_method, nil)
+      end
+      assert_raises IndexError do
+        ch.__send__(ref_method, 'others')
+      end
+      assert_raises IndexError do
+        ch.__send__(ref_method, 'not exist id')
+      end
+
+      yield(ch) if block_given?
+    end
+  end
 end
