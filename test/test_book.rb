@@ -468,6 +468,30 @@ EOC
   def test_volume
     mktmpbookdir do |dir, book, files|
       assert book.volume
+      assert_equal 0, book.volume.bytes
+      assert_equal 0, book.volume.chars
+      assert_equal 0, book.volume.lines
+    end
+
+    mktmpbookdir 'CHAPS' => 'chapter1.re', 'chapter1.re' => '12345' do |dir, book, files|
+      assert book.volume
+      assert book.volume.bytes > 0
+      assert book.volume.chars > 0
+      assert book.volume.lines > 0
+    end
+
+    mktmpbookdir 'preface.re' => '12345' do |dir, book, files|
+      assert_raises Errno::ENOENT do # XXX: OK?
+        book.volume
+      end
+
+      Dir.chdir(dir) do
+        book2 = Book.new('.')
+        assert book2.volume
+        assert book2.volume.bytes > 0
+        assert book2.volume.chars > 0
+        assert book2.volume.lines > 0
+      end
     end
   end
 
