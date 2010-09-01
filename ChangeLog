@@ -1,3 +1,36 @@
+Wed Sep  1 14:43:13 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* Merge git://github.com/akira/review. 52db533ba53a8d9416a17773fdfcf97044f858f0
+	  - added tests for ReVIEW.book
+	  - added tests for ReVIEW::Parameters
+	  - moved get_instance_variables to the Helper module
+	  - added tests for ReVIEW::Book.{load,load_default}
+	  - added tests for ReVIEW::Book.update_rubyenv
+	  - added tests for ReVIEW::ChapterSet
+	  - added tests for ReVIEW::Chapter.intern_pathes
+	  - added tests for index methods of ReVIEW::Chapter
+	  - added tests for ReVIEW::Chapter#on_CHAPS?
+	  - added tests for ReVIEW::Part
+	  - added/modifed ext of contents of CHAPS/PREDEF
+            Can we omit ext of files?
+	  - added a test for ReVIEW::Book#volume
+	  - added a test for ReVIEW::Book#{chapters,chapter,each_chapter}
+	  - added a test for ReVIEW::Book#{part,each_part}
+	  - added a test for ReVIEW::Book#parts
+	  - added a test for ReVIEW::Book#basedir
+	  - added tests for ReVIEW::Book#postscripts
+	  - added tests for ReVIEW::Book#prefaces
+	  - added tests for ReVIEW::Book#{setParameter,parse_chapters}
+	  - added tests for ReVIEW::Book#read_{CHPAS,PART,bib}
+	  - added a test for Book.load_default
+	  - added a test for ReVIEW::Chapter#volume
+	  - added some tests for ReVIEW::Chapter
+	  - added some tests for Builder
+	  - added test for ReVIEW::HTMLUtils
+	  - removed unused setup
+	  - added tests for LineInput
+	  - added rcov task
+
 Sun Aug 22 23:25:44 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* Merge git://github.com/moro/review into moro
