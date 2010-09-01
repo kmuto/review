@@ -75,10 +75,10 @@ class BookTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       File.open(File.join(dir, 'PARAMS'), 'w') do |o|
         o.puts 'WORDS_FILE = "x_words_file"'
-        o.puts 'PAPER = "A5"' # XXX: avoid erros of the last line of Parameters.get_page_metric
+        o.puts 'PAPER = "B5"' # XXX: avoid erros of the last line of Parameters.get_page_metric
       end
       book = Book.load(dir)
-      assert_equal '/x_words_file', # XXX: OK?
+      assert_match /x_words_file\z/,
         book.instance_eval { @parameters.reject_file }
     end
   end
@@ -594,6 +594,45 @@ EOC
     Dir.mktmpdir do |dir|
       book = Book.new(dir)
       assert_equal dir, book.basedir
+    end
+  end
+end
+
+class ParametersTest < Test::Unit::TestCase
+  def test_s_default
+    assert Parameters.default
+  end
+
+  def test_s_load
+    Tempfile.open('parameters_test') do |io|
+      io.puts 'CHAPS_FILE = "x_CHAPS"'
+      io.puts 'PAPER = "B5"' # XXX: avoid erros of the last line of Parameters.get_page_metric
+      io.close
+
+      params = Parameters.load(io.path)
+      assert_equal '/x_CHAPS', params.chapter_file # XXX: OK? (leading / and uninitialized @basedir)
+      assert_equal '/CHAPS', params.part_file
+    end
+  end
+
+  def test_s_get_page_metric
+    mod = Module.new
+    assert_raises ArgumentError do # XXX: OK?
+      params = Parameters.get_page_metric(mod)
+      assert params
+    end
+
+    mod = Module.new
+    mod.module_eval { const_set(:PAPER, 'A5') }
+    assert_nothing_raised do
+      params = Parameters.get_page_metric(mod)
+      assert params
+    end
+
+    mod = Module.new
+    mod.module_eval { const_set(:PAPER, 'X5') }
+    assert_raises ConfigError do
+      Parameters.get_page_metric(mod)
     end
   end
 end
