@@ -20,6 +20,18 @@ module BookTestHelper
       yield(dir, book, created_files)
     end
   end
+
+  def get_instance_variables(obj)
+    obj.instance_variables.inject({}) do |memo, name|
+      value = obj.instance_variable_get(name)
+      if value.instance_variables.empty?
+        memo[name] = value
+      else
+        memo[name] = get_instance_variables(value)
+      end
+      memo
+    end
+  end
 end
 
 class BookTest < Test::Unit::TestCase
@@ -49,18 +61,6 @@ class BookTest < Test::Unit::TestCase
       Dir.chdir(sub3dir) do
         assert_equal sub3dir, File.expand_path(Book.load_default.basedir)
       end
-    end
-  end
-
-  def get_instance_variables(obj)
-    obj.instance_variables.inject({}) do |memo, name|
-      value = obj.instance_variable_get(name)
-      if value.instance_variables.empty?
-        memo[name] = value
-      else
-        memo[name] = get_instance_variables(value)
-      end
-      memo
     end
   end
 
