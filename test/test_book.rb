@@ -62,6 +62,20 @@ class BookTest < Test::Unit::TestCase
         assert_equal sub3dir, File.expand_path(Book.load_default.basedir)
       end
     end
+
+    # tests for ReVIEW.book
+    default_book = nil
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        default_book = ReVIEW.book
+        assert default_book
+      end
+    end
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        assert_equal default_book, ReVIEW.book
+      end
+    end
   end
 
   def test_s_load
