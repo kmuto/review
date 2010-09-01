@@ -31,6 +31,49 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
+  def test_s_update_rubyenv
+    save_load_path = $LOAD_PATH.dup
+
+    Dir.mktmpdir do |dir|
+      Book.update_rubyenv(dir)
+      assert_equal save_load_path, $LOAD_PATH
+    end
+
+    Dir.mktmpdir do |dir|
+      local_lib_path = File.join(dir, 'lib')
+      Dir.mkdir(local_lib_path)
+      Book.update_rubyenv(dir)
+      assert_equal save_load_path, $LOAD_PATH
+    end
+
+    begin
+      Dir.mktmpdir do |dir|
+        local_lib_path = File.join(dir, 'lib')
+        Dir.mkdir(local_lib_path)
+        Dir.mkdir(File.join(local_lib_path, 'review'))
+        Book.update_rubyenv(dir)
+        assert save_load_path != $LOAD_PATH
+        assert $LOAD_PATH.index(local_lib_path)
+      end
+    ensure
+      $LOAD_PATH.replace save_load_path
+    end
+
+    num = rand(99999)
+    test_const = "ReVIEW__BOOK__TEST__#{num}"
+    begin
+      Dir.mktmpdir do |dir|
+        File.open(File.join(dir, 'review-ext.rb'), 'w') do |o|
+          o.puts "#{test_const} = #{num}"
+        end
+        Book.update_rubyenv(dir)
+        assert_equal num, Object.class_eval { const_get(test_const) }
+      end
+    ensure
+      Object.class_eval { remove_const(test_const) }
+    end
+  end
+
   def test_ext
     book = Book.new(File.dirname(__FILE__))
     assert_equal '.re', book.ext

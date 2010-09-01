@@ -35,6 +35,7 @@ begin
   require 'rcov/rcovtask'
   Rcov::RcovTask.new do |t|
     t.rcov_opts << '-x /gems/'
+    t.rcov_opts << '-x /tmp/'
     t.libs << 'test'
     t.pattern = 'test/test_*.rb'
     t.verbose = true
