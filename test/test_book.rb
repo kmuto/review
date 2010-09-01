@@ -26,8 +26,60 @@ class BookTest < Test::Unit::TestCase
   include BookTestHelper
 
   def test_s_load_default
-    Dir.chdir(File.dirname(__FILE__)) do
-      assert Book.load_default
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'CHAPS'), 'w') {}
+      Dir.chdir(dir) do
+        assert_equal dir, File.expand_path(Book.load_default.basedir)
+      end
+
+      subdir = File.join(dir, 'sub')
+      Dir.mkdir(subdir)
+      Dir.chdir(subdir) do
+        assert_equal dir, File.expand_path(Book.load_default.basedir)
+      end
+
+      sub2dir = File.join(dir, 'sub', 'sub')
+      Dir.mkdir(sub2dir)
+      Dir.chdir(sub2dir) do
+        assert_equal dir, File.expand_path(Book.load_default.basedir)
+      end
+
+      sub3dir = File.join(dir, 'sub', 'sub', 'sub')
+      Dir.mkdir(sub3dir)
+      Dir.chdir(sub3dir) do
+        assert_equal sub3dir, File.expand_path(Book.load_default.basedir)
+      end
+    end
+  end
+
+  def get_instance_variables(obj)
+    obj.instance_variables.inject({}) do |memo, name|
+      value = obj.instance_variable_get(name)
+      if value.instance_variables.empty?
+        memo[name] = value
+      else
+        memo[name] = get_instance_variables(value)
+      end
+      memo
+    end
+  end
+
+  def test_s_load
+    Dir.mktmpdir do |dir|
+      book = Book.load(dir)
+      defs = get_instance_variables(Parameters.default)
+      pars = get_instance_variables(book.instance_eval { @parameters })
+      assert_equal defs, pars
+    end
+
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'PARAMS'), 'w') do |o|
+        o.puts 'WORDS_FILE = "x_words_file"'
+        o.puts 'PAPER = "A5"' # XXX: avoid erros of the last line of Parameters.get_page_metric
+      end
+      book = Book.load(dir)
+      assert_equal '/x_words_file', # XXX: OK?
+        book.instance_eval { @parameters.reject_file }
     end
   end
 
