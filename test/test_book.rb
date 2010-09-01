@@ -650,7 +650,7 @@ class ChapterTest < Test::Unit::TestCase
     assert_equal lines, ch.lines # XXX: OK?
   end
 
-  def test_valume
+  def test_volume
     content = "abc\ndef"
     tf1 = Tempfile.new('chapter_test1')
     tf1.print content
