@@ -250,11 +250,11 @@ module ReVIEW
     end
 
     def th(s)
-      macro('textgt', s)
+      macro('textgt', macro('shortstack[l]', s))
     end
 
     def td(s)
-      s
+      macro('shortstack[l]', s)
     end
 
     def tr(rows)
