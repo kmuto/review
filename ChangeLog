@@ -1,3 +1,7 @@
+Thu Sep  2 23:38:01 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: add command bin/review-pdfmaker for generating PDF document by LaTeX
+
 Thu Sep  2 13:24:24 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb, test/test_latexbuilder.rb: add op @<br>{} into LaTeXBuilder.
