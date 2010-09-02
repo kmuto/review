@@ -1,3 +1,8 @@
+Fri Sep  3 01:01:19 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb, bin/review-pdfmaker: use {alltt}
+	  instead of {verbatim} to allow inline in lists and cmds.
+
 Thu Sep  2 23:38:01 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: add command bin/review-pdfmaker for generating PDF document by LaTeX

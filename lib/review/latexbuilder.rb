@@ -158,11 +158,11 @@ module ReVIEW
     def emlist(lines)
       blank
       puts '\begin{reviewemlist}'
-      puts '\begin{verbatim}'
+      puts '\begin{alltt}'
       lines.each do |line|
         puts line
       end
-      puts '\end{verbatim}'
+      puts '\end{alltt}'
       puts '\end{reviewemlist}'
       blank
     end
@@ -170,11 +170,11 @@ module ReVIEW
     def cmd(lines)
       blank
       puts '\begin{reviewcmd}'
-      puts '\begin{verbatim}'
+      puts '\begin{alltt}'
       lines.each do |line|
         puts line
       end
-      puts '\end{verbatim}'
+      puts '\end{alltt}'
       puts '\end{reviewcmd}'
       blank
     end
@@ -185,11 +185,11 @@ module ReVIEW
 
     def list_body(lines)
       puts '\begin{reviewlist}'
-      puts '\begin{verbatim}'
+      puts '\begin{alltt}'
       lines.each do |line|
         puts line
       end
-      puts '\end{verbatim}'
+      puts '\end{alltt}'
       puts '\end{reviewlist}'
       puts
     end
@@ -214,13 +214,13 @@ module ReVIEW
 
     def image_dummy(id, caption, lines)
       puts '\begin{reviewdummyimage}'
-      puts '\begin{verbatim}'
+      puts '\begin{alltt}'
       path = @chapter.image(id).path
       puts "--[[path = #{path} (#{existence(id)})]]--"
       lines.each do |line|
         puts detab(line.rstrip)
       end
-      puts '\end{verbatim}'
+      puts '\end{alltt}'
       puts macro('label', image_label(id))
       puts text(caption)
       puts '\end{reviewdummyimage}'
