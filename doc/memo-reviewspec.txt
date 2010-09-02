@@ -127,6 +127,7 @@
  * hidx  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
  * uchar ※IDGXMLで実装。HTML/EPUBBuilderでも簡単に実装できそう。LaTeXではOTFパッケージ必要?
  * labelref ※IDGXMLで中途半端に実装
+ * br ※LaTeX非対応、EPUBBuilder、IDGXMLで実装
 
 ==== 基本化の難しそうなもの・時間のかかりそうなもの
 

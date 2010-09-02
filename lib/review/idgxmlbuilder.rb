@@ -1000,6 +1000,10 @@ module ReVIEW
       %Q(<tt type='inline-code'>#{escape_html(str)}</tt>)
     end
 
+    def inline_br(str)
+      "\n"
+    end
+
     def rawblock(lines)
       no = 1
       lines.each {|l|

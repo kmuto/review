@@ -515,6 +515,10 @@ module ReVIEW
       # FIXME
       ""
     end
+
+    def inline_br(str)
+      %Q(\n)
+    end
     
     def raw(str)
       if str =~ /\A<\/(.+)>$/

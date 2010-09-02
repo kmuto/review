@@ -201,6 +201,7 @@ module ReVIEW
     definline :tt
     definline :i
     definline :raw
+    definline :br
 
     private
 

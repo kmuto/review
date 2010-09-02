@@ -75,4 +75,9 @@ class EPUBBuidlerTest < Test::Unit::TestCase
     ret = @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
     assert_equal %Q|<table>\n<tr><th><b>1</b></th><th><i>2</i></th></tr>\n<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>\n</table>\n|, @builder.raw_result
   end
+
+  def test_inline_br
+    ret = @builder.inline_br("")
+    assert_equal %Q|<br />|, ret
+  end
 end

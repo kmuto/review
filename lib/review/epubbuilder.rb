@@ -582,6 +582,10 @@ QUOTE
       %Q(<!-- IDX:#{escape_html(str)} -->)
     end
 
+    def inline_br(str)
+      %Q(<br />)
+    end
+
     def text(str)
       str
     end
