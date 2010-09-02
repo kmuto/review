@@ -1,3 +1,7 @@
+Thu Sep  2 13:24:24 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb, test/test_latexbuilder.rb: add op @<br>{} into LaTeXBuilder.
+
 Thu Sep  2 12:05:58 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* add op @<br>{}.

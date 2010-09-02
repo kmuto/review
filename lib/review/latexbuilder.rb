@@ -368,6 +368,11 @@ module ReVIEW
       macro('textbf', text(str))
     end
 
+    # line break
+    def inline_br(str)
+      "\\\\\n"
+    end
+
     def nofunc_text(str)
       escape(str)
     end

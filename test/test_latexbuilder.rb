@@ -71,4 +71,13 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\href{http://example.com/aaa/bbb}{AAA\\symbol{\"5F}BBB}|, ret
   end
 
+  def test_inline_br
+    ret = @builder.inline_br("")
+    assert_equal %Q|\\\\\n|, ret
+  end
+
+  def test_inline_br_with_other_strings
+    ret = @builder.compile_inline("abc@<br>{}def")
+    assert_equal %Q|abc\\\\\ndef|, ret
+  end
 end
