@@ -25,7 +25,7 @@
     * quoteブロック、leadブロックでは使えるようにしたい ※後方互換性を破壊する、ブロック名によって処理が違う(listとleadでの違いなど)のがややこしいといった問題あり。
  * listブロックやemlistブロック、cmdブロック内でのインラインは許すか？
     * 現状ではLATEXBuilderでは不可、HTMLBuilder/EPUBBuilder、IDGXMLBuilder、TOPBuilderでは可 ※LaTeXでどうするかについてのみ検討課題
-    * LaTeXはvarbatim環境を使っているので無理？？ ←alltt環境なら可能？
+    * LaTeXはvarbatim環境を使っているので無理？？ ←alltt環境に変更、検証中
 
 == 生成されるフォーマットについて
 
