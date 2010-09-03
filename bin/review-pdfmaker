@@ -156,12 +156,18 @@ def get_template(values)
 \\usepackage{framed}
 \\usepackage{wrapfig}
 \\definecolor{shadecolor}{gray}{0.9}
+\\definecolor{shadecolorb}{gray}{0.1}
 \\usepackage{eclbkbox}
 
 \\usepackage{ascmac}
 
 \\usepackage{float}
 \\usepackage{alltt}
+
+\\newenvironment{shadedb}{%
+  \\def\\FrameCommand{\\fboxsep=\\FrameSep \\colorbox{shadecolorb}}%
+  \\MakeFramed {\\FrameRestore}}%
+ {\\endMakeFramed}
 
 #{values["usepackage"]}
 
@@ -221,8 +227,8 @@ def get_template(values)
   \\end{shaded}}
 
 \\newenvironment{reviewcmd}{%
-  \\medskip\\small\\setlength{\\baselineskip}{1.2zw}}{%
-  }
+  \\color{white}\\medskip\\small\\begin{shadedb}\\setlength{\\baselineskip}{1.3zw}}{%
+  \\end{shadedb}}
 
 \\newenvironment{reviewtable}{%
   \\begin{center}\\small\\setlength{\\baselineskip}{1.2zw}
