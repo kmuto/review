@@ -21,7 +21,7 @@ module ReVIEW
     include LaTeXUtils
     include TextUtils
 
-    [:u, :tti, :idx, :hidx, :icon, :dtp].each {|e|
+    [:u, :tti, :idx, :hidx, :icon, :dtp, :hd_chap].each {|e|
       Compiler.definline(e)
     }
 
