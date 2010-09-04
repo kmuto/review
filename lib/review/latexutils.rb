@@ -14,19 +14,19 @@ module ReVIEW
   module LaTeXUtils
 
     MATACHARS = {
-      '#'  => '\symbol{"23}',
-      "$"  => '\symbol{"24}',
+      '#'  => '\#',
+      "$"  => '\textdollar{}',
       '%' => '\%',
       '&' => '\&',
       '{' => '\{',
       '}' => '\}',
-      '_'  => '\symbol{"5F}',
+      '_'  => '\textunderscore{}',
       '^' => '\textasciicircum{}',
       '~' => '\textasciitilde{}',
       '|' => '\textbar{}',
-      '<'  => '\symbol{"3C}',
-      '>'  => '\symbol{"3E}',
-      "\\" => '\symbol{"5C}'
+      '<'  => '\textless{}',
+      '>'  => '\textgreater{}',
+      "\\" => '\textbackslash{}'
     }
 
     METACHARS_RE = /[#{Regexp.escape(MATACHARS.keys.join(''))}]/
