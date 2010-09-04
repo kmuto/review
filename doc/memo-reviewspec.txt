@@ -52,7 +52,11 @@
  * image
 
  * footnote
- * (comment) ※ HTMLはdivで出力、LaTeXは%でコメントアウトで解釈が違う？ ←//commmentはできるだけ避けたい。変換後データにコメントを入れたいという場面は少ないはずなので、#@#の使用を強く推奨
+
+ * flushright  ※LaTeX対応済み
+ * source  ※LaTeX対応済み
+ * listnum  ※LaTeX対応済み
+ * emlistnum  ※LaTeX対応済み
 
 === 拡張
 
@@ -61,11 +65,10 @@
 基本化への開発を重点的に進める。
 
  * noindent  ※HTML非対応 ←IDGXMLでは頻度が高く、HTMLでもCSSで対処できるので、基本に近い拡張
- * flushright  ※LaTeXでは「right」になってる？？ ←flushrightにしません?
  * box(insn)  ※LaTeX非対応
  * indepimage ※LaTeX非対応
  * label  ※HTML非対応、EPUBBuilderで<a id="..." />で対応。hrefをサポートするならこの基本化は必須
- * raw  ※LaTeX非対応
+ * raw    ※LaTeX非対応
  * tsize  ※LaTeX非対応←いずれほしくなる気もする。mm単位
  * =+[nonum] 番号が標準で付くレベルでの番号なし見出し ※IDGXMLで実装
 
@@ -73,19 +76,18 @@
 
  * linebreak  ※HTML非対応、EPUBBuilderで<br/>で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
  * pagebreak  ※HTML非対応、EPUBBuilderで<br class="pagebreak" />で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
- * source  ※LaTeX非対応
- * listnum  ※LaTeX非対応
- * emlistnum  ※LaTeX非対応
  * bibpaper  ※LaTeX非対応
  * doorquote  ※LaTeX非対応
  * talk  ※LaTeX非対応
  * address  ※LaTeX非対応
- * blockquote  ※LaTeX非対応
+ * blockquote  ※LaTeX非対応←quoteとの違いは？
  * bpo  ※LaTeX非対応
  * note,memo,tip,info,planning,best,important,security,caution,notice,point,shoot,term,link,practice,reference,expert  ※LaTeX非対応←一部は書籍固有すぎるが、いくかは基本化していきたいところ
  * numberlessimage  ※LaTeX非対応
  * hr  ※LaTeX非対応
  * parasep  ※HTMLでは<br/>で対応
+
+ * (comment) ※ HTMLはdivで出力、LaTeXは%でコメントアウトで解釈が違う？ ←//commmentはできるだけ避けたい。変換後データにコメントを入れたいという場面は少ないはずなので、#@#の使用を強く推奨
 
 == 利用できるインライン記法
 
@@ -104,6 +106,18 @@
  * b
  * href
 
+ * raw
+ * dtp  ※EPUBBuilder、IDGXMLで実装。LaTeXでは単に無視する
+ * code ※LaTeX対応済
+ * tt   ※HTML非対応、IDGXML、EPUBBuilderで実装、LaTeX対応済み
+ * i    ※HTMLでは<i>...</i>で、LaTeXでは\indexだったが\textit{}に変更
+ * sup  ※LaTeX対応済み
+ * sub  ※LaTeX対応済み、ただしstyに難あり
+ * em   ※LaTeX対応済み(bと同じ)
+ * strong  ※LaTeX対応済み(b,emと同じ)
+ * u    ※HTML非対応、EPUBBuilderで実装、LaTeXは要jumolineパッケージ
+ * br
+
 === 拡張
 
 ==== 準基本
@@ -113,21 +127,11 @@
  * ruby  ※HTML非対応、EPUBBuilder、IDGXMLで実装
  * bou  ※HTML非対応
  * ami  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
- * dtp  ※LaTeX非対応←EPUBBuilder、IDGXMLで実装。LaTeXでは単に無視またはコメントにするのがよいと思う
- * code  ※LaTeX非対応
- * tt  ※HTML非対応、IDGXML、EPUBBuilderで実装
- * i  ※HTMLでは<i>...</i>で、LaTeXでは\indexで実装？？←まずいので\itか\emにしたほうが
- * sup  ※LaTeX非対応←_{}でできる?
- * sub  ※LaTeX非対応←^{}でできる?
- * em  ※LaTeX非対応
- * strong  ※LaTeX非対応
- * u  ※LaTeX非対応、HTML非対応、EPUBBuilderで実装
  * icon  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装←文中に画像を入れたくなるケースは多そうなので、いずれ対応せざるを得ない
  * idx  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
  * hidx  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
  * uchar ※IDGXMLで実装。HTML/EPUBBuilderでも簡単に実装できそう。LaTeXではOTFパッケージ必要?
  * labelref ※IDGXMLで中途半端に実装
- * br ※LaTeX非対応、EPUBBuilder、IDGXMLで実装
 
 ==== 基本化の難しそうなもの・時間のかかりそうなもの
 
@@ -145,7 +149,6 @@
  * small  ※LaTeX非対応
  * del  ※LaTeX非対応
  * ins  ※LaTeX非対応
- * raw  ※LaTeX非対応
  * tti  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
  * maru ※IDGXML実装
  * balloon ※IDGXML実装
