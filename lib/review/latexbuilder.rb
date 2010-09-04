@@ -171,6 +171,30 @@ module ReVIEW
       blank
     end
 
+    def emlistnum(lines)
+      blank
+      puts '\begin{reviewemlist}'
+      puts '\begin{alltt}'
+      lines.each_with_index do |line, i|
+        puts detab((i+1).to_s.rjust(2) + ": " + line)
+      end
+      puts '\end{alltt}'
+      puts '\end{reviewemlist}'
+      blank
+    end
+
+    def listnum_body(lines)
+      puts '\begin{reviewlist}'
+      puts '\begin{alltt}'
+      lines.each_with_index do |line, i|
+        puts detab((i+1).to_s.rjust(2) + ": " + line)
+      end
+      puts '\end{alltt}'
+      puts '\end{reviewlist}'
+      puts
+
+     end
+
     def cmd(lines)
       blank
       puts '\begin{reviewcmd}'
@@ -184,7 +208,7 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-      puts macro('reviewlistcaption', "#{@chapter.number}.#{@chapter.list(id).number}", text(caption))
+#      puts macro('reviewlistcaption', "#{@chapter.number}.#{@chapter.list(id).number}", text(caption))
     end
 
     def list_body(lines)
@@ -197,6 +221,27 @@ module ReVIEW
       puts '\end{reviewlist}'
       puts
     end
+
+    def source(lines, caption)
+      puts '\begin{reviewlist}'
+      source_header caption
+      source_body lines
+      puts '\end{reviewlist}'
+      puts
+    end
+
+    def source_header(caption)
+      puts macro('reviewlistcaption', escape(caption))
+    end
+
+    def source_body(lines)
+      puts '\begin{alltt}'
+      lines.each do |line|
+        puts line
+      end
+      puts '\end{alltt}'
+    end
+
 
     def image_header(id, caption)
     end
@@ -211,7 +256,7 @@ module ReVIEW
       end
       puts macro('label', image_label(id))
       if !caption.empty?
-        puts macro('caption', text(caption))
+        puts macro('caption', escape(caption))
       end
       puts '\end{reviewimage}'
     end
@@ -226,7 +271,7 @@ module ReVIEW
       end
       puts '\end{alltt}'
       puts macro('label', image_label(id))
-      puts text(caption)
+      puts escape(caption)
       puts '\end{reviewdummyimage}'
     end
 
@@ -279,7 +324,7 @@ module ReVIEW
       latex_block 'center', lines
     end
 
-    def right(lines)
+    def flushright(lines)
       latex_block 'flushright', lines
     end
 
