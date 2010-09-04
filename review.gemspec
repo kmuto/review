@@ -9,10 +9,10 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["kmuto", "takahashim"]
-  s.date = %q{2010-07-15}
+  s.date = %q{2010-09-04}
   s.description = %q{ReVIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.}
   s.email = %q{kmuto@debian.org}
-  s.executables = ["review-check", "review-checkdep", "review-compile", "review-epubmaker", "review-index", "review-preproc", "review-validate", "review-vol"]
+  s.executables = ["review-check", "review-checkdep", "review-compile", "review-epubmaker", "review-index", "review-pdfmaker", "review-preproc", "review-validate", "review-vol"]
   s.extra_rdoc_files = [
     "ChangeLog",
      "README.rdoc"
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
      "bin/review-compile",
      "bin/review-epubmaker",
      "bin/review-index",
+     "bin/review-pdfmaker",
      "bin/review-preproc",
      "bin/review-validate",
      "bin/review-vol",
@@ -35,6 +36,7 @@ Gem::Specification.new do |s|
      "doc/format.txt",
      "doc/format_idg.txt",
      "doc/format_sjis.txt",
+     "doc/memo-reviewspec.txt",
      "doc/sample.css",
      "doc/sample.yaml",
      "lib/lineinput.rb",
@@ -63,10 +65,18 @@ Gem::Specification.new do |s|
      "lib/review/volume.rb",
      "review.gemspec",
      "setup.rb",
+     "test/CHAPS",
+     "test/bib.re",
+     "test/test.re",
+     "test/test_book.rb",
+     "test/test_builder.rb",
      "test/test_epubbuilder.rb",
      "test/test_helper.rb",
      "test/test_htmlbuilder.rb",
-     "test/test_latexbuilder.rb"
+     "test/test_htmlutils.rb",
+     "test/test_idgxmlbuilder.rb",
+     "test/test_latexbuilder.rb",
+     "test/test_lineinput.rb"
   ]
   s.homepage = %q{http://github.com/kmuto/review}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -74,10 +84,15 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.6}
   s.summary = %q{ReVIEW: a easy-to-use digital publishing system}
   s.test_files = [
-    "test/test_epubbuilder.rb",
+    "test/test_book.rb",
+     "test/test_builder.rb",
+     "test/test_epubbuilder.rb",
      "test/test_helper.rb",
      "test/test_htmlbuilder.rb",
-     "test/test_latexbuilder.rb"
+     "test/test_htmlutils.rb",
+     "test/test_idgxmlbuilder.rb",
+     "test/test_latexbuilder.rb",
+     "test/test_lineinput.rb"
   ]
 
   if s.respond_to? :specification_version then
