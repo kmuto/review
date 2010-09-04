@@ -1,3 +1,8 @@
+Sat Sep  4 11:45:36 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb: add inlines: @<i>,@<idx>,@<hidx>,@<dtp>,@<code>,
+	  @<hd_chap>,@<raw>,@<sub>,@<sup>,@<em>,@<strong>,@<u>
+
 Fri Sep  3 22:50:56 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: make background color of //cmd black

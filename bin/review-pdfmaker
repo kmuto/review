@@ -159,6 +159,8 @@ def get_template(values)
 \\definecolor{shadecolorb}{gray}{0.1}
 \\usepackage{eclbkbox}
 
+\\usepackage{jumoline}
+
 \\usepackage{ascmac}
 
 \\usepackage{float}

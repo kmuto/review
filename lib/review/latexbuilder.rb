@@ -21,6 +21,10 @@ module ReVIEW
     include LaTeXUtils
     include TextUtils
 
+    [:u, :tti, :idx, :hidx, :icon, :dtp].each {|e|
+      Compiler.definline(e)
+    }
+
     def extname
       '.tex'
     end
@@ -358,9 +362,19 @@ module ReVIEW
       index(str)
     end
 
-    # index
+    # index -> italic
     def inline_i(str)
+      macro('textit', text(str))
+    end
+
+    # index
+    def inline_idx(str)
       text(str) + index(str)
+    end
+
+    # hidden index??
+    def inline_hidx(str)
+      index(str)
     end
 
     # bold
@@ -373,12 +387,55 @@ module ReVIEW
       "\\\\\n"
     end
 
+    def inline_dtp(str)
+      # ignore
+      ""
+    end
+
+    ## @<code> is same as @<tt>
+    def inline_code(str)
+      macro('texttt', escape(str))
+    end
+
     def nofunc_text(str)
       escape(str)
     end
 
     def inline_tt(str)
       macro('texttt', escape(str))
+    end
+
+    def inline_hd_chap(chap, id)
+      "「#{chap.headline_index.number(id)} #{chap.headline(id).caption}」"
+    end
+
+    def inline_raw(str)
+      escape(str)
+    end
+
+    def inline_sub(str)
+      macro('textsubscript', escape(str))
+    end
+
+    def inline_sup(str)
+      macro('textsuperscript', escape(str))
+    end
+
+    def inline_em(str)
+      macro('textbf', escape(str))
+    end
+
+    def inline_strong(str)
+      macro('textbf', escape(str))
+    end
+
+    def inline_u(str)
+      macro('Underline', escape(str))
+    end
+
+    def inline_icon(str)
+      ## can not support?
+      ""
     end
 
     def index(str)
