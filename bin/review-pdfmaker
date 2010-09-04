@@ -255,8 +255,8 @@ def get_template(values)
 \\newcommand{\\reviewtablecaption}[2]{%
 }
 
-\\newcommand{\\reviewlistcaption}[2]{%
-}
+\\newcommand{\\reviewlistcaption}[1]{%
+  #1}
 
 \\newcommand{\\reviewimageref}[1]{%
   図 #1}
