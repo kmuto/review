@@ -68,7 +68,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_href_with_underscore
     ret = @builder.compile_href("http://example.com/aaa/bbb", "AAA_BBB")
-    assert_equal %Q|\\href{http://example.com/aaa/bbb}{AAA\\symbol{\"5F}BBB}|, ret
+    assert_equal %Q|\\href{http://example.com/aaa/bbb}{AAA\\textunderscore{}BBB}|, ret
   end
 
   def test_inline_br
@@ -80,4 +80,60 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     ret = @builder.compile_inline("abc@<br>{}def")
     assert_equal %Q|abc\\\\\ndef|, ret
   end
+
+  def test_inline_u
+    ret = @builder.compile_inline("abc@<u>{def}ghi")
+    assert_equal %Q|abc\\Underline{def}ghi|, ret
+  end
+
+  def test_inline_i
+    ret = @builder.compile_inline("abc@<i>{def}ghi")
+    assert_equal %Q|abc\\textit{def}ghi|, ret
+  end
+
+  def test_inline_dtp
+    ret = @builder.compile_inline("abc@<dtp>{def}ghi")
+    assert_equal %Q|abcghi|, ret
+  end
+
+  def test_inline_code
+    ret = @builder.compile_inline("abc@<code>{def}ghi")
+    assert_equal %Q|abc\\texttt{def}ghi|, ret
+  end
+
+  def test_inline_raw
+    ret = @builder.compile_inline("@<raw>{@<tt>{inline!$%\\}}")
+    assert_equal %Q|@\\textless{}tt\\textgreater{}\\{inline!\\textdollar{}\\%\\}|, ret
+  end
+
+  def test_inline_sup
+    ret = @builder.compile_inline("abc@<sup>{def}")
+    assert_equal %Q|abc\\textsuperscript{def}|, ret
+  end
+
+  def test_inline_sub
+    ret = @builder.compile_inline("abc@<sub>{def}")
+    assert_equal %Q|abc\\textsubscript{def}|, ret
+  end
+
+  def test_inline_b
+    ret = @builder.compile_inline("abc@<b>{def}")
+    assert_equal %Q|abc\\textbf{def}|, ret
+  end
+
+  def test_inline_em
+    ret = @builder.compile_inline("abc@<em>{def}")
+    assert_equal %Q|abc\\textbf{def}|, ret
+  end
+
+  def test_inline_strong
+    ret = @builder.compile_inline("abc@<strong>{def}")
+    assert_equal %Q|abc\\textbf{def}|, ret
+  end
+
+  def test_inline_u
+    ret = @builder.compile_inline("abc@<u>{def}ghi")
+    assert_equal %Q|abc\\Underline{def}ghi|, ret
+  end
+
 end
