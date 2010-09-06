@@ -398,6 +398,16 @@ QUOTE
     def compile_href(url, label)
       %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
     end
+
+    def flushright(lines)
+      puts '<div style="text-align:right;">'
+      puts '<pre class="flushright">'
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts '</pre>'
+      puts '</div>'
+    end
   end
 
 end   # module ReVIEW
