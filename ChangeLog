@@ -1,3 +1,20 @@
+Wed Sep  8 22:24:49 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb: import all of epubbuilder.rb.
+	  - CSS name changed.
+	    //list caption: toplabel -> listcaption
+	    //source caption: toplabel -> sourcecaption
+	    //image caption: botlabel -> imagecaption
+	    //table caption: toplabel -> tablecaption
+          - //comment is converted as <!-- --> instead of <p class="comment">.
+	  - //image and //numberlessimage are converted as
+	    <div class="image"><img> instead of <p class="img"><img>
+	  - Produce XHTML header/footer contents by default.
+	  - Insert orderded numbers in headers by default. Specifing
+	    --secnolevel=0 prevents all of them.
+	* bin/review-compile, doc/memo-reviewspec.txt, bin/review-epubmaker:
+	  Replace string EPUB with HTML to follow HTMLBuilder changes.
+
 Sat Sep  4 11:53:31 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb: add bloks: emlistnum, listnum, reviewlistcaption, source, flushright

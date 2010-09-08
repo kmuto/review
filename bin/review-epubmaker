@@ -35,7 +35,7 @@ def main
     "stylesheet" => "stylesheet.css", # stylesheet file
     "coverfile" => nil, # content file of body of cover page
     "mytoc" => nil, # whether make own table of contents or not
-    "params" => "", # specify review2epub parameters
+    "params" => "", # specify review2html parameters
     "toclevel" => 3, # level of toc
     "secnolevel" => 2, # level of section #
     "posthook" => nil, # command path of post hook
@@ -87,7 +87,7 @@ def main
         toccount = toccount + 1
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
-          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+          exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
         getanchors("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
@@ -104,7 +104,7 @@ def main
         next if l =~ /^#/
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
-          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+          exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
         getanchors("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
@@ -121,7 +121,7 @@ def main
         toccount = toccount + 1
         fork {
           STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
-          exec("review-compile --target=epub --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+          exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
         getanchors("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
@@ -295,7 +295,7 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="ReVIEW"/>
   <title>#{values["booktitle"]}</title>
 </head>
 <body>

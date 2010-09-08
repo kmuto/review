@@ -24,22 +24,21 @@
     * 現状ではLATEXBuilderは可、HTMLBuilderは不可
     * quoteブロック、leadブロックでは使えるようにしたい ※後方互換性を破壊する、ブロック名によって処理が違う(listとleadでの違いなど)のがややこしいといった問題あり。
  * listブロックやemlistブロック、cmdブロック内でのインラインは許すか？
-    * 現状ではLATEXBuilderでは不可、HTMLBuilder/EPUBBuilder、IDGXMLBuilder、TOPBuilderでは可 ※LaTeXでどうするかについてのみ検討課題
+    * 現状ではLATEXBuilderでは不可、HTMLBuilder、IDGXMLBuilder、TOPBuilderでは可 ※LaTeXでどうするかについてのみ検討課題
     * LaTeXはvarbatim環境を使っているので無理？？ ←alltt環境に変更、検証中
 
 == 生成されるフォーマットについて
 
- * HTML(バージョンは？Layoutにおまかせ？) ※HTML5になるとlayoutだけでは処理できなくなる可能性。フラグの導入を要検討
- * EPUB(HTMLのバージョンはXHTML1.1) ※iPadのiBooksをリファレンスプラットフォームに。変なところはあるものの、現時点では一番まっとうなビューア
+ * HTML(レイアウトを使用しない場合のHTMLのバージョンはXHTML1.1) ※iPadのiBooksをリファレンスプラットフォームに。変なところはあるものの、現時点では一番まっとうなビューア
  * LaTeX(dvipdfmxでPDFに変換)
  * IDGXML (Adobe InDesign CS2以降向けXML形式)
- * (TOPBuilder記法？) ※ほぼプレインテキスト化したい場合の形式。EPUB/IDGXMLに遅れてのサポート
+ * (TOPBuilder記法？) ※ほぼプレインテキスト化したい場合の形式。HTML/IDGXMLに遅れてのサポート
  * (EWB記法←サポートする・できる？) ←捨てよう
 
 == 利用できるタグ記法
 
 全フォーマットで原則サポートしている（べき）基本記法と、それ以外の拡張記法に分ける。
-(基本はHTMLBuilderとLATEXBuilderの実装状況から判断)←HTMLBuilderはobsolete、EPUBBuilderで置き換え(いずれrename)。kmutoはEPUBBuilderとIDGXMLBuilderをコアコンポーネントと位置付けている。
+(基本はHTMLBuilderとLATEXBuilderの実装状況から判断)←kmutoはHTMLBuilderとIDGXMLBuilderをコアコンポーネントと位置付けている。
 
 === 基本
 
@@ -67,15 +66,15 @@
  * noindent  ※HTML非対応 ←IDGXMLでは頻度が高く、HTMLでもCSSで対処できるので、基本に近い拡張
  * box(insn)  ※LaTeX非対応
  * indepimage ※LaTeX非対応
- * label  ※HTML非対応、EPUBBuilderで<a id="..." />で対応。hrefをサポートするならこの基本化は必須
+ * label  ※HTMLで<a id="..." />で対応。hrefをサポートするならこの基本化は必須
  * raw    ※LaTeX非対応
  * tsize  ※LaTeX非対応←いずれほしくなる気もする。mm単位
  * =+[nonum] 番号が標準で付くレベルでの番号なし見出し ※IDGXMLで実装
 
 ==== 基本化の難しそうなもの・時間のかかりそうなもの
 
- * linebreak  ※HTML非対応、EPUBBuilderで<br/>で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
- * pagebreak  ※HTML非対応、EPUBBuilderで<br class="pagebreak" />で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
+ * linebreak  ※HTMLで<br/>で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
+ * pagebreak  ※HTMLで<br class="pagebreak" />で対応 ←IDGXMLで処理しがたいのでできるだけ避けたい
  * bibpaper  ※LaTeX非対応
  * doorquote  ※LaTeX非対応
  * talk  ※LaTeX非対応
@@ -107,15 +106,15 @@
  * href
 
  * raw
- * dtp  ※EPUBBuilder、IDGXMLで実装。LaTeXでは単に無視する
+ * dtp  ※HTML、IDGXMLで実装。LaTeXでは単に無視する
  * code ※LaTeX対応済
- * tt   ※HTML非対応、IDGXML、EPUBBuilderで実装、LaTeX対応済み
+ * tt   ※HTML、IDGXML、LaTeX対応済み
  * i    ※HTMLでは<i>...</i>で、LaTeXでは\indexだったが\textit{}に変更
  * sup  ※LaTeX対応済み
  * sub  ※LaTeX対応済み、ただしstyに難あり
  * em   ※LaTeX対応済み(bと同じ)
  * strong  ※LaTeX対応済み(b,emと同じ)
- * u    ※HTML非対応、EPUBBuilderで実装、LaTeXは要jumolineパッケージ
+ * u    ※HTMLで実装、LaTeXは要jumolineパッケージ
  * br
 
 === 拡張
@@ -124,13 +123,13 @@
 
 基本化への開発を重点的に進める。
 
- * ruby  ※HTML非対応、EPUBBuilder、IDGXMLで実装
+ * ruby  ※HTML、IDGXMLで実装
  * bou  ※HTML非対応
- * ami  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
- * icon  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装←文中に画像を入れたくなるケースは多そうなので、いずれ対応せざるを得ない
- * idx  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
- * hidx  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
- * uchar ※IDGXMLで実装。HTML/EPUBBuilderでも簡単に実装できそう。LaTeXではOTFパッケージ必要?
+ * ami  ※LaTeX非対応、HTML、IDGXMLで実装
+ * icon  ※LaTeX非対応、HTML、IDGXMLで実装←文中に画像を入れたくなるケースは多そうなので、いずれ対応せざるを得ない
+ * idx  ※LaTeX非対応、HTML、IDGXMLで実装
+ * hidx  ※LaTeX非対応、HTML、IDGXMLで実装
+ * uchar ※IDGXMLで実装。HTMLでも簡単に実装できそう。LaTeXではOTFパッケージ必要?
  * labelref ※IDGXMLで中途半端に実装
 
 ==== 基本化の難しそうなもの・時間のかかりそうなもの
@@ -149,7 +148,7 @@
  * small  ※LaTeX非対応
  * del  ※LaTeX非対応
  * ins  ※LaTeX非対応
- * tti  ※LaTeX非対応、HTML非対応、EPUBBuilder、IDGXMLで実装
+ * tti  ※LaTeX非対応、HTML、IDGXMLで実装
  * maru ※IDGXML実装
  * balloon ※IDGXML実装
  * keytop ※IDGXML実装

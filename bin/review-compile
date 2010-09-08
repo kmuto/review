@@ -41,14 +41,14 @@ def _main
   check_only = false
 
   param = {
-    "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
-    "tableopt" => nil,    # for IDGXMLBuilder
-    "nolf" => nil,        # for IDGXMLBuilder
-    "chapref" => nil,     # for IDGXMLBuilder
+    "secnolevel" => 2,    # for IDGXML and HTML
+    "tableopt" => nil,    # for IDGXML
+    "nolf" => nil,        # for IDGXML
+    "chapref" => nil,     # for IDGXML
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8",
     "subdirmode" => nil,
-    "stylesheet" => nil,  # for EPUBBuilder
+    "stylesheet" => nil,  # for HTML
   }
 
   parser = OptionParser.new
@@ -80,7 +80,7 @@ def _main
   parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') {
     param["subdirmode"] = true
   }
-  parser.on('--stylesheet=file', 'Stylesheet file for EPUB. (epub)') {|file|
+  parser.on('--stylesheet=file', 'Stylesheet file for HTML') {|file|
     param["stylesheet"] = file
   }
   parser.on('--hdnumberingmode', 'Output numbering headlines.') {
