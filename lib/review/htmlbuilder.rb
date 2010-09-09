@@ -852,7 +852,6 @@ QUOTE
       puts '</pre>'
       puts '</div>'
     end
-  end
 
     def getChap
       if @param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
@@ -884,5 +883,6 @@ QUOTE
     rescue Errno::ENOENT
     @entries = []
     end
+  end
 
 end   # module ReVIEW
