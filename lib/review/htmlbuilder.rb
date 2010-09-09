@@ -70,18 +70,18 @@ module ReVIEW
         header = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<html xmlns='http://www.w3.org/1999/xhtml' xmlns:ops='http://www.idpf.org/2007/ops' xml:lang='ja'>
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta http-equiv='Content-Type' content='text/html;charset=UTF-8' />
+  <meta http-equiv='Content-Style-Type' content='text/css' />
 EOT
         unless @param["stylesheet"].nil?
           header += <<EOT
-  <link rel="stylesheet" type="text/css" href="#{@param["stylesheet"]}" />
+  <link rel='stylesheet' type='text/css' href='#{@param["stylesheet"]}' />
 EOT
         end
         header += <<EOT
-  <meta name="generator" content="ReVIEW" />
+  <meta name='generator' content='ReVIEW' />
   <title>#{@chapter.title}</title>
 </head>
 <body>
@@ -208,7 +208,7 @@ EOT
       puts '' if level > 1
       a_id = ""
       unless anchor.empty?
-        a_id = "<a id=\"h#{anchor}\" />"
+        a_id = "<a id='h#{anchor}' />"
       end
       if caption.empty?
         puts a_id unless label.nil?
@@ -262,9 +262,9 @@ EOT
     end
 
     def captionblock(type, lines, caption)
-      puts "<div class=\"#{type}\">"
+      puts "<div class='#{type}'>"
       unless caption.nil?
-        puts "<p class=\"#{type}-title\">#{escape_html(caption)}</p>"
+        puts "<p class='caption'>#{escape_html(caption)}</p>"
       end
       lines.each {|l|
         puts "<p>#{l}</p>"
@@ -317,9 +317,9 @@ EOT
     end
 
     def box(lines, caption = nil)
-      puts '<div class="syntax">'
-      puts %Q[<p class="syntaxcaption">#{escape_html(caption)}</p>] unless caption.nil?
-      puts '<pre class="syntax">'
+      puts "<div class='syntax'>"
+      puts %Q[<p class='caption'>#{escape_html(caption)}</p>] unless caption.nil?
+      puts "<pre class='syntax'>"
       lines.each do |line|
         puts detab(line)
       end
@@ -328,8 +328,8 @@ EOT
     end
 
     def note(lines, caption = nil)
-      puts '<div class="note">'
-      puts "<p class='notecaption'>#{escape_html(caption)}</p>" unless caption.nil?
+      puts "<div class='note'>"
+      puts "<p class='caption'>#{escape_html(caption)}</p>" unless caption.nil?
       puts "#{lines.join("\n")}</div>"
     end
 
@@ -382,7 +382,7 @@ EOT
     end
 
     def read(lines)
-      puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
+      puts %Q[<p class='lead'>\n#{lines.join("\n")}\n</p>]
     end
 
     def lead(lines)
@@ -390,7 +390,7 @@ EOT
     end
 
     def list(lines, id, caption)
-      puts '<div class="caption-code">'
+      puts "<div class='caption-code'>"
       begin
         list_header id, caption
       rescue KeyError
@@ -401,12 +401,11 @@ EOT
     end
 
     def list_header(id, caption)
-      puts %Q[<p class="listcaption">リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
-      # changed: toplabel -> listcaption
+      puts %Q[<p class='caption'>リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
     end
 
     def list_body(lines)
-      puts '<pre class="list">'
+      puts "<pre class='list'>"
       lines.each do |line|
         puts detab(line)
       end
@@ -414,19 +413,18 @@ EOT
     end
 
     def source(lines, caption)
-      puts '<div class="caption-code">'
+      puts "<div class='source-code'>"
       source_header caption
       source_body lines
       puts '</div>'
     end
 
     def source_header(caption)
-      puts %Q[<p class="sourcecaption">#{escape_html(caption)}</p>]
-      # changed toplabel -> sourcecaption
+      puts %Q[<p class='caption'>#{escape_html(caption)}</p>]
     end
 
     def source_body(lines)
-      puts '<pre class="source">'
+      puts "<pre class='source'>"
       lines.each do |line|
         puts detab(line)
       end
@@ -434,7 +432,7 @@ EOT
     end
 
     def listnum(lines, id, caption)
-      puts '<div class="code">'
+      puts "<div class='code'>"
       begin
         list_header id, caption
       rescue KeyError
@@ -445,7 +443,7 @@ EOT
     end
 
     def listnum_body(lines)
-      puts '<pre class="list">'
+      puts "<pre class='list'>"
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
@@ -453,9 +451,9 @@ EOT
      end
 
     def emlist(lines, caption = nil)
-      puts '<div class="code">'
-      puts %Q(<p class="emlistcaption">#{caption}</p>) unless caption.nil?
-      puts '<pre class="emlist">'
+      puts "<div class='emlist-code'>"
+      puts %Q(<p class='caption'>#{caption}</p>) unless caption.nil?
+      puts "<pre class='emlist'>"
       lines.each do |line|
         puts detab(line)
       end
@@ -464,8 +462,8 @@ EOT
     end
 
     def emlistnum(lines)
-      puts '<div class="code">'
-      puts '<pre class="emlist">'
+      puts "<div class='emlistnum-code'>"
+      puts "<pre class='emlist'>"
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
@@ -474,8 +472,8 @@ EOT
     end
 
     def cmd(lines)
-      puts '<div class="code">'
-      puts '<pre class="cmd">'
+      puts "<div class='cmd-code'>"
+      puts "<pre class='cmd'>"
       lines.each do |line|
         puts detab(line)
       end
@@ -484,7 +482,7 @@ EOT
     end
 
     def quotedlist(lines, css_class)
-      puts %Q[<blockquote><pre class="#{css_class}">]
+      puts %Q[<blockquote><pre class='#{css_class}'>]
       lines.each do |line|
         puts detab(line)
       end
@@ -508,7 +506,7 @@ QUOTE
     end
 
     def talk(lines)
-      puts '<div class="talk">'
+      puts "<div class='talk'>"
       puts '<pre>'
       puts "#{lines.join("\n")}"
       puts '</pre>'
@@ -516,15 +514,15 @@ QUOTE
     end
 
     def image_image(id, metric, caption)
-      puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="(#{escape_html(caption)})" />]
-      puts %Q[</div>]
+      puts %Q[<div class='image'>]
+      puts %Q[<img src='#{@chapter.image(id).path.sub(/^\.\//, "")}' alt='(#{escape_html(caption)})' />]
       image_header id, caption
+      puts %Q[</div>]
       # <p> -> <div>
     end
 
     def image_dummy(id, caption, lines)
-      puts %Q[<div class="image">]
+      puts %Q[<div class='image'>]
       puts %Q[<pre class="dummyimage">]
       lines.each do |line|
         puts detab(line)
@@ -536,10 +534,10 @@ QUOTE
     end
 
     def image_header(id, caption)
-      puts %Q[<p class="imagecaption">]
+      puts %Q[<p class='caption'>]
       puts %Q[図#{@chapter.image(id).number}: #{escape_html(caption)}]
       puts %Q[</p>]
-      # botlabel -> imagecaption
+      # botlabel -> caption
     end
 
     def table(lines, id = nil, caption = nil)
@@ -556,6 +554,7 @@ QUOTE
       end
       rows = adjust_n_cols(rows)
 
+      puts %Q[<div class='table'>]
       begin
         table_header id, caption unless caption.nil?
       rescue KeyError => err
@@ -577,11 +576,12 @@ QUOTE
         end
       end
       table_end
+      puts %Q[</div>]
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="tablecaption">表#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
-      # toplabel -> tablecaption
+      puts %Q[<p class='caption'>表#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
+      # toplabel -> caption
     end
 
     def table_begin(ncols)
@@ -610,15 +610,15 @@ QUOTE
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
+      puts %Q(<div class='footnote'><p class='footnote'><a id='fn-#{id}'>[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
       # puts %Q(<p class="comment"><a name="fn-#{id}">#{escape_html(str)}</a></p>) -> above
     end
 
     def numberlessimage(id, caption)
-      puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="(#{escape_html(caption)})" />]
-      puts %Q[</div>]
+      puts %Q[<div class='image'>]
+      puts %Q[<img src='#{@chapter.image(id).path.sub(/^\.\//, "")}' alt='(#{escape_html(caption)})' />]
       image_header id, caption
+      puts %Q[</div>]
       # p -> div
     end
 
@@ -627,7 +627,7 @@ QUOTE
     end
 
     def label(id)
-      puts %Q(<a id="#{id}" />)
+      puts %Q(<a id='#{id}' />)
     end
 
     def linebreak
@@ -635,7 +635,7 @@ QUOTE
     end
 
     def pagebreak
-      puts %Q(<br class="pagebreak" />)
+      puts %Q(<br class='pagebreak' />)
     end
 
     def bpo(lines)
@@ -651,7 +651,7 @@ QUOTE
     end
 
     def inline_fn(id)
-      %Q(<a href="\#fn-#{id}">*#{@chapter.footnote(id).number}</a>)
+      %Q(<a href='#fn-#{id}'>*#{@chapter.footnote(id).number}</a>)
     end
 
     def compile_ruby(base, ruby)
@@ -659,13 +659,13 @@ QUOTE
     end
 
     def compile_kw(word, alt)
-      '<span class="kw">' +
+      "<b class='kw'>" +
         if alt
         #then escape_html(word + sprintf(@locale[:parens], alt.strip))
         then escape_html(word + " (#{alt.strip})")
         else escape_html(word)
         end +
-        "</span><!-- IDX:#{escape_html(word)} -->"
+        "</b><!-- IDX:#{escape_html(word)} -->"
     end
 
     def inline_i(str)
@@ -677,7 +677,7 @@ QUOTE
     end
 
     def inline_ami(str)
-      %Q(<span class="ami">#{escape_html(str)}</span>)
+      %Q(<span class='ami'>#{escape_html(str)}</span>)
     end
 
     def inline_tti(str)
@@ -689,7 +689,7 @@ QUOTE
     end
 
     def inline_code(str)
-      %Q(<span class="inline-code">#{str}</span>)
+      %Q(<tt class='inline-code'>#{str}</tt>)
     end
 
     def inline_idx(str)
@@ -709,7 +709,7 @@ QUOTE
     end
 
     def bibpaper_header(id, caption)
-      puts %Q(<a name="bib-#{id}">)
+      puts %Q(<a name='bib-#{id}'>)
       puts "[#{@chapter.bibpaper(id).number}] #{caption}"
       puts %Q(</a>)
     end
@@ -723,7 +723,7 @@ QUOTE
     end
 
     def inline_bib(id)
-      %Q(<a href=".#{@book.bib_file.gsub(/re$/, "html")}\#bib-#{id}">[#{@chapter.bibpaper(id).number}]</a>)
+      %Q(<a href='.#{@book.bib_file.gsub(/re$/, "html")}#bib-#{id}'>[#{@chapter.bibpaper(id).number}]</a>)
     end
 
     def inline_hd_chap(chap, id)
@@ -824,11 +824,11 @@ QUOTE
     end
 
    def inline_recipe(str)
-      %Q(<span class="recipe">「#{escape_html(str)}」</span>)
+      %Q(<span class='recipe'>「#{escape_html(str)}」</span>)
     end
 
     def inline_icon(id)
-      %Q[<img src=".#{@book.image_dir}#{find_pathes(id)[0].sub(/\A\.\//, "/")}" alt="[#{id}]" />]
+      %Q[<img src='.#{@book.image_dir}#{find_pathes(id)[0].sub(/\A\.\//, "/")}' alt='[#{id}]' />]
     end
 
     def inline_raw(str)
@@ -840,12 +840,12 @@ QUOTE
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      %Q(<a href='#{escape_html(url)}' class='link'>#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
     end
 
     def flushright(lines)
-      puts '<div style="text-align:right;">'
-      puts '<pre class="flushright">'
+      puts "<div style='text-align:right;'>"
+      puts "<pre class='flushright'>"
       lines.each do |line|
         puts detab(line)
       end

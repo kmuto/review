@@ -1,3 +1,20 @@
+Thu Sep  9 22:21:22 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb: 
+	  - use single quote for element attributes.
+	  - use 'caption' for the class name of all captions.
+	  - surround //source by div class='source-code' instead of
+	    div class='caption-code'.
+	  - surround //emlist and //emlistnum by div class='emlist-code'
+	    instead of div class='code'.
+	  - surround //cmd by div class='cmd-code' instead of div
+	    class='code'.
+	  - surround table by div class='table'.
+	  - use b (bold) for @<kw> instead of span class='kw'.
+	  - use tt (typewriter) for @<code> instead of span
+	    class='inline-code'.
+	* test/test_htmlbuilder.rb: follow single quote changes.
+
 Wed Sep  8 22:24:49 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb: import all of epubbuilder.rb.
