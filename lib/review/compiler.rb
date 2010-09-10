@@ -265,7 +265,7 @@ module ReVIEW
         open_tagged_section tag, level, label, caption
       else
         if @headline_indexs.size > (index + 1)
-          @headline_indexs = @headline_indexs.take(index + 1)
+          @headline_indexs = @headline_indexs[0..index]
         end
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
