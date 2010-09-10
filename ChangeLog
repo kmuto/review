@@ -1,3 +1,8 @@
+Fri Sep 10 19:33:27 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb, test/test_htmlbuilder.rb: 
+	  revert to use double quote for element attributes.
+
 Thu Sep  9 22:21:22 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb: 
