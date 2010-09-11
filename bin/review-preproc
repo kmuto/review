@@ -77,8 +77,7 @@ SJIS)') {|enc|
     exit 1
   end
 
-  pp = ReVIEW::Preprocessor.new(ReVIEW::Repository.new)
-  pp.setParameter(param)
+  pp = ReVIEW::Preprocessor.new(ReVIEW::Repository.new, param)
   current_file = nil
   ARGV.each do |path|
     current_file = path

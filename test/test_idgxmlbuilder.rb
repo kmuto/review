@@ -9,17 +9,16 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def setup
     @builder = IDGXMLBuilder.new()
     @param = {
-      "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
+      "secnolevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "nolf" => true,
       "tableopt" => "10",
       "subdirmode" => nil,
     }
+    ReVIEW.book.param = @param
     compiler = ReVIEW::Compiler.new(@builder)
-    compiler.setParameter(@param)
     chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
-    chapter.setParameter(@param)
     location = Location.new(nil, nil)
     @builder.bind(compiler, chapter, location)
   end

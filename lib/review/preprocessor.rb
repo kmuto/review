@@ -12,6 +12,7 @@
 
 require 'review/textutils'
 require 'review/exception'
+require 'nkf'
 
 module ReVIEW
 
@@ -99,11 +100,8 @@ module ReVIEW
       end
     end
 
-    def initialize(repo)
+    def initialize(repo, param)
       @repository = repo
-    end
-
-    def setParameter(param)
       @param = param
     end
 
@@ -181,11 +179,34 @@ module ReVIEW
       KNOWN_DIRECTIVES.index(op)
     end
 
+    def convert_outencoding(*s)
+      ine = ""
+      if @param["inencoding"] =~ /^EUC$/i
+        ine = "-E,"
+      elsif @param["inencoding"] =~ /^SJIS$/i
+        ine = "-S,"
+      elsif @param["inencoding"] =~ /^JIS$/i
+        ine = "-J,"
+      elsif @param["inencoding"] =~ /^UTF\-8$/i
+        ine = "-W,"
+      end
+
+      if @param["outencoding"] =~ /^EUC$/i
+        NKF.nkf("#{ine} -e", *s)
+      elsif @param["outencoding"] =~ /^SJIS$/i
+        NKF.nkf("#{ine} -s", *s)
+      elsif @param["outencoding"] =~ /^JIS$/i
+        NKF.nkf("#{ine} -j", *s)
+      else
+        NKF.nkf("#{ine} -w", *s)
+      end
+    end
+
     def replace_block(f, directive_line, newlines, with_lineno)
       @f.print directive_line
       newlines.each do |line|
         print_number line.number if with_lineno
-        @f.print line.string
+        @f.print convert_outencoding(line.string)
       end
       skip_list f
     end

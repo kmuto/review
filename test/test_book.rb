@@ -209,7 +209,7 @@ class BookTest < Test::Unit::TestCase
 
   def test_setParameter
     book = Book.new(File.dirname(__FILE__))
-    book.setParameter(:test)
+    book.param = :test
     assert_equal :test, book.instance_eval {@param}
   end
 
@@ -822,12 +822,6 @@ class ChapterTest < Test::Unit::TestCase
     assert_raises(TypeError) { ch.name } # XXX: OK?
   end
 
-  def test_setParameter
-    ch = Chapter.new(nil, nil, nil, nil, nil)
-    ch.setParameter(:test)
-    assert_equal :test, ch.instance_eval {@param}
-  end
-
   def test_open
     ch = Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal :io, ch.open
@@ -853,12 +847,10 @@ class ChapterTest < Test::Unit::TestCase
   def test_title
     io = StringIO.new
     ch = Chapter.new(nil, nil, nil, nil, io)
-    ch.setParameter({})
     assert_equal '', ch.title
 
     io = StringIO.new("=1\n=2\n")
     ch = Chapter.new(nil, nil, nil, nil, io)
-    ch.setParameter({})
     assert_equal '1', ch.title
 
 
@@ -870,7 +862,7 @@ class ChapterTest < Test::Unit::TestCase
     ].each do |enc, instr|
       io = StringIO.new("= #{instr}\n")
       ch = Chapter.new(nil, nil, nil, nil, io)
-      ch.setParameter({'inencoding' => enc})
+      ReVIEW.book.param = {'inencoding' => enc}
       assert_equal @utf8_str, ch.title
       assert_equal @utf8_str, ch.instance_eval { @title }
     end
@@ -889,7 +881,7 @@ class ChapterTest < Test::Unit::TestCase
         tf.close
 
         ch = Chapter.new(nil, nil, nil, tf.path)
-        ch.setParameter({'inencoding' => enc})
+        ReVIEW.book.param = {'inencoding' => enc}
         assert_equal @utf8_str, ch.content
         assert_equal @utf8_str, ch.instance_eval { @content }
       ensure
@@ -906,7 +898,7 @@ class ChapterTest < Test::Unit::TestCase
         tf1.close
 
         ch = Chapter.new(nil, nil, nil, tf1.path, tf2)
-        ch.setParameter({'inencoding' => enc})
+        ReVIEW.book.param = {'inencoding' => enc}
         assert_equal "#{@utf8_str}\n#{@utf8_str}\n", ch.content # XXX: OK?
       ensure
         tf1.close(true)
@@ -922,7 +914,6 @@ class ChapterTest < Test::Unit::TestCase
     tf.close
 
     ch = Chapter.new(nil, nil, nil, tf.path)
-    ch.setParameter({})
     assert_equal lines, ch.lines
 
     lines = ["1\n", "2\n", "3"]
@@ -935,7 +926,6 @@ class ChapterTest < Test::Unit::TestCase
     tf2.close
 
     ch = Chapter.new(nil, nil, nil, tf1.path, tf2.path)
-    ch.setParameter({})
     assert_equal lines, ch.lines # XXX: OK?
   end
 
@@ -1084,21 +1074,6 @@ E
       File.open(path, 'w') do |o|
         o.print content
         ch = Chapter.new(book, 1, 'chapter', o.path)
-      end
-
-      ch.setParameter({:__test__ => 54321})
-      assert_kind_of klass, ch.__send__(list_method)
-      tmp = ch.__send__(list_method).instance_eval do
-        if @param
-          @param[:__test__]
-        else
-          @param
-        end
-      end
-      if opts[:propagate] == false
-        assert_equal nil, tmp
-      else
-        assert_equal 54321, tmp
       end
 
       assert ch.__send__(ref_method, 'abc')

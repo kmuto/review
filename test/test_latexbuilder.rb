@@ -15,10 +15,9 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       "subdirmode" => nil,
       "stylesheet" => nil,  # for EPUBBuilder
     }
+    ReVIEW.book.param = @param
     compiler = ReVIEW::Compiler.new(@builder)
-    compiler.setParameter(@param)
     chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
-    chapter.setParameter(@param)
     location = Location.new(nil, nil)
     @builder.bind(compiler, chapter, location)
   end

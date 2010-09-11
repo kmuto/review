@@ -120,7 +120,7 @@ def _main
 
   begin
     compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
-    compiler.setParameter(param)
+    ReVIEW.book.param = param
     case mode
     when :files
       if ARGV.empty?
@@ -128,15 +128,12 @@ def _main
         exit 1
       end
       ReVIEW::Chapter.intern_pathes(ARGV).each do |chap|
-        chap.setParameter(param)
         result = compiler.compile(chap)
         print result unless check_only
       end
     when :dir
       book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
-      book.setParameter(param)
       book.chapters.each do |chap|
-        chap.setParameter(param)
         str = compiler.compile(chap)
         write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
       end

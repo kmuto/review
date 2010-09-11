@@ -54,11 +54,6 @@ module ReVIEW
     end
     private :builder_init
 
-    def setParameter(param)
-      @param = param
-      alias puts print unless @param["nolf"].nil?
-    end
-
     def builder_init_file
       @warns = []
       @errors = []
@@ -73,6 +68,7 @@ module ReVIEW
 
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
+      alias puts print unless ReVIEW.book.param["nolf"].nil?
     end
     private :builder_init_file
 
@@ -206,7 +202,7 @@ module ReVIEW
         raise "caption level too deep or unsupported: #{level}"
       end
 
-      prefix = "" if (level.to_i > @param["secnolevel"])
+      prefix = "" if (level.to_i > ReVIEW.book.param["secnolevel"])
       label = label.nil? ? "" : " id=\"#{label}\""
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{escape_html(caption)}</title><?dtp level="#{level}" section="#{prefix}#{escape_html(caption)}"?>)
     end
@@ -346,7 +342,7 @@ module ReVIEW
       print %Q[<pre>]
       no = 1
       lines.each do |line|
-        unless @param["listinfo"].nil?
+        unless ReVIEW.book.param["listinfo"].nil?
           print "<listinfo line=\"#{no}\""
           print " begin=\"1\"" if no == 1
           print " end=\"#{no}\"" if no == lines.size
@@ -354,7 +350,7 @@ module ReVIEW
         end
         print detab(line)
         print "\n"
-        print "</listinfo>" unless @param["listinfo"].nil?
+        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
         no += 1
       end
       puts '</pre></list>'
@@ -389,7 +385,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      if @param["subdirmode"].nil?
+      if ReVIEW.book.param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
       else
         warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
@@ -417,8 +413,8 @@ module ReVIEW
 #      puts %Q(<表 xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
       tablewidth = nil
       col = 0
-      unless @param["tableopt"].nil?
-        tablewidth = @param["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
+      unless ReVIEW.book.param["tableopt"].nil?
+        tablewidth = ReVIEW.book.param["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
       end
       puts "<table>"
       rows = []
@@ -613,7 +609,7 @@ module ReVIEW
     end
 
     def inline_hint(str)
-      if @param["nolf"].nil?
+      if ReVIEW.book.param["nolf"].nil?
         %Q(\n<hint>#{escape_html(str)}</hint>)
       else
         %Q(<hint>#{escape_html(str)}</hint>)
@@ -668,7 +664,7 @@ module ReVIEW
     end
 
     def inline_icon(id)
-      if @param["subdirmode"].nil?
+      if ReVIEW.book.param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
         %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" type='inline'/>]
       else
@@ -923,7 +919,7 @@ module ReVIEW
       end
       no = 1
       lines.each do |line|
-        unless @param["listinfo"].nil?
+        unless ReVIEW.book.param["listinfo"].nil?
           print "<listinfo line=\"#{no}\""
           print " begin=\"1\"" if no == 1
           print " end=\"#{no}\"" if no == lines.size
@@ -931,7 +927,7 @@ module ReVIEW
         end
         print detab(line)
         print "\n"
-        print "</listinfo>" unless @param["listinfo"].nil?
+        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
         no += 1
       end
       puts "</insn>"
@@ -945,7 +941,7 @@ module ReVIEW
       end
       no = 1
       lines.each do |line|
-        unless @param["listinfo"].nil?
+        unless ReVIEW.book.param["listinfo"].nil?
           print "<listinfo line=\"#{no}\""
           print " begin=\"1\"" if no == 1
           print " end=\"#{no}\"" if no == lines.size
@@ -953,7 +949,7 @@ module ReVIEW
         end
         print detab(line)
         print "\n"
-        print "</listinfo>" unless @param["listinfo"].nil?
+        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
         no += 1
       end
       puts "</box>"
@@ -961,7 +957,7 @@ module ReVIEW
 
     def indepimage(id)
       puts "<img>"
-      if @param["subdirmode"].nil?
+      if ReVIEW.book.param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
         puts %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" />]
       else
@@ -1019,8 +1015,8 @@ module ReVIEW
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless @param["chapref"].nil?
-        _chs = NKF.nkf("-w", @param["chapref"]).split(",")
+      unless ReVIEW.book.param["chapref"].nil?
+        _chs = NKF.nkf("-w", ReVIEW.book.param["chapref"]).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else

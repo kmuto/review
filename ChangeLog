@@ -1,3 +1,15 @@
+Sat Sep 11 18:29:39 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, bin/review-vol, lib/review/book.rb,
+	  lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	  lib/review/idgxmlbuilder.rb, lib/review/index.rb,
+	  lib/review/latexbuilder.rb, test/*.rb:
+	  manage parameters by ReVIEW.book.param.
+	* bin/review-preproc, lib/review/preprocessor.rb:
+	  manage preprocessor parameters by Preprocessor.param.
+	* lib/review/buildedr.rb: handle encoding conversions by
+	  Builder#convert_outencoding.
+
 Sat Sep 11 16:28:32 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/latexbuilder.rb, lib/review/htmlbuilder.rb:

@@ -48,10 +48,6 @@ module ReVIEW
       end
     end
 
-    def setParameter(param)
-      @param = param
-    end
-
     def [](id)
       @index.fetch(id)
     end
@@ -161,7 +157,7 @@ module ReVIEW
 
     # internal use only
     def find_pathes(id)
-      if @param["subdirmode"].nil?
+      if ReVIEW.book.param["subdirmode"].nil?
         re = /\A#{@chapid}-#{id}(?i:#{@types.join('|')})\z/x
         entries().select {|ent| re =~ ent }\
             .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
@@ -177,7 +173,7 @@ module ReVIEW
     private
 
     def entries
-      if @param["subdirmode"].nil?
+      if ReVIEW.book.param["subdirmode"].nil?
         @entries ||= Dir.entries(@basedir)
       else
         @entries ||= Dir.entries(File.join(@basedir, @chapid))
