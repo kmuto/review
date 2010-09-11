@@ -1,3 +1,8 @@
+Sat Sep 11 19:15:59 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb, lib/review/htmlbuilder.rb,
+	  lib/review/index.rb: support //indepimage.
+
 Sat Sep 11 18:29:39 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, bin/review-vol, lib/review/book.rb,

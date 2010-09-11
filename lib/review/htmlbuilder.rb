@@ -622,6 +622,12 @@ QUOTE
       puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
     end
 
+    def indepimage(id)
+      puts %Q[<div class="image">]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="" />]
+      puts %Q[</div>]
+    end
+
     def numberlessimage(id, caption)
       puts %Q[<div class="image">]
       puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(caption)}" />]

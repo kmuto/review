@@ -240,6 +240,25 @@ module ReVIEW
     end
   end
 
+  class IndepImageIndex < ImageIndex
+    class Item < ImageIndex::Item
+      def initialize(id, number)
+        @id = id
+        @number = ""
+        @pathes = nil
+STDERR.puts "KITERUYO"
+      end
+    end
+
+    def IndepImageIndex.item_type
+      'indepimage'
+    end
+
+    def number(id)
+      ""
+    end
+  end
+
   class HeadlineIndex < Index
     Item = Struct.new(:id, :number, :caption)
 

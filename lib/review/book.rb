@@ -436,6 +436,7 @@ module ReVIEW
       @footnote_index = nil
       @image_index = nil
       @numberless_image_index = nil
+      @indepimage_index = nil
       @headline_index = nil
     end
 
@@ -547,7 +548,8 @@ module ReVIEW
 
     def image(id)
       return image_index()[id] if image_index().has_key?(id)
-      numberless_image_index()[id]
+      return numberless_image_index()[id] if numberless_image_index().has_key?(id)
+      indepimage_index()[id]
     end
 
     def numberless_image_index
@@ -562,6 +564,13 @@ module ReVIEW
                                         "#{book.basedir}#{@book.image_dir}",
                                         @book.image_types)
       @image_index
+    end
+
+    def indepimage_index
+      @indepimage_index ||=
+        IndepImageIndex.parse(lines(), id(),
+                                   "#{book.basedir}#{@book.image_dir}",
+                                   @book.image_types)
     end
 
     def bibpaper(id)
