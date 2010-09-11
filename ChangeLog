@@ -1,3 +1,8 @@
+Sat Sep 11 16:28:32 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/latexbuilder.rb, lib/review/htmlbuilder.rb:
+	  support [nonum] in headlines.
+
 Fri Sep 10 19:33:27 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb, test/test_htmlbuilder.rb: 

@@ -74,6 +74,14 @@ module ReVIEW
       puts macro(HEADLINE[level]+prefix, escape(caption))
     end
 
+    def nonum_begin(level, label, caption)
+      blank unless @output.pos == 0
+      puts macro(HEADLINE[level]+"*", escape(caption))
+    end
+
+    def nonum_end(level)
+    end
+
     def column_begin(level, label, caption)
       blank
       ## puts '\vspace{2zw}' 

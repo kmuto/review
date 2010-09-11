@@ -221,6 +221,20 @@ EOT
       end
     end
 
+    def nonum_begin(level, label, caption)
+      puts '' if level > 1
+      unless caption.empty?
+        if label.nil?
+          puts %Q[<h#{level}>#{escape_html(caption)}</h#{level}>]
+        else
+          puts %Q[<h#{level} id="#{label}">#{escape_html(caption)}</h#{level}>]
+        end
+      end
+    end
+
+    def nonum_end(level)
+    end
+
     def column_begin(level, label, caption)
       puts %Q[<div class="column">]
       headline(level, label, caption)
