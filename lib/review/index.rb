@@ -246,7 +246,6 @@ module ReVIEW
         @id = id
         @number = ""
         @pathes = nil
-STDERR.puts "KITERUYO"
       end
     end
 
