@@ -37,29 +37,36 @@ end
 class BookTest < Test::Unit::TestCase
   include BookTestHelper
 
+  def assert_same_path(expected, result, *options)
+    require 'pathname'
+    ex_path = Pathname(expected).realpath
+    re_path = Pathname(result).realpath
+    assert_equal ex_path, re_path, *options
+  end
+
   def test_s_load_default
     Dir.mktmpdir do |dir|
       File.open(File.join(dir, 'CHAPS'), 'w') {}
       Dir.chdir(dir) do
-        assert_equal dir, File.expand_path(Book.load_default.basedir)
+        assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir CHAPS"
       end
 
       subdir = File.join(dir, 'sub')
       Dir.mkdir(subdir)
       Dir.chdir(subdir) do
-        assert_equal dir, File.expand_path(Book.load_default.basedir)
+        assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir sub"
       end
 
       sub2dir = File.join(dir, 'sub', 'sub')
       Dir.mkdir(sub2dir)
       Dir.chdir(sub2dir) do
-        assert_equal dir, File.expand_path(Book.load_default.basedir)
+        assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir sub sub"
       end
 
       sub3dir = File.join(dir, 'sub', 'sub', 'sub')
       Dir.mkdir(sub3dir)
       Dir.chdir(sub3dir) do
-        assert_equal sub3dir, File.expand_path(Book.load_default.basedir)
+        assert_same_path sub3dir, File.expand_path(Book.load_default.basedir), "error in dir sub sub sub"
       end
     end
 
@@ -73,7 +80,7 @@ class BookTest < Test::Unit::TestCase
     end
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
-        assert_equal default_book, ReVIEW.book
+        assert_equal default_book, ReVIEW.book, "chdir mktmpdir"
       end
     end
   end
