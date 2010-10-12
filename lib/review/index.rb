@@ -1,4 +1,4 @@
-# $Id: index.rb 4300 2009-06-21 23:45:49Z kmuto $
+# encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto

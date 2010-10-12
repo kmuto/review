@@ -1,3 +1,4 @@
+# encoding: utf-8
 # $Id: htmlbuilder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
