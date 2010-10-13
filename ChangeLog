@@ -1,3 +1,9 @@
+Wed Oct 13 21:03:25 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb: drop support for multichoice
+	  and singlechoice. They need more sophisticated symbols
+	  (don't use misleading multibyte characters).
+
 Wed Oct 13 20:54:39 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* support ruby 1.9.

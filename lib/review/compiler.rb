@@ -210,10 +210,6 @@ module ReVIEW
           compile_headline f.gets
         when %r<\A\s+\*>
           compile_ulist f
-        when %r<\A\s+□>
-          compile_multichoice f
-        when %r<\A\s+○>
-          compile_singlechoice f
         when %r<\A\s+\d+\.>
           compile_olist f
         when %r<\A:\s>
@@ -321,6 +317,7 @@ module ReVIEW
     end
 
     def compile_multichoice(f)
+      # deprecated
       @strategy.choice_multi_begin
       f.while_match(/\A\s+□/) do |line|
         buf = [text(line.sub(/□/, '').strip)]
@@ -333,6 +330,7 @@ module ReVIEW
     end
 
     def compile_singlechoice(f)
+      # deprecated
       @strategy.choice_single_begin
       f.while_match(/\A\s+○/) do |line|
         buf = [text(line.sub(/○/, '').strip)]
