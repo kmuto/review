@@ -14,7 +14,7 @@
 
  * ブロックの入れ子は不可
  * インラインの入れ子は不可
- * ブロック内でのインラインの使用は可
+ * ブロック内でのインラインの使用は可（listブロック、cmdブロックでも可）
  * インラインのエスケープには@<raw>を使う
  * ブロックのエスケープは困難なので、行頭ではないところに書くか、全角／／にしておいて後で置換するなどの対処をユーザ自身にしてもらう
 
@@ -23,9 +23,6 @@
  * ブロック内での段落の使用は許すか？
     * 現状ではLATEXBuilderは可、HTMLBuilderは不可
     * quoteブロック、leadブロックでは使えるようにしたい ※後方互換性を破壊する、ブロック名によって処理が違う(listとleadでの違いなど)のがややこしいといった問題あり。
- * listブロックやemlistブロック、cmdブロック内でのインラインは許すか？
-    * 現状ではLATEXBuilderでは不可、HTMLBuilder、IDGXMLBuilder、TOPBuilderでは可 ※LaTeXでどうするかについてのみ検討課題
-    * LaTeXはvarbatim環境を使っているので無理？？ ←alltt環境に変更、検証中
 
 == 生成されるフォーマットについて
 
@@ -38,7 +35,7 @@
 == 利用できるタグ記法
 
 全フォーマットで原則サポートしている（べき）基本記法と、それ以外の拡張記法に分ける。
-(基本はHTMLBuilderとLATEXBuilderの実装状況から判断)←kmutoはHTMLBuilderとIDGXMLBuilderをコアコンポーネントと位置付けている。
+基本はHTMLBuilder、IDGXMLBuider、LATEXBuilderで動作するようにする（少なくともエラーは起きないようにする）。
 
 === 基本
 
@@ -51,15 +48,14 @@
  * table
  * quote
  * image
-
  * footnote
-
- * flushright  ※LaTeX対応済み
- * source  ※LaTeX対応済み
- * listnum  ※LaTeX対応済み
- * emlistnum  ※LaTeX対応済み
+ * flushright
+ * source
+ * listnum
+ * emlistnum
 
  * =[nonum]〜=====[nonum] 番号が標準で付くレベルでの番号なし見出し
+ * raw
 
 === 拡張
 
@@ -71,7 +67,6 @@
  * box(insn)  ※LaTeX非対応
  * indepimage ※LaTeX非対応
  * label  ※HTMLで<a id="..." />で対応。hrefをサポートするならこの基本化は必須
- * raw    ※LaTeX非対応
  * tsize  ※LaTeX非対応←いずれほしくなる気もする。mm単位
 
 ==== 基本化の難しそうなもの・時間のかかりそうなもの
