@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
 # Copyright (c) 2009-2010 Minero Aoki, Kenshi Muto
