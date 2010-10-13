@@ -1,3 +1,7 @@
+Wed Oct 13 20:54:39 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* support ruby 1.9.
+
 Sat Sep 11 19:15:59 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/book.rb, lib/review/htmlbuilder.rb,
