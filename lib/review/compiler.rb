@@ -316,32 +316,6 @@ module ReVIEW
       @strategy.ul_end
     end
 
-    def compile_multichoice(f)
-      # deprecated
-      @strategy.choice_multi_begin
-      f.while_match(/\A\s+□/) do |line|
-        buf = [text(line.sub(/□/, '').strip)]
-        f.while_match(/\A\s+(?!□)\S/) do |cont|
-          buf.push text(cont.strip)
-        end
-        @strategy.ul_item buf
-      end
-      @strategy.choice_multi_end
-    end
-
-    def compile_singlechoice(f)
-      # deprecated
-      @strategy.choice_single_begin
-      f.while_match(/\A\s+○/) do |line|
-        buf = [text(line.sub(/○/, '').strip)]
-        f.while_match(/\A\s+(?!○)\S/) do |cont|
-          buf.push text(cont.strip)
-        end
-        @strategy.ul_item buf
-      end
-      @strategy.choice_single_end
-    end
-
     def compile_olist(f)
       @strategy.ol_begin
       f.while_match(/\A\s+\d+\./) do |line|
