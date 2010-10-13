@@ -21,14 +21,6 @@ class BuidlerTest < Test::Unit::TestCase
     assert Builder.new
   end
 
-  def test_setParameter
-    params = {:a => 1, :b => 2}
-
-    b = Builder.new
-    b.setParameter(params)
-    assert_equal params, b.param
-  end
-
   def test_bind
     b = Builder.new
     assert_nothing_raised do
@@ -79,7 +71,7 @@ class BuidlerTest < Test::Unit::TestCase
       ].each do |m, instr, expstr|
         b = Builder.new
         b.bind(nil, nil, nil)
-        b.setParameter(params)
+        ReVIEW.book.param = params
         b.__send__(m, instr)
         assert_equal expstr, b.result
       end

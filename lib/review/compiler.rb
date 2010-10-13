@@ -42,14 +42,8 @@ module ReVIEW
 
     attr_reader :strategy
 
-    def setParameter(param)
-      @param = param
-      @strategy.setParameter(@param)
-    end
-
     def compile(chap)
       @chapter = chap
-      @chapter.setParameter(@param)
       do_compile
       @strategy.result
     end
@@ -272,7 +266,7 @@ module ReVIEW
         while @tagged_section.last and @tagged_section.last[1] >= level
           close_tagged_section(* @tagged_section.pop)
         end
-        if @strategy.param["hdnumberingmode"]
+        if ReVIEW.book.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
         end
         @strategy.headline level, label, @strategy.text(caption)

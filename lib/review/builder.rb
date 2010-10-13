@@ -16,8 +16,6 @@ module ReVIEW
 
   class Builder
 
-    attr_reader :param
-
     def initialize(strict = false, *args)
       @strict = strict
       builder_init(*args)
@@ -26,10 +24,6 @@ module ReVIEW
     def builder_init(*args)
     end
     private :builder_init
-
-    def setParameter(param)
-      @param = param
-    end
 
     def bind(compiler, chapter, location)
       @compiler = compiler
@@ -48,28 +42,24 @@ module ReVIEW
       @output.string
     end
 
-    def print(*s)
-      if @param["outencoding"] =~ /^EUC$/i
-        @output.print(NKF.nkf("-W, -e", *s))
-      elsif @param["outencoding"] =~ /^SJIS$/i
-        @output.print(NKF.nkf("-W, -s", *s))
-      elsif @param["outencoding"] =~ /^JIS$/i
-        @output.print(NKF.nkf("-W, -j", *s))
+    def convert_outencoding(*s)
+      if ReVIEW.book.param["outencoding"] =~ /^EUC$/i
+        NKF.nkf("-W, -e", *s)
+      elsif ReVIEW.book.param["outencoding"] =~ /^SJIS$/i
+        NKF.nkf("-W, -s", *s)
+      elsif ReVIEW.book.param["outencoding"] =~ /^JIS$/i
+        NKF.nkf("-W, -j", *s)
       else
-        @output.print(*s)
+        return *s
       end
     end
 
+    def print(*s)
+      @output.print(convert_outencoding(*s))
+    end
+
     def puts(*s)
-      if @param["outencoding"] =~ /^EUC$/i
-        @output.puts(NKF.nkf("-W, -e", *s))
-      elsif @param["outencoding"] =~ /^SJIS$/i
-        @output.puts(NKF.nkf("-W, -s", *s))
-      elsif @param["outencoding"] =~ /^JIS$/i
-        @output.puts(NKF.nkf("-W, -j", *s))
-      else
-        @output.puts(*s)
-      end
+      @output.puts(convert_outencoding(*s))
     end
 
     def list(lines, id, caption)

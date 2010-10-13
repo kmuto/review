@@ -52,7 +52,7 @@ def main
   end
 
   book = ReVIEW.book
-  book.setParameter(@param)
+  ReVIEW.book.param = @param
   if part_sensitive
     sep = ""
     book.each_part do |part|
@@ -68,7 +68,6 @@ def main
     print_volume book.volume #puts "Total #{book.volume}"
   else
     book.each_chapter do |chap|
-      chap.setParameter(@param)
       print_chapter_volume chap
     end
     puts '============================='

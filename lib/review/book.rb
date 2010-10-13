@@ -27,6 +27,8 @@ module ReVIEW
 
   class Book
 
+    attr_accessor :param
+
     def Book.load_default
       %w( . .. ../.. ).each do |basedir|
         if File.file?("#{basedir}/PARAMS") or File.file?("#{basedir}/CHAPS")
@@ -42,10 +44,6 @@ module ReVIEW
       then new(dir, Parameters.load("#{dir}/PARAMS"))
       else new(dir)
       end
-    end
-
-    def setParameter(param)
-      @param = param
     end
 
     @basedir_seen = {}
@@ -109,7 +107,6 @@ module ReVIEW
 
     def chapter_index
       @chapter_index ||= ChapterIndex.new(chapters())
-      @chapter_index.setParameter(@param)
       @chapter_index
     end
 
@@ -439,11 +436,8 @@ module ReVIEW
       @footnote_index = nil
       @image_index = nil
       @numberless_image_index = nil
+      @indepimage_index = nil
       @headline_index = nil
-    end
-
-    def setParameter(param)
-      @param = param
     end
 
     def env
@@ -484,11 +478,11 @@ module ReVIEW
           end
         }
       }
-      if @param["inencoding"] =~ /^EUC$/
+      if ReVIEW.book.param["inencoding"] =~ /^EUC$/
         @title = NKF.nkf("-E -w", @title)
-      elsif @param["inencoding"] =~ /^SJIS$/
+      elsif ReVIEW.book.param["inencoding"] =~ /^SJIS$/
         @title = NKF.nkf("-S -w", @title)
-      elsif @param["inencoding"] =~ /^JIS$/
+      elsif ReVIEW.book.param["inencoding"] =~ /^JIS$/
         @title = NKF.nkf("-J -w", @title)
       else
         @title = NKF.nkf("-w", @title)
@@ -509,11 +503,11 @@ module ReVIEW
     end
 
     def content
-      if @param["inencoding"] =~ /^EUC$/i
+      if ReVIEW.book.param["inencoding"] =~ /^EUC$/i
         @content = NKF.nkf("-E -w", File.read(path()))
-      elsif @param["inencoding"] =~ /^SJIS$/i
+      elsif ReVIEW.book.param["inencoding"] =~ /^SJIS$/i
         @content = NKF.nkf("-S -w", File.read(path()))
-      elsif @param["inencoding"] =~ /^JIS$/i
+      elsif ReVIEW.book.param["inencoding"] =~ /^JIS$/i
         @content = NKF.nkf("-J -w", File.read(path()))
       else
         @content = NKF.nkf("-w", File.read(path())) # auto detect
@@ -531,7 +525,6 @@ module ReVIEW
 
     def list_index
       @list_index ||= ListIndex.parse(lines())
-      @list_index.setParameter(@param)
       @list_index
     end
 
@@ -541,7 +534,6 @@ module ReVIEW
 
     def table_index
       @table_index ||= TableIndex.parse(lines())
-      @table_index.setParameter(@param)
       @table_index
     end
 
@@ -551,13 +543,13 @@ module ReVIEW
 
     def footnote_index
       @footnote_index ||= FootnoteIndex.parse(lines())
-      @footnote_index.setParameter(@param)
       @footnote_index
     end
 
     def image(id)
       return image_index()[id] if image_index().has_key?(id)
-      numberless_image_index()[id]
+      return numberless_image_index()[id] if numberless_image_index().has_key?(id)
+      indepimage_index()[id]
     end
 
     def numberless_image_index
@@ -571,8 +563,14 @@ module ReVIEW
       @image_index ||= ImageIndex.parse(lines(), id(),
                                         "#{book.basedir}#{@book.image_dir}",
                                         @book.image_types)
-      @image_index.setParameter(@param)
       @image_index
+    end
+
+    def indepimage_index
+      @indepimage_index ||=
+        IndepImageIndex.parse(lines(), id(),
+                                   "#{book.basedir}#{@book.image_dir}",
+                                   @book.image_types)
     end
 
     def bibpaper(id)
@@ -582,7 +580,6 @@ module ReVIEW
     def bibpaper_index
       raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
       @bibpaper_index ||= BibpaperIndex.parse(@book.read_bib.lines.to_a)
-      @bibpaper_index.setParameter(@param)
       @bibpaper_index
     end
 

@@ -75,14 +75,14 @@ module ReVIEW
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
-        unless @param["stylesheet"].nil?
+        unless ReVIEW.book.param["stylesheet"].nil?
           header += <<EOT
-  <link rel="stylesheet" type="text/css" href="#{@param["stylesheet"]}" />
+  <link rel="stylesheet" type="text/css" href="#{ReVIEW.book.param["stylesheet"]}" />
 EOT
         end
         header += <<EOT
   <meta name="generator" content="ReVIEW" />
-  <title>#{@chapter.title}</title>
+  <title>#{convert_outencoding(@chapter.title)}</title>
 </head>
 <body>
 EOT
@@ -145,7 +145,7 @@ EOT
         @subsubsection = 0
         @subsubsubsection = 0
         anchor = "#{@chapter.number}"
-        if @param["secnolevel"] >= 1
+        if ReVIEW.book.param["secnolevel"] >= 1
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "第#{@chapter.number}章　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
@@ -158,7 +158,7 @@ EOT
         @subsubsection = 0
         @subsubsubsection = 0
         anchor = "#{@chapter.number}-#{@section}"
-        if @param["secnolevel"] >= 2
+        if ReVIEW.book.param["secnolevel"] >= 2
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
@@ -170,7 +170,7 @@ EOT
         @subsubsection = 0
         @subsubsubsection = 0
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}"
-        if @param["secnolevel"] >= 3
+        if ReVIEW.book.param["secnolevel"] >= 3
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
@@ -181,7 +181,7 @@ EOT
         @subsubsection += 1
         @subsubsubsection = 0
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}"
-        if @param["secnolevel"] >= 4
+        if ReVIEW.book.param["secnolevel"] >= 4
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
@@ -191,7 +191,7 @@ EOT
       when 5
         @subsubsubsection += 1
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}-#{@subsubsubsection}"
-        if @param["secnolevel"] >= 5
+        if ReVIEW.book.param["secnolevel"] >= 5
           if @chapter.number.to_s =~ /\A\d+$/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
@@ -529,7 +529,7 @@ QUOTE
 
     def image_image(id, metric, caption)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="(#{escape_html(caption)})" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(caption)}" />]
       image_header id, caption
       puts %Q[</div>]
     end
@@ -622,9 +622,15 @@ QUOTE
       puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
     end
 
+    def indepimage(id)
+      puts %Q[<div class="image">]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="" />]
+      puts %Q[</div>]
+    end
+
     def numberlessimage(id, caption)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="(#{escape_html(caption)})" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(caption)}" />]
       image_header id, caption
       puts %Q[</div>]
     end
@@ -861,14 +867,14 @@ QUOTE
     end
 
     def getChap
-      if @param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
+      if ReVIEW.book.param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
         return "#{@chapter.number}."
       end
       return ""
     end
 
     def find_pathes(id)
-      if @param["subdirmode"].nil?
+      if ReVIEW.book.param["subdirmode"].nil?
         re = /\A#{@chapter.name}-#{id}(?i:#{@book.image_types.join('|')})\z/x
         entries().select {|ent| re =~ ent }\
         .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
@@ -882,7 +888,7 @@ QUOTE
     end
     
     def entries
-      if @param["subdirmode"].nil?
+      if ReVIEW.book.param["subdirmode"].nil?
         @entries ||= Dir.entries(@book.basedir + @book.image_dir)
       else
         @entries ||= Dir.entries(File.join(@book.basedir + @book.image_dir, @chapter.name))
