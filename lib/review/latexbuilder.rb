@@ -25,6 +25,8 @@ module ReVIEW
       Compiler.definline(e)
     }
 
+    Compiler.defblock(:memo, 0..1)
+
     def extname
       '.tex'
     end
@@ -99,6 +101,21 @@ module ReVIEW
       puts '\end{center}'
       ## puts '\vspace{2zw}'
       blank
+    end
+
+    def minicolumn(type, lines, caption)
+      puts "\\begin{reviewminicolumn}\n"
+      unless caption.nil?
+        puts "\\reviewminicolumntitle{#{escape(caption)}}\n"
+      end
+      lines.each {|l|
+        puts l
+      }
+      puts "\\end{reviewminicolumn}\n"
+    end
+
+    def memo(lines, caption = nil)
+      minicolumn("memo", lines, caption)
     end
 
     def ul_begin
