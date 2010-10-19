@@ -1,3 +1,11 @@
+Tue Oct 19 12:54:40 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb: not use shortstack without @<br>
+
+Sun Oct 17 01:03:43 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: LATEXBuilder supports //memo command
+
 Wed Oct 13 21:03:25 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb: drop support for multichoice
