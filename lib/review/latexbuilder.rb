@@ -329,11 +329,21 @@ module ReVIEW
     end
 
     def th(s)
-      macro('textgt', macro('shortstack[l]', s))
+      ## use shortstack for @<br>
+      if  /\\\\/i =~ s
+        macro('textgt', macro('shortstack[l]', s))
+      else
+        macro('textgt', s)
+      end
     end
 
     def td(s)
-      macro('shortstack[l]', s)
+      ## use shortstack for @<br>
+      if  /\\\\/ =~ s
+        macro('shortstack[l]', s)
+      else
+        s
+      end
     end
 
     def tr(rows)
