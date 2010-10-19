@@ -297,7 +297,7 @@ def get_template(values)
 
 \\maketitle
 
-%% \\renewcommand{\\chaptermark}[1]{{}}
+\\renewcommand{\\chaptermark}[1]{{}}
 \\frontmatter
 
 %% preface
@@ -311,6 +311,7 @@ def get_template(values)
 
 #{values["chap_str"]}
 
+\\renewcommand{\\chaptermark}[1]{\\markboth{\\appendixname\\thechapter~#1}{}}
 \\appendix
 
 #{values["post_str"]}
