@@ -87,19 +87,24 @@ module ReVIEW
     def column_begin(level, label, caption)
       blank
       ## puts '\vspace{2zw}' 
-      puts '\begin{center}'
-      puts '\begin{minipage}{0.9\linewidth}'
-      puts '\begin{framed}'
-      puts '\setlength{\FrameSep}{2zw}'
+##      puts '\begin{center}'
+##      puts '\begin{minipage}{1.0\linewidth}'
+##      puts '\begin{framed}'
+##      puts '\setlength{\FrameSep}{1zw}'
 
-      headline(2, label, caption)   # FIXME
+##      nonum_begin(3, label, caption)   # FIXME
+
+      puts "\\begin{reviewcolumn}\n"
+      puts macro('reviewcolumnhead', nil, escape(caption))
+
     end
 
     def column_end(level)
-      puts '\end{framed}'
-      puts '\end{minipage}'
-      puts '\end{center}'
-      ## puts '\vspace{2zw}'
+##      puts '\end{framed}'
+##      puts '\end{minipage}'
+##      puts '\end{center}'
+##      ## puts '\vspace{2zw}'
+      puts "\\end{reviewcolumn}\n"
       blank
     end
 
