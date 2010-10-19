@@ -26,6 +26,7 @@ module ReVIEW
     }
 
     Compiler.defblock(:memo, 0..1)
+    Compiler.defsingle(:latextsize, 1)
 
     def extname
       '.tex'
@@ -34,6 +35,8 @@ module ReVIEW
     def builder_init_file
       #@index = indexes[:latex_index]
       @blank_needed = false
+      @latex_tsize = nil
+      @tsize = nil
     end
     private :builder_init_file
 
@@ -320,8 +323,17 @@ module ReVIEW
     end
 
     def table_begin(ncols)
-      puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
+      if @latex_tsize
+        puts macro('begin', 'reviewtable', @latex_tsize)
+      elsif @tsize
+        cellwidth = @tsize.split(/\s*,\s*/)
+        puts macro('begin', 'reviewtable', '|'+(cellwidth.collect{|i| "p{#{i}mm}"}.join('|'))+'|')
+      else
+        puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
+      end
       puts '\hline'
+      @tsize = nil
+      @latex_tsize = nil
     end
 
     def table_separator
@@ -559,7 +571,11 @@ module ReVIEW
     end
 
     def tsize(str)
-      # dummy
+      @tsize = str
+    end
+
+    def latextsize(str)
+      @latex_tsize = str
     end
 
   end
