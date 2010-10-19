@@ -454,7 +454,7 @@ module ReVIEW
 
     # bold
     def inline_b(str)
-      macro('textbf', text(str))
+      macro('textbf', escape(str))
     end
 
     # line break
