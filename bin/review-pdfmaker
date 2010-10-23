@@ -232,8 +232,8 @@ def get_template(values)
   \\end{shaded}}
 
 \\newenvironment{reviewlist}{%
-  \\medskip\\small\\begin{shaded}\\setlength{\\baselineskip}{1.3zw}}{%
-  \\end{shaded}}
+  \\begin{shaded}\\small\\setlength{\\baselineskip}{1.3zw}}{%
+  \\end{shaded}\\par\\vspace*{0.5zw}}
 
 \\newenvironment{reviewcmd}{%
   \\color{white}\\medskip\\small\\begin{shadedb}\\setlength{\\baselineskip}{1.3zw}}{%
@@ -265,7 +265,7 @@ def get_template(values)
 }
 
 \\newcommand{\\reviewlistcaption}[1]{%
-  #1}
+  {\\medskip\\small\\noindent #1 \\vspace*{-1.3zw}}}
 
 \\newcommand{\\reviewimageref}[1]{%
   図 #1}

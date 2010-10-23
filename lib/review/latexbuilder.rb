@@ -241,7 +241,7 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-#      puts macro('reviewlistcaption', "#{@chapter.number}.#{@chapter.list(id).number}", text(caption))
+      puts macro('reviewlistcaption', "リスト#{@chapter.number}.#{@chapter.list(id).number}: #{escape(caption)}")
     end
 
     def list_body(lines)
@@ -252,7 +252,7 @@ module ReVIEW
       end
       puts '\end{alltt}'
       puts '\end{reviewlist}'
-      puts
+      puts ""
     end
 
     def source(lines, caption)
@@ -260,7 +260,7 @@ module ReVIEW
       source_header caption
       source_body lines
       puts '\end{reviewlist}'
-      puts
+      puts ""
     end
 
     def source_header(caption)
