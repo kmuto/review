@@ -1,3 +1,8 @@
+Sun Oct 24 04:26:54 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker, lib/review/latexbuilder.rb:
+	  fix caption of //list and //table in LATEXBuilder
+
 Tue Oct 19 15:48:44 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb: add //tsize and //latextsize for table in LATEXBuilder
