@@ -319,7 +319,9 @@ module ReVIEW
     private :image_label
 
     def table_header(id, caption)
-      puts macro('reviewtablecaption', "#{@chapter.number}.#{@chapter.table(id).number}", text(caption))
+      puts '\begin{table}[h]'
+##      puts macro('reviewtablecaption', "表#{@chapter.number}.#{@chapter.table(id).number} #{escape(caption)}")
+      puts macro('reviewtablecaption', escape(caption))
     end
 
     def table_begin(ncols)
@@ -365,6 +367,7 @@ module ReVIEW
 
     def table_end
       puts macro('end', 'reviewtable')
+      puts '\end{table}'
       blank
     end
 

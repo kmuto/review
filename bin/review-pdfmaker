@@ -261,11 +261,11 @@ def get_template(values)
 \\newcommand{\\reviewcolumnhead}[2]{%
 {\\noindent\\large ■コラム: #2}}
 
-\\newcommand{\\reviewtablecaption}[2]{%
-}
+\\newcommand{\\reviewtablecaption}[1]{%
+  \\caption{#1}}
 
 \\newcommand{\\reviewlistcaption}[1]{%
-  {\\medskip\\small\\noindent #1 \\vspace*{-1.3zw}}}
+  \\medskip{\\small\\noindent #1}\\vspace*{-1.3zw}}
 
 \\newcommand{\\reviewimageref}[1]{%
   図 #1}
