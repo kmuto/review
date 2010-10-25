@@ -207,14 +207,6 @@ def get_template(values)
   \\AtBeginDvi{\\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
 \\fi
 
-\\newcommand{\\mytitle}[1]{%
-  \\title{\\usefont{T1}{pag}{b}{n} \\Huge\\gtfamily\\ebseries #1\\vspace*{10zh}}}
-%  \\title{\\usefont{T1}{pag}{b}{n} \\Huge\\gtfamily\\ebseries #1\\vspace*{5zh}}}
-\\newcommand{\\myauthor}[1]{%
-  \\author{\\usefont{T1}{pag}{m}{n} \\gtfamily \\huge #1\\vspace*{1zh} 著}}
-\\newcommand{\\mydate}[1]{%
-  \\date{\\usefont{T1}{pag}{m}{n} \\gtfamily #1 \\hspace{2zw}#{values["prt"]}　発行}}
-
 \\newenvironment{reviewimage}{%
   \\begin{figure}[H]
     \\begin{center}}{%
@@ -282,7 +274,6 @@ def get_template(values)
   \\end{screen}\\vspace{2zw}}
 
 
-
 \\usepackage[T1]{fontenc}
 
 \\begin{document}
@@ -290,12 +281,28 @@ def get_template(values)
 \\usefont{T1}{phv}{m}{n}
 \\mgfamily
 
-
-\\mytitle{#{values["booktitle"]}}
-\\myauthor{#{values["aut"]}}
-\\mydate{#{values["date"]} 版}
-
-\\maketitle
+\\begin{titlepage}
+  \\begin{center}
+    \\mbox{}\\vskip5zw%
+    \\includegraphics[scale=1.0]{./images/cover.jpg}
+  \\end{center}
+  \\clearpage
+\\thispagestyle{empty}
+\\begin{center}%
+  \\mbox{} \\vskip5zw
+   \\usefont{T1}{pag}{b}{n}\\gtfamily\\ebseries%
+    {\\Huge #{values["booktitle"]} \\par}%
+    \\vskip 15em%
+    {\\huge
+      \\lineskip .75em
+      \\begin{tabular}[t]{c}%
+        #{values["aut"]}\\vspace*{1zh} 著
+      \\end{tabular}\\par}%
+    \\vfill
+    {\\large #{values["date"]} 版\\hspace{2zw}#{values["prt"]}　発行\\par}%
+\\vskip4zw\\mbox{}
+  \\end{center}%
+\\end{titlepage}
 
 \\renewcommand{\\chaptermark}[1]{{}}
 \\frontmatter
