@@ -37,6 +37,7 @@ module ReVIEW
       @blank_needed = false
       @latex_tsize = nil
       @tsize = nil
+      @table_caption = nil
     end
     private :builder_init_file
 
@@ -319,9 +320,12 @@ module ReVIEW
     private :image_label
 
     def table_header(id, caption)
-      puts '\begin{table}[h]'
+      if caption && !caption.empty?
+        @table_caption = true
+        puts '\begin{table}[h]'
 ##      puts macro('reviewtablecaption', "表#{@chapter.number}.#{@chapter.table(id).number} #{escape(caption)}")
-      puts macro('reviewtablecaption', escape(caption))
+        puts macro('reviewtablecaption', escape(caption))
+      end
     end
 
     def table_begin(ncols)
@@ -367,7 +371,10 @@ module ReVIEW
 
     def table_end
       puts macro('end', 'reviewtable')
-      puts '\end{table}'
+      if @table_caption
+        puts '\end{table}'
+      end
+      @table_caption = nil
       blank
     end
 
