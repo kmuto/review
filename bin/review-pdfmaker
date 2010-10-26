@@ -182,7 +182,7 @@ def get_template(values)
 \\lhead{\\gtfamily\\sffamily\\bfseries\\upshape \\leftmark}
 \\chead{}
 \\rhead{\\gtfamily\\sffamily\\bfseries\\upshape \\rightmark}
-
+\\renewcommand{\\sectionmark}[1]{\\markright{\\thesection~#1}{}}
 \\renewcommand{\\chaptermark}[1]{\\markboth{\\prechaptername\\ \\thechapter\\ \\postchaptername~#1}{}}
 \\renewcommand{\\headfont}{\\gtfamily\\sffamily\\bfseries}
 
