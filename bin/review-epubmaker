@@ -197,6 +197,11 @@ EOT
     end
 
     f.puts @manifeststr
+    unless values["colophon"].nil?
+      f.puts <<EOT
+  <item id="colophon" href="colophon.html" media-type="application/xhtml+xml" />
+EOT
+    end
     f.puts <<EOT
  </manifest>
  <spine toc="ncx">
@@ -205,6 +210,11 @@ EOT
   <itemref idref="toc" />
 EOT
     f.puts @ncxstr
+    unless values["colophon"].nil?
+      f.puts <<EOT
+  <itemref idref="colophon" />
+EOT
+    end
     f.puts <<EOT
  </spine>
  <guide>
@@ -446,6 +456,11 @@ EOT
     FileUtils.cp values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
   end
 
+  # Colophon page
+  if !values["colophon"].nil?
+    make_colophon_page(tmp, bookname, values)
+  end
+
   # hook
   if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
     fork {
@@ -525,6 +540,71 @@ def getanchors(filename)
       end
     }
   }
+end
+
+def make_colophon_page(tmp,bookname,values)
+
+  header = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+
+  footer = <<EOT
+</body>
+</html>
+EOT
+
+  colophon_path = "#{tmp}/#{bookname}/OEBPS/colophon.html"
+  colophon = values["colophon"]
+  if colophon.kind_of?(String) && File.exist?(colophon)
+    File.open(colophon_path, "w") {|f|
+      f.puts header
+      File.open(values["colophon"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+      f.puts footer
+    }
+  else
+    File.open(colophon_path, "w") {|f|
+      f.puts header
+      f.puts <<EOT
+<div class="colophon">
+  <p class="title">#{values["booktitle"]}</p>
+EOT
+      if values["pubhistory"]
+        f.puts %Q[<div class="pubhistory">\n<p>#{values["pubhistory"].gsub(/\n/,"<br />")}</p>\n</div>]
+      end
+
+      f.puts <<EOT
+  <table>
+EOT
+      f.puts %Q[<tr>\n <th>著　者</th><td>#{values["aut"]}</td>\n</tr>] if values["aut"]
+      f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"]}</td>\n</tr>] if values["dsr"]
+      f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"]}</td>\n</tr>] if values["ill"]
+      f.puts %Q[<tr>\n <th>編　集</th><td>#{values["edt"]}</td>\n</tr>] if values["edt"]
+      f.puts %Q[<tr>\n <th>発行所</th><td>#{values["prt"]}</td>\n</tr>] if values["prt"]
+      f.puts <<EOT
+   </table>
+EOT
+      if values["rights"]
+        f.puts %Q[<p class="copyright">#{values["rights"]}</p>]
+      end
+
+      f.puts "</div>"
+      f.puts footer
+    }
+  end
 end
 
 main
