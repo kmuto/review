@@ -28,19 +28,21 @@ aut: 吟遊詩人
 #
 # coverimage: カバー用画像。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
 #
-# 固有IDに使用するドメイン
-urnid: example.jp
+# 固有IDに使用するドメイン。指定しない場合には、時刻に基づくランダムUUIDが入る
+# urnid: urn:uid:http://example.com/some-book-title/1.0.2/
 # CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること)
-stylesheet: sample.css
+stylesheet: stylesheet.css
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル
 secnolevel: 2
 # EPUB標準の目次以外に目次を作成するか
 # mytoc: nil
+# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
+# colophon: true
 # XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
 # posthook: hook.sh
 # review-compileに渡すパラメータ
 params: --stylesheet=sample.css
-# デバッグフラグ。nilのときには一時ファイルをカレントディレクトリに作成し、削除もしない
+# デバッグフラグ。nilでないときには一時ファイルをカレントディレクトリに作成し、削除もしない
 # debug: nil

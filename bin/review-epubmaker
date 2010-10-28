@@ -15,6 +15,13 @@ require 'yaml'
 require 'optparse'
 require 'rexml/document'
 
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'uuid'
+
 def main
   values = { # These parameters can be overridden by YAML file.
     "bookname"=> "sample", # it defines epub file name also
@@ -32,7 +39,7 @@ def main
     "date" => nil, # publishing date
     "rights" => nil, # Copyright messages
     "description" => nil, # Description
-    "urnid" => "example.jp", # just used for unique ID
+    "urnid" => nil, # Identifier (nil makes random uuid)
     "stylesheet" => "stylesheet.css", # stylesheet file
     "coverfile" => nil, # content file of body of cover page
     "mytoc" => nil, # whether make own table of contents or not
@@ -60,7 +67,7 @@ def main
     exit 1
   end
 
-  identifier = "urn:uuid:#{values["urnid"]}_#{bookname}"
+  identifier = values["urnid"].nil? ? "urn:uuid:#{UUID.create}" : values["urnid"]
 
   tmp = values["debug"].nil? ? Dir.mktmpdir : "."
   Dir.mkdir("#{tmp}/#{bookname}")
@@ -207,8 +214,13 @@ EOT
  <spine toc="ncx">
   <itemref idref="#{bookname}" linear="no" />
   <itemref idref="top" />
+EOT
+    unless values["mytoc"].nil?
+      f.puts <<EOT
   <itemref idref="toc" />
 EOT
+    end
+
     f.puts @ncxstr
     unless values["colophon"].nil?
       f.puts <<EOT
