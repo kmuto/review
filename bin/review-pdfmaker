@@ -275,6 +275,8 @@ def get_template(values)
   \\vspace{1.5zw}\\begin{screen}}{%
   \\end{screen}\\vspace{2zw}}
 
+\\newcommand{\\reviewkw}[1]{%
+  \\textbf{\\textgt{#1}}}
 
 \\usepackage[T1]{fontenc}
 

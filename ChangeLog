@@ -1,3 +1,8 @@
+Sat Oct 30 16:12:21 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker, lib/review/latexbuilder.rb: use \reviewkw{}
+	  for @<kw>, and \reviewkw{} use \textbf{} and \textgt{} as default
+
 Wed Oct 27 02:39:40 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb: do not use \begin{table}...\end{table}
