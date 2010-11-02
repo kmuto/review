@@ -548,7 +548,7 @@ QUOTE
 
     def image_header(id, caption)
       puts %Q[<p class="caption">]
-      puts %Q[図#{@chapter.image(id).number}: #{escape_html(caption)}]
+      puts %Q[図#{getChap}#{@chapter.image(id).number}: #{escape_html(caption)}]
       puts %Q[</p>]
     end
 
