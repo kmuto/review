@@ -138,6 +138,7 @@ module ReVIEW
     defblock :bibpaper, 2..3, true
     defblock :doorquote, 1
     defblock :talk, 0
+    defblock :texequation, 0
 
     defblock :address, 0
     defblock :blockquote, 0
@@ -197,6 +198,7 @@ module ReVIEW
     definline :i
     definline :raw
     definline :br
+    definline :m
 
     private
 

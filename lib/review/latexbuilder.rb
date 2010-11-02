@@ -390,6 +390,10 @@ module ReVIEW
       latex_block 'flushright', lines
     end
 
+    def texequation(lines)
+      latex_block 'equation*', lines
+    end
+
     def latex_block(type, lines)
       blank
       puts macro('begin', type)

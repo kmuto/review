@@ -22,6 +22,11 @@ module ReVIEW
       t = ESC
       str.gsub(/[&"<>]/) {|c| t[c] }
     end
+
+    def unescape_html(str)
+      # FIXME better code
+      str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
+    end
   end
 
 end   # module ReVIEW
