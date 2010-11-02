@@ -1,3 +1,9 @@
+Tue Nov  2 19:11:51 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge KADO's branch.
+	- lib/review/htmlbuilder.rb: add chap to image_header
+	- doc/format.rdoc: initial document file for GitHub.
+
 Wed Oct 27 02:39:40 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb: do not use \begin{table}...\end{table}
