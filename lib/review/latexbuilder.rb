@@ -391,7 +391,13 @@ module ReVIEW
     end
 
     def texequation(lines)
-      latex_block 'equation*', lines
+      blank
+      puts macro('begin','equation*')
+      lines.each do |line|
+        puts unescape_latex(line)
+      end
+      puts macro('end', 'equation*')
+      blank
     end
 
     def latex_block(type, lines)

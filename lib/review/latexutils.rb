@@ -31,6 +31,8 @@ module ReVIEW
 
     METACHARS_RE = /[#{Regexp.escape(MATACHARS.keys.join(''))}]/
 
+    MATACHARS_INVERT = MATACHARS.invert
+
     def escape_latex(str)
       str.gsub(METACHARS_RE) {|s|
         MATACHARS[s] or raise "unknown trans char: #{s}"
@@ -38,6 +40,13 @@ module ReVIEW
     end
 
     alias escape escape_latex
+
+    def unescape_latex(str)
+      metachars_invert_re = Regexp.new(MATACHARS_INVERT.keys.collect{|key|  Regexp.escape(key)}.join('|'))
+      str.gsub(metachars_invert_re) {|s|
+        MATACHARS_INVERT[s] or raise "unknown trans char: #{s}"
+      }
+    end
 
     def escape_index(str)
       str.gsub(/[@!|"]/) {|s| '"' + s }
