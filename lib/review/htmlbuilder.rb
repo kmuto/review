@@ -535,7 +535,7 @@ QUOTE
         puts p.parse(unescape_html(lines.join("\n")), true)
       else
         puts '<pre>'
-        puts "#{escape_html(lines.join("\n"))}"
+        puts "#{lines.join("\n")}"
         puts '</pre>'
       end
       puts '</div>'
