@@ -528,6 +528,19 @@ QUOTE
       puts '</div>'
     end
 
+    def texequation(lines)
+      puts %Q[<div class="equation">]
+      if ReVIEW.book.param["mathml"]
+        p = MathML::LaTeX::Parser.new
+        puts p.parse(unescape_html(lines.join("\n")), true)
+      else
+        puts '<pre>'
+        puts "#{lines.join("\n")}"
+        puts '</pre>'
+      end
+      puts '</div>'
+    end
+
     def image_image(id, metric, caption)
       puts %Q[<div class="image">]
       puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(caption)}" />]
@@ -716,6 +729,15 @@ QUOTE
 
     def inline_br(str)
       %Q(<br />)
+    end
+
+    def inline_m(str)
+      if ReVIEW.book.param["mathml"]
+        p = MathML::LaTeX::Parser.new
+        %Q[<span class="equation">#{p.parse(str, nil)}</span>]
+      else
+        %Q[<span class="equation">#{escape_html(str)}</span>]
+      end
     end
 
     def text(str)

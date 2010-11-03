@@ -49,6 +49,7 @@ def _main
     "outencoding" => "UTF-8",
     "subdirmode" => nil,
     "stylesheet" => nil,  # for HTML
+    "mathml" => nil,      # for HTML
   }
 
   parser = OptionParser.new
@@ -82,6 +83,10 @@ def _main
   }
   parser.on('--stylesheet=file', 'Stylesheet file for HTML') {|file|
     param["stylesheet"] = file
+  }
+  parser.on('--mathml', 'Use MathML for TeX equation in HTML') {
+    param["mathml"] = true
+    require 'math_ml'
   }
   parser.on('--hdnumberingmode', 'Output numbering headlines.') {
     @@hdnumberingmode = true

@@ -390,6 +390,16 @@ module ReVIEW
       latex_block 'flushright', lines
     end
 
+    def texequation(lines)
+      blank
+      puts macro('begin','equation*')
+      lines.each do |line|
+        puts unescape_latex(line)
+      end
+      puts macro('end', 'equation*')
+      blank
+    end
+
     def latex_block(type, lines)
       blank
       puts macro('begin', type)

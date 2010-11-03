@@ -1,3 +1,15 @@
+Thu Nov  4 07:27:09 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, lib/review/compiler.rb,
+	  lib/review/htmlbuilder.rb, lib/review/htmlutils.rb,
+	  lib/review/latexbuilder.rb, lib/review/latexutils.rb,
+	  doc/format.rdoc, doc/format.re, doc/format.txt:
+	  add experimental TeX block equation/inline equation support.
+	  add //texequation in LATEXBuilder and HTMLBuilder.
+	  add @<m> op in HTMLBuilder.
+	  add --mathml option to use math_ml.rb library
+	  (http://www.hinet.mydns.jp/?mathml.rb) in HTMLBuilder.
+
 Wed Nov  3 23:44:37 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge KADO's branch.
