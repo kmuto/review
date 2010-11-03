@@ -58,8 +58,11 @@ def _main
         error_exit "part #{n} does not exist in this book"
   }
   parser.on('-c', '--chapter C', 'list only chapter C.') {|c|
-    source = ReVIEW::Part.new(1, [ReVIEW.book.chapter(c)]) or
-        error_exit "chapter #{c} does not exist in this book"
+    begin
+      source = ReVIEW::Part.new(1, [ReVIEW.book.chapter(c)])
+    rescue
+      error_exit "chapter #{c} does not exist in this book"
+    end
   }
   parser.on('-l', '--level N', 'list upto N level (1..4, default=4)') {|n|
     upper = Integer(n)
