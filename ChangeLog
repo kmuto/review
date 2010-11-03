@@ -4,6 +4,21 @@ Tue Nov  2 19:11:51 2010  Kenshi Muto  <kmuto@debian.org>
 	- lib/review/htmlbuilder.rb: add chap to image_header
 	- doc/format.rdoc: initial document file for GitHub.
 
+Fri Oct 29 06:23:56 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/uuid.rb, test/test_uuid.rb, doc/ruby-uuid/README,
+	  doc/ruby-uuid/README.ja: uuid library, imported from
+	  git://github.com/shyouhei/ruby-uuid.git
+	  Copyright 2007 URABE, Shyouhei.
+	  (At this time, I prefer to import third party libraries
+	  rather than using gems, to let ReVIEW work on essential
+	  Ruby environments.)
+	* bin/review-epubmaker: use time-based random urnid when
+	  urnid isn't defined.
+	  write <itemref idref="toc" /> only if mytoc is defined.
+	* doc/sample.yaml: modify descriptions of urnid, stylesheet,
+	  colophon, and debug.
+
 Wed Oct 27 02:39:40 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb: do not use \begin{table}...\end{table}

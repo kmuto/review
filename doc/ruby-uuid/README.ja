@@ -1,0 +1,34 @@
+UUID: Pure-ruby RFC4122 Implementation
+
+RFC4122をフルサポート(はず)のライブラリ。使いかたは
+
+require 'uuid'
+UUID.create # => instance
+
+とか。
+
+基本的にUUIDってのは存在していることに意味があるオブジェクトなため、それ自身には
+ほとんどインスタンスメソッドを持たない。以下はその数少ないメソッドたち
+
+* UUID#==, UUID#<=>
+比較。RFC4122によるとなぜかUUIDは順序つきなんだそうだ。何に使うのか不明。RFCに準
+拠するためだけのメソッド。
+
+* UUID#to_i, UUID#to_int
+128bit unsigned intとみなして整数化。
+
+* UUID#to_s, UUID#to_uri, UUID#guid
+人間が読める文字列にする。to_uriはRFC4122が定めるURIとして変換。guidはよく
+Windowsとかで見るあれ。
+
+* UUID#raw_bytes
+これも文字列を返すんだけど、基本的には読めない。128bit長のUUID値そのもの。
+
+
+# Local Variables:
+# mode: text
+# indent-tabs-mode: t
+# tab-width: 8
+# fill-column: 79
+# default-justification: full
+# End:
