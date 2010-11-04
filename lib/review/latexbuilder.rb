@@ -575,9 +575,9 @@ module ReVIEW
 
     def compile_kw(word, alt)
       if alt
-        macro('textgt', escape(word)) + "（#{escape(alt.strip)}）"
+        macro('reviewkw', escape(word)) + "（#{escape(alt.strip)}）"
       else
-        macro('textgt', escape(word))
+        macro('reviewkw', escape(word))
       end
     end
 
