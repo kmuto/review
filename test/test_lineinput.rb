@@ -3,6 +3,7 @@
 require 'test_helper'
 require 'lineinput'
 require 'tempfile'
+require 'stringio'
 
 class LineInputTest < Test::Unit::TestCase
   def test_initialize
@@ -73,11 +74,16 @@ class LineInputTest < Test::Unit::TestCase
   end
 
   def test_skip_blank_lines
+    if "".respond_to?(:encode)
+      euc_jp_spc = "　".encode("EUC-JP")
+    else
+      euc_jp_spc = "\xa1\xa1" # EUC-JP 全角空白
+    end
     [
       ["", 0, nil],
       ["\n \n  \nabc", 3, 'abc'],
       ["\t", 1, nil],
-      ["\xa1\xa1", 0, "\xa1\xa1"], # EUC-JP 全角空白
+      [euc_jp_spc, 0, euc_jp_spc],
     ].each do |text, n, rest|
       li = LineInput.new(StringIO.new(text))
       assert_equal n, li.skip_blank_lines
