@@ -481,7 +481,7 @@ module ReVIEW
 
     # index -> italic
     def inline_i(str)
-      macro('textit', text(str))
+      macro('textit', escape(str))
     end
 
     # index
