@@ -102,6 +102,20 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal [:text, text], @b.compile_inline(text)
   end
 
+  def test_convert_outencoding_1arg
+    ReVIEW.book.param = {'outencoding' => "UTF-8"}
+    b = Builder.new
+    ret = b.convert_outencoding("a")
+    assert_equal "a", ret
+  end
+
+  def test_convert_outencoding_2arg
+    ReVIEW.book.param = {'outencoding' => "UTF-8"}
+    b = Builder.new
+    ret = b.convert_outencoding("a","b")
+    assert_equal(["a","b"], ret)
+  end
+
   class XBuilder < Builder
     def list_header(id, caption)
     end

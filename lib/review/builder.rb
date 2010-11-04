@@ -50,6 +50,10 @@ module ReVIEW
       elsif ReVIEW.book.param["outencoding"] =~ /^JIS$/i
         NKF.nkf("-W, -j", *s)
       else
+        ## for 1.9 compatibility
+        if s.size == 1
+          return s[0]
+        end
         return *s
       end
     end
