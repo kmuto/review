@@ -342,8 +342,11 @@ EOB
 
 {\\noindent\\usefont{T1}{pag}{b}{n}\\Large\\gtfamily\\ebseries #{values["booktitle"]}} \\\\
 \\rule[8pt]{14cm}{1pt} \\\\
+{\\noindent
+#{values["pubhistory"].gsub(/\n/){"\n\n\\noindent"} }
+}
+
 \\begin{tabular}{ll}
-発行日 & #{values["date"]} \\\\
 著　者 & #{values["aut"]} \\\\
 編集者 & #{values["edt"]} \\\\
 発行所 & #{values["prt"]} \\\\
