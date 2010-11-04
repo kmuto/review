@@ -1,3 +1,8 @@
+Thu Nov  4 17:29:17 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: only use coverimage file if 'converimage'
+	  attributes has a value(but ignore coverfile).
+
 Thu Nov  4 17:11:56 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* test/test_htmlbuilder.rb, test/test_latexbuilder.rb:

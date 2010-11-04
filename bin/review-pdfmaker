@@ -282,11 +282,17 @@ def get_template(values)
 \\mgfamily
 
 \\begin{titlepage}
+EOB
+  if values["coverimage"]
+    str += <<EOB
   \\begin{center}
     \\mbox{}\\vskip5zw%
-    \\includegraphics[scale=1.0]{./images/cover.jpg}
+    \\includegraphics[scale=1.0]{./images/#{values["coverimage"]}}
   \\end{center}
   \\clearpage
+EOB
+  end
+  str += <<EOB
 \\thispagestyle{empty}
 \\begin{center}%
   \\mbox{} \\vskip5zw
