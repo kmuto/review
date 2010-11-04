@@ -160,6 +160,8 @@ def get_template(values)
 \\definecolor{shadecolorb}{gray}{0.1}
 \\usepackage{eclbkbox}
 
+\\usepackage[utf8]{inputenc}
+
 \\usepackage{jumoline}
 
 \\usepackage{ascmac}
