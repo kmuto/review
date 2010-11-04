@@ -81,4 +81,24 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     ret = @builder.inline_br("")
     assert_equal %Q|<br />|, ret
   end
+
+  def test_inline_i
+    ret = @builder.compile_inline("test @<i>{inline test} test2")
+    assert_equal %Q|test <i>inline test</i> test2|, ret
+  end
+
+  def test_inline_i_and_escape
+    ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test <i>inline&lt;&amp;;\\ test</i> test2|, ret
+  end
+
+  def test_inline_b
+    ret = @builder.compile_inline("test @<b>{inline test} test2")
+    assert_equal %Q|test <b>inline test</b> test2|, ret
+  end
+
+  def test_inline_b_and_escape
+    ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test <b>inline&lt;&amp;;\\ test</b> test2|, ret
+  end
 end

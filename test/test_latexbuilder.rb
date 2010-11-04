@@ -90,6 +90,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|abc\\textit{def}ghi|, ret
   end
 
+  def test_inline_i_and_escape
+    ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test \\textit{inline\\textless{}\\&;\\textbackslash{} test} test2|, ret
+  end
+
   def test_inline_dtp
     ret = @builder.compile_inline("abc@<dtp>{def}ghi")
     assert_equal %Q|abcghi|, ret
@@ -120,6 +125,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|abc\\textbf{def}|, ret
   end
 
+  def test_inline_b_and_escape
+    ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test \\textbf{inline\\textless{}\\&;\\textbackslash{} test} test2|, ret
+  end
   def test_inline_em
     ret = @builder.compile_inline("abc@<em>{def}")
     assert_equal %Q|abc\\textbf{def}|, ret
@@ -133,6 +142,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_inline_u
     ret = @builder.compile_inline("abc@<u>{def}ghi")
     assert_equal %Q|abc\\Underline{def}ghi|, ret
+  end
+
+  def test_inline_m
+    ret = @builder.compile_inline("abc@<m>{\\alpha^n = \inf < 2}ghi")
+    assert_equal "abc $\\alpha^n = inf < 2$ ghi", ret
   end
 
 end
