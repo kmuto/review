@@ -1,3 +1,8 @@
+Sun Nov  7 12:35:11 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: ad-hoc support for //texequation
+	  and @<m>.
+
 Sun Nov  7 12:01:03 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge KADO's branch.
