@@ -638,7 +638,11 @@ QUOTE
 
     def indepimage(id)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="" />]
+      begin
+        puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="" />]
+      rescue
+        puts %Q[<pre>missing image: #{id}</pre>]
+      end
       puts %Q[</div>]
     end
 
@@ -860,7 +864,7 @@ QUOTE
     end
 
     def inline_u(str)
-      %Q(<underline>#{escape_html(str)}</underline>)
+      %Q(<u>#{escape_html(str)}</u>)
     end
 
    def inline_recipe(str)
