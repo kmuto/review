@@ -1,3 +1,9 @@
+Sun Nov  7 12:01:03 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge KADO's branch.
+	 - lib/review/htmlbuilder.rb, lib/review/idgxmlbuilder.rb:
+	   add @ttb op.
+
 Wed Nov  3 23:44:37 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge KADO's branch.
