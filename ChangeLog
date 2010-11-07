@@ -1,3 +1,9 @@
+Sun Nov  7 17:23:12 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/latexbuilder.rb: support //indepimage.
+	* lib/review/htmlbuilder.rb, lib/review/idgxmlbuilder.rb: accept
+	  (though just ignore) metric option of //indepimage.
+
 Sun Nov  7 15:20:16 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb: use <u> instead of <underline> for underline.

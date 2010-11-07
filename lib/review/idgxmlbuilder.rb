@@ -24,7 +24,7 @@ module ReVIEW
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
-    Compiler.defsingle(:indepimage, 1)
+    Compiler.defsingle(:indepimage, 1..2)
 
     Compiler.defblock(:insn, 0..1)
     Compiler.defblock(:memo, 0..1)
@@ -976,7 +976,7 @@ module ReVIEW
       puts "</box>"
     end
 
-    def indepimage(id)
+    def indepimage(id, metric=nil)
       puts "<img>"
       if ReVIEW.book.param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")

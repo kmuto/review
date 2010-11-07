@@ -27,6 +27,7 @@ module ReVIEW
 
     Compiler.defblock(:memo, 0..1)
     Compiler.defsingle(:latextsize, 1)
+    Compiler.defsingle(:indepimage, 1..2)
 
     def extname
       '.tex'
@@ -318,6 +319,16 @@ module ReVIEW
       "image:#{@chapter.id}:#{id}"
     end
     private :image_label
+
+    def indepimage(id, metric=nil)
+      puts '\begin{reviewimage}'
+      if metric
+        puts "\\includegraphics[#{metric}]{#{@chapter.image(id).path}}"
+      else
+        puts macro('includegraphics', @chapter.image(id).path)
+      end
+      puts '\end{reviewimage}'
+    end
 
     def table_header(id, caption)
       if caption && !caption.empty?
