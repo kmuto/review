@@ -112,4 +112,9 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test <tt><i>inline test</i></tt> test2|, ret
   end
 
+  def test_inline_ttb
+    ret = @builder.compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, ret
+  end
+
 end

@@ -149,4 +149,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal "abc $\\alpha^n = inf < 2$ ghi", ret
   end
 
+  def test_inline_tt
+    ret = @builder.compile_inline("test @<tt>{inline test} test2")
+    assert_equal %Q|test \\texttt{inline test} test2|, ret
+  end
+
+  def test_inline_tti
+    ret = @builder.compile_inline("test @<tti>{inline test} test2")
+    assert_equal %Q|test \\texttt{\\textit{inline test}} test2|, ret
+  end
+
+  def test_inline_ttb
+    ret = @builder.compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test \\texttt{\\textbf{inline test}} test2|, ret
+  end
 end
