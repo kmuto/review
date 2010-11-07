@@ -21,7 +21,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:u, :tti, :idx, :hidx, :icon].each {|e|
+    [:u, :tti, :ttb, :idx, :hidx, :icon].each {|e|
       Compiler.definline(e)
     }
 
@@ -709,6 +709,10 @@ QUOTE
 
     def inline_tti(str)
       %Q(<tt><i>#{escape_html(str)}</i></tt>)
+    end
+
+    def inline_ttb(str)
+      %Q(<tt><b>#{escape_html(str)}</b></tt>)
     end
 
     def inline_dtp(str)

@@ -1,3 +1,9 @@
+Sun Nov  7 12:01:03 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge KADO's branch.
+	 - lib/review/htmlbuilder.rb, lib/review/idgxmlbuilder.rb:
+	   add @ttb op.
+
 Thu Nov  4 20:48:41 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: update colophon in LATEXBuilder.

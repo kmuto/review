@@ -20,7 +20,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:i, :tt, :ttbold, :tti, :idx, :hidx, :dtp, :sup, :sub, :hint, :raw, :maru, :keytop, :labelref, :ref, :pageref, :u, :icon, :balloon, :uchar].each {|e|
+    [:i, :tt, :ttbold, :ttb, :tti, :idx, :hidx, :dtp, :sup, :sub, :hint, :raw, :maru, :keytop, :labelref, :ref, :pageref, :u, :icon, :balloon, :uchar].each {|e|
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
@@ -651,9 +651,13 @@ module ReVIEW
       %Q(<tt>#{escape_html(str)}</tt>)
     end
 
-    def inline_ttbold(str)
+    def inline_ttb(str)
       index = escape_html(str).gsub(/<.*?>/, "").gsub(/\*/, "ESCAPED_ASTERISK").gsub(/'/, "&#27;")
       %Q(<tt style='bold'>#{escape_html(str)}</tt><index value='#{index}' />)
+    end
+
+    def inline_ttbold(str)
+      inline_ttb(str)
     end
 
     def inline_tti(str)
