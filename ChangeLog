@@ -1,3 +1,7 @@
+Sun Nov  7 13:20:37 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb: support @<tti> and @<ttb> for LATEXBuilder
+
 Sun Nov  7 12:35:11 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: ad-hoc support for //texequation

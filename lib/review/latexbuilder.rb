@@ -21,7 +21,7 @@ module ReVIEW
     include LaTeXUtils
     include TextUtils
 
-    [:u, :tti, :idx, :hidx, :icon, :dtp, :hd_chap].each {|e|
+    [:u, :tti, :ttb, :idx, :hidx, :icon, :dtp, :hd_chap].each {|e|
       Compiler.definline(e)
     }
 
@@ -520,6 +520,14 @@ module ReVIEW
 
     def inline_tt(str)
       macro('texttt', escape(str))
+    end
+
+    def inline_tti(str)
+      macro('texttt', macro('textit', escape(str)))
+    end
+
+    def inline_ttb(str)
+      macro('texttt', macro('textbf', escape(str)))
     end
 
     def inline_hd_chap(chap, id)
