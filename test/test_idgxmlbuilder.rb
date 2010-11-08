@@ -82,4 +82,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     ret = @builder.inline_br("")
     assert_equal %Q|\n|, ret
   end
+
+  def test_inline_uchar
+    ret = @builder.compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test &#x2460; test2|, ret
+  end
 end

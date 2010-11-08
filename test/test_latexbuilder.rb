@@ -163,4 +163,9 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     ret = @builder.compile_inline("test @<ttb>{inline test} test2")
     assert_equal %Q|test \\texttt{\\textbf{inline test}} test2|, ret
   end
+
+  def test_inline_uchar
+    ret = @builder.compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test \\UTF{2460} test2|, ret
+  end
 end

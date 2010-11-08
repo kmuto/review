@@ -21,7 +21,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:u, :tti, :ttb, :idx, :hidx, :icon].each {|e|
+    [:tti, :ttb, :icon].each {|e|
       Compiler.definline(e)
     }
 
@@ -873,6 +873,10 @@ QUOTE
 
     def inline_icon(id)
       %Q[<img src=".#{@book.image_dir}#{find_pathes(id)[0].sub(/\A\.\//, "/")}" alt="[#{id}]" />]
+    end
+
+    def inline_uchar(str)
+      %Q(&#x#{str};)
     end
 
     def inline_raw(str)

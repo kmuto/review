@@ -1,3 +1,14 @@
+Mon Nov  8 21:51:43 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	  lib/review/idgxmlbuilder.rb, lib/review/latexbuilder.rb:
+	  move @<tti>, @<ttb>, @<u>, @<uchar>, @<idx>, and @<hidx> to
+	  base op.
+	* lib/review/htmlbuilder.rb, lib/review/latexbuilder.rb:
+	  support @<uchar> op.
+	* test/test_htmlbuilder.rb, test/test_latexbuilder.rb,
+	  test/test_idgxmlbuilder.rb: add test for @<uchar>.
+
 Sun Nov  7 17:23:12 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/latexbuilder.rb: support //indepimage.

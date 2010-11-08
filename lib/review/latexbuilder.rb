@@ -21,7 +21,7 @@ module ReVIEW
     include LaTeXUtils
     include TextUtils
 
-    [:u, :tti, :ttb, :idx, :hidx, :icon, :dtp, :hd_chap].each {|e|
+    [:icon, :dtp, :hd_chap].each {|e|
       Compiler.definline(e)
     }
 
@@ -572,6 +572,11 @@ module ReVIEW
     def inline_icon(str)
       ## can not support?
       ""
+    end
+
+    def inline_uchar(str)
+      # with otf package
+      macro('UTF', escape(str))
     end
 
     def index(str)

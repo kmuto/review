@@ -196,9 +196,15 @@ module ReVIEW
     definline :sub
     definline :tt
     definline :i
+    definline :tti
+    definline :ttb
+    definline :u
     definline :raw
     definline :br
     definline :m
+    definline :uchar
+    definline :idx
+    definline :hidx
 
     private
 
