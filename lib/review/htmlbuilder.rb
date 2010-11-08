@@ -21,7 +21,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:tti, :ttb, :icon].each {|e|
+    [:icon].each {|e|
       Compiler.definline(e)
     }
 
