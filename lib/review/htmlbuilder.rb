@@ -592,7 +592,7 @@ QUOTE
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="caption">表#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<p class="caption">表#{getChap}#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
     end
 
     def table_begin(ncols)
