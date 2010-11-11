@@ -33,6 +33,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\chapter*{this is test.}\n|, @builder.result
   end
 
+  def test_headline_level1_with_inlinetag
+    @builder.headline(1,"test","this \\textbf{is} test.\\textless{}\\&")
+    assert_equal %Q|\\chapter{this \\textbf{is} test.\\textless{}\\&}\n|, @builder.result
+  end
+
   def test_headline_level2
     @builder.headline(2,"test","this is test.")
     assert_equal %Q|\\section{this is test.}\n|, @builder.result
