@@ -258,7 +258,7 @@ module ReVIEW
       level = m[1].size
       tag = m[2]
       label = m[3]
-      caption = m[4].strip
+      caption = text(m[4].strip)
       index = level - 1
       if tag
         open_tagged_section tag, level, label, caption
@@ -274,12 +274,12 @@ module ReVIEW
         if ReVIEW.book.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
         end
-        @strategy.headline level, label, @strategy.text(caption)
+        @strategy.headline level, label, caption
       end
     end
 
     def headline(level, label, caption)
-      @strategy.headline level, label, @strategy.text(caption)
+      @strategy.headline level, label, caption
     end
 
     def tagged_section_init
@@ -294,7 +294,7 @@ module ReVIEW
         return
       end
       @tagged_section.push [tag, level]
-      @strategy.__send__ mid, level, label, @strategy.text(caption)
+      @strategy.__send__ mid, level, label, caption
     end
 
     def close_tagged_section(tag, level)
@@ -388,7 +388,7 @@ module ReVIEW
         error "argument syntax error: #{str.inspect}"
         return []
       end
-      str[1..-2].split('][', -1)
+      str[1..-2].split('][', -1).collect {|x| text(x) }
     end
 
     def compile_command(syntax, args, lines)
