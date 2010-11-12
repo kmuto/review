@@ -359,7 +359,7 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).intern
-      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'))
+      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
       lines = block_open?(line) ? read_block(f) : nil
       return name, args, lines
     end
@@ -382,13 +382,17 @@ module ReVIEW
       buf
     end
 
-    def parse_args(str)
+    def parse_args(str, name=nil)
       return [] if str.empty?
       unless str[0,1] == '[' and str[-1,1] == ']'
         error "argument syntax error: #{str.inspect}"
         return []
       end
-      str[1..-2].split('][', -1).collect {|x| text(x) }
+      if name.to_s != "raw"
+        str[1..-2].split('][', -1).collect {|x| text(x) }
+      else
+        str[1..-2].split('][', -1)
+      end
     end
 
     def compile_command(syntax, args, lines)
