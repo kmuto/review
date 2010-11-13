@@ -1,3 +1,13 @@
+Sat Nov 13 23:19:25 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/builder.rb: add Builder#output and Builder#output=
+	  to get/set output IO from test code.
+	* test/test_helper.rb: add TestHelper module with capture_stdout
+	  method to capture the output from the builder.
+	* test/test_builder.rb, test/test_htmlbuilder.rb,
+	  test/test_idgxmlbuilder.rb, test/test_latexbuilder.rb:
+	  add some block test codes with using capture_stdout.
+
 Sat Nov 13 10:33:13 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: round float value for

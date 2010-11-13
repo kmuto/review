@@ -6,7 +6,7 @@ require 'review/book'
 require 'review/htmlbuilder'
 
 class HTMLBuidlerTest < Test::Unit::TestCase
-  include ReVIEW
+  include ReVIEW, TestHelper
 
   def setup
     @builder = HTMLBuilder.new()
@@ -127,4 +127,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test &#x2460; test2|, ret
   end
 
+  def test_memo
+    out = capture_stdout do
+      @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    end
+    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, out.string
+  end
+
+  def test_raw
+    out = capture_stdout do
+      @builder.raw("<&>\\n")
+    end
+    assert_equal %Q|<&>\n|, out.string
+  end
 end

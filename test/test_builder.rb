@@ -12,7 +12,7 @@ class MockCompiler
 end
 
 class BuidlerTest < Test::Unit::TestCase
-  include ReVIEW
+  include ReVIEW, TestHelper
 
   def setup
     @b = Builder.new

@@ -38,6 +38,14 @@ module ReVIEW
     end
     private :builder_init_file
 
+    def output=(f)
+      @output = f
+    end
+
+    def output
+      @output
+    end
+
     def result
       @output.string
     end

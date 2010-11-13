@@ -6,7 +6,7 @@ require 'review/book'
 require 'review/idgxmlbuilder'
 
 class IDGXMLBuidlerTest < Test::Unit::TestCase
-  include ReVIEW
+  include ReVIEW, TestHelper
 
   def setup
     @builder = IDGXMLBuilder.new()
@@ -86,5 +86,19 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_inline_uchar
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test &#x2460; test2|, ret
+  end
+
+  def test_memo
+    out = capture_stdout do
+      @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    end
+    assert_equal %Q|<memo><title aid:pstyle='memo-title'>this is <b>test</b>&lt;&amp;&gt;_</title>test1\ntest<i>2</i></memo>|, out.string
+  end
+
+  def test_raw
+    out = capture_stdout do
+      @builder.raw("<&>\\n")
+    end
+    assert_equal %Q|<&>\n|, out.string
   end
 end

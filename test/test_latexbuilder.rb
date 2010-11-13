@@ -4,7 +4,7 @@ require 'review/book'
 require 'review/latexbuilder'
 
 class LATEXBuidlerTest < Test::Unit::TestCase
-  include ReVIEW
+  include ReVIEW, TestHelper
 
   def setup
     @builder = LATEXBuilder.new()
@@ -172,5 +172,19 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_inline_uchar
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test \\UTF{2460} test2|, ret
+  end
+
+  def test_memo
+    out = capture_stdout do
+      @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    end
+    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\ntest<i>2</i>\n\\end{reviewminicolumn}\n|, out.string
+  end
+
+  def test_raw
+    out = capture_stdout do
+      @builder.raw("<&>\\n")
+    end
+    assert_equal %Q|<&>\n|, out.string
   end
 end
