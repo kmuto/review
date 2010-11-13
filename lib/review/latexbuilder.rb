@@ -78,12 +78,12 @@ module ReVIEW
         prefix = "*"
       end
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level]+prefix, caption)
+      puts macro(HEADLINE[level]+prefix, compile_inline(caption))
     end
 
     def nonum_begin(level, label, caption)
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level]+"*", caption)
+      puts macro(HEADLINE[level]+"*", compile_inline(caption))
     end
 
     def nonum_end(level)
@@ -100,7 +100,7 @@ module ReVIEW
 ##      nonum_begin(3, label, caption)   # FIXME
 
       puts "\\begin{reviewcolumn}\n"
-      puts macro('reviewcolumnhead', nil, caption)
+      puts macro('reviewcolumnhead', nil, compile_inline(caption))
 
     end
 
@@ -116,7 +116,7 @@ module ReVIEW
     def minicolumn(type, lines, caption)
       puts "\\begin{reviewminicolumn}\n"
       unless caption.nil?
-        puts "\\reviewminicolumntitle{#{caption}}\n"
+        puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
       end
       lines.each {|l|
         puts l
@@ -243,7 +243,7 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-      puts macro('reviewlistcaption', "リスト#{@chapter.number}.#{@chapter.list(id).number}: #{caption}")
+      puts macro('reviewlistcaption', "リスト#{@chapter.number}.#{@chapter.list(id).number}: #{compile_inline(caption)}")
     end
 
     def list_body(lines)
@@ -266,7 +266,7 @@ module ReVIEW
     end
 
     def source_header(caption)
-      puts macro('reviewlistcaption', caption)
+      puts macro('reviewlistcaption', compile_inline(caption))
     end
 
     def source_body(lines)
@@ -291,7 +291,7 @@ module ReVIEW
       end
       puts macro('label', image_label(id))
       if !caption.empty?
-        puts macro('caption', caption)
+        puts macro('caption', compile_inline(caption))
       end
       puts '\end{reviewimage}'
     end
@@ -306,7 +306,7 @@ module ReVIEW
       end
       puts '\end{alltt}'
       puts macro('label', image_label(id))
-      puts caption
+      puts compile_inline(caption)
       puts '\end{reviewdummyimage}'
     end
 
@@ -334,8 +334,8 @@ module ReVIEW
       if caption && !caption.empty?
         @table_caption = true
         puts '\begin{table}[h]'
-##      puts macro('reviewtablecaption', "表#{@chapter.number}.#{@chapter.table(id).number} #{caption}")
-        puts macro('reviewtablecaption', caption)
+##      puts macro('reviewtablecaption', "表#{@chapter.number}.#{@chapter.table(id).number} #{compile_inline(caption)}")
+        puts macro('reviewtablecaption', compile_inline(caption))
       end
     end
 

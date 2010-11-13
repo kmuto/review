@@ -258,7 +258,7 @@ module ReVIEW
       level = m[1].size
       tag = m[2]
       label = m[3]
-      caption = text(m[4].strip)
+      caption = m[4].strip
       index = level - 1
       if tag
         open_tagged_section tag, level, label, caption
@@ -388,11 +388,7 @@ module ReVIEW
         error "argument syntax error: #{str.inspect}"
         return []
       end
-      if name.to_s != "raw"
-        str[1..-2].split('][', -1).collect {|x| text(x) }
-      else
-        str[1..-2].split('][', -1)
-      end
+      str[1..-2].split('][', -1)
     end
 
     def compile_command(syntax, args, lines)

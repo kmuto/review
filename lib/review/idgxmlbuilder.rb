@@ -207,7 +207,7 @@ module ReVIEW
 
       prefix = "" if (level.to_i > ReVIEW.book.param["secnolevel"])
       label = label.nil? ? "" : " id=\"#{label}\""
-      puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{caption}</title><?dtp level="#{level}" section="#{prefix}#{escape_html(caption)}"?>)
+      puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{escape_html(compile_inline(caption))}"?>)
     end
 
     def ul_begin
@@ -296,12 +296,12 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-     if !@chapter.number.nil? && !@chapter.number.to_s.empty?
+      if !@chapter.number.nil? && !@chapter.number.to_s.empty?
         puts %Q[<codelist>]
-        puts %Q[<caption>リスト#{@chapter.number}.#{@chapter.list(id).number}　#{caption}</caption>]
+        puts %Q[<caption>リスト#{@chapter.number}.#{@chapter.list(id).number}　#{compile_inline(caption)}</caption>]
       else
         puts %Q[<codelist>]
-        puts %Q[<caption>リスト#{@chapter.list(id).number}　#{caption}</caption>]
+        puts %Q[<caption>リスト#{@chapter.list(id).number}　#{compile_inline(caption)}</caption>]
       end
     end
 
@@ -341,7 +341,7 @@ module ReVIEW
 
     def quotedlist(lines, css_class, caption)
       print %Q[<list type='#{css_class}'>]
-      puts "<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>" unless caption.nil?
+      puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" unless caption.nil?
       print %Q[<pre>]
       no = 1
       lines.each do |line|
@@ -406,9 +406,9 @@ module ReVIEW
 
     def image_header(id, caption)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        puts %Q[<caption>図#{@chapter.number}.#{@chapter.image(id).number}　#{caption}</caption>]
+        puts %Q[<caption>図#{@chapter.number}.#{@chapter.image(id).number}　#{compile_inline(caption)}</caption>]
       else
-        puts %Q[<caption>図#{@chapter.image(id).number}　#{caption}</caption>]
+        puts %Q[<caption>図#{@chapter.image(id).number}　#{compile_inline(caption)}</caption>]
       end
     end
 
@@ -536,9 +536,9 @@ module ReVIEW
 
     def table_header(id, caption)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        puts %Q[<caption>表#{@chapter.number}.#{@chapter.table(id).number}　#{caption}</caption>]
+        puts %Q[<caption>表#{@chapter.number}.#{@chapter.table(id).number}　#{compile_inline(caption)}</caption>]
       else
-        puts %Q[<caption>表#{@chapter.table(id).number}　#{caption}</caption>]
+        puts %Q[<caption>表#{@chapter.table(id).number}　#{compile_inline(caption)}</caption>]
       end
     end
 
@@ -734,14 +734,14 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
-      puts %Q(<title aid:pstyle="h#{level}">#{caption}</title><?dtp level="#{level}" section="#{caption}"?>)
+      puts %Q(<title aid:pstyle="h#{level}">#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{escape_html(compile_inline(caption))}"?>)
     end
 
     def nonum_end(level)
     end
 
     def circle_begin(level, label, caption)
-      puts %Q(<title aid:pstyle="smallcircle">&#x2022;#{caption}</title>)
+      puts %Q(<title aid:pstyle="smallcircle">&#x2022;#{compile_inline(caption)}</title>)
     end
 
     def circle_end(level)
@@ -749,7 +749,7 @@ module ReVIEW
 
     def column_begin(level, label, caption)
       print "<column>"
-      puts %Q(<title aid:pstyle="column-title">#{caption}</title>)
+      puts %Q(<title aid:pstyle="column-title">#{compile_inline(caption)}</title>)
     end
 
     def column_end(level)
@@ -758,7 +758,7 @@ module ReVIEW
 
     def xcolumn_begin(level, label, caption)
       print "<xcolumn>"
-      puts %Q(<title aid:pstyle="xcolumn-title">#{caption}</title>)
+      puts %Q(<title aid:pstyle="xcolumn-title">#{compile_inline(caption)}</title>)
     end
 
     def xcolumn_end(level)
@@ -767,7 +767,7 @@ module ReVIEW
 
     def world_begin(level, label, caption)
       print "<worldcolumn>"
-      puts %Q(<title aid:pstyle="worldcolumn-title">#{caption}</title>)
+      puts %Q(<title aid:pstyle="worldcolumn-title">#{compile_inline(caption)}</title>)
     end
 
     def world_end(level)
@@ -776,7 +776,7 @@ module ReVIEW
 
     def hood_begin(level, label, caption)
       print "<hoodcolumn>"
-      puts %Q(<title aid:pstyle="hoodcolumn-title">#{caption}</title>)
+      puts %Q(<title aid:pstyle="hoodcolumn-title">#{compile_inline(caption)}</title>)
     end
 
     def hood_end(level)
@@ -785,7 +785,7 @@ module ReVIEW
 
     def edition_begin(level, label, caption)
       print "<editioncolumn>"
-      puts %Q(<title aid:pstyle="editioncolumn-title">#{caption}</title>)
+      puts %Q(<title aid:pstyle="editioncolumn-title">#{compile_inline(caption)}</title>)
     end
 
     def edition_end(level)
@@ -794,7 +794,7 @@ module ReVIEW
 
     def insideout_begin(level, label, caption)
       print "<insideoutcolumn>"
-      puts %Q(<title aid:pstyle="insideoutcolumn-title">#{caption}</title>)
+      puts %Q(<title aid:pstyle="insideoutcolumn-title">#{compile_inline(caption)}</title>)
     end
 
     def insideout_end(level)
@@ -831,55 +831,55 @@ module ReVIEW
 
     def note(lines, caption = nil)
       print "<note>"
-      puts "<title aid:pstyle='note-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='note-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</note>"
     end
 
     def memo(lines, caption = nil)
       print "<memo>"
-      puts "<title aid:pstyle='memo-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='memo-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</memo>"
     end
 
     def tip(lines, caption = nil)
       print "<tip>"
-      puts "<title aid:pstyle='tip-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='tip-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</tip>"
     end
 
     def info(lines, caption = nil)
       print "<info>"
-      puts "<title aid:pstyle='info-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='info-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</info>"
     end
 
     def planning(lines, caption = nil)
       print "<planning>"
-      puts "<title aid:pstyle='planning-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='planning-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</planning>"
     end
 
     def best(lines, caption = nil)
       print "<best>"
-      puts "<title aid:pstyle='best-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='best-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</best>"
     end
 
     def important(lines, caption = nil)
       print "<important>"
-      puts "<title aid:pstyle='important-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='important-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</important>"
     end
 
     def security(lines, caption = nil)
       print "<security>"
-      puts "<title aid:pstyle='security-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='security-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</security>"
     end
 
     def caution(lines, caption = nil)
       print "<caution>"
-      puts "<title aid:pstyle='caution-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='caution-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</caution>"
     end
 
@@ -889,7 +889,7 @@ module ReVIEW
 
     def link(lines, caption = nil)
       print "<link>"
-      puts "<title aid:pstyle='link-title'>#{caption}</title>" unless caption.nil?
+      puts "<title aid:pstyle='link-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       puts "#{lines.join("\n")}</link>"
     end
 
@@ -897,7 +897,7 @@ module ReVIEW
       if caption.nil?
         puts "<notice>#{lines.join("\n")}</notice>"
       else
-        puts "<notice-t><title aid:pstyle='notice-title'>#{caption}</title>"
+        puts "<notice-t><title aid:pstyle='notice-title'>#{compile_inline(caption)}</title>"
         puts "#{lines.join("\n")}</notice-t>"
       end
     end
@@ -906,7 +906,7 @@ module ReVIEW
       if caption.nil?
         puts "<point>#{lines.join("\n")}</point>"
       else
-        puts "<point-t><title aid:pstyle='point-title'>#{caption}</title>"
+        puts "<point-t><title aid:pstyle='point-title'>#{compile_inline(caption)}</title>"
         puts "#{lines.join("\n")}</point-t>"
       end
     end
@@ -915,7 +915,7 @@ module ReVIEW
       if caption.nil?
         puts "<shoot>#{lines.join("\n")}</shoot>"
       else
-        puts "<shoot-t><title aid:pstyle='shoot-title'>#{caption}</title>"
+        puts "<shoot-t><title aid:pstyle='shoot-title'>#{compile_inline(caption)}</title>"
         puts "#{lines.join("\n")}</shoot-t>"
       end
     end
@@ -936,7 +936,7 @@ module ReVIEW
       if caption.nil?
         puts %Q[<insn>]
       else
-        puts %Q[<insn><floattitle type="insn">#{caption}</floattitle>]
+        puts %Q[<insn><floattitle type="insn">#{compile_inline(caption)}</floattitle>]
       end
       no = 1
       lines.each do |line|
@@ -958,7 +958,7 @@ module ReVIEW
       if caption.nil?
         print %Q[<box>]
       else
-        puts %Q[<box><caption aid:pstyle="box-title">#{caption}</caption>]
+        puts %Q[<box><caption aid:pstyle="box-title">#{compile_inline(caption)}</caption>]
       end
       no = 1
       lines.each do |line|
@@ -1053,7 +1053,7 @@ module ReVIEW
 
     def source_header(caption)
       puts %Q[<source>]
-      puts %Q[<caption>#{caption}</caption>]
+      puts %Q[<caption>#{compile_inline(caption)}</caption>]
     end
 
     def source_body(lines)
@@ -1075,7 +1075,7 @@ module ReVIEW
 
     def bibpaper_header(id, caption)
       puts %Q(<bibitem id="bib-#{id}">)
-      puts "<caption><span type='bibno'>[#{@chapter.bibpaper(id).number}] </span>#{caption}</caption>"
+      puts "<caption><span type='bibno'>[#{@chapter.bibpaper(id).number}] </span>#{compile_inline(caption)}</caption>"
     end
 
     def bibpaper_bibpaper(id, caption, lines)

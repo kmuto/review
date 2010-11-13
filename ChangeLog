@@ -1,3 +1,8 @@
+Sat Nov 13 10:33:13 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: round float value for
+	  the compatibility between 1.8 and 1.9.
+
 Thu Nov 11 08:16:10 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* test/test_latexbuilder.rb: test tagged header.
@@ -8,8 +13,6 @@ Thu Nov 11 21:34:39 2010  Kenshi Muto  <kmuto@debian.org>
 	  lib/review/idgxmlbuilder.rb, lib/review/latexbuilder.rb:
 	  allow inline tags in captions and headers.
 	* test/test_htmlbuilder.rb: test tagged header.
-	* lib/review/htmlbuilder.rb: round float value for
-	  the compatibility between 1.8 and 1.9.
 
 Mon Nov  8 21:58:27 2010  Kenshi Muto  <kmuto@debian.org>
 

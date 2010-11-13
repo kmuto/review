@@ -36,7 +36,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_with_inlinetag
-    @builder.headline(1,"test","this <b>is</b> test.&lt;&amp;&quot;&gt;")
+    @builder.headline(1,"test","this @<b>{is} test.<&\">")
     assert_equal %Q|<h1 id="test"><a id="h1" />第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @builder.raw_result
   end
 
