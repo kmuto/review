@@ -1,3 +1,8 @@
+Sat Nov 13 10:33:13 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: round float value for
+	  the compatibility between 1.8 and 1.9.
+
 Mon Nov  8 21:58:27 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge KADO's patch.

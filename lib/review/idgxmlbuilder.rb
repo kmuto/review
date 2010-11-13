@@ -491,7 +491,7 @@ module ReVIEW
           else
             i = 0
             rows.shift.split(/\t/).each {|cell|
-              print "<td aid:table=\"cell\" aid:theader=\"1\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{cellwidth[i]}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
+              print "<td aid:table=\"cell\" aid:theader=\"1\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{sprintf("%.13f", cellwidth[i])}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
               i = i + 1
             }
           end
@@ -507,7 +507,7 @@ module ReVIEW
           rows.each do |row|
             i = 0
             row.split(/\t/).each {|cell|
-              print "<td aid:table=\"cell\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{cellwidth[i]}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
+              print "<td aid:table=\"cell\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{sprintf("%.13f", cellwidth[i])}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
               i = i + 1
             }
           end
@@ -523,7 +523,7 @@ module ReVIEW
           rows.each do |row|
             i = 0
             row.split(/\t/).each {|cell|
-              print "<td aid:table=\"cell\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{cellwidth[i]}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
+              print "<td aid:table=\"cell\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{sprintf("%.13f", cellwidth[i])}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
               i = i + 1
             }
           end
