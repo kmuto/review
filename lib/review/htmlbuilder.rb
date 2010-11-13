@@ -215,9 +215,9 @@ EOT
         puts a_id unless label.nil?
       else
         if label.nil?
-          puts %Q[<h#{level}>#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>]
+          puts %Q[<h#{level}>#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}">#{a_id}#{prefix}#{escape_html(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{label}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         end
       end
     end
@@ -226,9 +226,9 @@ EOT
       puts '' if level > 1
       unless caption.empty?
         if label.nil?
-          puts %Q[<h#{level}>#{escape_html(caption)}</h#{level}>]
+          puts %Q[<h#{level}>#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}">#{escape_html(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{label}">#{compile_inline(caption)}</h#{level}>]
         end
       end
     end
@@ -279,7 +279,7 @@ EOT
     def captionblock(type, lines, caption)
       puts %Q[<div class="#{type}">]
       unless caption.nil?
-        puts %Q[<p class="caption">#{escape_html(caption)}</p>]
+        puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
       end
       lines.each {|l|
         puts "<p>#{l}</p>"
@@ -333,7 +333,7 @@ EOT
 
     def box(lines, caption = nil)
       puts %Q[<div class="syntax">]
-      puts %Q[<p class="caption">#{escape_html(caption)}</p>] unless caption.nil?
+      puts %Q[<p class="caption">#{compile_inline(caption)}</p>] unless caption.nil?
       puts %Q[<pre class="syntax">]
       lines.each do |line|
         puts detab(line)
@@ -344,7 +344,7 @@ EOT
 
     def note(lines, caption = nil)
       puts %Q[<div class="note">]
-      puts %Q[<p class="caption">#{escape_html(caption)}</p>] unless caption.nil?
+      puts %Q[<p class="caption">#{compile_inline(caption)}</p>] unless caption.nil?
       puts "#{lines.join("\n")}</div>"
     end
 
@@ -416,7 +416,7 @@ EOT
     end
 
     def list_header(id, caption)
-      puts %Q[<p class="caption">リスト#{getChap}#{@chapter.list(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<p class="caption">リスト#{getChap}#{@chapter.list(id).number}: #{compile_inline(caption)}</p>]
     end
 
     def list_body(lines)
@@ -435,7 +435,7 @@ EOT
     end
 
     def source_header(caption)
-      puts %Q[<p class="caption">#{escape_html(caption)}</p>]
+      puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
     end
 
     def source_body(lines)
@@ -543,7 +543,7 @@ QUOTE
 
     def image_image(id, metric, caption)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(caption)}" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
       image_header id, caption
       puts %Q[</div>]
     end
@@ -561,7 +561,7 @@ QUOTE
 
     def image_header(id, caption)
       puts %Q[<p class="caption">]
-      puts %Q[図#{getChap}#{@chapter.image(id).number}: #{escape_html(caption)}]
+      puts %Q[図#{getChap}#{@chapter.image(id).number}: #{compile_inline(caption)}]
       puts %Q[</p>]
     end
 
@@ -605,7 +605,7 @@ QUOTE
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="caption">表#{getChap}#{@chapter.table(id).number}: #{escape_html(caption)}</p>]
+      puts %Q[<p class="caption">表#{getChap}#{@chapter.table(id).number}: #{compile_inline(caption)}</p>]
     end
 
     def table_begin(ncols)
@@ -633,7 +633,7 @@ QUOTE
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{escape_html(str)}</a></p></div>)
+      puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</a></p></div>)
     end
 
     def indepimage(id, metric=nil)
@@ -648,7 +648,7 @@ QUOTE
 
     def numberlessimage(id, caption)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(caption)}" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
       image_header id, caption
       puts %Q[</div>]
     end
