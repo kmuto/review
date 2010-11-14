@@ -16,10 +16,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       "stylesheet" => nil,  # for EPUBBuilder
     }
     ReVIEW.book.param = @param
-    compiler = ReVIEW::Compiler.new(@builder)
+    @compiler = ReVIEW::Compiler.new(@builder)
     chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
-    @builder.bind(compiler, chapter, location)
+    @builder.bind(@compiler, chapter, location)
   end
 
   def test_headline_level1
@@ -167,5 +167,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_inline_uchar
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test \\UTF{2460} test2|, ret
+  end
+
+  def test_headline_level1
+    @builder.headline(1,"test","this is test.")
+    assert_equal %Q|\\chapter{this is test.}\n|, @builder.result
+  end
+
+  def test_quote
+    syntax = @compiler.syntax_descriptor(:quote)
+    args = []
+    lines = ["foo","bar","buz"]
+    @compiler.__send__(:compile_command, syntax, args, lines)
+    assert_equal %Q|\n\\begin{quote}\nfoo\\\\bar\\\\buz\n\\end{quote}\n|, @builder.result
   end
 end
