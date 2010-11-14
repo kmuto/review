@@ -1,3 +1,9 @@
+Sun Nov 14 05:19:53 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* merge KADO's patch.
+	  - test/test_latexbuilder.rb, lib/review/latexbuilder.rb:
+	    //quote allow newlines in LATEXBuilder.
+
 Sat Nov 13 10:33:13 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: round float value for
