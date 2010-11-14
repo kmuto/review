@@ -390,7 +390,7 @@ module ReVIEW
     end
 
     def quote(lines)
-      latex_block 'quotation', lines
+      latex_block 'quote', lines.join('\\\\')
     end
 
     def center(lines)
