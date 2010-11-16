@@ -274,12 +274,12 @@ module ReVIEW
         if ReVIEW.book.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
         end
-        @strategy.headline level, label, @strategy.text(caption)
+        @strategy.headline level, label, caption
       end
     end
 
     def headline(level, label, caption)
-      @strategy.headline level, label, @strategy.text(caption)
+      @strategy.headline level, label, caption
     end
 
     def tagged_section_init
@@ -294,7 +294,7 @@ module ReVIEW
         return
       end
       @tagged_section.push [tag, level]
-      @strategy.__send__ mid, level, label, @strategy.text(caption)
+      @strategy.__send__ mid, level, label, caption
     end
 
     def close_tagged_section(tag, level)
@@ -359,7 +359,7 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).intern
-      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'))
+      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
       lines = block_open?(line) ? read_block(f) : nil
       return name, args, lines
     end
@@ -382,7 +382,7 @@ module ReVIEW
       buf
     end
 
-    def parse_args(str)
+    def parse_args(str, name=nil)
       return [] if str.empty?
       unless str[0,1] == '[' and str[-1,1] == ']'
         error "argument syntax error: #{str.inspect}"

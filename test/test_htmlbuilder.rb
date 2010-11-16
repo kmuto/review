@@ -35,6 +35,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<h1 id="test"><a id="h1" />this is test.</h1>\n|, @builder.raw_result
   end
 
+  def test_headline_level1_with_inlinetag
+    @builder.headline(1,"test","this @<b>{is} test.<&\">")
+    assert_equal %Q|<h1 id="test"><a id="h1" />第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @builder.raw_result
+  end
+
   def test_headline_level2
     @builder.headline(2,"test","this is test.")
     assert_equal %Q|\n<h2 id="test"><a id="h1-1" />1.1　this is test.</h2>\n|, @builder.raw_result
@@ -122,4 +127,13 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test &#x2460; test2|, ret
   end
 
+  def test_memo
+    @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_raw
+    @builder.raw("<&>\\n")
+    assert_equal %Q|<&>\n|, @builder.raw_result
+  end
 end
