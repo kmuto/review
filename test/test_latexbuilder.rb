@@ -180,17 +180,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_quote
-    #syntax = @compiler.syntax_descriptor(:quote)
-    #args = []
-    lines = ["foo","bar","buz"]
-    #@compiler.__send__(:compile_command, syntax, args, lines)
-    @builder.quote(lines)
-    assert_equal %Q|\n\\begin{quote}\nfoo\\\\bar\\\\buz\n\\end{quote}\n|, @builder.result
-  end
-
-  def test_blockquote
     lines = ["foo","","buz"]
-    @builder.blockquote(lines)
+    @builder.quote(lines)
     assert_equal %Q|\n\\begin{quote}\nfoo\n\nbuz\n\\end{quote}\n|, @builder.result
   end
 

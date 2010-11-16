@@ -390,11 +390,11 @@ module ReVIEW
     end
 
     def quote(lines)
-      latex_block 'quote', [lines.join('\\\\')]
-    end
-
-    def blockquote(lines)
-      latex_block 'quote', lines
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        latex_block 'quote', lines
+      else
+        latex_block 'quote', [lines.join('\\\\')]
+      end
     end
 
     def center(lines)

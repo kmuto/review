@@ -89,20 +89,22 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_quote
-    lines = ["foo","bar","buz"]
-    @builder.quote(lines)
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote>foo\nbar\nbuz</quote>|, @builder.raw_result
-  end
-
-  def test_blockquote
     lines = ["foo","","buz"]
-    @builder.blockquote(lines)
+    @builder.quote(lines)
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote><p>foo</p>\n<p>buz</p></quote>|, @builder.raw_result
   end
 
+  def test_quote_deprecated
+    lines = ["foo","","buz"]
+    ReVIEW.book.param["deprecated-blocklines"] = true
+    @builder.quote(lines)
+    ReVIEW.book.param["deprecated-blocklines"] = nil
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote>foo\n\nbuz</quote>|, @builder.raw_result
+  end
+
   def test_memo
-    @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><memo><title aid:pstyle='memo-title'>this is <b>test</b>&lt;&amp;&gt;_</title>test1\ntest<i>2</i></memo>|, @builder.raw_result
+    @builder.memo(["test1", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><memo><title aid:pstyle='memo-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1</p>\n<p>test<i>2</i></p></memo>|, @builder.raw_result
   end
 
   def test_raw
