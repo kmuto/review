@@ -42,6 +42,8 @@ module ReVIEW
       @output.string
     end
 
+    alias :raw_result result
+
     def convert_outencoding(*s)
       if ReVIEW.book.param["outencoding"] =~ /^EUC$/i
         NKF.nkf("-W, -e", *s)

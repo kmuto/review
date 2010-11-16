@@ -87,4 +87,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test &#x2460; test2|, ret
   end
+
+  def test_memo
+    @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><memo><title aid:pstyle='memo-title'>this is <b>test</b>&lt;&amp;&gt;_</title>test1\ntest<i>2</i></memo>|, @builder.raw_result
+  end
+
+  def test_raw
+    @builder.raw("<&>\\n")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><&>\n|, @builder.raw_result
+  end
 end

@@ -33,6 +33,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\chapter*{this is test.}\n|, @builder.result
   end
 
+  def test_headline_level1_with_inlinetag
+    @builder.headline(1,"test","this @<b>{is} test.<&\"_>")
+    assert_equal %Q|\\chapter{this \\textbf{is} test.\\textless{}\\&"\\textunderscore{}\\textgreater{}}\n|, @builder.result
+  end
+
   def test_headline_level2
     @builder.headline(2,"test","this is test.")
     assert_equal %Q|\\section{this is test.}\n|, @builder.result
@@ -175,10 +180,21 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_quote
-    syntax = @compiler.syntax_descriptor(:quote)
-    args = []
+    #syntax = @compiler.syntax_descriptor(:quote)
+    #args = []
     lines = ["foo","bar","buz"]
-    @compiler.__send__(:compile_command, syntax, args, lines)
+    #@compiler.__send__(:compile_command, syntax, args, lines)
+    @builder.quote(lines)
     assert_equal %Q|\n\\begin{quote}\nfoo\\\\bar\\\\buz\n\\end{quote}\n|, @builder.result
+  end
+
+  def test_memo
+    @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\ntest<i>2</i>\n\\end{reviewminicolumn}\n|, @builder.result
+  end
+
+  def test_raw
+    @builder.raw("<&>\\n")
+    assert_equal %Q|<&>\n|, @builder.result
   end
 end
