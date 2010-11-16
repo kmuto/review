@@ -188,6 +188,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\begin{quote}\nfoo\\\\bar\\\\buz\n\\end{quote}\n|, @builder.result
   end
 
+  def test_blockquote
+    lines = ["foo","","buz"]
+    @builder.blockquote(lines)
+    assert_equal %Q|\n\\begin{quote}\nfoo\n\nbuz\n\\end{quote}\n|, @builder.result
+  end
+
   def test_memo
     @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
     assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\ntest<i>2</i>\n\\end{reviewminicolumn}\n|, @builder.result
