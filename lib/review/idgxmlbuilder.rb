@@ -364,6 +364,11 @@ module ReVIEW
       puts "<quote>#{lines.join("\n")}</quote>"
     end
 
+    def blockquote(lines)
+      blocked_lines = split_paragraph(lines).map {|i| "<p>#{i}</p>" }
+      puts "<quote>#{blocked_lines.join("\n")}</quote>"
+    end
+
     def inline_table(id)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
         "<span type='table'>表#{@chapter.number}.#{@chapter.table(id).number}</span>"

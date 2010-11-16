@@ -393,6 +393,10 @@ module ReVIEW
       latex_block 'quote', lines.join('\\\\')
     end
 
+    def blockquote(lines)
+      latex_block 'quote', lines
+    end
+
     def center(lines)
       latex_block 'center', lines
     end

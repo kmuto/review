@@ -509,6 +509,11 @@ EOT
       puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
     end
 
+    def blockquote(lines)
+      blocked_lines = split_paragraph(lines).map {|i| "<p>#{i}</p>" }
+      puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
+    end
+
     def doorquote(lines, ref)
       puts <<-QUOTE
 <blockquote style="text-align:right;">

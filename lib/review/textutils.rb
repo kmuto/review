@@ -14,6 +14,17 @@ module ReVIEW
       }
     end
 
+    def split_paragraph(lines)
+      lines.inject([[]]) {|results, element|
+        if element == ""
+          results << []
+        else
+          results.last << element
+        end
+        results
+      }
+    end
+
   end
 
 end
