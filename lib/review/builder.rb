@@ -38,17 +38,11 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def output=(f)
-      @output = f
-    end
-
-    def output
-      @output
-    end
-
     def result
       @output.string
     end
+
+    alias :raw_result result
 
     def convert_outencoding(*s)
       if ReVIEW.book.param["outencoding"] =~ /^EUC$/i

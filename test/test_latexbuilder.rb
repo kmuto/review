@@ -4,7 +4,7 @@ require 'review/book'
 require 'review/latexbuilder'
 
 class LATEXBuidlerTest < Test::Unit::TestCase
-  include ReVIEW, TestHelper
+  include ReVIEW
 
   def setup
     @builder = LATEXBuilder.new()
@@ -175,16 +175,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_memo
-    out = capture_stdout do
-      @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
-    end
-    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\ntest<i>2</i>\n\\end{reviewminicolumn}\n|, out.string
+    @builder.memo(["test1", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\ntest<i>2</i>\n\\end{reviewminicolumn}\n|, @builder.result
   end
 
   def test_raw
-    out = capture_stdout do
-      @builder.raw("<&>\\n")
-    end
-    assert_equal %Q|<&>\n|, out.string
+    @builder.raw("<&>\\n")
+    assert_equal %Q|<&>\n|, @builder.result
   end
 end

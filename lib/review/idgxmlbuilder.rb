@@ -75,10 +75,6 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def raw_result
-      @output.string
-    end
-
     def result
       s = ""
       unless @secttags.nil?

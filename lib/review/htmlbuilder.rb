@@ -57,10 +57,6 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def raw_result
-      @output.string
-    end
-
     def result
       layout_file = File.join(@book.basedir, "layouts", "layout.erb")
       if File.exists?(layout_file)
