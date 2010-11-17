@@ -278,7 +278,7 @@ EOT
         puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
       end
       if ReVIEW.book.param["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines).map {|i| ["<p>"] + i + ["</p>"] }
+        blocked_lines = split_paragraph(lines)
         puts blocked_lines.join("")
       else
         lines.each {|l|
@@ -399,7 +399,7 @@ EOT
 
     def read(lines)
       if ReVIEW.book.param["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines).map {|i| ["<p>"] + i + ["</p>"] }
+        blocked_lines = split_paragraph(lines)
         puts %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>]
       else
         puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
@@ -511,7 +511,7 @@ EOT
 
     def quote(lines)
       if ReVIEW.book.param["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines).map {|i| ["<p>"] + i + ["</p>"] }
+        blocked_lines = split_paragraph(lines)
         puts "<blockquote>#{blocked_lines.join("")}</blockquote>"
       else
         puts "<blockquote><pre>#{blocked_lines.join("\n")}</pre></blockquote>"
@@ -520,7 +520,7 @@ EOT
 
     def doorquote(lines, ref)
       if ReVIEW.book.param["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines).map {|i| ["<p>"] + i + ["</p>"] }
+        blocked_lines = split_paragraph(lines)
         puts %Q[<blockquote style="text-align:right;">]
         puts "#{blocked_lines.join("\n")}"
         puts %Q[<p>#{ref}より</p>]
@@ -540,7 +540,7 @@ QUOTE
     def talk(lines)
       puts %Q[<div class="talk">]
       if ReVIEW.book.param["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines).map {|i| ["<p>"] + i + ["</p>"] }
+        blocked_lines = split_paragraph(lines)
         puts "#{blocked_lines.join("\n")}"
       else
         puts '<pre>'

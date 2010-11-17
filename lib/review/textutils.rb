@@ -15,7 +15,15 @@ module ReVIEW
     end
 
     def split_paragraph(lines)
-      lines.inject([[]]) {|results, element|
+      if [ReVIEW::IDGXMLBuilder, ReVIEW::HTMLBuilder].include?(self.class)
+        pre = "<p>"
+        post = "</p>"
+      else
+        pre = nil
+        post = nil
+      end
+
+      blocked_lines = lines.inject([[]]) {|results, element|
         if element == ""
           results << []
         else
@@ -23,6 +31,12 @@ module ReVIEW
         end
         results
       }
+
+      if !pre.nil? and !post.nil?
+        blocked_lines.map!{|i| [pre] + i + [post] }
+      end
+
+      blocked_lines
     end
 
   end
