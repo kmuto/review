@@ -97,7 +97,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_i_and_escape
     ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
-    assert_equal %Q|test \\textit{inline\\textless{}\\&;\\textbackslash{} test} test2|, ret
+    assert_equal %Q|test \\textit{inline\\textless{}\\&;\\reviewbackslash{} test} test2|, ret
   end
 
   def test_inline_dtp
@@ -132,7 +132,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_b_and_escape
     ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
-    assert_equal %Q|test \\textbf{inline\\textless{}\\&;\\textbackslash{} test} test2|, ret
+    assert_equal %Q|test \\textbf{inline\\textless{}\\&;\\reviewbackslash{} test} test2|, ret
   end
   def test_inline_em
     ret = @builder.compile_inline("abc@<em>{def}")

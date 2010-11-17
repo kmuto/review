@@ -26,7 +26,7 @@ module ReVIEW
       '|' => '\textbar{}',
       '<'  => '\textless{}',
       '>'  => '\textgreater{}',
-      "\\" => '\textbackslash{}'
+      "\\" => '\reviewbackslash{}'
     }
 
     METACHARS_RE = /[#{Regexp.escape(MATACHARS.keys.join(''))}]/

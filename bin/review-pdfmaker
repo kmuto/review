@@ -174,7 +174,6 @@ def get_template(values)
   \\MakeFramed {\\FrameRestore}}%
  {\\endMakeFramed}
 
-#{values["usepackage"]}
 
 \\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
 %\\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
@@ -258,6 +257,9 @@ def get_template(values)
 \\newcommand{\\reviewtablecaption}[1]{%
   \\caption{#1}}
 
+\\newcommand{\\reviewbackslash}[0]{%
+  \\textbackslash{}}
+
 \\newcommand{\\reviewlistcaption}[1]{%
   \\medskip{\\small\\noindent #1}\\vspace*{-1.3zw}}
 
@@ -277,6 +279,8 @@ def get_template(values)
 
 \\newcommand{\\reviewkw}[1]{%
   \\textbf{\\textgt{#1}}}
+
+#{values["usepackage"]}
 
 \\usepackage[T1]{fontenc}
 
