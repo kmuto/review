@@ -135,7 +135,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_memo
     @builder.memo(["test1", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
-    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p><p>test<i>2</i></p>\n</div>\n|, @builder.raw_result
   end
 
   def test_raw
