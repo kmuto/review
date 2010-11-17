@@ -356,8 +356,12 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
-      puts "<quote>#{blocked_lines.join("\n")}</quote>"
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines).map {|i| ["<p>"] + i + ["</p>"] }
+        puts "<quote>#{blocked_lines.join("")}</quote>"
+      else
+        puts "<quote>#{lines.join("\n")}</quote>"
+      end
     end
 
     def inline_table(id)

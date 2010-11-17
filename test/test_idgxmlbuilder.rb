@@ -89,9 +89,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_quote
-    lines = ["foo","","buz"]
+    lines = ["foo","bar","","buz"]
     @builder.quote(lines)
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote><p>foo</p>\n<p>buz</p></quote>|, @builder.raw_result
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote><p>foobar</p><p>buz</p></quote>|, @builder.raw_result
   end
 
   def test_quote_deprecated

@@ -128,9 +128,9 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_quote
-    lines = ["foo","","buz"]
+    lines = ["foo", "bar", "","buz"]
     @builder.quote(lines)
-    assert_equal %Q|<blockquote><p>foo</p>\n<p>buz</p></blockquote>\n|, @builder.raw_result
+    assert_equal %Q|<blockquote><p>foobar</p><p>buz</p></blockquote>\n|, @builder.raw_result
   end
 
   def test_memo
