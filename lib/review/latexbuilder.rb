@@ -530,7 +530,8 @@ module ReVIEW
     end
 
     def inline_tt(str)
-      macro('texttt', escape(str))
+      str_escaped = escape(str).gsub(/\-\-/, "{-}{-}")
+      macro('texttt', str_escaped)
     end
 
     def inline_tti(str)

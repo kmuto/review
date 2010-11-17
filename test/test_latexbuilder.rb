@@ -159,6 +159,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test \\texttt{inline test} test2|, ret
   end
 
+  def test_inline_tt_endash
+    ret = @builder.compile_inline("test @<tt>{in-line --test ---foo ----bar -----buz} --test2")
+    assert_equal %Q|test \\texttt{in-line {-}{-}test {-}{-}-foo {-}{-}{-}{-}bar {-}{-}{-}{-}-buz} --test2|, ret
+  end
+
   def test_inline_tti
     ret = @builder.compile_inline("test @<tti>{inline test} test2")
     assert_equal %Q|test \\texttt{\\textit{inline test}} test2|, ret
