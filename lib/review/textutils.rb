@@ -15,7 +15,8 @@ module ReVIEW
     end
 
     def split_paragraph(lines)
-      if [ReVIEW::IDGXMLBuilder, ReVIEW::HTMLBuilder].include?(self.class)
+      case self.class.to_s
+      when "ReVIEW::IDGXMLBuilder", "ReVIEW::HTMLBuilder"
         pre = "<p>"
         post = "</p>"
       else
