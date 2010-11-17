@@ -1,3 +1,15 @@
+Wed Nov 17 09:36:50 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge KADO's patch and modify.
+	  - lib/review/idgxmlbuilder.rb, lib/review/htmlbuilder.rb,
+	    lib/review/latexbuilder.rb: //lead, //read, //quote, //note,
+	    //memo, //tip, //info, //planning, //best, //important,
+	    //security, //caution, //term, //link, //notice, //point,
+	    //shoot, //reference, //practice: use normal paragraph
+	    syntax; splitted by empty line.
+	  - bin/review-compile: For backward compatibilty, add
+	    --deprecated-blocklines option.
+
 Sat Nov 13 23:19:25 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* test/test_builder.rb, test/test_htmlbuilder.rb,

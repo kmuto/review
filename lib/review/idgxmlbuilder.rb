@@ -276,7 +276,7 @@ module ReVIEW
     end
 
     def read(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts %Q[<p aid:pstyle="lead">#{blocked_lines.join('')}</p>]
     end
 
@@ -356,7 +356,7 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "<quote>#{blocked_lines.join("\n")}</quote>"
     end
 
@@ -828,80 +828,80 @@ module ReVIEW
     def note(lines, caption = nil)
       print "<note>"
       puts "<title aid:pstyle='note-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</note>"
     end
 
     def memo(lines, caption = nil)
       print "<memo>"
       puts "<title aid:pstyle='memo-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</memo>"
     end
 
     def tip(lines, caption = nil)
       print "<tip>"
       puts "<title aid:pstyle='tip-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</tip>"
     end
 
     def info(lines, caption = nil)
       print "<info>"
       puts "<title aid:pstyle='info-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</info>"
     end
 
     def planning(lines, caption = nil)
       print "<planning>"
       puts "<title aid:pstyle='planning-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</planning>"
     end
 
     def best(lines, caption = nil)
       print "<best>"
       puts "<title aid:pstyle='best-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</best>"
     end
 
     def important(lines, caption = nil)
       print "<important>"
       puts "<title aid:pstyle='important-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</important>"
     end
 
     def security(lines, caption = nil)
       print "<security>"
       puts "<title aid:pstyle='security-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</security>"
     end
 
     def caution(lines, caption = nil)
       print "<caution>"
       puts "<title aid:pstyle='caution-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</caution>"
     end
 
     def term(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "<term>#{blocked_lines.join("\n")}</term>"
     end
 
     def link(lines, caption = nil)
       print "<link>"
       puts "<title aid:pstyle='link-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "#{blocked_lines.join("\n")}</link>"
     end
 
     def notice(lines, caption = nil)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       if caption.nil?
         puts "<notice>#{blocked_lines.join("\n")}</notice>"
       else
@@ -911,7 +911,7 @@ module ReVIEW
     end
 
     def point(lines, caption = nil)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       if caption.nil?
         puts "<point>#{blocked_lines.join("\n")}</point>"
       else
@@ -921,7 +921,7 @@ module ReVIEW
     end
 
     def shoot(lines, caption = nil)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       if caption.nil?
         puts "<shoot>#{blocked_lines.join("\n")}</shoot>"
       else
@@ -931,17 +931,17 @@ module ReVIEW
     end
 
     def reference(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "<reference>#{blocked_lines.join("\n")}</reference>"
     end
 
     def practice(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "<practice>#{blocked_lines.join("\n")}</practice>"
     end
 
     def expert(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i}</p>" } : lines
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines).map {|i| "<p>#{i[0]}</p>" } : lines
       puts "<expert>#{blocked_lines.join("\n")}</expert>"
     end
 
