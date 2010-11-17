@@ -18,17 +18,19 @@ module ReVIEW
       pre = pre_paragraph
       post = post_paragraph
 
-      blocked_lines = lines.inject([[]]) {|results, element|
+      blocked_lines = [[]]
+      lines.each {|element|
         if element == ""
-          results << []
+          if blocked_lines.last != []
+            blocked_lines << []
+          end
         else
-          results.last << element
+          blocked_lines.last << element
         end
-        results
       }
 
       if !pre.nil? and !post.nil?
-        blocked_lines.map!{|i| pre + i.join + post }
+        blocked_lines.map!{|i| [pre] + i + [post] }
       end
 
       blocked_lines
