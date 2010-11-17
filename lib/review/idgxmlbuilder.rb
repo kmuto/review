@@ -46,6 +46,13 @@ module ReVIEW
     Compiler.defblock(:lead, 0)
     Compiler.defblock(:rawblock, 0)
 
+    def pre_paragraph
+      '<p>'
+    end
+    def post_paragraph
+      '</p>'
+    end
+
     def extname
       '.xml'
     end

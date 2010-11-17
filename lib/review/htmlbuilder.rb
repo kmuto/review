@@ -38,6 +38,13 @@ module ReVIEW
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
 
+    def pre_paragraph
+      '<p>'
+    end
+    def post_paragraph
+      '</p>'
+    end
+
     def extname
       '.html'
     end

@@ -15,14 +15,8 @@ module ReVIEW
     end
 
     def split_paragraph(lines)
-      case self.class.to_s
-      when "ReVIEW::IDGXMLBuilder", "ReVIEW::HTMLBuilder"
-        pre = "<p>"
-        post = "</p>"
-      else
-        pre = nil
-        post = nil
-      end
+      pre = pre_paragraph
+      post = post_paragraph
 
       blocked_lines = lines.inject([[]]) {|results, element|
         if element == ""

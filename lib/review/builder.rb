@@ -16,6 +16,13 @@ module ReVIEW
 
   class Builder
 
+    def pre_paragraph
+      nil
+    end
+    def post_paragraph
+      nil
+    end
+
     def initialize(strict = false, *args)
       @strict = strict
       builder_init(*args)
