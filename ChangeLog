@@ -2,8 +2,8 @@ Wed Nov 17 17:55:42 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexutils.rb, bin/review-pdfmaker,
 	  test/test_latexbuilder.rb:
-	  - \textbackslash -> \reviewbackslash(to replace into yensign)
-          - allow to overwrite review* macro
+	  - \textbackslash -> \reviewbackslash(to replace into yensign) in LATEXBuilder
+          - allow to overwrite review* macro in LATEXBuilder
 
 Sat Nov 13 23:19:25 2010  Kenshi Muto  <kmuto@debian.org>
 
