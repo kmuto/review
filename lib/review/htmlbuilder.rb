@@ -279,7 +279,7 @@ EOT
       end
       if ReVIEW.book.param["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
-        puts blocked_lines.join("")
+        puts blocked_lines.join("\n")
       else
         lines.each {|l|
           puts "<p>#{l}</p>"
@@ -512,9 +512,9 @@ EOT
     def quote(lines)
       if ReVIEW.book.param["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
-        puts "<blockquote>#{blocked_lines.join("")}</blockquote>"
+        puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
       else
-        puts "<blockquote><pre>#{blocked_lines.join("\n")}</pre></blockquote>"
+        puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
       end
     end
 

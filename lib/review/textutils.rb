@@ -34,7 +34,7 @@ module ReVIEW
       }
 
       if !pre.nil? and !post.nil?
-        blocked_lines.map!{|i| [pre] + i + [post] }
+        blocked_lines.map!{|i| pre + i.join + post }
       end
 
       blocked_lines
