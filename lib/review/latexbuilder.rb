@@ -416,7 +416,7 @@ module ReVIEW
       puts macro('begin', type)
       if ReVIEW.book.param["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
-        puts blocked_lines.map{|para| para.join("\n")}.join("\n\n")
+        puts blocked_lines.join("\n\n")
       else
         lines.each do |line|
           puts line

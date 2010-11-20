@@ -182,7 +182,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_quote
     lines = ["foo", "bar", "","buz"]
     @builder.quote(lines)
-    assert_equal %Q|\n\\begin{quote}\nfoo\nbar\n\nbuz\n\\end{quote}\n|, @builder.result
+    assert_equal %Q|\n\\begin{quote}\nfoobar\n\nbuz\n\\end{quote}\n|, @builder.result
   end
 
   def test_memo

@@ -32,37 +32,37 @@ class TextUtilsTest < Test::Unit::TestCase
 
   def test_split_paragraph_empty_nil
     ret = @tu_nil.split_paragraph([])
-    assert_equal ret, [[]]
+    assert_equal ret, [""]
   end
 
   def test_split_paragraph_empty_p
     ret = @tu_p.split_paragraph([])
-    assert_equal ret, [["<p>","</p>"]]
+    assert_equal ret, ["<p></p>"]
   end
 
   def test_split_paragraph_p
     ret = @tu_p.split_paragraph(["abc"])
-    assert_equal [["<p>","abc","</p>"]], ret
+    assert_equal ["<p>abc</p>"], ret
     ret = @tu_p.split_paragraph(["abc","def"])
-    assert_equal [["<p>","abc","def","</p>"]], ret
+    assert_equal ["<p>abcdef</p>"], ret
     ret = @tu_p.split_paragraph(["abc","","def"])
-    assert_equal [["<p>","abc","</p>"],["<p>","def","</p>"]], ret
+    assert_equal ["<p>abc</p>","<p>def</p>"], ret
     ret = @tu_p.split_paragraph(["abc","","","def"])
-    assert_equal [["<p>","abc","</p>"],["<p>","def","</p>"]], ret
+    assert_equal ["<p>abc</p>","<p>def</p>"], ret
     ret = @tu_p.split_paragraph(["abc","","","def","ghi"])
-    assert_equal [["<p>","abc","</p>"],["<p>","def","ghi","</p>"]], ret
+    assert_equal ["<p>abc</p>","<p>defghi</p>"], ret
   end
 
   def test_split_paragraph_nil
     ret = @tu_nil.split_paragraph(["abc"])
-    assert_equal [["abc"]], ret
+    assert_equal ["abc"], ret
     ret = @tu_nil.split_paragraph(["abc","def"])
-    assert_equal [["abc","def"]], ret
+    assert_equal ["abcdef"], ret
     ret = @tu_nil.split_paragraph(["abc","","def"])
-    assert_equal [["abc"],["def"]], ret
+    assert_equal ["abc","def"], ret
     ret = @tu_nil.split_paragraph(["abc","","","def"])
-    assert_equal [["abc"],["def"]], ret
+    assert_equal ["abc","def"], ret
     ret = @tu_nil.split_paragraph(["abc","","","def","ghi"])
-    assert_equal [["abc"],["def","ghi"]], ret
+    assert_equal ["abc","defghi"], ret
   end
 end

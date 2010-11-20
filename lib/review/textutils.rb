@@ -33,7 +33,7 @@ module ReVIEW
         blocked_lines.map!{|i| [pre] + i + [post] }
       end
 
-      blocked_lines
+      blocked_lines.map{|l| l.join("")}
     end
 
   end
