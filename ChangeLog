@@ -1,3 +1,8 @@
+Sun Nov 21 21:50:32 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* test/test_uuid.rb: reduce slow tests. If we use original
+	  uuid.rb without any changes, it's no problem.
+
 Sun Nov 21 15:02:00 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/book.rb: add 'ai' to acceptable image file.

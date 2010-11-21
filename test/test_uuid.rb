@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+#
+# Original license is below:
+#
 # Copyright(c) 2005 URABE, Shyouhei.
 #
 # Permission is hereby granted, free of  charge, to any person obtaining a copy
@@ -113,14 +116,14 @@ class TC_UUID < Test::Unit::TestCase
 	def test_version
 		assert_equal 0, UUID::Nil.version
 		assert_equal 1, UUID.create.version
-		65535.times do
+		100.times do # x100 random tests may be enough?
 			assert_equal 4, UUID.create_random.version
 		end
 	end
 
 	def test_clock
 		assert_equal 0, UUID::Nil.clock
-		8191.times do |i| # clock is 14bit so 8191 suffice
+		1000.times do |i| # clock is 14bit so 8191 suffice, but it's too slow
 			u = UUID.create i
 			assert_equal i, u.clock
 		end
