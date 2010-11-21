@@ -20,7 +20,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:ttbold, :dtp, :hint, :maru, :keytop, :labelref, :ref, :pageref, :icon, :balloon].each {|e|
+    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :icon, :balloon].each {|e|
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
@@ -43,12 +43,12 @@ module ReVIEW
     Compiler.defblock(:link, 0..1)
     Compiler.defblock(:practice, 0)
     Compiler.defblock(:expert, 0)
-    Compiler.defblock(:lead, 0)
     Compiler.defblock(:rawblock, 0)
 
     def pre_paragraph
       '<p>'
     end
+
     def post_paragraph
       '</p>'
     end
@@ -134,6 +134,13 @@ module ReVIEW
         "<li>#{escape_html(file)}:#{line}: #{escape_html(msg)}</li>\n"
       }.join('') +
       "</ul>\n"
+    end
+
+    def getChap
+      if ReVIEW.book.param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
+        return "#{@chapter.number}."
+      end
+      return ""
     end
 
     def headline(level, label, caption)
@@ -271,40 +278,31 @@ module ReVIEW
 
     def paragraph(lines)
       if @noindent.nil?
-        if lines[0] =~ /^(\t+)/
-          puts %Q(<p inlist="#{$1.size}">#{lines.join('').sub(/^\t+/, "")}</p>)
+        if lines[0] =~ /\A(\t+)/
+          puts %Q(<p inlist="#{$1.size}">#{lines.join('').sub(/\A\t+/, "")}</p>)
         else
-          puts "<p>#{lines.join('')}</p>"
+          puts "<p>#{lines.join}</p>"
         end
       else
-        puts %Q(<p aid:pstyle="noindent" noindent='1'>#{lines.join('')}</p>)
+        puts %Q(<p aid:pstyle="noindent" noindent='1'>#{lines.join}</p>)
         @noindent = nil
       end
     end
 
     def read(lines)
       blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts %Q[<p aid:pstyle="lead">#{blocked_lines.join('')}</p>]
+      puts %Q[<p aid:pstyle="lead">#{blocked_lines.join}</p>]
     end
 
     alias :lead read
 
     def inline_list(id)
-      if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        "<span type='list'>リスト#{@chapter.number}.#{@chapter.list(id).number}</span>"
-      else
-        "<span type='list'>リスト#{@chapter.list(id).number}</span>"
-      end
+      "<span type='list'>リスト#{getChap}#{@chapter.list(id).number}</span>"
     end
 
     def list_header(id, caption)
-      if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        puts %Q[<codelist>]
-        puts %Q[<caption>リスト#{@chapter.number}.#{@chapter.list(id).number}　#{compile_inline(caption)}</caption>]
-      else
-        puts %Q[<codelist>]
-        puts %Q[<caption>リスト#{@chapter.list(id).number}　#{compile_inline(caption)}</caption>]
-      end
+      puts %Q[<codelist>]
+      puts %Q[<caption>リスト#{getChap}#{@chapter.list(id).number}　#{compile_inline(caption)}</caption>]
     end
 
     def list_body(lines)
@@ -323,7 +321,7 @@ module ReVIEW
     def emlistnum(lines, caption = nil)
       _lines = []
       lines.each_with_index do |line, i|
-        _lines << detab("<span type='lineno'>" + (i+1).to_s.rjust(2) + ": </span>" + line)
+        _lines << detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
       end
       quotedlist _lines, 'emlist', caption
     end
@@ -331,7 +329,7 @@ module ReVIEW
     def listnum_body(lines)
       print %Q(<pre>)
       lines.each_with_index do |line, i|
-        print detab("<span type='lineno'>" + (i+1).to_s.rjust(2) + ": </span>" + line)
+        print detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
         print "\n"
       end
       puts "</pre></codelist>"
@@ -372,19 +370,11 @@ module ReVIEW
     end
 
     def inline_table(id)
-      if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        "<span type='table'>表#{@chapter.number}.#{@chapter.table(id).number}</span>"
-      else
-        "<span type='table'>表#{@chapter.table(id).number}</span>"
-      end
+      "<span type='table'>表#{getChap}#{@chapter.table(id).number}</span>"
     end
 
     def inline_img(id)
-      if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        "<span type='image'>図#{@chapter.number}.#{@chapter.image(id).number}</span>"
-      else
-        "<span type='image'>図#{@chapter.image(id).number}</span>"
-      end
+      "<span type='image'>図#{getChap}#{@chapter.image(id).number}</span>"
     end
 
     def image_image(id, metric, caption)
@@ -412,11 +402,7 @@ module ReVIEW
     end
 
     def image_header(id, caption)
-      if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        puts %Q[<caption>図#{@chapter.number}.#{@chapter.image(id).number}　#{compile_inline(caption)}</caption>]
-      else
-        puts %Q[<caption>図#{@chapter.image(id).number}　#{compile_inline(caption)}</caption>]
-      end
+      puts %Q[<caption>図#{getChap}#{@chapter.image(id).number}　#{compile_inline(caption)}</caption>]
     end
 
     def texequation(lines)
@@ -429,7 +415,6 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-#      puts %Q(<表 xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
       tablewidth = nil
       col = 0
       unless ReVIEW.book.param["tableopt"].nil?
@@ -440,8 +425,6 @@ module ReVIEW
       sepidx = nil
       lines.each_with_index do |line, idx|
         if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          #error "too many table separator" if sepidx
           sepidx ||= idx
           next
         end
@@ -464,7 +447,7 @@ module ReVIEW
           cellwidth = @tsize.split(/\s*,\s*/)
           totallength = 0
           cellwidth.size.times {|n|
-            cellwidth[n] = cellwidth[n].to_f / 0.351 # mm->pt
+            cellwidth[n] = cellwidth[n].to_f / 0.351 # mm -> pt
             totallength = totallength + cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
           }
@@ -488,93 +471,65 @@ module ReVIEW
       if tablewidth.nil?
         print "<tbody>"
       else
-        print "<tbody xmlns:aid5=\"http://ns.adobe.com/AdobeInDesign/5.0/\" aid:table=\"table\" aid:trows=\"#{rows.length}\" aid:tcols=\"#{col}\">"
+        print %Q[<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{col}">]
       end
 
       if sepidx
         sepidx.times do
           if tablewidth.nil?
-            puts "<tr type=\"header\">" + rows.shift + "</tr>"
+            puts %Q[<tr type="header">#{rows.shift}</tr>]
           else
             i = 0
             rows.shift.split(/\t/).each {|cell|
-              print "<td aid:table=\"cell\" aid:theader=\"1\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{sprintf("%.13f", cellwidth[i])}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
-              i = i + 1
-            }
-          end
-        end
-
-        if tablewidth.nil?
-          lastline = rows.pop
-          rows.each do |row|
-            puts "<tr>" + row + "</tr>"
-          end
-          puts "<tr type=\"lastline\">" + lastline + "</tr>" unless lastline.nil?
-        else
-          rows.each do |row|
-            i = 0
-            row.split(/\t/).each {|cell|
-              print "<td aid:table=\"cell\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{sprintf("%.13f", cellwidth[i])}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
-              i = i + 1
-            }
-          end
-        end
-      else
-        if tablewidth.nil?
-          lastline = rows.pop
-          rows.each do |row|
-            puts "<tr>" + row + "</tr>"
-          end
-          puts "<tr type=\"lastline\">" + lastline + "</tr>" unless lastline.nil?
-        else
-          rows.each do |row|
-            i = 0
-            row.split(/\t/).each {|cell|
-              print "<td aid:table=\"cell\" aid:crows=\"1\" aid:ccols=\"1\" aid:ccolwidth=\"#{sprintf("%.13f", cellwidth[i])}\">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>"
-              i = i + 1
+              print %Q[<td aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+              i += 1
             }
           end
         end
       end
-      print "</tbody>"
-      puts "</table>"
+      trputs(tablewidth, rows, cellwidth)
+      puts "</tbody></table>"
       @tsize = nil
     end
 
-    def table_header(id, caption)
-      if !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        puts %Q[<caption>表#{@chapter.number}.#{@chapter.table(id).number}　#{compile_inline(caption)}</caption>]
+    def trputs(tablewidth, rows, cellwidth)
+      if tablewidth.nil?
+        lastline = rows.pop
+        rows.each do |row|
+          puts %Q[<tr>#{row}</tr>]
+        end
+        puts %Q[<tr type="lastline">#{lastline}</tr>] unless lastline.nil?
       else
-        puts %Q[<caption>表#{@chapter.table(id).number}　#{compile_inline(caption)}</caption>]
+        rows.each do |row|
+          i = 0
+          row.split(/\t/).each {|cell|
+            print %Q[<td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+            i += 1
+          }
+        end
       end
     end
 
+    def table_header(id, caption)
+      puts %Q[<caption>表#{getChap}#{@chapter.table(id).number}　#{compile_inline(caption)}</caption>]
+    end
+
     def table_begin(ncols)
-      #  aid:trows="" aid:tcols="" widths="列1の幅, 列2の幅, ..."をdtp命令で入れておく
-#      puts %Q(<表 xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/" aid:table="table">)
     end
 
     def tr(rows)
-      # FIXME
-      puts "<tr>" + rows.join("\t") + "</tr>"
+      puts %Q[<tr>#{rows.join("\t")}</tr>]
     end
 
     def th(str)
-      # FIXME aid:ccolwidth=""
-      # FIXME strが2回エスケープされている
-#      %Q(<セル aid:table="cell" aid:theader="" aid:crows="1" aid:ccols="1">#{str}</セル>)
-      %Q(<?dtp tablerow header?>#{str})
+      %Q[<?dtp tablerow header?>#{str}]
     end
 
     def td(str)
-      # FIXME aid:ccolwidth=""
-      # FIXME strが2回エスケープされている
-#      %Q(<セル aid:table="cell" aid:crows="1" aid:ccols="1">#{str}</セル>)
       str
     end
     
     def table_end
-#      puts '</表>'
       print "<?dtp tablerow last?>"
     end
 
@@ -583,63 +538,63 @@ module ReVIEW
     end
 
     def footnote(id, str)
-      # FIXME: inline_fnと合わせて処理必要。2パースの処理をすべきか
-#      puts %Q(<footnote id="#{id}" no="#{@chapter.footnote(id).number}">#{compile_inline(str)}</footnote>)
+      # see inline_fn
     end
 
     def inline_fn(id)
-      %Q(<footnote>#{compile_inline(@chapter.footnote(id).content.strip)}</footnote>)
+      %Q[<footnote>#{compile_inline(@chapter.footnote(id).content.strip)}</footnote>]
     end
 
     def compile_ruby(base, ruby)
-      %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape_html(base.sub(/\A\s+/, "").sub(/\s+$/, ""))}</aid:rb><aid:rt>#{escape_html(ruby.sub(/\A\s+/, "").sub(/\s+$/, ""))}</aid:rt></aid:ruby></GroupRuby>)
+      %Q[<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape_html(base.sub(/\A\s+/, "").sub(/\s+$/, ""))}</aid:rb><aid:rt>#{escape_html(ruby.sub(/\A\s+/, "").sub(/\s+$/, ""))}</aid:rt></aid:ruby></GroupRuby>]
     end
 
     def compile_kw(word, alt)
       '<keyword>' +
         if alt
-        #then escape_html(word + sprintf(@locale[:parens], alt.strip))
-        then escape_html(word + "（#{alt.strip}）")
+        then escape_html("#{word}（#{alt.strip}）")
         else escape_html(word)
         end +
       '</keyword>' +
-        %Q(<index value="#{escape_html(word)}" />) +
+        %Q[<index value="#{escape_html(word)}" />] +
         if alt
-          alt.split(/\s*,\s*/).collect! {|e| %Q(<index value="#{escape_html(e.strip)}" />) }.join
+          alt.split(/\s*,\s*/).collect! {|e| %Q[<index value="#{escape_html(e.strip)}" />] }.join
         else
           ""
         end
     end
 
     def compile_href(url, label)
-      %Q(<a linkurl='#{url}'>#{label.nil? ? url : label}</a>)
+      %Q[<a linkurl='#{url}'>#{label.nil? ? url : label}</a>]
     end
 
     def inline_sup(str)
-      %Q(<sup>#{escape_html(str)}</sup>)
+      %Q[<sup>#{escape_html(str)}</sup>]
     end
 
     def inline_sub(str)
-      %Q(<sub>#{escape_html(str)}</sub>)
+      %Q[<sub>#{escape_html(str)}</sub>]
     end
 
     def inline_raw(str)
-      %Q(#{str.gsub("\\n", "\n")})
+      %Q[#{str.gsub("\\n", "\n")}]
     end
 
     def inline_hint(str)
       if ReVIEW.book.param["nolf"].nil?
-        %Q(\n<hint>#{escape_html(str)}</hint>)
+        %Q[\n<hint>#{escape_html(str)}</hint>]
       else
-        %Q(<hint>#{escape_html(str)}</hint>)
+        %Q[<hint>#{escape_html(str)}</hint>]
       end
     end
 
     def inline_maru(str)
-      if str =~ /^\d+$/
+      if str =~ /\A\d+$/
         sprintf("&#x%x;", 9311 + str.to_i)
-      elsif str =~ /^[A-Za-z]$/
+      elsif str =~ /\A[A-Z]$/
         sprintf("&#x%x;", 9398 + str[0] - 65)
+      elsif str =~ /\A[a-z]$/
+        sprintf("&#x%x;", 9392 + str[0] - 65)
       else
         raise "can't parse maru: #{str}"
       end
@@ -674,9 +629,7 @@ module ReVIEW
       %Q(<tt style='bold'>#{escape_html(str)}</tt><index value='#{index}' />)
     end
 
-    def inline_ttbold(str)
-      inline_ttb(str)
-    end
+    alias :inline_ttbold inline_ttb
 
     def inline_tti(str)
       %Q(<tt style='italic'>#{escape_html(str)}</tt>)
@@ -687,6 +640,7 @@ module ReVIEW
     end
 
     def inline_icon(id)
+      # FIXME: accept other image types
       if ReVIEW.book.param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
         %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" type='inline'/>]
@@ -697,29 +651,29 @@ module ReVIEW
     end
 
     def inline_bou(str)
-      %Q(<bou>#{escape_html(str)}</bou>)
+      %Q[<bou>#{escape_html(str)}</bou>]
     end
 
     def inline_keytop(str)
-      %Q(<keytop>#{escape_html(str)}</keytop>)
+      %Q[<keytop>#{escape_html(str)}</keytop>]
     end
 
     def inline_labelref(idref)
-      %Q(<ref idref='#{idref}'>「●●　#{idref}」</ref>) # FIXME:節名とタイトルも込みで要出力
+      %Q[<ref idref='#{idref}'>「●●　#{idref}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
     alias inline_ref inline_labelref
 
     def inline_pageref(idref)
-      %Q(<pageref idref='#{idref}'>●●</pageref>) # ページ番号を参照
+      %Q[<pageref idref='#{idref}'>●●</pageref>] # ページ番号を参照
     end
 
     def inline_balloon(str)
-      %Q(<balloon>#{escape_html(str).gsub(/@maru\[(\d+)\]/) {|m| inline_maru($1)}}</balloon>)
+      %Q[<balloon>#{escape_html(str).gsub(/@maru\[(\d+)\]/) {|m| inline_maru($1)}}</balloon>]
     end
 
     def inline_uchar(str)
-      %Q(&#x#{str};)
+      %Q[&#x#{str};]
     end
 
     def inline_m(str)
@@ -741,71 +695,74 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
-      puts %Q(<title aid:pstyle="h#{level}">#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{escape_html(compile_inline(caption))}"?>)
+      puts %Q[<title aid:pstyle="h#{level}">#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{escape_html(compile_inline(caption))}"?>]
     end
 
     def nonum_end(level)
     end
 
     def circle_begin(level, label, caption)
-      puts %Q(<title aid:pstyle="smallcircle">&#x2022;#{compile_inline(caption)}</title>)
+      puts %Q[<title aid:pstyle="smallcircle">&#x2022;#{compile_inline(caption)}</title>]
     end
 
     def circle_end(level)
     end
 
+    def common_column_begin(type, caption)
+      print "<#{type}column>"
+      puts %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title>]
+    end
+
+    def common_column_end(type)
+      puts "</#{type}column>"
+    end
+
     def column_begin(level, label, caption)
-      print "<column>"
-      puts %Q(<title aid:pstyle="column-title">#{compile_inline(caption)}</title>)
+      common_column_begin("", caption)
     end
 
     def column_end(level)
-      puts "</column>"
+      common_column_end("")
     end
 
     def xcolumn_begin(level, label, caption)
-      print "<xcolumn>"
-      puts %Q(<title aid:pstyle="xcolumn-title">#{compile_inline(caption)}</title>)
+      common_column_begin("x", caption)
     end
 
     def xcolumn_end(level)
-      puts "</xcolumn>"
+      common_column_end("x")
     end
 
     def world_begin(level, label, caption)
-      print "<worldcolumn>"
-      puts %Q(<title aid:pstyle="worldcolumn-title">#{compile_inline(caption)}</title>)
+      common_column_begin("world", caption)
     end
 
     def world_end(level)
-      puts "</worldcolumn>"
+      common_column_end("world")
     end
 
     def hood_begin(level, label, caption)
-      print "<hoodcolumn>"
-      puts %Q(<title aid:pstyle="hoodcolumn-title">#{compile_inline(caption)}</title>)
+      common_column_begin("hood", caption)
     end
 
     def hood_end(level)
-      puts "</hoodcolumn>"
+      common_column_end("hood")
     end
 
     def edition_begin(level, label, caption)
-      print "<editioncolumn>"
-      puts %Q(<title aid:pstyle="editioncolumn-title">#{compile_inline(caption)}</title>)
+      common_column_begin("edition", caption)
     end
 
     def edition_end(level)
-      puts "</editioncolumn>"
+      common_column_end("edition")
     end
 
     def insideout_begin(level, label, caption)
-      print "<insideoutcolumn>"
-      puts %Q(<title aid:pstyle="insideoutcolumn-title">#{compile_inline(caption)}</title>)
+      common_column_begin("insideout", caption)
     end
 
     def insideout_end(level)
-      puts "</insideoutcolumn>"
+      common_column_end("insideout")
     end
 
     def ref_begin(level, label, caption)
@@ -833,178 +790,143 @@ module ReVIEW
     end
 
     def flushright(lines)
-      puts "<p align='right'>#{lines.join("\n")}</p>"
-    end
-
-    def note(lines, caption = nil)
-      print "<note>"
-      puts "<title aid:pstyle='note-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</note>"
-    end
-
-    def memo(lines, caption = nil)
-      print "<memo>"
-      puts "<title aid:pstyle='memo-title'>#{compile_inline(caption)}</title>" unless caption.nil?
       if ReVIEW.book.param["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "#{blocked_lines.join("")}</memo>"
+        puts split_paragraph(lines).join.gsub("<p>", "<p align='right'>")
       else
-        puts "#{lines.join("\n")}</memo>"
+        puts "<p align='right'>#{lines.join("\n")}</p>"
       end
     end
 
+    def captionblock(type, lines, caption, specialstyle = nil)
+      print "<#{type}>"
+      style = specialstyle.nil? ? "#{type}-title" : specialstyle
+      puts "<title aid:pstyle='#{style}'>#{compile_inline(caption)}</title>" unless caption.nil?
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts "#{blocked_lines.join}</#{type}>"
+      else
+        puts "#{lines.join("\n")}</#{type}>"
+      end
+    end
+
+    def note(lines, caption = nil)
+      captionblock("note", lines, caption)
+    end
+
+    def memo(lines, caption = nil)
+      captionblock("memo", lines, caption)
+    end
+
     def tip(lines, caption = nil)
-      print "<tip>"
-      puts "<title aid:pstyle='tip-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</tip>"
+      captionblock("tip", lines, caption)
     end
 
     def info(lines, caption = nil)
-      print "<info>"
-      puts "<title aid:pstyle='info-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</info>"
+      captionblock("info", lines, caption)
     end
 
     def planning(lines, caption = nil)
-      print "<planning>"
-      puts "<title aid:pstyle='planning-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</planning>"
+      captionblock("planning", lines, caption)
     end
 
     def best(lines, caption = nil)
-      print "<best>"
-      puts "<title aid:pstyle='best-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</best>"
+      captionblock("best", lines, caption)
     end
 
     def important(lines, caption = nil)
-      print "<important>"
-      puts "<title aid:pstyle='important-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</important>"
+      captionblock("important", lines, caption)
     end
 
     def security(lines, caption = nil)
-      print "<security>"
-      puts "<title aid:pstyle='security-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</security>"
+      captionblock("security", lines, caption)
     end
 
     def caution(lines, caption = nil)
-      print "<caution>"
-      puts "<title aid:pstyle='caution-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</caution>"
+      captionblock("caution", lines, caption)
     end
 
     def term(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "<term>#{blocked_lines.join("\n")}</term>"
+      captionblock("term", lines, nil)
     end
 
     def link(lines, caption = nil)
-      print "<link>"
-      puts "<title aid:pstyle='link-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "#{blocked_lines.join("\n")}</link>"
+      captionblock("link", lines, caption)
     end
 
     def notice(lines, caption = nil)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
       if caption.nil?
-        puts "<notice>#{blocked_lines.join("\n")}</notice>"
+        captionblock("notice", lines, nil)
       else
-        puts "<notice-t><title aid:pstyle='notice-title'>#{compile_inline(caption)}</title>"
-        puts "#{blocked_lines.join("\n")}</notice-t>"
+        captionblock("notice-t", lines, caption, "notice-title")
       end
     end
 
     def point(lines, caption = nil)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
       if caption.nil?
-        puts "<point>#{blocked_lines.join("\n")}</point>"
+        captionblock("point", lines, nil)
       else
-        puts "<point-t><title aid:pstyle='point-title'>#{compile_inline(caption)}</title>"
-        puts "#{blocked_lines.join("\n")}</point-t>"
+        captionblock("point-t", lines, caption, "point-title")
       end
     end
 
     def shoot(lines, caption = nil)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
       if caption.nil?
-        puts "<shoot>#{blocked_lines.join("\n")}</shoot>"
+        captionblock("shoot", lines, nil)
       else
-        puts "<shoot-t><title aid:pstyle='shoot-title'>#{compile_inline(caption)}</title>"
-        puts "#{blocked_lines.join("\n")}</shoot-t>"
+        captionblock("shoot-t", lines, caption, "shoot-title")
       end
     end
 
     def reference(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "<reference>#{blocked_lines.join("\n")}</reference>"
+      captionblock("reference", lines, nil)
     end
 
     def practice(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "<practice>#{blocked_lines.join("\n")}</practice>"
+      captionblock("practice", lines, nil)
+    end
+    
+    def expert(lines)
+      captionblock("expert", lines, nil)
     end
 
-    def expert(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts "<expert>#{blocked_lines.join("\n")}</expert>"
+    def syntaxblock(type, lines, caption)
+      if caption.nil?
+        puts %Q[<#{type}>]
+      else
+        titleopentag = %Q[caption aid:pstyle="#{type}-title"]
+        titleclosetag = "caption"
+        if type == "insn"
+          titleopentag = %Q[floattitle type="insn"]
+          titleclosetag = "floattitle"
+        end
+        puts %Q[<#{type}><#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>]
+      end
+      no = 1
+      lines.each do |line|
+        unless ReVIEW.book.param["listinfo"].nil?
+          print %Q[<listinfo line="#{no}"]
+          print %Q[ begin="1"] if no == 1
+          print %Q[ end="#{no}"] if no == lines.size
+          print %Q[>]
+        end
+        print detab(line)
+        print "\n"
+        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
+        no += 1
+      end
+      puts "</#{type}>"
     end
 
     def insn(lines, caption = nil)
-      if caption.nil?
-        puts %Q[<insn>]
-      else
-        puts %Q[<insn><floattitle type="insn">#{compile_inline(caption)}</floattitle>]
-      end
-      no = 1
-      lines.each do |line|
-        unless ReVIEW.book.param["listinfo"].nil?
-          print "<listinfo line=\"#{no}\""
-          print " begin=\"1\"" if no == 1
-          print " end=\"#{no}\"" if no == lines.size
-          print ">"
-        end
-        print detab(line)
-        print "\n"
-        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
-        no += 1
-      end
-      puts "</insn>"
+      syntaxblock("insn", lines, caption)
     end
 
     def box(lines, caption = nil)
-      if caption.nil?
-        print %Q[<box>]
-      else
-        puts %Q[<box><caption aid:pstyle="box-title">#{compile_inline(caption)}</caption>]
-      end
-      no = 1
-      lines.each do |line|
-        unless ReVIEW.book.param["listinfo"].nil?
-          print "<listinfo line=\"#{no}\""
-          print " begin=\"1\"" if no == 1
-          print " end=\"#{no}\"" if no == lines.size
-          print ">"
-        end
-        print detab(line)
-        print "\n"
-        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
-        no += 1
-      end
-      puts "</box>"
+      syntaxblock("box", lines, caption)
     end
 
     def indepimage(id, metric=nil)
+      # FIXME: search path
       puts "<img>"
       if ReVIEW.book.param["subdirmode"].nil?
         warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
@@ -1030,7 +952,7 @@ module ReVIEW
     end
 
     def hr
-      print "<hr/>"
+      print "<hr />"
     end
 
     def bpo(lines)

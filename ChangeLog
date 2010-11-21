@@ -1,3 +1,8 @@
+Sun Nov 21 14:22:55 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:
+	  refactoring. add some tests.
+
 Wed Nov 17 09:36:50 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge KADO's patch and modify.

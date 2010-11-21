@@ -78,6 +78,25 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>1</b></td><td aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>2</i></td><td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>3</b></td><td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>4</i>&lt;&gt;&amp;</td></tbody></table>|, @builder.raw_result
   end
 
+  def test_inline_in_table_without_header
+    ret = @builder.table(["<b>1</b>\t<i>2</i>", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>1</b></td><td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>2</i></td><td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>3</b></td><td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>4</i>&lt;&gt;&amp;</td></tbody></table>|, @builder.raw_result
+  end
+
+  def test_inline_in_table_without_cellwidth
+    @param["tableopt"] = nil
+    ret = @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><table><tbody><tr type="header"><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, @builder.raw_result
+    @param["tableopt"] = 10
+  end
+
+  def test_inline_in_table_without_header_and_cellwidth
+    @param["tableopt"] = nil
+    ret = @builder.table(["<b>1</b>\t<i>2</i>", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><table><tbody><tr><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, @builder.raw_result
+    @param["tableopt"] = 10
+  end
+
   def test_inline_br
     ret = @builder.inline_br("")
     assert_equal %Q|\n|, ret
@@ -86,6 +105,53 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_inline_uchar
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test &#x2460; test2|, ret
+  end
+
+  def test_inline_ruby
+    ret = @builder.compile_ruby("coffin", "bed")
+    assert_equal %Q|<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>coffin</aid:rb><aid:rt>bed</aid:rt></aid:ruby></GroupRuby>|, ret
+  end
+
+  def test_inline_kw
+    ret = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
+    assert_equal %Q|<keyword>ISO（International Organization for Standardization）</keyword><index value="ISO" /><index value="International Organization for Standardization" /> <keyword>Ruby&lt;&gt;</keyword><index value="Ruby&lt;&gt;" />|, ret
+  end
+
+  def test_inline_maru
+    ret = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
+    assert_equal %Q|&#x2460;&#x2473;&#x24b6;&#x24e9;|, ret
+  end
+
+  def test_inline_ttb
+    ret = @builder.inline_ttb("test * <>\"")
+    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, ret
+  end
+
+  def test_inline_ttbold
+    ret = @builder.inline_ttbold("test * <>\"")
+    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, ret
+  end
+
+  def test_inline_balloon
+    ret = @builder.inline_balloon("@maru[1]test")
+    assert_equal %Q|<balloon>&#x2460;test</balloon>|, ret
+  end
+
+  def test_inline_m
+    ret = @builder.compile_inline("@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}")
+    assert_equal %Q|<replace idref="texinline-1"><pre>\\sin</pre></replace> <replace idref="texinline-2"><pre>\\frac{1}{2}</pre></replace>|, ret
+  end
+
+  def test_paragraph
+    lines = ["foo","bar"]
+    @builder.paragraph(lines)
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><p>foobar</p>|, @builder.raw_result
+  end
+
+  def test_tabbed_paragraph
+    lines = ["\tfoo","bar"]
+    @builder.paragraph(lines)
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><p inlist="1">foobar</p>|, @builder.raw_result
   end
 
   def test_quote
@@ -102,9 +168,65 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote>foo\n\nbuz</quote>|, @builder.raw_result
   end
 
+  def test_note
+    @builder.note(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><note><title aid:pstyle='note-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></note>|, @builder.raw_result
+  end
+
   def test_memo
     @builder.memo(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><memo><title aid:pstyle='memo-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></memo>|, @builder.raw_result
+  end
+
+  def test_term
+    @builder.term(["test1", "test1.5", "", "test<i>2</i>"])
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><term><p>test1test1.5</p><p>test<i>2</i></p></term>|, @builder.raw_result
+  end
+
+  def test_term_deprecated
+    ReVIEW.book.param["deprecated-blocklines"] = true
+    @builder.term(["test1", "test1.5", "", "test<i>2</i>"])
+    ReVIEW.book.param["deprecated-blocklines"] = nil
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><term>test1\ntest1.5\n\ntest<i>2</i></term>|, @builder.raw_result
+  end
+
+  def test_notice
+    @builder.notice(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><notice-t><title aid:pstyle='notice-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></notice-t>|, @builder.raw_result
+  end
+
+  def test_notice_without_caption
+    @builder.notice(["test1", "test1.5", "", "test<i>2</i>"], nil)
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><notice><p>test1test1.5</p><p>test<i>2</i></p></notice>|, @builder.raw_result
+  end
+
+  def test_point
+    @builder.point(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><point-t><title aid:pstyle='point-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></point-t>|, @builder.raw_result
+  end
+
+  def test_point_without_caption
+    @builder.point(["test1", "test1.5", "", "test<i>2</i>"], nil)
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><point><p>test1test1.5</p><p>test<i>2</i></p></point>|, @builder.raw_result
+  end
+
+  def test_insn
+    @param["listinfo"] = true
+    @builder.insn(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    @param["listinfo"] = nil
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><insn><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></insn>|, @builder.raw_result
+  end
+
+  def test_box
+    @param["listinfo"] = true
+    @builder.box(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    @param["listinfo"] = nil
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></box>|, @builder.raw_result
+  end
+
+  def test_flushright
+    @builder.flushright(["foo","","buz"])
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><p align='right'>foo</p><p align='right'>buz</p>|, @builder.raw_result
   end
 
   def test_raw
