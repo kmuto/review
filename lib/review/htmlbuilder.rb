@@ -572,7 +572,7 @@ QUOTE
 
     def image_image(id, metric, caption)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
       image_header id, caption
       puts %Q[</div>]
     end
@@ -642,7 +642,7 @@ QUOTE
     end
 
     def tr(rows)
-      puts "<tr>#{rows.join('')}</tr>"
+      puts "<tr>#{rows.join}</tr>"
     end
 
     def th(str)
@@ -668,7 +668,7 @@ QUOTE
     def indepimage(id, metric=nil)
       puts %Q[<div class="image">]
       begin
-        puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="" />]
+        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="" />]
       rescue
         puts %Q[<pre>missing image: #{id}</pre>]
       end
@@ -677,7 +677,7 @@ QUOTE
 
     def numberlessimage(id, caption)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/^\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
       image_header id, caption
       puts %Q[</div>]
     end
@@ -721,7 +721,6 @@ QUOTE
     def compile_kw(word, alt)
       %Q[<b class="kw">] +
         if alt
-        #then escape_html(word + sprintf(@locale[:parens], alt.strip))
         then escape_html(word + " (#{alt.strip})")
         else escape_html(word)
         end +
@@ -935,30 +934,6 @@ QUOTE
         return "#{@chapter.number}."
       end
       return ""
-    end
-
-    def find_pathes(id)
-      if ReVIEW.book.param["subdirmode"].nil?
-        re = /\A#{@chapter.name}-#{id}(?i:#{@book.image_types.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-        .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-        .map {|ent| "#{@book.basedir}/#{ent}" }
-      else
-        re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-        .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-        .map {|ent| "#{@book.asedir}/#{@chapter.name}/#{ent}" }
-      end
-    end
-    
-    def entries
-      if ReVIEW.book.param["subdirmode"].nil?
-        @entries ||= Dir.entries(@book.basedir + @book.image_dir)
-      else
-        @entries ||= Dir.entries(File.join(@book.basedir + @book.image_dir, @chapter.name))
-      end
-    rescue Errno::ENOENT
-    @entries = []
     end
   end
 

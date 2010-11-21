@@ -28,7 +28,11 @@ module ReVIEW
     end
 
     def string
-      "#{@filename}:#{@f.lineno}"
+      begin
+        "#{@filename}:#{@f.lineno}"
+      rescue
+        "#{@filename}:nil"
+      end
     end
 
     alias to_s string

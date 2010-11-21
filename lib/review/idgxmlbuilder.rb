@@ -592,9 +592,17 @@ module ReVIEW
       if str =~ /\A\d+$/
         sprintf("&#x%x;", 9311 + str.to_i)
       elsif str =~ /\A[A-Z]$/
-        sprintf("&#x%x;", 9398 + str[0] - 65)
+        begin
+          sprintf("&#x%x;", 9398 + str.codepoints.to_a[0] - 65)
+        rescue NoMethodError
+          sprintf("&#x%x;", 9398 + str[0] - 65)
+        end
       elsif str =~ /\A[a-z]$/
-        sprintf("&#x%x;", 9392 + str[0] - 65)
+        begin
+          sprintf("&#x%x;", 9392 + str.codepoints.to_a[0] - 65)
+        rescue NoMethodError
+          sprintf("&#x%x;", 9392 + str[0] - 65)
+        end
       else
         raise "can't parse maru: #{str}"
       end
@@ -641,12 +649,11 @@ module ReVIEW
 
     def inline_icon(id)
       # FIXME: accept other image types
-      if ReVIEW.book.param["subdirmode"].nil?
-        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
-        %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" type='inline'/>]
-      else
-        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
-        %Q[<Image href="file://images/#{@chapter.id}/#{id}.eps" type='inline'/>]
+      begin
+        %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" type="inline" />]
+      rescue
+        warn "no such icon image: #{id}"
+        ""
       end
     end
 
@@ -926,14 +933,11 @@ module ReVIEW
     end
 
     def indepimage(id, metric=nil)
-      # FIXME: search path
       puts "<img>"
-      if ReVIEW.book.param["subdirmode"].nil?
-        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
-        puts %Q[<Image href="file://images/#{@chapter.id}-#{id}.eps" />]
-      else
-        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
-        puts %Q[<Image href="file://images/#{@chapter.id}/#{id}.eps" />]
+      begin
+        puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" />]
+      rescue
+        warn %Q[no such image: #{id}]
       end
       puts "</img>"
     end

@@ -1,3 +1,14 @@
+Sun Nov 21 15:02:00 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb: add 'ai' to acceptable image file.
+	* lib/review/builder.rb: move find_pathes() and entries() here
+	  from HTMLBuilder.
+	* lib/review/compiler.rb: rescue string() error for TestUnit.
+	* lib/review/htmlbuilder.rb: cleanup.
+	* lib/review/idgxmlbuilder.rb: support both 1.8 and 1.9 in
+	  inline_maru. use find_pathes() of builder for @icon and
+	  //indepimage.
+
 Sun Nov 21 14:22:55 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:
