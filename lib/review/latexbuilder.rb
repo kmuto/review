@@ -575,9 +575,8 @@ module ReVIEW
       macro('Underline', escape(str))
     end
 
-    def inline_icon(str)
-      ## can not support?
-      ""
+    def inline_icon(id)
+      macro('includegraphics', @chapter.image(id).path)
     end
 
     def inline_uchar(str)
