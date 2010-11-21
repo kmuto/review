@@ -390,7 +390,7 @@ module ReVIEW
     end
 
     def quote(lines)
-      latex_block 'quote', [lines.join('\\\\')]
+      latex_block 'quote', lines
     end
 
     def center(lines)
@@ -414,8 +414,13 @@ module ReVIEW
     def latex_block(type, lines)
       blank
       puts macro('begin', type)
-      lines.each do |line|
-        puts line
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts blocked_lines.join("\n\n")
+      else
+        lines.each do |line|
+          puts line
+        end
       end
       puts macro('end', type)
       blank

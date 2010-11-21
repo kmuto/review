@@ -46,6 +46,13 @@ module ReVIEW
     Compiler.defblock(:lead, 0)
     Compiler.defblock(:rawblock, 0)
 
+    def pre_paragraph
+      '<p>'
+    end
+    def post_paragraph
+      '</p>'
+    end
+
     def extname
       '.xml'
     end
@@ -276,12 +283,11 @@ module ReVIEW
     end
 
     def read(lines)
-      puts %Q[<p aid:pstyle="lead">#{lines.join('')}</p>]
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts %Q[<p aid:pstyle="lead">#{blocked_lines.join('')}</p>]
     end
 
-    def lead(lines)
-      read(lines)
-    end
+    alias :lead read
 
     def inline_list(id)
       if !@chapter.number.nil? && !@chapter.number.to_s.empty?
@@ -357,7 +363,12 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      puts "<quote>#{lines.join("\n")}</quote>"
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts "<quote>#{blocked_lines.join("")}</quote>"
+      else
+        puts "<quote>#{lines.join("\n")}</quote>"
+      end
     end
 
     def inline_table(id)
@@ -828,104 +839,125 @@ module ReVIEW
     def note(lines, caption = nil)
       print "<note>"
       puts "<title aid:pstyle='note-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</note>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</note>"
     end
 
     def memo(lines, caption = nil)
       print "<memo>"
       puts "<title aid:pstyle='memo-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</memo>"
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts "#{blocked_lines.join("")}</memo>"
+      else
+        puts "#{lines.join("\n")}</memo>"
+      end
     end
 
     def tip(lines, caption = nil)
       print "<tip>"
       puts "<title aid:pstyle='tip-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</tip>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</tip>"
     end
 
     def info(lines, caption = nil)
       print "<info>"
       puts "<title aid:pstyle='info-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</info>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</info>"
     end
 
     def planning(lines, caption = nil)
       print "<planning>"
       puts "<title aid:pstyle='planning-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</planning>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</planning>"
     end
 
     def best(lines, caption = nil)
       print "<best>"
       puts "<title aid:pstyle='best-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</best>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</best>"
     end
 
     def important(lines, caption = nil)
       print "<important>"
       puts "<title aid:pstyle='important-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</important>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</important>"
     end
 
     def security(lines, caption = nil)
       print "<security>"
       puts "<title aid:pstyle='security-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</security>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</security>"
     end
 
     def caution(lines, caption = nil)
       print "<caution>"
       puts "<title aid:pstyle='caution-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</caution>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</caution>"
     end
 
     def term(lines)
-      puts "<term>#{lines.join("\n")}</term>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "<term>#{blocked_lines.join("\n")}</term>"
     end
 
     def link(lines, caption = nil)
       print "<link>"
       puts "<title aid:pstyle='link-title'>#{compile_inline(caption)}</title>" unless caption.nil?
-      puts "#{lines.join("\n")}</link>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "#{blocked_lines.join("\n")}</link>"
     end
 
     def notice(lines, caption = nil)
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
       if caption.nil?
-        puts "<notice>#{lines.join("\n")}</notice>"
+        puts "<notice>#{blocked_lines.join("\n")}</notice>"
       else
         puts "<notice-t><title aid:pstyle='notice-title'>#{compile_inline(caption)}</title>"
-        puts "#{lines.join("\n")}</notice-t>"
+        puts "#{blocked_lines.join("\n")}</notice-t>"
       end
     end
 
     def point(lines, caption = nil)
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
       if caption.nil?
-        puts "<point>#{lines.join("\n")}</point>"
+        puts "<point>#{blocked_lines.join("\n")}</point>"
       else
         puts "<point-t><title aid:pstyle='point-title'>#{compile_inline(caption)}</title>"
-        puts "#{lines.join("\n")}</point-t>"
+        puts "#{blocked_lines.join("\n")}</point-t>"
       end
     end
 
     def shoot(lines, caption = nil)
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
       if caption.nil?
-        puts "<shoot>#{lines.join("\n")}</shoot>"
+        puts "<shoot>#{blocked_lines.join("\n")}</shoot>"
       else
         puts "<shoot-t><title aid:pstyle='shoot-title'>#{compile_inline(caption)}</title>"
-        puts "#{lines.join("\n")}</shoot-t>"
+        puts "#{blocked_lines.join("\n")}</shoot-t>"
       end
     end
 
     def reference(lines)
-      puts "<reference>#{lines.join("\n")}</reference>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "<reference>#{blocked_lines.join("\n")}</reference>"
     end
 
     def practice(lines)
-      puts "<practice>#{lines.join("\n")}</practice>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "<practice>#{blocked_lines.join("\n")}</practice>"
     end
 
     def expert(lines)
-      puts "<expert>#{lines.join("\n")}</expert>"
+      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
+      puts "<expert>#{blocked_lines.join("\n")}</expert>"
     end
 
     def insn(lines, caption = nil)

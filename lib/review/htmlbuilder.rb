@@ -38,6 +38,13 @@ module ReVIEW
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
 
+    def pre_paragraph
+      '<p>'
+    end
+    def post_paragraph
+      '</p>'
+    end
+
     def extname
       '.html'
     end
@@ -277,9 +284,14 @@ EOT
       unless caption.nil?
         puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
       end
-      lines.each {|l|
-        puts "<p>#{l}</p>"
-      }
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts blocked_lines.join("\n")
+      else
+        lines.each {|l|
+          puts "<p>#{l}</p>"
+        }
+      end
       puts '</div>'
     end
 
@@ -323,7 +335,7 @@ EOT
       captionblock("point", lines, caption)
     end
 
-    def shot(lines, caption = nil)
+    def shoot(lines, caption = nil)
       captionblock("shoot", lines, caption)
     end
 
@@ -393,12 +405,15 @@ EOT
     end
 
     def read(lines)
-      puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>]
+      else
+        puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
+      end
     end
 
-    def lead(lines)
-      read(lines)
-    end
+    alias :lead read
 
     def list(lines, id, caption)
       puts %Q[<div class="caption-code">]
@@ -502,11 +517,23 @@ EOT
     private :quotedlist
 
     def quote(lines)
-      puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
+      else
+        puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
+      end
     end
 
     def doorquote(lines, ref)
-      puts <<-QUOTE
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts %Q[<blockquote style="text-align:right;">]
+        puts "#{blocked_lines.join("\n")}"
+        puts %Q[<p>#{ref}より</p>]
+        puts %Q[</blockquote>]
+      else
+        puts <<-QUOTE
 <blockquote style="text-align:right;">
   <pre>
 #{lines.join("\n")}
@@ -514,13 +541,19 @@ EOT
 #{ref}より</pre>
 </blockquote>
 QUOTE
+      end
     end
 
     def talk(lines)
       puts %Q[<div class="talk">]
-      puts '<pre>'
-      puts "#{lines.join("\n")}"
-      puts '</pre>'
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts "#{blocked_lines.join("\n")}"
+      else
+        puts '<pre>'
+        puts "#{lines.join("\n")}"
+        puts '</pre>'
+      end
       puts '</div>'
     end
 

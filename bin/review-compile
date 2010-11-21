@@ -50,6 +50,7 @@ def _main
     "subdirmode" => nil,
     "stylesheet" => nil,  # for HTML
     "mathml" => nil,      # for HTML
+    "deprecated-blocklines" => nil,
   }
 
   parser = OptionParser.new
@@ -90,6 +91,9 @@ def _main
   }
   parser.on('--hdnumberingmode', 'Output numbering headlines.') {
     @@hdnumberingmode = true
+  }
+  parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (Deprecated)') {
+    param["deprecated-blocklines"] = true
   }
   unless target
     parser.on('--target=FMT', 'Target format.') {|fmt|
