@@ -1,0 +1,4 @@
+usr/bin/review-compile	usr/bin/review2html
+usr/bin/review-compile	usr/bin/review2latex
+usr/bin/review-compile	usr/bin/review2top
+usr/bin/review-compile	usr/bin/review2idgxml

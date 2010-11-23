@@ -1,0 +1,13 @@
+bin/review-check	usr/bin
+bin/review-compile	usr/bin
+#bin/review-checkdep	usr/bin
+bin/review-epubmaker	usr/bin
+bin/review-index	usr/bin
+bin/review-pdfmaker	usr/bin
+bin/review-preproc	usr/bin
+bin/review-validate	usr/bin
+bin/review-vol	usr/bin
+lib/lineinput.rb	usr/share/review
+lib/review.rb	usr/share/review
+lib/uuid.rb	usr/share/review
+lib/review	usr/share/review

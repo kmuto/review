@@ -1,0 +1,9 @@
+review for Debian
+-----------------
+
+review-epubmaker, is EPUB builder, needs zip package. If you'd like to
+use MathML in HTML, install libmathml-ruby also.
+review-pdfmaker, is PDF builder, needs ptex-bin and okumura-clsfiles
+packages. Plus, it needs some styles are outside of Debian.
+
+ -- Kenshi Muto <kmuto@debian.org>  Tue, 23 Nov 2010 17:35:59 +0900

@@ -1,0 +1,5 @@
+review for Debian
+-----------------
+
+Rakefile focuses test and gem, not Debian packaging.
+Test needs some gem files are not yet included in Debian pool.

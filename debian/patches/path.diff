@@ -1,0 +1,91 @@
+indicate /usr/share/review as lib path.Index: review-0.6+20101123/bin/review-check
+===================================================================
+--- review-0.6+20101123.orig/bin/review-check	2010-11-23 21:08:35.525325930 +0900
++++ review-0.6+20101123/bin/review-check	2010-11-23 21:10:00.049309314 +0900
+@@ -13,7 +13,7 @@
+ require 'pathname'
+ 
+ bindir = Pathname.new(__FILE__).realpath.dirname
+-$LOAD_PATH.unshift((bindir + '../lib').realpath)
++$LOAD_PATH.unshift("/usr/share/review")
+ 
+ require 'review/book'
+ require 'optparse'
+Index: review-0.6+20101123/bin/review-checkdep
+===================================================================
+--- review-0.6+20101123.orig/bin/review-checkdep	2010-11-23 21:08:35.537304196 +0900
++++ review-0.6+20101123/bin/review-checkdep	2010-11-23 21:09:46.932891759 +0900
+@@ -13,7 +13,7 @@
+ require 'pathname'
+ 
+ bindir = Pathname.new(__FILE__).realpath.dirname
+-$LOAD_PATH.unshift((bindir + '../lib').realpath)
++$LOAD_PATH.unshift("/usr/share/review")
+ 
+ PREDEF_FILE = 'PREDEF'
+ 
+Index: review-0.6+20101123/bin/review-compile
+===================================================================
+--- review-0.6+20101123.orig/bin/review-compile	2010-11-23 21:08:35.545307445 +0900
++++ review-0.6+20101123/bin/review-compile	2010-11-23 21:10:11.464806373 +0900
+@@ -13,7 +13,7 @@
+ require 'pathname'
+ 
+ bindir = Pathname.new(__FILE__).realpath.dirname
+-$LOAD_PATH.unshift((bindir + '../lib').realpath)
++$LOAD_PATH.unshift("/usr/share/review")
+ 
+ require 'review/compiler'
+ require 'review/book'
+Index: review-0.6+20101123/bin/review-epubmaker
+===================================================================
+--- review-0.6+20101123.orig/bin/review-epubmaker	2010-11-23 21:08:35.557307851 +0900
++++ review-0.6+20101123/bin/review-epubmaker	2010-11-23 21:10:24.345309100 +0900
+@@ -18,7 +18,7 @@
+ require 'pathname'
+ 
+ bindir = Pathname.new(__FILE__).realpath.dirname
+-$LOAD_PATH.unshift((bindir + '../lib').realpath)
++$LOAD_PATH.unshift("/usr/share/review")
+ 
+ require 'uuid'
+ 
+Index: review-0.6+20101123/bin/review-index
+===================================================================
+--- review-0.6+20101123.orig/bin/review-index	2010-11-23 21:08:35.565304467 +0900
++++ review-0.6+20101123/bin/review-index	2010-11-23 21:10:35.780809275 +0900
+@@ -13,7 +13,7 @@
+ require 'pathname'
+ 
+ bindir = Pathname.new(__FILE__).realpath.dirname
+-$LOAD_PATH.unshift((bindir + '../lib').realpath)
++$LOAD_PATH.unshift("/usr/share/review")
+ 
+ require 'review/book'
+ require 'review/tocparser'
+Index: review-0.6+20101123/bin/review-preproc
+===================================================================
+--- review-0.6+20101123.orig/bin/review-preproc	2010-11-23 21:08:35.577305709 +0900
++++ review-0.6+20101123/bin/review-preproc	2010-11-23 21:10:46.252829939 +0900
+@@ -14,7 +14,7 @@
+ require 'pathname'
+ 
+ bindir = Pathname.new(__FILE__).realpath.dirname
+-$LOAD_PATH.unshift((bindir + '../lib').realpath)
++$LOAD_PATH.unshift("/usr/share/review")
+ 
+ require 'review/preprocessor'
+ require 'review/unfold'
+Index: review-0.6+20101123/bin/review-vol
+===================================================================
+--- review-0.6+20101123.orig/bin/review-vol	2010-11-23 21:08:35.589305906 +0900
++++ review-0.6+20101123/bin/review-vol	2010-11-23 21:10:56.212818665 +0900
+@@ -13,7 +13,7 @@
+ require 'pathname'
+ 
+ bindir = Pathname.new(__FILE__).realpath.dirname
+-$LOAD_PATH.unshift((bindir + '../lib').realpath)
++$LOAD_PATH.unshift("/usr/share/review")
+ 
+ require 'review/book'
+ require 'review/exception'
