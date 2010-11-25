@@ -158,7 +158,6 @@ def get_template(values)
 \\usepackage{wrapfig}
 \\definecolor{shadecolor}{gray}{0.9}
 \\definecolor{shadecolorb}{gray}{0.1}
-\\usepackage{eclbkbox}
 
 \\usepackage[utf8]{inputenc}
 
