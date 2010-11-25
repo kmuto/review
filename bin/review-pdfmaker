@@ -46,6 +46,7 @@ def main
   check_book(values)
   basedir = Dir.pwd
   path = build_path(values)
+  bookname = values["bookname"]
   Dir.mkdir(path)
 
   pre = 0
@@ -131,7 +132,7 @@ def main
     }
     Process.waitall
   }
-  FileUtils.cp("#{path}/book.pdf", basedir)
+  FileUtils.cp("#{path}/book.pdf", "#{basedir}/#{bookname}.pdf")
 
 end
 
