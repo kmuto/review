@@ -178,21 +178,6 @@ def get_template(values)
 \\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
 %\\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
 
-\\usepackage{fancyhdr}
-\\pagestyle{fancy}
-\\lhead{\\gtfamily\\sffamily\\bfseries\\upshape \\leftmark}
-\\chead{}
-\\rhead{\\gtfamily\\sffamily\\bfseries\\upshape \\rightmark}
-\\renewcommand{\\sectionmark}[1]{\\markright{\\thesection~#1}{}}
-\\renewcommand{\\chaptermark}[1]{\\markboth{\\prechaptername\\ \\thechapter\\ \\postchaptername~#1}{}}
-\\renewcommand{\\headfont}{\\gtfamily\\sffamily\\bfseries}
-
-\\fancypagestyle{plain}{%
-\\fancyhead{}
-\\fancyfoot{} % clear all header and footer fields
-\\renewcommand{\\headrulewidth}{0pt}
-\\renewcommand{\\footrulewidth}{0pt}}
-
 
 \\newcommand{\\parasep}{\\vspace*{3zh}}
 \\setlength{\\footskip}{30pt}
@@ -280,14 +265,19 @@ def get_template(values)
 \\newcommand{\\reviewkw}[1]{%
   \\textbf{\\textgt{#1}}}
 
+\\newcommand{\\reviewtitlefont}[0]{%
+  \\usefont{T1}{phv}{b}{n}\\gtfamily}
+
+\\newcommand{\\reviewmainfont}[0]{%
+ }
+
 #{values["usepackage"]}
 
 \\usepackage[T1]{fontenc}
 
 \\begin{document}
 
-\\usefont{T1}{phv}{m}{n}
-\\mgfamily
+\\reviewmainfont
 
 \\begin{titlepage}
 EOB
@@ -304,7 +294,7 @@ EOB
 \\thispagestyle{empty}
 \\begin{center}%
   \\mbox{} \\vskip5zw
-   \\usefont{T1}{pag}{b}{n}\\gtfamily\\ebseries%
+   \\reviewtitlefont%
     {\\Huge #{values["booktitle"]} \\par}%
     \\vskip 15em%
     {\\huge
@@ -344,7 +334,7 @@ EOB
 
 \\vspace*{\\fill}
 
-{\\noindent\\usefont{T1}{pag}{b}{n}\\Large\\gtfamily\\ebseries #{values["booktitle"]}} \\\\
+{\\noindent\\reviewtitlefont\\Large #{values["booktitle"]}} \\\\
 \\rule[8pt]{14cm}{1pt} \\\\
 {\\noindent
 #{values["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent"} }

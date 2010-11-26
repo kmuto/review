@@ -1,3 +1,10 @@
+Sat Nov 27 04:00:01 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: make default LaTeX style much simpler.
+	  - add \reviewmainfont and \reviewtitlefont (you can redifine with \renewcomamnd{})
+	  - delete header/footer definition (you can do it with config.yml)
+
+
 Mon Nov 22 00:44:20 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb: support @<icon>{} in LATEXBuilder
