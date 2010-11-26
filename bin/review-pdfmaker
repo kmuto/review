@@ -224,16 +224,9 @@ def get_template(values)
   \\end{center}}
 
 \\newenvironment{reviewcolumn}{%
-  %%\\begin{center}
-   %% \\begin{minipage}{0.9\\linewidth}
      \\begin{framed}
-%    \\begin{breakbox}
-   %%     \\setlength{\\FrameSep}{2zw}}{%
    }{%
-%    \\end{breakbox}
       \\end{framed}
-   %% \\end{minipage}
-  %%\\end{center}
   \\vspace{2zw}}
 
 \\newcommand{\\reviewcolumnhead}[2]{%
@@ -316,7 +309,6 @@ EOB
 
 \\tableofcontents
 
-%%\\renewcommand{\\chaptermark}[1]{\\markboth{第\\ \\thechapter\\ 章~#1}{}}
 \\renewcommand{\\chaptermark}[1]{\\markboth{\\prechaptername\\thechapter\\postchaptername~#1}{}}
 \\mainmatter
 
