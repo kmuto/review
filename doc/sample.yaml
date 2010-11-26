@@ -32,6 +32,8 @@ aut: 吟遊詩人
 # urnid: urn:uid:http://example.com/some-book-title/1.0.2/
 # CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること)
 stylesheet: stylesheet.css
+# LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
+# texstyle: samplemacro
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル
