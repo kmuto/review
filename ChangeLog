@@ -1,3 +1,8 @@
+Sat Nov 27 22:59:24 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb: accept space/tab before :
+	  (description list).
+
 Sat Nov 27 22:27:56 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb: use <p class="noindent"> for

@@ -225,7 +225,7 @@ module ReVIEW
           compile_ulist f
         when %r<\A\s+\d+\.>
           compile_olist f
-        when %r<\A:\s>
+        when %r<\A\s*:\s>
           compile_dlist f
         when %r<\A//\}>
           error 'block end seen but not opened'
@@ -345,9 +345,9 @@ module ReVIEW
 
     def compile_dlist(f)
       @strategy.dl_begin
-      while /\A:/ =~ f.peek
-        @strategy.dt text(f.gets.sub(/:/, '').strip)
-        @strategy.dd f.break(/\A\S/).map {|line| text(line.strip) }
+      while /\A\s*:/ =~ f.peek
+        @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
+        @strategy.dd f.break(/\A(\S|\s*:)/).map {|line| text(line.strip) }
         f.skip_blank_lines
       end
       @strategy.dl_end
