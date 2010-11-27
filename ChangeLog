@@ -1,7 +1,7 @@
 Sat Nov 27 22:27:56 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb: use <p class="noindent"> for
-	  //noindent. use <p class="flushrigh"> for //flushright (for
+	  //noindent. use <p class="flushright"> for //flushright (for
 	  backward compatibility, it can be reverted to older <div> and
 	  <pre> style by setting --deprecated-blocklines.)
 	* test/test_latexbuilder.rb, test/test_htmlbuilder.rb,
