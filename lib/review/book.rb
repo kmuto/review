@@ -68,9 +68,7 @@ module ReVIEW
                    :chapter_file,
                    :part_file,
                    :bib_file,
-                   :index_file,
                    :reject_file,
-                   :nocode_file,
                    :predef_file,
                    :postdef_file,
                    :ext,
@@ -272,10 +270,8 @@ module ReVIEW
         :chapter_file => const_get_safe(mod, :CHAPS_FILE),
         :part_file    => const_get_safe(mod, :PART_FILE),
         :bib_file     => const_get_safe(mod, :BIB_FILE),
-        :index_file   => const_get_safe(mod, :INDEX_FILE),
         :reject_file  => const_get_safe(mod, :REJECT_FILE) ||
                          const_get_safe(mod, :WORDS_FILE),
-        :nocode_file  => const_get_safe(mod, :NOCODE_FILE),
         :predef_file  => const_get_safe(mod, :PREDEF_FILE),
         :postdef_file => const_get_safe(mod, :POSTDEF_FILE),
         :ext          => const_get_safe(mod, :EXT),
@@ -307,9 +303,7 @@ module ReVIEW
     def initialize(params = {})
       @chapter_file = params[:chapter_file] || 'CHAPS'
       @part_file = params[:part_file]       || 'CHAPS'
-      @index_file   = params[:index_file]   || 'INDEX'
       @reject_file  = params[:reject_file]  || 'REJECT'
-      @nocode_file  = params[:nocode_file]  || 'NOCODE'
       @predef_file  = params[:predef_file]  || 'PREDEF'
       @postdef_file = params[:postdef_file] || 'POSTDEF'
       @page_metric  = params[:page_metric]  || PageMetric.a5
@@ -336,9 +330,7 @@ module ReVIEW
     path_param  :chapter_file
     path_param  :part_file
     path_param  :bib_file
-    path_param  :index_file
     path_param  :reject_file
-    path_param  :nocode_file
     path_param  :predef_file
     path_param  :postdef_file
     attr_reader :ext
