@@ -1,13 +1,14 @@
 Sat Nov 27 14:58:05 2010  Kenshi Muto  <kmuto@debian.org>
 
-	* bin/setup.rb: remove obsolete file. use gem or git.
+	* Clean up.
+	  - bin/setup.rb: remove obsolete file. use gem or git.
+	  - lib/review/book.rb, test/test_book.rb: remove PARAMS.
 
 Sat Nov 27 04:00:01 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: make default LaTeX style much simpler.
 	  - add \reviewmainfont and \reviewtitlefont (you can redifine with \renewcomamnd{})
 	  - delete header/footer definition (you can do it with config.yml)
-
 
 Mon Nov 22 00:44:20 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 

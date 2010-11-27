@@ -94,16 +94,6 @@ class BookTest < Test::Unit::TestCase
       pars = get_instance_variables(book.instance_eval { @parameters })
       assert_equal defs, pars
     end
-
-    Dir.mktmpdir do |dir|
-      File.open(File.join(dir, 'PARAMS'), 'w') do |o|
-        o.puts 'WORDS_FILE = "x_words_file"'
-        o.puts 'PAPER = "B5"' # XXX: avoid erros of the last line of Parameters.get_page_metric
-      end
-      book = Book.load(dir)
-      assert_match /x_words_file\z/,
-        book.instance_eval { @parameters.reject_file }
-    end
   end
 
   def test_s_update_rubyenv

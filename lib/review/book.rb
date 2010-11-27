@@ -31,7 +31,7 @@ module ReVIEW
 
     def Book.load_default
       %w( . .. ../.. ).each do |basedir|
-        if File.file?("#{basedir}/PARAMS") or File.file?("#{basedir}/CHAPS")
+        if File.file?("#{basedir}/CHAPS")
           return load(basedir)
         end
       end
@@ -40,10 +40,7 @@ module ReVIEW
 
     def Book.load(dir)
       update_rubyenv dir
-      if File.file?("#{dir}/PARAMS")
-      then new(dir, Parameters.load("#{dir}/PARAMS"))
-      else new(dir)
-      end
+      new(dir)
     end
 
     @basedir_seen = {}
