@@ -1,3 +1,8 @@
+Sat Nov 27 21:40:42 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* merge kdmsnr's branch.
+	  - add inline_table/list ref to another chapter.
+
 Sat Nov 27 14:58:05 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* Clean up.
