@@ -92,7 +92,7 @@ def _main
   parser.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') {
     param["hdnumberingmode"] = true
   }
-  parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (Deprecated)') {
+  parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') {
     param["deprecated-blocklines"] = true
   }
   unless target

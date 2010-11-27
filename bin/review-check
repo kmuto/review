@@ -46,7 +46,7 @@ def main
   parser.on('-a', '--all-chapters', 'Check all chapters.') {
     files = ReVIEW.book.chapters.map {|ent| ent.path }
   }
-  parser.on('-s', '--section N', 'Check section N.') {|n|
+  parser.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
     ents = ReVIEW.env.parts[Integer(n) - 1] or
         raise ReVIEW::ApplicationError, "section #{n} not exist"
     files = ents.map {|ent| ent.path }

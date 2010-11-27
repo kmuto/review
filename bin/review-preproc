@@ -62,7 +62,7 @@ SJIS)') {|enc|
   parser.on('-s', '--strip', 'Strip preprocessor tags.') {
     mode = :strip
   }
-  parser.on('--final', 'Unfold text and strip preprocessor tags.') {
+  parser.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') {
     mode = :final
   }
   parser.on('--help', 'Print this message and quit.') {

@@ -74,7 +74,7 @@ def _main
   parser.on('--text', 'output in plain text (default)') {
     printer_class = ReVIEW::TextTOCPrinter
   }
-  parser.on('--html', 'output in HTML') {
+  parser.on('--html', 'output in HTML (deprecated)') {
     printer_class = ReVIEW::HTMLTOCPrinter
   }
   parser.on('--idg', 'output in InDesign XML') {

@@ -1,3 +1,9 @@
+Sat Nov 27 22:00:20 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-index: deprecate --html option.
+	* bin/review-check: deprecate -s option.
+	* bin/review-preproc: deprecate --final option.
+
 Sat Nov 27 21:40:42 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* merge kdmsnr's branch.
