@@ -278,6 +278,7 @@ module ReVIEW
         end
         if ReVIEW.book.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
+          warn "--hdnumberingmode is deprecated. use --level option."
         end
         @strategy.headline level, label, caption
       end
