@@ -136,13 +136,6 @@ module ReVIEW
       "</ul>\n"
     end
 
-    def getChap
-      if ReVIEW.book.param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        return "#{@chapter.number}."
-      end
-      return ""
-    end
-
     def headline(level, label, caption)
       prefix = ""
       case level
@@ -374,7 +367,13 @@ module ReVIEW
     end
 
     def inline_img(id)
-      "<span type='image'>図#{getChap}#{@chapter.image(id).number}</span>"
+      m = /\A(\w+)\|(.+)/.match(id)
+      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      if chapter
+        "<span type='image'>図#{getChap(chapter)}#{chapter.image(id).number}</span>"
+      else
+        "<span type='image'>図#{getChap}#{@chapter.image(id).number}</span>"
+      end
     end
 
     def image_image(id, metric, caption)

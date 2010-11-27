@@ -810,7 +810,13 @@ QUOTE
     end
 
     def inline_img(id)
-      "図#{getChap}#{@chapter.image(id).number}"
+      m = /\A(\w+)\|(.+)/.match(id)
+      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      if chapter
+        "図#{getChap(chapter)}#{chapter.image(m[2]).number}"
+      else
+        "図#{getChap}#{@chapter.image(id).number}"
+      end
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
@@ -927,13 +933,6 @@ QUOTE
       end
       puts '</pre>'
       puts '</div>'
-    end
-
-    def getChap
-      if ReVIEW.book.param["secnolevel"] > 0 && !@chapter.number.nil? && !@chapter.number.to_s.empty?
-        return "#{@chapter.number}."
-      end
-      return ""
     end
   end
 

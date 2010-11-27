@@ -464,7 +464,13 @@ module ReVIEW
     end
 
     def inline_img(id)
-      macro('reviewimageref', "#{@chapter.number}.#{@chapter.image(id).number}")
+      m = /\A(\w+)\|(.+)/.match(id)
+      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      if chapter
+        macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}")
+      else
+        macro('reviewimageref', "#{@chapter.number}.#{@chapter.image(id).number}")
+      end
     end
 
     def footnote(id, content)

@@ -305,6 +305,12 @@ module ReVIEW
       raise ApplicationError, "#{@location}: error: #{msg}"
     end
 
+    def getChap(chapter = @chapter)
+      if ReVIEW.book.param["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
+        return "#{chapter.number}."
+      end
+      return ""
+    end
   end
 
 end   # module ReVIEW
