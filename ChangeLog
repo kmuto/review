@@ -1,3 +1,7 @@
+Sat Nov 27 14:58:05 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/setup.rb: remove obsolete file. use gem or git.
+
 Sat Nov 27 04:00:01 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: make default LaTeX style much simpler.
