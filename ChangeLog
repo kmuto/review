@@ -1,3 +1,9 @@
+Sun Nov 28 01:28:06 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb, lib/review/idgxmlbuilder.rb,
+	  lib/review/htmlbuilder.rb, lib/review/builder.rb:
+	   - support metric option of //image
+
 Sat Nov 27 22:59:24 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb: accept space/tab before :

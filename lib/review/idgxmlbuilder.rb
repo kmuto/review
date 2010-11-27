@@ -372,7 +372,7 @@ module ReVIEW
       "<span type='image'>図#{getChap(chapter)}#{chapter.image(id).number}</span>"
     end
 
-    def image_image(id, metric, caption)
+    def image_image(id, caption, metric)
       puts "<img>"
       puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}" />]
       image_header id, caption

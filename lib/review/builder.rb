@@ -98,15 +98,9 @@ module ReVIEW
       source_body lines
     end
 
-    def image(lines, id, caption_or_metric, caption = nil)
-      if caption
-        metric = caption_or_metric
-      else
-        metric = nil
-        caption = caption_or_metric
-      end
+    def image(lines, id, caption, metric = nil)
       if @chapter.image(id).bound?
-        image_image id, metric, caption
+        image_image id, caption, metric
       else
         warn "image not bound: #{id}" if @strict
         image_dummy id, caption, lines

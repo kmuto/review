@@ -17,9 +17,9 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     }
     ReVIEW.book.param = @param
     @compiler = ReVIEW::Compiler.new(@builder)
-    chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
+    @chapter = Chapter.new(nil, 1, 'chap1', nil, StringIO.new)
     location = Location.new(nil, nil)
-    @builder.bind(@compiler, chapter, location)
+    @builder.bind(@compiler, @chapter, location)
   end
 
   def test_headline_level1
@@ -211,4 +211,28 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @builder.raw("<&>\\n")
     assert_equal %Q|<&>\n|, @builder.result
   end
+
+
+  def test_image
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image_image("sampleimg","sample photo",nil)
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
+  def test_image_with_metric
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image_image("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
 end

@@ -575,7 +575,7 @@ QUOTE
       puts '</div>'
     end
 
-    def image_image(id, metric, caption)
+    def image_image(id, caption, metric)
       puts %Q[<div class="image">]
       puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
       image_header id, caption
