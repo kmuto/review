@@ -460,15 +460,18 @@ module ReVIEW
 
     # FIXME: use TeX native label/ref.
     def inline_list(id)
-      macro('reviewlistref', "#{@chapter.number}.#{@chapter.list(id).number}")
+      chapter, id = extract_chapter_id(id)
+      macro('reviewlistref', "#{chapter.number}.#{chapter.list(id).number}")
     end
 
     def inline_table(id)
-      macro('reviewtableref', "#{@chapter.number}.#{@chapter.table(id).number}")
+      chapter, id = extract_chapter_id(id)
+      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}")
     end
 
     def inline_img(id)
-      macro('reviewimageref', "#{@chapter.number}.#{@chapter.image(id).number}")
+      chapter, id = extract_chapter_id(id)
+      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}")
     end
 
     def footnote(id, content)
