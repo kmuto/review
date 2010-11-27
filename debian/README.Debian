@@ -3,7 +3,10 @@ review for Debian
 
 review-epubmaker, is EPUB builder, needs zip package. If you'd like to
 use MathML in HTML, install libmathml-ruby also.
-review-pdfmaker, is PDF builder, needs ptex-bin and okumura-clsfiles
-packages. Plus, it needs some styles are outside of Debian.
+review-pdfmaker, is PDF builder, needs ptexlive environment.
+   Although ptexlive isn't packaged yet, you can take experimental packages
+   from http://www1.pm.tokushima-u.ac.jp/~kohda/tex/ptexlive.html
+   Plus, review-pdfmaker uses additional style;
+ - jumoline.sty: http://www.para.media.kyoto-u.ac.jp/latex/jumoline.tar.gz
 
  -- Kenshi Muto <kmuto@debian.org>  Tue, 23 Nov 2010 17:35:59 +0900
