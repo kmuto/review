@@ -11,6 +11,7 @@ Sat Nov 27 14:58:05 2010  Kenshi Muto  <kmuto@debian.org>
 	    is deprecated. use --level option.
 	  - lib/review/book.rb: remove nocode_file and index_file because
 	    they aren't used anymore.
+	  - bin/review-epubmaker: print usage if argument isn't defined.
 
 Sat Nov 27 04:00:01 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
