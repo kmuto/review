@@ -3,7 +3,11 @@ Sat Nov 27 14:58:05 2010  Kenshi Muto  <kmuto@debian.org>
 	* Clean up.
 	  - bin/setup.rb: remove obsolete file. use gem or git.
 	  - lib/review/book.rb, test/test_book.rb: remove PARAMS.
-
+	  - lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	    lib/review/idgxmlbuilder.rb, lib/review/latexbuilder.rb:
+	    support caption in //indepimage.
+	    //numberlessimage aliases of //indepimage.
+	
 Sat Nov 27 04:00:01 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: make default LaTeX style much simpler.
