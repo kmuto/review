@@ -89,3 +89,20 @@ div h5 {
     font-size: larger;
     border-bottom: solid 1px #000000;
 }
+
+p {
+    text-indent: 1em;
+}
+
+p.caption {
+    font-weight: bold;
+    text-indent: 0em;
+}
+
+p.noindent {
+    text-indent: 0em;
+}
+
+p.flushright {
+    text-align: right;
+}

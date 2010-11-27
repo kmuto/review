@@ -54,6 +54,7 @@ module ReVIEW
       @subsection = 0
       @subsubsection = 0
       @subsubsubsection = 0
+      @noindent = nil
     end
     private :builder_init
 
@@ -396,7 +397,12 @@ EOT
     end
 
     def paragraph(lines)
-      puts "<p>#{lines.join("")}</p>"
+      if @noindent.nil?
+        puts "<p>#{lines.join}</p>"
+      else
+        puts %Q[<p class="noindent">#{lines.join}</p>]
+        @noindent = nil
+      end
     end
 
     def parasep()
@@ -705,7 +711,7 @@ QUOTE
     end
 
     def noindent
-      # dummy
+      @noindent = true
     end
 
     def inline_fn(id)
@@ -921,13 +927,17 @@ QUOTE
     end
 
     def flushright(lines)
-      puts %Q[<div style="text-align:right;">]
-      puts %Q[<pre class="flushright">]
-      lines.each do |line|
-        puts detab(line)
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
+      else
+        puts %Q[<div style="text-align:right;">]
+        puts %Q[<pre class="flushright">]
+        lines.each do |line|
+          puts detab(line)
+        end
+        puts '</pre>'
+        puts '</div>'
       end
-      puts '</pre>'
-      puts '</div>'
     end
   end
 

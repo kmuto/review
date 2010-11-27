@@ -225,8 +225,15 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_flushright
-    @builder.flushright(["foo","","buz"])
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><p align='right'>foo</p><p align='right'>buz</p>|, @builder.raw_result
+    @builder.flushright(["foo", "bar", "","buz"])
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><p align='right'>foobar</p><p align='right'>buz</p>|, @builder.raw_result
+  end
+
+  def test_noindent
+    @builder.noindent
+    @builder.paragraph(["foo", "bar"])
+    @builder.paragraph(["foo2", "bar2"])
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><p aid:pstyle="noindent" noindent='1'>foobar</p><p>foo2bar2</p>|, @builder.raw_result
   end
 
   def test_raw

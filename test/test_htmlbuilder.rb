@@ -50,7 +50,6 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n<h3 id="test"><a id="h1-0-1" />this is test.</h3>\n|, @builder.raw_result
   end
 
-
   def test_headline_level3_with_secno
     @param["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
@@ -136,6 +135,18 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_memo
     @builder.memo(["test1", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
     assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_noindent
+    @builder.noindent
+    @builder.paragraph(["foo", "bar"])
+    @builder.paragraph(["foo2", "bar2"])
+    assert_equal %Q|<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n|, @builder.raw_result
+  end
+
+  def test_flushright
+    @builder.flushright(["foo", "bar", "", "buz"])
+    assert_equal %Q|<p class="flushright">foobar</p>\n<p class="flushright">buz</p>\n|, @builder.raw_result
   end
 
   def test_raw

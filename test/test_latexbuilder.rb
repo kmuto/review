@@ -195,6 +195,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest<i>2</i>\n\\end{reviewminicolumn}\n|, @builder.result
   end
 
+  def test_flushright
+    @builder.flushright(["foo", "bar", "","buz"])
+    assert_equal %Q|\n\\begin{flushright}\nfoobar\n\nbuz\n\\end{flushright}\n|, @builder.raw_result
+  end
+
+  def test_noindent
+    @builder.noindent
+    @builder.paragraph(["foo", "bar"])
+    @builder.paragraph(["foo2", "bar2"])
+    assert_equal %Q|\\noindent\n\nfoo\nbar\n\nfoo2\nbar2\n|, @builder.raw_result
+  end
+
   def test_raw
     @builder.raw("<&>\\n")
     assert_equal %Q|<&>\n|, @builder.result
