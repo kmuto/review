@@ -156,7 +156,8 @@ module ReVIEW
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
-    defsingle :numberlessimage, 2
+    defsingle :indepimage, 1..3
+    defsingle :numberlessimage, 1..3
     defsingle :hr, 0
     defsingle :parasep, 0
     defsingle :label, 1
@@ -277,6 +278,7 @@ module ReVIEW
         end
         if ReVIEW.book.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
+          warn "--hdnumberingmode is deprecated. use --level option."
         end
         @strategy.headline level, label, caption
       end

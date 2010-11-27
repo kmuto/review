@@ -24,7 +24,6 @@ module ReVIEW
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
-    Compiler.defsingle(:indepimage, 1..2)
 
     Compiler.defblock(:insn, 0..1)
     Compiler.defblock(:memo, 0..1)
@@ -932,15 +931,18 @@ module ReVIEW
       syntaxblock("box", lines, caption)
     end
 
-    def indepimage(id, metric=nil)
+    def indepimage(id, caption=nil, metric=nil)
       puts "<img>"
       begin
         puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" />]
       rescue
         warn %Q[no such image: #{id}]
       end
+      puts %Q[<caption>#{compile_inline(caption)}</caption>] if !caption.nil? && !caption.empty?
       puts "</img>"
     end
+
+    alias :numberlessimage indepimage
 
     def label(id)
       # FIXME

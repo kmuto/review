@@ -89,8 +89,8 @@ def _main
     param["mathml"] = true
     require 'math_ml'
   }
-  parser.on('--hdnumberingmode', 'Output numbering headlines.') {
-    @@hdnumberingmode = true
+  parser.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') {
+    param["hdnumberingmode"] = true
   }
   parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (Deprecated)') {
     param["deprecated-blocklines"] = true

@@ -24,7 +24,7 @@ require 'uuid'
 
 def main
   values = { # These parameters can be overridden by YAML file.
-    "bookname"=> "sample", # it defines epub file name also
+    "bookname"=> nil, # it defines epub file name also
     "booktitle" => "ReVIEW EPUBサンプル",
     "aut" => "吟遊詩人", # author
     "prt" => nil, # printer(publisher)
@@ -49,13 +49,13 @@ def main
     "posthook" => nil, # command path of post hook
     "debug" => nil, # debug flag
   }
-  yamlfile = ""
-
-  if ARGV.size == 1
-    values = values.merge(YAML.load_file(ARGV[0]))
-    yamlfile = ARGV[0]
+  if ARGV.size != 1
+    puts "Usage: #{$0} configfile"
+    exit 0
   end
   
+  yamlfile = ARGV[0]
+  values = values.merge(YAML.load_file(yamlfile))
   bookname = values["bookname"]
 
   if File.exist?("#{bookname}.epub")
