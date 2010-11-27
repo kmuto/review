@@ -290,7 +290,8 @@ module ReVIEW
     alias :lead read
 
     def inline_list(id)
-      "<span type='list'>リスト#{getChap}#{@chapter.list(id).number}</span>"
+      chapter, id = extract_chapter_id(id)
+      "<span type='list'>リスト#{getChap(chapter)}#{chapter.list(id).number}</span>"
     end
 
     def list_header(id, caption)
@@ -363,17 +364,13 @@ module ReVIEW
     end
 
     def inline_table(id)
-      "<span type='table'>表#{getChap}#{@chapter.table(id).number}</span>"
+      chapter, id = extract_chapter_id(id)
+      "<span type='table'>表#{getChap(chapter)}#{chapter.table(id).number}</span>"
     end
 
     def inline_img(id)
-      m = /\A(\w+)\|(.+)/.match(id)
-      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
-      if chapter
-        "<span type='image'>図#{getChap(chapter)}#{chapter.image(id).number}</span>"
-      else
-        "<span type='image'>図#{getChap}#{@chapter.image(id).number}</span>"
-      end
+      chapter, id = extract_chapter_id(id)
+      "<span type='image'>図#{getChap(chapter)}#{chapter.image(id).number}</span>"
     end
 
     def image_image(id, metric, caption)

@@ -803,30 +803,27 @@ QUOTE
     end
 
     def inline_list(id)
-      "リスト#{getChap}#{@chapter.list(id).number}"
+      chapter, id = extract_chapter_id(id)
+      "リスト#{getChap(chapter)}#{chapter.list(id).number}"
     rescue KeyError
       error "unknown list: #{id}"
       nofunc_text("[UnknownList:#{id}]")
     end
 
-    def inline_img(id)
-      m = /\A(\w+)\|(.+)/.match(id)
-      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
-      if chapter
-        "図#{getChap(chapter)}#{chapter.image(m[2]).number}"
-      else
-        "図#{getChap}#{@chapter.image(id).number}"
-      end
-    rescue KeyError
-      error "unknown image: #{id}"
-      nofunc_text("[UnknownImage:#{id}]")
-    end
-
     def inline_table(id)
-      "表#{getChap}#{@chapter.table(id).number}"
+      chapter, id = extract_chapter_id(id)
+      "表#{getChap(chapter)}#{chapter.table(id).number}"
     rescue KeyError
       error "unknown table: #{id}"
       nofunc_text("[UnknownTable:#{id}]")
+    end
+
+    def inline_img(id)
+      chapter, id = extract_chapter_id(id)
+      "図#{getChap(chapter)}#{chapter.image(id).number}"
+    rescue KeyError
+      error "unknown image: #{id}"
+      nofunc_text("[UnknownImage:#{id}]")
     end
 
     def inline_asis(str, tag)
