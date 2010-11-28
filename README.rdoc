@@ -2,6 +2,31 @@
 
 ReVIEW is a easy-to-use digital publishing system for books and ebooks.
 
+== Format
+
+ReVIEW uses its original format('ReVIEW format') as source files. See doc/format.rdoc (in Japanese).
+
+Output formats ReVIEW supports are:
+
+* EPUB
+* LaTeX(ptexlive)
+* InDesign(IDGXML)
+* plain text(TOPBuilder Markup Lang.)
+
+== Commands
+
+There are two commands generate files directly.
+
+* review-epubmaker: generate EPUB file.
+* review-pdfmaker: generate PDF file using LaTeX(ptexlive).
+
+And some useful commands.
+
+* review-compile: compile ReVIEW fomat files.
+* review-vol: figure out size of ReVIEW files.
+* review-index: generate index with various format.
+* review-preproc: preprocessor.
+
 == Note on Patches/Pull Requests
  
 * Fork the project.
