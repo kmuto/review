@@ -576,6 +576,7 @@ QUOTE
     end
 
     def image_image(id, caption, metric)
+      # FIXME: should respect metric?
       puts %Q[<div class="image">]
       puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
       image_header id, caption
@@ -670,18 +671,21 @@ QUOTE
       puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</a></p></div>)
     end
 
-    def indepimage(id, caption=nil, metric=nil)
+    def indepimage(id, caption="", metric=nil)
+      caption = "" if caption.nil?
       puts %Q[<div class="image">]
       begin
-        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="" />]
+        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}" />]
       rescue
         puts %Q[<pre>missing image: #{id}</pre>]
       end
 
-      puts %Q[<p class="caption">]
-      puts %Q[図: #{compile_inline(caption)}]
-      puts %Q[</p>]
-      puts %Q[</div>]
+      unless caption.empty?
+        puts %Q[<p class="caption">]
+        puts %Q[図: #{compile_inline(caption)}]
+        puts %Q[</p>]
+        puts %Q[</div>]
+      end
     end
 
     alias :numberlessimage indepimage

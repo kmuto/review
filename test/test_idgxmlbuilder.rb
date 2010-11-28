@@ -19,10 +19,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
       "subdirmode" => nil,
     }
     ReVIEW.book.param = @param
-    compiler = ReVIEW::Compiler.new(@builder)
-    chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
+    @compiler = ReVIEW::Compiler.new(@builder)
+    @chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
-    @builder.bind(compiler, chapter, location)
+    @builder.bind(@compiler, @chapter, location)
   end
 
   def test_headline_level1
@@ -240,4 +240,71 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @builder.raw("<&>\\n")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><&>\n|, @builder.raw_result
   end
+
+  def test_image
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image_image("sampleimg","sample photo",nil)
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png"  /><caption>図1.1　sample photo</caption></img>|, @builder.raw_result
+  end
+
+  def test_image_with_metric
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image_image("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /><caption>図1.1　sample photo</caption></img>|, @builder.raw_result
+  end
+
+  def test_indepimage
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.indepimage("sampleimg","sample photo",nil)
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png"  /><caption>sample photo</caption></img>|, @builder.raw_result
+  end
+
+  def test_indepimage_without_caption
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.indepimage("sampleimg",nil,nil)
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png"  /></img>|, @builder.raw_result
+  end
+
+  def test_indepimage_with_metric
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.indepimage("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /><caption>sample photo</caption></img>|, @builder.raw_result
+  end
+
+  def test_indepimage_without_caption_but_with_metric
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.indepimage("sampleimg",nil,"scale=1.2")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /></img>|, @builder.raw_result
+  end
+
 end

@@ -372,9 +372,22 @@ module ReVIEW
       "<span type='image'>図#{getChap(chapter)}#{chapter.image(id).number}</span>"
     end
 
-    def image_image(id, caption, metric)
+    def parse_metric(metric)
+      return [] if metric.nil? || metric.empty?
+      params = []
+      values = metric.split(/\s*?,\s*?/)
+      return [] if values.size == 0
+      values.each {|value|
+        k, v = value.split("=", 2)
+        params.push("#{k}=\"" + v.gsub("\"", '') + "\"")
+      }
+      return params
+    end
+
+    def image_image(id, caption, metric=nil)
       puts "<img>"
-      puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}" />]
+      params = parse_metric(metric)
+      puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}" #{params.join(" ")} />]
       image_header id, caption
       puts "</img>"
     end
@@ -643,7 +656,6 @@ module ReVIEW
     end
 
     def inline_icon(id)
-      # FIXME: accept other image types
       begin
         %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" type="inline" />]
       rescue
@@ -927,10 +939,11 @@ module ReVIEW
       syntaxblock("box", lines, caption)
     end
 
-    def indepimage(id, caption=nil, metric=nil)
+   def indepimage(id, caption=nil, metric=nil)
       puts "<img>"
+      params = parse_metric(metric)
       begin
-        puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" />]
+        puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" #{params.join(" ")} />]
       rescue
         warn %Q[no such image: #{id}]
       end

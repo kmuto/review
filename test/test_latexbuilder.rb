@@ -212,7 +212,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<&>\n|, @builder.result
   end
 
-
   def test_image
     def @chapter.image(id)
       item = ImageIndex::Item.new("sampleimg",1)
@@ -233,6 +232,54 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     @builder.image_image("sampleimg","sample photo","scale=1.2")
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
+  def test_indepimage
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    # FIXME: indepimage's caption should not be with a counter.
+    @builder.indepimage("sampleimg","sample photo",nil)
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
+  def test_indepimage_without_caption
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    # FIXME: indepimage's caption should not be with a counter.
+    @builder.indepimage("sampleimg",nil,nil)
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
+  def test_indepimage_with_metric
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    # FIXME: indepimage's caption should not be with a counter.
+    @builder.indepimage("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
+  def test_indepimage_without_caption_but_with_metric
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    # FIXME: indepimage's caption should not be with a counter.
+    @builder.indepimage("sampleimg",nil,"scale=1.2")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
 end

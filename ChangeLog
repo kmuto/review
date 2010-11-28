@@ -1,3 +1,9 @@
+Sun Nov 28 14:12:50 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: partially support for metric.
+	* test/test_htmlbuilder.rb, test/idg_xmlbuilder.rb,
+	  test/test_latexbuilder.rb: add test for //indepimage and //image.
+
 Sun Nov 28 01:28:06 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb, lib/review/idgxmlbuilder.rb,
