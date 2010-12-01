@@ -1,3 +1,9 @@
+Wed Dec  1 16:38:34 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* doc/format.txt, doc/format_idg.txt, doc/format_sjis.txt, doc/memo-reviewspec.txt:
+	  delete old docs; see format.rdoc, format_idg.rdoc and
+	  Wiki pages on github.com (https://github.com/kmuto/review/wiki)
+
 Sun Nov 28 14:12:50 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: partially support for metric.
