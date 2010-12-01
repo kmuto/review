@@ -979,7 +979,7 @@ module ReVIEW
     end
 
     def inline_code(str)
-      %Q(<tt type='inline-code'>#{escape_html(str)}</tt>)
+      %Q[<tt type='inline-code'>#{escape_html(str)}</tt>]
     end
 
     def inline_br(str)

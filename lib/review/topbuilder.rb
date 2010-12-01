@@ -95,6 +95,8 @@ module ReVIEW
         "image" => "図",
         "texequation" => "TeX式",
         "table" => "表",
+        "bpo" => "bpo",
+        "source" => "ソースコードリスト",
       }
     end
     private :builder_init_file
@@ -222,8 +224,9 @@ module ReVIEW
 
     def read(lines)
       puts "◆→開始:#{@titles["lead"]}←◆"
-      paragraph(lines)
+      puts split_paragraph(lines).join("\n")
       puts "◆→終了:#{@titles["lead"]}←◆"
+      blank
     end
 
     alias :lead read
@@ -300,12 +303,12 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      "表#{getChap(chapter)}#{@chapter.table(id).number}"
+      "表#{getChap(chapter)}#{chapter.table(id).number}"
     end
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      "図#{getChap(chapter)}#{@chapter.image(id).number}"
+      "図#{getChap(chapter)}#{chapter.image(id).number}"
     end
 
     def image(lines, id, caption, metric=nil)
@@ -641,6 +644,7 @@ module ReVIEW
     alias :box insn
 
     def indepimage(id, caption=nil, metric=nil)
+      blank
       begin
         puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")}" #{params.join(" ")}←◆"
       rescue
@@ -648,14 +652,71 @@ module ReVIEW
         puts "◆→画像 #{id}←◆"
       end
       puts "図　#{compile_inline(caption)}" if !caption.nil? && !caption.empty?
+      blank
     end
 
     alias :numberlessimage indepimage
 
-   def inline_chap(id)
+    def label(id)
+      # FIXME
+      ""
+    end
+
+    def tsize(id)
+      # FIXME
+      ""
+    end
+
+    def dtp(str)
+      # FIXME
+    end
+
+    def bpo(lines)
+      base_block "bpo", lines, nil
+    end
+
+    def inline_dtp(str)
+      # FIXME
+      ""
+    end
+
+    def inline_code(str)
+      %Q[△#{str}☆]
+    end
+
+    def inline_br(str)
+      %Q(\n)
+    end
+    
+    def text(str)
+      str
+    end
+    
+    def inline_chap(id)
       #"「第#{super}章　#{inline_title(id)}」"
       # "第#{super}章"
       super
+    end
+
+    def inline_chapref(id)
+      chs = ["", "「", "」"]
+      unless ReVIEW.book.param["chapref"].nil?
+        _chs = NKF.nkf("-w", ReVIEW.book.param["chapref"]).split(",")
+        if _chs.size != 3
+          error "--chapsplitter must have exactly 3 parameters with comma."
+        else
+          chs = _chs
+        end
+      else
+      end
+      "#{chs[0]}#{@chapter.env.chapter_index.number(id)}#{chs[1]}#{@chapter.env.chapter_index.title(id)}#{chs[2]}"
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def source(lines, caption = nil)
+      base_block "source", lines, caption
     end
 
     def inline_ttibold(str)
@@ -679,75 +740,18 @@ module ReVIEW
     def circle_end(level)
     end
 
-
-    def label(id)
-      # FIXME
-      ""
-    end
-
-    def tsize(id)
-      # FIXME
-      ""
-    end
-
-    def dtp(str)
-      # FIXME
-    end
-
-
-
-    def inline_dtp(str)
-      # FIXME
-      ""
-    end
-
-    def inline_br(str)
-      %Q(\n)
-    end
-    
     def raw(str)
       if str =~ /\A<\/(.+)>\Z/
         puts "◆→終了:#{@boxtitles[$1].nil? ? $1 : @boxtitles[$1]}←◆"
+        blank
       elsif str =~ /\A<([^\/].+)>(?:<title[^>]>(.+)<\/title>)?(.*)/
-        case $1
-        when "emlist"
-          puts "◆→開始:インラインリスト←◆"
-        when "cmd"
-          puts "◆→開始:コマンド←◆"
-        when "quote"
-          puts "◆→開始:引用←◆"
-        when "flushright"
-          puts "◆→開始:右寄せ←◆"
-        when "note"
-          puts "◆→開始:ノート←◆"
-        when "important"
-          puts "◆→開始:重要←◆"
-        when "term"
-          puts "◆→開始:用語解説←◆"
-        when "notice"
-          puts "◆→開始:注意←◆"
-        when "point"
-          puts "◆→開始:ここがポイント←◆"
-        when "reference"
-          puts "◆→開始:参考←◆"
-        when "practice"
-          puts "◆→開始:練習問題←◆"
-        when "expert"
-          puts "◆→開始:エキスパートに訊け←◆"
-        when "box"
-          puts "◆→開始:書式←◆"
-        when "insn"
-          puts "◆→開始:書式←◆"
-        end
+        blank
+        puts "◆→開始:#{@boxtitles[$1].nil? ? $1 : @boxtitles[$1]}←◆"
         puts "■#{$2}" unless $2.nil?
         print $3
       else
         puts str
       end
-    end
-    
-    def text(str)
-      str
     end
     
     def nofunc_text(str)
