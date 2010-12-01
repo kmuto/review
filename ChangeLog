@@ -1,3 +1,10 @@
+Thu Dec  2 08:23:14 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	  lib/review/latexbuilder.rb: move core tag @<icon> to
+	  compiler.rb.
+	* lib/review/topbuilder.rb: supports same tags with other builders.
+
 Wed Dec  1 16:41:40 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* VERSION: Version bump to 0.9.0
