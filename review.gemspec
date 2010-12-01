@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{review}
-  s.version = "0.6.0"
+  s.version = "0.9.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["kmuto", "takahashim"]
-  s.date = %q{2010-09-04}
+  s.date = %q{2010-12-01}
   s.description = %q{ReVIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.}
   s.email = %q{kmuto@debian.org}
   s.executables = ["review-check", "review-checkdep", "review-compile", "review-epubmaker", "review-index", "review-pdfmaker", "review-preproc", "review-validate", "review-vol"]
@@ -32,11 +32,25 @@ Gem::Specification.new do |s|
      "bin/review-preproc",
      "bin/review-validate",
      "bin/review-vol",
+     "debian/README.Debian",
+     "debian/README.source",
+     "debian/changelog",
+     "debian/compat",
+     "debian/control",
+     "debian/copyright",
+     "debian/docs",
+     "debian/manpage.1.ex",
+     "debian/patches/path.diff",
+     "debian/patches/series",
+     "debian/review.install",
+     "debian/review.links",
+     "debian/rules",
+     "debian/source/format",
+     "doc/format.rdoc",
      "doc/format.re",
-     "doc/format.txt",
-     "doc/format_idg.txt",
-     "doc/format_sjis.txt",
-     "doc/memo-reviewspec.txt",
+     "doc/format_idg.rdoc",
+     "doc/ruby-uuid/README",
+     "doc/ruby-uuid/README.ja",
      "doc/sample.css",
      "doc/sample.yaml",
      "lib/lineinput.rb",
@@ -63,20 +77,21 @@ Gem::Specification.new do |s|
      "lib/review/topbuilder.rb",
      "lib/review/unfold.rb",
      "lib/review/volume.rb",
+     "lib/uuid.rb",
      "review.gemspec",
-     "setup.rb",
      "test/CHAPS",
      "test/bib.re",
      "test/test.re",
      "test/test_book.rb",
      "test/test_builder.rb",
-     "test/test_epubbuilder.rb",
      "test/test_helper.rb",
      "test/test_htmlbuilder.rb",
      "test/test_htmlutils.rb",
      "test/test_idgxmlbuilder.rb",
      "test/test_latexbuilder.rb",
-     "test/test_lineinput.rb"
+     "test/test_lineinput.rb",
+     "test/test_textutils.rb",
+     "test/test_uuid.rb"
   ]
   s.homepage = %q{http://github.com/kmuto/review}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -86,13 +101,15 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/test_book.rb",
      "test/test_builder.rb",
-     "test/test_epubbuilder.rb",
      "test/test_helper.rb",
      "test/test_htmlbuilder.rb",
      "test/test_htmlutils.rb",
      "test/test_idgxmlbuilder.rb",
+     "test/test_index.rb",
      "test/test_latexbuilder.rb",
-     "test/test_lineinput.rb"
+     "test/test_lineinput.rb",
+     "test/test_textutils.rb",
+     "test/test_uuid.rb"
   ]
 
   if s.respond_to? :specification_version then
