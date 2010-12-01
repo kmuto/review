@@ -21,10 +21,6 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:icon].each {|e|
-      Compiler.definline(e)
-    }
-
     Compiler.defblock(:memo, 0..1)
     Compiler.defblock(:tip, 0..1)
     Compiler.defblock(:info, 0..1)

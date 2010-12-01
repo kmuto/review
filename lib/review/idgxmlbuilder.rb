@@ -20,7 +20,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :icon, :balloon].each {|e|
+    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon].each {|e|
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
