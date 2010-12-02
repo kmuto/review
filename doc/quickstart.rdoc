@@ -1,0 +1,111 @@
+= ReVIEWクイックスタートガイド
+
+ReVIEW は、EWB や RD あるいは Wiki に似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。
+
+平易な文法ながらも、コンピュータ関係のドキュメント作成のための多くの機能を備えており、テキスト、LaTeX、HTML、XML といった形式に変換できます。独自のカスタマイズも簡単です。
+
+ReVIEW は GNU Lesser General Public License Version 2.1 に基づいて配布されており、自由に利用、改変、再配布できます。このライセンスは、ReVIEW を使ってあなたが作成しようとする文書とは無関係であり、あなたの文書はこのライセンスに強制されることはありません。ReVIEW のツールセットあるいは ReVIEW を組み込んだシステムを配布あるいは販売しようとしているときには、ライセンスファイル COPYING をよく確認してください。
+
+このドキュメントでは、ReVIEW のセットアップから変換の例までを簡単に説明します。
+
+== セットアップ
+
+ReVIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem、Git、Subversion のいずれかを使ってダウンロード・展開します。
+
+なお、ReVIEW フォーマット自体は文字で表現されたタグが付いている以外は単なるテキストファイルなので、エディタ、OS についてはまったく制限はありません。
+
+=== Ruby gemを使う場合
+
+機能セットがまとまった区切りごとに、ReVIEW の開発チームが ReVIEW の gem を更新しています。
+
+次のように ReVIEW の gem をインストールします。
+
+  gem install review
+
+Ruby gem の bin ディレクトリにパスを通すようにしておいてください。
+
+インストール後、最新の gem に追従するには次のようにします。
+
+  gem update review
+
+=== Gitを使う場合
+
+ReVIEW は GitHub で開発されており、バージョン管理ツールの Git を使って最新の ReVIEW コードを入手できます。Git は分岐が容易なので、独自のカスタマイズを施すのにも向いています。
+
+初めて取得するときには、次のようにします (コピーを作っています)。
+
+  git clone git://github.com/kmuto/review.git
+
+review というディレクトリに展開されるので、review/bin にパスを通すようにしておいてください。
+
+最新の開発に追従するには次のようにします。
+
+  git pull
+
+=== Subversionを使う場合
+
+Git の最新コピーは、別のバージョン管理ツールの Subversion 向けにも提供しています (古い環境では Subversion のクライアントしか入っていないことがあります)。
+
+初めて取得するときには、次のようにします (コピーを作っています)。
+
+  svn co https://kmuto.jp/svn/review/trunk review
+
+review というディレクトリに展開されるので、review/bin にパスを通すようにしておいてください。
+
+最新の開発に追従するには次のようにします。
+
+  svn up
+
+= ReVIEW テキストの作成と変換
+
+◆→WRITING... -kmuto←◆
+UTF-8 を使うようにしてください。
+
+ReVIEW は日本語文字エンコーディングとして UTF-8、EUC-JP、Shift-JIS、JIS を扱うことができ、入力ファイルについては自動判別、出力ファイルについても選択可能 (デフォルトは UTF-8) ですが、入力・出力のいずれにも、使用可能な文字についての制限が少ない UTF-8 を使うことをお勧めします。
+
+ReVIEW フォーマットについての詳細は、format.rdoc (オンラインでは [[https://github.com/kmuto/review/blob/master/doc/format.rdoc]]) を参照してください。
+
+ほとんどのコマンドは --help オプションを付けるとオプションについてのヘルプが表示されます。
+
+なお、--target で毎回指定するのは面倒なので、review-compile に対するシンボリックリンクを作成しておくとよいでしょう。「review2<ビルダ名>」のコマンド名で呼び出せるようになります。
+
+  cd <ReVIEWのインストールされたパス>/bin
+  ln -s review-compile review2top
+  ln -s review-compile review2html
+  ln -s review-compile review2latex
+  ln -s review-compile review2idgxml
+
+== プリプロセッサ、ボリューム表示
+
+#@mapfile、#@maprange、#@mapoutput のタグを使って、指定のファイルの内容あるいはコマンドの実行結果を挿入できます。挿入・更新を行うには、プリプロセッサとなる review-preproc コマンドを使います。
+
+  review-preproc ファイル > 結果ファイル ←標準出力をリダイレクト
+   または
+  review-preproc --replace ファイル ←ファイルを更新したもので上書き
+
+各章の分量などを表示するには、review-vol コマンドを使います。
+
+  review-vol
+
+より細かな見出し一覧などを出したいときには、review-index コマンドを使うのもよいでしょう。
+
+  review-index --level 掘り下げる見出しレベル数 -a
+
+== PDF 化と EPUB 化
+
+review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマンドで EPUB ファイルの作成ができます。
+
+PDF を作成するには、pTeXLive2009 以上の環境が必要です。EPUB を作成するには、zip コマンドが必要です (MathML も使いたいときには、[[http://www.hinet.mydns.jp/?mathml.rb]] の MathML ライブラリも必要です)。
+
+いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、sample.yaml (オンラインでは[[https://github.com/kmuto/review/blob/master/doc/sample.yaml]]) としてこのドキュメントと同じディレクトリに収録しています。
+
+  review-pdfmaker YAMLファイル  ←PDFの作成
+  review-epubmaker YAMLファイル ←EPUBの作成
+
+== クレジット
+
+ReVIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2010年12月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
+
+バグ・パッチの報告、開発者用メーリングリストなどについての情報は、
+[[https://github.com/kmuto/review/wiki]]
+を参照してください。
