@@ -1,0 +1,170 @@
+# encoding: utf-8
+
+require 'test_helper'
+require 'review/compiler'
+require 'review/book'
+require 'review/topbuilder'
+
+class TOPBuidlerTest < Test::Unit::TestCase
+  include ReVIEW
+
+  def setup
+    @builder = TOPBuilder.new()
+    @param = {
+      "secnolevel" => 2,
+      "inencoding" => "UTF-8",
+      "outencoding" => "UTF-8",
+      "subdirmode" => nil,
+    }
+    ReVIEW.book.param = @param
+    @compiler = ReVIEW::Compiler.new(@builder)
+    @chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
+    location = Location.new(nil, nil)
+    @builder.bind(@compiler, @chapter, location)
+  end
+
+  def test_headline_level1
+    @builder.headline(1,"test","this is test.")
+    assert_equal %Q|■H1■第1章　this is test.\n|, @builder.raw_result
+  end
+
+  def test_headline_level1_without_secno
+    @param["secnolevel"] = 0
+    @builder.headline(1,"test","this is test.")
+    assert_equal %Q|■H1■this is test.\n|, @builder.raw_result
+  end
+
+  def test_headline_level2
+    @builder.headline(2,"test","this is test.")
+    assert_equal %Q|■H2■1.1　this is test.\n|, @builder.raw_result
+  end
+
+  def test_headline_level3
+    @builder.headline(3,"test","this is test.")
+    assert_equal %Q|■H3■this is test.\n|, @builder.raw_result
+  end
+
+  def test_headline_level3_with_secno
+    @param["secnolevel"] = 3
+    @builder.headline(3,"test","this is test.")
+    assert_equal %Q|■H3■1.0.1　this is test.\n|, @builder.raw_result
+  end
+
+  def test_href
+    ret = @builder.compile_href("http://github.com", "GitHub")
+    assert_equal %Q|GitHub（△http://github.com☆）|, ret
+  end
+
+  def test_href_without_label
+    ret = @builder.compile_href("http://github.com",nil)
+    assert_equal %Q|△http://github.com☆|, ret
+  end
+
+  def test_inline_raw
+    ret = @builder.inline_raw("@<tt>{inline}")
+    assert_equal %Q|@<tt>{inline}|, ret
+  end
+
+  def test_inline_ruby
+    ret = @builder.compile_ruby("coffin", "bed")
+    assert_equal %Q|coffin◆→DTP連絡:「coffin」に「bed」とルビ←◆|, ret
+  end
+
+  def test_inline_kw
+    ret = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
+    assert_equal %Q|★ISO☆（International Organization for Standardization） ★Ruby<>☆|, ret
+  end
+
+  def test_inline_maru
+    ret = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
+    assert_equal %Q|1◆→丸数字1←◆20◆→丸数字20←◆A◆→丸数字A←◆z◆→丸数字z←◆|, ret
+  end
+
+  def test_inline_br
+    ret = @builder.inline_br("")
+    assert_equal %Q|\n|, ret
+  end
+
+  def test_inline_uchar
+    ret = @builder.compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test ① test2|, ret
+  end
+
+  def test_inline_in_table
+    @builder.table(["★1☆\t▲2☆", "------------", "★3☆\t▲4☆<>&"])
+    assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, @builder.raw_result
+  end
+
+  def test_paragraph
+    lines = ["foo","bar"]
+    @builder.paragraph(lines)
+    assert_equal %Q|foobar\n|, @builder.raw_result
+  end
+
+  def test_tabbed_paragraph
+    lines = ["\tfoo","bar"]
+    @builder.paragraph(lines)
+    assert_equal %Q|\tfoobar\n|, @builder.raw_result
+  end
+
+  def test_flushright
+    @builder.flushright(["foo", "bar", "","buz"])
+    assert_equal %Q|◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n|, @builder.raw_result
+  end
+
+  def test_noindent
+    @builder.noindent
+    @builder.paragraph(["foo", "bar"])
+    @builder.paragraph(["foo2", "bar2"])
+    assert_equal %Q|◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n|, @builder.raw_result
+  end
+
+  def test_list
+    def @chapter.list(id)
+      ListIndex::Item.new("test",1)
+    end
+    @builder.list(["foo", "bar"], "test", "this is @<b>{test}<&>_")
+    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
+  end
+
+  def test_listnum
+    def @chapter.list(id)
+      ListIndex::Item.new("test",1)
+    end
+    @builder.listnum(["foo", "bar"], "test", "this is @<b>{test}<&>_")
+    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
+  end
+
+  def test_emlistnum
+    @builder.emlistnum(["foo", "bar"], "this is @<b>{test}<&>_")
+    assert_equal %Q|◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n|, @builder.raw_result
+  end
+
+  def test_image
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image(["foo"], "sampleimg","sample photo",nil)
+    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, @builder.raw_result
+  end
+
+  def test_image_with_metric
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image(["foo"], "sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, @builder.raw_result
+  end
+
+  def test_texequation
+    @builder.texequation(["\\sin", "1^{2}"])
+    assert_equal %Q|◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n|, @builder.raw_result
+  end
+
+end
