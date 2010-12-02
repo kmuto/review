@@ -680,8 +680,8 @@ QUOTE
         puts %Q[<p class="caption">]
         puts %Q[図: #{compile_inline(caption)}]
         puts %Q[</p>]
-        puts %Q[</div>]
       end
+      puts %Q[</div>]
     end
 
     alias :numberlessimage indepimage
