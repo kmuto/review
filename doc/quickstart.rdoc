@@ -58,19 +58,96 @@ review というディレクトリに展開されるので、review/bin にパ�
 
 = ReVIEW テキストの作成と変換
 
-◆→WRITING... -kmuto←◆
-UTF-8 を使うようにしてください。
+セットアップを終えたら、ReVIEW フォーマットのテキストを作り、変換できるようになります。次に ReVIEW フォーマットテキストの簡単な例を示します。これを sample.re といった名前で保存します (拡張子も自由ですが、.re 拡張子を推奨します)。
 
-ReVIEW は日本語文字エンコーディングとして UTF-8、EUC-JP、Shift-JIS、JIS を扱うことができ、入力ファイルについては自動判別、出力ファイルについても選択可能 (デフォルトは UTF-8) ですが、入力・出力のいずれにも、使用可能な文字についての制限が少ない UTF-8 を使うことをお勧めします。
+  = はじめてのReVIEW
+  
+  //lead{
+  「Hello, ReVIEW.」
+  //}
+  
+  == ReVIEWとは
+  
+  @<b>{ReVIEW}は、EWBやRDあるいはWikiに似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。
+  
+  平易な文法ながらも、コンピュータ関係のドキュメント作成のための多くの機能を備えており、次のような形式に変換できます。
+  
+   * テキスト（指示タグ付き）
+   * LaTeX
+   * HTML
+   * XML
+  
+  現在入手手段としては次の3つがあります。
+  
+   1. Ruby gem
+   2. Git
+   3. Subversion
+  
+  ホームページは@<tt>{https://github.com/kmuto/review/wiki/}です。
 
-ReVIEW フォーマットについての詳細は、format.rdoc (オンラインでは [[https://github.com/kmuto/review/blob/master/doc/format.rdoc]]) を参照してください。
+テキストファイルの文字エンコーディングには、UTF-8 を使うことをお勧めします。ReVIEW は日本語文字エンコーディングとして UTF-8、EUC-JP、Shift-JIS、JIS を扱うことができ、入力ファイルについては自動判別、出力ファイルについても選択可能 (デフォルトは UTF-8) ですが、入力・出力のいずれにおいても、使用可能な文字についての制限が少ない UTF-8 が最適です。
 
-ほとんどのコマンドは --help オプションを付けるとオプションについてのヘルプが表示されます。
+次に、章構成ファイルの CHAPS ファイルを同じディレクトリに用意します。このファイルには、ReVIEW フォーマットファイルの名前を格納します。
 
-なお、--target で毎回指定するのは面倒なので、review-compile に対するシンボリックリンクを作成しておくとよいでしょう。「review2<ビルダ名>」のコマンド名で呼び出せるようになります。
+  sample.re
 
-  cd <ReVIEWのインストールされたパス>/bin
-  ln -s review-compile review2top
+CHAPS ファイルの1行目に書いたものが第1章、2行目に書いたものが第2章、……と構成されます (CHAPS に似たものとして、前付けを列挙する PREDEF ファイル、後付けを列挙する POSTDEF ファイルがあります)。
+
+sample.re から目的の形式に変換するには、review-compile コマンドを使います。
+
+  review-compile --target text sample.re > sample.txt   ←テキストにする
+  review-compile --target html sample.re > sample.html  ←HTMLにする
+  review-compile --target latex sample.re > sample.tex  ←LaTeXにする
+  review-compile --target idgxml sample.re > sample.xml ←XMLにする
+
+上記では各ファイル個別に変換することを想定して、標準出力をリダイレクトする書式を掲載していますが、-a オプションを付ければ、CHAPS、PREDEF、POSTDEF に従ってすべてのファイルを変換できます。
+
+  review-compile --target html -a ←すべてのファイルをHTMLにする
+
+sample.re を HTML に変換すると、次のようになります。
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta name="generator" content="ReVIEW" />
+    <title>はじめてのReVIEW</title>
+  </head>
+  <body>
+  <h1><a id="h1" />第1章　はじめてのReVIEW</h1>
+  <div class="lead">
+  <p>「Hello, ReVIEW.」</p>
+  </div>
+  
+  <h2><a id="h1-1" />1.1　ReVIEWとは</h2>
+  <p><b>ReVIEW</b>は、EWBやRDあるいはWikiに似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。</p>
+  <p>平易な文法ながらも、コンピュータ関係のドキュメント作成のための多くの機能を備えており、次のような形式に変換できます。</p>
+  <ul>
+  <li>テキスト（指示タグ付き）</li>
+  <li>LaTeX</li>
+  <li>HTML</li>
+  <li>XML</li>
+  </ul>
+  <p>現在入手手段としては次の3つがあります。</p>
+  <ol>
+  <li>Ruby gem</li>
+  <li>Git</li>
+  <li>Subversion</li>
+  </ol>
+  <p>ホームページは<tt>https://github.com/kmuto/review/wiki/</tt>です。</p>
+  </body>
+  </html>
+
+ReVIEW フォーマットについての詳細は、format.rdoc (オンラインでは [[https://github.com/kmuto/review/blob/master/doc/format.rdoc]] ) を参照してください。
+
+review-compile を含め、ほとんどのコマンドは --help オプションを付けるとオプションについてのヘルプが表示されます。review-compile には多数のオプションがあるので確認してください。
+
+なお、--target で毎回指定するのは面倒なので、review-compile に対するシンボリックリンクを作成しておくとよいでしょう。「review2...」のコマンド名で呼び出せるようになります。
+
+  cd ReVIEWのインストールされたパス/bin
+  ln -s review-compile review2text
   ln -s review-compile review2html
   ln -s review-compile review2latex
   ln -s review-compile review2idgxml

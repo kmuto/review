@@ -1,3 +1,10 @@
+Sat Dec  4 00:18:45 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/quickstart.rdoc: created.
+	* lib/review/textbuilder.rb: provide a wrapper of topbuilder.rb.
+	  'review-compile --target text' (or review2text) makes a plain
+	  text file with pseudo tags.
+
 Thu Dec  2 08:23:14 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,
