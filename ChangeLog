@@ -1,3 +1,8 @@
+Thu Dec  9 11:15:11 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/compiler.rb: fix slow regexp for compiling inline
+	  (ex. '@<href>{http://very.long.name/and/missing/close/curly/brace')
+
 Sat Dec  4 00:18:45 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* doc/quickstart.rdoc: created.
