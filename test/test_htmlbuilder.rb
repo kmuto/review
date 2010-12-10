@@ -195,7 +195,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.indepimage("sampleimg",nil,nil)
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n|, @builder.raw_result
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, @builder.raw_result
   end
 
   def test_indepimage_with_metric
@@ -217,7 +217,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.indepimage("sampleimg",nil,"scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n|, @builder.raw_result
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, @builder.raw_result
   end
 
 end
