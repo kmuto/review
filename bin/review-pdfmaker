@@ -264,6 +264,16 @@ def get_template(values)
 \\newcommand{\\reviewmainfont}[0]{%
  }
 
+\\makeatletter
+\\def\\maxwidth{%
+  \\ifdim\\Gin@nat@width>\\linewidth
+    \\linewidth
+  \\else
+    \\Gin@nat@width
+  \\fi
+}
+\\makeatother
+
 #{values["usepackage"]}
 
 \\usepackage[T1]{fontenc}

@@ -286,7 +286,7 @@ module ReVIEW
       if metric
         puts "\\includegraphics[#{metric}]{#{@chapter.image(id).path}}"
       else
-        puts macro('includegraphics', @chapter.image(id).path)
+        puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       puts macro('label', image_label(id))
       if !caption.empty?
