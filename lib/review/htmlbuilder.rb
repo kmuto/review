@@ -338,7 +338,7 @@ EOT
     def box(lines, caption = nil)
       puts %Q[<div class="syntax">]
       puts %Q[<p class="caption">#{compile_inline(caption)}</p>] unless caption.nil?
-      puts %Q[<pre class="syntax">]
+      print %Q[<pre class="syntax">]
       lines.each do |line|
         puts detab(line)
       end
@@ -432,7 +432,7 @@ EOT
     end
 
     def list_body(lines)
-      puts %Q[<pre class="list">]
+      print %Q[<pre class="list">]
       lines.each do |line|
         puts detab(line)
       end
@@ -451,7 +451,7 @@ EOT
     end
 
     def source_body(lines)
-      puts %Q[<pre class="source">]
+      print %Q[<pre class="source">]
       lines.each do |line|
         puts detab(line)
       end
@@ -470,7 +470,7 @@ EOT
     end
 
     def listnum_body(lines)
-      puts %Q[<pre class="list">]
+      print %Q[<pre class="list">]
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
@@ -480,7 +480,7 @@ EOT
     def emlist(lines, caption = nil)
       puts %Q[<div class="emlist-code">]
       puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
-      puts %Q[<pre class="emlist">]
+      print %Q[<pre class="emlist">]
       lines.each do |line|
         puts detab(line)
       end
@@ -490,7 +490,7 @@ EOT
 
     def emlistnum(lines)
       puts %Q[<div class="emlistnum-code">]
-      puts %Q[<pre class="emlist">]
+      print %Q[<pre class="emlist">]
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
@@ -500,7 +500,7 @@ EOT
 
     def cmd(lines)
       puts %Q[<div class="cmd-code">]
-      puts %Q[<pre class="cmd">]
+      print %Q[<pre class="cmd">]
       lines.each do |line|
         puts detab(line)
       end
@@ -509,7 +509,7 @@ EOT
     end
 
     def quotedlist(lines, css_class)
-      puts %Q[<blockquote><pre class="#{css_class}">]
+      print %Q[<blockquote><pre class="#{css_class}">]
       lines.each do |line|
         puts detab(line)
       end
@@ -536,8 +536,7 @@ EOT
       else
         puts <<-QUOTE
 <blockquote style="text-align:right;">
-  <pre>
-#{lines.join("\n")}
+  <pre>#{lines.join("\n")}
 
 #{ref}より</pre>
 </blockquote>
@@ -551,7 +550,7 @@ QUOTE
         blocked_lines = split_paragraph(lines)
         puts "#{blocked_lines.join("\n")}"
       else
-        puts '<pre>'
+        print '<pre>'
         puts "#{lines.join("\n")}"
         puts '</pre>'
       end
@@ -564,7 +563,7 @@ QUOTE
         p = MathML::LaTeX::Parser.new
         puts p.parse(unescape_html(lines.join("\n")), true)
       else
-        puts '<pre>'
+        print '<pre>'
         puts "#{lines.join("\n")}"
         puts '</pre>'
       end
@@ -931,7 +930,7 @@ QUOTE
         puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
       else
         puts %Q[<div style="text-align:right;">]
-        puts %Q[<pre class="flushright">]
+        print %Q[<pre class="flushright">]
         lines.each do |line|
           puts detab(line)
         end
