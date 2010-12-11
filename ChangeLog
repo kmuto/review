@@ -1,3 +1,9 @@
+Sat Dec 11 08:49:48 2010  KADO Masanori  <kdmsnr@gmail.com>
+
+	* bin/review-pdfmaker, lib/review/latexbuilder.rb: add maxwidth
+	for latex image
+	* bin/review-pdfmaker: include image subdir for ebb
+
 Sat Dec 11 02:39:37 2010  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/htmlbuilder.rb: remove empty line after <pre> tag
