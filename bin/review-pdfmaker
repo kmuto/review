@@ -142,7 +142,7 @@ def copy_images(from, to)
     copyImagesToDir(from, to)
     Dir.chdir(to) {
       fork {
-        exec("ebb *.png *.jpg")
+        exec("ebb *.png *.jpg */*.jpg */*.png")
       }
     }
   Process.waitall
