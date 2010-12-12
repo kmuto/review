@@ -307,4 +307,53 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /></img>|, @builder.raw_result
   end
 
+  def column_helper(review)
+    chap_singleton = class << @chapter; self; end
+    chap_singleton.send(:define_method, :content) { review }
+    @compiler.compile(@chapter)
+  end
+
+  def test_column_1
+    review =<<-EOS
+===[column] test
+
+inside column
+
+===[/column]
+EOS
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">test</title><p>inside column</p></column></doc>
+EOS
+    assert_equal expect, column_helper(review)
+  end
+
+  def test_column_2
+    review =<<-EOS
+===[column] test
+
+inside column
+
+=== next level
+EOS
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">test</title><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?></doc>
+EOS
+
+    assert_equal expect, column_helper(review)
+  end
+
+  def test_column_3
+    review =<<-EOS
+===[column] test
+
+inside column
+
+===[/column_dummy]
+EOS
+    assert_raise(ReVIEW::CompileError) do
+      column_helper(review)
+    end
+  end
 end

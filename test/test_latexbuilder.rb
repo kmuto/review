@@ -282,4 +282,65 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
+  def column_helper(review)
+    chap_singleton = class << @chapter; self; end
+    chap_singleton.send(:define_method, :content) { review }
+    @compiler.compile(@chapter)
+  end
+
+  def test_column_1
+    review =<<-EOS
+===[column] test
+
+inside column
+
+===[/column]
+EOS
+    expect =<<-EOS
+
+\\begin{reviewcolumn}
+\\reviewcolumnhead{}{test}
+
+inside column
+
+\\end{reviewcolumn}
+EOS
+    assert_equal expect, column_helper(review)
+  end
+
+  def test_column_2
+    review =<<-EOS
+===[column] test
+
+inside column
+
+=== next level
+EOS
+    expect =<<-EOS
+
+\\begin{reviewcolumn}
+\\reviewcolumnhead{}{test}
+
+inside column
+
+\\end{reviewcolumn}
+
+\\subsection*{next level}
+EOS
+
+    assert_equal expect, column_helper(review)
+  end
+
+  def test_column_3
+    review =<<-EOS
+===[column] test
+
+inside column
+
+===[/column_dummy]
+EOS
+    assert_raise(ReVIEW::CompileError) do
+      column_helper(review)
+    end
+  end
 end

@@ -267,7 +267,17 @@ module ReVIEW
       caption = m[4].strip
       index = level - 1
       if tag
-        open_tagged_section tag, level, label, caption
+        if tag !~ /\A\//
+          open_tagged_section(tag, level, label, caption)
+        else
+          open_tag = tag[1..-1]
+          prev_tag_info = @tagged_section.pop
+          unless prev_tag_info.first == open_tag
+            raise CompileError, "#{open_tag} does not opened."
+          end
+          @strategy.warn("It is not recommended to use \"#{line.chomp}\"")
+          close_tagged_section(*prev_tag_info)
+        end
       else
         if @headline_indexs.size > (index + 1)
           @headline_indexs = @headline_indexs[0..index]
