@@ -220,7 +220,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.image_image("sampleimg","sample photo",nil)
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_image_with_metric
