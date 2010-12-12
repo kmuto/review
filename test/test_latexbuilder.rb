@@ -290,6 +290,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_column_1
     review =<<-EOS
+===[column] prev column
+
+inside prev column
+
 ===[column] test
 
 inside column
@@ -297,6 +301,13 @@ inside column
 ===[/column]
 EOS
     expect =<<-EOS
+
+\\begin{reviewcolumn}
+\\reviewcolumnhead{}{prev column}
+
+inside prev column
+
+\\end{reviewcolumn}
 
 \\begin{reviewcolumn}
 \\reviewcolumnhead{}{test}

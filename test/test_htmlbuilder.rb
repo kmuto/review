@@ -233,6 +233,10 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_column_1
     review =<<-EOS
+===[column] prev column
+
+inside prev column
+
 ===[column] test
 
 inside column
@@ -242,7 +246,12 @@ EOS
     expect =<<-EOS
 <div class="column">
 
-<h3><a id="h1-0-1" />test</h3>
+<h3><a id="h1-0-1" />prev column</h3>
+<p>inside prev column</p>
+</div>
+<div class="column">
+
+<h3><a id="h1-0-2" />test</h3>
 <p>inside column</p>
 </div>
 EOS

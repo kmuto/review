@@ -268,6 +268,7 @@ module ReVIEW
       index = level - 1
       if tag
         if tag !~ /\A\//
+          close_current_tagged_section(level)
           open_tagged_section(tag, level, label, caption)
         else
           open_tag = tag[1..-1]
@@ -284,14 +285,18 @@ module ReVIEW
         end
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
-        while @tagged_section.last and @tagged_section.last[1] >= level
-          close_tagged_section(* @tagged_section.pop)
-        end
+        close_current_tagged_section(level)
         if ReVIEW.book.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
           warn "--hdnumberingmode is deprecated. use --level option."
         end
         @strategy.headline level, label, caption
+      end
+    end
+
+    def close_current_tagged_section(level)
+      while @tagged_section.last and @tagged_section.last[1] >= level
+        close_tagged_section(* @tagged_section.pop)
       end
     end
 

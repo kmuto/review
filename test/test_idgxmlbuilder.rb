@@ -315,6 +315,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_column_1
     review =<<-EOS
+===[column] prev column
+
+inside prev column
+
 ===[column] test
 
 inside column
@@ -323,7 +327,7 @@ inside column
 EOS
     expect =<<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">test</title><p>inside column</p></column></doc>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">prev column</title><p>inside prev column</p></column><column><title aid:pstyle="column-title">test</title><p>inside column</p></column></doc>
 EOS
     assert_equal expect, column_helper(review)
   end
