@@ -75,11 +75,11 @@ class Ec
 
     @media = "application/xhtml+xml" if @media == "xhtml" || @media == "xml" || @media == "html"
     @media = "text/css" if @media == "css"
-    @media = "images/jpeg" if @media == "jpg" || @media == "jpeg" || @media == "images/jpg"
-    @media = "images/png" if @media == "png"
-    @media = "images/gif" if @media == "gif"
-    @media = "images/svg" if @media == "svg"
-    @media = "images/svg+xml" if @media == "svg" || @media == "images/svg"
+    @media = "image/jpeg" if @media == "jpg" || @media == "jpeg" || @media == "image/jpg"
+    @media = "image/png" if @media == "png"
+    @media = "image/gif" if @media == "gif"
+    @media = "image/svg" if @media == "svg"
+    @media = "image/svg+xml" if @media == "svg" || @media == "image/svg"
 
     if @id.nil? || @href.nil? || @media.nil?
       raise "Type error: #{id}, #{href}, #{media}, #{title}, #{notoc}"
@@ -231,7 +231,7 @@ EOT
    end
 
     s << <<EOT
-<body>
+</body>
 </html>
 EOT
     wobj.puts s
@@ -492,7 +492,7 @@ EOT
     %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
       unless @params[role].nil?
         @params[role].each do |v|
-          s << %Q[    <dc:contributor opf:role="#{role}">#{v}</dc:creator>\n]
+          s << %Q[    <dc:contributor opf:role="#{role}">#{v}</dc:contributor>\n]
         end
       end
     end
