@@ -1,5 +1,14 @@
 =begin rdoc
 EPUBの生成を支援するライブラリ
+
+  [シンプルな例]
+  params = EPUBMaker.load_yaml(ARGV[0])
+  epub = EPUBMaker.new(2, params)
+  epub.data.push(Ec.new({"href" => "ch01.xhtml"}))
+  epub.data.push(Ec.new({"href" => "ch02.xhtml"}))
+   ...
+  epub.importImageInfo("images")
+  epub.makeepub("#{params["bookname"]}.epub")
 =end
 
 # encoding: utf-8
@@ -11,6 +20,9 @@ EPUBの生成を支援するライブラリ
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
+# TODO: handle title-page
+#       epub v3
+#       better documents and samples
 
 require 'tmpdir'
 require 'fileutils'
