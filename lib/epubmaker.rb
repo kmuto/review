@@ -27,7 +27,6 @@ EPUBの生成を支援するライブラリ
 require 'tmpdir'
 require 'fileutils'
 require 'yaml'
-require 'rexml/document'
 require 'uuid'
 
 # EPUBMakerに渡すコンテンツデータ。Ecオブジェクトの配列をEPUBMaker#dataに代入することで、コンテンツとして処理される
