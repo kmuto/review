@@ -64,6 +64,7 @@ class EPUBMaker
     @params = params
     @version = version
     validate_params
+    @res = EPUBMakerResource.new(@params)
   end
 
   def mimetype(wobj)
@@ -80,7 +81,7 @@ class EPUBMaker
     end
   end
 
-  def ncx(wobj, indentarray)
+  def ncx(wobj, indentarray=[])
     s = __send__("ncx_#{@version}", indentarray)
     if !s.nil? && !wobj.nil?
       wobj.puts s
@@ -88,17 +89,31 @@ class EPUBMaker
   end
 
   def mytoc(wobj)
+    s = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{@params["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{@res.v("toctitle")}</title>
+</head>
+<body>
+  <h1 class="toc-title">#{@res.v("toctitle")}</h1>
+  <ul class="toc-h1">
+EOT
+    # FIXME:stylesheet
 
+    s = <<EOT
+</body>
+</html>
+EOT
+    return s
   end
 
   private
-
-  def getTocTitle
-    toctitle = "Table of contents"
-    toctitle = "目次" if @params["language"] == "ja"
-    toctitle = @params["toctitle"] unless @params["toctitle"].nil?
-    return toctitle
-  end
 
   def validate_params
     # FIXME: needs escapeHTML?
@@ -124,6 +139,7 @@ class EPUBMaker
     end
     # optional
     # type, format, identifier, source, relation, coverpage, rights, aut
+
   end
 
   def mimetype_2
@@ -187,7 +203,7 @@ EOT
     
     s << %Q[  </metadata>\n]
 
-    # manifest
+    # manifest (FIXME:ncx can be included in?)
     s << <<EOT
   <manifest>
     <item id="ncx" href="#{@params["bookname"]}.ncx" media-type="application/x-dtbncx+xml"/>
@@ -215,13 +231,11 @@ s << %Q[    <item id="toc" href="toc.xhtml" media-type="application/xhtml+xml"/>
     # guide
     s << %Q[  <guide>\n]
 
-    cs = "Cover Page"
-    cs = "表紙" if @params["language"] == "ja"
-    s << %Q[    <reference type="cover" title="#{cs}" href="#{@params["bookname"]}.xhtml"/>\n]
+    s << %Q[    <reference type="cover" title="#{@res.v("covertitle")}" href="#{@params["bookname"]}.xhtml"/>\n]
     title = @params["titlepage"].nil? ? "#{@params["bookname"]}.xhtml" : @params["titlepage"]
-    s << %Q[    <reference type="title-page" title="Title Page" href="#{title}"/>\n]
+    s << %Q[    <reference type="title-page" title="#{@res.v("titlepagetitle")}" href="#{title}"/>\n]
     unless @params["mytoc"].nil?
-      s << %Q[    <reference type="toc" title="#{getTocTitle}" href="toc.xhtml"/>\n]
+      s << %Q[    <reference type="toc" title="#{@res.v("toctitle")}" href="toc.xhtml"/>\n]
     end
 
     s << %Q[  </guide>\n]
@@ -273,7 +287,7 @@ EOT
       s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{getTocTitlle}</text>
+        <text>#{@res.v("toctitle")}</text>
       </navLabel>
       <content src="toc.xhtml"/>
     </navPoint>
@@ -310,7 +324,46 @@ EOT
 
 end
 
-params = {"bookname" => "book", "booktitle"=>"TITLE", "a-adp" => "kenshi", "subject" => ["A", "B"], "coverfile" => "cover.jpg"}
+class EPUBMakerResource
+  def initialize(params)
+    @params = params
+
+    @hash = nil
+    begin
+      @hash = __send__ @params["language"]
+    rescue
+      @hash = __send__ :en
+    end
+
+    @hash.each_pair do |k, v|
+      @hash[k] = @params[k] unless @params[k].nil?
+    end
+  end
+
+  def v(key)
+    return @hash[key]
+  end
+
+  def en
+    {
+      "toctitle" => "Table of Contents",
+      "covertitle" => "Cover",
+      "titlepagetitle" => "Title Page",
+      "colophontitle" => "Colophon",
+    }
+  end
+
+  def ja
+    {
+      "toctitle" => "目次",
+      "covertitle" => "表紙",
+      "titlepagetitle" => "権利表記",
+      "colophontitle" => "奥付",
+    }
+  end
+end
+
+params = {"bookname" => "book", "booktitle"=>"TITLE", "a-adp" => "kenshi", "subject" => ["A", "B"], "coverfile" => "cover.jpg", "language" => "ja"}
 o = EPUBMaker.new(2, params)
 o.data = [
           Ec.new("style", "a.css", "text/css"),
@@ -322,6 +375,6 @@ o.data = [
           Ec.new(nil, "images/cover.jpg", "jpg"),
           Ec.new({"id" => nil, "href" => "media.png"})
 ]
-#o.mimetype(STDOUT)
-#o.opf(STDOUT)
+o.mimetype(STDOUT)
+o.opf(STDOUT)
 o.ncx(STDOUT, ["", "- "])
