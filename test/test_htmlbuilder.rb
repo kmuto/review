@@ -225,4 +225,70 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
   end
 
+  def column_helper(review)
+    chap_singleton = class << @chapter; self; end
+    chap_singleton.send(:define_method, :content) { review }
+    @compiler.compile(@chapter).match(/<body>\n(.+)<\/body>/m)[1]
+  end
+
+  def test_column_1
+    review =<<-EOS
+===[column] prev column
+
+inside prev column
+
+===[column] test
+
+inside column
+
+===[/column]
+EOS
+    expect =<<-EOS
+<div class="column">
+
+<h3><a id="h1-0-1" />prev column</h3>
+<p>inside prev column</p>
+</div>
+<div class="column">
+
+<h3><a id="h1-0-2" />test</h3>
+<p>inside column</p>
+</div>
+EOS
+    assert_equal expect, column_helper(review)
+  end
+
+  def test_column_2
+    review =<<-EOS
+===[column] test
+
+inside column
+
+=== next level
+EOS
+    expect =<<-EOS
+<div class="column">
+
+<h3><a id="h1-0-1" />test</h3>
+<p>inside column</p>
+</div>
+
+<h3><a id="h1-0-2" />next level</h3>
+EOS
+
+    assert_equal expect, column_helper(review)
+  end
+
+  def test_column_3
+    review =<<-EOS
+===[column] test
+
+inside column
+
+===[/column_dummy]
+EOS
+    assert_raise(ReVIEW::CompileError) do
+      column_helper(review)
+    end
+  end
 end

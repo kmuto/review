@@ -45,6 +45,7 @@ module ReVIEW
             path.push Chapter.new(get_label(line), id, filename)
             roots.push path.first
           end
+          next if get_label(line) =~ /\A\[\// # ex) "[/column]"
           new = Section.new(lev, get_label(line))
           until path.last.level < new.level
             path.pop

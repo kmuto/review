@@ -267,21 +267,36 @@ module ReVIEW
       caption = m[4].strip
       index = level - 1
       if tag
-        open_tagged_section tag, level, label, caption
+        if tag !~ /\A\//
+          close_current_tagged_section(level)
+          open_tagged_section(tag, level, label, caption)
+        else
+          open_tag = tag[1..-1]
+          prev_tag_info = @tagged_section.pop
+          unless prev_tag_info.first == open_tag
+            raise CompileError, "#{open_tag} is not opened."
+          end
+          @strategy.warn("It is not recommended to use \"#{line.chomp}\"")
+          close_tagged_section(*prev_tag_info)
+        end
       else
         if @headline_indexs.size > (index + 1)
           @headline_indexs = @headline_indexs[0..index]
         end
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
-        while @tagged_section.last and @tagged_section.last[1] >= level
-          close_tagged_section(* @tagged_section.pop)
-        end
+        close_current_tagged_section(level)
         if ReVIEW.book.param["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
           warn "--hdnumberingmode is deprecated. use --level option."
         end
         @strategy.headline level, label, caption
+      end
+    end
+
+    def close_current_tagged_section(level)
+      while @tagged_section.last and @tagged_section.last[1] >= level
+        close_tagged_section(* @tagged_section.pop)
       end
     end
 
