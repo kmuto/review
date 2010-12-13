@@ -57,17 +57,21 @@ aut: Kenshi Muto
 # relation: 補助的リソース(複数指定可)
 # coverage: 内容の範囲や領域(複数指定可)
 
-# coverfile: カバーページのbody要素内に挿入する内容を記述したファイル名
+# cover: カバーページのファイル名(省略した場合はbookname.xhtmlになる)
 #
 # coverimage: カバー用画像
 #
 # CSSファイル(配列で複数指定することも可)
-stylesheet: stylesheet.css
+#stylesheet: stylesheet.css
 
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル
 secnolevel: 2
+# NCX目次の見出しレベルごとの飾り(配列で設定)
+ncxindent:
+- 
+- - 
 
 # EPUB標準の目次以外に目次を作成するか
 # mytoc: nil
@@ -79,6 +83,7 @@ secnolevel: 2
 
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる(data配列にも指定しておく必要がある)
 # colophon: true
+# pubhistory: 奥付履歴
 
 # XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
 # posthook: hook.sh

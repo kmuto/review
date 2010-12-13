@@ -1,3 +1,7 @@
+=begin rdoc
+EPUBの生成を支援するライブラリ
+=end
+
 # encoding: utf-8
 #
 # Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
@@ -14,20 +18,34 @@ require 'yaml'
 require 'rexml/document'
 require 'uuid'
 
+# EPUBMakerに渡すコンテンツデータ。Ecオブジェクトの配列をEPUBMaker#dataに代入することで、コンテンツとして処理される
 class Ec
-  attr_accessor :id, :href, :media, :title, :level, :notoc
+  # コンテンツの一意な識別子
+  attr_accessor :id
+  # コンテンツの相対ファイルパス(アンカーを含むこともできる)
+  attr_accessor :href
+  # コンテンツのMIMEタイプ
+  attr_accessor :media
+  # コンテンツの見出し
+  attr_accessor :title
+  # コンテンツの見出しレベル(1〜)
+  attr_accessor :level
+  # コンテンツの目次表示可否。nilの場合には表示しない
+  attr_accessor :notoc
 
-  def initialize(idorhash, href=nil, media=nil, title=nil, level=nil, notoc=nil)
-    if idorhash.instance_of?(Hash)
-      @id = idorhash["id"]
-      @href = idorhash["href"]
-      @media = idorhash["media"]
-      @title = idorhash["title"]
-      @level = idorhash["level"]
-      @notoc = idorhash["notoc"]
+  # コンテンツデータの値を引数またはハッシュで指定してオブジェクトを作る
+  # hreforhash::ファイルパスまたはハッシュ。ハッシュの場合には後続の値は指定せず、ハッシュ内で指定する("id"=>"〜", "href"=>"〜", ...)。基本的にはhrefだけを明確に指定すればほかは自動生成して省略できる
+  def initialize(hreforhash, id=nil, media=nil, title=nil, level=nil, notoc=nil)
+    if hreforhash.instance_of?(Hash)
+      @id = hreforhash["id"]
+      @href = hreforhash["href"]
+      @media = hreforhash["media"]
+      @title = hreforhash["title"]
+      @level = hreforhash["level"]
+      @notoc = hreforhash["notoc"]
     else
-      @id = idorhash
-      @href = href
+      @href = hreforhash
+      @id = id
       @media = media
       @title = title
       @level = level
@@ -37,6 +55,7 @@ class Ec
   end
 
   private
+
   def validate
     # validation
     @id = @href.gsub(/[\\\/\.]/, '-') if @id.nil?
@@ -56,7 +75,9 @@ class Ec
   end
 end
 
+# メッセージリソース。languageパラメータの値によっていくつかの文字列を切り替える
 class EPUBMakerResource
+  # languageパラメータに従って使用する言語メッセージを設定する
   def initialize(params)
     @params = params
 
@@ -72,16 +93,24 @@ class EPUBMakerResource
     end
   end
 
+  # メッセージIDに相当するメッセージを返す
+  # key:: メッセージID
   def v(key)
     return @hash[key]
   end
 
+  private
   def en
     {
       "toctitle" => "Table of Contents",
       "covertitle" => "Cover",
       "titlepagetitle" => "Title Page",
       "colophontitle" => "Colophon",
+      "c-aut" => "Author",
+      "c-dsr" => "Designer",
+      "c-ill" => "Illustrator",
+      "c-edt" => "Editor",
+      "c-prt" => "Publisher",
     }
   end
 
@@ -91,19 +120,30 @@ class EPUBMakerResource
       "covertitle" => "表紙",
       "titlepagetitle" => "権利表記",
       "colophontitle" => "奥付",
+      "c-aut" => "著　者",
+      "c-dsr" => "デザイン",
+      "c-ill" => "イラスト",
+      "c-edt" => "編　集",
+      "c-prt" => "発行所",
     }
   end
 end
 
+# EPUB生成のための各種内部処理を提供する
 class EPUBMaker
-
+  # コンテンツデータ(Ec)の配列
   attr_accessor :data
 
+  # YAMLファイルを読み取り、パラメータを返す
+  # yamlfile:: YAMLファイル名
   def EPUBMaker.load_yaml(yamlfile)
     raise "Can't open #{yamlfile}." if yamlfile.nil? || !File.exist?(yamlfile)
     return YAML.load_file(yamlfile)
   end
 
+  # EPUBバージョン、パラメータを渡してオブジェクトを生成する
+  # version:: EPUBのバージョン。現行では「2」を指定すること
+  # params:: パラメータ(ハッシュ)。通常はYAMLファイルで定義する
   def initialize(version, params)
     @data = []
     @params = params
@@ -112,6 +152,8 @@ class EPUBMaker
     @res = EPUBMakerResource.new(@params)
   end
 
+  # EPUBバージョンに従ったmimetypeファイルを生成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
   def mimetype(wobj)
     s = __send__("mimetype_#{@version}")
     if !s.nil? && !wobj.nil?
@@ -119,6 +161,8 @@ class EPUBMaker
     end
   end
 
+  # EPUBバージョンに従ったopfファイルを生成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
   def opf(wobj)
     s = __send__("opf_#{@version}")
     if !s.nil? && !wobj.nil?
@@ -126,6 +170,9 @@ class EPUBMaker
     end
   end
 
+  # EPUBバージョンに従ったncxファイルを生成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
+  # indentarray:: 見出しレベルに応じてプレフィクスに付ける文字を配列で指定する。配列の0番目の値がレベル1の見出しに付き、1番目の値がレベル2の見出しに付き、……となる
   def ncx(wobj, indentarray=[])
     s = __send__("ncx_#{@version}", indentarray)
     if !s.nil? && !wobj.nil?
@@ -133,6 +180,8 @@ class EPUBMaker
     end
   end
 
+  # EPUBバージョンに従ったcontainerファイルを生成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
   def container(wobj)
     s = __send__("container_#{@version}")
     if !s.nil? && !wobj.nil?
@@ -140,22 +189,79 @@ class EPUBMaker
     end
   end
 
-  def mytoc(wobj)
-    s = <<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@params["language"]}">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  # 表紙ファイルを生成する。coverimageパラメータが設定されているときには、その画像を画面一杯に表示するように構成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
+  def cover(wobj)
+    s = common_header
+    s << <<EOT
+  <title>#{@params["title"]}</title>
+</head>
+<body>
 EOT
-
-    @params["stylesheet"].each do |file|
-      s << %Q[  <link rel="stylesheet" type="text/css" href="#{file}"/>\n]
-    end
+   if @params["coverimage"].nil?
+     s << <<EOT
+<h1 class="cover-title">#{@params["title"]}</h1>
+EOT
+   else
+     href = nil
+     @data.each do |item|
+        if item.media =~ /\Aimage/ && item.href =~ /#{@params["coverimage"]}\Z/
+            href = item.href
+          break
+        end
+      end
+     raise "coverimage #{@params["coverimage"]} not found. Abort." if href.nil?
+     s << <<EOT
+  <div id="cover-image" class="cover-image">
+    <img src="#{href}" alt="#{@params["title"]}" class="max"/>
+  </div>
+EOT
+   end
 
     s << <<EOT
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+<body>
+</html>
+EOT
+    wobj.puts s
+  end
+
+  # 奥付ファイルを生成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
+  def colophon(wobj)
+    s = common_header
+    s << <<EOT
+  <title>#{@res.v("colophontitle")}</title>
+</head>
+<body>
+  <div class="colophon">
+    <p class="title">#{@params["title"]}</p>
+EOT
+
+    if @params["pubhistory"]
+      s << %Q[    <div class="pubhistory">\n      <p>#{@params["pubhistory"].gsub(/\n/, "<br />")}</p>\n    </div>\n] # FIXME: should be array?
+    end
+
+    s << %Q[    <table class="colophon">\n]
+    s << %Q[      <tr><th>#{@res.v("c-aut")}</th><td>#{@params["aut"]}</td></tr>\n] if @params["aut"]
+    s << %Q[      <tr><th>#{@res.v("c-dsr")}</th><td>#{@params["dsr"]}</td></tr>\n] if @params["dsr"]
+    s << %Q[      <tr><th>#{@res.v("c-ill")}</th><td>#{@params["ill"]}</td></tr>\n] if @params["ill"]
+    s << %Q[      <tr><th>#{@res.v("c-edt")}</th><td>#{@params["edt"]}</td></tr>\n] if @params["edt"]
+    s << %Q[      <tr><th>#{@res.v("c-prt")}</th><td>#{@params["prt"]}</td></tr>\n] if @params["prt"]
+
+    s << <<EOT
+    </table>
+  </div>
+</body>
+</html>
+EOT
+    wobj.puts s
+  end
+
+  # 独自の目次ファイルを生成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
+  def mytoc(wobj)
+    s = common_header
+    s << <<EOT
   <title>#{@res.v("toctitle")}</title>
 </head>
 <body>
@@ -197,52 +303,121 @@ EOT
     wobj.puts s
   end
 
-  def importImageInfo(path, base="")
+  # 指定ディレクトリ下の画像を再帰的に検索し、コンテンツデータ配列に追加登録する。このメソッドは自己呼び出しされる
+  # path:: 検索パス
+  # base:: コンテンツデータとしての登録時にファイルパスから除外する文字列
+  def importImageInfo(path, base=nil)
     Dir.foreach(path) do |f|
       next if f =~ /\A\./
       if f =~ /\.(png|jpg|jpeg|svg|gif)\Z/i
         path.chop! if path =~ /\/\Z/
-        @data.push(Ec.new({"href" => "#{path.sub(base + "/", '')}/#{f}"}))
+        if base.nil?
+          @data.push(Ec.new({"href" => "#{path}/#{f}"}))
+        else
+          @data.push(Ec.new({"href" => "#{path.sub(base + "/", '')}/#{f}"}))
+        end
       end
-      if FileTest.directory?(f)
-        importImageInfo(f, base)
+      if FileTest.directory?("#{path}/#{f}")
+        importImageInfo("#{path}/#{f}", base)
       end
     end
   end
 
-  def makeepub(epubfile, basedir=".", tmpdir=nil)
+  # EPUBバージョンに従ったEPUBファイルを生成する
+  # epubfile:: 出力先のEPUBファイル名
+  # basedir:: コピー元コンテンツのあるディレクトリ名
+  # _tmpdir:: 一時作業に使うディレクトリ名。省略した場合はテンポラリディレクトリを作成し、作業完了後に削除する
+  def makeepub(epubfile, basedir=nil, _tmpdir=nil)
     # another zip implemantation?
     current = Dir.pwd
+    basedir = current if basedir.nil?
+    tmpdir = _tmpdir.nil? ? Dir.mktmpdir : _tmpdir
     epubfile = "#{current}/#{epubfile}" if epubfile !~ /\A\//
-
-      # FIXME error check
-      
-      File.unlink(epubfile)
     
+    # FIXME error check
+    File.unlink(epubfile) if File.exist?(epubfile)
+    
+    begin
+      __send__("makeepub_#{@version}", epubfile, basedir, tmpdir)
+    ensure
+      FileUtils.rm_r(tmpdir) if _tmpdir.nil?
+    end
+  end
+
+  private
+
+  def common_header
+    s =<<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@params["language"]}">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+EOT
+
+    @params["stylesheet"].each do |file|
+      s << %Q[  <link rel="stylesheet" type="text/css" href="#{file}"/>\n]
+    end
+    return s
+  end
+
+  def makeepub_2(epubfile, basedir, tmpdir)
+    File.open("#{tmpdir}/mimetype", "w") {|f| mimetype(f) }
+
+    Dir.mkdir("#{tmpdir}/META-INF") unless File.exist?("#{tmpdir}/META-INF")
+    File.open("#{tmpdir}/META-INF/container.xml", "w") {|f| container(f) }
+
+    Dir.mkdir("#{tmpdir}/OEBPS") unless File.exist?("#{tmpdir}/OEBPS")
+    File.open("#{tmpdir}/OEBPS/#{@params["bookname"]}.opf", "w") {|f| opf(f) }
+    File.open("#{tmpdir}/OEBPS/#{@params["bookname"]}.ncx", "w") {|f| ncx(f, @params["ncxindent"]) }
+    File.open("#{tmpdir}/OEBPS/#{@params["tocfile"]}", "w") {|f| mytoc(f) } unless @params["mytoc"].nil?
+
+    if File.exist?("#{basedir}/#{@params["cover"]}")
+      FileUtils.cp("#{basedir}/#{@params["cover"]}", "#{tmpdir}/OEBPS")
+    else
+      File.open("#{tmpdir}/OEBPS/#{@params["cover"]}", "w") {|f| cover(f) }
+    end
+
+    @data.each do |item|
+      fname = "#{basedir}/#{item.href}"
+      raise "#{fname} doesn't exist. Abort." unless File.exist?(fname)
+      FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.href}")) unless File.exist?(File.dirname("#{tmpdir}/OEBPS/#{item.href}"))
+      FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.href}")
+    end
+
     fork {
       Dir.chdir(tmpdir) {|d|
         exec("zip -0X #{epubfile} mimetype")
       }
     }
     Process.waitall
-    
-    # FIXME
-    
+    fork {
+      Dir.chdir(tmpdir) {|d|
+        exec("zip -Xr9D #{epubfile} META-INF OEBPS")
+      }
+    }
+    Process.waitall
   end
 
-  private
+  def makeepub_3(epubfile, basedir, tmpdir)
+    raise "FIXME: makeepub_3 for EPUB3"
+  end
 
   def validate_params
     # FIXME: needs escapeHTML?
 
     # use default value if not defined
     defaults = {
+      "cover" => "#{@params["bookname"]}.xhtml",
       "title" => @params["booktitle"], # backward compatibility
       "language" => "ja",
       "date" => Time.now.strftime("%Y-%m-%d"),
       "urnid" => "urn:uid:#{UUID.create}",
       "tocfile" => "toc.xhtml",
       "toclevel" => 2,
+      "stylesheet" => [],
     }
     defaults.each_pair do |k, v|
       @params[k] = v if @params[k].nil?
@@ -258,7 +433,6 @@ EOT
     end
     # optional
     # type, format, identifier, source, relation, coverpage, rights, aut
-
   end
 
   def mimetype_2
@@ -311,9 +485,9 @@ EOT
       end
     end
 
-    if @params["coverfile"]
+    if @params["coverimage"]
       @data.each do |item|
-        if item.media =~ /\Aimages/ && item.href =~ /#{@params["coverfile"]}\Z/
+        if item.media =~ /\Aimage/ && item.href =~ /#{@params["coverimage"]}\Z/
           s << %Q[    <meta name="cover" content="#{item.id}"/>\n]
           break
         end
@@ -326,7 +500,7 @@ EOT
     s << <<EOT
   <manifest>
     <item id="ncx" href="#{@params["bookname"]}.ncx" media-type="application/x-dtbncx+xml"/>
-    <item id="#{@params["bookname"]}" href="#{@params["bookname"]}.xhtml" media-type="application/xhtml+xml"/>
+    <item id="#{@params["bookname"]}" href="#{@params["cover"]}" media-type="application/xhtml+xml"/>
 EOT
     s << %Q[    <item id="toc" href="#{@params["tocfile"]}" media-type="application/xhtml+xml"/>\n] unless @params["mytoc"].nil?
 
@@ -349,8 +523,8 @@ EOT
 
     # guide
     s << %Q[  <guide>\n]
-    s << %Q[    <reference type="cover" title="#{@res.v("covertitle")}" href="#{@params["bookname"]}.xhtml"/>\n]
-    title = @params["titlepage"].nil? ? "#{@params["bookname"]}.xhtml" : @params["titlepage"]
+    s << %Q[    <reference type="cover" title="#{@res.v("covertitle")}" href="#{@params["cover"]}"/>\n]
+    title = @params["titlepage"].nil? ? @params["cover"] : @params["titlepage"]
     s << %Q[    <reference type="title-page" title="#{@res.v("titlepagetitle")}" href="#{title}"/>\n]
     unless @params["mytoc"].nil?
       s << %Q[    <reference type="toc" title="#{@res.v("toctitle")}" href="#{@params["tocfile"]}"/>\n]
@@ -393,7 +567,7 @@ EOT
       <navLabel>
         <text>#{@params["title"]}</text>
       </navLabel>
-      <content src="#{@params["bookname"]}.xhtml"/>
+      <content src="#{@params["cover"]}"/>
     </navPoint>
 EOT
 
@@ -455,24 +629,3 @@ EOT
   end
 
 end
-
-yamlfile = ARGV[0]
-params = EPUBMaker.load_yaml(yamlfile)
-o = EPUBMaker.new(2, params)
-#o.data = [
-#          Ec.new("style", "a.css", "text/css"),
-#          Ec.new("using", "using.xhtml", "application/xhtml+xml", "tukaikata", 1),
-#          Ec.new("using2", "using2.xhtml", "application/xhtml+xml", "tukaikata2", 2),
-#          Ec.new("using3", "using3.xhtml", "application/xhtml+xml", "tukaikata3", 3),
-#          Ec.new("hidden", "hidden.xhtml", "xhtml", nil, nil, true),
-#          Ec.new("fig1", "images/hoa.png", "png"),
-#          Ec.new(nil, "images/cover.jpg", "jpg"),
-#          Ec.new({"id" => nil, "href" => "media.png"})
-#]
-#o.mimetype(STDOUT)
-#o.opf(STDOUT)
-#o.ncx(STDOUT, ["", "- "])
-#o.mytoc(STDOUT)
-#o.container(STDOUT)
-o.importImageInfo("/home/kmuto/job/sharou-epub/images", "/home/kmuto/job/sharou-epub")
-o.data.each {|i| puts i.href }
