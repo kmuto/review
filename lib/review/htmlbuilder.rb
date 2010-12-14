@@ -1,5 +1,4 @@
 # encoding: utf-8
-# $Id: htmlbuilder.rb 4268 2009-05-27 04:17:08Z kmuto $
 #
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2010 Minero Aoki, Kenshi Muto
@@ -76,9 +75,11 @@ module ReVIEW
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
         unless ReVIEW.book.param["stylesheet"].nil?
-          header += <<EOT
-  <link rel="stylesheet" type="text/css" href="#{ReVIEW.book.param["stylesheet"]}" />
+          ReVIEW.book.param["stylesheet"].split(/\s*,\s*/).each do |style|
+            header += <<EOT
+  <link rel="stylesheet" type="text/css" href="#{style}" />
 EOT
+          end
         end
         header += <<EOT
   <meta name="generator" content="ReVIEW" />

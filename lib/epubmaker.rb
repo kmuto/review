@@ -236,6 +236,46 @@ EOT
     wobj.puts s
   end
 
+  # 権利表記ファイルを作成する
+  # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
+  def titlepage(wobj)
+    s = common_header
+    s << <<EOT
+  <title>#{@params["title"]}</title>
+</head>
+<body>
+  <h1 class="tp-title">#{@params["title"]}</h1>
+EOT
+
+   if @params["aut"]
+        s << <<EOT
+  <p>
+    <br />
+    <br />
+  </p>
+  <h2 class="tp-author">#{@params["aut"]}</h2>
+EOT
+   end
+
+   if @params["prt"]
+        s << <<EOT
+  <p>
+    <br />
+    <br />
+    <br />
+    <br />
+  </p>
+  <h3 class="tp-publisher">#{@params["prt"]}</h3>
+EOT
+   end
+
+    s << <<EOT
+</body>
+</html>
+EOT
+    wobj.puts s
+  end
+
   # 奥付ファイルを生成する
   # wobj:: 書き込み先IOオブジェクト。STDOUTを指定すると標準出力に出力する
   def colophon(wobj)
@@ -391,6 +431,8 @@ EOT
       File.open("#{tmpdir}/OEBPS/#{@params["cover"]}", "w") {|f| cover(f) }
     end
 
+    # colophon and titlepage should be included in @data.
+
     @data.each do |item|
       fname = "#{basedir}/#{item.href}"
       raise "#{fname} doesn't exist. Abort." unless File.exist?(fname)
@@ -420,13 +462,14 @@ EOT
     # FIXME: needs escapeHTML?
 
     # use default value if not defined
+    @params["htmlext"] = "xhtml" if @params["htmlext"].nil?
     defaults = {
-      "cover" => "#{@params["bookname"]}.xhtml",
+      "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
       "title" => @params["booktitle"], # backward compatibility
       "language" => "ja",
       "date" => Time.now.strftime("%Y-%m-%d"),
       "urnid" => "urn:uid:#{UUID.create}",
-      "tocfile" => "toc.xhtml",
+      "tocfile" => "toc.#{@params["htmlext"]}",
       "toclevel" => 2,
       "stylesheet" => [],
     }
@@ -535,11 +578,8 @@ EOT
     # guide
     s << %Q[  <guide>\n]
     s << %Q[    <reference type="cover" title="#{@res.v("covertitle")}" href="#{@params["cover"]}"/>\n]
-    title = @params["titlepage"].nil? ? @params["cover"] : @params["titlepage"]
-    s << %Q[    <reference type="title-page" title="#{@res.v("titlepagetitle")}" href="#{title}"/>\n]
-    unless @params["mytoc"].nil?
-      s << %Q[    <reference type="toc" title="#{@res.v("toctitle")}" href="#{@params["tocfile"]}"/>\n]
-    end
+    s << %Q[    <reference type="title-page" title="#{@res.v("titlepagetitle")}" href="#{@params["titlepage"]}"/>\n] unless @params["titlepage"].nil?
+    s << %Q[    <reference type="toc" title="#{@res.v("toctitle")}" href="#{@params["tocfile"]}"/>\n] unless @params["mytoc"].nil?
     s << %Q[  </guide>\n]
     s << %Q[</package>\n]
     return s
