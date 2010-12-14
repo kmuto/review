@@ -40,7 +40,7 @@ module ReVIEW
     end
 
     def extname
-      '.html'
+      ".#{ReVIEW.book.param["htmlext"]}"
     end
 
     def builder_init(no_error = false)
@@ -69,13 +69,13 @@ module ReVIEW
         header = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
         unless ReVIEW.book.param["stylesheet"].nil?
-          ReVIEW.book.param["stylesheet"].split(/\s*,\s*/).each do |style|
+          ReVIEW.book.param["stylesheet"].each do |style|
             header += <<EOT
   <link rel="stylesheet" type="text/css" href="#{style}" />
 EOT
@@ -121,7 +121,7 @@ EOT
       return '' if @errors.empty?
       "<h2>Syntax Errors</h2>\n" +
       "<ul>\n" +
-      @errors.map {|file, line, msg|
+        @errors.map {|file, line, msg|
         "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
       }.join('') +
       "</ul>\n"
@@ -147,7 +147,7 @@ EOT
         @subsubsubsection = 0
         anchor = "#{@chapter.number}"
         if ReVIEW.book.param["secnolevel"] >= 1
-          if @chapter.number.to_s =~ /\A\d+$/
+          if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "第#{@chapter.number}章　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
             prefix = "#{@chapter.number}　"
@@ -160,7 +160,7 @@ EOT
         @subsubsubsection = 0
         anchor = "#{@chapter.number}-#{@section}"
         if ReVIEW.book.param["secnolevel"] >= 2
-          if @chapter.number.to_s =~ /\A\d+$/
+          if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
             prefix = "#{@chapter.number}.#{@section}　"
@@ -172,7 +172,7 @@ EOT
         @subsubsubsection = 0
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}"
         if ReVIEW.book.param["secnolevel"] >= 3
-          if @chapter.number.to_s =~ /\A\d+$/
+          if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
@@ -183,7 +183,7 @@ EOT
         @subsubsubsection = 0
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}"
         if ReVIEW.book.param["secnolevel"] >= 4
-          if @chapter.number.to_s =~ /\A\d+$/
+          if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
@@ -193,7 +193,7 @@ EOT
         @subsubsubsection += 1
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}-#{@subsubsubsection}"
         if ReVIEW.book.param["secnolevel"] >= 5
-          if @chapter.number.to_s =~ /\A\d+$/
+          if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
@@ -285,9 +285,7 @@ EOT
         blocked_lines = split_paragraph(lines)
         puts blocked_lines.join("\n")
       else
-        lines.each {|l|
-          puts "<p>#{l}</p>"
-        }
+        lines.each {|l| puts "<p>#{l}</p>" }
       end
       puts '</div>'
     end
@@ -340,9 +338,7 @@ EOT
       puts %Q[<div class="syntax">]
       puts %Q[<p class="caption">#{compile_inline(caption)}</p>] unless caption.nil?
       print %Q[<pre class="syntax">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      lines.each {|line| puts detab(line) }
       puts '</pre>'
       puts '</div>'
     end
@@ -799,7 +795,7 @@ QUOTE
     end
 
     def inline_bib(id)
-      %Q(<a href=".#{@book.bib_file.gsub(/re$/, "html")}#bib-#{id}">[#{@chapter.bibpaper(id).number}]</a>)
+      %Q(<a href=".#{@book.bib_file.gsub(/re\Z/, "html")}#bib-#{id}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
     def inline_hd_chap(chap, id)
@@ -932,9 +928,7 @@ QUOTE
       else
         puts %Q[<div style="text-align:right;">]
         print %Q[<pre class="flushright">]
-        lines.each do |line|
-          puts detab(line)
-        end
+        lines.each {|line| puts detab(line) }
         puts '</pre>'
         puts '</div>'
       end

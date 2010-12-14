@@ -57,7 +57,7 @@ aut: Kenshi Muto
 # relation: 補助的リソース(複数指定可)
 # coverage: 内容の範囲や領域(複数指定可)
 
-# htmlext: HTMLファイルの拡張子(省略した場合はxhtml)
+# htmlext: HTMLファイルの拡張子(省略した場合はhtml)
 # cover: カバーページのファイル名(省略した場合はbookname.xhtmlになる)
 #
 # coverimage: カバー用画像

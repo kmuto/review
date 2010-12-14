@@ -20,9 +20,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon].each {|e|
-      Compiler.definline(e)
-    }
+    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon].each {|e| Compiler.definline(e) }
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 0..1)
@@ -377,10 +375,10 @@ module ReVIEW
       params = []
       values = metric.split(/\s*?,\s*?/)
       return [] if values.size == 0
-      values.each {|value|
+      values.each do |value|
         k, v = value.split("=", 2)
         params.push("#{k}=\"" + v.gsub("\"", '') + "\"")
-      }
+      end
       return params
     end
 
@@ -448,17 +446,15 @@ module ReVIEW
       cellwidth = []
       unless tablewidth.nil?
         if @tsize.nil?
-          col.times {|n|
-            cellwidth[n] = tablewidth / col
-          }
+          col.times {|n| cellwidth[n] = tablewidth / col }
         else
           cellwidth = @tsize.split(/\s*,\s*/)
           totallength = 0
-          cellwidth.size.times {|n|
+          cellwidth.size.times do |n|
             cellwidth[n] = cellwidth[n].to_f / 0.351 # mm -> pt
             totallength = totallength + cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
-          }
+          end
           if cellwidth.size < col
             cw = (tablewidth - totallength) / (col - cellwidth.size)
             warn "auto cell sizing exceeds limit for table: #{id}" if cw <= 0
@@ -488,10 +484,10 @@ module ReVIEW
             puts %Q[<tr type="header">#{rows.shift}</tr>]
           else
             i = 0
-            rows.shift.split(/\t/).each {|cell|
+            rows.shift.split(/\t/).each do |cell|
               print %Q[<td aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
               i += 1
-            }
+            end
           end
         end
       end
@@ -503,17 +499,15 @@ module ReVIEW
     def trputs(tablewidth, rows, cellwidth)
       if tablewidth.nil?
         lastline = rows.pop
-        rows.each do |row|
-          puts %Q[<tr>#{row}</tr>]
-        end
+        rows.each {|row| puts %Q[<tr>#{row}</tr>] }
         puts %Q[<tr type="lastline">#{lastline}</tr>] unless lastline.nil?
       else
         rows.each do |row|
           i = 0
-          row.split(/\t/).each {|cell|
+          row.split(/\t/).each do |cell|
             print %Q[<td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
             i += 1
-          }
+          end
         end
       end
     end
@@ -597,15 +591,15 @@ module ReVIEW
     end
 
     def inline_maru(str)
-      if str =~ /\A\d+$/
+      if str =~ /\A\d+\Z/
         sprintf("&#x%x;", 9311 + str.to_i)
-      elsif str =~ /\A[A-Z]$/
+      elsif str =~ /\A[A-Z]\Z/
         begin
           sprintf("&#x%x;", 9398 + str.codepoints.to_a[0] - 65)
         rescue NoMethodError
           sprintf("&#x%x;", 9398 + str[0] - 65)
         end
-      elsif str =~ /\A[a-z]$/
+      elsif str =~ /\A[a-z]\Z/
         begin
           sprintf("&#x%x;", 9392 + str.codepoints.to_a[0] - 65)
         rescue NoMethodError
@@ -988,11 +982,11 @@ module ReVIEW
 
     def rawblock(lines)
       no = 1
-      lines.each {|l|
+      lines.each do |l|
         print l.gsub("&lt;", "<").gsub("&gt;", ">").gsub("&quot;", "\"").gsub("&amp;", "&")
         print "\n" unless lines.length == no
         no = no + 1
-      }
+      end
     end
 
     def text(str)

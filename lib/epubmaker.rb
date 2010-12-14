@@ -462,7 +462,7 @@ EOT
     # FIXME: needs escapeHTML?
 
     # use default value if not defined
-    @params["htmlext"] = "xhtml" if @params["htmlext"].nil?
+    @params["htmlext"] = "html" if @params["htmlext"].nil?
     defaults = {
       "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
       "title" => @params["booktitle"], # backward compatibility

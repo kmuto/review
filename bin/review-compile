@@ -48,70 +48,48 @@ def _main
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8",
     "subdirmode" => nil,
-    "stylesheet" => nil,  # for HTML
+    "stylesheet" => [],   # for HTML
     "mathml" => nil,      # for HTML
+    "language" => "ja",   # for HTML
     "deprecated-blocklines" => nil,
+    "htmlext" => "html",
   }
 
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
-  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    param["inencoding"] = enc
-  }
-  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    param["outencoding"] = enc
-  }
-  parser.on('-c', '--check', 'Check manuscript') {
-    check_only = true
-  }
-  parser.on('--level=LVL', 'Section level to append number.') {|lvl|
-    param["secnolevel"] = lvl.to_i
-  }
-  parser.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') {
-    param["nolf"] = true
-  }
-  parser.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl|
-    param["tableopt"] = tbl
-  }
-  parser.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') {
-    param["listinfo"] = true
-  }
-  parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec|
-    param["chapref"] = cdec
-  }
-  parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') {
-    param["subdirmode"] = true
-  }
-  parser.on('--stylesheet=file', 'Stylesheet file for HTML') {|file|
-    param["stylesheet"] = file
-  }
-  parser.on('--mathml', 'Use MathML for TeX equation in HTML') {
+  parser.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
+    require 'yaml'
+    param = param.merge(YAML.load_file(yaml))
+  end
+  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc| param["inencoding"] = enc }
+  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc| param["outencoding"] = enc }
+  parser.on('-c', '--check', 'Check manuscript') { check_only = true }
+  parser.on('--level=LVL', 'Section level to append number.') {|lvl| param["secnolevel"] = lvl.to_i }
+  parser.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') { param["nolf"] = true }
+  parser.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| param["tableopt"] = tbl }
+  parser.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { param["listinfo"] = true }
+  parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec| param["chapref"] = cdec }
+  parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') { param["subdirmode"] = true }
+  parser.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| param["stylesheet"] = files.split(/\s*,\s*/) }
+  parser.on('--mathml', 'Use MathML for TeX equation in HTML') do
     param["mathml"] = true
     require 'math_ml'
-  }
-  parser.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') {
-    param["hdnumberingmode"] = true
-  }
-  parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') {
-    param["deprecated-blocklines"] = true
-  }
-  unless target
-    parser.on('--target=FMT', 'Target format.') {|fmt|
-      target = fmt
-    }
   end
-  parser.on('-a', '--all', 'Compile all chapters.') {
+  parser.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') { param["hdnumberingmode"] = true }
+  parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') { param["deprecated-blocklines"] = true }
+  parser.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
+  parser.on('-a', '--all', 'Compile all chapters.') do
     mode = :dir
     basedir = nil
-  }
-  parser.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
+  end
+  parser.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
     mode = :dir
     basedir = path
-  }
-  parser.on('--help', 'Prints this message and quit.') {
+  end
+  parser.on('--help', 'Prints this message and quit.') do
     puts parser.help
     exit 0
-  }
+  end
   begin
     parser.parse!
     unless target
@@ -125,6 +103,13 @@ def _main
     error err.message
     $stderr.puts parser.help
     exit 1
+  end
+
+  # array parameter
+  ["stylesheet"].each do |k|
+    if param["k"].instance_of?(String)
+      param["k"] = [param["k"]]
+    end
   end
 
   begin
