@@ -75,14 +75,14 @@ ncxindent:
 - - 
 
 # EPUB標準の目次以外に目次を作成するか
-# mytoc: nil
+mytoc:
 # mytocがtrueの場合に作成する目次ファイル名(省略するとtoc.xhtml)
 # tocfile: toc.xhtml
 
 # 表紙の後に権利表記ページを作成するか。デフォルトでは作成されない。ファイル名を指定するとそのファイルが使われる(data配列にも指定しておく必要がある)
 # titlepage: title.xhtml
 
-# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる(data配列にも指定しておく必要がある)
+# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.xhtmlとしてコピーされる(data配列にも指定しておく必要がある)
 # colophon: true
 # pubhistory: 奥付履歴
 

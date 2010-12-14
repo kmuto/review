@@ -434,6 +434,7 @@ EOT
     # colophon and titlepage should be included in @data.
 
     @data.each do |item|
+      next if item.href =~ /#/ # skip subgroup
       fname = "#{basedir}/#{item.href}"
       raise "#{fname} doesn't exist. Abort." unless File.exist?(fname)
       FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.href}")) unless File.exist?(File.dirname("#{tmpdir}/OEBPS/#{item.href}"))
@@ -559,7 +560,7 @@ EOT
     s << %Q[    <item id="toc" href="#{@params["tocfile"]}" media-type="application/xhtml+xml"/>\n] unless @params["mytoc"].nil?
 
     @data.each do |item|
-      next if item.id =~ /#/ # skip subgroup
+      next if item.href =~ /#/ # skip subgroup
       s << %Q[    <item id="#{item.id}" href="#{item.href}" media-type="#{item.media}"/>\n]
     end
     s << %Q[  </manifest>\n]
@@ -580,6 +581,7 @@ EOT
     s << %Q[    <reference type="cover" title="#{@res.v("covertitle")}" href="#{@params["cover"]}"/>\n]
     s << %Q[    <reference type="title-page" title="#{@res.v("titlepagetitle")}" href="#{@params["titlepage"]}"/>\n] unless @params["titlepage"].nil?
     s << %Q[    <reference type="toc" title="#{@res.v("toctitle")}" href="#{@params["tocfile"]}"/>\n] unless @params["mytoc"].nil?
+    s << %Q[    <reference type="colophon" title="#{@res.v("colophontitle")}" href="colophon.#{@params["htmlext"]}"/>\n] unless @params["colophon"].nil? # FIXME: path
     s << %Q[  </guide>\n]
     s << %Q[</package>\n]
     return s
