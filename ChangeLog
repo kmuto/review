@@ -1,3 +1,21 @@
+Sat Dec 18 10:50:24 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, lib/review/htmlbuilder.rb,
+	  lib/review/idgxmlbuilder.rb: unify block coding styles and regexp
+	  coding styles.
+	* bin/review-compile: accept multiple stylesheets.
+	  set default values for language and htmlext.
+	  use YAML file by passing --yaml=YAMLFILE option.
+	* lib/review/htmlbuilder.rb: support htmlext and language parameter.
+	  support multiple stylesheets.
+	* lib/epubmaker.rb: new EPUB support library. Not only ReVIEW can
+	  use this library. This library is experimental.
+	* bin/review-epubmaker-ng: experimental alternative implementation
+	  for review-epubmaker using epubmaker.rb. This tools is under
+	  construction and may be changed widely.
+	* doc/libepubmaker/sample.yaml: sample YAML file for epubmaker.rb
+	  library.
+
 Sat Dec 12 09:30:28 2010  KADO Masanori  <kdmsnr@gmail.com>
 
 	* lib/review/compiler.rb: add [/column] notation
