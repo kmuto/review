@@ -1,0 +1,183 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+#
+# Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+require 'rexml/document'
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+require 'epubmaker'
+
+def main
+  if ARGV.size != 1
+    puts "Usage: #{$0} configfile"
+    exit 0
+  end
+  
+  @params = {          # These parameters can be overridden by YAML file.
+    "params" => "",    # specify review2html parameters
+    "toclevel" => 3,   # level of toc
+    "secnolevel" => 2, # level of section #
+    "posthook" => nil, # command path of post hook
+    "debug" => nil,    # debug flag
+  }
+  
+  yamlfile = ARGV[0]
+  @params = @params.merge(EPUBMaker.load_yaml(yamlfile))
+  @epub = EPUBMaker.new(2, @params)
+  @res = EPUBMakerResource.new(@params["language"])
+  
+  bookname = @params["bookname"]
+  
+  if File.exist?("#{bookname}.epub")
+    STDERR.puts "#{bookname}.epub exists. Please remove or rename it first."
+    exit 1
+  end
+  if @params["debug"] && File.exist?("#{bookname}")
+    STDERR.puts "#{bookname} directory (for debug) exists. Please remove or rename it first."
+    exit 1
+  end
+  
+  basetmp = Dir.mktmpdir
+
+  FileUtils.cp(@params["cover"], "#{basetmp}/#{@params["cover"]}") if !@params["cover"].nil? && File.exist?(@params["cover"])
+
+  unless @params["titlepage"].nil? # FIXME
+    FileUtils.cp(@params["titlepage"], "#{basetmp}/#{@params["titlepage"]}")
+    @epub.data.push(Ec.new("href" => @params["titlepage"], "title" => @res.v("titlepagetitle")))
+  end
+
+  makeBody(basetmp, yamlfile)
+
+  unless @params["colophon"].nil?
+    if @params["colophon"].instance_of?(String)
+      FileUtils.cp(@params["colophon"], "#{basetmp}/colophon.#{@params["htmlext"]}")
+    else
+      File.open("#{basetmp}/colophon.#{@params["htmlext"]}", "w") {|f| @epub.colophon(f) }
+    end
+    @epub.data.push(Ec.new("href" => "colophon.#{@params["htmlext"]}", "title" => @res.v("colophontitle")))
+  end
+  
+  epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
+  unless @params["debug"].nil?
+    Dir.mkdir(bookname)
+  end
+  @epub.makeepub("#{bookname}.epub", basetmp, epubtmpdir)
+
+  FileUtils.rm_r(basetmp)
+end
+
+def makeBody(basetmp, yamlfile)
+  pre = 0
+  body = 0
+  post = 0
+  @manifeststr = ""
+  @ncxstr = ""
+  @tocdesc = Array.new
+  toccount = 2
+  
+  if File.exists?("PREDEF")
+    File.open("PREDEF") do |chaps|
+      chaps.each_line do |l|
+        pre += 1
+        next if l =~ /\A#/
+        fork {
+          STDOUT.reopen("#{basetmp}/pre#{pre}.#{@params["htmlext"]}")
+          exec("review-compile --target=html --yaml=#{yamlfile} #{l}")
+        }
+        Process.waitall
+        getanchors(basetmp, "pre#{pre}.#{@params["htmlext"]}")
+      end
+    end
+  end
+
+  if File.exists?("CHAPS")
+    File.open("CHAPS") do |chaps|
+      chaps.each_line do |l|
+        body += 1
+        next if l =~ /\A#/
+        fork {
+          STDOUT.reopen("#{basetmp}/chap#{body}.#{@params["htmlext"]}")
+          exec("review-compile --target=html --yaml=#{yamlfile} #{l}")
+        }
+        Process.waitall
+        getanchors(basetmp, "chap#{body}.#{@params["htmlext"]}")
+      end
+    end
+  end
+
+  if File.exists?("POSTDEF")
+    File.open("POSTDEF") do |chaps|
+      chaps.each_line do |l|
+        post += 1
+        next if l =~ /^#/
+        fork {
+          STDOUT.reopen("#{basetmp}/post#{post}.#{@params["htmlext"]}")
+          exec("review-compile --target=html --yaml=#{yamlfile} #{l}")
+        }
+        Process.waitall
+        getanchors(basetmp, "post#{post}.#{@params["htmlext"]}")
+      end
+    end
+  end
+  if File.exist?("images")
+    Dir.mkdir("#{basetmp}/images")
+    copyImagesToDir("images", "#{basetmp}/images")
+  end
+end
+
+def getanchors(basetmp, filename)
+  File.open("#{basetmp}/#{filename}") do |f|
+    firsttime = true
+    f.each_line do |l|
+      if l =~ /\A<h(\d)><a id=\"(.+?)\" \/>(.+?)<\/h/
+        # level, ID, content
+        level = $1.to_i
+        id = $2
+        title = $3
+        if level == 1 && !firsttime.nil?
+          @epub.data.push(Ec.new({
+                                   "id" => "#{filename.sub(".#{@params["htmlext"]}", '')}",
+                                   "href" => "#{filename}",
+                                   "level" => level,
+                                   "title" => title
+                                 }))
+          firsttime = nil
+        else
+          @epub.data.push(Ec.new({
+                                   "id" => "#{filename.sub(".#{@params["htmlext"]}", '')}-#{id}",
+                                   "href" => "#{filename}##{id}",
+                                   "level" => level,
+                                   "title" => title
+                                 }))
+        end
+      end
+    end
+  end
+end
+
+def copyImagesToDir(dirname, copybase)
+  Dir.open(dirname) do |dir|
+    dir.each do |fname|
+      next if fname =~ /\A\./
+      if FileTest.directory?("#{dirname}/#{fname}")
+        copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
+      else
+        if fname =~ /\.(png|gif|jpg|jpeg|svg)\Z/i
+          Dir.mkdir(copybase) unless File.exist?(copybase)
+          FileUtils.cp "#{dirname}/#{fname}", copybase
+        end
+      end
+    end
+  end
+end
+
+main
