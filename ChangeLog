@@ -1,3 +1,8 @@
+Mon Dec 20 00:12:41 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker.rb: separate files to content, epubv2, epubv3,
+	  producer, and resource.
+
 Sat Dec 18 10:50:24 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, lib/review/htmlbuilder.rb,
