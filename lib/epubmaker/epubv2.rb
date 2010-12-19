@@ -348,20 +348,20 @@ EOT
     # +basedir+ points the directory has contents.
     # +tmpdir+ defines temporary directory.
     def produce(epubfile, basedir, tmpdir)
-      File.open("#{tmpdir}/mimetype", "w") {|f| mimetype(f) }
+      File.open("#{tmpdir}/mimetype", "w") {|f| @producer.mimetype(f) }
       
       Dir.mkdir("#{tmpdir}/META-INF") unless File.exist?("#{tmpdir}/META-INF")
-      File.open("#{tmpdir}/META-INF/container.xml", "w") {|f| container(f) }
+      File.open("#{tmpdir}/META-INF/container.xml", "w") {|f| @producer.container(f) }
       
       Dir.mkdir("#{tmpdir}/OEBPS") unless File.exist?("#{tmpdir}/OEBPS")
-      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.opf", "w") {|f| opf(f) }
-      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| ncx(f, @producer.params["ncxindent"]) }
-      File.open("#{tmpdir}/OEBPS/#{@producer.params["tocfile"]}", "w") {|f| mytoc(f) } unless @producer.params["mytoc"].nil?
+      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.opf", "w") {|f| @producer.opf(f) }
+      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
+      File.open("#{tmpdir}/OEBPS/#{@producer.params["tocfile"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
       
       if File.exist?("#{basedir}/#{@producer.params["cover"]}")
         FileUtils.cp("#{basedir}/#{@producer.params["cover"]}", "#{tmpdir}/OEBPS")
       else
-        File.open("#{tmpdir}/OEBPS/#{@producer.params["cover"]}", "w") {|f| cover(f) }
+        File.open("#{tmpdir}/OEBPS/#{@producer.params["cover"]}", "w") {|f| @producer.cover(f) }
       end
       
       # FIXME:colophon and titlepage should be included in @producer.contents.

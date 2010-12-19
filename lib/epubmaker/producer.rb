@@ -28,7 +28,7 @@ module EPUBMaker
     attr_accessor :res
     
     # Take YAML +file+ and return parameter hash.
-    def EPUBMaker.load(file)
+    def Producer.load(file)
       raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
       return YAML.load_file(file)
     end
