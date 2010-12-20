@@ -118,7 +118,7 @@ module EPUBMaker
     
     # Write own toc file to IO object +wobj+.
     def mytoc(wobj)
-      s = @epub.colophon
+      s = @epub.mytoc
       wobj.puts s if !s.nil? && !wobj.nil?
     end
     
