@@ -1,3 +1,8 @@
+Mon Dec 20 23:41:04 2010  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker/epubv2.rb: fix indent.
+	* test/test_epubmaker.rb: initial test codes.
+
 Mon Dec 20 00:12:41 2010  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/epubmaker.rb: separate files to content, epubv2, epubv3,

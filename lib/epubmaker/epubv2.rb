@@ -167,7 +167,7 @@ EOT
         s << <<EOT
     <navPoint id="nav-#{nav_count}" playOrder="#{nav_count}">
       <navLabel>
-       <text>#{indent[level]}#{item.title}</text>
+        <text>#{indent[level]}#{item.title}</text>
       </navLabel>
       <content src="#{item.file}"/>
     </navPoint>
