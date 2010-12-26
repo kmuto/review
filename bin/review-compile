@@ -123,7 +123,7 @@ def _main
       end
       ReVIEW::Chapter.intern_pathes(ARGV).each do |chap|
         result = compiler.compile(chap)
-        print result unless check_only
+        puts result unless check_only
       end
     when :dir
       book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
