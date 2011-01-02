@@ -114,7 +114,17 @@ module ReVIEW
     end
 
     def read_CHAPS
-      File.read("#{@basedir}/#{chapter_file}")
+      res = ""
+      File.open("#{@basedir}/#{chapter_file}") do |f|
+        while line = f.gets
+          if /\A#/ =~ line
+            next
+          end
+          line.gsub!(/#.*$/, "")
+          res << line
+        end
+      end
+      res
     rescue Errno::ENOENT
       Dir.glob("#{@basedir}/*#{ext()}").sort.join("\n")
     end
