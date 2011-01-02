@@ -32,7 +32,11 @@ module ReVIEW
     def Book.load_default
       %w( . .. ../.. ).each do |basedir|
         if File.file?("#{basedir}/CHAPS")
-          return load(basedir)
+          book = load(basedir)
+          if File.file?("#{basedir}/config.rb")
+            book.instance_variable_set("@parameters", Parameters.load("#{basedir}/config.rb"))
+          end
+          return book
         end
       end
       new('.')
