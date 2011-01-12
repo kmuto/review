@@ -319,7 +319,10 @@ EOT
           s << %Q[\n<ul class="toc-h#{item.level}">\n]
           current = item.level
         elsif item.level < current
-          s << %Q[</li>\n</ul>\n</li>\n]
+          (current - 1).downto(item.level) do |n|
+            s << %Q[</li>\n</ul>\n]
+          end
+          s << %Q[</li>\n]
           current = item.level
         elsif init_item
           # noop
