@@ -299,6 +299,15 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|[1] sample bib\n\na\nb\n\n|, @builder.raw_result
   end
 
+  def test_bibpaper_without_body
+    def @chapter.bibpaper(id)
+      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    @builder.bibpaper([], "samplebib", "sample bib")
+    assert_equal %Q|[1] sample bib\n\n|, @builder.raw_result
+  end
+
   def column_helper(review)
     chap_singleton = class << @chapter; self; end
     chap_singleton.send(:define_method, :content) { review }

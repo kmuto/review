@@ -597,7 +597,6 @@ module ReVIEW
 
     def bibpaper_header(id, caption)
       puts "[#{@chapter.bibpaper(id).number}] #{caption}"
-      puts ""
     end
 
     def bibpaper_bibpaper(id, caption, lines)

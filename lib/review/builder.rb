@@ -250,6 +250,7 @@ module ReVIEW
     def bibpaper(lines, id, caption)
       bibpaper_header id, caption
       unless lines.empty?
+        puts ""
         bibpaper_bibpaper id, caption, lines
       end
       puts ""
