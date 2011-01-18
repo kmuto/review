@@ -225,6 +225,23 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
   end
 
+  def test_bib
+    def @chapter.bibpaper(id)
+      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    assert_equal %Q|<a href="./bib.html#bib-samplebib">[1]</a>|, @builder.inline_bib("samplebib")
+  end
+
+  def test_bibpaper
+    def @chapter.bibpaper(id)
+      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    @builder.bibpaper(["a", "b"], "samplebib", "sample bib")
+    assert_equal %Q|<div>\n<a name=\"bib-samplebib\">\n[1] sample bib\n</a>\n<p>\na\nb\n</p>\n</div>\n|, @builder.raw_result
+  end
+
   def column_helper(review)
     chap_singleton = class << @chapter; self; end
     chap_singleton.send(:define_method, :content) { review }

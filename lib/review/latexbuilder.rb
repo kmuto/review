@@ -90,7 +90,7 @@ module ReVIEW
 
     def column_begin(level, label, caption)
       blank
-      ## puts '\vspace{2zw}' 
+      ## puts '\vspace{2zw}'
 ##      puts '\begin{center}'
 ##      puts '\begin{minipage}{1.0\linewidth}'
 ##      puts '\begin{framed}'
@@ -554,6 +554,10 @@ module ReVIEW
       macro('texttt', macro('textbf', escape(str)))
     end
 
+    def inline_bib(id)
+      "[#{@chapter.bibpaper(id).number}]"
+    end
+
     def inline_hd_chap(chap, id)
       "「#{chap.headline_index.number(id)} #{chap.headline(id).caption}」"
     end
@@ -589,6 +593,17 @@ module ReVIEW
     def inline_uchar(str)
       # with otf package
       macro('UTF', escape(str))
+    end
+
+    def bibpaper_header(id, caption)
+      puts "[#{@chapter.bibpaper(id).number}] #{caption}"
+      puts ""
+    end
+
+    def bibpaper_bibpaper(id, caption, lines)
+      lines.each do |line|
+        puts detab(line)
+      end
     end
 
     def index(str)

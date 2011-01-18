@@ -248,12 +248,11 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
-      puts "<div>"
       bibpaper_header id, caption
       unless lines.empty?
         bibpaper_bibpaper id, caption, lines
       end
-      puts "</div>"
+      puts ""
     end
 
     def inline_hd(id)
@@ -280,7 +279,7 @@ module ReVIEW
         .map {|ent| "#{@book.asedir}/#{@chapter.name}/#{ent}" }
       end
     end
-    
+
     def entries
       if ReVIEW.book.param["subdirmode"].nil?
         @entries ||= Dir.entries(@book.basedir + @book.image_dir)
