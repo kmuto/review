@@ -62,6 +62,9 @@ EOT
         next if @producer.params[role].nil?
         @producer.params[role].each do |v|
           s << %Q[    <dc:contributor opf:role="#{role}">#{v}</dc:contributor>\n]
+          if role == "prt"
+            s << %Q[    <dc:publisher>#{v}</dc:publisher>\n]
+          end
         end
       end
       
