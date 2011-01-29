@@ -282,6 +282,32 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
+  def test_bib
+    def @chapter.bibpaper(id)
+      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    assert_equal "[1]", @builder.inline_bib("samplebib")
+  end
+
+  def test_bibpaper
+    def @chapter.bibpaper(id)
+      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    @builder.bibpaper(["a", "b"], "samplebib", "sample bib")
+    assert_equal %Q|[1] sample bib\n\na\nb\n\n|, @builder.raw_result
+  end
+
+  def test_bibpaper_without_body
+    def @chapter.bibpaper(id)
+      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    @builder.bibpaper([], "samplebib", "sample bib")
+    assert_equal %Q|[1] sample bib\n\n|, @builder.raw_result
+  end
+
   def column_helper(review)
     chap_singleton = class << @chapter; self; end
     chap_singleton.send(:define_method, :content) { review }

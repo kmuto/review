@@ -650,7 +650,7 @@ QUOTE
     def td(str)
       "<td>#{str}</td>"
     end
-    
+
     def table_end
       puts '</table>'
     end
@@ -778,6 +778,15 @@ QUOTE
 
     def text(str)
       str
+    end
+
+    def bibpaper(lines, id, caption)
+      puts "<div>"
+      bibpaper_header id, caption
+      unless lines.empty?
+        bibpaper_bibpaper id, caption, lines
+      end
+      puts "</div>"
     end
 
     def bibpaper_header(id, caption)
