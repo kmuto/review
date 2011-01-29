@@ -1,3 +1,8 @@
+Sat Jan 29 23:03:37 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* Merge nari's branch.
+	  - add @<bib> //bib to latexbuilder.
+
 Sat Jan 29 19:00:07 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/epubmaker/epubv2.rb: add dc:publisher value in opf file
