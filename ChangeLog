@@ -1,3 +1,8 @@
+Thu Feb  3 23:29:07 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book.rb, lib/review/index.rb: workaround for
+	  inline icon file support. (it still exports duplicate ID warning...)
+
 Sat Jan 29 23:03:37 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* Merge nari's branch.

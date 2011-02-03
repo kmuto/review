@@ -183,6 +183,19 @@ module ReVIEW
     end
   end
 
+  class IconIndex < ImageIndex
+    def IconIndex.parse(src, *args)
+      items = []
+      seq = 1
+      src.grep(%r!@<icon>!) do |line|
+        line.gsub(/@<icon>\{(.+?)\}/) do |m|
+          items.push item_class().new($1, seq)
+          seq += 1
+        end
+      end
+      new(items, *args)
+    end
+  end
 
   class FormatRef
     def initialize(locale, index)
