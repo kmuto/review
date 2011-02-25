@@ -1,3 +1,8 @@
+Fri Feb 25 22:40:18 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* Merge nari's branch.
+	  - add maxwidth for latex indepimage.
+
 Thu Feb  3 23:29:07 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/book.rb, lib/review/index.rb: workaround for
