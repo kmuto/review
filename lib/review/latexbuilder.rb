@@ -596,7 +596,7 @@ module ReVIEW
     end
 
     def bibpaper_header(id, caption)
-      puts "[#{@chapter.bibpaper(id).number}] #{caption}"
+      puts "[#{@chapter.bibpaper(id).number}] #{compile_inline(caption)}"
     end
 
     def bibpaper_bibpaper(id, caption, lines)

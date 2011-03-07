@@ -238,8 +238,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    @builder.bibpaper(["a", "b"], "samplebib", "sample bib")
-    assert_equal %Q|<div>\n<a name=\"bib-samplebib\">\n[1] sample bib\n</a>\n<p>\na\nb\n</p>\n</div>\n|, @builder.raw_result
+    @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
+    assert_equal %Q|<div>\n<a name=\"bib-samplebib\">\n[1] sample bib <b>bold</b>\n</a>\n<p>\na\nb\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def column_helper(review)
