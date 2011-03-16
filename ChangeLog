@@ -1,3 +1,8 @@
+Wed Mar 16 16:09:42 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* Mege nari's branch.
+	  - use compile_inline() to caption on //bibpaper.
+
 Fri Feb 25 22:40:18 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* Merge nari's branch.
