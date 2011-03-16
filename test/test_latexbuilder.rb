@@ -295,8 +295,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    @builder.bibpaper(["a", "b"], "samplebib", "sample bib")
-    assert_equal %Q|[1] sample bib\n\na\nb\n\n|, @builder.raw_result
+    @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
+    assert_equal %Q|[1] sample bib \\textbf{bold}\n\na\nb\n\n|, @builder.raw_result
   end
 
   def test_bibpaper_without_body
