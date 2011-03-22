@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # $Id: tocprinter.rb 4309 2009-07-19 04:15:02Z aamine $
 #
