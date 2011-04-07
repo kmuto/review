@@ -119,12 +119,14 @@ def main
     File.open("./book.tex", "wb"){|f| f.write(template)}
    
     ## do compile
+    enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
+    kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
     fork {
-      exec("platex book.tex")
+      exec("platex -kanji=#{kanji} book.tex")
     }
     Process.waitall
     fork {
-      exec("platex book.tex")
+      exec("platex -kanji=#{kanji} book.tex")
     }
     Process.waitall
     fork {
