@@ -15,6 +15,7 @@ require 'nkf'
 module ReVIEW
 
   class Builder
+    CAPTION_TITLES = %w(note memo tip info planning best important security caution term link notice point shoot reference practice expert)
 
     def pre_paragraph
       nil
@@ -313,6 +314,18 @@ module ReVIEW
       else
         return [@chapter, chap_ref]
       end
+    end
+
+    def captionblock(type, lines, caption, specialstyle = nil)
+      raise NotImplementedError
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q{
+        def #{name}(lines, caption = nil)
+          captionblock("#{name}", lines, caption)
+        end
+      }
     end
   end
 
