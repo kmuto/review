@@ -1,3 +1,7 @@
+Mon Apr 11 18:41:26 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: add texdocumentclass option in config.yml
+
 Wed Mar 16 16:09:42 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* Mege nari's branch.

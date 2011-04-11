@@ -34,6 +34,8 @@ aut: 吟遊詩人
 stylesheet: stylesheet.css
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
 # texstyle: samplemacro
+# LaTeX用のdocumentclassを指定する
+# texdocumentclass: ["jsarticle", "b5paper,oneside"]
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル

@@ -152,8 +152,11 @@ def copy_images(from, to)
 end
 
 def get_template(values)
+  dclass = values["texdocumentclass"] || []
+  documentclass =  dclass[0] || "jsbook"
+  documentclassoption =  dclass[1] || "oneside"
   str = <<EOB
-\\documentclass[oneside]{jsbook}
+\\documentclass[#{documentclassoption}]{#{documentclass}}
 \\usepackage[deluxe]{otf}
 \\usepackage[dvipdfmx]{color}
 \\usepackage[dvipdfmx]{graphicx}
