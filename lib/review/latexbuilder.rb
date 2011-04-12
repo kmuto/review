@@ -112,19 +112,22 @@ module ReVIEW
       blank
     end
 
-    def minicolumn(type, lines, caption)
+    def captionblock(type, lines, caption)
       puts "\\begin{reviewminicolumn}\n"
       unless caption.nil?
         puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
       end
-      lines.each {|l|
-        puts l
-      }
-      puts "\\end{reviewminicolumn}\n"
-    end
 
-    def memo(lines, caption = nil)
-      minicolumn("memo", lines, caption)
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        blocked_lines = split_paragraph(lines)
+        puts blocked_lines.join("\n\n")
+      else
+        lines.each do |line|
+          puts line
+        end
+      end
+
+      puts "\\end{reviewminicolumn}\n"
     end
 
     def ul_begin

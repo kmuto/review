@@ -344,9 +344,7 @@ EOT
     end
 
     def note(lines, caption = nil)
-      puts %Q[<div class="note">]
-      puts %Q[<p class="caption">#{compile_inline(caption)}</p>] unless caption.nil?
-      puts "#{lines.join("\n")}</div>"
+      captionblock("note", lines, caption)
     end
 
     def ul_begin
