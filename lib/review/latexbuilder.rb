@@ -228,7 +228,7 @@ module ReVIEW
       end
       puts '\end{alltt}'
       puts '\end{reviewlist}'
-      puts
+      blank
 
      end
 
