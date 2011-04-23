@@ -1,3 +1,24 @@
+Sat Apr 23 12:15:46 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* Cherry-pick from Kouji Takao's branch.
+	commit 133c44c61da8b1057a6883e95a9165815f163cb4
+	Author: Kouji Takao <kouji@takao7.net>
+	Date:   Sun Jan 2 20:42:40 2011 +0900
+	
+	    display chapter name.
+	
+	commit 35b65a3e13463c54e696c71b6ec92d9c04a036df
+	Author: Kouji Takao <kouji@takao7.net>
+	Date:   Sun Jan 2 20:38:47 2011 +0900
+	
+	    supported book configuration in config.rb.
+	
+	commit 0c493c434bda7bc5b58d5927cc8caedb8da5105c
+	Author: Kouji Takao <kouji@takao7.net>
+	Date:   Sun Jan 2 20:37:56 2011 +0900
+	
+	    supported comment in CHAPS file.
+
 Mon Apr 11 18:41:26 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: add texdocumentclass option in config.yml
