@@ -9,12 +9,11 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'rexml/document'
 require 'pathname'
-
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'epubmaker'
+include EPUBMaker
 
 def main
   if ARGV.size != 1
@@ -23,7 +22,10 @@ def main
   end
   
   @params = {          # These parameters can be overridden by YAML file.
+    "bookname" => "example", # Book file
+    "title" => "example", # Book title
     "params" => "",    # specify review2html parameters
+    "epubversion" => 2,# EPUB version
     "toclevel" => 3,   # level of toc
     "secnolevel" => 2, # level of section #
     "posthook" => nil, # command path of post hook
@@ -31,9 +33,9 @@ def main
   }
   
   yamlfile = ARGV[0]
-  @params = @params.merge(EPUBMaker.load_yaml(yamlfile))
-  @epub = EPUBMaker.new(2, @params)
-  @res = EPUBMakerResource.new(@params["language"])
+  @epub = Producer.new(@params)
+  @epub.load(yamlfile)
+  @params = @epub.params
   
   bookname = @params["bookname"]
   
@@ -42,7 +44,7 @@ def main
     exit 1
   end
   if @params["debug"] && File.exist?("#{bookname}")
-    STDERR.puts "#{bookname} directory (for debug) exists. Please remove or rename it first."
+    STDERR.puts "#{bookname} debug directory exists. Please remove or rename it first."
     exit 1
   end
   
@@ -52,7 +54,7 @@ def main
 
   unless @params["titlepage"].nil? # FIXME
     FileUtils.cp(@params["titlepage"], "#{basetmp}/#{@params["titlepage"]}")
-    @epub.data.push(Ec.new("href" => @params["titlepage"], "title" => @res.v("titlepagetitle")))
+    @epub.contents.push(Content.new("id" => "title", "file" => @params["titlepage"], "title" => @epub.res.v("titlepagetitle")))
   end
 
   makeBody(basetmp, yamlfile)
@@ -63,14 +65,14 @@ def main
     else
       File.open("#{basetmp}/colophon.#{@params["htmlext"]}", "w") {|f| @epub.colophon(f) }
     end
-    @epub.data.push(Ec.new("href" => "colophon.#{@params["htmlext"]}", "title" => @res.v("colophontitle")))
+    @epub.contents.push(Content.new("id" => "colophon", "file" => "colophon.#{@params["htmlext"]}", "title" => @epub.res.v("colophontitle")))
   end
   
   epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
   unless @params["debug"].nil?
     Dir.mkdir(bookname)
   end
-  @epub.makeepub("#{bookname}.epub", basetmp, epubtmpdir)
+  @epub.produce("#{bookname}.epub", basetmp, epubtmpdir)
 
   FileUtils.rm_r(basetmp)
 end
@@ -144,17 +146,17 @@ def getanchors(basetmp, filename)
         id = $2
         title = $3
         if level == 1 && !firsttime.nil?
-          @epub.data.push(Ec.new({
+          @epub.contents.push(Content.new({
                                    "id" => "#{filename.sub(".#{@params["htmlext"]}", '')}",
-                                   "href" => "#{filename}",
+                                   "file" => "#{filename}",
                                    "level" => level,
                                    "title" => title
                                  }))
           firsttime = nil
         else
-          @epub.data.push(Ec.new({
+          @epub.contents.push(Content.new({
                                    "id" => "#{filename.sub(".#{@params["htmlext"]}", '')}-#{id}",
-                                   "href" => "#{filename}##{id}",
+                                   "file" => "#{filename}##{id}",
                                    "level" => level,
                                    "title" => title
                                  }))
