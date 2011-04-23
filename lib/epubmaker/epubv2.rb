@@ -85,6 +85,7 @@ EOT
     <item id="ncx" href="#{@producer.params["bookname"]}.ncx" media-type="application/x-dtbncx+xml"/>
     <item id="#{@producer.params["bookname"]}" href="#{@producer.params["cover"]}" media-type="application/xhtml+xml"/>
 EOT
+
       s << %Q[    <item id="toc" href="#{@producer.params["tocfile"]}" media-type="application/xhtml+xml"/>\n] unless @producer.params["mytoc"].nil?
       
       @producer.contents.each do |item|
@@ -114,7 +115,7 @@ EOT
       s << %Q[</package>\n]
       return s
     end
-    
+
     # Return ncx content. +indentarray+ defines prefix string for each level.
     def ncx(indentarray)
       s = <<EOT
