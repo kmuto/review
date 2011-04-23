@@ -180,19 +180,23 @@ module EPUBMaker
         "toclevel" => 2,
         "stylesheet" => [],
         "epubversion" => 2,
+        "htmlversion" => 4,
       }
+
       defaults.each_pair do |k, v|
         @params[k] = v if @params[k].nil?
       end
+
+      @params["htmlversion"] == 5 if @params["epubversion"] >= 3 && @params["htmlversion"] == 4
       
       # must be defined
       %w[bookname title].each do |k|
         raise "Key #{k} must have a value. Abort." if @params[k].nil? # FIXME: should not be error?
-    end
+      end
       # array
       %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl stylesheet].each do |item|
         @params[item] = [@params[item]] if !@params[item].nil? && @params[item].instance_of?(String) # FIXME: avoid double insert
-    end
+      end
       # optional
       # type, format, identifier, source, relation, coverpage, rights, aut
     end

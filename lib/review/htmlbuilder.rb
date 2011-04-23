@@ -1,7 +1,8 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2010 Minero Aoki, Kenshi Muto
+#               2008-2011 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#                         KADO Masanori
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -68,7 +69,19 @@ module ReVIEW
         # default XHTML header/footer
         header = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
+EOT
+
+        if ReVIEW.book.param["htmlversion"] == 5
+          header += <<EOT
+<!DOCTYPE html>
+EOT
+        else
+          header += <<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+EOT
+        end
+
+        header += <<EOT
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
