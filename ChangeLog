@@ -1,3 +1,14 @@
+Mon Apr 25 07:22:39 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, lib/review/htmlbuilder.rb:
+	  add --htmlversion option. This parameter takes the
+	  HTML version value 4 or 5.
+	* bin/review-epubmaker-ng: now works. It gets an ability to
+	  produce EPUB3 book.
+	* lib/epubmaker/epubv3.rb. lib/epubmaker/producer.rb: support
+	  EPUB3.
+	* lib/epubmaker/epubv2.rb: fix indents.
+
 Sat Apr 23 12:15:46 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* Cherry-pick from Kouji Takao's branch.
