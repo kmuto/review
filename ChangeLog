@@ -1,3 +1,12 @@
+Wed May 11 14:54:50 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* merge Yutaka HARA's branch.
+	commit b4cf87a791f7dcca475cec9a5e838cc0da09de3b
+	Author: Yutaka HARA <yutaka.hara+github@gmail.com>
+	Date:   Wed May 11 14:28:41 2011 +0900
+
+	bin/review-vol: review-vol should accept --directory
+
 Mon Apr 25 07:22:39 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, lib/review/htmlbuilder.rb:
