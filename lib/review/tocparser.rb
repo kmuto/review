@@ -325,7 +325,7 @@ module ReVIEW
     def toc
       @toc ||= TOCParser.parse(self)
       unless @toc.size == 1
-        $stderr.puts "warning: chapter #{title} contains more than 1 chapter"
+        $stderr.puts "warning: chapter #{@toc.join} contains more than 1 chapter"
       end
       @toc.first
     end
