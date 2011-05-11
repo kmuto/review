@@ -29,6 +29,7 @@ def main
   }
 
   part_sensitive = false
+  basedir = nil
   parser = OptionParser.new
   parser.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
     part_sensitive = true
@@ -38,6 +39,9 @@ def main
   }
   parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
     @param["outencoding"] = enc
+  }
+  parser.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
+    basedir = path
   }
   parser.on('--help', 'Print this message and quit') {
     puts parser.help
@@ -51,7 +55,7 @@ def main
     exit 1
   end
 
-  book = ReVIEW.book
+  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
   ReVIEW.book.param = @param
   if part_sensitive
     sep = ""
