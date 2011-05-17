@@ -478,12 +478,18 @@ module ReVIEW
     end
 
     def footnote(id, content)
-      puts macro("footnotetext[#{@chapter.footnote(id).number}]",
-                 compile_inline(content.strip))
+      if ReVIEW.book.param["footnotetext"]
+        puts macro("footnotetext[#{@chapter.footnote(id).number}]",
+                   compile_inline(content.strip))
+      end
     end
 
     def inline_fn(id)
-      macro("footnotemark[#{@chapter.footnote(id).number}]", "")
+      if ReVIEW.book.param["footnotetext"]
+        macro("footnotemark[#{@chapter.footnote(id).number}]", "")
+      else
+        macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
+      end
     end
 
     BOUTEN = "・"

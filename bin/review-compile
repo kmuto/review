@@ -52,6 +52,7 @@ def _main
     "mathml" => nil,      # for HTML
     "language" => "ja",   # for HTML
     "deprecated-blocklines" => nil,
+    "footnotetext" => false,
     "htmlext" => "html",
     "htmlversion" => 4,
   }
@@ -83,6 +84,10 @@ def _main
   parser.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') { param["hdnumberingmode"] = true }
   parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') { param["deprecated-blocklines"] = true }
   parser.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
+  parser.on('--footnotetext',
+            'Use footnotetext and footnotemark instead of footnote (latex)') {
+    param["footnotetext"] = true
+  }
   parser.on('-a', '--all', 'Compile all chapters.') do
     mode = :dir
     basedir = nil
