@@ -1,3 +1,9 @@
+Tue May 24 12:57:37 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: Use <lead> element for
+	  //lead and //read by default, to avoid nested <p>
+	  elements.
+
 Wed May 11 14:54:50 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* merge Yutaka HARA's branch.

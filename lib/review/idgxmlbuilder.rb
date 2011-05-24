@@ -280,8 +280,11 @@ module ReVIEW
     end
 
     def read(lines)
-      blocked_lines = ReVIEW.book.param["deprecated-blocklines"].nil? ? split_paragraph(lines) : lines
-      puts %Q[<p aid:pstyle="lead">#{blocked_lines.join}</p>]
+      if ReVIEW.book.param["deprecated-blocklines"].nil?
+        puts %Q[<lead>#{split_paragraph(lines).join}</lead>]
+      else
+        puts %Q[<p aid:pstyle="lead">#{lines.join}</p>]
+      end
     end
 
     alias :lead read
