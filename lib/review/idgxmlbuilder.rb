@@ -1052,7 +1052,7 @@ module ReVIEW
 
     def inline_recipe(id)
       # FIXME
-      %Q(<recipe idref="#{escape_html(id)}">[XXX]「#{escape_html(id)}」\tp.XX</recipe>)
+      %Q(<recipe idref="#{escape_html(id)}">[XXX]「#{escape_html(id)}」　p.XX</recipe>)
     end
 
     def nofunc_text(str)

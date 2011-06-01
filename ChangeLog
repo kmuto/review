@@ -1,3 +1,14 @@
+Wed Jun  1 23:32:06 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb: <recipe> uses full
+	  width blank instead of tab, because tab breaks
+	  a table element.
+
+Wed Jun  1 18:42:52 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* support caption as optional in //cmd{..} and
+	  //emlist{..}.
+
 Tue May 24 12:57:37 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: Use <lead> element for
