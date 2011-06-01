@@ -506,8 +506,9 @@ EOT
       puts '</div>'
     end
 
-    def cmd(lines)
+    def cmd(lines, caption = nil)
       puts %Q[<div class="cmd-code">]
+      puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
       print %Q[<pre class="cmd">]
       lines.each do |line|
         puts detab(line)

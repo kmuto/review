@@ -220,9 +220,24 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, @builder.raw_result
   end
 
+  def test_emlist
+    @builder.emlist(["lineA","lineB"])
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_emlist_caption
+    @builder.emlist(["lineA","lineB"],"cap1")
+    assert_equal %Q|<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
+  end
+
   def test_cmd
     @builder.cmd(["lineA","lineB"])
     assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_cmd_caption
+    @builder.cmd(["lineA","lineB"], "cap1")
+    assert_equal %Q|<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
   end
 
   def test_bib

@@ -196,8 +196,11 @@ module ReVIEW
 
     alias lead read
 
-    def emlist(lines)
+    def emlist(lines, caption = nil)
       blank
+      if caption
+        puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
+      end
       puts '\begin{reviewemlist}'
       puts '\begin{alltt}'
       lines.each do |line|
@@ -208,8 +211,11 @@ module ReVIEW
       blank
     end
 
-    def emlistnum(lines)
+    def emlistnum(lines, caption = nil)
       blank
+      if caption
+        puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
+      end
       puts '\begin{reviewemlist}'
       puts '\begin{alltt}'
       lines.each_with_index do |line, i|
@@ -232,8 +238,11 @@ module ReVIEW
 
      end
 
-    def cmd(lines)
+    def cmd(lines, caption = nil)
       blank
+      if caption
+        puts macro('reviewcmdcaption', "#{compile_inline(caption)}")
+      end
       puts '\begin{reviewcmd}'
       puts '\begin{alltt}'
       lines.each do |line|

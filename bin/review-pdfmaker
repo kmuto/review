@@ -246,6 +246,12 @@ def get_template(values)
 \\newcommand{\\reviewlistcaption}[1]{%
   \\medskip{\\small\\noindent #1}\\vspace*{-1.3zw}}
 
+\\newcommand{\\reviewemlistcaption}[1]{%
+  \\medskip{\\small\\noindent #1}\\vspace*{-1.3zw}}
+
+\\newcommand{\\reviewcmdcaption}[1]{%
+  \\medskip{\\small\\noindent #1}\\vspace*{-1.3zw}}
+
 \\newcommand{\\reviewimageref}[1]{%
   図 #1}
 \\newcommand{\\reviewtableref}[1]{%

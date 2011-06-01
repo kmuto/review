@@ -184,6 +184,30 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\chapter{this is test.}\n|, @builder.result
   end
 
+  def test_cmd
+    lines = ["foo", "bar", "","buz"]
+    @builder.cmd(lines)
+    assert_equal %Q|\n\\begin{reviewcmd}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewcmd}\n|, @builder.result
+  end
+
+  def test_cmd_caption
+    lines = ["foo", "bar", "","buz"]
+    @builder.cmd(lines, "cap1")
+    assert_equal %Q|\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewcmd}\n|, @builder.result
+  end
+
+  def test_emlist
+    lines = ["foo", "bar", "","buz"]
+    @builder.emlist(lines)
+    assert_equal %Q|\n\\begin{reviewemlist}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+  end
+
+  def test_emlist_caption
+    lines = ["foo", "bar", "","buz"]
+    @builder.emlist(lines, "cap1")
+    assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+  end
+
   def test_quote
     lines = ["foo", "bar", "","buz"]
     @builder.quote(lines)
