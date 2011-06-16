@@ -488,7 +488,7 @@ module ReVIEW
           else
             i = 0
             rows.shift.split(/\t/).each_with_index do |cell, x|
-              print %Q[<td xy="#{x + 1},#{y + 1}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+              print %Q[<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
               i += 1
             end
           end
@@ -509,7 +509,7 @@ module ReVIEW
         rows.each_with_index do |row, y|
           i = 0
           row.split(/\t/).each_with_index do |cell, x|
-            print %Q[<td xy="#{x + 1},#{y + 1 + sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+            print %Q[<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
             i += 1
           end
         end
