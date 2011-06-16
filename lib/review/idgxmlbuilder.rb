@@ -482,33 +482,34 @@ module ReVIEW
       end
 
       if sepidx
-        sepidx.times do
+        sepidx.times do |y|
           if tablewidth.nil?
             puts %Q[<tr type="header">#{rows.shift}</tr>]
           else
             i = 0
-            rows.shift.split(/\t/).each do |cell|
-              print %Q[<td aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+            rows.shift.split(/\t/).each_with_index do |cell, x|
+              print %Q[<td xy="#{x + 1},#{y + 1}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
               i += 1
             end
           end
         end
       end
-      trputs(tablewidth, rows, cellwidth)
+      trputs(tablewidth, rows, cellwidth, sepidx)
       puts "</tbody></table>"
       @tsize = nil
     end
 
-    def trputs(tablewidth, rows, cellwidth)
+    def trputs(tablewidth, rows, cellwidth, sepidx)
+      sepidx = 0 if sepidx.nil?
       if tablewidth.nil?
         lastline = rows.pop
         rows.each {|row| puts %Q[<tr>#{row}</tr>] }
         puts %Q[<tr type="lastline">#{lastline}</tr>] unless lastline.nil?
       else
-        rows.each do |row|
+        rows.each_with_index do |row, y|
           i = 0
-          row.split(/\t/).each do |cell|
-            print %Q[<td aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+          row.split(/\t/).each_with_index do |cell, x|
+            print %Q[<td xy="#{x + 1},#{y + 1 + sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
             i += 1
           end
         end

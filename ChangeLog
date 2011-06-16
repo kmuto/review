@@ -1,3 +1,8 @@
+Thu Jun 16 15:59:35 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:
+	  <td> has xy attribution to point cell location.
+
 Wed Jun  1 23:32:06 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb: <recipe> uses full
