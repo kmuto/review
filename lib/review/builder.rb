@@ -11,6 +11,7 @@ require 'review/index'
 require 'review/exception'
 require 'stringio'
 require 'nkf'
+require 'cgi'
 
 module ReVIEW
 
@@ -326,6 +327,23 @@ module ReVIEW
           captionblock("#{name}", lines, caption)
         end
       }
+    end
+
+    def graphviz(lines, id, caption = nil)
+      dir = @book.basedir + @book.image_dir
+      file = "#{@chapter.name}-#{id}.png"
+      if ReVIEW.book.param["subdirmode"]
+        dir = File.join(dir, @chapter.name)
+        file = "#{id}.png"
+      end
+      file_path = File.join(dir, file)
+
+      cmd = "echo '#{CGI.unescapeHTML(lines.join '')}'" +
+            "| dot -Tpng -o#{file_path}"
+      warn cmd
+      system cmd
+
+      image(lines, id, caption)
     end
   end
 

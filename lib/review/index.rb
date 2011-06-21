@@ -142,7 +142,7 @@ module ReVIEW
     end
 
     def ImageIndex.item_type
-      'image'
+      '(image|graphviz)'
     end
 
     def initialize(items, chapid, basedir, types)
@@ -173,10 +173,11 @@ module ReVIEW
     private
 
     def entries
+      # @entries: do not cache for graphviz
       if ReVIEW.book.param["subdirmode"].nil?
-        @entries ||= Dir.entries(@basedir)
+        @entries = Dir.entries(@basedir)
       else
-        @entries ||= Dir.entries(File.join(@basedir, @chapid))
+        @entries = Dir.entries(File.join(@basedir, @chapid))
       end
     rescue Errno::ENOENT
       @entries = []
