@@ -329,21 +329,35 @@ module ReVIEW
       }
     end
 
-    def graphviz(lines, id, caption = nil)
+    # USAGE:
+    # - graph[graphviz-myid][mycaption]
+    # - graph[gnuplot-myid][mycaption]
+    def graph(lines, id, caption = nil)
+      type, graph_id = id.split(/-/)
       dir = @book.basedir + @book.image_dir
-      file = "#{@chapter.name}-#{id}.png"
+      file = "#{@chapter.name}-#{id}.#{image_ext}"
       if ReVIEW.book.param["subdirmode"]
         dir = File.join(dir, @chapter.name)
-        file = "#{id}.png"
+        file = "#{id}.#{image_ext}"
       end
       file_path = File.join(dir, file)
 
-      cmd = "echo '#{CGI.unescapeHTML(lines.join '')}'" +
-            "| dot -Tpng -o#{file_path}"
+      line = CGI.unescapeHTML(lines.join('\n'))
+      cmds = {
+        :graphviz => "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
+        :gnuplot  => "echo 'set terminal " +
+        "#{(image_ext == "eps") ? "postscript eps" : image_ext}\n" +
+        " set output \"#{file_path}\"\n#{line}' | gnuplot",
+      }
+      cmd = cmds[type.to_sym]
       warn cmd
       system cmd
 
       image(lines, id, caption)
+    end
+
+    def image_ext
+      raise NotImplementedError
     end
   end
 

@@ -668,6 +668,10 @@ module ReVIEW
       @latex_tsize = str
     end
 
+    def image_ext
+      "svg"
+    end
+
   end
 
 end

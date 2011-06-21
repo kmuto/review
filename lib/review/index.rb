@@ -142,7 +142,7 @@ module ReVIEW
     end
 
     def ImageIndex.item_type
-      '(image|graphviz)'
+      '(image|graph)'
     end
 
     def initialize(items, chapid, basedir, types)
@@ -173,7 +173,7 @@ module ReVIEW
     private
 
     def entries
-      # @entries: do not cache for graphviz
+      # @entries: do not cache for graph
       if ReVIEW.book.param["subdirmode"].nil?
         @entries = Dir.entries(@basedir)
       else
