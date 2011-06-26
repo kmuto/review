@@ -345,7 +345,8 @@ module ReVIEW
         "#{(image_ext == "eps") ? "postscript eps" : image_ext}\n" +
         " set output \"#{file_path}\"\n#{line}' | gnuplot",
         :blockdiag => "echo '#{line}' "+
-        "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin"
+        "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin",
+        :aafigure => "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}",
       }
       cmd = cmds[command.to_sym]
       warn cmd
