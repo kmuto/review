@@ -11,6 +11,7 @@ require 'review/index'
 require 'review/exception'
 require 'stringio'
 require 'nkf'
+require 'cgi'
 
 module ReVIEW
 
@@ -326,6 +327,36 @@ module ReVIEW
           captionblock("#{name}", lines, caption)
         end
       }
+    end
+
+    def graph(lines, id, command, caption = nil)
+      dir = @book.basedir + @book.image_dir
+      file = "#{@chapter.name}-#{id}.#{image_ext}"
+      if ReVIEW.book.param["subdirmode"]
+        dir = File.join(dir, @chapter.name)
+        file = "#{id}.#{image_ext}"
+      end
+      file_path = File.join(dir, file)
+
+      line = CGI.unescapeHTML(lines.join("\n"))
+      cmds = {
+        :graphviz => "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
+        :gnuplot  => "echo 'set terminal " +
+        "#{(image_ext == "eps") ? "postscript eps" : image_ext}\n" +
+        " set output \"#{file_path}\"\n#{line}' | gnuplot",
+        :blockdiag => "echo '#{line}' "+
+        "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin",
+        :aafigure => "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}",
+      }
+      cmd = cmds[command.to_sym]
+      warn cmd
+      system cmd
+
+      image(lines, id, caption)
+    end
+
+    def image_ext
+      raise NotImplementedError
     end
   end
 

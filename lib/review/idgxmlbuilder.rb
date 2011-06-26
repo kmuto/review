@@ -1060,6 +1060,10 @@ module ReVIEW
       escape_html(str)
     end
 
+    def image_ext
+      "eps"
+    end
+
   end
 
 end   # module ReVIEW
