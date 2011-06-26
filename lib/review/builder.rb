@@ -329,11 +329,7 @@ module ReVIEW
       }
     end
 
-    # USAGE:
-    # - graph[graphviz-myid][mycaption]
-    # - graph[gnuplot-myid][mycaption]
-    def graph(lines, id, caption = nil)
-      type, graph_id = id.split(/-/)
+    def graph(lines, id, command, caption = nil)
       dir = @book.basedir + @book.image_dir
       file = "#{@chapter.name}-#{id}.#{image_ext}"
       if ReVIEW.book.param["subdirmode"]
@@ -349,7 +345,7 @@ module ReVIEW
         "#{(image_ext == "eps") ? "postscript eps" : image_ext}\n" +
         " set output \"#{file_path}\"\n#{line}' | gnuplot",
       }
-      cmd = cmds[type.to_sym]
+      cmd = cmds[command.to_sym]
       warn cmd
       system cmd
 

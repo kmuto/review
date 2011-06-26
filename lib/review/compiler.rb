@@ -143,7 +143,7 @@ module ReVIEW
     defblock :doorquote, 1
     defblock :talk, 0
     defblock :texequation, 0
-    defblock :graph, 1..2
+    defblock :graph, 1..3
 
     defblock :address, 0
     defblock :blockquote, 0
