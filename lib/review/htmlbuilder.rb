@@ -802,7 +802,7 @@ QUOTE
     end
 
     def bibpaper_header(id, caption)
-      puts %Q(<a name="bib-#{id}">)
+      puts %Q(<a id="bib-#{id}">)
       puts "[#{@chapter.bibpaper(id).number}] #{compile_inline(caption)}"
       puts %Q(</a>)
     end

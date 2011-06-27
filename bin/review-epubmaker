@@ -127,13 +127,17 @@ def main
         next if l =~ /^#/
         post = post + 1
         toccount = toccount + 1
+        filename = "post#{post}.html"
+        if l =~ /^bib\.re/
+          filename = "bib.html"
+        end
         fork {
-          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
+          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/#{filename}")
           exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
-        getanchors("#{tmp}/#{bookname}/OEBPS/post#{post}.html")
-        @manifeststr << %Q(<item id="post#{post}" href="post#{post}.html" media-type="application/xhtml+xml" />\n)
+        getanchors("#{tmp}/#{bookname}/OEBPS/#{filename}")
+        @manifeststr << %Q(<item id="post#{post}" href="#{filename}" media-type="application/xhtml+xml" />\n)
         @ncxstr << %Q(<itemref idref="post#{post}" />\n)
       }
     }
