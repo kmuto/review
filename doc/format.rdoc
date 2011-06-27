@@ -238,7 +238,7 @@ RD や各種 Wiki の文法をとりいれて簡素化しています。
 
   //numberlessimage[door_image_path][扉絵]
 
-※ただし、//indepimageと機能的にかぶっているので、将来は廃止され、//indexpimageに統合される予定です。
+※ただし、//indepimageと機能的にかぶっているので、将来は廃止され、//indepimageに統合される予定です。
 
 == 表
 
