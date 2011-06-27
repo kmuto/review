@@ -954,6 +954,10 @@ QUOTE
         puts '</div>'
       end
     end
+
+    def image_ext
+      "png"
+    end
   end
 
 end   # module ReVIEW
