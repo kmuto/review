@@ -451,7 +451,9 @@ module ReVIEW
     end
 
     def comment(str)
-      puts "% #{str}"
+      if ReVIEW.book.param["draft"]
+        puts macro('pdfcomment', escape(str))
+      end
     end
 
     def label(id)
@@ -613,6 +615,12 @@ module ReVIEW
     def inline_uchar(str)
       # with otf package
       macro('UTF', escape(str))
+    end
+
+    def inline_comment(str)
+      if ReVIEW.book.param["draft"]
+        macro('pdfcomment', escape(str))
+      end
     end
 
     def bibpaper_header(id, caption)
