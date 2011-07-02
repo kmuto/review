@@ -1,3 +1,14 @@
+Sat Jul  2 11:22:53 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmaker, lib/review/htmlbuilder.rb:
+	  fix @<bib> and bib.re support in EPUB
+
+Sun Jun 26 22:38:09 2011  KADO Masanori  <kdmsnr@gmail.com>
+
+	* lib/review/builder.rb, lib/review/compiler.rb, lib/review/index.rb,
+	  lib/review/latexbuilder.rb, lib/review/idgxmlbuilder.rb, lib/review/htmlbuilder.rb:
+	  support //graph
+
 Thu Jun 16 15:59:35 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:
