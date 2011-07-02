@@ -212,6 +212,7 @@ module ReVIEW
     definline :uchar
     definline :idx
     definline :hidx
+    definline :comment
 
     private
 

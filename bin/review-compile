@@ -88,6 +88,7 @@ def _main
             'Use footnotetext and footnotemark instead of footnote (latex)') {
     param["footnotetext"] = true
   }
+  parser.on('--draft', 'use draft mode(inline comment)') { param["draft"] = true }
   parser.on('-a', '--all', 'Compile all chapters.') do
     mode = :dir
     basedir = nil
