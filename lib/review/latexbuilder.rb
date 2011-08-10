@@ -469,7 +469,7 @@ module ReVIEW
     end
 
     def noindent
-      puts '\noindent'
+      print '\noindent'
     end
 
     # FIXME: use TeX native label/ref.
