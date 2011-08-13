@@ -459,17 +459,18 @@ EOT
   end
 
   # stylesheet
-  File.open("#{tmp}/#{bookname}/OEBPS/stylesheet.css", "w") {|f|
-    f.puts <<EOT
+  if File.exist?(values["stylesheet"])
+    FileUtils.cp values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
+  else
+    File.open("#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}", "w") {|f|
+      f.puts <<EOT
 /* sample style sheet for epub */
 @charset "utf-8";
 
 body {
 }
 EOT
-  }
-  if File.exist?(values["stylesheet"])
-    FileUtils.cp values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
+    }
   end
 
   # Colophon page
