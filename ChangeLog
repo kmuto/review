@@ -1,3 +1,13 @@
+Sat Aug 13 11:06:17 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmaker:
+	  fix Issue #34: generating stylesheet with appropriate filename
+
+Sat Aug 11 01:23:00 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* test/test_latexbuilder.rb, lib/review/latexbuilder.rb:
+	  fix //noindent in LATEXBuilder
+
 Sat Jul  2 13:34:00 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb, lib/review/compiler.rb, bin/review-compile:
