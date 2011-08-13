@@ -228,7 +228,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @builder.noindent
     @builder.paragraph(["foo", "bar"])
     @builder.paragraph(["foo2", "bar2"])
-    assert_equal %Q|\\noindent\n\nfoo\nbar\n\nfoo2\nbar2\n|, @builder.raw_result
+    assert_equal %Q|\\noindent\nfoo\nbar\n\nfoo2\nbar2\n|, @builder.raw_result
   end
 
   def test_raw
