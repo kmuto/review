@@ -22,6 +22,9 @@ module ReVIEW
         if id = line.slice(/\[(.*?)\]/, 1)
           items.push item_class().new(id, seq)
           seq += 1
+          if id == ""
+            warn "warning: no ID of #{item_type()} in #{line}"
+          end
         end
       end
       new(items, *args)
@@ -43,7 +46,7 @@ module ReVIEW
       @items = items
       @index = {}
       items.each do |i|
-        warn "warning: duplicate ID: #{i.id}" unless @index[i.id].nil?
+        warn "warning: duplicate ID: #{i.id} (#{i})" unless @index[i.id].nil?
         @index[i.id] = i
       end
     end
