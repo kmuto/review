@@ -144,7 +144,11 @@ def copy_images(from, to)
     copyImagesToDir(from, to)
     Dir.chdir(to) {
       fork {
-        exec("ebb *.png *.jpg */*.jpg */*.png")
+        begin
+          exec("extractbb -v *.png *.jpg */*.jpg */*.png;extractbb -v -m *.png *.jpg */*.jpg */*.png")
+        rescue
+          exec("ebb -v *.png *.jpg */*.jpg */*.png")
+        end
       }
     }
   Process.waitall
@@ -187,16 +191,20 @@ def get_template(values)
 \\newcommand{\\parasep}{\\vspace*{3zh}}
 \\setlength{\\footskip}{30pt}
 
+%% Bookmarkの文字化け対策（日本語向け）
+\\ifnum 46273=\\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
+  \\usepackage{atbegshi}%
+  \\AtBeginShipoutFirst{\\special{pdf:tounicode EUC-UCS2}}%
+  %%\\AtBeginDvi{\\special{pdf:tounicode EUC-UCS2}}%
+\\else
+  \\usepackage{atbegshi}%
+  \\AtBeginShipoutFirst{\\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
+  %%\\AtBeginDvi{\\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
+\\fi
+
 \\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={#{values["booktitle"]}},%
             pdfauthor={#{values["aut"]}}]{hyperref}
-
-%% Bookmarkの文字化け対策（日本語向け）
-\\ifnum 46273=\\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
-  \\AtBeginDvi{\\special{pdf:tounicode EUC-UCS2}}%
-\\else
-  \\AtBeginDvi{\\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-\\fi
 
 \\newenvironment{reviewimage}{%
   \\begin{figure}[H]
@@ -298,8 +306,8 @@ EOB
   if values["coverimage"]
     str += <<EOB
   \\begin{center}
-    \\mbox{}\\vskip5zw%
-    \\includegraphics[scale=1.0]{./images/#{values["coverimage"]}}
+    %%%\\mbox{}\\vskip5zw%
+    \\includegraphics[width=\\textwidth,height=\\textheight,keepaspectratio]{./images/#{values["coverimage"]}}
   \\end{center}
   \\clearpage
 EOB

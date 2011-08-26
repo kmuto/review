@@ -1,3 +1,8 @@
+Fri Aug 26 14:57:35 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: fix some style broken in TeXLive 2011
+	* bin/review-pdfmaker: use extractbb instead of ebb
+
 Sat Aug 13 11:06:17 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-epubmaker:
