@@ -159,6 +159,18 @@ def get_template(values)
   dclass = values["texdocumentclass"] || []
   documentclass =  dclass[0] || "jsbook"
   documentclassoption =  dclass[1] || "oneside"
+
+  okuduke = "著　者 & #{values["aut"]} \\\\\n"
+  authors = values["aut"]+ "\\vspace*{1zh} 著"
+  if values["trl"]
+    authors += " \\\\\n"+values["trl"]+ "\\vspace*{1zh} 訳"
+    okuduke += "翻　訳 & #{values["trl"]} \\\\"
+  end
+  okuduke += <<EOB
+編集者 & #{values["edt"]} \\\\
+発行所 & #{values["prt"]} \\\\
+EOB
+
   str = <<EOB
 \\documentclass[#{documentclassoption}]{#{documentclass}}
 \\usepackage[deluxe]{otf}
@@ -322,7 +334,7 @@ EOB
     {\\huge
       \\lineskip .75em
       \\begin{tabular}[t]{c}%
-        #{values["aut"]}\\vspace*{1zh} 著
+        #{authors}
       \\end{tabular}\\par}%
     \\vfill
     {\\large #{values["date"]} 版\\hspace{2zw}#{values["prt"]}　発行\\par}%
@@ -362,9 +374,7 @@ EOB
 }
 
 \\begin{tabular}{ll}
-著　者 & #{values["aut"]} \\\\
-編集者 & #{values["edt"]} \\\\
-発行所 & #{values["prt"]} \\\\
+#{okuduke}
 \\end{tabular}
 　\\\\
 \\rule[0pt]{14cm}{1pt} \\\\
