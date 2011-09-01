@@ -396,6 +396,13 @@ EOC
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
     end
+
+    mktmpbookdir 'PREDEF' => 'chapter1.txt',
+       'chapter1.txt' => '' do |dir, book, files|
+      assert_kind_of Part, book.prefaces
+      assert_equal '', book.prefaces.name
+      assert_equal 1, book.prefaces.chapters.size
+    end
   end
 
   def test_postscripts
@@ -553,6 +560,26 @@ EOC
 
   def test_chapters
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
+       'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+      chapters = book.chapters
+      assert_equal 5, chapters.size
+
+      ch_names = %w(preface ch1 ch2 ch3 postscript)
+      tmp = []
+      book.each_chapter {|ch| tmp << ch.name }
+      assert_equal ch_names, tmp
+
+      ch_names.each do |name|
+        assert book.chapter(name)
+        assert_equal name, book.chapter(name).name
+      end
+
+      assert_raises IndexError,KeyError do
+        book.chapter('not exist')
+      end
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt",
        'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
       chapters = book.chapters
       assert_equal 5, chapters.size

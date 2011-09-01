@@ -221,7 +221,7 @@ module ReVIEW
     end
 
     def mkchap(name)
-      name += ext unless File.extname(name) == ext
+      name += ext if File.extname(name) == ""
       path = "#{@basedir}/#{name}"
       raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
       Chapter.new(self, nil, name, path)
