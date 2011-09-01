@@ -1,3 +1,10 @@
+Thu Sep  1 13:21:16 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb: support --draft flag.
+	  add @<comment>. //comment and @<comment> will show in the
+	  output when --draft flag is specified. Without this flag
+	  (default), they will be converted to '<!-- -->'.
+
 Thu Sep  1 12:39:54 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb: escape html in @<code>.

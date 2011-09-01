@@ -668,7 +668,11 @@ QUOTE
     end
 
     def comment(str)
-      puts %Q(<!-- #{escape_html(str)} -->)
+      if ReVIEW.book.param["draft"]
+        puts %Q(<div class="draft-comment">#{escape_html(str)}</div>)
+      else
+        puts %Q(<!-- #{escape_html(str)} -->)
+      end
     end
 
     def footnote(id, str)
@@ -929,6 +933,14 @@ QUOTE
 
     def inline_uchar(str)
       %Q(&#x#{str};)
+    end
+
+    def inline_comment(str)
+      if ReVIEW.book.param["draft"]
+        %Q(<span class="draft-comment">#{escape_html(str)}</span>)
+      else
+        %Q(<!-- #{escape_html(str)} -->)
+      end
     end
 
     def inline_raw(str)
