@@ -1,3 +1,7 @@
+Thu Sep  1 12:39:54 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb: escape html in @<code>.
+
 Mon Aug 29 10:59:15 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker:

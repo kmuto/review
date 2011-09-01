@@ -764,7 +764,7 @@ QUOTE
     end
 
     def inline_code(str)
-      %Q(<tt class="inline-code">#{str}</tt>)
+      %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
     end
 
     def inline_idx(str)
