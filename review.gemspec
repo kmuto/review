@@ -106,7 +106,6 @@ Gem::Specification.new do |s|
      "test/test_htmlbuilder.rb",
      "test/test_htmlutils.rb",
      "test/test_idgxmlbuilder.rb",
-     "test/test_index.rb",
      "test/test_latexbuilder.rb",
      "test/test_lineinput.rb",
      "test/test_textutils.rb",
