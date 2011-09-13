@@ -80,6 +80,7 @@ def main
         next if l =~ /^#/
         fork {
           STDOUT.reopen("#{path}/chap#{body}.tex")
+          $stderr.puts "compiling #{l}"
           exec("review-compile --target=latex --level=#{values["secnolevel"]} #{values["params"]} #{l}")
         }
         Process.waitall
