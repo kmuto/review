@@ -249,7 +249,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.image_image("sampleimg","sample photo",nil)
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png"  /><caption>図1.1　sample photo</caption></img>|, @builder.raw_result
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" /><caption>図1.1　sample photo</caption></img>|, @builder.raw_result
   end
 
   def test_image_with_metric
@@ -263,6 +263,17 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /><caption>図1.1　sample photo</caption></img>|, @builder.raw_result
   end
 
+  def test_image_with_metric2
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image_image("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::ignore=params, idgxml::ostyle=\"object\"")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" ostyle="object" /><caption>図1.1　sample photo</caption></img>|, @builder.raw_result
+  end
+
   def test_indepimage
     def @chapter.image(id)
       item = ImageIndex::Item.new("sampleimg",1)
@@ -271,7 +282,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.indepimage("sampleimg","sample photo",nil)
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png"  /><caption>sample photo</caption></img>|, @builder.raw_result
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" /><caption>sample photo</caption></img>|, @builder.raw_result
   end
 
   def test_indepimage_without_caption
@@ -282,7 +293,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.indepimage("sampleimg",nil,nil)
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png"  /></img>|, @builder.raw_result
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" /></img>|, @builder.raw_result
   end
 
   def test_indepimage_with_metric
@@ -294,6 +305,17 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
     @builder.indepimage("sampleimg","sample photo","scale=1.2")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /><caption>sample photo</caption></img>|, @builder.raw_result
+  end
+
+  def test_indepimage_with_metric2
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.indepimage("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::ignore=params, idgxml::ostyle=\"object\"")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" ostyle="object" /><caption>sample photo</caption></img>|, @builder.raw_result
   end
 
   def test_indepimage_without_caption_but_with_metric

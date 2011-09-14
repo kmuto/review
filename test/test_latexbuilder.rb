@@ -258,6 +258,17 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
+  def test_image_with_metric2
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.image_image("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::height=3cm")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
   def test_indepimage
     def @chapter.image(id)
       item = ImageIndex::Item.new("sampleimg",1)
@@ -292,6 +303,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     # FIXME: indepimage's caption should not be with a counter.
     @builder.indepimage("sampleimg","sample photo","scale=1.2")
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+  end
+
+  def test_indepimage_with_metric2
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    # FIXME: indepimage's caption should not be with a counter.
+    @builder.indepimage("sampleimg","sample photo","scale=1.2, latex::height=3cm, html::class=\"sample\"")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_indepimage_without_caption_but_with_metric

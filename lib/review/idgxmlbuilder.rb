@@ -372,23 +372,20 @@ module ReVIEW
       chapter, id = extract_chapter_id(id)
       "<span type='image'>図#{getChap(chapter)}#{chapter.image(id).number}</span>"
     end
-
-    def parse_metric(metric)
-      return [] if metric.nil? || metric.empty?
-      params = []
-      values = metric.split(/\s*?,\s*?/)
-      return [] if values.size == 0
-      values.each do |value|
-        k, v = value.split("=", 2)
-        params.push("#{k}=\"" + v.gsub("\"", '') + "\"")
-      end
-      return params
+ 
+    def handle_metric(str)
+      k, v = str.split('=', 2)
+      return "#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\""
+    end
+      
+    def result_metric(array)
+      " #{array.join(' ')}"
     end
 
     def image_image(id, caption, metric=nil)
+      metrics = parse_metric("idgxml", metric)
       puts "<img>"
-      params = parse_metric(metric)
-      puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}" #{params.join(" ")} />]
+      puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}"#{metrics} />]
       image_header id, caption
       puts "</img>"
     end
@@ -938,10 +935,10 @@ module ReVIEW
     end
 
    def indepimage(id, caption=nil, metric=nil)
+     metrics = parse_metric("idgxml", metric)
       puts "<img>"
-      params = parse_metric(metric)
       begin
-        puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" #{params.join(" ")} />]
+        puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}"#{metrics} />]
       rescue
         warn %Q[no such image: #{id}]
       end

@@ -1,3 +1,13 @@
+Thu Sep 15 00:28:05 2011  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/builder.rb, lib/review/htmlbuilder.rb,
+	  lib/review/texbuilder.rb, lib/review/idgxmlbuilder.rb,
+	  test/test_htmlbuilder.rb, test/test_latexbuilder.rb,
+	  test/test_idgxmlbuilder.rb: handle metric parameter of
+	  //image and //indepimage more portable.
+	  Builder specific parameter can be specified with prefix
+	  html::, latex::, and idgxml::.
+
 Thu Sep  1 13:21:16 2011  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb: support --draft flag.

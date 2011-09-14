@@ -579,10 +579,21 @@ QUOTE
       puts '</div>'
     end
 
+    def handle_metric(str)
+      if str =~ /\Ascale=([\d.]+)\Z/
+        str = "width=\"#{($1.to_f * 100).round}%\""
+      end
+      str
+    end
+
+    def result_metric(array)
+      " #{array.join(' ')}"
+    end
+
     def image_image(id, caption, metric)
-      # FIXME: should respect metric?
+      metrics = parse_metric("html", metric)
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}" />]
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       image_header id, caption
       puts %Q[</div>]
     end
@@ -680,10 +691,11 @@ QUOTE
     end
 
     def indepimage(id, caption="", metric=nil)
+      metrics = parse_metric("html", metric)
       caption = "" if caption.nil?
       puts %Q[<div class="image">]
       begin
-        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}" />]
+        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}"#{metrics} />]
       rescue
         puts %Q[<pre>missing image: #{id}</pre>]
       end

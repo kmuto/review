@@ -301,6 +301,32 @@ module ReVIEW
       raise ApplicationError, "#{@location}: error: #{msg}"
     end
 
+    def handle_metric(str)
+      str
+    end
+
+    def result_metric(array)
+      array.join(',')
+    end
+
+    def parse_metric(type, metric)
+      return "" if metric.nil? || metric.empty?
+      params = metric.split(/,\s*/)
+      results = []
+      params.each do |p|
+        if p =~ /\A.+?::/
+          if p =~ /\A#{type}::/
+              p.sub!(/\A#{type}::/, '')
+          else
+            next
+          end
+        end
+        p = handle_metric(p)
+        results.push(p)
+      end
+      return result_metric(results)
+    end
+
     def getChap(chapter = @chapter)
       if ReVIEW.book.param["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
         return "#{chapter.number}."

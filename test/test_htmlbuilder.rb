@@ -173,7 +173,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.image_image("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_image_with_metric2
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+    @builder.image_image("sampleimg","sample photo","scale=1.2,html::class=\"sample\",latex::ignore=params")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def test_indepimage
@@ -206,7 +216,18 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.indepimage("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_indepimage_with_metric2
+    def @chapter.image(id)
+      item = ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item
+    end
+
+    @builder.indepimage("sampleimg","sample photo","scale=1.2, html::class=\"sample\",latex::ignore=params")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -217,7 +238,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.indepimage("sampleimg",nil,"scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, @builder.raw_result
   end
 
   def test_emlist

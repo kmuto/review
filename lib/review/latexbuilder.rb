@@ -292,11 +292,16 @@ module ReVIEW
     def image_header(id, caption)
     end
 
+    def result_metric(array)
+      "#{array.join(',')}"
+    end
+
     def image_image(id, caption, metric)
+      metrics = parse_metric("latex", metric)
       # image is always bound here
       puts '\begin{reviewimage}'
-      if metric
-        puts "\\includegraphics[#{metric}]{#{@chapter.image(id).path}}"
+      if !metrics.empty?
+        puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
@@ -332,9 +337,10 @@ module ReVIEW
     private :image_label
 
     def indepimage(id, caption=nil, metric=nil)
+      metrics = parse_metric("latex", metric)
       puts '\begin{reviewimage}'
-      if metric
-        puts "\\includegraphics[#{metric}]{#{@chapter.image(id).path}}"
+      if !metrics.empty?
+        puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
