@@ -270,7 +270,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image_image("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::ignore=params, idgxml::ostyle=\"object\"")
+    @builder.image_image("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::ignore=params, idgxml::ostyle=object")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><img><Image href="file://images/chap1-sampleimg.png" scale="1.2" ostyle="object" /><caption>図1.1　sample photo</caption></img>|, @builder.raw_result
   end
 

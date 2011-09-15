@@ -182,7 +182,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
-    @builder.image_image("sampleimg","sample photo","scale=1.2,html::class=\"sample\",latex::ignore=params")
+    @builder.image_image("sampleimg","sample photo","scale=1.2,html::class=sample,latex::ignore=params")
     assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 

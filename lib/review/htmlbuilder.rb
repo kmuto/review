@@ -581,9 +581,11 @@ QUOTE
 
     def handle_metric(str)
       if str =~ /\Ascale=([\d.]+)\Z/
-        str = "width=\"#{($1.to_f * 100).round}%\""
+        return "width=\"#{($1.to_f * 100).round}%\""
+      else
+        k, v = str.split('=', 2)
+        return "#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\""
       end
-      str
     end
 
     def result_metric(array)
