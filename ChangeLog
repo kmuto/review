@@ -1,3 +1,8 @@
+Fri Sep 23 22:06:26 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexutils.rb:
+          support MARUSUJI(number in circle) 0-10
+
 Wed Sep 21 19:51:57 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/compiler.rb: fix slow regexp (cf. [ruby-list:48379])

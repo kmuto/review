@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 # $Id: latexutils.rb 2204 2006-03-18 06:10:26Z aamine $
 #
@@ -26,7 +27,19 @@ module ReVIEW
       '|' => '\textbar{}',
       '<'  => '\textless{}',
       '>'  => '\textgreater{}',
-      "\\" => '\reviewbackslash{}'
+      "\\" => '\reviewbackslash{}',
+
+      '⓪' => '\UTF{24EA}',
+      '①' => '\UTF{2460}',
+      '②' => '\UTF{2461}',
+      '③' => '\UTF{2462}',
+      '④' => '\UTF{2463}',
+      '⑤' => '\UTF{2464}',
+      '⑥' => '\UTF{2465}',
+      '⑦' => '\UTF{2466}',
+      '⑧' => '\UTF{2467}',
+      '⑨' => '\UTF{2468}',
+      '⑩' => '\UTF{2469}',
     }
 
     METACHARS_RE = /[#{Regexp.escape(MATACHARS.keys.join(''))}]/
