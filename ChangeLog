@@ -1,3 +1,7 @@
+Tue Sep 27 21:36:00 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmaker: fix Issue #43: fix generating invalid EPUB toc.html file
+
 Tue Sep 27 18:51:27 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/book.rb, bin/review-pdfmaker:
