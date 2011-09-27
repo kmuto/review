@@ -425,14 +425,24 @@ EOT
         # values["level"]
         next if level > values["toclevel"].to_i
         if level > current
+          current += 1
           f.puts ""
-          f.puts "<ul class=\"toc-h#{level}\">"
-          current = level
+          f.puts "<ul class=\"toc-h#{current}\">"
+          while current < level
+            current += 1
+            f.puts "<li>"
+            f.puts "<ul class=\"toc-h#{current}\">"
+          end
         elsif level < current
+          current -= 1
           f.puts "</li>"
           f.puts "</ul>"
           f.puts "</li>"
-          current = level
+          while current > level
+            current -= 1
+            f.puts "</ul>"
+            f.puts "</li>"
+          end
         elsif init_item
           # noop
         else
