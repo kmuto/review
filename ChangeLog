@@ -1,3 +1,7 @@
+Tue Sep 27 21:44:13 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmaker: default author should be nil
+
 Tue Sep 27 21:36:00 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-epubmaker: fix Issue #43: fix generating invalid EPUB toc.html file
