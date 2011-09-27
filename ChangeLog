@@ -1,3 +1,8 @@
+Tue Sep 27 18:19:20 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker:
+	  support customizing coverfile in LATEXBuilder (same as HTMLBuilder)
+
 Fri Sep 23 22:06:26 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexutils.rb:

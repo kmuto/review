@@ -114,6 +114,7 @@ def main
 
   copy_images("./images", "#{path}/images")
   copyStyToDir(Dir.pwd + "/sty", path)
+  copyStyToDir(Dir.pwd, path, "tex")
 
   Dir.chdir(path) {
     template = get_template(values)
@@ -156,6 +157,51 @@ def copy_images(from, to)
   end
 end
 
+def make_titlepage(values, authors)
+  coverfile = values["coverfile"]
+  if coverfile
+    coverfile_sty = coverfile.sub(/\.[^.]+$/, ".tex")
+    if File.exist?(coverfile_sty)
+      titlepage = File.read(coverfile_sty)
+      return titlepage
+    end
+  end
+
+  ## use default titlepage template
+  titlepage = <<EOB
+\\begin{titlepage}
+EOB
+  if values["coverimage"]
+    titlepage += <<EOB
+  \\begin{center}
+    %%%\\mbox{}\\vskip5zw%
+    \\includegraphics[width=\\textwidth,height=\\textheight,keepaspectratio]{./images/#{values["coverimage"]}}
+  \\end{center}
+  \\clearpage
+EOB
+  end
+  titlepage += <<EOB
+\\thispagestyle{empty}
+\\begin{center}%
+  \\mbox{} \\vskip5zw
+   \\reviewtitlefont%
+    {\\Huge #{values["booktitle"]} \\par}%
+    \\vskip 15em%
+    {\\huge
+      \\lineskip .75em
+      \\begin{tabular}[t]{c}%
+        #{authors}
+      \\end{tabular}\\par}%
+    \\vfill
+    {\\large #{values["date"]} 版\\hspace{2zw}#{values["prt"]}　発行\\par}%
+\\vskip4zw\\mbox{}
+  \\end{center}%
+\\end{titlepage}
+EOB
+
+  return titlepage
+end
+
 def get_template(values)
   dclass = values["texdocumentclass"] || []
   documentclass =  dclass[0] || "jsbook"
@@ -178,6 +224,8 @@ def get_template(values)
   okuduke += <<EOB
 発行所 & #{values["prt"]} \\\\
 EOB
+
+  titlepage = make_titlepage(values, authors)
 
   str = <<EOB
 \\documentclass[#{documentclassoption}]{#{documentclass}}
@@ -320,35 +368,10 @@ EOB
 \\begin{document}
 
 \\reviewmainfont
+EOB
 
-\\begin{titlepage}
-EOB
-  if values["coverimage"]
-    str += <<EOB
-  \\begin{center}
-    %%%\\mbox{}\\vskip5zw%
-    \\includegraphics[width=\\textwidth,height=\\textheight,keepaspectratio]{./images/#{values["coverimage"]}}
-  \\end{center}
-  \\clearpage
-EOB
-  end
+  str += titlepage
   str += <<EOB
-\\thispagestyle{empty}
-\\begin{center}%
-  \\mbox{} \\vskip5zw
-   \\reviewtitlefont%
-    {\\Huge #{values["booktitle"]} \\par}%
-    \\vskip 15em%
-    {\\huge
-      \\lineskip .75em
-      \\begin{tabular}[t]{c}%
-        #{authors}
-      \\end{tabular}\\par}%
-    \\vfill
-    {\\large #{values["date"]} 版\\hspace{2zw}#{values["prt"]}　発行\\par}%
-\\vskip4zw\\mbox{}
-  \\end{center}%
-\\end{titlepage}
 
 \\renewcommand{\\chaptermark}[1]{{}}
 \\frontmatter
@@ -409,11 +432,11 @@ def copyImagesToDir(dirname, copybase)
   }
 end
 
-def copyStyToDir(dirname, copybase)
+def copyStyToDir(dirname, copybase, extname = "sty")
   Dir.open(dirname) {|dir|
     dir.each {|fname|
       next if fname =~ /^\./
-      if fname =~ /\.(sty)$/i
+      if fname =~ /\.(#{extname})$/i
         Dir.mkdir(copybase) unless File.exist?(copybase)
         FileUtils.cp "#{dirname}/#{fname}", copybase
       end
