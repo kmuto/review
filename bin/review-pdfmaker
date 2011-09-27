@@ -161,14 +161,21 @@ def get_template(values)
   documentclass =  dclass[0] || "jsbook"
   documentclassoption =  dclass[1] || "oneside"
 
-  okuduke = "著　者 & #{values["aut"]} \\\\\n"
-  authors = values["aut"]+ "\\vspace*{1zh} 著"
+  okuduke = ""
+  authors = ""
+
+  if values["aut"]
+    okuduke += "著　者 & #{values["aut"]} \\\\\n"
+    authors = values["aut"]+ "\\vspace*{1zh} 著"
+  end
   if values["trl"]
     authors += " \\\\\n"+values["trl"]+ "\\vspace*{1zh} 訳"
-    okuduke += "翻　訳 & #{values["trl"]} \\\\"
+    okuduke += "翻　訳 & #{values["trl"]} \\\\\n"
+  end
+  if values["edt"]
+    okuduke += "編集者 & #{values["edt"]} \\\\\n"
   end
   okuduke += <<EOB
-編集者 & #{values["edt"]} \\\\
 発行所 & #{values["prt"]} \\\\
 EOB
 
