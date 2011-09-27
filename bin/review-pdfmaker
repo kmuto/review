@@ -423,7 +423,7 @@ def copyImagesToDir(dirname, copybase)
       if FileTest.directory?("#{dirname}/#{fname}")
         copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
       else
-        if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
+        if fname =~ /\.(png|gif|jpg|jpeg|svg|pdf)$/i
           Dir.mkdir(copybase) unless File.exist?(copybase)
           FileUtils.cp "#{dirname}/#{fname}", copybase
         end

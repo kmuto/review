@@ -1,3 +1,8 @@
+Tue Sep 27 18:51:27 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book.rb, bin/review-pdfmaker:
+	  support *.pdf file for images in LATEXBuilder
+
 Tue Sep 27 18:19:20 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker:
