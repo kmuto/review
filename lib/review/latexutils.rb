@@ -65,6 +65,10 @@ module ReVIEW
       str.gsub(/[@!|"]/) {|s| '"' + s }
     end
 
+    def escape_url(str)
+      str.gsub(/[\#]/) {|s| '\\'+s }
+    end
+
     def macro(name, *args)
       "\\#{name}" + args.map {|a| "{#{a}}" }.join('')
     end

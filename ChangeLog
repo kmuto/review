@@ -1,3 +1,8 @@
+Sun Oct  9 00:43:51 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb, lib/review/latexutils.rb:
+	  LATEXBuilder: fix escape in URL (use special method)
+
 Tue Sep 27 21:44:13 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-epubmaker: default author should be nil
