@@ -748,6 +748,40 @@ QUOTE
       @noindent = true
     end
 
+    def inline_chapref(id)
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.display_string(id)}</a>)
+      else
+        @chapter.env.chapter_index.display_string(id)
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def inline_chap(id)
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.number(id)}</a>)
+      else
+        @chapter.env.chapter_index.number(id)
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def inline_title(id)
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.title(id)}</a>)
+      else
+        @chapter.env.chapter_index.title(id)
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+
     def inline_fn(id)
       %Q(<a href="#fn-#{id}">*#{@chapter.footnote(id).number}</a>)
     end
