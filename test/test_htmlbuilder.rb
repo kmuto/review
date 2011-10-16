@@ -344,4 +344,31 @@ EOS
       column_helper(review)
     end
   end
+
+  def ul_helper(src, expect)
+    io = StringIO.new(src)
+    li = LineInput.new(io)
+    @compiler.__send__(:compile_ulist, li)
+    assert_equal expect, @builder.raw_result
+  end
+
+  def test_ul
+    src =<<-EOS
+  * AAA
+  * BBB
+EOS
+    expect = "<ul>\n<li>AAA</li>\n<li>BBB</li>\n</ul>\n"
+    ul_helper(src, expect)
+  end
+
+  def test_ul_cont
+    src =<<-EOS
+  * AAA
+    -AA
+  * BBB
+    -BB
+EOS
+    expect = "<ul>\n<li>AAA\n-AA</li>\n<li>BBB\n-BB</li>\n</ul>\n"
+    ul_helper(src, expect)
+  end
 end
