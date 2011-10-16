@@ -96,7 +96,8 @@ def _main
       error_exit '-a/-s option and file arguments are exclusive'
     end
   else
-    source = ReVIEW::ChapterSet.for_argv
+    puts parser.help
+    exit 0
   end
 
   begin
