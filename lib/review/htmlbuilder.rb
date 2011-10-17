@@ -368,6 +368,18 @@ EOT
       puts "<li>#{lines.join("\n")}</li>"
     end
 
+    def ul_item_begin(lines)
+      print "<li>#{lines.join("\n")}"
+    end
+
+    def dummy
+      print "######"
+    end
+
+    def ul_item_end
+      puts "</li>"
+    end
+
     def ul_end
       puts '</ul>'
     end

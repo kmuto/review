@@ -218,6 +218,14 @@ module ReVIEW
       puts %Q(<li aid:pstyle="ul-item">#{lines.join("\n").chomp}</li>)
     end
 
+    def ul_item_begin(lines)
+      print %Q(<li aid:pstyle="ul-item">#{lines.join("\n").chomp})
+    end
+
+    def ul_item_end
+      puts "</li>"
+    end
+
     def choice_single_begin
       puts "<choice type='single'>"
     end

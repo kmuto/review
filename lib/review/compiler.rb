@@ -337,15 +337,45 @@ module ReVIEW
     end
 
     def compile_ulist(f)
-      @strategy.ul_begin
+      level = 0
       f.while_match(/\A\s+\*/) do |line|
-        buf = [text(line.sub(/\*/, '').strip)]
+
+        buf = [text(line.sub(/\*+/, '').strip)]
         f.while_match(/\A\s+(?!\*)\S/) do |cont|
           buf.push text(cont.strip)
         end
-        @strategy.ul_item buf
+
+        line =~ /\A\s+(\*+)/
+        if level == $1.size
+          @strategy.ul_item_end
+          # body
+          @strategy.ul_item_begin buf
+        elsif level < $1.size # down
+          level_diff = $1.size - level
+          level = $1.size
+          (level_diff - 1).times do |i|
+            @strategy.ul_begin
+            @strategy.ul_item_begin []
+          end
+          @strategy.ul_begin
+          @strategy.ul_item_begin buf
+        elsif level > $1.size # up
+          level_diff = level - $1.size
+          level = $1.size
+          level_diff.times do |i|
+            @strategy.ul_item_end
+            @strategy.ul_end
+            @strategy.ul_item_end
+          end
+          # body
+          @strategy.ul_item_begin buf
+        end
       end
-      @strategy.ul_end
+
+      level.times do |i|
+        @strategy.ul_item_end
+        @strategy.ul_end
+      end
     end
 
     def compile_olist(f)

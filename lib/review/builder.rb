@@ -384,6 +384,13 @@ module ReVIEW
     def image_ext
       raise NotImplementedError
     end
+
+    def ul_item_begin(lines)
+      ul_item(lines)
+    end
+
+    def ul_item_end
+    end
   end
 
 end   # module ReVIEW
