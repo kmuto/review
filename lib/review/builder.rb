@@ -384,6 +384,18 @@ module ReVIEW
     def image_ext
       raise NotImplementedError
     end
+
+
+    def inline_include(file_name)
+      if ReVIEW.book.param["inencoding"].nil?
+        enc = "utf8"
+      else
+        # UTF-8, SJIS, EUC => utf8, sjis, euc
+        enc = ReVIEW.book.param["inencoding"].gsub(/-/, '').downcase
+      end
+
+      compile_inline NKF.nkf("--#{enc}", File.open(file_name).read)
+    end
   end
 
 end   # module ReVIEW
