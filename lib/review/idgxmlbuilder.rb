@@ -391,10 +391,12 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      if ReVIEW.book.param["subdirmode"].nil?
-        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
-      else
+      if ReVIEW.book.param["subdirmode"]
         warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
+      elsif ReVIEW.book.param["singledirmode"]
+        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{id}.eps")
+      else
+        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
       end
       puts "<img>"
       print %Q[<pre aid:pstyle="dummyimage">]
