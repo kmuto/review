@@ -372,10 +372,6 @@ EOT
       print "<li>#{lines.join("\n")}"
     end
 
-    def dummy
-      print "######"
-    end
-
     def ul_item_end
       puts "</li>"
     end
