@@ -350,21 +350,21 @@ module ReVIEW
           @strategy.ul_item_end
           # body
           @strategy.ul_item_begin buf
-        elsif level < $1.size # down
-          level_diff = $1.size - level
-          level = $1.size
-          (level_diff - 1).times do |i|
-            @strategy.ul_begin
+        elsif level < (current_level = $1.size) # down
+          level_diff = current_level - level
+          level = current_level
+          (1..(level_diff - 1)).to_a.reverse.each do |i|
+            @strategy.ul_begin {i}
             @strategy.ul_item_begin []
           end
-          @strategy.ul_begin
+          @strategy.ul_begin {level}
           @strategy.ul_item_begin buf
-        elsif level > $1.size # up
-          level_diff = level - $1.size
-          level = $1.size
-          level_diff.times do |i|
+        elsif level > (current_level = $1.size) # up
+          level_diff = level - current_level
+          level = current_level
+          (1..level_diff).to_a.reverse.each do |i|
             @strategy.ul_item_end
-            @strategy.ul_end
+            @strategy.ul_end {i + 1}
             @strategy.ul_item_end
           end
           # body
@@ -372,9 +372,9 @@ module ReVIEW
         end
       end
 
-      level.times do |i|
+      (1..level).to_a.reverse.each do |i|
         @strategy.ul_item_end
-        @strategy.ul_end
+        @strategy.ul_end {i}
       end
     end
 

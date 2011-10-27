@@ -210,8 +210,11 @@ module ReVIEW
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{escape_html(compile_inline(caption))}"?>)
     end
 
+
     def ul_begin
-      puts '<ul>'
+      level = block_given? ? yield : ""
+      level = nil if level == 1
+      puts "<ul#{level == 1 ? nil : level}>"
     end
 
     def ul_item(lines)
@@ -243,7 +246,9 @@ module ReVIEW
     end
 
     def ul_end
-      puts '</ul>'
+      level = block_given? ? yield : ""
+      level = nil if level == 1
+      puts "</ul#{level}>"
     end
 
     def ol_begin

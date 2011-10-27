@@ -421,7 +421,35 @@ EOS
 
     expect =<<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA<ul><li aid:pstyle="ul-item">AA</li></ul></li></ul>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA<ul2><li aid:pstyle="ul-item">AA</li></ul2></li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
+  def test_ul_nest2
+    src =<<-EOS
+  * AAA
+  ** AA
+  * BBB
+  ** BB
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA<ul2><li aid:pstyle="ul-item">AA</li></ul2></li><li aid:pstyle="ul-item">BBB<ul2><li aid:pstyle="ul-item">BB</li></ul2></li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
+  def test_ul_nest3
+    src =<<-EOS
+  ** AAA
+  * AA
+  * BBB
+  ** BB
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item"><ul2><li aid:pstyle="ul-item">AAA</li></ul2></li><li aid:pstyle="ul-item">AA</li><li aid:pstyle="ul-item">BBB<ul2><li aid:pstyle="ul-item">BB</li></ul2></li></ul>
 EOS
     ul_helper(src, expect.chomp)
   end
