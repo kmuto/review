@@ -427,4 +427,88 @@ EOS
       column_helper(review)
     end
   end
+
+  def test_ul
+    src =<<-EOS
+  * AAA
+  * BBB
+EOS
+    expect =<<-EOS
+
+\\begin{itemize}
+\\item AAA
+\\item BBB
+\\end{itemize}
+EOS
+    ul_helper(src, expect)
+  end
+
+  def test_cont
+    src =<<-EOS
+  * AAA
+    -AA
+  * BBB
+    -BB
+EOS
+    expect =<<-EOS
+
+\\begin{itemize}
+\\item AAA
+-AA
+\\item BBB
+-BB
+\\end{itemize}
+EOS
+    ul_helper(src, expect)
+  end
+
+  def test_ul_nest1
+    src =<<-EOS
+  * AAA
+  ** AA
+EOS
+
+    expect =<<-EOS
+
+\\begin{itemize}
+\\item AAA
+
+\\begin{itemize}
+\\item AA
+\\end{itemize}
+
+\\end{itemize}
+EOS
+    ul_helper(src, expect)
+  end
+
+  def test_ul_nest3
+    src =<<-EOS
+  * AAA
+  ** AA
+  * BBB
+  ** BB
+EOS
+
+    expect =<<-EOS
+
+\\begin{itemize}
+\\item AAA
+
+\\begin{itemize}
+\\item AA
+\\end{itemize}
+
+\\item BBB
+
+\\begin{itemize}
+\\item BB
+\\end{itemize}
+
+\\end{itemize}
+EOS
+    ul_helper(src, expect)
+  end
+
+
 end

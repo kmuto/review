@@ -392,7 +392,6 @@ module ReVIEW
       raise NotImplementedError
     end
 
-
     def inline_include(file_name)
       if ReVIEW.book.param["inencoding"].nil?
         enc = "utf8"
@@ -402,6 +401,13 @@ module ReVIEW
       end
 
       compile_inline NKF.nkf("--#{enc}", File.open(file_name).read)
+    end
+
+    def ul_item_begin(lines)
+      ul_item(lines)
+    end
+
+    def ul_item_end
     end
   end
 

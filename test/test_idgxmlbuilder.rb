@@ -382,4 +382,76 @@ EOS
       column_helper(review)
     end
   end
+
+  def test_ul
+    src =<<-EOS
+  * AAA
+  * BBB
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA</li><li aid:pstyle="ul-item">BBB</li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
+  def test_ul_cont
+    src =<<-EOS
+  * AAA
+    -AA
+  * BBB
+    -BB
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA
+-AA</li><li aid:pstyle="ul-item">BBB
+-BB</li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
+  def test_ul_nest1
+    src =<<-EOS
+  * AAA
+  ** AA
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA<ul2><li aid:pstyle="ul-item">AA</li></ul2></li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
+  def test_ul_nest2
+    src =<<-EOS
+  * AAA
+  ** AA
+  * BBB
+  ** BB
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA<ul2><li aid:pstyle="ul-item">AA</li></ul2></li><li aid:pstyle="ul-item">BBB<ul2><li aid:pstyle="ul-item">BB</li></ul2></li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
+  def test_ul_nest3
+    src =<<-EOS
+  ** AAA
+  * AA
+  * BBB
+  ** BB
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item"><ul2><li aid:pstyle="ul-item">AAA</li></ul2></li><li aid:pstyle="ul-item">AA</li><li aid:pstyle="ul-item">BBB<ul2><li aid:pstyle="ul-item">BB</li></ul2></li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
 end
