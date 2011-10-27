@@ -646,7 +646,7 @@ module ReVIEW
     def indepimage(id, caption=nil, metric=nil)
       blank
       begin
-        puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")}" #{params.join(" ")}←◆"
+        puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")} #{metric.join(" ")}←◆"
       rescue
         warn "no such image: #{id}"
         puts "◆→画像 #{id}←◆"
@@ -741,12 +741,15 @@ module ReVIEW
     end
 
     def raw(str)
-      if str =~ /\A<\/(.+)>\Z/
-        puts "◆→終了:#{@boxtitles[$1].nil? ? $1 : @boxtitles[$1]}←◆"
+      if str =~ /\A<\/(.+?)>\Z/
+        puts "◆→終了:#{@titles[$1].nil? ? $1 : @titles[$1]}←◆"
         blank
-      elsif str =~ /\A<([^\/].+)>(?:<title[^>]>(.+)<\/title>)?(.*)/
+      elsif str =~ /\A<(.+?)\/>\Z/
+        puts "◆→#{@titles[$1].nil? ? $1 : @titles[$1]}←◆"
         blank
-        puts "◆→開始:#{@boxtitles[$1].nil? ? $1 : @boxtitles[$1]}←◆"
+      elsif str =~ /\A<([^\/].+?)>(?:<title[^>]>(.+)<\/title>)?(.*)/
+        blank
+        puts "◆→開始:#{@titles[$1].nil? ? $1 : @titles[$1]}←◆"
         puts "■#{$2}" unless $2.nil?
         print $3
       else
