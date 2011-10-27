@@ -270,24 +270,29 @@ module ReVIEW
     end
 
     def find_pathes(id)
-      if ReVIEW.book.param["subdirmode"].nil?
-        re = /\A#{@chapter.name}-#{id}(?i:#{@book.image_types.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-        .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-        .map {|ent| "#{@book.basedir}/#{ent}" }
-      else
+      if ReVIEW.book.param["subdirmode"]
         re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
         entries().select {|ent| re =~ ent }\
-        .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-        .map {|ent| "#{@book.asedir}/#{@chapter.name}/#{ent}" }
+          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
+          .map {|ent| "#{@book.basedir}/#{@chapter.name}/#{ent}" }
+      elsif ReVIEW.book.param["singledirmode"]
+        re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
+          .map {|ent| "#{@book.basedir}/#{ent}" }
+      else
+        re = /\A#{@chapter.name}-#{id}(?i:#{@book.image_types.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
+          .map {|ent| "#{@book.basedir}/#{ent}" }
       end
     end
 
     def entries
-      if ReVIEW.book.param["subdirmode"].nil?
-        @entries ||= Dir.entries(@book.basedir + @book.image_dir)
-      else
+      if ReVIEW.book.param["subdirmode"]
         @entries ||= Dir.entries(File.join(@book.basedir + @book.image_dir, @chapter.name))
+      else
+        @entries ||= Dir.entries(@book.basedir + @book.image_dir)
       end
     rescue Errno::ENOENT
     @entries = []
@@ -360,6 +365,8 @@ module ReVIEW
       file = "#{@chapter.name}-#{id}.#{image_ext}"
       if ReVIEW.book.param["subdirmode"]
         dir = File.join(dir, @chapter.name)
+        file = "#{id}.#{image_ext}"
+      elsif ReVIEW.book.param["singledirmode"]
         file = "#{id}.#{image_ext}"
       end
       file_path = File.join(dir, file)

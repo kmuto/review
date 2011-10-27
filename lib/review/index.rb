@@ -160,16 +160,21 @@ module ReVIEW
 
     # internal use only
     def find_pathes(id)
-      if ReVIEW.book.param["subdirmode"].nil?
-        re = /\A#{@chapid}-#{id}(?i:#{@types.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{ent}" }
-      else
+      if ReVIEW.book.param["subdirmode"]
         re = /\A#{id}(?i:#{@types.join('|')})\z/x
         entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{@chapid}/#{ent}" }
+          .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
+          .map {|ent| "#{@basedir}/#{@chapid}/#{ent}" }
+      elsif ReVIEW.book.param["singledirmode"]
+        re = /\A#{id}(?i:#{@types.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+          .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
+          .map {|ent| "#{@basedir}/#{ent}" }
+      else
+        re = /\A#{@chapid}-#{id}(?i:#{@types.join('|')})\z/x
+        entries().select {|ent| re =~ ent }\
+          .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
+          .map {|ent| "#{@basedir}/#{ent}" }
       end
     end
 
@@ -177,10 +182,10 @@ module ReVIEW
 
     def entries
       # @entries: do not cache for graph
-      if ReVIEW.book.param["subdirmode"].nil?
-        @entries = Dir.entries(@basedir)
-      else
+      if ReVIEW.book.param["subdirmode"]
         @entries = Dir.entries(File.join(@basedir, @chapid))
+      else
+        @entries = Dir.entries(@basedir)
       end
     rescue Errno::ENOENT
       @entries = []

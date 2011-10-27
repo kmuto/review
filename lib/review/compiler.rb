@@ -213,6 +213,7 @@ module ReVIEW
     definline :idx
     definline :hidx
     definline :comment
+    definline :include
 
     private
 
