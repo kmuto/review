@@ -344,4 +344,88 @@ EOS
       column_helper(review)
     end
   end
+
+  def test_ul
+    src =<<-EOS
+  * AAA
+  * BBB
+EOS
+    expect = "<ul>\n<li>AAA</li>\n<li>BBB</li>\n</ul>\n"
+    ul_helper(src, expect)
+  end
+
+  def test_ul_cont
+    src =<<-EOS
+  * AAA
+    -AA
+  * BBB
+    -BB
+EOS
+    expect = "<ul>\n<li>AAA\n-AA</li>\n<li>BBB\n-BB</li>\n</ul>\n"
+    ul_helper(src, expect)
+  end
+
+  def test_ul_nest1
+    src =<<-EOS
+  * AAA
+  ** AA
+EOS
+
+    expect =<<-EOS
+<ul>
+<li>AAA<ul>
+<li>AA</li>
+</ul>
+</li>
+</ul>
+EOS
+    ul_helper(src, expect)
+  end
+
+  def test_ul_nest2
+    src =<<-EOS
+  * AAA
+  ** AA
+  * BBB
+  ** BB
+EOS
+
+    expect =<<-EOS
+<ul>
+<li>AAA<ul>
+<li>AA</li>
+</ul>
+</li>
+<li>BBB<ul>
+<li>BB</li>
+</ul>
+</li>
+</ul>
+EOS
+    ul_helper(src, expect)
+  end
+
+  def test_ul_nest3
+    src =<<-EOS
+  ** AAA
+  * AA
+  * BBB
+  ** BB
+EOS
+
+    expect =<<-EOS
+<ul>
+<li><ul>
+<li>AAA</li>
+</ul>
+</li>
+<li>AA</li>
+<li>BBB<ul>
+<li>BB</li>
+</ul>
+</li>
+</ul>
+EOS
+    ul_helper(src, expect)
+  end
 end
