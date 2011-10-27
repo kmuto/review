@@ -347,11 +347,12 @@ module ReVIEW
         end
 
         line =~ /\A\s+(\*+)/
-        if level == $1.size
+        current_level = $1.size
+        if level == current_level
           @strategy.ul_item_end
           # body
           @strategy.ul_item_begin buf
-        elsif level < (current_level = $1.size) # down
+        elsif level < current_level # down
           level_diff = current_level - level
           level = current_level
           (1..(level_diff - 1)).to_a.reverse.each do |i|
@@ -360,12 +361,12 @@ module ReVIEW
           end
           @strategy.ul_begin {level}
           @strategy.ul_item_begin buf
-        elsif level > (current_level = $1.size) # up
+        elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
           (1..level_diff).to_a.reverse.each do |i|
             @strategy.ul_item_end
-            @strategy.ul_end {i + 1}
+            @strategy.ul_end {level + i}
             @strategy.ul_item_end
           end
           # body

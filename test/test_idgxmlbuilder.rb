@@ -454,4 +454,21 @@ EOS
     ul_helper(src, expect.chomp)
   end
 
+  def test_ul_nest4
+    src =<<-EOS
+  * A
+  ** B
+  ** C
+  *** D
+  ** E
+  * F
+  ** G
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">A<ul2><li aid:pstyle="ul-item">B</li><li aid:pstyle="ul-item">C<ul3><li aid:pstyle="ul-item">D</li></ul3></li><li aid:pstyle="ul-item">E</li></ul2></li><li aid:pstyle="ul-item">F<ul2><li aid:pstyle="ul-item">G</li></ul2></li></ul>
+EOS
+    ul_helper(src, expect.chomp)
+  end
+
 end
