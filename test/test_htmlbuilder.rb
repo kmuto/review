@@ -71,6 +71,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, ret
   end
 
+  def test_inline_href
+    ret = @builder.inline_href("http://github.com, Git\\,Hub")
+    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, ret
+  end
+
   def test_inline_raw
     ret = @builder.inline_raw("@<tt>{inline}")
     assert_equal %Q|@&lt;tt&gt;{inline}|, ret

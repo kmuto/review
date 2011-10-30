@@ -65,6 +65,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\href{http://github.com}{GitHub}|, ret
   end
 
+  def test_inline_href
+    ret = @builder.inline_href("http://github.com, Git\\,Hub")
+    assert_equal %Q|\\href{http://github.com}{Git,Hub}|, ret
+  end
+
   def test_href_without_label
     ret = @builder.compile_href("http://github.com",nil)
     assert_equal %Q|\\href{http://github.com}{http://github.com}|, ret

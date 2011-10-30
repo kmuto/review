@@ -242,6 +242,7 @@ module ReVIEW
     def inline_href(arg)
       url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
       url = url.gsub(/\\,/, ",").strip
+      label = label.gsub(/\\,/, ",").strip
       compile_href(url, label)
     end
 

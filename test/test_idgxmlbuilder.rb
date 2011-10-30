@@ -68,6 +68,11 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<a linkurl='http://github.com'>http://github.com</a>|, ret
   end
 
+  def test_inline_href
+    ret = @builder.inline_href("http://github.com, Git\\,Hub")
+    assert_equal %Q|<a linkurl='http://github.com'>Git,Hub</a>|, ret
+  end
+
   def test_inline_raw
     ret = @builder.inline_raw("@<tt>{inline}")
     assert_equal %Q|@<tt>{inline}|, ret
