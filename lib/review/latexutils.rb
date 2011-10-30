@@ -66,7 +66,7 @@ module ReVIEW
     end
 
     def escape_url(str)
-      str.gsub(/[\#]/) {|s| '\\'+s }
+      str.gsub(/[\#%]/) {|s| '\\'+s }
     end
 
     def macro(name, *args)
