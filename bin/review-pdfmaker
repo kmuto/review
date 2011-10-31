@@ -433,7 +433,7 @@ def copyImagesToDir(dirname, copybase)
 end
 
 def copyStyToDir(dirname, copybase, extname = "sty")
-  unless Dir.exist?(dirname)
+  unless File.directory?(dirname)
     $stderr.puts "No such directory - #{dirname}"
     return
   end
