@@ -394,15 +394,30 @@ module ReVIEW
     end
 
     def inline_include(file_name)
+      enc = inencoding()
+      compile_inline NKF.nkf("--#{enc}", File.open(file_name).read)
+    end
+
+    def include(file_name)
+      enc = inencoding()
+      result = ""
+      File.foreach(file_name) do |line|
+        if r = paragraph([line])
+          result << NKF.nkf("--#{enc}", r)
+        end
+      end
+      result
+    end
+
+    def inencoding
       if ReVIEW.book.param["inencoding"].nil?
         enc = "utf8"
       else
         # UTF-8, SJIS, EUC => utf8, sjis, euc
         enc = ReVIEW.book.param["inencoding"].gsub(/-/, '').downcase
       end
-
-      compile_inline NKF.nkf("--#{enc}", File.open(file_name).read)
     end
+    private :inencoding
 
     def ul_item_begin(lines)
       ul_item(lines)

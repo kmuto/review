@@ -164,6 +164,7 @@ module ReVIEW
     defsingle :label, 1
     defsingle :raw, 1
     defsingle :tsize, 1
+    defsingle :include, 1
 
     definline :chapref
     definline :chap
