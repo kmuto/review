@@ -515,5 +515,23 @@ EOS
     ul_helper(src, expect)
   end
 
+  def test_inline_raw0
+    assert_equal "normal", @builder.inline_raw("normal")
+  end
 
+  def test_inline_raw1
+    assert_equal "body", @builder.inline_raw("|latex|body")
+  end
+
+  def test_inline_raw2
+    assert_equal "body", @builder.inline_raw("|html, latex|body")
+  end
+
+  def test_inline_raw3
+    assert_equal "", @builder.inline_raw("|idgxml, html|body")
+  end
+
+  def test_inline_raw4
+    assert_equal "\\textbar{}latex body", @builder.inline_raw("|latex body")
+  end
 end
