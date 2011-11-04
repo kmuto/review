@@ -132,6 +132,10 @@ def main
     }
     Process.waitall
     fork {
+      exec("platex -kanji=#{kanji} book.tex")
+    }
+    Process.waitall
+    fork {
       exec("dvipdfmx -d 5 book.dvi")
     }
     Process.waitall
