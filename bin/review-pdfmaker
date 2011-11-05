@@ -49,13 +49,6 @@ def main
   bookname = values["bookname"]
   Dir.mkdir(@path)
 
-  pre = 0
-  body = 0
-  post = 0
-  @pre_str = ""
-  @chap_str = ""
-  @post_str = ""
-  @toccount = 2
   @chaps_filenames = Hash.new{|h, key| h[key] = ""}
 
   if File.exists?("PREDEF")
@@ -111,7 +104,6 @@ def output_chaps(chapsfile, values)
   File.open(chapsfile) {|chaps|
     chaps.each_line {|l|
       next if l =~ /^#/
-      @toccount += 1
       file_id = File.basename(l.chomp.strip,".*")
       filename = "#{file_id}.tex"
       fork {
