@@ -83,7 +83,6 @@ def main
   @manifeststr = ""
   @ncxstr = ""
   @tocdesc = Array.new
-  @toccount = 2
   
   if File.exists?("PREDEF")
     output_chaps("PREDEF", values)
@@ -471,7 +470,6 @@ def output_chaps(chapsfile, values)
   File.open(chapsfile) {|chaps|
     chaps.each_line {|l|
       next if l =~ /^#/
-      @toccount += 1
       file_id = File.basename(l.chomp.strip,".*")
       filename = "#{file_id}.html"
       fork {
