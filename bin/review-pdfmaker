@@ -45,9 +45,9 @@ def main
   values = YAML.load_file(yamlfile)
   check_book(values)
   basedir = Dir.pwd
-  path = build_path(values)
+  @path = build_path(values)
   bookname = values["bookname"]
-  Dir.mkdir(path)
+  Dir.mkdir(@path)
 
   pre = 0
   body = 0
@@ -55,68 +55,32 @@ def main
   @pre_str = ""
   @chap_str = ""
   @post_str = ""
-  toccount = 2
+  @toccount = 2
+  @chaps_filenames = Hash.new{|h, key| h[key] = ""}
 
   if File.exists?("PREDEF")
-    File.open("PREDEF") {|chaps|
-      chaps.each_line {|l|
-        next if l =~ /^#/
-        pre = pre + 1
-        toccount = toccount + 1
-        fork {
-          STDOUT.reopen("#{path}/pre#{pre}.tex")
-          exec("review-compile --target=latex --level=1 #{values["params"]} #{l}")
-        }
-        Process.waitall
-        @pre_str << %Q|\\input{pre#{pre}.tex}\n|
-      }
-    }
+    output_chaps("PREDEF", values)
   end
   if File.exists?("CHAPS")
-    File.open("CHAPS") {|chaps|
-      chaps.each_line {|l|
-        body = body + 1
-        toccount = toccount + 1
-        next if l =~ /^#/
-        fork {
-          STDOUT.reopen("#{path}/chap#{body}.tex")
-          $stderr.puts "compiling #{l}"
-          exec("review-compile --target=latex --level=#{values["secnolevel"]} #{values["params"]} #{l}")
-        }
-        Process.waitall
-        @chap_str << %Q|\\input{chap#{body}.tex}\n|
-      }
-    }
+    output_chaps("CHAPS", values)
   end
   if File.exists?("POSTDEF")
-    File.open("POSTDEF") {|chaps|
-      chaps.each_line {|l|
-        next if l =~ /^#/
-        post = post + 1
-        toccount = toccount + 1
-        fork {
-          STDOUT.reopen("#{path}/post#{post}.tex")
-          exec("review-compile --target=latex --level=1 #{values["params"]} #{l}")
-        }
-        Process.waitall
-        @post_str << %Q|\\input{post#{post}.tex}\n|
-      }
-    }
+    output_chaps("POSTDEF", values)
   end
-  values["pre_str"] = @pre_str
-  values["chap_str"] = @chap_str
-  values["post_str"] = @post_str
+  values["pre_str"]  = @chaps_filenames["PREDEF"]
+  values["chap_str"] = @chaps_filenames["CHAPS"]
+  values["post_str"] = @chaps_filenames["POSTDEF"]
 
   values["usepackage"] = ""
   if values["texstyle"]
     values["usepackage"] = "\\usepackage{#{values['texstyle']}}"
   end
 
-  copy_images("./images", "#{path}/images")
-  copyStyToDir(Dir.pwd + "/sty", path)
-  copyStyToDir(Dir.pwd, path, "tex")
+  copy_images("./images", "#{@path}/images")
+  copyStyToDir(Dir.pwd + "/sty", @path)
+  copyStyToDir(Dir.pwd, @path, "tex")
 
-  Dir.chdir(path) {
+  Dir.chdir(@path) {
     template = get_template(values)
     File.open("./book.tex", "wb"){|f| f.write(template)}
    
@@ -140,8 +104,25 @@ def main
     }
     Process.waitall
   }
-  FileUtils.cp("#{path}/book.pdf", "#{basedir}/#{bookname}.pdf")
+  FileUtils.cp("#{@path}/book.pdf", "#{basedir}/#{bookname}.pdf")
+end
 
+def output_chaps(chapsfile, values)
+  File.open(chapsfile) {|chaps|
+    chaps.each_line {|l|
+      next if l =~ /^#/
+      @toccount += 1
+      file_id = File.basename(l.chomp.strip,".*")
+      filename = "#{file_id}.tex"
+      fork {
+        STDOUT.reopen("#{@path}/#{filename}")
+        $stderr.puts "compiling #{l}"
+        exec("review-compile --target=latex --level=1 #{values["params"]} #{l}")
+      }
+      Process.waitall
+      @chaps_filenames[chapsfile] << %Q|\\input{#{filename}}\n|
+    }
+  }
 end
 
 def copy_images(from, to)
