@@ -70,86 +70,38 @@ def main
   identifier = values["urnid"].nil? ? "urn:uuid:#{UUID.create}" : values["urnid"]
 
   tmp = values["debug"].nil? ? Dir.mktmpdir : "."
-  Dir.mkdir("#{tmp}/#{bookname}")
+  @bookdir = "#{tmp}/#{bookname}"
+  Dir.mkdir(@bookdir)
   
   # MIME type
-  File.open("#{tmp}/#{bookname}/mimetype", "w") {|f|
+  File.open("#{@bookdir}/mimetype", "w") {|f|
     f.puts "application/epub+zip"
   }
   
-  Dir.mkdir("#{tmp}/#{bookname}/OEBPS")
+  Dir.mkdir("#{@bookdir}/OEBPS")
   # XHTML
-  pre = 0
-  body = 0
-  post = 0
   @manifeststr = ""
   @ncxstr = ""
   @tocdesc = Array.new
-  toccount = 2
+  @toccount = 2
   
   if File.exists?("PREDEF")
-    File.open("PREDEF") {|chaps|
-      chaps.each_line {|l|
-        next if l =~ /^#/
-        pre = pre + 1
-        toccount = toccount + 1
-        fork {
-          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
-          exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
-        }
-        Process.waitall
-        getanchors("#{tmp}/#{bookname}/OEBPS/pre#{pre}.html")
-        @manifeststr << %Q(<item id="pre#{pre}" href="pre#{pre}.html" media-type="application/xhtml+xml" />\n)
-        @ncxstr << %Q(<itemref idref="pre#{pre}" />\n)
-      }
-    }
+    output_chaps("PREDEF", values)
   end
   if File.exists?("CHAPS")
-    File.open("CHAPS") {|chaps|
-      chaps.each_line {|l|
-        body = body + 1
-        toccount = toccount + 1
-        next if l =~ /^#/
-        fork {
-          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
-          exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
-        }
-        Process.waitall
-        getanchors("#{tmp}/#{bookname}/OEBPS/chap#{body}.html")
-        @manifeststr << %Q(<item id="chap#{body}" href="chap#{body}.html" media-type="application/xhtml+xml" />\n)
-        @ncxstr << %Q(<itemref idref="chap#{body}" />\n)
-      }
-    }
+    output_chaps("CHAPS", values)
   end
   if File.exists?("POSTDEF")
-    File.open("POSTDEF") {|chaps|
-      chaps.each_line {|l|
-        next if l =~ /^#/
-        post = post + 1
-        toccount = toccount + 1
-        filename = "post#{post}.html"
-        if l =~ /^bib\.re/
-          filename = "bib.html"
-        end
-        fork {
-          STDOUT.reopen("#{tmp}/#{bookname}/OEBPS/#{filename}")
-          exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
-        }
-        Process.waitall
-        getanchors("#{tmp}/#{bookname}/OEBPS/#{filename}")
-        @manifeststr << %Q(<item id="post#{post}" href="#{filename}" media-type="application/xhtml+xml" />\n)
-        @ncxstr << %Q(<itemref idref="post#{post}" />\n)
-      }
-    }
+    output_chaps("POSTDEF", values)
   end
   if File.exist?("images")
-    Dir.mkdir("#{tmp}/#{bookname}/OEBPS/images")
-    copyImagesToDir("images", "#{tmp}/#{bookname}/OEBPS/images")
+    Dir.mkdir("#{@bookdir}/OEBPS/images")
+    copyImagesToDir("images", "#{@bookdir}/OEBPS/images")
   end
   
   # container
-  Dir.mkdir("#{tmp}/#{bookname}/META-INF")
-  File.open("#{tmp}/#{bookname}/META-INF/container.xml", "w") {|f|
+  Dir.mkdir("#{@bookdir}/META-INF")
+  File.open("#{@bookdir}/META-INF/container.xml", "w") {|f|
     f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
@@ -161,7 +113,7 @@ EOT
   }
 
 # opf (meta info)
-  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.opf", "w") {|f|
+  File.open("#{@bookdir}/OEBPS/#{bookname}.opf", "w") {|f|
     f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
@@ -249,7 +201,7 @@ EOT
   }
 
   # ncx (toc)
-  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.ncx", "w") {|f|
+  File.open("#{@bookdir}/OEBPS/#{bookname}.ncx", "w") {|f|
     f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
@@ -313,7 +265,7 @@ EOT
   }
   
   # Cover page
-  File.open("#{tmp}/#{bookname}/OEBPS/#{bookname}.html", "w") {|f|
+  File.open("#{@bookdir}/OEBPS/#{bookname}.html", "w") {|f|
     f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -347,7 +299,7 @@ EOT
 
 
   # Title page
-  File.open("#{tmp}/#{bookname}/OEBPS/top.html", "w") {|f|
+  File.open("#{@bookdir}/OEBPS/top.html", "w") {|f|
     f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -401,7 +353,7 @@ EOT
 
   # Additional toc page
   unless values["mytoc"].nil?
-    File.open("#{tmp}/#{bookname}/OEBPS/toc.html", "w") {|f|
+    File.open("#{@bookdir}/OEBPS/toc.html", "w") {|f|
       f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -470,9 +422,9 @@ EOT
 
   # stylesheet
   if File.exist?(values["stylesheet"])
-    FileUtils.cp values["stylesheet"], "#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}"
+    FileUtils.cp values["stylesheet"], "#{@bookdir}/OEBPS/#{values["stylesheet"]}"
   else
-    File.open("#{tmp}/#{bookname}/OEBPS/#{values["stylesheet"]}", "w") {|f|
+    File.open("#{@bookdir}/OEBPS/#{values["stylesheet"]}", "w") {|f|
       f.puts <<EOT
 /* sample style sheet for epub */
 @charset "utf-8";
@@ -491,7 +443,7 @@ EOT
   # hook
   if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
     fork {
-      exec(values["posthook"], "#{tmp}/#{bookname}", Dir.pwd, yamlfile)
+      exec(values["posthook"], @bookdir, Dir.pwd, yamlfile)
     }
     Process.waitall
   end
@@ -499,14 +451,14 @@ EOT
   # Zip epubファイルの作成。mimetypeは圧縮しないようにする
   fork {
     basedir = Dir.pwd
-    Dir.chdir("#{tmp}/#{bookname}") {|d|
+    Dir.chdir(@bookdir) {|d|
       exec("zip -0X #{basedir}/#{bookname}.epub mimetype")
     }
   }
   Process.waitall
   fork {
     basedir = Dir.pwd
-    Dir.chdir("#{tmp}/#{bookname}") {|d|
+    Dir.chdir(@bookdir) {|d|
       exec("zip -Xr9D #{basedir}/#{bookname}.epub META-INF OEBPS")
     }
   }
@@ -514,6 +466,26 @@ EOT
   
   FileUtils.rm_r(tmp) if values["debug"].nil?
 end
+
+def output_chaps(chapsfile, values)
+  File.open(chapsfile) {|chaps|
+    chaps.each_line {|l|
+      next if l =~ /^#/
+      @toccount += 1
+      file_id = File.basename(l.chomp.strip,".*")
+      filename = "#{file_id}.html"
+      fork {
+        STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
+        exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+      }
+      Process.waitall
+      getanchors("#{@bookdir}/OEBPS/#{filename}")
+      @manifeststr << %Q(<item id="#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
+      @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
+    }
+  }
+end
+
 
 def copyImagesToDir(dirname, copybase)
   Dir.open(dirname) {|dir|
@@ -590,7 +562,7 @@ EOT
 </html>
 EOT
 
-  colophon_path = "#{tmp}/#{bookname}/OEBPS/colophon.html"
+  colophon_path = "#{@bookdir}/OEBPS/colophon.html"
   colophon = values["colophon"]
   if colophon.kind_of?(String) && File.exist?(colophon)
     File.open(colophon_path, "w") {|f|
