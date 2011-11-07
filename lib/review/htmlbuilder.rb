@@ -950,7 +950,7 @@ QUOTE
     end
 
     def inline_icon(id)
-      %Q[<img src=".#{@book.image_dir}#{find_pathes(id)[0].sub(/\A\.\//, "/")}" alt="[#{id}]" />]
+      %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="[#{id}]" />]
     end
 
     def inline_uchar(str)
