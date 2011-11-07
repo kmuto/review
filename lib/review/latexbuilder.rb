@@ -78,6 +78,9 @@ module ReVIEW
       end
       blank unless @output.pos == 0
       puts macro(HEADLINE[level]+prefix, compile_inline(caption))
+      if level == 1
+        puts macro('label', chapter_label)
+      end
     end
 
     def nonum_begin(level, label, caption)
@@ -336,6 +339,11 @@ module ReVIEW
     end
     private :image_label
 
+    def chapter_label()
+      "chap:#{@chapter.id}"
+    end
+    private :chapter_label
+
     def indepimage(id, caption=nil, metric=nil)
       metrics = parse_metric("latex", metric)
       puts '\begin{reviewimage}'
@@ -477,6 +485,40 @@ module ReVIEW
     def noindent
       print '\noindent'
     end
+
+    def inline_chapref(id)
+      if ReVIEW.book.param["chapterlink"]
+        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.display_string(id)}}"
+      else
+        @chapter.env.chapter_index.display_string(id)
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def inline_chap(id)
+      if ReVIEW.book.param["chapterlink"]
+        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.number(id)}}"
+      else
+        @chapter.env.chapter_index.number(id)
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def inline_title(id)
+      if ReVIEW.book.param["chapterlink"]
+        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.title(id)}}"
+      else
+        @chapter.env.chapter_index.title(id)
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
 
     # FIXME: use TeX native label/ref.
     def inline_list(id)
