@@ -24,18 +24,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|\\chapter{this is test.}\n|, @builder.result
+    assert_equal %Q|\\chapter{this is test.}\n\\label{chap:chap1}\n|, @builder.result
   end
 
   def test_headline_level1_without_secno
     @param["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|\\chapter*{this is test.}\n|, @builder.result
+    assert_equal %Q|\\chapter*{this is test.}\n\\label{chap:chap1}\n|, @builder.result
   end
 
   def test_headline_level1_with_inlinetag
     @builder.headline(1,"test","this @<b>{is} test.<&\"_>")
-    assert_equal %Q|\\chapter{this \\textbf{is} test.\\textless{}\\&"\\textunderscore{}\\textgreater{}}\n|, @builder.result
+    assert_equal %Q|\\chapter{this \\textbf{is} test.\\textless{}\\&"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n|, @builder.result
   end
 
   def test_headline_level2
@@ -182,11 +182,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_inline_uchar
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test \\UTF{2460} test2|, ret
-  end
-
-  def test_headline_level1
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|\\chapter{this is test.}\n|, @builder.result
   end
 
   def test_cmd
