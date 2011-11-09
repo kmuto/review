@@ -218,11 +218,11 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts %Q(<li aid:pstyle="ul-item">#{lines.join("\n").chomp}</li>)
+      puts %Q(<li aid:pstyle="ul-item">#{lines.join.chomp}</li>)
     end
 
     def ul_item_begin(lines)
-      print %Q(<li aid:pstyle="ul-item">#{lines.join("\n").chomp})
+      print %Q(<li aid:pstyle="ul-item">#{lines.join.chomp})
     end
 
     def ul_item_end
@@ -256,7 +256,7 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts %Q(<li aid:pstyle="ol-item" num="#{num}">#{lines.join("\n").chomp}</li>)
+      puts %Q(<li aid:pstyle="ol-item" num="#{num}">#{lines.join.chomp}</li>)
     end
 
     def ol_end
@@ -272,7 +272,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join("\n").chomp}</dd>"
+      puts "<dd>#{lines.join.chomp}</dd>"
     end
 
     def dl_end

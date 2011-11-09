@@ -371,7 +371,7 @@ EOS
   * BBB
     -BB
 EOS
-    expect = "<ul>\n<li>AAA\n-AA</li>\n<li>BBB\n-BB</li>\n</ul>\n"
+    expect = "<ul>\n<li>AAA-AA</li>\n<li>BBB-BB</li>\n</ul>\n"
     ul_helper(src, expect)
   end
 

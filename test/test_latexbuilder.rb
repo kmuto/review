@@ -458,10 +458,8 @@ EOS
     expect =<<-EOS
 
 \\begin{itemize}
-\\item AAA
--AA
-\\item BBB
--BB
+\\item AAA-AA
+\\item BBB-BB
 \\end{itemize}
 EOS
     ul_helper(src, expect)

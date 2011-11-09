@@ -411,9 +411,7 @@ EOS
 
     expect =<<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA
--AA</li><li aid:pstyle="ul-item">BBB
--BB</li></ul>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ul><li aid:pstyle="ul-item">AAA-AA</li><li aid:pstyle="ul-item">BBB-BB</li></ul>
 EOS
     ul_helper(src, expect.chomp)
   end

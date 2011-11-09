@@ -139,7 +139,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts '\item ' + lines.join("\n")
+      puts '\item ' + lines.join
     end
 
     def ul_end
@@ -153,7 +153,7 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts '\item ' + lines.join("\n")
+      puts '\item ' + lines.join
     end
 
     def ol_end
@@ -171,9 +171,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      lines.each do |line|
-        puts line
-      end
+      lines.join
     end
 
     def dl_end

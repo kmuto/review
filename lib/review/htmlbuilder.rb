@@ -365,11 +365,11 @@ EOT
     end
 
     def ul_item(lines)
-      puts "<li>#{lines.join("\n")}</li>"
+      puts "<li>#{lines.join}</li>"
     end
 
     def ul_item_begin(lines)
-      print "<li>#{lines.join("\n")}"
+      print "<li>#{lines.join}"
     end
 
     def ul_item_end
@@ -385,7 +385,7 @@ EOT
     end
 
     def ol_item(lines, num)
-      puts "<li>#{lines.join("\n")}</li>"
+      puts "<li>#{lines.join}</li>"
     end
 
     def ol_end
@@ -401,7 +401,7 @@ EOT
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join("\n")}</dd>"
+      puts "<dd>#{lines.join}</dd>"
     end
 
     def dl_end
