@@ -61,22 +61,22 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_href
-    ret = @builder.compile_href("http://github.com", "GitHub")
+    ret = @builder.compile_inline('@<href>{http://github.com,GitHub}')
     assert_equal %Q|\\href{http://github.com}{GitHub}|, ret
   end
 
   def test_inline_href
-    ret = @builder.inline_href("http://github.com, Git\\,Hub")
+    ret = @builder.compile_inline('@<href>{http://github.com,Git\\,Hub}')
     assert_equal %Q|\\href{http://github.com}{Git,Hub}|, ret
   end
 
   def test_href_without_label
-    ret = @builder.compile_href("http://github.com",nil)
+    ret = @builder.compile_inline('@<href>{http://github.com}')
     assert_equal %Q|\\href{http://github.com}{http://github.com}|, ret
   end
 
   def test_href_with_underscore
-    ret = @builder.compile_href("http://example.com/aaa/bbb", "AAA_BBB")
+    ret = @builder.compile_inline('@<href>{http://example.com/aaa/bbb, AAA_BBB}')
     assert_equal %Q|\\href{http://example.com/aaa/bbb}{AAA\\textunderscore{}BBB}|, ret
   end
 
