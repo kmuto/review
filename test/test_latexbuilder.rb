@@ -72,7 +72,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_href_without_label
     ret = @builder.compile_inline('@<href>{http://github.com}')
-    assert_equal %Q|\\href{http://github.com}{http://github.com}|, ret
+    assert_equal %Q|\\url{http://github.com}|, ret
   end
 
   def test_href_with_underscore

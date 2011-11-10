@@ -706,9 +706,12 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      label ||=  url
       if /\A[a-z]+:\/\// =~ url
-        macro("href", escape_url(url), escape(label))
+        if label
+          macro("href", escape_url(url), escape(label))
+        else
+          macro("url", escape_url(url))
+        end
       else
         macro("ref", url)
       end
