@@ -328,6 +328,12 @@ EOB
 \\newcommand{\\reviewmainfont}[0]{%
  }
 
+\\newcommand{\\reviewcolophon}[0]{%
+  \\backmatter
+  \\clearpage}
+\\newcommand{\\reviewappendix}[0]{%
+  \\appendix}
+
 \\makeatletter
 \\def\\maxwidth{%
   \\ifdim\\Gin@nat@width>\\linewidth
@@ -364,13 +370,12 @@ EOB
 #{values["chap_str"]}
 
 \\renewcommand{\\chaptermark}[1]{\\markboth{\\appendixname\\thechapter~#1}{}}
-\\appendix
+\\reviewappendix
 
 #{values["post_str"]}
 
 %% okuduke
-\\backmatter
-\\clearpage
+\\reviewcolophon
 \\thispagestyle{empty}
 
 \\vspace*{\\fill}

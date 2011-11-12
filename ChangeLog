@@ -1,3 +1,8 @@
+Sat Nov 12 18:42:24 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker:
+	  LATEXBuilder: appendix and backmatter should be able to redefine
+
 Fri Nov 11 02:45:50 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb:
