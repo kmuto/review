@@ -198,21 +198,21 @@ module ReVIEW
     end
 
     def inline_list(id)
-      "リスト#{@chapter.list(id).number}"
+      "#{I18n.t("list")}#{@chapter.list(id).number}"
     rescue KeyError
       error "unknown list: #{id}"
       nofunc_text("[UnknownList:#{id}]")
     end
 
     def inline_img(id)
-      "図#{@chapter.image(id).number}"
+      "#{I18n.t("image")}#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
     end
 
     def inline_table(id)
-      "表#{@chapter.table(id).number}"
+      "#{I18n.t("table")}#{@chapter.table(id).number}"
     rescue KeyError
       error "unknown table: #{id}"
       nofunc_text("[UnknownTable:#{id}]")

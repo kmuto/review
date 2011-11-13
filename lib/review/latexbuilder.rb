@@ -255,7 +255,7 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-      puts macro('reviewlistcaption', "リスト#{@chapter.number}.#{@chapter.list(id).number}: #{compile_inline(caption)}")
+      puts macro('reviewlistcaption', "#{I18n.t("list")}#{@chapter.number}.#{@chapter.list(id).number}: #{compile_inline(caption)}")
     end
 
     def list_body(lines)
