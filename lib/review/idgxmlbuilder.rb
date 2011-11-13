@@ -146,7 +146,7 @@ module ReVIEW
 
         print %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
         if @chapter.number.to_s =~ /\A\d+$/
-          prefix = "第#{@chapter.number}章　"
+          prefix = "#{I18n.t("chapter", @chapter.number)}　"
         elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
           prefix = "#{@chapter.number}　"
         end

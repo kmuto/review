@@ -9,6 +9,7 @@ class I18nTest < Test::Unit::TestCase
     I18n.i18n = "ja"
     assert_equal I18n.t("image"), "図"
     assert_equal I18n.t("table"), "表"
+    assert_equal I18n.t("chapter", 1), "第1章"
     assert_equal I18n.t("etc"), "etc"
   end
 
@@ -16,6 +17,7 @@ class I18nTest < Test::Unit::TestCase
     I18n.i18n = "en"
     assert_equal I18n.t("image"), "Figure"
     assert_equal I18n.t("table"), "Table"
+    assert_equal I18n.t("chapter", 1), "Chapter 1"
     assert_equal I18n.t("etc"), "etc"
   end
 

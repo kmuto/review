@@ -8,12 +8,10 @@ module ReVIEW
       @i18n = YAML.load_file(i18n_yaml_path)[locale]
     end
 
-    def self.t(str)
-      if @i18n
-        @i18n[str] || str
-      else
-        str
-      end
+    def self.t(str, args = nil)
+      @i18n[str] % args
+    rescue
+      str
     end
   end
 
