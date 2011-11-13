@@ -1,3 +1,4 @@
+require 'review/i18n'
 require 'review/exception'
 require 'review/env'
 require 'review/compiler'

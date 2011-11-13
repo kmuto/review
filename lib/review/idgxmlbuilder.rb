@@ -304,12 +304,12 @@ module ReVIEW
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      "<span type='list'>リスト#{getChap(chapter)}#{chapter.list(id).number}</span>"
+      "<span type='list'>#{I18n.t("list")}#{getChap(chapter)}#{chapter.list(id).number}</span>"
     end
 
     def list_header(id, caption)
       puts %Q[<codelist>]
-      puts %Q[<caption>リスト#{getChap}#{@chapter.list(id).number}　#{compile_inline(caption)}</caption>]
+      puts %Q[<caption>#{I18n.t("list")}#{getChap}#{@chapter.list(id).number}　#{compile_inline(caption)}</caption>]
     end
 
     def list_body(lines)
@@ -378,12 +378,12 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      "<span type='table'>表#{getChap(chapter)}#{chapter.table(id).number}</span>"
+      "<span type='table'>#{I18n.t("table")}#{getChap(chapter)}#{chapter.table(id).number}</span>"
     end
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      "<span type='image'>図#{getChap(chapter)}#{chapter.image(id).number}</span>"
+      "<span type='image'>#{I18n.t("image")}#{getChap(chapter)}#{chapter.image(id).number}</span>"
     end
  
     def handle_metric(str)
@@ -423,7 +423,7 @@ module ReVIEW
     end
 
     def image_header(id, caption)
-      puts %Q[<caption>図#{getChap}#{@chapter.image(id).number}　#{compile_inline(caption)}</caption>]
+      puts %Q[<caption>#{I18n.t("image")}#{getChap}#{@chapter.image(id).number}　#{compile_inline(caption)}</caption>]
     end
 
     def texequation(lines)
@@ -529,7 +529,7 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      puts %Q[<caption>表#{getChap}#{@chapter.table(id).number}　#{compile_inline(caption)}</caption>]
+      puts %Q[<caption>#{I18n.t("table")}#{getChap}#{@chapter.table(id).number}　#{compile_inline(caption)}</caption>]
     end
 
     def table_begin(ncols)
