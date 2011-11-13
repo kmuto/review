@@ -4,7 +4,7 @@ require 'yaml'
 module ReVIEW
   class I18n
     def self.setup
-      user_i18n = YAML.load_file(File.expand_path "i18n.yaml", ENV["PWD"])
+      user_i18n = YAML.load_file(File.expand_path "locale.yaml", ENV["PWD"])
       I18n.i18n user_i18n["locale"], user_i18n
     rescue
       I18n.i18n "ja"
