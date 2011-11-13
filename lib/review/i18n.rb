@@ -9,7 +9,11 @@ module ReVIEW
     end
 
     def self.t(str)
-      @i18n[str]
+      if @i18n
+        @i18n[str] || str
+      else
+        str
+      end
     end
   end
 
