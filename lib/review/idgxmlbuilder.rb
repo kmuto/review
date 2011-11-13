@@ -146,9 +146,9 @@ module ReVIEW
 
         print %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
         if @chapter.number.to_s =~ /\A\d+$/
-          prefix = "#{I18n.t("chapter", @chapter.number)}　"
+          prefix = "#{I18n.t("chapter", @chapter.number)}#{I18n.t("chapter_postfix")}"
         elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
-          prefix = "#{@chapter.number}　"
+          prefix = "#{@chapter.number}#{I18n.t("chapter_postfix")}"
         end
         @section = 0
         @subsection = 0

@@ -3,9 +3,11 @@ ja:
   table: 表
   list: リスト
   chapter: 第%d章
+  chapter_postfix: "　"
 
 en:
   image: Figure
   table: Table
   list: List
   chapter: Chapter %d
+  chapter_postfix: ". "

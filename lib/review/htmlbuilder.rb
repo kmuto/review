@@ -161,9 +161,9 @@ EOT
         anchor = "#{@chapter.number}"
         if ReVIEW.book.param["secnolevel"] >= 1
           if @chapter.number.to_s =~ /\A\d+\Z/
-            prefix = "#{I18n.t("chapter", @chapter.number)}　"
+            prefix = "#{I18n.t("chapter", @chapter.number)}#{I18n.t("chapter_postfix")}"
           elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
-            prefix = "#{@chapter.number}　"
+            prefix = "#{@chapter.number}#{I18n.t("chapter_postfix")}"
           end
         end
       when 2
