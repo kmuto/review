@@ -6,8 +6,8 @@ ja:
   chapter_postfix: "　"
 
 en:
-  image: Figure
-  table: Table
-  list: List
+  image: "Figure "
+  table: "Table "
+  list: "List "
   chapter: Chapter %d
   chapter_postfix: ". "
