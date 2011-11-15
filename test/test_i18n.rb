@@ -23,8 +23,8 @@ class I18nTest < Test::Unit::TestCase
 
   def test_en
     I18n.i18n "en"
-    assert_equal I18n.t("image"), "Figure"
-    assert_equal I18n.t("table"), "Table"
+    assert_equal I18n.t("image"), "Figure "
+    assert_equal I18n.t("table"), "Table "
     assert_equal I18n.t("chapter", 1), "Chapter 1"
     assert_equal I18n.t("etc"), "etc"
   end
