@@ -444,7 +444,7 @@ EOT
     end
 
     def list_header(id, caption)
-      puts %Q[<p class="caption">#{I18n.t("list")}#{getChap}#{@chapter.list(id).number}: #{compile_inline(caption)}</p>]
+      puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header", [getChap.chop, @chapter.list(id).number])} #{compile_inline(caption)}</p>]
     end
 
     def list_body(lines)
@@ -621,7 +621,7 @@ QUOTE
 
     def image_header(id, caption)
       puts %Q[<p class="caption">]
-      puts %Q[#{I18n.t("image")}#{getChap}#{@chapter.image(id).number}: #{compile_inline(caption)}]
+      puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header", [getChap.chop, @chapter.image(id).number])} #{compile_inline(caption)}]
       puts %Q[</p>]
     end
 
@@ -665,7 +665,7 @@ QUOTE
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="caption">#{I18n.t("table")}#{getChap}#{@chapter.table(id).number}: #{compile_inline(caption)}</p>]
+      puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [getChap.chop, @chapter.table(id).number])} #{compile_inline(caption)}</p>]
     end
 
     def table_begin(ncols)
@@ -712,7 +712,7 @@ QUOTE
 
       unless caption.empty?
         puts %Q[<p class="caption">]
-        puts %Q[#{I18n.t("image")}: #{compile_inline(caption)}]
+        puts %Q[#{I18n.t("numberless_image")} #{compile_inline(caption)}]
         puts %Q[</p>]
       end
       puts %Q[</div>]
@@ -885,7 +885,7 @@ QUOTE
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      "#{I18n.t("list")}#{getChap(chapter)}#{chapter.list(id).number}"
+      "#{I18n.t("list")}#{I18n.t("format_number", [getChap(chapter).chop, chapter.list(id).number])}"
     rescue KeyError
       error "unknown list: #{id}"
       nofunc_text("[UnknownList:#{id}]")
@@ -893,7 +893,7 @@ QUOTE
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      "#{I18n.t("table")}#{getChap(chapter)}#{chapter.table(id).number}"
+      "#{I18n.t("table")}#{I18n.t("format_number", [getChap(chapter).chop, chapter.table(id).number])}"
     rescue KeyError
       error "unknown table: #{id}"
       nofunc_text("[UnknownTable:#{id}]")
@@ -901,7 +901,7 @@ QUOTE
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      "#{I18n.t("image")}#{getChap(chapter)}#{chapter.image(id).number}"
+      "#{I18n.t("image")}#{I18n.t("format_number", [getChap(chapter).chop, chapter.image(id).number])}"
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
