@@ -4,6 +4,9 @@ ja:
   list: リスト
   chapter: 第%d章
   chapter_postfix: "　"
+  numberless_image: "図:"
+  format_number: "%d.%d"
+  format_number_header: "%d.%d:"
 
 en:
   image: "Figure "
@@ -11,3 +14,6 @@ en:
   list: "List "
   chapter: Chapter %d
   chapter_postfix: ". "
+  numberless_image: "Figure:"
+  format_number: "%d.%d"
+  format_number_header: "%d.%d:"
