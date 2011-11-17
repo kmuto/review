@@ -5,8 +5,8 @@ ja:
   chapter: 第%d章
   chapter_postfix: "　"
   numberless_image: "図:"
-  format_number: "%d.%d"
-  format_number_header: "%d.%d:"
+  format_number: "%s.%d"
+  format_number_header: "%s.%d:"
 
 en:
   image: "Figure "
@@ -15,5 +15,5 @@ en:
   chapter: Chapter %d
   chapter_postfix: ". "
   numberless_image: "Figure:"
-  format_number: "%d.%d"
-  format_number_header: "%d.%d:"
+  format_number: "%s.%d"
+  format_number_header: "%s.%d:"
