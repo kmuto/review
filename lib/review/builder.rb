@@ -400,13 +400,9 @@ module ReVIEW
 
     def include(file_name)
       enc = inencoding()
-      result = ""
       File.foreach(file_name) do |line|
-        if r = paragraph([line])
-          result << NKF.nkf("--#{enc}", r)
-        end
+        paragraph([NKF.nkf("--#{enc}", line)])
       end
-      result
     end
 
     def inencoding
