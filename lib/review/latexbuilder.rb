@@ -73,7 +73,7 @@ module ReVIEW
 
     def headline(level, label, caption)
       prefix = ""
-      if level > ReVIEW.book.param["secnolevel"]
+      if level > ReVIEW.book.param["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
       end
       blank unless @output.pos == 0
