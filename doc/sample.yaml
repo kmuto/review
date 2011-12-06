@@ -50,6 +50,8 @@ htmlversion: 4
 # colophon: true
 # XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
 # posthook: hook.sh
+# EPUBで表紙をコンテンツに含めるか。デフォルト(no)では作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
+# cover_linear: yes
 # review-compileに渡すパラメータ
 params: --stylesheet=sample.css
 # デバッグフラグ。nilでないときには一時ファイルをカレントディレクトリに作成し、削除もしない
