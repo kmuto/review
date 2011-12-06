@@ -787,7 +787,7 @@ QUOTE
     end
 
     def compile_ruby(base, ruby)
-      %Q[<ruby><rb>{escape_html(base)}</rb><rp>(</rp><rt>#{ruby}</rt><rp>)</rp></ruby>]
+      %Q[<ruby><rb>#{escape_html(base)}</rb><rp>(</rp><rt>#{ruby}</rt><rp>)</rp></ruby>]
     end
 
     def compile_kw(word, alt)
