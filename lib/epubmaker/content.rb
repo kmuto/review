@@ -25,7 +25,7 @@ module EPUBMaker
     attr_accessor :level
     # Show in TOC? nil:No.
     attr_accessor :notoc
-    
+
     # :call-seq:
     #    initialize(file, id, media, title, level, notoc)
     #    initialize(hash)
@@ -47,17 +47,25 @@ module EPUBMaker
         @title = title
         @level = level
         @notoc = notoc
-    end
+      end
       complement
     end
-    
+
+    def ==(obj)
+      if self.class != obj.class
+        return false
+      end
+      [self.id, self.file, self.media, self.title, self.level, self.notoc] ==
+        [obj.id, obj.file, obj.media, obj.title, obj.level, obj.notoc]
+    end
+
     private
-    
+
     # Complement other parameters from file parameter.
     def complement
       @id = @file.gsub(/[\\\/\.]/, '-') if @id.nil?
       @media = @file.sub(/.+\./, '').downcase if !@file.nil? && @media.nil?
-      
+
       @media = "application/xhtml+xml" if @media == "xhtml" || @media == "xml" || @media == "html"
       @media = "text/css" if @media == "css"
       @media = "image/jpeg" if @media == "jpg" || @media == "jpeg" || @media == "image/jpg"
@@ -65,7 +73,7 @@ module EPUBMaker
       @media = "image/gif" if @media == "gif"
       @media = "image/svg" if @media == "svg"
       @media = "image/svg+xml" if @media == "svg" || @media == "image/svg"
-      
+
       if @id.nil? || @file.nil? || @media.nil?
         raise "Type error: #{id}, #{file}, #{media}, #{title}, #{notoc}"
       end
