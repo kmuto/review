@@ -114,16 +114,12 @@ EOT
 
   def test_stage2_add_l1item
     stage2
-    expect = <<EOT
---- !ruby/object:EPUBMaker::Content 
-file: ch01.html
-id: ch01-html
-level: 1
-media: application/xhtml+xml
-notoc: 
-title: CH01
-EOT
-    assert_equal expect, @producer.contents[0].to_yaml
+    expect = EPUBMaker::Content.new("ch01.html",
+                                    "ch01-html",
+                                    "application/xhtml+xml",
+                                    "CH01",
+                                    1)
+    assert_equal expect, @producer.contents[0]
   end
 
   def test_stage2_opf
@@ -217,143 +213,29 @@ EOT
 
   def test_stage3_add_various_items
     stage3
-    expect = <<EOT
---- 
-- !ruby/object:EPUBMaker::Content 
-  file: ch01.html
-  id: ch01-html
-  level: 1
-  media: application/xhtml+xml
-  notoc: 
-  title: CH01
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html
-  id: ch02-html
-  level: 1
-  media: application/xhtml+xml
-  notoc: 
-  title: CH02
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html#S1
-  id: ch02-html#S1
-  level: 2
-  media: html#s1
-  notoc: 
-  title: CH02.1
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html#S1.1
-  id: ch02-html#S1-1
-  level: 3
-  media: "1"
-  notoc: 
-  title: CH02.1.1
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html#S1.1.1
-  id: ch02-html#S1-1-1
-  level: 4
-  media: "1"
-  notoc: 
-  title: CH02.1.1.1
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html#S1.1.1.1
-  id: ch02-html#S1-1-1-1
-  level: 5
-  media: "1"
-  notoc: 
-  title: CH02.1.1.1.1
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html#S1.1.2
-  id: ch02-html#S1-1-2
-  level: 4
-  media: "2"
-  notoc: 
-  title: CH02.1.1.2
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html#S2
-  id: ch02-html#S2
-  level: 2
-  media: html#s2
-  notoc: 
-  title: CH02.2
-- !ruby/object:EPUBMaker::Content 
-  file: ch02.html#S2.1
-  id: ch02-html#S2-1
-  level: 3
-  media: "1"
-  notoc: 
-  title: CH02.2.1
-- !ruby/object:EPUBMaker::Content 
-  file: ch03.html
-  id: ch03-html
-  level: 1
-  media: application/xhtml+xml
-  notoc: 
-  title: CH03
-- !ruby/object:EPUBMaker::Content 
-  file: ch03.html#S1
-  id: ch03-html#S1
-  level: 2
-  media: html#s1
-  notoc: 
-  title: CH03.1
-- !ruby/object:EPUBMaker::Content 
-  file: ch03.html#S1.1
-  id: ch03-html#S1-1
-  level: 3
-  media: "1"
-  notoc: 
-  title: CH03.1.1
-- !ruby/object:EPUBMaker::Content 
-  file: ch04.html
-  id: ch04-html
-  level: 1
-  media: application/xhtml+xml
-  notoc: 
-  title: CH04
-- !ruby/object:EPUBMaker::Content 
-  file: sample.png
-  id: sample-png
-  level: 
-  media: image/png
-  notoc: 
-  title: 
-- !ruby/object:EPUBMaker::Content 
-  file: sample.jpg
-  id: sample-jpg
-  level: 
-  media: image/jpeg
-  notoc: 
-  title: 
-- !ruby/object:EPUBMaker::Content 
-  file: sample.JPEG
-  id: sample-JPEG
-  level: 
-  media: image/jpeg
-  notoc: 
-  title: 
-- !ruby/object:EPUBMaker::Content 
-  file: sample.SvG
-  id: sample-SvG
-  level: 
-  media: image/svg+xml
-  notoc: 
-  title: 
-- !ruby/object:EPUBMaker::Content 
-  file: sample.GIF
-  id: sample-GIF
-  level: 
-  media: image/gif
-  notoc: 
-  title: 
-- !ruby/object:EPUBMaker::Content 
-  file: sample.css
-  id: sample-css
-  level: 
-  media: text/css
-  notoc: 
-  title: 
-EOT
-    assert_equal expect, @producer.contents.to_yaml
+    expect = [
+              Content.new("ch01.html", "ch01-html", "application/xhtml+xml", "CH01", 1),
+              Content.new("ch02.html", "ch02-html", "application/xhtml+xml", "CH02", 1),
+              Content.new("ch02.html#S1", "ch02-html#S1","html#s1","CH02.1", 2),
+              Content.new("ch02.html#S1.1", "ch02-html#S1-1", "1", "CH02.1.1", 3),
+              Content.new("ch02.html#S1.1.1", "ch02-html#S1-1-1","1", "CH02.1.1.1", 4),
+              Content.new("ch02.html#S1.1.1.1", "ch02-html#S1-1-1-1", "1","CH02.1.1.1.1", 5),
+              Content.new("ch02.html#S1.1.2", "ch02-html#S1-1-2", "2", "CH02.1.1.2", 4),
+              Content.new("ch02.html#S2", "ch02-html#S2", "html#s2", "CH02.2", 2),
+              Content.new("ch02.html#S2.1", "ch02-html#S2-1", "1", "CH02.2.1", 3),
+              Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1),
+              Content.new("ch03.html#S1", "ch03-html#S1", "html#s1", "CH03.1", 2),
+              Content.new("ch03.html#S1.1", "ch03-html#S1-1", "1", "CH03.1.1", 3),
+              Content.new("ch04.html", "ch04-html", "application/xhtml+xml", "CH04", 1),
+              Content.new("sample.png", "sample-png", "image/png"),
+              Content.new("sample.jpg", "sample-jpg", "image/jpeg"),
+              Content.new("sample.JPEG", "sample-JPEG", "image/jpeg"),
+              Content.new("sample.SvG", "sample-SvG", "image/svg+xml"),
+              Content.new("sample.GIF", "sample-GIF", "image/gif"),
+              Content.new("sample.css", "sample-css", "text/css")
+             ]
+
+    assert_equal expect, @producer.contents
   end
 
   def test_stage3_opf
