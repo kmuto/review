@@ -21,8 +21,6 @@ rescue LoadError
 end
 
 
-task :test => :check_dependencies
-
 task :default => [:test]
 
 Rake::TestTask.new("test") do |t|
