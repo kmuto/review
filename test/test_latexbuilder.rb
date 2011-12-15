@@ -184,6 +184,14 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test \\UTF{2460} test2|, ret
   end
 
+  def test_dlist
+    @builder.dl_begin
+    @builder.dt "foo"
+    @builder.dd ["foo.\n", "bar.\n"]
+    @builder.dl_end
+    assert_equal %Q|\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, @builder.result
+  end
+
   def test_cmd
     lines = ["foo", "bar", "","buz"]
     @builder.cmd(lines)
