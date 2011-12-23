@@ -1,3 +1,4 @@
+# -*- coding: euc-jp -*-
 # $Id: ewbbuilder.rb 2195 2005-11-13 21:52:18Z aamine $
 
 require 'review/builder'
@@ -146,7 +147,7 @@ module ReVIEW
     end
 
     def ol_item(num, lines)
-      print "#{num}//|' + lines.join('')
+      print "#{num}//|" + lines.join('')
     end
 
     def ol_end
@@ -162,7 +163,7 @@ module ReVIEW
     end
 
     def vspace
-      print "\n//h"
+      print %Q|\n//h|
     end
 
     def noindent

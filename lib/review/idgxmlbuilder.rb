@@ -388,7 +388,7 @@ module ReVIEW
  
     def handle_metric(str)
       k, v = str.split('=', 2)
-      return "#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\""
+      return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
     end
       
     def result_metric(array)
