@@ -1,3 +1,8 @@
+Mon Jan  2 01:09:58 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder: put <listinfo> to codelist element
+	  (//list) as same as list (//emlist).
+
 Fri Dec 16 01:01:31 2011  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/latexbuilder.rb: LATEXBuilder: fix dlist(dd) bug

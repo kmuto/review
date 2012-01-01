@@ -215,6 +215,34 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><point><p>test1test1.5</p><p>test<i>2</i></p></point>|, @builder.raw_result
   end
 
+  def test_emlist
+    @builder.emlist(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></list>|, @builder.raw_result
+  end
+
+  def test_emlist_listinfo
+    @param["listinfo"] = true
+    @builder.emlist(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></list>|, @builder.raw_result
+  end
+
+  def test_list
+    def @chapter.list(id)
+      ListIndex::Item.new("samplelist",1)
+    end
+    @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></codelist>|, @builder.raw_result
+  end
+
+  def test_list_listinfo
+    def @chapter.list(id)
+      ListIndex::Item.new("samplelist",1)
+    end
+    @param["listinfo"] = true
+    @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></codelist>|, @builder.raw_result
+  end
+
   def test_insn
     @param["listinfo"] = true
     @builder.insn(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
