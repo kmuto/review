@@ -1000,7 +1000,7 @@ QUOTE
     end
 
     def inline_raw(str)
-      escape_html(str)
+      escape_html(super(str))
     end
 
     def nofunc_text(str)

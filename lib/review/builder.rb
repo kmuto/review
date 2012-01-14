@@ -421,6 +421,20 @@ module ReVIEW
 
     def ul_item_end
     end
+
+    def inline_raw(args)
+      if matched = args.match(/\|(.*?)\|(.*)/)
+        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
+        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+        if builders.include?(c)
+          matched[2]
+        else
+          ""
+        end
+      else
+        args
+      end
+    end
   end
 
 end   # module ReVIEW
