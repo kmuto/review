@@ -333,7 +333,7 @@ module ReVIEW
       return result_metric(results)
     end
 
-    def getChap(chapter = @chapter)
+    def get_chap(chapter = @chapter)
       if ReVIEW.book.param["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
         return "#{chapter.number}."
       end

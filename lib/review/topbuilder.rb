@@ -233,13 +233,13 @@ module ReVIEW
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      "リスト#{getChap(chapter)}#{chapter.list(id).number}"
+      "リスト#{get_chap(chapter)}#{chapter.list(id).number}"
     end
 
     def list_header(id, caption)
       blank
       puts "◆→開始:#{@titles["list"]}←◆"
-      puts %Q[リスト#{getChap}#{@chapter.list(id).number}　#{compile_inline(caption)}]
+      puts %Q[リスト#{get_chap}#{@chapter.list(id).number}　#{compile_inline(caption)}]
       blank
     end
 
@@ -303,18 +303,18 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      "表#{getChap(chapter)}#{chapter.table(id).number}"
+      "表#{get_chap(chapter)}#{chapter.table(id).number}"
     end
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      "図#{getChap(chapter)}#{chapter.image(id).number}"
+      "図#{get_chap(chapter)}#{chapter.image(id).number}"
     end
 
     def image(lines, id, caption, metric=nil)
       blank
       puts "◆→開始:#{@titles["image"]}←◆"
-      puts "図#{getChap}#{@chapter.image(id).number}　#{compile_inline(caption)}"
+      puts "図#{get_chap}#{@chapter.image(id).number}　#{compile_inline(caption)}"
       blank
       if @chapter.image(id).bound?
         puts "◆→#{@chapter.image(id).path}←◆"
@@ -337,7 +337,7 @@ module ReVIEW
     def table_header(id, caption)
       blank
       puts "◆→開始:#{@titles["table"]}←◆"
-      puts "表#{getChap}#{@chapter.table(id).number}　#{compile_inline(caption)}"
+      puts "表#{get_chap}#{@chapter.table(id).number}　#{compile_inline(caption)}"
       blank
     end
 
