@@ -1,3 +1,8 @@
+Sat Jan 14 22:33:04 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/tocparser.rb: remove BOM (\xEF\xBB\xBF) from
+	  line head to avoid review-index error. Closes #72.
+
 Sat Jan 14 22:02:29 2012  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb, lib/review/preprocessor.rb,

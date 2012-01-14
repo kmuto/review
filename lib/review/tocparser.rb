@@ -34,6 +34,7 @@ module ReVIEW
       path = []
 
       while line = f.gets
+        line.sub!(/\A\xEF\xBB\xBF/, '') # remove BOM
         case line
         when /\A\s*\z/
           ;
