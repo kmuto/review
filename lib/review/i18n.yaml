@@ -7,6 +7,8 @@ ja:
   numberless_image: "図:"
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
+  format_number_without_chapter: "%d"
+  format_number_header_without_chapter: "%d:"
 
 en:
   image: "Figure "
@@ -17,3 +19,5 @@ en:
   numberless_image: "Figure:"
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
+  format_number_without_chapter: "%d"
+  format_number_header_without_chapter: "%d:"

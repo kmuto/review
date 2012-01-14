@@ -1,3 +1,11 @@
+Sat Jan 14 23:24:52 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/builder.rb, lib/review/htmlbuilder.rb,
+	  lib/review/i18n.yaml, lib/review/idgxmlbuilder.rb,
+	  lib/review/topbuilder.rb: show only counter on
+	  image/list/table caption, if chapter number is
+	  undefined.
+
 Sat Jan 14 22:33:04 2012  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/tocparser.rb: remove BOM (\xEF\xBB\xBF) from

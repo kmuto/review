@@ -335,9 +335,9 @@ module ReVIEW
 
     def get_chap(chapter = @chapter)
       if ReVIEW.book.param["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
-        return "#{chapter.number}."
+        return "#{chapter.number}"
       end
-      return "#{chapter.name}"
+      return nil
     end
 
     def extract_chapter_id(chap_ref)

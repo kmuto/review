@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2011 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2012 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -444,7 +444,11 @@ EOT
     end
 
     def list_header(id, caption)
-      puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header", [get_chap.chop, @chapter.list(id).number])} #{compile_inline(caption)}</p>]
+      if get_chap.nil?
+        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])} #{compile_inline(caption)}</p>]
+      else
+        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header", [get_chap, @chapter.list(id).number])} #{compile_inline(caption)}</p>]
+      end
     end
 
     def list_body(lines)
@@ -621,7 +625,11 @@ QUOTE
 
     def image_header(id, caption)
       puts %Q[<p class="caption">]
-      puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header", [get_chap.chop, @chapter.image(id).number])} #{compile_inline(caption)}]
+      if get_chap.nil?
+        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header_without_chapter", [@chapter.image(id).number])} #{compile_inline(caption)}]
+      else
+        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header", [get_chap, @chapter.image(id).number])} #{compile_inline(caption)}]
+      end
       puts %Q[</p>]
     end
 
@@ -665,7 +673,11 @@ QUOTE
     end
 
     def table_header(id, caption)
-      puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap.chop, @chapter.table(id).number])} #{compile_inline(caption)}</p>]
+      if get_chap.nil?
+        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_header", [@chapter.table(id).number])} #{compile_inline(caption)}</p>]
+      else
+        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])} #{compile_inline(caption)}</p>]
+      end
     end
 
     def table_begin(ncols)
@@ -885,7 +897,11 @@ QUOTE
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      "#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter).chop, chapter.list(id).number])}"
+      if get_chap(chapter).nil?
+        "#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}"
+      else
+        "#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}"
+      end
     rescue KeyError
       error "unknown list: #{id}"
       nofunc_text("[UnknownList:#{id}]")
@@ -893,7 +909,11 @@ QUOTE
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter).chop, chapter.table(id).number])}"
+      if get_chap(chapter).nil?
+        "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}"
+      else
+        "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
+      end
     rescue KeyError
       error "unknown table: #{id}"
       nofunc_text("[UnknownTable:#{id}]")
@@ -901,7 +921,11 @@ QUOTE
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter).chop, chapter.image(id).number])}"
+      if get_chap(chapter).nil?
+        "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}"
+      else
+        "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
+      end
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")

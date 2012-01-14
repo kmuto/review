@@ -233,13 +233,22 @@ module ReVIEW
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      "リスト#{get_chap(chapter)}#{chapter.list(id).number}"
+      if get_chap(chapter).nil?
+        puts %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}]
+      else
+        puts %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), @chapter.list(id).number])}]
+      end
+
     end
 
     def list_header(id, caption)
       blank
       puts "◆→開始:#{@titles["list"]}←◆"
-      puts %Q[リスト#{get_chap}#{@chapter.list(id).number}　#{compile_inline(caption)}]
+      if get_chap.nil?
+        puts %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}　#{compile_inline(caption)}]
+      else
+        puts %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap, @chapter.list(id).number])}　#{compile_inline(caption)}]
+      end
       blank
     end
 
@@ -303,18 +312,30 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      "表#{get_chap(chapter)}#{chapter.table(id).number}"
+      if get_chap(chapter).nil?
+        "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}"
+      else
+        "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
+      end
     end
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      "図#{get_chap(chapter)}#{chapter.image(id).number}"
+      if get_chap(chapter).nil?
+        "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}"
+      else
+        "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
+      end
     end
 
     def image(lines, id, caption, metric=nil)
       blank
       puts "◆→開始:#{@titles["image"]}←◆"
-      puts "図#{get_chap}#{@chapter.image(id).number}　#{compile_inline(caption)}"
+      if get_chap.nil?
+        puts "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [@chapter.image(id).number])}　#{compile_inline(caption)}"
+      else
+        puts "#{I18n.t("image")}#{I18n.t("format_number", [get_chap, @chapter.image(id).number])}　#{compile_inline(caption)}"
+      end
       blank
       if @chapter.image(id).bound?
         puts "◆→#{@chapter.image(id).path}←◆"
@@ -337,7 +358,11 @@ module ReVIEW
     def table_header(id, caption)
       blank
       puts "◆→開始:#{@titles["table"]}←◆"
-      puts "表#{get_chap}#{@chapter.table(id).number}　#{compile_inline(caption)}"
+      if get_chap.nil?
+        puts "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}　#{compile_inline(caption)}"
+      else
+        puts "#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}　#{compile_inline(caption)}"
+      end
       blank
     end
 

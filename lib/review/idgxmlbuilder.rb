@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2010 Minero Aoki, Kenshi Muto
+#               2008-2012 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -304,12 +304,20 @@ module ReVIEW
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      "<span type='list'>#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter).chop, chapter.list(id).number])}</span>"
+      if get_chap(chapter).nil?
+        "<span type='list'>#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [chapter.list(id).number])}</span>"
+      else
+        "<span type='list'>#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}</span>"
+      end
     end
 
     def list_header(id, caption)
       puts %Q[<codelist>]
-      puts %Q[<caption>#{I18n.t("list")}#{I18n.t("format_number", [get_chap.chop, @chapter.list(id).number])}　#{compile_inline(caption)}</caption>]
+      if get_chap.nil?
+        puts %Q[<caption>#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}　#{compile_inline(caption)}</caption>]
+      else
+        puts %Q[<caption>#{I18n.t("list")}#{I18n.t("format_number", [get_chap, @chapter.list(id).number])}　#{compile_inline(caption)}</caption>]
+      end
     end
 
     def list_body(lines)
@@ -387,12 +395,20 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      "<span type='table'>#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter).chop, chapter.table(id).number])}</span>"
+      if get_chap(chapter).nil?
+        "<span type='table'>#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}</span>"
+      else
+        "<span type='table'>#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}</span>"
+      end
     end
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter).chop, chapter.image(id).number])}</span>"
+      if get_chap(chapter).nil?
+        "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}</span>"
+      else
+        "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}</span>"
+      end
     end
  
     def handle_metric(str)
@@ -432,7 +448,11 @@ module ReVIEW
     end
 
     def image_header(id, caption)
-      puts %Q[<caption>#{I18n.t("image")}#{I18n.t("format_number", [get_chap.chop, @chapter.image(id).number])}　#{compile_inline(caption)}</caption>]
+      if get_chap.nil?
+        puts %Q[<caption>#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [@chapter.image(id).number])}　#{compile_inline(caption)}</caption>]
+      else
+        puts %Q[<caption>#{I18n.t("image")}#{I18n.t("format_number", [get_chap, @chapter.image(id).number])}　#{compile_inline(caption)}</caption>]
+      end
     end
 
     def texequation(lines)
@@ -538,7 +558,11 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number", [get_chap.chop, @chapter.table(id).number])}　#{compile_inline(caption)}</caption>]
+      if get_chap.nil?
+      puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}　#{compile_inline(caption)}</caption>]
+      else
+        puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}　#{compile_inline(caption)}</caption>]
+      end
     end
 
     def table_begin(ncols)
