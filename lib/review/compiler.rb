@@ -224,6 +224,8 @@ module ReVIEW
       tagged_section_init
       while f.next?
         case f.peek
+        when /\A\#@\#/
+          f.gets # Nothing to do
         when /\A=+[\[\s\{]/
           compile_headline f.gets
         when %r<\A\s+\*>
@@ -233,8 +235,8 @@ module ReVIEW
         when %r<\A\s*:\s>
           compile_dlist f
         when %r<\A//\}>
-          error 'block end seen but not opened'
           f.gets
+          error 'block end seen but not opened'
         when %r<\A//[a-z]+>
           name, args, lines = read_command(f)
           syntax = syntax_descriptor(name)
