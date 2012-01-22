@@ -224,8 +224,6 @@ module ReVIEW
       tagged_section_init
       while f.next?
         case f.peek
-        when /\A\#@\#/
-          f.gets # Nothing to do
         when /\A=+[\[\s\{]/
           compile_headline f.gets
         when %r<\A\s+\*>

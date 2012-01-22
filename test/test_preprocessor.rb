@@ -13,11 +13,11 @@ class PreprocessorStripTest < Test::Unit::TestCase
     assert_equal expect, actual
   end
 
-  def test_gets_with_comment
-    f = StringIO.new '#@warn(write it later)'
-    s = Preprocessor::Strip.new(f)
-    expect = '#@#' + "\n"
-    actual = s.gets
-    assert_equal expect, actual
-  end
+#  def test_gets_with_comment
+#    f = StringIO.new '#@warn(write it later)'
+#    s = Preprocessor::Strip.new(f)
+#    expect = '#@#' + "\n"
+#    actual = s.gets
+#    assert_equal expect, actual
+#  end
 end

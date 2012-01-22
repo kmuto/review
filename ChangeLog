@@ -1,3 +1,9 @@
+Sun Jan 22 19:49:42 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* revert 17b0deb55b599deb1bdfbd6c61957d6edd5977ed change.
+	  It caused a bug that '#@#' was included in paragraphs when
+	  '#@#' was located just after paragraph line.
+
 Sat Jan 14 23:24:52 2012  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/builder.rb, lib/review/htmlbuilder.rb,
