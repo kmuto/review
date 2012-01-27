@@ -83,7 +83,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_raw
     ret = @builder.inline_raw("@<tt>{inline}")
-    assert_equal %Q|@&lt;tt&gt;{inline}|, ret
+    assert_equal %Q|@<tt>{inline}|, ret
   end
 
   def test_inline_in_table

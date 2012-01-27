@@ -117,7 +117,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_raw
     ret = @builder.compile_inline("@<raw>{@<tt>{inline!$%\\}}")
-    assert_equal %Q|@\\textless{}tt\\textgreater{}\\{inline!\\textdollar{}\\%\\}|, ret
+    assert_equal "@<tt>{inline!$%}", ret
   end
 
   def test_inline_sup
@@ -533,6 +533,6 @@ EOS
   end
 
   def test_inline_raw4
-    assert_equal "\\textbar{}latex body", @builder.inline_raw("|latex body")
+    assert_equal "|latex body", @builder.inline_raw("|latex body")
   end
 end

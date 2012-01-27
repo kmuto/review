@@ -631,7 +631,7 @@ module ReVIEW
     end
 
     def inline_raw(str)
-      escape(super(str))
+      super(str)
     end
 
     def inline_sub(str)

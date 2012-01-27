@@ -1024,7 +1024,7 @@ QUOTE
     end
 
     def inline_raw(str)
-      escape_html(super(str))
+      super(str)
     end
 
     def nofunc_text(str)
