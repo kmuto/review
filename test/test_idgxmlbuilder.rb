@@ -269,11 +269,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><p aid:pstyle="noindent" noindent='1'>foobar</p><p>foo2bar2</p>|, @builder.raw_result
   end
 
-  def test_raw
-    @builder.raw("<&>\\n")
-    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><&>\n|, @builder.raw_result
-  end
-
   def test_image
     def @chapter.image(id)
       item = ImageIndex::Item.new("sampleimg",1)
@@ -520,6 +515,50 @@ EOS
 
   def test_inline_raw4
     assert_equal "|idgxml body", @builder.inline_raw("|idgxml body")
+  end
+
+  def test_block_raw0
+    @builder.raw("<>!\"\\n& ")
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw1
+    @builder.raw("|idgxml|<>!\"\\n& ")
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw2
+    @builder.raw("|idgxml, latex|<>!\"\\n& ")
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!\"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw3
+    @builder.raw("|latex, html|<>!\"\\n& ")
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw4
+    @builder.raw("|idgxml <>!\"\\n& ")
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">|idgxml <>!\"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
   end
 
 end

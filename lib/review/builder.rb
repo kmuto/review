@@ -267,7 +267,18 @@ module ReVIEW
     end
 
     def raw(str)
-      print str.gsub("\\n", "\n")
+      if matched = str.match(/\|(.*?)\|(.*)/)
+        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
+        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+        if builders.include?(c)
+          print matched[2].gsub("\\n", "\n")
+        else
+          ""
+        end
+      else
+        warn "It is recommended to set builder(s)."
+        print str.gsub("\\n", "\n")
+      end
     end
 
     def find_pathes(id)

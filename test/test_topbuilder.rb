@@ -174,4 +174,49 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n|, @builder.raw_result
   end
 
+  def test_block_raw0
+    @builder.raw("<>!\"\\n& ")
+    expect =<<-EOS
+It is recommended to set builder(s).
+<>!"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw1
+    @builder.raw("|top|<>!\"\\n& ")
+    expect =<<-EOS
+<>!"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw2
+    @builder.raw("|top, latex|<>!\"\\n& ")
+    expect =<<-EOS
+<>!\"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw3
+    @builder.raw("|latex, idgxml|<>!\"\\n& ")
+    expect =<<-EOS
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def test_block_raw4
+    @builder.raw("|top <>!\"\\n& ")
+    expect =<<-EOS
+It is recommended to set builder(s).
+|top <>!\"
+& 
+EOS
+    assert_equal expect.chomp, @builder.raw_result
+  end
+
 end

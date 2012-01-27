@@ -765,23 +765,6 @@ module ReVIEW
     def circle_end(level)
     end
 
-    def raw(str)
-      if str =~ /\A<\/(.+?)>\Z/
-        puts "◆→終了:#{@titles[$1].nil? ? $1 : @titles[$1]}←◆"
-        blank
-      elsif str =~ /\A<(.+?)\/>\Z/
-        puts "◆→#{@titles[$1].nil? ? $1 : @titles[$1]}←◆"
-        blank
-      elsif str =~ /\A<([^\/].+?)>(?:<title[^>]>(.+)<\/title>)?(.*)/
-        blank
-        puts "◆→開始:#{@titles[$1].nil? ? $1 : @titles[$1]}←◆"
-        puts "■#{$2}" unless $2.nil?
-        print $3
-      else
-        puts str
-      end
-    end
-    
     def nofunc_text(str)
       str
     end
