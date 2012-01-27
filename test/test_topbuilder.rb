@@ -21,6 +21,13 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @chapter = Chapter.new(nil, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
+
+    @builder.instance_eval do
+      # to ignore lineno in original method
+      def warn(msg)
+        puts msg
+      end
+    end
   end
 
   def test_headline_level1

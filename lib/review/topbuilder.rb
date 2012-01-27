@@ -426,7 +426,7 @@ module ReVIEW
     end
 
     def inline_raw(str)
-      %Q[#{str.gsub("\\n", "\n")}]
+      %Q[#{super(str).gsub("\\n", "\n")}]
     end
 
     def inline_hint(str)

@@ -432,6 +432,7 @@ module ReVIEW
           ""
         end
       else
+        warn "It is recommended to set builder(s)."
         args
       end
     end
