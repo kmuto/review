@@ -1,3 +1,11 @@
+Sat Jan 28 00:28:34 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* //raw supports to indicate builder(s) by using
+	  //raw[|builder,builder| ...]
+	* merge kdmsnr's branch.
+	commit 207c787c961d61bbc517e160effadf417f05e28e
+	unescape in inline_raw: refs #54
+
 Sun Jan 22 19:49:42 2012  Kenshi Muto  <kmuto@debian.org>
 
 	* revert 17b0deb55b599deb1bdfbd6c61957d6edd5977ed change.

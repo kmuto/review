@@ -438,13 +438,13 @@ module ReVIEW
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
         c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
         if builders.include?(c)
-          matched[2]
+          matched[2].gsub("\\n", "\n")
         else
           ""
         end
       else
         warn "It is recommended to set builder(s)."
-        args
+        args.gsub("\\n", "\n")
       end
     end
   end

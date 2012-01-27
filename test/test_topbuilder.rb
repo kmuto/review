@@ -174,6 +174,30 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n|, @builder.raw_result
   end
 
+  def test_inline_raw0
+    assert_equal "normal", @builder.inline_raw("normal")
+  end
+
+  def test_inline_raw1
+    assert_equal "body", @builder.inline_raw("|top|body")
+  end
+
+  def test_inline_raw2
+    assert_equal "body", @builder.inline_raw("|top, latex|body")
+  end
+
+  def test_inline_raw3
+    assert_equal "", @builder.inline_raw("|idgxml, html|body")
+  end
+
+  def test_inline_raw4
+    assert_equal "|top body", @builder.inline_raw("|top body")
+  end
+
+  def test_inline_raw5
+    assert_equal "nor\nmal", @builder.inline_raw("|top|nor\\nmal")
+  end
+
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
     expect =<<-EOS

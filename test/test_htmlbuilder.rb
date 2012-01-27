@@ -459,6 +459,10 @@ EOS
     assert_equal "|html body", @builder.inline_raw("|html body")
   end
 
+  def test_inline_raw5
+    assert_equal "nor\nmal", @builder.inline_raw("|html|nor\\nmal")
+  end
+
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
     expect =<<-EOS

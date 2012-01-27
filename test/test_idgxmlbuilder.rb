@@ -517,6 +517,10 @@ EOS
     assert_equal "|idgxml body", @builder.inline_raw("|idgxml body")
   end
 
+  def test_inline_raw5
+    assert_equal "nor\nmal", @builder.inline_raw("|idgxml|nor\\nmal")
+  end
+
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
     expect =<<-EOS
