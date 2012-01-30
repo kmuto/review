@@ -1,3 +1,7 @@
+Mon Jan 30 20:39:17 2012  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* Version bump to 1.0.0.
+
 Sat Jan 28 00:28:34 2012  Kenshi Muto  <kmuto@debian.org>
 
 	* //raw supports to indicate builder(s) by using
