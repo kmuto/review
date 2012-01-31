@@ -24,8 +24,10 @@ require 'fileutils'
 require 'optparse'
 
 def sigmain
-  Signal.trap(:PIPE, 'IGNORE')
   Signal.trap(:INT) { exit 1 }
+  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
+    Signal.trap(:PIPE, 'IGNORE')
+  end
   main
 rescue Errno::EPIPE
   exit 0

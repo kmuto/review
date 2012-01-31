@@ -21,7 +21,9 @@ require 'nkf'
 
 def sigmain
   Signal.trap(:INT) { exit 1 }
-  Signal.trap(:PIPE, 'IGNORE')
+  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
+    Signal.trap(:PIPE, 'IGNORE')
+  end
   main
 rescue Errno::EPIPE
   exit 0
