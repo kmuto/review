@@ -445,9 +445,9 @@ EOT
 
     def list_header(id, caption)
       if get_chap.nil?
-        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])} #{compile_inline(caption)}</p>]
+        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       else
-        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header", [get_chap, @chapter.list(id).number])} #{compile_inline(caption)}</p>]
+        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header", [get_chap, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       end
     end
 
@@ -626,9 +626,9 @@ QUOTE
     def image_header(id, caption)
       puts %Q[<p class="caption">]
       if get_chap.nil?
-        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header_without_chapter", [@chapter.image(id).number])} #{compile_inline(caption)}]
+        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header_without_chapter", [@chapter.image(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}]
       else
-        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header", [get_chap, @chapter.image(id).number])} #{compile_inline(caption)}]
+        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header", [get_chap, @chapter.image(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}]
       end
       puts %Q[</p>]
     end
@@ -674,9 +674,9 @@ QUOTE
 
     def table_header(id, caption)
       if get_chap.nil?
-        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_header", [@chapter.table(id).number])} #{compile_inline(caption)}</p>]
+        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_header", [@chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       else
-        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])} #{compile_inline(caption)}</p>]
+        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       end
     end
 
@@ -724,7 +724,7 @@ QUOTE
 
       unless caption.empty?
         puts %Q[<p class="caption">]
-        puts %Q[#{I18n.t("numberless_image")} #{compile_inline(caption)}]
+        puts %Q[#{I18n.t("numberless_image")}#{I18n.t("caption_prefix")}#{compile_inline(caption)}]
         puts %Q[</p>]
       end
       puts %Q[</div>]

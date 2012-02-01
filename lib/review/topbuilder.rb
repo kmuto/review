@@ -245,9 +245,9 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles["list"]}←◆"
       if get_chap.nil?
-        puts %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}　#{compile_inline(caption)}]
+        puts %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix_zen")}#{compile_inline(caption)}]
       else
-        puts %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap, @chapter.list(id).number])}　#{compile_inline(caption)}]
+        puts %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap, @chapter.list(id).number])}#{I18n.t("caption_prefix_zen")}#{compile_inline(caption)}]
       end
       blank
     end
@@ -332,9 +332,9 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles["image"]}←◆"
       if get_chap.nil?
-        puts "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [@chapter.image(id).number])}　#{compile_inline(caption)}"
+        puts "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [@chapter.image(id).number])}#{I18n.t("caption_prefix_zen")}#{compile_inline(caption)}"
       else
-        puts "#{I18n.t("image")}#{I18n.t("format_number", [get_chap, @chapter.image(id).number])}　#{compile_inline(caption)}"
+        puts "#{I18n.t("image")}#{I18n.t("format_number", [get_chap, @chapter.image(id).number])}#{I18n.t("caption_prefix_zen")}#{compile_inline(caption)}"
       end
       blank
       if @chapter.image(id).bound?
@@ -359,9 +359,9 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles["table"]}←◆"
       if get_chap.nil?
-        puts "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}　#{compile_inline(caption)}"
+        puts "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_zen")}#{compile_inline(caption)}"
       else
-        puts "#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}　#{compile_inline(caption)}"
+        puts "#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_zen")}#{compile_inline(caption)}"
       end
       blank
     end

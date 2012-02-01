@@ -9,6 +9,8 @@ ja:
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
   format_number_header_without_chapter: "%d:"
+  caption_prefix: " "
+  caption_prefix_zen: "　"
 
 en:
   image: "Figure "
@@ -21,3 +23,6 @@ en:
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
   format_number_header_without_chapter: "%d:"
+  caption_prefix: " "
+  caption_prefix_zen: "　"
+
