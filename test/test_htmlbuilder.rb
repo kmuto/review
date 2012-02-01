@@ -138,7 +138,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_ruby
     ret = @builder.compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
-    assert_equal "<ruby><rb>粗雑</rb><rp>(</rp><rt>クルード</rt><rp>)</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>(</rp><rt>テクニカル</rt><rp>)</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", ret
+    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", ret
   end
 
   def test_quote

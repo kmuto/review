@@ -799,7 +799,7 @@ QUOTE
     end
 
     def compile_ruby(base, ruby)
-      %Q[<ruby><rb>#{escape_html(base)}</rb><rp>(</rp><rt>#{ruby}</rt><rp>)</rp></ruby>]
+      %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
     end
 
     def compile_kw(word, alt)
