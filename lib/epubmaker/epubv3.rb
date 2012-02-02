@@ -120,7 +120,7 @@ EOT
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
           s << @producer.params[item].map {|i| %Q[    <dc:#{item} prefer="#{item}">#{i}</dc:#{item}>\n]}.join
-          s << @producer.params[item].map {|i| %Q[    <meta id="#{item}" property="dcterms:#{item}>#{i}</meta>\n]}.join
+          s << @producer.params[item].map {|i| %Q[    <meta id="#{item}" property="dcterms:#{item}">#{i}</meta>\n]}.join
         else
           s << %Q[    <dc:#{item} prefer="#{item}">#{@producer.params[item]}</dc:#{item}>\n]
           s << %Q[    <meta id="#{item}" property="dcterms:#{item}">#{@producer.params[item]}</meta>\n]
