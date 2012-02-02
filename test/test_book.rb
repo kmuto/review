@@ -8,7 +8,6 @@ require 'tempfile'
 require 'tmpdir'
 
 include ReVIEW
-
 module BookTestHelper
   def mktmpbookdir(files = {})
     created_files = {}
@@ -18,7 +17,7 @@ module BookTestHelper
         File.open(path, 'w') {|o| o.print content }
         created_files[basename] = path
       end
-      book = Book.new(dir)
+      book = Book::Base.new(dir)
       yield(dir, book, created_files)
     end
   end
@@ -90,7 +89,7 @@ class BookTest < Test::Unit::TestCase
   def test_s_load
     Dir.mktmpdir do |dir|
       book = Book.load(dir)
-      defs = get_instance_variables(Parameters.default)
+      defs = get_instance_variables(Book::Parameters.default)
       pars = get_instance_variables(book.instance_eval { @parameters })
       assert_equal defs, pars
     end
@@ -140,13 +139,13 @@ class BookTest < Test::Unit::TestCase
   end
 
   def test_ext
-    book = Book.new(File.dirname(__FILE__))
+    book = Book::Base.new(File.dirname(__FILE__))
     assert_equal '.re', book.ext
   end
 
   def test_read_CHAPS
     Dir.mktmpdir do |dir|
-      book = Book.new(dir)
+      book = Book::Base.new(dir)
       assert_equal "", book.read_CHAPS
 
       chaps_path = File.join(dir, 'CHAPS')
@@ -172,7 +171,7 @@ class BookTest < Test::Unit::TestCase
 
   def test_read_PART
     Dir.mktmpdir do |dir|
-      book = Book.new(dir)
+      book = Book::Base.new(dir)
       assert !book.part_exist?
       assert_raises Errno::ENOENT do # XXX: OK?
         book.read_PART
@@ -192,7 +191,7 @@ class BookTest < Test::Unit::TestCase
 
   def test_read_bib
     Dir.mktmpdir do |dir|
-      book = Book.new(dir)
+      book = Book::Base.new(dir)
       assert !book.bib_exist?
       assert_raises Errno::ENOENT do # XXX: OK?
         book.read_bib
@@ -207,7 +206,7 @@ class BookTest < Test::Unit::TestCase
   end
 
   def test_setParameter
-    book = Book.new(File.dirname(__FILE__))
+    book = Book::Base.new(File.dirname(__FILE__))
     book.param = :test
     assert_equal :test, book.instance_eval {@param}
   end
@@ -318,8 +317,8 @@ EOC
     ].each do |n_parts, chaps_text, parts_text, part_names|
       n_test += 1
       Dir.mktmpdir do |dir|
-        params = Parameters.new(:part_file => 'PARTS')
-        book = Book.new(dir, params)
+        params = Book::Parameters.new(:part_file => 'PARTS')
+        book = Book::Base.new(dir, params)
         chaps_path = File.join(dir, 'CHAPS')
         File.open(chaps_path, 'w') {|o| o.print chaps_text }
         unless parts_text.nil?
@@ -340,7 +339,7 @@ EOC
     end
 
     mktmpbookdir 'preface.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.prefaces
+      assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
       assert_equal "preface", book.prefaces.chapters.first.name
@@ -359,7 +358,7 @@ EOC
 
     mktmpbookdir 'PREDEF' => 'chapter1',
        'chapter1.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.prefaces
+      assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
       assert_equal "chapter1", book.prefaces.chapters.first.name
@@ -368,7 +367,7 @@ EOC
 
     mktmpbookdir 'PREDEF' => "chapter1\n\nchapter2",
        'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.prefaces
+      assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 2, book.prefaces.chapters.size
       assert_equal "chapter1", book.prefaces.chapters.first.name
@@ -379,7 +378,7 @@ EOC
 
     mktmpbookdir 'PREDEF' => "chapter1 chapter2",
        'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.prefaces
+      assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 2, book.prefaces.chapters.size # XXX: OK?
     end
@@ -392,14 +391,14 @@ EOC
 
     mktmpbookdir 'PREDEF' => 'chapter1.re',
        'chapter1.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.prefaces
+      assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
     end
 
     mktmpbookdir 'PREDEF' => 'chapter1.txt',
        'chapter1.txt' => '' do |dir, book, files|
-      assert_kind_of Part, book.prefaces
+      assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
     end
@@ -411,7 +410,7 @@ EOC
     end
 
     mktmpbookdir 'appendix.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.postscripts
+      assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 1, book.postscripts.chapters.size
       assert_equal "appendix", book.postscripts.chapters.first.name
@@ -420,7 +419,7 @@ EOC
     end
 
     mktmpbookdir 'postscript.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.postscripts
+      assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 1, book.postscripts.chapters.size
       assert_equal "postscript", book.postscripts.chapters.first.name
@@ -430,7 +429,7 @@ EOC
 
     mktmpbookdir 'appendix.re' => '',
        'postscript.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.postscripts
+      assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 2, book.postscripts.chapters.size
       assert_equal "appendix", book.postscripts.chapters.first.name
@@ -452,7 +451,7 @@ EOC
 
     mktmpbookdir 'POSTDEF' => 'chapter1',
        'chapter1.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.postscripts
+      assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 1, book.postscripts.chapters.size
       assert_equal "chapter1", book.postscripts.chapters.first.name
@@ -461,7 +460,7 @@ EOC
 
     mktmpbookdir 'POSTDEF' => "chapter1\n\nchapter2",
        'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.postscripts
+      assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 2, book.postscripts.chapters.size
       assert_equal "chapter1", book.postscripts.chapters.first.name
@@ -472,7 +471,7 @@ EOC
 
     mktmpbookdir 'POSTDEF' => "chapter1 chapter2",
        'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
-      assert_kind_of Part, book.postscripts
+      assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 2, book.postscripts.chapters.size # XXX: OK?
     end
@@ -621,7 +620,7 @@ EOC
       end
 
       Dir.chdir(dir) do
-        book2 = Book.new('.')
+        book2 = Book::Base.new('.')
         assert book2.volume
         assert book2.volume.bytes > 0
         assert book2.volume.chars > 0
@@ -632,7 +631,7 @@ EOC
 
   def test_basedir
     Dir.mktmpdir do |dir|
-      book = Book.new(dir)
+      book = Book::Base.new(dir)
       assert_equal dir, book.basedir
     end
   end
@@ -640,7 +639,7 @@ end
 
 class ParametersTest < Test::Unit::TestCase
   def test_s_default
-    assert Parameters.default
+    assert Book::Parameters.default
   end
 
   def test_s_load
@@ -649,7 +648,7 @@ class ParametersTest < Test::Unit::TestCase
       io.puts 'PAPER = "B5"' # XXX: avoid erros of the last line of Parameters.get_page_metric
       io.close
 
-      params = Parameters.load(io.path)
+      params = Book::Parameters.load(io.path)
       assert_equal '/x_CHAPS', params.chapter_file # XXX: OK? (leading / and uninitialized @basedir)
       assert_equal '/CHAPS', params.part_file
     end
@@ -658,40 +657,40 @@ class ParametersTest < Test::Unit::TestCase
   def test_s_get_page_metric
     mod = Module.new
     assert_raises ArgumentError do # XXX: OK?
-      params = Parameters.get_page_metric(mod)
+      params = Book::Parameters.get_page_metric(mod)
       assert params
     end
 
     mod = Module.new
     mod.module_eval { const_set(:PAPER, 'A5') }
     assert_nothing_raised do
-      params = Parameters.get_page_metric(mod)
+      params = Book::Parameters.get_page_metric(mod)
       assert params
     end
 
     mod = Module.new
     mod.module_eval { const_set(:PAPER, 'X5') }
     assert_raises ConfigError do
-      Parameters.get_page_metric(mod)
+      Book::Parameters.get_page_metric(mod)
     end
   end
 end
 
 class PartTest < Test::Unit::TestCase
   def test_initialize
-    part = Part.new(nil, nil)
+    part = Book::Part.new(nil, nil)
     assert_equal nil, part.number
     assert_equal nil, part.chapters
     assert_equal '', part.name
 
-    part = Part.new(123, [], 'name')
+    part = Book::Part.new(123, [], 'name')
     assert_equal 123, part.number
     assert_equal [], part.chapters
     assert_equal 'name', part.name
   end
 
   def test_each_chapter
-    part = Part.new(nil, [1, 2, 3])
+    part = Book::Part.new(nil, [1, 2, 3])
 
     tmp = []
     part.each_chapter do |ch|
@@ -701,7 +700,7 @@ class PartTest < Test::Unit::TestCase
   end
 
   def test_volume
-    part = Part.new(nil, [])
+    part = Book::Part.new(nil, [])
     assert part.volume
     assert_equal 0, part.volume.bytes
     assert_equal 0, part.volume.chars
@@ -710,14 +709,14 @@ class PartTest < Test::Unit::TestCase
     chs = []
     Tempfile.open('part_test') do |o|
       o.print "12345"
-      chs << Chapter.new(nil, nil, nil, o.path)
+      chs << Book::Chapter.new(nil, nil, nil, o.path)
     end
     Tempfile.open('part_test') do |o|
       o.print "67890"
-      chs << Chapter.new(nil, nil, nil, o.path)
+      chs << Book::Chapter.new(nil, nil, nil, o.path)
     end
 
-    part = Part.new(nil, chs)
+    part = Book::Part.new(nil, chs)
     assert part.volume
     assert part.volume.bytes > 0
     assert part.volume.chars > 0
@@ -762,7 +761,7 @@ class ChapterTest < Test::Unit::TestCase
     mktmpbookdir dir1_files do |dir1, book1, files1|
       mktmpbookdir dir2_files do |dir2, book2, files2|
         paths = (files1.values + files2.values).flatten.grep(/\.re\z/)
-        chs = Chapter.intern_pathes(paths)
+        chs = Book::Chapter.intern_pathes(paths)
 
         assert_equal 3, chs.size
         assert chs[0].book == chs[1].book
@@ -779,8 +778,8 @@ class ChapterTest < Test::Unit::TestCase
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
       paths << __FILE__ + ' not exist file.re'
-      assert_raises IndexError,KeyError do # XXX: OK? (KeyError?)
-        Chapter.intern_pathes(paths)
+      assert_raises ReVIEW::FileNotFound do
+        Book::Chapter.intern_pathes(paths)
       end
     end
 
@@ -791,7 +790,7 @@ class ChapterTest < Test::Unit::TestCase
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
       assert_nothing_raised do
-        Chapter.intern_pathes(paths)
+        Book::Chapter.intern_pathes(paths)
       end
     end
 
@@ -802,8 +801,8 @@ class ChapterTest < Test::Unit::TestCase
     }
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
-      assert_raises IndexError,KeyError do # XXX: OK? (should not be raised?)
-        Chapter.intern_pathes(paths)
+      assert_raises ReVIEW::FileNotFound do
+        Book::Chapter.intern_pathes(paths)
       end
     end
 
@@ -815,69 +814,69 @@ class ChapterTest < Test::Unit::TestCase
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
       assert_nothing_raised do
-        Chapter.intern_pathes(paths)
+        Book::Chapter.intern_pathes(paths)
       end
     end
   end
 
   def test_s_for_stdin
-    assert Chapter.for_stdin
+    assert Book::Chapter.for_stdin
   end
 
   def test_s_for_path
-    assert Chapter.for_path(1, __FILE__)
+    assert Book::Chapter.for_path(1, __FILE__)
   end
 
   def test_initialize
-    ch = Chapter.new(:book, :number, :name, '/foo/bar', :io)
+    ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
     assert_equal :book, ch.env
     assert_equal :book, ch.book
     assert_equal :number, ch.number
     assert_equal '/foo/bar', ch.path
-    assert_equal "#<ReVIEW::Chapter number /foo/bar>", ch.inspect
+    assert_equal "#<ReVIEW::Book::Chapter number /foo/bar>", ch.inspect
   end
 
   def test_dirname_and_basename
-    ch = Chapter.new(nil, nil, nil, nil, nil)
+    ch = Book::Chapter.new(nil, nil, nil, nil, nil)
     assert_equal nil, ch.dirname
     assert_equal nil, ch.basename
 
-    ch = Chapter.new(nil, nil, nil, '/foo/bar', nil)
+    ch = Book::Chapter.new(nil, nil, nil, '/foo/bar', nil)
     assert_equal '/foo', ch.dirname
     assert_equal 'bar', ch.basename
 
-    ch = Chapter.new(nil, nil, nil, 'bar', nil)
+    ch = Book::Chapter.new(nil, nil, nil, 'bar', nil)
     assert_equal '.', ch.dirname
     assert_equal 'bar', ch.basename
   end
 
   def test_name
-    ch = Chapter.new(nil, nil, 'foo', nil)
+    ch = Book::Chapter.new(nil, nil, 'foo', nil)
     assert_equal 'foo', ch.name
 
-    ch = Chapter.new(nil, nil, 'foo.bar', nil)
+    ch = Book::Chapter.new(nil, nil, 'foo.bar', nil)
     assert_equal 'foo', ch.name
 
-    ch = Chapter.new(nil, nil, nil, nil)
+    ch = Book::Chapter.new(nil, nil, nil, nil)
     assert_raises(TypeError) { ch.name } # XXX: OK?
   end
 
   def test_open
-    ch = Chapter.new(nil, nil, nil, __FILE__, :io)
+    ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal :io, ch.open
     assert_equal [:io], ch.open {|io| [io] }
 
-    ch = Chapter.new(nil, nil, nil, __FILE__)
+    ch = Book::Chapter.new(nil, nil, nil, __FILE__)
     assert_equal __FILE__, ch.open.path
     assert_equal [__FILE__], ch.open {|io| [io.path] }
   end
 
   def test_size
-    ch = Chapter.new(nil, nil, nil, __FILE__, :io)
+    ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal File.size(__FILE__), ch.size
 
     File.open(__FILE__, 'r') do |i|
-      ch = Chapter.new(nil, nil, nil, nil, i)
+      ch = Book::Chapter.new(nil, nil, nil, nil, i)
       assert_raises(TypeError) do # XXX: OK?
         ch.size
       end
@@ -886,11 +885,11 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_title
     io = StringIO.new
-    ch = Chapter.new(nil, nil, nil, nil, io)
+    ch = Book::Chapter.new(nil, nil, nil, nil, io)
     assert_equal '', ch.title
 
     io = StringIO.new("=1\n=2\n")
-    ch = Chapter.new(nil, nil, nil, nil, io)
+    ch = Book::Chapter.new(nil, nil, nil, nil, io)
     assert_equal '1', ch.title
 
 
@@ -901,7 +900,7 @@ class ChapterTest < Test::Unit::TestCase
       ['XYZ', @eucjp_str],
     ].each do |enc, instr|
       io = StringIO.new("= #{instr}\n")
-      ch = Chapter.new(nil, nil, nil, nil, io)
+      ch = Book::Chapter.new(nil, nil, nil, nil, io)
       ReVIEW.book.param = {'inencoding' => enc}
       assert_equal @utf8_str, ch.title
       assert_equal @utf8_str, ch.instance_eval { @title }
@@ -920,7 +919,7 @@ class ChapterTest < Test::Unit::TestCase
         tf.print instr
         tf.close
 
-        ch = Chapter.new(nil, nil, nil, tf.path)
+        ch = Book::Chapter.new(nil, nil, nil, tf.path)
         ReVIEW.book.param = {'inencoding' => enc}
         assert_equal @utf8_str, ch.content
         assert_equal @utf8_str, ch.instance_eval { @content }
@@ -937,7 +936,7 @@ class ChapterTest < Test::Unit::TestCase
         tf2.puts instr
         tf1.close
 
-        ch = Chapter.new(nil, nil, nil, tf1.path, tf2)
+        ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2)
         ReVIEW.book.param = {'inencoding' => enc}
         assert_equal "#{@utf8_str}\n#{@utf8_str}\n", ch.content # XXX: OK?
       ensure
@@ -953,7 +952,7 @@ class ChapterTest < Test::Unit::TestCase
     tf.print lines.join('')
     tf.close
 
-    ch = Chapter.new(nil, nil, nil, tf.path)
+    ch = Book::Chapter.new(nil, nil, nil, tf.path)
     assert_equal lines, ch.lines
 
     lines = ["1\n", "2\n", "3"]
@@ -965,7 +964,7 @@ class ChapterTest < Test::Unit::TestCase
     tf2.puts lines.join('')
     tf2.close
 
-    ch = Chapter.new(nil, nil, nil, tf1.path, tf2.path)
+    ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2.path)
     assert_equal lines, ch.lines # XXX: OK?
   end
 
@@ -979,11 +978,11 @@ class ChapterTest < Test::Unit::TestCase
     tf2.print content
     tf2.close
 
-    ch = Chapter.new(nil, nil, nil, tf1.path)
+    ch = Book::Chapter.new(nil, nil, nil, tf1.path)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes
 
-    ch = Chapter.new(nil, nil, nil, tf1.path, tf2)
+    ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?
   end
@@ -991,19 +990,19 @@ class ChapterTest < Test::Unit::TestCase
   def test_on_CHAPS?
     mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re",
         'chapter1.re' => '12345', 'preface.re' => 'abcde' do |dir, book, files|
-      ch1 = Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
-      pre = Chapter.new(book, nil, 'preface', files['preface.re'])
+      ch1 = Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
+      pre = Book::Chapter.new(book, nil, 'preface', files['preface.re'])
 
       assert ch1.on_CHAPS?
       assert !pre.on_CHAPS?
 
       ch2_path = File.join(dir, 'chapter2.er')
       File.open(ch2_path, 'w') {}
-      ch2 = Chapter.new(book, 2, 'chapter2', ch2_path)
+      ch2 = Book::Chapter.new(book, 2, 'chapter2', ch2_path)
 
       ch3_path = File.join(dir, 'chapter3.er')
       File.open(ch3_path, 'w') {}
-      ch3 = Chapter.new(book, 3, 'chapter3', ch3_path)
+      ch3 = Book::Chapter.new(book, 3, 'chapter3', ch3_path)
 
       assert ch2.on_CHAPS?
       assert !ch3.on_CHAPS?
@@ -1108,12 +1107,12 @@ E
     Dir.mktmpdir do |dir|
       path = File.join(dir, opts[:filename] || 'chapter.re')
 
-      book = Book.new(dir)
+      book = Book::Base.new(dir)
 
       ch = nil
       File.open(path, 'w') do |o|
         o.print content
-        ch = Chapter.new(book, 1, 'chapter', o.path)
+        ch = Book::Chapter.new(book, 1, 'chapter', o.path)
       end
 
       assert ch.__send__(ref_method, 'abc')
@@ -1145,7 +1144,7 @@ class ChapterSetTest < Test::Unit::TestCase
       paths = files.values.grep(/\.re\z/)
       cs = nil
       assert_nothing_raised do
-        cs = ChapterSet.for_pathes(paths)
+        cs = Book::ChapterSet.for_pathes(paths)
       end
       assert_equal 2, cs.chapters.size
     end
@@ -1154,7 +1153,7 @@ class ChapterSetTest < Test::Unit::TestCase
   def test_s_for_argv
     begin
       paths = []
-      ChapterSet.class_eval { const_set(:ARGV, paths) }
+      Book::ChapterSet.class_eval { const_set(:ARGV, paths) }
 
       dir_files = {
         'ch1.re' => 'ch1',
@@ -1164,22 +1163,22 @@ class ChapterSetTest < Test::Unit::TestCase
         paths.concat files.values.grep(/\.re\z/)
         cs = nil
         assert_nothing_raised do
-          cs = ChapterSet.for_argv
+          cs = Book::ChapterSet.for_argv
         end
         assert_equal 2, cs.chapters.size
         assert_equal ['ch1', 'ch2'], cs.chapters.map(&:name).sort
       end
 
     ensure
-      ChapterSet.class_eval { remove_const(:ARGV) }
-      ChapterSet.class_eval { const_set(:ARGV, []) }
+      Book::ChapterSet.class_eval { remove_const(:ARGV) }
+      Book::ChapterSet.class_eval { const_set(:ARGV, []) }
     end
 
     begin
       $stdin = StringIO.new('abc')
       cs = nil
       assert_nothing_raised do
-        cs = ChapterSet.for_argv
+        cs = Book::ChapterSet.for_argv
       end
       assert_equal 1, cs.chapters.size
       assert_equal '-', cs.chapters.first.name
@@ -1190,18 +1189,18 @@ class ChapterSetTest < Test::Unit::TestCase
   end
 
   def test_no_part?
-    cs = ChapterSet.new([])
+    cs = Book::ChapterSet.new([])
     assert cs.no_part?
 
-    ch = Chapter.new(nil, nil, nil, nil, StringIO.new)
-    cs = ChapterSet.new([ch])
+    ch = Book::Chapter.new(nil, nil, nil, nil, StringIO.new)
+    cs = Book::ChapterSet.new([ch])
     assert cs.no_part?
   end
 
   def test_chapters
-    ch1 = Chapter.new(nil, 123, nil, nil, StringIO.new)
-    ch2 = Chapter.new(nil, 456, nil, nil, StringIO.new)
-    cs = ChapterSet.new([ch1, ch2])
+    ch1 = Book::Chapter.new(nil, 123, nil, nil, StringIO.new)
+    ch2 = Book::Chapter.new(nil, 456, nil, nil, StringIO.new)
+    cs = Book::ChapterSet.new([ch1, ch2])
     assert_equal [123, 456], cs.chapters.map(&:number)
 
     tmp = [ch1, ch2]
@@ -1212,7 +1211,7 @@ class ChapterSetTest < Test::Unit::TestCase
   end
 
   def test_ext
-    cs = ChapterSet.new([])
+    cs = Book::ChapterSet.new([])
     assert_equal '.re', cs.ext
   end
 end

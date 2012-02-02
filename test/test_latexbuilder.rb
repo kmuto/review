@@ -17,7 +17,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     }
     ReVIEW.book.param = @param
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Chapter.new(nil, 1, 'chap1', nil, StringIO.new)
+    @chapter = Book::Chapter.new(nil, 1, 'chap1', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
   end
