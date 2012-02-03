@@ -778,7 +778,7 @@ class ChapterTest < Test::Unit::TestCase
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
       paths << __FILE__ + ' not exist file.re'
-      assert_raises ReVIEW::FileNotFound do
+      assert_raises ReVIEW::FileNotFound, IndexError do
         Book::Chapter.intern_pathes(paths)
       end
     end
@@ -801,7 +801,7 @@ class ChapterTest < Test::Unit::TestCase
     }
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
-      assert_raises ReVIEW::FileNotFound do
+      assert_raises ReVIEW::FileNotFound, IndexError do
         Book::Chapter.intern_pathes(paths)
       end
     end
