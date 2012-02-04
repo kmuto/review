@@ -674,7 +674,7 @@ QUOTE
 
     def table_header(id, caption)
       if get_chap.nil?
-        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_header", [@chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
+        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       else
         puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       end
