@@ -9,26 +9,28 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-module ReVIEW::Book
-  class Part
+module ReVIEW
+  module Book
+    class Part
 
-    def initialize(number, chapters, name="")
-      @number = number
-      @chapters = chapters
-      @name = name
+      def initialize(number, chapters, name="")
+        @number = number
+        @chapters = chapters
+        @name = name
+      end
+
+      attr_reader :number
+      attr_reader :chapters
+      attr_reader :name
+
+      def each_chapter(&block)
+        @chapters.each(&block)
+      end
+
+      def volume
+        Volume.sum(@chapters.map {|chap| chap.volume })
+      end
+
     end
-
-    attr_reader :number
-    attr_reader :chapters
-    attr_reader :name
-
-    def each_chapter(&block)
-      @chapters.each(&block)
-    end
-
-    def volume
-      Volume.sum(@chapters.map {|chap| chap.volume })
-    end
-
   end
 end

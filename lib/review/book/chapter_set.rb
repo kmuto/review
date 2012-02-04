@@ -9,37 +9,40 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-module ReVIEW::Book
-  class ChapterSet
+module ReVIEW
+  module Book
 
-    def ChapterSet.for_argv
-      if ARGV.empty?
-        new([Chapter.for_stdin])
-      else
-        for_pathes(ARGV)
+    class ChapterSet
+
+      def ChapterSet.for_argv
+        if ARGV.empty?
+          new([Chapter.for_stdin])
+        else
+          for_pathes(ARGV)
+        end
       end
-    end
 
-    def ChapterSet.for_pathes(pathes)
-      new(Chapter.intern_pathes(pathes))
-    end
+      def ChapterSet.for_pathes(pathes)
+        new(Chapter.intern_pathes(pathes))
+      end
 
-    def initialize(chapters)
-      @chapters = chapters
-    end
+      def initialize(chapters)
+        @chapters = chapters
+      end
 
-    def no_part?
-      true
-    end
+      def no_part?
+        true
+      end
 
-    attr_reader :chapters
+      attr_reader :chapters
 
-    def each_chapter(&block)
-      @chapters.each(&block)
-    end
+      def each_chapter(&block)
+        @chapters.each(&block)
+      end
 
-    def ext
-      '.re'
+      def ext
+        '.re'
+      end
     end
   end
 end
