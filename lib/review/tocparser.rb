@@ -12,7 +12,6 @@
 
 require 'review/preprocessor'
 require 'review/book'
-require 'review/volume'
 require 'forwardable'
 
 module ReVIEW
@@ -216,8 +215,8 @@ module ReVIEW
 
       def volume
         return @volume if @volume
-        return Volume.dummy unless @path
-        @volume = Volume.count_file(@path)
+        return Book::Volume.dummy unless @path
+        @volume = Book::Volume.count_file(@path)
         @volume.lines = estimated_lines()
         @volume
       end
@@ -310,19 +309,19 @@ module ReVIEW
     end
   end
 
-  class Book   # reopen
+  class Book::Base   # reopen
     include TOCRoot
   end
 
-  class ChapterSet   # reopen
+  class Book::ChapterSet   # reopen
     include TOCRoot
   end
 
-  class Part
+  class Book::Part
     include TOCRoot
   end
 
-  class Chapter   # reopen
+  class Book::Chapter   # reopen
     def toc
       @toc ||= TOCParser.parse(self)
       unless @toc.size == 1
