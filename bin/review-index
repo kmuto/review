@@ -61,7 +61,7 @@ def _main
   }
   parser.on('-c', '--chapter C', 'list only chapter C.') {|c|
     begin
-      source = ReVIEW::Book.Part.new(1, [ReVIEW.book.chapter(c)])
+      source = ReVIEW::Book::Part.new(1, [ReVIEW.book.chapter(c)])
     rescue
       error_exit "chapter #{c} does not exist in this book"
     end
