@@ -16,6 +16,7 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review/book'
+require 'review/book/volume'
 require 'review/exception'
 require 'optparse'
 require 'nkf'
