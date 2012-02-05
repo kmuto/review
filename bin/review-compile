@@ -138,7 +138,7 @@ def _main
         error 'no input'
         exit 1
       end
-      ReVIEW::Chapter.intern_pathes(ARGV).each do |chap|
+      ReVIEW::Book::Chapter.intern_pathes(ARGV).each do |chap|
         result = compiler.compile(chap)
         puts result unless check_only
       end
