@@ -1,3 +1,7 @@
+Sun Feb 12 16:06:52 2012  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: fix ebb and extractbb options for PDF as images
+
 Mon Jan 30 20:39:17 2012  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* Version bump to 1.0.0.
