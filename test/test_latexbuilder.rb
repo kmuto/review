@@ -10,6 +10,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @builder = LATEXBuilder.new()
     @param = {
       "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
+      "toclevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "subdirmode" => nil,
@@ -30,7 +31,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_headline_level1_without_secno
     @param["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|\\chapter*{this is test.}\n\\label{chap:chap1}\n|, @builder.result
+    assert_equal %Q|\\chapter*{this is test.}\n\\addcontentsline{toc}{chapter}{this is test.}\n\\label{chap:chap1}\n|, @builder.result
   end
 
   def test_headline_level1_with_inlinetag
