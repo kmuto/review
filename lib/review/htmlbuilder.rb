@@ -162,7 +162,7 @@ EOT
         if ReVIEW.book.param["secnolevel"] >= 1
           if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{I18n.t("chapter", @chapter.number)}#{I18n.t("chapter_postfix")}"
-          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+          elsif @chapter.number.present?
             prefix = "#{@chapter.number}#{I18n.t("chapter_postfix")}"
           end
         end
@@ -175,7 +175,7 @@ EOT
         if ReVIEW.book.param["secnolevel"] >= 2
           if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}　"
-          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+          elsif @chapter.number.present?
             prefix = "#{@chapter.number}.#{@section}　"
           end
         end
@@ -187,7 +187,7 @@ EOT
         if ReVIEW.book.param["secnolevel"] >= 3
           if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
-          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+          elsif @chapter.number.present?
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
           end
         end
@@ -198,7 +198,7 @@ EOT
         if ReVIEW.book.param["secnolevel"] >= 4
           if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
-          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+          elsif @chapter.number.present?
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
           end
         end
@@ -208,7 +208,7 @@ EOT
         if ReVIEW.book.param["secnolevel"] >= 5
           if @chapter.number.to_s =~ /\A\d+\Z/
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
-          elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+          elsif @chapter.number.present?
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
           end
         end

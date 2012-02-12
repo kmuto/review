@@ -142,7 +142,7 @@ module ReVIEW
       when 1
         if @chapter.number.to_s =~ /\A\d+\Z/
           prefix = "第#{@chapter.number}章　"
-        elsif !@chapter.number.nil? && !@chapter.number.to_s.empty?
+        elsif @chapter.number.present?
           prefix = "#{@chapter.number}　"
         end
         @section = 0
@@ -151,22 +151,22 @@ module ReVIEW
         @subsubsubsection = 0
       when 2
         @section += 1
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}　" : ""
+        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}　" : ""
         @subsection = 0
         @subsubsection = 0
         @subsubsubsection = 0
       when 3
         @subsection += 1
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}　" : ""
+        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}　" : ""
         @subsubsection = 0
         @subsubsubsection = 0
       when 4
         @subsubsection += 1
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　" : ""
+        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　" : ""
         @subsubsubsection = 0
       when 5
         @subsubsubsection += 1
-        prefix = (!@chapter.number.nil? && !@chapter.number.to_s.empty?) ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　" : ""
+        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　" : ""
       else
         raise "caption level too deep or unsupported: #{level}"
       end
@@ -676,7 +676,7 @@ module ReVIEW
         warn "no such image: #{id}"
         puts "◆→画像 #{id}←◆"
       end
-      puts "図　#{compile_inline(caption)}" if !caption.nil? && !caption.empty?
+      puts "図　#{compile_inline(caption)}" if caption.present?
       blank
     end
 

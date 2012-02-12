@@ -327,7 +327,7 @@ module ReVIEW
     end
 
     def parse_metric(type, metric)
-      return "" if metric.nil? || metric.empty?
+      return "" if metric.blank?
       params = metric.split(/,\s*/)
       results = []
       params.each do |p|
