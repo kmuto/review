@@ -8,7 +8,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
 
-require 'review/compat'
+require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
 require 'lineinput'

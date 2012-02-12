@@ -9,7 +9,7 @@
 # For details of LGPL, see the file "COPYING".
 #
 
-require 'review/compat'
+require 'review/extentions'
 require 'review/exception'
 
 module ReVIEW

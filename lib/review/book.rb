@@ -12,7 +12,7 @@
 
 require 'review/index'
 require 'review/exception'
-require 'review/compat'
+require 'review/extentions'
 require 'forwardable'
 require 'nkf'
 

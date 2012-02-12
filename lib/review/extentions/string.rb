@@ -1,3 +1,7 @@
+if defined?(Encoding) && Encoding.respond_to?("default_external")
+  Encoding.default_external = "UTF-8"
+end
+
 unless String.method_defined?(:lines)
   # Ruby 1.8
   class String
