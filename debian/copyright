@@ -8,12 +8,14 @@ It was downloaded from:
 
 Upstream Author(s):
 
-    Minero Aoki <aamine@loveruby.net>, Kenshi Muto <kmuto@debian.org>,
-    and Masayoshi Takahashi <takahashimm@gmail.com>.
+    Minero Aoki, Kenshi Muto,
+    Masayoshi Takahashi, and
+    Masanori KADO <kdmsnr@gmail.com>.
 
 Copyright:
 
-    Copyright (C) 2006-2010 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
+    Copyright (C) 2006-2012 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+    Masanori KADO.
 
     For lib/uuid.rb:
     Copyright(c) 2005 URABE, Shyouhei
