@@ -71,6 +71,7 @@ def _main
   parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc| param["outencoding"] = enc }
   parser.on('-c', '--check', 'Check manuscript') { check_only = true }
   parser.on('--level=LVL', 'Section level to append number.') {|lvl| param["secnolevel"] = lvl.to_i }
+  parser.on('--toclevel=LVL', 'Section level to append number.') {|lvl| param["toclevel"] = lvl.to_i }
   parser.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') { param["nolf"] = true }
   parser.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| param["tableopt"] = tbl }
   parser.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { param["listinfo"] = true }
