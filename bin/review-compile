@@ -42,6 +42,7 @@ def _main
     target = nil
   end
   check_only = false
+  output_path = nil
 
   param = {
     "secnolevel" => 2,    # for IDGXML and HTML
@@ -103,6 +104,9 @@ def _main
     mode = :dir
     basedir = path
   end
+  parser.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') do |filename|
+    output_path = filename
+  end
   parser.on('--help', 'Prints this message and quit.') do
     puts parser.help
     exit 0
@@ -140,7 +144,11 @@ def _main
       end
       ReVIEW::Book::Chapter.intern_pathes(ARGV).each do |chap|
         result = compiler.compile(chap)
-        puts result unless check_only
+        if output_path
+          write output_path, result
+        else
+          puts result unless check_only
+        end
       end
     when :dir
       book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
