@@ -122,13 +122,6 @@ def _main
     exit 1
   end
 
-  # array parameter
-  ["stylesheet"].each do |k|
-    if param["k"].instance_of?(String)
-      param["k"] = [param["k"]]
-    end
-  end
-
   begin
     compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
     ReVIEW.book.param = param
