@@ -109,7 +109,7 @@ def output_chaps(chapsfile, values)
       fork {
         STDOUT.reopen("#{@path}/#{filename}")
         $stderr.puts "compiling #{l}"
-        exec("review-compile --target=latex --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+        exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{l}")
       }
       Process.waitall
       @chaps_filenames[chapsfile] << %Q|\\input{#{filename}}\n|
