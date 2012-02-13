@@ -7,7 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
 
-require 'review/index'
+require 'review/book/index'
 require 'review/exception'
 require 'stringio'
 require 'nkf'

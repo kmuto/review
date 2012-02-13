@@ -228,7 +228,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_list
     def @chapter.list(id)
-      ListIndex::Item.new("samplelist",1)
+      Book::ListIndex::Item.new("samplelist",1)
     end
     @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></codelist>|, @builder.raw_result
@@ -236,7 +236,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_list_listinfo
     def @chapter.list(id)
-      ListIndex::Item.new("samplelist",1)
+      Book::ListIndex::Item.new("samplelist",1)
     end
     @param["listinfo"] = true
     @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
@@ -271,7 +271,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_image
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -282,7 +282,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_image_with_metric
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -293,7 +293,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_image_with_metric2
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -304,7 +304,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -315,7 +315,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_without_caption
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -326,7 +326,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_with_metric
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -337,7 +337,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_with_metric2
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -348,7 +348,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end

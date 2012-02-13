@@ -10,7 +10,6 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'review/index'
 require 'review/exception'
 require 'review/extentions'
 require 'forwardable'
@@ -23,6 +22,7 @@ require 'review/book/part'
 require 'review/book/parameters'
 require 'review/book/page_metric'
 require 'review/book/volume'
+require 'review/book/index'
 
 module ReVIEW
   @default_book = nil

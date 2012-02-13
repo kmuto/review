@@ -1010,7 +1010,7 @@ class ChapterTest < Test::Unit::TestCase
   end
 
   def test_list_index
-    do_test_index(<<E, ListIndex, :list_index, :list)
+    do_test_index(<<E, Book::ListIndex, :list_index, :list)
 //list
 //listnum [abc]
 //list [def]
@@ -1020,7 +1020,7 @@ E
   end
 
   def test_table_index
-    do_test_index(<<E, TableIndex, :table_index, :table)
+    do_test_index(<<E, Book::TableIndex, :table_index, :table)
 //table
 //table [abc]
 //table [def]
@@ -1038,7 +1038,7 @@ E
 //list [def]
 //list [others]
 E
-    do_test_index(content, FootnoteIndex, :footnote_index, :footnote) do |ch|
+    do_test_index(content, Book::FootnoteIndex, :footnote_index, :footnote) do |ch|
       assert_raises IndexError,KeyError do
         ch.footnote('xyz')
       end
@@ -1046,7 +1046,7 @@ E
   end
 
   def test_bibpaper
-    do_test_index(<<E, BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib.re')
+    do_test_index(<<E, Book::BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib.re')
 //bibpaper
 //bibpaper [abc][text...]
 //bibpaper [def][text...]
@@ -1055,12 +1055,12 @@ E
 //list [others]
 E
     assert_raises FileNotFound do
-      do_test_index('', BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib')
+      do_test_index('', Book::BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib')
     end
   end
 
   def test_headline_index
-    do_test_index(<<E, HeadlineIndex, :headline_index, :headline, :propagate => false)
+    do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, :propagate => false)
 ==
 == abc
 == def
@@ -1070,7 +1070,7 @@ E
   end
 
   def test_image
-    do_test_index(<<E, ImageIndex, :image_index, :image)
+    do_test_index(<<E, Book::ImageIndex, :image_index, :image)
 //image
 //image [abc]
 //image [def]
@@ -1078,7 +1078,7 @@ E
 //list [others]
 E
 
-    do_test_index(<<E, NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
+    do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
 //numberlessimage
 //numberlessimage [abc]
 //numberlessimage [def]
@@ -1086,7 +1086,7 @@ E
 //list [others]
 E
 
-    do_test_index(<<E, ImageIndex, :image_index, :image)
+    do_test_index(<<E, Book::ImageIndex, :image_index, :image)
 //image
 //numberlessimage [abc]
 //image [def]
@@ -1094,7 +1094,7 @@ E
 //list [others]
 E
 
-    do_test_index(<<E, NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
+    do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
 //image
 //numberlessimage [abc]
 //image [def]
