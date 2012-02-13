@@ -362,6 +362,7 @@ EOB
 %% preface
 #{values["pre_str"]}
 
+\\setcounter{tocdepth}{#{values["toclevel"]}}
 \\tableofcontents
 
 \\renewcommand{\\chaptermark}[1]{\\markboth{\\prechaptername\\thechapter\\postchaptername~#1}{}}
