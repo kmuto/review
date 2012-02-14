@@ -68,7 +68,9 @@ module ReVIEW
       1 => 'chapter',
       2 => 'section',
       3 => 'subsection',
-      4 => 'subsubsection'
+      4 => 'subsubsection',
+      5 => 'paragraph',
+      6 => 'subparagraph'
     }
 
     def headline(level, label, caption)
@@ -84,6 +86,8 @@ module ReVIEW
       if level == 1
         puts macro('label', chapter_label)
       end
+    rescue
+      error "unknown level: #{level}"
     end
 
     def nonum_begin(level, label, caption)
