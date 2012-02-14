@@ -80,7 +80,7 @@ module ReVIEW
       end
       blank unless @output.pos == 0
       puts macro(HEADLINE[level]+prefix, compile_inline(caption))
-      if prefix == "*" && level <= ReVIEW.book.param["toclevel"]
+      if prefix == "*" && level <= ReVIEW.book.param["toclevel"].to_i
         puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
       end
       if level == 1
