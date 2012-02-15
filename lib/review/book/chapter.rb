@@ -80,25 +80,30 @@ module ReVIEW
 
       alias id name
 
+      def convert_inencoding(str, enc)
+        case enc
+        when /^EUC$/i
+          NKF.nkf("-E -w", str)
+        when /^SJIS$/i
+          NKF.nkf("-S -w", str)
+        when /^JIS$/i
+          NKF.nkf("-J -w", str)
+        else
+          NKF.nkf("-w", str)
+        end
+      end
+
       def title
         @title = ""
         open {|f|
           f.each_line {|l|
+            l = convert_inencoding(l, ReVIEW.book.param["inencoding"])
             if l =~ /\A=+/
               @title = l.sub(/\A=+/, '').strip
               break
             end
           }
         }
-        if ReVIEW.book.param["inencoding"] =~ /^EUC$/
-          @title = NKF.nkf("-E -w", @title)
-        elsif ReVIEW.book.param["inencoding"] =~ /^SJIS$/
-          @title = NKF.nkf("-S -w", @title)
-        elsif ReVIEW.book.param["inencoding"] =~ /^JIS$/
-          @title = NKF.nkf("-J -w", @title)
-        else
-          @title = NKF.nkf("-w", @title)
-        end
       end
 
       def size
@@ -115,15 +120,8 @@ module ReVIEW
       end
 
       def content
-        if ReVIEW.book.param["inencoding"] =~ /^EUC$/i
-          @content = NKF.nkf("-E -w", File.read(path()))
-        elsif ReVIEW.book.param["inencoding"] =~ /^SJIS$/i
-          @content = NKF.nkf("-S -w", File.read(path()))
-        elsif ReVIEW.book.param["inencoding"] =~ /^JIS$/i
-          @content = NKF.nkf("-J -w", File.read(path()))
-        else
-          @content = NKF.nkf("-w", File.read(path())) # auto detect
-        end
+        @content = convert_inencoding(File.read(path()),
+                                      ReVIEW.book.param["inencoding"])
       end
 
       def lines
