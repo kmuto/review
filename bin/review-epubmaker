@@ -452,18 +452,18 @@ EOT
   fork {
     basedir = Dir.pwd
     Dir.chdir(@bookdir) {|d|
-      exec("zip -0X #{basedir}/#{bookname}.epub mimetype")
+      exec("zip", "-0X", "#{basedir}/#{bookname}.epub", "mimetype")
     }
   }
   Process.waitall
   fork {
     basedir = Dir.pwd
     Dir.chdir(@bookdir) {|d|
-      exec("zip -Xr9D #{basedir}/#{bookname}.epub META-INF OEBPS")
+      exec("zip", "-Xr9D", "#{basedir}/#{bookname}.epub", "META-INF OEBPS")
     }
   }
   Process.waitall
-  
+
   FileUtils.rm_r(tmp) if values["debug"].nil?
 end
 

@@ -93,16 +93,16 @@ EOT
         FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}")) unless File.exist?(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
         FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
       end
-      
+
       fork {
         Dir.chdir(tmpdir) {|d|
-          exec("zip -0X #{epubfile} mimetype")
+          exec("zip", "-0X", "#{epubfile}", "mimetype")
         }
       }
       Process.waitall
       fork {
         Dir.chdir(tmpdir) {|d|
-          exec("zip -Xr9D #{epubfile} META-INF OEBPS")
+          exec("zip", "-Xr9D", "#{epubfile}", "META-INF OEBPS")
         }
       }
       Process.waitall
