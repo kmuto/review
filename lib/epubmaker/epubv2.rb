@@ -389,7 +389,7 @@ EOT
       Process.waitall
       fork {
         Dir.chdir(tmpdir) {|d|
-          exec("zip", "-Xr9D", "#{epubfile}", "META-INF OEBPS")
+          exec("zip", "-Xr9D", "#{epubfile}", "META-INF", "OEBPS")
         }
       }
       Process.waitall
