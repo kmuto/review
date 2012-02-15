@@ -104,6 +104,7 @@ module ReVIEW
             end
           }
         }
+        @title
       end
 
       def size
