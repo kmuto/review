@@ -75,7 +75,7 @@ def main
   
   # MIME type
   File.open("#{@bookdir}/mimetype", "w") {|f|
-    f.puts "application/epub+zip"
+    f.write "application/epub+zip"
   }
   
   Dir.mkdir("#{@bookdir}/OEBPS")
