@@ -76,26 +76,14 @@ def main
   Dir.chdir(@path) {
     template = get_template(values)
     File.open("./book.tex", "wb"){|f| f.write(template)}
-   
+
     ## do compile
     enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
     kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
-    fork {
-      exec("platex -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("platex -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("platex -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("dvipdfmx -d 5 book.dvi")
-    }
-    Process.waitall
+    system("platex -kanji=#{kanji} book.tex")
+    system("platex -kanji=#{kanji} book.tex")
+    system("platex -kanji=#{kanji} book.tex")
+    system("dvipdfmx -d 5 book.dvi")
   }
   FileUtils.cp("#{@path}/book.pdf", "#{basedir}/#{bookname}.pdf")
 end
@@ -106,12 +94,9 @@ def output_chaps(chapsfile, values)
       next if l =~ /^#/
       file_id = File.basename(l.chomp.strip,".*")
       filename = "#{file_id}.tex"
-      fork {
-        STDOUT.reopen("#{@path}/#{filename}")
-        $stderr.puts "compiling #{l}"
-        exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{l}")
-      }
-      Process.waitall
+      STDOUT.reopen("#{@path}/#{filename}")
+      $stderr.puts "compiling #{l}"
+      system("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{l}")
       @chaps_filenames[chapsfile] << %Q|\\input{#{filename}}\n|
     }
   }
@@ -122,15 +107,11 @@ def copy_images(from, to)
     Dir.mkdir(to)
     copyImagesToDir(from, to)
     Dir.chdir(to) {
-      fork {
-        begin
-          exec("extractbb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf;extractbb -m *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
-        rescue
-          exec("ebb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
-        end
-      }
+      if system("extractbb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf;extractbb -m *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
+      else
+        system("ebb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
+      end
     }
-  Process.waitall
   end
 end
 
