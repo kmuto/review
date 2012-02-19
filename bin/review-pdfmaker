@@ -80,10 +80,10 @@ def main
     ## do compile
     enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
     kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
-    system("platex -kanji=#{kanji} book.tex")
-    system("platex -kanji=#{kanji} book.tex")
-    system("platex -kanji=#{kanji} book.tex")
-    system("dvipdfmx -d 5 book.dvi")
+    `platex -kanji=#{kanji} book.tex`
+    `platex -kanji=#{kanji} book.tex`
+    `platex -kanji=#{kanji} book.tex`
+    `dvipdfmx -d 5 book.dvi`
   }
   FileUtils.cp("#{@path}/book.pdf", "#{basedir}/#{bookname}.pdf")
 end
