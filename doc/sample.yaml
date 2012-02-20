@@ -36,6 +36,12 @@ stylesheet: stylesheet.css
 # texstyle: samplemacro
 # LaTeX用のdocumentclassを指定する
 # texdocumentclass: ["jsarticle", "b5paper,oneside"]
+# 表紙を出力しない
+# withouttitlepage: true
+# 目次を出力しない
+# withouttoc: true
+# 奥付を出力しない
+# withoutokuduke: true
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル

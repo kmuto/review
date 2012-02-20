@@ -186,7 +186,6 @@ def get_template(values)
 
   okuduke = ""
   authors = ""
-
   if values["aut"]
     okuduke += "著　者 & #{values["aut"]} \\\\\n"
     authors = values["aut"]+ "\\vspace*{1zh} 著"
@@ -353,7 +352,10 @@ EOB
 \\reviewmainfont
 EOB
 
-  str += titlepage
+  unless values["withouttitlepage"]
+    str += titlepage
+  end
+
   str += <<EOB
 
 \\renewcommand{\\chaptermark}[1]{{}}
@@ -362,9 +364,17 @@ EOB
 %% preface
 #{values["pre_str"]}
 
+EOB
+
+  unless values["withouttoc"]
+    str += <<EOB
 \\setcounter{tocdepth}{#{values["toclevel"]}}
 \\tableofcontents
 
+EOB
+  end
+
+  str += <<EOB
 \\renewcommand{\\chaptermark}[1]{\\markboth{\\prechaptername\\thechapter\\postchaptername~#1}{}}
 \\mainmatter
 
@@ -374,7 +384,10 @@ EOB
 \\reviewappendix
 
 #{values["post_str"]}
+EOB
 
+  unless values["withoutokuduke"]
+    str += <<EOB
 %% okuduke
 \\reviewcolophon
 \\thispagestyle{empty}
@@ -394,6 +407,10 @@ EOB
 \\rule[0pt]{14cm}{1pt} \\\\
 #{values["rights"]} \\\\
 
+EOB
+  end
+
+  str += <<EOB
 \\end{document}
 
 EOB
