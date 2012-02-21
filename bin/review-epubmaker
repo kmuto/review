@@ -465,8 +465,11 @@ def output_chaps(chapsfile, values)
       next if l =~ /^#/
       file_id = File.basename(l.chomp.strip,".*")
       filename = "#{file_id}.html"
+      stdout_sv = STDOUT.dup
       STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
       system("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+      STDOUT.flush
+      STDOUT.reopen(stdout_sv)
 
       getanchors("#{@bookdir}/OEBPS/#{filename}")
       @manifeststr << %Q(<item id="#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
