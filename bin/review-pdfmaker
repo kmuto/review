@@ -386,7 +386,7 @@ EOB
 #{values["post_str"]}
 EOB
 
-  unless values["withoutokuduke"]
+  unless values["withoutcolophon"]
     str += <<EOB
 %% okuduke
 \\reviewcolophon

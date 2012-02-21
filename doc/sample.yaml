@@ -41,7 +41,7 @@ stylesheet: stylesheet.css
 # 目次を出力しない
 # withouttoc: true
 # 奥付を出力しない
-# withoutokuduke: true
+# withoutcolophon: true
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル
