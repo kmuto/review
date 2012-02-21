@@ -80,10 +80,10 @@ def main
     ## do compile
     enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
     kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
-    `platex -kanji=#{kanji} book.tex`
-    `platex -kanji=#{kanji} book.tex`
-    `platex -kanji=#{kanji} book.tex`
-    `dvipdfmx -d 5 book.dvi`
+    system("platex -kanji=#{kanji} book.tex")
+    system("platex -kanji=#{kanji} book.tex")
+    system("platex -kanji=#{kanji} book.tex")
+    system("dvipdfmx -d 5 book.dvi")
   }
   FileUtils.cp("#{@path}/book.pdf", "#{basedir}/#{bookname}.pdf")
 end
@@ -94,9 +94,12 @@ def output_chaps(chapsfile, values)
       next if l =~ /^#/
       file_id = File.basename(l.chomp.strip,".*")
       filename = "#{file_id}.tex"
+      stdout_sv = STDOUT.dup
       STDOUT.reopen("#{@path}/#{filename}")
       $stderr.puts "compiling #{l}"
       system("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{l}")
+      STDOUT.flush
+      STDOUT.reopen(stdout_sv)
       @chaps_filenames[chapsfile] << %Q|\\input{#{filename}}\n|
     }
   }
