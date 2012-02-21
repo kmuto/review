@@ -212,7 +212,7 @@ module ReVIEW
       puts '\begin{reviewemlist}'
       puts '\begin{alltt}'
       lines.each do |line|
-        puts line
+        puts detab(line)
       end
       puts '\end{alltt}'
       puts '\end{reviewemlist}'
@@ -254,7 +254,7 @@ module ReVIEW
       puts '\begin{reviewcmd}'
       puts '\begin{alltt}'
       lines.each do |line|
-        puts line
+        puts detab(line)
       end
       puts '\end{alltt}'
       puts '\end{reviewcmd}'
@@ -269,7 +269,7 @@ module ReVIEW
       puts '\begin{reviewlist}'
       puts '\begin{alltt}'
       lines.each do |line|
-        puts line
+        puts detab(line)
       end
       puts '\end{alltt}'
       puts '\end{reviewlist}'
@@ -291,7 +291,7 @@ module ReVIEW
     def source_body(lines)
       puts '\begin{alltt}'
       lines.each do |line|
-        puts line
+        puts detab(line)
       end
       puts '\end{alltt}'
     end
