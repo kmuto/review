@@ -128,7 +128,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_list
     def @chapter.list(id)
-      ListIndex::Item.new("test",1)
+      Book::ListIndex::Item.new("test",1)
     end
     @builder.list(["foo", "bar"], "test", "this is @<b>{test}<&>_")
     assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
@@ -136,7 +136,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_listnum
     def @chapter.list(id)
-      ListIndex::Item.new("test",1)
+      Book::ListIndex::Item.new("test",1)
     end
     @builder.listnum(["foo", "bar"], "test", "this is @<b>{test}<&>_")
     assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
@@ -149,7 +149,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_image
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -160,7 +160,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_image_with_metric
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
