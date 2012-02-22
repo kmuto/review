@@ -358,7 +358,7 @@ EOB
 \\reviewmainfont
 EOB
 
-  unless values["withouttitlepage"]
+  if values["titlepage"]
     str += titlepage
   end
 
@@ -372,7 +372,7 @@ EOB
 
 EOB
 
-  unless values["withouttoc"]
+  if values["toc"]
     str += <<EOB
 \\setcounter{tocdepth}{#{values["toclevel"]}}
 \\tableofcontents
@@ -392,7 +392,7 @@ EOB
 #{values["post_str"]}
 EOB
 
-  unless values["withoutcolophon"]
+  if values["colophon"]
     str += <<EOB
 %% okuduke
 \\reviewcolophon
