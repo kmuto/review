@@ -24,3 +24,10 @@ else
     end
   end
 end
+
+unless String.method_defined?(:each)
+  # Ruby 1.9
+  class String
+    alias each each_line
+  end
+end
