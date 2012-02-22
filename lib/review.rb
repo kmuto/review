@@ -1,4 +1,5 @@
 require 'review/extentions'
+require 'review/configure'
 require 'review/i18n'
 require 'review/exception'
 require 'review/compiler'

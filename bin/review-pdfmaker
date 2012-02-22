@@ -13,6 +13,12 @@ require 'tmpdir'
 require 'yaml'
 require 'fileutils'
 
+require 'pathname'
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review'
+
 def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
   exit 1
@@ -42,7 +48,7 @@ def main
   usage if ARGV.size != 1
 
   yamlfile = ARGV[0]
-  values = YAML.load_file(yamlfile)
+  values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   check_book(values)
   basedir = Dir.pwd
   @path = build_path(values)

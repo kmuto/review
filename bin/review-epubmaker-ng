@@ -12,6 +12,7 @@
 require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
+require 'review'
 require 'epubmaker'
 include EPUBMaker
 
@@ -20,19 +21,9 @@ def main
     puts "Usage: #{$0} configfile"
     exit 0
   end
-  
-  @params = {          # These parameters can be overridden by YAML file.
-    "bookname" => "example", # Book file
-    "title" => "example", # Book title
-    "params" => "",    # specify review2html parameters
-    "epubversion" => 2,# EPUB version
-    "toclevel" => 3,   # level of toc
-    "secnolevel" => 2, # level of section #
-    "posthook" => nil, # command path of post hook
-    "debug" => nil,    # debug flag
-  }
-  
+
   yamlfile = ARGV[0]
+  @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   @epub = Producer.new(@params)
   @epub.load(yamlfile)
   @params = @epub.params

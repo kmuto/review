@@ -21,41 +21,16 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'uuid'
+require 'review'
 
 def main
-  values = { # These parameters can be overridden by YAML file.
-    "bookname"=> nil, # it defines epub file name also
-    "booktitle" => "ReVIEW EPUBサンプル",
-    "aut" => nil, # author
-    "prt" => nil, # printer(publisher)
-    "asn" => nil, # associated name
-    "ant" => nil, # bibliographic antecedent
-    "clb" => nil, # Collaborator
-    "edt" => nil, # Editor
-    "dsr" => nil, # Designer
-    "ill" => nil, # Illustrator
-    "pht" => nil, # Photographer
-    "trl" => nil, # Translator
-    "date" => nil, # publishing date
-    "rights" => nil, # Copyright messages
-    "description" => nil, # Description
-    "urnid" => nil, # Identifier (nil makes random uuid)
-    "stylesheet" => "stylesheet.css", # stylesheet file
-    "coverfile" => nil, # content file of body of cover page
-    "mytoc" => nil, # whether make own table of contents or not
-    "params" => "", # specify review2html parameters
-    "toclevel" => 3, # level of toc
-    "secnolevel" => 2, # level of section #
-    "posthook" => nil, # command path of post hook
-    "debug" => nil, # debug flag
-  }
   if ARGV.size != 1
     puts "Usage: #{$0} configfile"
     exit 0
   end
-  
+
   yamlfile = ARGV[0]
-  values = values.merge(YAML.load_file(yamlfile))
+  values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   bookname = values["bookname"]
 
   if File.exist?("#{bookname}.epub")
