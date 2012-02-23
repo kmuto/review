@@ -15,9 +15,10 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/book'
+require 'review'
 require 'optparse'
-require 'nkf'
+
+include ReVIEW::TextUtils
 
 def sigmain
   Signal.trap(:INT) { exit 1 }
@@ -94,15 +95,7 @@ def check_text(files)
           next if neg and neg =~ s
           str, offset = find_line(para, re)
           out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
-          if @param["outencoding"] =~ /^EUC$/
-            print NKF.nkf("-e", out)
-          elsif @param["outencoding"] =~ /^SJIS$/
-            print NKF.nkf("-s", out)
-          elsif @param["outencoding"] =~ /^JIS$/
-            print NKF.nkf("-j", out)
-          else
-            print out
-          end
+          print convert_outencoding(out, @param["outencoding"])
         end
       end
     }
@@ -144,15 +137,8 @@ end
 def each_paragraph(f)
   $ReVIEW_utils_word_ok = nil
   while line = f.gets
-    if @param["inencoding"] =~ /^EUC$/
-      line = NKF.nkf("-E -w", line)
-    elsif @param["inencoding"] =~ /SJIS$/
-      line = NKF.nkf("-S -w", line)
-    elsif @param["inencoding"] =~ /^JIS$/
-      line = NKF.nkf("-J -w", line)
-    else
-      line = NKF.nkf("-w", line)
-    end
+    line = convert_inencoding(line, @param["inencoding"])
+
     case line
     when /\A\#@ok\((.*)\)/
       $ReVIEW_utils_word_ok = $1
