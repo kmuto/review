@@ -1045,7 +1045,8 @@ module ReVIEW
     def inline_chapref(id)
       chs = ["", "「", "」"]
       unless ReVIEW.book.param["chapref"].nil?
-        _chs = NKF.nkf("-w", ReVIEW.book.param["chapref"]).split(",")
+        _chs = convert_inencoding(ReVIEW.book.param["chapref"],
+                                  ReVIEW.book.param["inencoding"]).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else

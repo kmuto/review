@@ -9,13 +9,15 @@
 
 require 'review/book/index'
 require 'review/exception'
+require 'review/textutils'
 require 'stringio'
-require 'nkf'
 require 'cgi'
 
 module ReVIEW
 
   class Builder
+    include TextUtils
+
     CAPTION_TITLES = %w(note memo tip info planning best important security caution term link notice point shoot reference practice expert)
 
     def pre_paragraph
@@ -53,28 +55,16 @@ module ReVIEW
 
     alias :raw_result result
 
-    def convert_outencoding(*s)
-      if ReVIEW.book.param["outencoding"] =~ /^EUC$/i
-        NKF.nkf("-W, -e", *s)
-      elsif ReVIEW.book.param["outencoding"] =~ /^SJIS$/i
-        NKF.nkf("-W, -s", *s)
-      elsif ReVIEW.book.param["outencoding"] =~ /^JIS$/i
-        NKF.nkf("-W, -j", *s)
-      else
-        ## for 1.9 compatibility
-        if s.size == 1
-          return s[0]
-        end
-        return *s
-      end
-    end
-
     def print(*s)
-      @output.print(convert_outencoding(*s))
+      @output.print *s.map{|i|
+        convert_outencoding(i, ReVIEW.book.param["outencoding"])
+      }
     end
 
     def puts(*s)
-      @output.puts(convert_outencoding(*s))
+      @output.puts *s.map{|i|
+        convert_outencoding(i, ReVIEW.book.param["outencoding"])
+      }
     end
 
     def list(lines, id, caption)
@@ -405,26 +395,15 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      enc = inencoding()
-      compile_inline NKF.nkf("--#{enc}", File.open(file_name).read)
+      compile_inline convert_inencoding(File.open(file_name).read,
+                                        ReVIEW.book.param["inencoding"])
     end
 
     def include(file_name)
-      enc = inencoding()
       File.foreach(file_name) do |line|
-        paragraph([NKF.nkf("--#{enc}", line)])
+        paragraph([convert_inencoding(line, ReVIEW.book.param["inencoding"])])
       end
     end
-
-    def inencoding
-      if ReVIEW.book.param["inencoding"].nil?
-        enc = "utf8"
-      else
-        # UTF-8, SJIS, EUC => utf8, sjis, euc
-        enc = ReVIEW.book.param["inencoding"].gsub(/-/, '').downcase
-      end
-    end
-    private :inencoding
 
     def ul_item_begin(lines)
       ul_item(lines)
