@@ -47,5 +47,18 @@ module ReVIEW
         NKF.nkf("-w", str)
       end
     end
+
+    def convert_outencoding(str, enc)
+      case enc
+      when /^EUC$/i
+        NKF.nkf("-W -e", str)
+      when /^SJIS$/i
+        NKF.nkf("-W -s", str)
+      when /^JIS$/i
+        NKF.nkf("-W -j", str)
+      else
+        str
+      end
+    end
   end
 end
