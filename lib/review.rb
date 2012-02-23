@@ -1,6 +1,3 @@
-require 'review/extentions'
-require 'review/configure'
-require 'review/i18n'
-require 'review/exception'
-require 'review/compiler'
-require 'review/htmlbuilder'
+Dir["#{File.dirname(__FILE__)}/review/*.rb"].sort.each do |path|
+  require "review/#{File.basename(path, '.rb')}"
+end
