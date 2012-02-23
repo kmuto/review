@@ -166,7 +166,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_image
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -177,7 +177,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_image_with_metric
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -188,7 +188,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_image_with_metric2
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -198,7 +198,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -209,7 +209,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_without_caption
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -220,7 +220,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_with_metric
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -231,7 +231,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_with_metric2
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -242,7 +242,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(id)
-      item = ImageIndex::Item.new("sampleimg",1)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
@@ -273,7 +273,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_bib
     def @chapter.bibpaper(id)
-      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+      Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
     assert_equal %Q|<a href="./bib.html#bib-samplebib">[1]</a>|, @builder.inline_bib("samplebib")
@@ -281,7 +281,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_bibpaper
     def @chapter.bibpaper(id)
-      BibpaperIndex::Item.new("samplebib",1,"sample bib")
+      Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
     @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
