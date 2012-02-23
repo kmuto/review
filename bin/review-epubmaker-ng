@@ -43,14 +43,14 @@ def main
 
   FileUtils.cp(@params["cover"], "#{basetmp}/#{@params["cover"]}") if !@params["cover"].nil? && File.exist?(@params["cover"])
 
-  unless @params["titlepage"].nil? # FIXME
+  if @params["titlepage"] # FIXME
     FileUtils.cp(@params["titlepage"], "#{basetmp}/#{@params["titlepage"]}")
     @epub.contents.push(Content.new("id" => "title", "file" => @params["titlepage"], "title" => @epub.res.v("titlepagetitle")))
   end
 
   makeBody(basetmp, yamlfile)
 
-  unless @params["colophon"].nil?
+  if @params["colophon"]
     if @params["colophon"].instance_of?(String)
       FileUtils.cp(@params["colophon"], "#{basetmp}/colophon.#{@params["htmlext"]}")
     else
