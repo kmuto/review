@@ -15,11 +15,10 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/book'
-require 'review/book/volume'
-require 'review/exception'
+require 'review'
 require 'optparse'
-require 'nkf'
+
+include ReVIEW::TextUtils
 
 def main
   $KCODE = 'UTF-8' unless defined?(Encoding)
@@ -86,14 +85,7 @@ end
 
 def print_chapter_volume(chap)
   vol = chap.volume
-  title = chap.title
-  if @param["outencoding"] =~ /^EUC$/i
-    title = NKF.nkf("-W -e", title)
-  elsif @param["outencoding"] =~ /^SJIS$/i
-    title = NKF.nkf("-W -s", title)
-  elsif @param["outencoding"] =~ /^JIS$/i
-    title = NKF.nkf("-W -j", title)
-  end
+  title = convert_outencoding(chap.title, @param["outencoding"])
   printf "%s %3dKB %6dC %5dL %3dP %s %-s\n",
          chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines, vol.page,
          "#{chap.name} ".ljust(25, '.'), title
