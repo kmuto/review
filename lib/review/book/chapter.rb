@@ -9,9 +9,11 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
+require 'review/textutils'
 module ReVIEW
   module Book
     class Chapter
+      include TextUtils
 
       def Chapter.intern_pathes(pathes)
         books = {}
@@ -79,19 +81,6 @@ module ReVIEW
       end
 
       alias id name
-
-      def convert_inencoding(str, enc)
-        case enc
-        when /^EUC$/i
-          NKF.nkf("-E -w", str)
-        when /^SJIS$/i
-          NKF.nkf("-S -w", str)
-        when /^JIS$/i
-          NKF.nkf("-J -w", str)
-        else
-          NKF.nkf("-w", str)
-        end
-      end
 
       def title
         @title = ""

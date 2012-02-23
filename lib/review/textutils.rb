@@ -1,9 +1,8 @@
 # $Id: textutils.rb 2192 2005-11-13 11:55:42Z aamine $
+require 'nkf'
 
 module ReVIEW
-
   module TextUtils
-
     def detab(str, ts = 8)
       add = 0
       len = nil
@@ -36,6 +35,17 @@ module ReVIEW
       blocked_lines.map{|l| l.join("")}
     end
 
+    def convert_inencoding(str, enc)
+      case enc
+      when /^EUC$/i
+        NKF.nkf("-E -w", str)
+      when /^SJIS$/i
+        NKF.nkf("-S -w", str)
+      when /^JIS$/i
+        NKF.nkf("-J -w", str)
+      else
+        NKF.nkf("-w", str)
+      end
+    end
   end
-
 end
