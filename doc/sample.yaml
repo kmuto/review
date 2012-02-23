@@ -36,12 +36,6 @@ stylesheet: stylesheet.css
 # texstyle: samplemacro
 # LaTeX用のdocumentclassを指定する
 # texdocumentclass: ["jsarticle", "b5paper,oneside"]
-# 表紙を出力しない
-# withouttitlepage: true
-# 目次を出力しない
-# withouttoc: true
-# 奥付を出力しない
-# withoutcolophon: true
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル
@@ -50,6 +44,10 @@ secnolevel: 2
 epubversion: 2
 # HTMLのバージョン(現時点では4または5。デフォルトは4。epubversionを3にした場合は自動で5に設定される)
 htmlversion: 4
+# 表紙を出力するか
+titlepage: true
+# 目次を出力するか
+toc: true
 # EPUB標準の目次以外に目次を作成するか
 mytoc: null
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる

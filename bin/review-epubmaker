@@ -121,20 +121,28 @@ EOT
    <dc:identifier id="BookId">#{identifier}</dc:identifier>
  </metadata>
  <manifest>
+EOT
+
+    if values["toc"]
+      f.puts <<EOT
   <item id="ncx" href="#{bookname}.ncx" media-type="application/x-dtbncx+xml" />
+EOT
+    end
+
+    f.puts <<EOT
   <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
   <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
   <item id="top" href="top.html" media-type="application/xhtml+xml" />
 EOT
 
-    unless values["mytoc"].nil?
+    if values["toc"] && values["mytoc"]
       f.puts <<EOT
   <item id="toc" href="toc.html" media-type="application/xhtml+xml" />
 EOT
     end
 
     f.puts @manifeststr
-    unless values["colophon"].nil?
+    if values["colophon"]
       f.puts <<EOT
   <item id="colophon" href="colophon.html" media-type="application/xhtml+xml" />
 EOT
@@ -152,14 +160,15 @@ EOT
   <itemref idref="#{bookname}" linear="#{cover_linear}" />
   <itemref idref="top" />
 EOT
-    unless values["mytoc"].nil?
+
+    if values["toc"] && values["mytoc"]
       f.puts <<EOT
   <itemref idref="toc" />
 EOT
     end
 
     f.puts @ncxstr
-    unless values["colophon"].nil?
+    if values["colophon"]
       f.puts <<EOT
   <itemref idref="colophon" />
 EOT
@@ -167,10 +176,16 @@ EOT
     f.puts <<EOT
  </spine>
  <guide>
+EOT
+
+    if values["titlepage"]
+      f.puts <<EOT
   <reference type="cover" title="表紙" href="#{bookname}.html"/>
   <reference type="title-page" title="Title Page" href="top.html"/>
 EOT
-    unless values["mytoc"].nil?
+    end
+
+    if values["toc"] && values["mytoc"]
       f.puts <<EOT
   <reference type="toc" title="目次" href="toc.html"/>
 EOT
@@ -182,8 +197,9 @@ EOT
   }
 
   # ncx (toc)
-  File.open("#{@bookdir}/OEBPS/#{bookname}.ncx", "w") {|f|
-    f.puts <<EOT
+  if values["toc"]
+    File.open("#{@bookdir}/OEBPS/#{bookname}.ncx", "w") {|f|
+      f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
@@ -207,10 +223,10 @@ EOT
     </navPoint>
 EOT
 
-    nav_count = 2
+      nav_count = 2
 
-    unless values["mytoc"].nil?
-      f.puts <<EOT
+      if values["mytoc"]
+        f.puts <<EOT
     <navPoint id="toc" playOrder="2">
       <navLabel>
         <text>目次</text>
@@ -218,18 +234,18 @@ EOT
       <content src="toc.html"/>
     </navPoint>
 EOT
-      nav_count = 3
-    end
-    
-    @tocdesc.each {|item|
-      level, file, id, content = item
-      # values["level"]
-      next if level > values["toclevel"].to_i
-      indent = ""
-      if level > values["secnolevel"].to_i
-        indent = "- "
+        nav_count = 3
       end
-      f.puts <<EOT
+
+      @tocdesc.each {|item|
+        level, file, id, content = item
+        # values["level"]
+        next if level > values["toclevel"].to_i
+        indent = ""
+        if level > values["secnolevel"].to_i
+          indent = "- "
+        end
+        f.puts <<EOT
     <navPoint id="navPoint-#{nav_count}" playOrder="#{nav_count}">
       <navLabel>
         <text>#{indent}#{content}</text>
@@ -237,14 +253,15 @@ EOT
       <content src="#{file}##{id}"/>
     </navPoint>
 EOT
-      nav_count += 1
-    }
-    f.puts <<EOT
+        nav_count += 1
+      }
+      f.puts <<EOT
   </navMap>
 </ncx>
 EOT
-  }
-  
+    }
+  end
+
   # Cover page
   File.open("#{@bookdir}/OEBPS/#{bookname}.html", "w") {|f|
     f.puts <<EOT
@@ -333,7 +350,7 @@ EOT
   }
 
   # Additional toc page
-  unless values["mytoc"].nil?
+  if values["toc"] && values["mytoc"]
     File.open("#{@bookdir}/OEBPS/toc.html", "w") {|f|
       f.puts <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -417,7 +434,7 @@ EOT
   end
 
   # Colophon page
-  if !values["colophon"].nil?
+  if values["colophon"]
     make_colophon_page(tmp, bookname, values)
   end
 

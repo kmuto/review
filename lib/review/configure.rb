@@ -28,6 +28,9 @@ module ReVIEW
         "secnolevel" => 2, # level of section #
         "posthook" => nil, # command path of post hook
         "epubversion" => 2,
+        "titlepage" => true, # Use title page
+        "toc" => true, # Use table of contents
+        "colophon" => false, # Use colophon
         "debug" => nil, # debug flag
       }
     end
