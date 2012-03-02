@@ -17,7 +17,6 @@ require 'forwardable'
 module ReVIEW
 
   class TOCParser
-
     def TOCParser.parse(chap)
       chap.open {|f|
         stream = Preprocessor::Strip.new(f)
@@ -33,7 +32,7 @@ module ReVIEW
       path = []
 
       while line = f.gets
-        line.sub!(/\A\xEF\xBB\xBF/, '') # remove BOM
+        line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
         case line
         when /\A\s*\z/
           ;
