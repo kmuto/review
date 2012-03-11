@@ -141,49 +141,13 @@ def copy_images(from, to)
   end
 end
 
-def make_titlepage(values, authors)
-  coverfile = values["coverfile"]
-  if coverfile
-    coverfile_sty = coverfile.sub(/\.[^.]+$/, ".tex")
-    if File.exist?(coverfile_sty)
-      titlepage = File.read(coverfile_sty)
-      return titlepage
-    end
+def make_custom_titlepage(coverfile)
+  coverfile_sty = coverfile.to_s.sub(/\.[^.]+$/, ".tex")
+  if File.exist?(coverfile_sty)
+    File.read(coverfile_sty)
+  else
+    nil
   end
-
-  ## use default titlepage template
-  titlepage = <<EOB
-\\begin{titlepage}
-EOB
-  if values["coverimage"]
-    titlepage += <<EOB
-  \\begin{center}
-    %%%\\mbox{}\\vskip5zw%
-    \\includegraphics[width=\\textwidth,height=\\textheight,keepaspectratio]{./images/#{values["coverimage"]}}
-  \\end{center}
-  \\clearpage
-EOB
-  end
-  titlepage += <<EOB
-\\thispagestyle{empty}
-\\begin{center}%
-  \\mbox{} \\vskip5zw
-   \\reviewtitlefont%
-    {\\Huge #{values["booktitle"]} \\par}%
-    \\vskip 15em%
-    {\\huge
-      \\lineskip .75em
-      \\begin{tabular}[t]{c}%
-        #{authors}
-      \\end{tabular}\\par}%
-    \\vfill
-    {\\large #{values["date"]} 版\\hspace{2zw}#{values["prt"]}　発行\\par}%
-\\vskip4zw\\mbox{}
-  \\end{center}%
-\\end{titlepage}
-EOB
-
-  return titlepage
 end
 
 def get_template(values)
@@ -208,7 +172,7 @@ def get_template(values)
 発行所 & #{values["prt"]} \\\\
 EOB
 
-  titlepage = make_titlepage(values, authors)
+  custom_titlepage = make_custom_titlepage(values["coverfile"])
 
   template = File.expand_path(File.dirname(__FILE__) +
                               '/../lib/review/review.tex.erb')
