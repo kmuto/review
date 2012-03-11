@@ -66,10 +66,6 @@ module ReVIEW
       :image_types,
       :page_metric
 
-      def no_part?
-        false
-      end
-
       def parts
         @parts ||= read_parts()
       end

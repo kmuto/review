@@ -488,7 +488,6 @@ EOC
       assert book.parts.empty?
       assert !book.part(0)
       assert !book.part(1)
-      assert !book.no_part?
 
       tmp = []
       book.each_part { tmp << true }
@@ -502,7 +501,6 @@ EOC
       assert book.part(1)
       assert book.part(2)
       assert !book.part(3)
-      assert !book.no_part? # XXX: OK?
 
       tmp = []
       book.each_part {|p| tmp << p.number }
