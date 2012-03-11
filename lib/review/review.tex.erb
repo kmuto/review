@@ -1,0 +1,192 @@
+\documentclass[<%= documentclassoption %>]{<%= documentclass %>}
+\usepackage[deluxe]{otf}
+\usepackage[dvipdfmx]{color}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{framed}
+\usepackage{wrapfig}
+\definecolor{shadecolor}{gray}{0.9}
+\definecolor{shadecolorb}{gray}{0.1}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{jumoline}
+
+\usepackage{ascmac}
+
+\usepackage{float}
+\usepackage{alltt}
+
+\newenvironment{shadedb}{%
+  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
+  \MakeFramed {\FrameRestore}}%
+ {\endMakeFramed}
+
+
+\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
+%\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
+
+
+\newcommand{\parasep}{\vspace*{3zh}}
+\setlength{\footskip}{30pt}
+
+%% Bookmarkの文字化け対策（日本語向け）
+\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
+  \usepackage{atbegshi}%
+  \AtBeginShipoutFirst{\special{pdf:tounicode EUC-UCS2}}%
+  %%\AtBeginDvi{\special{pdf:tounicode EUC-UCS2}}%
+\else
+  \usepackage{atbegshi}%
+  \AtBeginShipoutFirst{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
+  %%\AtBeginDvi{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
+\fi
+
+\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+            pdftitle={<%= values["booktitle"] %>},%
+            pdfauthor={<%= values["aut"] %>}]{hyperref}
+
+\newenvironment{reviewimage}{%
+  \begin{figure}[H]
+    \begin{center}}{%
+    \end{center}
+  \end{figure}}
+
+\newenvironment{reviewdummyimage}{%
+  \begin{figure}[H]
+    \begin{center}}{%
+    \end{center}
+  \end{figure}}
+
+\newenvironment{reviewemlist}{%
+  \medskip\small\begin{shaded}\setlength{\baselineskip}{1.3zw}}{%
+  \end{shaded}}
+
+\newenvironment{reviewlist}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}}{%
+  \end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewcmd}{%
+  \color{white}\medskip\small\begin{shadedb}\setlength{\baselineskip}{1.3zw}}{%
+  \end{shadedb}}
+
+\newenvironment{reviewtable}[1]{%
+  \begin{center}\small\setlength{\baselineskip}{1.2zw}
+    \begin{tabular}{#1}}{%
+    \end{tabular}
+  \end{center}}
+
+\newenvironment{reviewcolumn}{%
+     \begin{framed}
+   }{%
+      \end{framed}
+  \vspace{2zw}}
+
+\newcommand{\reviewcolumnhead}[2]{%
+{\noindent\large ■コラム: #2}}
+
+\newcommand{\reviewtablecaption}[1]{%
+  \caption{#1}}
+
+\newcommand{\reviewbackslash}[0]{%
+  \textbackslash{}}
+
+\newcommand{\reviewlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewemlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewcmdcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewimageref}[1]{%
+  図 #1}
+\newcommand{\reviewtableref}[1]{%
+  表 #1}
+\newcommand{\reviewlistref}[1]{%
+  リスト #1}
+
+\newcommand{\reviewminicolumntitle}[1]{%
+  {\large ■メモ：#1}\\}
+
+\newenvironment{reviewminicolumn}{%
+  \vspace{1.5zw}\begin{screen}}{%
+  \end{screen}\vspace{2zw}}
+
+\newcommand{\reviewkw}[1]{%
+  \textbf{\textgt{#1}}}
+
+\newcommand{\reviewtitlefont}[0]{%
+  \usefont{T1}{phv}{b}{n}\gtfamily}
+
+\newcommand{\reviewmainfont}[0]{%
+ }
+
+\newcommand{\reviewcolophon}[0]{%
+  \backmatter
+  \clearpage}
+\newcommand{\reviewappendix}[0]{%
+  \appendix}
+
+\makeatletter
+\def\maxwidth{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+<%= values["usepackage"] %>
+
+\usepackage[T1]{fontenc}
+
+\begin{document}
+
+\reviewmainfont
+
+<% if values["titlepage"] %>
+<%= titlepage %>
+<% end %>
+
+\renewcommand{\chaptermark}[1]{{}}
+\frontmatter
+
+%% preface
+<%= values["pre_str"] %>
+
+<% if values["toc"] %>
+\setcounter{tocdepth}{<%= values["toclevel"] %>}
+\tableofcontents
+<% end %>
+
+\renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~#1}{}}
+\mainmatter
+<%= values["chap_str"] %>
+\renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~#1}{}}
+\reviewappendix
+<%= values["post_str"] %>
+
+<% if values["colophon"] %>
+%% okuduke
+\reviewcolophon
+\thispagestyle{empty}
+
+\vspace*{\fill}
+
+{\noindent\reviewtitlefont\Large <%= values["booktitle"] %>} \\
+\rule[8pt]{14cm}{1pt} \\
+{\noindent
+<%= values["pubhistory"].to_s.gsub(/\n/){"\n\n\noindent"} %>
+}
+
+\begin{tabular}{ll}
+<%= okuduke %>
+\end{tabular}
+　\\
+\rule[0pt]{14cm}{1pt} \\
+<%= values["rights"] %> \\
+<% end %>
+
+
+\end{document}
