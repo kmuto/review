@@ -661,6 +661,10 @@ module ReVIEW
       macro('Underline', escape(str))
     end
 
+    def inline_ami(str)
+      macro('reviewami', escape(str))
+    end
+
     def inline_icon(id)
       macro('includegraphics', @chapter.image(id).path)
     end
