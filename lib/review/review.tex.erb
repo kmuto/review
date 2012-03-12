@@ -205,7 +205,7 @@
 {\noindent\reviewtitlefont\Large <%= values["booktitle"] %>} \\
 \rule[8pt]{14cm}{1pt} \\
 {\noindent
-<%= values["pubhistory"].to_s.gsub(/\n/){"\n\n\noindent"} %>
+<%= values["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent"} %>
 }
 
 \begin{tabular}{ll}
