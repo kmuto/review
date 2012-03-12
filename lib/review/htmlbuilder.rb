@@ -823,6 +823,10 @@ QUOTE
       %Q(<span class="ami">#{escape_html(str)}</span>)
     end
 
+    def inline_bou(str)
+      %Q(<span class="bou">#{escape_html(str)}</span>)
+    end
+
     def inline_tti(str)
       %Q(<tt><i>#{escape_html(str)}</i></tt>)
     end
