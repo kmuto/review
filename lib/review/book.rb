@@ -16,7 +16,6 @@ require 'forwardable'
 require 'nkf'
 
 require 'review/book/base'
-require 'review/book/chapter_set'
 require 'review/book/chapter'
 require 'review/book/part'
 require 'review/book/parameters'
