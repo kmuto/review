@@ -35,6 +35,10 @@ module ReVIEW
         Volume.sum(@chapters.map {|chap| chap.volume })
       end
 
+      def file?
+        (name.present? and path =~ /\.re\z/) ? true : false
+      end
+
     end
   end
 end

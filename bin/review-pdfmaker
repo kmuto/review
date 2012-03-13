@@ -58,18 +58,34 @@ def main
 
   @chaps_filenames = Hash.new{|h, key| h[key] = ""}
 
-  if File.exists?("PREDEF")
-    output_chaps("PREDEF", values)
-  end
-  if File.exists?("CHAPS")
-    output_chaps("CHAPS", values)
-  end
-  if File.exists?("POSTDEF")
-    output_chaps("POSTDEF", values)
+  # review-compile
+  fork {
+    exec("review-compile --directory=#{basedir} --target=latex -a --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]}")
+  }
+  Process.waitall
+
+  ['PREDEF', 'POSTDEF'].each do |file|
+    collect_output(file)
   end
   values["pre_str"]  = @chaps_filenames["PREDEF"]
-  values["chap_str"] = @chaps_filenames["CHAPS"]
   values["post_str"] = @chaps_filenames["POSTDEF"]
+
+  ReVIEW::Book.load(basedir).parts.each do |part|
+    if part.name.present?
+      if part.file?
+        filename = "#{File.basename(part.path, ".*")}.tex"
+        @chaps_filenames["CHAPS"] << %Q|\\input{#{filename}}\n|
+      else
+        @chaps_filenames["CHAPS"] << %Q|\\part{#{part.name}}\n|
+      end
+    end
+    part.chapters.each do |chap|
+      filename = "#{File.basename(chap.path, ".*")}.tex"
+      @chaps_filenames["CHAPS"] << %Q|\\input{#{filename}}\n|
+    end
+  end
+  values["chap_str"] = @chaps_filenames["CHAPS"]
+
 
   values["usepackage"] = ""
   if values["texstyle"]
@@ -107,21 +123,15 @@ def main
   FileUtils.cp("#{@path}/book.pdf", "#{basedir}/#{bookname}.pdf")
 end
 
-def output_chaps(chapsfile, values)
-  File.open(chapsfile) {|chaps|
-    chaps.each_line {|l|
-      next if l =~ /^#/
-      file_id = File.basename(l.chomp.strip,".*")
-      filename = "#{file_id}.tex"
-      fork {
-        STDOUT.reopen("#{@path}/#{filename}")
-        $stderr.puts "compiling #{l}"
-        exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{l}")
-      }
-      Process.waitall
-      @chaps_filenames[chapsfile] << %Q|\\input{#{filename}}\n|
-    }
-  }
+def collect_output(file)
+  return unless File.exist?(file)
+  File.foreach(file) do |filename|
+    next if filename =~ /^#/           # comment
+    if File.exist?(filename.chomp.strip)
+    filename = "#{File.basename(filename.chomp.strip, ".*")}.tex"
+      @chaps_filenames[file] << %Q|\\input{#{filename}}\n|
+    end
+  end
 end
 
 def copy_images(from, to)

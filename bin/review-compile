@@ -105,6 +105,9 @@ def _main
     mode = :dir
     basedir = path
   end
+  parser.on('--part', 'Compile PART file.') do
+    mode = :part
+  end
   parser.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') do |filename|
     output_path = filename
   end
@@ -149,6 +152,12 @@ def _main
       book.chapters.each do |chap|
         str = compiler.compile(chap)
         write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
+      end
+      # PART
+      book.parts_in_file.each do |part|
+        str = compiler.compile(part)
+        str.gsub!(/\A\\chapter{/, '\part{') # FIXME: UGLY...
+        write "#{part.name}#{compiler.strategy.extname}", str  unless check_only
       end
     else
       raise "must not happen: #{mode}"

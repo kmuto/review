@@ -70,6 +70,10 @@ module ReVIEW
         @parts ||= read_parts()
       end
 
+      def parts_in_file
+        parts.find_all{|part| part if part.file? }
+      end
+
       def part(n)
         parts.detect {|part| part.number == n }
       end
