@@ -9,14 +9,18 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
+require 'review/book/compilable'
 module ReVIEW
   module Book
     class Part
+      include Compilable
 
-      def initialize(number, chapters, name="")
+      def initialize(book, number, chapters, name="")
+        @book = book
         @number = number
         @chapters = chapters
-        @name = name
+        @path = name
+        @name = name ? File.basename(name, '.*') : nil
       end
 
       attr_reader :number

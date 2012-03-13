@@ -56,7 +56,7 @@ module ReVIEW
 
       def initialize(params = {})
         @chapter_file = params[:chapter_file] || 'CHAPS'
-        @part_file = params[:part_file]       || 'CHAPS'
+        @part_file    = params[:part_file]    || 'PART'
         @reject_file  = params[:reject_file]  || 'REJECT'
         @predef_file  = params[:predef_file]  || 'PREDEF'
         @postdef_file = params[:postdef_file] || 'POSTDEF'

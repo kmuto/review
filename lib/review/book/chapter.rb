@@ -9,12 +9,10 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-require 'review/textutils'
 require 'review/book/compilable'
 module ReVIEW
   module Book
     class Chapter
-      include TextUtils
       include Compilable
 
       def Chapter.intern_pathes(pathes)

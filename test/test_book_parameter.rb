@@ -15,7 +15,7 @@ class ParametersTest < Test::Unit::TestCase
 
       params = Book::Parameters.load(io.path)
       assert_equal '/x_CHAPS', params.chapter_file # XXX: OK? (leading / and uninitialized @basedir)
-      assert_equal '/CHAPS', params.part_file
+      assert_equal '/PART', params.part_file
     end
   end
 

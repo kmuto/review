@@ -182,9 +182,9 @@ module ReVIEW
             Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
           }
           if part_exist? && read_PART.split("\n").size >= part
-            Part.new((part += 1), chaps, read_PART.split("\n")[part-1])
+            Part.new(self, (part += 1), chaps, read_PART.split("\n")[part-1])
           else
-            Part.new((part += 1), chaps)
+            Part.new(self, (part += 1), chaps)
           end
         }
         return chap
@@ -199,7 +199,7 @@ module ReVIEW
       end
 
       def mkpart(chaps)
-        chaps.empty? ? nil : Part.new(nil, chaps)
+        chaps.empty? ? nil : Part.new(self, nil, chaps)
       end
 
       def mkchap(name)

@@ -9,9 +9,11 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
+require 'review/textutils'
 module ReVIEW
   module Book
     module Compilable
+      include TextUtils
       attr_reader :book
       attr_reader :path
 

@@ -143,7 +143,7 @@ class BookTest < Test::Unit::TestCase
         book.read_PART
       end
 
-      chaps_path = File.join(dir, 'CHAPS')
+      chaps_path = File.join(dir, 'PART')
       chaps_content = "abc\n"
       File.open(chaps_path, 'w') {|o| o.print chaps_content }
 
@@ -188,7 +188,6 @@ class BookTest < Test::Unit::TestCase
       assert_equal 1, parts.size
 
       assert_equal 1, parts[0].number
-      assert_equal 'chapter1.re', parts[0].name # XXX: OK?
       assert_equal 2, parts[0].chapters.size
       chaps = parts[0].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
@@ -213,7 +212,6 @@ EOC
       assert_equal 3, parts.size
 
       assert_equal 1, parts[0].number
-      assert_equal 'part1_chapter1.re', parts[0].name
       assert_equal 2, parts[0].chapters.size
       chaps = parts[0].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
@@ -223,7 +221,6 @@ EOC
       assert_equal expect, chaps
 
       assert_equal 2, parts[1].number
-      assert_equal 'part1_chapter2.re', parts[1].name # XXX: OK?
       assert_equal 3, parts[1].chapters.size
       chaps = parts[1].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
@@ -234,7 +231,6 @@ EOC
       assert_equal expect, chaps
 
       assert_equal 3, parts[2].number
-      assert_equal '',                  parts[2].name # XXX: OK?
       assert_equal 1, parts[2].chapters.size
       chaps = parts[2].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
