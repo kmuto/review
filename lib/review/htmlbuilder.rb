@@ -717,7 +717,7 @@ QUOTE
       caption = "" if caption.nil?
       puts %Q[<div class="image">]
       begin
-        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}"#{metrics} />]
+        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       rescue
         puts %Q[<pre>missing image: #{id}</pre>]
       end
