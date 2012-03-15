@@ -80,10 +80,11 @@ def main
       end
     end
 
-    # FIXME: need to delete PREDEF chapters
     part.chapters.each do |chap|
-      filename = "#{File.basename(chap.path, ".*")}.tex"
-      @chaps_filenames["CHAPS"] << %Q|\\input{#{filename}}\n|
+      if chap.on_CHAPS?
+        filename = "#{File.basename(chap.path, ".*")}.tex"
+        @chaps_filenames["CHAPS"] << %Q|\\input{#{filename}}\n|
+      end
     end
   end
   values["chap_str"] = @chaps_filenames["CHAPS"]
