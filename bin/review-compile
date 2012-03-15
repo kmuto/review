@@ -105,9 +105,6 @@ def _main
     mode = :dir
     basedir = path
   end
-  parser.on('--part', 'Compile PART file.') do
-    mode = :part
-  end
   parser.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') do |filename|
     output_path = filename
   end
