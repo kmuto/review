@@ -23,7 +23,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'uuid'
 require 'review'
 
-$essential_files = ['top', 'toc']
+$essential_files = ['top', 'toc', 'colophon']
 def main
   if ARGV.size != 1
     puts "Usage: #{$0} configfile"
