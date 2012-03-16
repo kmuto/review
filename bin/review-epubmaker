@@ -23,6 +23,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'uuid'
 require 'review'
 
+$essential_files = ['top', 'toc', 'colophon']
 def main
   if ARGV.size != 1
     puts "Usage: #{$0} configfile"
@@ -32,6 +33,7 @@ def main
   yamlfile = ARGV[0]
   values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   bookname = values["bookname"]
+  $essential_files <<= bookname
 
   if File.exist?("#{bookname}.epub")
     STDERR.puts "#{bookname}.epub exists. Please remove or rename first."
@@ -470,6 +472,14 @@ def output_chaps(chapsfile, values)
     chaps.each_line {|l|
       next if l =~ /^#/
       file_id = File.basename(l.chomp.strip,".*")
+      if (idx = $essential_files.index(file_id))
+        if idx == $essential_files.size - 1
+          STDERR.puts "#{file_id} is book name. Please rename #{l.chomp.strip}."
+        else
+         STDERR.puts "#{file_id} is special name. Please rename #{l.chomp.strip}."
+        end
+        exit 1
+      end
       filename = "#{file_id}.html"
       fork {
         STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
