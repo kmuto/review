@@ -504,7 +504,7 @@ def copyImagesToDir(dirname, copybase)
         if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
           Dir.mkdir(copybase) unless File.exist?(copybase)
           FileUtils.cp "#{dirname}/#{fname}", copybase
-          figid = getFigId(fname)
+          figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
           mime = nil
           case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
           when "png"
