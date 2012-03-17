@@ -332,15 +332,8 @@ module ReVIEW
     end
 
     def check_ruby_syntax(rbfile)
-      status = spawn {
-        exec("ruby -c #{rbfile} 2>&1 > /dev/null")
-      }
-      error "syntax check failed: #{rbfile}" unless status.exitstatus == 0
-    end
-
-    def spawn
-      pid, status = *Process.waitpid2(fork { yield })
-      status
+      system("ruby -c #{rbfile}")
+      error "syntax check failed: #{rbfile}" unless $?.exitstatus == 0
     end
 
     def evaluate(path, chunk)

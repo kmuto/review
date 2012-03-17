@@ -381,18 +381,13 @@ EOT
         FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
       end
 
-      fork {
-        Dir.chdir(tmpdir) {|d|
-          exec("zip", "-0X", "#{epubfile}", "mimetype")
-        }
+      Dir.chdir(tmpdir) {|d|
+        system("zip", "-0X", "#{epubfile}", "mimetype")
       }
-      Process.waitall
-      fork {
-        Dir.chdir(tmpdir) {|d|
-          exec("zip", "-Xr9D", "#{epubfile}", "META-INF", "OEBPS")
-        }
+
+      Dir.chdir(tmpdir) {|d|
+        system("zip", "-Xr9D", "#{epubfile}", "META-INF", "OEBPS")
       }
-      Process.waitall
     end
 
     private

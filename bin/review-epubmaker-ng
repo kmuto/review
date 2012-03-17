@@ -82,11 +82,8 @@ def makeBody(basetmp, yamlfile)
       chaps.each_line do |l|
         pre += 1
         next if l =~ /\A#/
-        fork {
-          STDOUT.reopen("#{basetmp}/pre#{pre}.#{@params["htmlext"]}")
-          exec("review-compile --target=html --yaml=#{yamlfile} #{l}")
-        }
-        Process.waitall
+        STDOUT.reopen("#{basetmp}/pre#{pre}.#{@params["htmlext"]}")
+        system("review-compile --target=html --yaml=#{yamlfile} #{l}")
         getanchors(basetmp, "pre#{pre}.#{@params["htmlext"]}")
       end
     end
@@ -97,11 +94,8 @@ def makeBody(basetmp, yamlfile)
       chaps.each_line do |l|
         body += 1
         next if l =~ /\A#/
-        fork {
-          STDOUT.reopen("#{basetmp}/chap#{body}.#{@params["htmlext"]}")
-          exec("review-compile --target=html --yaml=#{yamlfile} #{l}")
-        }
-        Process.waitall
+        STDOUT.reopen("#{basetmp}/chap#{body}.#{@params["htmlext"]}")
+        system("review-compile --target=html --yaml=#{yamlfile} #{l}")
         getanchors(basetmp, "chap#{body}.#{@params["htmlext"]}")
       end
     end
@@ -112,11 +106,8 @@ def makeBody(basetmp, yamlfile)
       chaps.each_line do |l|
         post += 1
         next if l =~ /^#/
-        fork {
-          STDOUT.reopen("#{basetmp}/post#{post}.#{@params["htmlext"]}")
-          exec("review-compile --target=html --yaml=#{yamlfile} #{l}")
-        }
-        Process.waitall
+        STDOUT.reopen("#{basetmp}/post#{post}.#{@params["htmlext"]}")
+        system("review-compile --target=html --yaml=#{yamlfile} #{l}")
         getanchors(basetmp, "post#{post}.#{@params["htmlext"]}")
       end
     end
