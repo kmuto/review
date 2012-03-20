@@ -150,6 +150,14 @@ def _main
         str = compiler.compile(chap)
         write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
       end
+      # PART
+      book.parts_in_file.each do |part|
+        str = compiler.compile(part)
+        if compiler.strategy.extname == ".tex"
+          str.gsub!(/\A\\chapter{/, '\part{') # FIXME: UGLY...
+        end
+        write "#{part.name}#{compiler.strategy.extname}", str  unless check_only
+      end
     else
       raise "must not happen: #{mode}"
     end
