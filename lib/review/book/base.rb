@@ -104,19 +104,15 @@ module ReVIEW
       end
 
       def read_CHAPS
-        res = ""
-        File.open("#{@basedir}/#{chapter_file}") do |f|
-          while line = f.gets
-            if /\A#/ =~ line
-              next
-            end
-            line.gsub!(/#.*$/, "")
-            res << line
-          end
-        end
-        res
-      rescue Errno::ENOENT
-        Dir.glob("#{@basedir}/*#{ext()}").sort.join("\n")
+        read_FILE("chapter_file")
+      end
+
+      def read_PREDEF
+        read_FILE("predef_file")
+      end
+
+      def read_POSTDEF
+        read_FILE("postdef_file")
       end
 
       def read_PART
@@ -219,6 +215,21 @@ module ReVIEW
         File.file?(path) ? Chapter.new(self, nil, name, path) : nil
       end
 
+      def read_FILE(filename)
+        res = ""
+        File.open("#{@basedir}/#{eval(filename)}") do |f|
+          while line = f.gets
+            if /\A#/ =~ line
+              next
+            end
+            line.gsub!(/#.*$/, "")
+            res << line
+          end
+        end
+        res
+      rescue Errno::ENOENT
+        Dir.glob("#{@basedir}/*#{ext()}").sort.join("\n")
+      end
     end
   end
 end

@@ -61,7 +61,20 @@ module ReVIEW
       end
 
       def on_CHAPS?
-        @book.read_CHAPS().lines.map(&:strip).include?(id() + @book.ext())
+        on_FILE?(@book.read_CHAPS())
+      end
+
+      def on_PREDEF?
+        on_FILE?(@book.read_PREDEF())
+      end
+
+      def on_POSTDEF?
+        on_FILE?(@book.read_POSTDEF())
+      end
+
+      private
+      def on_FILE?(contents)
+        contents.lines.map(&:strip).include?(id() + @book.ext())
       end
     end
   end

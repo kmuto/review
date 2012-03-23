@@ -56,39 +56,31 @@ def main
   bookname = values["bookname"]
   Dir.mkdir(@path)
 
-  @chaps_filenames = Hash.new{|h, key| h[key] = ""}
-
-  # review-compile
-  fork {
-    exec("review-compile --directory=#{basedir} --target=latex -a --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]}")
-  }
-  Process.waitall
-
-  ['PREDEF', 'POSTDEF'].each do |file|
-    collect_output(file)
-  end
-  values["pre_str"]  = @chaps_filenames["PREDEF"]
-  values["post_str"] = @chaps_filenames["POSTDEF"]
+  @chaps_fnames = Hash.new{|h, key| h[key] = ""}
 
   ReVIEW::Book.load(basedir).parts.each do |part|
     if part.name.present?
       if part.file?
         filename = "#{File.basename(part.path, ".*")}.tex"
-        @chaps_filenames["CHAPS"] << %Q|\\input{#{filename}}\n|
+        output_chaps(filename, values)
+        @chaps_fnames["CHAPS"] << %Q|\\input{#{filename}}\n|
       else
-        @chaps_filenames["CHAPS"] << %Q|\\part{#{part.name}}\n|
+        @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
       end
     end
 
     part.chapters.each do |chap|
-      if chap.on_CHAPS?
-        filename = "#{File.basename(chap.path, ".*")}.tex"
-        @chaps_filenames["CHAPS"] << %Q|\\input{#{filename}}\n|
-      end
+      filename = "#{File.basename(chap.path, ".*")}.tex"
+      output_chaps(filename, values)
+      @chaps_fnames["PREDEF"]  << "\\input{#{filename}}\n" if chap.on_PREDEF?
+      @chaps_fnames["CHAPS"]   << "\\input{#{filename}}\n" if chap.on_CHAPS?
+      @chaps_fnames["POSTDEF"] << "\\input{#{filename}}\n" if chap.on_POSTDEF?
     end
   end
-  values["chap_str"] = @chaps_filenames["CHAPS"]
 
+  values["pre_str"]  = @chaps_fnames["PREDEF"]
+  values["chap_str"] = @chaps_fnames["CHAPS"]
+  values["post_str"] = @chaps_fnames["POSTDEF"]
 
   values["usepackage"] = ""
   if values["texstyle"]
@@ -102,7 +94,7 @@ def main
   Dir.chdir(@path) {
     template = get_template(values)
     File.open("./book.tex", "wb"){|f| f.write(template)}
-   
+
     ## do compile
     enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
     kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
@@ -126,15 +118,13 @@ def main
   FileUtils.cp("#{@path}/book.pdf", "#{basedir}/#{bookname}.pdf")
 end
 
-def collect_output(file)
-  return unless File.exist?(file)
-  File.foreach(file) do |filename|
-    next if filename =~ /^#/           # comment
-    if File.exist?(filename.chomp.strip)
-    filename = "#{File.basename(filename.chomp.strip, ".*")}.tex"
-      @chaps_filenames[file] << %Q|\\input{#{filename}}\n|
-    end
-  end
+def output_chaps(filename, values)
+  fork {
+    STDOUT.reopen("#{@path}/#{filename}")
+    $stderr.puts "compiling #{filename}"
+    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}")
+  }
+  Process.waitall
 end
 
 def copy_images(from, to)
