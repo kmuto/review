@@ -423,7 +423,31 @@ ReVIEW は任意のブロックを追加可能なので、本によって専用�
 //prototype:: 関数プロトタイプ。『ふつうのLinuxプログラミング』で使用。
 //type:: 関数の型宣言。『ふつうのHaskellプログラミング』で使用。
 
-拡張文法はreview-ext.rbというファイルで指定できますが、ここでは詳しく触れません。
+拡張文法はreview-ext.rbというファイルで指定できます。
+例えば、
+
+    # review-ext.rb
+    ReVIEW::Compiler.defblock :foo, 0..1
+ 
+    class ReVIEW::HTMLBuilder
+      def foo(lines, caption = nil)
+        puts lines.join(",")
+      end
+    end
+
+のようにすると、以下のような文法を追加できます。
+
+    //foo{
+    A
+    B
+    C
+    //}
+    
+    # 出力結果
+    A,B,C
+
+詳しいことについては、ここでは触れません。
+
 
 == 段落中で使う文法 (インライン命令)
 
