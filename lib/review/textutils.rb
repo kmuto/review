@@ -38,24 +38,24 @@ module ReVIEW
     def convert_inencoding(str, enc)
       case enc
       when /^EUC$/i
-        NKF.nkf("-E -w", str)
+        NKF.nkf("-E -w -m0x", str)
       when /^SJIS$/i
-        NKF.nkf("-S -w", str)
+        NKF.nkf("-S -w -m0x", str)
       when /^JIS$/i
-        NKF.nkf("-J -w", str)
+        NKF.nkf("-J -w -m0x", str)
       else
-        NKF.nkf("-w", str)
+        NKF.nkf("-w -m0 -m0x", str)
       end
     end
 
     def convert_outencoding(str, enc)
       case enc
       when /^EUC$/i
-        NKF.nkf("-W -e", str)
+        NKF.nkf("-W -e -m0x", str)
       when /^SJIS$/i
-        NKF.nkf("-W -s", str)
+        NKF.nkf("-W -s -m0x", str)
       when /^JIS$/i
-        NKF.nkf("-W -j", str)
+        NKF.nkf("-W -j -m0x", str)
       else
         str
       end
