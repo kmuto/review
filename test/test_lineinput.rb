@@ -42,6 +42,21 @@ class LineInputTest < Test::Unit::TestCase
     assert li.eof?
   end
 
+  def test_ungets
+    io = StringIO.new('abc')
+    li = LineInput.new(io)
+
+    line = li.gets
+    assert_equal line, li.ungets(line)
+    assert_equal 0, li.lineno
+    assert_equal line, li.gets
+
+    li.ungets('xyz')
+    assert_equal 0, li.lineno
+    li.ungets('xyz')
+    assert_equal -1, li.lineno # XXX: OK?
+  end
+
   def test_peek
     li = LineInput.new(StringIO.new)
     assert_equal nil, li.peek

@@ -12,7 +12,7 @@ class LineInput
 
   def initialize(f)
     @input = f
-    @line = f.gets
+    @buf = []
     @lineno = 0
     @eof_p = false
   end
@@ -30,16 +30,28 @@ class LineInput
   end
 
   def gets
+    unless @buf.empty?
+      @lineno += 1
+      return @buf.pop
+    end
     return nil if @eof_p   # to avoid ARGF blocking.
-    line = @line
-    @line = @input.gets
+    line = @input.gets
     @eof_p = true unless line
     @lineno += 1
     line
   end
 
+  def ungets(line)
+    return unless line
+    @lineno -= 1
+    @buf.push line
+    line
+  end
+
   def peek
-    @line
+    line = gets()
+    ungets line if line
+    line
   end
 
   def next?
@@ -48,11 +60,10 @@ class LineInput
 
   def skip_blank_lines
     n = 0
-    while line = peek()
+    while line = gets()
       unless line.strip.empty?
+        ungets line
         return n
-      else
-        gets
       end
       n += 1
     end
@@ -60,21 +71,19 @@ class LineInput
   end
 
   def gets_if(re)
-    line = peek
+    line = gets()
     if not line or not (re =~ line)
+      ungets line
       return nil
-    else
-      gets
     end
     line
   end
 
   def gets_unless(re)
-    line = peek()
+    line = gets()
     if not line or re =~ line
+      ungets line
       return nil
-    else
-     gets
     end
     line
   end
@@ -86,11 +95,10 @@ class LineInput
   end
 
   def while_match(re)
-    while line = peek()
+    while line = gets()
       unless re =~ line
+        ungets line
         return
-      else
-        gets
       end
       yield line
     end
@@ -108,11 +116,10 @@ class LineInput
   alias span getlines_while   # from Haskell
 
   def until_match(re)
-    while line = peek()
+    while line = gets()
       if re =~ line
+        ungets line
         return
-      else
-        gets
       end
       yield line
     end
