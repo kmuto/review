@@ -78,6 +78,9 @@ module ReVIEW
         @f = f
       end
 
+      def pos;@f.pos end
+      def pos= v;@f.pos = v end
+
       def path
         @f.path
       end
