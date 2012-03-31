@@ -63,6 +63,12 @@ class LineInputTest < Test::Unit::TestCase
 
     li = LineInput.new(StringIO.new('abc'))
     assert_equal 'abc', li.peek
+
+    li = LineInput.new(StringIO.new("abc\ndef"))
+    line = li.gets
+    li.ungets line
+    assert_equal "abc\n", li.peek
+
   end
 
   def test_next?

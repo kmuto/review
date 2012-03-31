@@ -13,7 +13,6 @@ class LineInput
   def initialize(f)
     @input = f
     @peek = f.gets
-    @buf = []
     @lineno = 0
     @eof_p = false
   end
@@ -31,10 +30,6 @@ class LineInput
   end
 
   def gets
-    unless @buf.empty?
-      @lineno += 1
-      return @buf.pop
-    end
     return nil if @eof_p   # to avoid ARGF blocking.
     line = @peek
     @peek = @input.gets
@@ -46,8 +41,8 @@ class LineInput
   def ungets(line)
     return unless line
     @lineno -= 1
-    @buf.push line
-    line
+    @input.pos -= @peek.size if @peek
+    @peek = line
   end
 
   def peek
