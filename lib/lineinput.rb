@@ -41,7 +41,7 @@ class LineInput
   def ungets(line)
     return unless line
     @lineno -= 1
-    @input.pos -= @peek.size if @peek
+    @input.pos -= @peek.bytesize if @peek
     @peek = line
   end
 
