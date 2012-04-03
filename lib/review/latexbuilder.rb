@@ -146,7 +146,9 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts '\item ' + lines.join
+      str = lines.join
+      str.sub!(/\A(\[)/){'\lbrack{}'}
+      puts '\item ' + str
     end
 
     def ul_end
@@ -160,7 +162,9 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts '\item ' + lines.join
+      str = lines.join
+      str.sub!(/\A(\[)/){'\lbrack{}'}
+      puts '\item ' + str
     end
 
     def ol_end
@@ -174,6 +178,8 @@ module ReVIEW
     end
 
     def dt(str)
+      str.sub!(/\[/){'\lbrack{}'}
+      str.sub!(/\]/){'\rbrack{}'}
       puts '\item[' + str + '] \mbox{} \\\\'
     end
 

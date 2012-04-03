@@ -193,6 +193,14 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, @builder.result
   end
 
+  def test_dlist_with_bracket
+    @builder.dl_begin
+    @builder.dt "foo[bar]"
+    @builder.dd ["foo.\n", "bar.\n"]
+    @builder.dl_end
+    assert_equal %Q|\n\\begin{description}\n\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, @builder.result
+  end
+
   def test_cmd
     lines = ["foo", "bar", "","buz"]
     @builder.cmd(lines)
@@ -447,6 +455,21 @@ EOS
     ul_helper(src, expect)
   end
 
+  def test_ul_with_bracket
+    src =<<-EOS
+  * AAA
+  * []BBB
+EOS
+    expect =<<-EOS
+
+\\begin{itemize}
+\\item AAA
+\\item \\lbrack{}]BBB
+\\end{itemize}
+EOS
+    ul_helper(src, expect)
+  end
+
   def test_cont
     src =<<-EOS
   * AAA
@@ -510,6 +533,21 @@ EOS
 \\end{itemize}
 EOS
     ul_helper(src, expect)
+  end
+
+  def test_ol_with_bracket
+    src =<<-EOS
+  1. AAA
+  2. []BBB
+EOS
+    expect =<<-EOS
+
+\\begin{enumerate}
+\\item AAA
+\\item \\lbrack{}]BBB
+\\end{enumerate}
+EOS
+    builder_helper(src, expect, :compile_olist)
   end
 
   def test_inline_raw0
