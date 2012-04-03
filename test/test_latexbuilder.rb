@@ -81,6 +81,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\href{http://example.com/aaa/bbb}{AAA\\textunderscore{}BBB}|, ret
   end
 
+  def test_href_mailto
+    ret = @builder.compile_inline('@<href>{mailto:takahashim@example.com, takahashim@example.com}')
+    assert_equal %Q|\\href{mailto:takahashim@example.com}{takahashim@example.com}|, ret
+  end
+
   def test_inline_br
     ret = @builder.inline_br("")
     assert_equal %Q|\\\\\n|, ret
