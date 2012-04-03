@@ -634,7 +634,7 @@ module ReVIEW
     end
 
     def inline_hd_chap(chap, id)
-      "「#{chap.headline_index.number(id)} #{chap.headline(id).caption}」"
+      "「#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}」"
     end
 
     def inline_raw(str)
