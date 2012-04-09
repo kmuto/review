@@ -75,7 +75,14 @@ module ReVIEW
       end
 
       def number(id)
-        "第#{@index.fetch(id).number}章"
+        chapter = @index.fetch(id)
+        if chapter.on_CHAPS?
+          "第#{chapter.number}章"
+        elsif chapter.on_PREDEF?
+          "#{chapter.number}"
+        elsif chapter.on_POSTDEF?
+          "付録#{chapter.number}"
+        end
       end
 
       def title(id)
