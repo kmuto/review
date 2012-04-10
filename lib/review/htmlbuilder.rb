@@ -709,7 +709,7 @@ QUOTE
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote"><a id="fn-#{id}">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</a></p></div>)
+      puts %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
     end
 
     def indepimage(id, caption="", metric=nil)
