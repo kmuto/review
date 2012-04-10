@@ -74,7 +74,7 @@ module EPUBMaker
     # Write mimetype file to IO object +wobj+.
     def mimetype(wobj)
       s = @epub.mimetype
-      wobj.puts s if !s.nil? && !wobj.nil?
+      wobj.print s if !s.nil? && !wobj.nil?
     end
     
     # Write opf file to IO object +wobj+.

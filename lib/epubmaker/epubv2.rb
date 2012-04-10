@@ -22,9 +22,7 @@ module EPUBMaker
     
     # Return mimetype content.
     def mimetype
-      return <<EOT
-application/epub+zip
-EOT
+      return "application/epub+zip"
     end
     
     # Return opf file content.
