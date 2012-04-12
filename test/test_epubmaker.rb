@@ -35,7 +35,7 @@ class EPUBMakerTest < Test::Unit::TestCase
 
   def test_mimetype
     @producer.mimetype(@output)
-    assert_equal %Q[application/epub+zip\n], @output.string
+    assert_equal %Q[application/epub+zip], @output.string
   end
 
   def test_container
