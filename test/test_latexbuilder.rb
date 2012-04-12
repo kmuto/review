@@ -304,9 +304,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    # FIXME: indepimage's caption should not be with a counter.
     @builder.indepimage("sampleimg","sample photo",nil)
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_indepimage_without_caption
@@ -328,9 +327,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    # FIXME: indepimage's caption should not be with a counter.
     @builder.indepimage("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_indepimage_with_metric2
@@ -340,9 +338,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    # FIXME: indepimage's caption should not be with a counter.
     @builder.indepimage("sampleimg","sample photo","scale=1.2, latex::height=3cm, html::class=\"sample\"")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_indepimage_without_caption_but_with_metric

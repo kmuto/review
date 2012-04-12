@@ -364,7 +364,8 @@ module ReVIEW
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       if !caption.nil? && !caption.empty?
-        puts macro('caption', compile_inline(caption))
+        puts macro('reviewindepimagecaption',
+                   %Q[#{I18n.t("numberless_image")}#{I18n.t("caption_prefix")}#{compile_inline(caption)}])
       end
       puts '\end{reviewimage}'
     end
