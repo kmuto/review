@@ -314,13 +314,13 @@ module ReVIEW
       metrics = parse_metric("latex", metric)
       # image is always bound here
       puts '\begin{reviewimage}'
-      if !metrics.empty?
+      if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       puts macro('label', image_label(id))
-      if !caption.empty?
+      if caption.present?
         puts macro('caption', compile_inline(caption))
       end
       puts '\end{reviewimage}'
@@ -358,12 +358,12 @@ module ReVIEW
     def indepimage(id, caption=nil, metric=nil)
       metrics = parse_metric("latex", metric)
       puts '\begin{reviewimage}'
-      if !metrics.empty?
+      if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
-      if !caption.nil? && !caption.empty?
+      if caption.present?
         puts macro('reviewindepimagecaption',
                    %Q[#{I18n.t("numberless_image")}#{I18n.t("caption_prefix")}#{compile_inline(caption)}])
       end
@@ -373,7 +373,7 @@ module ReVIEW
     alias :numberlessimage indepimage
 
     def table_header(id, caption)
-      if caption && !caption.empty?
+      if caption.present?
         @table_caption = true
         puts '\begin{table}[h]'
 ##      puts macro('reviewtablecaption', "表#{@chapter.number}.#{@chapter.table(id).number} #{compile_inline(caption)}")
