@@ -319,10 +319,10 @@ module ReVIEW
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
-      puts macro('label', image_label(id))
       if caption.present?
         puts macro('caption', compile_inline(caption))
       end
+      puts macro('label', image_label(id))
       puts '\end{reviewimage}'
     end
 

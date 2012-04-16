@@ -272,7 +272,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.image_image("sampleimg","sample photo",nil)
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_image_with_metric
@@ -283,7 +283,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.image_image("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_image_with_metric2
@@ -294,7 +294,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.image_image("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::height=3cm")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\label{image:chap1:sampleimg}\n\\caption{sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, @builder.raw_result
   end
 
   def test_indepimage
