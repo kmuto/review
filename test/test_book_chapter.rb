@@ -345,6 +345,15 @@ E
 E
   end
 
+
+  def test_headline_index_nullsection
+    do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, :propagate => false)
+== abc
+==== dummy
+== def
+E
+  end
+
   def test_image
     do_test_index(<<E, Book::ImageIndex, :image_index, :image)
 //image

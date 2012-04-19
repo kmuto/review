@@ -303,7 +303,9 @@ module ReVIEW
                 indexs = indexs.take(index + 1)
                 headlines = headlines.take(index + 1)
               end
-              indexs << 0 if indexs[index].nil?
+              if indexs[index].nil?
+                (0..index).each{|i| indexs[i] = 0 if indexs[i].nil?}
+              end
               indexs[index] += 1
               headlines[index] = m[4].strip
               items.push Item.new(headlines.join("|"), indexs.dup, m[4].strip)
