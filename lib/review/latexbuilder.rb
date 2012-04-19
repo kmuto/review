@@ -250,7 +250,7 @@ module ReVIEW
       puts '\end{reviewlist}'
       blank
 
-     end
+    end
 
     def cmd(lines, caption = nil)
       blank

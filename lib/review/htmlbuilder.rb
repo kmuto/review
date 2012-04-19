@@ -495,7 +495,7 @@ EOT
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
       puts '</pre>'
-     end
+    end
 
     def emlist(lines, caption = nil)
       puts %Q[<div class="emlist-code">]
@@ -1007,7 +1007,7 @@ QUOTE
       %Q(<u>#{escape_html(str)}</u>)
     end
 
-   def inline_recipe(str)
+    def inline_recipe(str)
       %Q(<span class="recipe">「#{escape_html(str)}」</span>)
     end
 

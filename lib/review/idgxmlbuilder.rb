@@ -982,8 +982,8 @@ module ReVIEW
       syntaxblock("box", lines, caption)
     end
 
-   def indepimage(id, caption=nil, metric=nil)
-     metrics = parse_metric("idgxml", metric)
+    def indepimage(id, caption=nil, metric=nil)
+      metrics = parse_metric("idgxml", metric)
       puts "<img>"
       begin
         puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}"#{metrics} />]

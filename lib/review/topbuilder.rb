@@ -394,7 +394,7 @@ module ReVIEW
       puts "【注#{@chapter.footnote(id).number}】#{compile_inline(str)}"
     end
 
-   def inline_fn(id)
+    def inline_fn(id)
       "【注#{@chapter.footnote(id).number}】"
     end
 
@@ -449,7 +449,7 @@ module ReVIEW
       "#{str}◆→DTP連絡:「#{str}」に網カケ←◆"
     end
 
-     def inline_i(str)
+    def inline_i(str)
       "▲#{str}☆"
     end
 
@@ -475,13 +475,13 @@ module ReVIEW
       "＠#{str}＠◆→＠〜＠部分に下線←◆"
     end
 
-   def inline_icon(id)
-     begin
-       return "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")}←◆"
-     rescue
-       warn "no such icon image: #{id}"
-       return "◆→画像 #{id}←◆"
-     end
+    def inline_icon(id)
+      begin
+        return "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")}←◆"
+      rescue
+        warn "no such icon image: #{id}"
+        return "◆→画像 #{id}←◆"
+      end
     end
 
     def inline_bou(str)
