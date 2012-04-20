@@ -119,11 +119,11 @@ EOT
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
-          s << @producer.params[item].map {|i| %Q[    <dc:#{item} prefer="#{item}">#{i}</dc:#{item}>\n]}.join
-          s << @producer.params[item].map {|i| %Q[    <meta id="#{item}" property="dcterms:#{item}">#{i}</meta>\n]}.join
+          s << @producer.params[item].map {|i| %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(i)}</dc:#{item}>\n]}.join
+          s << @producer.params[item].map {|i| %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(i)}</meta>\n]}.join
         else
-          s << %Q[    <dc:#{item} prefer="#{item}">#{@producer.params[item]}</dc:#{item}>\n]
-          s << %Q[    <meta id="#{item}" property="dcterms:#{item}">#{@producer.params[item]}</meta>\n]
+          s << %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(@producer.params[item])}</dc:#{item}>\n]
+          s << %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(@producer.params[item])}</meta>\n]
         end
       end
 
@@ -140,20 +140,20 @@ EOT
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
-          s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}" prefer="creator-#{i}">#{v}</dc:creator>\n]
-          s << %Q[    <meta property="dcterms:creator" id="creator-#{i}" opf:role="#{role.sub('a-', '')}">#{v}</meta>\n]
+          s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}" prefer="creator-#{i}">#{CGI.escapeHTML(v)}</dc:creator>\n]
+          s << %Q[    <meta property="dcterms:creator" id="creator-#{i}" opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</meta>\n]
         end
       end
       # contributor
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
-          s << %Q[    <dc:contributor opf:role="#{role}" prefer="contributor-#{i}">#{v}</dc:contributor>\n]
-          s << %Q[    <meta property="dcterms:contributor" id="contributor-#{i}" opf:role="#{role}">#{v}</meta>\n]
+          s << %Q[    <dc:contributor opf:role="#{role}" prefer="contributor-#{i}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
+          s << %Q[    <meta property="dcterms:contributor" id="contributor-#{i}" opf:role="#{role}">#{CGI.escapeHTML(v)}</meta>\n]
 
           if role == "prt"
-            s << %Q[    <dc:publisher prefer="publisher">#{v}</dc:publisher>\n]
-            s << %Q[    <meta property="dcterms:publisher" id="publisher">#{v}</meta>\n]
+            s << %Q[    <dc:publisher prefer="publisher">#{CGI.escapeHTML(v)}</dc:publisher>\n]
+            s << %Q[    <meta property="dcterms:publisher" id="publisher">#{CGI.escapeHTML(v)}</meta>\n]
           end
         end
       end

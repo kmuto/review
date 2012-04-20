@@ -10,6 +10,7 @@
 #
 
 require 'epubmaker/producer'
+require 'cgi'
 
 module EPUBMaker
   
@@ -35,9 +36,9 @@ EOT
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
-          s << @producer.params[item].map {|i| %Q[    <dc:#{item}>#{i}</dc:#{item}>\n]}.join
+          s << @producer.params[item].map {|i| %Q[    <dc:#{item}>#{CGI.escapeHTML(i)}</dc:#{item}>\n]}.join
         else
-          s << %Q[    <dc:#{item}>#{@producer.params[item]}</dc:#{item}>\n]
+          s << %Q[    <dc:#{item}>#{CGI.escapeHTML(@producer.params[item])}</dc:#{item}>\n]
         end
       end
       
@@ -52,14 +53,14 @@ EOT
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each do |v|
-          s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}">#{v}</dc:creator>\n]
+          s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</dc:creator>\n]
         end
       end
       # contributor
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each do |v|
-          s << %Q[    <dc:contributor opf:role="#{role}">#{v}</dc:contributor>\n]
+          s << %Q[    <dc:contributor opf:role="#{role}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
           if role == "prt"
             s << %Q[    <dc:publisher>#{v}</dc:publisher>\n]
           end
@@ -133,15 +134,15 @@ EOT
       s << <<EOT
   </head>
   <docTitle>
-    <text>#{@producer.params["title"]}</text>
+    <text>#{CGI.escapeHTML(@producer.params["title"])}</text>
   </docTitle>
   <docAuthor>
-    <text>#{@producer.params["aut"].nil? ? "" : @producer.params["aut"].join(", ")}</text>
+    <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(@producer.params["aut"].join(", "))}</text>
   </docAuthor>
   <navMap>
     <navPoint id="top" playOrder="1">
       <navLabel>
-        <text>#{@producer.params["title"]}</text>
+        <text>#{CGI.escapeHTML(@producer.params["title"])}</text>
       </navLabel>
       <content src="#{@producer.params["cover"]}"/>
     </navPoint>
@@ -201,13 +202,13 @@ EOT
     def cover
       s = common_header
       s << <<EOT
-  <title>#{@producer.params["title"]}</title>
+  <title>#{CGI.escapeHTML(@producer.params["title"])}</title>
 </head>
 <body>
 EOT
       if @producer.params["coverimage"].nil?
         s << <<EOT
-<h1 class="cover-title">#{@producer.params["title"]}</h1>
+<h1 class="cover-title">#{CGI.escapeHTML(@producer.params["title"])}</h1>
 EOT
       else
         file = nil
@@ -220,7 +221,7 @@ EOT
         raise "coverimage #{@producer.params["coverimage"]} not found. Abort." if file.nil?
         s << <<EOT
   <div id="cover-image" class="cover-image">
-    <img src="#{file}" alt="#{@producer.params["title"]}" class="max"/>
+    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.params["title"])}" class="max"/>
   </div>
 EOT
    end
@@ -236,10 +237,10 @@ EOT
     def titlepage
       s = common_header
       s << <<EOT
-  <title>#{@producer.params["title"]}</title>
+  <title>#{CGI.escapeHTML(@producer.params["title"])}</title>
 </head>
 <body>
-  <h1 class="tp-title">#{@producer.params["title"]}</h1>
+  <h1 class="tp-title">#{CGI.escapeHTML(@producer.params["title"])}</h1>
 EOT
 
       if @producer.params["aut"]
@@ -248,7 +249,7 @@ EOT
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{@producer.params["aut"]}</h2>
+  <h2 class="tp-author">#{CGI.escapeHTML(@producer.params["aut"])}</h2>
 EOT
       end
 
@@ -260,7 +261,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{@producer.params["prt"]}</h3>
+  <h3 class="tp-publisher">#{CGI.escapeHTML(@producer.params["prt"])}</h3>
 EOT
       end
 
@@ -279,7 +280,7 @@ EOT
 </head>
 <body>
   <div class="colophon">
-    <p class="title">#{@producer.params["title"]}</p>
+    <p class="title">#{CGI.escapeHTML(@producer.params["title"])}</p>
 EOT
 
       if @producer.params["pubhistory"]
@@ -287,11 +288,11 @@ EOT
       end
       
       s << %Q[    <table class="colophon">\n]
-      s << %Q[      <tr><th>#{@producer.res.v("c-aut")}</th><td>#{@producer.params["aut"]}</td></tr>\n] if @producer.params["aut"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-dsr")}</th><td>#{@producer.params["dsr"]}</td></tr>\n] if @producer.params["dsr"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-ill")}</th><td>#{@producer.params["ill"]}</td></tr>\n] if @producer.params["ill"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-edt")}</th><td>#{@producer.params["edt"]}</td></tr>\n] if @producer.params["edt"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-prt")}</th><td>#{@producer.params["prt"]}</td></tr>\n] if @producer.params["prt"]
+      s << %Q[      <tr><th>#{@producer.res.v("c-aut")}</th><td>#{CGI.escapeHTML(@producer.params["aut"])}</td></tr>\n] if @producer.params["aut"]
+      s << %Q[      <tr><th>#{@producer.res.v("c-dsr")}</th><td>#{CGI.escapeHTML(@producer.params["dsr"])}</td></tr>\n] if @producer.params["dsr"]
+      s << %Q[      <tr><th>#{@producer.res.v("c-ill")}</th><td>#{CGI.escapeHTML(@producer.params["ill"])}</td></tr>\n] if @producer.params["ill"]
+      s << %Q[      <tr><th>#{@producer.res.v("c-edt")}</th><td>#{CGI.escapeHTML(@producer.params["edt"])}</td></tr>\n] if @producer.params["edt"]
+      s << %Q[      <tr><th>#{@producer.res.v("c-prt")}</th><td>#{CGI.escapeHTML(@producer.params["prt"])}</td></tr>\n] if @producer.params["prt"]
       s << <<EOT
     </table>
   </div>

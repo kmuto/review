@@ -1,3 +1,7 @@
+Fri Apr 20 16:07:35 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker/epubv*.rb: escape entity strings in meta informations.
+
 Tue Mar 13 02:58:41 2012  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/htmlbuilder.rb: support @<bou> in HTMLBuilder
