@@ -657,11 +657,11 @@ module ReVIEW
     end
 
     def inline_em(str)
-      macro('textbf', escape(str))
+      macro('reviewem', escape(str))
     end
 
     def inline_strong(str)
-      macro('textbf', escape(str))
+      macro('reviewstrong', escape(str))
     end
 
     def inline_u(str)

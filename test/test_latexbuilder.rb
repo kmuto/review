@@ -148,12 +148,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
   def test_inline_em
     ret = @builder.compile_inline("abc@<em>{def}")
-    assert_equal %Q|abc\\textbf{def}|, ret
+    assert_equal %Q|abc\\reviewem{def}|, ret
   end
 
   def test_inline_strong
     ret = @builder.compile_inline("abc@<strong>{def}")
-    assert_equal %Q|abc\\textbf{def}|, ret
+    assert_equal %Q|abc\\reviewstrong{def}|, ret
   end
 
   def test_inline_u
