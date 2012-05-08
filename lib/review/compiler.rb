@@ -280,7 +280,6 @@ module ReVIEW
           unless prev_tag_info.first == open_tag
             raise CompileError, "#{open_tag} is not opened."
           end
-          @strategy.warn("It is not recommended to use \"#{line.chomp}\"")
           close_tagged_section(*prev_tag_info)
         end
       else
