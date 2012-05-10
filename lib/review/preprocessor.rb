@@ -192,13 +192,13 @@ module ReVIEW
       end
 
       if @param["outencoding"] =~ /^EUC$/i
-        NKF.nkf("#{ine} -e", *s)
+        NKF.nkf("#{ine} -m0x -e", *s)
       elsif @param["outencoding"] =~ /^SJIS$/i
-        NKF.nkf("#{ine} -s", *s)
+        NKF.nkf("#{ine} -m0x -s", *s)
       elsif @param["outencoding"] =~ /^JIS$/i
-        NKF.nkf("#{ine} -j", *s)
+        NKF.nkf("#{ine} -m0x -j", *s)
       else
-        NKF.nkf("#{ine} -w", *s)
+        NKF.nkf("#{ine} -m0x -w", *s)
       end
     end
 
