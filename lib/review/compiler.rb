@@ -440,11 +440,16 @@ module ReVIEW
 
     def parse_args(str, name=nil)
       return [] if str.empty?
-      unless str[0,1] == '[' and str[-1,1] == ']'
-        error "argument syntax error: #{str.inspect}"
+      scanner = StringScanner.new(str)
+      words = []
+      while word = scanner.scan(/(\[\]|\[.*?[^\\]\])/)
+        words << word[1..-2].gsub(/\\(.)/){$1}
+      end
+      if !scanner.eos?
+        error "argument syntax error: #{scanner.rest} in #{str.inspect}"
         return []
       end
-      str[1..-2].split('][', -1)
+      return words
     end
 
     def compile_command(syntax, args, lines)
