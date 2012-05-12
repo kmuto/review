@@ -717,7 +717,7 @@ QUOTE
       caption = "" if caption.nil?
       puts %Q[<div class="image">]
       begin
-        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+        puts %Q[<img src="#{@chapter.image(id).path.to_s.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       rescue
         puts %Q[<pre>missing image: #{id}</pre>]
       end
@@ -1012,7 +1012,7 @@ QUOTE
     end
 
     def inline_icon(id)
-      %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="[#{id}]" />]
+      %Q[<img src="#{@chapter.image(id).path.to_s.sub(/\A\.\//, "")}" alt="[#{id}]" />]
     end
 
     def inline_uchar(str)
