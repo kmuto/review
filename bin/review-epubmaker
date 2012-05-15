@@ -60,7 +60,7 @@ def main
   @manifeststr = ""
   @ncxstr = ""
   @tocdesc = Array.new
-  
+
   if File.exists?("PREDEF")
     output_chaps("PREDEF", values)
   end
@@ -471,26 +471,30 @@ def output_chaps(chapsfile, values)
   File.open(chapsfile) {|chaps|
     chaps.each_line {|l|
       next if l =~ /^#/
-      file_id = File.basename(l.chomp.strip,".*")
-      if (idx = $essential_files.index(file_id))
-        if idx == $essential_files.size - 1
-          STDERR.puts "#{file_id} is book name. Please rename #{l.chomp.strip}."
-        else
-         STDERR.puts "#{file_id} is special name. Please rename #{l.chomp.strip}."
-        end
-        exit 1
-      end
-      filename = "#{file_id}.html"
-      fork {
-        STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
-        exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
-      }
-      Process.waitall
-      getanchors("#{@bookdir}/OEBPS/#{filename}")
-      @manifeststr << %Q(<item id="#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
-      @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
+      output_chaps_by_file(l, values)
     }
   }
+end
+
+def output_chaps_by_file(l, values)
+  file_id = File.basename(l.chomp.strip,".*")
+  if (idx = $essential_files.index(file_id))
+    if idx == $essential_files.size - 1
+      STDERR.puts "#{file_id} is book name. Please rename #{l.chomp.strip}."
+    else
+      STDERR.puts "#{file_id} is special name. Please rename #{l.chomp.strip}."
+    end
+    exit 1
+  end
+  filename = "#{file_id}.html"
+  fork {
+    STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
+    exec("review-compile --target=html --level=#{values["secnolevel"]} #{values["params"]} #{l}")
+  }
+  Process.waitall
+  getanchors("#{@bookdir}/OEBPS/#{filename}")
+  @manifeststr << %Q(<item id="#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
+  @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
 end
 
 
