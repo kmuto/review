@@ -402,9 +402,9 @@ module ReVIEW
     def th(s)
       ## use shortstack for @<br>
       if  /\\\\/i =~ s
-        macro('textgt', macro('shortstack[l]', s))
+        macro('reviewth', macro('shortstack[l]', s))
       else
-        macro('textgt', s)
+        macro('reviewth', s)
       end
     end
 
