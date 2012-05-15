@@ -22,6 +22,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'uuid'
 require 'review'
+require 'review/i18n'
 
 $essential_files = ['top', 'toc', 'colophon']
 def main
@@ -61,15 +62,30 @@ def main
   @ncxstr = ""
   @tocdesc = Array.new
 
-  if File.exists?("PREDEF")
-    output_chaps("PREDEF", values)
+  basedir = Dir.pwd
+  ReVIEW::Book.load(basedir).parts.each do |part|
+    if part.name.present?
+      if part.file?
+        filename = part.path
+        output_chaps_by_file(filename, values)
+        htmlfile = File.basename(filename.chomp.strip,".*")+".html"
+      else
+        htmlfile = "part_#{part.number}.html"
+        make_part_page(part, htmlfile, values)
+      end
+      file_id = "part_#{part.number}"
+      part_name = "#{ReVIEW::I18n.t("part", part.number)} #{part.name.strip}"
+      @tocdesc << [1, htmlfile, nil, part_name]
+      @manifeststr << %Q(<item id="#{file_id}" href="#{htmlfile}" media-type="application/xhtml+xml" />\n)
+      @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
+    end
+
+    part.chapters.each do |chap|
+      filename = chap.path
+      output_chaps_by_file(filename, values)
+    end
   end
-  if File.exists?("CHAPS")
-    output_chaps("CHAPS", values)
-  end
-  if File.exists?("POSTDEF")
-    output_chaps("POSTDEF", values)
-  end
+
   if File.exist?("images")
     Dir.mkdir("#{@bookdir}/OEBPS/images")
     copyImagesToDir("images", "#{@bookdir}/OEBPS/images")
@@ -247,12 +263,13 @@ EOT
         if level > values["secnolevel"].to_i
           indent = "- "
         end
+        fragment_id = (id ? '#'+id : '')
         f.puts <<EOT
     <navPoint id="navPoint-#{nav_count}" playOrder="#{nav_count}">
       <navLabel>
         <text>#{indent}#{content}</text>
       </navLabel>
-      <content src="#{file}##{id}"/>
+      <content src="#{file}#{fragment_id}"/>
     </navPoint>
 EOT
         nav_count += 1
@@ -400,7 +417,8 @@ EOT
         else
           f.puts "</li>"
         end
-        f.write "<li><a href=\"#{file}##{id}\">#{content}</a>"
+        fragment_id = (id ? '#'+id : '')
+        f.write "<li><a href=\"#{file}#{fragment_id}\">#{content}</a>"
         init_item = false
       }
 
@@ -616,6 +634,36 @@ EOT
       f.puts footer
     }
   end
+end
+
+def make_part_page(part, filename, values)
+  File.open("#{@bookdir}/OEBPS/#{filename}", "w") {|f|
+    f.puts <<-EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+<h1 class="part-number">#{ReVIEW::I18n.t("part", part.number)}</h1>
+    EOT
+
+    if part.name.strip.present?
+      f.puts <<-EOT
+<h2 class="part-title">#{part.name.strip}</h2>
+      EOT
+    end
+
+    f.puts <<-EOT
+</body>
+</html>
+    EOT
+  }
 end
 
 main
