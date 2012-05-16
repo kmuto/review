@@ -2,6 +2,7 @@ ja:
   image: 図
   table: 表
   list: リスト
+  part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
   numberless_image: "図:"
