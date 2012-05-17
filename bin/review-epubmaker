@@ -133,7 +133,7 @@ EOT
    f.puts %Q(<dc:description>#{values["description"]}</dc:description>) unless values["description"].nil?
 
     if values["coverimage"]
-      f.puts %Q(<meta name="cover" content="#{getFigId(values["coverimage"])}"/>)
+      f.puts %Q(<meta name="cover" content="#{getFigId("images-"+values["coverimage"])}"/>)
     end
     f.puts <<EOT
    <dc:language>ja</dc:language>
