@@ -63,10 +63,11 @@ def main
   @tocdesc = Array.new
 
   basedir = Dir.pwd
+  base_path = Pathname.new(basedir)
   ReVIEW::Book.load(basedir).parts.each do |part|
     if part.name.present?
       if part.file?
-        filename = part.path
+        filename = Pathname.new(part.path).relative_path_from(base_path).to_s
         output_chaps_by_file(filename, values)
         htmlfile = File.basename(filename.chomp.strip,".*")+".html"
       else
@@ -81,7 +82,7 @@ def main
     end
 
     part.chapters.each do |chap|
-      filename = chap.path
+      filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
       output_chaps_by_file(filename, values)
     end
   end
