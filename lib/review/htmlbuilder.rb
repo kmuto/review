@@ -51,6 +51,7 @@ module ReVIEW
       @subsubsection = 0
       @subsubsubsection = 0
       @noindent = nil
+      @ol_num = nil
     end
     private :builder_init
 
@@ -381,7 +382,12 @@ EOT
     end
 
     def ol_begin
-      puts '<ol>'
+      if @ol_num
+        puts "<ol start=\"#{@ol_num}\">"  ## it's OK in HTML5, but not OK in XHTML1.1
+        @ol_num = nil
+      else
+        puts '<ol>'
+      end
     end
 
     def ol_item(lines, num)
@@ -1057,6 +1063,10 @@ QUOTE
 
     def image_ext
       "png"
+    end
+
+    def olnum(num)
+      @ol_num = num.to_i
     end
   end
 

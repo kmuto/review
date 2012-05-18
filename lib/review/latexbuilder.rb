@@ -38,6 +38,7 @@ module ReVIEW
       @latex_tsize = nil
       @tsize = nil
       @table_caption = nil
+      @ol_num = nil
     end
     private :builder_init_file
 
@@ -159,6 +160,10 @@ module ReVIEW
     def ol_begin
       blank
       puts '\begin{enumerate}'
+      if @ol_num
+        puts "\\setcounter{enumi}{#{@ol_num - 1}}"
+        @ol_num = nil
+      end
     end
 
     def ol_item(lines, num)
@@ -745,6 +750,10 @@ module ReVIEW
 
     def image_ext
       "svg"
+    end
+
+    def olnum(num)
+      @ol_num = num.to_i
     end
 
   end
