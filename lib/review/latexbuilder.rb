@@ -487,6 +487,10 @@ module ReVIEW
       end
     end
 
+    def hr
+      puts '\hrule'
+    end
+
     def label(id)
       puts macro('label', id)
     end
