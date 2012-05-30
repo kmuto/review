@@ -27,6 +27,10 @@ module ReVIEW
       # FIXME better code
       str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
     end
+
+    def strip_html(str)
+      str.gsub(/<\/?[^>]*>/, "")
+    end
   end
 
 end   # module ReVIEW

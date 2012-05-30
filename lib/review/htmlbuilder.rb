@@ -97,7 +97,7 @@ EOT
         end
         header += <<EOT
   <meta name="generator" content="ReVIEW" />
-  <title>#{convert_outencoding(@chapter.title, ReVIEW.book.param["outencoding"])}</title>
+  <title>#{convert_outencoding(strip_html(compile_inline(@chapter.title)), ReVIEW.book.param["outencoding"])}</title>
 </head>
 <body>
 EOT

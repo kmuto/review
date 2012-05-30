@@ -21,4 +21,8 @@ class HTMLUtilsTest < Test::Unit::TestCase
       end
     end
   end
+
+  def test_strip_html
+    assert_equal 'thisistest.', strip_html('<h3>this<b>is</b>test</h3>.')
+  end
 end
