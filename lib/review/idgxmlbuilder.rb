@@ -1054,7 +1054,34 @@ module ReVIEW
         end
       else
       end
-      "#{chs[0]}#{@chapter.env.chapter_index.number(id)}#{chs[1]}#{@chapter.env.chapter_index.title(id)}#{chs[2]}"
+      s = "#{chs[0]}#{@chapter.env.chapter_index.number(id)}#{chs[1]}#{@chapter.env.chapter_index.title(id)}#{chs[2]}"
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<link href="#{id}">#{s}</link>)
+      else
+        s
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def inline_chap(id)
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<link href="#{id}">#{@chapter.env.chapter_index.number(id)}</link>)
+      else
+        @chapter.env.chapter_index.number(id)
+      end
+    rescue KeyError
+      error "unknown chapter: #{id}"
+      nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def inline_title(id)
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<link href="#{id}">#{@chapter.env.chapter_index.title(id)}</link>)
+      else
+        @chapter.env.chapter_index.title(id)
+      end
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
