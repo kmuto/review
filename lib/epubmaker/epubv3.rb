@@ -119,11 +119,11 @@ EOT
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
-          s << @producer.params[item].map {|i| %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(i)}</dc:#{item}>\n]}.join
-          s << @producer.params[item].map {|i| %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(i)}</meta>\n]}.join
+          s << @producer.params[item].map {|i| %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(i.to_s)}</dc:#{item}>\n]}.join
+          s << @producer.params[item].map {|i| %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(i.to_s)}</meta>\n]}.join
         else
-          s << %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(@producer.params[item])}</dc:#{item}>\n]
-          s << %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(@producer.params[item])}</meta>\n]
+          s << %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
+          s << %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(@producer.params[item].to_s)}</meta>\n]
         end
       end
 

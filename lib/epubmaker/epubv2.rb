@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv2.rb -- EPUB version 2 producer.
 #
-# Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2012 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -36,9 +36,9 @@ EOT
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
-          s << @producer.params[item].map {|i| %Q[    <dc:#{item}>#{CGI.escapeHTML(i)}</dc:#{item}>\n]}.join
+          s << @producer.params[item].map {|i| %Q[    <dc:#{item}>#{CGI.escapeHTML(i.to_s)}</dc:#{item}>\n]}.join
         else
-          s << %Q[    <dc:#{item}>#{CGI.escapeHTML(@producer.params[item])}</dc:#{item}>\n]
+          s << %Q[    <dc:#{item}>#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
         end
       end
       
