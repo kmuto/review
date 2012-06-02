@@ -412,8 +412,9 @@ module ReVIEW
     include TextUtils
     include ErrorUtils
 
-    def initialize
+    def initialize(param)
       @repository = {}
+      @param = param
     end
 
     def fetch_file(file)
@@ -532,7 +533,11 @@ module ReVIEW
     end
 
     def canonical(line)
-      detab(line).rstrip + "\n"
+      tabwidth = 8
+      if @param['tabwidth']
+        tabwidth = @param['tabwidth']
+      end
+      detab(line, tabwidth).rstrip + "\n"
     end
 
     def check_type(type)

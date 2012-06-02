@@ -67,6 +67,7 @@ SJIS)') {|enc|
   parser.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') {
     mode = :final
   }
+  parser.on('--tabwidth=WIDTH', 'tab width') {|width| param["tabwidth"] = width.to_i }
   parser.on('--help', 'Print this message and quit.') {
     puts parser.help
     exit 0
@@ -79,7 +80,7 @@ SJIS)') {|enc|
     exit 1
   end
 
-  pp = ReVIEW::Preprocessor.new(ReVIEW::Repository.new, param)
+  pp = ReVIEW::Preprocessor.new(ReVIEW::Repository.new(param), param)
   current_file = nil
   ARGV.each do |path|
     current_file = path
