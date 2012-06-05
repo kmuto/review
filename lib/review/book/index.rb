@@ -178,7 +178,7 @@ module ReVIEW
             .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
             .map {|ent| "#{@basedir}/#{ent}" }
         else
-          re = /\A#{@chapid}-#{id}(?i:#{@types.join('|')})\z/x
+          re = /\A#{@chapid.gsub('+', '\\\+').gsub('-', '\\\-')}-#{id}(?i:#{@types.join('|')})\z/x
           entries().select {|ent| re =~ ent }\
             .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
             .map {|ent| "#{@basedir}/#{ent}" }
