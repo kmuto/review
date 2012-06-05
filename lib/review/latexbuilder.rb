@@ -554,7 +554,7 @@ module ReVIEW
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}")
+      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}", image_label(id))
     end
 
     def footnote(id, content)
