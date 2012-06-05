@@ -117,7 +117,9 @@ module ReVIEW
         seq = 1
         src.grep(%r<^//footnote>) do |line|
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
-            items.push Item.new(m[1], seq, m[2])
+            m1 = m[1].gsub(/\\(.)/){$1}
+            m2 = m[2].gsub(/\\(.)/){$1}
+            items.push Item.new(m1, seq, m2)
           end
           seq += 1
         end
@@ -243,7 +245,9 @@ module ReVIEW
         seq = 1
         src.grep(%r<^//bibpaper>) do |line|
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
-            items.push Item.new(m[1], seq, m[2])
+            m1 = m[1].gsub(/\\(.)/){$1}
+            m2 = m[2].gsub(/\\(.)/){$1}
+            items.push Item.new(m1, seq, m2)
           end
           seq += 1
         end
