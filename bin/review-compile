@@ -108,6 +108,7 @@ def _main
   parser.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') do |filename|
     output_filename = filename
   end
+  parser.on('--tabwidth=WIDTH', 'tab width') {|width| param["tabwidth"] = width.to_i }
   parser.on('--help', 'Prints this message and quit.') do
     puts parser.help
     exit 0
@@ -128,8 +129,8 @@ def _main
   end
 
   begin
-    compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
     ReVIEW.book.param = param
+    compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
     case mode
     when :files
       if ARGV.empty?

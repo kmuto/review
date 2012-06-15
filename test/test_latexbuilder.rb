@@ -241,6 +241,19 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
   end
 
+  def test_emlist_with_tab
+    lines = ["\tfoo", "\t\tbar", "","\tbuz"]
+    @builder.emlist(lines)
+    assert_equal %Q|\n\\begin{reviewemlist}\n\\begin{alltt}\n        foo\n                bar\n\n        buz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+  end
+
+  def test_emlist_with_tab4
+    lines = ["\tfoo", "\t\tbar", "","\tbuz"]
+    @builder.instance_eval{@tabwidth=4}
+    @builder.emlist(lines)
+    assert_equal %Q|\n\\begin{reviewemlist}\n\\begin{alltt}\n    foo\n        bar\n\n    buz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+  end
+
   def test_quote
     lines = ["foo", "bar", "","buz"]
     @builder.quote(lines)

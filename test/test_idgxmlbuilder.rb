@@ -226,6 +226,17 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></list>|, @builder.raw_result
   end
 
+  def test_emlist_with_tab
+    @builder.emlist(["\ttest1", "\t\ttest1.5", "", "\ttest<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>        test1\n                test1.5\n\n        test<i>2</i>\n</pre></list>|, @builder.raw_result
+  end
+
+  def test_emlist_with_4tab
+    @builder.instance_eval{@tabwidth=4}
+    @builder.emlist(["\ttest1", "\t\ttest1.5", "", "\ttest<i>2</i>"], "this is @<b>{test}<&>_")
+    assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>    test1\n        test1.5\n\n    test<i>2</i>\n</pre></list>|, @builder.raw_result
+  end
+
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)

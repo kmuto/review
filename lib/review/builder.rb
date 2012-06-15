@@ -29,6 +29,10 @@ module ReVIEW
 
     def initialize(strict = false, *args)
       @strict = strict
+      @tabwidth = nil
+      if ReVIEW.book.param && ReVIEW.book.param["tabwidth"]
+        @tabwidth = ReVIEW.book.param["tabwidth"]
+      end
       builder_init(*args)
     end
 
@@ -424,6 +428,17 @@ module ReVIEW
       else
         warn "It is recommended to set builder(s)."
         args.gsub("\\n", "\n")
+      end
+    end
+
+    ## override TextUtils::detab
+    def detab(str, num = nil)
+      if num
+        super(str, num)
+      elsif @tabwidth
+        super(str, @tabwidth)
+      else
+        super(str)
       end
     end
   end

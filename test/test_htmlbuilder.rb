@@ -271,6 +271,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
   end
 
+  def test_emlist_with_tab
+    @builder.emlist(["\tlineA","\t\tlineB","\tlineC"])
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">        lineA\n                lineB\n        lineC\n</pre>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_emlist_with_4tab
+    @builder.instance_eval{@tabwidth=4}
+    @builder.emlist(["\tlineA","\t\tlineB","\tlineC"])
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">    lineA\n        lineB\n    lineC\n</pre>\n</div>\n|, @builder.raw_result
+  end
+
   def test_cmd
     @builder.cmd(["lineA","lineB"])
     assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
