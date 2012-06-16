@@ -526,4 +526,14 @@ EOS
 EOS
     assert_equal expect.chomp, @builder.raw_result
   end
+
+  def test_inline_fn
+    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
+    @chapter.instance_eval{@footnote_index=fn}
+    @builder.footnote("foo",'bar\\a\\$buz')
+    expect =<<-'EOS'
+<div class="footnote"><p class="footnote">[<a id="fn-foo">*1</a>] bar\a\$buz</p></div>
+EOS
+    assert_equal expect, @builder.raw_result
+  end
 end

@@ -113,6 +113,11 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal [:text, text], @b.compile_inline(text)
   end
 
+  def test_compile_inline_backslash
+    text = "abc\\d\\#a"
+    assert_equal [:text, text], @b.compile_inline(text)
+  end
+
   def test_convert_outencoding
     ReVIEW.book.param = {'outencoding' => "EUC"}
     b = Builder.new
