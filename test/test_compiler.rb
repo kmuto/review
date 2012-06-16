@@ -26,5 +26,19 @@ class CompilerTest < Test::Unit::TestCase
     assert_equal ["f]o]o","bar"], args
   end
 
+  def test_parse_args_with_backslash
+    args = @c.__send__(:parse_args, "[foo][bar\\buz]")
+    assert_equal ["foo","bar\\buz"], args
+  end
+
+  def test_parse_args_with_backslash2
+    args = @c.__send__(:parse_args, "[foo][bar\\#\\[\\!]")
+    assert_equal ["foo","bar\\#\\[\\!"], args
+  end
+
+  def test_parse_args_with_backslash3
+    args = @c.__send__(:parse_args, "[foo][bar\\\\buz]")
+    assert_equal ["foo","bar\\buz"], args
+  end
 end
 

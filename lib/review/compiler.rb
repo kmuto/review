@@ -444,7 +444,11 @@ module ReVIEW
       scanner = StringScanner.new(str)
       words = []
       while word = scanner.scan(/(\[\]|\[.*?[^\\]\])/)
-        words << word[1..-2].gsub(/\\(.)/){$1}
+        w2 = word[1..-2].gsub(/\\(.)/){
+          ch = $1
+          (ch == "]" or ch == "\\") ? ch : "\\" + ch
+        }
+        words << w2
       end
       if !scanner.eos?
         error "argument syntax error: #{scanner.rest} in #{str.inspect}"
