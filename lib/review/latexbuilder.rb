@@ -360,6 +360,11 @@ module ReVIEW
     end
     private :chapter_label
 
+    def table_label(id)
+      "table:#{@chapter.id}:#{id}"
+    end
+    private :table_label
+
     def indepimage(id, caption=nil, metric=nil)
       metrics = parse_metric("latex", metric)
       puts '\begin{reviewimage}'
@@ -384,6 +389,7 @@ module ReVIEW
 ##      puts macro('reviewtablecaption', "表#{@chapter.number}.#{@chapter.table(id).number} #{compile_inline(caption)}")
         puts macro('reviewtablecaption', compile_inline(caption))
       end
+      puts macro('label', table_label(id))
     end
 
     def table_begin(ncols)
@@ -549,7 +555,7 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}")
+      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id))
     end
 
     def inline_img(id)
