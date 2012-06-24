@@ -24,6 +24,9 @@ require 'uuid'
 require 'review'
 require 'review/i18n'
 
+require 'review/htmlutils'
+include ReVIEW::HTMLUtils
+
 $essential_files = ['top', 'toc', 'colophon']
 def main
   if ARGV.size != 1
@@ -268,7 +271,7 @@ EOT
         f.puts <<EOT
     <navPoint id="navPoint-#{nav_count}" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{indent}#{content}</text>
+        <text>#{indent}#{strip_html(content)}</text>
       </navLabel>
       <content src="#{file}#{fragment_id}"/>
     </navPoint>
