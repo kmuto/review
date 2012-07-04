@@ -790,7 +790,7 @@ QUOTE
 
     def inline_title(id)
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.title(id)}</a>)
+        %Q(<a href="./#{id}.html">#{compile_inline(@chapter.env.chapter_index.title(id))}</a>)
       else
         @chapter.env.chapter_index.title(id)
       end
