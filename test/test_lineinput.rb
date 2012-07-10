@@ -57,12 +57,27 @@ class LineInputTest < Test::Unit::TestCase
     assert_equal -1, li.lineno # XXX: OK?
   end
 
+  def test_ungets_ja
+    io = StringIO.new("日本語の\nテスト\n")
+    li = LineInput.new(io)
+    line = li.gets
+    li.ungets line
+    li.gets
+    assert_equal "テスト\n", li.peek
+  end
+
   def test_peek
     li = LineInput.new(StringIO.new)
     assert_equal nil, li.peek
 
     li = LineInput.new(StringIO.new('abc'))
     assert_equal 'abc', li.peek
+
+    li = LineInput.new(StringIO.new("abc\ndef"))
+    line = li.gets
+    li.ungets line
+    assert_equal "abc\n", li.peek
+
   end
 
   def test_next?
