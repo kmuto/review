@@ -1,3 +1,7 @@
+Sat Jul 14 16:07:54 2012  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/review.tex.erb: \usepackage{jumoline} is optional
+
 Sat Jun 16 00:57:14 2012  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-compile, lib/review/builder.rb:
