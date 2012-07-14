@@ -179,6 +179,11 @@ EOB
 
   template = File.expand_path(File.dirname(__FILE__) +
                               '/../lib/review/review.tex.erb')
+  layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
+  if File.exists?(layout_file)
+    template = layout_file
+  end
+
   erb = ERB.new(File.open(template).read)
   erb.result(binding)
 end
