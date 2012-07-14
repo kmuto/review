@@ -51,14 +51,14 @@ def main
   yamlfile = ARGV[0]
   values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   check_book(values)
-  basedir = Dir.pwd
+  @basedir = Dir.pwd
   @path = build_path(values)
   bookname = values["bookname"]
   Dir.mkdir(@path)
 
   @chaps_fnames = Hash.new{|h, key| h[key] = ""}
 
-  ReVIEW::Book.load(basedir).parts.each do |part|
+  ReVIEW::Book.load(@basedir).parts.each do |part|
     if part.name.present?
       if part.file?
         filename = "#{File.basename(part.path, ".*")}.tex"
@@ -115,7 +115,7 @@ def main
     }
     Process.waitall
   }
-  FileUtils.cp("#{@path}/book.pdf", "#{basedir}/#{bookname}.pdf")
+  FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
 end
 
 def output_chaps(filename, values)
