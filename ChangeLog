@@ -1,3 +1,8 @@
+Wed Aug  8 18:47:33 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-compile, lib/review/idgxmlbuilder.rb:
+	  Add --structuredxml option to produce structured XML for sections.
+
 Sat Jul 14 16:07:54 2012  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/review.tex.erb: \usepackage{jumoline} is optional

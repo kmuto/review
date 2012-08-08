@@ -76,6 +76,7 @@ module ReVIEW
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
       alias puts print unless ReVIEW.book.param["nolf"].nil?
+      @secttags = true unless ReVIEW.book.param["structuredxml"].nil?
     end
     private :builder_init_file
 

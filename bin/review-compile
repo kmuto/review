@@ -49,6 +49,7 @@ def _main
     "tableopt" => nil,    # for IDGXML
     "nolf" => nil,        # for IDGXML
     "chapref" => nil,     # for IDGXML
+    "structuredxml" => nil, # for IDGXML
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8",
     "subdirmode" => nil,
@@ -74,6 +75,7 @@ def _main
   parser.on('--level=LVL', 'Section level to append number.') {|lvl| param["secnolevel"] = lvl.to_i }
   parser.on('--toclevel=LVL', 'Section level to append number.') {|lvl| param["toclevel"] = lvl.to_i }
   parser.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') { param["nolf"] = true }
+  parser.on('--structuredxml', 'Produce XML with structured sections. (idgxml)') { param["structuredxml"] = true }
   parser.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| param["tableopt"] = tbl }
   parser.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { param["listinfo"] = true }
   parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec| param["chapref"] = cdec }
