@@ -270,6 +270,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\begin{flushright}\nfoobar\n\nbuz\n\\end{flushright}\n|, @builder.raw_result
   end
 
+  def test_centering
+    @builder.centering(["foo", "bar", "","buz"])
+    assert_equal %Q|\n\\begin{center}\nfoobar\n\nbuz\n\\end{center}\n|, @builder.raw_result
+  end
+
   def test_noindent
     @builder.noindent
     @builder.paragraph(["foo", "bar"])

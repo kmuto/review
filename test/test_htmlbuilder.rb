@@ -174,6 +174,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<p class="flushright">foobar</p>\n<p class="flushright">buz</p>\n|, @builder.raw_result
   end
 
+  def test_centering
+    @builder.centering(["foo", "bar", "", "buz"])
+    assert_equal %Q|<p class="center">foobar</p>\n<p class="center">buz</p>\n|, @builder.raw_result
+  end
+
   def test_image
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)

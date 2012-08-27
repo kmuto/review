@@ -1,3 +1,11 @@
+Mon Aug 27 20:27:11 2012  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,
+	  lib/review/idgxmlbuilder.rb, lib/review/latexbuilder.rb,
+	  lib/review/topbuilder.rb, test/test_htmlbuilder.rb,
+	  test/test_idgxmlbuilder.rb, test/test_latexbuilder.rb:
+	  Add //centering to centerize contents.
+
 Wed Aug  8 18:47:33 2012  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-compile, lib/review/idgxmlbuilder.rb:

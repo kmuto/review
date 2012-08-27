@@ -149,6 +149,7 @@ module ReVIEW
     defblock :blockquote, 0
     defblock :bpo, 0
     defblock :flushright, 0
+    defblock :centering, 0
     defblock :note, 0..1
     defblock :box, 0..1
 

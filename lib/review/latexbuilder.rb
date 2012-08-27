@@ -450,6 +450,8 @@ module ReVIEW
       latex_block 'center', lines
     end
 
+    alias centering center
+
     def flushright(lines)
       latex_block 'flushright', lines
     end

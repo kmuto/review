@@ -1061,6 +1061,10 @@ QUOTE
       end
     end
 
+    def centering(lines)
+      puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"center\">")
+    end
+
     def image_ext
       "png"
     end

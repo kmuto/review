@@ -61,6 +61,7 @@ module ReVIEW
         "emlist" => "インラインリスト",
         "cmd" => "コマンド",
         "quote" => "引用",
+        "centering" => "中央揃え",
         "flushright" => "右寄せ",
         "note" => "ノート",
         "memo" => "メモ",
@@ -592,6 +593,10 @@ module ReVIEW
 
     def flushright(lines)
       base_parablock "flushright", lines, nil
+    end
+
+    def centering(lines)
+      base_parablock "centering", lines, nil
     end
 
     def note(lines, caption = nil)

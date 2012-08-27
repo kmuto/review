@@ -855,6 +855,10 @@ module ReVIEW
       end
     end
 
+    def centering(lines)
+      puts split_paragraph(lines).join.gsub("<p>", "<p align='center'>")
+    end
+
     def captionblock(type, lines, caption, specialstyle = nil)
       print "<#{type}>"
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
