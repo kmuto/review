@@ -53,6 +53,8 @@ module ReVIEW
 
       def [](id)
         @index.fetch(id)
+      rescue
+        raise KeyError
       end
 
       def number(id)

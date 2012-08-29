@@ -533,7 +533,7 @@ EOC
         assert_equal name, book.chapter(name).name
       end
 
-      assert_raises IndexError,KeyError do
+      assert_raises ReVIEW::KeyError do
         book.chapter('not exist')
       end
     end
@@ -553,7 +553,7 @@ EOC
         assert_equal name, book.chapter(name).name
       end
 
-      assert_raises IndexError,KeyError do
+      assert_raises ReVIEW::KeyError do
         book.chapter('not exist')
       end
     end

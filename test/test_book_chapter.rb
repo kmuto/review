@@ -54,7 +54,7 @@ class ChapterTest < Test::Unit::TestCase
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
       paths << __FILE__ + ' not exist file.re'
-      assert_raises IndexError, KeyError do
+      assert_raises ReVIEW::FileNotFound do
         Book::Chapter.intern_pathes(paths)
       end
     end
@@ -77,7 +77,7 @@ class ChapterTest < Test::Unit::TestCase
     }
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
-      assert_raises IndexError, KeyError do
+      assert_raises KeyError::FileNotFound do
         Book::Chapter.intern_pathes(paths)
       end
     end
@@ -315,7 +315,7 @@ E
 //list [others]
 E
     do_test_index(content, Book::FootnoteIndex, :footnote_index, :footnote) do |ch|
-      assert_raises IndexError,KeyError do
+      assert_raises ReVIEW::KeyError do
         ch.footnote('xyz')
       end
     end
@@ -402,13 +402,13 @@ E
 
       assert ch.__send__(ref_method, 'abc')
       assert ch.__send__(ref_method, 'def')
-      assert_raises IndexError,KeyError do
+      assert_raises ReVIEW::KeyError do
         ch.__send__(ref_method, nil)
       end
-      assert_raises IndexError,KeyError do
+      assert_raises ReVIEW::KeyError do
         ch.__send__(ref_method, 'others')
       end
-      assert_raises IndexError,KeyError do
+      assert_raises ReVIEW::KeyError do
         ch.__send__(ref_method, 'not exist id')
       end
 
