@@ -88,7 +88,11 @@ module ReVIEW
 
       def gets
         while line = @f.gets
-          return line unless /\A\#@/ =~ line
+          if /\A\#@/ =~ line
+            return "\#@\#\n"
+          else
+            return line
+          end
         end
         nil
       end

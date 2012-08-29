@@ -226,6 +226,8 @@ module ReVIEW
       tagged_section_init
       while f.next?
         case f.peek
+        when /\A\#@/
+          f.gets # Nothing to do
         when /\A=+[\[\s\{]/
           compile_headline f.gets
         when %r<\A\s+\*>
@@ -407,7 +409,7 @@ module ReVIEW
 
     def compile_paragraph(f)
       buf = []
-      f.until_match(%r<\A//>) do |line|
+      f.until_match(%r<\A//|\A\#@>) do |line|
         break if line.strip.empty?
         buf.push text(line.sub(/^(\t+)\s*/) {|m| "<!ESCAPETAB!>" * m.size}.strip.gsub(/<!ESCAPETAB!>/, "\t"))
       end
