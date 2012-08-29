@@ -201,7 +201,6 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
     expect =<<-EOS
-It is recommended to set builder(s).
 <>!"
 & 
 EOS
@@ -236,7 +235,6 @@ EOS
   def test_block_raw4
     @builder.raw("|top <>!\"\\n& ")
     expect =<<-EOS
-It is recommended to set builder(s).
 |top <>!\"
 & 
 EOS

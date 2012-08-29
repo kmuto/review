@@ -270,7 +270,6 @@ module ReVIEW
           ""
         end
       else
-        warn "It is recommended to set builder(s)."
         print str.gsub("\\n", "\n")
       end
     end
@@ -426,7 +425,6 @@ module ReVIEW
           ""
         end
       else
-        warn "It is recommended to set builder(s)."
         args.gsub("\\n", "\n")
       end
     end
