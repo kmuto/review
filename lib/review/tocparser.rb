@@ -34,6 +34,8 @@ module ReVIEW
       while line = f.gets
         line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
         case line
+        when /\A\#@/
+          ;
         when /\A\s*\z/
           ;
         when /\A(={2,})[\[\s]/
