@@ -717,13 +717,13 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<ref idref='#{idref}'>「●●　#{idref}」</ref>] # FIXME:節名とタイトルも込みで要出力
+      %Q[<ref idref='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
     alias inline_ref inline_labelref
 
     def inline_pageref(idref)
-      %Q[<pageref idref='#{idref}'>●●</pageref>] # ページ番号を参照
+      %Q[<pageref idref='#{escape_html(idref)}'>●●</pageref>] # ページ番号を参照
     end
 
     def inline_balloon(str)

@@ -151,6 +151,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", ret
   end
 
+  def test_inline_ref
+    ret = @builder.compile_inline("@<ref>{外部参照<>&}")
+    assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, ret
+  end
+
   def test_quote
     lines = ["foo", "bar", "","buz"]
     @builder.quote(lines)

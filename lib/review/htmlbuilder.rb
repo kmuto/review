@@ -21,6 +21,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
+    [:ref].each {|e| Compiler.definline(e) }
     Compiler.defblock(:memo, 0..1)
     Compiler.defblock(:tip, 0..1)
     Compiler.defblock(:info, 0..1)
@@ -765,6 +766,12 @@ QUOTE
     def noindent
       @noindent = true
     end
+
+    def inline_labelref(idref)
+      %Q[<a target='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</a>]
+    end
+
+    alias inline_ref inline_labelref
 
     def inline_chapref(id)
       if ReVIEW.book.param["chapterlink"]

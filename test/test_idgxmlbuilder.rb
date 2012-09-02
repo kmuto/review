@@ -58,6 +58,11 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><label id='label_test' />|, @builder.raw_result
   end
 
+  def test_inline_ref
+    ret = @builder.compile_inline("@<ref>{外部参照<>&}")
+    assert_equal %Q|<ref idref='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</ref>|, ret
+  end
+
   def test_href
     ret = @builder.compile_href("http://github.com", "GitHub")
     assert_equal %Q|<a linkurl='http://github.com'>GitHub</a>|, ret
