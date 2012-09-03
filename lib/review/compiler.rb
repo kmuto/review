@@ -343,7 +343,8 @@ module ReVIEW
 
     def compile_ulist(f)
       level = 0
-      f.while_match(/\A\s+\*/) do |line|
+      f.while_match(/\A\s+\*|\A\#@/) do |line|
+        next if line =~ /\A\#@/
 
         buf = [text(line.sub(/\*+/, '').strip)]
         f.while_match(/\A\s+(?!\*)\S/) do |cont|
@@ -386,7 +387,9 @@ module ReVIEW
 
     def compile_olist(f)
       @strategy.ol_begin
-      f.while_match(/\A\s+\d+\./) do |line|
+      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
+        next if line =~ /\A\#@/
+
         num = line.match(/(\d+)\./)[1]
         buf = [text(line.sub(/\d+\./, '').strip)]
         f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
