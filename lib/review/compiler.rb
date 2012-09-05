@@ -435,7 +435,9 @@ module ReVIEW
       head = f.lineno
       buf = []
       f.until_match(%r<\A//\}>) do |line|
-        buf.push text(line.rstrip)
+        unless line =~ /\A\#@/
+          buf.push text(line.rstrip)
+        end
       end
       unless %r<\A//\}> =~ f.peek
         error "unexpected EOF (block begins at: #{head})"
