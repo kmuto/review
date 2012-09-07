@@ -98,7 +98,6 @@ class BuidlerTest < Test::Unit::TestCase
       :source_header, :source_body,
       :image_image, :image_dummy,
       :table_header, :table_begin, :tr, :th, :table_end,
-      :nofunc_text,
       :compile_ruby, :compile_kw, :compile_href,
       :bibpaper_header, :bibpaper_bibpaper,
       :inline_hd_chap,

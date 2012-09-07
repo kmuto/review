@@ -429,6 +429,14 @@ module ReVIEW
       end
     end
 
+    def nofunc_text(str)
+      str                       # dummy
+    end
+
+    def inline_del(str)
+      str                       # dummy
+    end
+
     ## override TextUtils::detab
     def detab(str, num = nil)
       if num

@@ -92,7 +92,14 @@ module ReVIEW
     end
 
     def get_label(line)
-      line.strip.sub(/\A=+\s*/, '')
+      line = line.strip.sub(/\A=+\s*/, '')
+      compile_label(line)
+    end
+
+    def compile_label(line)
+      b = Builder.new
+      b.bind(ReVIEW::Compiler.new(b), nil, nil)
+      b.compile_inline(line)
     end
 
     def error!(filename, lineno, msg)
