@@ -710,6 +710,11 @@ module ReVIEW
       ""
     end
 
+    def inline_del(str)
+      # FIXME
+      ""
+    end
+
     def inline_code(str)
       %Q[△#{str}☆]
     end

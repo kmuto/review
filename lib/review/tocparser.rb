@@ -97,7 +97,7 @@ module ReVIEW
     end
 
     def compile_label(line)
-      b = Builder.new
+      b = TEXTBuilder.new
       b.bind(ReVIEW::Compiler.new(b), nil, nil)
       b.compile_inline(line)
     end
