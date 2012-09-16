@@ -701,6 +701,8 @@ module ReVIEW
     def inline_comment(str)
       if ReVIEW.book.param["draft"]
         macro('pdfcomment', escape(str))
+      else
+        ""
       end
     end
 
