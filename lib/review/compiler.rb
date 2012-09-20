@@ -475,7 +475,7 @@ module ReVIEW
         syntax.check_args args
       rescue CompileError => err
         error err.message
-        args = ['(NoArgument)'] * SYNTAX[name].min_argc
+        args = ['(NoArgument)'] * syntax.min_argc
       end
       if syntax.block_allowed?
         compile_block syntax, args, lines
