@@ -645,6 +645,10 @@ module ReVIEW
       macro('texttt', str_escaped)
     end
 
+    def inline_del(str)
+      escape(str)               # TODO: use strike ?
+    end
+
     def inline_tti(str)
       macro('texttt', macro('textit', escape(str)))
     end
