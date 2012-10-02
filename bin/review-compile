@@ -139,12 +139,29 @@ def _main
         error 'no input'
         exit 1
       end
-      ReVIEW::Book::Chapter.intern_pathes(ARGV).each do |chap|
-        result = compiler.compile(chap)
-        if output_filename
-          write output_filename, result
-        else
-          puts result unless check_only
+
+      begin
+        ReVIEW::Book::Chapter.intern_pathes(ARGV).each do |chap|
+          result = compiler.compile(chap)
+          if output_filename
+            write output_filename, result
+          else
+            puts result unless check_only
+          end
+        end
+      rescue => e
+        # PART
+        ReVIEW.book.parts_in_file.each do |part|
+          if ARGV.include? part.path
+            result = compiler.compile(part)
+            if output_filename
+              write output_filename, result
+            else
+              puts result unless check_only
+            end
+          else
+            raise e
+          end
         end
       end
     when :dir
