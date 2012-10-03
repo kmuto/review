@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["kmuto", "takahashim"]
-  s.date = "2012-01-30"
+  s.date = "2012-10-03"
   s.description = "ReVIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX."
   s.email = "kmuto@debian.org"
   s.executables = ["review-check", "review-checkdep", "review-compile", "review-epubmaker", "review-epubmaker-ng", "review-index", "review-pdfmaker", "review-preproc", "review-validate", "review-vol"]
@@ -65,43 +65,58 @@ Gem::Specification.new do |s|
     "lib/lineinput.rb",
     "lib/review.rb",
     "lib/review/book.rb",
+    "lib/review/book/base.rb",
+    "lib/review/book/chapter.rb",
+    "lib/review/book/compilable.rb",
+    "lib/review/book/index.rb",
+    "lib/review/book/page_metric.rb",
+    "lib/review/book/parameters.rb",
+    "lib/review/book/part.rb",
+    "lib/review/book/volume.rb",
     "lib/review/builder.rb",
-    "lib/review/compat.rb",
     "lib/review/compiler.rb",
+    "lib/review/configure.rb",
     "lib/review/epubbuilder.rb",
-    "lib/review/ewbbuilder.rb",
     "lib/review/exception.rb",
+    "lib/review/extentions.rb",
+    "lib/review/extentions/object.rb",
+    "lib/review/extentions/string.rb",
     "lib/review/htmlbuilder.rb",
     "lib/review/htmllayout.rb",
     "lib/review/htmlutils.rb",
     "lib/review/i18n.rb",
     "lib/review/i18n.yaml",
     "lib/review/idgxmlbuilder.rb",
-    "lib/review/index.rb",
     "lib/review/latexbuilder.rb",
     "lib/review/latexindex.rb",
     "lib/review/latexutils.rb",
     "lib/review/preprocessor.rb",
+    "lib/review/review.tex.erb",
     "lib/review/textbuilder.rb",
     "lib/review/textutils.rb",
     "lib/review/tocparser.rb",
     "lib/review/tocprinter.rb",
     "lib/review/topbuilder.rb",
     "lib/review/unfold.rb",
-    "lib/review/volume.rb",
     "lib/uuid.rb",
     "review.gemspec",
     "test/CHAPS",
     "test/bib.re",
+    "test/book_test_helper.rb",
     "test/test.re",
     "test/test_book.rb",
+    "test/test_book_chapter.rb",
+    "test/test_book_parameter.rb",
+    "test/test_book_part.rb",
     "test/test_builder.rb",
+    "test/test_compiler.rb",
     "test/test_epubmaker.rb",
     "test/test_helper.rb",
     "test/test_htmlbuilder.rb",
     "test/test_htmlutils.rb",
     "test/test_i18n.rb",
     "test/test_idgxmlbuilder.rb",
+    "test/test_index.rb",
     "test/test_latexbuilder.rb",
     "test/test_lineinput.rb",
     "test/test_preprocessor.rb",
@@ -111,7 +126,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/kmuto/review"
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.24"
   s.summary = "ReVIEW: a easy-to-use digital publishing system"
 
   if s.respond_to? :specification_version then
