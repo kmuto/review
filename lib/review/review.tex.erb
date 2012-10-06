@@ -158,6 +158,7 @@
 
 \reviewmainfont
 
+<% if values["titlepage"] %>
 <% if custom_titlepage %>
 <%= custom_titlepage %>
 <% else %>
@@ -185,6 +186,7 @@
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
+<% end %>
 <% end %>
 
 \renewcommand{\chaptermark}[1]{{}}
