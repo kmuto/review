@@ -1,0 +1,55 @@
+# review-epubmaker向けの設定ファイルの例。
+# yamlファイルをReVIEWファイルのある場所に置き、
+# 「review-epubmaker yamlファイル」を実行すると、<bookname>.epubファイルが
+# 生成されます。
+# このファイルはUTF-8エンコーディングで記述してください。
+
+# ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
+bookname: book
+# 書名
+booktitle: ReVIEWサンプル書籍
+# 著者
+aut: 高橋征義
+prt: 達人出版会
+prt_url:  http://github.com/takahashim/review-sample-book/
+edt: 高橋征義
+date: 2011-08-03
+rights: |
+  (C) 2011 Masayoshi Takahashi
+description: 
+# 以下はオプション
+# prt: 出版社
+# asn: Associated name
+# ant: Bibliographic antecedent
+# clb: 貢献者
+# edt: 編集者
+# dsr: デザイナ
+# ill: イラストレータ
+# pht: 撮影者
+# trl: 翻訳者
+# date: 刊行日
+# rights: 権利表記
+# description: ブックの説明
+#
+# coverfile: カバーページのbody要素内に挿入する内容を記述したファイル名
+coverfile: _cover.html
+# coverimage: 表紙用画像ファイル
+coverimage: cover.jpg
+# 固有IDに使用するドメイン
+urnid: http://tatsu-zine.com/books/review-sample-book/1.0.0/
+# CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること
+stylesheet: main.css
+# 目次として抽出するレベル
+toclevel: 2
+# セクション番号を表示するレベル
+secnolevel: 3
+# review-compileに渡すパラメータ
+params: --stylesheet=main.css
+# 目次生成用？
+mytoc: true
+# 奥付生成用
+colophon: true
+texstyle: samplemacro
+pubhistory: |
+  2011年08月03日 v1.0.0版発行
+debug: true
