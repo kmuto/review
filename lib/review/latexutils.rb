@@ -28,6 +28,7 @@ module ReVIEW
       '<'  => '\textless{}',
       '>'  => '\textgreater{}',
       "\\" => '\reviewbackslash{}',
+      "-" => '{-}',
 
       '⓪' => '\UTF{24EA}',
       '①' => '\UTF{2460}',

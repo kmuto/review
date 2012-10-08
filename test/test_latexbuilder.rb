@@ -173,7 +173,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_tt_endash
     ret = @builder.compile_inline("test @<tt>{in-line --test ---foo ----bar -----buz} --test2")
-    assert_equal %Q|test \\texttt{in-line {-}{-}test {-}{-}-foo {-}{-}{-}{-}bar {-}{-}{-}{-}-buz} --test2|, ret
+    assert_equal %Q|test \\texttt{in{-}line {-}{-}test {-}{-}{-}foo {-}{-}{-}{-}bar {-}{-}{-}{-}{-}buz} {-}{-}test2|, ret
   end
 
   def test_inline_tti
@@ -511,8 +511,8 @@ EOS
     expect =<<-EOS
 
 \\begin{itemize}
-\\item AAA-AA
-\\item BBB-BB
+\\item AAA{-}AA
+\\item BBB{-}BB
 \\end{itemize}
 EOS
     ul_helper(src, expect)
@@ -603,6 +603,11 @@ EOS
 
   def test_inline_raw5
     assert_equal "nor\nmal", @builder.inline_raw("|latex|nor\\nmal")
+  end
+
+  def test_inline_endash
+    ret = @builder.compile_inline("- -- --- ----")
+    assert_equal "{-} {-}{-} {-}{-}{-} {-}{-}{-}{-}", ret
   end
 
   def test_block_raw0
