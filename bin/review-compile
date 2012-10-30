@@ -151,17 +151,16 @@ def _main
         end
       rescue => e
         # PART
-        ReVIEW.book.parts_in_file.each do |part|
-          if ARGV.include? part.path
-            result = compiler.compile(part)
-            if output_filename
-              write output_filename, result
-            else
-              puts result unless check_only
-            end
+        part = ReVIEW.book.parts_in_file.select{|part| ARGV.include? part.path }
+        if part.present?
+          result = compiler.compile(part.first)
+          if output_filename
+            write output_filename, result
           else
-            raise e
+            puts result unless check_only
           end
+        else
+          raise e
         end
       end
     when :dir
