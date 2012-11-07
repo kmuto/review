@@ -382,6 +382,43 @@ module ReVIEW
 
     alias :numberlessimage indepimage
 
+    def table(lines, id = nil, caption = nil)
+      rows = []
+      sepidx = nil
+      lines.each_with_index do |line, idx|
+        if /\A[\=\{\-\}]{12}/ =~ line
+          # just ignore
+          #error "too many table separator" if sepidx
+          sepidx ||= idx
+          next
+        end
+        rows.push line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') }
+      end
+      rows = adjust_n_cols(rows)
+
+      begin
+        table_header id, caption unless caption.nil?
+      rescue KeyError => err
+        error "no such table: #{id}"
+      end
+      return if rows.empty?
+      table_begin rows.first.size
+      if sepidx
+        sepidx.times do
+          tr rows.shift.map {|s| th(s) }
+        end
+        rows.each do |cols|
+          tr cols.map {|s| td(s) }
+        end
+      else
+        rows.each do |cols|
+          h, *cs = *cols
+          tr [th(h)] + cs.map {|s| td(s) }
+        end
+      end
+      table_end
+    end
+
     def table_header(id, caption)
       if caption.present?
         @table_caption = true
