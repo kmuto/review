@@ -884,7 +884,7 @@ QUOTE
     end
 
     def bibpaper(lines, id, caption)
-      puts "<div>"
+      puts %Q[<div class="bibpaper">]
       bibpaper_header id, caption
       unless lines.empty?
         bibpaper_bibpaper id, caption, lines
@@ -893,13 +893,13 @@ QUOTE
     end
 
     def bibpaper_header(id, caption)
-      puts %Q(<a id="bib-#{id}">)
-      puts "[#{@chapter.bibpaper(id).number}] #{compile_inline(caption)}"
+      print %Q(<a id="bib-#{id}">)
+      print "[#{@chapter.bibpaper(id).number}] #{compile_inline(caption)}"
       puts %Q(</a>)
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      puts %Q(<p>)
+      print %Q(<p>)
       lines.each do |line|
         puts detab(line)
       end
