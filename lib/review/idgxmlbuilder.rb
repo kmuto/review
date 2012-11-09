@@ -1120,9 +1120,7 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      lines.each do |line|
-        puts detab(line)
-      end
+        print split_paragraph(lines).join("")
     end
 
     def inline_bib(id)
