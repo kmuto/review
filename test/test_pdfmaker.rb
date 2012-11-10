@@ -5,6 +5,7 @@ require 'tmpdir'
 require 'fileutils'
 
 load File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
+alias :pdfmaker_copyImagesToDir :copyImagesToDir
 
 class PDFMakerTest < Test::Unit::TestCase
   def setup
@@ -22,7 +23,7 @@ class PDFMakerTest < Test::Unit::TestCase
     types.each do |type|
       touch_file("#{@tmpdir1}/foo.#{type}")
     end
-    copyImagesToDir(@tmpdir1, @tmpdir2)
+    pdfmaker_copyImagesToDir(@tmpdir1, @tmpdir2)
 
     types.each do |type|
       assert File.exists?("#{@tmpdir2}/foo.#{type}"), "Copying #{type} file failed"
