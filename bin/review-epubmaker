@@ -38,20 +38,20 @@ def main
   values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   bookname = values["bookname"]
   $essential_files <<= bookname
+  tmp = values["debug"].nil? ? Dir.mktmpdir : "."
+  @bookdir = "#{tmp}/#{bookname}-epub"
 
   if File.exist?("#{bookname}.epub")
     STDERR.puts "#{bookname}.epub exists. Please remove or rename first."
     exit 1
   end
-  if File.exist?("#{bookname}")
-    STDERR.puts "#{bookname} directory exists. Please remove or rename first."
+  if File.exist?(@bookdir)
+    STDERR.puts "#{@bookdir} directory exists. Please remove or rename first."
     exit 1
   end
 
   identifier = values["urnid"].nil? ? "urn:uuid:#{UUID.create}" : values["urnid"]
 
-  tmp = values["debug"].nil? ? Dir.mktmpdir : "."
-  @bookdir = "#{tmp}/#{bookname}"
   Dir.mkdir(@bookdir)
   
   # MIME type
@@ -670,4 +670,6 @@ def make_part_page(part, filename, values)
   }
 end
 
-main
+if __FILE__ == $0
+  main
+end
