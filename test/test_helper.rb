@@ -14,3 +14,9 @@ def builder_helper(src, expect, method_sym)
   @compiler.__send__(method_sym, li)
   assert_equal expect, @builder.raw_result
 end
+
+def prepare_samplebook(srcdir)
+  samplebook_dir = File.expand_path("sample-book/src/", File.dirname(__FILE__))
+  FileUtils.cp_r(Dir.glob(samplebook_dir + "/*"), srcdir)
+  YAML.load(File.open(srcdir + "/config.yml"))
+end
