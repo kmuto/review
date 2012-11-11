@@ -527,9 +527,14 @@ def copyImagesToDir(dirname, copybase)
       if FileTest.directory?("#{dirname}/#{fname}")
         copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
       else
-        if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
+        if fname =~ /\.(png|gif|jpg|jpeg|svg|eps)$/i
           Dir.mkdir(copybase) unless File.exist?(copybase)
-          FileUtils.cp "#{dirname}/#{fname}", copybase
+          if fname =~ /\.eps\Z/
+            system("convert #{dirname}/#{fname} #{File.expand_path(fname+'.png', copybase)}")
+            fname = fname + '.png'
+          else
+            FileUtils.cp "#{dirname}/#{fname}", copybase
+          end
           figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
           mime = nil
           case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
