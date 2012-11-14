@@ -130,7 +130,7 @@ end
 def copy_images(from, to)
   if File.exist?(from)
     Dir.mkdir(to)
-    copyImagesToDir(from, to)
+    ReVIEW::MakerHelper.copy_images_to_dir(from, to)
     Dir.chdir(to) {
       fork {
         begin
@@ -188,22 +188,6 @@ EOB
   erb.result(binding)
 end
 
-def copyImagesToDir(dirname, copybase)
-  Dir.open(dirname) {|dir|
-    dir.each {|fname|
-      next if fname =~ /^\./
-      if FileTest.directory?("#{dirname}/#{fname}")
-        copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
-      else
-        if fname =~ /\.(png|gif|jpg|jpeg|svg|pdf|eps)$/i
-          Dir.mkdir(copybase) unless File.exist?(copybase)
-          FileUtils.cp "#{dirname}/#{fname}", copybase
-        end
-      end
-    }
-  }
-end
-
 def copyStyToDir(dirname, copybase, extname = "sty")
   unless File.directory?(dirname)
     $stderr.puts "No such directory - #{dirname}"
@@ -221,6 +205,4 @@ def copyStyToDir(dirname, copybase, extname = "sty")
   }
 end
 
-if __FILE__ == $0
-  main
-end
+main
