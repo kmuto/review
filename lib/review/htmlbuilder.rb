@@ -613,10 +613,14 @@ QUOTE
       " #{array.join(' ')}"
     end
 
+
+
     def image_image(id, caption, metric)
       metrics = parse_metric("html", metric)
+      img_path = @chapter.image(id).path.sub(/\A\.\//, "")
+      img_path = img_path + ".png" if img_path =~ /\.eps\Z/
       puts %Q[<div class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+      puts %Q[<img src="#{img_path}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       image_header id, caption
       puts %Q[</div>]
     end
