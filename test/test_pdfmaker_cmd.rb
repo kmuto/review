@@ -47,10 +47,4 @@ class PDFMakerCmdTest < Test::Unit::TestCase
 
     assert File.exists?(builddir)
   end
-
-  private
-  def touch_file(path)
-    File.open(path, "w").close
-    path
-  end
 end
