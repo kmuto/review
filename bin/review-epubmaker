@@ -92,7 +92,8 @@ def main
 
   if File.exist?("images")
     Dir.mkdir("#{@bookdir}/OEBPS/images")
-    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images")
+    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images",
+                                                         :convert => {:eps => :png})
     image_files.each do |image_file|
       dirname = File.dirname(image_file)
       fname = File.basename(image_file)
