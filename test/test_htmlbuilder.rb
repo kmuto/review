@@ -195,6 +195,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
+  def test_image_eps
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@pathes=["./images/chap1-sampleimg.eps"]}
+      item
+    end
+
+    @builder.image_image("sampleimg","sample photo",nil)
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.eps.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+  end
+
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
