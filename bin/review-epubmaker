@@ -92,9 +92,29 @@ def main
 
   if File.exist?("images")
     Dir.mkdir("#{@bookdir}/OEBPS/images")
-    copyImagesToDir("images", "#{@bookdir}/OEBPS/images")
+    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images")
+    image_files.each do |image_file|
+      dirname = File.dirname(image_file)
+      fname = File.basename(image_file)
+      figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
+      mime = nil
+      next unless fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
+      case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
+      when "png"
+        mime = "image/png"
+      when "gif"
+        mime = "image/gif"
+      when "jpg", "jpeg"
+        mime = "image/jpeg"
+      when "svg"
+        mime = "image/svg+xml"
+      else
+        raise "unsupported type #{fname}"
+      end
+      @manifeststr << %Q(<item id="#{figid}" href="#{image_file}" media-type="#{mime}" />\n)
+    end
   end
-  
+
   # container
   Dir.mkdir("#{@bookdir}/META-INF")
   File.open("#{@bookdir}/META-INF/container.xml", "w") {|f|
@@ -519,38 +539,6 @@ def output_chaps_by_file(l, values)
   @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
 end
 
-
-def copyImagesToDir(dirname, copybase)
-  Dir.open(dirname) {|dir|
-    dir.each {|fname|
-      next if fname =~ /^\./
-      if FileTest.directory?("#{dirname}/#{fname}")
-        copyImagesToDir("#{dirname}/#{fname}", "#{copybase}/#{fname}")
-      else
-        if fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
-          Dir.mkdir(copybase) unless File.exist?(copybase)
-          FileUtils.cp "#{dirname}/#{fname}", copybase
-          figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
-          mime = nil
-          case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
-          when "png"
-            mime = "image/png"
-          when "gif"
-            mime = "image/gif"
-          when "jpg", "jpeg"
-            mime = "image/jpeg"
-          when "svg"
-            mime = "image/svg+xml"
-          else
-            raise "unsupported type #{fname}"
-          end
-          @manifeststr << %Q(<item id="#{figid}" href="#{dirname}/#{fname}" media-type="#{mime}" />\n)
-        end
-      end
-    }
-  }
-end
-
 def getFigId(filename)
   figid = filename.sub(/\.(png|gif|jpg|jpeg|svg)$/, '')
   "fig-#{figid}"
@@ -670,6 +658,4 @@ def make_part_page(part, filename, values)
   }
 end
 
-if __FILE__ == $0
-  main
-end
+main

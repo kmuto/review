@@ -15,6 +15,11 @@ def builder_helper(src, expect, method_sym)
   assert_equal expect, @builder.raw_result
 end
 
+def touch_file(path)
+  File.open(path, "w").close
+  path
+end
+
 def prepare_samplebook(srcdir)
   samplebook_dir = File.expand_path("sample-book/src/", File.dirname(__FILE__))
   FileUtils.cp_r(Dir.glob(samplebook_dir + "/*"), srcdir)
