@@ -658,6 +658,4 @@ def make_part_page(part, filename, values)
   }
 end
 
-if __FILE__ == $0
-  main
-end
+main

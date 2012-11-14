@@ -6,8 +6,6 @@ require 'fileutils'
 
 REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker', File.dirname(__FILE__))
 
-load REVIEW_EPUBMAKER
-
 class EPUBMakerCmdTest < Test::Unit::TestCase
   def setup
     @tmpdir1 = Dir.mktmpdir

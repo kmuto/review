@@ -6,8 +6,6 @@ require 'fileutils'
 
 REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
 
-load REVIEW_PDFMAKER
-
 class PDFMakerCmdTest < Test::Unit::TestCase
   def setup
     @tmpdir1 = Dir.mktmpdir
