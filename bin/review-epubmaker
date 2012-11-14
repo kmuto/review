@@ -92,13 +92,13 @@ def main
 
   if File.exist?("images")
     Dir.mkdir("#{@bookdir}/OEBPS/images")
-    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images",
-                                                         :convert => {:eps => :png})
+    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images")
     image_files.each do |image_file|
       dirname = File.dirname(image_file)
       fname = File.basename(image_file)
       figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
       mime = nil
+      next unless fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
       case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
       when "png"
         mime = "image/png"
