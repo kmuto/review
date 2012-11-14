@@ -7,7 +7,6 @@ require 'fileutils'
 REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
 
 load REVIEW_PDFMAKER
-alias :pdfmaker_copyImagesToDir :copyImagesToDir
 
 class PDFMakerCmdTest < Test::Unit::TestCase
   def setup
@@ -22,18 +21,6 @@ class PDFMakerCmdTest < Test::Unit::TestCase
     FileUtils.rm_rf @tmpdir1
     FileUtils.rm_rf @tmpdir2
     ENV['RUBYLIB'] = @old_rubylib
-  end
-
-  def test_copyImagesToDir
-    types = %w{png gif jpg jpeg svg pdf eps PNG GIF JPG JPEG SVG PDF EPS}
-    types.each do |type|
-      touch_file("#{@tmpdir1}/foo.#{type}")
-    end
-    pdfmaker_copyImagesToDir(@tmpdir1, @tmpdir2)
-
-    types.each do |type|
-      assert File.exists?("#{@tmpdir2}/foo.#{type}"), "Copying #{type} file failed"
-    end
   end
 
   def test_pdfmaker_cmd
