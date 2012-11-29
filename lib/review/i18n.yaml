@@ -5,6 +5,7 @@ ja:
   part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
+  appendix: 付録%s
   numberless_image: "図:"
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
@@ -21,6 +22,7 @@ en:
   list: "List "
   chapter: Chapter %d
   chapter_postfix: ". "
+  appendix: Appendix %s
   numberless_image: "Figure:"
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
