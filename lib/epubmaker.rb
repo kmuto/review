@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubmaker.rb -- EPUB production set.
 #
-# Copyright (c) 2010 Kenshi Muto
+# Copyright (c) 2010-2012 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
