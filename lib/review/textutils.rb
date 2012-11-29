@@ -43,6 +43,8 @@ module ReVIEW
         NKF.nkf("-S -w -m0x", str)
       when /^JIS$/i
         NKF.nkf("-J -w -m0x", str)
+      when /^UTF-8$/i
+        NKF.nkf("-W -w -m0x", str)
       else
         NKF.nkf("-w -m0 -m0x", str)
       end
