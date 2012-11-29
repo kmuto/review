@@ -79,11 +79,11 @@ module ReVIEW
       def number(id)
         chapter = @index.fetch(id)
         if chapter.on_CHAPS?
-          "第#{chapter.number}章"
+          "#{I18n.t("chapter", chapter.number)}#{I18n.t("chapter_postfix")}"
         elsif chapter.on_PREDEF?
           "#{chapter.number}"
         elsif chapter.on_POSTDEF?
-          "付録#{chapter.number}"
+          "#{I18n.t("appendix", chapter.number)}#{I18n.t("chapter_postfix")}"
         end
       end
 
