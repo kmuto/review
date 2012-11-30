@@ -226,7 +226,7 @@ EOT
       puts '' if level > 1
       a_id = ""
       unless anchor.nil?
-        a_id = %Q[<a id="h#{anchor}" />]
+        a_id = %Q[<a id="h#{anchor}"></a>]
       end
       if caption.empty?
         puts a_id unless label.nil?
@@ -746,7 +746,7 @@ QUOTE
     end
 
     def label(id)
-      puts %Q(<a id="#{id}" />)
+      puts %Q(<a id="#{id}"></a>)
     end
 
     def linebreak
