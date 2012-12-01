@@ -26,39 +26,39 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1" />第1章　this is test.</h1>\n|, @builder.raw_result
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level1_without_secno
     @param["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1" />this is test.</h1>\n|, @builder.raw_result
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level1_with_inlinetag
     @builder.headline(1,"test","this @<b>{is} test.<&\">")
-    assert_equal %Q|<h1 id="test"><a id="h1" />第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @builder.raw_result
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level2
     @builder.headline(2,"test","this is test.")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1" />1.1　this is test.</h2>\n|, @builder.raw_result
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, @builder.raw_result
   end
 
   def test_headline_level3
     @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1" />this is test.</h3>\n|, @builder.raw_result
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, @builder.raw_result
   end
 
   def test_headline_level3_with_secno
     @param["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1" />1.0.1　this is test.</h3>\n|, @builder.raw_result
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, @builder.raw_result
   end
 
   def test_label
     @builder.label("label_test")
-    assert_equal %Q|<a id="label_test" />\n|, @builder.raw_result
+    assert_equal %Q|<a id="label_test"></a>\n|, @builder.raw_result
   end
 
   def test_href
@@ -340,12 +340,12 @@ EOS
     expect =<<-EOS
 <div class="column">
 
-<h3><a id="h1-0-1" />prev column</h3>
+<h3><a id="h1-0-1"></a>prev column</h3>
 <p>inside prev column</p>
 </div>
 <div class="column">
 
-<h3><a id="h1-0-2" />test</h3>
+<h3><a id="h1-0-2"></a>test</h3>
 <p>inside column</p>
 </div>
 EOS
@@ -363,11 +363,11 @@ EOS
     expect =<<-EOS
 <div class="column">
 
-<h3><a id="h1-0-1" />test</h3>
+<h3><a id="h1-0-1"></a>test</h3>
 <p>inside column</p>
 </div>
 
-<h3><a id="h1-0-2" />next level</h3>
+<h3><a id="h1-0-2"></a>next level</h3>
 EOS
 
     assert_equal expect, column_helper(review)
