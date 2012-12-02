@@ -554,7 +554,7 @@ def getanchors(filename)
   File.open(filename) {|f|
     file = filename.sub(/.+\//, '')
     f.each_line {|l|
-      if l =~ /\A<h(\d)><a id=\"(.+?)\" \/>(.+?)<\/h/
+      if l =~ /\A<h(\d)><a id=\"(.+?)\"><\/a>(.+?)<\/h/
         # level, ID, content
         @tocdesc << [$1.to_i, file, $2, $3]
       end
