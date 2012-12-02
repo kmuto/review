@@ -20,7 +20,7 @@ class MakerHelperTest < Test::Unit::TestCase
   end
 
   def test_copy_images_to_dir
-    types = %w{png gif jpg jpeg svg pdf eps PNG GIF JPG JPEG SVG PDF EPS}
+    types = %w{png gif jpg jpeg svg pdf eps}
     types.each do |type|
       touch_file("#{@tmpdir1}/foo.#{type}")
     end
