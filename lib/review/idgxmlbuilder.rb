@@ -208,7 +208,8 @@ module ReVIEW
 
       prefix = "" if (level.to_i > ReVIEW.book.param["secnolevel"])
       label = label.nil? ? "" : " id=\"#{label}\""
-      puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{escape_html(compile_inline(caption))}"?>)
+      toccaption = escape_html(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
+      puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>)
     end
 
 
