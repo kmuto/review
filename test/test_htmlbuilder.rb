@@ -137,6 +137,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::HeadlineIndex.new(items, self)
     end
 
+    @param["secnolevel"] = 2
+    ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
+    assert_equal %Q|test 「te_st」 test2|, ret
+
+    @param["secnolevel"] = 3
     ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「1.1.1 te_st」 test2|, ret
   end

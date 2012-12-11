@@ -911,7 +911,13 @@ QUOTE
     end
 
     def inline_hd_chap(chap, id)
-      "「#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}」"
+      if chap.number
+        n = chap.headline_index.number(id)
+        if ReVIEW.book.param["secnolevel"] >= n.split('.').size
+          return "「#{n} #{compile_inline(chap.headline(id).caption)}」"
+        end
+      end
+      "「#{compile_inline(chap.headline(id).caption)}」"
     end
 
     def inline_list(id)
