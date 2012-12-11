@@ -179,7 +179,7 @@ module ReVIEW
 
         @subsection += 1
         print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}　" : ""
+        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}" : ""
 
         @subsubsection = 0
         @subsubsubsection = 0
@@ -191,7 +191,7 @@ module ReVIEW
 
         @subsubsection += 1
         print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　" : ""
+        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}" : ""
 
         @subsubsubsection = 0
       when 5
@@ -201,7 +201,7 @@ module ReVIEW
 
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) unless @secttags.nil?
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　" : ""
+        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}" : ""
       else
         raise "caption level too deep or unsupported: #{level}"
       end
@@ -211,7 +211,6 @@ module ReVIEW
       toccaption = escape_html(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>)
     end
-
 
     def ul_begin
       level = block_given? ? yield : ""

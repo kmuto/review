@@ -178,9 +178,9 @@ EOT
         anchor = "#{@chapter.number}-#{@section}"
         if ReVIEW.book.param["secnolevel"] >= 2
           if @chapter.number.to_s =~ /\A\d+\Z/
-            prefix = "#{@chapter.number}.#{@section}　"
+            prefix = "#{@chapter.number}.#{@section}#{I18n.t("chapter_postfix")}"
           elsif @chapter.number.present?
-            prefix = "#{@chapter.number}.#{@section}　"
+            prefix = "#{@chapter.number}.#{@section}#{I18n.t("chapter_postfix")}"
           end
         end
       when 3
@@ -190,9 +190,9 @@ EOT
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}"
         if ReVIEW.book.param["secnolevel"] >= 3
           if @chapter.number.to_s =~ /\A\d+\Z/
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}"
           elsif @chapter.number.present?
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}　"
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}"
           end
         end
       when 4
@@ -201,9 +201,9 @@ EOT
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}"
         if ReVIEW.book.param["secnolevel"] >= 4
           if @chapter.number.to_s =~ /\A\d+\Z/
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}"
           elsif @chapter.number.present?
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　"
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}"
           end
         end
       when 5
@@ -211,9 +211,9 @@ EOT
         anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}-#{@subsubsubsection}"
         if ReVIEW.book.param["secnolevel"] >= 5
           if @chapter.number.to_s =~ /\A\d+\Z/
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}"
           elsif @chapter.number.present?
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　"
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}"
           end
         end
       end
