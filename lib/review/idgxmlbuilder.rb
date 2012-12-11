@@ -348,7 +348,7 @@ module ReVIEW
       lines.each_with_index do |line, i|
         _lines << detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
       end
-      quotedlist _lines, 'emlist', caption
+      quotedlist _lines, 'emlistnum', caption
     end
 
     def listnum_body(lines)
