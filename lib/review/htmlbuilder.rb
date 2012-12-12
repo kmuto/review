@@ -911,13 +911,18 @@ QUOTE
     end
 
     def inline_hd_chap(chap, id)
-      if chap.number
-        n = chap.headline_index.number(id)
-        if ReVIEW.book.param["secnolevel"] >= n.split('.').size
-          return "「#{n} #{compile_inline(chap.headline(id).caption)}」"
-        end
+      n = chap.headline_index.number(id)
+      if chap.number and ReVIEW.book.param["secnolevel"] >= n.split('.').size
+        str = "「#{n} #{compile_inline(chap.headline(id).caption)}」"
+      else
+        str = "「#{compile_inline(chap.headline(id).caption)}」"
       end
-      "「#{compile_inline(chap.headline(id).caption)}」"
+      if ReVIEW.book.param["chapterlink"]
+        anchor = "h"+n.gsub(/\./, "-")
+        %Q(<a href="#{chap.id}.html\##{anchor}">#{str}</a>)
+      else
+        str
+      end
     end
 
     def inline_list(id)
