@@ -617,7 +617,7 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      %Q[<a linkurl='#{url}'>#{label.nil? ? url : label}</a>]
+      %Q[<a linkurl='#{escape_html(url)}'>#{label.nil? ? escape_html(url) : escape_html(label)}</a>]
     end
 
     def inline_sup(str)
