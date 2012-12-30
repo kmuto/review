@@ -113,6 +113,10 @@ module ReVIEW
       "◆cmd/◆#{str}◆/cmd◆"
     end
 
+    def inline_cmd(str)
+      inline_tt(str)
+    end
+
     def footnote(id, str)
       #
     end
@@ -125,10 +129,14 @@ module ReVIEW
       "#{str}▲"
     end
 
+    def inline_kbd(str)
+      inline_keytop(str)
+    end
+
     # 「赤文字」はなし
 
     def compile_ruby(base, ruby)
-      "◆ルビ/◆#{base}◆#{ruby}」◆/ルビ◆"
+      "◆ルビ/◆#{base}◆#{ruby}◆/ルビ◆"
     end
 
     def quote(lines)
