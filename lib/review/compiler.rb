@@ -412,7 +412,7 @@ module ReVIEW
 
     def compile_paragraph(f)
       buf = []
-      f.until_match(%r<\A//|\A\#@>) do |line|
+      f.until_match(%r<\A//|\A\#@|\A===+>) do |line|
         break if line.strip.empty?
         buf.push text(line.sub(/^(\t+)\s*/) {|m| "<!ESCAPETAB!>" * m.size}.strip.gsub(/<!ESCAPETAB!>/, "\t"))
       end
