@@ -215,6 +215,10 @@ module ReVIEW
       "◆comment/◆#{str}◆/comment◆"
     end
 
+    def inline_comment(str)
+      inline_balloon(str)
+    end
+
     # whiteリスト代用
     def cmd(lines, caption=nil)
       puts "◆list-white/◆"
@@ -235,7 +239,6 @@ module ReVIEW
     end
 
     def image(lines, id, caption, metric=nil)
-      puts "◆list-white/" if @chapter.image(id).bound?
       if get_chap.nil?
         puts "●図#{@chapter.image(id).number}　#{compile_inline(caption)}"
       else
@@ -247,7 +250,6 @@ module ReVIEW
         lines.each do |line|
           puts line
         end
-        puts "◆/list-white"
       end
     end
 
@@ -273,7 +275,8 @@ module ReVIEW
         rows.push line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') }
       end
       rows = adjust_n_cols(rows)
-      
+
+      puts "◆table/◆"
       begin
         table_header id, caption unless caption.nil?
       rescue KeyError => err
@@ -299,7 +302,6 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      puts "◆table/◆"
       if get_chap.nil?
         puts "●表#{@chapter.table(id).number}　#{compile_inline(caption)}"
       else
@@ -321,7 +323,7 @@ module ReVIEW
     def td(str)
       str
     end
-    
+
     def table_end
       puts "◆/table◆"
     end
@@ -337,7 +339,7 @@ module ReVIEW
     def text(str)
       str
     end
-    
+
     def nofunc_text(str)
       str
     end
