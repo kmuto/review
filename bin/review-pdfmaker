@@ -61,9 +61,8 @@ def main
   ReVIEW::Book.load(@basedir).parts.each do |part|
     if part.name.present?
       if part.file?
-        filename = "#{File.basename(part.path, ".*")}.tex"
-        output_chaps(filename, values)
-        @chaps_fnames["CHAPS"] << %Q|\\input{#{filename}}\n|
+        output_parts(part.name, values)
+        @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
       else
         @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
       end
@@ -126,6 +125,17 @@ def output_chaps(filename, values)
   }
   Process.waitall
 end
+
+def output_parts(filename, values)
+  fork {
+    STDOUT.reopen("#{@path}/#{filename}.tex")
+    $stderr.puts "compiling #{filename}.tex"
+    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/")
+
+  }
+  Process.waitall
+end
+
 
 def copy_images(from, to)
   if File.exist?(from)
