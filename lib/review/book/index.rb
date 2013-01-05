@@ -313,7 +313,7 @@ module ReVIEW
                 (0..index).each{|i| indexs[i] = 0 if indexs[i].nil?}
               end
               indexs[index] += 1
-              headlines[index] = m[4].strip
+              headlines[index] = m[3].present? ? m[3].strip : m[4].strip
               items.push Item.new(headlines.join("|"), indexs.dup, m[4].strip)
             end
           end
