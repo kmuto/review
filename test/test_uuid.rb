@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: us-ascii
 #
 # Original license is below:
 #
