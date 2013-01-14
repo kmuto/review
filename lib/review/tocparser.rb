@@ -12,6 +12,7 @@
 
 require 'review/preprocessor'
 require 'review/book'
+require 'review/textbuilder'
 require 'forwardable'
 
 module ReVIEW
@@ -97,7 +98,7 @@ module ReVIEW
     end
 
     def compile_label(line)
-      b = TEXTBuilder.new
+      b = ReVIEW::TEXTBuilder.new
       b.bind(ReVIEW::Compiler.new(b), nil, nil)
       b.compile_inline(line)
     end
