@@ -5,7 +5,7 @@ ja:
   part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
-  appendix: 付録%s
+  appendix: 付録%d
   numberless_image: "図:"
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
