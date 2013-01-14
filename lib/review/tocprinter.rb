@@ -66,8 +66,10 @@ module ReVIEW
     def print_children(node)
       return unless print?(node.level + 1)
       node.each_section_with_index do |section, idx|
-        print_node idx+1, section
-        print_children section
+        unless section.blank?
+          print_node idx+1, section
+          print_children section
+        end
       end
     end
 
@@ -124,7 +126,9 @@ module ReVIEW
           end
         end
       end
-      puts HTMLLayout.new(html, "目次", File.join(book.basedir, "layouts", "layout.erb")).result
+      puts HTMLLayout.new({ :body => html,
+                            :title => "目次",
+                            :template => File.join(book.basedir, "layouts", "layout.erb")}).result
     end
 
     private
