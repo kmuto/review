@@ -345,12 +345,12 @@ EOS
     expect =<<-EOS
 <div class="column">
 
-<h3><a id="h1-0-1"></a>prev column</h3>
+<h3><a id="column-1"></a>prev column</h3>
 <p>inside prev column</p>
 </div>
 <div class="column">
 
-<h3><a id="h1-0-2"></a>test</h3>
+<h3><a id="column-2"></a>test</h3>
 <p>inside column</p>
 </div>
 EOS
@@ -368,11 +368,11 @@ EOS
     expect =<<-EOS
 <div class="column">
 
-<h3><a id="h1-0-1"></a>test</h3>
+<h3><a id="column-1"></a>test</h3>
 <p>inside column</p>
 </div>
 
-<h3><a id="h1-0-2"></a>next level</h3>
+<h3><a id="h1-0-1"></a>next level</h3>
 EOS
 
     assert_equal expect, column_helper(review)

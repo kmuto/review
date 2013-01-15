@@ -51,6 +51,7 @@ module ReVIEW
       @subsection = 0
       @subsubsection = 0
       @subsubsubsection = 0
+      @column = 0
       @noindent = nil
       @ol_num = nil
     end
@@ -255,7 +256,21 @@ EOT
 
     def column_begin(level, label, caption)
       puts %Q[<div class="column">]
-      headline(level, label, caption)
+
+      @column += 1
+      puts '' if level > 1
+      a_id = %Q[<a id="column-#{@column}"></a>]
+
+      if caption.empty?
+        puts a_id unless label.nil?
+      else
+        if label.nil?
+          puts %Q[<h#{level}>#{a_id}#{compile_inline(caption)}</h#{level}>]
+        else
+          puts %Q[<h#{level} id="#{label}">#{a_id}#{compile_inline(caption)}</h#{level}>]
+        end
+      end
+#      headline(level, label, caption)
     end
 
     def column_end(level)
