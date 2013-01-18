@@ -193,7 +193,11 @@ module ReVIEW
       def mkpart_from_namelistfile(path)
         chaps = []
         File.read(path).split.each_with_index do |name, idx|
-          chaps << mkchap(name, idx + 1)
+          if path =~ /PREDEF/
+            chaps << mkchap(name)
+          else
+            chaps << mkchap(name, idx + 1)
+          end
         end
         mkpart(chaps)
       end
