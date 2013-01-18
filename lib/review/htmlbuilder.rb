@@ -163,12 +163,17 @@ EOT
         @subsubsubsection = 0
         anchor = "#{@chapter.number}"
         if ReVIEW.book.param["secnolevel"] >= 1
-          placeholder = @chapter.is_a?(ReVIEW::Book::Part) ? "part" : "chapter"
-
-          if @chapter.number.to_s =~ /\A\d+\Z/
+          if @chapter.number.blank?
+            prefix = ""
+          else
+            placeholder = if @chapter.is_a? ReVIEW::Book::Part
+                            'part'
+                          elsif @chapter.on_POSTDEF?
+                            'appendix'
+                          else
+                            'chapter'
+                          end
             prefix = "#{I18n.t(placeholder, @chapter.number)}#{I18n.t("chapter_postfix")}"
-          elsif @chapter.number.present?
-            prefix = "#{@chapter.number}#{I18n.t("chapter_postfix")}"
           end
         end
       when 2
