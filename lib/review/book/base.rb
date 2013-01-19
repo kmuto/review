@@ -71,7 +71,9 @@ module ReVIEW
       end
 
       def parts_in_file
-        parts.find_all{|part| part if part.file? }
+        parts.find_all{|part|
+          part if part.present? and part.file?
+        }
       end
 
       def part(n)

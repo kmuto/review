@@ -151,7 +151,9 @@ def _main
         end
       rescue => e
         # PART
-        part = ReVIEW.book.parts_in_file.select{|part| ARGV.include? part.path }
+        part = ReVIEW.book.parts_in_file.select do |part|
+          ARGV.map{|path| File.basename path}.include? part.path
+        end
         if part.present?
           result = compiler.compile(part.first)
           if output_filename
