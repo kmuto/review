@@ -70,7 +70,7 @@ def main
   ReVIEW::Book.load(basedir).parts.each do |part|
     if part.name.present?
       if part.file?
-        filename = Pathname.new(part.path).relative_path_from(base_path).to_s
+        filename = (base_path + part.path).to_s
         output_chaps_by_file(filename, values)
         htmlfile = File.basename(filename.chomp.strip,".*")+".html"
       else
