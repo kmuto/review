@@ -729,10 +729,14 @@ QUOTE
       puts '</table>'
     end
 
-    def comment(str)
+    def comment(lines, comment = nil)
+      lines ||= []
+      lines.unshift comment unless comment.blank?
       if ReVIEW.book.param["draft"]
-        puts %Q(<div class="draft-comment">#{escape_html(str)}</div>)
+        str = lines.map{|line| escape_html(line) }.join("<br />")
+        puts %Q(<div class="draft-comment">#{str}</div>)
       else
+        str = lines.join("\n")
         puts %Q(<!-- #{escape_html(str)} -->)
       end
     end

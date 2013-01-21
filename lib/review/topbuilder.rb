@@ -388,7 +388,10 @@ module ReVIEW
       blank
     end
 
-    def comment(str)
+    def comment(lines, comment = nil)
+      lines ||= []
+      lines.unshift comment unless comment.blank?
+      str = lines.join("")
       puts "◆→DTP連絡:#{str}←◆"
     end
 

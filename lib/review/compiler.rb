@@ -152,9 +152,9 @@ module ReVIEW
     defblock :centering, 0
     defblock :note, 0..1
     defblock :box, 0..1
+    defblock :comment, 0..1, true
 
     defsingle :footnote, 2
-    defsingle :comment, 1
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0

@@ -526,8 +526,11 @@ module ReVIEW
       end
     end
 
-    def comment(str)
+    def comment(lines, comment = nil)
+      lines ||= []
+      lines.unshift comment unless comment.blank?
       if ReVIEW.book.param["draft"]
+        str = lines.join("")
         puts macro('pdfcomment', escape(str))
       end
     end
