@@ -365,6 +365,11 @@ module ReVIEW
     end
     private :table_label
 
+    def bib_label(id)
+      "bib:#{id}"
+    end
+    private :bib_label
+
     def indepimage(id, caption=nil, metric=nil)
       metrics = parse_metric("latex", metric)
       puts '\begin{reviewimage}'
@@ -697,7 +702,7 @@ module ReVIEW
     end
 
     def inline_bib(id)
-      "[#{@chapter.bibpaper(id).number}]"
+      macro('reviewbibref', "[#{@chapter.bibpaper(id).number}]", escape(bib_label(id)))
     end
 
     def inline_hd_chap(chap, id)
@@ -751,6 +756,7 @@ module ReVIEW
 
     def bibpaper_header(id, caption)
       puts "[#{@chapter.bibpaper(id).number}] #{compile_inline(caption)}"
+      puts macro('label', bib_label(id))
     end
 
     def bibpaper_bibpaper(id, caption, lines)
