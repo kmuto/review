@@ -377,7 +377,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    assert_equal "[1]", @builder.inline_bib("samplebib")
+    assert_equal "\\reviewbibref{[1]}{bib:samplebib}", @builder.inline_bib("samplebib")
   end
 
   def test_bibpaper
@@ -386,7 +386,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
-    assert_equal %Q|[1] sample bib \\textbf{bold}\n\na\nb\n\n|, @builder.raw_result
+    assert_equal %Q|[1] sample bib \\textbf{bold}\n\\label{bib:samplebib}\n\na\nb\n\n|, @builder.raw_result
   end
 
   def test_bibpaper_without_body
@@ -395,7 +395,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.bibpaper([], "samplebib", "sample bib")
-    assert_equal %Q|[1] sample bib\n\n|, @builder.raw_result
+    assert_equal %Q|[1] sample bib\n\\label{bib:samplebib}\n\n|, @builder.raw_result
   end
 
   def column_helper(review)
