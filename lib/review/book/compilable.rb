@@ -64,9 +64,13 @@ module ReVIEW
         File.open(path(), &block)
       end
 
+      attr_writer :content
+
       def content
         @content = convert_inencoding(File.read(path()),
                                       ReVIEW.book.param["inencoding"])
+      rescue
+        @content
       end
 
       def lines
