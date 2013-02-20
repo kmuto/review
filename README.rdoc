@@ -12,6 +12,7 @@ Output formats ReVIEW supports are:
 * LaTeX(ptexlive)
 * InDesign(IDGXML)
 * plain text(TOPBuilder Markup Lang.)
+* Inao(gihyo.jp original markup)
 
 == Commands
 
