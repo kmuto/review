@@ -1,0 +1,94 @@
+#!/usr/bin/env ruby
+#
+# Copyright (c) 2013 Masanori Kado
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+
+require 'fileutils'
+
+def main
+  if ARGV.empty?
+    puts "Usage: #{File.basename($0)} dirname"
+    exit
+  end
+
+  dir = File.expand_path(ARGV.shift)
+  @review_dir = File.dirname(File.expand_path(__FILE__ + "./../"))
+
+  generate_dir(dir) do |dir|
+    generate_review_setting_files(dir)
+    generate_sample(dir)
+    generate_images_dir(dir)
+    generate_layout(dir)
+    generate_config(dir)
+    generate_rakefile(dir)
+  end
+end
+
+def generate_dir(dir)
+  if File.exist? dir
+    puts "#{dir} already exists."
+    exit
+  end
+  FileUtils.mkdir_p dir
+  yield dir
+end
+
+def generate_sample(dir)
+  File.open("#{dir}/#{File.basename(dir)}.re", "w") do |file|
+    file.write("= ")
+  end
+end
+
+def generate_layout(dir)
+  Dir.mkdir dir + '/layouts'
+  File.open("#{dir}/layouts/layout.erb", "w") do |file|
+    file.write <<-EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <meta name="generator" content="ReVIEW" />
+  <title><%= title %></title>
+</head>
+<body>
+<%= body %>
+</body>
+</html>
+EOS
+  end
+end
+
+def generate_review_setting_files(dir)
+  File.open(dir + "/PREDEF", "w")
+  File.open(dir + "/CHAPS", "w") do |file|
+    file.write("#{File.basename(dir)}.re")
+  end
+  File.open(dir + "/POSTDEF", "w")
+end
+
+def generate_images_dir(dir)
+  Dir.mkdir dir + '/images'
+end
+
+def generate_config(dir)
+  FileUtils.cp @review_dir + "/test/sample-book/src/config.yml", dir
+end
+
+def generate_style(dir)
+  File.open(dir + "/style.css", "w")
+end
+
+def generate_rakefile(dir)
+  FileUtils.cp @review_dir + "/test/sample-book/src/Rakefile", dir
+end
+
+if $0 == __FILE__
+  main()
+end
