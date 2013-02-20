@@ -1,15 +1,14 @@
 require 'fileutils'
 
 def build(mode, chapter)
-  cmd = "review-compile --target=#{mode} --footnotetext --singledirmode --stylesheet=style.css #{chapter} > tmp"
-  sh cmd
+  sh "review-compile --target=#{mode} --footnotetext --singledirmode --stylesheet=style.css #{chapter} > tmp"
   mode_ext = {"html" => "html", "latex" => "tex",
               "idgxml" => "xml", "inao" => "inao"}
   FileUtils.mv "tmp", chapter.gsub(/re\z/, mode_ext[mode])
 end
 
 def build_all(mode)
-  `review-compile --all --target=#{mode} --footnotetext --singledirmode --stylesheet=style.css`
+  sh "review-compile --all --target=#{mode} --footnotetext --singledirmode --stylesheet=style.css"
 end
 
 desc "build html (Usage: rake build re=target.re)"
