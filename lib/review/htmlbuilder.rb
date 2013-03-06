@@ -468,7 +468,7 @@ EOT
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body lines
+      list_body id, lines
       puts '</div>'
     end
 
@@ -480,11 +480,11 @@ EOT
       end
     end
 
-    def list_body(lines)
+    def list_body(id, lines)
       print %Q[<pre class="list">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = File.extname(id).gsub(/\./, '')
+      puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 
