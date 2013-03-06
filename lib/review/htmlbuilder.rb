@@ -468,7 +468,7 @@ EOT
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body lines
+      list_body id, lines
       puts '</div>'
     end
 
@@ -480,30 +480,34 @@ EOT
       end
     end
 
-    def list_body(lines)
+    def list_body(id, lines)
+      id ||= ''
       print %Q[<pre class="list">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = File.extname(id).gsub(/\./, '')
+      puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 
-    def source(lines, caption)
+    def source(lines, caption = nil)
       puts %Q[<div class="source-code">]
       source_header caption
-      source_body lines
+      source_body caption, lines
       puts '</div>'
     end
 
     def source_header(caption)
-      puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
+      if caption.present?
+        puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
+      end
     end
 
-    def source_body(lines)
+    def source_body(id, lines)
+      id ||= ''
       print %Q[<pre class="source">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = File.extname(id).gsub(/\./, '')
+      puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 

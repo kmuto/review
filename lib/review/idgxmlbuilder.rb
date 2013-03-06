@@ -321,7 +321,7 @@ module ReVIEW
       end
     end
 
-    def list_body(lines)
+    def list_body(id, lines)
       print %Q(<pre>)
       no = 1
       lines.each do |line|
