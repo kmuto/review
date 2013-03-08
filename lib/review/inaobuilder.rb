@@ -193,7 +193,7 @@ module ReVIEW
       end
     end
 
-    def list_body(lines)
+    def list_body(id, lines)
       lines.each do |line|
         puts detab(line)
       end

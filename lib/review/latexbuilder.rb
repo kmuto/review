@@ -276,7 +276,7 @@ module ReVIEW
       puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
     end
 
-    def list_body(lines)
+    def list_body(id, lines)
       puts '\begin{reviewlist}'
       puts '\begin{alltt}'
       lines.each do |line|

@@ -77,7 +77,7 @@ module ReVIEW
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body lines
+      list_body id, lines
     end
 
     def listnum(lines, id, caption)
