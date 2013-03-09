@@ -9,10 +9,10 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["kmuto", "takahashim"]
-  s.date = "2012-10-03"
+  s.date = "2013-03-09"
   s.description = "ReVIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX."
   s.email = "kmuto@debian.org"
-  s.executables = ["review-check", "review-checkdep", "review-compile", "review-epubmaker", "review-epubmaker-ng", "review-index", "review-pdfmaker", "review-preproc", "review-validate", "review-vol"]
+  s.executables = ["review-check", "review-checkdep", "review-compile", "review-epubmaker", "review-epubmaker-ng", "review-index", "review-init", "review-pdfmaker", "review-preproc", "review-validate", "review-vol"]
   s.extra_rdoc_files = [
     "ChangeLog",
     "README.rdoc"
@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
     "bin/review-epubmaker",
     "bin/review-epubmaker-ng",
     "bin/review-index",
+    "bin/review-init",
     "bin/review-pdfmaker",
     "bin/review-preproc",
     "bin/review-validate",
@@ -77,6 +78,7 @@ Gem::Specification.new do |s|
     "lib/review/compiler.rb",
     "lib/review/configure.rb",
     "lib/review/epubbuilder.rb",
+    "lib/review/ewbbuilder.rb",
     "lib/review/exception.rb",
     "lib/review/extentions.rb",
     "lib/review/extentions/object.rb",
@@ -87,9 +89,11 @@ Gem::Specification.new do |s|
     "lib/review/i18n.rb",
     "lib/review/i18n.yaml",
     "lib/review/idgxmlbuilder.rb",
+    "lib/review/inaobuilder.rb",
     "lib/review/latexbuilder.rb",
     "lib/review/latexindex.rb",
     "lib/review/latexutils.rb",
+    "lib/review/makerhelper.rb",
     "lib/review/preprocessor.rb",
     "lib/review/review.tex.erb",
     "lib/review/textbuilder.rb",
@@ -103,6 +107,20 @@ Gem::Specification.new do |s|
     "test/CHAPS",
     "test/bib.re",
     "test/book_test_helper.rb",
+    "test/sample-book/README.md",
+    "test/sample-book/src/CHAPS",
+    "test/sample-book/src/PREDEF",
+    "test/sample-book/src/Rakefile",
+    "test/sample-book/src/_cover.html",
+    "test/sample-book/src/ch01.re",
+    "test/sample-book/src/ch02.re",
+    "test/sample-book/src/config.yml",
+    "test/sample-book/src/images/ch01-imgsample.jpg",
+    "test/sample-book/src/images/cover.jpg",
+    "test/sample-book/src/main.css",
+    "test/sample-book/src/preface.re",
+    "test/sample-book/src/sty/jumoline.sty",
+    "test/sample-book/src/sty/samplemacro.sty",
     "test/test.re",
     "test/test_book.rb",
     "test/test_book_chapter.rb",
@@ -111,14 +129,18 @@ Gem::Specification.new do |s|
     "test/test_builder.rb",
     "test/test_compiler.rb",
     "test/test_epubmaker.rb",
+    "test/test_epubmaker_cmd.rb",
     "test/test_helper.rb",
     "test/test_htmlbuilder.rb",
     "test/test_htmlutils.rb",
     "test/test_i18n.rb",
     "test/test_idgxmlbuilder.rb",
+    "test/test_inaobuilder.rb",
     "test/test_index.rb",
     "test/test_latexbuilder.rb",
     "test/test_lineinput.rb",
+    "test/test_makerhelper.rb",
+    "test/test_pdfmaker_cmd.rb",
     "test/test_preprocessor.rb",
     "test/test_textutils.rb",
     "test/test_topbuilder.rb",
@@ -126,7 +148,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/kmuto/review"
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.24"
+  s.rubygems_version = "1.8.25"
   s.summary = "ReVIEW: a easy-to-use digital publishing system"
 
   if s.respond_to? :specification_version then
