@@ -66,6 +66,10 @@
   \color{white}\medskip\small\begin{shadedb}\setlength{\baselineskip}{1.3zw}}{%
   \end{shadedb}}
 
+\newenvironment{reviewbox}{%
+  \medskip\small\begin{framed}\setlength{\baselineskip}{1.3zw}}{%
+  \end{framed}}
+
 \newenvironment{reviewtable}[1]{%
   \begin{center}\small\setlength{\baselineskip}{1.2zw}
     \begin{tabular}{#1}}{%
@@ -98,6 +102,9 @@
 
 \newcommand{\reviewindepimagecaption}[1]{%
   \begin{center}#1\end{center}}
+
+\newcommand{\reviewboxcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
 \newcommand{\reviewimageref}[2]{%
   図 #1}

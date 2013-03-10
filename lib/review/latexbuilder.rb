@@ -141,6 +141,21 @@ module ReVIEW
       puts "\\end{reviewminicolumn}\n"
     end
 
+    def box(lines, caption = nil)
+      blank
+      if caption
+        puts macro('reviewboxcaption', "#{compile_inline(caption)}")
+      end
+      puts '\begin{reviewbox}'
+      puts '\begin{alltt}'
+      lines.each do |line|
+        puts detab(line)
+      end
+      puts '\end{alltt}'
+      puts '\end{reviewbox}'
+      blank
+    end
+
     def ul_begin
       blank
       puts '\begin{itemize}'
