@@ -1,3 +1,8 @@
+Sun Mar 24 15:55:43 2013  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:
+	  support PART.
+
 Mon Aug 27 20:27:11 2012  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/compiler.rb, lib/review/htmlbuilder.rb,

@@ -146,10 +146,19 @@ module ReVIEW
         end
 
         print %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
-        if @chapter.number.to_s =~ /\A\d+$/
-          prefix = "#{I18n.t("chapter", @chapter.number)}#{I18n.t("chapter_postfix")}"
-        elsif @chapter.number.present?
-          prefix = "#{@chapter.number}#{I18n.t("chapter_postfix")}"
+
+        if @chapter.number.blank?
+          prefix = ""
+        else
+          placeholder = if @chapter.is_a? ReVIEW::Book::Part
+                          level = 0
+                          'part'
+                        elsif @chapter.on_POSTDEF?
+                          'appendix'
+                        else
+                          'chapter'
+                        end
+          prefix = "#{I18n.t(placeholder, @chapter.number)}#{I18n.t("chapter_postfix")}"
         end
         @section = 0
         @subsection = 0
@@ -164,8 +173,13 @@ module ReVIEW
         end
         @section += 1
         print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
-
-        prefix = @chapter.present? ? "#{@chapter.number}.#{@section}　" : ""
+        if ReVIEW.book.param["secnolevel"] >= 2
+          if @chapter.number.blank? or @chapter.on_POSTDEF?
+            prefix = ""
+          else
+            prefix = "#{@chapter.number}.#{@section}#{I18n.t("chapter_postfix")}"
+          end
+        end
 
         @subsection = 0
         @subsubsection = 0
@@ -179,7 +193,13 @@ module ReVIEW
 
         @subsection += 1
         print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}" : ""
+        if ReVIEW.book.param["secnolevel"] >= 3
+          if @chapter.number.blank? or @chapter.on_POSTDEF?
+            prefix = ""
+          else
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}"
+          end
+        end
 
         @subsubsection = 0
         @subsubsubsection = 0
@@ -190,8 +210,14 @@ module ReVIEW
         end
 
         @subsubsection += 1
-        print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}" : ""
+        print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil? 
+        if ReVIEW.book.param["secnolevel"] >= 4
+          if @chapter.number.blank? or @chapter.on_POSTDEF?
+            prefix = ""
+          else
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}"
+          end
+        end
 
         @subsubsubsection = 0
       when 5
@@ -201,7 +227,14 @@ module ReVIEW
 
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) unless @secttags.nil?
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}" : ""
+        if ReVIEW.book.param["secnolevel"] >= 5
+          if @chapter.number.blank? or @chapter.on_POSTDEF?
+            prefix = ""
+          else
+            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}"
+          end
+        end
+
       else
         raise "caption level too deep or unsupported: #{level}"
       end
