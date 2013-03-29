@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["kmuto", "takahashim"]
-  s.date = "2013-03-09"
+  s.date = "2013-03-29"
   s.description = "ReVIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX."
   s.email = "kmuto@debian.org"
   s.executables = ["review-check", "review-checkdep", "review-compile", "review-epubmaker", "review-epubmaker-ng", "review-index", "review-init", "review-pdfmaker", "review-preproc", "review-validate", "review-vol"]
@@ -78,7 +78,6 @@ Gem::Specification.new do |s|
     "lib/review/compiler.rb",
     "lib/review/configure.rb",
     "lib/review/epubbuilder.rb",
-    "lib/review/ewbbuilder.rb",
     "lib/review/exception.rb",
     "lib/review/extentions.rb",
     "lib/review/extentions/object.rb",
