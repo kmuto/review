@@ -1,3 +1,15 @@
+Sat Mar 30 03:15:43 2013  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/latexbuilder.rb, lib/review/review.tex.erb,
+	  test/test_latexbuilder.rb:
+
+	  move alltt environment into ReVIEW macros
+          (reviewbox, reviewemlist, reviewlist, reviewcmd,
+	   reviewdummyimage.)
+
+	  If you redefine these macros, you should add \begin{alltt}
+	  and \end{alltt} in your definitions.
+
 Sun Mar 24 15:55:43 2013  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:

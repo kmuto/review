@@ -220,38 +220,38 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_cmd
     lines = ["foo", "bar", "","buz"]
     @builder.cmd(lines)
-    assert_equal %Q|\n\\begin{reviewcmd}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewcmd}\n|, @builder.result
+    assert_equal %Q|\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, @builder.result
   end
 
   def test_cmd_caption
     lines = ["foo", "bar", "","buz"]
     @builder.cmd(lines, "cap1")
-    assert_equal %Q|\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewcmd}\n|, @builder.result
+    assert_equal %Q|\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, @builder.result
   end
 
   def test_emlist
     lines = ["foo", "bar", "","buz"]
     @builder.emlist(lines)
-    assert_equal %Q|\n\\begin{reviewemlist}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+    assert_equal %Q|\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, @builder.result
   end
 
   def test_emlist_caption
     lines = ["foo", "bar", "","buz"]
     @builder.emlist(lines, "cap1")
-    assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\n\\begin{alltt}\nfoo\nbar\n\nbuz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+    assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, @builder.result
   end
 
   def test_emlist_with_tab
     lines = ["\tfoo", "\t\tbar", "","\tbuz"]
     @builder.emlist(lines)
-    assert_equal %Q|\n\\begin{reviewemlist}\n\\begin{alltt}\n        foo\n                bar\n\n        buz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+    assert_equal %Q|\n\\begin{reviewemlist}\n        foo\n                bar\n\n        buz\n\\end{reviewemlist}\n|, @builder.result
   end
 
   def test_emlist_with_tab4
     lines = ["\tfoo", "\t\tbar", "","\tbuz"]
     @builder.instance_eval{@tabwidth=4}
     @builder.emlist(lines)
-    assert_equal %Q|\n\\begin{reviewemlist}\n\\begin{alltt}\n    foo\n        bar\n\n    buz\n\\end{alltt}\n\\end{reviewemlist}\n|, @builder.result
+    assert_equal %Q|\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n|, @builder.result
   end
 
   def test_quote

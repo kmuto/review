@@ -135,11 +135,9 @@ module ReVIEW
         puts macro('reviewboxcaption', "#{compile_inline(caption)}")
       end
       puts '\begin{reviewbox}'
-      puts '\begin{alltt}'
       lines.each do |line|
         puts detab(line)
       end
-      puts '\end{alltt}'
       puts '\end{reviewbox}'
       blank
     end
@@ -224,11 +222,9 @@ module ReVIEW
         puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
       end
       puts '\begin{reviewemlist}'
-      puts '\begin{alltt}'
       lines.each do |line|
         puts detab(line)
       end
-      puts '\end{alltt}'
       puts '\end{reviewemlist}'
       blank
     end
@@ -239,22 +235,18 @@ module ReVIEW
         puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
       end
       puts '\begin{reviewemlist}'
-      puts '\begin{alltt}'
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
-      puts '\end{alltt}'
       puts '\end{reviewemlist}'
       blank
     end
 
     def listnum_body(lines)
       puts '\begin{reviewlist}'
-      puts '\begin{alltt}'
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
       end
-      puts '\end{alltt}'
       puts '\end{reviewlist}'
       blank
 
@@ -266,11 +258,9 @@ module ReVIEW
         puts macro('reviewcmdcaption', "#{compile_inline(caption)}")
       end
       puts '\begin{reviewcmd}'
-      puts '\begin{alltt}'
       lines.each do |line|
         puts detab(line)
       end
-      puts '\end{alltt}'
       puts '\end{reviewcmd}'
       blank
     end
@@ -281,11 +271,9 @@ module ReVIEW
 
     def list_body(id, lines)
       puts '\begin{reviewlist}'
-      puts '\begin{alltt}'
       lines.each do |line|
         puts detab(line)
       end
-      puts '\end{alltt}'
       puts '\end{reviewlist}'
       puts ""
     end
@@ -303,11 +291,9 @@ module ReVIEW
     end
 
     def source_body(lines)
-      puts '\begin{alltt}'
       lines.each do |line|
         puts detab(line)
       end
-      puts '\end{alltt}'
     end
 
 
@@ -336,13 +322,11 @@ module ReVIEW
 
     def image_dummy(id, caption, lines)
       puts '\begin{reviewdummyimage}'
-      puts '\begin{alltt}'
       path = @chapter.image(id).path
       puts "--[[path = #{path} (#{existence(id)})]]--"
       lines.each do |line|
         puts detab(line.rstrip)
       end
-      puts '\end{alltt}'
       puts macro('label', image_label(id))
       puts compile_inline(caption)
       puts '\end{reviewdummyimage}'
