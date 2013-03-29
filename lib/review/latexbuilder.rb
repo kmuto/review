@@ -101,24 +101,12 @@ module ReVIEW
 
     def column_begin(level, label, caption)
       blank
-      ## puts '\vspace{2zw}'
-##      puts '\begin{center}'
-##      puts '\begin{minipage}{1.0\linewidth}'
-##      puts '\begin{framed}'
-##      puts '\setlength{\FrameSep}{1zw}'
-
-##      nonum_begin(3, label, caption)   # FIXME
-
       puts "\\begin{reviewcolumn}\n"
       puts macro('reviewcolumnhead', nil, compile_inline(caption))
 
     end
 
     def column_end(level)
-##      puts '\end{framed}'
-##      puts '\end{minipage}'
-##      puts '\end{center}'
-##      ## puts '\vspace{2zw}'
       puts "\\end{reviewcolumn}\n"
       blank
     end
@@ -443,7 +431,6 @@ module ReVIEW
       if caption.present?
         @table_caption = true
         puts '\begin{table}[h]'
-##      puts macro('reviewtablecaption', "表#{@chapter.number}.#{@chapter.table(id).number} #{compile_inline(caption)}")
         puts macro('reviewtablecaption', compile_inline(caption))
       end
       puts macro('label', table_label(id))
