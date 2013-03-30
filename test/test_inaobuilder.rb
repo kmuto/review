@@ -154,19 +154,20 @@ EOS
     end
   end
 
-
   def test_image
     compiler = Compiler.new(INAOBuilder.new)
     mktmpbookdir do |dir, book, files|
       chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
       chapter.content = <<-EOS
 = 図
+@<img>{id}
 //image[id][図のタイトル]{
 ダミー
 //}
 EOS
       expected = <<-EOS
 ■図
+　図1.1
 ●図1.1　図のタイトル
 ダミー
 EOS
