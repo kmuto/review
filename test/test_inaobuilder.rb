@@ -52,27 +52,6 @@ class INAOBuidlerTest < Test::Unit::TestCase
   1. 連番箇条書き
   2. 連番箇条書き
 
-== リスト
-//list[id][キャプション（コードのタイトル）]{
-function hoge() {
-    alert(foo);
-    alert(bar);
-}
-//}
-
-=== 本文埋め込みリスト
-本文中で流れでコードを掲載するときに使用します。
-
-//emlist{
-function hoge() {
-    alert(foo);@<comment>{こんな風にコメントがつけられます}
-}
-//}
-
-このように、上下に本文が入ります。
-
-本文から一連の流れで読んでもらうことができますが、コードがページをまたぐ可能性がございます。
-
 == コマンド
 //cmd[コマンドのタイトル]{
 $ command foo
@@ -81,11 +60,6 @@ $ command foo
 === 本文埋め込みコマンド（本文埋め込み版はWEB+DB PRESSでは未使用）
 //cmd{
 $ command foo
-//}
-
-== 図
-//image[id][図のタイトル]{
-ダミー
 //}
 
 == 表
@@ -121,7 +95,57 @@ EOS
 ■■■連番箇条書き
 （1）連番箇条書き
 （2）連番箇条書き
+■■コマンド
+◆list-white/◆
+●コマンドのタイトル
+$ command foo
+◆/list-white◆
+■■■本文埋め込みコマンド（本文埋め込み版はWEB+DB PRESSでは未使用）
+◆list-white/◆
+$ command foo
+◆/list-white◆
+■■表
+◆table/◆
+●表1.1　表のタイトル
+◆table-title◆項目1	項目2
+内容1	内容2
+内容1	内容2
+◆/table◆
+EOS
+      assert_equal expected, compiler.compile(chapter)
+    end
+  end
+
+  def test_list
+    compiler = Compiler.new(INAOBuilder.new)
+    mktmpbookdir do |dir, book, files|
+      chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
+      chapter.content = <<-EOS
+== リスト
+@<list>{id}
+//list[id][キャプション（コードのタイトル）]{
+function hoge() {
+    alert(foo);
+    alert(bar);
+}
+//}
+
+=== 本文埋め込みリスト
+本文中で流れでコードを掲載するときに使用します。
+
+//emlist{
+function hoge() {
+    alert(foo);@<comment>{こんな風にコメントがつけられます}
+}
+//}
+
+このように、上下に本文が入ります。
+
+本文から一連の流れで読んでもらうことができますが、コードがページをまたぐ可能性がございます。
+EOS
+      expected = <<-EOS
 ■■リスト
+　リスト1.1
 ◆list/◆
 ●リスト1.1　キャプション（コードのタイトル）
 function hoge() {
@@ -138,19 +162,49 @@ function hoge() {
 ◆/list◆
 　このように、上下に本文が入ります。
 　本文から一連の流れで読んでもらうことができますが、コードがページをまたぐ可能性がございます。
-■■コマンド
-◆list-white/◆
-●コマンドのタイトル
-$ command foo
-◆/list-white◆
-■■■本文埋め込みコマンド（本文埋め込み版はWEB+DB PRESSでは未使用）
-◆list-white/◆
-$ command foo
-◆/list-white◆
-■■図
+EOS
+      assert_equal expected, compiler.compile(chapter)
+    end
+  end
+
+  def test_image
+    compiler = Compiler.new(INAOBuilder.new)
+    mktmpbookdir do |dir, book, files|
+      chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
+      chapter.content = <<-EOS
+= 図
+@<img>{id}
+//image[id][図のタイトル]{
+ダミー
+//}
+EOS
+      expected = <<-EOS
+■図
+　図1.1
 ●図1.1　図のタイトル
 ダミー
+EOS
+      assert_equal expected, compiler.compile(chapter)
+    end
+  end
+
+  def test_table
+    compiler = Compiler.new(INAOBuilder.new)
+    mktmpbookdir do |dir, book, files|
+      chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
+      chapter.content = <<-EOS
+== 表
+@<table>{id}
+//table[id][表のタイトル]{
+項目1	項目2
+-------------
+内容1	内容2
+内容1	内容2
+//}
+EOS
+      expected = <<-EOS
 ■■表
+　表1.1
 ◆table/◆
 ●表1.1　表のタイトル
 ◆table-title◆項目1	項目2
@@ -162,4 +216,3 @@ EOS
     end
   end
 end
-
