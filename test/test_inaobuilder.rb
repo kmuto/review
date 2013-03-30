@@ -181,6 +181,7 @@ EOS
       chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
       chapter.content = <<-EOS
 == 表
+@<table>{id}
 //table[id][表のタイトル]{
 項目1	項目2
 -------------
@@ -190,6 +191,7 @@ EOS
 EOS
       expected = <<-EOS
 ■■表
+　表1.1
 ◆table/◆
 ●表1.1　表のタイトル
 ◆table-title◆項目1	項目2
