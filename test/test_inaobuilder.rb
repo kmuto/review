@@ -174,4 +174,30 @@ EOS
       assert_equal expected, compiler.compile(chapter)
     end
   end
+
+  def test_table
+    compiler = Compiler.new(INAOBuilder.new)
+    mktmpbookdir do |dir, book, files|
+      chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
+      chapter.content = <<-EOS
+== 表
+//table[id][表のタイトル]{
+項目1	項目2
+-------------
+内容1	内容2
+内容1	内容2
+//}
+EOS
+      expected = <<-EOS
+■■表
+◆table/◆
+●表1.1　表のタイトル
+◆table-title◆項目1	項目2
+内容1	内容2
+内容1	内容2
+◆/table◆
+EOS
+      assert_equal expected, compiler.compile(chapter)
+    end
+  end
 end
