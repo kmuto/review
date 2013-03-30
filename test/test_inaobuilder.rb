@@ -83,11 +83,6 @@ $ command foo
 $ command foo
 //}
 
-== 図
-//image[id][図のタイトル]{
-ダミー
-//}
-
 == 表
 //table[id][表のタイトル]{
 項目1	項目2
@@ -147,9 +142,6 @@ $ command foo
 ◆list-white/◆
 $ command foo
 ◆/list-white◆
-■■図
-●図1.1　図のタイトル
-ダミー
 ■■表
 ◆table/◆
 ●表1.1　表のタイトル
@@ -161,5 +153,24 @@ EOS
       assert_equal expected, compiler.compile(chapter)
     end
   end
-end
 
+
+  def test_image
+    compiler = Compiler.new(INAOBuilder.new)
+    mktmpbookdir do |dir, book, files|
+      chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
+      chapter.content = <<-EOS
+= 図
+//image[id][図のタイトル]{
+ダミー
+//}
+EOS
+      expected = <<-EOS
+■図
+●図1.1　図のタイトル
+ダミー
+EOS
+      assert_equal expected, compiler.compile(chapter)
+    end
+  end
+end
