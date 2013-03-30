@@ -122,6 +122,7 @@ EOS
       chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
       chapter.content = <<-EOS
 == リスト
+@<list>{id}
 //list[id][キャプション（コードのタイトル）]{
 function hoge() {
     alert(foo);
@@ -144,6 +145,7 @@ function hoge() {
 EOS
       expected = <<-EOS
 ■■リスト
+　リスト1.1
 ◆list/◆
 ●リスト1.1　キャプション（コードのタイトル）
 function hoge() {
