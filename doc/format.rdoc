@@ -324,9 +324,9 @@ footnotetextオプションを使うには、YAMLファイルのparamsに「--fo
 == 参考文献の定義
 
 参考文献は同一ディレクトリ内の bib.re に定義します。
-//bibpaper[site][キャプション]{..コメント..}
+//bibpaper[cite][キャプション]{..コメント..}
 コメントが無い場合も定義可能です。
-//bibpaper[site][キャプション]
+//bibpaper[cite][キャプション]
 
 例:
 
