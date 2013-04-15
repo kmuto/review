@@ -1160,6 +1160,16 @@ module ReVIEW
       %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
     end
 
+    def inline_hd_chap(chap, id)
+      if chap.number
+        n = chap.headline_index.number(id)
+        if ReVIEW.book.param["secnolevel"] >= n.split('.').size
+          return "「#{n}　#{compile_inline(chap.headline(id).caption)}」"
+        end
+      end
+      "「#{compile_inline(chap.headline(id).caption)}」"
+    end
+
     def inline_recipe(id)
       # FIXME
       %Q(<recipe idref="#{escape_html(id)}">[XXX]「#{escape_html(id)}」　p.XX</recipe>)
