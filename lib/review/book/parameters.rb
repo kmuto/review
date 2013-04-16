@@ -64,7 +64,7 @@ module ReVIEW
         @ext          = params[:ext]          || '.re'
         @image_dir    = params[:image_dir]    || 'images'
         @image_types  = unify_exts(params[:image_types]  ||
-          %w( eps ai tif tiff png bmp jpg jpeg gif svg pdf ))
+          %w( ai psd eps pdf tif tiff png bmp jpg jpeg gif svg ))
         @bib_file  = params[:bib_file]        || "bib#{@ext}"
       end
 
