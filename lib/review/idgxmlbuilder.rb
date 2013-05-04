@@ -386,9 +386,18 @@ module ReVIEW
 
     def listnum_body(lines)
       print %Q(<pre>)
+      no = 1
       lines.each_with_index do |line, i|
+        unless ReVIEW.book.param["listinfo"].nil?
+          print "<listinfo line=\"#{no}\""
+          print " begin=\"1\"" if no == 1
+          print " end=\"#{no}\"" if no == lines.size
+          print ">"
+        end
         print detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
         print "\n"
+        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
+        no += 1
       end
       puts "</pre></codelist>"
     end
