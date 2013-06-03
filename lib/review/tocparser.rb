@@ -39,7 +39,7 @@ module ReVIEW
           ;
         when /\A\s*\z/
           ;
-        when /\A(={2,})[\[\s]/
+        when /\A(={2,})[\[\s\{]/
           lev = $1.size
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
           if path.empty?
@@ -48,7 +48,7 @@ module ReVIEW
             roots.push path.first
           end
           next if get_label(line) =~ /\A\[\// # ex) "[/column]"
-          new = Section.new(lev, get_label(line))
+          new = Section.new(lev, get_label(line).gsub(/\A\{.*?\}\s?/, ""))
           until path.last.level < new.level
             path.pop
           end
