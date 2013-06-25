@@ -77,19 +77,20 @@ EOT
         if ReVIEW.book.param["htmlversion"] == 5
           header += <<EOT
 <!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
+<head>
+  <meta charset="#{ReVIEW.book.param["outencoding"] || :UTF-8}" />
 EOT
         else
           header += <<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-EOT
-        end
-
-        header += <<EOT
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=#{ReVIEW.book.param["outencoding"] || :UTF-8}" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
+        end
+
         unless ReVIEW.book.param["stylesheet"].nil?
           ReVIEW.book.param["stylesheet"].each do |style|
             header += <<EOT
@@ -842,7 +843,11 @@ QUOTE
     end
 
     def compile_ruby(base, ruby)
-      %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      if ReVIEW.book.param["htmlversion"] == 5
+        %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      else
+        %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      end
     end
 
     def compile_kw(word, alt)
@@ -871,11 +876,19 @@ QUOTE
     end
 
     def inline_tti(str)
-      %Q(<tt><i>#{escape_html(str)}</i></tt>)
+      if ReVIEW.book.param["htmlversion"] == 5
+        %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
+      else
+        %Q(<tt><i>#{escape_html(str)}</i></tt>)
+      end
     end
 
     def inline_ttb(str)
-      %Q(<tt><b>#{escape_html(str)}</b></tt>)
+      if ReVIEW.book.param["htmlversion"] == 5
+        %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
+      else
+        %Q(<tt><b>#{escape_html(str)}</b></tt>)
+      end
     end
 
     def inline_dtp(str)
@@ -883,7 +896,11 @@ QUOTE
     end
 
     def inline_code(str)
-      %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
+      if ReVIEW.book.param["htmlversion"] == 5
+        %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
+      else
+        %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
+      end
     end
 
     def inline_idx(str)
@@ -1047,7 +1064,11 @@ QUOTE
     end
 
     def inline_tt(str)
-      inline_asis(str, "tt")
+      if ReVIEW.book.param["htmlversion"] == 5
+        %Q(<code class="tt">#{escape_html(str)}</code>)
+      else
+        %Q(<tt>#{escape_html(str)}</tt>)
+      end
     end
 
     def inline_del(str)
