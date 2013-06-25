@@ -922,8 +922,9 @@ QUOTE
 
     def bibpaper_header(id, caption)
       print %Q(<a id="bib-#{id}">)
-      print "[#{@chapter.bibpaper(id).number}] #{compile_inline(caption)}"
-      puts %Q(</a>)
+      print "[#{@chapter.bibpaper(id).number}]"
+      print %Q(</a>)
+      puts " #{compile_inline(caption)}"
     end
 
     def bibpaper_bibpaper(id, caption, lines)
