@@ -688,7 +688,7 @@ module ReVIEW
     end
 
     def inline_bib(id)
-      macro('reviewbibref', "[#{@chapter.bibpaper(id).number}]", escape(bib_label(id)))
+      macro('reviewbibref', "[#{@chapter.bibpaper(id).number}]", bib_label(id))
     end
 
     def inline_hd_chap(chap, id)
