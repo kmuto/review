@@ -32,13 +32,16 @@ class PartTest < Test::Unit::TestCase
     assert_equal 0, part.volume.lines
 
     chs = []
+    tfs = []  ## prevent from removing Tempfile
     Tempfile.open('part_test') do |o|
       o.print "12345"
       chs << Book::Chapter.new(nil, nil, nil, o.path)
+      tfs << o
     end
     Tempfile.open('part_test') do |o|
       o.print "67890"
       chs << Book::Chapter.new(nil, nil, nil, o.path)
+      tfs << o
     end
 
     part = Book::Part.new(nil, nil, chs)
