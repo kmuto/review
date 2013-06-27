@@ -200,6 +200,13 @@ module ReVIEW
       puts "◆/list◆"
     end
 
+    def listnum_body(lines)
+      lines.each_with_index do |line, i|
+        puts detab((i+1).to_s.rjust(2, "0") + " " +line)
+      end
+      puts "◆/list◆"
+    end
+
     def emlist(lines, caption=nil)
       puts "◆list/◆"
       puts %Q[●#{compile_inline(caption)}] unless caption.nil?
