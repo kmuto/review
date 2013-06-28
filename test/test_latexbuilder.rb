@@ -386,7 +386,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
-    assert_equal %Q|[1] sample bib \\textbf{bold}\n\\label{bib:samplebib}\n\na\nb\n\n|, @builder.raw_result
+    assert_equal %Q|[1] sample bib \\textbf{bold}\n\\label{bib:samplebib}\n\nab\n|, @builder.raw_result
   end
 
   def test_bibpaper_without_body

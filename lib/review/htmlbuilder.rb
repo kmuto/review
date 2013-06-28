@@ -928,11 +928,7 @@ QUOTE
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      print %Q(<p>)
-      lines.each do |line|
-        puts detab(line)
-      end
-      puts %Q(</p>)
+      print split_paragraph(lines).join("")
     end
 
     def inline_bib(id)
