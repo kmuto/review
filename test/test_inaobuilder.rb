@@ -235,10 +235,10 @@ EOS
 　リスト1.1
 ◆list/◆
 ●リスト1.1　キャプション（コードのタイトル）
-01 function hoge() {
-02     alert(foo);
-03     alert(bar);
-04 }
+ 1 function hoge() {
+ 2     alert(foo);
+ 3     alert(bar);
+ 4 }
 ◆/list◆
 EOS
       assert_equal expected, compiler.compile(chapter)
