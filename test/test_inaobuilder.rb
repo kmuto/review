@@ -215,4 +215,33 @@ EOS
       assert_equal expected, compiler.compile(chapter)
     end
   end
+
+  def test_listnum
+    compiler = Compiler.new(INAOBuilder.new)
+    mktmpbookdir do |dir, book, files|
+      chapter = Book::Chapter.new(book, 1, "chap1", nil, StringIO.new)
+      chapter.content = <<-EOS
+== リスト
+@<list>{id}
+//listnum[id][キャプション（コードのタイトル）]{
+function hoge() {
+    alert(foo);
+    alert(bar);
+}
+//}
+EOS
+      expected = <<-EOS
+■■リスト
+　リスト1.1
+◆list/◆
+●リスト1.1　キャプション（コードのタイトル）
+ 1 function hoge() {
+ 2     alert(foo);
+ 3     alert(bar);
+ 4 }
+◆/list◆
+EOS
+      assert_equal expected, compiler.compile(chapter)
+    end
+  end
 end
