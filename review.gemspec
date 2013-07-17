@@ -6,6 +6,7 @@ Gem::Specification.new do |gem|
   gem.name        = "review"
   gem.version     = Review::VERSION
   gem.platform    = Gem::Platform::RUBY
+  gem.license     = "LGPL"
   gem.authors     = ["kmuto", "takahashim"]
   gem.email       = "kmuto@debian.org"
   gem.homepage    = "http://github.com/kmuto/review"
