@@ -140,7 +140,7 @@ sample.re を HTML に変換すると、次のようになります。
   </body>
   </html>
 
-ReVIEW フォーマットについての詳細は、format.rdoc (オンラインでは [[https://github.com/kmuto/review/blob/master/doc/format.rdoc]] ) を参照してください。
+ReVIEW フォーマットについての詳細は、{format.rdoc}[https://github.com/kmuto/review/blob/master/doc/format.rdoc] を参照してください。
 
 review-compile を含め、ほとんどのコマンドは --help オプションを付けるとオプションについてのヘルプが表示されます。review-compile には多数のオプションがあるので確認してください。
 
@@ -172,9 +172,9 @@ review-compile を含め、ほとんどのコマンドは --help オプション
 
 review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマンドで EPUB ファイルの作成ができます。
 
-PDF を作成するには、pTeXLive2009 以上の環境が必要です。EPUB を作成するには、zip コマンドが必要です (MathML も使いたいときには、[[http://www.hinet.mydns.jp/?mathml.rb]] の MathML ライブラリも必要です)。
+PDF を作成するには、pTeXLive2009 以上の環境が必要です。EPUB を作成するには、zip コマンドが必要です (MathML も使いたいときには、{MathML ライブラリ}[http://www.hinet.mydns.jp/?mathml.rb]も必要です)。
 
-いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、sample.yaml (オンラインでは[[https://github.com/kmuto/review/blob/master/doc/sample.yaml]]) としてこのドキュメントと同じディレクトリに収録しています。
+いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、{sample.yaml}[https://github.com/kmuto/review/blob/master/doc/sample.yaml] としてこのドキュメントと同じディレクトリに収録しています。
 
   review-pdfmaker YAMLファイル  ←PDFの作成
   review-epubmaker YAMLファイル ←EPUBの作成
@@ -184,5 +184,5 @@ PDF を作成するには、pTeXLive2009 以上の環境が必要です。EPUB �
 ReVIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2010年12月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
 
 バグ・パッチの報告、開発者用メーリングリストなどについての情報は、
-[[https://github.com/kmuto/review/wiki]]
+https://github.com/kmuto/review/wiki
 を参照してください。
