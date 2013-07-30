@@ -225,13 +225,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -274,13 +274,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -348,13 +348,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -764,13 +764,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   else
     header += <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
 EOT
   end
     header += <<EOT
