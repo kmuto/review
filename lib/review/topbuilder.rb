@@ -18,7 +18,7 @@ module ReVIEW
 
     include TextUtils
 
-    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon].each {|e|
+    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon, :strong].each {|e|
       Compiler.definline(e)
     }
     Compiler.defsingle(:dtp, 1)
@@ -461,6 +461,8 @@ module ReVIEW
     def inline_b(str)
       "★#{str}☆"
     end
+
+    alias :inline_strong inline_b
 
     def inline_tt(str)
       "△#{str}☆"
