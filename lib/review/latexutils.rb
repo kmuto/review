@@ -105,7 +105,7 @@ module ReVIEW
 
     }
 
-    METACHARS_RE = /[#{Regexp.escape(METACHARS.keys.join(''))}]/
+    METACHARS_RE = /[#{Regexp.escape(METACHARS.keys.join(''))}]/u
 
     METACHARS_INVERT = METACHARS.invert
 
