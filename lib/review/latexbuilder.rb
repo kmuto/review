@@ -676,7 +676,7 @@ module ReVIEW
     end
 
     def inline_del(str)
-      escape(str)               # TODO: use strike ?
+      macro('reviewstrike', escape(str))
     end
 
     def inline_tti(str)
