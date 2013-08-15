@@ -1,0 +1,2988 @@
+% \iffalse
+%% Style file `jumoline'.
+%% Copyright (C) 1999-2001  Hiroshi Nakashima
+%%		       (Toyohashi Univ. of Tech.)
+%% 
+%% This program can be redistributed and/or modified under the terms
+%% of the LaTeX Project Public License distributed from CTAN
+%% archives in directory macros/latex/base/lppl.txt; either
+%% version 1 of the License, or any later version.
+%% 
+% \fi
+%
+% \CheckSum{770}
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%
+% \iffalse
+%%
+%<*dtx>
+\ProvidesFile{jumoline.dtx}
+%</dtx>
+%<package>\def\next{LaTeX2e}
+%<package>\ifx\fmtname\next
+%<package>\def\next{
+%<package>\NeedsTeXFormat{LaTeX2e}[1994/12/01]
+%<package>\ProvidesPackage{jumoline}}
+%<package>\else\def\next[#1]{}\fi
+%<package>\next
+%<driver>\ProvidesFile{jumoline-man.tex}
+% \fi
+% \ProvidesFile{jumoline.dtx}
+[2001/05/31 v1.2 ]
+% \iffalse
+%<*driver>
+\documentclass{jltxdoc}
+\usepackage{jumoline}
+\DisableCrossrefs
+\PageIndex
+\CodelineNumbered
+\RecordChanges
+%</driver>
+%<driver>\OnlyDescription
+%<driver>\def\ONLYDESCRIPTION{}
+%<*driver>
+\advance\textwidth4em
+\begin{document}
+\DocInput{jumoline.dtx}
+\end{document}
+%</driver>
+% \fi
+% \changes{v0.1}{1995/06/06}
+%	{関連スタイルjulem作成。}
+% \changes{v0.2}{1996/10/05}
+%	{関連スタイルoverstroke作成。}
+% \changes{v1.0}{1999/04/14}
+%	{機能／実装の根本的見直しと本資料追加。}
+% \changes{v1.1-1}{2000/07/11}
+%	{以下は本資料に関する改訂。}
+% \changes{v1.2}{2001/05/31}
+%	{本資料に関する改訂。}
+%
+% \errorcontextlines10000
+% \ifx\xkanjiskip\undefined
+% \def\!{\hskip\jintercharskip}
+% \else
+% \def\!{\hskip\xkanjiskip}
+% \fi
+% \def\|{\!\verb|}
+% \def\+{\verb+}
+% \DeleteShortVerb\|
+% \GetFileInfo{jumoline.dtx}
+% \setcounter{IndexColumns}{2}
+% 
+% \def\bottomfraction{.9}
+% \def\abstractname{概要}
+% \def\refname{参考文献}
+% \def\indexname{索引}
+% \def\figurename{図}
+% \def\tablename{表}
+% \def\contentsname{目次}
+% 
+% \def\cs#1{\hbox{\tt\char\escapechar#1}}
+% \def\Item{\vskip-\itemsep\vskip-\parsep\vskip0pt\item}
+%
+% \makeatletter
+% \def\eqnarray{\stepcounter{equation}\let\@currentlabel=\theequation
+% \global\@eqnswtrue
+% \global\@eqcnt\z@\tabskip\@centering\let\\=\@eqncr
+% $$\halign to \displaywidth\bgroup\hskip\@centering
+%   $\displaystyle\tabskip\z@{##}$\@eqnsel&\global\@eqcnt\@ne
+%   \hfil$\;{##}\;$\hfil
+%   &\global\@eqcnt\tw@ $\displaystyle\tabskip\z@{##}$\hfil
+%    \tabskip\@centering&\llap{##}\tabskip\z@\cr}
+%
+% \def\Meta#1{\penalty\@highpenalty
+%	\hbox{{\tt\char`\{}{\it\meta{#1}}{\tt\char`\}}}}
+% \def\opt#1{{\tt[}{\it\meta{#1}}{\tt]}}
+% \def\optn#1{{\tt[#1]}}
+% \def\arg#1{{\tt\char`\{#1\char`\}}}
+%
+% \let\latex@addmarginpar\@addmarginpar
+% \let\latex@latex@warning@no@line\@latex@warning@no@line
+% \def\@addmarginpar{\let\@latex@warning@no@line\@gobble
+%	\latex@addmarginpar
+%	\let\@latex@warning@no@line\latex@latex@warning@no@line}
+% \let\@font@warning\@gobble
+%
+% \long\def\m@cro@#1#2{\endgroup \topsep\MacroTopsep \trivlist
+%    \edef\saved@macroname{\string#2}
+%   \def\makelabel##1{\llap{##1\hskip\@totalleftmargin}}
+%   \if@inlabel
+%     \let\@tempa\@empty \count@\macro@cnt
+%     \loop \ifnum\count@>\z@
+%       \edef\@tempa{\@tempa\hbox{\strut}}\advance\count@\m@ne \repeat
+%     \edef\makelabel##1{\llap{\vtop to\baselineskip
+%                                {\@tempa\hbox{##1}\vss}
+%			       \hskip\@totalleftmargin}}
+%     \advance \macro@cnt \@ne
+%   \else  \macro@cnt\@ne  \fi
+%   \edef\@tempa{\noexpand\item[
+%      #1
+%        \noexpand\PrintMacroName
+%      \else
+%        \noexpand\PrintEnvName
+%      \fi
+%      {\string#2}]}
+%   \@tempa
+%   \global\advance\c@CodelineNo\@ne
+%    #1
+%       \SpecialMainIndex{#2}\nobreak
+%       \DoNotIndex{#2}
+%    \else
+%       \SpecialMainEnvIndex{#2}\nobreak
+%    \fi
+%   \global\advance\c@CodelineNo\m@ne
+%   \ignorespaces}
+% 
+% \def\DescribeOpt{\leavevmode\@bsphack\begingroup\MakePrivateLetters
+%   \Describe@Opt}
+% \def\Describe@Opt#1{\endgroup \Describe@pt{#1}}
+% \def\Describe@pt#1#2{
+%               \marginpar{\raggedleft\PrintDescribeMacro{#1}}
+% 		\SpecialOptUsageIndex{#1}{#2}}
+% \def\SpecialOptUsageIndex#1#2{
+% 	\index{#1\actualchar{\protect\ttfamily#1} (#2)\encapchar usage}
+%	\index{#2s:\levelchar{\protect\ttfamily#1}\encapchar usage}
+%	\@esphack\ignorespaces}
+% \def\SpecialOptMainIndex#1#2{
+% 	\index{#1\actualchar{\protect\ttfamily#1} (#2)\encapchar main}
+%	\index{#2s:\levelchar{\protect\ttfamily#1}\encapchar main}
+%	\@esphack\ignorespaces}
+% \def\SpecialOptIndex#1#2{
+% 	\index{#1\actualchar{\protect\ttfamily#1} (#2)}
+%	\index{#2s:\levelchar{\protect\ttfamily#1}}
+%	\@esphack\ignorespaces}
+% \def\SpecialOptIndexS#1#2{
+% 	\index{#1\actualchar{\protect\ttfamily#1} (#2)}
+%	\index{#2es:\levelchar{\protect\ttfamily#1}}
+%	\@esphack\ignorespaces}
+%
+% \def\SpecialMainIndex#1{\@bsphack
+%	\RemoveAtFromCS{#1}
+% 	\protected@edef\@tempa{\noexpand\special@index{\RAFCtempa
+%		\actualchar \string\verb
+% 		\quotechar*\verbatimchar\string#1\verbatimchar
+%		\encapchar main}}\@tempa
+%	\@esphack}
+% \def\SpecialIndex#1{\@bsphack
+%	\RemoveAtFromCS{#1}
+% 	\protected@edef\@tempa{\noexpand\special@index{\RAFCtempa
+%		\actualchar \string\verb
+% 		\quotechar*\verbatimchar\string#1\verbatimchar}}\@tempa
+%	\@esphack}
+% 
+% \let\RAFCempty\@empty
+% \let\RAFCgobble\@gobble
+% \makeatother
+% \def\RemoveAtFromCS#1{\edef\RAFCtempa{\expandafter\RAFCgobble\string#1}
+% 	\edef\RAFCtempa{\expandafter\string\csname\RAFCtempa\endcsname}
+%	\expandafter\iRemoveAtFromCS\RAFCtempa@\NIL}
+% \def\iRemoveAtFromCS#1#2@#3\NIL{\def\RAFCtempb{#3}
+% 	\ifx\RAFCtempb\RAFCempty \def\RAFCtempa{#2}\let\next\relax
+%	\else \def\RAFCtempa{#2@}\def\next{\iiRemoveAtFromCS#3\NIL}
+% 	\def\RAFCtempb{#2}
+%	\ifx\RAFCtempb\RAFCempty
+%	\else\ifx\RAFCtempb\CommonCSPrefix
+%	\else\ifx\RAFCtempb\CommonIfPrefix
+%	\else \def\RAFCtempa{}\def\next{\xRemoveAtFromCS#2@#3\NIL}\fi\fi\fi\fi
+%	\next}
+% \def\iiRemoveAtFromCS#1{\ifx#1@\edef\RAFCtempa{\RAFCtempa@}
+%	\let\next\iiRemoveAtFromCS
+%	\else \def\next{\xRemoveAtFromCS#1}\fi
+% 	\next}
+% \def\xRemoveAtFromCS#1@\NIL{\edef\RAFCtempa{#1\RAFCtempa}}
+% \makeatletter
+% 
+% \begingroup
+% \gdef\@sverbcat{\catcode`\@\active\catcode`\#\active}
+% \catcode`\@\active \gdef@{\char`\@\penalty\exhyphenpenalty}
+% \catcode`\#\active \gdef#{\penalty\exhyphenpenalty}
+% \endgroup
+% \let\latex@sverb\@sverb
+% \def\@sverb{\@sverbcat\latex@sverb}
+%
+% \newcount\ChangesCounter \ChangesCounter10000
+% \def\changes@#1#2#3{\global\advance\ChangesCounter\@ne
+% 	\protected@edef\@tempa{\noexpand\glossary{#1\levelchar
+%		x\number\ChangesCounter
+%		\ifx\saved@macroname\@empty
+%			\actualchar\generalname
+%		\else
+%			\expandafter\@gobble\saved@macroname
+%			\actualchar \string\verb
+%			\quotechar*\verbatimchar \saved@macroname
+%			\verbatimchar
+%		\fi
+%		:\levelchar #3}}\@tempa\endgroup\@esphack}
+% \def\theglossary{\onecolumn \glossary@prologue
+%	\GlossaryParms \let\item\@idxitem \ignorespaces}
+% \def\endtheglossary{\relax}
+% 
+% 
+%
+% \def\bracepair{`{\tt\char`\{\char`\}'}}
+%
+% \ifx\ONLYDESCRIPTION\undefined\else
+% \let\SpecialUsageIndex\SpecialMainIndex
+% \let\SpecialOptUsageIndex\SpecialOptMainIndex
+% \fi
+% 
+% 
+%
+% \edef\CommonCSPrefix{\expandafter\RAFCgobble\string\UMO}
+% \edef\CommonIfPrefix{\expandafter\RAFCgobble\string\ifUMO}
+%
+% \title{下線／中線／上線パッケージ\!\textsf{jumoline}\thanks{
+%	本ファイルのバージョンは\fileversion, 改訂日付は\filedate である。}}
+% \author{中島 浩\\（豊橋技術科学大学）}
+% \date{\filedate}
+% \maketitle
+% 
+% \begin{abstract}
+% 本ファイルは，和文テキストに改行可能な下線(\+\Underline+)／中線
+% (\+\Midline+)／上線(\+\Overline+)を施すためのマクロを提供する。
+% \end{abstract}
+%
+% \tableofcontents
+% \newpage
+%
+% 
+% \section{はじめに}
+% \label{sec:intro}
+%
+% \TeX や\LaTeX が提供する諸機能の中でしばしば問題となるものの一つとして，
+% \|\underline|や\|\overline|により下線／上線を施したテキストの途中での改行
+% ができないことがあげられる。したがって，たとえば文書の改訂箇所を明示するな
+% どの目的で比較的長い文章の全てに下線を施すことは，\+\underline+では困難で
+% ある。
+%
+% この問題の完全な解決策を見い出すことは極めて困難であるが，ある一定の制約，
+% たとえば\!\textsf{jumoline}が提供するマクロのように下線対象を「普通のテキス
+% ト」に限定するといった制約を課すれば，解決することは不可能ではない。実際，
+% 磯崎氏によるスタイルファイル\!\textsf{juline}や，著者自身による改良版であ
+% る\!\textsf{julem}\footnote{
+%
+% このスタイル名は，著者が\!\textsf{fj.comp.texhax}に投稿したマクロが流通す
+% る過程で命名されたものであるらしく，その由来や意味は著者にも不明である。}
+%
+% が提供する\|\juline|は，同様の制約下での一定の解決策として流通している。し
+% かし\|\juline|には，禁則処理や特殊記号の「追い込み」など和文特有の改行／
+% スペーシング処理が，下線等を施していない「普通の」文章とは必ずしも一致しな
+% いという問題点がある。
+%
+% \textsf{jumoline}はこのような問題点を可能な限り解決するものであり，下線等が
+% 施された文章に対しても，通常の文章と（ほぼ）同じ改行／スペーシングを行なう
+% ことを目的としている。
+% 
+% なお\textsf{jumoline}は，ASCII版ついては\LaTeX-2.09と\LaTeXe の双方に対応し
+% ているが，NTT版では動作しない。
+%
+% 
+% \section{使用法}
+% \label{sec:usage}
+%
+% \subsection{基本的な使用法}
+% \label{sec:usage-basic}
+%
+% パッケージの使用宣言は標準的なものであり，\LaTeXe であれば；
+% \begin{quote}
+% \+\usepackage{jumoline}+\SpecialIndex{\usepackage}
+% \end{quote}
+% とすればよく，日本語\LaTeX-2.09であれば；
+% \begin{quote}
+% \+\documentstyle[..,jumoline,...]+\Meta{style}\SpecialIndex{\documentstyle}
+% \end{quote}
+% とすればよい。
+%
+% 下線等を施す基本的なコマンドは，以下の3つである。
+%
+% \begin{itemize}
+% \item \+\Underline+\Meta{text}
+%	\DescribeMacro{\Underline}\par
+% \meta{text}に下線を施す。\Underline{たとえばこの文章は，
+% {\tt\string\Underline\char`\{た}とえば{\ldots}であ{る。\tt\char`\}}により
+% 生成されたものである。}
+%
+% \item \+\Midline+\Meta{text}
+%	\DescribeMacro{\Midline}\par
+% \meta{text}に中線を施す。\Midline{たとえばこの文章は，
+% {\tt\string\Midline\char`\{た}とえば{\ldots}であ{る。\tt\char`\}}により
+% 生成されたものである。}
+%
+% \item \+\Overline+\Meta{text}
+%	\DescribeMacro{\Overline}\par
+% \meta{text}に上線を施す。\Overline{たとえばこの文章は，
+% {\tt\string\Overline\char`\{た}とえば{\ldots}であ{る。\tt\char`\}}により
+% 生成されたものである。}
+% \end{itemize}
+%
+% いずれのコマンドについても，引数\!\meta{text}は以下のいずれかを要素とする
+% 列である。
+% \begin{itemize}
+% \item
+% いわゆる全角文字。たとえば；
+%
+% \begin{quote}
+%\begin{verbatim}
+%\Underline{この文章は全角文字だけを含んでいるので，特別な配慮をすることなく
+%下線を施すことができる。}
+%\end{verbatim}
+% \end{quote}
+%
+% は，以下を生成する。
+%
+% \begin{quote}
+% \Underline{この文章は全角文字だけを含んでいるので，特別な配慮をすることなく
+% 下線を施すことができる。}
+% \end{quote}
+%
+% \item
+% いわゆる半角文字。ただしコマンド呼び出しや数式は除く。たとえば；
+%
+% \begin{quote}
+%\begin{verbatim}
+%\Underline{この文章は，macro invocationやmath staffを含まないので，やはり特
+%別な配慮は不要である。}
+%\end{verbatim}
+% \end{quote}
+%
+% は，以下を生成する。
+%
+% \begin{quote}
+% \Underline{この文章は，macro invocationやmath staffを含まないので，やはり特
+% 別な配慮は不要である。}
+% \end{quote}
+%
+% またもちろん；
+% \begin{quote}
+%\begin{verbatim}
+%\Underline{English sentences like this also may be the argument of
+%macros without any special treatments.}
+%\end{verbatim}
+% \end{quote}
+%
+% のように英文をそのまま引数とすることもでき，以下が生成される。
+%
+% \begin{quote}
+% \Underline{English sentences like this also may be the argument of macros
+% without any special treatments.}
+% \end{quote}
+%
+% \item
+% `\+{+'と`\+}+'で囲まれた任意の文字列。\LaTeX の\|\mbox|の引数となりうるも
+% のであれば，どのようなものであってもよい。文字列は\|\mbox|に入れた形で処理
+% されるので，文字列の途中で改行は行なわれない。たとえば；
+%
+% \begin{quote}
+%\begin{verbatim}
+%\Underline{この文章の{\textbf{ゴチック}}の部分や数式 {$y=x^2$} の部分は，
+%普通ではない文字を含んでいるので波カッコで囲まれている。}
+%\end{verbatim}
+% \end{quote}
+%
+% は，以下を生成する。
+% \begin{quote}
+% \Underline{この文章の{\textbf{ゴチック}}の部分や数式 {$y=x^2$} の部分は，
+% 普通ではない文字を含んでいるので波カッコで囲まれている。}
+% \end{quote}
+%
+% \item
+% スペース／改行制御のための\|\UMOspace|, \+\UMOnewline+, および\|\\|。詳細
+% は後述。
+% \end{itemize}
+% 
+% 
+%
+% \subsection{描線の制御}
+% \label{sec:usage-line}
+%
+% \+\Underline+などで描かれる線のデフォルト位置は，ベースラインを基準として
+% 以下のように定まっている。ただし$b$は
+% \|\baselineskip|\SpecialIndex{\baselineskip}の値，$a$は文字「あ」の高さで
+% あり，それぞれの値は\|\Underline|などが実行される時点でのものである。また
+% 正値は上方，負値は下方をそれぞれ意味する。
+% \SpecialIndex{\strutbox}
+%
+% \begin{eqnarray*}
+% \+\Underline+&:&	-0.3b\ \hbox{(\+\strutbox+の深さ)}\\
+% \+\Midline+&:&	+0.5a\\
+% \+\Overline+&:&	+0.7b\ \hbox{(\+\strutbox+の高さ)}\\
+% \end{eqnarray*}
+%
+% これらのデフォルト以外の位置に描線したいときには，以下に示す長さコマンド
+% （\TeX 流にいえばdimen register）を\|\setlength|\SpecialIndex{\setlength}
+% 等によってベースラインからの距離（正値）に設定すればよい。
+%
+% \begin{itemize}
+% \item
+% \makebox[12em]{\cs{UnderlineDepth} \dotfill}
+% \+\Underline+の深さ
+% \DescribeMacro{\UnderlineDepth}
+%
+% \item
+% \makebox[12em]{\cs{MidlineHeight} \dotfill}
+% \+\Midline+の高さ
+% \DescribeMacro{\MidlineHeight}
+%
+% \item
+% \makebox[12em]{\cs{OverlineHeight} \dotfill}
+% \+\Overline+の高さ
+% \DescribeMacro{\OverlineHeight}
+% \end{itemize}
+%
+% またデフォルトに戻すときには，任意の負値を設定すればよい。
+%
+% \changes{v1.2}{2001/05/31}
+%	{\cs{UMOline}を\cs{Jumoline}としていた誤りを訂正。}
+%
+% \leavevmode\DescribeMacro{\UMOline}
+% 描線位置制御の別の方法として；
+%
+% \begin{quote}
+% \+\UMOline+\Meta{height}\Meta{text}
+% \end{quote}
+%
+% も用意されている。このコマンドは\!\meta{text}を対象に，ベースラインから
+% \!\meta{height}の高さ（負値は深さ）に描線する。
+%
+% \leavevmode\DescribeMacro{\UMOlineThickness}
+% 描線の太さは長さコマンド\|\UMOlineThickness|に設定された値に従い，デフォル
+% ト値は0.4\,ptである。
+%
+% 
+%
+% \subsection{スペース／改行の制御}
+% \label{sec:usage-space}
+%
+% \+\Underline+などの引数\!\meta{text}がコマンド呼び出しを含む場合，
+% \ref{sec:usage-basic}で述べたようにコマンドを`\+{+'と`\+}+'で囲まなければ
+% ならない。したがって\|{\hspace|\Meta{len}\+}+\SpecialIndex{\hspace}によって挿
+% 入した空白は，その直前で改行が行なわれても削除されない。また，
+% \+\(no)linebreak+\SpecialIndex{\linebreak}\SpecialIndex{\nolinebreak}や
+% \|\newline|\SpecialIndex{\newline}などによる改行制御は無効である。
+%
+% そこで\!\meta{text}の要素として，以下のスペース／改行制御コマンドが用意さ
+% れている。
+%
+% \begin{itemize}
+% \item
+% \+\UMOspace+\Meta{len}\opt{num}
+%	\DescribeMacro{\UMOspace}\par
+% 直前で改行されると消去されるような，幅\!\meta{len}の空白を挿入する。
+% オプション引数\!\meta{num}は，空白の直前での改行の困難さ／容易さを定める。
+% \meta{num}が非負値($0\sim4$)の場合，
+% \|\nolinebreak|\SpecialIndex{\nolinebreak}の引数と同じ意味で改行の困難さが
+% 指定される。負値(${-0}\sim{-4}$)は改行の容易さを示し，その絶対値が
+% \+\linebreak+\SpecialIndex{\linebreak}の引数の値に対応する。
+%
+% なお\!\opt{num}の直前に`\+*+'がある場合，\meta{num}は\TeX の
+% \|\penalty|\SpecialIndex{\penalty}の値と解釈される。
+%
+% \item
+% \+\UMOspace*+\Meta{len}
+%	\DescribeMacro{\UMOspace*}\par
+% 直前で改行されても消去されない，幅\!\meta{len}の空白を挿入する。
+%
+% \item
+% \+\UMOnewline+, \+\\+
+%	\DescribeMacro{\UMOnewline}
+%	\DescribeMacro{\\}\par
+% 改行する。改行によって生じた余白には下線などは施されない。
+%
+% \item
+% \+\UMOnewline*+, \+\\*+
+%	\DescribeMacro{\UMOnewline*}
+%	\DescribeMacro{\\*}\par
+%  改行する。改行によって生じた余白に下線などを施す。
+% \end{itemize}
+%
+% 
+%
+% \subsection{注意事項}
+% \label{sec:usage-note}
+%
+% \begin{enumerate}
+% \item
+% 欧文に対するハイフネーションは一切行なわれない。
+%
+% \item
+% 一般の\LaTeX コマンドと同様，\!\meta{text}の中に
+% \+\verb+\SpecialIndex{\verb}が含まれると（`\+{+'と`\+}+'に囲まれていても）
+% エラーになることがある。
+%
+% \item
+% 多くの\LaTeX コマンドと同様，\!\meta{text}の中にパラグラフの切れ目が含まれ
+% ているとエラーになる。
+%
+% \item
+% 和文／欧文スペーシングが，下線等を施さない場合と完全には一致しないことがあ
+% り，その結果パラグラフの組み立てが変化することもある。
+%
+% \item
+% \+\Underline+などが呼び出された時点，あるいは\+\Underline+が含まれるパラグ
+% ラフ／ボックスが終了した時点で，\+\noautospacing+によって文字間スペーシン
+% グが抑止されていても，\meta{text}は\|\autospacing|でスペーシングされる。た
+% だし\bracepair に囲まれた部分については\|\noautospacing|となる。
+% \SpecialIndex{\noautospacing}\SpecialIndex{\autospacing}
+% 
+% \item
+% 下線等を施す処理は，通常の和文テキスト処理の100倍程度の時間を要し，またdvi
+% ファイルの大きさも10倍程度に増加する。
+% \end{enumerate}
+%
+% 
+%
+% \IndexPrologue{\newpage\section*{索引}
+% 下線のページは項目の仕様記述箇所を示す。}
+% \StopEventually{\PrintIndex}
+%
+% 
+%
+% \newpage
+% \section{実装}
+% \label{sec:imp}
+%
+% \subsection{問題点と解決策}
+% \label{sec:imp-solution}
+%
+% 下線等の対象\!\meta{text}の要素を「普通の文字」と\bracepair に囲まれたもの
+% （以下blocked textと呼ぶ）に限定することによって，要素を一つずつ切り出して
+% 下線等を施すことが可能になるため，処理の根本的な困難さは解決される。しかし
+% 次に問題となるのは，パラグラフ組み立て時に伸縮するスペース(glue)の取り扱い
+% であり，特に和文では容易ではない。
+% 
+% すなわち問題点は；
+% \begin{enumerate}
+% \item
+% 挿入されるglueの幅と伸縮項（すなわちnatural width\slash stretch\slash
+% shrink）をどのようにして得るか。
+% 
+% \item
+% そのglueと同じ幅と伸縮項を持つような下線等をどのようして描くか。
+% \end{enumerate}
+% である。
+%
+% この二つの問題点の内，後者は\|\leaders|を用いることにより比較的容易に解決
+% できる。すなわち（あまり知られていないが）；
+% \SpecialIndex{\leaders}
+%
+% \begin{quote}
+% \+\leaders\hrule height+\meta{$h$}\+depth+\meta{$d$}\+\hskip+\meta{$s$}
+% \end{quote}
+%
+% において，$h$と$d$は必ずしも非負値である必要はなく，$h$はベースラインを基
+% 準とした横線の上端までの距離（正値が上方）を，また$d$は下端までの距離（正
+% 値が下方）を，それぞれ定めるものとして扱われる\footnote{
+%
+% この事実を認識していなかったため，\textsf{julem}では極めて短い線分からなる
+% \!\cs{hbox}を要素とする\cs{leaders}によって下線を描くという，非効率な方法
+% を採っていた。}。
+% 
+% したがって，上端がベースラインから下方へ$u$，太さが$w$であるような下線を描
+% く場合；
+%
+% \begin{quote}
+% \+\leaders\hrule height+\meta{$-u$}\+depth+\meta{$u{+}w$}\+\hskip+\meta{s}
+% \end{quote}
+%
+% とすれば，伸縮や改行効果が\+\hskip+\meta{$s$}と全く同じ下線が得られる。ま
+% た中線や上線についても同様である。
+%
+% \begin{table}[b]
+% \caption{欧文スペースのglue}
+% \label{tab:space}
+% $$\arraycolsep0pt
+% \begin{array}{r@{\;\land\;}l@{\quad}c@{\quad}c@{\quad}c}
+% \multicolumn2c{\hbox{condition}}&n(\sigma)&p(\sigma)&m(\sigma)\\\hline
+% f<2000&n(s)=0&	d_2&	d_3\cdot(f/1000)&	d_4\cdot(1000/f)\\
+% f<2000&n(s)\neq0&	n(s)&	p(s)\cdot(f/1000)&	m(s)\cdot(1000/f)\\
+% f\geq2000&n(x)=0&	d_2+d_7&d_3\cdot(f/1000)&	d_4\cdot(1000/f)\\
+% f\geq2000&n(x)\neq0&	n(x)&	p(x)&			m(x)
+% \end{array}
+% $$
+% \end{table}
+%
+% 一方前者については，欧文の場合は\TeX のスペーシング機構をシミュレートする
+% ことにより，幅と伸縮項を算出することができる。すなわち\!\meta{text}に出現
+% する（\bracepair に囲まれていない）各々のスペースについて，その直前の要素
+% で定まる\|\spacefactor|の値を$f$, 選択されているフォントの
+% \+\fontdimen+\meta{$i$}の値を$d_i$, \+\spaceskip+の値を$s$, \+\xspaceskip+
+% の値を$x$, またglue $g$の幅，伸び，縮みの項をそれぞれ$n(g)$, $p(g)$,
+% $m(g)$とすると，スペースにより挿入されるglue $\sigma$は表\ref{tab:space}に
+% 示すように算出される。
+% \SpecialIndex{\spacefactor}\SpecialIndex{\spaceskip}
+% \SpecialIndex{\xspaceskip}
+%
+% 一方和文の場合，ASCII版は特に複雑であり，節を改めて議論する。
+%
+% 
+%
+% \begin{figure}[p]
+% \makeatletter
+% \parindent\z@ \@tempcntb\z@
+% \newdimen\gna \newdimen\gsa \newdimen\gnb \newdimen\gsb
+% \gna\z@ \gsa\z@ \gnb\z@ \gsb\z@
+% \newcount\nw \@tempdima1zw \nw\@tempdima \divide\nw1000
+% \def\Tenmin#1\\{\ifcase\@tempcntb
+% 	\begingroup\advance\@tempcntb\@ne \or
+% 	\advance\@tempcntb\@ne \def\C{#1}\or
+% 	\putglue \endgroup\fi\ignorespaces}
+% \def\glue#1 minus #2\\{
+% 	\ifnum\@tempcntb=\@ne \gna#1pt\relax \gsa#2pt\relax
+% 	\else		\gnb#1pt\relax \gsb#2pt\relax\fi\ignorespaces}
+% \def\putglue{
+% 	\settowidth\unitlength{\inhibitglue\C\inhibitglue}
+% 	\ifdim\unitlength=1zw\else
+% 	\leavevmode\hbox to.33\hsize{\fbox{
+% 			\hskip\gna\inhibitglue\C\inhibitglue\hskip\gnb}\space
+% 		\putg\gna$-$\putg\gsa\,/\,\putg\unitlength\,/\,
+% 		\putg\gnb$-$\putg\gsb\hfil}\allowbreak\hfill\fi}
+% \def\putg#1{\@tempcnta#1\divide\@tempcnta\nw
+% 	\phantom{000}\llap{\number\@tempcnta}}
+% 
+% \Tenmin あ\\
+% \Tenmin 、\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 。\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ，\\
+% \glue 6.08551 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ．\\
+% \glue 6.08551 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ・\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ：\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ；\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ？\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ！\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゛\\
+% \glue 6.08551 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゜\\
+% \glue 6.08551 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ´\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ｀\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ¨\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ＾\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ￣\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＿\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ヽ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヾ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ゝ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ゞ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin 〃\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 仝\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin 々\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 〆\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 〇\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ー\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ―\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ‐\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ／\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＼\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 〜\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ‖\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ｜\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin …\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ‥\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ‘\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin ’\\
+% \glue 3.04276 minus 3.04276\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin “\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ”\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin （\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ）\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin 〔\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 〕\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin ［\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ］\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin ｛\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｝\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin 〈\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 〉\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin 《\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 》\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin 「\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 」\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin 『\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 』\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin 【\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 】\\
+% \glue 4.58203 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＋\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin −\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ±\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ×\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ÷\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＝\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ≠\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＜\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＞\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ≦\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ≧\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∞\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ∴\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ♂\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ♀\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin °\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ′\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin ″\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ℃\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ￥\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ＄\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ¢\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin £\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ％\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＃\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＆\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＊\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ＠\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin §\\
+% \glue 2.291 minus 2.291\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ☆\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ★\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ○\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ●\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ◎\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ◇\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ◆\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin □\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ■\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin △\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ▲\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ▽\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ▼\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ※\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 〒\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin →\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ←\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ↑\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ↓\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin 〓\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∈\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∋\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⊆\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⊇\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⊂\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⊃\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∪\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∩\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∧\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∨\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ¬\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⇒\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⇔\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∀\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∃\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∠\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⊥\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ⌒\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∂\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∇\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ≡\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ≒\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ≪\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ≫\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin √\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∽\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∝\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∵\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∫\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ∬\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Å\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ‰\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ♯\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ♭\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ♪\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin †\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ‡\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ¶\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ◯\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ０\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin １\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ２\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ３\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ４\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ５\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ６\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ７\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ８\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ９\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ａ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｂ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｃ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｄ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｅ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｆ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｇ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｈ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｉ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｊ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｋ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｌ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｍ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｎ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｏ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｐ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｑ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｒ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｓ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｔ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｕ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｖ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｗ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｘ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｙ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin Ｚ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ａ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｂ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｃ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｄ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｅ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｆ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｇ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｈ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｉ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｊ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｋ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｌ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｍ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｎ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｏ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｐ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｑ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｒ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｓ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｔ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｕ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｖ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｗ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｘ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｙ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ｚ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ぁ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ぃ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin い\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ぅ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin う\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ぇ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin え\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ぉ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin お\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin か\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin が\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin き\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぎ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin く\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぐ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin け\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin げ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin こ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ご\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin さ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ざ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin し\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin じ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin す\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ず\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin せ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぜ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin そ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぞ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin た\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin だ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ち\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぢ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin っ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin つ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin づ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin て\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin で\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin と\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ど\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin な\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin に\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぬ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ね\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin の\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin は\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ば\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぱ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ひ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin び\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぴ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ふ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぶ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぷ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin へ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin べ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぺ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ほ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぼ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ぽ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ま\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin み\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin む\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin め\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin も\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ゃ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin や\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ゅ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゆ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ょ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin よ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ら\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin り\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin る\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin れ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ろ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ゎ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin わ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゐ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゑ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin を\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ん\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ァ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ア\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ィ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin イ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ゥ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ウ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ェ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin エ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ォ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin オ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin カ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ガ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin キ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ギ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ク\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin グ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ケ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゲ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin コ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゴ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin サ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ザ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin シ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ジ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ス\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ズ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin セ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゼ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ソ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ゾ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin タ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ダ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin チ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヂ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ッ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ツ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヅ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin テ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin デ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ト\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ド\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ナ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ニ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヌ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ネ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ノ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ハ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin バ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin パ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヒ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ビ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ピ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin フ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ブ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin プ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヘ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ベ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ペ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ホ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ボ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ポ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin マ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ミ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ム\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin メ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin モ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ャ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヤ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ュ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ユ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ョ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ヨ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ラ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin リ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ル\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin レ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \Tenmin ロ\\
+% \Tenmin あ\\
+% \Tenmin あ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin ヮ\\
+% \glue 1.07391 minus 1.07391\\
+% \Tenmin あ\\
+% \par
+% \caption{jfm glueと文字幅}
+% \label{fig:jfmglue}
+% \end{figure}
+%
+% 
+%
+% \subsection{和文のスペーシング}
+% \label{sec:imp-jspace}
+%
+% ASCII版日本語\TeX （p\TeX を含む）において，連続する二つの文字$c_1$と$c_2$
+% の間に挿入されるglue $g(c_1,c_2)$は，以下の情報に基づいて定まる。
+%
+% \begin{itemize}
+% \item
+% $c_i$がいわゆる半角文字であるか($c_i\in A$)，あるいは全角文字であるか
+% ($c_i\in K$)。
+%
+% \item
+% $c_i\in K$の場合，jfmファイルによって定まる$c_i$の左側および右側のglue
+% (jfm glue) $l(c_i)$および$r(c_i)$。
+%
+% \item
+% $c_i\in A$の場合，$c_i$の\|\xspcode| $\gamma_a(c_i)$。
+% \SpecialIndex{\xspcode}
+% 
+% \item
+% $c_i\in K$の場合，$c_i$の\|\inhibitxspcode| $\gamma_k(c_i)$。
+% \SpecialIndex{\inhibitxspcode}
+%
+% \item
+% \+\kanjiskip+の値$s_k$および\|\xkanjiskip|の値$s_a$。
+% \SpecialIndex{\kanjiskip}\SpecialIndex{\xkanjiskip}
+% \end{itemize}
+%
+% なおこの他に\|\noautospacing|によるスペーシング抑止が影響するが，ほとんど
+% 使われることがないと想定され，かつ完全にシミュレートすることが不可能である
+% ため，常に\|\autospacing|であると仮定して実装を簡略化している\footnote{%
+%
+% \cs{Underline}等が呼び出された時点で\cs{autospacing}か否かを判断するのは可
+% 能であるが，実際に影響するのは\cs{Underline}等を含むパラグラフあるいはbox
+% が終了した時点での状況であり，これを正しく推定するのは不可能である。}
+%
+% （\ref{sec:usage-note}節参照）。
+% \SpecialIndex{\noautospacing}\SpecialIndex{\autospacing}
+%
+% これらの情報に基づいて，$g(c_1,c_2)$は以下のように定まる\footnote{
+%
+% 特に全角文字が連続した場合の実際の挙動は，これらの式よりもさらに複雑（怪奇）
+% であるが，精密なシミュレートは繁雑かつ無意味であるため，ここに示した簡易か
+% つ有意な式を用いている。}。
+%
+% \def\LAND{{\;\land\;}}\def\LOR{{\;\lor\;}}
+% \begin{eqnarray}
+% c_1\in K\LAND c_2\in K\Longrightarrow{}\hskip-4em\nonumber\\
+% g(c_1,c_2)&=&\cases{s_k&if $r(c_1)=l(c_2)=0$\cr
+%		      r(c_1)+l(c_2)&otherwise}\label{eq:jg1}\\[.5ex]
+% c_1\in K\LAND c_2\in A\Longrightarrow{}\hskip-4em\nonumber\\
+% g(c_1,c_2)&=&\cases{r(c_1)&if $r(c_1)\neq0$\cr
+%		      s_a&if $r(c_1)=0\LAND\gamma_k(c_1)\in\{1,3\}\LAND
+%					   \gamma_a(c_2)\in\{1,3\}$\cr
+%		      0&otherwise}\label{eq:jg2}\\[.5ex]
+% c_1\in A\LAND c_2\in K\Longrightarrow{}\hskip-4em\nonumber\\
+% g(c_1,c_2)&=&\cases{l(c_2)&if $l(c_2)\neq0$\cr
+%		      s_a&if $l(c_2)=0\LAND\gamma_a(c_1)\in\{2,3\}\LAND
+%					   \gamma_k(c_2)\in\{2,3\}$\cr
+%		      0&otherwise}\label{eq:jg3}
+% \end{eqnarray}
+%
+% ここで問題となるのは，文字ごとにjfmファイルで定められている$l(c_i)$と
+% $r(c_i)$の値を取得するプリミティブが用意されていないことである。そこで，こ
+% れらのglueが0ではないような文字をJISの$1\sim8$区を対象に調査すると，図
+% \ref{fig:jfmglue}に示す結果が得られた。図の表記は文字$c$について，1\,zwを
+% 1000としたときの；
+%
+% \begin{quote}
+% \fbox{\hbox to1zw{\vphantom{あ}\hss$c$\hss}}\quad
+%	$n(l(c)){-}m(l(c))\,/\,w(c)\,/\,n(r(c))-m(r(c))$
+% \end{quote}
+% であり，$w(c)$は$c$の幅である。また$p(l(c))$, $p(r(c))$は全ての文字につい
+% て0であった。なお16区以降の漢字については，これらのglueは0であると信じられ
+% る。
+%
+% 
+%
+% この図から，$z=1$\,zw, $q$を「”」の幅とすると，以下の関係式が帰納的に求め
+% られる。
+%
+% \begin{eqnarray}
+% n(l(c))+w(c)+n(r(c))=z\nonumber\\
+% n(l(c))\neq0\LAND n(r(c))\neq0\Longrightarrow{}\nonumber\\
+%	n(l(c))&=&m(l(c))=n(r(c))=m(r(c))\label{eq:jfm1}\\
+% n(l(c))\neq0\LAND n(r(c))=0\Longrightarrow{}\nonumber\\
+%	m(l(c))&=&(z-q)/2\nonumber\\
+%	m(r(c))&=&0\label{eq:jfm2}\\
+% n(l(c))=0\LAND n(r(c))\neq0\Longrightarrow{}\nonumber\\
+%	m(l(c))&=&0\nonumber\\
+%	m(r(c))&=&(z-q)/2\label{eq:jfm3}
+% \end{eqnarray}
+%
+% すなわち，$n(l(c))$と$n(r(c))$を求めることができれば，$m(l(c))$と$m(r(c))$
+% を算出することができる。
+%
+% この$n(l(c))$と$n(r(c))$は，glueの挿入を局所的に禁止する\|\inhibitglue|を
+% 用いて求めることができる。すなわち$l(c)$と$r(c)$が0であることがわかってい
+% る文字（たとえば「あ」）と$c$を連結した\|\hbox|の幅は，\+\inhibitglue+を文
+% 字間に挿入した場合には連結の順序によって$n(l(c))$または$n(r(c))$だけ小さく
+% なる。つまり\|\hbox|\Meta{str}の幅を\textit{width}(\meta{str})とすると；
+% \SpecialIndex{\inhibitglue}
+%
+% \begin{eqnarray}
+% n(l(c))&=&\textit{width}(\hbox{あ\!\meta{$c$}})-
+%	    \textit{width}(\hbox{あ\|\inhibitglue|\!\meta{$c$}})
+%	\label{eq:jfmleft}\\
+% n(r(c))&=&\textit{width}(\hbox{\meta{$c$}\!あ})-
+%	    \textit{width}(\hbox{\meta{$c$}\|\inhibitglue|あ})
+%	\label{eq:jfmright}
+% \end{eqnarray}
+% となる。
+%
+% したがって$g(c_1,c_2)$を求めるための情報は全て入手可能であり，前述の式
+% $(\ref{eq:jg1})\sim(\ref{eq:jg3})$によって算出することができる。
+%
+% 
+%
+% \subsection{互換性のための処置}
+% \label{sec:imp-compat}
+%
+% \textsf{jumoline.sty}の冒頭では，\LaTeX2e であるか\LaTeX-2.09であるかのチェッ
+% クを行ない，\LaTeX2e であれば\|\NeedsTeXFormat|と\|\ProvidesPackage|を
+% 宣言する。この部分はバージョン番号／日付をこのマニュアルに整合させるために，
+% \textsf{jumoline.dtx}の冒頭にトリッキーな形で埋め込まれており，以下のコードが
+% \textsf{docstrip}によって生成される。
+% \SpecialIndex{\NeedsTeXFormat}
+% \SpecialIndex{\ProvidesPackage}
+%
+%\begin{quote}
+%\begin{verbatim}
+%\def\next{LaTeX2e}
+%\ifx\fmtname\next
+%\def\next{
+%\NeedsTeXFormat{LaTeX2e}[1994/12/01]
+%\ProvidesPackage{jlet}}
+%\else\def\next[#1]{}\fi
+%\next
+%[2001/05/31 v1.2 ]
+%\end{verbatim}
+%\end{quote}
+%
+% \begin{macro}{\PackageError}
+% 続いて\textsf{jumoline}の中で唯一使用している\LaTeX2e 固有のマクロである
+% \|\PackageError|が未定義であれば（すなわち\LaTeX-2.09であれば），ほぼ同様
+% の機能となるように\|\@latexerr|を用いて定義する。
+% \SpecialIndex{\@latexerr}
+% \end{macro}
+%
+% \iffalse
+%<*package>
+% \fi
+%    \begin{macrocode}
+
+\ifx\PackageError\undefined
+\def\PackageError#1#2#3{\@latexerr{#1:#2}{#3^^J\@ehc}}
+\fi
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{レジスタ宣言}
+% \label{sec:imp-decl}
+%
+% \textsf{jumoline}では，以下のレジスタ等を使用する。
+%
+% \begin{itemize}
+% \item
+% \begin{macro}{\UnderlineDepth}
+% \+\UnderlineDepth+ (dimen)\\
+% ベースラインから下線の上端までの距離。デフォルトである\+\strutbox+の深さを
+% 参照することを意味する負値(\+-\maxdimen+)に初期化する。
+% \end{macro}
+% 
+% \item
+% \begin{macro}{\MidlineHeight}
+% \+\MidlineHeight+ (dimen)\\
+% ベースラインから中線の下端までの距離。デフォルトである「あ」の高さの1/2を
+% 参照することを意味する負値(\+-\maxdimen+)に初期化する。
+% \end{macro}
+%
+% \item
+% \begin{macro}{\OverlineHeight}
+% \+\OverlineHeight+ (dimen)\\
+% ベースラインから上線の下端までの距離。デフォルトである\+\strutbox+の高さを
+% 参照することを意味する負値(\+-\maxdimen+)に初期化する。
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMOlineThickness}
+% \+\UMOlineThickness+ (dimen)\\
+% 下線等の線幅を定める。デフォルトである0.4\,ptに初期化する。
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@height}
+% \+\UMO@height+ (dimen)\\
+% 実際の描線時に使用する，ベースラインから線の上端までの距離。
+% \end{macro}
+% 
+% \item
+% \begin{macro}{\UMO@depth}
+% \+\UMO@depth+ (dimen)\\
+% 実際の描線時に使用する，ベースラインから線の下端までの距離。
+% \end{macro}
+% 
+% \item
+% \begin{macro}{\UMO@dqspace}
+% \+\UMO@dqspace+ (dimen)\\
+% \ref{sec:imp-jspace}節で述べた，全角文字$c$の両側のglueである$l(c)$と
+% $r(c)$の算出のために用いられる$(z-q)/2$。ただし$z$は全角スペース幅，$q$は
+% 「”」の幅である。
+% \end{macro}
+% 
+% \item
+% \begin{macro}{\UMO@tempdim}
+% \+\UMO@tempdim+ (dimen)\\
+% スクラッチパッド。
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@prejfmglue}
+% \+\UMO@prejfmglue+ (skip)\\
+% 全角文字$c$の処理において，直前の文字$c'$と$c$の間に挿入されるjfm glueを保
+% 持する（\ref{sec:imp-jspace}節参照）。すなわち$c'$も全角文字であれば
+% $r(c')+l(c)$である。
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@postjfmglue}
+% \+\UMO@postjfmglue+ (skip)\\
+% \ref{sec:imp-jspace}節で述べた，全角文字$c$の右側のglueである$r(c)$を保持
+% する。
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@mode}
+% \+\UMO@mode+ (count)\\
+% \meta{text}の要素は，全角文字，半角文字列，あるいはblocked textを単位とし
+% て処理される（\ref{sec:imp-word}, \ref{sec:imp-char}節参照）。\+\UMO@mode+
+% はある処理単位の直前の処理単位を種類を，以下の識別番号にしたがって保持する。
+%
+% \begin{itemize}\item[]
+% \|\UMO@afterblock|${}=0$\,\ldots\,blocked text
+% \|\UMO@afterword |${}=1$\,\ldots\,半角文字列\\
+% \|\UMO@afterchar |${}=2$\,\ldots\,全角文字
+% \end{itemize}
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@spacefactor}
+% \+\UMO@spacefactor+ (count)\\
+% 半角文字列の処理が終了した時点での\|\spacefactor|の値を保持する。
+% \SpecialIndex{\spacefactor}
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@firstxspcode}
+% \+\UMO@firstxspcode+ (count)\\
+% 半角文字列の先頭文字の\+\xspcode+を保持する。
+% \SpecialIndex{\xspcode}
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@lastxspcode}
+% \+\UMO@firstxspcode+ (count)\\
+% 半角文字列の末尾文字の\+\xspcode+を保持する。
+% \SpecialIndex{\xspcode}
+% \end{macro}
+%
+% \changes{v1.1-1}{2000/07/11}
+%	{\cs{UMO@inhibitxspcode}の解説重複を削除。}
+% \item
+% \begin{macro}{\UMO@inhibitxspcode}
+% \+\UMO@inhibitxspcode+ (count)\\
+% 処理が完了した全角文字の\+\inhibitxspcode+を保持する。
+% \SpecialIndex{\inhibitxspcode}
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@prebreakpenalty}
+% \+\UMO@prebreakpenalty+ (count)\\
+% 半角文字列の先頭文字の\+\prebreakpenalty+を保持する。
+% \SpecialIndex{\prebreakpenalty}
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@postbreakpenalty}
+% \+\UMO@postbreakpenalty+ (count)\\
+% 半角文字列の末尾文字の\+\postbreakpenalty+を保持する。
+% \SpecialIndex{\postbreakpenalty}
+% \end{macro}
+%
+% \item
+% \begin{macro}{\UMO@kpostbreakpenalty}
+% \+\UMO@kpostbreakpenalty+ (count)\\
+% 処理が完了した全角文字の\+\postbreakpenalty+を保持する。
+% \SpecialIndex{\postbreakpenalty}
+% \end{macro}
+%
+% \item
+% \begin{macro}{\ifUMO@nospace}
+% \+\ifUMO@nospace+ (if)\\
+% \meta{text}の先頭要素，あるいはスペース直後のblocked text（およびその連鎖）
+% に引き続く要素であることを示す。このような要素については，その左方への語間
+% スペース挿入を行なわない。
+% \end{macro}
+%
+% \item
+% \begin{macro}{\ifUMO@firstelem}
+% \+\ifUMO@firstelem+ (if)\\
+% \meta{text}の先頭要素であることを示す。\+\Underline+等の直前の文字との間の
+% スペーシングを\TeX に委ねるため，先頭要素については他の要素とは異なる描線
+% 手順をとる（\ref{sec:imp-drawline}節参照）。
+% \end{macro}
+% \end{itemize}
+%
+%    \begin{macrocode}
+%% Register Declaration
+
+\newdimen\UnderlineDepth \UnderlineDepth-\maxdimen
+\newdimen\MidlineHeight \MidlineHeight-\maxdimen
+\newdimen\OverlineHeight \OverlineHeight-\maxdimen
+\newdimen\UMOlineThickness \UMOlineThickness.4pt
+
+\newdimen\UMO@height \newdimen\UMO@depth
+\newdimen\UMO@dqspace \newdimen\UMO@tempdim
+
+\newskip\UMO@prejfmglue \newskip\UMO@postjfmglue
+
+\newcount\UMO@mode
+\let\UMO@afterblock\z@
+\let\UMO@afterword\@ne
+\let\UMO@afterchar\tw@
+
+\newcount\UMO@spacefactor
+\newcount\UMO@firstxspcode
+\newcount\UMO@lastxspcode
+\newcount\UMO@inhibitxspcode
+\newcount\UMO@prebreakpenalty
+\newcount\UMO@postbreakpenalty
+\newcount\UMO@kpostbreakpenalty
+
+\newif\ifUMO@nospace \newif\ifUMO@firstelem
+
+%%^L
+
+%    \end{macrocode}
+%
+% なお上記の他，\LaTeX で宣言された以下のレジスタ等も使用する。
+%
+% \begin{itemize}\item[]
+% \+\@tempboxa+\quad\+\@tempdima+\quad\+\@tempdimb+\quad
+% \+\@tempskipa+\quad\+\@tempcnta+\\\+\if@tempswa+
+% \SpecialIndex{\@tempboxa}
+% \SpecialIndex{\@tempdima}
+% \SpecialIndex{\@tempdimb}
+% \SpecialIndex{\@tempskipa}
+% \SpecialIndex{\@tempcnta}
+% \SpecialIndex{\if@tempswa}
+% \end{itemize}
+%
+% 
+% 
+%
+% \subsection{ユーザインタフェースと初期化}
+% \label{sec:imp-uifinit}
+%
+% \begin{macro}{\Underline}
+% \begin{macro}{\Midline}
+% \begin{macro}{\Overline}
+% \begin{macro}{\UMOline}
+% ユーザインタフェースであるマクロ\|\Underline|\Meta{text},
+% \+\Midline+\Meta{text}, \+\Overline+\Meta{text},
+% \+\UMOline+\Meta{height}\Meta{text}は，共通のマクロ；
+%
+% \begin{quote}
+% \+\UMO@line+\Meta{reg-or-def}\Meta{reg-height}\Meta{def-height}\Meta{text}
+% \end{quote}
+%
+% を呼び出して，各マクロに固有の位置に描線する。描かれる線のベースラインに近
+% い方の端のベースラインからの高さ$\delta$は，下式によって定まる。
+%
+% \begin{equation}
+% \delta=\cases{\meta{reg-height}&if $\meta{reg-or-def}\geq 0$\cr
+%		  \meta{def-height}&if $\meta{reg-or-def}< 0$}
+% \label{eq:delta}
+% \end{equation}
+% したがって各マクロが以下のような引数で\|\UMO@line|を呼び出すことにより，
+% \ref{sec:usage-line}節で述べた描線位置の制御が行なわれる。
+%
+% \begin{center}\begin{tabular}{l|lll}
+% &\meta{reg-or-def}&\meta{reg-height}&\meta{def-height}\\\hline
+% \+\Underline+&\+\UnderlineDepth+&\+-\UnderlineDepth+&\+\dp\strutbox+\\
+% \+\Midline+&\+\MidlineHeight+&\+\MidlineHeight+&{\it height-of\/}(あ)/2\\
+% \+\Overline+&\+\OverlineHeight+&\+\OverlineHeight+&\+\ht\strutbox+\\
+% \+\UMOline+&\+-\maxdimen+&---&\meta{height}\\
+% \end{tabular}\end{center}
+% \end{macro}\end{macro}\end{macro}\end{macro}
+%
+%    \begin{macrocode}
+%% User Interface and Initialization
+
+\def\Underline{\UMO@line\UnderlineDepth{-\UnderlineDepth}{-\dp\strutbox}}
+\def\Midline{\setbox\@tempboxa\hbox{あ}%
+        \UMO@line\MidlineHeight\MidlineHeight{.5\ht\@tempboxa}}
+\def\Overline{\UMO@line\OverlineHeight\OverlineHeight{\ht\strutbox}}
+\def\UMOline{\UMO@line{-\maxdimen}\z@}
+
+%    \end{macrocode}
+%
+% \begin{macro}{\UMO@line}
+% \begin{macro}{\\}
+% \meta{text}の要素として出現する\|\\|は，\LaTeX の原定義とは異なる処理を行
+% なう必要があるので，\+\UMO@line+はまずグループを開始し\|\\|を
+% \|\UMOnewline|に\|\let|する。
+%
+% 次に式(\ref{eq:delta})の$\delta$を算出する。この$\delta$は下線等のベースラ
+% インに近い方の端からベースラインまでの距離であるので，下式によって線の上端
+% の高さ\|\UMO@height| ($h$)と，下端の深さ\|\UMO@depth| ($d$) を算出する。た
+% だし$w$は\|\UMOlineThickness|の値である。
+%
+% \begin{eqnarray}
+% h&=&\cases{\delta+w&if $\delta\geq0$\cr
+%	     \delta&if $\delta<0$}\\[.3ex]
+% e&=&\cases{-\delta&if $\delta\geq0$\cr
+%	     -\delta+w&if $\delta<0$}
+% \end{eqnarray}
+%
+% 続いて式(\ref{eq:jg2}), (\ref{eq:jg3})の$(z-q)/2$を算出して\|\UMO@dqspace|
+% に設定する。また\meta{text}の先頭要素を処理するため，\+\ifUMO@nospace+と
+% \|\ifUMO@firstelem|を真に初期化し，\+\UMO@mode+を\|\UMO@afterblock|とする。
+% さらにvertical modeであれば\|\leavevmode|によってhorizontal modeへスイッチ
+% する。
+%
+% \meta{text}は後述する\|\UMO@wordloop|（\ref{sec:imp-word}節参照）によって，
+% 語間スペースによって区切られた語要素単位に処理される。この要素を$w_1$,
+% \ldots, $w_n$としたとき，\+\UMO@wordloop+には；
+%
+% \begin{quote}
+% $w_1$\verb*| |$w_2$\verb*| |\ldots\verb*| |$w_n$\verb*| \@nil |
+% \end{quote}
+%
+% が渡される。この最終要素\|\@nil|とそれに続くスペースは，
+% \+\noexpand\@nil\space+を\|\edef|により展開し，さらにそれを\|\expandafter|
+% によって展開するというトリックにより付加される。
+%
+% \|\UMO@wordloop|によって\meta{text}の処理が完了すると，\+\UMO@line+はグルー
+% プを終了し，引き続くテキストとの間のスペーシング等を適切に行なうための
+% \|\UMO@aftergroup|を呼び出す（\ref{sec:imp-end}節参照）。
+% \end{macro}\end{macro}
+%    \begin{macrocode}
+\def\UMO@line#1#2#3#4{\begingroup \let\\\UMOnewline
+        \relax\ifdim#1<\z@ \UMO@height#3\relax
+        \else \UMO@height#2\relax \fi
+        \UMO@depth-\UMO@height
+        \ifdim\UMO@height<\z@ \advance\UMO@depth\UMOlineThickness
+        \else                 \advance\UMO@height\UMOlineThickness \fi
+        \settowidth\UMO@dqspace{“}\advance\UMO@dqspace-1zw
+        \UMO@dqspace-\UMO@dqspace \divide\UMO@dqspace\tw@
+        \UMO@nospacetrue \UMO@firstelemtrue
+        \UMO@mode\UMO@afterblock
+        \ifvmode\leavevmode\fi
+        \def\@tempa{#4 }\edef\@tempb{\noexpand\@nil\space}%
+        \expandafter\expandafter\expandafter\UMO@wordloop
+                \expandafter\@tempa\@tempb
+        \endgroup \UMO@aftergroup}
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{語要素の処理}
+% \label{sec:imp-word}
+%
+% \begin{macro}{\UMO@wordloop}
+% \+\UMO@wordloop+は語要素の先頭文字が`\|{|'であるか否かを\|\UMO@ifbgroup|に
+% よりチェックし，`\+{+'であればblocked textを処理する\|\UMO@wordblock|を，
+% `\+{+'でなければ半角／全角文字列を処理する\|\UMO@iwordloop|を呼び出す。
+% \end{macro}
+%
+% \begin{macro}{\UMO@ifbgroup}
+% \begin{macro}{\UMO@ifnc}
+% \SpecialIndex{\if@nextchar}
+% \+\UMO@ifbgroup+\meta{then}\meta{else}は，
+% \+\if@nextchar\bgroup+\meta{then}\meta{else}とほとんど同じであるが，
+% `\+{+'の前のスペースを読み飛ばさないことが異なる。これは特に；
+%
+% \begin{quote}
+% \verb*|\Underline{ |\Meta{blocked-text}\ldots\+}+
+% \end{quote}
+%
+% のように，\meta{text}の先頭のスペースを無視しないための措置である。
+% \+\UMO@ifbgroup+の実装は，スペース読み飛ばしがないため\|\if@nextchar|より
+% も単純であり，\+\futurelet+の簡単な応用例である。
+% \end{macro}\end{macro}
+%
+%    \begin{macrocode}
+%% Processing Word Elements
+
+\def\UMO@wordloop{\UMO@ifbgroup\UMO@wordblock\UMO@iwordloop}
+\def\UMO@ifbgroup#1#2{\let\@tempa#1\let\@tempb#2\futurelet\@tempc\UMO@ifnc}
+\def\UMO@ifnc{\ifx\@tempc\bgroup \let\next\@tempa \else\let\next\@tempb \fi
+        \next}
+%    \end{macrocode}
+%
+% \changes{v1.1-1}{2000/07/11}
+%	{\cs{ifUMO@nonspace}の誤記修正。}
+% \begin{macro}{\UMO@wordblock}
+% \+\UMO@wordblock+\Meta{blocked-text}は，まず\|\UMO@spaceskip|
+% （\ref{sec:imp-wordspace}節参照）により語要素の直前の語間スペースに対応す
+% る下線等を生成し，続いて\|\UMO@putbox|（\ref{sec:imp-drawline}節参照）によっ
+% て\!\meta{blocked-text}に下線等を施す。続いて\!\meta{blocked-text}にスペース
+% なしで引き続く要素（もしあれば）を\|\UMO@wordloop|で処理するが，その際に前
+% 方にスペースを挿入しないように\|\ifUMO@nospace|を真にし，また\|\UMO@mode|を
+% \|\UMO@afterblock|にして後続要素が全角文字である場合の文字間スペース挿入を
+% 抑止する。一方\!\meta{blocked-text}の直後がスペースである場合は，そのスペー
+% スに対する\|\spacefactor|を1000とするために，\+\UMO@spacefactor+を1000にす
+% る。
+% \end{macro}
+%
+%    \begin{macrocode}
+\def\UMO@wordblock#1{\UMO@spaceskip
+        \UMO@putbox\relax{#1}\UMO@nospacetrue \UMO@mode\UMO@afterblock
+        \UMO@spacefactor\@m \UMO@wordloop}
+%    \end{macrocode}
+%
+% \begin{macro}{\UMO@iwordloop}
+% \begin{macro}{\UMO@theword}
+% \+\UMO@iwordloop+\meta{word}\verb*| |は，\meta{word}が\|\@nil|であれば
+% \|\UMO@end|（\ref{sec:imp-end}節参照）によって終了処理を行なう。また直前の
+% 語要素がblocked textであれば，語要素は\|\UMO@wordblock|により処理されて取
+% り除かれているので，\!\meta{word}は空となる。この場合には，次の語要素の処
+% 理の際に語間スペース処理を行なう必要があるため，\+\ifUMO@nospace+を偽とし
+% て\|\UMO@wordloop|を呼び出す。
+%
+% 上記以外の場合，\meta{word}の直前のスペース（もしあれば）に対応する下線等
+% を\|\UMO@spaceskip|（\ref{sec:imp-wordspace}節参照）により生成し，続いて
+% \|\UMO@charloop|\meta{word}\+\@nil+によって\!\meta{word}を構成する文字列の
+% 処理を行なう。その際，\|\UMO@mode|を\|\UMO@afterblock|にして，\meta{word}
+% の先頭が全角文字である場合の文字間スペース挿入を抑止する。また\meta{word}
+% の先頭が半角文字である場合のために，半角文字列を保持する\|\UMO@theword|を
+% 空に初期化するとともに，\+\UMO@firstxspcode+を$-1$にして空であることを示す。
+% \end{macro}\end{macro}
+%
+%    \begin{macrocode}
+\def\UMO@iwordloop#1 {\def\@tempa{#1}\ifx\@tempa\@nnil \let\next\UMO@end
+        \else
+        \ifx\@tempa\empty \UMO@nospacefalse
+        \else
+                \UMO@spaceskip \UMO@mode\UMO@afterblock
+                \def\UMO@theword{}\UMO@firstxspcode\m@ne
+                \UMO@charloop#1\@nil \fi
+        \let\next\UMO@wordloop \fi
+        \next}
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{語間スペース処理}
+% \label{sec:imp-wordspace}
+%
+% \begin{macro}{\UMO@spaceskip}
+% \+\UMO@spaceskip+は，\+\ifUMO@nospace+が偽である場合に語間スペースに対応す
+% る下線等を生成する。語間スペースのためのglue $\sigma$は，
+% \ref{sec:imp-solution}節の表\ref{tab:space}に示すように算出される。したがっ
+% てスペース直前の語要素生成時点での\|\spacefactor|である\|\UMO@spacefactor|
+% に基づき，$\sigma$を算出して\|\@tempskipa|にセットし，
+% \+\UMO@skip+\meta{$\sigma$}（\ref{sec:imp-drawline}節参照）によって下線等を
+% 生成すればよい。
+% \end{macro}
+%
+% \begin{macro}{\UMO@setspaceskip}
+% なおこの$\sigma$算出の過程において，$\+\spacefactor+<2000$かつ
+% $\+\spaceskip+\ (s)\neq0$である場合，$s$の幅$n(s)$と伸縮項$p(s)$, $m(s)$を
+% 個別に求める必要がある。この操作は\TeX のprimitiveとして用意されていないた
+% め，\+\the\spaceskip+により得られる$s$の文字列表現\!\meta{the-s}を
+% \|\UMO@setspaceskip|で処理することによって求める。この\!\meta{the-s}は；
+% $$
+% \def\PLUS{\hbox{\tt\char`\ plus\char`\ }}
+% \def\MINUS{\hbox{\tt\char`\ minus\char`\ }}
+% \def\LAND{{\;\land\;}}
+% \meta{the-s}=\cases{n(s)&			if $p(s)=0\LAND m(s)=0$\cr
+%		      n(s)\PLUS p(s)&		if $p(s)\neq0\LAND m(s)=0$\cr
+%		      n(s)\MINUS m(s)&		if $p(s)=0\LAND m(s)\neq0$\cr
+%		      n(s)\PLUS p(s)\MINUS m(s)&if $p(s)\neq0\LAND m(s)\neq0$}
+% $$
+% の4通りの表現を持つ。そこで\|\UMO@space|では；
+%
+% \begin{quote}
+% \+\UMO@setspaceskip+\meta{the-s}\verb*| @ @ @ @ \@nil|
+% \end{quote}
+%
+% と呼び出すことにより，少なくとも5個のスペースで区切られた6個の要素（6番目
+% 以降は無意味）を\|\UMO@setspaceskip|に与える。なお\meta{the-s}から\+\@nil+
+% の直前のスペースまでの部分は，``\+\the\spaceskip\space @ @ @ @ +''を
+% \|\edef|により展開し，さらにそれを\|\expandafter|によって展開するというト
+% リックにより付加される。
+%
+% 一方呼び出される\|\UMO@setspaceskip|の引数構文は；
+%
+% \begin{itemize}\item[]
+% \+\UMO@setspaceskip+\meta{$n$}\verb*| |\meta{plus-or-minus}\verb*| |
+%	\meta{p-or-m}\verb*| |\meta{minus}\verb*| |\meta{$m$}\verb*| |
+%	\meta{trailer}\+\@nil+
+% \end{itemize}
+%
+% であるので，\meta{plus-or-minus}が``\+plus+'', ``\+minus+'', ``\+@+''のいずれ
+% であるか，また\meta{minus}が\hbox{``\|minus|''}と``\+@+''のいずれであるか
+% を判定することにより，\meta{the-s}がどの表現であるかを調べて各々に対応する
+% 伸縮項を持つglueを\|\@tempskipa|に設定することができる。
+% \end{macro}
+%
+% \begin{macro}{\UMO@plus}
+% \begin{macro}{\UMO@minus}
+% \changes{v1.1-2}{2000/07/11}
+% 	{\texttt{plus}と\texttt{minus}を保持するマクロ名のバグ修正。}
+%	
+% なお，上記の``\+plus+''と``\+minus+''はいずれも\+\catcode+が（11ではなく）
+% 12の文字列である。これらを簡単に得るために``\+1pt plus 2pt minus 3pt+''を
+% \|\@tempskipa|に設定した上で\|\the\@tempskipa|を行ない，その結果から
+% ``\+plus+''と``\+minus+''を抽出して\|\UMO@plus|と\|\UMO@minus|に\|\def|す
+% る操作をあらかじめ行なっておく。
+% \end{macro}\end{macro}
+%
+%    \begin{macrocode}
+%% Interword Spacing
+
+\def\UMO@spaceskip{\ifUMO@nospace \UMO@nospacefalse \else
+        \ifdim\spaceskip=\z@
+            \@tempdima\fontdimen3\font\relax
+                \multiply\@tempdima\UMO@spacefactor \divide\@tempdima\@m
+            \@tempdimb\fontdimen4\font\relax \multiply\@tempdimb\@m
+                \divide\@tempdimb\UMO@spacefactor
+            \@tempskipa\fontdimen2\font plus\@tempdima minus\@tempdimb\relax
+        \else
+            \edef\@tempa{\the\spaceskip\space @ @ @ @ }%
+            \expandafter\UMO@setspaceskip\@tempa\@nil
+        \fi
+        \ifnum\UMO@spacefactor<2000\else
+                \ifdim\xspaceskip=\z@ \advance\@tempskipa\fontdimen7\font
+                \else \@tempskipa\xspaceskip
+        \fi\fi
+        \UMO@skip\@tempskipa \fi}
+\def\UMO@setspaceskip#1 #2 #3 #4 #5 #6\@nil{\@tempdima\z@ \@tempdimb\z@
+        \def\@tempa{#2}\def\@tempb{#3}%
+        \ifx\@tempa\UMO@plus \@tempdima#3\def\@tempa{#4}\def\@tempb{#5}\fi
+        \ifx\@tempa\UMO@minus \@tempdimb\@tempb\relax\fi
+        \multiply\@tempdima\UMO@specefactor \divide\@tempdima\@m
+        \multiply\@tempdimb\@m \divide\UMO@spacefactor
+        \@tempskipa#1 plus\@tempdima minus\@tempdimb\relax}
+\def\@tempa#1 #2 #3 #4 #5\@nil{\def\UMO@plus{#2}\def\UMO@minus{#4}}
+\@tempskipa1pt plus 2pt minus 3pt
+\expandafter\@tempa\the\@tempskipa\@nil
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{文字列の処理}
+% \label{sec:imp-char}
+%
+% \begin{macro}{\UMO@charloop}
+% \+\UMO@charloop+は語要素の先頭文字が`\|{|'であるか否かを\|\UMO@ifbgroup|
+% （\ref{sec:imp-word}節参照）によりチェックし，`\+{+'であればblocked textを
+% 処理する\|\UMO@charblock|を，`\+{+'でなければ半角／全角文字を処理する
+% \|\UMO@icharloop|を呼び出す。
+% \end{macro}
+%
+% \begin{macro}{\UMO@charblock}
+% \+\UMO@charblock+\Meta{blocked-text}は，まず\|\UMO@putword|
+% （\ref{sec:imp-astring}節参照）により\!\meta{block-text}の直前の半角文字列
+% （もしあれば）に下線等を施したものを生成し，続いて\|\UMO@putbox|
+% （\ref{sec:imp-drawline}節参照）によって\!\meta{blocked-text}に下線等を施
+% す。続いて\!\meta{blocked-text}にスペースなしで引き続く要素（もしあれば）
+% を\|\UMO@charloop|で処理するが，その際に\|\UMO@mode|を\|\UMO@afterblock|に
+% して後続要素が全角文字である場合の文字間スペース挿入を抑止する。一方
+% \!\meta{blocked-text}の直後がスペースである場合は，そのスペースに対する
+% \|\spacefactor|を1000とするために，\+\UMO@spacefactor+を1000にする。
+% \end{macro}
+%
+%    \begin{macrocode}
+%% Processing Characters
+
+\def\UMO@charloop{\UMO@ifbgroup\UMO@charblock\UMO@icharloop}
+\def\UMO@charblock#1{\UMO@putword
+        \UMO@putbox\relax{#1}\UMO@mode\UMO@afterblock \UMO@spacefactor\@m
+        \UMO@charloop}
+%    \end{macrocode}
+%
+% \changes{v1.1-1}{2000/07/11}
+%	{節参照の不統一を修正。}
+% \begin{macro}{\UMO@icharloop}
+% \begin{macro}{\UMO@theword}
+% \+\UMO@icharloop+\meta{char}は，\meta{char}が\|\@nil|, \+\UMOspace+,
+% \+\UMOnewline+（\+\\+を含む）のいずれかである場合には，まず\|\UMO@putword|
+% （\ref{sec:imp-astring}節参照）により\!\meta{char}の直前の半角文字列（もし
+% あれば）に下線等を施したものを生成する。続いて\|\@nil|であれば文字列処理を
+% 終了，\|\UMOspace|であれば\|\UMO@space|（\ref{sec:imp-spnl}節参照）を呼び
+% 出してスペースを挿入，\|\UMOnewline|であれば\|\UMO@newline|
+% （\ref{sec:imp-spnl}節参照）を呼び出して改行，のいずれかを行なう。
+%
+% 上記以外の場合，\meta{char}の文字コードをチェックし，256未満であれば
+% \!\meta{char}を\|\UMO@theword|の末尾に付加する。またその際，
+% \|\UMO@firstxspcode|が負であれば，すなわち\!\meta{char}が半角文字列の先頭
+% であれば，\+\UMO@firstxspcode+と\|\UMO@prebreakpenalty|に\meta{char}の
+% \|\xspcode|と\|\prebreakpenalty|を設定して，半角文字列の左側のスペース／ペ
+% ナルティ挿入処理で参照できるようにする。さらに（\+\UMO@firstxspcode+の値に
+% 関わらず）\meta{char}が文字列の末尾である場合に備えて，\+\UMO@lastxspcode+
+% と\|\UMO@postbreakpenalty|に\meta{char}の\|\xspcode|と\|\postbreakpenalty|
+% を設定して，半角文字列の右側のスペース／ペナルティ挿入処理で参照できるよう
+% にする。
+%
+% 一方\meta{char}の文字コードが256以上であれば全角文字とみなし，まず
+% \|\UMO@putword|により\!\meta{char}の直前の半角文字列（もしあれば）に下線等
+% を施したものを生成する。続いて\|\UMO@putchar|\Meta{char}
+% （\ref{sec:imp-kchar}節参照）によって\!\meta{char}に下線等を施したものを生
+% 成する。また\meta{char}の直後がスペースである場合に備えて，
+% \+\UMO@spacefactor+を1000に設定する。\end{macro}\end{macro}
+%
+% \begin{macro}{\UMOspace}
+% \begin{macro}{\UMOnewline}
+% なお\|\UMOspace|と\|\UMOnewline|が，\|\UMO@icharloop|の引数以外のコンテク
+% ストで出現すると（たとえば\|\Underline|等の外側での出現），適切な処理を行
+% なうことができない。そこでこれらは\|\PackageError|によってエラーメッセージ
+% 出力などのエラー処理を行なうように定義される。
+% \end{macro}\end{macro}
+%
+%    \begin{macrocode}
+\def\UMO@icharloop#1{\def\@tempa{#1}%
+        \ifx\@tempa\@nnil \UMO@putword \let\next\relax
+        \else\ifx\UMOspace#1\relax \UMO@putword \let\next\UMO@space
+        \else\ifx\UMOnewline#1\relax \UMO@putword \let\next\UMO@newline
+        \else
+        \ifnum`#1<256\relax \edef\UMO@theword{\UMO@theword#1}%
+                \ifnum\UMO@firstxspcode<\z@
+                        \UMO@firstxspcode\xspcode`#1\relax
+                        \UMO@prebreakpenalty\prebreakpenalty`#1\relax
+                        \fi
+                \UMO@lastxspcode\xspcode`#1\relax
+                \UMO@postbreakpenalty\postbreakpenalty`#1\relax
+        \else \UMO@putword \UMO@putchar{#1}\UMO@spacefactor\@m\fi
+        \let\next\UMO@charloop \fi\fi\fi \next}
+\def\UMOspace{\PackageError{jumoline}%
+        {\string\UMOspace\space cannot be used here.}%
+        {\string\UMOspace\space can be used only in the argument of
+                \string\Underline\space and its relatives.}}
+\def\UMOnewline{\PackageError{jumoline}%
+        {\string\UMOnewline\space cannot be used here.}%
+        {\string\UMOnewline\space can be used only in the argument of
+                \string\Underline\space and its relatives.}}
+
+%%^L
+
+%    \end{macrocode}
+% 
+%
+% \subsection{半角文字列の処理}
+% \label{sec:imp-astring}
+%
+% \begin{macro}{\UMO@putword}
+% \begin{macro}{\UMO@theword}
+% \+\UMO@putword+は\+\UMO@theword+が空でない場合，そこに格納された半角文字列
+% $w$に下線等を施すとともに，その左側への文字間スペース／改行ペナルティ
+% 挿入を行なう。まず\|\UMO@mode|をチェックし，その値が\|\UMO@afterchar|であ
+% る場合，すなわち$w$の直前の文字が全角文字$k$である場合には，
+% ペナルティと文字間スペースを挿入する。ペナルティの値は$k$の
+% \|\postbreakpenatly|である\|\UMO@kpostpenalty|と，$w$の先頭文字$a$の
+% \|\prebreakpenalty|である\|\UMO@prebreakpenalty|の和である。また文字間スペー
+% スは式(\ref{eq:jg2})で定まり，$k$の右側のjfm glue ($r(k)$)である
+% \|\UMO@postjfmglue|が0でなければその値である。一方0であれば，$\gamma_k(k)$
+% である\|\UMO@inhibitxspcode|と，$\gamma_a(a)$である\|\UMO@firstxspcode|が
+% ともに1または3であるときに\|\xkanjiskip| ($s_a$)が挿入される。
+%
+% \begingroup\hfuzz0.6pt
+% 次に$w$の直後にスペースがある場合に備えて，$w$からなる\|\hbox|を仮生成して
+% \|\spacefactor|を得て，その値を\|\UMO@spacefactor|に設定する。この操作によっ
+% て，$w$の末尾文字の\|\sfcode|が0である場合の特例など，\TeX の
+% \|\spacefactor|の機構を簡単にシミュレートできる。
+% \par\endgroup
+%
+% 続いて\+\UMO@putbox+（\ref{sec:imp-drawline}節参照）によって$w$に下線を施
+% したものを生成する。最後に，\+\UMO@mode+を\|\UMO@afterword|として後続文字
+% が全角文字である場合に適切なスペーシングが行なわれるようにし，
+% \+\UMO@theword+と\|\UMO@firstxspcode|を空と$-1$に初期化する。
+% \end{macro}\end{macro}
+%
+%    \begin{macrocode}
+%% Put ASCII String
+
+\def\UMO@putword{\ifx\UMO@theword\empty\else
+        \ifnum\UMO@mode=\UMO@afterchar
+                \advance\UMO@kpostbreakpenalty\UMO@prebreakpenalty
+                \penalty\UMO@kpostbreakpenalty
+                \ifdim\UMO@postjfmglue>\z@ \UMO@skip\UMO@postjfmglue
+                \else\ifodd\UMO@inhibitxspcode \ifodd\UMO@firstxspcode
+                        \UMO@skip\xkanjiskip \fi\fi\fi\fi
+        \setbox\@tempboxa\hbox{%
+                \UMO@theword\global\UMO@spacefactor\spacefactor}%
+        \UMO@putbox\relax\UMO@theword \UMO@mode\UMO@afterword
+        \def\UMO@theword{}\fi \UMO@firstxspcode\m@ne}
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{全角文字の処理}
+% \label{sec:imp-kchar}
+%
+% \begin{macro}{\UMO@putchar}
+% \begin{macro}{\UMO@zskip}
+% \+\UMO@putchar+\meta{$c$}は，まず$c$の左側への文字間スペース／改行ペナルティ
+% を挿入し，次に$c$に下線等を施し，最後に$c$の右側への文字間スペース／改行ペ
+% ナルティ挿入の準備をする。
+%
+% まず$c$の左右への文字間スペース／改行ペナルティ挿入の準備として，
+% \|\UMO@mode|が\|\UMO@afterchar|であれば，すなわち$c$の直前の文字$c'$が全角
+% 文字であれば，$c'$の右側のjfm glue ($r(c')$)である\|\UMO@postjfmglue|を
+% \|\UMO@prejfmglue|に設定する。一方$c'$が全角文字でなければ
+% \|\UMO@prejfmglue|を0とする。さらに\|\UMO@postjfmglue|を0に初期化した後，
+% $c$がJISの15区までの文字であれば後述の\|\UMO@setjfmglue|\meta{$c$}によって，
+% \|\UMO@prejfmglue|に$r(c')+l(c)$を（式(\ref{eq:jg1})参照），
+% また$c$の右側の文字間スペース挿入の準備として\|\UMO@postjfmglue|に$r(c)$を，
+% それぞれ設定する。続いて\|\@tempskipa| ($g(c',c)$)に\|\UMO@prejfmglue|を，
+% \|\UMO@inhibitxspcode|に$c$の\|\inhibitxspcode|を，改行ペナルティ ($p$)を
+% 保持する\|\@tempcnta|に$c$の\|\prebreakpenalty|をそれぞれ設定する。
+%
+% 次に\|\UMO@mode|が\|\UMO@afterchar|であれば，すなわち$c'$が全角文字であれ
+% ば，$p$に$c'$の\|\postbreakpenalty|である\|\UMO@kpostbreakpenalty|を加え，
+% さらに$r(c')+l(c)$である\|\UMO@prejfmglue|が0であれば$g(c',c)$を
+% \|\kanjiskip| ($s_k$)とする（式(\ref{eq:jg1})参照）。
+%
+% 一方\|\UMO@mode|が\|\UMO@afterword|であれば，すなわち$c'$が半角文字であれ
+% ば，$p$に$c'$の\|\postbreakpenalty|である\|\UMO@postbreakpenalty|を加える。
+% また式(\ref{eq:jg3})にしたがって，$l(c)$である\|\UMO@prejfmglue|が0でなく，
+% かつ$\gamma_a(c')$のである\|\UMO@lastxspcode|と$\gamma_k(c)$である
+% \|\UMO@inhibitxspcode|がともに2または3であれば，$g(c',c)$を\|\xkanjiskip|
+% ($s_a$)とする。
+%
+% 続いてペナルティ$p$を挿入した後，$g(c',c)$の全ての項が0でなければ$g(c',c)$
+% を挿入する。なおskipに対する\|\ifdim|は幅のみを対象とするので，あらかじめ
+% 全項が0のskipの\|\the|表現を\|\UMO@zskip|に\|\def|しておき，$g(c',c)$の
+% 全項0の判定は\|\the\@tempskipa|と\|\UMO@zskip|を\|\ifx|で比較することによ
+% り行なう。
+%
+% 続いて\+\UMO@putbox+（\ref{sec:imp-drawline}節参照）によって$c$に下線を施
+% したものを生成するが，その際に\TeX によって不要なスペーシングが行なわれる
+% のを抑止するため，$c$の両側に\|\inhibitglue|を置くことを指示する。
+%
+% 最後に$c$の右側の改行ペナルティ挿入の準備として，
+% \|\UMO@kpostbreakpenalty|に$c$の\|\postbreakpenalty|を設定し，\|\UMO@mode|
+% を\|\UMO@afterchar|とする。
+% \end{macro}\end{macro}
+%
+%    \begin{macrocode}
+%% Put Kanji Letter
+
+\def\UMO@putchar#1{%
+        \ifnum\UMO@mode=\UMO@afterchar \UMO@prejfmglue\UMO@postjfmglue
+        \else                          \UMO@prejfmglue\z@ \fi
+        \UMO@postjfmglue\z@
+        \ifnum`#1<\kuten"1001\relax\UMO@setjfmglue{#1}\fi
+        \@tempskipa\UMO@prejfmglue
+        \UMO@inhibitxspcode\inhibitxspcode`#1\relax
+        \@tempcnta\prebreakpenalty`#1\relax
+        \ifnum\UMO@mode=\UMO@afterchar
+                \advance\@tempcnta\UMO@kpostbreakpenalty
+                \ifdim\UMO@prejfmglue=\z@ \@tempskipa\kanjiskip \fi
+        \else\ifnum\UMO@mode=\UMO@afterword
+                \advance\@tempcnta\UMO@postbreakpenalty
+                \ifdim\UMO@prejfmglue=\z@
+                \ifnum\UMO@lastxspcode>\@ne \ifnum\UMO@inhibitxspcode>\@ne
+                        \@tempskipa\xkanjiskip \fi\fi\fi\fi\fi
+        \penalty\@tempcnta
+        \edef\@tempa{\the\@tempskipa}\ifx\@tempa\UMO@zskip\else
+                \UMO@skip\@tempskipa \fi
+        \UMO@putbox\inhibitglue{#1}%
+        \UMO@kpostbreakpenalty\postbreakpenalty`#1\relax
+        \UMO@mode\UMO@afterchar}
+\@tempskipa\z@
+\edef\UMO@zskip{\the\@tempskipa}
+%    \end{macrocode}
+%
+% \begin{macro}{\UMO@setjfmglue}
+% \+\UMO@setjfmglue+\meta{$c$}は，\ref{sec:imp-jspace}節に示した方法に基づき，
+% $c$の左右のjfm glueである$l(c)$と$r(c)$を求める。まず式(\ref{eq:jfmleft}), 
+% (\ref{eq:jfmright})に従って$n(l(c))$と$n(r(c))$を求め，続いてこれらに基づ
+% き式$(\ref{eq:jfm1})\sim(\ref{eq:jfm3})$に従って$m(l(c))$と$m(r(c))$を求め
+% る。最終的に$l(c)$は直前の文字$c'$についての$r(c')$を保持している
+% \|\UMO@prejfmglue|に加えられ，$r(c)$は\|\UMO@postjfmglue|に格納される。
+% \end{macro}
+%
+%    \begin{macrocode}
+\def\UMO@setjfmglue#1{%
+        \settowidth\@tempdima{あ#1}\settowidth\@tempdimb{あ\inhibitglue#1}%
+        \advance\@tempdima-\@tempdimb
+        \settowidth\UMO@tempdim{#1あ}\settowidth\@tempdimb{#1\inhibitglue あ}%
+        \advance\UMO@tempdim-\@tempdimb
+        \ifdim\@tempdima>\z@
+                \ifdim\UMO@tempdim>\z@
+                        \@tempskipa\@tempdima minus\@tempdima\relax
+                        \UMO@postjfmglue\UMO@tempdim minus\UMO@tempdim\relax
+                \else   \@tempskipa\@tempdima minus\UMO@dqspace\relax \fi
+                \advance\UMO@prejfmglue\@tempskipa
+        \else \UMO@postjfmglue\UMO@tempdim minus\UMO@dqspace \fi}
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{描線処理}
+% \label{sec:imp-drawline}
+%
+% \begin{macro}{\UMO@putbox}
+% \+\UMO@putbox+\meta{inh}\Meta{cont}は，\meta{cont}からなる\|\hbox|と，
+% 高さが\|UMO@height|, 深さが\|\UMO@depth|, 幅が\|\hbox|\Meta{cont}の幅であ
+% るような下線等を生成する。下線等は\|\rlap|または\|\llap|によって幅0の
+% \|\hbox|として生成されるが，それを\|\hbox|\Meta{cont}の左右どちらに置くか
+% は\|\ifUMO@firstelem|の真偽，すなわち\!\meta{cont}が\!\meta{text}の先頭要
+% 素か否かによって定まる。すなわち，先頭要素であれば下線等は\|\llap|によって
+% 右側に，そうでなければ\|\rlap|によって左側に置かれる。この結果，
+% \+\Underline+等の直前のテキストと最初の\|\hbox|\Meta{cont}の間, および最後
+% の\|\hbox|\Meta{cont}と直後のテキストとの間には，下線等のための\|\hbox|が
+% 存在しなくなる。p\TeX を含む日本語ASCII-\TeX では；
+%
+% \begin{quote}
+% $c_1\+\hbox+\hbox{\arg{$c_2\ldots$}}\ldots
+%	\+\hbox+\hbox{\arg{$\ldots c'_1$}}c'_2$
+% \end{quote}
+%
+% のような系列に対して，$c_1$と$c_2$および$c'_1$と$c'_2$の間のスペーシングを
+% 行なうので\footnote{
+%
+% \texttt{http://www.ascii.co.jp/pb/ptex/}によれば，スペーシングが行なわれな
+% いことになっているが，実際は行なわれる。}，
+%
+% \+\Underline+等の両側のスペーシングは（ほぼ）適切となる。
+%
+% なお\!\meta{inh}は，全角文字については\|\inhibitglue|, それ以外については
+% \|\relax|であり，全角文字に対する\TeX でのスペーシングが抑止される
+%
+% \footnote{
+% この結果\!\meta{text}の先頭／末尾要素に関するスペーシングも抑止されるよう
+% に見えるが，実際にはそうならならない（理由は不明）。}。
+% \end{macro}
+%
+% \begin{macro}{\UMO@skip}
+% \+\UMO@skip+\Meta{glue}は，\ref{sec:imp-solution}節に示した方法に基づき，
+% \+\leaders+を用いて高さが\|UMO@height|, 深さが\|\UMO@depth|で，伸縮項を含
+% めた幅が\!\meta{glue}であるような下線等を描く。
+% \end{macro}
+%
+%    \begin{macrocode}
+%% Draw Under/Mid/Overline
+
+\def\UMO@putbox#1#2{\setbox\@tempboxa\hbox{#1#2#1}\@tempdima\wd\@tempboxa
+        \ifUMO@firstelem\else
+        \rlap{\vrule\@height\UMO@height\@depth\UMO@depth\@width\@tempdima}\fi
+        \box\@tempboxa
+        \ifUMO@firstelem \UMO@firstelemfalse
+        \llap{\vrule\@height\UMO@height\@depth\UMO@depth\@width\@tempdima}\fi}
+\def\UMO@skip#1{%
+        \leaders\hrule\@height\UMO@height\@depth\UMO@depth\hskip#1\relax}
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{スペース／改行制御}
+% \label{sec:imp-spnl}
+%
+% \begin{macro}{\UMO@space}
+% \begin{macro}{\UMO@sspace}
+% \begin{macro}{\UMO@ispace}
+% \begin{macro}{\UMO@iispace}
+% \begin{macro}{\UMO@penalty}
+% ユーザインタフェース\+\UMOspace+\Meta{glue}\opt{pen}に対応する処理は，
+% \+\UMOspace+直後の`\+*+'の存在チェック(\+\UMO@space+), 
+% \opt{pen}直前の`\+*+'の存在チェック(\+\UMO@ispace+), 
+% および\opt{pen}の存在チェック(\+\UMO@iispace+)を含めて行なわれ，
+% \meta{glue}に対応する下線等は\|\UMO@skip|（\ref{sec:imp-drawline}節参照）
+% によって描かれる。また改行ペナルティは，\+\UMO@penalty+により\LaTeX 仕様
+% （\+\@tempswa+が真）または\TeX 仕様（\+\@tempswa+が偽）に従った値で挿入さ
+% れる。
+%
+% 一方\|\UMOspace*|\Meta{glue}に対応する処理は\|\UMO@sspace|が行ない，
+% \LaTeX の\|\hspace*|と同様に幅0の\|\vrule|と\|\nobreak|に続いて，
+% \|\UMO@skip|によって\!\meta{glue}に対応する下線等を描く。
+% 
+% なおいずれの場合も\|\UMO@mode|は\|\UMO@aftergroup|となり，処理後に
+% \|\UMO@charloop|を呼び出して文字列処理を続行する。
+% \end{macro}\end{macro}\end{macro}\end{macro}\end{macro}
+%
+%    \begin{macrocode}
+%% Explicit Spacing and Line Breaking
+
+\def\UMO@space{\UMO@mode\UMO@afterblock
+        \@ifstar\UMO@sspace\UMO@ispace}
+\def\UMO@sspace#1{\vrule width\z@\nobreak\UMO@skip{#1}\UMO@charloop}
+\def\UMO@ispace#1{\@tempskipa#1\relax
+        \@ifstar{\@tempswafalse\UMO@iispace}{\@tempswatrue\UMO@iispace}}
+\def\UMO@iispace{\@ifnextchar[%]
+                              {\UMO@penalty}%
+                              {\UMO@skip\@tempskipa \UMO@charloop}}
+\def\UMO@penalty[#1]{\@tempcnta#1\relax
+        \if@tempswa
+                \ifnum\@tempcnta<\z@ \@tempcnta-\@tempcnta \fi
+                \ifcase\@tempcnta \or
+                        \@tempcnta\@lowpenalty \or
+                        \@tempcnta\@medpenalty \or
+                        \@tempcnta\@highpenalty \else
+                        \@tempcnta\@M \fi
+                \ifnum#1<\z@ \@tempcnta-\@tempcnta \fi \fi
+        \penalty\@tempcnta \UMO@skip\@tempskipa \UMO@charloop}
+
+%    \end{macrocode}
+%
+% \begin{macro}{\UMO@newline}
+% ユーザインタフェース\|\UMOnewline|(\+*+)の処理は\|\UMO@newline|が行ない，
+% `\+*+'がある場合には\|\UMO@skip|により伸長項が\|1fil|の下線等を，また
+% `\+*+'がない場合には単に\|\1fil|の空白を挿入し，\|\break|によって改行する。
+% なおいずれの場合も\|\UMO@mode|は\|\UMO@aftergroup|となり，処理後に
+% \|\UMO@charloop|を呼び出して文字列処理を続行する。
+% \end{macro}
+%
+%    \begin{macrocode}
+\def\UMO@newline{\UMO@mode\UMO@afterblock
+        \@ifstar{\UMO@skip{0pt plus1fil}\break \UMO@charloop}%
+                                 {\hfil \break \UMO@charloop}}
+
+%%^L
+
+%    \end{macrocode}
+%
+% 
+%
+% \subsection{終了処理}
+% \label{sec:imp-end}
+%
+% \begin{macro}{\UMO@end}
+% \begin{macro}{\UMO@aftergroup}
+% \meta{text}の処理が全て完了すると\|\UMO@end|が呼び出され，\meta{text}の末
+% 尾文字に関する処理を行なう。すなわち\|\UMO@mode|が\|\UMO@afterword|であれ
+% ば\|\spacefactor|に\|\UMO@spacefactor|を設定し，\|\UMO@afterchar|であれば
+% \|\UMO@kpostpenalty|と\|\UMO@postjfmglue|の挿入（いずれも0でない場合のみ）
+% を行なう。なおこれらの内，\|\spacefactor|の設定は\|\UMO@line|
+% （\ref{sec:imp-uifinit}節参照）によるグルーピングの外部で行なう必要がある
+% ため，この操作を行なうマクロ\|\UMO@aftergroup|を\|\xdef|し，それを
+% \|\UMO@line|がグループ終了後に呼び出す形で実装されている。
+% \end{macro}\end{macro}
+%
+%    \begin{macrocode}
+%% Finalization
+
+\def\UMO@end{\ifnum\UMO@mode=\UMO@afterchar
+        \ifnum\UMO@kpostbreakpenalty>\z@
+                \penalty\UMO@kpostbreakpenalty \fi
+        \ifdim\UMO@postjfmglue>\z@
+                \UMO@skip\UMO@postjfmglue\fi \fi
+        \xdef\UMO@aftergroup{\ifnum\UMO@mode=\UMO@afterword
+                \spacefactor\number\UMO@spacefactor\fi}}
+%    \end{macrocode}
+% \iffalse
+%</package>
+% \fi
+%
+% 
+%
+% \IndexPrologue{\newpage\section*{索引}
+% イタリックのページは項目の仕様や用例を，下線のページは項目の実装を，それぞ
+% れ示す。また\cs{@}, \cs{UMO@}, \cs{ifUMO@}ではじまるcontrol sequenceについ
+% ては，それらを除去してから検索されたい。}
+% \Finale
+% \GlossaryPrologue{\newpage\section*{改訂履歴}}
+% \PrintChanges
+\endinput

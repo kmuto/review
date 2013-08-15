@@ -10,12 +10,16 @@
 %% 
 %% For the copyright see the source file.
 %% 
-%% You are *not* allowed to modify this file.
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from jumoline.sty.
 %% 
-%% You are *not* allowed to distribute this file.
 %% For distribution of the original source see the terms
 %% for copying and modification in the file jumoline.dtx.
 %% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
 %% Style file `jumoline'.
 %% Copyright (C) 1999-2001  Hiroshi Nakashima
 %%        (Toyohashi Univ. of Tech.)
@@ -89,7 +93,7 @@
 %% User Interface and Initialization
 
 \def\Underline{\UMO@line\UnderlineDepth{-\UnderlineDepth}{-\dp\strutbox}}
-\def\Midline{\setbox\@tempboxa\hbox{$B$"(B}%
+\def\Midline{\setbox\@tempboxa\hbox{あ}%
         \UMO@line\MidlineHeight\MidlineHeight{.5\ht\@tempboxa}}
 \def\Overline{\UMO@line\OverlineHeight\OverlineHeight{\ht\strutbox}}
 \def\UMOline{\UMO@line{-\maxdimen}\z@}
@@ -100,7 +104,7 @@
         \UMO@depth-\UMO@height
         \ifdim\UMO@height<\z@ \advance\UMO@depth\UMOlineThickness
         \else                 \advance\UMO@height\UMOlineThickness \fi
-        \settowidth\UMO@dqspace{$B!H(B}\advance\UMO@dqspace-1zw
+        \settowidth\UMO@dqspace{“}\advance\UMO@dqspace-1zw
         \UMO@dqspace-\UMO@dqspace \divide\UMO@dqspace\tw@
         \UMO@nospacetrue \UMO@firstelemtrue
         \UMO@mode\UMO@afterblock
@@ -238,9 +242,9 @@
 \@tempskipa\z@
 \edef\UMO@zskip{\the\@tempskipa}
 \def\UMO@setjfmglue#1{%
-        \settowidth\@tempdima{$B$"(B#1}\settowidth\@tempdimb{$B$"(B\inhibitglue#1}%
+        \settowidth\@tempdima{あ#1}\settowidth\@tempdimb{あ\inhibitglue#1}%
         \advance\@tempdima-\@tempdimb
-        \settowidth\UMO@tempdim{#1$B$"(B}\settowidth\@tempdimb{#1\inhibitglue $B$"(B}%
+        \settowidth\UMO@tempdim{#1あ}\settowidth\@tempdimb{#1\inhibitglue あ}%
         \advance\UMO@tempdim-\@tempdimb
         \ifdim\@tempdima>\z@
                 \ifdim\UMO@tempdim>\z@

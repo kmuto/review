@@ -1,0 +1,29 @@
+jumoline (v1.2): The Package for Under/Mid/Overline for Long Japanese Texts.
+
+[How to "make"]
+
+  % ptex jumoline.ins	# you'll have jumoline.sty and jumoline-man.tex
+
+# to have user's manual  
+  % platex jumoline-man
+  % makeindex -s gind.ist -o jumoline-man.ind jumoline-man.idx
+  % platex jumoline-man
+
+# to have implementation document
+  % platex jumoline.dtx
+  % makeindex -s gind.ist -o jumoline.ind jumoline.idx
+  % nkf -e < jumoline.glo > jumoline.gle
+  % makeindex -s gglo.ist -o jumoline.gls jumoline.gle
+  % platex jumoline.dtx
+
+[Features]
+
++ \Underline{<text>} draw an underline for text allowing line breaks in
+  the <text> of "ordinary" character strings or general LaTeX staffs
+  surrounded by `{' and `}'.  
+
++ \Midline{<text>} and \Overline{<text>} are also available.
+
+Enjoy!
+
+Hiroshi Nakashima <nakasima@tutics.tut.ac.jp>
