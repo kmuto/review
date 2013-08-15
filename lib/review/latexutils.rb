@@ -14,7 +14,7 @@ module ReVIEW
 
   module LaTeXUtils
 
-    MATACHARS = {
+    METACHARS = {
       '#'  => '\#',
       "$"  => '\textdollar{}',
       '%' => '\%',
@@ -43,22 +43,22 @@ module ReVIEW
       '⑩' => '\UTF{2469}',
     }
 
-    METACHARS_RE = /[#{Regexp.escape(MATACHARS.keys.join(''))}]/
+    METACHARS_RE = /[#{Regexp.escape(METACHARS.keys.join(''))}]/
 
-    MATACHARS_INVERT = MATACHARS.invert
+    METACHARS_INVERT = METACHARS.invert
 
     def escape_latex(str)
       str.gsub(METACHARS_RE) {|s|
-        MATACHARS[s] or raise "unknown trans char: #{s}"
+        METACHARS[s] or raise "unknown trans char: #{s}"
       }
     end
 
     alias escape escape_latex
 
     def unescape_latex(str)
-      metachars_invert_re = Regexp.new(MATACHARS_INVERT.keys.collect{|key|  Regexp.escape(key)}.join('|'))
+      metachars_invert_re = Regexp.new(METACHARS_INVERT.keys.collect{|key|  Regexp.escape(key)}.join('|'))
       str.gsub(metachars_invert_re) {|s|
-        MATACHARS_INVERT[s] or raise "unknown trans char: #{s}"
+        METACHARS_INVERT[s] or raise "unknown trans char: #{s}"
       }
     end
 
