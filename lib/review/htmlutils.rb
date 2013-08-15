@@ -39,16 +39,20 @@ module ReVIEW
 
       begin
         require 'pygments'
-        Pygments.highlight(
-                 unescape_html(body),
-                 :options => {
-                             :nowrap => true,
-                             :noclasses => true
-                           },
-                 :formatter => format,
-                 :lexer => lexer)
-      rescue LoadError, MentosError
-        body
+        begin
+          Pygments.highlight(
+                   unescape_html(body),
+                   :options => {
+                               :nowrap => true,
+                               :noclasses => true
+                             },
+                   :formatter => format,
+                   :lexer => lexer)
+        rescue MentosError
+          body
+        end
+      rescue LoadError
+          body
       end
     end
   end
