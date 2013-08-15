@@ -2,6 +2,8 @@
 
 require 'test_helper'
 require 'review/compiler'
+require 'review/book'
+require 'review/latexbuilder'
 
 class CompilerTest < Test::Unit::TestCase
   include ReVIEW

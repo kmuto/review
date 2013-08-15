@@ -4,6 +4,7 @@ require 'test_helper'
 require 'review/compiler'
 require 'review/book'
 require 'review/idgxmlbuilder'
+require 'review/i18n'
 
 class IDGXMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW

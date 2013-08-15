@@ -4,6 +4,7 @@ require 'test_helper'
 require 'review/compiler'
 require 'review/book'
 require 'review/htmlbuilder'
+require 'review/i18n'
 
 class HTMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW

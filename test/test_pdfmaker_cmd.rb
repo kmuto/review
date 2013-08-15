@@ -3,6 +3,7 @@
 require 'test_helper'
 require 'tmpdir'
 require 'fileutils'
+require 'yaml'
 
 REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
 

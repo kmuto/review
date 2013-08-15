@@ -4,6 +4,7 @@ require 'test_helper'
 require 'review/compiler'
 require 'review/book'
 require 'review/topbuilder'
+require 'review/i18n'
 
 class TOPBuidlerTest < Test::Unit::TestCase
   include ReVIEW

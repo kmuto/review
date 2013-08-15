@@ -2,6 +2,10 @@
 require 'test_helper'
 require 'review/i18n'
 
+require 'review/compiler'
+require 'review/book'
+require 'review/htmlbuilder'
+
 class I18nTest < Test::Unit::TestCase
   include ReVIEW
 

@@ -3,6 +3,7 @@
 require 'test_helper'
 require 'tmpdir'
 require 'fileutils'
+require 'yaml'
 
 REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker', File.dirname(__FILE__))
 
