@@ -195,6 +195,7 @@ module ReVIEW
       def mkpart_from_namelistfile(path)
         chaps = []
         File.read(path).split.each_with_index do |name, idx|
+          name.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
           if path =~ /PREDEF/
             chaps << mkchap(name)
           else
@@ -229,6 +230,7 @@ module ReVIEW
         res = ""
         File.open("#{@basedir}/#{eval(filename)}") do |f|
           while line = f.gets
+            line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
             if /\A#/ =~ line
               next
             end
