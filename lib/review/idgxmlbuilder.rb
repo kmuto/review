@@ -354,8 +354,7 @@ module ReVIEW
       end
     end
 
-    def list_body(id, lines)
-      print %Q(<pre>)
+    def codelines_body(lines)
       no = 1
       lines.each do |line|
         unless ReVIEW.book.param["listinfo"].nil?
@@ -369,6 +368,11 @@ module ReVIEW
         print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
         no += 1
       end
+    end
+
+    def list_body(id, lines)
+      print %Q(<pre>)
+      codelines_body(lines)
       puts "</pre></codelist>"
     end
 
@@ -1141,10 +1145,7 @@ module ReVIEW
 
     def source_body(lines)
       puts %Q[<pre>]
-      lines.each do |line|
-        print detab(line)
-        print "\n"
-      end
+      codelines_body(lines)
       puts %Q[</pre></source>]
     end
 
