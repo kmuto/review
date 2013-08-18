@@ -134,6 +134,15 @@
 \newcommand{\reviewstrong}[1]{%
   \textbf{#1}}
 
+%% @<del> is ignored in LaTeX with default style
+\newcommand{\reviewstrike}[1]{#1}
+
+%%%% for ulem.sty:
+%%\renewcommand{\reviewstrike}[1]{\sout{#1}}
+%%
+%%%% for jumoline.sty:
+%%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
+
 \newcommand{\reviewth}[1]{%
   \textgt{#1}}
 
