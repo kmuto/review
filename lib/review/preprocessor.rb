@@ -541,7 +541,11 @@ module ReVIEW
       if @param['tabwidth']
         tabwidth = @param['tabwidth']
       end
-      detab(line, tabwidth).rstrip + "\n"
+      if tabwidth > 0
+        detab(line, tabwidth).rstrip + "\n"
+      else
+        line + "\n"
+      end
     end
 
     def check_type(type)
