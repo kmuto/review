@@ -67,7 +67,7 @@ SJIS)') {|enc|
   parser.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') {
     mode = :final
   }
-  parser.on('--tabwidth=WIDTH', 'tab width') {|width| param["tabwidth"] = width.to_i }
+  parser.on('--tabwidth=WIDTH', "Replace tabs with space characters. (0: don't replace)") {|width| param["tabwidth"] = width.to_i }
   parser.on('--help', 'Print this message and quit.') {
     puts parser.help
     exit 0
