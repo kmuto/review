@@ -224,7 +224,9 @@ module ReVIEW
     end
 
     def inline_ruby(arg)
-      base, ruby = *arg.split(',', 2)
+      base, *ruby = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/)
+      base = base.gsub(/\\,/, ",") if base
+      ruby = ruby.join(",").gsub(/\\,/, ",") if ruby
       compile_ruby(base, ruby)
     end
 

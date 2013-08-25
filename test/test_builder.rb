@@ -112,6 +112,16 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal [:text, text], @b.compile_inline(text)
   end
 
+  def test_inline_ruby
+    def @b.compile_ruby(base,ruby)
+      [base,ruby]
+    end
+    str = @b.inline_ruby("foo,bar")
+    assert_equal str, ["foo","bar"]
+    str = @b.inline_ruby("foo\\,\\,,\\,bar,buz")
+    assert_equal str, ["foo,,",",bar,buz"]
+  end
+
   def test_compile_inline_backslash
     text = "abc\\d\\#a"
     assert_equal [:text, text], @b.compile_inline(text)
