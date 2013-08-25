@@ -544,7 +544,7 @@ module ReVIEW
       if tabwidth > 0
         detab(line, tabwidth).rstrip + "\n"
       else
-        line + "\n"
+        line
       end
     end
 
