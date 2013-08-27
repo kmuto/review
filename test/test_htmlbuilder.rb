@@ -499,6 +499,63 @@ EOS
     ul_helper(src, expect)
   end
 
+  def test_ul_nest4
+    src =<<-EOS
+  * A
+  ** AA
+  *** AAA
+  * B
+  ** BB
+EOS
+
+    expect =<<-EOS
+<ul>
+<li>A<ul>
+<li>AA<ul>
+<li>AAA</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>B<ul>
+<li>BB</li>
+</ul>
+</li>
+</ul>
+EOS
+    ul_helper(src, expect)
+  end
+
+  def test_ul_nest5
+    src =<<-EOS
+  * A
+  ** AA
+  **** AAAA
+  * B
+  ** BB
+EOS
+
+    expect =<<-EOS
+<ul>
+<li>A<ul>
+<li>AA<ul>
+<li><ul>
+<li>AAAA</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>B<ul>
+<li>BB</li>
+</ul>
+</li>
+</ul>
+EOS
+    ul_helper(src, expect)
+  end
+
   def test_inline_raw0
     assert_equal "normal", @builder.inline_raw("normal")
   end
