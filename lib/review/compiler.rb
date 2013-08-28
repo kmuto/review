@@ -372,8 +372,8 @@ module ReVIEW
           (1..level_diff).to_a.reverse.each do |i|
             @strategy.ul_item_end
             @strategy.ul_end {level + i}
-            @strategy.ul_item_end
           end
+          @strategy.ul_item_end
           # body
           @strategy.ul_item_begin buf
         end
