@@ -1,5 +1,8 @@
 = ReVIEW
 
+{<img src="https://secure.travis-ci.org/kmuto/review.png"/>}[http://travis-ci.org/kmuto/review]
+{<img src="https://badge.fury.io/rb/review.png" alt="Gem Version" />}[http://badge.fury.io/rb/review]
+
 ReVIEW is a easy-to-use digital publishing system for books and ebooks.
 
 == Format
@@ -37,10 +40,6 @@ And some useful commands.
 * Commit, do not mess with rakefile, version, or history.
   (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
 * Send me a pull request. Bonus points for topic branches.
-
-== Build status
-
-* {<img src="https://secure.travis-ci.org/kmuto/review.png"/>}[http://travis-ci.org/kmuto/review]
 
 == License
 
