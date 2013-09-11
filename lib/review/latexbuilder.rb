@@ -617,9 +617,8 @@ module ReVIEW
       str.split(//).map {|c| macro('ruby', escape(c), macro('textgt', BOUTEN)) }.join('\allowbreak')
     end
 
-    def inline_ruby(str)
-      base, ruby = *str.split(/,/)
-      macro('ruby', base, ruby)
+    def compile_ruby(base, ruby)
+      macro('ruby', escape(base), escape(ruby))
     end
 
     # math

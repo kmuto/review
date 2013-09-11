@@ -196,6 +196,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test 「1.1.1 te\\textunderscore{}st」 test2|, ret
   end
 
+  def test_inline_ruby_comma
+    ret = @builder.compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
+    assert_equal "\\ruby{foo, bar, buz}{フー・バー・バズ}", ret
+  end
+
   def test_inline_uchar
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test \\UTF{2460} test2|, ret
