@@ -317,7 +317,9 @@ footnotetextオプションを使うには、YAMLファイルのparamsに「--fo
 
 これでPDFのコラムや表のなかでも脚注が使えるようになります。
 
-ただし、通常の脚注(footnote)ではなく、footnotemarkとfootnotetextを使うため、本文と脚注が別ページに分かれる可能性があるなど、いろいろな制約があります。
+ただし、通常の脚注(footnote)ではなく、footnotemarkとfootnotetextを使うため、
+本文と脚注が別ページに分かれる可能性があるなど、いろいろな制約があります。
+なお、採番が別々になるためfootnoteとfootnotemark/footnotetextを両立させることはできません。
 
 == 参考文献の定義
 
