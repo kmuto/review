@@ -49,7 +49,7 @@ params: --stylesheet=main.css
 mytoc: true
 # 奥付生成用
 colophon: true
-texstyle: samplemacro
+texstyle: reviewmacro
 pubhistory: |
   2011年08月03日 v1.0.0版発行
 debug: true
