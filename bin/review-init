@@ -22,7 +22,9 @@ def main
     generate_review_setting_files(dir)
     generate_sample(dir)
     generate_images_dir(dir)
+    generate_cover_image(dir)
     generate_layout(dir)
+    generate_texmacro(dir)
     generate_config(dir)
     generate_rakefile(dir)
   end
@@ -77,12 +79,22 @@ def generate_images_dir(dir)
   Dir.mkdir dir + '/images'
 end
 
+def generate_cover_image(dir)
+  FileUtils.cp @review_dir + "/test/sample-book/src/images/cover.jpg", dir + '/images/'
+end
+
 def generate_config(dir)
   FileUtils.cp @review_dir + "/test/sample-book/src/config.yml", dir
 end
 
 def generate_style(dir)
   File.open(dir + "/style.css", "w")
+end
+
+def generate_texmacro(dir)
+  texmacrodir = dir + '/sty'
+  Dir.mkdir texmacrodir
+  FileUtils.cp @review_dir + "/test/sample-book/src/sty/reviewmacro.sty", texmacrodir
 end
 
 def generate_rakefile(dir)
