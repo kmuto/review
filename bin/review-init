@@ -89,6 +89,6 @@ def generate_rakefile(dir)
   FileUtils.cp @review_dir + "/test/sample-book/src/Rakefile", dir
 end
 
-if $0 == __FILE__
+if File.basename($0) == File.basename(__FILE__)
   main()
 end
