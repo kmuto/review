@@ -15,10 +15,10 @@ def main
     exit
   end
 
-  dir = File.expand_path(ARGV.shift)
+  initdir = File.expand_path(ARGV.shift)
   @review_dir = File.dirname(File.expand_path(__FILE__ + "./../"))
 
-  generate_dir(dir) do |dir|
+  generate_dir(initdir) do |dir|
     generate_review_setting_files(dir)
     generate_sample(dir)
     generate_images_dir(dir)
