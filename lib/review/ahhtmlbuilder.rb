@@ -18,15 +18,20 @@ module ReVIEW
       puts '' if level > 1
       a_id = ""
       if !anchor.nil? && !anchor.empty?
+        if @chapter.on_PREDEF?
+          anchor = "pre#{anchor}"
+        elsif @chapter.on_POSTDEF?
+          anchor = "post#{anchor}"
+        end
         a_id = %Q[<a id="h#{anchor}"></a>]
       end
       if caption.empty?
         puts a_id unless label.nil?
       else
         if label.nil?
-          puts %Q[<h#{level}>#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} class="realheader">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{label}" class="realheader">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         end
       end
     end
@@ -42,9 +47,9 @@ module ReVIEW
         puts a_id unless label.nil?
       else
         if label.nil?
-          puts %Q[<h#{level}>#{a_id}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} class="realheader">#{a_id}#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}">#{a_id}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{label}" class="realheader">#{a_id}#{compile_inline(caption)}</h#{level}>]
         end
       end
 #      headline(level, label, caption)
