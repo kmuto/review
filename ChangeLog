@@ -1,3 +1,8 @@
+Tue Sep 17 09:25:20 2013  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/builder.rb, lib/review/topbuilder.rb:
+	  force all builders to load compiler.rb.
+
 Sun Sep 15 14:39:43 2013  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-init: fix review-init; it's broken when installed as gem.

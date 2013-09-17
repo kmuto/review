@@ -10,6 +10,7 @@
 require 'review/book/index'
 require 'review/exception'
 require 'review/textutils'
+require 'review/compiler'
 require 'stringio'
 require 'cgi'
 

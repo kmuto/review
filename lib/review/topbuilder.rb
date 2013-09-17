@@ -10,7 +10,6 @@
 
 require 'review/builder'
 require 'review/textutils'
-require 'review/compiler'
 
 module ReVIEW
 
