@@ -8,15 +8,10 @@
 #
 # Alternate XHTML Builder for Antenna House CSS Formatter (experimental)
 
-require 'review/builder'
-require 'review/htmlutils'
-require 'review/htmllayout'
-require 'review/textutils'
-
 require 'review/htmlbuilder'
 
 module ReVIEW
-  class HTMLAHBuilder < HTMLBuilder
+  class AHHTMLBuilder < HTMLBuilder
 
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
