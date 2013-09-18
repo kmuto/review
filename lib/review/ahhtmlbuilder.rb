@@ -13,6 +13,19 @@ require 'review/htmlbuilder'
 module ReVIEW
   class AHHTMLBuilder < HTMLBuilder
 
+    def raw(str)
+      if matched = str.match(/\|(.*?)\|(.*)/)
+        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
+        if builders.include?("ahhtml") || builders.include?("html")
+          print matched[2].gsub("\\n", "\n")
+        else
+          ""
+        end
+      else
+        print str.gsub("\\n", "\n")
+      end
+    end
+
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
       puts '' if level > 1
