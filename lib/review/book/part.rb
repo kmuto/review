@@ -20,7 +20,7 @@ module ReVIEW
         @number = number
         @chapters = chapters
         @path = name
-        @name = name ? File.basename(name, '.*') : nil
+        @name = name ? File.basename(name, '.re') : nil
       end
 
       attr_reader :number
