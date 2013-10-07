@@ -43,7 +43,7 @@ module ReVIEW
           f.each_line {|l|
             l = convert_inencoding(l, ReVIEW.book.param["inencoding"])
             if l =~ /\A=+/
-              @title = l.sub(/\A=+/, '').strip
+              @title = l.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
               break
             end
           }
