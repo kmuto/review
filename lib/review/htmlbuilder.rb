@@ -615,7 +615,7 @@ QUOTE
     def texequation(lines)
       puts %Q[<div class="equation">]
       if ReVIEW.book.param["mathml"]
-        p = MathML::LaTeX::Parser.new
+        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
       else
         print '<pre>'
@@ -917,7 +917,7 @@ QUOTE
 
     def inline_m(str)
       if ReVIEW.book.param["mathml"]
-        p = MathML::LaTeX::Parser.new
+        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{p.parse(str, nil)}</span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]

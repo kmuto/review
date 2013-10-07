@@ -86,6 +86,7 @@ def _main
   parser.on('--mathml', 'Use MathML for TeX equation in HTML') do
     param["mathml"] = true
     require 'math_ml'
+    require "math_ml/symbol/character_reference"
   end
   parser.on('--htmlversion=VERSION', 'HTML version.') do |v|
     v = v.to_i
