@@ -722,8 +722,8 @@ def output_chaps_by_file(l, values)
   }
   Process.waitall
   getanchors("#{@bookdir}/OEBPS/#{filename}")
-  @manifeststr << %Q(<item id="#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
-  @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
+  @manifeststr << %Q(<item id="rv#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
+  @ncxstr << %Q(<itemref idref="rv#{file_id}" />\n)
 end
 
 def getFigId(filename)
