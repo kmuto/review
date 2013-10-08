@@ -73,11 +73,10 @@ module ReVIEW
         header = <<EOT
 <?xml version="1.0" encoding="#{ReVIEW.book.param["outencoding"] || :UTF-8}"?>
 EOT
-
         if ReVIEW.book.param["htmlversion"] == 5
           header += <<EOT
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
 <head>
   <meta charset="#{ReVIEW.book.param["outencoding"] || :UTF-8}" />
 EOT
@@ -109,6 +108,14 @@ EOT
 </html>
 EOT
         header + messages() + convert_outencoding(@output.string, ReVIEW.book.param["outencoding"]) + footer
+      end
+    end
+
+    def xmlns_ops_prefix
+      if ReVIEW.book.param["epubversion"] == 3
+        "epub"
+      else
+        "ops"
       end
     end
 
@@ -747,7 +754,11 @@ QUOTE
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
+      if ReVIEW.book.param["epubversion"] == 3
+        puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{id}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
+      else
+        puts %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
+      end
     end
 
     def indepimage(id, caption="", metric=nil)
@@ -837,9 +848,12 @@ QUOTE
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-
     def inline_fn(id)
-      %Q(<a href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
+      if ReVIEW.book.param["epubversion"] == 3
+        %Q(<a href="#fn-#{id}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
+      else
+        %Q(<a href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
+      end
     end
 
     def compile_ruby(base, ruby)

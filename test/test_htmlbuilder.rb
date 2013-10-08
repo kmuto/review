@@ -25,6 +25,15 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @builder.bind(@compiler, @chapter, location)
   end
 
+  def test_xmlns_ops_prefix_epub3
+    ReVIEW.book.param["epubversion"] = 3
+    assert_equal "epub", @builder.xmlns_ops_prefix
+  end
+
+  def test_xmlns_ops_prefix_epub2
+    assert_equal "ops", @builder.xmlns_ops_prefix
+  end
+
   def test_headline_level1
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
