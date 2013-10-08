@@ -839,7 +839,7 @@ QUOTE
 
 
     def inline_fn(id)
-      %Q(<a href="#fn-#{id}">*#{@chapter.footnote(id).number}</a>)
+      %Q(<a href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
     end
 
     def compile_ruby(base, ruby)

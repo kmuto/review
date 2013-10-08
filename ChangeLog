@@ -7,6 +7,10 @@ Mon Oct  7 22:37:38 2013  Kenshi Muto  <kmuto@debian.org>
 	  add prefix 'rv' to internal ID for each converted files.
 	  Closes: #204
 
+	* lib/review/htmlbuilder.rb:
+	  set 'noteref' style class for footnote referers.
+	  Closes: #205
+
 Tue Sep 17 09:25:20 2013  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/builder.rb, lib/review/topbuilder.rb:
