@@ -401,7 +401,7 @@ EOT
           f.puts "</li>"
         end
         fragment_id = (id ? '#'+id : '')
-        f.write "<li><a href=\"#{file}#{fragment_id}\">#{content}</a>"
+        f.write "<li><a href=\"#{file}#{fragment_id}\">#{strip_html(content)}</a>"
         init_item = false
       }
 
