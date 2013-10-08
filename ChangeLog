@@ -1,3 +1,7 @@
+Tue Oct  8 13:47:01 2013  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmaker: support MathML in EPUB3
+
 Mon Oct  7 22:37:38 2013  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/book/compilable.rb:

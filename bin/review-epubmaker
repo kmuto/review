@@ -746,8 +746,21 @@ def output_chaps_by_file(l, values)
   }
   Process.waitall
   getanchors("#{@bookdir}/OEBPS/#{filename}")
-  @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
+  if @epubversion == 3 && include_mathml?("#{@bookdir}/OEBPS/#{filename}")
+    @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" properties="mathml" media-type="application/xhtml+xml" />\n)
+  else
+    @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
+  end
   @ncxstr << %Q(<itemref idref="rv-#{file_id}" />\n)
+end
+
+def include_mathml?(filename)
+  File.open(filename) {|f|
+    REXML::Document.new(f).each_element("//math"){
+      return true
+    }
+    return false
+  }
 end
 
 def getFigId(filename)
