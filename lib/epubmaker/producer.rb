@@ -181,6 +181,8 @@ module EPUBMaker
         "stylesheet" => [],
         "epubversion" => 2,
         "htmlversion" => 4,
+        "zip_stage1" => "zip -0X",
+        "zip_stage2" => "zip -Xr9D",
       }
 
       defaults.each_pair do |k, v|

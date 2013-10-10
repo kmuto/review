@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv2.rb -- EPUB version 2 producer.
 #
-# Copyright (c) 2010-2012 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2013 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -23,9 +23,9 @@ module EPUBMaker
     
     # Return mimetype content.
     def mimetype
-      return "application/epub+zip"
+      "application/epub+zip"
     end
-    
+
     # Return opf file content.
     def opf
       s = <<EOT
@@ -33,6 +33,23 @@ module EPUBMaker
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
 EOT
+
+      s << opf_metainfo
+      s << opf_coverimage
+      
+      s << %Q[  </metadata>\n]
+      
+      s << opf_manifest
+      s << opf_tocx
+      s << opf_guide
+
+      s << %Q[</package>\n]
+
+      s
+    end
+
+    def opf_metainfo
+      s = ""
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
@@ -49,14 +66,14 @@ EOT
         s << %Q[    <dc:identifier id="BookId" opf:scheme="ISBN">#{@producer.params["isbn"]}</dc:identifier>\n]
       end
       
-      # creator
+      # creator (should be array)
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each do |v|
           s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</dc:creator>\n]
         end
       end
-      # contributor
+      # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each do |v|
@@ -66,19 +83,27 @@ EOT
           end
         end
       end
-      
+      s
+    end
+
+    def opf_coverimage
+      s = ""
       if @producer.params["coverimage"]
+        file = nil
         @producer.contents.each do |item|
           if item.media =~ /\Aimage/ && item.file =~ /#{@producer.params["coverimage"]}\Z/
-              s << %Q[    <meta name="cover" content="#{item.id}"/>\n]
+            s << %Q[    <meta name="cover" content="#{item.id}"/>\n]
+            file = item.file
             break
           end
         end
+        raise "coverimage #{@producer.params["coverimage"]} not found. Abort." if file.nil?
       end
-      
-      s << %Q[  </metadata>\n]
-      
-      # manifest
+      s
+    end
+
+    def opf_manifest
+      s = ""
       s << <<EOT
   <manifest>
     <item id="ncx" href="#{@producer.params["bookname"]}.ncx" media-type="application/x-dtbncx+xml"/>
@@ -92,8 +117,11 @@ EOT
         s << %Q[    <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
       end
       s << %Q[  </manifest>\n]
-      
-      # tocx
+      s
+    end
+
+    def opf_tocx
+      s = ""
       s << %Q[  <spine toc="ncx">\n]
       s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="no"/>\n]
       s << %Q[    <itemref idref="toc" />\n] unless @producer.params["mytoc"].nil?
@@ -103,19 +131,21 @@ EOT
         s << %Q[    <itemref idref="#{item.id}"/>\n] if item.notoc.nil?
       end
       s << %Q[  </spine>\n]
-      
-      # guide
+      s
+    end
+
+    def opf_guide
+      s = ""
       s << %Q[  <guide>\n]
       s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
       s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="#{@producer.params["titlepage"]}"/>\n] unless @producer.params["titlepage"].nil?
       s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["tocfile"]}"/>\n] unless @producer.params["mytoc"].nil?
       s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil? # FIXME: path
       s << %Q[  </guide>\n]
-      s << %Q[</package>\n]
-      return s
+      s
     end
 
-    # Return ncx content. +indentarray+ defines prefix string for each level.
+    # Return ncx content. +indentarray+ has prefix marks for each level.
     def ncx(indentarray)
       s = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -125,20 +155,41 @@ EOT
     <meta name="dtb:totalPageCount" content="0"/>
     <meta name="dtb:maxPageNumber" content="0"/>
 EOT
-      if @producer.params["isbn"].nil?
-        s << %Q[    <meta name="dtb:uid" content="#{@producer.params["urnid"]}"/>\n]
-      else
-        s << %Q[    <meta name="dtb:uid" content="#{@producer.params["isbn"]}"/>\n]
-      end
-      
+      s << ncx_isbn
+
       s << <<EOT
   </head>
+EOT
+      s << ncx_doctitle
+      s << ncx_navmap(indentarray)
+
+      s << <<EOT
+</ncx>
+EOT
+      s
+    end
+
+    def ncx_isbn
+      if @producer.params["isbn"].nil?
+        %Q[    <meta name="dtb:uid" content="#{@producer.params["urnid"]}"/>\n]
+      else
+        %Q[    <meta name="dtb:uid" content="#{@producer.params["isbn"]}"/>\n]
+      end
+    end
+
+    def ncx_doctitle
+      <<EOT
   <docTitle>
     <text>#{CGI.escapeHTML(@producer.params["title"])}</text>
   </docTitle>
   <docAuthor>
     <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(@producer.params["aut"].join(", "))}</text>
   </docAuthor>
+EOT
+    end
+
+    def ncx_navmap(indentarray)
+      s = <<EOT
   <navMap>
     <navPoint id="top" playOrder="1">
       <navLabel>
@@ -180,9 +231,8 @@ EOT
       
       s << <<EOT
   </navMap>
-</ncx>
 EOT
-      return s
+      s
     end
     
     # Return container content.
@@ -195,7 +245,7 @@ EOT
   </rootfiles>
 </container>
 EOT
-      return s
+      s
     end
     
     # Return cover content.
@@ -230,7 +280,7 @@ EOT
 </body>
 </html>
 EOT
-      return s
+      s
     end
 
     # Return title (copying) content.
@@ -249,7 +299,7 @@ EOT
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{CGI.escapeHTML(@producer.params["aut"])}</h2>
+  <h2 class="tp-author">#{CGI.escapeHTML(@producer.params["aut"].join(", "))}</h2>
 EOT
       end
 
@@ -261,7 +311,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{CGI.escapeHTML(@producer.params["prt"])}</h3>
+  <h3 class="tp-publisher">#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</h3>
 EOT
       end
 
@@ -269,7 +319,8 @@ EOT
 </body>
 </html>
 EOT
-      return s
+
+      s
     end
 
     # Return colophon content.
@@ -288,18 +339,18 @@ EOT
       end
       
       s << %Q[    <table class="colophon">\n]
-      s << %Q[      <tr><th>#{@producer.res.v("c-aut")}</th><td>#{CGI.escapeHTML(@producer.params["aut"])}</td></tr>\n] if @producer.params["aut"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-dsr")}</th><td>#{CGI.escapeHTML(@producer.params["dsr"])}</td></tr>\n] if @producer.params["dsr"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-ill")}</th><td>#{CGI.escapeHTML(@producer.params["ill"])}</td></tr>\n] if @producer.params["ill"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-edt")}</th><td>#{CGI.escapeHTML(@producer.params["edt"])}</td></tr>\n] if @producer.params["edt"]
-      s << %Q[      <tr><th>#{@producer.res.v("c-prt")}</th><td>#{CGI.escapeHTML(@producer.params["prt"])}</td></tr>\n] if @producer.params["prt"]
+      s << %Q[      <tr><th>#{@producer.res.v("c-aut")}</th><td>#{CGI.escapeHTML(@producer.params["aut"].join(", "))}</td></tr>\n] unless @producer.params["aut"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("c-dsr")}</th><td>#{CGI.escapeHTML(@producer.params["dsr"].join(", "))}</td></tr>\n] unless @producer.params["dsr"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("c-ill")}</th><td>#{CGI.escapeHTML(@producer.params["ill"].join(", "))}</td></tr>\n] unless @producer.params["ill"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("c-edt")}</th><td>#{CGI.escapeHTML(@producer.params["edt"].join(", "))}</td></tr>\n] unless @producer.params["edt"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("c-prt")}</th><td>#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</td></tr>\n] unless @producer.params["prt"].nil?
       s << <<EOT
     </table>
   </div>
 </body>
 </html>
 EOT
-      return s
+      s
     end
 
     # Return own toc content.
@@ -347,7 +398,7 @@ EOT
 </body>
 </html>
 EOT
-      return s
+      s
     end
 
     # Produce EPUB file +epubfile+.
@@ -380,15 +431,20 @@ EOT
         FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
       end
 
+      export_zip(tmpdir, epubfile)
+    end
+
+    def export_zip(tmpdir, epubfile)
+      # FIXME: for Windows?
       fork {
         Dir.chdir(tmpdir) {|d|
-          exec("zip", "-0X", "#{epubfile}", "mimetype")
+          exec("#{@producer.params["zip_stage1"]} #{epubfile} mimetype")
         }
       }
       Process.waitall
       fork {
         Dir.chdir(tmpdir) {|d|
-          exec("zip", "-Xr9D", "#{epubfile}", "META-INF", "OEBPS")
+          exec("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS")
         }
       }
       Process.waitall
@@ -411,8 +467,7 @@ EOT
       @producer.params["stylesheet"].each do |file|
         s << %Q[  <link rel="stylesheet" type="text/css" href="#{file}"/>\n]
       end
-      return s
+      s
     end
   end
-  
 end
