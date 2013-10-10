@@ -118,7 +118,10 @@ def main
       else
         raise "unsupported type #{fname}"
       end
-      @manifeststr << %Q(<item id="#{figid}" href="#{image_file}" media-type="#{mime}" />\n)
+      if @epubversion == 3 && File.join("images",values["coverimage"]) == image_file
+        properties = ' properties="cover-image"'
+      end
+      @manifeststr << %Q(<item id="#{figid}" href="#{image_file}"#{properties} media-type="#{mime}" />\n)
     end
   end
 
