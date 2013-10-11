@@ -15,7 +15,7 @@
 #  epub.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
 #  epub.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
 #   ...
-#  epub.importImageInfo("images")
+#  epub.import_imageinfo("images")
 #  epub.produce
 
 require 'epubmaker/producer'

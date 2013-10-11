@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010 Kenshi Muto
+# Copyright (c) 2010-2013 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -36,11 +36,11 @@ module EPUBMaker
     # Take YAML +file+ and update parameter hash.
     def load(file)
       raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
-      mergeparams(@params.merge(YAML.load_file(file)))
+      merge_params(@params.merge(YAML.load_file(file)))
     end
     
     # Construct producer object.
-    # +params+ takes initial parameter hash. This parameters can be overriden by EPUBMaker#load or EPUBMaker#mergeparams.
+    # +params+ takes initial parameter hash. This parameters can be overriden by EPUBMaker#load or EPUBMaker#merge_params.
     # +version+ takes EPUB version (default is 2).
     def initialize(params=nil, version=nil)
       @contents = []
@@ -49,12 +49,12 @@ module EPUBMaker
       @params["epubversion"] = version unless version.nil?
       
       unless params.nil?
-        mergeparams(params)
+        merge_params(params)
       end
     end
     
     # Update parameters by merging from new parameter hash +params+.
-    def mergeparams(params)
+    def merge_params(params)
       @params = @params.merge(params)
       complement
       @res = EPUBMaker::Resource.new(@params)
@@ -121,10 +121,10 @@ module EPUBMaker
       s = @epub.mytoc
       wobj.puts s if !s.nil? && !wobj.nil?
     end
-    
+
     # Add informations of figure files in +path+ to contents array.
     # +base+ defines a string to remove from path name.
-    def importImageInfo(path, base=nil)
+    def import_imageinfo(path, base=nil)
       Dir.foreach(path) do |f|
         next if f =~ /\A\./
         if f =~ /\.(png|jpg|jpeg|svg|gif)\Z/i  # FIXME:EPUB3 accepts more types...
@@ -140,6 +140,8 @@ module EPUBMaker
         end
       end
     end
+
+    alias importImageInfo import_imageinfo
     
     # Produce EPUB file +epubfile+.
     # +basedir+ points the directory has contents (default: current directory.)
@@ -147,7 +149,6 @@ module EPUBMaker
     def produce(epubfile, basedir=nil, tmpdir=nil)
       current = Dir.pwd
       basedir = current if basedir.nil?
-      # FIXME: produce cover, mytoc, titlepage, colophon?
       
       _tmpdir = tmpdir.nil? ? Dir.mktmpdir : tmpdir
       epubfile = "#{current}/#{epubfile}" if epubfile !~ /\A\// # /
@@ -166,9 +167,6 @@ module EPUBMaker
     
     # Complement parameters.
     def complement
-      # FIXME: should separate for EPUB2/3?
-      # FIXME: escapeHTML?
-      # use default value if not defined
       @params["htmlext"] = "html" if @params["htmlext"].nil?
       defaults = {
         "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
@@ -189,15 +187,14 @@ module EPUBMaker
         @params[k] = v if @params[k].nil?
       end
 
-      @params["htmlversion"] == 5 if @params["epubversion"] >= 3 && @params["htmlversion"] == 4
+      @params["htmlversion"] == 5 if @params["epubversion"] >= 3
       
-      # must be defined
       %w[bookname title].each do |k|
-        raise "Key #{k} must have a value. Abort." if @params[k].nil? # FIXME: should not be error?
+        raise "Key #{k} must have a value. Abort." if @params[k].nil?
       end
       # array
       %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl stylesheet].each do |item|
-        @params[item] = [@params[item]] if !@params[item].nil? && @params[item].instance_of?(String) # FIXME: avoid double insert
+        @params[item] = [@params[item]] if !@params[item].nil? && @params[item].instance_of?(String)
       end
       # optional
       # type, format, identifier, source, relation, coverpage, rights, aut

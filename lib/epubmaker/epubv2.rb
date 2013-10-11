@@ -73,6 +73,7 @@ EOT
           s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</dc:creator>\n]
         end
       end
+
       # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next if @producer.params[role].nil?
@@ -83,6 +84,7 @@ EOT
           end
         end
       end
+
       s
     end
 
@@ -405,6 +407,15 @@ EOT
     # +basedir+ points the directory has contents.
     # +tmpdir+ defines temporary directory.
     def produce(epubfile, basedir, tmpdir)
+      produce_write_common(basedir, tmpdir)
+
+      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
+      File.open("#{tmpdir}/OEBPS/#{@producer.params["tocfile"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
+      
+      export_zip(tmpdir, epubfile)
+    end
+
+    def produce_write_common(basedir, tmpdir)
       File.open("#{tmpdir}/mimetype", "w") {|f| @producer.mimetype(f) }
       
       Dir.mkdir("#{tmpdir}/META-INF") unless File.exist?("#{tmpdir}/META-INF")
@@ -412,17 +423,14 @@ EOT
       
       Dir.mkdir("#{tmpdir}/OEBPS") unless File.exist?("#{tmpdir}/OEBPS")
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.opf", "w") {|f| @producer.opf(f) }
-      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
-      File.open("#{tmpdir}/OEBPS/#{@producer.params["tocfile"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
-      
+
       if File.exist?("#{basedir}/#{@producer.params["cover"]}")
         FileUtils.cp("#{basedir}/#{@producer.params["cover"]}", "#{tmpdir}/OEBPS")
       else
         File.open("#{tmpdir}/OEBPS/#{@producer.params["cover"]}", "w") {|f| @producer.cover(f) }
       end
-      
+
       # FIXME:colophon and titlepage should be included in @producer.contents.
-      
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
         fname = "#{basedir}/#{item.file}"
@@ -430,8 +438,6 @@ EOT
         FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}")) unless File.exist?(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
         FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
       end
-
-      export_zip(tmpdir, epubfile)
     end
 
     def export_zip(tmpdir, epubfile)
