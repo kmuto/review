@@ -179,6 +179,9 @@ module EPUBMaker
         "stylesheet" => [],
         "epubversion" => 2,
         "htmlversion" => 4,
+        "secnolevel" => 2,
+        "pre_secnolevel" => 0,
+        "post_secnolevel" => 0,
         "zip_stage1" => "zip -0X",
         "zip_stage2" => "zip -Xr9D",
       }
