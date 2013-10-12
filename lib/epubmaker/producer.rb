@@ -136,7 +136,7 @@ module EPUBMaker
           end
         end
         if FileTest.directory?("#{path}/#{f}")
-          importImageInfo("#{path}/#{f}", base)
+          import_imageinfo("#{path}/#{f}", base)
         end
       end
     end
@@ -184,6 +184,7 @@ module EPUBMaker
         "post_secnolevel" => 0,
         "zip_stage1" => "zip -0X",
         "zip_stage2" => "zip -Xr9D",
+        "imagedir" => "images",
       }
 
       defaults.each_pair do |k, v|
