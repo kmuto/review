@@ -39,15 +39,22 @@ class ReVIEWEPUBMaker
       copy_stylesheet(basetmpdir)
       copy_frontmatter(basetmpdir)
 
+      call_hook(@params["hook_afterfrontmatter"], basetmpdir)
+
       build_body(basetmpdir, yamlfile)
-      call_hook(@params["hook_pretoc"], basetmpdir)
+      call_hook(@params["hook_prebody"], basetmpdir)
 
       push_body(basetmpdir)
+
+      call_hook(@params["hook_afterbody"], basetmpdir)
       
       copy_backmatter(basetmpdir)
 
+      call_hook(@params["hook_afterbackmatter"], basetmpdir)
+
       copy_images(@params["imagedir"], "#{basetmpdir}/images")
       copy_images("covers", "#{basetmpdir}/images")
+      copy_images("adv", "#{basetmpdir}/images")
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
 
       epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
@@ -118,7 +125,6 @@ class ReVIEWEPUBMaker
   end
 
   def build_part(part, basetmpdir, htmlfile)
-    # FIXME:重複チェック?
     File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
       f.puts header(CGI.escapeHTML(@params["booktitle"]))
       f.puts <<EOT
@@ -147,7 +153,6 @@ EOT
     end
     id = filename.sub(/\.re\Z/, "")
     htmlfile = "#{id}.#{@params["htmlext"]}"
-    # FIXME: essential_files check
 
     level = @params["secnolevel"]
     
@@ -212,21 +217,56 @@ EOT
   end
 
   def copy_frontmatter(basetmpdir)
-    FileUtils.cp(@params["cover"], "#{basetmpdir}/#{@params["cover"]}") if !@params["cover"].nil? && File.exist?(@params["cover"])
-    # FIXME:大扉
-    # FIXME:原書大扉
-    # FIXME:クレジット
+    FileUtils.cp(@params["cover"], "#{basetmpdir}/#{File.basename(@params["cover"])}") if !@params["cover"].nil? && File.exist?(@params["cover"])
 
-#    if @params["titlepage"] # FIXME
-#      FileUtils.cp(@params["titlepage"], "#{basetmpdir}/#{@params["titlepage"]}")
-#      @epub.contents.push(Content.new("id" => "title", "file" => @params["titlepage"], "title" => @epub.res.v("titlepagetitle")))
-#    end
+    if @params["titlepage"]
+      if @params["titlepagefile"].nil?
+        build_titlepage(basetmpdir, "_titlepage.#{@params["htmlext"]}")
+        @epub.contents.push(Content.new("file" => "_titlepage.#{@params["htmlext"]}", "title" => @epub.res.v("titlepagetitle")))
+      else
+        FileUtils.cp(@params["titlepagefile"], "#{basetmpdir}/#{File.basename(@params["titlepagefile"])}")
+        @epub.contents.push(Content.new("id" => "_titlepage", "file" => File.basename(@params["titlepagefile"]), "title" => @epub.res.v("titlepagetitle")))
+      end
+    end
+  end
+
+  def build_titlepage(basetmpdir, htmlfile)
+    File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
+      f.puts header(CGI.escapeHTML(@params["booktitle"]))
+      f.puts <<EOT
+<div class="titlepage">
+<h1 class="tp-title">#{CGI.escapeHTML(@params["booktitle"])}</h1>
+EOT
+
+      if @params["aut"]
+        f.puts <<EOT
+<h2 class="tp-author">#{@params["aut"].join(", ")}</h2>
+EOT
+      end
+      if @params["prt"]
+        f.puts <<EOT
+<h3 class="tp-publisher">#{@params["prt"].join(", ")}</h3>
+EOT
+      end
+
+      f.puts <<EOT
+</div>
+EOT
+      f.puts footer
+    end
   end
 
   def copy_backmatter(basetmpdir)
-    # FIXME:著者紹介
+    if @params["profile"]
+      FileUtils.cp(@params["profile"], "#{basetmpdir}/#{File.basename(@params["profile"])}")
+      @epub.contents.push(Content.new("file" => File.basename(@params["profile"]), "title" => @epub.res.v("profile")))
+    end
 
-    # FIXME: backcover
+    if @params["advfile"]
+      FileUtils.cp(@params["advfile"], "#{basetmpdir}/#{File.basename(@params["advfile"])}")
+      @epub.contents.push(Content.new("file" => File.basename(@params["advfile"]), "title" => @epub.res.v("advtitle")))
+    end
+
     if @params["colophon"]
       if @params["colophon"].instance_of?(String)
         FileUtils.cp(@params["colophon"], "#{basetmpdir}/colophon.#{@params["htmlext"]}")

@@ -40,10 +40,13 @@ module EPUBMaker
         "covertitle" => "Cover",
         "titlepagetitle" => "Title Page",
         "colophontitle" => "Colophon",
+        "profile" => "Profile",
+        "advtitle" => "Advertisement",
         "c-aut" => "Author",
         "c-dsr" => "Designer",
         "c-ill" => "Illustrator",
         "c-edt" => "Editor",
+        "c-trl" => "Translator",
         "c-prt" => "Publisher",
       }
     end
@@ -53,12 +56,15 @@ module EPUBMaker
       {
         "toctitle" => "目次",
         "covertitle" => "表紙",
-        "titlepagetitle" => "権利表記",
+        "titlepagetitle" => "大扉",
         "colophontitle" => "奥付",
+        "advtitle" => "広告",
+        "profile" => "著者紹介",
         "c-aut" => "著　者",
         "c-dsr" => "デザイン",
         "c-ill" => "イラスト",
         "c-edt" => "編　集",
+        "c-trl" => "翻　訳",
         "c-prt" => "発行所",
       }
     end
