@@ -140,7 +140,7 @@ EOT
       s = ""
       s << %Q[  <guide>\n]
       s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
-      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="#{@producer.params["titlepage"]}"/>\n] unless @producer.params["titlepage"].nil?
+      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="#{@producer.params["titlepage"]}"/>\n] unless @producer.params["titlepage"].nil? # FIXME: path
       s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["tocfile"]}"/>\n] unless @producer.params["mytoc"].nil?
       s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil? # FIXME: path
       s << %Q[  </guide>\n]
@@ -412,6 +412,7 @@ EOT
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
       File.open("#{tmpdir}/OEBPS/#{@producer.params["tocfile"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
       
+      @producer.call_hook(@producer.params["hook_prepack"], tmpdir)
       export_zip(tmpdir, epubfile)
     end
 

@@ -163,8 +163,17 @@ module EPUBMaker
       end
     end
     
-    private
+    def call_hook(filename, *params)
+      if !filename.nil? && File.exist?(filename) && FileTest.executable?(filename)
+        fork {
+          exec(filename, *params)
+        }
+        Process.waitall
+      end
+    end
     
+    private
+
     # Complement parameters.
     def complement
       @params["htmlext"] = "html" if @params["htmlext"].nil?
@@ -182,8 +191,11 @@ module EPUBMaker
         "secnolevel" => 2,
         "pre_secnolevel" => 0,
         "post_secnolevel" => 0,
+        "part_secnolevel" => 1,
         "zip_stage1" => "zip -0X",
         "zip_stage2" => "zip -Xr9D",
+        "hook_pretoc" => nil,
+        "hook_prepack" => nil,
         "imagedir" => "images",
       }
 

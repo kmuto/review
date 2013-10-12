@@ -71,7 +71,8 @@ EOT
       produce_write_common(basedir, tmpdir)
 
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
-      
+
+      @producer.call_hook(@producer.params["hook_prepack"], tmpdir)
       export_zip(tmpdir, epubfile)
     end
 
@@ -215,8 +216,7 @@ EOT
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2011/epub" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta charset="UTF-8" />
   <meta name="generator" content="EPUBMaker::Producer"/>
 EOT
       
