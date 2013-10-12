@@ -34,28 +34,29 @@ class ReVIEWEPUBMaker
     File.unlink("#{bookname}.epub") if File.exist?("#{bookname}.epub")
     FileUtils.rm_rf(bookname) if @params["debug"] && File.exist?(bookname)
     
-    basetmpdir = Dir.mktmpdir # FIXME:デバッグ終わったらblock化する
+    Dir.mktmpdir(bookname, Dir.pwd) do |basetmpdir|
 
-    copy_frontmatter(basetmpdir)
+      copy_stylesheet(basetmpdir)
+      copy_frontmatter(basetmpdir)
 
-    build_body(basetmpdir, yamlfile)
-    # FIXME: pre-hook
+      build_body(basetmpdir, yamlfile)
+      # FIXME: pre-hook
 
-    push_body(basetmpdir)
+      push_body(basetmpdir)
+      
+      copy_backmatter(basetmpdir)
 
-    copy_backmatter(basetmpdir)
+      copy_images(@params["imagedir"], "#{basetmpdir}/images")
+      copy_images("covers", "#{basetmpdir}/images") # FIXME:イレギュラー?
+      @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
 
-    copy_images(@params["imagedir"], "#{basetmpdir}/images")
-    copy_images("covers", "#{basetmpdir}/images") # FIXME:イレギュラー?
-    @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
+      # FIXME: post-hook
 
-    # FIXME: post-hook
+      epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
+      Dir.mkdir(bookname) unless @params["debug"].nil?
+      @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
 
-    epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
-    Dir.mkdir(bookname) unless @params["debug"].nil?
-    @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
-
-    FileUtils.rm_r(basetmpdir)
+    end
   end
 
   def copy_images(imagedir, destdir)
@@ -148,6 +149,15 @@ class ReVIEWEPUBMaker
         level, file, title = l.chomp.split("\t", 3)
         next if level.to_i > @params["toclevel"]
         @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title))
+      end
+    end
+  end
+
+  def copy_stylesheet(basetmpdir)
+    if @params["stylesheet"].size > 0
+      @params["stylesheet"].each do |sfile|
+        FileUtils.cp(sfile, basetmpdir)
+        @epub.contents.push(Content.new("file" => sfile))
       end
     end
   end
