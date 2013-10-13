@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = resource.rb -- Message resources for EPUBMaker.
 #
-# Copyright (c) 2010 Kenshi Muto
+# Copyright (c) 2010-2013 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -33,12 +33,14 @@ module EPUBMaker
     end
     
     private
-    # English messages.
+    # English message catalog
     def en
       {
         "toctitle" => "Table of Contents",
         "covertitle" => "Cover",
         "titlepagetitle" => "Title Page",
+        "originaltitle" => "Title Page of Original",
+        "credit" => "Credit",
         "colophontitle" => "Colophon",
         "profile" => "Profile",
         "advtitle" => "Advertisement",
@@ -51,12 +53,14 @@ module EPUBMaker
       }
     end
     
-    # Japanese messages.
+    # Japanese message catalog
     def ja
       {
         "toctitle" => "目次",
         "covertitle" => "表紙",
         "titlepagetitle" => "大扉",
+        "originaltitle" => "原書大扉",
+        "credit" => "クレジット",
         "colophontitle" => "奥付",
         "advtitle" => "広告",
         "profile" => "著者紹介",

@@ -179,10 +179,11 @@ module EPUBMaker
       @params["htmlext"] = "html" if @params["htmlext"].nil?
       defaults = {
         "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
-        "title" => @params["booktitle"], # backward compatibility
+        "title" => @params["booktitle"],
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
         "urnid" => "urn:uid:#{UUID.create}",
+        "isbn" => nil,
         "tocfile" => "toc.#{@params["htmlext"]}",
         "toclevel" => 2,
         "stylesheet" => [],
@@ -194,14 +195,18 @@ module EPUBMaker
         "part_secnolevel" => 1,
         "titlepage" => nil,
         "titlepagefile" => nil,
+        "originaltitlefile" => nil,
         "profile" => nil,
-        "zip_stage1" => "zip -0X",
-        "zip_stage2" => "zip -Xr9D",
+        "colophon" => nil,
+        "zip_stage1" => "zip -0Xq",
+        "zip_stage2" => "zip -Xr9Dq",
+        "hook_beforeprocess" => nil,
         "hook_afterfrontmatter" => nil,
-        "hook_prebody" => nil,
         "hook_afterbody" => nil,
         "hook_afterbackmatter" => nil,
+        "hook_aftercopyimage" => nil,
         "hook_prepack" => nil,
+        "rename_for_legacy" => nil,
         "imagedir" => "images",
       }
 

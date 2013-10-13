@@ -14,9 +14,10 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'reviewepubmaker'
 
 rv = ReVIEWEPUBMaker.new
-if ARGV.size != 1 || !File.exist?(ARGV[0])
-  STDERR.puts "Usage: #{$0} YAML_file"
+if ARGV.size < 1 || !File.exist?(ARGV[0])
+  STDERR.puts "Usage: #{$0} YAML_filename [export_filename]"
   exit 0
 end
 
-rv.produce(ARGV[0])
+bookname = (ARGV.size > 1) ? ARGV[1] : nil
+rv.produce(ARGV[0], bookname)

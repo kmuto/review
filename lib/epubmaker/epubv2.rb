@@ -140,9 +140,9 @@ EOT
       s = ""
       s << %Q[  <guide>\n]
       s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
-      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="#{@producer.params["titlepage"]}"/>\n] unless @producer.params["titlepage"].nil? # FIXME: path
+      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="titlepage.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["titlepage"].nil?
       s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["tocfile"]}"/>\n] unless @producer.params["mytoc"].nil?
-      s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil? # FIXME: path
+      s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil?
       s << %Q[  </guide>\n]
       s
     end
@@ -333,19 +333,51 @@ EOT
 </head>
 <body>
   <div class="colophon">
-    <p class="title">#{CGI.escapeHTML(@producer.params["title"])}</p>
 EOT
 
-      if @producer.params["pubhistory"]
-        s << %Q[    <div class="pubhistory">\n      <p>#{@producer.params["pubhistory"].gsub(/\n/, "<br />")}</p>\n    </div>\n] # FIXME: should be array?
+      if @producer.params["subtitle"].nil?
+        s << <<EOT
+    <p class="title">#{CGI.escapeHTML(@producer.params["title"])}</p>
+EOT
+      else
+        s << <<EOT
+    <p class="title">#{CGI.escapeHTML(@producer.params["title"])}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.params["subtitle"])}</span></p>
+EOT
+      end
+
+      if @producer.params["date"] || @producer.params["history"]
+        s << %Q[    <div class="pubhistory">\n]
+        if @producer.params["history"]
+          @producer.params["history"].each_with_index do |items, edit|
+            items.each_with_index do |item, rev|
+              editstr = (edit == 0) ? "初版" : "第#{edit + 1}版" # FIXME:i18n
+              revstr = "第#{rev + 1}刷"
+              s << %Q[      <p>#{date_to_s(item)}　#{editstr}#{revstr}　発行</p>\n] # FIXME:i18n
+            end
+          end
+        else
+          s << %Q[      <p>#{date_to_s(@producer.params["date"])}　発行</p>\n] #FIXME:i18n
+        end
+        s << %Q[    </div>\n]
       end
       
       s << %Q[    <table class="colophon">\n]
       s << %Q[      <tr><th>#{@producer.res.v("c-aut")}</th><td>#{CGI.escapeHTML(@producer.params["aut"].join(", "))}</td></tr>\n] unless @producer.params["aut"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("c-trl")}</th><td>#{CGI.escapeHTML(@producer.params["trl"].join(", "))}</td></tr>\n] unless @producer.params["trl"].nil?
       s << %Q[      <tr><th>#{@producer.res.v("c-dsr")}</th><td>#{CGI.escapeHTML(@producer.params["dsr"].join(", "))}</td></tr>\n] unless @producer.params["dsr"].nil?
       s << %Q[      <tr><th>#{@producer.res.v("c-ill")}</th><td>#{CGI.escapeHTML(@producer.params["ill"].join(", "))}</td></tr>\n] unless @producer.params["ill"].nil?
       s << %Q[      <tr><th>#{@producer.res.v("c-edt")}</th><td>#{CGI.escapeHTML(@producer.params["edt"].join(", "))}</td></tr>\n] unless @producer.params["edt"].nil?
       s << %Q[      <tr><th>#{@producer.res.v("c-prt")}</th><td>#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</td></tr>\n] unless @producer.params["prt"].nil?
+      if @producer.params["isbn"].to_s =~ /\A\d{10}\Z/ || @producer.params["isbn"].to_s =~ /\A\d{13}\Z/
+        isbn = nil
+        str = @producer.params["isbn"].to_s
+        if str.size == 10
+          isbn = "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
+        else
+          isbn = "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
+        end
+        s << %Q[      <tr><th>ISBN</th><td>#{isbn}</td></tr>\n]
+      end
       s << <<EOT
     </table>
   </div>
@@ -353,6 +385,11 @@ EOT
 </html>
 EOT
       s
+    end
+
+    def date_to_s(date)
+      ymd = date.split('-')
+      "#{ymd[0]}年#{ymd[1].sub(/\A0/, '')}月#{ymd[2].sub(/\A0/, '')}日" # FIXME:i18n
     end
 
     # Return own toc content.
@@ -431,7 +468,6 @@ EOT
         File.open("#{tmpdir}/OEBPS/#{@producer.params["cover"]}", "w") {|f| @producer.cover(f) }
       end
 
-      # FIXME:colophon and titlepage should be included in @producer.contents.
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
         fname = "#{basedir}/#{item.file}"

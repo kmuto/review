@@ -18,48 +18,63 @@ class ReVIEWEPUBMaker
 
   def initialize
     @epub = nil
+    @tochtmltxt = "toc-html.txt"
+  end
+
+  def log(s)
+    puts s unless @params["debug"].nil?
   end
 
   def load_yaml(yamlfile)
-    @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
+    @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile)) # FIXME:設定がReVIEW側とepubmaker/producer.rb側の2つに分かれて面倒
     @epub = Producer.new(@params)
     @epub.load(yamlfile)
     @params = @epub.params
   end
 
-  def produce(yamlfile, bookname = nil)
+  def produce(yamlfile, bookname=nil)
     load_yaml(yamlfile)
     bookname = @params["bookname"] if bookname.nil?
+    log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
     File.unlink("#{bookname}.epub") if File.exist?("#{bookname}.epub")
     FileUtils.rm_rf(bookname) if @params["debug"] && File.exist?(bookname)
     
     Dir.mktmpdir(bookname, Dir.pwd) do |basetmpdir|
+      log("Created first temporary directory as #{basetmpdir}.")
+
+      log("Call hook_beforeprocess. (#{@params["hook_beforeprocess"]})")
+      call_hook(@params["hook_beforeprocess"], basetmpdir)
 
       copy_stylesheet(basetmpdir)
-      copy_frontmatter(basetmpdir)
 
+      copy_frontmatter(basetmpdir)
+      log("Call hook_afterfrontmatter. (#{@params["hook_afterfrontmatter"]})")
       call_hook(@params["hook_afterfrontmatter"], basetmpdir)
 
       build_body(basetmpdir, yamlfile)
-      call_hook(@params["hook_prebody"], basetmpdir)
-
-      push_body(basetmpdir)
-
+      log("Call hook_afterbody. (#{@params["hook_afterbody"]})")
       call_hook(@params["hook_afterbody"], basetmpdir)
-      
-      copy_backmatter(basetmpdir)
 
+      copy_backmatter(basetmpdir)
+      log("Call hook_afterbackmatter. (#{@params["hook_afterbackmatter"]})")
       call_hook(@params["hook_afterbackmatter"], basetmpdir)
+
+      push_contents(basetmpdir)
 
       copy_images(@params["imagedir"], "#{basetmpdir}/images")
       copy_images("covers", "#{basetmpdir}/images")
       copy_images("adv", "#{basetmpdir}/images")
+      log("Call hook_aftercopyimage. (#{@params["hook_aftercopyimage"]})")
+      call_hook(@params["hook_aftercopyimage"], basetmpdir)
+
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
 
       epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
       Dir.mkdir(bookname) unless @params["debug"].nil?
+      log("Call ePUB producer.")
       @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
+      log("Finished.")
 
     end
   end
@@ -88,6 +103,7 @@ class ReVIEWEPUBMaker
         else
           if fname =~ /\.(png|gif|jpg|jpeg|svg)\Z/i
             Dir.mkdir(destdir) unless File.exist?(destdir)
+            log("Copy #{imagedir}/#{fname} to the temporary directory.")
             FileUtils.cp("#{imagedir}/#{fname}", destdir)
           end
         end
@@ -96,6 +112,10 @@ class ReVIEWEPUBMaker
   end
 
   def build_body(basetmpdir, yamlfile)
+    @precount = 0
+    @bodycount = 0
+    @postcount = 0
+
     @manifeststr = ""
     @ncxstr = ""
     @tocdesc = Array.new
@@ -107,24 +127,25 @@ class ReVIEWEPUBMaker
       htmlfile = nil
       if part.name.present?
         if part.file?
-          build_chap(part, base_path, basetmpdir, yamlfile)
+          build_chap(part, base_path, basetmpdir, yamlfile, true)
         else
           htmlfile = "part_#{part.number}.#{@params["htmlext"]}"
           build_part(part, basetmpdir, htmlfile)
           title = ReVIEW::I18n.t("part", part.number)
           title += ReVIEW::I18n.t("chapter_postfix") + part.name.strip if part.name.strip.present?
-          write_info_builtpart(basetmpdir, htmlfile, title)
+          write_tochtmltxt(basetmpdir, "0\t#{filename}\t#{title}")
         end
       end
 
       part.chapters.each do |chap|
-        build_chap(chap, base_path, basetmpdir, yamlfile)
+        build_chap(chap, base_path, basetmpdir, yamlfile, nil)
       end
       
     end
   end
 
   def build_part(part, basetmpdir, htmlfile)
+    log("Create #{htmlfile} from a template.")
     File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
       f.puts header(CGI.escapeHTML(@params["booktitle"]))
       f.puts <<EOT
@@ -144,19 +165,34 @@ EOT
     end
   end
 
-  def build_chap(chap, base_path, basetmpdir, yamlfile)
+  def build_chap(chap, base_path, basetmpdir, yamlfile, ispart=nil)
     filename = ""
-    if chap.instance_of?(ReVIEW::Book::Part)
+    if !ispart.nil?
       filename = chap.path
     else
       filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
     end
     id = filename.sub(/\.re\Z/, "")
+
+    if @params["rename_for_legacy"] && ispart.nil?
+      if chap.on_PREDEF?
+        @precount += 1
+        id = sprintf("pre%02d", @precount)
+      elsif chap.on_POSTDEF?
+        @postcount += 1
+        id = sprintf("post%02d", @postcount)
+      else
+        @bodycount += 1
+        id = sprintf("chap%02d", @bodycount)
+      end
+    end
+
     htmlfile = "#{id}.#{@params["htmlext"]}"
+    log("Create #{htmlfile} from #{filename}.")
 
     level = @params["secnolevel"]
     
-    if chap.instance_of?(ReVIEW::Book::Part)
+    if !ispart.nil?
       level = @params["part_secnolevel"]
     else
       level = @params["pre_secnolevel"] if chap.on_PREDEF?
@@ -169,40 +205,52 @@ EOT
     }
     Process.waitall
 
-    write_info_body(basetmpdir, id, htmlfile, chap.instance_of?(ReVIEW::Book::Part))
+    write_info_body(basetmpdir, id, htmlfile, ispart)
   end
 
-  def write_info_builtpart(basetmpdir, filename, title)
-    File.open("#{basetmpdir}/toc-html.txt", "a") do |f|
-      f.puts "0\t#{filename}\t#{title}"
-    end
-  end
-
-  def write_info_body(basetmpdir, id, filename, part = nil)
+  def write_info_body(basetmpdir, id, filename, ispart=nil)
     headlines = []
     # FIXME:nonumを修正する必要あり
-    # 最初にtoclevel以下だとリストから抜ける?
     Document.parse_stream(File.new("#{basetmpdir}/#{filename}"), ReVIEWHeaderListener.new(headlines))
-    File.open("#{basetmpdir}/toc-html.txt", "a") do |f|
-      first = true
-      headlines.each do |headline|
-        headline["level"] = 0 if !part.nil? && headline["level"] == 1
-        if first.nil?
-          f.puts "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}"
-        else
-          f.puts "#{headline["level"]}\t#{filename}\t#{headline["title"]}"
-          first = nil
-        end
+    first = true
+    headlines.each do |headline|
+      headline["level"] = 0 if !ispart.nil? && headline["level"] == 1
+      if first.nil?
+        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}")
+      else
+        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true")
+        first = nil
       end
     end
   end
 
-  def push_body(basetmpdir)
-    File.open("#{basetmpdir}/toc-html.txt") do |f|
+  def push_contents(basetmpdir)
+    File.open("#{basetmpdir}/#{@tochtmltxt}") do |f|
       f.each_line do |l|
-        level, file, title = l.chomp.split("\t", 3)
-        next if level.to_i > @params["toclevel"]
-        @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title))
+        force_include = nil
+        customid = nil
+        level, file, title, custom = l.chomp.split("\t")
+        unless custom.nil?
+          # custom setting
+          vars = custom.split(/,\s*/)
+          vars.each do |var|
+            k, v = var.split("=")
+            case k
+            when "id"
+              customid = v
+            when "force_include"
+              force_include = true
+            end
+          end
+        end
+        next if level.to_i > @params["toclevel"] && force_include.nil?
+        log("Push #{file} to ePUB contents.")
+
+        if customid.nil?
+          @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title))
+        else
+          @epub.contents.push(Content.new("id" => customid, "file" => file, "level" => level.to_i, "title" => title))
+        end
       end
     end
   end
@@ -221,13 +269,23 @@ EOT
 
     if @params["titlepage"]
       if @params["titlepagefile"].nil?
-        build_titlepage(basetmpdir, "_titlepage.#{@params["htmlext"]}")
-        @epub.contents.push(Content.new("file" => "_titlepage.#{@params["htmlext"]}", "title" => @epub.res.v("titlepagetitle")))
+        build_titlepage(basetmpdir, "titlepage.#{@params["htmlext"]}")
       else
-        FileUtils.cp(@params["titlepagefile"], "#{basetmpdir}/#{File.basename(@params["titlepagefile"])}")
-        @epub.contents.push(Content.new("id" => "_titlepage", "file" => File.basename(@params["titlepagefile"]), "title" => @epub.res.v("titlepagetitle")))
+        FileUtils.cp(@params["titlepagefile"], "titlepage.#{@params["htmlext"]}")
       end
+      write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@epub.res.v("titlepagetitle")}")
     end
+
+    if !@params["originaltitlefile"].nil? && File.exist?(@params["originaltitlefile"])
+      FileUtils.cp(@params["originaltitlefile"], "#{basetmpdir}/#{File.basename(@params["originaltitlefile"])}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["originaltitlefile"])}\t#{@epub.res.v("originaltitle")}")
+    end
+
+    if !@params["creditfile"].nil? && File.exist?(@params["creditfile"])
+      FileUtils.cp(@params["creditfile"], "#{basetmpdir}/#{File.basename(@params["creditfile"])}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@epub.res.v("credit")}")
+    end
+
   end
 
   def build_titlepage(basetmpdir, htmlfile)
@@ -259,21 +317,27 @@ EOT
   def copy_backmatter(basetmpdir)
     if @params["profile"]
       FileUtils.cp(@params["profile"], "#{basetmpdir}/#{File.basename(@params["profile"])}")
-      @epub.contents.push(Content.new("file" => File.basename(@params["profile"]), "title" => @epub.res.v("profile")))
+      write_tochtmltxt(basetmpdir, "1\t_#{File.basename(@params["profile"])}\t#{@epub.res.v("profile")}")
     end
 
     if @params["advfile"]
       FileUtils.cp(@params["advfile"], "#{basetmpdir}/#{File.basename(@params["advfile"])}")
-      @epub.contents.push(Content.new("file" => File.basename(@params["advfile"]), "title" => @epub.res.v("advtitle")))
+      write_tochtmltxt(basetmpdir, "1\t_#{File.basename(@params["advfile"])}\t#{@epub.res.v("advtitle")}")
     end
 
     if @params["colophon"]
-      if @params["colophon"].instance_of?(String)
+      if @params["colophon"].instance_of?(String) # FIXME:このやり方はやめる？
         FileUtils.cp(@params["colophon"], "#{basetmpdir}/colophon.#{@params["htmlext"]}")
       else
         File.open("#{basetmpdir}/colophon.#{@params["htmlext"]}", "w") {|f| @epub.colophon(f) }
       end
-      @epub.contents.push(Content.new("id" => "colophon", "file" => "colophon.#{@params["htmlext"]}", "title" => @epub.res.v("colophontitle")))
+      write_tochtmltxt(basetmpdir, "1\tcolophon.#{@params["htmlext"]}\t#{@epub.res.v("colophontitle")}")
+    end
+  end
+
+  def write_tochtmltxt(basetmpdir, s)
+    File.open("#{basetmpdir}/#{@tochtmltxt}", "a") do |f|
+      f.puts s
     end
   end
 
@@ -355,7 +419,7 @@ EOT
     
     def text(text)
       unless @level.nil?
-        @content << text
+        @content << text.gsub("\t", "　") # FIXME:区切り文字
       end
     end
   end

@@ -30,7 +30,7 @@ module ReVIEW
         "epubversion" => 2,
         "titlepage" => true, # Use title page
         "toc" => true, # Use table of contents
-        "colophon" => false, # Use colophon
+        "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
       }
     end
