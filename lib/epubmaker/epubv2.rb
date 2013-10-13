@@ -388,7 +388,7 @@ EOT
     end
 
     def date_to_s(date)
-      ymd = date.split('-')
+      ymd = date.to_s.split('-')
       "#{ymd[0]}年#{ymd[1].sub(/\A0/, '')}月#{ymd[2].sub(/\A0/, '')}日" # FIXME:i18n
     end
 
