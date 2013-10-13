@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = content.rb -- Content object for EPUBMaker.
 #
-# Copyright (c) 2010 Kenshi Muto
+# Copyright (c) 2010-2013 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -11,11 +11,12 @@
 
 module EPUBMaker
 
-  # EPUBMaker::Content describes a content data for EPUBMaker. EPUBMaker#contents takes an array of Content.
+  # EPUBMaker::Content represents a content data for EPUBMaker.
+  # EPUBMaker#contents takes an array of Content.
   class Content
     # ID
     attr_accessor :id
-    # File path (can accept #<anchor> suffix also)
+    # File path (will accept #<anchor> suffix also)
     attr_accessor :file
     # MIME type
     attr_accessor :media
@@ -61,9 +62,10 @@ module EPUBMaker
 
     private
 
-    # Complement other parameters from file parameter.
+    # Complement other parameters by using file parameter.
     def complement
-      @id = @file.gsub(/[\\\/\.]/, '-') if @id.nil?
+      @id = @file.gsub(/[\\\/\. ]/, '-') if @id.nil?
+      @id = "rv-#{@id}" if @id =~ /\A[^a-z]/i
       @media = @file.sub(/.+\./, '').downcase if !@file.nil? && @media.nil?
 
       @media = "application/xhtml+xml" if @media == "xhtml" || @media == "xml" || @media == "html"
