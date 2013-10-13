@@ -8,7 +8,7 @@ class EPUBMakerTest < Test::Unit::TestCase
 
   def setup
     @producer = Producer.new
-    @producer.mergeparams({
+    @producer.merge_params({
                             "bookname" => "sample",
                             "title" => "Sample Book",
                             "version" => 2,
@@ -24,12 +24,12 @@ class EPUBMakerTest < Test::Unit::TestCase
   end
 
   def test_resource_en
-    @producer.mergeparams({"language" => "en"})
+    @producer.merge_params({"language" => "en"})
     assert_equal "Table of Contents", @producer.res.v("toctitle")
   end
 
   def test_resource_ja
-    @producer.mergeparams({"language" => "ja"})
+    @producer.merge_params({"language" => "ja"})
     assert_equal "目次", @producer.res.v("toctitle")
   end
 
@@ -470,8 +470,8 @@ EOT
   end
 
   def test_colophon_default
-    @producer.params["aut"] = "Mr.Smith"
-    @producer.params["prt"] = "BLUEPRINT"
+    @producer.params["aut"] = ["Mr.Smith"]
+    @producer.params["prt"] = ["BLUEPRINT"]
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -486,6 +486,9 @@ EOT
 <body>
   <div class="colophon">
     <p class="title">Sample Book</p>
+    <div class="pubhistory">
+      <p>2011年1月1日　発行</p>
+    </div>
     <table class="colophon">
       <tr><th>Author</th><td>Mr.Smith</td></tr>
       <tr><th>Publisher</th><td>BLUEPRINT</td></tr>
