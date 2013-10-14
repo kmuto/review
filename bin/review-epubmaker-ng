@@ -11,9 +11,9 @@
 require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
-require 'reviewepubmaker'
+require 'review/epubmaker'
 
-rv = ReVIEWEPUBMaker.new
+rv = ReVIEW::EPUBMaker.new
 if ARGV.size < 1 || !File.exist?(ARGV[0])
   STDERR.puts "Usage: #{$0} YAML_filename [export_filename]"
   exit 0
