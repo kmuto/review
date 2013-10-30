@@ -576,6 +576,22 @@ EOS
     ul_helper(src, expect)
   end
 
+  def test_ol
+    src =<<-EOS
+  3. AAA
+  3. BBB
+EOS
+
+    expect =<<-EOS
+
+\\begin{enumerate}
+\\item AAA
+\\item BBB
+\\end{enumerate}
+EOS
+    ol_helper(src, expect)
+  end
+
   def test_ol_with_bracket
     src =<<-EOS
   1. AAA

@@ -570,6 +570,21 @@ EOS
     ul_helper(src, expect)
   end
 
+  def test_ol
+    src =<<-EOS
+  3. AAA
+  3. BBB
+EOS
+
+    expect =<<-EOS
+<ol>
+<li>AAA</li>
+<li>BBB</li>
+</ol>
+EOS
+    ol_helper(src, expect)
+  end
+
   def test_inline_raw0
     assert_equal "normal", @builder.inline_raw("normal")
   end
