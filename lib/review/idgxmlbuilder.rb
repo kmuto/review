@@ -287,14 +287,23 @@ module ReVIEW
 
     def ol_begin
       puts '<ol>'
+      if !@ol_num
+        @ol_num = 1
+      end
     end
 
     def ol_item(lines, num)
-      puts %Q(<li aid:pstyle="ol-item" num="#{num}">#{lines.join.chomp}</li>)
+      puts %Q(<li aid:pstyle="ol-item" num="#{@ol_num}">#{lines.join.chomp}</li>)
+      @ol_num += 1
     end
 
     def ol_end
       puts '</ol>'
+      @ol_num = nil
+    end
+
+    def olnum(num)
+      @ol_num = num.to_i
     end
 
     def dl_begin
