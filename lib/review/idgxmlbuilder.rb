@@ -293,7 +293,7 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts %Q(<li aid:pstyle="ol-item" num="#{@ol_num}">#{lines.join.chomp}</li>)
+      puts %Q(<li aid:pstyle="ol-item" olnum="#{@ol_num}" num="#{num}">#{lines.join.chomp}</li>)
       @ol_num += 1
     end
 
