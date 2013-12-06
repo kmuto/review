@@ -178,6 +178,15 @@ def get_template(values)
     authors += " \\\\\n"+values["trl"]+ "\\vspace*{1zh} 訳"
     okuduke += "翻　訳 & #{values["trl"]} \\\\\n"
   end
+  if values["dsr"]
+    okuduke += "デザイン & #{values["dsr"]} \\\\\n"
+  end
+  if values["ill"]
+    okuduke += "イラスト & #{values["ill"]} \\\\\n"
+  end
+  if values["cov"]
+    okuduke += "表　紙 & #{values["cov"]} \\\\\n"
+  end
   if values["edt"]
     okuduke += "編集者 & #{values["edt"]} \\\\\n"
   end

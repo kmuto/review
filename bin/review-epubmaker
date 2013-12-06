@@ -854,6 +854,7 @@ EOT
       f.puts %Q[<tr>\n <th>翻　訳</th><td>#{values["trl"]}</td>\n</tr>] if values["trl"]
       f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"]}</td>\n</tr>] if values["dsr"]
       f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"]}</td>\n</tr>] if values["ill"]
+      f.puts %Q[<tr>\n <th>表　紙</th><td>#{values["cov"]}</td>\n</tr>] if values["cov"]
       f.puts %Q[<tr>\n <th>編　集</th><td>#{values["edt"]}</td>\n</tr>] if values["edt"]
       f.puts %Q[<tr>\n <th>発行所</th><td>#{values["prt"]}</td>\n</tr>] if values["prt"]
       f.puts <<EOT
