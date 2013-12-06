@@ -876,7 +876,8 @@ def make_part_page(part, filename, values)
     EOT
     doctype = make_doctype()
     f.puts doctype
-    f.puts <<-EOT
+  if @htmlversion == 4
+    header = <<-EOT
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
@@ -885,6 +886,21 @@ def make_part_page(part, filename, values)
   <meta name="generator" content="ReVIEW EPUB Maker"/>
   <title>#{values["booktitle"]}</title>
 </head>
+    EOT
+  else
+    header = <<-EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+    EOT
+  end
+    f.puts header
+
+    f.puts <<-EOT
 <body>
 <h1 class="part-number">#{ReVIEW::I18n.t("part", part.number)}</h1>
     EOT
