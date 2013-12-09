@@ -549,8 +549,9 @@ EOT
       puts '</div>'
     end
 
-    def emlistnum(lines)
+    def emlistnum(lines, caption = nil)
       puts %Q[<div class="emlistnum-code">]
+      puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
       print %Q[<pre class="emlist">]
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
