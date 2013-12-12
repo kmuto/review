@@ -93,6 +93,41 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n|, ret
   end
 
+  def test_inline_i
+    ret = @builder.compile_inline("test @<i>{inline test} test2")
+    assert_equal %Q|test ▲inline test☆ test2|, ret
+  end
+
+  def test_inline_i_and_escape
+    ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test ▲inline<&;\\ test☆ test2|, ret
+  end
+
+  def test_inline_b
+    ret = @builder.compile_inline("test @<b>{inline test} test2")
+    assert_equal %Q|test ★inline test☆ test2|, ret
+  end
+
+  def test_inline_b_and_escape
+    ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test ★inline<&;\\ test☆ test2|, ret
+  end
+
+  def test_inline_tt
+    ret = @builder.compile_inline("test @<tt>{inline test} test2@<tt>{\\}}")
+    assert_equal %Q|test △inline test☆ test2△}☆|, ret
+  end
+
+  def test_inline_tti
+    ret = @builder.compile_inline("test @<tti>{inline test} test2")
+    assert_equal %Q|test ▲inline test☆◆→等幅フォントイタ←◆ test2|, ret
+  end
+
+  def test_inline_ttb
+    ret = @builder.compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test ★inline test☆◆→等幅フォント太字←◆ test2|, ret
+  end
+
   def test_inline_uchar
     ret = @builder.compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test ① test2|, ret
