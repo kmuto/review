@@ -73,7 +73,7 @@ module ReVIEW
         header = <<EOT
 <?xml version="1.0" encoding="#{ReVIEW.book.param["outencoding"] || :UTF-8}"?>
 EOT
-        if ReVIEW.book.param["htmlversion"] == 5
+        if ReVIEW.book.param["htmlversion"].to_i == 5
           header += <<EOT
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
@@ -112,7 +112,7 @@ EOT
     end
 
     def xmlns_ops_prefix
-      if ReVIEW.book.param["epubversion"] == 3
+      if ReVIEW.book.param["epubversion"].to_i == 3
         "epub"
       else
         "ops"
@@ -755,7 +755,7 @@ QUOTE
     end
 
     def footnote(id, str)
-      if ReVIEW.book.param["epubversion"] == 3
+      if ReVIEW.book.param["epubversion"].to_i == 3
         puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{id}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
       else
         puts %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
@@ -850,7 +850,7 @@ QUOTE
     end
 
     def inline_fn(id)
-      if ReVIEW.book.param["epubversion"] == 3
+      if ReVIEW.book.param["epubversion"].to_i == 3
         %Q(<a href="#fn-#{id}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
       else
         %Q(<a href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
@@ -858,7 +858,7 @@ QUOTE
     end
 
     def compile_ruby(base, ruby)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
         %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
@@ -891,7 +891,7 @@ QUOTE
     end
 
     def inline_tti(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
       else
         %Q(<tt><i>#{escape_html(str)}</i></tt>)
@@ -899,7 +899,7 @@ QUOTE
     end
 
     def inline_ttb(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
       else
         %Q(<tt><b>#{escape_html(str)}</b></tt>)
@@ -911,7 +911,7 @@ QUOTE
     end
 
     def inline_code(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
       else
         %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
@@ -1075,7 +1075,7 @@ QUOTE
     end
 
     def inline_tt(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="tt">#{escape_html(str)}</code>)
       else
         %Q(<tt>#{escape_html(str)}</tt>)
