@@ -182,6 +182,7 @@ module EPUBMaker
         "title" => @params["booktitle"],
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
+        "modified" => Time.now.strftime("%Y-%02m-%02dT%02H:%02M:%02SZ"),
         "urnid" => "urn:uid:#{UUID.create}",
         "isbn" => nil,
         "tocfile" => "toc.#{@params["htmlext"]}",

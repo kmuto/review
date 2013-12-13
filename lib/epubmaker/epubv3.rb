@@ -81,29 +81,27 @@ EOT
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
-          s << @producer.params[item].map {|i| %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(i.to_s)}</dc:#{item}>\n]}.join
-          s << @producer.params[item].map {|i| %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(i.to_s)}</meta>\n]}.join
+          s << @producer.params[item].map.with_index {|v, i| %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v.to_s)}</dc:#{item}>\n]}.join
         else
-          s << %Q[    <dc:#{item} prefer="#{item}">#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
-          s << %Q[    <meta id="#{item}" property="dcterms:#{item}">#{CGI.escapeHTML(@producer.params[item].to_s)}</meta>\n]
+          s << %Q[    <dc:#{item} id="#{item}">#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
         end
       end
 
+      s << %Q[    <meta property="dcterms:modified">#{@producer.params["modified"]}</meta>\n]
+
       # ID
       if @producer.params["isbn"].nil?
-        s << %Q[    <dc:identifier id="BookId" prefer="bookid">#{@producer.params["urnid"]}</dc:identifier>\n]
-        s << %Q[    <meta property="dcterms:identifier" id="bookid">#{@producer.params["urnid"]}</meta>\n]
+        s << %Q[    <dc:identifier id="BookId">#{@producer.params["urnid"]}</dc:identifier>\n]
       else
-        s << %Q[    <dc:identifier id="BookId" opf:scheme="ISBN" prefer="bookid">#{@producer.params["isbn"]}</dc:identifier>\n]
-        s << %Q[    <meta property="dcterms:identifier" id="bookid" opf:scheme="ISBN">#{@producer.params["isbn"]}</meta>\n]
+        s << %Q[    <dc:identifier id="BookId">#{@producer.params["isbn"]}</dc:identifier>\n]
       end
 
       # creator (should be array)
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
-          s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}" prefer="creator-#{i}">#{CGI.escapeHTML(v)}</dc:creator>\n]
-          s << %Q[    <meta property="dcterms:creator" id="creator-#{i}" opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</meta>\n]
+          s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:creator>\n]
+          s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n]
         end
       end
 
@@ -111,12 +109,12 @@ EOT
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
-          s << %Q[    <dc:contributor opf:role="#{role}" prefer="contributor-#{i}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
-          s << %Q[    <meta property="dcterms:contributor" id="contributor-#{i}" opf:role="#{role}">#{CGI.escapeHTML(v)}</meta>\n]
+          s << %Q[    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
+          s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
 
           if role == "prt"
-            s << %Q[    <dc:publisher prefer="publisher">#{CGI.escapeHTML(v)}</dc:publisher>\n]
-            s << %Q[    <meta property="dcterms:publisher" id="publisher">#{CGI.escapeHTML(v)}</meta>\n]
+            s << %Q[    <dc:publisher id="prt">#{CGI.escapeHTML(v)}</dc:publisher>\n]
+            s << %Q[    <meta refines="#prt" property="role" scheme="marc:relators">prt</meta>\n]
           end
         end
       end
@@ -135,14 +133,15 @@ EOT
       if @producer.params["coverimage"]
         @producer.contents.each do |item|
           if item.media =~ /\Aimage/ && item.file =~ /#{@producer.params["coverimage"]}\Z/
-              s << %Q[    <item properties="cover-image" id="cover-#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
+            s << %Q[    <item properties="cover-image" id="cover-#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
+            item.id = nil
             break
           end
         end
       end
       
       @producer.contents.each do |item|
-        next if item.file =~ /#/ # skip subgroup
+        next if item.file =~ /#/ || item.id.nil? # skip subgroup, or id=nil (for cover)
         s << %Q[    <item#{mathstr} id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
       end
       s << %Q[  </manifest>\n]
@@ -170,7 +169,7 @@ EOT
       mathstr = @producer.params["mathml"].nil? ? "" : %Q[ properties="mathml"]
       s = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="#{@producer.params["language"]}" profile="http://www.idpf.org/epub/30/profile/package/">
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="#{@producer.params["language"]}">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
 EOT
 
