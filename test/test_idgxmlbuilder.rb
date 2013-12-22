@@ -519,6 +519,19 @@ EOS
     ul_helper(src, expect.chomp)
   end
 
+  def test_ol
+    src =<<-EOS
+  3. AAA
+  3. BBB
+EOS
+
+    expect =<<-EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><ol><li aid:pstyle="ol-item" olnum="1" num="3">AAA</li><li aid:pstyle="ol-item" olnum="2" num="3">BBB</li></ol>
+EOS
+    ol_helper(src, expect.chomp)
+  end
+
   def test_inline_raw0
     assert_equal "normal", @builder.inline_raw("normal")
   end

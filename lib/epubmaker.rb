@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubmaker.rb -- EPUB production set.
 #
-# Copyright (c) 2010-2012 Kenshi Muto
+# Copyright (c) 2010-2013 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -9,16 +9,13 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 # == Quick usage
-# (If you put xhtml files on current directory and put figures in
-# images subdirectory)
-#
 #  require 'epubmaker'
 #  epub = EPUBMaker::Producer.new
 #  params = epub.load("config.yaml")
 #  epub.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
 #  epub.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
 #   ...
-#  epub.importImageInfo("images")
+#  epub.import_imageinfo("images")
 #  epub.produce
 
 require 'epubmaker/producer'

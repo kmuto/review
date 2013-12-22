@@ -1,3 +1,25 @@
+Tue Oct  8 18:57:54 2013  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/htmlbuilder.rb:
+	  support epub:type="noteref" and epub:type="footnote" in EPUB3.
+
+Tue Oct  8 13:47:01 2013  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-epubmaker: support MathML in EPUB3
+
+Mon Oct  7 22:37:38 2013  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book/compilable.rb:
+	  remove type and label from the extracted title.
+
+	* bin/review-epubmaker:
+	  add prefix 'rv' to internal ID for each converted files.
+	  Closes: #204
+
+	* lib/review/htmlbuilder.rb:
+	  set 'noteref' style class for footnote referers.
+	  Closes: #205
+
 Tue Sep 17 09:25:20 2013  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/builder.rb, lib/review/topbuilder.rb:

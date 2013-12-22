@@ -8,6 +8,13 @@ def ul_helper(src, expect)
   assert_equal expect, @builder.raw_result
 end
 
+def ol_helper(src, expect)
+  io = StringIO.new(src)
+  li = LineInput.new(io)
+  @compiler.__send__(:compile_olist, li)
+  assert_equal expect, @builder.raw_result
+end
+
 def builder_helper(src, expect, method_sym)
   io = StringIO.new(src)
   li = LineInput.new(io)

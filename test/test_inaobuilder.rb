@@ -40,8 +40,10 @@ class INAOBuidlerTest < Test::Unit::TestCase
 
 ====[column]コラム見出し
 本文コラム
+
 ===== コラム小見出し
 本文コラム
+
 ====[/column]
 
 == 箇条書き

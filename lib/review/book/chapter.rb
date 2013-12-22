@@ -23,7 +23,7 @@ module ReVIEW
           begin
             book.chapter(File.basename(path, '.*'))
           rescue KeyError => err
-            raise FileNotFound, "no such file: #{path}"
+            raise FileNotFound, "No such chapter in your book. Check if the catalog files contain the chapter. : #{path}"
           end
         }
       end

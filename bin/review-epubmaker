@@ -118,7 +118,10 @@ def main
       else
         raise "unsupported type #{fname}"
       end
-      @manifeststr << %Q(<item id="#{figid}" href="#{image_file}" media-type="#{mime}" />\n)
+      if @epubversion == 3 && File.join("images",values["coverimage"]) == image_file
+        properties = ' properties="cover-image"'
+      end
+      @manifeststr << %Q(<item id="#{figid}" href="#{image_file}"#{properties} media-type="#{mime}" />\n)
     end
   end
 
@@ -257,6 +260,9 @@ EOT
 EOT
   }
 
+  if values["backcoverfile"]
+    make_backcover_image(bookname, values)
+  end
 
   # Title page
   File.open("#{@bookdir}/OEBPS/top.html", "w") {|f|
@@ -398,7 +404,7 @@ EOT
           f.puts "</li>"
         end
         fragment_id = (id ? '#'+id : '')
-        f.write "<li><a href=\"#{file}#{fragment_id}\">#{content}</a>"
+        f.write "<li><a href=\"#{file}#{fragment_id}\">#{strip_html(content)}</a>"
         init_item = false
       }
 
@@ -536,6 +542,11 @@ EOT
   <item id="colophon" href="colophon.html" media-type="application/xhtml+xml" />
 EOT
     end
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <item id="backcover" href="#{values["backcoverfile"]}" media-type="application/xhtml+xml" />
+EOT
+    end
 
     if values["cover_linear"] && values["cover_linear"] != "no"
       cover_linear = "yes"
@@ -560,6 +571,11 @@ EOT
     if values["colophon"]
       f.puts <<EOT
   <itemref idref="colophon" />
+EOT
+    end
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <itemref idref="backcover" />
 EOT
     end
     f.puts <<EOT
@@ -646,6 +662,12 @@ EOT
 EOT
     end
 
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <item id="backcover" href="#{values["backcoverfile"]}" media-type="application/xhtml+xml" />
+EOT
+    end
+
     if values["cover_linear"] && values["cover_linear"] != "no"
       cover_linear = "yes"
     else
@@ -669,6 +691,11 @@ EOT
     if values["colophon"]
       f.puts <<EOT
   <itemref idref="colophon" />
+EOT
+    end
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <itemref idref="backcover" />
 EOT
     end
     f.puts <<EOT
@@ -718,12 +745,25 @@ def output_chaps_by_file(l, values)
   filename = "#{file_id}.html"
   fork {
     STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
-    exec("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} #{values["params"]} #{l}")
+    exec("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l}")
   }
   Process.waitall
   getanchors("#{@bookdir}/OEBPS/#{filename}")
-  @manifeststr << %Q(<item id="#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
-  @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
+  if @epubversion == 3 && include_mathml?("#{@bookdir}/OEBPS/#{filename}")
+    @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" properties="mathml" media-type="application/xhtml+xml" />\n)
+  else
+    @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
+  end
+  @ncxstr << %Q(<itemref idref="rv-#{file_id}" />\n)
+end
+
+def include_mathml?(filename)
+  File.open(filename) {|f|
+    REXML::Document.new(f).each_element("//math"){
+      return true
+    }
+    return false
+  }
 end
 
 def getFigId(filename)
@@ -814,6 +854,7 @@ EOT
       f.puts %Q[<tr>\n <th>翻　訳</th><td>#{values["trl"]}</td>\n</tr>] if values["trl"]
       f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"]}</td>\n</tr>] if values["dsr"]
       f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"]}</td>\n</tr>] if values["ill"]
+      f.puts %Q[<tr>\n <th>表　紙</th><td>#{values["cov"]}</td>\n</tr>] if values["cov"]
       f.puts %Q[<tr>\n <th>編　集</th><td>#{values["edt"]}</td>\n</tr>] if values["edt"]
       f.puts %Q[<tr>\n <th>発行所</th><td>#{values["prt"]}</td>\n</tr>] if values["prt"]
       f.puts <<EOT
@@ -836,7 +877,8 @@ def make_part_page(part, filename, values)
     EOT
     doctype = make_doctype()
     f.puts doctype
-    f.puts <<-EOT
+  if @htmlversion == 4
+    header = <<-EOT
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
@@ -845,6 +887,21 @@ def make_part_page(part, filename, values)
   <meta name="generator" content="ReVIEW EPUB Maker"/>
   <title>#{values["booktitle"]}</title>
 </head>
+    EOT
+  else
+    header = <<-EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+    EOT
+  end
+    f.puts header
+
+    f.puts <<-EOT
 <body>
 <h1 class="part-number">#{ReVIEW::I18n.t("part", part.number)}</h1>
     EOT
@@ -861,6 +918,60 @@ def make_part_page(part, filename, values)
     EOT
   }
 end
+
+def make_backcover_image(bookname, values)
+  backcoverfile = values["backcoverfile"]
+  File.open("#{@bookdir}/OEBPS/#{backcoverfile}", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+EOT
+    doctype = make_doctype()
+    f.puts doctype
+    f.puts <<EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+EOT
+  if @htmlversion == 4
+    f.puts <<EOT
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+EOT
+  else
+    f.puts <<EOT
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="ReVIEW EPUB Maker"/>
+EOT
+  end
+    f.puts <<EOT
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+    if File.exist?(backcoverfile)
+      File.open(backcoverfile) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
+<div id="back-cover-image" class="full">
+  <img src="images/#{backcoverfile}" alt="back-cover"/>
+</div>
+EOT
+    end
+
+    f.puts <<EOT
+</body>
+</html>
+EOT
+  }
+end
+
+
 
 
 main

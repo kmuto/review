@@ -86,10 +86,15 @@ def _main
   parser.on('--mathml', 'Use MathML for TeX equation in HTML') do
     param["mathml"] = true
     require 'math_ml'
+    require "math_ml/symbol/character_reference"
   end
   parser.on('--htmlversion=VERSION', 'HTML version.') do |v|
     v = v.to_i
     param["htmlversion"] = v if v == 4 || v == 5
+  end
+  parser.on('--epubversion=VERSION', 'EPUB version.') do |v|
+    v = v.to_i
+    param["epubversion"] = v if v == 2 || v == 3
   end
   parser.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') { param["hdnumberingmode"] = true }
   parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') { param["deprecated-blocklines"] = true }

@@ -73,11 +73,10 @@ module ReVIEW
         header = <<EOT
 <?xml version="1.0" encoding="#{ReVIEW.book.param["outencoding"] || :UTF-8}"?>
 EOT
-
-        if ReVIEW.book.param["htmlversion"] == 5
+        if ReVIEW.book.param["htmlversion"].to_i == 5
           header += <<EOT
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
 <head>
   <meta charset="#{ReVIEW.book.param["outencoding"] || :UTF-8}" />
 EOT
@@ -109,6 +108,14 @@ EOT
 </html>
 EOT
         header + messages() + convert_outencoding(@output.string, ReVIEW.book.param["outencoding"]) + footer
+      end
+    end
+
+    def xmlns_ops_prefix
+      if ReVIEW.book.param["epubversion"].to_i == 3
+        "epub"
+      else
+        "ops"
       end
     end
 
@@ -542,8 +549,9 @@ EOT
       puts '</div>'
     end
 
-    def emlistnum(lines)
+    def emlistnum(lines, caption = nil)
       puts %Q[<div class="emlistnum-code">]
+      puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
       print %Q[<pre class="emlist">]
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
@@ -615,7 +623,7 @@ QUOTE
     def texequation(lines)
       puts %Q[<div class="equation">]
       if ReVIEW.book.param["mathml"]
-        p = MathML::LaTeX::Parser.new
+        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
       else
         print '<pre>'
@@ -747,7 +755,11 @@ QUOTE
     end
 
     def footnote(id, str)
-      puts %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
+      if ReVIEW.book.param["epubversion"].to_i == 3
+        puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{id}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
+      else
+        puts %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
+      end
     end
 
     def indepimage(id, caption="", metric=nil)
@@ -837,13 +849,16 @@ QUOTE
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-
     def inline_fn(id)
-      %Q(<a href="#fn-#{id}">*#{@chapter.footnote(id).number}</a>)
+      if ReVIEW.book.param["epubversion"].to_i == 3
+        %Q(<a href="#fn-#{id}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
+      else
+        %Q(<a href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
+      end
     end
 
     def compile_ruby(base, ruby)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
         %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
@@ -876,7 +891,7 @@ QUOTE
     end
 
     def inline_tti(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
       else
         %Q(<tt><i>#{escape_html(str)}</i></tt>)
@@ -884,7 +899,7 @@ QUOTE
     end
 
     def inline_ttb(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
       else
         %Q(<tt><b>#{escape_html(str)}</b></tt>)
@@ -896,7 +911,7 @@ QUOTE
     end
 
     def inline_code(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
       else
         %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
@@ -917,7 +932,7 @@ QUOTE
 
     def inline_m(str)
       if ReVIEW.book.param["mathml"]
-        p = MathML::LaTeX::Parser.new
+        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{p.parse(str, nil)}</span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
@@ -1060,7 +1075,7 @@ QUOTE
     end
 
     def inline_tt(str)
-      if ReVIEW.book.param["htmlversion"] == 5
+      if ReVIEW.book.param["htmlversion"].to_i == 5
         %Q(<code class="tt">#{escape_html(str)}</code>)
       else
         %Q(<tt>#{escape_html(str)}</tt>)
