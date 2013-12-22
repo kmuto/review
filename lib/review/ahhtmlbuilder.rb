@@ -42,9 +42,9 @@ module ReVIEW
         puts a_id unless label.nil?
       else
         if label.nil?
-          puts %Q[<h#{level} class="realheader">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} class="realheader" title="#{prefix}#{strip_html(compile_inline(caption))}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}" class="realheader">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{label}" class="realheader" title="#{prefix}#{strip_html(compile_inline(caption))}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         end
       end
     end
@@ -74,6 +74,32 @@ module ReVIEW
      
      def footnote(id, str)
      end
+
+    def list_header(id, caption)
+      if get_chap.nil?
+        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix")}<span class="splitter" />#{compile_inline(caption)}</p>]
+      else
+        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header", [get_chap, @chapter.list(id).number])}#{I18n.t("caption_prefix")}<span class="splitter" />#{compile_inline(caption)}</p>]
+      end
+    end
+
+    def image_header(id, caption)
+      puts %Q[<p class="caption">]
+      if get_chap.nil?
+        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header_without_chapter", [@chapter.image(id).number])}#{I18n.t("caption_prefix")}<span class="splitter" />#{compile_inline(caption)}]
+      else
+        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header", [get_chap, @chapter.image(id).number])}#{I18n.t("caption_prefix")}<span class="splitter" />#{compile_inline(caption)}]
+      end
+      puts %Q[</p>]
+    end
+
+    def table_header(id, caption)
+      if get_chap.nil?
+        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix")}<span class="splitter" />#{compile_inline(caption)}</p>]
+      else
+        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix")}<span class="splitter" />#{compile_inline(caption)}</p>]
+      end
+    end
 
     def image_image(id, caption, metric)
       metrics = parse_metric("html", metric)
