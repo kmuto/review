@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2008-2012 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
