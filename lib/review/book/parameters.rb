@@ -45,7 +45,8 @@ module ReVIEW
         PageMetric.new(const_get_safe(mod, :LINES_PER_PAGE_list) || 46,
           const_get_safe(mod, :COLUMNS_list)        || 80,
           const_get_safe(mod, :LINES_PER_PAGE_text) || 30,
-          const_get_safe(mod, :COLUMNS_text)        || 74)  # 37zw
+          const_get_safe(mod, :COLUMNS_text)        || 74,  # 37zw
+          const_get_safe(mod, :PAGE_PER_KBYTE)         ||  1)  # 37zw
       end
 
       def Parameters.const_get_safe(mod, name)

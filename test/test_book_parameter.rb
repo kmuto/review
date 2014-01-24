@@ -21,7 +21,7 @@ class ParametersTest < Test::Unit::TestCase
 
   def test_s_get_page_metric
     mod = Module.new
-    assert_raises ArgumentError do # XXX: OK?
+    assert_nothing_raised do # XXX: OK?
       params = Book::Parameters.get_page_metric(mod)
       assert params
     end
