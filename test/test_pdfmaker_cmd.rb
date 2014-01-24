@@ -4,6 +4,7 @@ require 'test_helper'
 require 'tmpdir'
 require 'fileutils'
 require 'yaml'
+require 'rbconfig'
 
 REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
 
@@ -27,8 +28,9 @@ class PDFMakerCmdTest < Test::Unit::TestCase
     builddir = @tmpdir1 + "/" + config['bookname'] + '-pdf'
     assert ! File.exists?(builddir)
 
+    ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
     Dir.chdir(@tmpdir1) do
-      system("#{REVIEW_PDFMAKER} config.yml 1>/dev/null 2>/dev/null")
+      system("#{ruby_cmd} -S #{REVIEW_PDFMAKER} config.yml 1>/dev/null 2>/dev/null")
     end
 
     assert File.exists?(builddir)
