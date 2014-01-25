@@ -13,6 +13,7 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/htmllayout'
 require 'review/textutils'
+require 'review/sec_counter'
 
 module ReVIEW
 
@@ -47,10 +48,6 @@ module ReVIEW
 
     def builder_init(no_error = false)
       @no_error = no_error
-      @section = 0
-      @subsection = 0
-      @subsubsection = 0
-      @subsubsubsection = 0
       @column = 0
       @noindent = nil
       @ol_num = nil
@@ -61,6 +58,7 @@ module ReVIEW
       @warns = []
       @errors = []
       @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
+      @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
 
@@ -163,75 +161,9 @@ EOT
     end
 
     def headline_prefix(level)
-      anchor = ""
-      case level
-      when 1
-        @section = 0
-        @subsection = 0
-        @subsubsection = 0
-        @subsubsubsection = 0
-        anchor = "#{@chapter.number}"
-        if ReVIEW.book.param["secnolevel"] >= 1
-          if @chapter.number.blank?
-            prefix = ""
-          else
-            placeholder = if @chapter.is_a? ReVIEW::Book::Part
-                            'part'
-                          elsif @chapter.on_POSTDEF?
-                            'appendix'
-                          else
-                            'chapter'
-                          end
-            prefix = "#{I18n.t(placeholder, @chapter.number)}#{I18n.t("chapter_postfix")}"
-          end
-        end
-      when 2
-        @section += 1
-        @subsection = 0
-        @subsubsection = 0
-        @subsubsubsection = 0
-        anchor = "#{@chapter.number}-#{@section}"
-        if ReVIEW.book.param["secnolevel"] >= 2
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}#{I18n.t("chapter_postfix")}"
-          end
-        end
-      when 3
-        @subsection += 1
-        @subsubsection = 0
-        @subsubsubsection = 0
-        anchor = "#{@chapter.number}-#{@section}-#{@subsection}"
-        if ReVIEW.book.param["secnolevel"] >= 3
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
-      when 4
-        @subsubsection += 1
-        @subsubsubsection = 0
-        anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}"
-        if ReVIEW.book.param["secnolevel"] >= 4
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
-      when 5
-        @subsubsubsection += 1
-        anchor = "#{@chapter.number}-#{@section}-#{@subsection}-#{@subsubsection}-#{@subsubsubsection}"
-        if ReVIEW.book.param["secnolevel"] >= 5
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
-      end
+      @sec_counter.inc(level)
+      anchor = @sec_counter.anchor(level)
+      prefix = @sec_counter.prefix(level, ReVIEW.book.param["secnolevel"])
       [prefix, anchor]
     end
     private :headline_prefix

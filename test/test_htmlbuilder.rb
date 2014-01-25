@@ -40,7 +40,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    ReVIEW.book.param["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, @builder.raw_result
   end
@@ -61,7 +61,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    ReVIEW.book.param["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, @builder.raw_result
   end
