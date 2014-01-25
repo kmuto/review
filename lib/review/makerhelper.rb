@@ -34,7 +34,7 @@ module ReVIEW
         dir.each do |fname|
           next if fname =~ /^\./
           if FileTest.directory?("#{from_dir}/#{fname}")
-            image_files += copy_images_to_dir("#{from_dir}/#{fname}", "#{to_dir}/#{fname}")
+            image_files += copy_images_to_dir("#{from_dir}/#{fname}", "#{to_dir}/#{fname}", options)
           else
             Dir.mkdir(to_dir) unless File.exist?(to_dir)
 
@@ -45,7 +45,9 @@ module ReVIEW
               image_files << "#{from_dir}/#{fname}.#{conv_type}"
             end
 
-            if !is_converted && fname =~ /\.(png|gif|jpg|jpeg|svg|pdf|eps)$/i
+            exts = options[:exts] || %w(png gif jpg jpeg svg pdf eps)
+            exts_str = exts.join('|')
+            if !is_converted && fname =~ /\.(#{exts_str})$/i
               FileUtils.cp "#{from_dir}/#{fname}", to_dir
               image_files << "#{from_dir}/#{fname}"
             end

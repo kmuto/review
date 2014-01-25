@@ -47,4 +47,20 @@ class MakerHelperTest < Test::Unit::TestCase
     assert image_files.include?("#{@tmpdir1}/foo.eps.png")
   end
 
+  def test_copy_images_to_dir_with_exts
+    types = %w{png gif jpg jpeg svg pdf eps}
+    types4epub = %w{png gif jpg jpeg svg}
+    types.each do |type|
+      touch_file("#{@tmpdir1}/foo.#{type}")
+    end
+    image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2, :exts=>types4epub)
+
+    types4epub.each do |type|
+      assert image_files.include?("#{@tmpdir1}/foo.#{type}"), "foo.#{type} is not included"
+    end
+    (types - types4epub).each do |type|
+      assert !image_files.include?("#{@tmpdir1}/foo.#{type}"), "foo.#{type} is included"
+    end
+  end
+
 end
