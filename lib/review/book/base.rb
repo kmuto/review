@@ -64,6 +64,7 @@ module ReVIEW
       :ext,
       :image_dir,
       :image_types,
+      :image_types=,
       :page_metric
 
       def parts

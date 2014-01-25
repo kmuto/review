@@ -90,7 +90,7 @@ module ReVIEW
       path_param  :postdef_file
       attr_reader :ext
       path_param  :image_dir
-      attr_reader :image_types
+      attr_accessor :image_types
       attr_reader :page_metric
 
     end

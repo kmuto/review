@@ -60,6 +60,7 @@ module ReVIEW
     def builder_init_file
       @warns = []
       @errors = []
+      @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
     end
     private :builder_init_file
 
