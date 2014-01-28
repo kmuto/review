@@ -65,6 +65,7 @@ module EPUBMaker
         "advtitle" => "広告",
         "profile" => "著者紹介",
         "c-aut" => "著　者",
+        "c-csl" => "監　修",
         "c-dsr" => "デザイン",
         "c-ill" => "イラスト",
         "c-edt" => "編　集",
