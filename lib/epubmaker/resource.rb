@@ -45,6 +45,7 @@ module EPUBMaker
         "profile" => "Profile",
         "advtitle" => "Advertisement",
         "c-aut" => "Author",
+        "c-csl" => "Consultant",
         "c-dsr" => "Designer",
         "c-ill" => "Illustrator",
         "c-edt" => "Editor",
