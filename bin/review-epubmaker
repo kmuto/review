@@ -851,6 +851,7 @@ EOT
   <table>
 EOT
       f.puts %Q[<tr>\n <th>著　者</th><td>#{values["aut"]}</td>\n</tr>] if values["aut"]
+      f.puts %Q[<tr>\n <th>監　修</th><td>#{values["csl"]}</td>\n</tr>] if values["csl"]
       f.puts %Q[<tr>\n <th>翻　訳</th><td>#{values["trl"]}</td>\n</tr>] if values["trl"]
       f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"]}</td>\n</tr>] if values["dsr"]
       f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"]}</td>\n</tr>] if values["ill"]

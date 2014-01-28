@@ -174,6 +174,10 @@ def get_template(values)
     okuduke += "著　者 & #{values["aut"]} \\\\\n"
     authors = values["aut"]+ "\\vspace*{1zh} 著"
   end
+  if values["csl"]
+    okuduke += "監　修 & #{values["csl"]} \\\\\n"
+    authors += " \\\\\n"+values["csl"]+ "\\vspace*{1zh} 監修"
+  end
   if values["trl"]
     authors += " \\\\\n"+values["trl"]+ "\\vspace*{1zh} 訳"
     okuduke += "翻　訳 & #{values["trl"]} \\\\\n"
