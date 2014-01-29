@@ -18,8 +18,13 @@ require 'time'
 
 require 'pathname'
 
-bindir = Pathname.new(__FILE__).realpath.dirname
-$LOAD_PATH.unshift((bindir + '../lib').realpath)
+$bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift(($bindir + '../lib').realpath)
+
+def exec_in_review(*args)
+	args[0] = "#{$bindir}/#{args[0]}"
+	exec(*args)
+end
 
 require 'uuid'
 require 'review'
@@ -745,7 +750,7 @@ def output_chaps_by_file(l, values)
   filename = "#{file_id}.html"
   fork {
     STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
-    exec("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l}")
+    exec_in_review("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l}")
   }
   Process.waitall
   getanchors("#{@bookdir}/OEBPS/#{filename}")
