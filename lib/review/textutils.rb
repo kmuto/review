@@ -62,5 +62,29 @@ module ReVIEW
         str
       end
     end
+
+    def highlight(ops)
+      body = ops[:body] || ''
+      lexer = ops[:lexer] || ''
+      format = ops[:format] || ''
+
+      begin
+        require 'pygments'
+        begin
+          Pygments.highlight(
+                   body,
+                   :options => {
+                               :nowrap => true,
+                               :noclasses => true,
+                             },
+                   :formatter => format,
+                   :lexer => lexer)
+        rescue MentosError
+          body
+        end
+      rescue LoadError
+          body
+      end
+    end
   end
 end

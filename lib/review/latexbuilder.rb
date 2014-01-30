@@ -270,10 +270,11 @@ module ReVIEW
     end
 
     def list_body(id, lines)
+      id ||= ''
       puts '\begin{reviewlist}'
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = File.extname(id).gsub(/\./, '')
+      puts highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
       puts '\end{reviewlist}'
       puts ""
     end
@@ -281,7 +282,7 @@ module ReVIEW
     def source(lines, caption)
       puts '\begin{reviewlist}'
       source_header caption
-      source_body lines
+      source_body caption, lines
       puts '\end{reviewlist}'
       puts ""
     end
@@ -290,10 +291,11 @@ module ReVIEW
       puts macro('reviewlistcaption', compile_inline(caption))
     end
 
-    def source_body(lines)
-      lines.each do |line|
-        puts detab(line)
-      end
+    def source_body(id, lines)
+      id ||= ''
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = File.extname(id).gsub(/\./, '')
+      puts highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
     end
 
 

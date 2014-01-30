@@ -426,7 +426,7 @@ EOT
       print %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => body, :lexer => lexer, :format => 'html')
+      puts highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 
