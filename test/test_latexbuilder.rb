@@ -3,6 +3,7 @@ require 'test_helper'
 require 'review/compiler'
 require 'review/book'
 require 'review/latexbuilder'
+require 'review/i18n'
 
 class LATEXBuidlerTest < Test::Unit::TestCase
   include ReVIEW

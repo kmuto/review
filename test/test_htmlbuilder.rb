@@ -299,7 +299,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
     begin # FIXME: Use params instead of exception handling
       require 'pygments'
-      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #666666">&lt;</span>i<span style="color: #666666">&gt;2&lt;/</span>i<span style="color: #666666">&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result
+      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result
     rescue LoadError
       assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, @builder.raw_result
     end
