@@ -240,6 +240,15 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, @builder.result
   end
 
+  def test_list
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+
+    assert_equal %Q|\\reviewlistcaption{リスト1.1: this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\n\\begin{reviewlist}\ntest1\ntest1.5\n\ntest<i>2</i>\n\\end{reviewlist}\n\n|, @builder.raw_result
+  end
+
   def test_emlist
     lines = ["foo", "bar", "","buz"]
     @builder.emlist(lines)
@@ -680,4 +689,40 @@ EOS
     assert_equal expect.chomp, @builder.raw_result
   end
 
+end
+
+begin
+  #  test syntax highlighting when Pygments is available
+  require 'pygments'
+
+  class LATEXBuidlerWithPygmentsTest < Test::Unit::TestCase
+    include ReVIEW
+
+    def setup
+      @builder = LATEXBuilder.new(false, {})
+      @param = {
+        "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
+        "toclevel" => 2,
+        "inencoding" => "UTF-8",
+        "outencoding" => "UTF-8",
+        "subdirmode" => nil,
+        "stylesheet" => nil,  # for EPUBBuilder
+      }
+      ReVIEW.book.param = @param
+      @compiler = ReVIEW::Compiler.new(@builder)
+      @chapter = Book::Chapter.new(nil, 1, 'chap1', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+    end
+
+    def test_list
+      def @chapter.list(id)
+        Book::ListIndex::Item.new("samplelist",1)
+      end
+      @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+
+      assert_equal %Q|\\reviewlistcaption{リスト1.1: this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\n\\begin{reviewlist}\n\\begin{Verbatim}[commandchars=\\\\\\{\\}]\ntest1\ntest1.5\n\ntest\\PY{n+nt}{\\PYZlt{}i}\\PY{n+nt}{\\PYZgt{}}2\\PY{n+nt}{\\PYZlt{}/i\\PYZgt{}}\n\\end{Verbatim}\n\\end{reviewlist}\n\n|, @builder.raw_result
+    end
+  end
+rescue LoadError
 end

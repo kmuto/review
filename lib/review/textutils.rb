@@ -67,23 +67,21 @@ module ReVIEW
       body = ops[:body] || ''
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
+      pygments_opts = ops[:pygments_opts] || nil
+      # e.g. {style:'emacs'}
 
-      begin
+      if pygments_opts
         require 'pygments'
-        begin
-          Pygments.highlight(
-                   body,
-                   :options => {
-                               :nowrap => true,
-                               :noclasses => true,
-                             },
-                   :formatter => format,
-                   :lexer => lexer)
-        rescue MentosError
-          body
-        end
-      rescue LoadError
-          body
+        Pygments.highlight(
+                 body,
+                 :options => {
+                             :nowrap => true,
+                             :noclasses => true,
+                           }.merge(pygments_opts),
+                 :formatter => format,
+                 :lexer => lexer)
+      else
+        body
       end
     end
   end

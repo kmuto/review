@@ -28,12 +28,13 @@ module ReVIEW
       nil
     end
 
-    def initialize(strict = false, *args)
+    def initialize(strict = false, pygments_opts = nil, *args)
       @strict = strict
       @tabwidth = nil
       if ReVIEW.book.param && ReVIEW.book.param["tabwidth"]
         @tabwidth = ReVIEW.book.param["tabwidth"]
       end
+      @pygments_opts = pygments_opts  # nil to avoid use of Pygments
       builder_init(*args)
     end
 
