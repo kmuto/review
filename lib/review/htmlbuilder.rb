@@ -65,8 +65,9 @@ module ReVIEW
     def result
       layout_file = File.join(@book.basedir, "layouts", "layout.erb")
       if File.exists?(layout_file)
+        title = convert_outencoding(strip_html(compile_inline(@chapter.title)), ReVIEW.book.param["outencoding"])
         messages() +
-          HTMLLayout.new(@output.string, @chapter.title, layout_file).result
+          HTMLLayout.new(@output.string, title, layout_file).result
       else
         # default XHTML header/footer
         header = <<EOT
