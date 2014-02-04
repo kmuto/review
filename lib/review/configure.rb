@@ -32,6 +32,7 @@ module ReVIEW
         "toc" => true, # Use table of contents
         "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
+        "syntax-highlight" => "none", # "none", "mononochrome", or "color"
       }
     end
   end

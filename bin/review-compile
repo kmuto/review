@@ -61,6 +61,7 @@ def _main
     "footnotetext" => false,
     "htmlext" => "html",
     "htmlversion" => 4,
+		"syntax-highlight" => "none",
   }
 
   parser = OptionParser.new
@@ -116,6 +117,9 @@ def _main
     output_filename = filename
   end
   parser.on('--tabwidth=WIDTH', 'tab width') {|width| param["tabwidth"] = width.to_i }
+  parser.on('--syntax-highlight=NONE', 'Apply monochrome/color highlight or [none]') do |highlight|
+    param['syntax-highlight'] = highlight
+  end
   parser.on('--help', 'Prints this message and quit.') do
     puts parser.help
     exit 0
@@ -137,7 +141,7 @@ def _main
 
   begin
     ReVIEW.book.param = param
-    compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
+    compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only, param['syntax-highlight']))
     case mode
     when :files
       if ARGV.empty?
@@ -198,9 +202,20 @@ def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
 end
 
-def load_strategy_class(target, strict)
+def load_strategy_class(target, strict, highlight)
   require "review/#{target}builder"
-  ReVIEW.const_get("#{target.upcase}Builder").new(strict)
+  case highlight
+  when nil, 'none'
+    pygments_opts = nil
+  when 'monochrome'
+    pygments_opts = {style:'bw'}
+  when 'color'
+    pygments_opts = {style:'default'}
+  else
+    $stderr.puts "syntax-highlight must be none, monochrome, or color"
+    exit 1
+  end
+  ReVIEW.const_get("#{target.upcase}Builder").new(strict, pygments_opts)
 end
 
 def write(path, str)
