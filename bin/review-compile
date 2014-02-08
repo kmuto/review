@@ -209,9 +209,9 @@ def load_strategy_class(target, strict, highlight)
   when nil, 'none'
     # do nothing
   when 'monochrome'
-    builder.highlighter_opts = {pygments_opts:{style:'bw'}}
+    builder.highlighter_opts = {:pygments_opts => {style:'bw'}}
   when 'color'
-    builder.highlighter_opts = {pygments_opts:{style:'default'}}
+    builder.highlighter_opts = {:pygments_opts => {style:'default'}}
   else
     $stderr.puts "syntax-highlight must be none, monochrome, or color"
     exit 1

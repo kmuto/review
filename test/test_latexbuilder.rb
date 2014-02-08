@@ -700,7 +700,7 @@ begin
 
     def setup
       @builder = LATEXBuilder.new(false)
-      @builder.highlighter_opts = {pygments_opts:{}}
+      @builder.highlighter_opts = {:pygments_opts => {}}
       @param = {
         "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
         "toclevel" => 2,
