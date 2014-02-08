@@ -61,7 +61,7 @@ def _main
     "footnotetext" => false,
     "htmlext" => "html",
     "htmlversion" => 4,
-		"syntax-highlight" => "none",
+    "syntax-highlight" => "none",
   }
 
   parser = OptionParser.new
