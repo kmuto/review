@@ -1,25 +1,28 @@
 module ReVIEW
   module Highlighter
     def highlight(ops)
+      if ops[:pygments_opts]
+        return highlight_with_pygments(ops)
+      end
+      body = ops[:body] || ''
+      return body
+    end
+
+    def highlight_with_pygments(ops)
+      require 'pygments'
       body = ops[:body] || ''
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
-      pygments_opts = ops[:pygments_opts] || nil
+      pygments_opts = ops[:pygments_opts]
       # e.g. {style:'emacs'}
-
-      if pygments_opts
-        require 'pygments'
-        Pygments.highlight(
-                 body,
-                 :options => {
-                             :nowrap => true,
-                             :noclasses => true,
-                           }.merge(pygments_opts),
-                 :formatter => format,
-                 :lexer => lexer)
-      else
-        body
-      end
+      Pygments.highlight(
+               body,
+               :options => {
+                           :nowrap => true,
+                           :noclasses => true,
+                         }.merge(pygments_opts),
+               :formatter => format,
+               :lexer => lexer)
     end
   end
 end
