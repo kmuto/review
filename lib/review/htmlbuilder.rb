@@ -13,6 +13,7 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/htmllayout'
 require 'review/textutils'
+require 'review/highlighter'
 require 'review/sec_counter'
 
 module ReVIEW
@@ -21,6 +22,7 @@ module ReVIEW
 
     include TextUtils
     include HTMLUtils
+    include Highlighter
 
     [:ref].each {|e| Compiler.definline(e) }
     Compiler.defblock(:memo, 0..1)

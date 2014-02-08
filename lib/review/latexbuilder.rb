@@ -13,6 +13,7 @@
 require 'review/builder'
 require 'review/latexutils'
 require 'review/textutils'
+require 'review/highlighter'
 
 module ReVIEW
 
@@ -20,6 +21,7 @@ module ReVIEW
 
     include LaTeXUtils
     include TextUtils
+    include Highlighter
 
     [:dtp, :hd_chap].each {|e|
       Compiler.definline(e)
