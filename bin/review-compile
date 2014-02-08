@@ -204,18 +204,19 @@ end
 
 def load_strategy_class(target, strict, highlight)
   require "review/#{target}builder"
+  builder = ReVIEW.const_get("#{target.upcase}Builder").new(strict)
   case highlight
   when nil, 'none'
-    pygments_opts = nil
+    # do nothing
   when 'monochrome'
-    pygments_opts = {style:'bw'}
+    builder.highlighter_opts = {pygments_opts:{style:'bw'}}
   when 'color'
-    pygments_opts = {style:'default'}
+    builder.highlighter_opts = {pygments_opts:{style:'default'}}
   else
     $stderr.puts "syntax-highlight must be none, monochrome, or color"
     exit 1
   end
-  ReVIEW.const_get("#{target.upcase}Builder").new(strict, pygments_opts)
+  return builder
 end
 
 def write(path, str)

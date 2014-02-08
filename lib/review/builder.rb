@@ -21,6 +21,8 @@ module ReVIEW
 
     CAPTION_TITLES = %w(note memo tip info planning best important security caution term link notice point shoot reference practice expert)
 
+    attr_writer :highlighter_opts
+
     def pre_paragraph
       nil
     end
@@ -28,13 +30,13 @@ module ReVIEW
       nil
     end
 
-    def initialize(strict = false, pygments_opts = nil, *args)
+    def initialize(strict = false, *args)
       @strict = strict
       @tabwidth = nil
       if ReVIEW.book.param && ReVIEW.book.param["tabwidth"]
         @tabwidth = ReVIEW.book.param["tabwidth"]
       end
-      @pygments_opts = pygments_opts  # nil to avoid use of Pygments
+      @highlighter_opts = {}
       builder_init(*args)
     end
 

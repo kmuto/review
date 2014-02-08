@@ -1,7 +1,7 @@
 module ReVIEW
   module Highlighter
     def highlight(ops)
-      if ops[:pygments_opts]
+      if @highlighter_opts[:pygments_opts]
         return highlight_with_pygments(ops)
       end
       body = ops[:body] || ''
@@ -13,7 +13,7 @@ module ReVIEW
       body = ops[:body] || ''
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
-      pygments_opts = ops[:pygments_opts]
+      pygments_opts = @highlighter_opts[:pygments_opts]
       # e.g. {style:'emacs'}
       Pygments.highlight(
                body,

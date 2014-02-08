@@ -666,7 +666,8 @@ begin
     include ReVIEW
 
     def setup
-      @builder = HTMLBuilder.new(false, {})
+      @builder = HTMLBuilder.new(false)
+      @builder.highlighter_opts = {pygments_opts:{}}
       @param = {
         "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
         "inencoding" => "UTF-8",
