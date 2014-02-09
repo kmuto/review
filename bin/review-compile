@@ -18,6 +18,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review'
 require 'review/compiler'
 require 'review/book'
+require 'review/highlighter'
 require 'fileutils'
 require 'optparse'
 
@@ -205,17 +206,7 @@ end
 def load_strategy_class(target, strict, highlight)
   require "review/#{target}builder"
   builder = ReVIEW.const_get("#{target.upcase}Builder").new(strict)
-  case highlight
-  when nil, 'none'
-    # do nothing
-  when 'monochrome'
-    builder.highlighter_opts = {:pygments_opts => {style:'bw'}}
-  when 'color'
-    builder.highlighter_opts = {:pygments_opts => {style:'default'}}
-  else
-    $stderr.puts "syntax-highlight must be none, monochrome, or color"
-    exit 1
-  end
+  builder.highlighter_opts = ReVIEW::Highlighter::highlighter_opts(:pygments, highlight)
   return builder
 end
 
