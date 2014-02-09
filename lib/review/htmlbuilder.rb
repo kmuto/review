@@ -451,7 +451,7 @@ EOT
       print %Q[<pre class="source">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => body, :lexer => lexer, :format => 'html', :pygments_opts => @pygments_opts)
+      puts highlight(:body => body, :lexer => lexer, :format => 'html', :highlighter_opts => @highlighter_opts)
       puts '</pre>'
     end
 
