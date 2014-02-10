@@ -1,6 +1,6 @@
 module ReVIEW
   module Highlighter
-    def Highlighter::highlighter_opts(engine = :pygments, style = none)
+    def Highlighter::highlighter_opts(engine = :pygments, style = 'none')
       case engine
       when :pygments
         case style
