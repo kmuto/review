@@ -19,6 +19,7 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review'
+require 'review/highlighter'
 
 def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
@@ -197,6 +198,8 @@ def get_template(values)
   okuduke += <<EOB
 発行所 & #{values["prt"]} \\\\
 EOB
+
+  highlighter_preamble = ReVIEW::Highlighter::highlighter_preamble('latex', :pygments, values['syntax-highlight']) || ''
 
   custom_titlepage = make_custom_titlepage(values["coverfile"])
 
