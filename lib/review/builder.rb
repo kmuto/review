@@ -21,7 +21,14 @@ module ReVIEW
 
     CAPTION_TITLES = %w(note memo tip info planning best important security caution term link notice point shoot reference practice expert)
 
-    attr_accessor :highlighter
+    def highlighter
+      @highlighter
+    end
+
+    def highlighter=(highlighter)
+      @highlighter = highlighter
+      @highlighter.builder = self
+    end
 
     def pre_paragraph
       nil

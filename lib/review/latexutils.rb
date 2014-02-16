@@ -70,6 +70,8 @@ module ReVIEW
       }
     end
 
+    alias unescape unescape_latex
+
     def escape_index(str)
       str.gsub(/[@!|"]/) {|s| '"' + s }
     end

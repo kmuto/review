@@ -2,6 +2,7 @@ module ReVIEW
   class Highlighter
 
     attr_accessor :opts
+    attr_accessor :builder
 
     def initialize(engine = :pygments, style = 'none')
       @engine = engine
@@ -60,7 +61,7 @@ module ReVIEW
       if @opts and @opts[:pygments_opts]
         return highlight_with_pygments(ops)
       end
-      body = ops[:body] || ''
+      body = @builder.escape(ops[:body]) || ''
       return body
     end
 
