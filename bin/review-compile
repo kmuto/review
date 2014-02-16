@@ -142,7 +142,9 @@ def _main
 
   begin
     ReVIEW.book.param = param
-    compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only, param['syntax-highlight']))
+    builder = load_strategy_class(target, check_only)
+    builder.highlighter_opts = ReVIEW::Highlighter::highlighter_opts(:pygments, param['syntax-highlight'])
+    compiler = ReVIEW::Compiler.new(builder)
     case mode
     when :files
       if ARGV.empty?
@@ -203,10 +205,9 @@ def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
 end
 
-def load_strategy_class(target, strict, highlight)
+def load_strategy_class(target, strict)
   require "review/#{target}builder"
   builder = ReVIEW.const_get("#{target.upcase}Builder").new(strict)
-  builder.highlighter_opts = ReVIEW::Highlighter::highlighter_opts(:pygments, highlight)
   return builder
 end
 
