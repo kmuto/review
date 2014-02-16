@@ -198,8 +198,8 @@ def get_template(values)
   okuduke += <<EOB
 発行所 & #{values["prt"]} \\\\
 EOB
-
-  highlighter_preamble = ReVIEW::Highlighter::highlighter_preamble('latex', :pygments, values['syntax-highlight']) || ''
+  highlighter =  ReVIEW::Highlighter.new(:pygments, values['syntax-highlight'])
+  highlighter_preamble = highlighter.preamble('latex') || ''
 
   custom_titlepage = make_custom_titlepage(values["coverfile"])
 

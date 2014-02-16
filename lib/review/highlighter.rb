@@ -1,9 +1,18 @@
 module ReVIEW
-  module Highlighter
-    def Highlighter::highlighter_opts(engine = :pygments, style = 'none')
-      case engine
+  class Highlighter
+
+    attr_accessor :opts
+
+    def initialize(engine = :pygments, style = 'none')
+      @engine = engine
+      @style = style
+      @opts = highlighter_opts
+    end
+
+    def highlighter_opts
+      case @engine
       when :pygments
-        case style
+        case @style
         when nil, 'none'
           return nil
         when 'monochrome'
@@ -20,12 +29,11 @@ module ReVIEW
       end
     end
 
-    def Highlighter::highlighter_preamble(format, engine = :pygments, style = 'none')
+    def preamble(format)
       # also does sanity check for engine and style
-      highlighter_opts = Highlighter::highlighter_opts(engine, style)
-      case engine
+      case @engine
       when :pygments
-        case style
+        case @style
         when nil, 'none'
           return nil
         when 'monochrome'
@@ -49,7 +57,7 @@ module ReVIEW
     end
 
     def highlight(ops)
-      if @highlighter_opts and @highlighter_opts[:pygments_opts]
+      if @opts and @opts[:pygments_opts]
         return highlight_with_pygments(ops)
       end
       body = ops[:body] || ''
@@ -61,7 +69,7 @@ module ReVIEW
       body = ops[:body] || ''
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
-      pygments_opts = @highlighter_opts[:pygments_opts]
+      pygments_opts = @opts[:pygments_opts]
       # e.g. {style:'emacs'}
       Pygments.highlight(
                body,

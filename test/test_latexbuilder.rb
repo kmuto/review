@@ -10,6 +10,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = LATEXBuilder.new()
+    @builder.highlighter = ReVIEW::Highlighter.new(:pygments)
     @param = {
       "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,

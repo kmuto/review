@@ -22,7 +22,6 @@ module ReVIEW
 
     include TextUtils
     include HTMLUtils
-    include Highlighter
 
     [:ref].each {|e| Compiler.definline(e) }
     Compiler.defblock(:memo, 0..1)
@@ -429,7 +428,7 @@ EOT
       print %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html', :highlighter_opts => @highlighter_opts)
+      puts @highlighter.highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 
@@ -451,7 +450,7 @@ EOT
       print %Q[<pre class="source">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => body, :lexer => lexer, :format => 'html', :highlighter_opts => @highlighter_opts)
+      puts @highlighter.highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 

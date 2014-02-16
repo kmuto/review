@@ -21,7 +21,6 @@ module ReVIEW
 
     include LaTeXUtils
     include TextUtils
-    include Highlighter
 
     [:dtp, :hd_chap].each {|e|
       Compiler.definline(e)
@@ -276,7 +275,7 @@ module ReVIEW
       puts '\begin{reviewlist}'
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex', :highlighter_opts => @highlighter_opts)
+      puts @highlighter.highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
       puts '\end{reviewlist}'
       puts ""
     end
@@ -297,7 +296,7 @@ module ReVIEW
       id ||= ''
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex', :highlighter_opts => @highlighter_opts)
+      puts @highlighter.highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
     end
 
 

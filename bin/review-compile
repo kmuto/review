@@ -143,7 +143,8 @@ def _main
   begin
     ReVIEW.book.param = param
     builder = load_strategy_class(target, check_only)
-    builder.highlighter_opts = ReVIEW::Highlighter::highlighter_opts(:pygments, param['syntax-highlight'])
+    highlighter = ReVIEW::Highlighter.new(:pygments, param['syntax-highlight'])
+    builder.highlighter = highlighter
     compiler = ReVIEW::Compiler.new(builder)
     case mode
     when :files
