@@ -11,7 +11,6 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = HTMLBuilder.new()
-    @builder.highlighter = ReVIEW::Highlighter.new(:pygments)
     @param = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
@@ -668,7 +667,7 @@ begin
 
     def setup
       @builder = HTMLBuilder.new(false)
-      @builder.highlighter = ReVIEW::Highlighter.new(:pygments)
+      @builder.highlighter = ReVIEW::Highlighter.new(:pygments, 'color')
       @param = {
         "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
         "inencoding" => "UTF-8",
