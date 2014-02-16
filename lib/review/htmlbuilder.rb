@@ -428,7 +428,11 @@ EOT
       print %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts @highlighter.highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
+      if @highlighter
+        puts @highlighter.highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
+      else
+        puts body
+      end
       puts '</pre>'
     end
 
@@ -450,7 +454,11 @@ EOT
       print %Q[<pre class="source">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts @highlighter.highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
+      if @highlighter
+        puts @highlighter.highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
+      else
+        puts body
+      end
       puts '</pre>'
     end
 

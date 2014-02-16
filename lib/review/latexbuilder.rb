@@ -275,7 +275,11 @@ module ReVIEW
       puts '\begin{reviewlist}'
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts @highlighter.highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
+      if @highlighter
+        puts @highlighter.highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
+      else
+        puts body
+      end
       puts '\end{reviewlist}'
       puts ""
     end
@@ -296,7 +300,11 @@ module ReVIEW
       id ||= ''
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts @highlighter.highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
+      if @highlighter
+        puts @highlighter.highlight(:body => unescape_latex(body), :lexer => lexer, :format => 'latex')
+      else
+        puts body
+      end
     end
 
 
