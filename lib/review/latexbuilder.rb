@@ -746,6 +746,7 @@ module ReVIEW
 
     def bibpaper_bibpaper(id, caption, lines)
       print split_paragraph(lines).join("")
+      puts ""
     end
 
     def index(str)
