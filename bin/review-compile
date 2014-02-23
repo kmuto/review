@@ -22,10 +22,10 @@ require 'fileutils'
 require 'optparse'
 
 def main
-  Signal.trap(:INT) { exit 1 }
-  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
-    Signal.trap(:PIPE, 'IGNORE')
-  end
+#  Signal.trap(:INT) { exit 1 }
+#  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
+#    Signal.trap(:PIPE, 'IGNORE')
+#  end
   _main
 rescue Errno::EPIPE
   exit 0
