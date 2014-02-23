@@ -1,3 +1,5 @@
+require 'fileutils'
+
 begin
   require 'bundler'
   Bundler::GemHelper.install_tasks
@@ -10,6 +12,15 @@ require 'rake/testtask'
 require 'rake/clean'
 
 task :default => [:test]
+
+task :kpeg do
+  FileUtils.rm_f "lib/review/compiler.rb"
+  FileUtils.rm_f "lib/review/compiler/literals_1_8.rb"
+  FileUtils.rm_f "lib/review/compiler/literals_1_9.rb"
+  sh "kpeg -s lib/review/compiler/literals_1_8.kpeg -o lib/review/compiler/literals_1_8.rb"
+  sh "kpeg -s lib/review/compiler/literals_1_9.kpeg -o lib/review/compiler/literals_1_9.rb"
+  sh "kpeg -s lib/review/review.kpeg -o lib/review/compiler.rb"
+end
 
 Rake::TestTask.new("test") do |t|
   t.libs   << "test"
