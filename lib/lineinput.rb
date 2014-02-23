@@ -48,46 +48,6 @@ class LineInput
     line
   end
 
-  def peek
-    line = gets()
-    ungets line if line
-    line
-  end
-
-  def next?
-    peek() ? true : false
-  end
-
-  def skip_blank_lines
-    n = 0
-    while line = gets()
-      unless line.strip.empty?
-        ungets line
-        return n
-      end
-      n += 1
-    end
-    n
-  end
-
-  def gets_if(re)
-    line = gets()
-    if not line or not (re =~ line)
-      ungets line
-      return nil
-    end
-    line
-  end
-
-  def gets_unless(re)
-    line = gets()
-    if not line or re =~ line
-      ungets line
-      return nil
-    end
-    line
-  end
-
   def each
     while line = gets()
       yield line
@@ -105,16 +65,6 @@ class LineInput
     nil
   end
 
-  def getlines_while(re)
-    buf = []
-    while_match(re) do |line|
-      buf.push line
-    end
-    buf
-  end
-
-  alias span getlines_while   # from Haskell
-
   def until_match(re)
     while line = gets()
       if re =~ line
@@ -126,30 +76,12 @@ class LineInput
     nil
   end
 
-  def getlines_until(re)
-    buf = []
-    until_match(re) do |line|
-      buf.push line
-    end
-    buf
-  end
-
-  alias break getlines_until   # from Haskell
-
   def until_terminator(re)
     while line = gets()
       return if re =~ line   # discard terminal line
       yield line
     end
     nil
-  end
-
-  def getblock(term_re)
-    buf = []
-    until_terminator(term_re) do |line|
-      buf.push line
-    end
-    buf
   end
 
 end
