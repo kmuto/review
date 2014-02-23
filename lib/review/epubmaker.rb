@@ -120,7 +120,7 @@ module ReVIEW
     @manifeststr = ""
     @ncxstr = ""
     @tocdesc = Array.new
-    toccount = 2
+    # toccount = 2  ## not used
 
     basedir = Dir.pwd
     base_path = Pathname.new(basedir)

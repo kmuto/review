@@ -22,7 +22,7 @@ module ReVIEW
           book = (books[File.expand_path(basedir)] ||= Book.load(basedir))
           begin
             book.chapter(File.basename(path, '.*'))
-          rescue KeyError => err
+          rescue KeyError
             raise FileNotFound, "No such chapter in your book. Check if the catalog files contain the chapter. : #{path}"
           end
         }

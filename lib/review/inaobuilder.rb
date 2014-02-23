@@ -286,7 +286,7 @@ module ReVIEW
       puts "◆table/◆"
       begin
         table_header id, caption unless caption.nil?
-      rescue KeyError => err
+      rescue KeyError
         error "no such table: #{id}"
       end
       return if rows.empty?

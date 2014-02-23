@@ -626,7 +626,7 @@ QUOTE
       puts %Q[<div class="table">]
       begin
         table_header id, caption unless caption.nil?
-      rescue KeyError => err
+      rescue KeyError
         error "no such table: #{id}"
       end
       table_begin rows.first.size
