@@ -32,7 +32,7 @@ end
 
 def check_book(values)
   pdf_file = values["bookname"]+".pdf"
-  if File.exists? pdf_file
+  if File.exist? pdf_file
     error "file already exists:#{pdf_file}"
   end
 end
@@ -203,7 +203,7 @@ EOB
   template = File.expand_path(File.dirname(__FILE__) +
                               '/../lib/review/review.tex.erb')
   layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
-  if File.exists?(layout_file)
+  if File.exist?(layout_file)
     template = layout_file
   end
 

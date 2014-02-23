@@ -30,10 +30,10 @@ class MakerHelperTest < Test::Unit::TestCase
     image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2)
 
     types.each do |type|
-      assert File.exists?("#{@tmpdir2}/foo.#{type}"), "Copying #{type} file failed"
+      assert File.exist?("#{@tmpdir2}/foo.#{type}"), "Copying #{type} file failed"
       assert image_files.include?("#{@tmpdir1}/foo.#{type}")
     end
-    assert File.exists?("#{@tmpdir2}/subdir/foo.png"), "Copying a image file in a subdirectory"
+    assert File.exist?("#{@tmpdir2}/subdir/foo.png"), "Copying a image file in a subdirectory"
     assert image_files.include?("#{@tmpdir1}/subdir/foo.png")
   end
 
@@ -43,7 +43,7 @@ class MakerHelperTest < Test::Unit::TestCase
     image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2,
                                                  :convert => {:eps => :png})
 
-    assert File.exists?("#{@tmpdir2}/foo.eps.png"), "EPS to PNG conversion failed"
+    assert File.exist?("#{@tmpdir2}/foo.eps.png"), "EPS to PNG conversion failed"
     assert image_files.include?("#{@tmpdir1}/foo.eps.png")
   end
 

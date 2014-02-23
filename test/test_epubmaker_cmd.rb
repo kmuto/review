@@ -27,14 +27,14 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
     if RUBY_VERSION !~ /^1.8/
       config = prepare_samplebook(@tmpdir1)
       builddir = @tmpdir1 + "/" + config['bookname'] + '-epub'
-      assert ! File.exists?(builddir)
+      assert ! File.exist?(builddir)
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
       Dir.chdir(@tmpdir1) do
         system("#{ruby_cmd} -S #{REVIEW_EPUBMAKER} config.yml 1>/dev/null 2>/dev/null")
       end
 
-      assert File.exists?(builddir)
+      assert File.exist?(builddir)
     end
   end
 end
