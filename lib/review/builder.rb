@@ -61,9 +61,9 @@ module ReVIEW
     alias :raw_result result
 
     def print(*s)
-      @output.print *s.map{|i|
+      @output.print(*s.map{|i|
         convert_outencoding(i, ReVIEW.book.param["outencoding"])
-      }
+      })
     end
 
     def puts(*s)

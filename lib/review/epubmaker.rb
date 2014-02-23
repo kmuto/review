@@ -13,7 +13,7 @@ require 'rexml/streamlistener'
 require 'epubmaker'
 
 module ReVIEW
-  class EPUBMaker
+ class EPUBMaker
   include ::EPUBMaker
   include REXML
 
@@ -424,5 +424,5 @@ EOT
       end
     end
   end
-end
+ end
 end

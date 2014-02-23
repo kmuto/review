@@ -276,7 +276,7 @@ EOT
     <img src="#{file}" alt="#{CGI.escapeHTML(@producer.params["title"])}" class="max"/>
   </div>
 EOT
-   end
+      end
       
       s << <<EOT
 </body>
