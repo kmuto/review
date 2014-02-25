@@ -726,4 +726,6 @@ begin
     end
   end
 rescue LoadError
+  warn "#{File.basename(__FILE__)}: Error in requiring 'pygments'. Related tests are skipped"
+  # pygments may be insalled with, e.g.: gem install pygments.rb
 end
