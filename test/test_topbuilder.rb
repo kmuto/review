@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'test_helper'
+require 'review'
 require 'review/compiler'
 require 'review/book'
 require 'review/topbuilder'
@@ -32,30 +33,30 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|■H1■第1章　this is test.\n|, @builder.raw_result
+    result = @builder.headline(1,"test","this is test.\n")
+    assert_equal %Q|■H1■第1章　this is test.\n|, result
   end
 
   def test_headline_level1_without_secno
     @param["secnolevel"] = 0
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|■H1■this is test.\n|, @builder.raw_result
+    result = @builder.headline(1,"test","this is test.\n")
+    assert_equal %Q|■H1■this is test.\n|, result
   end
 
   def test_headline_level2
-    @builder.headline(2,"test","this is test.")
-    assert_equal %Q|■H2■1.1　this is test.\n|, @builder.raw_result
+    result = @builder.headline(2,"test","this is test.\n")
+    assert_equal %Q|■H2■1.1　this is test.\n|, result
   end
 
   def test_headline_level3
-    @builder.headline(3,"test","this is test.")
-    assert_equal %Q|■H3■this is test.\n|, @builder.raw_result
+    result = @builder.headline(3,"test","this is test.\n")
+    assert_equal %Q|■H3■this is test.\n|, result
   end
 
   def test_headline_level3_with_secno
     @param["secnolevel"] = 3
-    @builder.headline(3,"test","this is test.")
-    assert_equal %Q|■H3■1.0.1　this is test.\n|, @builder.raw_result
+    result = @builder.headline(3,"test","this is test.\n")
+    assert_equal %Q|■H3■1.0.1　this is test.\n|, result
   end
 
   def test_href
@@ -79,13 +80,13 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_kw
-    ret = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
-    assert_equal %Q|★ISO☆（International Organization for Standardization） ★Ruby<>☆|, ret
+    result = compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
+    assert_equal %Q|★ISO☆（International Organization for Standardization） ★Ruby<>☆|, result
   end
 
   def test_inline_maru
-    ret = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
-    assert_equal %Q|1◆→丸数字1←◆20◆→丸数字20←◆A◆→丸数字A←◆z◆→丸数字z←◆|, ret
+    result = compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
+    assert_equal %Q|1◆→丸数字1←◆20◆→丸数字20←◆A◆→丸数字A←◆z◆→丸数字z←◆|, result
   end
 
   def test_inline_br
@@ -94,93 +95,94 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_i
-    ret = @builder.compile_inline("test @<i>{inline test} test2")
-    assert_equal %Q|test ▲inline test☆ test2|, ret
+    result = compile_inline("test @<i>{inline test} test2")
+    assert_equal %Q|test ▲inline test☆ test2|, result
   end
 
   def test_inline_i_and_escape
-    ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
-    assert_equal %Q|test ▲inline<&;\\ test☆ test2|, ret
+    result = compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test ▲inline<&;\\ test☆ test2|, result
   end
 
   def test_inline_b
-    ret = @builder.compile_inline("test @<b>{inline test} test2")
-    assert_equal %Q|test ★inline test☆ test2|, ret
+    result = compile_inline("test @<b>{inline test} test2")
+    assert_equal %Q|test ★inline test☆ test2|, result
   end
 
   def test_inline_b_and_escape
-    ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
-    assert_equal %Q|test ★inline<&;\\ test☆ test2|, ret
+    result = compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test ★inline<&;\\ test☆ test2|, result
   end
 
   def test_inline_tt
-    ret = @builder.compile_inline("test @<tt>{inline test} test2@<tt>{\\}}")
-    assert_equal %Q|test △inline test☆ test2△}☆|, ret
+    result = compile_inline("test @<tt>{inline test} test2@<tt>{\\}}")
+    assert_equal %Q|test △inline test☆ test2△}☆|, result
   end
 
   def test_inline_tti
-    ret = @builder.compile_inline("test @<tti>{inline test} test2")
-    assert_equal %Q|test ▲inline test☆◆→等幅フォントイタ←◆ test2|, ret
+    result = compile_inline("test @<tti>{inline test} test2")
+    assert_equal %Q|test ▲inline test☆◆→等幅フォントイタ←◆ test2|, result
   end
 
   def test_inline_ttb
-    ret = @builder.compile_inline("test @<ttb>{inline test} test2")
-    assert_equal %Q|test ★inline test☆◆→等幅フォント太字←◆ test2|, ret
+    result = compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test ★inline test☆◆→等幅フォント太字←◆ test2|, result
   end
 
   def test_inline_uchar
-    ret = @builder.compile_inline("test @<uchar>{2460} test2")
-    assert_equal %Q|test ① test2|, ret
+    result = compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test ① test2|, result
   end
 
   def test_inline_in_table
-    @builder.table(["★1☆\t▲2☆", "------------", "★3☆\t▲4☆<>&"])
-    assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, @builder.raw_result
+    result = @builder.table(["★1☆\t▲2☆", "------------", "★3☆\t▲4☆<>&"])
+    assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, result
   end
 
   def test_paragraph
     lines = ["foo","bar"]
-    @builder.paragraph(lines)
-    assert_equal %Q|foobar\n|, @builder.raw_result
+    result = @builder.paragraph(lines)
+    assert_equal %Q|foobar\n|, result
   end
 
   def test_tabbed_paragraph
     lines = ["\tfoo","bar"]
-    @builder.paragraph(lines)
-    assert_equal %Q|\tfoobar\n|, @builder.raw_result
+    result = @builder.paragraph(lines)
+    assert_equal %Q|\tfoobar\n|, result
   end
 
   def test_flushright
-    @builder.flushright(["foo", "bar", "","buz"])
-    assert_equal %Q|◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n|, @builder.raw_result
+    result = @builder.flushright(["foo", "bar", "","buz"])
+    assert_equal %Q|◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n|, result
   end
 
   def test_noindent
-    @builder.noindent
-    @builder.paragraph(["foo", "bar"])
-    @builder.paragraph(["foo2", "bar2"])
-    assert_equal %Q|◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n|, @builder.raw_result
+    result = ""
+    result << @builder.noindent
+    result << @builder.paragraph(["foo", "bar"])
+    result << @builder.paragraph(["foo2", "bar2"])
+    assert_equal %Q|◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n|, result
   end
 
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("test",1)
     end
-    @builder.list(["foo", "bar"], "test", "this is @<b>{test}<&>_")
-    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
+    result = compile_blockelem("//list[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n|, result
   end
 
   def test_listnum
     def @chapter.list(id)
       Book::ListIndex::Item.new("test",1)
     end
-    @builder.listnum(["foo", "bar"], "test", "this is @<b>{test}<&>_")
-    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
+    result = compile_blockelem("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n|, result
   end
 
   def test_emlistnum
-    @builder.emlistnum(["foo", "bar"], "this is @<b>{test}<&>_")
-    assert_equal %Q|◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n|, @builder.raw_result
+    result = compile_blockelem("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    assert_equal %Q|◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n|, result
   end
 
   def test_image
@@ -190,8 +192,8 @@ class TOPBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image(["foo"], "sampleimg","sample photo",nil)
-    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, @builder.raw_result
+    result = @builder.image(["foo"], "sampleimg","sample photo",nil)
+    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, result
   end
 
   def test_image_with_metric
@@ -201,13 +203,13 @@ class TOPBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image(["foo"], "sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, @builder.raw_result
+    result = @builder.image(["foo"], "sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, result
   end
 
   def test_texequation
-    @builder.texequation(["\\sin", "1^{2}"])
-    assert_equal %Q|◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n|, @builder.raw_result
+    result = @builder.texequation(["\\sin", "1^{2}"])
+    assert_equal %Q|◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n|, result
   end
 
   def test_inline_raw0
@@ -235,46 +237,46 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_block_raw0
-    @builder.raw("<>!\"\\n& ")
+    result = @builder.raw("<>!\"\\n& ")
     expect =<<-EOS
 <>!"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw1
-    @builder.raw("|top|<>!\"\\n& ")
+    result = @builder.raw("|top|<>!\"\\n& ")
     expect =<<-EOS
 <>!"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw2
-    @builder.raw("|top, latex|<>!\"\\n& ")
+    result = @builder.raw("|top, latex|<>!\"\\n& ")
     expect =<<-EOS
 <>!\"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw3
-    @builder.raw("|latex, idgxml|<>!\"\\n& ")
+    result = @builder.raw("|latex, idgxml|<>!\"\\n& ")
     expect =<<-EOS
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw4
-    @builder.raw("|top <>!\"\\n& ")
+    result = @builder.raw("|top <>!\"\\n& ")
     expect =<<-EOS
 |top <>!\"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
 end

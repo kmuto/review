@@ -102,6 +102,10 @@ module ReVIEW
     end
     private :builder_init_file
 
+    def blank_reset
+      @blank_seen = false
+    end
+
     def print(s)
       @blank_seen = false
       super
@@ -115,8 +119,14 @@ module ReVIEW
     private :puts
 
     def blank
-      @output.puts unless @blank_seen
+      # @output.puts unless @blank_seen
+      seen = @blank_seen
       @blank_seen = true
+      unless seen
+        "\n"
+      else
+        ""
+      end
     end
     private :blank
 
@@ -137,8 +147,9 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      buf = ""
       prefix = ""
-      blank
+      buf << blank
       case level
       when 1
         if @chapter.number.to_s =~ /\A\d+\Z/
@@ -172,7 +183,9 @@ module ReVIEW
         raise "caption level too deep or unsupported: #{level}"
       end
       prefix = "" if (level.to_i > ReVIEW.book.param["secnolevel"])
-      puts "■H#{level}■#{prefix}#{compile_inline(caption)}"
+      buf << "■H#{level}■#{prefix}#{caption}"
+      blank_reset
+      buf
     end
 
     def ul_begin
@@ -180,7 +193,8 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts "●\t#{lines.join}"
+      blank_reset
+      "●\t#{lines.join}"
     end
 
     def ul_end
@@ -188,17 +202,18 @@ module ReVIEW
     end
 
     def ol_begin
-      blank
       @olitem = 0
+      blank
     end
 
     def ol_item(lines, num)
-      puts "#{num}\t#{lines.join}"
+      blank_reset
+      "#{num}\t#{lines.join}\n"
     end
 
     def ol_end
-      blank
       @olitem = nil
+      blank
     end
 
     def dl_begin
@@ -206,13 +221,16 @@ module ReVIEW
     end
 
     def dt(line)
-      puts "★#{line}☆"
+      blank_reset
+      "★#{line}☆\n"
     end
 
     def dd(lines)
+      buf = ""
       split_paragraph(lines).each do |paragraph|
-        puts "\t#{paragraph.gsub(/\n/, '')}"
+        buf << "\t#{paragraph.gsub(/\n/, '')}\n"
       end
+      blank_reset
     end
 
     def dl_end
@@ -220,14 +238,17 @@ module ReVIEW
     end
 
     def paragraph(lines)
-      puts lines.join
+      blank_reset
+      lines.join+"\n"
     end
 
     def read(lines)
-      puts "◆→開始:#{@titles["lead"]}←◆"
-      puts split_paragraph(lines).join("\n")
-      puts "◆→終了:#{@titles["lead"]}←◆"
-      blank
+      buf = ""
+      buf << "◆→開始:#{@titles["lead"]}←◆\n"
+      buf << split_paragraph(lines).join("\n") << "\n"
+      buf << "◆→終了:#{@titles["lead"]}←◆\n"
+      buf << blank
+      buf
     end
 
     alias :lead read
@@ -243,40 +264,51 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-      blank
-      puts "◆→開始:#{@titles["list"]}←◆"
+      buf = ""
+      buf << blank
+      buf << "◆→開始:#{@titles["list"]}←◆\n"
       if get_chap.nil?
-        puts %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}]
+        buf << %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix_idgxml")}#{caption}] << "\n"
       else
-        puts %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap, @chapter.list(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}]
+        buf << %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap, @chapter.list(id).number])}#{I18n.t("caption_prefix_idgxml")}#{caption}] << "\n"
       end
-      blank
+      blank_reset
+      buf << blank
+      buf
     end
 
     def list_body(id, lines)
+      buf = ""
       lines.each do |line|
-        puts detab(line)
+        buf << detab(line) << "\n"
       end
-      puts "◆→終了:#{@titles["list"]}←◆"
-      blank
+      buf << "◆→終了:#{@titles["list"]}←◆\n"
+      blank_reset
+      buf << blank
     end
 
     def base_block(type, lines, caption = nil)
-      blank
-      puts "◆→開始:#{@titles[type]}←◆"
-      puts "■#{compile_inline(caption)}" unless caption.nil?
-      puts lines.join("\n")
-      puts "◆→終了:#{@titles[type]}←◆"
-      blank
+      buf = ""
+      buf  << blank
+      buf << "◆→開始:#{@titles[type]}←◆\n"
+      buf << "■#{caption}\n" unless caption.nil?
+      buf << lines.join("\n") << "\n"
+      buf << "◆→終了:#{@titles[type]}←◆\n"
+      blank_reset
+      buf << blank
+      buf
     end
 
     def base_parablock(type, lines, caption = nil)
-      blank
-      puts "◆→開始:#{@titles[type]}←◆"
-      puts "■#{compile_inline(caption)}" unless caption.nil?
-      puts split_paragraph(lines).join("\n")
-      puts "◆→終了:#{@titles[type]}←◆"
-      blank
+      buf = ""
+      buf << blank
+      buf << "◆→開始:#{@titles[type]}←◆\n"
+      buf << "■#{caption}\n" unless caption.nil?
+      buf << split_paragraph(lines).join("\n") << "\n"
+      buf << "◆→終了:#{@titles[type]}←◆\n"
+      blank_reset
+      buf << blank
+      buf
     end
 
     def emlist(lines, caption = nil)
@@ -284,23 +316,29 @@ module ReVIEW
     end
 
     def emlistnum(lines, caption = nil)
+      buf = ""
       blank
-      puts "◆→開始:#{@titles["emlist"]}←◆"
-      puts "■#{compile_inline(caption)}" unless caption.nil?
+      buf << "◆→開始:#{@titles["emlist"]}←◆\n"
+      buf << "■#{caption}\n" unless caption.nil?
       _lines = []
       lines.each_with_index do |line, i|
-        puts (i + 1).to_s.rjust(2) + ": #{line}"
+        buf << (i + 1).to_s.rjust(2) + ": #{line}\n"
       end
-      puts "◆→終了:#{@titles["emlist"]}←◆"
-      blank
+      buf << "◆→終了:#{@titles["emlist"]}←◆\n"
+      blank_reset
+      buf << blank
+      buf
     end
 
     def listnum_body(lines)
+      buf = ""
       lines.each_with_index do |line, i|
-        puts (i + 1).to_s.rjust(2) + ": #{line}"
+        buf << (i + 1).to_s.rjust(2) + ": #{line}\n"
       end
-      puts "◆→終了:#{@titles["list"]}←◆"
-      blank
+      buf << "◆→終了:#{@titles["list"]}←◆\n"
+      blank_reset
+      buf << blank
+      buf
     end
 
     def cmd(lines, caption = nil)
@@ -330,48 +368,62 @@ module ReVIEW
     end
 
     def image(lines, id, caption, metric=nil)
-      blank
-      puts "◆→開始:#{@titles["image"]}←◆"
+      buf = ""
+      buf << blank
+      buf << "◆→開始:#{@titles["image"]}←◆\n"
       if get_chap.nil?
-        puts "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [@chapter.image(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+        buf << "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [@chapter.image(id).number])}#{I18n.t("caption_prefix_idgxml")}#{caption}\n"
       else
-        puts "#{I18n.t("image")}#{I18n.t("format_number", [get_chap, @chapter.image(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+        buf << "#{I18n.t("image")}#{I18n.t("format_number", [get_chap, @chapter.image(id).number])}#{I18n.t("caption_prefix_idgxml")}#{caption}\n"
       end
-      blank
+      blank_reset
+      buf << blank
       if @chapter.image(id).bound?
-        puts "◆→#{@chapter.image(id).path}←◆"
+        buf << "◆→#{@chapter.image(id).path}←◆\n"
       else
         lines.each do |line|
-          puts line
+          buf << line << "\n"
         end
       end
-      puts "◆→終了:#{@titles["image"]}←◆"
-      blank
+      buf << "◆→終了:#{@titles["image"]}←◆\n"
+      blank_reset
+      buf << blank
+      buf
     end
 
     def texequation(lines)
-      puts "◆→開始:#{@titles["texequation"]}←◆"
-      puts "#{lines.join("\n")}"
-      puts "◆→終了:#{@titles["texequation"]}←◆"
-      blank
+      buf = ""
+      buf << "◆→開始:#{@titles["texequation"]}←◆\n"
+      buf << "#{lines.join("\n")}\n"
+      buf << "◆→終了:#{@titles["texequation"]}←◆\n"
+      blank_reset
+      buf << blank
+      buf
     end
 
     def table_header(id, caption)
-      blank
-      puts "◆→開始:#{@titles["table"]}←◆"
+      buf = ""
+      buf << blank
+      buf << "◆→開始:#{@titles["table"]}←◆\n"
       if get_chap.nil?
-        puts "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+        buf << "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{caption}\n"
       else
-        puts "#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+        buf << "#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{caption}\n"
       end
-      blank
+      blank_reset
+      buf << blank
+      buf
     end
 
     def table_begin(ncols)
+      ""
     end
 
     def tr(rows)
-      puts rows.join("\t")
+      buf = ""
+      buf << rows.join("\t") << "\n"
+      blank_reset
+      buf
     end
 
     def th(str)
@@ -383,19 +435,24 @@ module ReVIEW
     end
     
     def table_end
-      puts "◆→終了:#{@titles["table"]}←◆"
-      blank
+      buf = ""
+      buf << "◆→終了:#{@titles["table"]}←◆\n"
+      blank_reset
+      buf << blank
+      buf
     end
 
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
       str = lines.join("")
-      puts "◆→DTP連絡:#{str}←◆"
+      blank_reset
+      "◆→DTP連絡:#{str}←◆\n"
     end
 
     def footnote(id, str)
-      puts "【注#{@chapter.footnote(id).number}】#{compile_inline(str)}"
+      blank_reset
+      "【注#{@chapter.footnote(id).number}】#{str}\n"
     end
 
     def inline_fn(id)
@@ -511,25 +568,33 @@ module ReVIEW
     end
 
     def noindent
-      puts "◆→DTP連絡:次の1行インデントなし←◆"
+      blank_reset
+      "◆→DTP連絡:次の1行インデントなし←◆\n"
     end
 
     def nonum_begin(level, label, caption)
-      puts "■H#{level}■#{compile_inline(caption)}"
+      blank_reset
+      "■H#{level}■#{caption}\n"
     end
 
     def nonum_end(level)
     end
 
     def common_column_begin(type, caption)
-      blank
-      puts "◆→開始:#{@titles["type"]}←◆"
-      puts %Q[■#{compile_inline(caption)}]
+      buf = ""
+      buf << blank
+      buf << "◆→開始:#{@titles["type"]}←◆\n"
+      buf << %Q[■#{caption}\n]
+      blank_reset
+      buf
     end
 
     def common_column_end(type)
-      puts %Q[◆→終了:#{@titles["type"]}←◆]
-      blank
+      buf = ""
+      buf << %Q[◆→終了:#{@titles["type"]}←◆]
+      blank_reset
+      buf << blank
+      buf
     end
 
     def column_begin(level, label, caption)
@@ -679,15 +744,18 @@ module ReVIEW
     alias :box insn
 
     def indepimage(id, caption=nil, metric=nil)
-      blank
+      buf = ""
+      buf << blank
       begin
-        puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")} #{metric.join(" ")}←◆"
+        buf << "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")} #{metric.join(" ")}←◆\n"
       rescue
         warn "no such image: #{id}"
-        puts "◆→画像 #{id}←◆"
+        buf << "◆→画像 #{id}←◆\n"
       end
-      puts "図　#{compile_inline(caption)}" if caption.present?
-      blank
+      buf << "図　#{caption}\n" if caption.present?
+      blank_reset
+      buf << blank
+      buf
     end
 
     alias :numberlessimage indepimage
@@ -775,7 +843,8 @@ module ReVIEW
     end
 
     def circle_begin(level, label, caption)
-      puts "・\t#{caption}"
+      blank_reset
+      "・\t#{caption}\n"
     end
 
     def circle_end(level)
