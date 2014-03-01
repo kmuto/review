@@ -1,0 +1,18 @@
+%% name = ReVIEW::Compiler::Literals
+
+%% header {
+
+##
+# Provides Literals appropriate for your ruby version.
+#--
+# This set of literals is for Ruby 1.8 regular expressions.
+}
+
+Alphanumeric      = /[0-9A-Za-z\200-\377]/n
+AlphanumericAscii = /[A-Za-z0-9]/
+LowerAlphabetAscii = /[a-z]/
+Digit             = /[0-9]/
+BOM               = "\357\273\277"
+Newline           = /\n|\r\n?/
+NonAlphanumeric   = /[\000-\057\072-\100\133-\140\173-\177]/n
+Spacechar         = / |\t/

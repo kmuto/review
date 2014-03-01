@@ -431,7 +431,7 @@ EOT
 
     def list_body(id, lines)
       id ||= ''
-      buf = %Q[<pre class="list">\n]
+      buf = %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
       buf << highlight(:body => body, :lexer => lexer, :format => 'html')
@@ -487,7 +487,7 @@ EOT
     def emlist(lines, caption = nil)
       buf = %Q[<div class="emlist-code">\n]
       buf << %Q(<p class="caption">#{caption}</p>\n) unless caption.nil?
-      buf << %Q[<pre class="emlist">\n]
+      buf << %Q[<pre class="emlist">]
       lines.each do |line|
         buf << detab(line) << "\n"
       end
