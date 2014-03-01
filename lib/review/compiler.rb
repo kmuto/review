@@ -390,6 +390,7 @@ require 'review/exception'
       parse()
     end
 
+=begin
     def text(str)
       st = @strategy.dup
       f = LineInput.new(ReVIEW::Preprocessor::Strip.new(StringIO.new(str)))
@@ -399,6 +400,7 @@ require 'review/exception'
       parser.parse("InlineElementContents")
       st.result
     end
+=end
 
     def escape_text(text)
       @strategy.nofunc_text(text)
@@ -1395,7 +1397,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElement = "@<" < /[^>\r\n]+/ > {symbol = text} ">" "{" < InlineElementContents? > { contents = text } "}" { compile_inline(symbol,contents) }
+  # InlineElement = "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" { compile_inline(symbol,contents) }
   def _InlineElement
 
     _save = self.pos
@@ -1405,17 +1407,8 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      _text_start = self.pos
-      _tmp = scan(/\A(?-mix:[^>\r\n]+)/)
-      if _tmp
-        text = get_text(_text_start)
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; symbol = text; end
-      _tmp = true
+      _tmp = apply(:_InlineElementSymbol)
+      symbol = @result
       unless _tmp
         self.pos = _save
         break
@@ -1430,22 +1423,14 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      _text_start = self.pos
       _save1 = self.pos
       _tmp = apply(:_InlineElementContents)
+      @result = nil unless _tmp
       unless _tmp
         _tmp = true
         self.pos = _save1
       end
-      if _tmp
-        text = get_text(_text_start)
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  contents = text ; end
-      _tmp = true
+      contents = @result
       unless _tmp
         self.pos = _save
         break
@@ -1464,6 +1449,32 @@ require 'review/exception'
     end # end sequence
 
     set_failed_rule :_InlineElement unless _tmp
+    return _tmp
+  end
+
+  # InlineElementSymbol = < /[^>\r\n]+/ > { text }
+  def _InlineElementSymbol
+
+    _save = self.pos
+    while true # sequence
+      _text_start = self.pos
+      _tmp = scan(/\A(?-mix:[^>\r\n]+)/)
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementSymbol unless _tmp
     return _tmp
   end
 
@@ -1923,7 +1934,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElementContents = !"}" InlineElementContent+
+  # InlineElementContents = !"}" InlineElementContent+:c { c.join("") }
   def _InlineElementContents
 
     _save = self.pos
@@ -1937,16 +1948,27 @@ require 'review/exception'
         break
       end
       _save2 = self.pos
+      _ary = []
       _tmp = apply(:_InlineElementContent)
       if _tmp
+        _ary << @result
         while true
           _tmp = apply(:_InlineElementContent)
+          _ary << @result if _tmp
           break unless _tmp
         end
         _tmp = true
+        @result = _ary
       else
         self.pos = _save2
       end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c.join("") ; end
+      _tmp = true
       unless _tmp
         self.pos = _save
       end
@@ -1957,7 +1979,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElementContent = (InlineElement:c | InlineElementContentText:c)
+  # InlineElementContent = (InlineElement:c | InlineElementContentText+:c)
   def _InlineElementContent
 
     _save = self.pos
@@ -1966,7 +1988,21 @@ require 'review/exception'
       c = @result
       break if _tmp
       self.pos = _save
+      _save1 = self.pos
+      _ary = []
       _tmp = apply(:_InlineElementContentText)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_InlineElementContentText)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
       c = @result
       break if _tmp
       self.pos = _save
@@ -1977,53 +2013,62 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElementContentText = (!InlineElement /[^\r\n}]/)+
+  # InlineElementContentText = ("\\}" { "}" } | !InlineElement < /[^\r\n}]/ > { text })
   def _InlineElementContentText
+
     _save = self.pos
+    while true # choice
 
-    _save1 = self.pos
-    while true # sequence
-      _save2 = self.pos
-      _tmp = apply(:_InlineElement)
-      _tmp = _tmp ? nil : true
-      self.pos = _save2
-      unless _tmp
-        self.pos = _save1
-        break
-      end
-      _tmp = scan(/\A(?-mix:[^\r\n}])/)
-      unless _tmp
-        self.pos = _save1
-      end
-      break
-    end # end sequence
-
-    if _tmp
-      while true
-
-        _save3 = self.pos
-        while true # sequence
-          _save4 = self.pos
-          _tmp = apply(:_InlineElement)
-          _tmp = _tmp ? nil : true
-          self.pos = _save4
-          unless _tmp
-            self.pos = _save3
-            break
-          end
-          _tmp = scan(/\A(?-mix:[^\r\n}])/)
-          unless _tmp
-            self.pos = _save3
-          end
+      _save1 = self.pos
+      while true # sequence
+        _tmp = match_string("\\}")
+        unless _tmp
+          self.pos = _save1
           break
-        end # end sequence
+        end
+        @result = begin;  "}" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
 
-        break unless _tmp
-      end
-      _tmp = true
-    else
+      break if _tmp
       self.pos = _save
-    end
+
+      _save2 = self.pos
+      while true # sequence
+        _save3 = self.pos
+        _tmp = apply(:_InlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save3
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _text_start = self.pos
+        _tmp = scan(/\A(?-mix:[^\r\n}])/)
+        if _tmp
+          text = get_text(_text_start)
+        end
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  text ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
     set_failed_rule :_InlineElementContentText unless _tmp
     return _tmp
   end
@@ -2833,7 +2878,8 @@ require 'review/exception'
   Rules[:_ContentText] = rule_info("ContentText", "NonInlineElement+:c { c }")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < /[^\\r\\n]/ > { text }")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {    compile_command(symbol, args, contents) } | \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
-  Rules[:_InlineElement] = rule_info("InlineElement", "\"@<\" < /[^>\\r\\n]+/ > {symbol = text} \">\" \"{\" < InlineElementContents? > { contents = text } \"}\" { compile_inline(symbol,contents) }")
+  Rules[:_InlineElement] = rule_info("InlineElement", "\"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" { compile_inline(symbol,contents) }")
+  Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< /[^>\\r\\n]+/ > { text }")
   Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline+:c \"]\" { c.join(\"\") }")
   Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" { \"]\" } | < /[^\\r\\n\\]]/ > { escape_text(text) })")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
@@ -2842,9 +2888,9 @@ require 'review/exception'
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "&. { @blockElem = \"\" } BlockElementParagraphSub:c { @blockElem }")
   Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c { @blockElem << c } | BlockElementContentText:c { @blockElem << c })+ Newline")
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist < NonInlineElement+ > { text }")
-  Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContent+")
-  Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c | InlineElementContentText:c)")
-  Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(!InlineElement /[^\\r\\n}]/)+")
+  Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContent+:c { c.join(\"\") }")
+  Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c | InlineElementContentText+:c)")
+  Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" { \"}\" } | !InlineElement < /[^\\r\\n}]/ > { text })")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "ContentInlines:c (Newline | EOF) { c }")
   Rules[:_ContentInlines] = rule_info("ContentInlines", "ContentInline+:c { c.join }")
   Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < /[^\\r\\n]/ > { escape_text(text) })")

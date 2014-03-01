@@ -35,6 +35,7 @@ require 'review/exception'
       parse()
     end
 
+=begin
     def text(str)
       st = @strategy.dup
       f = LineInput.new(ReVIEW::Preprocessor::Strip.new(StringIO.new(str)))
@@ -44,6 +45,7 @@ require 'review/exception'
       parser.parse("InlineElementContents")
       st.result
     end
+=end
 
     def escape_text(text)
       @strategy.nofunc_text(text)
@@ -449,8 +451,10 @@ BlockElement = ( "//" ElementName:symbol BracketArg*:args "{" Space* Newline Blo
                | "//" ElementName:symbol BracketArg*:args Space* Newline   { compile_command(symbol, args, nil) }
                )
 
-InlineElement =  "@<" < /[^>\r\n]+/ > {symbol = text} ">" "{" < InlineElementContents? > { contents = text } "}"
+InlineElement =  "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}"
                  { compile_inline(symbol,contents) }
+
+InlineElementSymbol = < /[^>\r\n]+/ > { text }
 
 BracketArg = "["  BracketArgContentInline+:c  "]" { c.join("") }
 
@@ -476,13 +480,13 @@ BlockElementParagraphSub = ( InlineElement:c { @blockElem << c }
 
 BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  < NonInlineElement+ >  { text }
 
-InlineElementContents = !"}" InlineElementContent+
+InlineElementContents = !"}" InlineElementContent+:c { c.join("") }
 
 InlineElementContent = ( InlineElement:c
-                       | InlineElementContentText:c
+                       | InlineElementContentText+:c
                        )
 
-InlineElementContentText = ( !InlineElement /[^\r\n}]/ )+
+InlineElementContentText = ( "\\}" { "}" } | !InlineElement < /[^\r\n}]/> { text }  )
 
 SinglelineContent = ContentInlines:c (Newline | EOF) { c }
 
