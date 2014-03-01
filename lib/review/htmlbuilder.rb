@@ -225,7 +225,7 @@ EOT
     end
 
     def column_end(level)
-      "</div><!-- END COLUMN -->\n"
+      "</div>\n"
     end
 
     def xcolumn_begin(level, label, caption)
@@ -440,7 +440,7 @@ EOT
     end
 
     def source(lines, caption = nil)
-      buf = %Q[<div class="source-code">]
+      buf = %Q[<div class="source-code">\n]
       buf << source_header(caption)
       buf << source_body(caption, lines)
       buf << "</div>\n"

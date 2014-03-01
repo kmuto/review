@@ -1221,7 +1221,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElement = ("//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {           compile_command(symbol, args, contents) } | "//" ElementName:symbol BracketArg*:args Space* Newline)
+  # BlockElement = ("//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {       compile_command(symbol, args, contents) } | "//" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })
   def _BlockElement
 
     _save = self.pos
@@ -1303,7 +1303,7 @@ require 'review/exception'
           self.pos = _save1
           break
         end
-        @result = begin;            compile_command(symbol, args, contents) ; end
+        @result = begin;        compile_command(symbol, args, contents) ; end
         _tmp = true
         unless _tmp
           self.pos = _save1
@@ -1350,6 +1350,12 @@ require 'review/exception'
           break
         end
         _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save6
+          break
+        end
+        @result = begin;  compile_command(symbol, args, nil) ; end
+        _tmp = true
         unless _tmp
           self.pos = _save6
         end
@@ -1531,7 +1537,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElementContent = (SinglelineComment:c | BlockElement:c | BlockElementParagraph:c)
+  # BlockElementContent = (SinglelineComment:c | BlockElement:c | BlockElementParagraph:c | Newline:c { "" })
   def _BlockElementContent
 
     _save = self.pos
@@ -1546,6 +1552,25 @@ require 'review/exception'
       self.pos = _save
       _tmp = apply(:_BlockElementParagraph)
       c = @result
+      break if _tmp
+      self.pos = _save
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_Newline)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  "" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
       break if _tmp
       self.pos = _save
       break
@@ -2650,12 +2675,12 @@ require 'review/exception'
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | < ContentText > { text })+:d Newline { d }")
   Rules[:_ContentText] = rule_info("ContentText", "NonInlineElement+:c { c }")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < /[^\\r\\n]/ > { text }")
-  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {           compile_command(symbol, args, contents) } | \"//\" ElementName:symbol BracketArg*:args Space* Newline)")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {       compile_command(symbol, args, contents) } | \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
   Rules[:_InlineElement] = rule_info("InlineElement", "\"@<\" < /[^>\\r\\n]+/ > {symbol = text} \">\" \"{\" < InlineElementContents? > { contents = text } \"}\" { compile_inline(symbol,contents); }")
   Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" < /([^\\r\\n\\]\\\\]|\\\\[^\\r\\n])*/ > \"]\" { text }")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c")
-  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c | BlockElement:c | BlockElementParagraph:c)")
+  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c | BlockElement:c | BlockElementParagraph:c | Newline:c { \"\" })")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "&. { @blockElem = \"\" } BlockElementParagraphSub:c { @blockElem }")
   Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c { @blockElem << c } | BlockElementContentText:c { @blockElem << c })+ Newline")
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist < NonInlineElement+ > { text }")

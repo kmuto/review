@@ -440,8 +440,8 @@ ContentText = NonInlineElement+:c { c }
 NonInlineElement = !InlineElement < /[^\r\n]/ > { text }
 
 BlockElement = ( "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline
-               {           compile_command(symbol, args, contents) }
-               | "//" ElementName:symbol BracketArg*:args Space* Newline
+               {       compile_command(symbol, args, contents) }
+               | "//" ElementName:symbol BracketArg*:args Space* Newline   { compile_command(symbol, args, nil) }
                )
 
 InlineElement =  "@<" < /[^>\r\n]+/ > {symbol = text} ">" "{" < InlineElementContents? > { contents = text } "}"
@@ -458,6 +458,7 @@ BlockElementContents = BlockElementContent+:c
 BlockElementContent = ( SinglelineComment:c
                       | BlockElement:c
                       | BlockElementParagraph:c
+                      | Newline:c { "" }
                       )
 
 BlockElementParagraph = &. { @blockElem = "" } BlockElementParagraphSub:c { @blockElem }
