@@ -21,6 +21,8 @@ module ReVIEW
 
     CAPTION_TITLES = %w(note memo tip info planning best important security caution term link notice point shoot reference practice expert)
 
+    attr_accessor :output
+
     def pre_paragraph
       nil
     end
@@ -61,15 +63,17 @@ module ReVIEW
     alias :raw_result result
 
     def print(*s)
-      @output.print(*s.map{|i|
-        convert_outencoding(i, ReVIEW.book.param["outencoding"])
-      })
+      raise NotImplementedError, "XXX: do not use print"
+#      @output.print(*s.map{|i|
+#        convert_outencoding(i, ReVIEW.book.param["outencoding"])
+#      })
     end
 
     def puts(*s)
-      @output.puts *s.map{|i|
-        convert_outencoding(i, ReVIEW.book.param["outencoding"])
-      }
+      raise NotImplementedError, "XXX: do not use puts"
+#      @output.puts *s.map{|i|
+#        convert_outencoding(i, ReVIEW.book.param["outencoding"])
+#      }
     end
 
     def list(lines, id, caption)
@@ -167,9 +171,9 @@ module ReVIEW
     #  footnote_end
     #end
 
-    def compile_inline(s)
-      @compiler.text(s)
-    end
+#    def compile_inline(s)
+#      @compiler.text(s)
+#    end
 
     def inline_chapref(id)
       @chapter.env.chapter_index.display_string(id)

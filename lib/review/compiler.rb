@@ -571,28 +571,34 @@ require 'review/exception'
     end
 
     def open_tagged_section(tag, level, label, caption)
+      buf = ""
       mid = "#{tag}_begin"
       unless @strategy.respond_to?(mid)
         error "strategy does not support tagged section: #{tag}"
         return
       end
       @tagged_section.push [tag, level]
-      @strategy.__send__ mid, level, label, caption
+      buf << @strategy.__send__(mid, level, label, caption)
+      buf
     end
 
     def close_tagged_section(tag, level)
+      buf = ""
       mid = "#{tag}_end"
       if @strategy.respond_to?(mid)
-        @strategy.__send__ mid, level
+        buf << @strategy.__send__(mid, level)
       else
         error "strategy does not support block op: #{mid}"
       end
+      buf
     end
 
     def close_all_tagged_section
+      buf  = ""
       until @tagged_section.empty?
-        close_tagged_section(* @tagged_section.pop)
+        buf << close_tagged_section(* @tagged_section.pop)
       end
+      buf
     end
 
     def compile_command(name, args, lines)
@@ -619,20 +625,21 @@ require 'review/exception'
     end
 
     def compile_headline(level, tag, label, caption)
+      buf = ""
       @headline_indexs ||= [0] ## XXX
       caption.strip!
       index = level - 1
       if tag
         if tag !~ /\A\//
-          close_current_tagged_section(level)
-          open_tagged_section(tag, level, label, caption)
+          buf << close_current_tagged_section(level)
+          buf << open_tagged_section(tag, level, label, caption)
         else
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
           unless prev_tag_info.first == open_tag
             raise CompileError, "#{open_tag} is not opened."
           end
-          close_tagged_section(*prev_tag_info)
+          buf << close_tagged_section(*prev_tag_info)
         end
       else
         if @headline_indexs.size > (index + 1)
@@ -640,15 +647,18 @@ require 'review/exception'
         end
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
-        close_current_tagged_section(level)
-        @strategy.headline level, label, caption
+        buf << close_current_tagged_section(level)
+        buf << @strategy.headline(level, label, caption)
       end
+      buf
     end
 
     def close_current_tagged_section(level)
+      buf = ""
       while @tagged_section.last and @tagged_section.last[1] >= level
-        close_tagged_section(* @tagged_section.pop)
+        buf << close_tagged_section(* @tagged_section.pop)
       end
+      buf
     end
 
     def comment(text)
@@ -656,51 +666,55 @@ require 'review/exception'
     end
 
     def compile_ulist(elem)
+      buf0 = ""
       level = 0
       elem.each do |current_level, buf|
         if level == current_level
-          @strategy.ul_item_end
+          buf0 << @strategy.ul_item_end
           # body
-          @strategy.ul_item_begin [buf]
+          buf0 << @strategy.ul_item_begin([buf])
         elsif level < current_level # down
           level_diff = current_level - level
           level = current_level
           (1..(level_diff - 1)).to_a.reverse.each do |i|
-            @strategy.ul_begin {i}
-            @strategy.ul_item_begin []
+            buf0 << @strategy.ul_begin{i}
+            buf0 << @strategy.ul_item_begin([])
           end
-          @strategy.ul_begin {level}
-          @strategy.ul_item_begin [buf]
+          buf0 << @strategy.ul_begin{level}
+          buf0 << @strategy.ul_item_begin([buf])
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
           (1..level_diff).to_a.reverse.each do |i|
-            @strategy.ul_item_end
-            @strategy.ul_end {level + i}
+            buf0 << @strategy.ul_item_end
+            buf0 << @strategy.ul_end{level + i}
           end
-          @strategy.ul_item_end
+          buf0 << @strategy.ul_item_end
           # body
-          @strategy.ul_item_begin [buf]
+          buf0 <<@strategy.ul_item_begin([buf])
         end
       end
 
       (1..level).to_a.reverse.each do |i|
-        @strategy.ul_item_end
-        @strategy.ul_end {i}
+        buf0 << @strategy.ul_item_end
+        buf0 << @strategy.ul_end{i}
       end
+      buf0
     end
 
     def compile_olist(elem)
-      @strategy.ol_begin
+      buf0 = ""
+      buf0 << @strategy.ol_begin
       elem.each do |num, buf|
-        @strategy.ol_item buf, num
+        buf0 << @strategy.ol_item(buf, num)
       end
-      @strategy.ol_end
+      buf0 << @strategy.ol_end
+      buf0
     end
 
 
     def compile_unknown_command(args, lines)
-      @strategy.unknown_command args, lines
+      @strategy.unknown_command(args, lines)
     end
 
     def compile_block(syntax, args, lines)
@@ -717,7 +731,6 @@ require 'review/exception'
     def compile_single(syntax, args)
       @strategy.__send__(syntax.name, *args)
     end
-
 
 
     def compile_inline(op, arg)
@@ -798,7 +811,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # Block = BlankLine* (SinglelineComment:c | Headline:headline | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c)
+  # Block = BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { @strategy.output << c }
   def _Block
 
     _save = self.pos
@@ -820,7 +833,7 @@ require 'review/exception'
         break if _tmp
         self.pos = _save2
         _tmp = apply(:_Headline)
-        headline = @result
+        c = @result
         break if _tmp
         self.pos = _save2
         _tmp = apply(:_BlockElement)
@@ -846,6 +859,12 @@ require 'review/exception'
         break
       end # end choice
 
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @strategy.output << c ; end
+      _tmp = true
       unless _tmp
         self.pos = _save
       end
@@ -1536,7 +1555,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElementParagraph = &. { @blockElem = [] } BlockElementParagraphSub+:c { @blockElem }
+  # BlockElementParagraph = &. { @blockElem = "" } BlockElementParagraphSub:c { @blockElem }
   def _BlockElementParagraph
 
     _save = self.pos
@@ -1548,27 +1567,13 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  @blockElem = [] ; end
+      @result = begin;  @blockElem = "" ; end
       _tmp = true
       unless _tmp
         self.pos = _save
         break
       end
-      _save2 = self.pos
-      _ary = []
       _tmp = apply(:_BlockElementParagraphSub)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_BlockElementParagraphSub)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save2
-      end
       c = @result
       unless _tmp
         self.pos = _save
@@ -2255,7 +2260,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # OlistElement = " "+ < /\d/+ > { level=text } "." Space* SinglelineContent:c {@olist_elem << [level, c] }
+  # OlistElement = " "+ < /\d/+ > { level=text } "." Space* SinglelineContent:c {@olist_elem << [level, [c]] }
   def _OlistElement
 
     _save = self.pos
@@ -2320,7 +2325,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin; @olist_elem << [level, c] ; end
+      @result = begin; @olist_elem << [level, [c]] ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2637,7 +2642,7 @@ require 'review/exception'
   Rules = {}
   Rules[:_root] = rule_info("root", "Start")
   Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Block* { close_all_tagged_section }")
-  Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:headline | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c)")
+  Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { @strategy.output << c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent:caption Newline* { compile_headline(level, cmd, label, caption) }")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
@@ -2651,7 +2656,7 @@ require 'review/exception'
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c | BlockElement:c | BlockElementParagraph:c)")
-  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "&. { @blockElem = [] } BlockElementParagraphSub+:c { @blockElem }")
+  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "&. { @blockElem = \"\" } BlockElementParagraphSub:c { @blockElem }")
   Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c { @blockElem << c } | BlockElementContentText:c { @blockElem << c })+ Newline")
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist < NonInlineElement+ > { text }")
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContent+:c { c }")
@@ -2663,7 +2668,7 @@ require 'review/exception'
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } (UlistElement | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c { @ulist_elem << [level.size, c] }")
   Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c { compile_olist(@olist_elem) }")
-  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { level=text } \".\" Space* SinglelineContent:c {@olist_elem << [level, c] }")
+  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { level=text } \".\" Space* SinglelineContent:c {@olist_elem << [level, [c]] }")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment):c Dlist?:cc")
   Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text DlistElementContent:content")
   Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c")
