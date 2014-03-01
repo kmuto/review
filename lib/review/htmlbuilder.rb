@@ -340,7 +340,7 @@ EOT
     end
 
     def ul_item_begin(lines)
-      "<li>#{lines.join}\n"
+      "<li>#{lines.join}"
     end
 
     def ul_item_end
@@ -508,9 +508,9 @@ EOT
     end
 
     def cmd(lines, caption = nil)
-      buf == %Q[<div class="cmd-code">\n]
+      buf = %Q[<div class="cmd-code">\n]
       buf << %Q(<p class="caption">#{caption}</p>\n) unless caption.nil?
-      buf %Q[<pre class="cmd">\n]
+      buf << %Q[<pre class="cmd">]
       lines.each do |line|
         buf << detab(line) << "\n"
       end
@@ -520,7 +520,7 @@ EOT
     end
 
     def quotedlist(lines, css_class)
-      buf << %Q[<blockquote><pre class="#{css_class}">\n]
+      buf = %Q[<blockquote><pre class="#{css_class}">\n]
       lines.each do |line|
         buf << detab(line) << "\n"
       end
@@ -685,11 +685,11 @@ QUOTE
     end
 
     def th(str)
-      "<th>#{str}</th>\n"
+      "<th>#{str}</th>"
     end
 
     def td(str)
-      "<td>#{str}</td>\n"
+      "<td>#{str}</td>"
     end
 
     def table_end
@@ -900,23 +900,24 @@ QUOTE
     end
 
     def bibpaper(lines, id, caption)
-      puts %Q[<div class="bibpaper">]
-      bibpaper_header id, caption
+      buf = %Q[<div class="bibpaper">\n]
+      buf << bibpaper_header(id, caption)
       unless lines.empty?
-        bibpaper_bibpaper id, caption, lines
+        buf << bibpaper_bibpaper(id, caption, lines)
       end
-      puts "</div>"
+      buf << "</div>" << "\n"
+      buf
     end
 
     def bibpaper_header(id, caption)
-      print %Q(<a id="bib-#{id}">)
-      print "[#{@chapter.bibpaper(id).number}]"
-      print %Q(</a>)
-      puts " #{caption}"
+      buf = %Q(<a id="bib-#{id}">)
+      buf << "[#{@chapter.bibpaper(id).number}]"
+      buf << %Q(</a>)
+      buf << " #{caption}\n"
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      print split_paragraph(lines).join("")
+      split_paragraph(lines).join("")
     end
 
     def inline_bib(id)
@@ -1087,19 +1088,21 @@ QUOTE
     end
 
     def flushright(lines)
+      result = ""
       if ReVIEW.book.param["deprecated-blocklines"].nil?
-        puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
+        result << split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">") << "\n"
       else
-        puts %Q[<div style="text-align:right;">]
-        print %Q[<pre class="flushright">]
-        lines.each {|line| puts detab(line) }
-        puts '</pre>'
-        puts '</div>'
+        result << %Q[<div style="text-align:right;">\n]
+        result << %Q[<pre class="flushright">]
+        lines.each {|line| result << detab(line) << "\n" }
+        result << "</pre>\n"
+        result << "</div>\n"
       end
+      result
     end
 
     def centering(lines)
-      puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"center\">")
+      split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"center\">") + "\n"
     end
 
     def image_ext

@@ -272,12 +272,12 @@ module ReVIEW
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
         c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
         if builders.include?(c)
-          print matched[2].gsub("\\n", "\n")
+          matched[2].gsub("\\n", "\n")
         else
           ""
         end
       else
-        print str.gsub("\\n", "\n")
+        str.gsub("\\n", "\n")
       end
     end
 

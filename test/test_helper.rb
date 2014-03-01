@@ -1,18 +1,32 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
 require 'test/unit'
 
+  def compile_inline(str)
+    @compiler.setup_parser(str)
+    @compiler.tagged_section_init
+    @compiler.parse("Paragraph")
+    @compiler.result
+  end
+
+  def compile_blockelem(str)
+    @compiler.setup_parser(str)
+    @compiler.tagged_section_init
+    @compiler.parse("BlockElement")
+    @compiler.result
+  end
+
 def ul_helper(src, expect)
-  io = StringIO.new(src)
-  li = LineInput.new(io)
-  @compiler.__send__(:compile_ulist, li)
-  assert_equal expect, @builder.raw_result
+  @compiler.setup_parser(src)
+  @compiler.tagged_section_init
+  @compiler.parse("Ulist")
+  assert_equal expect, @compiler.result
 end
 
 def ol_helper(src, expect)
-  io = StringIO.new(src)
-  li = LineInput.new(io)
-  @compiler.__send__(:compile_olist, li)
-  assert_equal expect, @builder.raw_result
+  @compiler.setup_parser(src)
+  @compiler.tagged_section_init
+  @compiler.parse("Olist")
+  assert_equal expect, @compiler.result
 end
 
 def builder_helper(src, expect, method_sym)

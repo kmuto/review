@@ -45,6 +45,10 @@ require 'review/exception'
       st.result
     end
 
+    def escape_text(text)
+      @strategy.nofunc_text(text)
+    end
+
     class SyntaxElement
       def initialize(name, type, argc, &block)
         @name = name
@@ -57,7 +61,7 @@ require 'review/exception'
 
       def check_args(args)
         unless @argc_spec === args.size
-          raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
+          raise ReVIEW::CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
         end
         @checker.call(*args) if @checker
       end
@@ -255,7 +259,7 @@ require 'review/exception'
       end
       begin
         syntax.check_args args
-      rescue CompileError => err
+      rescue ReVIEW::CompileError => err
         error err.message
         args = ['(NoArgument)'] * syntax.min_argc
       end
@@ -272,6 +276,7 @@ require 'review/exception'
     def compile_headline(level, tag, label, caption)
       buf = ""
       @headline_indexs ||= [0] ## XXX
+      caption ||= ""
       caption.strip!
       index = level - 1
       if tag
@@ -282,7 +287,7 @@ require 'review/exception'
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
           unless prev_tag_info.first == open_tag
-            raise CompileError, "#{open_tag} is not opened."
+            raise ReVIEW::CompileError, "#{open_tag} is not opened."
           end
           buf << close_tagged_section(*prev_tag_info)
         end
@@ -380,7 +385,7 @@ require 'review/exception'
 
     def compile_inline(op, arg)
       unless inline_defined?(op)
-        raise CompileError, "no such inline op: #{op}"
+        raise ReVIEW::CompileError, "no such inline op: #{op}"
       end
       unless @strategy.respond_to?("inline_#{op}")
         raise "strategy does not support inline op: @<#{op}>"
@@ -424,7 +429,7 @@ Block = BlankLine*
 
 BlankLine = Newline
 
-Headline = ( HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent:caption Newline* )  { compile_headline(level, cmd, label, caption) }
+Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption (Newline|EOF)  { compile_headline(level, cmd, label, caption) }
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
 
@@ -432,7 +437,7 @@ Paragraph = ParagraphSub+:c  { compile_paragraph(c) }
 
 ParagraphSub = ( InlineElement:c { c }
                | < ContentText > { text }
-               )+:d  Newline { d }
+               )+:d  { e=d.join("") } Newline { e }
 
 ## ContentText = !Newline !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
 ContentText = NonInlineElement+:c { c }
@@ -440,14 +445,16 @@ ContentText = NonInlineElement+:c { c }
 NonInlineElement = !InlineElement < /[^\r\n]/ > { text }
 
 BlockElement = ( "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline
-               {       compile_command(symbol, args, contents) }
+               {    compile_command(symbol, args, contents) }
                | "//" ElementName:symbol BracketArg*:args Space* Newline   { compile_command(symbol, args, nil) }
                )
 
 InlineElement =  "@<" < /[^>\r\n]+/ > {symbol = text} ">" "{" < InlineElementContents? > { contents = text } "}"
-                 { compile_inline(symbol,contents); }
+                 { compile_inline(symbol,contents) }
 
-BracketArg = "[" < /([^\r\n\]\\]|\\[^\r\n])*/ > "]" { text }
+BracketArg = "["  BracketArgContentInline+:c  "]" { c.join("") }
+
+BracketArgContentInline = ( InlineElement:c { c } |  "\\]" { "]" } | < /[^\r\n\]]/ > { escape_text(text) } )
 
 BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
 
@@ -469,7 +476,7 @@ BlockElementParagraphSub = ( InlineElement:c { @blockElem << c }
 
 BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  < NonInlineElement+ >  { text }
 
-InlineElementContents = !"}" InlineElementContent+:c { c }
+InlineElementContents = !"}" InlineElementContent+
 
 InlineElementContent = ( InlineElement:c
                        | InlineElementContentText:c
@@ -482,7 +489,7 @@ SinglelineContent = ContentInlines:c (Newline | EOF) { c }
 ContentInlines =  ContentInline+:c  { c.join }
 
 ContentInline = ( InlineElement:c { c }
-                | !Newline < /[^\r\n]/ > {text }
+                | !Newline < /[^\r\n]/ > { escape_text(text) }
                 )
 
 ## ContentInlineText = !InlineElement !Newline  .:cc { p [:char,cc];cc }
@@ -491,9 +498,10 @@ ContentInline = ( InlineElement:c { c }
 ## * 箇条書き
 ## 行頭から… の指定がない
 
-Ulist =  &. { @ulist_elem=[] } (UlistElement | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }
+Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }
 
 UlistElement = " "+ "*"+:level " "* SinglelineContent:c { @ulist_elem << [level.size, c] }
+UlistContLine = " " " "+ !"*" SinglelineContent:c {  @ulist_elem[-1][1] << c }
 
 ## 1. 番号付き箇条書き
 ## 行頭から… の指定がない

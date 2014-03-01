@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'test_helper'
+require 'review'
 require 'review/compiler'
 require 'review/book'
 require 'review/htmlbuilder'
@@ -35,110 +36,113 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
+    result = @builder.headline(1,"test","this is test.")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, result
   end
+
 
   def test_headline_level1_without_secno
     ReVIEW.book.param["secnolevel"] = 0
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, @builder.raw_result
+    result = @builder.headline(1,"test","this is test.")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, result
   end
 
   def test_headline_level1_with_inlinetag
-    @builder.headline(1,"test","this @<b>{is} test.<&\">")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @builder.raw_result
+    @compiler.setup_parser("={test} this @<b>{is} test.<&\">\n")
+    @compiler.tagged_section_init
+    @compiler.parse("Headline")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @compiler.result
   end
 
   def test_headline_level2
-    @builder.headline(2,"test","this is test.")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, @builder.raw_result
+    result = @builder.headline(2,"test","this is test.")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, result
   end
 
   def test_headline_level3
-    @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, @builder.raw_result
+    result = @builder.headline(3,"test","this is test.")
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, result
   end
 
   def test_headline_level3_with_secno
     ReVIEW.book.param["secnolevel"] = 3
-    @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, @builder.raw_result
+    result = @builder.headline(3,"test","this is test.")
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, result
   end
 
   def test_label
-    @builder.label("label_test")
-    assert_equal %Q|<a id="label_test"></a>\n|, @builder.raw_result
+    result = @builder.label("label_test")
+    assert_equal %Q|<a id="label_test"></a>\n|, result
   end
 
   def test_href
-    ret = @builder.compile_href("http://github.com", "GitHub")
-    assert_equal %Q|<a href="http://github.com" class="link">GitHub</a>|, ret
+    result = @builder.compile_href("http://github.com", "GitHub")
+    assert_equal %Q|<a href="http://github.com" class="link">GitHub</a>|, result
   end
 
   def test_href_without_label
-    ret = @builder.compile_href("http://github.com",nil)
-    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, ret
+    result = @builder.compile_href("http://github.com",nil)
+    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, result
   end
 
   def test_inline_href
-    ret = @builder.inline_href("http://github.com, Git\\,Hub")
-    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, ret
+    result = @builder.inline_href("http://github.com, Git\\,Hub")
+    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, result
   end
 
   def test_inline_href_without_label
-    ret = @builder.inline_href("http://github.com")
-    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, ret
+    result = @builder.inline_href("http://github.com")
+    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, result
   end
 
   def test_inline_raw
-    ret = @builder.inline_raw("@<tt>{inline}")
-    assert_equal %Q|@<tt>{inline}|, ret
+    result = @builder.inline_raw("@<tt>{inline}")
+    assert_equal %Q|@<tt>{inline}|, result
   end
 
   def test_inline_in_table
-    ret = @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
-    assert_equal %Q|<div class="table">\n<table>\n<tr><th><b>1</b></th><th><i>2</i></th></tr>\n<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|, @builder.raw_result
+    result = @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
+    assert_equal %Q|<div class="table">\n<table>\n<tr><th><b>1</b></th><th><i>2</i></th></tr>\n<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|, result
   end
 
   def test_inline_br
-    ret = @builder.inline_br("")
-    assert_equal %Q|<br />|, ret
+    result = @builder.inline_br("")
+    assert_equal %Q|<br />|, result
   end
 
   def test_inline_i
-    ret = @builder.compile_inline("test @<i>{inline test} test2")
-    assert_equal %Q|test <i>inline test</i> test2|, ret
+    result = compile_inline("test @<i>{inline test} test2")
+    assert_equal %Q|test <i>inline test</i> test2|, result
   end
 
   def test_inline_i_and_escape
-    ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
-    assert_equal %Q|test <i>inline&lt;&amp;;\\ test</i> test2|, ret
+    result = compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test <i>inline&lt;&amp;;\\ test</i> test2|, result
   end
 
   def test_inline_b
-    ret = @builder.compile_inline("test @<b>{inline test} test2")
-    assert_equal %Q|test <b>inline test</b> test2|, ret
+    result = compile_inline("test @<b>{inline test} test2")
+    assert_equal %Q|test <b>inline test</b> test2|, result
   end
 
   def test_inline_b_and_escape
-    ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
-    assert_equal %Q|test <b>inline&lt;&amp;;\\ test</b> test2|, ret
+    result = compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test <b>inline&lt;&amp;;\\ test</b> test2|, result
   end
 
   def test_inline_tt
-    ret = @builder.compile_inline("test @<tt>{inline test} test2")
-    assert_equal %Q|test <tt>inline test</tt> test2|, ret
+    result = compile_inline("test @<tt>{inline test} test2")
+    assert_equal %Q|test <tt>inline test</tt> test2|, result
   end
 
   def test_inline_tti
-    ret = @builder.compile_inline("test @<tti>{inline test} test2")
-    assert_equal %Q|test <tt><i>inline test</i></tt> test2|, ret
+    result = compile_inline("test @<tti>{inline test} test2")
+    assert_equal %Q|test <tt><i>inline test</i></tt> test2|, result
   end
 
   def test_inline_ttb
-    ret = @builder.compile_inline("test @<ttb>{inline test} test2")
-    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, ret
+    result = compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, result
   end
 
   def test_inline_hd_chap
@@ -148,60 +152,63 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @param["secnolevel"] = 2
-    ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
-    assert_equal %Q|test 「te_st」 test2|, ret
+    result = compile_inline("test @<hd>{chap1|test} test2")
+    assert_equal %Q|test 「te_st」 test2|, result
 
     @param["secnolevel"] = 3
-    ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
-    assert_equal %Q|test 「1.1.1 te_st」 test2|, ret
+    result = compile_inline("test @<hd>{chap1|test} test2")
+    assert_equal %Q|test 「1.1.1 te_st」 test2|, result
   end
 
   def test_inline_uchar
-    ret = @builder.compile_inline("test @<uchar>{2460} test2")
-    assert_equal %Q|test &#x2460; test2|, ret
+    result = compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test &#x2460; test2|, result
   end
 
   def test_inline_ruby
-    ret = @builder.compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
-    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", ret
+    result = compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
+    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", result
   end
 
   def test_inline_ruby_comma
-    ret = @builder.compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
-    assert_equal "<ruby><rb>foo, bar, buz</rb><rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", ret
+    result = compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
+    assert_equal "<ruby><rb>foo, bar, buz</rb><rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", result
   end
 
   def test_inline_ref
-    ret = @builder.compile_inline("@<ref>{外部参照<>&}")
-    assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, ret
+    result = compile_inline("@<ref>{外部参照<>&}")
+    assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, result
   end
 
   def test_quote
     lines = ["foo", "bar", "","buz"]
-    @builder.quote(lines)
-    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, @builder.raw_result
+    result = @builder.quote(lines)
+    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, result
   end
+
 
   def test_memo
-    @builder.memo(["test1", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
-    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, @builder.raw_result
+    result = compile_blockelem("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest<i>2</i>\n//}\n")
+    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, result
   end
 
+
   def test_noindent
+    result = ""
     @builder.noindent
-    @builder.paragraph(["foo", "bar"])
-    @builder.paragraph(["foo2", "bar2"])
-    assert_equal %Q|<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n|, @builder.raw_result
+    result << @builder.paragraph(["foo", "bar"])
+    result << @builder.paragraph(["foo2", "bar2"])
+    assert_equal %Q|<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n|, result
   end
 
   def test_flushright
-    @builder.flushright(["foo", "bar", "", "buz"])
-    assert_equal %Q|<p class="flushright">foobar</p>\n<p class="flushright">buz</p>\n|, @builder.raw_result
+    result = @builder.flushright(["foo", "bar", "", "buz"])
+    assert_equal %Q|<p class="flushright">foobar</p>\n<p class="flushright">buz</p>\n|, result
   end
 
   def test_centering
-    @builder.centering(["foo", "bar", "", "buz"])
-    assert_equal %Q|<p class="center">foobar</p>\n<p class="center">buz</p>\n|, @builder.raw_result
+    result = @builder.centering(["foo", "bar", "", "buz"])
+    assert_equal %Q|<p class="center">foobar</p>\n<p class="center">buz</p>\n|, result
   end
 
   def test_image
@@ -211,8 +218,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image_image("sampleimg","sample photo",nil)
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    result = @builder.image_image("sampleimg","sample photo",nil)
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, result
   end
 
   def test_image_with_metric
@@ -222,8 +229,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image_image("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    result = @builder.image_image("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, result
   end
 
   def test_image_with_metric2
@@ -232,8 +239,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
       item
     end
-    @builder.image_image("sampleimg","sample photo","scale=1.2,html::class=sample,latex::ignore=params")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    result = @builder.image_image("sampleimg","sample photo","scale=1.2,html::class=sample,latex::ignore=params")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, result
   end
 
   def test_indepimage
@@ -243,8 +250,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg","sample photo",nil)
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    result = @builder.indepimage("sampleimg","sample photo",nil)
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, result
   end
 
   def test_indepimage_without_caption
@@ -254,8 +261,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg",nil,nil)
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, @builder.raw_result
+    result = @builder.indepimage("sampleimg",nil,nil)
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, result
   end
 
   def test_indepimage_with_metric
@@ -265,8 +272,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    result = @builder.indepimage("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, result
   end
 
   def test_indepimage_with_metric2
@@ -276,8 +283,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg","sample photo","scale=1.2, html::class=\"sample\",latex::ignore=params")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    result = @builder.indepimage("sampleimg","sample photo","scale=1.2, html::class=\"sample\",latex::ignore=params")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, result
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -287,53 +294,54 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg",nil,"scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, @builder.raw_result
+    result = @builder.indepimage("sampleimg",nil,"scale=1.2")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, result
   end
 
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
-    @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+    result = compile_blockelem("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest<i>2</i>\n//}\n")
 
     begin # FIXME: Use params instead of exception handling
       require 'pygments'
-      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result
+      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, result
     rescue LoadError
-      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, @builder.raw_result
+      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, result
     end
   end
 
+
   def test_emlist
-    @builder.emlist(["lineA","lineB"])
-    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
+    result = @builder.emlist(["lineA","lineB"])
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, result
   end
 
   def test_emlist_caption
-    @builder.emlist(["lineA","lineB"],"cap1")
-    assert_equal %Q|<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
+    result = @builder.emlist(["lineA","lineB"],"cap1")
+    assert_equal %Q|<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, result
   end
 
   def test_emlist_with_tab
-    @builder.emlist(["\tlineA","\t\tlineB","\tlineC"])
-    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">        lineA\n                lineB\n        lineC\n</pre>\n</div>\n|, @builder.raw_result
+    result = @builder.emlist(["\tlineA","\t\tlineB","\tlineC"])
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">        lineA\n                lineB\n        lineC\n</pre>\n</div>\n|, result
   end
 
   def test_emlist_with_4tab
     @builder.instance_eval{@tabwidth=4}
-    @builder.emlist(["\tlineA","\t\tlineB","\tlineC"])
-    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">    lineA\n        lineB\n    lineC\n</pre>\n</div>\n|, @builder.raw_result
+    result = @builder.emlist(["\tlineA","\t\tlineB","\tlineC"])
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">    lineA\n        lineB\n    lineC\n</pre>\n</div>\n|, result
   end
 
   def test_cmd
-    @builder.cmd(["lineA","lineB"])
-    assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
+    result = @builder.cmd(["lineA","lineB"])
+    assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, result
   end
 
   def test_cmd_caption
-    @builder.cmd(["lineA","lineB"], "cap1")
-    assert_equal %Q|<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, @builder.raw_result
+    result = @builder.cmd(["lineA","lineB"], "cap1")
+    assert_equal %Q|<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, result
   end
 
   def test_bib
@@ -349,8 +357,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, @builder.raw_result
+    result = compile_blockelem("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, result
   end
 
   def test_bibpaper_with_anchor
@@ -358,8 +366,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<href>{http://example.jp}")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, @builder.raw_result
+    result = compile_blockelem("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, result
   end
 
   def column_helper(review)
@@ -416,6 +424,7 @@ EOS
     assert_equal expect, column_helper(review)
   end
 
+
   def test_column_3
     review =<<-EOS
 ===[column] test
@@ -428,6 +437,7 @@ EOS
       column_helper(review)
     end
   end
+
 
   def test_ul
     src =<<-EOS
@@ -465,6 +475,7 @@ EOS
 EOS
     ul_helper(src, expect)
   end
+
 
   def test_ul_nest2
     src =<<-EOS
@@ -610,55 +621,57 @@ EOS
   end
 
   def test_block_raw0
-    @builder.raw("<>!\"\\n& ")
+    result = @builder.raw("<>!\"\\n& ")
     expect =<<-EOS
 <>!"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw1
-    @builder.raw("|html|<>!\"\\n& ")
+    result = @builder.raw("|html|<>!\"\\n& ")
     expect =<<-EOS
 <>!"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw2
-    @builder.raw("|html, latex|<>!\"\\n& ")
+    result = @builder.raw("|html, latex|<>!\"\\n& ")
     expect =<<-EOS
 <>!\"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw3
-    @builder.raw("|latex, idgxml|<>!\"\\n& ")
+    result = @builder.raw("|latex, idgxml|<>!\"\\n& ")
     expect =<<-EOS
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw4
-    @builder.raw("|html <>!\"\\n& ")
+    result = @builder.raw("|html <>!\"\\n& ")
     expect =<<-EOS
 |html <>!\"
 & 
 EOS
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_inline_fn
     fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
     @chapter.instance_eval{@footnote_index=fn}
-    @builder.footnote("foo",'bar\\a\\$buz')
+    result = @builder.footnote("foo",'bar\\a\\$buz')
     expect =<<-'EOS'
 <div class="footnote"><p class="footnote">[<a id="fn-foo">*1</a>] bar\a\$buz</p></div>
 EOS
-    assert_equal expect, @builder.raw_result
+    assert_equal expect, result
   end
+
+
 end

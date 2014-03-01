@@ -400,6 +400,10 @@ require 'review/exception'
       st.result
     end
 
+    def escape_text(text)
+      @strategy.nofunc_text(text)
+    end
+
     class SyntaxElement
       def initialize(name, type, argc, &block)
         @name = name
@@ -412,7 +416,7 @@ require 'review/exception'
 
       def check_args(args)
         unless @argc_spec === args.size
-          raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
+          raise ReVIEW::CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
         end
         @checker.call(*args) if @checker
       end
@@ -610,7 +614,7 @@ require 'review/exception'
       end
       begin
         syntax.check_args args
-      rescue CompileError => err
+      rescue ReVIEW::CompileError => err
         error err.message
         args = ['(NoArgument)'] * syntax.min_argc
       end
@@ -627,6 +631,7 @@ require 'review/exception'
     def compile_headline(level, tag, label, caption)
       buf = ""
       @headline_indexs ||= [0] ## XXX
+      caption ||= ""
       caption.strip!
       index = level - 1
       if tag
@@ -637,7 +642,7 @@ require 'review/exception'
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
           unless prev_tag_info.first == open_tag
-            raise CompileError, "#{open_tag} is not opened."
+            raise ReVIEW::CompileError, "#{open_tag} is not opened."
           end
           buf << close_tagged_section(*prev_tag_info)
         end
@@ -735,7 +740,7 @@ require 'review/exception'
 
     def compile_inline(op, arg)
       unless inline_defined?(op)
-        raise CompileError, "no such inline op: #{op}"
+        raise ReVIEW::CompileError, "no such inline op: #{op}"
       end
       unless @strategy.respond_to?("inline_#{op}")
         raise "strategy does not support inline op: @<#{op}>"
@@ -882,7 +887,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent:caption Newline* { compile_headline(level, cmd, label, caption) }
+  # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) { compile_headline(level, cmd, label, caption) }
   def _Headline
 
     _save = self.pos
@@ -926,17 +931,30 @@ require 'review/exception'
         self.pos = _save
         break
       end
+      _save4 = self.pos
       _tmp = apply(:_SinglelineContent)
+      @result = nil unless _tmp
+      unless _tmp
+        _tmp = true
+        self.pos = _save4
+      end
       caption = @result
       unless _tmp
         self.pos = _save
         break
       end
-      while true
+
+      _save5 = self.pos
+      while true # choice
         _tmp = apply(:_Newline)
-        break unless _tmp
-      end
-      _tmp = true
+        break if _tmp
+        self.pos = _save5
+        _tmp = apply(:_EOF)
+        break if _tmp
+        self.pos = _save5
+        break
+      end # end choice
+
       unless _tmp
         self.pos = _save
         break
@@ -1016,7 +1034,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # ParagraphSub = (InlineElement:c { c } | < ContentText > { text })+:d Newline { d }
+  # ParagraphSub = (InlineElement:c { c } | < ContentText > { text })+:d { e=d.join("") } Newline { e }
   def _ParagraphSub
 
     _save = self.pos
@@ -1133,12 +1151,18 @@ require 'review/exception'
         self.pos = _save
         break
       end
+      @result = begin;  e=d.join("") ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
       _tmp = apply(:_Newline)
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin;  d ; end
+      @result = begin;  e ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1221,7 +1245,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElement = ("//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {       compile_command(symbol, args, contents) } | "//" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })
+  # BlockElement = ("//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {    compile_command(symbol, args, contents) } | "//" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })
   def _BlockElement
 
     _save = self.pos
@@ -1303,7 +1327,7 @@ require 'review/exception'
           self.pos = _save1
           break
         end
-        @result = begin;        compile_command(symbol, args, contents) ; end
+        @result = begin;     compile_command(symbol, args, contents) ; end
         _tmp = true
         unless _tmp
           self.pos = _save1
@@ -1371,7 +1395,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElement = "@<" < /[^>\r\n]+/ > {symbol = text} ">" "{" < InlineElementContents? > { contents = text } "}" { compile_inline(symbol,contents); }
+  # InlineElement = "@<" < /[^>\r\n]+/ > {symbol = text} ">" "{" < InlineElementContents? > { contents = text } "}" { compile_inline(symbol,contents) }
   def _InlineElement
 
     _save = self.pos
@@ -1431,7 +1455,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  compile_inline(symbol,contents); ; end
+      @result = begin;  compile_inline(symbol,contents) ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1443,7 +1467,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BracketArg = "[" < /([^\r\n\]\\]|\\[^\r\n])*/ > "]" { text }
+  # BracketArg = "[" BracketArgContentInline+:c "]" { c.join("") }
   def _BracketArg
 
     _save = self.pos
@@ -1453,11 +1477,22 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      _text_start = self.pos
-      _tmp = scan(/\A(?-mix:([^\r\n\]\\]|\\[^\r\n])*)/)
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_BracketArgContentInline)
       if _tmp
-        text = get_text(_text_start)
+        _ary << @result
+        while true
+          _tmp = apply(:_BracketArgContentInline)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
       end
+      c = @result
       unless _tmp
         self.pos = _save
         break
@@ -1467,7 +1502,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  text ; end
+      @result = begin;  c.join("") ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1476,6 +1511,77 @@ require 'review/exception'
     end # end sequence
 
     set_failed_rule :_BracketArg unless _tmp
+    return _tmp
+  end
+
+  # BracketArgContentInline = (InlineElement:c { c } | "\\]" { "]" } | < /[^\r\n\]]/ > { escape_text(text) })
+  def _BracketArgContentInline
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_InlineElement)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = match_string("\\]")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  "]" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _text_start = self.pos
+        _tmp = scan(/\A(?-mix:[^\r\n\]])/)
+        if _tmp
+          text = get_text(_text_start)
+        end
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin;  escape_text(text) ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_BracketArgContentInline unless _tmp
     return _tmp
   end
 
@@ -1817,7 +1923,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElementContents = !"}" InlineElementContent+:c { c }
+  # InlineElementContents = !"}" InlineElementContent+
   def _InlineElementContents
 
     _save = self.pos
@@ -1831,27 +1937,16 @@ require 'review/exception'
         break
       end
       _save2 = self.pos
-      _ary = []
       _tmp = apply(:_InlineElementContent)
       if _tmp
-        _ary << @result
         while true
           _tmp = apply(:_InlineElementContent)
-          _ary << @result if _tmp
           break unless _tmp
         end
         _tmp = true
-        @result = _ary
       else
         self.pos = _save2
       end
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c ; end
-      _tmp = true
       unless _tmp
         self.pos = _save
       end
@@ -2009,7 +2104,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # ContentInline = (InlineElement:c { c } | !Newline < /[^\r\n]/ > {text })
+  # ContentInline = (InlineElement:c { c } | !Newline < /[^\r\n]/ > { escape_text(text) })
   def _ContentInline
 
     _save = self.pos
@@ -2053,7 +2148,7 @@ require 'review/exception'
           self.pos = _save2
           break
         end
-        @result = begin; text ; end
+        @result = begin;  escape_text(text) ; end
         _tmp = true
         unless _tmp
           self.pos = _save2
@@ -2070,7 +2165,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # Ulist = &. { @ulist_elem=[] } (UlistElement | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }
+  # Ulist = &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }
   def _Ulist
 
     _save = self.pos
@@ -2088,11 +2183,19 @@ require 'review/exception'
         self.pos = _save
         break
       end
+      _tmp = apply(:_UlistElement)
+      unless _tmp
+        self.pos = _save
+        break
+      end
       _save2 = self.pos
 
       _save3 = self.pos
       while true # choice
         _tmp = apply(:_UlistElement)
+        break if _tmp
+        self.pos = _save3
+        _tmp = apply(:_UlistContLine)
         break if _tmp
         self.pos = _save3
         _tmp = apply(:_SinglelineComment)
@@ -2107,6 +2210,9 @@ require 'review/exception'
           _save4 = self.pos
           while true # choice
             _tmp = apply(:_UlistElement)
+            break if _tmp
+            self.pos = _save4
+            _tmp = apply(:_UlistContLine)
             break if _tmp
             self.pos = _save4
             _tmp = apply(:_SinglelineComment)
@@ -2217,6 +2323,57 @@ require 'review/exception'
     end # end sequence
 
     set_failed_rule :_UlistElement unless _tmp
+    return _tmp
+  end
+
+  # UlistContLine = " " " "+ !"*" SinglelineContent:c {  @ulist_elem[-1][1] << c }
+  def _UlistContLine
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string(" ")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save1 = self.pos
+      _tmp = match_string(" ")
+      if _tmp
+        while true
+          _tmp = match_string(" ")
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = match_string("*")
+      _tmp = _tmp ? nil : true
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;   @ulist_elem[-1][1] << c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistContLine unless _tmp
     return _tmp
   end
 
@@ -2669,29 +2826,31 @@ require 'review/exception'
   Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Block* { close_all_tagged_section }")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { @strategy.output << c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
-  Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent:caption Newline* { compile_headline(level, cmd, label, caption) }")
+  Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) { compile_headline(level, cmd, label, caption) }")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c { compile_paragraph(c) }")
-  Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | < ContentText > { text })+:d Newline { d }")
+  Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | < ContentText > { text })+:d { e=d.join(\"\") } Newline { e }")
   Rules[:_ContentText] = rule_info("ContentText", "NonInlineElement+:c { c }")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < /[^\\r\\n]/ > { text }")
-  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {       compile_command(symbol, args, contents) } | \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
-  Rules[:_InlineElement] = rule_info("InlineElement", "\"@<\" < /[^>\\r\\n]+/ > {symbol = text} \">\" \"{\" < InlineElementContents? > { contents = text } \"}\" { compile_inline(symbol,contents); }")
-  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" < /([^\\r\\n\\]\\\\]|\\\\[^\\r\\n])*/ > \"]\" { text }")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {    compile_command(symbol, args, contents) } | \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
+  Rules[:_InlineElement] = rule_info("InlineElement", "\"@<\" < /[^>\\r\\n]+/ > {symbol = text} \">\" \"{\" < InlineElementContents? > { contents = text } \"}\" { compile_inline(symbol,contents) }")
+  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline+:c \"]\" { c.join(\"\") }")
+  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" { \"]\" } | < /[^\\r\\n\\]]/ > { escape_text(text) })")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c | BlockElement:c | BlockElementParagraph:c | Newline:c { \"\" })")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "&. { @blockElem = \"\" } BlockElementParagraphSub:c { @blockElem }")
   Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c { @blockElem << c } | BlockElementContentText:c { @blockElem << c })+ Newline")
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist < NonInlineElement+ > { text }")
-  Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContent+:c { c }")
+  Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContent+")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c | InlineElementContentText:c)")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(!InlineElement /[^\\r\\n}]/)+")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "ContentInlines:c (Newline | EOF) { c }")
   Rules[:_ContentInlines] = rule_info("ContentInlines", "ContentInline+:c { c.join }")
-  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < /[^\\r\\n]/ > {text })")
-  Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } (UlistElement | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }")
+  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < /[^\\r\\n]/ > { escape_text(text) })")
+  Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c { @ulist_elem << [level.size, c] }")
+  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c {  @ulist_elem[-1][1] << c }")
   Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c { compile_olist(@olist_elem) }")
   Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { level=text } \".\" Space* SinglelineContent:c {@olist_elem << [level, [c]] }")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment):c Dlist?:cc")
