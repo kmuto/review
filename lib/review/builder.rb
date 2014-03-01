@@ -77,26 +77,32 @@ module ReVIEW
     end
 
     def list(lines, id, caption)
+      buf = ""
       begin
-        list_header id, caption
+        buf << list_header(id, caption)
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines
+      buf << list_body(id, lines)
+      buf
     end
 
     def listnum(lines, id, caption)
+      buf = ""
       begin
-        list_header id, caption
+        buf << list_header(id, caption)
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines
+      buf << listnum_body(lines)
+      buf
     end
 
     def source(lines, caption)
-      source_header caption
-      source_body lines
+      buf = ""
+      buf << source_header(caption)
+      buf << source_body(lines)
+      buf
     end
 
     def image(lines, id, caption, metric = nil)
@@ -109,6 +115,7 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
+      buf = ""
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -123,26 +130,27 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption unless caption.nil?
+        buf << table_header(id, caption) unless caption.nil?
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
-      table_begin rows.first.size
+      return buf if rows.empty?
+      buf << table_begin(rows.first.size)
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(s) }
+          buf << tr(rows.shift.map {|s| th(s) })
         end
         rows.each do |cols|
-          tr cols.map {|s| td(s) }
+          buf << tr(cols.map {|s| td(s) })
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(h)] + cs.map {|s| td(s) }
+          buf << tr([th(h)] + cs.map {|s| td(s) })
         end
       end
-      table_end
+      buf << table_end
+      buf
     end
 
     def adjust_n_cols(rows)
@@ -252,12 +260,14 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
-      bibpaper_header id, caption
+      buf = ""
+      buf << bibpaper_header(id, caption)
       unless lines.empty?
-        puts ""
-        bibpaper_bibpaper id, caption, lines
+        buf << "\n"
+        buf << bibpaper_bibpaper(id, caption, lines)
       end
-      puts ""
+      buf << "\n"
+      buf
     end
 
     def inline_hd(id)
@@ -307,7 +317,7 @@ module ReVIEW
         @entries ||= Dir.entries(@book.basedir + @book.image_dir)
       end
     rescue Errno::ENOENT
-    @entries = []
+      @entries = []
     end
 
     def warn(msg)
