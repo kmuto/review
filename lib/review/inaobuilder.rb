@@ -30,7 +30,6 @@ module ReVIEW
     end
 
     def builder_init_file
-      @blank_seen = true
       @noindent = nil
 
       @titles = {
@@ -44,23 +43,6 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def print(s)
-      @blank_seen = false
-      super
-    end
-    private :print
-
-    def puts(s)
-      @blank_seen = false
-      super
-    end
-    private :puts
-
-    def blank
-      @output.puts unless @blank_seen
-      @blank_seen = true
-    end
-    private :blank
 
     def result
       @output.string
@@ -79,22 +61,26 @@ module ReVIEW
     end
 
     def base_parablock(type, lines, caption=nil)
-      puts "◆#{@titles[type]}/◆"
-      puts "■■■■■#{compile_inline(caption)}" unless caption.nil?
-      puts split_paragraph(lines).join("\n")
-      puts "◆/#{@titles[type]}◆"
-      blank
+      buf = ""
+      buf << "◆#{@titles[type]}/◆\n"
+      buf << "■■■■■#{caption}\n" unless caption.nil?
+      buf << split_paragraph(lines).join("\n") << "\n"
+      buf << "◆/#{@titles[type]}◆\n"
+      buf << "\n"
+      buf
     end
 
     def headline(level, label, caption)
       prefix = "■" * level
-      puts "#{prefix}#{compile_inline(caption)}"
+      "#{prefix}#{caption}\n"
     end
 
     def paragraph(lines)
-      print "　" if @noindent.nil?
+      buf = ""
+      buf << "　" if @noindent.nil?
       @noindent = nil
-      puts lines.join
+      buf << lines.join + "\n"
+      buf
     end
 
     def noindent
@@ -119,10 +105,11 @@ module ReVIEW
 
     def footnote(id, str)
       #
+      ""
     end
 
     def inline_fn(id)
-      "◆注/◆#{compile_inline(@chapter.footnote(id).content.strip)}◆/注◆"
+      "◆注/◆#{@chapter.footnote(id).content.strip}◆/注◆"
     end
 
     def inline_keytop(str)
@@ -144,35 +131,40 @@ module ReVIEW
     end
 
     def column_begin(level, label, caption)
-      puts "◆column/◆"
-      puts "■■■■#{compile_inline(caption)}"
-
+      buf = ""
+      buf << "◆column/◆\n"
+      buf << "■■■■#{caption}\n"
+      buf
     end
 
     def column_end(level)
-      puts "◆/column◆"
+      "◆/column◆\n"
     end
 
     def ul_begin
+      ""
     end
 
     def ul_item(lines)
-      puts "・#{lines.join}"
+      "・#{lines.join}\n"
     end
 
     def ul_end
+      ""
     end
 
     def ol_begin
       @olitem = 0
+      ""
     end
 
     def ol_item(lines, num)
-      puts "（#{num}）#{lines.join}"
+      "（#{num}）#{lines.join}\n"
     end
 
     def ol_end
       @olitem = nil
+      ""
     end
 
     def inline_list(id)
@@ -185,35 +177,42 @@ module ReVIEW
     end
 
     def list_header(id, caption)
-      puts "◆list/◆"
+      buf = "◆list/◆\n"
       if get_chap.nil?
-        puts %Q[●リスト#{@chapter.list(id).number}　#{compile_inline(caption)}]
+        buf << %Q[●リスト#{@chapter.list(id).number}　#{caption}\n]
       else
-        puts %Q[●リスト#{get_chap}.#{@chapter.list(id).number}　#{compile_inline(caption)}]
+        buf << %Q[●リスト#{get_chap}.#{@chapter.list(id).number}　#{caption}\n]
       end
+      buf
     end
 
     def list_body(id, lines)
+      buf = ""
       lines.each do |line|
-        puts detab(line)
+        buf << detab(line) << "\n"
       end
-      puts "◆/list◆"
+      buf << "◆/list◆\n"
+      buf
     end
 
     def listnum_body(lines)
+      buf = ""
       lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + " " +line)
+        buf << detab((i+1).to_s.rjust(2) + " " +line) << "\n"
       end
-      puts "◆/list◆"
+      buf << "◆/list◆\n"
+      buf
     end
 
     def emlist(lines, caption=nil)
-      puts "◆list/◆"
-      puts %Q[●#{compile_inline(caption)}] unless caption.nil?
+      buf = ""
+      buf << "◆list/◆\n"
+      buf << %Q[●#{caption}\n] unless caption.nil?
       lines.each do |line|
-        puts detab(line)
+        buf << detab(line) << "\n"
       end
-      puts "◆/list◆"
+      buf << "◆/list◆\n"
+      buf
     end
 
     # o1,o2のようなことはできない
@@ -228,12 +227,13 @@ module ReVIEW
 
     # whiteリスト代用
     def cmd(lines, caption=nil)
-      puts "◆list-white/◆"
-      puts %Q[●#{compile_inline(caption)}] unless caption.nil?
+      buf = "◆list-white/◆\n"
+      buf << %Q[●#{caption}\n] unless caption.nil?
       lines.each do |line|
-        puts detab(line)
+        buf << detab(line) << "\n"
       end
-      puts "◆/list-white◆"
+      buf << "◆/list-white◆\n"
+      buf
     end
 
     def inline_img(id)
@@ -246,18 +246,20 @@ module ReVIEW
     end
 
     def image(lines, id, caption, metric=nil)
+      buf = ""
       if get_chap.nil?
-        puts "●図#{@chapter.image(id).number}　#{compile_inline(caption)}"
+        buf << "●図#{@chapter.image(id).number}　#{caption}\n"
       else
-        puts "●図#{get_chap}.#{@chapter.image(id).number}　#{compile_inline(caption)}"
+        buf << "●図#{get_chap}.#{@chapter.image(id).number}　#{caption}\n"
       end
       if @chapter.image(id).bound?
-        puts @chapter.image(id).path
+        buf << @chapter.image(id).path << "\n"
       else
         lines.each do |line|
-          puts line
+          buf << line << "\n"
         end
       end
+      buf
     end
 
     def inline_table(id)
@@ -270,6 +272,7 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
+      buf = ""
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -283,44 +286,46 @@ module ReVIEW
       end
       rows = adjust_n_cols(rows)
 
-      puts "◆table/◆"
+      buf << "◆table/◆\n"
       begin
-        table_header id, caption unless caption.nil?
+        buf << table_header(id, caption) unless caption.nil?
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
-      table_begin rows.first.size
+      return buf if rows.empty?
+      buf << table_begin(rows.first.size)
       if sepidx
         sepidx.times do
-          print "◆table-title◆"
-          tr rows.shift.map {|s| th(s) }
+          buf << "◆table-title◆"
+          buf << tr(rows.shift.map {|s| th(s) })
         end
         rows.each do |cols|
-          tr cols.map {|s| td(s) }
+          buf << tr(cols.map {|s| td(s) })
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(h)] + cs.map {|s| td(s) }
+          buf << tr([th(h)] + cs.map {|s| td(s) })
         end
       end
-      table_end
+      buf << table_end
+      buf
     end
 
     def table_header(id, caption)
       if get_chap.nil?
-        puts "●表#{@chapter.table(id).number}　#{compile_inline(caption)}"
+        "●表#{@chapter.table(id).number}　#{caption}\n"
       else
-        puts "●表#{get_chap}.#{@chapter.table(id).number}　#{compile_inline(caption)}"
+        "●表#{get_chap}.#{@chapter.table(id).number}　#{caption}\n"
       end
     end
 
     def table_begin(ncols)
+      ""
     end
 
     def tr(rows)
-      puts rows.join("\t")
+      rows.join("\t") + "\n"
     end
 
     def th(str)
@@ -332,7 +337,7 @@ module ReVIEW
     end
 
     def table_end
-      puts "◆/table◆"
+      "◆/table◆\n"
     end
 
     def inline_raw(str)

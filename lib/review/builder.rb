@@ -425,6 +425,7 @@ module ReVIEW
     end
 
     def ul_item_end
+      ""
     end
 
     def inline_raw(args)

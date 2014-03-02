@@ -288,7 +288,7 @@ require 'review/exception'
         else
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
-          unless prev_tag_info.first == open_tag
+          if !prev_tag_info || prev_tag_info.first != open_tag
             raise ReVIEW::CompileError, "#{open_tag} is not opened."
           end
           buf << close_tagged_section(*prev_tag_info)
@@ -451,7 +451,7 @@ ParagraphSub = ( InlineElement:c { c }
                )+:d  { e=d.join("") } Newline { e }
 
 ## ContentText = !Newline !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
-ContentText = NonInlineElement+:c { c.join("") }
+ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join("") }
 
 NonInlineElement = !InlineElement < /[^\r\n]/ > { escape_text(text) }
 
@@ -522,7 +522,7 @@ BlockElementParagraphSub = ( InlineElement:c
 
 BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c.join("") }
 
-SinglelineContent = ContentInlines:c (Newline | EOF) { c }
+SinglelineContent = ContentInlines:c { c }
 
 ContentInlines =  ContentInline+:c  { c.join }
 
@@ -536,23 +536,23 @@ ContentInline = ( InlineElement:c { c }
 ## * 箇条書き
 ## 行頭から… の指定がない
 
-Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ (Newline | EOF) { compile_ulist(@ulist_elem) }
+Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ { compile_ulist(@ulist_elem) }
 
-UlistElement = " "+ "*"+:level " "* SinglelineContent:c { @ulist_elem << [level.size, c] }
-UlistContLine = " " " "+ !"*" SinglelineContent:c {  @ulist_elem[-1][1] << c }
+UlistElement = " "+ "*"+:level " "* SinglelineContent:c (EOF|Newline) { @ulist_elem << [level.size, c] }
+UlistContLine = " " " "+ !"*" SinglelineContent:c (EOF|Newline) {  @ulist_elem[-1][1] << c }
 
 ## 1. 番号付き箇条書き
 ## 行頭から… の指定がない
 
 Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c { compile_olist(@olist_elem) }
 
-OlistElement = " "+ < /\d/+ > { level=text } "." Space* SinglelineContent:c {@olist_elem << [level, [c]] }
+OlistElement = " "+ < /\d/+ > { level=text } "." Space* SinglelineContent:c (EOF|Newline) {@olist_elem << [level, [c]] }
 
 ## : 用語リスト
   ## 行頭から… の指定がない
 Dlist = (DlistElement | SinglelineComment):c Dlist?:cc
 
-DlistElement = " "* ":" " " Space* SinglelineContent:text DlistElementContent:content
+DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent:content Newline
 
 DlistElementContent = /[ \t]+/ SinglelineContent:c
 
