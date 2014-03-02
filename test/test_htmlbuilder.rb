@@ -81,12 +81,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_href_without_label
-    result = @builder.compile_href("http://github.com",nil)
+    result = compile_inline("@<href>{http://github.com}")
     assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, result
   end
 
   def test_inline_href
-    result = @builder.inline_href("http://github.com, Git\\,Hub")
+    result = compile_inline("@<href>{http://github.com, Git\\,Hub}")
     assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, result
   end
 
