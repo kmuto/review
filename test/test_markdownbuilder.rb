@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'test_helper'
+require 'review'
 require 'review/compiler'
 require 'review/book'
 require 'review/htmlbuilder'
@@ -26,11 +27,11 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   end
 
   def test_inline_em
-    assert_equal "test*foo*abc", @builder.compile_inline("test@<em>{foo}abc")
+    assert_equal "test*foo*abc", compile_inline("test@<em>{foo}abc")
   end
 
   def test_inline_strong
-    assert_equal "test**foo**abc", @builder.compile_inline("test@<strong>{foo}abc")
+    assert_equal "test**foo**abc",compile_inline("test@<strong>{foo}abc")
   end
 
 end
