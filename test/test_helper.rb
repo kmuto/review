@@ -15,6 +15,13 @@ require 'test/unit'
     @compiler.result
   end
 
+  def compile_headline(str)
+    @compiler.setup_parser(str)
+    @compiler.tagged_section_init
+    @compiler.parse("Headline")
+    @compiler.result
+  end
+
 def ul_helper(src, expect)
   @compiler.setup_parser(src)
   @compiler.tagged_section_init
