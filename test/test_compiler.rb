@@ -27,6 +27,7 @@ class CompilerTest < Test::Unit::TestCase
     def @compiler.compile_command(name, args, lines)
       args
     end
+
   end
 
   def test_parse_args
@@ -57,6 +58,29 @@ class CompilerTest < Test::Unit::TestCase
   def test_parse_args_with_backslash3
     args = compile_blockelem("//dummy[foo][bar\\\\buz]")
     assert_equal ["foo","bar\\buz"], args
+  end
+
+  def test_compile_inline
+    def @compiler.compile_inline(op, args)
+      return args
+    end
+    args = compile_inline("@<ruby>{abc}")
+    assert_equal "abc", args
+  end
+
+  def test_inline_ruby
+    str = compile_inline("@<ruby>{foo,bar}")
+    assert_equal "<ruby><rb>foo</rb><rp>（</rp><rt>bar</rt><rp>）</rp></ruby>", str
+    str = compile_inline("@<ruby>{foo\\,\\,,\\,bar\\,buz}")
+    assert_equal "<ruby><rb>foo,,</rb><rp>（</rp><rt>,bar,buz</rt><rp>）</rp></ruby>", str
+  end
+
+  def test_compile_inline_backslash
+    def @compiler.compile_inline(op, args)
+      return args
+    end
+    args = compile_inline("@<dummy>{abc\\d\\#a}")
+    assert_equal "abc\\d\\#a", args
   end
 end
 
