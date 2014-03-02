@@ -236,22 +236,17 @@ module ReVIEW
       text(str)
     end
 
-    def inline_ruby(arg)
-      base, *ruby = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/)
-      base = base.gsub(/\\,/, ",") if base
-      ruby = ruby.join(",").gsub(/\\,/, ",") if ruby
+    def inline_ruby(base, ruby)
       compile_ruby(base, ruby)
     end
 
-    def inline_kw(arg)
-      word, alt = *arg.split(',', 2)
+    def inline_kw(word, alt = nil)
       compile_kw(word, alt)
     end
 
-    def inline_href(arg)
-      url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
-      url = url.gsub(/\\,/, ",").strip
-      label = label.gsub(/\\,/, ",").strip if label
+    def inline_href(url, label = nil)
+      url = url.strip
+      label = label.strip if label
       compile_href(url, label)
     end
 
@@ -325,7 +320,7 @@ module ReVIEW
     end
 
     def error(msg)
-      raise ApplicationError, "#{@location}: error: #{msg}"
+      raise ApplicationError, "error: #{msg} at #{@compiler.show_pos} \n  (#{@compiler.failure_oneline})"
     end
 
     def handle_metric(str)

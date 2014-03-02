@@ -740,20 +740,29 @@ require 'review/exception'
     end
 
 
-    def compile_inline(op, arg)
+    def compile_inline(op, args)
       unless inline_defined?(op)
         raise ReVIEW::CompileError, "no such inline op: #{op}"
       end
       unless @strategy.respond_to?("inline_#{op}")
         raise "strategy does not support inline op: @<#{op}>"
       end
-      @strategy.__send__("inline_#{op}", arg)
+      @strategy.__send__("inline_#{op}", *args)
     rescue => err
       error err.message
     end
 
     def compile_paragraph(buf)
       @strategy.paragraph buf
+    end
+
+    def compile_raw(builders, content)
+      c = @strategy.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      if !builders || builders.include?(c)
+        content
+      else
+        ""
+      end
     end
 
     def warn(msg)
@@ -1241,7 +1250,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElement = ("//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {    compile_command(symbol, args, contents) } | "//" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })
+  # BlockElement = ("//raw[" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 "]" Space* Newline { compile_raw(b, r1.join("")) } | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {    compile_command(symbol, args, contents) } | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })
   def _BlockElement
 
     _save = self.pos
@@ -1249,62 +1258,36 @@ require 'review/exception'
 
       _save1 = self.pos
       while true # sequence
-        _tmp = match_string("//")
+        _tmp = match_string("//raw[")
         unless _tmp
           self.pos = _save1
           break
         end
-        _tmp = apply(:_ElementName)
-        symbol = @result
+        _save2 = self.pos
+        _tmp = apply(:_RawBlockBuilderSelect)
+        b = @result
+        unless _tmp
+          _tmp = true
+          self.pos = _save2
+        end
         unless _tmp
           self.pos = _save1
           break
         end
         _ary = []
         while true
-          _tmp = apply(:_BracketArg)
+          _tmp = apply(:_RawBlockElementArg)
           _ary << @result if _tmp
           break unless _tmp
         end
         _tmp = true
         @result = _ary
-        args = @result
+        r1 = @result
         unless _tmp
           self.pos = _save1
           break
         end
-        _tmp = match_string("{")
-        unless _tmp
-          self.pos = _save1
-          break
-        end
-        while true
-          _tmp = apply(:_Space)
-          break unless _tmp
-        end
-        _tmp = true
-        unless _tmp
-          self.pos = _save1
-          break
-        end
-        _tmp = apply(:_Newline)
-        unless _tmp
-          self.pos = _save1
-          break
-        end
-        _save4 = self.pos
-        _tmp = apply(:_BlockElementContents)
-        @result = nil unless _tmp
-        unless _tmp
-          _tmp = true
-          self.pos = _save4
-        end
-        contents = @result
-        unless _tmp
-          self.pos = _save1
-          break
-        end
-        _tmp = match_string("//}")
+        _tmp = match_string("]")
         unless _tmp
           self.pos = _save1
           break
@@ -1323,7 +1306,7 @@ require 'review/exception'
           self.pos = _save1
           break
         end
-        @result = begin;     compile_command(symbol, args, contents) ; end
+        @result = begin;  compile_raw(b, r1.join("")) ; end
         _tmp = true
         unless _tmp
           self.pos = _save1
@@ -1334,17 +1317,25 @@ require 'review/exception'
       break if _tmp
       self.pos = _save
 
-      _save6 = self.pos
+      _save5 = self.pos
       while true # sequence
+        _save6 = self.pos
+        _tmp = match_string("//raw")
+        _tmp = _tmp ? nil : true
+        self.pos = _save6
+        unless _tmp
+          self.pos = _save5
+          break
+        end
         _tmp = match_string("//")
         unless _tmp
-          self.pos = _save6
+          self.pos = _save5
           break
         end
         _tmp = apply(:_ElementName)
         symbol = @result
         unless _tmp
-          self.pos = _save6
+          self.pos = _save5
           break
         end
         _ary = []
@@ -1357,7 +1348,12 @@ require 'review/exception'
         @result = _ary
         args = @result
         unless _tmp
-          self.pos = _save6
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("{")
+        unless _tmp
+          self.pos = _save5
           break
         end
         while true
@@ -1366,18 +1362,108 @@ require 'review/exception'
         end
         _tmp = true
         unless _tmp
-          self.pos = _save6
+          self.pos = _save5
           break
         end
         _tmp = apply(:_Newline)
         unless _tmp
-          self.pos = _save6
+          self.pos = _save5
+          break
+        end
+        _save9 = self.pos
+        _tmp = apply(:_BlockElementContents)
+        @result = nil unless _tmp
+        unless _tmp
+          _tmp = true
+          self.pos = _save9
+        end
+        contents = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("//}")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin;     compile_command(symbol, args, contents) ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save11 = self.pos
+      while true # sequence
+        _save12 = self.pos
+        _tmp = match_string("//raw")
+        _tmp = _tmp ? nil : true
+        self.pos = _save12
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = match_string("//")
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = apply(:_ElementName)
+        symbol = @result
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _ary = []
+        while true
+          _tmp = apply(:_BracketArg)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+        args = @result
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save11
           break
         end
         @result = begin;  compile_command(symbol, args, nil) ; end
         _tmp = true
         unless _tmp
-          self.pos = _save6
+          self.pos = _save11
         end
         break
       end # end sequence
@@ -1388,6 +1474,251 @@ require 'review/exception'
     end # end choice
 
     set_failed_rule :_BlockElement unless _tmp
+    return _tmp
+  end
+
+  # RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c.join("") }
+  def _RawBlockBuilderSelect
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("|")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_RawBlockBuilderSelectSub)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("|")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c.join("") ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_RawBlockBuilderSelect unless _tmp
+    return _tmp
+  end
+
+  # RawBlockBuilderSelectSub = (LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBuilderSelectSub:c2 { [c1.join("")]+ c2 } | LowerAlphabetAscii+:c1 { [c1.join("")] })
+  def _RawBlockBuilderSelectSub
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _save2 = self.pos
+        _ary = []
+        _tmp = apply(:_LowerAlphabetAscii)
+        if _tmp
+          _ary << @result
+          while true
+            _tmp = apply(:_LowerAlphabetAscii)
+            _ary << @result if _tmp
+            break unless _tmp
+          end
+          _tmp = true
+          @result = _ary
+        else
+          self.pos = _save2
+        end
+        c1 = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _tmp = match_string(",")
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _tmp = apply(:_RawBlockBuilderSelectSub)
+        c2 = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  [c1.join("")]+ c2 ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save5 = self.pos
+      while true # sequence
+        _save6 = self.pos
+        _ary = []
+        _tmp = apply(:_LowerAlphabetAscii)
+        if _tmp
+          _ary << @result
+          while true
+            _tmp = apply(:_LowerAlphabetAscii)
+            _ary << @result if _tmp
+            break unless _tmp
+          end
+          _tmp = true
+          @result = _ary
+        else
+          self.pos = _save6
+        end
+        c1 = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin;  [c1.join("")] ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_RawBlockBuilderSelectSub unless _tmp
+    return _tmp
+  end
+
+  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < /[^\r\n\]]/ > { text })
+  def _RawBlockElementArg
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("]")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+
+      _save2 = self.pos
+      while true # choice
+
+        _save3 = self.pos
+        while true # sequence
+          _tmp = match_string("\\]")
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          @result = begin;  "]" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save4 = self.pos
+        while true # sequence
+          _tmp = match_string("\\n")
+          unless _tmp
+            self.pos = _save4
+            break
+          end
+          @result = begin;  "\n" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save4
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save5 = self.pos
+        while true # sequence
+          _text_start = self.pos
+          _tmp = scan(/\A(?-mix:[^\r\n\]])/)
+          if _tmp
+            text = get_text(_text_start)
+          end
+          unless _tmp
+            self.pos = _save5
+            break
+          end
+          @result = begin;  text ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save5
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_RawBlockElementArg unless _tmp
     return _tmp
   end
 
@@ -1606,6 +1937,311 @@ require 'review/exception'
     return _tmp
   end
 
+  # InlineElementContents = !"}" InlineElementContentsSub:c { c }
+  def _InlineElementContents
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_InlineElementContentsSub)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementContents unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContentsSub = !"}" (InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 { [c1]+c2 } | InlineElementContent:c1 { [c1] })
+  def _InlineElementContentsSub
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+
+      _save2 = self.pos
+      while true # choice
+
+        _save3 = self.pos
+        while true # sequence
+          _tmp = apply(:_InlineElementContent)
+          c1 = @result
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          _tmp = match_string(",")
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          _tmp = apply(:_InlineElementContentsSub)
+          c2 = @result
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          @result = begin;  [c1]+c2 ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save6 = self.pos
+        while true # sequence
+          _tmp = apply(:_InlineElementContent)
+          c1 = @result
+          unless _tmp
+            self.pos = _save6
+            break
+          end
+          @result = begin;  [c1] ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save6
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementContentsSub unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContent = (InlineElement:c { c } | InlineElementContentText+:c { c.join("") })
+  def _InlineElementContent
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_InlineElement)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _save3 = self.pos
+        _ary = []
+        _tmp = apply(:_InlineElementContentText)
+        if _tmp
+          _ary << @result
+          while true
+            _tmp = apply(:_InlineElementContentText)
+            _ary << @result if _tmp
+            break unless _tmp
+          end
+          _tmp = true
+          @result = _ary
+        else
+          self.pos = _save3
+        end
+        c = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  c.join("") ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_InlineElementContent unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContentText = ("\\}" { "}" } | "\\," { "," } | "\\\\" { "\\" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\},]/ > { text })
+  def _InlineElementContentText
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = match_string("\\}")
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  "}" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = match_string("\\,")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  "," ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _tmp = match_string("\\\\")
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin;  "\\" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _tmp = match_string("\\")
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin;  "\\" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save5 = self.pos
+      while true # sequence
+        _save6 = self.pos
+        _tmp = apply(:_InlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save6
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _text_start = self.pos
+        _tmp = scan(/\A(?-mix:[^\r\n\\},])/)
+        if _tmp
+          text = get_text(_text_start)
+        end
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin;  text ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_InlineElementContentText unless _tmp
+    return _tmp
+  end
+
   # BracketArg = "[" BracketArgContentInline+:c "]" { c.join("") }
   def _BracketArg
 
@@ -1653,7 +2289,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BracketArgContentInline = (InlineElement:c { c } | "\\]" { "]" } | < /[^\r\n\]]/ > { escape_text(text) })
+  # BracketArgContentInline = (InlineElement:c { c } | "\\]" { "]" } | "\\\\" { "\\" } | < /[^\r\n\]]/ > { escape_text(text) })
   def _BracketArgContentInline
 
     _save = self.pos
@@ -1698,19 +2334,37 @@ require 'review/exception'
 
       _save3 = self.pos
       while true # sequence
+        _tmp = match_string("\\\\")
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin;  "\\" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
         _text_start = self.pos
         _tmp = scan(/\A(?-mix:[^\r\n\]])/)
         if _tmp
           text = get_text(_text_start)
         end
         unless _tmp
-          self.pos = _save3
+          self.pos = _save4
           break
         end
         @result = begin;  escape_text(text) ; end
         _tmp = true
         unless _tmp
-          self.pos = _save3
+          self.pos = _save4
         end
         break
       end # end sequence
@@ -1969,179 +2623,6 @@ require 'review/exception'
     end # end sequence
 
     set_failed_rule :_BlockElementContentText unless _tmp
-    return _tmp
-  end
-
-  # InlineElementContents = !"}" InlineElementContent+:c { c.join("") }
-  def _InlineElementContents
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = match_string("}")
-      _tmp = _tmp ? nil : true
-      self.pos = _save1
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save2 = self.pos
-      _ary = []
-      _tmp = apply(:_InlineElementContent)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_InlineElementContent)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save2
-      end
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c.join("") ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_InlineElementContents unless _tmp
-    return _tmp
-  end
-
-  # InlineElementContent = (InlineElement:c | InlineElementContentText+:c)
-  def _InlineElementContent
-
-    _save = self.pos
-    while true # choice
-      _tmp = apply(:_InlineElement)
-      c = @result
-      break if _tmp
-      self.pos = _save
-      _save1 = self.pos
-      _ary = []
-      _tmp = apply(:_InlineElementContentText)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_InlineElementContentText)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
-      end
-      c = @result
-      break if _tmp
-      self.pos = _save
-      break
-    end # end choice
-
-    set_failed_rule :_InlineElementContent unless _tmp
-    return _tmp
-  end
-
-  # InlineElementContentText = &. ("\\}" { "}" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\}]/ > { text })
-  def _InlineElementContentText
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = get_byte
-      self.pos = _save1
-      unless _tmp
-        self.pos = _save
-        break
-      end
-
-      _save2 = self.pos
-      while true # choice
-
-        _save3 = self.pos
-        while true # sequence
-          _tmp = match_string("\\}")
-          unless _tmp
-            self.pos = _save3
-            break
-          end
-          @result = begin;  "}" ; end
-          _tmp = true
-          unless _tmp
-            self.pos = _save3
-          end
-          break
-        end # end sequence
-
-        break if _tmp
-        self.pos = _save2
-
-        _save4 = self.pos
-        while true # sequence
-          _tmp = match_string("\\")
-          unless _tmp
-            self.pos = _save4
-            break
-          end
-          @result = begin;  "\\" ; end
-          _tmp = true
-          unless _tmp
-            self.pos = _save4
-          end
-          break
-        end # end sequence
-
-        break if _tmp
-        self.pos = _save2
-
-        _save5 = self.pos
-        while true # sequence
-          _save6 = self.pos
-          _tmp = apply(:_InlineElement)
-          _tmp = _tmp ? nil : true
-          self.pos = _save6
-          unless _tmp
-            self.pos = _save5
-            break
-          end
-          _text_start = self.pos
-          _tmp = scan(/\A(?-mix:[^\r\n\\}])/)
-          if _tmp
-            text = get_text(_text_start)
-          end
-          unless _tmp
-            self.pos = _save5
-            break
-          end
-          @result = begin;  text ; end
-          _tmp = true
-          unless _tmp
-            self.pos = _save5
-          end
-          break
-        end # end sequence
-
-        break if _tmp
-        self.pos = _save2
-        break
-      end # end choice
-
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_InlineElementContentText unless _tmp
     return _tmp
   end
 
@@ -2949,22 +3430,26 @@ require 'review/exception'
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | ContentText:c { c })+:d { e=d.join(\"\") } Newline { e }")
   Rules[:_ContentText] = rule_info("ContentText", "NonInlineElement+:c { c.join(\"\") }")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < /[^\\r\\n]/ > { escape_text(text) }")
-  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {    compile_command(symbol, args, contents) } | \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 \"]\" Space* Newline { compile_raw(b, r1.join(\"\")) } | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {    compile_command(symbol, args, contents) } | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
+  Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c.join(\"\") }")
+  Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(LowerAlphabetAscii+:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [c1.join(\"\")]+ c2 } | LowerAlphabetAscii+:c1 { [c1.join(\"\")] })")
+  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < /[^\\r\\n\\]]/ > { text })")
   Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" { compile_inline(symbol,contents) })")
   Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawInlineElementContent+:c \"}\" { c.join(\"\") }")
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
   Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< /[^>\\r\\n]+/ > { text }")
+  Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
+  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 { [c1]+c2 } | InlineElementContent:c1 { [c1] })")
+  Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c { c } | InlineElementContentText+:c { c.join(\"\") })")
+  Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" { \"}\" } | \"\\\\,\" { \",\" } | \"\\\\\\\\\" { \"\\\\\" } | \"\\\\\" { \"\\\\\" } | !InlineElement < /[^\\r\\n\\\\},]/ > { text })")
   Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline+:c \"]\" { c.join(\"\") }")
-  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" { \"]\" } | < /[^\\r\\n\\]]/ > { escape_text(text) })")
+  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" { \"]\" } | \"\\\\\\\\\" { \"\\\\\" } | < /[^\\r\\n\\]]/ > { escape_text(text) })")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c | BlockElement:c | BlockElementParagraph:c | Newline:c { \"\" })")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphSub+:c Newline { c.join(\"\") }")
   Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c | BlockElementContentText:c)")
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join(\"\") }")
-  Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContent+:c { c.join(\"\") }")
-  Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c | InlineElementContentText+:c)")
-  Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "&. (\"\\\\}\" { \"}\" } | \"\\\\\" { \"\\\\\" } | !InlineElement < /[^\\r\\n\\\\}]/ > { text })")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "ContentInlines:c (Newline | EOF) { c }")
   Rules[:_ContentInlines] = rule_info("ContentInlines", "ContentInline+:c { c.join }")
   Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < /[^\\r\\n]/ > { escape_text(text) })")
