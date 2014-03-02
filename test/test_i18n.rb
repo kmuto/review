@@ -42,8 +42,8 @@ class I18nTest < Test::Unit::TestCase
 
   def test_htmlbuilder
     _setup_htmlbuilder
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>Chapter 1. this is test.</h1>\n|, @builder.raw_result
+    result = @builder.headline(1,"test","this is test.")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>Chapter 1. this is test.</h1>\n|, result
   end
 
   def _setup_htmlbuilder
