@@ -478,11 +478,11 @@ BlockElementContent = ( SinglelineComment:c
                       | Newline:c { "" }
                       )
 
-BlockElementParagraph = &. { @blockElem = "" } BlockElementParagraphSub:c { @blockElem }
+BlockElementParagraph = BlockElementParagraphSub+:c Newline { c.join("") }
 
-BlockElementParagraphSub = ( InlineElement:c { @blockElem << c }
-                           | BlockElementContentText:c { @blockElem << c }
-                           )+ Newline
+BlockElementParagraphSub = ( InlineElement:c
+                           | BlockElementContentText:c
+                           )
 
 BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c.join("") }
 
