@@ -49,10 +49,10 @@ module ReVIEW
                    :formatter => format,
                    :lexer => lexer)
         rescue MentosError
-          escape_html(body)
+          body
         end
       rescue LoadError
-        escape_html(body)
+        body
       end
     end
   end
