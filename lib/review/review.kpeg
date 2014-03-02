@@ -438,11 +438,11 @@ HeadlinePrefix = < /={1,5}/ > { text.length }
 Paragraph = ParagraphSub+:c  { compile_paragraph(c) }
 
 ParagraphSub = ( InlineElement:c { c }
-               | < ContentText > { text }
+               | ContentText:c  { c }
                )+:d  { e=d.join("") } Newline { e }
 
 ## ContentText = !Newline !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
-ContentText = NonInlineElement+:c { c }
+ContentText = NonInlineElement+:c { c.join("") }
 
 NonInlineElement = !InlineElement < /[^\r\n]/ > { escape_text(text) }
 
@@ -451,8 +451,14 @@ BlockElement = ( "//" ElementName:symbol BracketArg*:args "{" Space* Newline Blo
                | "//" ElementName:symbol BracketArg*:args Space* Newline   { compile_command(symbol, args, nil) }
                )
 
-InlineElement =  "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}"
+InlineElement =  ( RawInlineElement:c { c }
+                 | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}"
                  { compile_inline(symbol,contents) }
+                 )
+
+RawInlineElement = "@<raw>{" RawInlineElementContent+:c "}" { c.join("") }
+
+RawInlineElementContent = ( "\\}" { "}" } | < /[^\r\n\}]/ >  { text })
 
 InlineElementSymbol = < /[^>\r\n]+/ > { text }
 
@@ -486,7 +492,8 @@ InlineElementContent = ( InlineElement:c
                        | InlineElementContentText+:c
                        )
 
-InlineElementContentText = ( "\\}" { "}" } | !InlineElement < /[^\r\n}]/> { text }  )
+## XXX '\' (excpet '\}') => '\' is OK?
+InlineElementContentText = &. ( "\\}" { "}" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\}]/> { text }  )
 
 SinglelineContent = ContentInlines:c (Newline | EOF) { c }
 
