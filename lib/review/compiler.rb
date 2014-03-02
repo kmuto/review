@@ -1213,7 +1213,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # NonInlineElement = !InlineElement < /[^\r\n]/ > { text }
+  # NonInlineElement = !InlineElement < /[^\r\n]/ > { escape_text(text) }
   def _NonInlineElement
 
     _save = self.pos
@@ -1235,7 +1235,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  text ; end
+      @result = begin;  escape_text(text) ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1850,7 +1850,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist < NonInlineElement+ > { text }
+  # BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join("") }
   def _BlockElementContentText
 
     _save = self.pos
@@ -1903,26 +1903,27 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      _text_start = self.pos
       _save7 = self.pos
+      _ary = []
       _tmp = apply(:_NonInlineElement)
       if _tmp
+        _ary << @result
         while true
           _tmp = apply(:_NonInlineElement)
+          _ary << @result if _tmp
           break unless _tmp
         end
         _tmp = true
+        @result = _ary
       else
         self.pos = _save7
       end
-      if _tmp
-        text = get_text(_text_start)
-      end
+      c = @result
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin;  text ; end
+      @result = begin;  c.join("") ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2876,7 +2877,7 @@ require 'review/exception'
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c { compile_paragraph(c) }")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | < ContentText > { text })+:d { e=d.join(\"\") } Newline { e }")
   Rules[:_ContentText] = rule_info("ContentText", "NonInlineElement+:c { c }")
-  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < /[^\\r\\n]/ > { text }")
+  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < /[^\\r\\n]/ > { escape_text(text) }")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {    compile_command(symbol, args, contents) } | \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
   Rules[:_InlineElement] = rule_info("InlineElement", "\"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" { compile_inline(symbol,contents) }")
   Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< /[^>\\r\\n]+/ > { text }")
@@ -2887,7 +2888,7 @@ require 'review/exception'
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c | BlockElement:c | BlockElementParagraph:c | Newline:c { \"\" })")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "&. { @blockElem = \"\" } BlockElementParagraphSub:c { @blockElem }")
   Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c { @blockElem << c } | BlockElementContentText:c { @blockElem << c })+ Newline")
-  Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist < NonInlineElement+ > { text }")
+  Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join(\"\") }")
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContent+:c { c.join(\"\") }")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c | InlineElementContentText+:c)")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" { \"}\" } | !InlineElement < /[^\\r\\n}]/ > { text })")

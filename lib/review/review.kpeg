@@ -444,7 +444,7 @@ ParagraphSub = ( InlineElement:c { c }
 ## ContentText = !Newline !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
 ContentText = NonInlineElement+:c { c }
 
-NonInlineElement = !InlineElement < /[^\r\n]/ > { text }
+NonInlineElement = !InlineElement < /[^\r\n]/ > { escape_text(text) }
 
 BlockElement = ( "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline
                {    compile_command(symbol, args, contents) }
@@ -478,7 +478,7 @@ BlockElementParagraphSub = ( InlineElement:c { @blockElem << c }
                            | BlockElementContentText:c { @blockElem << c }
                            )+ Newline
 
-BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  < NonInlineElement+ >  { text }
+BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c.join("") }
 
 InlineElementContents = !"}" InlineElementContent+:c { c.join("") }
 
