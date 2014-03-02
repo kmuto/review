@@ -409,11 +409,6 @@ module ReVIEW
       raise NotImplementedError
     end
 
-    def inline_include(file_name)
-      compile_inline convert_inencoding(File.open(file_name).read,
-                                        ReVIEW.book.param["inencoding"])
-    end
-
     def include(file_name)
       File.foreach(file_name) do |line|
         paragraph([convert_inencoding(line, ReVIEW.book.param["inencoding"])])
