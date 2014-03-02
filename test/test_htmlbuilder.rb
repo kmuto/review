@@ -186,10 +186,9 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, result
   end
 
-
   def test_memo
     result = compile_blockelem("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest<i>2</i>\n//}\n")
-    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, result
+    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test&lt;i&gt;2&lt;/i&gt;</p>\n</div>\n|, result
   end
 
 
