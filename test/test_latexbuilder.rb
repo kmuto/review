@@ -90,7 +90,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_br
-    ret = @builder.inline_br("")
+    ret = @builder.inline_br()
     assert_equal %Q|\\\\\n|, ret
   end
 

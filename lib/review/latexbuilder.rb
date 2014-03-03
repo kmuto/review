@@ -678,7 +678,7 @@ module ReVIEW
     end
 
     # line break
-    def inline_br(str)
+    def inline_br()
       "\\\\\n"
     end
 
