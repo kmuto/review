@@ -1264,7 +1264,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # NonInlineElement = !InlineElement < /[^\r\n]/ > { escape_text(text) }
+  # NonInlineElement = !InlineElement < NonNewLine > { escape_text(text) }
   def _NonInlineElement
 
     _save = self.pos
@@ -1278,7 +1278,7 @@ require 'review/exception'
         break
       end
       _text_start = self.pos
-      _tmp = scan(/\A(?-mix:[^\r\n])/)
+      _tmp = apply(:_NonNewLine)
       if _tmp
         text = get_text(_text_start)
       end
@@ -1525,7 +1525,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c.join("") }
+  # RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
   def _RawBlockBuilderSelect
 
     _save = self.pos
@@ -1564,7 +1564,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  c.join("") ; end
+      @result = begin;  c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1576,7 +1576,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # RawBlockBuilderSelectSub = (LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBuilderSelectSub:c2 { [c1.join("")]+ c2 } | LowerAlphabetAscii+:c1 { [c1.join("")] })
+  # RawBlockBuilderSelectSub = (LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBuilderSelectSub:c2 { [c1.join("")]+ c2 } | < AlphanumericAscii+ >:c1 { [c1] })
   def _RawBlockBuilderSelectSub
 
     _save = self.pos
@@ -1646,27 +1646,27 @@ require 'review/exception'
 
       _save5 = self.pos
       while true # sequence
+        _text_start = self.pos
         _save6 = self.pos
-        _ary = []
-        _tmp = apply(:_LowerAlphabetAscii)
+        _tmp = apply(:_AlphanumericAscii)
         if _tmp
-          _ary << @result
           while true
-            _tmp = apply(:_LowerAlphabetAscii)
-            _ary << @result if _tmp
+            _tmp = apply(:_AlphanumericAscii)
             break unless _tmp
           end
           _tmp = true
-          @result = _ary
         else
           self.pos = _save6
+        end
+        if _tmp
+          text = get_text(_text_start)
         end
         c1 = @result
         unless _tmp
           self.pos = _save5
           break
         end
-        @result = begin;  [c1.join("")] ; end
+        @result = begin;  [c1] ; end
         _tmp = true
         unless _tmp
           self.pos = _save5
@@ -1683,7 +1683,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < /[^\r\n\]]/ > { text })
+  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewLine > { text })
   def _RawBlockElementArg
 
     _save = self.pos
@@ -1739,7 +1739,7 @@ require 'review/exception'
         _save5 = self.pos
         while true # sequence
           _text_start = self.pos
-          _tmp = scan(/\A(?-mix:[^\r\n\]])/)
+          _tmp = apply(:_NonNewLine)
           if _tmp
             text = get_text(_text_start)
           end
@@ -1959,13 +1959,23 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElementSymbol = < /[^>\r\n]+/ > { text }
+  # InlineElementSymbol = < AlphanumericAscii+ > { text }
   def _InlineElementSymbol
 
     _save = self.pos
     while true # sequence
       _text_start = self.pos
-      _tmp = scan(/\A(?-mix:[^>\r\n]+)/)
+      _save1 = self.pos
+      _tmp = apply(:_AlphanumericAscii)
+      if _tmp
+        while true
+          _tmp = apply(:_AlphanumericAscii)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
       if _tmp
         text = get_text(_text_start)
       end
@@ -2734,7 +2744,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # ContentInline = (InlineElement:c { c } | !Newline < /[^\r\n]/ > { escape_text(text) })
+  # ContentInline = (InlineElement:c { c } | !Newline < NonNewLine > { escape_text(text) })
   def _ContentInline
 
     _save = self.pos
@@ -2770,7 +2780,7 @@ require 'review/exception'
           break
         end
         _text_start = self.pos
-        _tmp = scan(/\A(?-mix:[^\r\n])/)
+        _tmp = apply(:_NonNewLine)
         if _tmp
           text = get_text(_text_start)
         end
@@ -3304,7 +3314,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # SinglelineComment = "#@" < NonNewLine > { comment(text) } Newline
+  # SinglelineComment = "#@" < NonNewLine+ > { "" } Newline
   def _SinglelineComment
 
     _save = self.pos
@@ -3315,7 +3325,17 @@ require 'review/exception'
         break
       end
       _text_start = self.pos
+      _save1 = self.pos
       _tmp = apply(:_NonNewLine)
+      if _tmp
+        while true
+          _tmp = apply(:_NonNewLine)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
       if _tmp
         text = get_text(_text_start)
       end
@@ -3323,7 +3343,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  comment(text) ; end
+      @result = begin;  "" ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3340,9 +3360,9 @@ require 'review/exception'
     return _tmp
   end
 
-  # NonNewLine = /[^\r\n]+/
+  # NonNewLine = /[^\r\n]/
   def _NonNewLine
-    _tmp = scan(/\A(?-mix:[^\r\n]+)/)
+    _tmp = scan(/\A(?-mix:[^\r\n])/)
     set_failed_rule :_NonNewLine unless _tmp
     return _tmp
   end
@@ -3503,15 +3523,15 @@ require 'review/exception'
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c { compile_paragraph(c) }")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | ContentText:c { c })+:d { e=d.join(\"\") } Newline { e }")
   Rules[:_ContentText] = rule_info("ContentText", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join(\"\") }")
-  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < /[^\\r\\n]/ > { escape_text(text) }")
+  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > { escape_text(text) }")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 \"]\" Space* Newline { compile_raw(b, r1.join(\"\")) } | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {    compile_command(symbol, args, contents) } | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
-  Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c.join(\"\") }")
-  Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(LowerAlphabetAscii+:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [c1.join(\"\")]+ c2 } | LowerAlphabetAscii+:c1 { [c1.join(\"\")] })")
-  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < /[^\\r\\n\\]]/ > { text })")
+  Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
+  Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(LowerAlphabetAscii+:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [c1.join(\"\")]+ c2 } | < AlphanumericAscii+ >:c1 { [c1] })")
+  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
   Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" { compile_inline(symbol,contents) })")
   Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawInlineElementContent+:c \"}\" { c.join(\"\") }")
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
-  Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< /[^>\\r\\n]+/ > { text }")
+  Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< AlphanumericAscii+ > { text }")
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
   Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 { [c1]+c2 } | InlineElementContent:c1 { [c1] })")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c { c } | InlineElementContentText+:c { c.join(\"\") })")
@@ -3526,7 +3546,7 @@ require 'review/exception'
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join(\"\") }")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "ContentInlines:c { c }")
   Rules[:_ContentInlines] = rule_info("ContentInlines", "ContentInline+:c { c.join }")
-  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < /[^\\r\\n]/ > { escape_text(text) })")
+  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < NonNewLine > { escape_text(text) })")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ { compile_ulist(@ulist_elem) }")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c (EOF | Newline) { @ulist_elem << [level.size, c] }")
   Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1][1] << c }")
@@ -3535,8 +3555,8 @@ require 'review/exception'
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment):c Dlist?:cc")
   Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent:content Newline")
   Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c")
-  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine > { comment(text) } Newline")
-  Rules[:_NonNewLine] = rule_info("NonNewLine", "/[^\\r\\n]+/")
+  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > { \"\" } Newline")
+  Rules[:_NonNewLine] = rule_info("NonNewLine", "/[^\\r\\n]/")
   Rules[:_Digits] = rule_info("Digits", "Digit+:c { c }")
   Rules[:_Space] = rule_info("Space", "/[ \\t]/")
   Rules[:_EOF] = rule_info("EOF", "!.")

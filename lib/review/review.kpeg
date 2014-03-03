@@ -453,7 +453,7 @@ ParagraphSub = ( InlineElement:c { c }
 ## ContentText = !Newline !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
 ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join("") }
 
-NonInlineElement = !InlineElement < /[^\r\n]/ > { escape_text(text) }
+NonInlineElement = !InlineElement < NonNewLine > { escape_text(text) }
 
 BlockElement = ( "//raw[" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 "]" Space* Newline
                  { compile_raw(b, r1.join("")) }
@@ -462,15 +462,15 @@ BlockElement = ( "//raw[" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 "]" Sp
                | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline   { compile_command(symbol, args, nil) }
                )
 
-RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c.join("") }
+RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
 
 RawBlockBuilderSelectSub = ( LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBuilderSelectSub:c2
                              { [c1.join("")]+ c2 } 
-                           | LowerAlphabetAscii+:c1
-                             { [c1.join("")] }
+                           | < AlphanumericAscii+ >:c1
+                             { [c1] }
                            )
 
-RawBlockElementArg = !"]" ( "\\]" { "]" } | "\\n" { "\n" } | < /[^\r\n\]]/ >  { text } )
+RawBlockElementArg = !"]" ( "\\]" { "]" } | "\\n" { "\n" } | < NonNewLine >  { text } )
 
 InlineElement =  ( RawInlineElement:c { c }
                  | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}"
@@ -481,7 +481,7 @@ RawInlineElement = "@<raw>{" RawInlineElementContent+:c "}" { c.join("") }
 
 RawInlineElementContent = ( "\\}" { "}" } | < /[^\r\n\}]/ >  { text })
 
-InlineElementSymbol = < /[^>\r\n]+/ > { text }
+InlineElementSymbol = < AlphanumericAscii+ > { text }
 
 InlineElementContents = !"}" InlineElementContentsSub:c { c }
 
@@ -527,7 +527,7 @@ SinglelineContent = ContentInlines:c { c }
 ContentInlines =  ContentInline+:c  { c.join }
 
 ContentInline = ( InlineElement:c { c }
-                | !Newline < /[^\r\n]/ > { escape_text(text) }
+                | !Newline < NonNewLine > { escape_text(text) }
                 )
 
 ## ContentInlineText = !InlineElement !Newline  .:cc { p [:char,cc];cc }
@@ -556,9 +556,9 @@ DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementCo
 
 DlistElementContent = /[ \t]+/ SinglelineContent:c
 
-SinglelineComment = ("#@" < NonNewLine > { comment(text) } Newline)
+SinglelineComment = ("#@" < NonNewLine+ > { "" } Newline)
 
-NonNewLine = /[^\r\n]+/
+NonNewLine = /[^\r\n]/
 
 Digits = Digit+:c { c }
 
