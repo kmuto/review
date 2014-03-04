@@ -8,6 +8,7 @@ require 'review/location'
 require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
+require 'review/node'
   require 'lineinput'
   if RUBY_VERSION > '1.9' then
     require 'review/compiler/literals_1_9'
@@ -47,7 +48,7 @@ require 'review/exception'
     end
 =end
 
-    def escape_text(text)
+    def compile_text(text)
       @strategy.nofunc_text(text)
     end
 
@@ -317,10 +318,11 @@ require 'review/exception'
       @strategy.comment(text)
     end
 
-    def compile_ulist(elem)
+    def compile_ulist(content)
       buf0 = ""
       level = 0
-      elem.each do |current_level, buf|
+      content.each do |element|
+        current_level, buf = element.level, element.content.to_s
         if level == current_level
           buf0 << @strategy.ul_item_end
           # body
@@ -354,11 +356,15 @@ require 'review/exception'
       buf0
     end
 
-    def compile_olist(elem)
+    def compile_olist(content)
+
+# content = [<#ElemNode @content=[<#SinglelineContent @content="AAA"   ]
+# p content[0].content[0].content
       buf0 = ""
       buf0 << @strategy.ol_begin
-      elem.each do |num, buf|
-        buf0 << @strategy.ol_item(buf, num)
+      content.each do |element|
+        ## XXX 1st arg should be String, not Array
+        buf0 << @strategy.ol_item(element.to_s.split(/\n/), element.num)
       end
       buf0 << @strategy.ol_end
       buf0
@@ -421,6 +427,26 @@ require 'review/exception'
 
 }
 
+%% ast-location = ::ReVIEW
+%% headline = ast HeadlineNode(compiler, level, cmd, label, content)
+%% paragraph = ast ParagraphNode(compiler, content)
+%% block_element = ast BlockElementNode(compiler, name, args, content)
+%% inline_element = ast InlineElementNode(compiler, symbol, content)
+%% text = ast TextNode(compiler, content)
+%% raw = ast RawNode(compiler, builder, content)
+%% bracket = ast BracketNode(compiler, content)
+%% brace = ast BraceNode(compiler, content)
+%% singleline_content = ast SinglelineContentNode(compiler, content)
+%% singleline_comment = ast SinglelineCommentNode(compiler, content)
+%% ulist = ast UlistNode(compiler, content)
+%% ulist_element = ast UlistElementNode(compiler, level, content)
+%% olist = ast OlistNode(compiler, content)
+%% olist_element = ast OlistElementNode(compiler, num, content)
+%% dlist = ast DlistNode(compiler, content)
+%% dlist_element = ast DlistElementNode(compiler, text, content)
+
+# %% dummy
+
 root = Start
 
 Start = &. { tagged_section_init } Block* { close_all_tagged_section }
@@ -440,11 +466,11 @@ Block = BlankLine*
 
 BlankLine = Newline
 
-Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption (Newline|EOF)  { compile_headline(level, cmd, label, caption) }
+Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption (Newline|EOF)  ~headline(self, level, cmd, label, caption)
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
 
-Paragraph = ParagraphSub+:c  { compile_paragraph(c) }
+Paragraph = ParagraphSub+:c  ~paragraph(self, c)
 
 ParagraphSub = ( InlineElement:c { c }
                | ContentText:c  { c }
@@ -453,31 +479,30 @@ ParagraphSub = ( InlineElement:c { c }
 ## ContentText = !Newline !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
 ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join("") }
 
-NonInlineElement = !InlineElement < NonNewLine > { escape_text(text) }
+NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
-BlockElement = ( "//raw[" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 "]" Space* Newline
-                 { compile_raw(b, r1.join("")) }
+BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* Newline
+                 ~raw(self, b, r1.join(""))
                | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline
-               {    compile_command(symbol, args, contents) }
-               | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline   { compile_command(symbol, args, nil) }
+                  ~block_element(self, symbol, args, contents)
+               | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline ~block_element(self, symbol, args, nil)
                )
 
 RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
 
 RawBlockBuilderSelectSub = ( LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBuilderSelectSub:c2
-                             { [c1.join("")]+ c2 } 
+                             { [c1.join("")]+ c2 }
                            | < AlphanumericAscii+ >:c1
                              { [c1] }
                            )
 
-RawBlockElementArg = !"]" ( "\\]" { "]" } | "\\n" { "\n" } | < NonNewLine >  { text } )
+RawBlockElementArg = !"]" ( "\\]" { "]" } | "\\n" { "\n" } | < NonNewLine >  ~text(self, text) )
 
 InlineElement =  ( RawInlineElement:c { c }
-                 | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}"
-                 { compile_inline(symbol,contents) }
+                 | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, symbol,contents)
                  )
 
-RawInlineElement = "@<raw>{" RawInlineElementContent+:c "}" { c.join("") }
+RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, builders,c.join(""))
 
 RawInlineElementContent = ( "\\}" { "}" } | < /[^\r\n\}]/ >  { text })
 
@@ -485,7 +510,7 @@ InlineElementSymbol = < AlphanumericAscii+ > { text }
 
 InlineElementContents = !"}" InlineElementContentsSub:c { c }
 
-InlineElementContentsSub = !"}" ( InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 { [c1]+c2 }
+InlineElementContentsSub = !"}" ( InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 {  [c1]+c2 }
                                   | InlineElementContent:c1 { [c1] }
                                   )
 
@@ -500,12 +525,12 @@ InlineElementContentText =  ( "\\}" { "}" } | "\\," { "," } | "\\\\" { "\\" } | 
 BracketArg = "["  BracketArgContentInline+:c  "]" { c.join("") }
 
 ## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
-BracketArgContentInline = ( InlineElement:c { c } |  "\\]" { "]" } | "\\\\" { "\\" } | < /[^\r\n\]]/ > { escape_text(text) } )
+BracketArgContentInline = ( InlineElement:c { c } |  "\\]" { "]" } | "\\\\" { "\\" } | < /[^\r\n\]]/ > { compile_text(text) } )
 
 BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
 
 ## contents との差は paragraph を切るか切らないか
-BlockElementContents = BlockElementContent+:c
+BlockElementContents = BlockElementContent+:c { c }
 
 ## 各要素は Newline で終わらなければならない
 BlockElementContent = ( SinglelineComment:c
@@ -522,12 +547,12 @@ BlockElementParagraphSub = ( InlineElement:c
 
 BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c.join("") }
 
-SinglelineContent = ContentInlines:c { c }
+SinglelineContent = ContentInlines:c ~singleline_content(self,c)
 
 ContentInlines =  ContentInline+:c  { c.join }
 
 ContentInline = ( InlineElement:c { c }
-                | !Newline < NonNewLine > { escape_text(text) }
+                | !Newline < NonNewLine > { compile_text(text) }
                 )
 
 ## ContentInlineText = !InlineElement !Newline  .:cc { p [:char,cc];cc }
@@ -536,17 +561,17 @@ ContentInline = ( InlineElement:c { c }
 ## * 箇条書き
 ## 行頭から… の指定がない
 
-Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ { compile_ulist(@ulist_elem) }
+Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ ~ulist(self, @ulist_elem)
 
-UlistElement = " "+ "*"+:level " "* SinglelineContent:c (EOF|Newline) { @ulist_elem << [level.size, c] }
-UlistContLine = " " " "+ !"*" SinglelineContent:c (EOF|Newline) {  @ulist_elem[-1][1] << c }
+UlistElement = " "+ "*"+:level " "* SinglelineContent:c (EOF|Newline) { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
+UlistContLine = " " " "+ !"*" SinglelineContent:c (EOF|Newline) {  @ulist_elem[-1].concat(c) }
 
 ## 1. 番号付き箇条書き
 ## 行頭から… の指定がない
 
-Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c { compile_olist(@olist_elem) }
+Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c ~olist(self, @olist_elem)
 
-OlistElement = " "+ < /\d/+ > { level=text } "." Space* SinglelineContent:c (EOF|Newline) {@olist_elem << [level, [c]] }
+OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c (EOF|Newline) {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
 
 ## : 用語リスト
   ## 行頭から… の指定がない

@@ -363,6 +363,7 @@ require 'review/location'
 require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
+require 'review/node'
   require 'lineinput'
   if RUBY_VERSION > '1.9' then
     require 'review/compiler/literals_1_9'
@@ -402,7 +403,7 @@ require 'review/exception'
     end
 =end
 
-    def escape_text(text)
+    def compile_text(text)
       @strategy.nofunc_text(text)
     end
 
@@ -672,10 +673,11 @@ require 'review/exception'
       @strategy.comment(text)
     end
 
-    def compile_ulist(elem)
+    def compile_ulist(content)
       buf0 = ""
       level = 0
-      elem.each do |current_level, buf|
+      content.each do |element|
+        current_level, buf = element.level, element.content.to_s
         if level == current_level
           buf0 << @strategy.ul_item_end
           # body
@@ -709,11 +711,15 @@ require 'review/exception'
       buf0
     end
 
-    def compile_olist(elem)
+    def compile_olist(content)
+
+# content = [<#ElemNode @content=[<#SinglelineContent @content="AAA"   ]
+# p content[0].content[0].content
       buf0 = ""
       buf0 << @strategy.ol_begin
-      elem.each do |num, buf|
-        buf0 << @strategy.ol_item(buf, num)
+      content.each do |element|
+        ## XXX 1st arg should be String, not Array
+        buf0 << @strategy.ol_item(element.to_s.split(/\n/), element.num)
       end
       buf0 << @strategy.ol_end
       buf0
@@ -777,6 +783,209 @@ require 'review/exception'
 
 
   # :stopdoc:
+
+  module ::ReVIEW
+    class Node; end
+    class BlockElementNode < Node
+      def initialize(compiler, name, args, content)
+        @compiler = compiler
+        @name = name
+        @args = args
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :name
+      attr_reader :args
+      attr_reader :content
+    end
+    class BraceNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class BracketNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class DlistNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class DlistElementNode < Node
+      def initialize(compiler, text, content)
+        @compiler = compiler
+        @text = text
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :text
+      attr_reader :content
+    end
+    class HeadlineNode < Node
+      def initialize(compiler, level, cmd, label, content)
+        @compiler = compiler
+        @level = level
+        @cmd = cmd
+        @label = label
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :level
+      attr_reader :cmd
+      attr_reader :label
+      attr_reader :content
+    end
+    class InlineElementNode < Node
+      def initialize(compiler, symbol, content)
+        @compiler = compiler
+        @symbol = symbol
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :symbol
+      attr_reader :content
+    end
+    class OlistNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class OlistElementNode < Node
+      def initialize(compiler, num, content)
+        @compiler = compiler
+        @num = num
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :num
+      attr_reader :content
+    end
+    class ParagraphNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class RawNode < Node
+      def initialize(compiler, builder, content)
+        @compiler = compiler
+        @builder = builder
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :builder
+      attr_reader :content
+    end
+    class SinglelineCommentNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class SinglelineContentNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class TextNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class UlistNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class UlistElementNode < Node
+      def initialize(compiler, level, content)
+        @compiler = compiler
+        @level = level
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :level
+      attr_reader :content
+    end
+  end
+  module ::ReVIEWConstruction
+    def block_element(compiler, name, args, content)
+      ::ReVIEW::BlockElementNode.new(compiler, name, args, content)
+    end
+    def brace(compiler, content)
+      ::ReVIEW::BraceNode.new(compiler, content)
+    end
+    def bracket(compiler, content)
+      ::ReVIEW::BracketNode.new(compiler, content)
+    end
+    def dlist(compiler, content)
+      ::ReVIEW::DlistNode.new(compiler, content)
+    end
+    def dlist_element(compiler, text, content)
+      ::ReVIEW::DlistElementNode.new(compiler, text, content)
+    end
+    def headline(compiler, level, cmd, label, content)
+      ::ReVIEW::HeadlineNode.new(compiler, level, cmd, label, content)
+    end
+    def inline_element(compiler, symbol, content)
+      ::ReVIEW::InlineElementNode.new(compiler, symbol, content)
+    end
+    def olist(compiler, content)
+      ::ReVIEW::OlistNode.new(compiler, content)
+    end
+    def olist_element(compiler, num, content)
+      ::ReVIEW::OlistElementNode.new(compiler, num, content)
+    end
+    def paragraph(compiler, content)
+      ::ReVIEW::ParagraphNode.new(compiler, content)
+    end
+    def raw(compiler, builder, content)
+      ::ReVIEW::RawNode.new(compiler, builder, content)
+    end
+    def singleline_comment(compiler, content)
+      ::ReVIEW::SinglelineCommentNode.new(compiler, content)
+    end
+    def singleline_content(compiler, content)
+      ::ReVIEW::SinglelineContentNode.new(compiler, content)
+    end
+    def text(compiler, content)
+      ::ReVIEW::TextNode.new(compiler, content)
+    end
+    def ulist(compiler, content)
+      ::ReVIEW::UlistNode.new(compiler, content)
+    end
+    def ulist_element(compiler, level, content)
+      ::ReVIEW::UlistElementNode.new(compiler, level, content)
+    end
+  end
+  include ::ReVIEWConstruction
   def setup_foreign_grammar
     @_grammar_literals = ReVIEW::Compiler::Literals.new(nil)
   end
@@ -898,7 +1107,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) { compile_headline(level, cmd, label, caption) }
+  # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}
   def _Headline
 
     _save = self.pos
@@ -970,7 +1179,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  compile_headline(level, cmd, label, caption) ; end
+      @result = begin; headline(self, level, cmd, label, caption); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1008,7 +1217,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # Paragraph = ParagraphSub+:c { compile_paragraph(c) }
+  # Paragraph = ParagraphSub+:c {paragraph(self, c)}
   def _Paragraph
 
     _save = self.pos
@@ -1033,7 +1242,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  compile_paragraph(c) ; end
+      @result = begin; paragraph(self, c); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1264,7 +1473,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # NonInlineElement = !InlineElement < NonNewLine > { escape_text(text) }
+  # NonInlineElement = !InlineElement < NonNewLine > {text(self, text)}
   def _NonInlineElement
 
     _save = self.pos
@@ -1286,7 +1495,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  escape_text(text) ; end
+      @result = begin; text(self, text); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1298,7 +1507,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElement = ("//raw[" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 "]" Space* Newline { compile_raw(b, r1.join("")) } | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {    compile_command(symbol, args, contents) } | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })
+  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* Newline {raw(self, b, r1.join(""))} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline {block_element(self, symbol, args, nil)})
   def _BlockElement
 
     _save = self.pos
@@ -1313,11 +1522,12 @@ require 'review/exception'
         end
         _save2 = self.pos
         _tmp = apply(:_RawBlockBuilderSelect)
-        b = @result
+        @result = nil unless _tmp
         unless _tmp
           _tmp = true
           self.pos = _save2
         end
+        b = @result
         unless _tmp
           self.pos = _save1
           break
@@ -1354,7 +1564,7 @@ require 'review/exception'
           self.pos = _save1
           break
         end
-        @result = begin;  compile_raw(b, r1.join("")) ; end
+        @result = begin; raw(self, b, r1.join("")); end
         _tmp = true
         unless _tmp
           self.pos = _save1
@@ -1449,7 +1659,7 @@ require 'review/exception'
           self.pos = _save5
           break
         end
-        @result = begin;     compile_command(symbol, args, contents) ; end
+        @result = begin; block_element(self, symbol, args, contents); end
         _tmp = true
         unless _tmp
           self.pos = _save5
@@ -1508,7 +1718,7 @@ require 'review/exception'
           self.pos = _save11
           break
         end
-        @result = begin;  compile_command(symbol, args, nil) ; end
+        @result = begin; block_element(self, symbol, args, nil); end
         _tmp = true
         unless _tmp
           self.pos = _save11
@@ -1683,7 +1893,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewLine > { text })
+  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewLine > {text(self, text)})
   def _RawBlockElementArg
 
     _save = self.pos
@@ -1747,7 +1957,7 @@ require 'review/exception'
             self.pos = _save5
             break
           end
-          @result = begin;  text ; end
+          @result = begin; text(self, text); end
           _tmp = true
           unless _tmp
             self.pos = _save5
@@ -1770,7 +1980,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElement = (RawInlineElement:c { c } | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" { compile_inline(symbol,contents) })
+  # InlineElement = (RawInlineElement:c { c } | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" {inline_element(self, symbol,contents)})
   def _InlineElement
 
     _save = self.pos
@@ -1843,7 +2053,7 @@ require 'review/exception'
           self.pos = _save2
           break
         end
-        @result = begin;  compile_inline(symbol,contents) ; end
+        @result = begin; inline_element(self, symbol,contents); end
         _tmp = true
         unless _tmp
           self.pos = _save2
@@ -1860,7 +2070,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # RawInlineElement = "@<raw>{" RawInlineElementContent+:c "}" { c.join("") }
+  # RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" {raw(self, builders,c.join(""))}
   def _RawInlineElement
 
     _save = self.pos
@@ -1871,6 +2081,18 @@ require 'review/exception'
         break
       end
       _save1 = self.pos
+      _tmp = apply(:_RawBlockBuilderSelect)
+      @result = nil unless _tmp
+      unless _tmp
+        _tmp = true
+        self.pos = _save1
+      end
+      builders = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
       _ary = []
       _tmp = apply(:_RawInlineElementContent)
       if _tmp
@@ -1883,7 +2105,7 @@ require 'review/exception'
         _tmp = true
         @result = _ary
       else
-        self.pos = _save1
+        self.pos = _save2
       end
       c = @result
       unless _tmp
@@ -1895,7 +2117,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  c.join("") ; end
+      @result = begin; raw(self, builders,c.join("")); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2026,7 +2248,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # InlineElementContentsSub = !"}" (InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 { [c1]+c2 } | InlineElementContent:c1 { [c1] })
+  # InlineElementContentsSub = !"}" (InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 {  [c1]+c2 } | InlineElementContent:c1 { [c1] })
   def _InlineElementContentsSub
 
     _save = self.pos
@@ -2080,7 +2302,7 @@ require 'review/exception'
             self.pos = _save3
             break
           end
-          @result = begin;  [c1]+c2 ; end
+          @result = begin;   [c1]+c2 ; end
           _tmp = true
           unless _tmp
             self.pos = _save3
@@ -2347,7 +2569,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # BracketArgContentInline = (InlineElement:c { c } | "\\]" { "]" } | "\\\\" { "\\" } | < /[^\r\n\]]/ > { escape_text(text) })
+  # BracketArgContentInline = (InlineElement:c { c } | "\\]" { "]" } | "\\\\" { "\\" } | < /[^\r\n\]]/ > { compile_text(text) })
   def _BracketArgContentInline
 
     _save = self.pos
@@ -2419,7 +2641,7 @@ require 'review/exception'
           self.pos = _save4
           break
         end
-        @result = begin;  escape_text(text) ; end
+        @result = begin;  compile_text(text) ; end
         _tmp = true
         unless _tmp
           self.pos = _save4
@@ -2472,24 +2694,39 @@ require 'review/exception'
     return _tmp
   end
 
-  # BlockElementContents = BlockElementContent+:c
+  # BlockElementContents = BlockElementContent+:c { c }
   def _BlockElementContents
+
     _save = self.pos
-    _ary = []
-    _tmp = apply(:_BlockElementContent)
-    if _tmp
-      _ary << @result
-      while true
-        _tmp = apply(:_BlockElementContent)
-        _ary << @result if _tmp
-        break unless _tmp
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_BlockElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_BlockElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
       end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
       _tmp = true
-      @result = _ary
-    else
-      self.pos = _save
-    end
-    c = @result
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
     set_failed_rule :_BlockElementContents unless _tmp
     return _tmp
   end
@@ -2684,7 +2921,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # SinglelineContent = ContentInlines:c { c }
+  # SinglelineContent = ContentInlines:c {singleline_content(self,c)}
   def _SinglelineContent
 
     _save = self.pos
@@ -2695,7 +2932,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  c ; end
+      @result = begin; singleline_content(self,c); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2744,7 +2981,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # ContentInline = (InlineElement:c { c } | !Newline < NonNewLine > { escape_text(text) })
+  # ContentInline = (InlineElement:c { c } | !Newline < NonNewLine > { compile_text(text) })
   def _ContentInline
 
     _save = self.pos
@@ -2788,7 +3025,7 @@ require 'review/exception'
           self.pos = _save2
           break
         end
-        @result = begin;  escape_text(text) ; end
+        @result = begin;  compile_text(text) ; end
         _tmp = true
         unless _tmp
           self.pos = _save2
@@ -2805,7 +3042,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # Ulist = &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ { compile_ulist(@ulist_elem) }
+  # Ulist = &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}
   def _Ulist
 
     _save = self.pos
@@ -2871,7 +3108,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  compile_ulist(@ulist_elem) ; end
+      @result = begin; ulist(self, @ulist_elem); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2883,7 +3120,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # UlistElement = " "+ "*"+:level " "* SinglelineContent:c (EOF | Newline) { @ulist_elem << [level.size, c] }
+  # UlistElement = " "+ "*"+:level " "* SinglelineContent:c (EOF | Newline) { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
   def _UlistElement
 
     _save = self.pos
@@ -2954,7 +3191,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  @ulist_elem << [level.size, c] ; end
+      @result = begin;  @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2966,7 +3203,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # UlistContLine = " " " "+ !"*" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1][1] << c }
+  # UlistContLine = " " " "+ !"*" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1].concat(c) }
   def _UlistContLine
 
     _save = self.pos
@@ -3021,7 +3258,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;   @ulist_elem[-1][1] << c ; end
+      @result = begin;   @ulist_elem[-1].concat(c) ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3033,7 +3270,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c { compile_olist(@olist_elem) }
+  # Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}
   def _Olist
 
     _save = self.pos
@@ -3086,7 +3323,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  compile_olist(@olist_elem) ; end
+      @result = begin; olist(self, @olist_elem); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3098,7 +3335,7 @@ require 'review/exception'
     return _tmp
   end
 
-  # OlistElement = " "+ < /\d/+ > { level=text } "." Space* SinglelineContent:c (EOF | Newline) {@olist_elem << [level, [c]] }
+  # OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c (EOF | Newline) {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
   def _OlistElement
 
     _save = self.pos
@@ -3137,7 +3374,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin;  level=text ; end
+      @result = begin;  num=text ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3179,7 +3416,7 @@ require 'review/exception'
         self.pos = _save
         break
       end
-      @result = begin; @olist_elem << [level, [c]] ; end
+      @result = begin; @olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3518,40 +3755,40 @@ require 'review/exception'
   Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Block* { close_all_tagged_section }")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { @strategy.output << c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
-  Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) { compile_headline(level, cmd, label, caption) }")
+  Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
-  Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c { compile_paragraph(c) }")
+  Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c)}")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | ContentText:c { c })+:d { e=d.join(\"\") } Newline { e }")
   Rules[:_ContentText] = rule_info("ContentText", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join(\"\") }")
-  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > { escape_text(text) }")
-  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect:b? RawBlockElementArg*:r1 \"]\" Space* Newline { compile_raw(b, r1.join(\"\")) } | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {    compile_command(symbol, args, contents) } | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline { compile_command(symbol, args, nil) })")
+  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* Newline {raw(self, b, r1.join(\"\"))} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
   Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(LowerAlphabetAscii+:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [c1.join(\"\")]+ c2 } | < AlphanumericAscii+ >:c1 { [c1] })")
-  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
-  Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" { compile_inline(symbol,contents) })")
-  Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawInlineElementContent+:c \"}\" { c.join(\"\") }")
+  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > {text(self, text)})")
+  Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, symbol,contents)})")
+  Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawBlockBuilderSelect?:builders RawInlineElementContent+:c \"}\" {raw(self, builders,c.join(\"\"))}")
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
   Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< AlphanumericAscii+ > { text }")
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
-  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 { [c1]+c2 } | InlineElementContent:c1 { [c1] })")
+  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 {  [c1]+c2 } | InlineElementContent:c1 { [c1] })")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c { c } | InlineElementContentText+:c { c.join(\"\") })")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" { \"}\" } | \"\\\\,\" { \",\" } | \"\\\\\\\\\" { \"\\\\\" } | \"\\\\\" { \"\\\\\" } | !InlineElement < /[^\\r\\n\\\\},]/ > { text })")
   Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline+:c \"]\" { c.join(\"\") }")
-  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" { \"]\" } | \"\\\\\\\\\" { \"\\\\\" } | < /[^\\r\\n\\]]/ > { escape_text(text) })")
+  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" { \"]\" } | \"\\\\\\\\\" { \"\\\\\" } | < /[^\\r\\n\\]]/ > { compile_text(text) })")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
-  Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c")
+  Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c | BlockElement:c | BlockElementParagraph:c | Newline:c { \"\" })")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphSub+:c Newline { c.join(\"\") }")
   Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c | BlockElementContentText:c)")
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join(\"\") }")
-  Rules[:_SinglelineContent] = rule_info("SinglelineContent", "ContentInlines:c { c }")
+  Rules[:_SinglelineContent] = rule_info("SinglelineContent", "ContentInlines:c {singleline_content(self,c)}")
   Rules[:_ContentInlines] = rule_info("ContentInlines", "ContentInline+:c { c.join }")
-  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < NonNewLine > { escape_text(text) })")
-  Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ { compile_ulist(@ulist_elem) }")
-  Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c (EOF | Newline) { @ulist_elem << [level.size, c] }")
-  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1][1] << c }")
-  Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c { compile_olist(@olist_elem) }")
-  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { level=text } \".\" Space* SinglelineContent:c (EOF | Newline) {@olist_elem << [level, [c]] }")
+  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < NonNewLine > { compile_text(text) })")
+  Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
+  Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c (EOF | Newline) { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
+  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1].concat(c) }")
+  Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}")
+  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { num=text } \".\" Space* SinglelineContent:c (EOF | Newline) {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment):c Dlist?:cc")
   Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent:content Newline")
   Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c")

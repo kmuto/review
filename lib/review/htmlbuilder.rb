@@ -341,6 +341,7 @@ EOT
 
     def ul_item_begin(lines)
       "<li>#{lines.join}"
+      "<li>#{lines.map(&:to_s).join}"
     end
 
     def ul_item_end
@@ -362,7 +363,7 @@ EOT
     end
 
     def ol_item(lines, num)
-      "<li>#{lines.join}</li>\n"
+      "<li>#{lines.map(&:to_s).join}</li>\n"
     end
 
     def ol_end

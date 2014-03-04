@@ -48,10 +48,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_with_inlinetag
-    @compiler.setup_parser("={test} this @<b>{is} test.<&\">\n")
-    @compiler.tagged_section_init
-    @compiler.parse("Headline")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @compiler.result
+    result = compile_headline("={test} this @<b>{is} test.<&\">\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, result
   end
 
   def test_headline_level2

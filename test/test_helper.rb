@@ -5,35 +5,35 @@ require 'test/unit'
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
     @compiler.parse("Paragraph")
-    @compiler.result
+    @compiler.result.to_s
   end
 
   def compile_blockelem(str)
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
     @compiler.parse("BlockElement")
-    @compiler.result
+    @compiler.result.to_s
   end
 
   def compile_headline(str)
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
     @compiler.parse("Headline")
-    @compiler.result
+    @compiler.result.to_s
   end
 
 def ul_helper(src, expect)
   @compiler.setup_parser(src)
   @compiler.tagged_section_init
   @compiler.parse("Ulist")
-  assert_equal expect, @compiler.result
+  assert_equal expect, @compiler.result.to_s
 end
 
 def ol_helper(src, expect)
   @compiler.setup_parser(src)
   @compiler.tagged_section_init
   @compiler.parse("Olist")
-  assert_equal expect, @compiler.result
+  assert_equal expect, @compiler.result.to_s
 end
 
 def builder_helper(src, expect, method_sym)
