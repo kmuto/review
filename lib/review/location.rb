@@ -1,19 +1,19 @@
 module ReVIEW
   class Location
-    def initialize(filename, f)
+    def initialize(filename, compiler)
       @filename = filename
-      @f = f
+      @f = compiler
     end
 
     attr_reader :filename
 
     def lineno
-      @f.lineno
+      @f.current_line
     end
 
     def string
       begin
-        "#{@filename}:#{@f.lineno}"
+        "#{@filename}:#{self.lineno}"
       rescue
         "#{@filename}:nil"
       end
