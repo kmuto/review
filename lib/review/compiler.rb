@@ -385,23 +385,10 @@ require 'review/node'
     end
 
     def do_compile
-      f = LineInput.new(ReVIEW::Preprocessor::Strip.new(StringIO.new(@chapter.content)))
-      @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, f)
+      @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, self)
       setup_parser(@chapter.content)
       parse()
     end
-
-=begin
-    def text(str)
-      st = @strategy.dup
-      f = LineInput.new(ReVIEW::Preprocessor::Strip.new(StringIO.new(str)))
-      st.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, f)
-      parser = ReVIEW::Compiler.new(st)
-      parser.setup_parser(str)
-      parser.parse("InlineElementContents")
-      st.result
-    end
-=end
 
     def compile_text(text)
       @strategy.nofunc_text(text)
@@ -609,9 +596,9 @@ require 'review/node'
     end
 
     def compile_command(name, args, lines)
-          syntax = syntax_descriptor(name)
-      unless @strategy.respond_to?(syntax.name)
-        error "strategy does not support command: //#{syntax.name}"
+      syntax = syntax_descriptor(name)
+      if !syntax || !@strategy.respond_to?(syntax.name)
+        error "strategy does not support command: //#{name}"
         compile_unknown_command args, lines
         return
       end
@@ -677,7 +664,7 @@ require 'review/node'
       buf0 = ""
       level = 0
       content.each do |element|
-        current_level, buf = element.level, element.content.to_s
+        current_level, buf = element.level, element.to_s
         if level == current_level
           buf0 << @strategy.ul_item_end
           # body
@@ -712,9 +699,6 @@ require 'review/node'
     end
 
     def compile_olist(content)
-
-# content = [<#ElemNode @content=[<#SinglelineContent @content="AAA"   ]
-# p content[0].content[0].content
       buf0 = ""
       buf0 << @strategy.ol_begin
       content.each do |element|
@@ -1217,12 +1201,20 @@ require 'review/node'
     return _tmp
   end
 
-  # Paragraph = ParagraphSub+:c {paragraph(self, c)}
+  # Paragraph = !/\/\/A-Za-z/ ParagraphSub+:c {paragraph(self, c)}
   def _Paragraph
 
     _save = self.pos
     while true # sequence
       _save1 = self.pos
+      _tmp = scan(/\A(?-mix:\/\/A-Za-z)/)
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
       _ary = []
       _tmp = apply(:_ParagraphSub)
       if _tmp
@@ -1235,7 +1227,7 @@ require 'review/node'
         _tmp = true
         @result = _ary
       else
-        self.pos = _save1
+        self.pos = _save2
       end
       c = @result
       unless _tmp
@@ -3757,7 +3749,7 @@ require 'review/node'
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
-  Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c)}")
+  Rules[:_Paragraph] = rule_info("Paragraph", "!/\\/\\/A-Za-z/ ParagraphSub+:c {paragraph(self, c)}")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | ContentText:c { c })+:d { e=d.join(\"\") } Newline { e }")
   Rules[:_ContentText] = rule_info("ContentText", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join(\"\") }")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")

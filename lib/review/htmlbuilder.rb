@@ -336,11 +336,10 @@ EOT
     end
 
     def ul_item(lines)
-      "<li>#{lines.join}</li>\n"
+      "<li>#{lines.map(&:to_s).join}</li>\n"
     end
 
     def ul_item_begin(lines)
-      "<li>#{lines.join}"
       "<li>#{lines.map(&:to_s).join}"
     end
 
