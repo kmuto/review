@@ -30,23 +30,10 @@ require 'review/node'
     end
 
     def do_compile
-      f = LineInput.new(ReVIEW::Preprocessor::Strip.new(StringIO.new(@chapter.content)))
-      @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, f)
+      @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, self)
       setup_parser(@chapter.content)
       parse()
     end
-
-=begin
-    def text(str)
-      st = @strategy.dup
-      f = LineInput.new(ReVIEW::Preprocessor::Strip.new(StringIO.new(str)))
-      st.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, f)
-      parser = ReVIEW::Compiler.new(st)
-      parser.setup_parser(str)
-      parser.parse("InlineElementContents")
-      st.result
-    end
-=end
 
     def compile_text(text)
       @strategy.nofunc_text(text)
@@ -357,9 +344,6 @@ require 'review/node'
     end
 
     def compile_olist(content)
-
-# content = [<#ElemNode @content=[<#SinglelineContent @content="AAA"   ]
-# p content[0].content[0].content
       buf0 = ""
       buf0 << @strategy.ol_begin
       content.each do |element|
@@ -476,7 +460,6 @@ ParagraphSub = ( InlineElement:c { c }
                | ContentText:c  { c }
                )+:d  { e=d.join("") } Newline { e }
 
-## ContentText = !Newline !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
 ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join("") }
 
 NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
