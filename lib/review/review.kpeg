@@ -479,7 +479,7 @@ RawBlockBuilderSelectSub = ( LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBu
                              { [c1] }
                            )
 
-RawBlockElementArg = !"]" ( "\\]" { "]" } | "\\n" { "\n" } | < NonNewLine >  ~text(self, text) )
+RawBlockElementArg = !"]" ( "\\]" { "]" } | "\\n" { "\n" } | < NonNewLine >  { text } )
 
 InlineElement =  ( RawInlineElement:c { c }
                  | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, symbol,contents)
