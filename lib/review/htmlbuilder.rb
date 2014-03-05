@@ -831,7 +831,7 @@ QUOTE
     end
 
     def inline_i(str)
-      %Q(<i>#{escape_html(str)}</i>)
+      %Q(<i>#{str}</i>)
     end
 
     def inline_b(str)

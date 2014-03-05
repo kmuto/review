@@ -1,18 +1,26 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
 require 'test/unit'
 
-  def compile_inline(str)
+  def compile_inline(str, force_to_s=true)
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
     @compiler.parse("Paragraph")
-    @compiler.result.to_s
+    if force_to_s
+      @compiler.result.to_s
+    else
+      @compiler.result
+    end
   end
 
-  def compile_blockelem(str)
+  def compile_blockelem(str, force_to_s=true)
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
     @compiler.parse("BlockElement")
-    @compiler.result.to_s
+    if force_to_s
+      @compiler.result.to_s
+    else
+      @compiler.result
+    end
   end
 
   def compile_headline(str)

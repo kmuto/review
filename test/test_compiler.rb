@@ -36,33 +36,33 @@ class CompilerTest < Test::Unit::TestCase
   end
 
   def test_parse_args_with_brace1
-    args = compile_blockelem("//dummy[fo[\\][\\]o][bar]")
+    args = compile_blockelem("//dummy[fo[\\][\\]o][bar]", false)
     assert_equal ["fo[][]o","bar"], args
   end
 
   def test_parse_args_with_brace2
-    args = compile_blockelem("//dummy[f\\]o\\]o][bar]")
+    args = compile_blockelem("//dummy[f\\]o\\]o][bar]", false)
     assert_equal ["f]o]o","bar"], args
   end
 
   def test_parse_args_with_backslash
-    args = compile_blockelem("//dummy[foo][bar\\buz]")
+    args = compile_blockelem("//dummy[foo][bar\\buz]", false)
     assert_equal ["foo","bar\\buz"], args
   end
 
   def test_parse_args_with_backslash2
-    args = compile_blockelem("//dummy[foo][bar\\#\\[\\!]")
+    args = compile_blockelem("//dummy[foo][bar\\#\\[\\!]", false)
     assert_equal ["foo","bar\\#\\[\\!"], args
   end
 
   def test_parse_args_with_backslash3
-    args = compile_blockelem("//dummy[foo][bar\\\\buz]")
+    args = compile_blockelem("//dummy[foo][bar\\\\buz]", false)
     assert_equal ["foo","bar\\buz"], args
   end
 
   def test_compile_inline
     def @compiler.compile_inline(op, args)
-      return args
+      return args.map(&:to_s).join("")
     end
     args = compile_inline("@<ruby>{abc}")
     assert_equal "abc", args
@@ -70,17 +70,17 @@ class CompilerTest < Test::Unit::TestCase
 
   def test_inline_ruby
     str = compile_inline("@<ruby>{foo,bar}")
-    assert_equal "<ruby><rb>foo</rb><rp>（</rp><rt>bar</rt><rp>）</rp></ruby>", str
+    assert_equal "<ruby><rb>foo</rb><rp>（</rp><rt>bar</rt><rp>）</rp></ruby>", str.to_s
     str = compile_inline("@<ruby>{foo\\,\\,,\\,bar\\,buz}")
-    assert_equal "<ruby><rb>foo,,</rb><rp>（</rp><rt>,bar,buz</rt><rp>）</rp></ruby>", str
+    assert_equal "<ruby><rb>foo,,</rb><rp>（</rp><rt>,bar,buz</rt><rp>）</rp></ruby>", str.to_s
   end
 
   def test_compile_inline_backslash
     def @compiler.compile_inline(op, args)
-      return args
+      return args.map(&:to_s).join("")
     end
-    args = compile_inline("@<dummy>{abc\\d\\#a}")
-    assert_equal "abc\\d\\#a", args
+    args = compile_inline("@<dummy>{abc\\d\\#a}", false)
+    assert_equal "abc\\d\\#a", args.to_s
   end
 end
 

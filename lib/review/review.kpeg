@@ -503,7 +503,7 @@ InlineElementContent = ( InlineElement:c { c }
                        )
 
 ## XXX '\' (excpet '\}' and '\,' and '\\' ) => '\' is OK?
-InlineElementContentText =  ( "\\}" { "}" } | "\\," { "," } | "\\\\" { "\\" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\},]/> { text }  )
+InlineElementContentText =  ( "\\}" { "}" } | "\\," { "," } | "\\\\" { "\\" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\},]/> ~text(self,text)  )
 
 BracketArg = "["  BracketArgContentInline+:c  "]" { c.join("") }
 

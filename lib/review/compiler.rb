@@ -1885,7 +1885,7 @@ require 'review/node'
     return _tmp
   end
 
-  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewLine > {text(self, text)})
+  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewLine > { text })
   def _RawBlockElementArg
 
     _save = self.pos
@@ -1949,7 +1949,7 @@ require 'review/node'
             self.pos = _save5
             break
           end
-          @result = begin; text(self, text); end
+          @result = begin;  text ; end
           _tmp = true
           unless _tmp
             self.pos = _save5
@@ -2400,7 +2400,7 @@ require 'review/node'
     return _tmp
   end
 
-  # InlineElementContentText = ("\\}" { "}" } | "\\," { "," } | "\\\\" { "\\" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\},]/ > { text })
+  # InlineElementContentText = ("\\}" { "}" } | "\\," { "," } | "\\\\" { "\\" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\},]/ > {text(self,text)})
   def _InlineElementContentText
 
     _save = self.pos
@@ -2497,7 +2497,7 @@ require 'review/node'
           self.pos = _save5
           break
         end
-        @result = begin;  text ; end
+        @result = begin; text(self,text); end
         _tmp = true
         unless _tmp
           self.pos = _save5
@@ -3756,7 +3756,7 @@ require 'review/node'
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* Newline {raw(self, b, r1.join(\"\"))} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
   Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(LowerAlphabetAscii+:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [c1.join(\"\")]+ c2 } | < AlphanumericAscii+ >:c1 { [c1] })")
-  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > {text(self, text)})")
+  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
   Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, symbol,contents)})")
   Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawBlockBuilderSelect?:builders RawInlineElementContent+:c \"}\" {raw(self, builders,c.join(\"\"))}")
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
@@ -3764,7 +3764,7 @@ require 'review/node'
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
   Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 {  [c1]+c2 } | InlineElementContent:c1 { [c1] })")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:c { c } | InlineElementContentText+:c { c.join(\"\") })")
-  Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" { \"}\" } | \"\\\\,\" { \",\" } | \"\\\\\\\\\" { \"\\\\\" } | \"\\\\\" { \"\\\\\" } | !InlineElement < /[^\\r\\n\\\\},]/ > { text })")
+  Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" { \"}\" } | \"\\\\,\" { \",\" } | \"\\\\\\\\\" { \"\\\\\" } | \"\\\\\" { \"\\\\\" } | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self,text)})")
   Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline+:c \"]\" { c.join(\"\") }")
   Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" { \"]\" } | \"\\\\\\\\\" { \"\\\\\" } | < /[^\\r\\n\\]]/ > { compile_text(text) })")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
