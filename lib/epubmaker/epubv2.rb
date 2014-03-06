@@ -13,14 +13,14 @@ require 'epubmaker/producer'
 require 'cgi'
 
 module EPUBMaker
-  
+
   # EPUBv2 is EPUB version 2 producer.
   class EPUBv2
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
       @producer = producer
     end
-    
+
     # Return mimetype content.
     def mimetype
       "application/epub+zip"
@@ -36,9 +36,9 @@ EOT
 
       s << opf_metainfo
       s << opf_coverimage
-      
+
       s << %Q[  </metadata>\n]
-      
+
       s << opf_manifest
       s << opf_tocx
       s << opf_guide
@@ -58,14 +58,14 @@ EOT
           s << %Q[    <dc:#{item}>#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
         end
       end
-      
+
       # ID
       if @producer.params["isbn"].nil?
         s << %Q[    <dc:identifier id="BookId">#{@producer.params["urnid"]}</dc:identifier>\n]
       else
         s << %Q[    <dc:identifier id="BookId" opf:scheme="ISBN">#{@producer.params["isbn"]}</dc:identifier>\n]
       end
-      
+
       # creator (should be array)
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next if @producer.params[role].nil?
@@ -113,7 +113,7 @@ EOT
 EOT
 
       s << %Q[    <item id="toc" href="#{@producer.params["tocfile"]}" media-type="application/xhtml+xml"/>\n] unless @producer.params["mytoc"].nil?
-      
+
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
         s << %Q[    <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
@@ -127,7 +127,7 @@ EOT
       s << %Q[  <spine toc="ncx">\n]
       s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="no"/>\n]
       s << %Q[    <itemref idref="toc" />\n] unless @producer.params["mytoc"].nil?
-      
+
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
         s << %Q[    <itemref idref="#{item.id}"/>\n] if item.notoc.nil?
@@ -202,7 +202,7 @@ EOT
 EOT
 
       nav_count = 2
-      
+
       unless @producer.params["mytoc"].nil?
         s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
@@ -214,7 +214,7 @@ EOT
 EOT
         nav_count += 1
       end
-      
+
       @producer.contents.each do |item|
         next if item.title.nil?
         indent = indentarray.nil? ? [""] : indentarray
@@ -230,13 +230,13 @@ EOT
 EOT
         nav_count += 1
       end
-      
+
       s << <<EOT
   </navMap>
 EOT
       s
     end
-    
+
     # Return container content.
     def container
       s = <<EOT
@@ -249,7 +249,7 @@ EOT
 EOT
       s
     end
-    
+
     # Return cover content.
     def cover
       s = common_header
@@ -277,7 +277,7 @@ EOT
   </div>
 EOT
       end
-      
+
       s << <<EOT
 </body>
 </html>
@@ -360,7 +360,7 @@ EOT
         end
         s << %Q[    </div>\n]
       end
-      
+
       s << %Q[    <table class="colophon">\n]
       s << %Q[      <tr><th>#{@producer.res.v("c-aut")}</th><td>#{CGI.escapeHTML(@producer.params["aut"].join(", "))}</td></tr>\n] unless @producer.params["aut"].nil?
       s << %Q[      <tr><th>#{@producer.res.v("c-csl")}</th><td>#{CGI.escapeHTML(@producer.params["csl"].join(", "))}</td></tr>\n] unless @producer.params["csl"].nil?
@@ -369,6 +369,7 @@ EOT
       s << %Q[      <tr><th>#{@producer.res.v("c-ill")}</th><td>#{CGI.escapeHTML(@producer.params["ill"].join(", "))}</td></tr>\n] unless @producer.params["ill"].nil?
       s << %Q[      <tr><th>#{@producer.res.v("c-edt")}</th><td>#{CGI.escapeHTML(@producer.params["edt"].join(", "))}</td></tr>\n] unless @producer.params["edt"].nil?
       s << %Q[      <tr><th>#{@producer.res.v("c-prt")}</th><td>#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</td></tr>\n] unless @producer.params["prt"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("c-pht")}</th><td>#{CGI.escapeHTML(@producer.params["pht"].join(", "))}</td></tr>\n] unless @producer.params["pht"].nil?
       if @producer.params["isbn"].to_s =~ /\A\d{10}\Z/ || @producer.params["isbn"].to_s =~ /\A\d{13}\Z/
         isbn = nil
         str = @producer.params["isbn"].to_s
@@ -426,7 +427,7 @@ EOT
         s << %Q[<li><a href="#{item.file}">#{item.title}</a>]
         init_item = false
       end
-      
+
       (current - 1).downto(1) do |n|
         s << %Q[</li>\n</ul>\n]
       end
@@ -449,17 +450,17 @@ EOT
 
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
       File.open("#{tmpdir}/OEBPS/#{@producer.params["tocfile"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
-      
+
       @producer.call_hook(@producer.params["hook_prepack"], tmpdir)
       export_zip(tmpdir, epubfile)
     end
 
     def produce_write_common(basedir, tmpdir)
       File.open("#{tmpdir}/mimetype", "w") {|f| @producer.mimetype(f) }
-      
+
       Dir.mkdir("#{tmpdir}/META-INF") unless File.exist?("#{tmpdir}/META-INF")
       File.open("#{tmpdir}/META-INF/container.xml", "w") {|f| @producer.container(f) }
-      
+
       Dir.mkdir("#{tmpdir}/OEBPS") unless File.exist?("#{tmpdir}/OEBPS")
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.opf", "w") {|f| @producer.opf(f) }
 
