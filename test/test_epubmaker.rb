@@ -500,6 +500,39 @@ EOT
     assert_equal expect, @output.string
   end
 
+  def test_colophon_pht
+    @producer.params["aut"] = ["Mr.Smith"]
+    @producer.params["prt"] = ["BLUEPRINT"]
+    @producer.params["pht"] = ["Mrs.Smith"]
+    @producer.colophon(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="EPUBMaker::Producer"/>
+  <title>Colophon</title>
+</head>
+<body>
+  <div class="colophon">
+    <p class="title">Sample Book</p>
+    <div class="pubhistory">
+      <p>2011年1月1日　発行</p>
+    </div>
+    <table class="colophon">
+      <tr><th>Author</th><td>Mr.Smith</td></tr>
+      <tr><th>Publisher</th><td>BLUEPRINT</td></tr>
+      <tr><th>Director of Photography</th><td>Mrs.Smith</td></tr>
+    </table>
+  </div>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
+
 #  def test_duplicate_id
 #    stage3
 #    assert_raise(Error) do
