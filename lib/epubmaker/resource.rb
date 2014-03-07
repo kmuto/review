@@ -21,17 +21,17 @@ module EPUBMaker
       rescue
         @hash = __send__ :en
       end
-      
+
       @hash.each_pair do |k, v|
         @hash[k] = params[k] unless params[k].nil?
       end
     end
-    
+
     # Return message translation for +key+.
     def v(key)
       return @hash[key]
     end
-    
+
     private
     # English message catalog
     def en
@@ -49,11 +49,12 @@ module EPUBMaker
         "c-dsr" => "Designer",
         "c-ill" => "Illustrator",
         "c-edt" => "Editor",
+        "c-pht" => "Director of Photography",
         "c-trl" => "Translator",
         "c-prt" => "Publisher",
       }
     end
-    
+
     # Japanese message catalog
     def ja
       {
@@ -70,6 +71,7 @@ module EPUBMaker
         "c-dsr" => "デザイン",
         "c-ill" => "イラスト",
         "c-edt" => "編　集",
+        "c-pht" => "撮　影",
         "c-trl" => "翻　訳",
         "c-prt" => "発行所",
       }
