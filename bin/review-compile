@@ -18,6 +18,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review'
 require 'review/compiler'
 require 'review/book'
+require 'review/highlighter'
 require 'fileutils'
 require 'optparse'
 
@@ -61,6 +62,7 @@ def _main
     "footnotetext" => false,
     "htmlext" => "html",
     "htmlversion" => 4,
+    "syntax-highlight" => "none",
   }
 
   parser = OptionParser.new
@@ -116,6 +118,9 @@ def _main
     output_filename = filename
   end
   parser.on('--tabwidth=WIDTH', 'tab width') {|width| param["tabwidth"] = width.to_i }
+  parser.on('--syntax-highlight=NONE', 'Apply monochrome/color highlight or [none]') do |highlight|
+    param['syntax-highlight'] = highlight
+  end
   parser.on('--help', 'Prints this message and quit.') do
     puts parser.help
     exit 0
@@ -137,7 +142,10 @@ def _main
 
   begin
     ReVIEW.book.param = param
-    compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
+    builder = load_strategy_class(target, check_only)
+    highlighter = ReVIEW::Highlighter.new(:pygments, param['syntax-highlight'])
+    builder.highlighter = highlighter
+    compiler = ReVIEW::Compiler.new(builder)
     case mode
     when :files
       if ARGV.empty?
@@ -200,7 +208,8 @@ end
 
 def load_strategy_class(target, strict)
   require "review/#{target}builder"
-  ReVIEW.const_get("#{target.upcase}Builder").new(strict)
+  builder = ReVIEW.const_get("#{target.upcase}Builder").new(strict)
+  return builder
 end
 
 def write(path, str)

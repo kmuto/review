@@ -13,6 +13,7 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/htmllayout'
 require 'review/textutils'
+require 'review/highlighter'
 require 'review/sec_counter'
 
 module ReVIEW
@@ -427,7 +428,11 @@ EOT
       print %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => body, :lexer => lexer, :format => 'html')
+      if @highlighter
+        puts @highlighter.highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
+      else
+        puts body
+      end
       puts '</pre>'
     end
 
@@ -449,7 +454,11 @@ EOT
       print %Q[<pre class="source">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = File.extname(id).gsub(/\./, '')
-      puts highlight(:body => body, :lexer => lexer, :format => 'html')
+      if @highlighter
+        puts @highlighter.highlight(:body => unescape_html(body), :lexer => lexer, :format => 'html')
+      else
+        puts body
+      end
       puts '</pre>'
     end
 

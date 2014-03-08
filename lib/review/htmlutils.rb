@@ -23,37 +23,17 @@ module ReVIEW
       str.gsub(/[&"<>]/) {|c| t[c] }
     end
 
+    alias escape escape_html
+
     def unescape_html(str)
       # FIXME better code
       str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
     end
 
+    alias unescape unescape_html
+
     def strip_html(str)
       str.gsub(/<\/?[^>]*>/, "")
-    end
-
-    def highlight(ops)
-      body = ops[:body] || ''
-      lexer = ops[:lexer] || ''
-      format = ops[:format] || ''
-
-      begin
-        require 'pygments'
-        begin
-          Pygments.highlight(
-                   unescape_html(body),
-                   :options => {
-                               :nowrap => true,
-                               :noclasses => true
-                             },
-                   :formatter => format,
-                   :lexer => lexer)
-        rescue MentosError
-          body
-        end
-      rescue LoadError
-          body
-      end
     end
   end
 end   # module ReVIEW

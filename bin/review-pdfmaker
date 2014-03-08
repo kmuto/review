@@ -19,6 +19,7 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review'
+require 'review/highlighter'
 
 def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
@@ -121,7 +122,7 @@ def output_chaps(filename, values)
   fork {
     STDOUT.reopen("#{@path}/#{filename}")
     $stderr.puts "compiling #{filename}"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}")
+    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} --syntax-highlight=#{values["syntax-highlight"]} #{values["params"]} #{filename}")
   }
   Process.waitall
 end
@@ -130,7 +131,7 @@ def output_parts(filename, values)
   fork {
     STDOUT.reopen("#{@path}/#{filename}.tex")
     $stderr.puts "compiling #{filename}.tex"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/")
+    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} --syntax-highlight=#{values["syntax-highlight"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/")
 
   }
   Process.waitall
@@ -197,6 +198,8 @@ def get_template(values)
   okuduke += <<EOB
 発行所 & #{values["prt"]} \\\\
 EOB
+  highlighter =  ReVIEW::Highlighter.new(:pygments, values['syntax-highlight'])
+  highlighter_preamble = highlighter.preamble('latex') || ''
 
   custom_titlepage = make_custom_titlepage(values["coverfile"])
 

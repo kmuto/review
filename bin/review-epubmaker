@@ -745,7 +745,7 @@ def output_chaps_by_file(l, values)
   filename = "#{file_id}.html"
   fork {
     STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
-    exec("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l}")
+    exec("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} --syntax-highlight=#{values["syntax-highlight"]} #{values["params"]} #{l}")
   }
   Process.waitall
   getanchors("#{@bookdir}/OEBPS/#{filename}")

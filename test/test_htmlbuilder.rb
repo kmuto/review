@@ -297,12 +297,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
     @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
 
-    begin # FIXME: Use params instead of exception handling
-      require 'pygments'
-      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result
-    rescue LoadError
-      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, @builder.raw_result
-    end
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, @builder.raw_result
   end
 
   def test_emlist
@@ -661,4 +656,42 @@ EOS
 EOS
     assert_equal expect, @builder.raw_result
   end
+end
+
+begin
+  # test syntax highlighting when Pygments is available
+  require 'pygments'
+
+  class HTMLBuidlerWithPygmentsTest < Test::Unit::TestCase
+    include ReVIEW
+
+    def setup
+      @builder = HTMLBuilder.new(false)
+      @builder.highlighter = ReVIEW::Highlighter.new(:pygments, 'color')
+      @param = {
+        "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
+        "inencoding" => "UTF-8",
+        "outencoding" => "UTF-8",
+        "subdirmode" => nil,
+        "stylesheet" => nil,  # for HTMLBuilder
+      }
+      ReVIEW.book.param = @param
+      @compiler = ReVIEW::Compiler.new(@builder)
+      @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+    end
+
+    def test_list
+      def @chapter.list(id)
+        Book::ListIndex::Item.new("samplelist",1)
+      end
+      @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+
+      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result
+    end
+  end
+rescue LoadError
+  warn "#{File.basename(__FILE__)}: Error in requiring 'pygments'. Related tests are skipped"
+  # pygments may be insalled with, e.g.: gem install pygments.rb
 end
