@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2012 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -98,7 +98,7 @@ EOT
           end
         end
         header += <<EOT
-  <meta name="generator" content="ReVIEW" />
+  <meta name="generator" content="Re:VIEW" />
   <title>#{convert_outencoding(strip_html(compile_inline(@chapter.title)), ReVIEW.book.param["outencoding"])}</title>
 </head>
 <body>

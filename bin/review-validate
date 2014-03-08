@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Copyright (c) 2010 Kenshi Muto
+# Copyright (c) 2010-2014 Kenshi Muto
 #
 # This program is free software
 # You can distribute or modify this program under the terms of
@@ -7,7 +7,7 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-# simple validator for ReVIEW
+# simple validator for Re:VIEW
 
 block = nil
 maxcolcount = 0

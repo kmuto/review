@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2013 Masanori Kado
+# Copyright (c) 2013-2014 Masanori Kado
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -56,7 +56,7 @@ def generate_layout(dir)
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="stylesheet" type="text/css" href="style.css" />
-  <meta name="generator" content="ReVIEW" />
+  <meta name="generator" content="Re:VIEW" />
   <title><%= title %></title>
 </head>
 <body>

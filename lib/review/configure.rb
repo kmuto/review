@@ -4,7 +4,7 @@ module ReVIEW
     def self.values
       { # These parameters can be overridden by YAML file.
         "bookname"=> "example", # it defines epub file name also
-        "booktitle" => "ReVIEW EPUBサンプル",
+        "booktitle" => "Re:VIEW EPUBサンプル",
         "title" => nil,
         "aut" => nil, # author
         "prt" => nil, # printer(publisher)

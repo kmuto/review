@@ -1,5 +1,5 @@
 # review-epubmaker向けの設定ファイルの例。
-# yamlファイルをReVIEWファイルのある場所に置き、
+# yamlファイルをRe:VIEWファイルのある場所に置き、
 # 「review-epubmaker yamlファイル」を実行すると、<bookname>.epubファイルが
 # 生成されます。
 # このファイルはUTF-8エンコーディングで記述してください。
@@ -7,7 +7,7 @@
 # ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
 bookname: review-sample
 # 書名
-booktitle: ReVIEW EPUBサンプル
+booktitle: Re:VIEW EPUBサンプル
 # 著者
 aut: 吟遊詩人
 # 以下はオプション
@@ -31,7 +31,7 @@ aut: 吟遊詩人
 #
 # 固有IDに使用するドメイン。指定しない場合には、時刻に基づくランダムUUIDが入る
 # urnid: urn:uid:http://example.com/some-book-title/1.0.2/
-# CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること)
+# CSSファイル (yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること)
 stylesheet: stylesheet.css
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
 # texstyle: samplemacro
@@ -53,7 +53,7 @@ toc: true
 mytoc: null
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
 colophon: null
-# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
+# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:Re:VIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
 # posthook: hook.sh
 # EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
 cover_linear: null

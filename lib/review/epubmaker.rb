@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2013 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -27,7 +27,7 @@ module ReVIEW
   end
 
   def load_yaml(yamlfile)
-    @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile)) # FIXME:設定がReVIEW側とepubmaker/producer.rb側の2つに分かれて面倒
+    @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile)) # FIXME:設定がRe:VIEW側とepubmaker/producer.rb側の2つに分かれて面倒
     @epub = Producer.new(@params)
     @epub.load(yamlfile)
     @params = @epub.params
@@ -371,7 +371,7 @@ EOT
       end
     end
     s << <<EOT
-  <meta content='ReVIEW' name='generator'/>
+  <meta content='Re:VIEW' name='generator'/>
   <title>#{title}</title>
 </head>
 <body>

@@ -6,7 +6,7 @@ bookname: sample
 # 記述言語
 language: ja
 # 書名
-title: ReVIEW EPUBのサンプル
+title: Re:VIEW EPUBのサンプル
 
 # 固有IDに使用するドメイン。指定しない場合には、時刻に基づくランダムUUIDが入る
 # urnid: urn:uid:http://example.com/some-book-title/1.0.2/
@@ -86,5 +86,5 @@ mytoc:
 # colophon: true
 # pubhistory: 奥付履歴
 
-# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
+# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:Re:VIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
 # posthook: hook.sh

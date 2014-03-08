@@ -1,24 +1,24 @@
-= ReVIEWクイックスタートガイド
+= Re:VIEWクイックスタートガイド
 
-ReVIEW は、EWB や RD あるいは Wiki に似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。
+Re:VIEW は、EWB や RD あるいは Wiki に似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。
 
 平易な文法ながらも、コンピュータ関係のドキュメント作成のための多くの機能を備えており、テキスト、LaTeX、HTML、XML といった形式に変換できます。独自のカスタマイズも簡単です。
 
-ReVIEW は GNU Lesser General Public License Version 2.1 に基づいて配布されており、自由に利用、改変、再配布できます。このライセンスは、ReVIEW を使ってあなたが作成しようとする文書とは無関係であり、あなたの文書はこのライセンスに強制されることはありません。ReVIEW のツールセットあるいは ReVIEW を組み込んだシステムを配布あるいは販売しようとしているときには、ライセンスファイル COPYING をよく確認してください。
+Re:VIEW は GNU Lesser General Public License Version 2.1 に基づいて配布されており、自由に利用、改変、再配布できます。このライセンスは、Re:VIEW を使ってあなたが作成しようとする文書とは無関係であり、あなたの文書はこのライセンスに強制されることはありません。Re:VIEW のツールセットあるいは Re:VIEW を組み込んだシステムを配布あるいは販売しようとしているときには、ライセンスファイル COPYING をよく確認してください。
 
-このドキュメントでは、ReVIEW のセットアップから変換の例までを簡単に説明します。
+このドキュメントでは、Re:VIEW のセットアップから変換の例までを簡単に説明します。
 
 == セットアップ
 
-ReVIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem、Git、Subversion のいずれかを使ってダウンロード・展開します。
+Re:VIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem、Git、Subversion のいずれかを使ってダウンロード・展開します。
 
-なお、ReVIEW フォーマット自体は文字で表現されたタグが付いている以外は単なるテキストファイルなので、エディタ、OS についてはまったく制限はありません。
+なお、Re:VIEW フォーマット自体は文字で表現されたタグが付いている以外は単なるテキストファイルなので、エディタ、OS についてはまったく制限はありません。
 
 === Ruby gemを使う場合
 
-機能セットがまとまった区切りごとに、ReVIEW の開発チームが ReVIEW の gem を更新しています。
+機能セットがまとまった区切りごとに、Re:VIEW の開発チームが Re:VIEW の gem を更新しています。
 
-次のように ReVIEW の gem をインストールします。
+次のように Re:VIEW の gem をインストールします。
 
   gem install review
 
@@ -30,7 +30,7 @@ Ruby gem の bin ディレクトリにパスを通すようにしておいてく
 
 === Gitを使う場合
 
-ReVIEW は GitHub で開発されており、バージョン管理ツールの Git を使って最新の ReVIEW コードを入手できます。Git は分岐が容易なので、独自のカスタマイズを施すのにも向いています。
+Re:VIEW は GitHub で開発されており、バージョン管理ツールの Git を使って最新の Re:VIEW コードを入手できます。Git は分岐が容易なので、独自のカスタマイズを施すのにも向いています。
 
 初めて取得するときには、次のようにします (コピーを作っています)。
 
@@ -56,19 +56,19 @@ review というディレクトリに展開されるので、review/bin にパ�
 
   svn up
 
-= ReVIEW テキストの作成と変換
+= Re:VIEW テキストの作成と変換
 
-セットアップを終えたら、ReVIEW フォーマットのテキストを作り、変換できるようになります。次に ReVIEW フォーマットテキストの簡単な例を示します。これを sample.re といった名前で保存します (拡張子も自由ですが、.re 拡張子を推奨します)。
+セットアップを終えたら、Re:VIEW フォーマットのテキストを作り、変換できるようになります。次に Re:VIEW フォーマットテキストの簡単な例を示します。これを sample.re といった名前で保存します (拡張子も自由ですが、.re 拡張子を推奨します)。
 
-  = はじめてのReVIEW
+  = はじめてのRe:VIEW
   
   //lead{
-  「Hello, ReVIEW.」
+  「Hello, Re:VIEW.」
   //}
   
-  == ReVIEWとは
+  == Re:VIEWとは
   
-  @<b>{ReVIEW}は、EWBやRDあるいはWikiに似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。
+  @<b>{Re:VIEW}は、EWBやRDあるいはWikiに似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。
   
   平易な文法ながらも、コンピュータ関係のドキュメント作成のための多くの機能を備えており、次のような形式に変換できます。
   
@@ -85,9 +85,9 @@ review というディレクトリに展開されるので、review/bin にパ�
   
   ホームページは@<tt>{https://github.com/kmuto/review/wiki/}です。
 
-テキストファイルの文字エンコーディングには、UTF-8 を使うことをお勧めします。ReVIEW は日本語文字エンコーディングとして UTF-8、EUC-JP、Shift-JIS、JIS を扱うことができ、入力ファイルについては自動判別、出力ファイルについても選択可能 (デフォルトは UTF-8) ですが、入力・出力のいずれにおいても、使用可能な文字についての制限が少ない UTF-8 が最適です。
+テキストファイルの文字エンコーディングには、UTF-8 を使うことをお勧めします。Re:VIEW は日本語文字エンコーディングとして UTF-8、EUC-JP、Shift-JIS、JIS を扱うことができ、入力ファイルについては自動判別、出力ファイルについても選択可能 (デフォルトは UTF-8) ですが、入力・出力のいずれにおいても、使用可能な文字についての制限が少ない UTF-8 が最適です。
 
-次に、章構成ファイルの CHAPS ファイルを同じディレクトリに用意します。このファイルには、ReVIEW フォーマットファイルの名前を格納します。
+次に、章構成ファイルの CHAPS ファイルを同じディレクトリに用意します。このファイルには、Re:VIEW フォーマットファイルの名前を格納します。
 
   sample.re
 
@@ -112,17 +112,17 @@ sample.re を HTML に変換すると、次のようになります。
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <meta http-equiv="Content-Style-Type" content="text/css" />
-    <meta name="generator" content="ReVIEW" />
-    <title>はじめてのReVIEW</title>
+    <meta name="generator" content="Re:VIEW" />
+    <title>はじめてのRe:VIEW</title>
   </head>
   <body>
-  <h1><a id="h1" />第1章　はじめてのReVIEW</h1>
+  <h1><a id="h1" />第1章　はじめてのRe:VIEW</h1>
   <div class="lead">
-  <p>「Hello, ReVIEW.」</p>
+  <p>「Hello, Re:VIEW.」</p>
   </div>
   
-  <h2><a id="h1-1" />1.1　ReVIEWとは</h2>
-  <p><b>ReVIEW</b>は、EWBやRDあるいはWikiに似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。</p>
+  <h2><a id="h1-1" />1.1　Re:VIEWとは</h2>
+  <p><b>Re:VIEW</b>は、EWBやRDあるいはWikiに似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。</p>
   <p>平易な文法ながらも、コンピュータ関係のドキュメント作成のための多くの機能を備えており、次のような形式に変換できます。</p>
   <ul>
   <li>テキスト（指示タグ付き）</li>
@@ -140,13 +140,13 @@ sample.re を HTML に変換すると、次のようになります。
   </body>
   </html>
 
-ReVIEW フォーマットについての詳細は、 {format.rdoc}[https://github.com/kmuto/review/blob/master/doc/format.rdoc] を参照してください。
+Re:VIEW フォーマットについての詳細は、 {format.rdoc}[https://github.com/kmuto/review/blob/master/doc/format.rdoc] を参照してください。
 
 review-compile を含め、ほとんどのコマンドは --help オプションを付けるとオプションについてのヘルプが表示されます。review-compile には多数のオプションがあるので確認してください。
 
 なお、--target で毎回指定するのは面倒なので、review-compile に対するシンボリックリンクを作成しておくとよいでしょう。「review2...」のコマンド名で呼び出せるようになります。
 
-  cd ReVIEWのインストールされたパス/bin
+  cd Re:VIEWのインストールされたパス/bin
   ln -s review-compile review2text
   ln -s review-compile review2html
   ln -s review-compile review2latex
@@ -181,7 +181,7 @@ PDF を作成するには、pTeXLive2009 以上の環境が必要です。EPUB �
 
 == クレジット
 
-ReVIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2010年12月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
+Re:VIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2014年3月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
 
 バグ・パッチの報告、開発者用メーリングリストなどについての情報は、
 https://github.com/kmuto/review/wiki

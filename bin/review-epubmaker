@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -228,13 +228,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -280,13 +280,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -354,13 +354,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -806,13 +806,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     header += <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     header += <<EOT
@@ -887,7 +887,7 @@ def make_part_page(part, filename, values)
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
   <title>#{values["booktitle"]}</title>
 </head>
     EOT
@@ -897,7 +897,7 @@ def make_part_page(part, filename, values)
 <head>
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
   <title>#{values["booktitle"]}</title>
 </head>
     EOT
@@ -939,13 +939,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
