@@ -317,12 +317,12 @@ EOT
   def copy_backmatter(basetmpdir)
     if @params["profile"]
       FileUtils.cp(@params["profile"], "#{basetmpdir}/#{File.basename(@params["profile"])}")
-      write_tochtmltxt(basetmpdir, "1\t_#{File.basename(@params["profile"])}\t#{@epub.res.v("profile")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@epub.res.v("profile")}")
     end
 
     if @params["advfile"]
       FileUtils.cp(@params["advfile"], "#{basetmpdir}/#{File.basename(@params["advfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t_#{File.basename(@params["advfile"])}\t#{@epub.res.v("advtitle")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["advfile"])}\t#{@epub.res.v("advtitle")}")
     end
 
     if @params["colophon"]
