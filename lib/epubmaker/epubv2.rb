@@ -480,19 +480,8 @@ EOT
     end
 
     def export_zip(tmpdir, epubfile)
-      # FIXME: for Windows?
-      fork {
-        Dir.chdir(tmpdir) {|d|
-          exec("#{@producer.params["zip_stage1"]} #{epubfile} mimetype")
-        }
-      }
-      Process.waitall
-      fork {
-        Dir.chdir(tmpdir) {|d|
-          exec("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS")
-        }
-      }
-      Process.waitall
+      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage1"]} #{epubfile} mimetype") }
+      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS") }
     end
 
     private

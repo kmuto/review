@@ -1,3 +1,9 @@
+Wed Mar 12 20:14:22 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* epubmaker/epubv2.rb, epubmaker/producer.rb, review/epubmaker.rb:
+	  - use system() instead of exec() for review-epubmaker-ng.
+	  - hand over stylesheet values to review-compile in review-epubmaker-ng.
+
 Wed Mar 12 20:03:12 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-pdfmaker: support LuaLaTeX.

@@ -165,10 +165,7 @@ module EPUBMaker
     
     def call_hook(filename, *params)
       if !filename.nil? && File.exist?(filename) && FileTest.executable?(filename)
-        fork {
-          exec(filename, *params)
-        }
-        Process.waitall
+        system(filename, *params)
       end
     end
     

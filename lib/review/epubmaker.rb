@@ -82,10 +82,7 @@ module ReVIEW
 
   def call_hook(filename, *params)
     if !filename.nil? && File.exist?(filename) && FileTest.executable?(filename)
-    fork {
-      exec(filename, *params)
-    }
-    Process.waitall
+      system(filename, *params)
     end
   end
 
@@ -200,11 +197,13 @@ EOT
       level = @params["post_secnolevel"] if chap.on_POSTDEF?
     end
 
-    fork {
-      STDOUT.reopen("#{basetmpdir}/#{htmlfile}")
-      exec("review-compile --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{@params["params"]} #{filename}")
-    }
-    Process.waitall
+    stylesheet = ""
+    if @params["stylesheet"].size > 0
+      stylesheet = "--stylesheet=#{@params["stylesheet"].join(",")}"
+    end
+
+    #STDOUT.reopen("#{basetmpdir}/#{htmlfile}")
+    system("review-compile --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
 
     write_info_body(basetmpdir, id, htmlfile, ispart)
   end
