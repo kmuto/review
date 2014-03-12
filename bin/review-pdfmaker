@@ -97,22 +97,25 @@ def main
     ## do compile
     enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
     kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
+    texcommand = values["texcommand"] || "platex"
     fork {
-      exec("platex -kanji=#{kanji} book.tex")
+      exec("#{texcommand} -kanji=#{kanji} book.tex")
     }
     Process.waitall
     fork {
-      exec("platex -kanji=#{kanji} book.tex")
+      exec("#{texcommand} -kanji=#{kanji} book.tex")
     }
     Process.waitall
     fork {
-      exec("platex -kanji=#{kanji} book.tex")
+      exec("#{texcommand} -kanji=#{kanji} book.tex")
     }
-    Process.waitall
-    fork {
-      exec("dvipdfmx -d 5 book.dvi")
-    }
-    Process.waitall
+    if texcommand != "lualatex"
+      Process.waitall
+      fork {
+        exec("dvipdfmx -d 5 book.dvi")
+      }
+      Process.waitall
+    end
   }
   FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
 end

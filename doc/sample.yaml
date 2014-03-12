@@ -37,6 +37,8 @@ stylesheet: stylesheet.css
 # texstyle: samplemacro
 # LaTeX用のdocumentclassを指定する
 # texdocumentclass: ["jsarticle", "b5paper,oneside"]
+# LaTeX用のコマンドを指定する(platex or lualatex)
+# texcommand: "platex"
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル

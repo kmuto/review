@@ -1,3 +1,7 @@
+Wed Mar 12 20:03:12 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: support LuaLaTeX.
+
 Sat Mar  8 23:16:52 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* 'ReVIEW' has been renamed to 'Re:VIEW'.
