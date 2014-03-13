@@ -1,3 +1,7 @@
+Thu Mar 13 09:52:50 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* epubmaker/epubv3.rb: <nav> needs own epub namespace. <nav> should use <ol>, not <ul>.
+
 Thu Mar 13 00:36:58 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/epubmaker.rb: remove unnecessary escape character for review-epubmaker-ng.

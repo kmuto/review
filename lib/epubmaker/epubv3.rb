@@ -22,9 +22,9 @@ module EPUBMaker
   <title>#{@producer.res.v("toctitle")}</title>
 </head>
 <body>
-  <nav epub:type="toc" id="toc">
+  <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>
-  <ul class="toc-h1">
+  <ol class="toc-h1">
 EOT
 
       current = 1
@@ -32,11 +32,11 @@ EOT
       @producer.contents.each do |item|
         next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
         if item.level > current
-          s << %Q[\n<ul class="toc-h#{item.level}">\n]
+          s << %Q[\n<ol class="toc-h#{item.level}">\n]
           current = item.level
         elsif item.level < current
           (current - 1).downto(item.level) do |n|
-            s << %Q[</li>\n</ul>\n]
+            s << %Q[</li>\n</ol>\n]
           end
           s << %Q[</li>\n]
           current = item.level
@@ -50,13 +50,13 @@ EOT
       end
       
       (current - 1).downto(1) do |n|
-        s << %Q[</li>\n</ul>\n]
+        s << %Q[</li>\n</ol>\n]
       end
       if !init_item
       s << %Q[</li>\n]
       end
       s << <<EOT
-  </ul>
+  </ol>
   </nav>
 </body>
 </html>
