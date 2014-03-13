@@ -283,7 +283,7 @@ EOT
 
     if !@params["creditfile"].nil? && File.exist?(@params["creditfile"])
       FileUtils.cp(@params["creditfile"], "#{basetmpdir}/#{File.basename(@params["creditfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@epub.res.v("credit")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@epub.res.v("credittitle")}")
     end
 
   end
@@ -317,7 +317,7 @@ EOT
   def copy_backmatter(basetmpdir)
     if @params["profile"]
       FileUtils.cp(@params["profile"], "#{basetmpdir}/#{File.basename(@params["profile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@epub.res.v("profile")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@epub.res.v("profiletitle")}")
     end
 
     if @params["advfile"]
