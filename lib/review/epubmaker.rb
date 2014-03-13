@@ -202,8 +202,7 @@ EOT
       stylesheet = "--stylesheet=#{@params["stylesheet"].join(",")}"
     end
 
-    #STDOUT.reopen("#{basetmpdir}/#{htmlfile}")
-    system("review-compile --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
+    system("review-compile --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
 
     write_info_body(basetmpdir, id, htmlfile, ispart)
   end

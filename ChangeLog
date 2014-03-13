@@ -1,3 +1,7 @@
+Thu Mar 13 11:34:15 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlutils.rb, lib/review/epubmaker.rb, test_htmlbuilder.rb: use pygments higlighting only if "pygments: true" is defined.
+
 Thu Mar 13 09:52:50 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* epubmaker/epubv3.rb: <nav> needs own epub namespace. <nav> should use <ol>, not <ul>.

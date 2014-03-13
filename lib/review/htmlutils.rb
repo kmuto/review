@@ -37,6 +37,8 @@ module ReVIEW
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
 
+      return body if ReVIEW.book.param["pygments"].nil?
+
       begin
         require 'pygments'
         begin
