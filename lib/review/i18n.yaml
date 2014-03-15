@@ -15,6 +15,10 @@ ja:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  aut: "著　者"
+  author_postfix: "　著"
+  supervisor_postfix: "　監修"
+  translator_postfix: "　訳"
 
 en:
   image: "Figure "

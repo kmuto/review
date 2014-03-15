@@ -19,6 +19,7 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review'
+require 'review/i18n'
 
 def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
@@ -175,14 +176,14 @@ def get_template(values)
   authors = ""
   if values["aut"]
     okuduke += "著　者 & #{values["aut"]} \\\\\n"
-    authors = values["aut"]+ "\\vspace*{1zh} 著"
+    authors = values["aut"]+ ReVIEW::I18n.t("author_postfix")
   end
   if values["csl"]
     okuduke += "監　修 & #{values["csl"]} \\\\\n"
-    authors += " \\\\\n"+values["csl"]+ "\\vspace*{1zh} 監修"
+    authors += " \\\\\n"+values["csl"]+ ReVIEW::I18n.t("supervisor_postfix")
   end
   if values["trl"]
-    authors += " \\\\\n"+values["trl"]+ "\\vspace*{1zh} 訳"
+    authors += " \\\\\n"+values["trl"]+ ReVIEW::I18n.t("translator_postfix")
     okuduke += "翻　訳 & #{values["trl"]} \\\\\n"
   end
   if values["dsr"]
