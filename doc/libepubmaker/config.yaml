@@ -1,0 +1,158 @@
+# review-epubmaker-ng向けYAMLファイルのサンプル
+# 
+# このファイルはUTF-8エンコーディングで記述してください
+# YAMLにおける空は、「nil」ではなく「null」であることに注意してください
+
+# ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
+bookname: sample
+# 記述言語
+language: ja
+# 書名
+title: "Re:VIEW EPUBのサンプル"
+
+# 固有IDに使用するドメイン。指定しない場合には、時刻に基づくランダムUUIDが入る
+# urnid: urn:uid:http://example.com/some-book-title/1.0.2/
+
+# ISBN。省略した場合はランダム生成したUUIDが入る
+# isbn: null
+
+# 著者名。「, 」で区切って複数指定できる
+aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
+
+# 以下はオプション(autと同じように配列書式で複数指定可能)。
+# a-が付いているものはcreator側、
+# 付いていないものはcontributor側(二次協力者)に入る
+# a-adp, adp: 異なるメディア向けに作り直した者
+# a-ann, ann: 注釈記述者
+# a-arr, arr: アレンジした者
+# a-art, art: グラフィックデザインおよび芸術家
+# a-asn, asn: 関連・かつての所有者・関係者
+# a-aqt, aqt: 大きく引用された人物
+# a-aft, aft: 後書き・奥付の責任者
+# a-aui, aui: 序論・序文・前書きの責任者
+# a-ant, ant: 目録責任者
+# a-bkp, bkp: メディア制作責任者
+# a-clb, clb: 限定参加または補足者
+# a-cmm, cmm: 解釈・分析・考察者
+# a-dsr, dsr: デザイナ
+# a-edt, edt: 編集者
+# a-ill, ill: イラストレータ
+# a-lyr, lyr: 歌詞作成者
+# a-mdc, mdc: メタデータセットの一次的責任者
+# a-mus, mus: 音楽家
+# a-nrt, nrt: 語り手
+# a-oth, oth: その他
+# a-pht, pht: 撮影責任者
+# a-prt, prt: 出版社
+# a-red, red: 項目の枠組起草者
+# a-rev, rev: 評論者
+# a-spn, spn: 援助者
+# a-ths, ths: 監督者
+# a-trc, trc: 筆記・タイプ作業者
+# a-trl, trl: 翻訳者
+
+# rights: 権利表記(配列で複数指定可)
+# date: 刊行日(省略した場合は実行時の日付)
+# description: 説明
+# subject: 短い説明用タグ(配列で複数指定可)
+# type: 書籍のカテゴリーなど(配列で複数指定可)
+# format: メディアタイプおよび特徴(配列で複数指定可)
+# source: 出版物生成の重要なリソース情報(配列で複数指定可)
+# relation: 補助的リソース(配列で複数指定可)
+# coverage: 内容の範囲や領域(配列で複数指定可)
+
+# htmlext: HTMLファイルの拡張子(省略した場合はhtml)
+# cover: カバーページのファイル名(省略した場合はbookname.xhtmlになる)
+#
+# coverimage: カバー用画像
+#
+# CSSファイル(配列で複数指定可)
+stylesheet: ["stylesheet.css"]
+
+# ePUBのバージョン (2か3)
+# epubversion: 2
+# HTMLのバージョン (4か5。epubversionを3にしたときには5にする)
+# htmlversion: 4
+
+# 目次に抽出する見出しレベル
+# toclevel: 2
+# 本文でセクション番号を表示する見出しレベル
+# secnolevel: 2
+# 前付でセクション番号を表示する見出しレベル
+# pre_secnolevel: 0
+# 後付でセクション番号を表示する見出しレベル
+# post_secnolevel: 0
+# 部番号を表示する見出しレベル
+# part_secnolevel: 1
+
+# NCX目次の見出しレベルごとの飾り(配列で設定)
+#ncxindent:
+#- 
+#- - 
+
+# EPUB標準の目次以外に目次を作成するか。省略した場合はnull (作成しない)
+# mytoc: true
+# mytocがtrueの場合に作成する目次ファイル名(省略するとtoc.xhtml)
+# tocfile: toc.xhtml
+
+# 表紙の後に権利表記ページを作成するか。デフォルトでは作成されない。ファイル名を指定するとそのファイルが使われる(data配列にも指定しておく必要がある)
+# titlepage: title.xhtml
+
+# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.xhtmlとしてコピーされる(data配列にも指定しておく必要がある)
+# colophon: true
+# pubhistory: 奥付履歴
+
+# プロフィールページファイル。ファイル名を指定すると著者紹介として入る
+# profile: null
+# プロフィールページの目次上の見出し
+# profiletitle: 著者紹介
+
+# フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
+# プログラムには実行権限が必要
+
+# ファイル変換処理の前に実行するプログラム。スタイルシートのコンパイルをしたいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_beforeprocess: null
+
+# 前付の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_afterfrontmatter: null
+
+# 本文の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_afterbody: null
+
+# 後付の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_afterbackmatter: null
+
+# 画像およびフォントをコピーした後に実行するプログラム。別の画像やフォントを追加したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_aftercopyimage: null
+
+# ePUB zipアーカイブ直前に実行するプログラム。メタ情報などを加工したいときなどに利用する。
+# 渡される引数1=ePUB準備ディレクトリ
+# hook_prepack: null
+
+# ハイライトを有効にするか。pygments.gemが必要
+# pygments: null
+
+# 取り込む画像が格納されているディレクトリ。省略した場合は以下
+# imagedir: images
+
+# 取り込むフォントが格納されているディレクトリ。省略した場合は以下
+# fontdir: fonts
+
+# imagedir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
+# image_ext: ["png", "gif", "jpg", "jpeg", "svg", "ttf", "woff", "otf"]
+
+# fontdir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
+# font_ext: ["ttf", "woff", "otf"]
+
+# Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
+# rename_for_legacy: null
+
+# ePUBアーカイブの非圧縮実行
+# zip_stage1: "zip -0Xq"
+# ePUBアーカイブの圧縮実行
+# zip_stage2: "zip -Xr9Dq"

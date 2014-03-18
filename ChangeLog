@@ -1,3 +1,7 @@
+Tue Mar 18 18:37:12 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yaml: add descriptions of some parameters.
+
 Tue Mar 18 17:57:23 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* epubmaker/content.rb, epubmaker/producer.rb, epubmaker.rb:
