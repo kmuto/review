@@ -19,6 +19,7 @@ ja:
   author_postfix: "　著"
   supervisor_postfix: "　監修"
   translator_postfix: "　訳"
+  names_splitter: "、"
 
 en:
   image: "Figure "
@@ -36,6 +37,7 @@ en:
   caption_prefix_idgxml: "　"
   ruby_prefix: "("
   ruby_postfix: ")"
+  names_splitter: ", "
 
 zh_TW:
   image: 圖
@@ -54,3 +56,4 @@ zh_TW:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  names_splitter: ", "
