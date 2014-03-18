@@ -134,7 +134,7 @@ module ReVIEW
           build_part(part, basetmpdir, htmlfile)
           title = ReVIEW::I18n.t("part", part.number)
           title += ReVIEW::I18n.t("chapter_postfix") + part.name.strip if part.name.strip.present?
-          write_tochtmltxt(basetmpdir, "0\t#{filename}\t#{title}")
+          write_tochtmltxt(basetmpdir, "0\t#{htmlfile}\t#{title}")
         end
       end
 
