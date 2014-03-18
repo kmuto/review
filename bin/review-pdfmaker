@@ -87,6 +87,10 @@ def main
     values["usepackage"] = "\\usepackage{#{values['texstyle']}}"
   end
 
+  %w[aut csl trl dsr ill cov edt].each do |item|
+    values[item] = [values[item]] if !values[item].nil? && values[item].instance_of?(String)
+  end
+
   copy_images("./images", "#{@path}/images")
   copyStyToDir(Dir.pwd + "/sty", @path)
   copyStyToDir(Dir.pwd, @path, "tex")
@@ -174,29 +178,29 @@ def get_template(values)
 
   okuduke = ""
   authors = ""
-  if values["aut"]
-    okuduke += "著　者 & #{values["aut"]} \\\\\n"
-    authors = values["aut"]+ ReVIEW::I18n.t("author_postfix")
+  if !values["aut"].nil? && !values["aut"].empty?
+    okuduke += "著　者 & #{values["aut"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    authors = values["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
   end
-  if values["csl"]
-    okuduke += "監　修 & #{values["csl"]} \\\\\n"
-    authors += " \\\\\n"+values["csl"]+ ReVIEW::I18n.t("supervisor_postfix")
+  if !values["csl"].nil? && !values["csl"].empty?
+    okuduke += "監　修 & #{values["csl"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    authors += " \\\\\n"+values["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
   end
-  if values["trl"]
-    authors += " \\\\\n"+values["trl"]+ ReVIEW::I18n.t("translator_postfix")
-    okuduke += "翻　訳 & #{values["trl"]} \\\\\n"
+  if !values["trl"].nil? && !values["trl"].empty?
+    okuduke += "翻　訳 & #{values["trl"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    authors += " \\\\\n"+values["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
   end
-  if values["dsr"]
-    okuduke += "デザイン & #{values["dsr"]} \\\\\n"
+  if !values["dsr"].nil? && !values["dsr"].empty?
+    okuduke += "デザイン & #{values["dsr"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
   end
-  if values["ill"]
-    okuduke += "イラスト & #{values["ill"]} \\\\\n"
+  if !values["ill"].nil? && !values["ill"].empty?
+    okuduke += "イラスト & #{values["ill"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
   end
-  if values["cov"]
-    okuduke += "表　紙 & #{values["cov"]} \\\\\n"
+  if !values["cov"].nil? && !values["cov"].empty?
+    okuduke += "表　紙 & #{values["cov"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
   end
-  if values["edt"]
-    okuduke += "編集者 & #{values["edt"]} \\\\\n"
+  if !values["edt"].nil? && !values["edt"].empty?
+    okuduke += "編集者 & #{values["edt"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
   end
   okuduke += <<EOB
 発行所 & #{values["prt"]} \\\\
