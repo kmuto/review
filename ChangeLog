@@ -1,3 +1,11 @@
+Tue Mar 18 17:57:23 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* epubmaker/content.rb, epubmaker/producer.rb, epubmaker.rb:
+	  add embeded font support. By default, review-epubmaker-ng
+	  takes fonts/*.{otf|ttf|woff} and images/*.{otf|ttf|woff}.
+	  You can change this behaviour by modifying image_ext, font_ext,
+	  fontdir, and imagedir in config.yaml.
+
 Thu Mar 13 11:34:15 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlutils.rb, lib/review/epubmaker.rb, test_htmlbuilder.rb: use pygments higlighting only if "pygments: true" is defined.

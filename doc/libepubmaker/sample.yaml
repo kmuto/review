@@ -1,5 +1,6 @@
 # YAMLファイルのサンプル
 # このファイルはUTF-8エンコーディングで記述してください
+# YAMLにおける空は、「nil」ではなく「null」であることに注意してください
 
 # ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
 bookname: sample
@@ -88,3 +89,12 @@ mytoc:
 
 # XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:Re:VIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
 # posthook: hook.sh
+
+# 取り込む画像が格納されているディレクトリ
+# imagedir: images
+# 取り込むフォントが格納されているディレクトリ
+# fontdir: fonts
+# imagedir内から取り込まれる対象となるファイル拡張子
+# image_ext: ["png", "gif", "jpg", "jpeg", "svg", "ttf", "woff", "otf"]
+# fontdir内から取り込まれる対象となるファイル拡張子
+# font_ext: ["ttf", "woff", "otf"]

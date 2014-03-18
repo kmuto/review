@@ -66,10 +66,12 @@ module ReVIEW
       copy_images(@params["imagedir"], "#{basetmpdir}/images")
       copy_images("covers", "#{basetmpdir}/images")
       copy_images("adv", "#{basetmpdir}/images")
+      copy_images(@params["fontdir"], "#{basetmpdir}/fonts", @params["font_ext"])
       log("Call hook_aftercopyimage. (#{@params["hook_aftercopyimage"]})")
       call_hook(@params["hook_aftercopyimage"], basetmpdir)
 
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
+      @epub.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
       epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
       Dir.mkdir(bookname) unless @params["debug"].nil?
@@ -86,20 +88,21 @@ module ReVIEW
     end
   end
 
-  def copy_images(imagedir, destdir)
+  def copy_images(imagedir, destdir, allow_exts=nil)
     return nil unless File.exist?(imagedir)
+    allow_exts = @params["image_ext"] if allow_exts.nil?
     FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
-    recursive_copy_images(imagedir, destdir)
+    recursive_copy_images(imagedir, destdir, allow_exts)
   end
 
-  def recursive_copy_images(imagedir, destdir)
+  def recursive_copy_images(imagedir, destdir, allow_exts)
     Dir.open(imagedir) do |dir|
       dir.each do |fname|
         next if fname =~ /\A\./
         if FileTest.directory?("#{imagedir}/#{fname}")
           recursive_copy_images("#{imagedir}/#{fname}", "#{destdir}/#{fname}")
         else
-          if fname =~ /\.(png|gif|jpg|jpeg|svg)\Z/i
+          if fname =~ /\.(#{allow_exts.join("|")})\Z/i
             Dir.mkdir(destdir) unless File.exist?(destdir)
             log("Copy #{imagedir}/#{fname} to the temporary directory.")
             FileUtils.cp("#{imagedir}/#{fname}", destdir)

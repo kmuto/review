@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2013 Kenshi Muto
+# Copyright (c) 2010-2014 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -124,10 +124,12 @@ module EPUBMaker
 
     # Add informations of figure files in +path+ to contents array.
     # +base+ defines a string to remove from path name.
-    def import_imageinfo(path, base=nil)
+    def import_imageinfo(path, base=nil, allow_exts=nil)
+      return nil unless File.exist?(path)
+      allow_exts = @params["image_ext"] if allow_exts.nil?
       Dir.foreach(path) do |f|
         next if f =~ /\A\./
-        if f =~ /\.(png|jpg|jpeg|svg|gif)\Z/i  # FIXME:EPUB3 accepts more types...
+        if f =~ /\.(#{allow_exts.join("|")})\Z/i
           path.chop! if path =~ /\/\Z/
           if base.nil?
             @contents.push(EPUBMaker::Content.new({"file" => "#{path}/#{f}"}))
@@ -206,6 +208,9 @@ module EPUBMaker
         "hook_prepack" => nil,
         "rename_for_legacy" => nil,
         "imagedir" => "images",
+        "fontdir" => "fonts",
+        "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
+        "font_ext" => %w(ttf woff otf),
       }
 
       defaults.each_pair do |k, v|

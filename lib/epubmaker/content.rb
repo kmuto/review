@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = content.rb -- Content object for EPUBMaker.
 #
-# Copyright (c) 2010-2013 Kenshi Muto
+# Copyright (c) 2010-2014 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -73,8 +73,9 @@ module EPUBMaker
       @media = "image/jpeg" if @media == "jpg" || @media == "jpeg" || @media == "image/jpg"
       @media = "image/png" if @media == "png"
       @media = "image/gif" if @media == "gif"
-      @media = "image/svg" if @media == "svg"
       @media = "image/svg+xml" if @media == "svg" || @media == "image/svg"
+      @media = "application/vnd.ms-opentype" if @media == "ttf" || @media == "otf"
+      @media = "application/font-woff" if @media == "woff"
 
       if @id.nil? || @file.nil? || @media.nil?
         raise "Type error: #{id}, #{file}, #{media}, #{title}, #{notoc}"
