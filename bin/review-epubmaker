@@ -83,12 +83,12 @@ def main
       else
         htmlfile = "part_#{part.number}.html"
         make_part_page(part, htmlfile, values)
+        file_id = "part_#{part.number}"
+        part_name = "#{ReVIEW::I18n.t("part", part.number)} #{part.name.strip}"
+        @tocdesc << [1, htmlfile, nil, part_name]
+        @manifeststr << %Q(<item id="rv-#{file_id}" href="#{htmlfile}" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="rv-#{file_id}" />\n)
       end
-      file_id = "part_#{part.number}"
-      part_name = "#{ReVIEW::I18n.t("part", part.number)} #{part.name.strip}"
-      @tocdesc << [1, htmlfile, nil, part_name]
-      @manifeststr << %Q(<item id="#{file_id}" href="#{htmlfile}" media-type="application/xhtml+xml" />\n)
-      @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
     end
 
     part.chapters.each do |chap|
