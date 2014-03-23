@@ -1,3 +1,10 @@
+Sun Mar 23 23:54:27 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yaml, lib/epubmaker/epubv2.rb,
+	  lib/epubmaker/epubv3.rb, lib/epubmaker/poducer.rb,
+	  test/test_epubmaker.rb: support both hierarchy toc and
+	  flat toc.
+
 Sun Mar 23 18:05:53 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* doc/libepubmaker/config.yaml, lib/epubmaker/epubv2.rb,
