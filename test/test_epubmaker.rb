@@ -403,21 +403,47 @@ EOT
 </head>
 <body>
   <h1 class="toc-title">Table of Contents</h1>
-  <ul class="toc-h1">
-<li><a href="ch01.html">CH01</a></li>
+
+<ul class="toc-h1"><li><a href="ch01.html">CH01</a></li>
 <li><a href="ch02.html">CH02</a>
-<ul class="toc-h2">
+<ul class="toc-h2"><li><a href="ch02.html#S1">CH02.1</a></li>
+<li><a href="ch02.html#S2">CH02.2</a></li>
+</ul></li>
+<li><a href="ch03.html">CH03</a>
+<ul class="toc-h2"><li><a href="ch03.html#S1">CH03.1</a></li>
+</ul></li>
+<li><a href="ch04.html">CH04</a></li>
+</ul></body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
+
+  def test_stage3_flat
+    @producer.merge_params({"flattoc" => true, "flattocindent" => false})
+    stage3
+    @producer.mytoc(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="EPUBMaker::Producer"/>
+  <title>Table of Contents</title>
+</head>
+<body>
+  <h1 class="toc-title">Table of Contents</h1>
+<ul class="toc-h1">
+<li><a href="ch01.html">CH01</a></li>
+<li><a href="ch02.html">CH02</a></li>
 <li><a href="ch02.html#S1">CH02.1</a></li>
 <li><a href="ch02.html#S2">CH02.2</a></li>
-</ul>
-</li>
-<li><a href="ch03.html">CH03</a>
-<ul class="toc-h2">
+<li><a href="ch03.html">CH03</a></li>
 <li><a href="ch03.html#S1">CH03.1</a></li>
-</ul>
-</li>
 <li><a href="ch04.html">CH04</a></li>
-  </ul>
+</ul>
 </body>
 </html>
 EOT
