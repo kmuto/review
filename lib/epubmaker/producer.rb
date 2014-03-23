@@ -185,6 +185,8 @@ module EPUBMaker
         "urnid" => "urn:uid:#{UUID.create}",
         "isbn" => nil,
         "toclevel" => 2,
+        "flattoc" => nil,
+        "flattocindent" => true,
         "stylesheet" => [],
         "epubversion" => 2,
         "htmlversion" => 4,

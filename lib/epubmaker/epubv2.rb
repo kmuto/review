@@ -405,40 +405,73 @@ EOT
   <ul class="toc-h1">
 EOT
 
-      # FIXME: indent
-      current = 1
-      init_item = true
-      @producer.contents.each do |item|
-        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
-        if item.level > current
-          s << %Q[\n<ul class="toc-h#{item.level}">\n]
-          current = item.level
-        elsif item.level < current
-          (current - 1).downto(item.level) do |n|
-            s << %Q[</li>\n</ul>\n]
-          end
-          s << %Q[</li>\n]
-          current = item.level
-        elsif init_item
-          # noop
-        else
-          s << %Q[</li>\n]
-        end
-        s << %Q[<li><a href="#{item.file}">#{item.title}</a>]
-        init_item = false
+      if @producer.params["flattoc"].nil?
+        s << hierarchy_ncx("ul")
+      else
+        s << flat_ncx("ul", @producer.params["flattocindent"])
       end
 
-      (current - 1).downto(1) do |n|
-        s << %Q[</li>\n</ul>\n]
-      end
-      if !init_item
-      s << %Q[</li>\n]
-      end
       s << <<EOT
-  </ul>
 </body>
 </html>
 EOT
+      s
+    end
+
+    def hierarchy_ncx(type)
+      require 'rexml/document'
+      level = 1
+      find_jump = nil
+
+      # check part existance
+      @producer.contents.each do |item|
+        if item.notoc.nil? && item.level == 0
+          level = 0
+        end
+      end
+
+      doc = REXML::Document.new(%Q[<#{type} class="toc-h#{level}" />])
+
+      e = doc.root
+      @producer.contents.each do |item|
+        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
+
+        if item.level > level
+          find_jump = true if (item.level - level) > 1
+          # deeper
+          (level + 1).upto(item.level) do |n|
+            e2 = e.add_element(type, {"class" => "toc-h#{n}"})
+            e = e2
+          end
+          level = item.level
+        elsif item.level < level
+          find_jump = true if (level - item.level) > 1
+          # shallower
+          (level - 1).downto(item.level) do |n|
+            e2 = e.parent
+            e = e2
+          end
+          level = item.level
+        end
+        e2 = e.add_element("li")
+        e3 = e2.add_element("a", {"href" => item.file})
+        e3.add_text(REXML::Text.new(item.title, true))
+      end
+
+      warn "found level jumping in table of contents. consider to use 'flattoc: true' for strict ePUB validator." unless find_jump.nil?
+
+      doc.to_s.gsub("</li>", "</li>\n").gsub("href='", "href=\"").gsub(" class='", " class=\"").gsub("'>", "\">") # ugly
+    end
+
+    def flat_ncx(type, indent=nil)
+      s = %Q[<#{type} class="toc-h1">\n]
+      @producer.contents.each do |item|
+        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
+        is = indent.nil? ? "" : "　" * item.level
+        s << %Q[<li><a href="#{item.file}">#{is}#{item.title}</a></li>\n]
+      end
+      s << %Q[</#{type}>\n]
+
       s
     end
 

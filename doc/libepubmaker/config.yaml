@@ -74,8 +74,14 @@ stylesheet: ["stylesheet.css"]
 # HTMLのバージョン (4か5。epubversionを3にしたときには5にする)
 # htmlversion: 4
 
-# 目次に抽出する見出しレベル
+# 目次として抽出する見出しレベル
 # toclevel: 2
+# 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
+# 構成によっては、階層化目次ではepubcheckにパスしない目次ができるが、
+# そのようなときにはこれをtrueにする
+# flattoc: null
+# 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
+# flattocindent: true
 # 本文でセクション番号を表示する見出しレベル
 # secnolevel: 2
 # 前付でセクション番号を表示する見出しレベル
