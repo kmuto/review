@@ -1,3 +1,11 @@
+Sun Mar 23 18:05:53 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yaml, lib/epubmaker/epubv2.rb,
+	  lib/epubmaker/epubv3.rb, lib/epubmaker/poducer.rb,
+	  lib/review/epubmaker.rb: use <bookname>-toc.<htmlext> for
+	  ePUB2 as same as ePUB3. dropped tocfile parameter.
+	  Closes: #237
+
 Tue Mar 18 18:37:12 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* doc/libepubmaker/config.yaml: add descriptions of some parameters.

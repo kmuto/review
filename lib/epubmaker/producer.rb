@@ -184,7 +184,6 @@ module EPUBMaker
         "modified" => Time.now.strftime("%Y-%02m-%02dT%02H:%02M:%02SZ"),
         "urnid" => "urn:uid:#{UUID.create}",
         "isbn" => nil,
-        "tocfile" => "toc.#{@params["htmlext"]}",
         "toclevel" => 2,
         "stylesheet" => [],
         "epubversion" => 2,

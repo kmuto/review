@@ -112,7 +112,7 @@ EOT
     <item id="#{@producer.params["bookname"]}" href="#{@producer.params["cover"]}" media-type="application/xhtml+xml"/>
 EOT
 
-      s << %Q[    <item id="toc" href="#{@producer.params["tocfile"]}" media-type="application/xhtml+xml"/>\n] unless @producer.params["mytoc"].nil?
+      s << %Q[    <item id="toc" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" media-type="application/xhtml+xml"/>\n] unless @producer.params["mytoc"].nil?
 
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
@@ -141,7 +141,7 @@ EOT
       s << %Q[  <guide>\n]
       s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
       s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="titlepage.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["titlepage"].nil?
-      s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["tocfile"]}"/>\n] unless @producer.params["mytoc"].nil?
+      s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["mytoc"].nil?
       s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil?
       s << %Q[  </guide>\n]
       s
@@ -209,7 +209,7 @@ EOT
       <navLabel>
         <text>#{@producer.res.v("toctitle")}</text>
       </navLabel>
-      <content src="#{@producer.params["tocfile"]}"/>
+      <content src="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>
     </navPoint>
 EOT
         nav_count += 1
@@ -449,7 +449,7 @@ EOT
       produce_write_common(basedir, tmpdir)
 
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
-      File.open("#{tmpdir}/OEBPS/#{@producer.params["tocfile"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
+      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
 
       @producer.call_hook(@producer.params["hook_prepack"], tmpdir)
       export_zip(tmpdir, epubfile)

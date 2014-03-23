@@ -15,6 +15,17 @@ module EPUBMaker
   
   # EPUBv3 is EPUB version 3 producer.
   class EPUBv3 < EPUBv2
+    def opf_guide
+      s = ""
+      s << %Q[  <guide>\n]
+      s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
+      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="titlepage.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["titlepage"].nil?
+      s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>\n]
+      s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil?
+      s << %Q[  </guide>\n]
+      s
+    end
+
     def ncx(indentarray)
       # FIXME: handle indentarray
       s = common_header
@@ -153,7 +164,7 @@ EOT
       s = ""
       s << %Q[  <spine>\n]
       s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="no"/>\n]
-      s << %Q[    <itemref idref="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" />\n] unless @producer.params["mytoc"].nil?
+#      s << %Q[    <itemref idref="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" />\n]
       
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML

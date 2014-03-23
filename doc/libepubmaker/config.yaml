@@ -90,10 +90,9 @@ stylesheet: ["stylesheet.css"]
 #- 
 #- - 
 
-# EPUB標準の目次以外に目次を作成するか。省略した場合はnull (作成しない)
+# EPUB2標準の目次以外に物理目次ファイルを作成するか。省略した場合はnull (作成しない)
+# ePUB3においてはこの設定によらず必ず作成する
 # mytoc: true
-# mytocがtrueの場合に作成する目次ファイル名(省略するとtoc.xhtml)
-# tocfile: toc.xhtml
 
 # 表紙の後に権利表記ページを作成するか。デフォルトでは作成されない。ファイル名を指定するとそのファイルが使われる(data配列にも指定しておく必要がある)
 # titlepage: title.xhtml

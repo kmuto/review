@@ -287,7 +287,6 @@ EOT
       FileUtils.cp(@params["creditfile"], "#{basetmpdir}/#{File.basename(@params["creditfile"])}")
       write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@epub.res.v("credittitle")}")
     end
-
   end
 
   def build_titlepage(basetmpdir, htmlfile)
