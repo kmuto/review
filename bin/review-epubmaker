@@ -97,16 +97,19 @@ def main
     end
   end
 
+  # images
   if File.exist?("images")
+    allow_exts = values["image_ext"] || %w(png gif jpg jpeg svg ttf woff otf)
     Dir.mkdir("#{@bookdir}/OEBPS/images")
-    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images", :exts=>%w(png gif jpg jpeg svg))
+    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images", :exts=>allow_exts)
     image_files.each do |image_file|
       dirname = File.dirname(image_file)
       fname = File.basename(image_file)
       figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
       mime = nil
-      next unless fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
-      case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
+      fname_pattern = /\.(#{allow_exts.join("|")})$/i
+      next unless fname =~ fname_pattern
+      case fname.downcase.match(fname_pattern)[1]
       when "png"
         mime = "image/png"
       when "gif"
@@ -115,6 +118,10 @@ def main
         mime = "image/jpeg"
       when "svg"
         mime = "image/svg+xml"
+      when "ttf", "otf"
+        mime = "application/vnd.ms-opentype"
+      when "woff"
+        mime = "application/font-woff"
       else
         raise "unsupported type #{fname}"
       end
@@ -122,6 +129,33 @@ def main
         properties = ' properties="cover-image"'
       end
       @manifeststr << %Q(<item id="#{figid}" href="#{image_file}"#{properties} media-type="#{mime}" />\n)
+    end
+  end
+
+  # fonts
+  fontdir = values["fontdir"] || "fonts"
+  if File.exist?(fontdir)
+    font_ext = values["font_ext"]
+    Dir.mkdir("#{@bookdir}/OEBPS/#{fontdir}")
+    font_files = ReVIEW::MakerHelper.copy_images_to_dir(fontdir, "#{@bookdir}/OEBPS/#{fontdir}", :exts=>font_ext)
+    font_files.each do |font_file|
+      dirname = File.dirname(font_file)
+      fname = File.basename(font_file)
+      font_id = "font-"+fname
+      mime = nil
+      fname_pattern = /\.(#{font_ext.join("|")})$/i
+      next unless fname =~ fname_pattern
+      case fname.downcase.match(fname_pattern)[1]
+      when "svg"
+        mime = "image/svg+xml"
+      when "ttf", "otf"
+        mime = "application/vnd.ms-opentype"
+      when "woff"
+        mime = "application/font-woff"
+      else
+        raise "unsupported type #{fname}"
+      end
+      @manifeststr << %Q(<item id="#{font_id}" href="#{font_file}" media-type="#{mime}" />\n)
     end
   end
 
