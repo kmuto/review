@@ -277,35 +277,6 @@ module ReVIEW
       end
     end
 
-    def find_pathes(id)
-      if ReVIEW.book.param["subdirmode"]
-        re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-          .map {|ent| "#{@book.basedir}/#{@chapter.name}/#{ent}" }
-      elsif ReVIEW.book.param["singledirmode"]
-        re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-          .map {|ent| "#{@book.basedir}/#{ent}" }
-      else
-        re = /\A#{@chapter.name}-#{id}(?i:#{@book.image_types.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-          .map {|ent| "#{@book.basedir}/#{ent}" }
-      end
-    end
-
-    def entries
-      if ReVIEW.book.param["subdirmode"]
-        @entries ||= Dir.entries(File.join(@book.basedir + @book.image_dir, @chapter.name))
-      else
-        @entries ||= Dir.entries(@book.basedir + @book.image_dir)
-      end
-    rescue Errno::ENOENT
-    @entries = []
-    end
-
     def warn(msg)
       $stderr.puts "#{@location}: warning: #{msg}"
     end
