@@ -181,24 +181,24 @@ module ReVIEW
       def find_pathes(id)
         pathes = []
 
-        # 1. <basedir>/<chapid>-<id>.<ext>
-        target = "#{@basedir}/#{@chapid}-#{id}"
+        # 1. <basedir>/<builder>/<chapid>/<id>.<ext>
+        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}/#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
         # 2. <basedir>/<builder>/<chapid>-<id>.<ext>
         target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}-#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
-        # 3. <basedir>/<chapid>/<id>.<ext>
+        # 3. <basedir>/<builder>/<id>.<ext>
+        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{id}"
+        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
+
+        # 4. <basedir>/<chapid>/<id>.<ext>
         target = "#{@basedir}/#{@chapid}/#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
-        # 4. <basedir>/<builder>/<chapid>/<id>.<ext>
-        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}/#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        # 5. <basedir>/<builder>/<id>.<ext>
-        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{id}"
+        # 5. <basedir>/<chapid>-<id>.<ext>
+        target = "#{@basedir}/#{@chapid}-#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
         # 6. <basedir>/<id>.<ext>
