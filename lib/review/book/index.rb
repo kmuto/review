@@ -189,23 +189,19 @@ module ReVIEW
         target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}-#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
-        # 3. <basedir>/<chapid>/<chapid>-<id>.<ext>
-        target = "#{@basedir}/#{@chapid}/#{@chapid}-#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        # 4. <basedir>/<chapid>/<id>.<ext>
+        # 3. <basedir>/<chapid>/<id>.<ext>
         target = "#{@basedir}/#{@chapid}/#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
-        # 5. <basedir>/<builder>/<chapid>/<id>.<ext>
+        # 4. <basedir>/<builder>/<chapid>/<id>.<ext>
         target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}/#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
-        # 6. <basedir>/<builder>/<id>.<ext>
+        # 5. <basedir>/<builder>/<id>.<ext>
         target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
-        # 7. <basedir>/<id>.<ext>
+        # 6. <basedir>/<id>.<ext>
         target = "#{@basedir}/#{id}"
         @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
 
