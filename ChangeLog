@@ -1,3 +1,15 @@
+Tue Mar 25 19:11:36 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book/index.rb, bin/review-compile:
+	  improve the image file finder.
+	  Now review-compile finds a image file from:
+	  1. <imgdir>/<builder>/<chapid>/<id>.<ext>
+	  2. <imgdir>/<builder>/<chapid>-<id>.<ext>
+	  3. <imgdir>/<builder>/<id>.<ext>
+	  4. <imgdir>/<chapid>/<id>.<ext>
+	  5. <imgdir>/<chapid>-<id>.<ext>
+	  6. <imgdir>/<id>.<ext>
+
 Sun Mar 23 23:54:27 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* doc/libepubmaker/config.yaml, lib/epubmaker/epubv2.rb,

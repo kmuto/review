@@ -132,6 +132,8 @@ module ReVIEW
 
     class ImageIndex < Index
       class Item
+        @@entries = nil
+
         def initialize(id, number)
           @id = id
           @number = number
@@ -167,31 +169,49 @@ module ReVIEW
         @chapid = chapid
         @basedir = basedir
         @types = types
+
+        @@entries ||= get_entries
+      end
+
+      def get_entries
+        Dir.glob(File.join(@basedir, "**/*.*"))
       end
 
       # internal use only
       def find_pathes(id)
-        if ReVIEW.book.param["subdirmode"]
-          re = /\A#{id}(?i:#{@types.join('|')})\z/x
-          entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{@chapid}/#{ent}" }
-        elsif ReVIEW.book.param["singledirmode"]
-          re = /\A#{id}(?i:#{@types.join('|')})\z/x
-          entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{ent}" }
-        else
-          re = /\A#{@chapid.gsub('+', '\\\+').gsub('-', '\\\-')}-#{id}(?i:#{@types.join('|')})\z/x
-          entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{ent}" }
-        end
+        pathes = []
+
+        # 1. <basedir>/<builder>/<chapid>/<id>.<ext>
+        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}/#{id}"
+        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
+
+        # 2. <basedir>/<builder>/<chapid>-<id>.<ext>
+        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}-#{id}"
+        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
+
+        # 3. <basedir>/<builder>/<id>.<ext>
+        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{id}"
+        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
+
+        # 4. <basedir>/<chapid>/<id>.<ext>
+        target = "#{@basedir}/#{@chapid}/#{id}"
+        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
+
+        # 5. <basedir>/<chapid>-<id>.<ext>
+        target = "#{@basedir}/#{@chapid}-#{id}"
+        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
+
+        # 6. <basedir>/<id>.<ext>
+        target = "#{@basedir}/#{id}"
+        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
+
+        return pathes
       end
 
       private
 
       def entries
+        # deprecated
         # @entries: do not cache for graph
         if ReVIEW.book.param["subdirmode"]
           @entries = Dir.entries(File.join(@basedir, @chapid))

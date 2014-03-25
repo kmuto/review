@@ -100,7 +100,7 @@ module ReVIEW
       dir.each do |fname|
         next if fname =~ /\A\./
         if FileTest.directory?("#{imagedir}/#{fname}")
-          recursive_copy_images("#{imagedir}/#{fname}", "#{destdir}/#{fname}")
+          recursive_copy_images("#{imagedir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
         else
           if fname =~ /\.(#{allow_exts.join("|")})\Z/i
             Dir.mkdir(destdir) unless File.exist?(destdir)
