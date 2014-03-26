@@ -1,3 +1,5 @@
+require 'yaml'
+
 module ReVIEW
   class Catalog
     def initialize(file)
