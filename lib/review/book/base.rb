@@ -138,9 +138,9 @@ module ReVIEW
         return @read_PART if @read_PART
 
         if @catalog
-          @catalog.parts
+          @read_PART = @catalog.parts
         else
-          File.read("#{@basedir}/#{part_file}")
+          @read_PART = File.read("#{@basedir}/#{part_file}")
         end
       end
 
