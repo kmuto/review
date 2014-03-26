@@ -73,6 +73,7 @@ def generate_review_setting_files(dir)
     file.write("#{File.basename(dir)}.re")
   end
   File.open(dir + "/POSTDEF", "w")
+  File.open(dir + "/catalog.yml", "w")
 end
 
 def generate_images_dir(dir)
