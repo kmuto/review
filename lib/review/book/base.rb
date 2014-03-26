@@ -241,7 +241,7 @@ module ReVIEW
       end
 
       def mkpart_from_namelist(names)
-        mkpart(names.map {|n| mkchap(n) }.compact)
+        mkpart(names.map {|n| mkchap_ifexist(n) }.compact)
       end
 
       def mkpart(chaps)
@@ -253,6 +253,12 @@ module ReVIEW
         path = "#{@basedir}/#{name}"
         raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
         Chapter.new(self, number, name, path)
+      end
+
+      def mkchap_ifexist(name)
+        name += ext if File.extname(name) == ""
+        path = "#{@basedir}/#{name}"
+        File.file?(path) ? Chapter.new(self, nil, name, path) : nil
       end
 
       def read_FILE(filename)
