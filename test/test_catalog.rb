@@ -6,39 +6,61 @@ class CatalogTest < Test::Unit::TestCase
 
   def test_predef
     sut = Catalog.new(yaml)
-    assert_equal(["pre01.re", "pre02.re"], sut.predef)
+    exp =<<-EOS
+pre01.re
+pre02.re
+    EOS
+    assert_equal(exp.chomp, sut.predef)
   end
 
   def test_chaps
     sut = Catalog.new(yaml)
-    assert_equal(["ch01.re", "ch02.re"], sut.chaps)
+    exp =<<-EOS
+ch01.re
+ch02.re
+    EOS
+    assert_equal(exp.chomp, sut.chaps)
   end
 
-  def test_chaps_nil
+  def test_chaps_empty
     yaml = StringIO.new
     sut = Catalog.new(yaml)
-    assert_equal([], sut.chaps)
+    assert_equal("", sut.chaps)
   end
 
   def test_postdef
     sut = Catalog.new(yaml)
-    assert_equal(["post01.re", "post02.re"], sut.postdef)
+    exp =<<-EOS
+post01.re
+post02.re
+    EOS
+    assert_equal(exp.chomp, sut.postdef)
   end
 
   def test_chaps_with_parts
     sut = Catalog.new(yaml_with_parts)
-    assert_equal(["ch01.re", "ch02.re", "ch03.re", "ch04.re", "ch05.re"],
-                 sut.chaps)
+    exp =<<-EOS
+ch01.re
+ch02.re
+ch03.re
+ch04.re
+ch05.re
+    EOS
+    assert_equal(exp.chomp, sut.chaps)
   end
 
   def test_parts
     sut = Catalog.new(yaml_with_parts)
-    assert_equal(["part1.re", "part2.re"], sut.parts)
+    exp =<<-EOS
+part1.re
+part2.re
+    EOS
+    assert_equal(exp.chomp, sut.parts)
   end
 
-  def test_parts_with_nil
+  def test_parts_with_empty
     sut = Catalog.new(yaml)
-    assert_equal([], sut.parts)
+    assert_equal("", sut.parts)
   end
 
   def test_parts
