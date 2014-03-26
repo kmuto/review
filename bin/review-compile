@@ -53,8 +53,6 @@ def _main
     "structuredxml" => nil, # for IDGXML
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8",
-    "subdirmode" => nil,
-    "singledirmode" => nil,
     "stylesheet" => [],   # for HTML
     "mathml" => nil,      # for HTML
     "language" => "ja",   # for HTML
@@ -80,8 +78,6 @@ def _main
   parser.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| param["tableopt"] = tbl }
   parser.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { param["listinfo"] = true }
   parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec| param["chapref"] = cdec }
-  parser.on('--subdirmode', 'Use chapter/id.ext path style to find images.') { param["subdirmode"] = true }
-  parser.on('--singledirmode', 'Use id.ext path style to find images.') { param["singledirmode"] = true }
   parser.on('--chapterlink', 'make chapref hyperlink') { param["chapterlink"] = true }
   parser.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| param["stylesheet"] = files.split(/\s*,\s*/) }
   parser.on('--mathml', 'Use MathML for TeX equation in HTML') do

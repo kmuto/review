@@ -16,8 +16,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "nolf" => true,
-      "tableopt" => "10",
-      "subdirmode" => nil,
+      "tableopt" => "10"
     }
     ReVIEW.book.param = @param
     @compiler = ReVIEW::Compiler.new(@builder)
