@@ -17,7 +17,8 @@ module ReVIEW
 
       def self.load_default
         %w( . .. ../.. ).each do |basedir|
-          if File.file?("#{basedir}/CHAPS")
+          if File.file?("#{basedir}/CHAPS") ||
+              File.file?("#{basedir}/catalog.yml")
             book = load(basedir)
             if File.file?("#{basedir}/config.rb")
               book.instance_variable_set("@parameters", Parameters.load("#{basedir}/config.rb"))
@@ -51,6 +52,9 @@ module ReVIEW
         @parameters = parameters
         @parts = nil
         @chapter_index = nil
+        if File.exist?("#{basedir}/catalog.yml")
+          @catalog = Catalog.new File.open("#{basedir}/catalog.yml")
+        end
       end
 
       extend Forwardable
@@ -107,23 +111,45 @@ module ReVIEW
       end
 
       def read_CHAPS
-        read_FILE("chapter_file")
+        if @catalog
+          @catalog.chaps
+        else
+          read_FILE("chapter_file")
+        end
       end
 
       def read_PREDEF
-        read_FILE("predef_file")
+        if @catalog
+          @catalog.predef
+        else
+          read_FILE("predef_file")
+        end
       end
 
       def read_POSTDEF
-        read_FILE("postdef_file")
+        if @catalog
+          @catalog.postdef
+        else
+          read_FILE("postdef_file")
+        end
       end
 
       def read_PART
-        @read_PART ||= File.read("#{@basedir}/#{part_file}")
+        return @read_PART if @read_PART
+
+        if @catalog
+          @catalog.parts
+        else
+          File.read("#{@basedir}/#{part_file}")
+        end
       end
 
       def part_exist?
-        File.exist?("#{@basedir}/#{part_file}")
+        if @catalog
+          @catalog.parts.present?
+        else
+          File.exist?("#{@basedir}/#{part_file}")
+        end
       end
 
       def read_bib
@@ -135,6 +161,10 @@ module ReVIEW
       end
 
       def prefaces
+        if @catalog
+          return mkpart_from_namelist(@catalog.predef.split("\n"))
+        end
+
         if File.file?("#{@basedir}/#{predef_file}")
           begin
             return mkpart_from_namelistfile("#{@basedir}/#{predef_file}")
@@ -147,6 +177,10 @@ module ReVIEW
       end
 
       def postscripts
+        if @catalog
+          return mkpart_from_namelist(@catalog.postdef.split("\n"))
+        end
+
         if File.file?("#{@basedir}/#{postdef_file}")
           begin
             return mkpart_from_namelistfile("#{@basedir}/#{postdef_file}")
@@ -207,7 +241,7 @@ module ReVIEW
       end
 
       def mkpart_from_namelist(names)
-        mkpart(names.map {|n| mkchap_ifexist(n) }.compact)
+        mkpart(names.map {|n| mkchap(n) }.compact)
       end
 
       def mkpart(chaps)
@@ -219,12 +253,6 @@ module ReVIEW
         path = "#{@basedir}/#{name}"
         raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
         Chapter.new(self, number, name, path)
-      end
-
-      def mkchap_ifexist(id)
-        name = "#{id}#{ext()}"
-        path = "#{@basedir}/#{name}"
-        File.file?(path) ? Chapter.new(self, nil, name, path) : nil
       end
 
       def read_FILE(filename)
