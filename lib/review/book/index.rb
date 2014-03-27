@@ -207,20 +207,6 @@ module ReVIEW
 
         return pathes
       end
-
-      private
-
-      def entries
-        # deprecated
-        # @entries: do not cache for graph
-        if ReVIEW.book.param["subdirmode"]
-          @entries = Dir.entries(File.join(@basedir, @chapid))
-        else
-          @entries = Dir.entries(@basedir)
-        end
-      rescue Errno::ENOENT
-        @entries = []
-      end
     end
 
     class IconIndex < ImageIndex

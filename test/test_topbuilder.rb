@@ -14,8 +14,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @param = {
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
-      "subdirmode" => nil,
+      "outencoding" => "UTF-8"
     }
     ReVIEW.book.param = @param
     @compiler = ReVIEW::Compiler.new(@builder)

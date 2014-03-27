@@ -15,7 +15,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       "toclevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
-      "subdirmode" => nil,
       "stylesheet" => nil,  # for EPUBBuilder
     }
     ReVIEW.book.param = @param

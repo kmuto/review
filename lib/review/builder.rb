@@ -340,14 +340,10 @@ module ReVIEW
     end
 
     def graph(lines, id, command, caption = nil)
-      dir = @book.basedir + @book.image_dir
-      file = "#{@chapter.name}-#{id}.#{image_ext}"
-      if ReVIEW.book.param["subdirmode"]
-        dir = File.join(dir, @chapter.name)
-        file = "#{id}.#{image_ext}"
-      elsif ReVIEW.book.param["singledirmode"]
-        file = "#{id}.#{image_ext}"
-      end
+      c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      dir = File.join(@book.basedir, @book.image_dir, c)
+      Dir.mkdir(dir) unless File.exist?(dir)
+      file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
       line = CGI.unescapeHTML(lines.join("\n"))
@@ -364,7 +360,7 @@ module ReVIEW
       warn cmd
       system cmd
 
-      image(lines, id, caption)
+      image(lines, id, caption ||= "")
     end
 
     def image_ext
