@@ -495,9 +495,9 @@ module ReVIEW
     def compile_block(syntax, args, lines, options)
       body = lines || default_block(syntax)
       if options
-        @strategy.__send__(syntax.name, body, *args)
-      else
         @strategy.__send__(syntax.name, body, *args) { options }
+      else
+        @strategy.__send__(syntax.name, body, *args)
       end
     end
 
@@ -510,9 +510,9 @@ module ReVIEW
 
     def compile_single(syntax, args, options)
       if options
-        @strategy.__send__(syntax.name, *args)
-      else
         @strategy.__send__(syntax.name, *args) { options }
+      else
+        @strategy.__send__(syntax.name, *args)
       end
     end
 
