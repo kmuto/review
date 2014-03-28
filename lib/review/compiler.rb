@@ -423,14 +423,14 @@ module ReVIEW
       line = f.gets
       name = line.slice(/[a-z]+/).intern
       args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip
-                     .gsub(/\{\z|{\|(.+?)\|\z/, ''), name)
+                     .gsub(/\{\z|\{\|(.+?)\|\z/, ''), name)
       options = $1
       lines = block_open?(line) ? read_block(f) : nil
       return name, args, lines, options
     end
 
     def block_open?(line)
-      !!line.chomp.match(/\{\z|{\|(.+?)\|\z/)
+      !!line.chomp.match(/\{\z|\{\|(.+?)\|\z/)
     end
 
     def read_block(f)
