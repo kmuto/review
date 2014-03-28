@@ -422,8 +422,7 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).intern
-      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip
-                     .gsub(/\{\z|\{\|(.+?)\|\z/, ''), name)
+      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.gsub(/\{\z|\{\|(.+?)\|\z/, ''), name)
       options = $1
       lines = block_open?(line) ? read_block(f) : nil
       return name, args, lines, options
