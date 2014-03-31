@@ -751,10 +751,11 @@ QUOTE
     alias inline_ref inline_labelref
 
     def inline_chapref(id)
+      title = super
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.display_string(id)}</a>)
+        %Q(<a href="./#{id}.html">#{title}</a>)
       else
-        @chapter.env.chapter_index.display_string(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"

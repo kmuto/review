@@ -547,10 +547,11 @@ module ReVIEW
     end
 
     def inline_chapref(id)
+      title = super
       if ReVIEW.book.param["chapterlink"]
-        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.display_string(id)}}"
+        "\\hyperref[chap:#{id}]{#{title}}"
       else
-        @chapter.env.chapter_index.display_string(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"
