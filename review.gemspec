@@ -4,7 +4,7 @@ require "review/version"
 
 Gem::Specification.new do |gem|
   gem.name        = "review"
-  gem.version     = Review::VERSION
+  gem.version     = ReVIEW::VERSION
   gem.platform    = Gem::Platform::RUBY
   gem.license     = "LGPL"
   gem.authors     = ["kmuto", "takahashim"]
