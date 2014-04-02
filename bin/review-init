@@ -19,7 +19,7 @@ def main
   @review_dir = File.dirname(File.expand_path(__FILE__ + "./../"))
 
   generate_dir(initdir) do |dir|
-    generate_review_setting_files(dir)
+    generate_catalog_file(dir)
     generate_sample(dir)
     generate_images_dir(dir)
     generate_cover_image(dir)
@@ -67,12 +67,18 @@ EOS
   end
 end
 
-def generate_review_setting_files(dir)
-  File.open(dir + "/PREDEF", "w")
-  File.open(dir + "/CHAPS", "w") do |file|
-    file.write("#{File.basename(dir)}.re")
+def generate_catalog_file(dir)
+  File.open(dir + "/catalog.yml", "w") do |file|
+    file.write <<-EOS
+PREDEF:
+
+CHAPS:
+  - #{File.basename(dir)}.re
+
+POSTDEF:
+
+EOS
   end
-  File.open(dir + "/POSTDEF", "w")
 end
 
 def generate_images_dir(dir)
