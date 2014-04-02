@@ -1,3 +1,7 @@
+Wed Apr  2 22:34:56 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* Release 1.2.0.
+
 Tue Mar 25 19:11:36 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/book/index.rb, bin/review-compile:
