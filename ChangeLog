@@ -1,3 +1,9 @@
+Thu Apr  3 09:53:26 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker: add zip_addpath parameter to include
+	  extra pathes in ePUB file.
+	* Rename sample YAML file's extension from .yaml to .yml.
+
 Wed Apr  2 22:34:56 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* Release 1.2.0.
