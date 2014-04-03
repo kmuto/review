@@ -11,7 +11,7 @@
 # == Quick usage
 #  require 'epubmaker'
 #  epub = EPUBMaker::Producer.new
-#  params = epub.load("config.yaml")
+#  params = epub.load("config.yml")
 #  epub.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
 #  epub.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
 #   ...
