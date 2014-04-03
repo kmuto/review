@@ -206,6 +206,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test \\UTF{2460} test2|, ret
   end
 
+  def test_inline_idx
+    ret = @builder.compile_inline("@<idx>{__TEST%$}, @<hidx>{__TEST%$}")
+    assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$}, \\index{__TEST%$}|, ret
+  end
+
   def test_jis_x_0201_kana
     ret = @builder.compile_inline("foo･ｶﾝｼﾞ､テスト")
     assert_equal %Q|foo\\aj半角{・}\\aj半角{カ}\\aj半角{ン}\\aj半角{シ}\\aj半角{゛}\\aj半角{、}テスト|, ret

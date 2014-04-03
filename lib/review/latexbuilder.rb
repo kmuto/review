@@ -639,7 +639,7 @@ module ReVIEW
 
     # index
     def inline_idx(str)
-      text(str) + index(str)
+      escape(str) + index(str)
     end
 
     # hidden index??
