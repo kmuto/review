@@ -516,7 +516,7 @@ EOT
 
     def export_zip(tmpdir, epubfile)
       Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage1"]} #{epubfile} mimetype") }
-      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS") }
+      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}") }
     end
 
     private

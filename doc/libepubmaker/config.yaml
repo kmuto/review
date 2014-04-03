@@ -161,3 +161,5 @@ stylesheet: ["stylesheet.css"]
 # zip_stage1: "zip -0Xq"
 # ePUBアーカイブの圧縮実行
 # zip_stage2: "zip -Xr9Dq"
+# ePUBアーカイブに追加するパス(デフォルトはmimetype、META-INF、OEBPS)
+# zip_addpath: null
