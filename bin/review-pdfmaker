@@ -47,9 +47,13 @@ def build_path(values)
 end
 
 def main
-  usage if ARGV.size != 1
+  if ARGV.size == 1 && !File.exist?(ARGV[0])
+    error('configfile does not exist')
+  elsif ARGV.size == 0 && !File.exist?('config.yml')
+    usage
+  end
 
-  yamlfile = ARGV[0]
+  yamlfile = ARGV[0] || 'config.yml'
   values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   check_book(values)
   @basedir = Dir.pwd
