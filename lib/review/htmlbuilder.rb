@@ -917,9 +917,15 @@ QUOTE
       end
     end
 
+    def column_label(id)
+      num = @chapter.column(id).number
+      "column-#{num}"
+    end
+    private :column_label
+
     def inline_column(id)
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="\##{id}" class="columnref">#{@chapter.column(id).caption}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{@chapter.column(id).caption}</a>)
       else
         @chapter.column(id).caption
       end
