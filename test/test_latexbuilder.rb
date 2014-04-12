@@ -434,16 +434,16 @@ EOS
     expect =<<-EOS
 
 \\begin{reviewcolumn}
+\\hypertarget{column:chap1:1}{}
 \\reviewcolumnhead{}{prev column}
-\\label{column:chap1:1}
 
 inside prev column
 
 \\end{reviewcolumn}
 
 \\begin{reviewcolumn}
+\\hypertarget{column:chap1:2}{}
 \\reviewcolumnhead{}{test}
-\\label{column:chap1:2}
 
 inside column
 
@@ -463,8 +463,8 @@ EOS
     expect =<<-EOS
 
 \\begin{reviewcolumn}
+\\hypertarget{column:chap1:1}{}
 \\reviewcolumnhead{}{test}
-\\label{column:chap1:1}
 
 inside column
 
