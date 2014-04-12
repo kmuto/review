@@ -210,6 +210,23 @@ module ReVIEW
     end
 
     class IconIndex < ImageIndex
+      def initialize(items, chapid, basedir, types)
+        @items = items
+        @index = {}
+        items.each do |i|
+          ## warn "warning: duplicate ID: #{i.id} (#{i})" unless @index[i.id].nil?
+          @index[i.id] = i
+        end
+        items.each do |i|
+          i.index = self
+        end
+        @chapid = chapid
+        @basedir = basedir
+        @types = types
+
+        @@entries ||= get_entries
+      end
+
       def IconIndex.parse(src, *args)
         items = []
         seq = 1
