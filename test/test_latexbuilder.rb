@@ -435,6 +435,7 @@ EOS
 
 \\begin{reviewcolumn}
 \\reviewcolumnhead{}{prev column}
+\\label{column:chap1:1}
 
 inside prev column
 
@@ -442,6 +443,7 @@ inside prev column
 
 \\begin{reviewcolumn}
 \\reviewcolumnhead{}{test}
+\\label{column:chap1:2}
 
 inside column
 
@@ -462,6 +464,7 @@ EOS
 
 \\begin{reviewcolumn}
 \\reviewcolumnhead{}{test}
+\\label{column:chap1:1}
 
 inside column
 

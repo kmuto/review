@@ -102,8 +102,12 @@ module ReVIEW
     def column_begin(level, label, caption)
       blank
       puts "\\begin{reviewcolumn}\n"
+      if label
+        puts "\\hypertarget{#{column_label(label)}}{}"
+      else
+        puts "\\hypertarget{#{column_label(caption)}}{}"
+      end
       puts macro('reviewcolumnhead', nil, compile_inline(caption))
-
     end
 
     def column_end(level)
@@ -356,6 +360,13 @@ module ReVIEW
       "bib:#{id}"
     end
     private :bib_label
+
+    def column_label(id)
+      filename = @chapter.id
+      num = @chapter.column(id).number
+      "column:#{filename}:#{num}"
+    end
+    private :column_label
 
     def indepimage(id, caption=nil, metric=nil)
       metrics = parse_metric("latex", metric)
@@ -693,6 +704,10 @@ module ReVIEW
 
     def inline_hd_chap(chap, id)
       "「#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}」"
+    end
+
+    def inline_column(id)
+      macro('reviewcolumnref', "#{@chapter.column(id).caption}", column_label(id))
     end
 
     def inline_raw(str)

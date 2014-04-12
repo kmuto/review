@@ -568,6 +568,20 @@ PART:
   :
   @<hd>{hajimeni|まずわ}
 
+=== コラム見出し参照
+
+コラムの見出しの参照は、@<column>を使います。
+
+例:
+
+  @<column>{Re:VIEWの用途いろいろ}
+
+ラベルでの参照もできます。
+
+  ==[column]{review-application} Re:VIEWの応用
+  :
+  @<column>{review-application}
+
 == リンク
 
 Web ハイパーリンクを記述するには、リンクに @<href>、アンカーに //label

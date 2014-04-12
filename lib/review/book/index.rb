@@ -383,10 +383,6 @@ module ReVIEW
         new(items)
       end
 
-      def number(id)
-        ""
-      end
-
     end
 
   end
