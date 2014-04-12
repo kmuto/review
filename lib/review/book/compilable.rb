@@ -157,6 +157,14 @@ module ReVIEW
       def headline_index
         @headline_index ||= HeadlineIndex.parse(lines(), self)
       end
+
+      def column(id)
+        column_index()[id]
+      end
+
+      def column_index
+        @column_index ||= ColumnIndex.parse(lines())
+      end
     end
   end
 end

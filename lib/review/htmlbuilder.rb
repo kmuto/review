@@ -917,6 +917,17 @@ QUOTE
       end
     end
 
+    def inline_column(id)
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<a href="\##{id}" class="columnref">#{@chapter.column(id).caption}</a>)
+      else
+        @chapter.column(id).caption
+      end
+    rescue KeyError
+      error "unknown column: #{id}"
+      nofunc_text("[UnknownColumn:#{id}]")
+    end
+
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?

@@ -354,6 +354,18 @@ E
 E
   end
 
+
+  def test_column_index
+    ReVIEW.book.param = {"inencoding" => "utf-8"}
+    do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)
+= dummy1
+===[column]{abc} aaaa
+= dummy2
+===[column] def
+== dummy3
+E
+  end
+
   def test_image
     do_test_index(<<E, Book::ImageIndex, :image_index, :image)
 //image

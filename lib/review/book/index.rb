@@ -359,5 +359,31 @@ module ReVIEW
         return ([@chap.number] + @index.fetch(id).number).join(".")
       end
     end
+
+    class ColumnIndex < Index
+      COLUMN_PATTERN = /\A(=+)\[column\](?:\{(.+?)\})?(.*)/
+      Item = Struct.new(:id, :number, :caption)
+
+      def ColumnIndex.parse(src, *args)
+        items = []
+        seq = 1
+        src.each do |line|
+          if m = COLUMN_PATTERN.match(line)
+            level = m[1] ## not use it yet
+            id = m[2]
+            caption = m[3].strip
+            if !id || id == ""
+              id = caption
+            end
+
+            items.push item_class().new(id, seq, caption)
+            seq += 1
+          end
+        end
+        new(items)
+      end
+
+    end
+
   end
 end
