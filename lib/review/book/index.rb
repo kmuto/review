@@ -317,6 +317,7 @@ module ReVIEW
     end
 
     class HeadlineIndex < Index
+      HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
       Item = Struct.new(:id, :number, :caption)
 
       def HeadlineIndex.parse(src, chap)
@@ -324,7 +325,7 @@ module ReVIEW
         indexs = []
         headlines = []
         src.each do |line|
-          if m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
+          if m = HEADLINE_PATTERN.match(line)
             next if m[2] == 'column'
             index = m[1].size - 2
             if index >= 0
