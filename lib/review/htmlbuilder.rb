@@ -925,9 +925,9 @@ QUOTE
 
     def inline_column(id)
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{@chapter.column(id).caption}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{escape_html(@chapter.column(id).caption)}</a>)
       else
-        @chapter.column(id).caption
+        escape_html(@chapter.column(id).caption)
       end
     rescue KeyError
       error "unknown column: #{id}"
