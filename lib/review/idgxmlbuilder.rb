@@ -66,6 +66,7 @@ module ReVIEW
       @subsection = 0
       @subsubsection = 0
       @subsubsubsection = 0
+      @column = 0
       @noindent = nil
       @rootelement = "doc"
       @secttags = nil
@@ -344,6 +345,23 @@ module ReVIEW
     end
 
     alias :lead read
+
+    def column_label(id)
+      num = @chapter.column(id).number
+      "column-#{num}"
+    end
+    private :column_label
+    
+    def inline_column(id)
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<link href="#{column_label(id)}">#{escape_html(@chapter.column(id).caption)}</link>)
+      else
+        escape_html(@chapter.column(id).caption)
+      end
+    rescue KeyError
+      error "unknown column: #{id}"
+      nofunc_text("[UnknownColumn:#{id}]")
+    end
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
@@ -815,7 +833,9 @@ module ReVIEW
     end
 
     def common_column_begin(type, caption)
-      print "<#{type}column>"
+      @column += 1
+      a_id = %Q[id="column-#{@column}"]
+      print "<#{type}column #{a_id}>"
       puts %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title>]
     end
 
