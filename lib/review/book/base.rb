@@ -212,6 +212,21 @@ module ReVIEW
       def parse_chapters
         part = 0
         num = 0
+
+        if @catalog
+          return @catalog.parts_with_chaps.map do |entry|
+            if entry.is_a? Hash
+              chaps = entry.values.first.map do |chap|
+                Chapter.new(self, (num += 1), chap, "#{@basedir}/#{chap}")
+              end
+              Part.new(self, (part += 1), chaps, read_PART.split("\n")[part - 1])
+            else
+              chap = Chapter.new(self, (num += 1), entry, "#{@basedir}/#{entry}")
+              Part.new(self, nil, [chap])
+            end
+          end
+        end
+
         chap = read_CHAPS()\
           .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
           .map {|part_chunk|

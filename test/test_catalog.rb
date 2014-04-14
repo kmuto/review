@@ -65,7 +65,9 @@ part2.re
 
   def test_parts
     sut = Catalog.new(yaml_with_parts)
-    assert_equal([{"part1.re" => ["ch02.re"]},
+    assert_equal(["ch01.re",
+                  {"part1.re" => ["ch02.re"]},
+                  "ch03.re",
                   {"part2.re" => ["ch04.re", "ch05.re"]}],
                  sut.parts_with_chaps)
   end
