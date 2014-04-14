@@ -51,6 +51,7 @@ module ReVIEW
       @column = 0
       @noindent = nil
       @ol_num = nil
+      require 'math_ml/string' if ReVIEW.book.param["mathml"]
     end
     private :builder_init
 
@@ -557,8 +558,7 @@ QUOTE
     def texequation(lines)
       puts %Q[<div class="equation">]
       if ReVIEW.book.param["mathml"]
-        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
-        puts p.parse(unescape_html(lines.join("\n")), true)
+        puts unescape_html(lines.join("\n")).to_mathml
       else
         print '<pre>'
         puts "#{lines.join("\n")}"
@@ -867,8 +867,7 @@ QUOTE
 
     def inline_m(str)
       if ReVIEW.book.param["mathml"]
-        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
-        %Q[<span class="equation">#{p.parse(str, nil)}</span>]
+        %Q[<span class="equation">#{str.to_mathml}</span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
       end
