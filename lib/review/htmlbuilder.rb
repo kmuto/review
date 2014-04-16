@@ -692,7 +692,7 @@ QUOTE
       if ReVIEW.book.param["epubversion"].to_i == 3
         puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{id}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
       else
-        puts %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
+        puts %Q(<div class="footnote" id="fn-#{id}"><p class="footnote">[<a href="#fnb-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
       end
     end
 
@@ -786,9 +786,9 @@ QUOTE
 
     def inline_fn(id)
       if ReVIEW.book.param["epubversion"].to_i == 3
-        %Q(<a href="#fn-#{id}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
+        %Q(<a id="fnb-#{id}" href="#fn-#{id}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
       else
-        %Q(<a href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
+        %Q(<a id="fnb-#{id}" href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
       end
     end
 
