@@ -680,11 +680,11 @@ QUOTE
       lines ||= []
       lines.unshift comment unless comment.blank?
       if ReVIEW.book.param["draft"]
-        str = lines.map{|line| escape_html(line) }.join("<br />")
+        str = lines.join("<br />")
         puts %Q(<div class="draft-comment">#{str}</div>)
       else
         str = lines.join("\n")
-        puts %Q(<!-- #{escape_html(str)} -->)
+        puts %Q(<!-- #{str} -->)
       end
     end
 
