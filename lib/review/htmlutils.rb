@@ -32,6 +32,10 @@ module ReVIEW
       str.gsub(/<\/?[^>]*>/, "")
     end
 
+    def escape_comment(str)
+      str.gsub('-', '&#45;')
+    end
+
     def highlight(ops)
       body = ops[:body] || ''
       lexer = ops[:lexer] || ''

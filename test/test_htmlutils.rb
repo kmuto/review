@@ -25,4 +25,13 @@ class HTMLUtilsTest < Test::Unit::TestCase
   def test_strip_html
     assert_equal 'thisistest.', strip_html('<h3>this<b>is</b>test</h3>.')
   end
+
+  def test_escape_comment
+    assert_equal '<', escape_comment('<')
+    assert_equal '>', escape_comment('>')
+    assert_equal '&', escape_comment('&')
+    assert_equal '&#45;', escape_comment('-')
+    assert_equal '&#45;&#45;', escape_comment('--')
+  end
+
 end
