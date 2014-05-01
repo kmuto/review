@@ -15,8 +15,13 @@ require 'fileutils'
 require 'erb'
 
 require 'pathname'
-bindir = Pathname.new(__FILE__).realpath.dirname
-$LOAD_PATH.unshift((bindir + '../lib').realpath)
+$bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift(($bindir + '../lib').realpath)
+
+def exec_in_review(*args)
+	args[0] = "#{$bindir}/#{args[0]}"
+	exec(*args)
+end
 
 require 'review'
 require 'review/i18n'
@@ -129,7 +134,7 @@ def output_chaps(filename, values)
   fork {
     STDOUT.reopen("#{@path}/#{filename}")
     $stderr.puts "compiling #{filename}"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}")
+    exec_in_review("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}")
   }
   Process.waitall
 end
@@ -138,7 +143,7 @@ def output_parts(filename, values)
   fork {
     STDOUT.reopen("#{@path}/#{filename}.tex")
     $stderr.puts "compiling #{filename}.tex"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/")
+    exec_in_review("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/")
 
   }
   Process.waitall
