@@ -97,11 +97,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|abc\\\\\ndef|, ret
   end
 
-  def test_inline_u
-    ret = @builder.compile_inline("abc@<u>{def}ghi")
-    assert_equal %Q|abc\\Underline{def}ghi|, ret
-  end
-
   def test_inline_i
     ret = @builder.compile_inline("abc@<i>{def}ghi")
     assert_equal %Q|abc\\textit{def}ghi|, ret
