@@ -101,47 +101,29 @@ def main
 
     ## do compile
     enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
-    kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
+    kanji = 'utf8'
+    if enc
+      kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
+    end
     texcommand = values["texcommand"] || "platex"
-    fork {
-      exec("#{texcommand} -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("#{texcommand} -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("#{texcommand} -kanji=#{kanji} book.tex")
-    }
-    if texcommand != "lualatex"
-      Process.waitall
-      fork {
-        exec("dvipdfmx -d 5 book.dvi")
-      }
-      Process.waitall
+    3.times do
+      system("#{texcommand} -kanji=#{kanji} book.tex")
+    end
+    if File.exist?("book.dvi")
+      system("dvipdfmx -d 5 book.dvi")
     end
   }
   FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
 end
 
 def output_chaps(filename, values)
-  fork {
-    STDOUT.reopen("#{@path}/#{filename}")
-    $stderr.puts "compiling #{filename}"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}")
-  }
-  Process.waitall
+  $stderr.puts "compiling #{filename}"
+  system("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename} > #{@path}/#{filename}")
 end
 
 def output_parts(filename, values)
-  fork {
-    STDOUT.reopen("#{@path}/#{filename}.tex")
-    $stderr.puts "compiling #{filename}.tex"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/")
-
-  }
-  Process.waitall
+  $stderr.puts "compiling #{filename}.tex"
+  system("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/ > #{@path}/#{filename}.tex")
 end
 
 
@@ -150,15 +132,12 @@ def copy_images(from, to)
     Dir.mkdir(to)
     ReVIEW::MakerHelper.copy_images_to_dir(from, to)
     Dir.chdir(to) {
-      fork {
-        begin
-          exec("extractbb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf;extractbb -m *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
-        rescue
-          exec("ebb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
-        end
-      }
+      begin
+        system("extractbb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf;extractbb -m *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
+      rescue
+        system("ebb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
+      end
     }
-  Process.waitall
   end
 end
 
