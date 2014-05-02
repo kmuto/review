@@ -438,6 +438,30 @@ EOS
     end
   end
 
+  def test_column_ref
+    review =<<-EOS
+===[column]{foo} test
+
+inside column
+
+=== next level
+
+this is @<column>{foo}.
+EOS
+    expect =<<-EOS
+<div class="column">
+
+<h3><a id="column-1"></a>test</h3>
+<p>inside column</p>
+</div>
+
+<h3><a id="h1-0-1"></a>next level</h3>
+EOS
+
+    assert_equal expect, column_helper(review)
+  end
+
+
   def test_ul
     src =<<-EOS
   * AAA
