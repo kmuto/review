@@ -276,4 +276,33 @@ EOS
     assert_equal expect.chomp, @builder.raw_result
   end
 
+  def column_helper(review)
+    chap_singleton = class << @chapter; self; end
+    chap_singleton.send(:define_method, :content) { review }
+    @compiler.compile(@chapter)
+  end
+
+  def test_column_ref
+    review =<<-EOS
+===[column]{foo} test
+
+inside column
+
+=== next level
+
+this is @<column>{foo}.
+EOS
+    expect =<<-EOS
+◆→開始:コラム←◆
+■test
+inside column
+◆→終了:コラム←◆
+
+■H3■next level
+this is test.
+EOS
+
+    assert_equal expect, column_helper(review)
+  end
+
 end
