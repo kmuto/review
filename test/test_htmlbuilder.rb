@@ -666,7 +666,7 @@ EOS
     @chapter.instance_eval{@footnote_index=fn}
     @builder.footnote("foo",'bar\\a\\$buz')
     expect =<<-'EOS'
-<div class="footnote"><p class="footnote">[<a id="fn-foo">*1</a>] bar\a\$buz</p></div>
+<div class="footnote" id="fn-foo"><p class="footnote">[<a href="#fnb-foo">*1</a>] bar\a\$buz</p></div>
 EOS
     assert_equal expect, @builder.raw_result
   end
