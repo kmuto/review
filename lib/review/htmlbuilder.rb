@@ -680,11 +680,11 @@ QUOTE
       lines ||= []
       lines.unshift comment unless comment.blank?
       if ReVIEW.book.param["draft"]
-        str = lines.map{|line| escape_html(line) }.join("<br />")
+        str = lines.join("<br />")
         puts %Q(<div class="draft-comment">#{str}</div>)
       else
         str = lines.join("\n")
-        puts %Q(<!-- #{escape_html(str)} -->)
+        puts %Q(<!-- #{escape_comment(str)} -->)
       end
     end
 
@@ -806,7 +806,7 @@ QUOTE
         then escape_html(word + " (#{alt.strip})")
         else escape_html(word)
         end +
-        "</b><!-- IDX:#{escape_html(word)} -->"
+        "</b><!-- IDX:#{escape_comment(escape_html(word))} -->"
     end
 
     def inline_i(str)
@@ -854,11 +854,11 @@ QUOTE
     end
 
     def inline_idx(str)
-      %Q(#{escape_html(str)}<!-- IDX:#{escape_html(str)} -->)
+      %Q(#{escape_html(str)}<!-- IDX:#{escape_comment(escape_html(str))} -->)
     end
 
     def inline_hidx(str)
-      %Q(<!-- IDX:#{escape_html(str)} -->)
+      %Q(<!-- IDX:#{escape_comment(escape_html(str))} -->)
     end
 
     def inline_br(str)
@@ -1065,7 +1065,7 @@ QUOTE
       if ReVIEW.book.param["draft"]
         %Q(<span class="draft-comment">#{escape_html(str)}</span>)
       else
-        %Q(<!-- #{escape_html(str)} -->)
+        %Q(<!-- #{escape_comment(escape_html(str))} -->)
       end
     end
 
