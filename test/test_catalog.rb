@@ -63,7 +63,7 @@ part2.re
     assert_equal("", sut.parts)
   end
 
-  def test_parts
+  def test_parts2
     sut = Catalog.new(yaml_with_parts)
     assert_equal(["ch01.re",
                   {"part1.re" => ["ch02.re"]},
