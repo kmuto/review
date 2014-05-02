@@ -263,6 +263,13 @@ module ReVIEW
       return inline_hd_chap(@chapter, id)
     end
 
+    def inline_column(id)
+      @chapter.column(id).caption
+    rescue
+      error "unknown column: #{id}"
+      nofunc_text("[UnknownColumn:#{id}]")
+    end
+
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
