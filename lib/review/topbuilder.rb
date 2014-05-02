@@ -523,12 +523,12 @@ module ReVIEW
 
     def common_column_begin(type, caption)
       blank
-      puts "◆→開始:#{@titles["type"]}←◆"
+      puts "◆→開始:#{@titles[type]}←◆"
       puts %Q[■#{compile_inline(caption)}]
     end
 
     def common_column_end(type)
-      puts %Q[◆→終了:#{@titles["type"]}←◆]
+      puts %Q[◆→終了:#{@titles[type]}←◆]
       blank
     end
 
