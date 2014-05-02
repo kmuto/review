@@ -108,6 +108,7 @@ module ReVIEW
         puts "\\hypertarget{#{column_label(caption)}}{}"
       end
       puts macro('reviewcolumnhead', nil, compile_inline(caption))
+      puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
     end
 
     def column_end(level)
