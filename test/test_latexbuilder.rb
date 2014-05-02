@@ -431,6 +431,7 @@ EOS
 \\begin{reviewcolumn}
 \\hypertarget{column:chap1:1}{}
 \\reviewcolumnhead{}{prev column}
+\\addcontentsline{toc}{subsection}{prev column}
 
 inside prev column
 
@@ -439,6 +440,7 @@ inside prev column
 \\begin{reviewcolumn}
 \\hypertarget{column:chap1:2}{}
 \\reviewcolumnhead{}{test}
+\\addcontentsline{toc}{subsection}{test}
 
 inside column
 
@@ -460,6 +462,7 @@ EOS
 \\begin{reviewcolumn}
 \\hypertarget{column:chap1:1}{}
 \\reviewcolumnhead{}{test}
+\\addcontentsline{toc}{subsection}{test}
 
 inside column
 
