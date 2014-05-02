@@ -1,4 +1,4 @@
-# -*- coding: euc-jp -*-
+# -*- coding: utf-8 -*-
 # $Id: ewbbuilder.rb 2195 2005-11-13 21:52:18Z aamine $
 
 require 'review/builder'
@@ -6,9 +6,7 @@ require 'review/textutils'
 require 'review/exception'
 
 module ReVIEW
-
   class EWBBuilder < Builder
-
     include TextUtils
 
     def initialize(chap)
@@ -39,7 +37,7 @@ module ReVIEW
       firstline = f.lineno
       puts
       puts caption
-      puts "//lst1"
+      puts '//lst1'
       lines.each do |line|
         if noescape
           puts detab(line)
@@ -60,7 +58,7 @@ module ReVIEW
     def cmd(lines, caption = nil)
       puts
       puts caption
-      puts "//sc1{"
+      puts '//sc1{'
       lines.each do |line|
         if noescape
           puts detab(line)
@@ -128,7 +126,7 @@ module ReVIEW
       output.puts '//}'
     end
 
-    LI = '¡ü'
+    LI = 'â—'
 
     def ul_begin
       puts
@@ -165,7 +163,8 @@ module ReVIEW
     end
 
     def vspace
-      print %Q|\n//h|
+      print %Q(
+//h)
     end
 
     def noindent
@@ -224,7 +223,7 @@ module ReVIEW
         base = key
         ext = '.eps'
       end
-      currname = "images/ch_#{chapter_id()}_#{base}#{ext}"
+      currname = "images/ch_#{chapter_id}_#{base}#{ext}"
       destname = "images/fig#{figure_number(base)}#{ext}"
       unless File.exist? currname
         # error "image file not exist: #{currname}"
@@ -233,12 +232,12 @@ module ReVIEW
     end
 
     def image_label(str)
-      "#{chapter_id()}:#{str}"
+      "#{chapter_id}:#{str}"
     end
 
     def text(str)
       str = str.gsub(/\t/, ' ')
-      str.gsub(/([^@^]+)|\^(.*?)\^|@<(\w+)>\{(.*?)\}|@\{(.*?)\}|([@^])/) {
+      str.gsub(/([^@^]+)|\^(.*?)\^|@<(\w+)>\{(.*?)\}|@\{(.*?)\}|([@^])/) do
         if normal = $1
           escape(normal)
         elsif tt = $2
@@ -253,7 +252,7 @@ module ReVIEW
         else
           error "unknown inline: #{str.inspect}"
         end
-      }
+      end
     rescue DocumentError => e
       error e.message
       return 'ERROR'
@@ -263,11 +262,11 @@ module ReVIEW
       word, eng, abbr = arg.split(/,/).map {|s| s.strip }
       if abbr
         add_index(word) + "//g{#{word}//}" +
-        add_index(abbr) + "¡Ê#{abbr}, " +
-        add_index(eng)  + "#{eng}¡Ë"
+        add_index(abbr) + "ï¼ˆ#{abbr}, " +
+        add_index(eng)  + "#{eng}ï¼‰"
       elsif eng
         add_index(word) + "//g{#{word}//}" +
-        add_index(eng)  + "¡Ê#{eng}¡Ë"
+        add_index(eng)  + "ï¼ˆ#{eng}ï¼‰"
       else
         add_index(word) + "//g{#{word}//}"
       end
@@ -307,7 +306,7 @@ module ReVIEW
       "//ruby{#{arg}//}"
     end
 
-    NAKAGURO = '¡¦'
+    NAKAGURO = 'ãƒ»'
 
     def inline_bou(str)
       "//ruby{#{escape(str)},#{NAKAGURO * char_length(str)}//}"
@@ -325,42 +324,41 @@ module ReVIEW
       "//LaTeX{ $#{arg}$ //}"
     end
 
-
     def chapter_id
       File.basename(@filename, '.rd')
     end
 
     def chapter_prefix
-      sprintf('%02d', @chapter_table.number(chapter_id()))
+      sprintf('%02d', @chapter_table.number(chapter_id))
     end
 
-    def chapter_number( key )
-      curr = @chapter_table.number(chapter_id())
+    def chapter_number(key)
+      curr = @chapter_table.number(chapter_id)
       dest = @chapter_table.number(key)
 
-      case chapter_id()
+      case chapter_id
       when /\.ewb\z/, 'tmp', 'temp'
-        return 'Âè' + dest + '¾Ï'
+        return 'ç¬¬' + dest + 'ç« '
       end
       if dest == curr + 1
-        '¼¡¾Ï'
+        'æ¬¡ç« '
       elsif dest == curr - 1
-        'Á°¾Ï'
+        'å‰ç« '
       else
-        "Âè#{dest}¾Ï"
+        "ç¬¬#{dest}ç« "
       end
     end
 
     def chapter_name(key)
-      '¡Ø' + text(@chapter_table.title(key)) + '¡Ù'
+      'ã€' + text(@chapter_table.title(key)) + 'ã€'
     end
 
     def list_number(key)
-      sprintf(chapter_prefix() + '%02d0', @list_table.number(key))
+      sprintf(chapter_prefix + '%02d0', @list_table.number(key))
     end
 
     def figure_number(key)
-      sprintf(chapter_prefix() + '%02d0', @figure_table.number(key))
+      sprintf(chapter_prefix + '%02d0', @figure_table.number(key))
     end
 
     def footnote_number(key)
@@ -373,13 +371,11 @@ module ReVIEW
     end
 
     def index_number(n)
-      900000 + @chapter_index.number(chapter_id()) * 1000 + n
+      900_000 + @chapter_index.number(chapter_id) * 1000 + n
     end
 
     def escape(str)
-      str.gsub(%r<//>, '////')
+      str.gsub(%r{//}, '////')
     end
-
   end
-
 end
