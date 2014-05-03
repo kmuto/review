@@ -112,11 +112,6 @@ ConstantName:
 CyclomaticComplexity:
   Max: 64
 
-# Offense count: 3
-# Cop supports --auto-correct.
-DefWithParentheses:
-  Enabled: false
-
 # Offense count: 98
 Documentation:
   Enabled: false

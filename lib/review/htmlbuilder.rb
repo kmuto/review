@@ -389,7 +389,7 @@ EOT
       end
     end
 
-    def parasep()
+    def parasep
       puts '<br />'
     end
 

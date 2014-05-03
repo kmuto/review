@@ -211,7 +211,7 @@ module ReVIEW
       blank
     end
 
-    def parasep()
+    def parasep
       puts '\\parasep'
     end
 
@@ -347,7 +347,7 @@ module ReVIEW
     end
     private :image_label
 
-    def chapter_label()
+    def chapter_label
       "chap:#{@chapter.id}"
     end
     private :chapter_label
