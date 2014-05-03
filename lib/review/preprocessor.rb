@@ -395,7 +395,7 @@ module ReVIEW
 
     attr_reader :number
     attr_reader :string
-    alias to_s string
+    alias_method :to_s, :string
 
     def edit
       self.class.new(@number, yield(@string))

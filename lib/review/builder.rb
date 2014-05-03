@@ -58,7 +58,7 @@ module ReVIEW
       @output.string
     end
 
-    alias :raw_result result
+    alias_method :raw_result, :result
 
     def print(*s)
       @output.print(*s.map{|i|

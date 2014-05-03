@@ -219,7 +219,7 @@ module ReVIEW
       latex_block 'quotation', lines
     end
 
-    alias lead read
+    alias_method :lead, :read
 
     def emlist(lines, caption = nil)
       blank
@@ -384,7 +384,7 @@ module ReVIEW
       puts '\end{reviewimage}'
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def table(lines, id = nil, caption = nil)
       rows = []
@@ -490,7 +490,7 @@ module ReVIEW
       latex_block 'center', lines
     end
 
-    alias centering center
+    alias_method :centering, :center
 
     def flushright(lines)
       latex_block 'flushright', lines

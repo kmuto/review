@@ -76,7 +76,13 @@ module ReVIEW
 
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
-      alias puts print unless ReVIEW.book.param["nolf"].nil?
+      if ReVIEW.book.param["nolf"].present?
+        IDGXMLBuilder.class_eval do
+          def puts(arg)
+            print arg
+          end
+        end
+      end
       @secttags = true unless ReVIEW.book.param["structuredxml"].nil?
     end
     private :builder_init_file
@@ -344,7 +350,7 @@ module ReVIEW
       end
     end
 
-    alias :lead read
+    alias_method :lead, :read
 
     def column_label(id)
       num = @chapter.column(id).number
@@ -755,7 +761,7 @@ module ReVIEW
       %Q(<tt style='bold'>#{escape_html(str)}</tt><index value='#{index}' />)
     end
 
-    alias :inline_ttbold inline_ttb
+    alias_method :inline_ttbold, :inline_ttb
 
     def inline_tti(str)
       %Q(<tt style='italic'>#{escape_html(str)}</tt>)
@@ -786,7 +792,7 @@ module ReVIEW
       %Q[<ref idref='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
-    alias inline_ref inline_labelref
+    alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(idref)
       %Q[<pageref idref='#{escape_html(idref)}'>●●</pageref>] # ページ番号を参照
@@ -1067,7 +1073,7 @@ module ReVIEW
       puts "</img>"
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def label(id)
       # FIXME

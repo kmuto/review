@@ -402,7 +402,7 @@ EOT
       end
     end
 
-    alias :lead read
+    alias_method :lead, :read
 
     def list(lines, id, caption)
       puts %Q[<div class="caption-code">]
@@ -714,7 +714,7 @@ QUOTE
       puts %Q[</div>]
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def hr
       puts "<hr />"
@@ -748,7 +748,7 @@ QUOTE
       %Q[<a target='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</a>]
     end
 
-    alias inline_ref inline_labelref
+    alias_method :inline_ref, :inline_labelref
 
     def inline_chapref(id)
       title = super

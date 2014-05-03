@@ -35,7 +35,7 @@ module ReVIEW
         File.basename(@name, '.*')
       end
 
-      alias id name
+      alias_method :id, :name
 
       def title
         @title = ""

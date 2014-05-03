@@ -15,11 +15,6 @@ AccessModifierIndentation:
 AccessorMethodName:
   Enabled: false
 
-# Offense count: 36
-# Cop supports --auto-correct.
-Alias:
-  Enabled: false
-
 # Offense count: 17
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedHashRocketStyle, EnforcedColonStyle, EnforcedLastArgumentHashStyle, SupportedLastArgumentHashStyles.

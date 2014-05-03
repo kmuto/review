@@ -230,7 +230,7 @@ module ReVIEW
       blank
     end
 
-    alias :lead read
+    alias_method :lead, :read
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
@@ -461,7 +461,7 @@ module ReVIEW
       "★#{str}☆"
     end
 
-    alias :inline_strong inline_b
+    alias_method :inline_strong, :inline_b
 
     def inline_tt(str)
       "△#{str}☆"
@@ -471,7 +471,7 @@ module ReVIEW
       "★#{str}☆◆→等幅フォント太字←◆"
     end
 
-    alias :inline_ttbold inline_ttb
+    alias_method :inline_ttbold, :inline_ttb
 
     def inline_tti(str)
       "▲#{str}☆◆→等幅フォントイタ←◆"
@@ -676,7 +676,7 @@ module ReVIEW
       base_block "insn", lines, caption
     end
 
-    alias :box insn
+    alias_method :box, :insn
 
     def indepimage(id, caption=nil, metric=nil)
       blank
@@ -690,7 +690,7 @@ module ReVIEW
       blank
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def label(id)
       # FIXME
@@ -768,7 +768,7 @@ module ReVIEW
       %Q(「◆→#{idref}←◆」) # 節、項を参照
     end
 
-    alias inline_ref inline_labelref
+    alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(idref)
       %Q(●ページ◆→#{idref}←◆) # ページ番号を参照

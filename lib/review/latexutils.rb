@@ -67,7 +67,7 @@ module ReVIEW
       }
     end
 
-    alias escape escape_latex
+    alias_method :escape, :escape_latex
 
     def unescape_latex(str)
       metachars_invert_re = Regexp.new(METACHARS_INVERT.keys.collect{|key|  Regexp.escape(key)}.join('|'))

@@ -143,7 +143,7 @@ module EPUBMaker
       end
     end
 
-    alias importImageInfo import_imageinfo
+    alias_method :importImageInfo, :import_imageinfo
 
     # Produce EPUB file +epubfile+.
     # +basedir+ points the directory has contents (default: current directory.)
