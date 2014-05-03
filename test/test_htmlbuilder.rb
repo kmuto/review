@@ -645,44 +645,31 @@ EOS
 
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw1
     @builder.raw("|html|<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw2
     @builder.raw("|html, latex|<>!\"\\n& ")
-    expect =<<-EOS
-<>!\"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw3
     @builder.raw("|latex, idgxml|<>!\"\\n& ")
-    expect =<<-EOS
-EOS
+    expect = ''
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw4
     @builder.raw("|html <>!\"\\n& ")
-    expect =<<-EOS
-|html <>!\"
-& 
-EOS
+    expect = %Q(|html <>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 

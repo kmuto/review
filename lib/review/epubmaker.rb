@@ -40,7 +40,7 @@ module ReVIEW
 
     File.unlink("#{bookname}.epub") if File.exist?("#{bookname}.epub")
     FileUtils.rm_rf(bookname) if @params["debug"] && File.exist?(bookname)
-    
+
     Dir.mktmpdir(bookname, Dir.pwd) do |basetmpdir|
       log("Created first temporary directory as #{basetmpdir}.")
 
@@ -141,7 +141,7 @@ module ReVIEW
       part.chapters.each do |chap|
         build_chap(chap, base_path, basetmpdir, yamlfile, nil)
       end
-      
+
     end
   end
 
@@ -158,7 +158,7 @@ EOT
 <h2 class="part-title">#{part.name.strip}</h2>
 EOT
       end
-      
+
       f.puts <<EOT
 </div>
 EOT
@@ -192,7 +192,7 @@ EOT
     log("Create #{htmlfile} from #{filename}.")
 
     level = @params["secnolevel"]
-    
+
     if !ispart.nil?
       level = @params["part_secnolevel"]
     else
@@ -392,7 +392,7 @@ EOT
       @content = ""
       @headlines = headlines
     end
-    
+
     def tag_start(name, attrs)
       if name =~ /\Ah(\d+)/
         unless @level.nil?
@@ -408,7 +408,7 @@ EOT
         end
       end
     end
-    
+
     def tag_end(name)
       if name =~ /\Ah\d+/
         @headlines.push({"level" => @level, "id" => @id, "title" => @content}) unless @id.nil?
@@ -417,7 +417,7 @@ EOT
         @id = nil
       end
     end
-    
+
     def text(text)
       unless @level.nil?
         @content << text.gsub("\t", "　") # FIXME:区切り文字

@@ -60,12 +60,12 @@ def main
   @identifier = values["urnid"].nil? ? "urn:uuid:#{UUID.create}" : values["urnid"]
 
   Dir.mkdir(@bookdir)
-  
+
   # MIME type
   File.open("#{@bookdir}/mimetype", "w") {|f|
     f.write "application/epub+zip"
   }
-  
+
   Dir.mkdir("#{@bookdir}/OEBPS")
   # XHTML
   @manifeststr = ""
@@ -483,7 +483,7 @@ EOT
   if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
     system(values["posthook"], @bookdir, Dir.pwd, yamlfile)
   end
-  
+
   # Zip epubファイルの作成。mimetypeは圧縮しないようにする
   basedir = Dir.pwd
   Dir.chdir(@bookdir) {|d|

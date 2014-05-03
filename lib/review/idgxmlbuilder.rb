@@ -211,7 +211,7 @@ module ReVIEW
         end
 
         @subsubsection += 1
-        print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil? 
+        print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
         if ReVIEW.book.param["secnolevel"] >= 4
           if @chapter.number.blank? or @chapter.on_POSTDEF?
             prefix = ""
@@ -351,7 +351,7 @@ module ReVIEW
       "column-#{num}"
     end
     private :column_label
-    
+
     def inline_column(id)
       if ReVIEW.book.param["chapterlink"]
         %Q(<link href="#{column_label(id)}">#{escape_html(@chapter.column(id).caption)}</link>)
@@ -484,12 +484,12 @@ module ReVIEW
         "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}</span>"
       end
     end
- 
+
     def handle_metric(str)
       k, v = str.split('=', 2)
       return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
     end
-      
+
     def result_metric(array)
       " #{array.join(' ')}"
     end
@@ -646,7 +646,7 @@ module ReVIEW
     def td(str)
       str
     end
-    
+
     def table_end
       print "<?dtp tablerow last?>"
     end
@@ -1014,7 +1014,7 @@ module ReVIEW
     def practice(lines)
       captionblock("practice", lines, nil)
     end
-    
+
     def expert(lines)
       captionblock("expert", lines, nil)
     end

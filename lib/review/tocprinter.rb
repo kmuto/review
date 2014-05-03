@@ -42,7 +42,7 @@ module ReVIEW
       elsif @param["inencoding"]  =~ /^JIS$/
         inc = "-J"
       end
-      
+
       if @param["outencoding"] =~ /^EUC$/
         outc = "-e"
       elsif @param["outencoding"] =~ /^SJIS$/
@@ -50,7 +50,7 @@ module ReVIEW
       elsif @param["outencoding"]  =~ /^JIS$/
         outc = "-j"
       end
-      
+
       NKF.nkf("#{inc} #{outc}", line)
     end
   end

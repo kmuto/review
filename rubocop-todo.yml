@@ -430,11 +430,6 @@ TrailingBlankLines:
 TrailingComma:
   Enabled: false
 
-# Offense count: 67
-# Cop supports --auto-correct.
-TrailingWhitespace:
-  Enabled: false
-
 # Offense count: 8
 # Configuration parameters: ExactNameMatch, AllowPredicates, Whitelist.
 TrivialAccessors:

@@ -12,7 +12,7 @@
 require 'epubmaker/epubv2'
 
 module EPUBMaker
-  
+
   # EPUBv3 is EPUB version 3 producer.
   class EPUBv3 < EPUBv2
     def opf_guide
@@ -124,7 +124,7 @@ EOT
           end
         end
       end
-      
+
       @producer.contents.each do |item|
         next if item.file =~ /#/ || item.id.nil? # skip subgroup, or id=nil (for cover)
         s << %Q[    <item#{mathstr} id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
@@ -139,7 +139,7 @@ EOT
       s << %Q[  <spine>\n]
       s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="no"/>\n]
 #      s << %Q[    <itemref idref="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" />\n]
-      
+
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
         s << %Q[    <itemref idref="#{item.id}"/>\n] if item.notoc.nil?
@@ -187,7 +187,7 @@ EOT
           end
         end
       end
-      
+
       s << <<EOT
     <item id="#{@producer.params["bookname"]}" href="#{@producer.params["cover"]}" media-type="application/xhtml+xml"/>
 EOT
@@ -203,7 +203,7 @@ EOT
   <meta charset="UTF-8" />
   <meta name="generator" content="EPUBMaker::Producer"/>
 EOT
-      
+
       @producer.params["stylesheet"].each do |file|
         s << %Q[  <link rel="stylesheet" type="text/css" href="#{file}"/>\n]
       end

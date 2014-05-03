@@ -381,7 +381,7 @@ module ReVIEW
     def td(str)
       str
     end
-    
+
     def table_end
       puts "◆→終了:#{@titles["table"]}←◆"
       blank
@@ -727,11 +727,11 @@ module ReVIEW
     def inline_br(str)
       %Q(\n)
     end
-    
+
     def text(str)
       str
     end
-    
+
     def inline_chap(id)
       #"「第#{super}章　#{inline_title(id)}」"
       # "第#{super}章"

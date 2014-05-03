@@ -142,7 +142,7 @@ module ReVIEW
             @f.print out.string
           end
           skip_list f
-        
+
         when /\A\#@mapfile/
           direc = parse_directive(line, 1, 'eval')
           path = expand(direc.arg)
@@ -166,7 +166,7 @@ module ReVIEW
           #error "unkown directive: #{line.strip}" unless known_directive?(op)
           warn "unkown directive: #{line.strip}" unless known_directive?(op)
           @f.print line
-        
+
         when /\A\s*\z/   # empty line
           @f.puts
         else

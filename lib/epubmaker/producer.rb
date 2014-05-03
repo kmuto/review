@@ -26,19 +26,19 @@ module EPUBMaker
     attr_accessor :params
     # Message resource object.
     attr_accessor :res
-    
+
     # Take YAML +file+ and return parameter hash.
     def Producer.load(file)
       raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
       return YAML.load_file(file)
     end
-    
+
     # Take YAML +file+ and update parameter hash.
     def load(file)
       raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
       merge_params(@params.merge(YAML.load_file(file)))
     end
-    
+
     # Construct producer object.
     # +params+ takes initial parameter hash. This parameters can be overriden by EPUBMaker#load or EPUBMaker#merge_params.
     # +version+ takes EPUB version (default is 2).
@@ -47,18 +47,18 @@ module EPUBMaker
       @params = {}
       @epub = nil
       @params["epubversion"] = version unless version.nil?
-      
+
       unless params.nil?
         merge_params(params)
       end
     end
-    
+
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
       @params = @params.merge(params)
       complement
       @res = EPUBMaker::Resource.new(@params)
-      
+
       unless @params["epubversion"].nil?
         case @params["epubversion"].to_i
         when 2
@@ -70,32 +70,32 @@ module EPUBMaker
         end
       end
     end
-    
+
     # Write mimetype file to IO object +wobj+.
     def mimetype(wobj)
       s = @epub.mimetype
       wobj.print s if !s.nil? && !wobj.nil?
     end
-    
+
     # Write opf file to IO object +wobj+.
     def opf(wobj)
       s = @epub.opf
       wobj.puts s if !s.nil? && !wobj.nil?
     end
-    
+
     # Write ncx file to IO object +wobj+. +indentarray+ defines prefix
     # string for each level.
     def ncx(wobj, indentarray=[])
       s = @epub.ncx(indentarray)
       wobj.puts s if !s.nil? && !wobj.nil?
     end
-    
+
     # Write container file to IO object +wobj+.
     def container(wobj)
       s = @epub.container
       wobj.puts s if !s.nil? && !wobj.nil?
     end
-    
+
     # Write cover file to IO object +wobj+.
     # If Producer#params["coverimage"] is defined, it will be used for
     # the cover image.
@@ -103,19 +103,19 @@ module EPUBMaker
       s = @epub.cover
       wobj.puts s if !s.nil? && !wobj.nil?
     end
-    
+
     # Write title file (copying) to IO object +wobj+.
     def titlepage(wobj)
       s = @epub.titlepage
       wobj.puts s if !s.nil? && !wobj.nil?
     end
-    
+
     # Write colophon file to IO object +wobj+.
     def colophon(wobj)
       s = @epub.colophon
       wobj.puts s if !s.nil? && !wobj.nil?
     end
-    
+
     # Write own toc file to IO object +wobj+.
     def mytoc(wobj)
       s = @epub.mytoc
@@ -144,33 +144,33 @@ module EPUBMaker
     end
 
     alias importImageInfo import_imageinfo
-    
+
     # Produce EPUB file +epubfile+.
     # +basedir+ points the directory has contents (default: current directory.)
     # +tmpdir+ defines temporary directory.
     def produce(epubfile, basedir=nil, tmpdir=nil)
       current = Dir.pwd
       basedir = current if basedir.nil?
-      
+
       _tmpdir = tmpdir.nil? ? Dir.mktmpdir : tmpdir
       epubfile = "#{current}/#{epubfile}" if epubfile !~ /\A\// # /
-      
+
       # FIXME: error check
       File.unlink(epubfile) if File.exist?(epubfile)
-      
+
       begin
         @epub.produce(epubfile, basedir, _tmpdir)
       ensure
         FileUtils.rm_r(_tmpdir) if tmpdir.nil?
       end
     end
-    
+
     def call_hook(filename, *params)
       if !filename.nil? && File.exist?(filename) && FileTest.executable?(filename)
         system(filename, *params)
       end
     end
-    
+
     private
 
     # Complement parameters.
@@ -219,7 +219,7 @@ module EPUBMaker
       end
 
       @params["htmlversion"] == 5 if @params["epubversion"] >= 3
-      
+
       %w[bookname title].each do |k|
         raise "Key #{k} must have a value. Abort." if @params[k].nil?
       end
