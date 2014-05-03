@@ -446,6 +446,7 @@ inside column
 
 \\end{reviewcolumn}
 EOS
+    @param["toclevel"] = 3
     assert_equal expect, column_helper(review)
   end
 
@@ -462,7 +463,6 @@ EOS
 \\begin{reviewcolumn}
 \\hypertarget{column:chap1:1}{}
 \\reviewcolumnhead{}{test}
-\\addcontentsline{toc}{subsection}{test}
 
 inside column
 
@@ -471,6 +471,7 @@ inside column
 \\subsection*{next level}
 EOS
 
+    @param["toclevel"] = 1
     assert_equal expect, column_helper(review)
   end
 
