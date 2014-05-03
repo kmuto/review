@@ -481,28 +481,15 @@ EOT
 
   # hook
   if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
-    fork {
-      exec(values["posthook"], @bookdir, Dir.pwd, yamlfile)
-    }
-    Process.waitall
+    system(values["posthook"], @bookdir, Dir.pwd, yamlfile)
   end
   
   # Zip epubファイルの作成。mimetypeは圧縮しないようにする
-  fork {
-    basedir = Dir.pwd
-    Dir.chdir(@bookdir) {|d|
-      exec("zip", "-0X", "#{basedir}/#{bookname}.epub", "mimetype")
-    }
+  basedir = Dir.pwd
+  Dir.chdir(@bookdir) {|d|
+    system("zip", "-0X", "#{basedir}/#{bookname}.epub", "mimetype")
+    system("zip", "-Xr9D", "#{basedir}/#{bookname}.epub", "META-INF", "OEBPS")
   }
-  Process.waitall
-  fork {
-    basedir = Dir.pwd
-    Dir.chdir(@bookdir) {|d|
-      exec("zip", "-Xr9D", "#{basedir}/#{bookname}.epub", "META-INF", "OEBPS")
-    }
-  }
-  Process.waitall
-
   FileUtils.rm_r(tmp) if values["debug"].nil?
 end
 
@@ -777,11 +764,7 @@ def output_chaps_by_file(l, values)
     exit 1
   end
   filename = "#{file_id}.html"
-  fork {
-    STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
-    exec("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l}")
-  }
-  Process.waitall
+  system("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l} > #{@bookdir}/OEBPS/#{filename}")
   getanchors("#{@bookdir}/OEBPS/#{filename}")
   if @epubversion == 3 && include_mathml?("#{@bookdir}/OEBPS/#{filename}")
     @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" properties="mathml" media-type="application/xhtml+xml" />\n)
