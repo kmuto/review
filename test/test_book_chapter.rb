@@ -265,7 +265,7 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_on_CHAPS?
     mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re",
-        'chapter1.re' => '12345', 'preface.re' => 'abcde' do |dir, book, files|
+                 'chapter1.re' => '12345', 'preface.re' => 'abcde' do |dir, book, files|
       ch1 = Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
       pre = Book::Chapter.new(book, nil, 'preface', files['preface.re'])
 

@@ -310,7 +310,7 @@ EOC
     end
 
     mktmpbookdir 'preface.re' => '',
-        'PREDEF' => '' do |dir, book, files|
+                 'PREDEF' => '' do |dir, book, files|
       assert_equal nil, book.prefaces # XXX: OK?
     end
 
@@ -319,7 +319,7 @@ EOC
     end
 
     mktmpbookdir 'PREDEF' => 'chapter1',
-       'chapter1.re' => '' do |dir, book, files|
+                 'chapter1.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
@@ -328,7 +328,7 @@ EOC
     end
 
     mktmpbookdir 'PREDEF' => "chapter1\n\nchapter2",
-       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+                 'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 2, book.prefaces.chapters.size
@@ -339,7 +339,7 @@ EOC
     end
 
     mktmpbookdir 'PREDEF' => "chapter1 chapter2",
-       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+                 'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 2, book.prefaces.chapters.size # XXX: OK?
@@ -352,14 +352,14 @@ EOC
     end
 
     mktmpbookdir 'PREDEF' => 'chapter1.re',
-       'chapter1.re' => '' do |dir, book, files|
+                 'chapter1.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
     end
 
     mktmpbookdir 'PREDEF' => 'chapter1.txt',
-       'chapter1.txt' => '' do |dir, book, files|
+                 'chapter1.txt' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.prefaces
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
@@ -390,7 +390,7 @@ EOC
     end
 
     mktmpbookdir 'appendix.re' => '',
-       'postscript.re' => '' do |dir, book, files|
+                 'postscript.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 2, book.postscripts.chapters.size
@@ -403,7 +403,7 @@ EOC
     end
 
     mktmpbookdir 'preface.re' => '',
-        'POSTDEF' => '' do |dir, book, files|
+                 'POSTDEF' => '' do |dir, book, files|
       assert_equal nil, book.postscripts # XXX: OK?
     end
 
@@ -412,7 +412,7 @@ EOC
     end
 
     mktmpbookdir 'POSTDEF' => 'chapter1',
-       'chapter1.re' => '' do |dir, book, files|
+                 'chapter1.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 1, book.postscripts.chapters.size
@@ -421,7 +421,7 @@ EOC
     end
 
     mktmpbookdir 'POSTDEF' => "chapter1\n\nchapter2",
-       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+                 'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 2, book.postscripts.chapters.size
@@ -432,7 +432,7 @@ EOC
     end
 
     mktmpbookdir 'POSTDEF' => "chapter1 chapter2",
-       'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
+                 'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.postscripts
       assert_equal '', book.postscripts.name
       assert_equal 2, book.postscripts.chapters.size # XXX: OK?
@@ -470,7 +470,7 @@ EOC
     end
 
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-       'preface.re' => '' do |dir, book, files|
+                 'preface.re' => '' do |dir, book, files|
       parts = book.parts
       assert_equal 3, parts.size
       assert book.part(1)
@@ -485,7 +485,7 @@ EOC
     end
 
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-       'postscript.re' => '' do |dir, book, files|
+                 'postscript.re' => '' do |dir, book, files|
       parts = book.parts
       assert_equal 3, parts.size
       assert book.part(1)
@@ -500,7 +500,7 @@ EOC
     end
 
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-       'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
       parts = book.parts
       assert_equal 4, parts.size
       assert book.part(1)
@@ -519,7 +519,7 @@ EOC
 
   def test_chapters
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-       'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
       chapters = book.chapters
       assert_equal 5, chapters.size
 
@@ -539,7 +539,7 @@ EOC
     end
 
     mktmpbookdir 'CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt",
-       'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
       chapters = book.chapters
       assert_equal 5, chapters.size
 
