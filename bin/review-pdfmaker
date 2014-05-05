@@ -13,6 +13,7 @@ require 'tmpdir'
 require 'yaml'
 require 'fileutils'
 require 'erb'
+require 'optparse'
 
 require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
@@ -24,11 +25,6 @@ require 'review/i18n'
 def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
   exit 1
-end
-
-def usage
-  $stderr.puts "Usage: #{$0} configfile"
-  exit 0
 end
 
 def check_book(values)
@@ -47,10 +43,28 @@ def build_path(values)
 end
 
 def main
-  usage if ARGV.size != 1
+  values = ReVIEW::Configure.values
 
+  # Options
+  opts = OptionParser.new
+  opts.banner = "Usage: #{File.basename($0)} configfile"
+
+  opts.on('--help', 'Prints this message and quit.') do
+    puts opts.help
+    exit 0
+  end
+  opts.on('--ignore-errors', 'Ignore review-compile errors.') do
+    values["ignore-errors"] = true
+  end
+
+  opts.parse!(ARGV)
+  if ARGV.size != 1
+    puts opts.help
+    exit 0
+  end
   yamlfile = ARGV[0]
-  values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
+  values.merge!(YAML.load_file(yamlfile))
+
   check_book(values)
   @basedir = Dir.pwd
   @path = build_path(values)
@@ -118,12 +132,22 @@ end
 
 def output_chaps(filename, values)
   $stderr.puts "compiling #{filename}"
-  system("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename} > #{@path}/#{filename}")
+  cmd = "review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename} > #{@path}/#{filename}"
+  if system cmd
+    # OK
+  else
+    error cmd unless values["ignore-errors"]
+  end
 end
 
 def output_parts(filename, values)
   $stderr.puts "compiling #{filename}.tex"
-  system("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/ > #{@path}/#{filename}.tex")
+  cmd = "review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/ > #{@path}/#{filename}.tex"
+  if system cmd
+    # OK
+  else
+    error cmd unless values["ignore-errors"]
+  end
 end
 
 
