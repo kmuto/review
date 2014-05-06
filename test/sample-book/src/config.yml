@@ -38,13 +38,13 @@ coverimage: cover.jpg
 # 固有IDに使用するドメイン
 urnid: http://tatsu-zine.com/books/review-sample-book/1.0.0/
 # CSSファイル (yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること
-stylesheet: main.css
+stylesheet: style.css
 # 目次として抽出するレベル
 toclevel: 2
 # セクション番号を表示するレベル
 secnolevel: 3
 # review-compileに渡すパラメータ
-params: --stylesheet=main.css
+params: --stylesheet=style.css
 # 目次生成用？
 mytoc: true
 # 奥付生成用
