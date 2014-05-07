@@ -39,11 +39,7 @@ def check_book(values)
 end
 
 def build_path(values)
-  if values["debug"].nil?
-    Dir.mktmpdir+"/#{values["bookname"]}-pdf"
-  else
-    "./#{values["bookname"]}-pdf"
-  end
+  "./#{values["bookname"]}-pdf"
 end
 
 def check_compile_status(ignore_errors)
