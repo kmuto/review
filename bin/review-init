@@ -24,6 +24,7 @@ def main
     generate_images_dir(dir)
     generate_cover_image(dir)
     generate_layout(dir)
+    generate_style(dir)
     generate_texmacro(dir)
     generate_config(dir)
     generate_rakefile(dir)
@@ -94,7 +95,7 @@ def generate_config(dir)
 end
 
 def generate_style(dir)
-  File.open(dir + "/style.css", "w")
+  FileUtils.cp @review_dir + "/test/sample-book/src/style.css", dir
 end
 
 def generate_texmacro(dir)
