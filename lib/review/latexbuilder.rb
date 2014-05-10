@@ -344,8 +344,9 @@ module ReVIEW
     end
     private :existence
 
-    def image_label(id)
-      "image:#{@chapter.id}:#{id}"
+    def image_label(id, chapter=nil)
+      chapter ||= @chapter
+      "image:#{chapter.id}:#{id}"
     end
     private :image_label
 
@@ -608,7 +609,7 @@ module ReVIEW
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}", image_label(id))
+      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}", image_label(id, chapter))
     end
 
     def footnote(id, content)
