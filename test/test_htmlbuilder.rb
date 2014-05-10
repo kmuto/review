@@ -175,6 +175,19 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, ret
   end
 
+  def test_inline_mathml
+    begin
+      require 'math_ml'
+      require "math_ml/symbol/character_reference"
+    rescue LoadError
+      return true
+    end
+    @param["mathml"] = true
+    ret = @builder.compile_inline("@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}")
+    @param["mathml"] = nil
+    assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", ret
+  end
+
   def test_quote
     lines = ["foo", "bar", "","buz"]
     @builder.quote(lines)
