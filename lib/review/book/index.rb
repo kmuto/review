@@ -54,7 +54,7 @@ module ReVIEW
       def [](id)
         @index.fetch(id)
       rescue
-        raise KeyError
+        raise KeyError, "not found key '#{id}' for #{self.class}"
       end
 
       def number(id)
