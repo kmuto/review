@@ -2,6 +2,7 @@ ja:
   image: 図
   table: 表
   list: リスト
+  column: "コラム「%s」"
   part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
@@ -25,6 +26,7 @@ en:
   image: "Figure "
   table: "Table "
   list: "List "
+  column: "Column %s"
   chapter: Chapter %d
   chapter_postfix: ". "
   appendix: Appendix %s
