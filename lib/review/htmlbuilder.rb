@@ -582,7 +582,7 @@ QUOTE
 
     def image_image(id, caption, metric)
       metrics = parse_metric("html", metric)
-      puts %Q[<div class="image">]
+      puts %Q[<div id="#{id}" class="image">]
       puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       image_header id, caption
       puts %Q[</div>]
@@ -623,7 +623,7 @@ QUOTE
       end
       rows = adjust_n_cols(rows)
 
-      puts %Q[<div class="table">]
+      puts %Q[<div id="#{id}" class="table">]
       begin
         table_header id, caption unless caption.nil?
       rescue KeyError
@@ -948,10 +948,16 @@ QUOTE
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
+      str = nil
       if get_chap(chapter).nil?
-        "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}"
+        str = "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}"
       else
-        "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
+        str = "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
+      end
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<a href="./#{chapter.id}.html##{id}">#{str}</a>)
+      else
+        str
       end
     rescue KeyError
       error "unknown table: #{id}"
@@ -960,10 +966,16 @@ QUOTE
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
+      str = nil
       if get_chap(chapter).nil?
-        "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}"
+        str = "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}"
       else
-        "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
+        str = "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
+      end
+      if ReVIEW.book.param["chapterlink"]
+        %Q(<a href="./#{chapter.id}.html##{id}">#{str}</a>)
+      else
+        str
       end
     rescue KeyError
       error "unknown image: #{id}"
