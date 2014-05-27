@@ -1,3 +1,13 @@
+Thu May 28 00:51:08 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/image_finder.rb:
+	  add new class ReVIEW::Book::ImageFinder extracted from ReVIEW::Book::Index
+
+	  Index#find_pathes moves to ImageFinder#find_path, and select only one (first) path
+	  because rest pathes is not used.
+	  ImageFinder is an independent class, so you can get image pathes without ImageIndex.
+
+
 Sat Apr 12 16:31:11 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/book/index.rb: allow same @<icon>s in one document (remove warning)

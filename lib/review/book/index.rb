@@ -11,6 +11,7 @@
 
 require 'review/extentions'
 require 'review/exception'
+require 'review/book/image_finder'
 
 module ReVIEW
   module Book
@@ -49,6 +50,7 @@ module ReVIEW
           warn "warning: duplicate ID: #{i.id} (#{i})" unless @index[i.id].nil?
           @index[i.id] = i
         end
+        @image_finder = nil
       end
 
       def [](id)
@@ -132,12 +134,11 @@ module ReVIEW
 
     class ImageIndex < Index
       class Item
-        @@entries = nil
 
         def initialize(id, number)
           @id = id
           @number = number
-          @pathes = nil
+          @path = nil
         end
 
         attr_reader :id
@@ -145,21 +146,20 @@ module ReVIEW
         attr_writer :index    # internal use only
 
         def bound?
-          not pathes().empty?
+          path
         end
 
         def path
-          pathes().first
+          @path ||= @index.find_path(id)
         end
 
-        def pathes
-          @pathes ||= @index.find_pathes(id)
-        end
       end
 
       def ImageIndex.item_type
         '(image|graph)'
       end
+
+      attr_reader :image_finder
 
       def initialize(items, chapid, basedir, types)
         super items
@@ -170,43 +170,14 @@ module ReVIEW
         @basedir = basedir
         @types = types
 
-        @@entries ||= get_entries
+        @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid,
+                                                      ReVIEW.book.param['builder'], types)
       end
 
-      def get_entries
-        Dir.glob(File.join(@basedir, "**/*.*"))
+      def find_path(id)
+        @image_finder.find_path(id)
       end
 
-      # internal use only
-      def find_pathes(id)
-        pathes = []
-
-        # 1. <basedir>/<builder>/<chapid>/<id>.<ext>
-        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}/#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        # 2. <basedir>/<builder>/<chapid>-<id>.<ext>
-        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{@chapid}-#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        # 3. <basedir>/<builder>/<id>.<ext>
-        target = "#{@basedir}/#{ReVIEW.book.param['builder']}/#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        # 4. <basedir>/<chapid>/<id>.<ext>
-        target = "#{@basedir}/#{@chapid}/#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        # 5. <basedir>/<chapid>-<id>.<ext>
-        target = "#{@basedir}/#{@chapid}-#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        # 6. <basedir>/<id>.<ext>
-        target = "#{@basedir}/#{id}"
-        @types.each {|ext| pathes.push("#{target}#{ext}") if @@entries.include?("#{target}#{ext}")}
-
-        return pathes
-      end
     end
 
     class IconIndex < ImageIndex
@@ -224,7 +195,7 @@ module ReVIEW
         @basedir = basedir
         @types = types
 
-        @@entries ||= get_entries
+        @image_finder = ImageFinder.new(basedir, chapid, ReVIEW.book.param['builder'], types)
       end
 
       def IconIndex.parse(src, *args)
@@ -285,7 +256,7 @@ module ReVIEW
         def initialize(id, number)
           @id = id
           @number = ""
-          @pathes = nil
+          @path = nil
         end
       end
 
@@ -303,7 +274,7 @@ module ReVIEW
         def initialize(id, number)
           @id = id
           @number = ""
-          @pathes = nil
+          @path = nil
         end
       end
 
