@@ -22,6 +22,8 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review'
 require 'review/i18n'
 
+include ReVIEW::LaTeXUtils
+
 include FileUtils
 
 def error(msg)
@@ -204,28 +206,28 @@ def get_template(values)
   okuduke = ""
   authors = ""
   if !values["aut"].nil? && !values["aut"].empty?
-    okuduke += "著　者 & #{values["aut"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    okuduke += "著　者 & #{escape_latex(values["aut"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
     authors = values["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
   end
   if !values["csl"].nil? && !values["csl"].empty?
-    okuduke += "監　修 & #{values["csl"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    okuduke += "監　修 & #{escape_latex(values["csl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
     authors += " \\\\\n"+values["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
   end
   if !values["trl"].nil? && !values["trl"].empty?
-    okuduke += "翻　訳 & #{values["trl"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    okuduke += "翻　訳 & #{escape_latex(values["trl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
     authors += " \\\\\n"+values["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
   end
   if !values["dsr"].nil? && !values["dsr"].empty?
-    okuduke += "デザイン & #{values["dsr"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    okuduke += "デザイン & #{escape_latex(values["dsr"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
   if !values["ill"].nil? && !values["ill"].empty?
-    okuduke += "イラスト & #{values["ill"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    okuduke += "イラスト & #{escape_latex(values["ill"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
   if !values["cov"].nil? && !values["cov"].empty?
-    okuduke += "表　紙 & #{values["cov"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    okuduke += "表　紙 & #{escape_latex(values["cov"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
   if !values["edt"].nil? && !values["edt"].empty?
-    okuduke += "編集者 & #{values["edt"].join(ReVIEW::I18n.t("names_splitter"))} \\\\\n"
+    okuduke += "編集者 & #{escape_latex(values["edt"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
   okuduke += <<EOB
 発行所 & #{values["prt"]} \\\\
