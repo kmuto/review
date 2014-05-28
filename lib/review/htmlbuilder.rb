@@ -623,7 +623,11 @@ QUOTE
       end
       rows = adjust_n_cols(rows)
 
-      puts %Q[<div id="#{id}" class="table">]
+      if id
+        puts %Q[<div id="#{id}" class="table">]
+      else
+        puts %Q[<div class="table">]
+      end
       begin
         table_header id, caption unless caption.nil?
       rescue KeyError
