@@ -344,7 +344,7 @@ EOT
 <br />
 <br />
 </p>
-<h2 class="tp-author">#{values["aut"]}</h2>
+<h2 class="tp-author">#{values["aut"].join(ReVIEW::I18n.t("names_splitter"))}</h2>
 EOT
       end
       if values["prt"]
@@ -869,13 +869,13 @@ EOT
       f.puts <<EOT
   <table>
 EOT
-      f.puts %Q[<tr>\n <th>著　者</th><td>#{values["aut"]}</td>\n</tr>] if values["aut"]
-      f.puts %Q[<tr>\n <th>監　修</th><td>#{values["csl"]}</td>\n</tr>] if values["csl"]
-      f.puts %Q[<tr>\n <th>翻　訳</th><td>#{values["trl"]}</td>\n</tr>] if values["trl"]
-      f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"]}</td>\n</tr>] if values["dsr"]
-      f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"]}</td>\n</tr>] if values["ill"]
-      f.puts %Q[<tr>\n <th>表　紙</th><td>#{values["cov"]}</td>\n</tr>] if values["cov"]
-      f.puts %Q[<tr>\n <th>編　集</th><td>#{values["edt"]}</td>\n</tr>] if values["edt"]
+      f.puts %Q[<tr>\n <th>著　者</th><td>#{values["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")}</td>\n</tr>] if values["aut"]
+      f.puts %Q[<tr>\n <th>監　修</th><td>#{values["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")}</td>\n</tr>] if values["csl"]
+      f.puts %Q[<tr>\n <th>翻　訳</th><td>#{values["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")}</td>\n</tr>] if values["trl"]
+      f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["dsr"]
+      f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["ill"]
+      f.puts %Q[<tr>\n <th>表　紙</th><td>#{values["cov"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["cov"]
+      f.puts %Q[<tr>\n <th>編　集</th><td>#{values["edt"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["edt"]
       f.puts %Q[<tr>\n <th>発行所</th><td>#{values["prt"]}</td>\n</tr>] if values["prt"]
       f.puts <<EOT
    </table>
