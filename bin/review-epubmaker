@@ -344,7 +344,7 @@ EOT
 <br />
 <br />
 </p>
-<h2 class="tp-author">#{values["aut"].join(ReVIEW::I18n.t("names_splitter"))}</h2>
+<h2 class="tp-author">#{join_names(values["aut"])}</h2>
 EOT
       end
       if values["prt"]
@@ -808,6 +808,14 @@ def getanchors(filename)
   }
 end
 
+def join_names(param)
+  if param.respond_to?(:join)
+    param.join(ReVIEW::I18n.t("names_splitter"))
+  else
+    param
+  end
+end
+
 def make_colophon_page(tmp,bookname,values)
 
   header = <<EOT
@@ -869,13 +877,13 @@ EOT
       f.puts <<EOT
   <table>
 EOT
-      f.puts %Q[<tr>\n <th>著　者</th><td>#{values["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")}</td>\n</tr>] if values["aut"]
-      f.puts %Q[<tr>\n <th>監　修</th><td>#{values["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")}</td>\n</tr>] if values["csl"]
-      f.puts %Q[<tr>\n <th>翻　訳</th><td>#{values["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")}</td>\n</tr>] if values["trl"]
-      f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["dsr"]
-      f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["ill"]
-      f.puts %Q[<tr>\n <th>表　紙</th><td>#{values["cov"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["cov"]
-      f.puts %Q[<tr>\n <th>編　集</th><td>#{values["edt"].join(ReVIEW::I18n.t("names_splitter"))}</td>\n</tr>] if values["edt"]
+      f.puts %Q[<tr>\n <th>著　者</th><td>#{join_names(values["aut"]) + ReVIEW::I18n.t("author_postfix")}</td>\n</tr>] if values["aut"]
+      f.puts %Q[<tr>\n <th>監　修</th><td>#{join_names(values["csl"]) + ReVIEW::I18n.t("supervisor_postfix")}</td>\n</tr>] if values["csl"]
+      f.puts %Q[<tr>\n <th>翻　訳</th><td>#{join_names(values["trl"]) + ReVIEW::I18n.t("translator_postfix")}</td>\n</tr>] if values["trl"]
+      f.puts %Q[<tr>\n <th>デザイン</th><td>#{join_names(values["dsr"])}</td>\n</tr>] if values["dsr"]
+      f.puts %Q[<tr>\n <th>イラスト</th><td>#{join_names(values["ill"])}</td>\n</tr>] if values["ill"]
+      f.puts %Q[<tr>\n <th>表　紙</th><td>#{join_names(values["cov"])}</td>\n</tr>] if values["cov"]
+      f.puts %Q[<tr>\n <th>編　集</th><td>#{join_names(values["edt"])}</td>\n</tr>] if values["edt"]
       f.puts %Q[<tr>\n <th>発行所</th><td>#{values["prt"]}</td>\n</tr>] if values["prt"]
       f.puts <<EOT
    </table>
