@@ -13,6 +13,7 @@
 require 'review/builder'
 require 'review/latexutils'
 require 'review/textutils'
+require 'review/sec_counter'
 
 module ReVIEW
 
@@ -39,6 +40,7 @@ module ReVIEW
       @tsize = nil
       @table_caption = nil
       @ol_num = nil
+      @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
 
@@ -74,7 +76,17 @@ module ReVIEW
       6 => 'subparagraph'
     }
 
+    def headline_prefix(level)
+      @sec_counter.inc(level)
+      anchor = @sec_counter.anchor(level)
+      prefix = @sec_counter.prefix(level, ReVIEW.book.param["secnolevel"])
+      [prefix, anchor]
+    end
+    private :headline_prefix
+
+
     def headline(level, label, caption)
+      _, anchor = headline_prefix(level)
       prefix = ""
       if level > ReVIEW.book.param["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
@@ -86,6 +98,8 @@ module ReVIEW
       end
       if level == 1
         puts macro('label', chapter_label)
+      else
+        puts macro('label', sec_label(anchor))
       end
     rescue
       error "unknown level: #{level}"
@@ -354,6 +368,11 @@ module ReVIEW
       "chap:#{@chapter.id}"
     end
     private :chapter_label
+
+    def sec_label(sec_anchor)
+      "sec:#{sec_anchor}"
+    end
+    private :sec_label
 
     def table_label(id)
       "table:#{@chapter.id}:#{id}"
@@ -707,7 +726,18 @@ module ReVIEW
     end
 
     def inline_hd_chap(chap, id)
-      "「#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}」"
+      n = chap.headline_index.number(id)
+      if chap.number and ReVIEW.book.param["secnolevel"] >= n.split('.').size
+        str = "「#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}」"
+      else
+        str = "「#{compile_inline(chap.headline(id).caption)}」"
+      end
+      if ReVIEW.book.param["chapterlink"]
+        anchor = n.gsub(/\./, "-")
+        macro('reviewsecref', str, sec_label(anchor))
+      else
+        str
+      end
     end
 
     def inline_column(id)

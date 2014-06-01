@@ -19,7 +19,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     }
     ReVIEW.book.param = @param
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(nil, 1, 'chap1', nil, StringIO.new)
+    @chapter = Book::Chapter.new(Book::Base.new(nil), 1, 'chap1', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
   end
@@ -42,19 +42,19 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level2
     @builder.headline(2,"test","this is test.")
-    assert_equal %Q|\\section{this is test.}\n|, @builder.result
+    assert_equal %Q|\\section{this is test.}\n\\label{sec:1-1}\n|, @builder.result
   end
 
   def test_headline_level3
     @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\\subsection*{this is test.}\n|, @builder.result
+    assert_equal %Q|\\subsection*{this is test.}\n\\label{sec:1-0-1}\n|, @builder.result
   end
 
 
   def test_headline_level3_with_secno
     @param["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\\subsection{this is test.}\n|, @builder.result
+    assert_equal %Q|\\subsection{this is test.}\n\\label{sec:1-0-1}\n|, @builder.result
   end
 
   def test_label
@@ -187,6 +187,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       Book::HeadlineIndex.new(items, self)
     end
 
+    @param["secnolevel"] = 3
     ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「1.1.1 te\\textunderscore{}st」 test2|, ret
   end
@@ -469,6 +470,7 @@ inside column
 \\end{reviewcolumn}
 
 \\subsection*{next level}
+\\label{sec:1-0-1}
 EOS
 
     @param["toclevel"] = 1
