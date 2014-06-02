@@ -101,20 +101,20 @@ module ReVIEW
 
         File.open("#{basetmpdir}/#{content.file}") do |f|
           Document.new(File.new(f)).each_element("//img") do |e|
-            @params["force_included_images"].push(e.attributes["src"])
+            @params["force_include_images"].push(e.attributes["src"])
           end
         end
       elsif content.media == "text/css"
         File.open("#{basetmpdir}/#{content.file}") do |f|
           f.each_line do |l|
             l.scan(/url\((.+?)\)/) do |m|
-              @params["force_included_images"].push($1.strip)
+              @params["force_include_images"].push($1.strip)
             end
           end
         end
       end
     end
-    @params["force_included_images"] = @params["force_included_images"].sort.uniq
+    @params["force_include_images"] = @params["force_include_images"].sort.uniq
   end
 
   def copy_images(resdir, destdir, allow_exts=nil)
@@ -122,7 +122,7 @@ module ReVIEW
     allow_exts = @params["image_ext"] if allow_exts.nil?
     FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
     if !@params["verify_target_images"].nil?
-      @params["force_included_images"].each do |file|
+      @params["force_include_images"].each do |file|
         unless File.exist?(file)
           warn "#{file} is not found, skip." if file !~ /\Ahttp[s]?:/
           next
