@@ -63,10 +63,17 @@ module ReVIEW
 
       push_contents(basetmpdir)
 
-      copy_images(@params["imagedir"], "#{basetmpdir}/images")
-      copy_images("covers", "#{basetmpdir}/images")
-      copy_images("adv", "#{basetmpdir}/images")
-      copy_images(@params["fontdir"], "#{basetmpdir}/fonts", @params["font_ext"])
+      if !@params["verify_target_images"].nil?
+        verify_target_images(basetmpdir)
+        copy_images(@params["imagedir"], basetmpdir)
+      else
+        copy_images(@params["imagedir"], "#{basetmpdir}/images")
+      end
+
+      copy_resources("covers", "#{basetmpdir}/images")
+      copy_resources("adv", "#{basetmpdir}/images")
+      copy_resources(@params["fontdir"], "#{basetmpdir}/fonts", @params["font_ext"])
+
       log("Call hook_aftercopyimage. (#{@params["hook_aftercopyimage"]})")
       call_hook(@params["hook_aftercopyimage"], basetmpdir)
 
@@ -88,24 +95,66 @@ module ReVIEW
     end
   end
 
-  def copy_images(imagedir, destdir, allow_exts=nil)
-    return nil unless File.exist?(imagedir)
-    allow_exts = @params["image_ext"] if allow_exts.nil?
-    FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
-    recursive_copy_images(imagedir, destdir, allow_exts)
+  def verify_target_images(basetmpdir)
+    @epub.contents.each do |content|
+      if content.media == "application/xhtml+xml"
+
+        File.open("#{basetmpdir}/#{content.file}") do |f|
+          Document.new(File.new(f)).each_element("//img") do |e|
+            @params["force_included_images"].push(e.attributes["src"])
+          end
+        end
+      elsif content.media == "text/css"
+        File.open("#{basetmpdir}/#{content.file}") do |f|
+          f.each_line do |l|
+            l.scan(/url\((.+?)\)/) do |m|
+              @params["force_included_images"].push($1.strip)
+            end
+          end
+        end
+      end
+    end
+    @params["force_included_images"] = @params["force_included_images"].sort.uniq
   end
 
-  def recursive_copy_images(imagedir, destdir, allow_exts)
-    Dir.open(imagedir) do |dir|
+  def copy_images(resdir, destdir, allow_exts=nil)
+    return nil unless File.exist?(resdir)
+    allow_exts = @params["image_ext"] if allow_exts.nil?
+    FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
+    if !@params["verify_target_images"].nil?
+      @params["force_included_images"].each do |file|
+        unless File.exist?(file)
+          warn "#{file} is not found, skip." if file !~ /\Ahttp[s]?:/
+          next
+        end
+        basedir = File.dirname(file)
+        FileUtils.mkdir_p("#{destdir}/#{basedir}") unless FileTest.directory?("#{destdir}/#{basedir}")
+        log("Copy #{file} to the temporary directory.")
+        FileUtils.cp(file, "#{destdir}/#{basedir}")
+      end
+    else
+      recursive_copy_files(resdir, destdir, allow_exts)
+    end
+  end
+
+  def copy_resources(resdir, destdir, allow_exts=nil)
+    return nil unless File.exist?(resdir)
+    allow_exts = @params["image_ext"] if allow_exts.nil?
+    FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
+    recursive_copy_files(resdir, destdir, allow_exts)
+  end
+
+  def recursive_copy_files(resdir, destdir, allow_exts)
+    Dir.open(resdir) do |dir|
       dir.each do |fname|
         next if fname =~ /\A\./
-        if FileTest.directory?("#{imagedir}/#{fname}")
-          recursive_copy_images("#{imagedir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
+        if FileTest.directory?("#{resdir}/#{fname}")
+          recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
         else
           if fname =~ /\.(#{allow_exts.join("|")})\Z/i
             Dir.mkdir(destdir) unless File.exist?(destdir)
-            log("Copy #{imagedir}/#{fname} to the temporary directory.")
-            FileUtils.cp("#{imagedir}/#{fname}", destdir)
+            log("Copy #{resdir}/#{fname} to the temporary directory.")
+            FileUtils.cp("#{resdir}/#{fname}", destdir)
           end
         end
       end
