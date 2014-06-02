@@ -212,6 +212,8 @@ module EPUBMaker
         "fontdir" => "fonts",
         "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
         "font_ext" => %w(ttf woff otf),
+        "verify_target_images" => nil,
+        "force_included_images" => [],
       }
 
       defaults.each_pair do |k, v|
