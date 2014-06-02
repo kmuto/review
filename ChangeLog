@@ -1,3 +1,11 @@
+Mon Jun  2 14:23:28 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yml, lib/epubmaker/producer.rb,
+	  lib/review/epubmaker.rb: implement strict image finder mode
+	  for review-epubmaker-ng.
+	  review-epubmaker-ng picks up the images which are used in each
+	  HTMLs and CSSs by declareing 'verify_target_images: true' in yml.
+
 Thu May 28 00:51:08 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/book/image_finder.rb:
