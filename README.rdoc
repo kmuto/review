@@ -3,7 +3,7 @@
 {<img src="https://secure.travis-ci.org/kmuto/review.png"/>}[http://travis-ci.org/kmuto/review]
 {<img src="https://badge.fury.io/rb/review.png" alt="Gem Version" />}[http://badge.fury.io/rb/review]
 
-Re:VIEW is a easy-to-use digital publishing system for books and ebooks.
+Re:VIEW is an easy-to-use digital publishing system for books and ebooks.
 
 == Format
 
