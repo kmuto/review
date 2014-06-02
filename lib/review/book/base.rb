@@ -98,7 +98,8 @@ module ReVIEW
       end
 
       def chapter_index
-        @chapter_index ||= ChapterIndex.new(chapters())
+        contents = (chapters() << parts()).flatten
+        @chapter_index ||= ChapterIndex.new(contents)
         @chapter_index
       end
 

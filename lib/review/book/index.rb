@@ -87,10 +87,14 @@ module ReVIEW
         elsif chapter.on_POSTDEF?
           "#{I18n.t("appendix", chapter.number)}"
         end
+      rescue # part
+        "#{I18n.t("part", chapter.number)}"
       end
 
       def title(id)
         @index.fetch(id).title
+      rescue # non-file part
+        @index.fetch(id).name
       end
 
       def display_string(id)
