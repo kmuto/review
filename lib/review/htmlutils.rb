@@ -23,10 +23,14 @@ module ReVIEW
       str.gsub(/[&"<>]/) {|c| t[c] }
     end
 
+    alias_method :escape, :escape_html
+
     def unescape_html(str)
       # FIXME better code
       str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
     end
+
+    alias_method :unescape, :unescape_html
 
     def strip_html(str)
       str.gsub(/<\/?[^>]*>/, "")

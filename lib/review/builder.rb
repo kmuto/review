@@ -353,7 +353,7 @@ module ReVIEW
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
-      line = CGI.unescapeHTML(lines.join("\n"))
+      line = self.unescape(lines.join("\n"))
       cmds = {
         :graphviz => "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
         :gnuplot  => "echo 'set terminal " +
