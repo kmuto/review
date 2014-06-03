@@ -98,7 +98,12 @@ module ReVIEW
       end
 
       def chapter_index
-        contents = (chapters() << parts()).flatten
+        contents = chapters()
+        parts().each do |prt|
+          if prt.id && prt.id != ""
+            contents << prt
+          end
+        end
         @chapter_index ||= ChapterIndex.new(contents)
         @chapter_index
       end
