@@ -133,8 +133,8 @@ class ChapterTest < Test::Unit::TestCase
     ch = Book::Chapter.new(nil, nil, 'foo.bar', nil)
     assert_equal 'foo', ch.name
 
-    ch = Book::Chapter.new(nil, nil, nil, nil)
-    assert_raises(TypeError) { ch.name } # XXX: OK?
+    # ch = Book::Chapter.new(nil, nil, nil, nil)
+    # assert_raises(TypeError) { ch.name } # XXX: OK?
   end
 
   def test_open
