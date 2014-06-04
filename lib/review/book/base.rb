@@ -102,14 +102,15 @@ module ReVIEW
       end
 
       def chapter_index
+        return @chapter_index if @chapter_index
+
         contents = chapters()
         parts().each do |prt|
-          if prt.id && prt.id != ""
+          if prt.id.present?
             contents << prt
           end
         end
-        @chapter_index ||= ChapterIndex.new(contents)
-        @chapter_index
+        @chapter_index = ChapterIndex.new(contents)
       end
 
       def chapter(id)

@@ -39,7 +39,9 @@ module ReVIEW
       alias_method :id, :name
 
       def title
-        @title = ""
+        return @title if @title
+
+        @title = ''
         open {|f|
           f.each_line {|l|
             l = convert_inencoding(l, ReVIEW.book.param["inencoding"])
