@@ -1,3 +1,12 @@
+Wed Jun  4 12:05:36 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* add safe mode.
+          This feature checks a numeric value of REVIEW_SAFE_MODE
+	  environment variable.
+           bit1(+1) : blocks any hooks of epubmaker.
+           bit2(+2) : blocks review-ext.rb.
+           bit3(+4) : blocks user's custom html layouts.
+
 Mon Jun  2 14:23:28 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* doc/libepubmaker/config.yml, lib/epubmaker/producer.rb,
