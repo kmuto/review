@@ -32,6 +32,7 @@ module ReVIEW
       end
 
       def name
+        return nil unless @name
         File.basename(@name, '.*')
       end
 
