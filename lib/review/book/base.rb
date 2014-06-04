@@ -42,7 +42,11 @@ module ReVIEW
           $LOAD_PATH.unshift "#{dir}/lib"
         end
         if File.file?("#{dir}/review-ext.rb")
-          Kernel.load File.expand_path("#{dir}/review-ext.rb")
+          if ENV["REVIEW_SAFE_MODE"].to_i & 2 > 0
+            warn "review-ext.rb is prohibited in safe mode. ignored."
+          else
+            Kernel.load File.expand_path("#{dir}/review-ext.rb")
+          end
         end
         @basedir_seen[dir] = true
       end

@@ -167,7 +167,11 @@ module EPUBMaker
 
     def call_hook(filename, *params)
       if !filename.nil? && File.exist?(filename) && FileTest.executable?(filename)
-        system(filename, *params)
+        if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
+          warn "hook is prohibited in safe mode. ignored."
+        else
+          system(filename, *params)
+        end
       end
     end
 
