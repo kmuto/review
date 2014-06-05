@@ -846,7 +846,7 @@ module ReVIEW
     end
 
     def image_ext
-      "svg"
+      "pdf"
     end
 
     def olnum(num)
