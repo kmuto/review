@@ -107,6 +107,9 @@ module ReVIEW
         File.open("#{basetmpdir}/#{content.file}") do |f|
           Document.new(File.new(f)).each_element("//img") do |e|
             @params["force_include_images"].push(e.attributes["src"])
+            if e.attributes["src"] =~ /svg\Z/i
+              content.properties.push("svg")
+            end
           end
         end
       elsif content.media == "text/css"
