@@ -1,15 +1,20 @@
 # encoding: utf-8
 #
-# Copyright (c) 2012 Yuto HAYAMIZU
+# Copyright (c) 2012-2014 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
+require 'pathname'
 
 module ReVIEW
   class MakerHelper
+    # Return review/bin directory
+    def self.bindir
+      Pathname.new("#{Pathname.new(__FILE__).realpath.dirname}/../../bin").realpath
+    end
 
     # Copy image files under from_dir to to_dir recursively
     # ==== Args

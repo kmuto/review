@@ -154,7 +154,7 @@ end
 
 def output_chaps(filename, values)
   $stderr.puts "compiling #{filename}"
-  cmd = "review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename} > #{@path}/#{filename}"
+  cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename} > #{@path}/#{filename}"
   if system cmd
     # OK
   else

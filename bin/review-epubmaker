@@ -764,7 +764,7 @@ def output_chaps_by_file(l, values)
     exit 1
   end
   filename = "#{file_id}.html"
-  system("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l} > #{@bookdir}/OEBPS/#{filename}")
+  system("#{ReVIEW::MakerHelper.bindir}/review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l} > #{@bookdir}/OEBPS/#{filename}")
   getanchors("#{@bookdir}/OEBPS/#{filename}")
   if @epubversion == 3 && include_mathml?("#{@bookdir}/OEBPS/#{filename}")
     @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" properties="mathml" media-type="application/xhtml+xml" />\n)
