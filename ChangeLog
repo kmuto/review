@@ -1,3 +1,9 @@
+Sat Jun  7 00:37:17 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb:
+	  use the value of htmlext variable for html file
+	  extension, instead of static ".html".
+
 Sat Jun  7 00:06:37 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/epubmaker/content.rb, lib/epubmaker/epubv3.rb,
