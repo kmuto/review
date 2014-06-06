@@ -1,3 +1,10 @@
+Sat Jun  7 00:06:37 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker/content.rb, lib/epubmaker/epubv3.rb,
+	  lib/review/epubmaker.rb:
+	  add properties='svg' attribute to OPF item of HTML
+	  which links SVG file (to satisfy EPUB3 spec.)
+
 Wed Jun  4 12:05:36 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* add safe mode.
