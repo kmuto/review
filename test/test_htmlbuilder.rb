@@ -44,6 +44,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, @builder.raw_result
   end
 
+  def test_headline_level1_with_tricky_id
+    @builder.headline(1,"123 あ_;","this is test.")
+    assert_equal %Q|<h1 id="id:123:_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
+  end
+
   def test_headline_level1_with_inlinetag
     @builder.headline(1,"test","this @<b>{is} test.<&\">")
     assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, @builder.raw_result
@@ -68,6 +73,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_label
     @builder.label("label_test")
     assert_equal %Q|<a id="label_test"></a>\n|, @builder.raw_result
+  end
+
+  def test_label_with_tricky_id
+    @builder.label("123 あ_;")
+    assert_equal %Q|<a id="id:123:_E3_81_82___3B"></a>\n|, @builder.raw_result
   end
 
   def test_href
@@ -246,6 +256,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
     @builder.image_image("sampleimg","sample photo","scale=1.2,html::class=sample,latex::ignore=params")
     assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_image_with_tricky_id
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("123 あ_;",1)
+      item.instance_eval{@path="./images/chap1-123 あ_;.png"}
+      item
+    end
+
+    @builder.image_image("123 あ_;","sample photo",nil)
+    assert_equal %Q|<div id="id:123:_E3_81_82___3B" class="image">\n<img src="images/chap1-123 あ_;.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def test_indepimage
@@ -692,6 +713,16 @@ EOS
     @builder.footnote("foo",'bar\\a\\$buz')
     expect =<<-'EOS'
 <div class="footnote" id="fn-foo"><p class="footnote">[<a href="#fnb-foo">*1</a>] bar\a\$buz</p></div>
+EOS
+    assert_equal expect, @builder.raw_result
+  end
+
+  def test_inline_fn_with_tricky_id
+    fn = Book::FootnoteIndex.parse(['//footnote[123 あ_;][bar\\a\\$buz]'])
+    @chapter.instance_eval{@footnote_index=fn}
+    @builder.footnote("123 あ_;",'bar\\a\\$buz')
+    expect =<<-'EOS'
+<div class="footnote" id="fn-id:123:_E3_81_82___3B"><p class="footnote">[<a href="#fnb-id:123:_E3_81_82___3B">*1</a>] bar\a\$buz</p></div>
 EOS
     assert_equal expect, @builder.raw_result
   end

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'test_helper'
 require 'review/htmlutils'
 
@@ -32,6 +33,18 @@ class HTMLUtilsTest < Test::Unit::TestCase
     assert_equal '&', escape_comment('&')
     assert_equal '&#45;', escape_comment('-')
     assert_equal '&#45;&#45;', escape_comment('--')
+  end
+
+  def test_normalize_id
+    assert_equal 'abcxyz', normalize_id('abcxyz')
+    assert_equal 'ABCXYZ', normalize_id('ABCXYZ')
+    assert_equal 'abc0123', normalize_id('abc0123')
+    assert_equal 'a:b:c', normalize_id('a:b:c')
+    assert_equal 'a-b-c_x.y.z', normalize_id('a-b-c_x.y.z')
+    assert_equal 'id:0123a-b-c_x.y.z', normalize_id('0123a-b-c_x.y.z')
+    assert_equal 'id:.', normalize_id('.')
+    assert_equal 'id:_E3_81_82', normalize_id('あ')
+    assert_equal 'id::___3B', normalize_id(' _;')
   end
 
 end

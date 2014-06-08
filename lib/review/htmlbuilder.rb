@@ -186,7 +186,7 @@ EOT
         if label.nil?
           puts %Q[<h#{level}>#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
         end
       end
     end
@@ -197,7 +197,7 @@ EOT
         if label.nil?
           puts %Q[<h#{level}>#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}">#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{normalize_id(label)}">#{compile_inline(caption)}</h#{level}>]
         end
       end
     end
@@ -218,7 +218,7 @@ EOT
         if label.nil?
           puts %Q[<h#{level}>#{a_id}#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{label}">#{a_id}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{compile_inline(caption)}</h#{level}>]
         end
       end
 #      headline(level, label, caption)
@@ -586,7 +586,7 @@ QUOTE
 
     def image_image(id, caption, metric)
       metrics = parse_metric("html", metric)
-      puts %Q[<div id="#{id}" class="image">]
+      puts %Q[<div id="#{normalize_id(id)}" class="image">]
       puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       image_header id, caption
       puts %Q[</div>]
@@ -628,7 +628,7 @@ QUOTE
       rows = adjust_n_cols(rows)
 
       if id
-        puts %Q[<div id="#{id}" class="table">]
+        puts %Q[<div id="#{normalize_id(id)}" class="table">]
       else
         puts %Q[<div class="table">]
       end
@@ -698,9 +698,9 @@ QUOTE
 
     def footnote(id, str)
       if ReVIEW.book.param["epubversion"].to_i == 3
-        puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{id}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
+        puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
       else
-        puts %Q(<div class="footnote" id="fn-#{id}"><p class="footnote">[<a href="#fnb-#{id}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
+        puts %Q(<div class="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[<a href="#fnb-#{normalize_id(id)}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
       end
     end
 
@@ -729,7 +729,7 @@ QUOTE
     end
 
     def label(id)
-      puts %Q(<a id="#{id}"></a>)
+      puts %Q(<a id="#{normalize_id(id)}"></a>)
     end
 
     def linebreak
@@ -794,9 +794,9 @@ QUOTE
 
     def inline_fn(id)
       if ReVIEW.book.param["epubversion"].to_i == 3
-        %Q(<a id="fnb-#{id}" href="#fn-#{id}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
+        %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
       else
-        %Q(<a id="fnb-#{id}" href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
+        %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref">*#{@chapter.footnote(id).number}</a>)
       end
     end
 
@@ -896,7 +896,7 @@ QUOTE
     end
 
     def bibpaper_header(id, caption)
-      print %Q(<a id="bib-#{id}">)
+      print %Q(<a id="bib-#{normalize_id(id)}">)
       print "[#{@chapter.bibpaper(id).number}]"
       print %Q(</a>)
       puts " #{compile_inline(caption)}"
@@ -981,7 +981,7 @@ QUOTE
         str = "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
       end
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{chapter.id}#{extname}##{id}">#{str}</a>)
+        %Q(<a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a>)
       else
         str
       end
