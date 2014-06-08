@@ -20,6 +20,7 @@ module ReVIEW
   def initialize
     @epub = nil
     @tochtmltxt = "toc-html.txt"
+    @buildlogtxt = "build-log.txt"
   end
 
   def log(s)
@@ -106,6 +107,9 @@ module ReVIEW
         File.open("#{basetmpdir}/#{content.file}") do |f|
           Document.new(File.new(f)).each_element("//img") do |e|
             @params["force_include_images"].push(e.attributes["src"])
+            if e.attributes["src"] =~ /svg\Z/i
+              content.properties.push("svg")
+            end
           end
         end
       elsif content.media == "text/css"
@@ -188,6 +192,7 @@ module ReVIEW
           title = ReVIEW::I18n.t("part", part.number)
           title += ReVIEW::I18n.t("chapter_postfix") + part.name.strip if part.name.strip.present?
           write_tochtmltxt(basetmpdir, "0\t#{htmlfile}\t#{title}")
+          write_buildlogtxt(basetmpdir, htmlfile, "")
         end
       end
 
@@ -242,6 +247,7 @@ EOT
     end
 
     htmlfile = "#{id}.#{@params["htmlext"]}"
+    write_buildlogtxt(basetmpdir, htmlfile, filename)
     log("Create #{htmlfile} from #{filename}.")
 
     level = @params["secnolevel"]
@@ -392,6 +398,12 @@ EOT
   def write_tochtmltxt(basetmpdir, s)
     File.open("#{basetmpdir}/#{@tochtmltxt}", "a") do |f|
       f.puts s
+    end
+  end
+
+  def write_buildlogtxt(basetmpdir, htmlfile, reviewfile)
+    File.open("#{basetmpdir}/#{@buildlogtxt}", "a") do |f|
+      f.puts "#{htmlfile},#{reviewfile}"
     end
   end
 

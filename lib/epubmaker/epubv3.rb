@@ -127,7 +127,11 @@ EOT
 
       @producer.contents.each do |item|
         next if item.file =~ /#/ || item.id.nil? # skip subgroup, or id=nil (for cover)
-        s << %Q[    <item#{mathstr} id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
+        propstr = ""
+        if item.properties.size > 0
+          propstr = %Q[ properties="#{item.properties.sort.uniq.join(" ")}"]
+        end
+        s << %Q[    <item#{mathstr} id="#{item.id}" href="#{item.file}" media-type="#{item.media}"#{propstr}/>\n]
       end
       s << %Q[  </manifest>\n]
 

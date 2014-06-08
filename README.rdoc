@@ -47,4 +47,4 @@ LGPL. See COPYING file.
 
 == Copyright
 
-Copyright (c) 2006-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi.
+Copyright (c) 2006-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.

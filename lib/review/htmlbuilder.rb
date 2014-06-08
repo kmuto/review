@@ -761,7 +761,7 @@ QUOTE
     def inline_chapref(id)
       title = super
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{title}</a>)
+        %Q(<a href="./#{id}#{extname}">#{title}</a>)
       else
         title
       end
@@ -772,7 +772,7 @@ QUOTE
 
     def inline_chap(id)
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.number(id)}</a>)
+        %Q(<a href="./#{id}#{extname}">#{@chapter.env.chapter_index.number(id)}</a>)
       else
         @chapter.env.chapter_index.number(id)
       end
@@ -783,7 +783,7 @@ QUOTE
 
     def inline_title(id)
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{compile_inline(@chapter.env.chapter_index.title(id))}</a>)
+        %Q(<a href="./#{id}#{extname}">#{compile_inline(@chapter.env.chapter_index.title(id))}</a>)
       else
         @chapter.env.chapter_index.title(id)
       end
@@ -919,7 +919,7 @@ QUOTE
       end
       if ReVIEW.book.param["chapterlink"]
         anchor = "h"+n.gsub(/\./, "-")
-        %Q(<a href="#{chap.id}.html\##{anchor}">#{str}</a>)
+        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{str}</a>)
       else
         str
       end
@@ -963,7 +963,7 @@ QUOTE
         str = "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
       end
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{chapter.id}.html##{id}">#{str}</a>)
+        %Q(<a href="./#{chapter.id}#{extname}##{id}">#{str}</a>)
       else
         str
       end
@@ -981,7 +981,7 @@ QUOTE
         str = "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
       end
       if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{chapter.id}.html##{id}">#{str}</a>)
+        %Q(<a href="./#{chapter.id}#{extname}##{id}">#{str}</a>)
       else
         str
       end

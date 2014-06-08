@@ -56,9 +56,6 @@ module ReVIEW
         @parameters = parameters
         @parts = nil
         @chapter_index = nil
-        if File.exist?("#{basedir}/catalog.yml")
-          @catalog = Catalog.new File.open("#{basedir}/catalog.yml")
-        end
       end
 
       extend Forwardable
@@ -121,25 +118,40 @@ module ReVIEW
         Volume.sum(chapters.map {|chap| chap.volume })
       end
 
+      def catalog
+        return @catalog if @catalog.present?
+
+        if @configure.blank?
+          @configure = Configure.values
+        end
+
+        catalogfile_path = "#{basedir}/#{@configure["catalogfile"]}"
+        if File.exist? catalogfile_path
+          @catalog = Catalog.new(File.open catalogfile_path)
+        end
+
+        @catalog
+      end
+
       def read_CHAPS
-        if @catalog
-          @catalog.chaps
+        if catalog
+          catalog.chaps
         else
           read_FILE("chapter_file")
         end
       end
 
       def read_PREDEF
-        if @catalog
-          @catalog.predef
+        if catalog
+          catalog.predef
         else
           read_FILE("predef_file")
         end
       end
 
       def read_POSTDEF
-        if @catalog
-          @catalog.postdef
+        if catalog
+          catalog.postdef
         else
           read_FILE("postdef_file")
         end
@@ -148,16 +160,16 @@ module ReVIEW
       def read_PART
         return @read_PART if @read_PART
 
-        if @catalog
-          @read_PART = @catalog.parts
+        if catalog
+          @read_PART = catalog.parts
         else
           @read_PART = File.read("#{@basedir}/#{part_file}")
         end
       end
 
       def part_exist?
-        if @catalog
-          @catalog.parts.present?
+        if catalog
+          catalog.parts.present?
         else
           File.exist?("#{@basedir}/#{part_file}")
         end
@@ -172,8 +184,8 @@ module ReVIEW
       end
 
       def prefaces
-        if @catalog
-          return mkpart_from_namelist(@catalog.predef.split("\n"))
+        if catalog
+          return mkpart_from_namelist(catalog.predef.split("\n"))
         end
 
         if File.file?("#{@basedir}/#{predef_file}")
@@ -188,8 +200,8 @@ module ReVIEW
       end
 
       def postscripts
-        if @catalog
-          return mkpart_from_namelist(@catalog.postdef.split("\n"))
+        if catalog
+          return mkpart_from_namelist(catalog.postdef.split("\n"))
         end
 
         if File.file?("#{@basedir}/#{postdef_file}")
@@ -224,8 +236,8 @@ module ReVIEW
         part = 0
         num = 0
 
-        if @catalog
-          return @catalog.parts_with_chaps.map do |entry|
+        if catalog
+          return catalog.parts_with_chaps.map do |entry|
             if entry.is_a? Hash
               chaps = entry.values.first.map do |chap|
                 Chapter.new(self, (num += 1), chap, "#{@basedir}/#{chap}")
