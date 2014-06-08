@@ -67,12 +67,12 @@ module ReVIEW
     end
 
     def normalize_id(id)
-      if id =~ /\A[a-z][a-z0-9_:.-]*\Z/i
+      if id =~ /\A[a-z][a-z0-9_.-]*\Z/i
         return id
-      elsif id =~ /\A[0-9_:.-][a-z0-9_:.-]*\Z/i
-        return "id:#{id}" # dummy prefix
+      elsif id =~ /\A[0-9_.-][a-z0-9_.-]*\Z/i
+        return "id_#{id}" # dummy prefix
       else
-        return "id:#{CGI.escape(id.gsub("_", "__")).gsub("%", "_").gsub("+", ":")}" # escape all
+        return "id_#{CGI.escape(id.gsub("_", "__")).gsub("%", "_").gsub("+", "-")}" # escape all
       end
     end
   end

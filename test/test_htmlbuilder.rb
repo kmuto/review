@@ -46,7 +46,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_with_tricky_id
     @builder.headline(1,"123 あ_;","this is test.")
-    assert_equal %Q|<h1 id="id:123:_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
+    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level1_with_inlinetag
@@ -77,7 +77,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_label_with_tricky_id
     @builder.label("123 あ_;")
-    assert_equal %Q|<a id="id:123:_E3_81_82___3B"></a>\n|, @builder.raw_result
+    assert_equal %Q|<a id="id_123-_E3_81_82___3B"></a>\n|, @builder.raw_result
   end
 
   def test_href
@@ -266,7 +266,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @builder.image_image("123 あ_;","sample photo",nil)
-    assert_equal %Q|<div id="id:123:_E3_81_82___3B" class="image">\n<img src="images/chap1-123 あ_;.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div id="id_123-_E3_81_82___3B" class="image">\n<img src="images/chap1-123 あ_;.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def test_indepimage
@@ -722,7 +722,7 @@ EOS
     @chapter.instance_eval{@footnote_index=fn}
     @builder.footnote("123 あ_;",'bar\\a\\$buz')
     expect =<<-'EOS'
-<div class="footnote" id="fn-id:123:_E3_81_82___3B"><p class="footnote">[<a href="#fnb-id:123:_E3_81_82___3B">*1</a>] bar\a\$buz</p></div>
+<div class="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[<a href="#fnb-id_123-_E3_81_82___3B">*1</a>] bar\a\$buz</p></div>
 EOS
     assert_equal expect, @builder.raw_result
   end

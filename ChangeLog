@@ -2,7 +2,7 @@ Sun Jun  8 22:55:39 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb, lib/review/htmlutils.rb,
 	  test/test_htmlbuilder.rb, test/test_htmlutils.rb:
-	  normalize html ID. ID must be /\A[a-z][0-9a-z:_.-]*/
+	  normalize html ID. ID must be /\A[a-z][0-9a-z_.-]*/
 	  with case insensitive.
 
 Sun Jun  8 22:04:29 2014  Kenshi Muto  <kmuto@debian.org>
