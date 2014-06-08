@@ -1,3 +1,10 @@
+Sun Jun  8 22:04:29 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, bin/review-pdfmaker,
+	  lib/review/epubmaker.rb, lib/review/makerhelper.rb:
+	  review-*maker calls review-compile of exactly same
+	  directory. Closes #228, #288.
+
 Sat Jun  7 00:37:17 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb:
