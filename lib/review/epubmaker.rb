@@ -393,6 +393,11 @@ EOT
       end
       write_tochtmltxt(basetmpdir, "1\tcolophon.#{@params["htmlext"]}\t#{@epub.res.v("colophontitle")}")
     end
+
+    if @params["backcover"]
+      FileUtils.cp(@params["backcover"], "#{basetmpdir}/#{File.basename(@params["backcover"])}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["backcover"])}\t#{@epub.res.v("backcovertitle")}")
+    end
   end
 
   def write_tochtmltxt(basetmpdir, s)

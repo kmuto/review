@@ -255,6 +255,13 @@ module EPUBMaker
         warn "Parameter 'titlepagefile' is obsolete. Please use 'titlefile' and make complete html file with header and footer."
       end
 
+      if @params["flag_legacy_backcoverfile"].nil? && !@params["backcoverfile"].nil? && File.exist?(@params["backcoverfile"])
+        @params["backcover"] = "#{@params["bookname"]}-backcover.#{@params["htmlext"]}"
+        @epub.legacy_cover_and_title_file(@params["backcoverfile"], @params["backcover"])
+        @params["flag_legacy_backcoverfile"] = true
+        warn "Parameter 'backcoverfile' is obsolete. Please use 'backcover' and make complete html file with header and footer."
+      end
+
       if @params["flag_legacy_pubhistory"].nil? && !@params["pubhistory"].nil?
         @params["history"] = [[]]
         @params["pubhistory"].split("\n").each do |date|

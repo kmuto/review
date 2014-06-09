@@ -62,9 +62,6 @@ aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
 # coverage: 内容の範囲や領域(配列で複数指定可)
 
 # htmlext: HTMLファイルの拡張子(省略した場合はhtml)
-# cover: カバーページのファイル名(省略した場合はbookname.xhtmlになる)
-#
-# coverimage: カバー用画像
 #
 # CSSファイル(配列で複数指定可)
 stylesheet: ["stylesheet.css"]
@@ -77,11 +74,12 @@ stylesheet: ["stylesheet.css"]
 # 目次として抽出する見出しレベル
 # toclevel: 2
 # 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
-# 構成によっては、階層化目次ではepubcheckにパスしない目次ができるが、
-# そのようなときにはこれをtrueにする
+# 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
+# パスしない目次ができるが、そのようなときにはこれをtrueにする
 # flattoc: null
 # 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
 # flattocindent: true
+
 # 本文でセクション番号を表示する見出しレベル
 # secnolevel: 2
 # 前付でセクション番号を表示する見出しレベル
@@ -91,29 +89,41 @@ stylesheet: ["stylesheet.css"]
 # 部番号を表示する見出しレベル
 # part_secnolevel: 1
 
-# NCX目次の見出しレベルごとの飾り(配列で設定)
+# NCX目次の見出しレベルごとの飾り(配列で設定)。EPUB3ではNCXは作られない
 #ncxindent:
 #- 
 #- - 
 
 # EPUB2標準の目次以外に物理目次ファイルを作成するか。省略した場合はnull (作成しない)
-# ePUB3においてはこの設定によらず必ず作成する
+# ePUB3においてはこの設定によらず必ず作成される
 # mytoc: true
 
+# 表紙にするHTMLファイル。ファイル名を指定すると表紙として入る
+# cover: null
+# 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)
+# coverimage: null
 # 表紙の後に大扉ページを作成するか。省略した場合はnull (作成しない)
 # titlepage: null
-# 自動生成される大扉ページを差し替えるファイル
+# 自動生成される大扉ページを上書きするファイル。ファイル名を指定すると大扉として入る
 # titlefile: null
-
-
-# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.xhtmlとしてコピーされる
-# colophon: true
-# pubhistory: 奥付履歴
+# 原書大扉ページにするHTMLファイル。ファイル名を指定すると原書大扉として入る
+# originaltitlefile: null
+# 権利表記ページファイル。ファイル名を指定すると権利表記として入る
+# creditfile: null
 
 # プロフィールページファイル。ファイル名を指定すると著者紹介として入る
 # profile: null
 # プロフィールページの目次上の見出し
 # profiletitle: 著者紹介
+
+# 広告ファイル。ファイル名を指定すると広告として入る
+# advfile: null
+
+# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
+# colophon: true
+
+# 裏表紙ファイル (画像はcoversまたはimagesに配置する)。ファイル名を指定すると裏表紙として入る
+# backcover: null
 
 # フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
 # プログラムには実行権限が必要
@@ -122,7 +132,7 @@ stylesheet: ["stylesheet.css"]
 # 渡される引数1=作業用展開ディレクトリ
 # hook_beforeprocess: null
 
-# 前付の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 前付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
 # 渡される引数1=作業用展開ディレクトリ
 # hook_afterfrontmatter: null
 
@@ -130,7 +140,7 @@ stylesheet: ["stylesheet.css"]
 # 渡される引数1=作業用展開ディレクトリ
 # hook_afterbody: null
 
-# 後付の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 後付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
 # 渡される引数1=作業用展開ディレクトリ
 # hook_afterbackmatter: null
 
@@ -175,5 +185,16 @@ stylesheet: ["stylesheet.css"]
 
 # 以下は古いreview-epubmaker実装で使用されていたパラメータで、
 # 互換性のために同じ機能を提供しているが、将来廃止予定であり、使うべきではない。
-# ヘッダ・フッタのない大扉ページ差し替えファイル
+#
+# ヘッダ・フッタのない、表紙のHTMLファイル。
+# (※ヘッダ・フッタを入れたcoverを使うように変更することを勧告する。)
+# coverfile: null
+# ヘッダ・フッタのない、大扉ページ差し替えのHTMLファイル。
+# (※ヘッダ・フッタを入れたtitlefileを使うように変更することを勧告する。)
 # titlepagefile: null
+# ヘッダ・フッタのない、裏表紙のHTMLファイル。
+# (※ヘッダ・フッタを入れたbackcoverを使うように変更することを勧告する。)
+# backcoverfile: null
+# 奥付の日付文字列。
+# (※history配列を使うように変更することを勧告する。)
+# pubhistory: 奥付履歴文字列
