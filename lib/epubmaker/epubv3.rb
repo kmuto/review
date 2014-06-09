@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv3.rb -- EPUB version 3 producer.
 #
-# Copyright (c) 2010-2013 Kenshi Muto
+# Copyright (c) 2010-2014 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -202,10 +202,10 @@ EOT
       s =<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2011/epub" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/epub" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
 <head>
   <meta charset="UTF-8" />
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW" />
 EOT
 
       @producer.params["stylesheet"].each do |file|
@@ -213,5 +213,6 @@ EOT
       end
       s
     end
+
   end
 end

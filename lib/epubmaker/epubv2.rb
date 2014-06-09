@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv2.rb -- EPUB version 2 producer.
 #
-# Copyright (c) 2010-2013 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -352,7 +352,14 @@ EOT
             items.each_with_index do |item, rev|
               editstr = (edit == 0) ? "初版" : "第#{edit + 1}版" # FIXME:i18n
               revstr = "第#{rev + 1}刷"
-              s << %Q[      <p>#{date_to_s(item)}　#{editstr}#{revstr}　発行</p>\n] # FIXME:i18n
+              if item =~ /\A\d+\-\d+\-\d+\Z/
+                s << %Q[      <p>#{date_to_s(item)}　#{editstr}#{revstr}　発行</p>\n] # FIXME:i18n
+              else
+                # custom date with string
+                item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
+                  s << %Q[      <p>#{date_to_s(m[1])}　#{m[2]}</p>\n]
+                end
+              end
             end
           end
         else
@@ -382,6 +389,12 @@ EOT
       end
       s << <<EOT
     </table>
+EOT
+      if !@producer.params["rights"].nil? && @producer.params["rights"].size > 0
+        s << %Q[    <p class="copyright">#{@producer.params["rights"].join("<br />")}</p>]
+      end
+
+      s << <<EOT
   </div>
 </body>
 </html>
@@ -519,6 +532,28 @@ EOT
       Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}") }
     end
 
+    def legacy_cover_and_title_file(loadfile, writefile)
+      s = common_header
+      s << <<EOT
+  <title>#{@producer.params["booktitle"]}</title>
+</head>
+<body>
+EOT
+      File.open(loadfile) do |f|
+        f.each_line do |l|
+          s << l
+        end
+      end
+      s << <<EOT
+</body>
+</html>
+EOT
+
+      File.open(writefile, "w") do |f|
+        f.puts s
+      end
+    end
+
     private
 
     # Return common XHTML headder
@@ -530,7 +565,7 @@ EOT
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW"/>
 EOT
 
       @producer.params["stylesheet"].each do |file|

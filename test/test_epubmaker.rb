@@ -398,7 +398,7 @@ EOT
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW"/>
   <title>Table of Contents</title>
 </head>
 <body>
@@ -430,7 +430,7 @@ EOT
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW"/>
   <title>Table of Contents</title>
 </head>
 <body>
@@ -460,7 +460,7 @@ EOT
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW"/>
   <title>Sample Book</title>
 </head>
 <body>
@@ -482,7 +482,7 @@ EOT
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW"/>
   <title>Sample Book</title>
 </head>
 <body>
@@ -506,7 +506,7 @@ EOT
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW"/>
   <title>Colophon</title>
 </head>
 <body>
@@ -538,7 +538,7 @@ EOT
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW"/>
   <title>Colophon</title>
 </head>
 <body>

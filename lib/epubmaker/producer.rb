@@ -69,6 +69,7 @@ module EPUBMaker
           raise "Invalid EPUB version (#{@params["epubversion"]}.)"
         end
       end
+      support_legacy_maker
     end
 
     # Write mimetype file to IO object +wobj+.
@@ -199,7 +200,7 @@ module EPUBMaker
         "post_secnolevel" => 0,
         "part_secnolevel" => 1,
         "titlepage" => nil,
-        "titlepagefile" => nil,
+        "titlefile" => nil,
         "originaltitlefile" => nil,
         "profile" => nil,
         "colophon" => nil,
@@ -230,11 +231,38 @@ module EPUBMaker
         raise "Key #{k} must have a value. Abort." if @params[k].nil?
       end
       # array
-      %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl stylesheet].each do |item|
+      %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl stylesheet rights].each do |item|
         @params[item] = [@params[item]] if !@params[item].nil? && @params[item].instance_of?(String)
       end
       # optional
-      # type, format, identifier, source, relation, coverpage, rights, aut
+      # type, format, identifier, source, relation, coverpage, aut
+    end
+
+    def support_legacy_maker
+      # legacy review-epubmaker support
+      if @params["flag_legacy_coverfile"].nil? && !@params["coverfile"].nil? && File.exist?(@params["coverfile"])
+        @params["cover"] = "#{@params["bookname"]}-cover.#{@params["htmlext"]}"
+        @epub.legacy_cover_and_title_file(@params["coverfile"], @params["cover"])
+        @params["flag_legacy_coverfile"] = true
+        warn "Parameter 'coverfile' is obsolete. Please use 'cover' and make complete html file with header and footer."
+      end
+
+      if @params["flag_legacy_titlepagefile"].nil? && !@params["titlepagefile"].nil? && File.exist?(@params["titlepagefile"])
+        @params["titlefile"] = "#{@params["bookname"]}-title.#{@params["htmlext"]}"
+        @params["titlepage"] = true
+        @epub.legacy_cover_and_title_file(@params["titlepagefile"], @params["titlefile"])
+        @params["flag_legacy_titlepagefile"] = true
+        warn "Parameter 'titlepagefile' is obsolete. Please use 'titlefile' and make complete html file with header and footer."
+      end
+
+      if @params["flag_legacy_pubhistory"].nil? && !@params["pubhistory"].nil?
+        @params["history"] = [[]]
+        @params["pubhistory"].split("\n").each do |date|
+          @params["history"][0].push(date.sub(/(\d+)年(\d+)月(\d+)日/, '\1-\2-\3'))
+        end
+        @params["flag_legacy_pubhistory"] = true
+        warn "Parameter 'pubhistory' is obsolete. Please use 'history' array."
+      end
     end
   end
 end

@@ -329,10 +329,10 @@ EOT
     FileUtils.cp(@params["cover"], "#{basetmpdir}/#{File.basename(@params["cover"])}") if !@params["cover"].nil? && File.exist?(@params["cover"])
 
     if @params["titlepage"]
-      if @params["titlepagefile"].nil?
+      if @params["titlefile"].nil?
         build_titlepage(basetmpdir, "titlepage.#{@params["htmlext"]}")
       else
-        FileUtils.cp(@params["titlepagefile"], "titlepage.#{@params["htmlext"]}")
+        FileUtils.cp(@params["titlefile"], "#{basetmpdir}/titlepage.#{@params["htmlext"]}")
       end
       write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@epub.res.v("titlepagetitle")}")
     end

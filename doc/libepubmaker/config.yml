@@ -100,10 +100,13 @@ stylesheet: ["stylesheet.css"]
 # ePUB3においてはこの設定によらず必ず作成する
 # mytoc: true
 
-# 表紙の後に権利表記ページを作成するか。デフォルトでは作成されない。ファイル名を指定するとそのファイルが使われる(data配列にも指定しておく必要がある)
-# titlepage: title.xhtml
+# 表紙の後に大扉ページを作成するか。省略した場合はnull (作成しない)
+# titlepage: null
+# 自動生成される大扉ページを差し替えるファイル
+# titlefile: null
 
-# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.xhtmlとしてコピーされる(data配列にも指定しておく必要がある)
+
+# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.xhtmlとしてコピーされる
 # colophon: true
 # pubhistory: 奥付履歴
 
@@ -169,3 +172,8 @@ stylesheet: ["stylesheet.css"]
 # zip_stage2: "zip -Xr9Dq"
 # ePUBアーカイブに追加するパス(デフォルトはmimetype、META-INF、OEBPS)
 # zip_addpath: null
+
+# 以下は古いreview-epubmaker実装で使用されていたパラメータで、
+# 互換性のために同じ機能を提供しているが、将来廃止予定であり、使うべきではない。
+# ヘッダ・フッタのない大扉ページ差し替えファイル
+# titlepagefile: null
