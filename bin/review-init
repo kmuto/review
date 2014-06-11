@@ -8,11 +8,26 @@
 # For details of the GNU LGPL, see the file "COPYING".
 
 require 'fileutils'
+require 'optparse'
 
 def main
+  parser = OptionParser.new
+  parser.banner = "Usage: #{File.basename($0)} dirname"
+  parser.on('-h', '--help', 'print this message and quit.') {
+    puts parser.help
+    exit 0
+  }
+  begin
+    parser.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts parser.help
+    exit 1
+  end
+
   if ARGV.empty?
-    puts "Usage: #{File.basename($0)} dirname"
-    exit
+    $stderr.puts parser.help
+    exit 1
   end
 
   initdir = File.expand_path(ARGV.shift)
