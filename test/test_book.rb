@@ -171,10 +171,19 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
+  # backword compatible
   def test_setParameter
     book = Book::Base.new(File.dirname(__FILE__))
+    book.param = :test
+    assert_equal :test, book.param  # old way
+    assert_equal :test, book.config # new way
+  end
+
+  def test_setConfig
+    book = Book::Base.new(File.dirname(__FILE__))
     book.config = :test
-    assert_equal :test, book.instance_eval {@config}
+    assert_equal :test, book.param  # old way
+    assert_equal :test, book.config # new way
   end
 
   def test_parse_chapters

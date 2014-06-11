@@ -125,6 +125,16 @@ module ReVIEW
         @config ||= Configure.values
       end
 
+      # backword compatible
+      def param=(param)
+        @config = param
+      end
+
+      # backword compatible
+      def param
+        @config
+      end
+
       def catalog
         return @catalog if @catalog.present?
 
