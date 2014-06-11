@@ -16,7 +16,7 @@ module ReVIEW
   module Book
     class Base
 
-      attr_accessor :param
+      attr_accessor :config
 
       def self.load_default
         %w( . .. ../.. ).each do |basedir|

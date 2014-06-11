@@ -10,14 +10,14 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = LATEXBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for EPUBBuilder
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(Book::Base.new(nil), 1, 'chap1', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -30,7 +30,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    @config["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|\\chapter*{this is test.}\n\\addcontentsline{toc}{chapter}{this is test.}\n\\label{chap:chap1}\n|, @builder.result
   end
@@ -52,7 +52,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|\\subsection{this is test.}\n\\label{sec:1-0-1}\n|, @builder.result
   end
@@ -187,7 +187,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       Book::HeadlineIndex.new(items, self)
     end
 
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「1.1.1 te\\textunderscore{}st」 test2|, ret
   end
@@ -447,7 +447,7 @@ inside column
 
 \\end{reviewcolumn}
 EOS
-    @param["toclevel"] = 3
+    @config["toclevel"] = 3
     assert_equal expect, column_helper(review)
   end
 
@@ -473,7 +473,7 @@ inside column
 \\label{sec:1-0-1}
 EOS
 
-    @param["toclevel"] = 1
+    @config["toclevel"] = 1
     assert_equal expect, column_helper(review)
   end
 

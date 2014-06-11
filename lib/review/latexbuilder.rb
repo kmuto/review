@@ -79,7 +79,7 @@ module ReVIEW
     def headline_prefix(level)
       @sec_counter.inc(level)
       anchor = @sec_counter.anchor(level)
-      prefix = @sec_counter.prefix(level, ReVIEW.book.param["secnolevel"])
+      prefix = @sec_counter.prefix(level, ReVIEW.book.config["secnolevel"])
       [prefix, anchor]
     end
     private :headline_prefix
@@ -88,12 +88,12 @@ module ReVIEW
     def headline(level, label, caption)
       _, anchor = headline_prefix(level)
       prefix = ""
-      if level > ReVIEW.book.param["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
+      if level > ReVIEW.book.config["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
       end
       blank unless @output.pos == 0
       puts macro(HEADLINE[level]+prefix, compile_inline(caption))
-      if prefix == "*" && level <= ReVIEW.book.param["toclevel"].to_i
+      if prefix == "*" && level <= ReVIEW.book.config["toclevel"].to_i
         puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
       end
       if level == 1
@@ -122,7 +122,7 @@ module ReVIEW
         puts "\\hypertarget{#{column_label(caption)}}{}"
       end
       puts macro('reviewcolumnhead', nil, compile_inline(caption))
-      if level <= ReVIEW.book.param["toclevel"].to_i
+      if level <= ReVIEW.book.config["toclevel"].to_i
         puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
       end
     end
@@ -138,7 +138,7 @@ module ReVIEW
         puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
       end
 
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if ReVIEW.book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         puts blocked_lines.join("\n\n")
       else
@@ -531,7 +531,7 @@ module ReVIEW
     def latex_block(type, lines)
       blank
       puts macro('begin', type)
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if ReVIEW.book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         puts blocked_lines.join("\n\n")
       else
@@ -554,7 +554,7 @@ module ReVIEW
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
-      if ReVIEW.book.param["draft"]
+      if ReVIEW.book.config["draft"]
         str = lines.join("")
         puts macro('pdfcomment', escape(str))
       end
@@ -582,7 +582,7 @@ module ReVIEW
 
     def inline_chapref(id)
       title = super
-      if ReVIEW.book.param["chapterlink"]
+      if ReVIEW.book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{title}}"
       else
         title
@@ -593,7 +593,7 @@ module ReVIEW
     end
 
     def inline_chap(id)
-      if ReVIEW.book.param["chapterlink"]
+      if ReVIEW.book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.number(id)}}"
       else
         @chapter.env.chapter_index.number(id)
@@ -604,7 +604,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      if ReVIEW.book.param["chapterlink"]
+      if ReVIEW.book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.title(id)}}"
       else
         @chapter.env.chapter_index.title(id)
@@ -632,14 +632,14 @@ module ReVIEW
     end
 
     def footnote(id, content)
-      if ReVIEW.book.param["footnotetext"]
+      if ReVIEW.book.config["footnotetext"]
         puts macro("footnotetext[#{@chapter.footnote(id).number}]",
                    compile_inline(content.strip))
       end
     end
 
     def inline_fn(id)
-      if ReVIEW.book.param["footnotetext"]
+      if ReVIEW.book.config["footnotetext"]
         macro("footnotemark[#{@chapter.footnote(id).number}]", "")
       else
         macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
@@ -727,12 +727,12 @@ module ReVIEW
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
-      if chap.number and ReVIEW.book.param["secnolevel"] >= n.split('.').size
+      if chap.number and ReVIEW.book.config["secnolevel"] >= n.split('.').size
         str = "「#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}」"
       else
         str = "「#{compile_inline(chap.headline(id).caption)}」"
       end
-      if ReVIEW.book.param["chapterlink"]
+      if ReVIEW.book.config["chapterlink"]
         anchor = n.gsub(/\./, "-")
         macro('reviewsecref', str, sec_label(anchor))
       else
@@ -782,7 +782,7 @@ module ReVIEW
     end
 
     def inline_comment(str)
-      if ReVIEW.book.param["draft"]
+      if ReVIEW.book.config["draft"]
         macro('pdfcomment', escape(str))
       else
         ""

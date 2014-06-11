@@ -11,12 +11,12 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = TOPBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8"
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(nil, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -36,7 +36,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    @config["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|■H1■this is test.\n|, @builder.raw_result
   end
@@ -52,7 +52,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|■H3■1.0.1　this is test.\n|, @builder.raw_result
   end

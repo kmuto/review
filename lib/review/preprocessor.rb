@@ -24,22 +24,22 @@ module ReVIEW
     end
 
     def warn(msg)
-      if @param["outencoding"] =~ /^EUC$/
+      if @config["outencoding"] =~ /^EUC$/
         msg = NKF.nkf("-W -e", msg)
-      elsif @param["outencoding"] =~ /^SJIS$/
+      elsif @config["outencoding"] =~ /^SJIS$/
         msg = NKF.nkf("-W -s", msg)
-      elsif @param["outencoding"] =~ /^JIS$/
+      elsif @config["outencoding"] =~ /^JIS$/
         msg = NKF.nkf("-W -j", msg)
       end
       $stderr.puts "#{location()}: warning: #{msg}"
     end
 
     def error(msg)
-      if @param["outencoding"] =~ /^EUC$/
+      if @config["outencoding"] =~ /^EUC$/
         msg = NKF.nkf("-W -e", msg)
-      elsif @param["outencoding"] =~ /^SJIS$/
+      elsif @config["outencoding"] =~ /^SJIS$/
         msg = NKF.nkf("-W -s", msg)
-      elsif @param["outencoding"] =~ /^JIS$/
+      elsif @config["outencoding"] =~ /^JIS$/
         msg = NKF.nkf("-W -j", msg)
       end
       @errutils_err = true
@@ -106,7 +106,7 @@ module ReVIEW
 
     def initialize(repo, param)
       @repository = repo
-      @param = param
+      @config = param
     end
 
     def process(inf, outf)
@@ -185,21 +185,21 @@ module ReVIEW
 
     def convert_outencoding(*s)
       ine = ""
-      if @param["inencoding"] =~ /^EUC$/i
+      if @config["inencoding"] =~ /^EUC$/i
         ine = "-E,"
-      elsif @param["inencoding"] =~ /^SJIS$/i
+      elsif @config["inencoding"] =~ /^SJIS$/i
         ine = "-S,"
-      elsif @param["inencoding"] =~ /^JIS$/i
+      elsif @config["inencoding"] =~ /^JIS$/i
         ine = "-J,"
-      elsif @param["inencoding"] =~ /^UTF\-8$/i
+      elsif @config["inencoding"] =~ /^UTF\-8$/i
         ine = "-W,"
       end
 
-      if @param["outencoding"] =~ /^EUC$/i
+      if @config["outencoding"] =~ /^EUC$/i
         NKF.nkf("#{ine} -m0x -e", *s)
-      elsif @param["outencoding"] =~ /^SJIS$/i
+      elsif @config["outencoding"] =~ /^SJIS$/i
         NKF.nkf("#{ine} -m0x -s", *s)
-      elsif @param["outencoding"] =~ /^JIS$/i
+      elsif @config["outencoding"] =~ /^JIS$/i
         NKF.nkf("#{ine} -m0x -j", *s)
       else
         NKF.nkf("#{ine} -m0x -w", *s)
@@ -418,7 +418,7 @@ module ReVIEW
 
     def initialize(param)
       @repository = {}
-      @param = param
+      @config = param
     end
 
     def fetch_file(file)
@@ -538,8 +538,8 @@ module ReVIEW
 
     def canonical(line)
       tabwidth = 8
-      if @param['tabwidth']
-        tabwidth = @param['tabwidth']
+      if @config['tabwidth']
+        tabwidth = @config['tabwidth']
       end
       if tabwidth > 0
         detab(line, tabwidth).rstrip + "\n"

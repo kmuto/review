@@ -23,10 +23,11 @@ include ReVIEW::TextUtils
 def main
   $KCODE = 'UTF-8' unless defined?(Encoding)
 
-  @param = {
+  @config = ReVIEW::Configure.values
+  @config.merge!({
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8"
-  }
+  })
 
   part_sensitive = false
   basedir = nil
@@ -35,10 +36,10 @@ def main
     part_sensitive = true
   }
   parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    @param["inencoding"] = enc
+    @config["inencoding"] = enc
   }
   parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    @param["outencoding"] = enc
+    @config["outencoding"] = enc
   }
   parser.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
     basedir = path
@@ -56,7 +57,7 @@ def main
   end
 
   book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
-  ReVIEW.book.param = @param
+  ReVIEW.book.config = @config
   if part_sensitive
     sep = ""
     book.each_part do |part|
@@ -85,7 +86,7 @@ end
 
 def print_chapter_volume(chap)
   vol = chap.volume
-  title = convert_outencoding(chap.title, @param["outencoding"])
+  title = convert_outencoding(chap.title, @config["outencoding"])
   printf "%s %3dKB %6dC %5dL %3dP %s %-s\n",
          chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines, vol.page,
          "#{chap.name} ".ljust(25, '.'), title

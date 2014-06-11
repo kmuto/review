@@ -171,7 +171,7 @@ module ReVIEW
       else
         raise "caption level too deep or unsupported: #{level}"
       end
-      prefix = "" if (level.to_i > ReVIEW.book.param["secnolevel"])
+      prefix = "" if (level.to_i > ReVIEW.book.config["secnolevel"])
       puts "■H#{level}■#{prefix}#{compile_inline(caption)}"
     end
 
@@ -740,9 +740,9 @@ module ReVIEW
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless ReVIEW.book.param["chapref"].nil?
-        _chs = convert_inencoding(ReVIEW.book.param["chapref"],
-                                  ReVIEW.book.param["inencoding"]).split(",")
+      unless ReVIEW.book.config["chapref"].nil?
+        _chs = convert_inencoding(ReVIEW.book.config["chapref"],
+                                  ReVIEW.book.config["inencoding"]).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else

@@ -44,7 +44,7 @@ module ReVIEW
         @title = ''
         open {|f|
           f.each_line {|l|
-            l = convert_inencoding(l, ReVIEW.book.param["inencoding"])
+            l = convert_inencoding(l, ReVIEW.book.config["inencoding"])
             if l =~ /\A=+/
               @title = l.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
               break
@@ -71,7 +71,7 @@ module ReVIEW
 
       def content
         @content = convert_inencoding(File.read(path()),
-                                      ReVIEW.book.param["inencoding"])
+                                      ReVIEW.book.config["inencoding"])
       rescue
         @content
       end

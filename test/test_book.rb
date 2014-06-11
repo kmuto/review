@@ -173,8 +173,8 @@ class BookTest < Test::Unit::TestCase
 
   def test_setParameter
     book = Book::Base.new(File.dirname(__FILE__))
-    book.param = :test
-    assert_equal :test, book.instance_eval {@param}
+    book.config = :test
+    assert_equal :test, book.instance_eval {@config}
   end
 
   def test_parse_chapters

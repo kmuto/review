@@ -25,7 +25,7 @@ module ReVIEW
 
     def initialize(print_upper, param)
       @print_upper = print_upper
-      @param = param
+      @config = param
     end
 
     def print?(level)
@@ -35,19 +35,19 @@ module ReVIEW
     def nkffilter(line)
       inc = ""
       outc = "-w"
-      if @param["inencoding"] =~ /^EUC$/
+      if @config["inencoding"] =~ /^EUC$/
         inc = "-E"
-      elsif @param["inencoding"] =~ /^SJIS$/
+      elsif @config["inencoding"] =~ /^SJIS$/
         inc = "-S"
-      elsif @param["inencoding"]  =~ /^JIS$/
+      elsif @config["inencoding"]  =~ /^JIS$/
         inc = "-J"
       end
 
-      if @param["outencoding"] =~ /^EUC$/
+      if @config["outencoding"] =~ /^EUC$/
         outc = "-e"
-      elsif @param["outencoding"] =~ /^SJIS$/
+      elsif @config["outencoding"] =~ /^SJIS$/
         outc = "-s"
-      elsif @param["outencoding"]  =~ /^JIS$/
+      elsif @config["outencoding"]  =~ /^JIS$/
         outc = "-j"
       end
 

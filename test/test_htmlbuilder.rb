@@ -11,13 +11,13 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = HTMLBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -25,7 +25,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_xmlns_ops_prefix_epub3
-    ReVIEW.book.param["epubversion"] = 3
+    ReVIEW.book.config["epubversion"] = 3
     assert_equal "epub", @builder.xmlns_ops_prefix
   end
 
@@ -39,7 +39,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    ReVIEW.book.param["secnolevel"] = 0
+    ReVIEW.book.config["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, @builder.raw_result
   end
@@ -65,7 +65,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level3_with_secno
-    ReVIEW.book.param["secnolevel"] = 3
+    ReVIEW.book.config["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, @builder.raw_result
   end
@@ -156,11 +156,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::HeadlineIndex.new(items, self)
     end
 
-    @param["secnolevel"] = 2
+    @config["secnolevel"] = 2
     ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「te_st」 test2|, ret
 
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「1.1.1 te_st」 test2|, ret
   end
@@ -192,9 +192,9 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     rescue LoadError
       return true
     end
-    @param["mathml"] = true
+    @config["mathml"] = true
     ret = @builder.compile_inline("@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}")
-    @param["mathml"] = nil
+    @config["mathml"] = nil
     assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", ret
   end
 
@@ -342,7 +342,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     rescue LoadError
       return true
     end
-    ReVIEW.book.param["pygments"] = true
+    ReVIEW.book.config["pygments"] = true
     @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
 
     assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result

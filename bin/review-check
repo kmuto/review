@@ -32,19 +32,20 @@ end
 
 def main
   $KCODE = 'UTF-8' unless defined?(Encoding)
-  @param = {
+  @config = ReVIEW::Configure.values
+  @config.merge!({
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8"
-  }
+  })
 
   modes = nil
   files = ARGV unless ARGV.empty?
   parser = OptionParser.new
   parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    @param["inencoding"] = enc
+    @config["inencoding"] = enc
   }
   parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    @param["outencoding"] = enc
+    @config["outencoding"] = enc
   }
   parser.on('-a', '--all-chapters', 'Check all chapters.') {
     files = ReVIEW.book.chapters.map {|ent| ent.path }
@@ -95,7 +96,7 @@ def check_text(files)
           next if neg and neg =~ s
           str, offset = find_line(para, re)
           out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
-          print convert_outencoding(out, @param["outencoding"])
+          print convert_outencoding(out, @config["outencoding"])
         end
       end
     }
@@ -137,7 +138,7 @@ end
 def each_paragraph(f)
   $ReVIEW_utils_word_ok = nil
   while line = f.gets
-    line = convert_inencoding(line, @param["inencoding"])
+    line = convert_inencoding(line, @config["inencoding"])
 
     case line
     when /\A\#@ok\((.*)\)/

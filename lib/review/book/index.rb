@@ -175,7 +175,7 @@ module ReVIEW
         @types = types
 
         @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid,
-                                                      ReVIEW.book.param['builder'], types)
+                                                      ReVIEW.book.config['builder'], types)
       end
 
       def find_path(id)
@@ -199,7 +199,7 @@ module ReVIEW
         @basedir = basedir
         @types = types
 
-        @image_finder = ImageFinder.new(basedir, chapid, ReVIEW.book.param['builder'], types)
+        @image_finder = ImageFinder.new(basedir, chapid, ReVIEW.book.config['builder'], types)
       end
 
       def IconIndex.parse(src, *args)

@@ -14,7 +14,7 @@ class INAOBuidlerTest < Test::Unit::TestCase
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     }
-    ReVIEW.book.param = param
+    ReVIEW.book.config = param
   end
 
   def test_all

@@ -31,8 +31,8 @@ module ReVIEW
     def initialize(strict = false, *args)
       @strict = strict
       @tabwidth = nil
-      if ReVIEW.book.param && ReVIEW.book.param["tabwidth"]
-        @tabwidth = ReVIEW.book.param["tabwidth"]
+      if ReVIEW.book.config && ReVIEW.book.config["tabwidth"]
+        @tabwidth = ReVIEW.book.config["tabwidth"]
       end
       builder_init(*args)
     end
@@ -62,13 +62,13 @@ module ReVIEW
 
     def print(*s)
       @output.print(*s.map{|i|
-        convert_outencoding(i, ReVIEW.book.param["outencoding"])
+        convert_outencoding(i, ReVIEW.book.config["outencoding"])
       })
     end
 
     def puts(*s)
       @output.puts *s.map{|i|
-        convert_outencoding(i, ReVIEW.book.param["outencoding"])
+        convert_outencoding(i, ReVIEW.book.config["outencoding"])
       }
     end
 
@@ -319,7 +319,7 @@ module ReVIEW
     end
 
     def get_chap(chapter = @chapter)
-      if ReVIEW.book.param["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
+      if ReVIEW.book.config["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
         return "#{chapter.number}"
       end
       return nil
@@ -376,12 +376,12 @@ module ReVIEW
 
     def inline_include(file_name)
       compile_inline convert_inencoding(File.open(file_name).read,
-                                        ReVIEW.book.param["inencoding"])
+                                        ReVIEW.book.config["inencoding"])
     end
 
     def include(file_name)
       File.foreach(file_name) do |line|
-        paragraph([convert_inencoding(line, ReVIEW.book.param["inencoding"])])
+        paragraph([convert_inencoding(line, ReVIEW.book.config["inencoding"])])
       end
     end
 

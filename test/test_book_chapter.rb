@@ -177,7 +177,7 @@ class ChapterTest < Test::Unit::TestCase
     ].each do |enc, instr|
       io = StringIO.new("= #{instr}\n")
       ch = Book::Chapter.new(nil, nil, nil, nil, io)
-      ReVIEW.book.param = {'inencoding' => enc}
+      ReVIEW.book.config = {'inencoding' => enc}
       assert_equal @utf8_str, ch.title
       assert_equal @utf8_str, ch.instance_eval { @title }
     end
@@ -196,7 +196,7 @@ class ChapterTest < Test::Unit::TestCase
         tf.close
 
         ch = Book::Chapter.new(nil, nil, nil, tf.path)
-        ReVIEW.book.param = {'inencoding' => enc}
+        ReVIEW.book.config = {'inencoding' => enc}
         assert_equal @utf8_str, ch.content
         assert_equal @utf8_str, ch.instance_eval { @content }
       ensure
@@ -213,7 +213,7 @@ class ChapterTest < Test::Unit::TestCase
         tf1.close
 
         ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2)
-        ReVIEW.book.param = {'inencoding' => enc}
+        ReVIEW.book.config = {'inencoding' => enc}
         assert_equal "#{@utf8_str}\n#{@utf8_str}\n", ch.content # XXX: OK?
       ensure
         tf1.close(true)
@@ -356,7 +356,7 @@ E
 
 
   def test_column_index
-    ReVIEW.book.param = {"inencoding" => "utf-8"}
+    ReVIEW.book.config = {"inencoding" => "utf-8"}
     do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)
 = dummy1
 ===[column]{abc} aaaa

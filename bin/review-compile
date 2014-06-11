@@ -45,7 +45,8 @@ def _main
   check_only = false
   output_filename = nil
 
-  config = {
+  config = ReVIEW::Configure.values
+  config.merge!({
     "secnolevel" => 2,    # for IDGXML and HTML
     "tableopt" => nil,    # for IDGXML
     "nolf" => nil,        # for IDGXML
@@ -60,7 +61,7 @@ def _main
     "footnotetext" => false,
     "htmlext" => "html",
     "htmlversion" => 4,
-  }
+  })
 
   parser = OptionParser.new
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
@@ -139,8 +140,9 @@ def _main
   end
 
   begin
-    ReVIEW.book.param = config # XXX: should assing to 'configure'
-    ReVIEW.book.param["builder"] = target
+    config["builder"] = target
+
+    ReVIEW.book.config = config
     compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
     case mode
     when :files
