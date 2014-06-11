@@ -243,6 +243,7 @@ EOB
   end
 
   erb = ERB.new(File.open(template).read)
+  values = config # must be 'values' for legacy files
   erb.result(binding)
 end
 
