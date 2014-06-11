@@ -16,7 +16,7 @@ module ReVIEW
   module Book
     class Base
 
-      attr_accessor :config
+      attr_writer :config
 
       def self.load_default
         %w( . .. ../.. ).each do |basedir|
@@ -121,14 +121,14 @@ module ReVIEW
         Volume.sum(chapters.map {|chap| chap.volume })
       end
 
+      def config
+        @config ||= Configure.values
+      end
+
       def catalog
         return @catalog if @catalog.present?
 
-        if @configure.blank?
-          @configure = Configure.values
-        end
-
-        catalogfile_path = "#{basedir}/#{@configure["catalogfile"]}"
+        catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
         if File.exist? catalogfile_path
           @catalog = Catalog.new(File.open catalogfile_path)
         end

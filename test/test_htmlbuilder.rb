@@ -11,12 +11,13 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = HTMLBuilder.new()
-    @config = {
+    @config = ReVIEW::Configure.values
+    @config.merge!({
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
-    }
+    })
     ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)

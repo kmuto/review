@@ -120,6 +120,9 @@ def _main
     output_filename = filename
   end
   parser.on('--tabwidth=WIDTH', 'tab width') {|width| config["tabwidth"] = width.to_i }
+  parser.on('--catalogfile=FILENAME', 'Set catalog file') do |catalogfile|
+    config["catalogfile"] = catalogfile
+  end
   parser.on('--help', 'Prints this message and quit.') do
     puts parser.help
     exit 0
