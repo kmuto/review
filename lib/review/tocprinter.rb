@@ -126,9 +126,9 @@ module ReVIEW
           end
         end
       end
-      puts HTMLLayout.new({ :body => html,
-                            :title => "目次",
-                            :template => File.join(book.basedir, "layouts", "layout.erb")}).result
+      puts HTMLLayout.new(
+        {'body' => html, 'title' => "目次"},
+        File.join(book.basedir, "layouts", "layout.erb")).result
     end
 
     private

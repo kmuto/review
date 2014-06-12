@@ -2,9 +2,9 @@
 require 'erb'
 
 class HTMLLayout
-  def initialize(src, title, template)
-    @body = src
-    @title = title
+  def initialize(params, template)
+    @body = params['body']
+    @title = params['title']
     @template = template
   end
   attr_reader :body, :title

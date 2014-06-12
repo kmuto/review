@@ -70,7 +70,9 @@ module ReVIEW
         else
           title = convert_outencoding(strip_html(compile_inline(@chapter.title)), ReVIEW.book.config["outencoding"])
           return messages() +
-            HTMLLayout.new(@output.string, title, layout_file).result
+            HTMLLayout.new(
+            {'body' => @output.string, 'title' => title},
+            layout_file).result
         end
       end
 
