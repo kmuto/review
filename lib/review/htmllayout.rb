@@ -5,9 +5,10 @@ class HTMLLayout
   def initialize(params, template)
     @body = params['body']
     @title = params['title']
+    @toc = params['toc']
     @template = template
   end
-  attr_reader :body, :title
+  attr_reader :body, :title, :toc
 
   def result
     if File.exist?(@template)

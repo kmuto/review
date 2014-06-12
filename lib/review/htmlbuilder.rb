@@ -69,9 +69,28 @@ module ReVIEW
           warn "user's layout is prohibited in safe mode. ignored."
         else
           title = convert_outencoding(strip_html(compile_inline(@chapter.title)), ReVIEW.book.config["outencoding"])
+
+          toc = ""
+          toc_level = 0
+          @chapter.headline_index.items.each do |i|
+            caption = "<li>#{strip_html(compile_inline(i.caption))}</li>\n"
+            if toc_level == i.number.size
+              # do nothing
+            elsif toc_level < i.number.size
+              toc += "<ul>\n" * (i.number.size - toc_level)
+              toc_level = i.number.size
+            elsif toc_level > i.number.size
+              toc += "</ul>\n" * (toc_level - i.number.size)
+              toc_level = i.number.size
+              toc += "<ul>\n" * (toc_level - 1)
+            end
+            toc += caption
+          end
+          toc += "</ul>" * toc_level
+
           return messages() +
             HTMLLayout.new(
-            {'body' => @output.string, 'title' => title},
+            {'body' => @output.string, 'title' => title, 'toc' => toc},
             layout_file).result
         end
       end

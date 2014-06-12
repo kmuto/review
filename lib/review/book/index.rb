@@ -294,6 +294,7 @@ module ReVIEW
     class HeadlineIndex < Index
       HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
       Item = Struct.new(:id, :number, :caption)
+      attr_reader :items
 
       def HeadlineIndex.parse(src, chap)
         items = []
