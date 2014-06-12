@@ -182,9 +182,10 @@ def copy_images(from, to)
     Dir.chdir(to) do
       images = Dir.glob("**/*").find_all{|f|
         File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
-      }.join(" ")
-      unless system("extractbb #{images}; extractbb -m #{images}")
-        system("ebb #{images}")
+      }
+      system("extractbb", *images)
+      unless system("extractbb", "-m", *images)
+        system("ebb", *images)
       end
     end
   end
