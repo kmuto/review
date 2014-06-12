@@ -90,7 +90,9 @@ module ReVIEW
 
           return messages() +
             HTMLLayout.new(
-            {'body' => @output.string, 'title' => title, 'toc' => toc},
+            {'body' => @output.string, 'title' => title, 'toc' => toc,
+             'next' => @chapter.next_chapter,
+             'prev' => @chapter.prev_chapter},
             layout_file).result
         end
       end

@@ -568,6 +568,26 @@ EOC
     end
   end
 
+  def test_next_chapter
+    mktmpbookdir 'CHAPS' => "ch1\nch2" do |dir, book, files|
+      chapter = book.chapter('ch1')
+      assert_equal book.chapter('ch2'), book.next_chapter(chapter)
+
+      chapter = book.chapter('ch2')
+      assert_equal nil, book.next_chapter(chapter)
+    end
+  end
+
+  def test_prev_chapter
+    mktmpbookdir 'CHAPS' => "ch1\nch2" do |dir, book, files|
+      chapter = book.chapter('ch2')
+      assert_equal book.chapter('ch1'), book.prev_chapter(chapter)
+
+      chapter = book.chapter('ch1')
+      assert_equal nil, book.prev_chapter(chapter)
+    end
+  end
+
   def test_volume
     mktmpbookdir do |dir, book, files|
       assert book.volume

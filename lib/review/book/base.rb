@@ -101,6 +101,10 @@ module ReVIEW
         chapters.each(&block)
       end
 
+      def each_chapter_r(&block)
+        chapters.reverse.each(&block)
+      end
+
       def chapter_index
         return @chapter_index if @chapter_index
 
@@ -115,6 +119,24 @@ module ReVIEW
 
       def chapter(id)
         chapter_index()[id]
+      end
+
+      def next_chapter(chapter)
+        finded = false
+        each_chapter do |c|
+          return c if finded
+          finded = true if c == chapter
+        end
+        nil # not founded
+      end
+
+      def prev_chapter(chapter)
+        finded = false
+        each_chapter_r do |c|
+          return c if finded
+          finded = true if c == chapter
+        end
+        nil # not founded
       end
 
       def volume
