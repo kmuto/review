@@ -168,6 +168,14 @@ module ReVIEW
       def column_index
         @column_index ||= ColumnIndex.parse(lines())
       end
+
+      def next_chapter
+        book.next_chapter(self)
+      end
+
+      def prev_chapter
+        book.prev_chapter(self)
+      end
     end
   end
 end

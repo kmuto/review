@@ -73,14 +73,6 @@ module ReVIEW
         on_FILE?(@book.read_POSTDEF())
       end
 
-      def next_chapter
-        @book.next_chapter(self)
-      end
-
-      def prev_chapter
-        @book.prev_chapter(self)
-      end
-
       private
       def on_FILE?(contents)
         contents.lines.map(&:strip).include?(id() + @book.ext())
