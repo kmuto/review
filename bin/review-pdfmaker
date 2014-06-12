@@ -179,13 +179,15 @@ def copy_images(from, to)
   if File.exist?(from)
     Dir.mkdir(to)
     ReVIEW::MakerHelper.copy_images_to_dir(from, to)
-    Dir.chdir(to) {
-      begin
-        system("extractbb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf;extractbb -m *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
-      rescue
-        system("ebb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
+    Dir.chdir(to) do
+      Dir.glob("**/*") do |f|
+        if File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
+          unless system("extractbb #{f}; extractbb -m #{f}")
+            system("ebb #{f}")
+          end
+        end
       end
-    }
+    end
   end
 end
 
