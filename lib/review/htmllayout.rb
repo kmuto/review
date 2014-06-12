@@ -10,13 +10,14 @@ class HTMLLayout
     @toc = params['toc']
     @next = params['next']
     @prev = params['prev']
+    @builder = params['builder']
     @template = template
   end
   attr_reader :body, :title, :toc
 
   def next_chapter
     if @next.present?
-      "<a href='#{h @next.id}.html'>#{h @next.title}</a>"
+      "<a href='#{h @next.id}.html'>#{h @builder.compile_inline @next.title}</a>"
     else
       ""
     end
@@ -24,7 +25,7 @@ class HTMLLayout
 
   def prev_chapter
     if @prev.present?
-      "<a href='#{h @prev.id}.html'>#{h @prev.title}</a>"
+      "<a href='#{h @prev.id}.html'>#{h @builder.compile_inline @prev.title}</a>"
     else
       ""
     end
