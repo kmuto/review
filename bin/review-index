@@ -18,6 +18,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/book'
 require 'review/tocparser'
 require 'review/tocprinter'
+require 'review/version'
 require 'optparse'
 
 def main
@@ -42,6 +43,7 @@ def _main
   }
 
   parser = OptionParser.new
+  parser.version = ReVIEW::VERSION
   parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
     param["inencoding"] = enc
   }

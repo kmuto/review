@@ -64,6 +64,7 @@ def _main
   })
 
   parser = OptionParser.new
+  parser.version = ReVIEW::VERSION
   parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
   parser.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
     require 'yaml'
