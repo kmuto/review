@@ -9,15 +9,34 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 require 'pathname'
+require 'optparse'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/epubmaker'
 
 rv = ReVIEW::EPUBMaker.new
-if ARGV.size < 1 || !File.exist?(ARGV[0])
-  STDERR.puts "Usage: #{$0} YAML_filename [export_filename]"
+
+opts = OptionParser.new
+opts.banner = "Usage: #{File.basename($0)} [options] YAML_filename [export_filename]"
+opts.on('--help', 'Prints this message and quit.') do
+  puts opts.help
   exit 0
 end
 
-bookname = (ARGV.size > 1) ? ARGV[1] : nil
-rv.produce(ARGV[0], bookname)
+begin
+  opts.parse!
+rescue OptionParser::ParseError => err
+  $stderr.puts err.message
+  $stderr.puts opts.help
+  exit 1
+end
+
+
+if ARGV.size < 1 || !File.exist?(ARGV[0])
+  puts opts.help
+  exit 1
+end
+
+yaml_file = ARGV[0]
+bookname = ARGV[1]
+rv.produce(yaml_file, bookname)
