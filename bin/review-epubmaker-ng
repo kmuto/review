@@ -13,10 +13,12 @@ require 'optparse'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/epubmaker'
+require 'review/version'
 
 rv = ReVIEW::EPUBMaker.new
 
 opts = OptionParser.new
+opts.version = ReVIEW::VERSION
 opts.banner = "Usage: #{File.basename($0)} [options] YAML_filename [export_filename]"
 opts.on('--help', 'Prints this message and quit.') do
   puts opts.help
