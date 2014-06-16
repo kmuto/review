@@ -41,6 +41,7 @@ def main
   modes = nil
   files = ARGV unless ARGV.empty?
   parser = OptionParser.new
+  parser.version = ReVIEW::VERSION
   parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
     @config["inencoding"] = enc
   }

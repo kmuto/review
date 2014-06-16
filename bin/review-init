@@ -9,9 +9,11 @@
 
 require 'fileutils'
 require 'optparse'
+require 'review/version'
 
 def main
   parser = OptionParser.new
+  parser.version = ReVIEW::VERSION
   parser.banner = "Usage: #{File.basename($0)} dirname"
   parser.on('-h', '--help', 'print this message and quit.') {
     puts parser.help

@@ -32,6 +32,7 @@ def main
   part_sensitive = false
   basedir = nil
   parser = OptionParser.new
+  parser.version = ReVIEW::VERSION
   parser.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
     part_sensitive = true
   }

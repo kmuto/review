@@ -63,6 +63,7 @@ def main
   # Options
   opts = OptionParser.new
   opts.banner = "Usage: #{File.basename($0)} configfile"
+  opts.version = ReVIEW::VERSION
 
   opts.on('--help', 'Prints this message and quit.') do
     puts opts.help
