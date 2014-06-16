@@ -30,9 +30,24 @@ include ReVIEW::HTMLUtils
 
 $essential_files = ['top', 'toc', 'colophon']
 def main
-  if ARGV.size != 1
-    puts "Usage: #{$0} configfile"
+  parser = OptionParser.new
+  parser.version = ReVIEW::VERSION
+  parser.banner = "Usage: #{File.basename($0)} [options] configfile"
+  parser.on('-h', '--help', 'print this message and quit.') {
+    puts parser.help
     exit 0
+  }
+  begin
+    parser.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts parser.help
+    exit 1
+  end
+
+  if ARGV.empty?
+    $stderr.puts parser.help
+    exit 1
   end
 
   yamlfile = ARGV[0]
