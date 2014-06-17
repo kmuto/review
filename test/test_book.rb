@@ -17,24 +17,6 @@ class BookTest < Test::Unit::TestCase
       Dir.chdir(dir) do
         assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir CHAPS"
       end
-
-      subdir = File.join(dir, 'sub')
-      Dir.mkdir(subdir)
-      Dir.chdir(subdir) do
-        assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir sub"
-      end
-
-      sub2dir = File.join(dir, 'sub', 'sub')
-      Dir.mkdir(sub2dir)
-      Dir.chdir(sub2dir) do
-        assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir sub sub"
-      end
-
-      sub3dir = File.join(dir, 'sub', 'sub', 'sub')
-      Dir.mkdir(sub3dir)
-      Dir.chdir(sub3dir) do
-        assert_same_path sub3dir, File.expand_path(Book.load_default.basedir), "error in dir sub sub sub"
-      end
     end
 
     # tests for ReVIEW.book
@@ -74,19 +56,6 @@ class BookTest < Test::Unit::TestCase
       Dir.mkdir(local_lib_path)
       Book.update_rubyenv(dir)
       assert_equal save_load_path, $LOAD_PATH
-    end
-
-    begin
-      Dir.mktmpdir do |dir|
-        local_lib_path = File.join(dir, 'lib')
-        Dir.mkdir(local_lib_path)
-        Dir.mkdir(File.join(local_lib_path, 'review'))
-        Book.update_rubyenv(dir)
-        assert save_load_path != $LOAD_PATH
-        assert $LOAD_PATH.index(local_lib_path)
-      end
-    ensure
-      $LOAD_PATH.replace save_load_path
     end
 
     num = rand(99999)

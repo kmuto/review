@@ -19,17 +19,14 @@ module ReVIEW
       attr_writer :config
 
       def self.load_default
-        %w( . .. ../.. ).each do |basedir|
-          if File.file?("#{basedir}/CHAPS") ||
-              File.file?("#{basedir}/catalog.yml")
-            book = load(basedir)
-            if File.file?("#{basedir}/config.rb")
-              book.instance_variable_set("@parameters", Parameters.load("#{basedir}/config.rb"))
-            end
-            return book
-          end
+        basedir = "."
+        if File.file?("#{basedir}/CHAPS") ||
+            File.file?("#{basedir}/catalog.yml")
+          book = load(basedir)
+          book
+        else
+          new(basedir)
         end
-        new('.')
       end
 
       def self.load(dir)
@@ -41,9 +38,6 @@ module ReVIEW
 
       def self.update_rubyenv(dir)
         return if @basedir_seen.key?(dir)
-        if File.directory?("#{dir}/lib/review")
-          $LOAD_PATH.unshift "#{dir}/lib"
-        end
         if File.file?("#{dir}/review-ext.rb")
           if ENV["REVIEW_SAFE_MODE"].to_i & 2 > 0
             warn "review-ext.rb is prohibited in safe mode. ignored."
