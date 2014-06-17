@@ -1,3 +1,11 @@
+Tue Jun 17 10:36:31 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/base.rb:
+	  remove (rarely used) features.
+	   * ignore ./config.rb file
+	   * ignore ./lib/review/* files
+	   * ignore ./*/*.re and ./*/*/*.re files
+
 Wed Jun 11 20:15:00 2014  KADO Masanori  <kdmsnr@gmail.com>
 
 	* lib/review/book/base.rb (ReVIEW::Book::Base#config):
