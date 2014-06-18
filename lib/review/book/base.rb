@@ -121,7 +121,7 @@ module ReVIEW
           return c if finded
           finded = true if c == chapter
         end
-        nil # not founded
+        nil # not found
       end
 
       def prev_chapter(chapter)
@@ -130,7 +130,7 @@ module ReVIEW
           return c if finded
           finded = true if c == chapter
         end
-        nil # not founded
+        nil # not found
       end
 
       def volume
