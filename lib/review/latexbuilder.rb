@@ -34,7 +34,6 @@ module ReVIEW
     end
 
     def builder_init_file
-      #@index = indexes[:latex_index]
       @blank_needed = false
       @latex_tsize = nil
       @tsize = nil
