@@ -12,23 +12,23 @@ require 'optparse'
 require 'review/version'
 
 def main
-  parser = OptionParser.new
-  parser.version = ReVIEW::VERSION
-  parser.banner = "Usage: #{File.basename($0)} dirname"
-  parser.on('-h', '--help', 'print this message and quit.') {
-    puts parser.help
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0)} dirname"
+  opts.on('-h', '--help', 'print this message and quit.') {
+    puts opts.help
     exit 0
   }
   begin
-    parser.parse!
+    opts.parse!
   rescue OptionParser::ParseError => err
     $stderr.puts err.message
-    $stderr.puts parser.help
+    $stderr.puts opts.help
     exit 1
   end
 
   if ARGV.empty?
-    $stderr.puts parser.help
+    $stderr.puts opts.help
     exit 1
   end
 

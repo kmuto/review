@@ -40,34 +40,34 @@ def main
 
   modes = nil
   files = ARGV unless ARGV.empty?
-  parser = OptionParser.new
-  parser.version = ReVIEW::VERSION
-  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
     @config["inencoding"] = enc
   }
-  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
+  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
     @config["outencoding"] = enc
   }
-  parser.on('-a', '--all-chapters', 'Check all chapters.') {
+  opts.on('-a', '--all-chapters', 'Check all chapters.') {
     files = ReVIEW.book.chapters.map {|ent| ent.path }
   }
-  parser.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
+  opts.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
     ents = ReVIEW.env.parts[Integer(n) - 1] or
         raise ReVIEW::ApplicationError, "section #{n} not exist"
     files = ents.map {|ent| ent.path }
   }
-  parser.on('--text', 'Check text.') {
+  opts.on('--text', 'Check text.') {
     (modes ||= []).push :text
   }
-  parser.on('--help', 'print this message and quit.') {
-    puts parser.help
+  opts.on('--help', 'print this message and quit.') {
+    puts opts.help
     exit 0
   }
   begin
-    parser.parse!
+    opts.parse!
   rescue OptionParser::ParseError => err
     $stderr.puts err.message
-    $stderr.puts parser.help
+    $stderr.puts opts.help
     exit 1
   end
   unless files

@@ -31,29 +31,29 @@ def main
 
   part_sensitive = false
   basedir = nil
-  parser = OptionParser.new
-  parser.version = ReVIEW::VERSION
-  parser.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
     part_sensitive = true
   }
-  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
+  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
     @config["inencoding"] = enc
   }
-  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
+  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
     @config["outencoding"] = enc
   }
-  parser.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
+  opts.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
     basedir = path
   }
-  parser.on('--help', 'Print this message and quit') {
-    puts parser.help
+  opts.on('--help', 'Print this message and quit') {
+    puts opts.help
     exit 0
   }
   begin
-    parser.parse!
+    opts.parse!
   rescue OptionParser::ParseError => err
     $stderr.puts err.message
-    $stderr.puts parser.help
+    $stderr.puts opts.help
     exit 1
   end
 
