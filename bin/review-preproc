@@ -43,42 +43,42 @@ def main
   }
 
   mode = :output
-  parser = OptionParser.new
-  parser.version = ReVIEW::VERSION
-  parser.banner = "Usage: #{File.basename($0)} [-c|-d|-s|--replace] [<file>...]"
-  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0)} [-c|-d|-s|--replace] [<file>...]"
+  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and
 SJIS)') {|enc|
     param["inencoding"] = enc
   }
-  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC
+  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC
 , JIS, and SJIS)') {|enc|
     param["outencoding"] = enc
   }
-  parser.on('-c', '--check', 'Check if preprocess is needed.') {
+  opts.on('-c', '--check', 'Check if preprocess is needed.') {
     mode = :check
   }
-  parser.on('-d', '--diff', 'Show diff from current file.') {
+  opts.on('-d', '--diff', 'Show diff from current file.') {
     mode = :diff
   }
-  parser.on('--replace', 'Replace file by preprocessed one.') {
+  opts.on('--replace', 'Replace file by preprocessed one.') {
     mode = :replace
   }
-  parser.on('-s', '--strip', 'Strip preprocessor tags.') {
+  opts.on('-s', '--strip', 'Strip preprocessor tags.') {
     mode = :strip
   }
-  parser.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') {
+  opts.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') {
     mode = :final
   }
-  parser.on('--tabwidth=WIDTH', "Replace tabs with space characters. (0: don't replace)") {|width| param["tabwidth"] = width.to_i }
-  parser.on('--help', 'Print this message and quit.') {
-    puts parser.help
+  opts.on('--tabwidth=WIDTH', "Replace tabs with space characters. (0: don't replace)") {|width| param["tabwidth"] = width.to_i }
+  opts.on('--help', 'Print this message and quit.') {
+    puts opts.help
     exit 0
   }
   begin
-    parser.parse!
+    opts.parse!
   rescue OptionParser::ParseError => err
     $stderr.puts err.message
-    $stderr.puts parser.help
+    $stderr.puts opts.help
     exit 1
   end
 
