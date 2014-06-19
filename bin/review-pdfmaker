@@ -59,18 +59,20 @@ end
 
 def main
   config = ReVIEW::Configure.values
+  cmd_config = Hash.new
 
-  # Options
   opts = OptionParser.new
   opts.banner = "Usage: #{File.basename($0)} configfile"
   opts.version = ReVIEW::VERSION
-
   opts.on('--help', 'Prints this message and quit.') do
     puts opts.help
     exit 0
   end
+  opts.on('--[no-]debug', 'Keep temporary files.') do |debug|
+    cmd_config["debug"] = debug
+  end
   opts.on('--ignore-errors', 'Ignore review-compile errors.') do
-    config["ignore-errors"] = true
+    cmd_config["ignore-errors"] = true
   end
 
   opts.parse!(ARGV)
@@ -80,6 +82,8 @@ def main
   end
   yamlfile = ARGV[0]
   config.merge!(YAML.load_file(yamlfile))
+  # YAML configs will be overridden by command line options.
+  config.merge!(cmd_config)
 
   check_book(config)
   @basedir = Dir.pwd
