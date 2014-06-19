@@ -166,7 +166,7 @@ module ReVIEW
         if catalog
           catalog.chaps
         else
-          read_FILE("chapter_file")
+          read_FILE(chapter_file)
         end
       end
 
@@ -174,7 +174,7 @@ module ReVIEW
         if catalog
           catalog.predef
         else
-          read_FILE("predef_file")
+          read_FILE(predef_file)
         end
       end
 
@@ -182,7 +182,7 @@ module ReVIEW
         if catalog
           catalog.postdef
         else
-          read_FILE("postdef_file")
+          read_FILE(postdef_file)
         end
       end
 
@@ -330,7 +330,7 @@ module ReVIEW
 
       def read_FILE(filename)
         res = ""
-        File.open("#{@basedir}/#{eval(filename)}") do |f|
+        File.open("#{@basedir}/#{filename}") do |f|
           while line = f.gets
             line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
             if /\A#/ =~ line
