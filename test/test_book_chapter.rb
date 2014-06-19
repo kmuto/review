@@ -161,11 +161,11 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_title
     io = StringIO.new
-    ch = Book::Chapter.new(nil, nil, nil, nil, io)
+    ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
     assert_equal '', ch.title
 
     io = StringIO.new("=1\n=2\n")
-    ch = Book::Chapter.new(nil, nil, nil, nil, io)
+    ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
     assert_equal '1', ch.title
 
 
@@ -176,7 +176,7 @@ class ChapterTest < Test::Unit::TestCase
       ['XYZ', @eucjp_str],
     ].each do |enc, instr|
       io = StringIO.new("= #{instr}\n")
-      ch = Book::Chapter.new(nil, nil, nil, nil, io)
+      ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
       ReVIEW.book.config = {'inencoding' => enc}
       assert_equal @utf8_str, ch.title
       assert_equal @utf8_str, ch.instance_eval { @title }
@@ -195,7 +195,7 @@ class ChapterTest < Test::Unit::TestCase
         tf.print instr
         tf.close
 
-        ch = Book::Chapter.new(nil, nil, nil, tf.path)
+        ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf.path)
         ReVIEW.book.config = {'inencoding' => enc}
         assert_equal @utf8_str, ch.content
         assert_equal @utf8_str, ch.instance_eval { @content }
@@ -212,7 +212,7 @@ class ChapterTest < Test::Unit::TestCase
         tf2.puts instr
         tf1.close
 
-        ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2)
+        ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf1.path, tf2)
         ReVIEW.book.config = {'inencoding' => enc}
         assert_equal "#{@utf8_str}\n#{@utf8_str}\n", ch.content # XXX: OK?
       ensure
@@ -228,7 +228,7 @@ class ChapterTest < Test::Unit::TestCase
     tf.print lines.join('')
     tf.close
 
-    ch = Book::Chapter.new(nil, nil, nil, tf.path)
+    ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf.path)
     assert_equal lines, ch.lines
 
     lines = ["1\n", "2\n", "3"]
@@ -240,7 +240,7 @@ class ChapterTest < Test::Unit::TestCase
     tf2.puts lines.join('')
     tf2.close
 
-    ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2.path)
+    ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf1.path, tf2.path)
     assert_equal lines, ch.lines # XXX: OK?
   end
 

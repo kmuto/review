@@ -45,7 +45,7 @@ module ReVIEW
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
 
-      return body if ReVIEW.book.config["pygments"].nil?
+      return body if @book.config["pygments"].nil?
 
       begin
         require 'pygments'
