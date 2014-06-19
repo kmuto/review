@@ -63,73 +63,73 @@ def _main
     "htmlversion" => 4,
   })
 
-  parser = OptionParser.new
-  parser.version = ReVIEW::VERSION
-  parser.banner = "Usage: #{File.basename($0)} [--target=FMT]"
-  parser.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0)} [--target=FMT]"
+  opts.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
     require 'yaml'
     config = config.merge(YAML.load_file(yaml))
   end
-  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc| config["inencoding"] = enc }
-  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc| config["outencoding"] = enc }
-  parser.on('-c', '--check', 'Check manuscript') { check_only = true }
-  parser.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
-  parser.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }
-  parser.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') { config["nolf"] = true }
-  parser.on('--structuredxml', 'Produce XML with structured sections. (idgxml)') { config["structuredxml"] = true }
-  parser.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| config["tableopt"] = tbl }
-  parser.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { config["listinfo"] = true }
-  parser.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec| config["chapref"] = cdec }
-  parser.on('--subdirmode', 'Use chapter/id.ext path style to find images. (deprecated)') do
+  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc| config["inencoding"] = enc }
+  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc| config["outencoding"] = enc }
+  opts.on('-c', '--check', 'Check manuscript') { check_only = true }
+  opts.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
+  opts.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }
+  opts.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') { config["nolf"] = true }
+  opts.on('--structuredxml', 'Produce XML with structured sections. (idgxml)') { config["structuredxml"] = true }
+  opts.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| config["tableopt"] = tbl }
+  opts.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { config["listinfo"] = true }
+  opts.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec| config["chapref"] = cdec }
+  opts.on('--subdirmode', 'Use chapter/id.ext path style to find images. (deprecated)') do
     STDERR.puts "Warning: --subdirmode is deprecated. Images are automatically detected."
   end
-  parser.on('--singledirmode', 'Use id.ext path style to find images. (deprecated)') do
+  opts.on('--singledirmode', 'Use id.ext path style to find images. (deprecated)') do
     STDERR.puts "Warning: --singledirmode is deprecated. Images are automatically detected."
   end
-  parser.on('--chapterlink', 'make chapref hyperlink') { config["chapterlink"] = true }
-  parser.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| config["stylesheet"] = files.split(/\s*,\s*/) }
-  parser.on('--mathml', 'Use MathML for TeX equation in HTML') do
+  opts.on('--chapterlink', 'make chapref hyperlink') { config["chapterlink"] = true }
+  opts.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| config["stylesheet"] = files.split(/\s*,\s*/) }
+  opts.on('--mathml', 'Use MathML for TeX equation in HTML') do
     config["mathml"] = true
     require 'math_ml'
     require "math_ml/symbol/character_reference"
   end
-  parser.on('--htmlversion=VERSION', 'HTML version.') do |v|
+  opts.on('--htmlversion=VERSION', 'HTML version.') do |v|
     v = v.to_i
     config["htmlversion"] = v if v == 4 || v == 5
   end
-  parser.on('--epubversion=VERSION', 'EPUB version.') do |v|
+  opts.on('--epubversion=VERSION', 'EPUB version.') do |v|
     v = v.to_i
     config["epubversion"] = v if v == 2 || v == 3
   end
-  parser.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') { config["hdnumberingmode"] = true }
-  parser.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') { config["deprecated-blocklines"] = true }
-  parser.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
-  parser.on('--footnotetext',
+  opts.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') { config["hdnumberingmode"] = true }
+  opts.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') { config["deprecated-blocklines"] = true }
+  opts.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
+  opts.on('--footnotetext',
             'Use footnotetext and footnotemark instead of footnote (latex)') {
     config["footnotetext"] = true
   }
-  parser.on('--draft', 'use draft mode(inline comment)') { config["draft"] = true }
-  parser.on('-a', '--all', 'Compile all chapters.') do
+  opts.on('--draft', 'use draft mode(inline comment)') { config["draft"] = true }
+  opts.on('-a', '--all', 'Compile all chapters.') do
     mode = :dir
     basedir = nil
   end
-  parser.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
+  opts.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
     mode = :dir
     basedir = path
   end
-  parser.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') do |filename|
+  opts.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') do |filename|
     output_filename = filename
   end
-  parser.on('--tabwidth=WIDTH', 'tab width') {|width| config["tabwidth"] = width.to_i }
-  parser.on('--catalogfile=FILENAME', 'Set catalog file') do |catalogfile|
+  opts.on('--tabwidth=WIDTH', 'tab width') {|width| config["tabwidth"] = width.to_i }
+  opts.on('--catalogfile=FILENAME', 'Set catalog file') do |catalogfile|
     config["catalogfile"] = catalogfile
   end
-  parser.on('--help', 'Prints this message and quit.') do
-    puts parser.help
+  opts.on('--help', 'Prints this message and quit.') do
+    puts opts.help
     exit 0
   end
   begin
-    parser.parse!
+    opts.parse!
     unless target
       if check_only
         target = 'html'
@@ -139,7 +139,7 @@ def _main
     end
   rescue OptionParser::ParseError => err
     error err.message
-    $stderr.puts parser.help
+    $stderr.puts opts.help
     exit 1
   end
 
