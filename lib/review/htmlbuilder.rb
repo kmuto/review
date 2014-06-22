@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2012 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -43,7 +43,7 @@ module ReVIEW
     end
 
     def extname
-      ".#{ReVIEW.book.param["htmlext"]}"
+      ".#{@book.config["htmlext"]}"
     end
 
     def builder_init(no_error = false)
@@ -65,54 +65,83 @@ module ReVIEW
     def result
       layout_file = File.join(@book.basedir, "layouts", "layout.erb")
       if File.exist?(layout_file)
-        title = convert_outencoding(strip_html(@chapter.title), ReVIEW.book.param["outencoding"])
-        messages() +
-          HTMLLayout.new(@output.string, title, layout_file).result
-      else
-        # default XHTML header/footer
-        header = <<EOT
-<?xml version="1.0" encoding="#{ReVIEW.book.param["outencoding"] || :UTF-8}"?>
-EOT
-        if ReVIEW.book.param["htmlversion"].to_i == 5
-          header += <<EOT
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
-<head>
-  <meta charset="#{ReVIEW.book.param["outencoding"] || :UTF-8}" />
-EOT
+        if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
+          warn "user's layout is prohibited in safe mode. ignored."
         else
-          header += <<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{ReVIEW.book.param["language"]}">
+          title = convert_outencoding(strip_html(@chapter.title), @book.config["outencoding"])
+
+          toc = ""
+          toc_level = 0
+          @chapter.headline_index.items.each do |i|
+            caption = "<li>#{strip_html(i.caption)}</li>\n"
+            if toc_level == i.number.size
+              # do nothing
+            elsif toc_level < i.number.size
+              toc += "<ul>\n" * (i.number.size - toc_level)
+              toc_level = i.number.size
+            elsif toc_level > i.number.size
+              toc += "</ul>\n" * (toc_level - i.number.size)
+              toc_level = i.number.size
+              toc += "<ul>\n" * (toc_level - 1)
+            end
+            toc += caption
+          end
+          toc += "</ul>" * toc_level
+
+          return messages() +
+            HTMLLayout.new(
+            {'body' => @output.string, 'title' => title, 'toc' => toc,
+             'builder' => self,
+             'next' => @chapter.next_chapter,
+             'prev' => @chapter.prev_chapter},
+            layout_file).result
+        end
+      end
+
+      # default XHTML header/footer
+      header = <<EOT
+<?xml version="1.0" encoding="#{@book.config["outencoding"] || :UTF-8}"?>
+>>>>>>> master
+EOT
+      if @book.config["htmlversion"].to_i == 5
+        header += <<EOT
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=#{ReVIEW.book.param["outencoding"] || :UTF-8}" />
+  <meta charset="#{@book.config["outencoding"] || :UTF-8}" />
+EOT
+      else
+        header += <<EOT
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || :UTF-8}" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
-        end
+      end
 
-        unless ReVIEW.book.param["stylesheet"].nil?
-          ReVIEW.book.param["stylesheet"].each do |style|
-            header += <<EOT
+      unless @book.config["stylesheet"].nil?
+        @book.config["stylesheet"].each do |style|
+          header += <<EOT
   <link rel="stylesheet" type="text/css" href="#{style}" />
 EOT
-          end
         end
-        header += <<EOT
-  <meta name="generator" content="ReVIEW" />
-  <title>#{convert_outencoding(strip_html(@chapter.title), ReVIEW.book.param["outencoding"])}</title>
+      end
+      header += <<EOT
+  <meta name="generator" content="Re:VIEW" />
+  <title>#{convert_outencoding(strip_html(@chapter.title), @book.config["outencoding"])}</title>
 </head>
 <body>
 EOT
-        footer = <<EOT
+      footer = <<EOT
 </body>
 </html>
 EOT
-        header + messages() + convert_outencoding(@output.string, ReVIEW.book.param["outencoding"]) + footer
-      end
+      header + messages() + convert_outencoding(@output.string, @book.config["outencoding"]) + footer
     end
 
     def xmlns_ops_prefix
-      if ReVIEW.book.param["epubversion"].to_i == 3
+      if @book.config["epubversion"].to_i == 3
         "epub"
       else
         "ops"
@@ -164,7 +193,7 @@ EOT
     def headline_prefix(level)
       @sec_counter.inc(level)
       anchor = @sec_counter.anchor(level)
-      prefix = @sec_counter.prefix(level, ReVIEW.book.param["secnolevel"])
+      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
       [prefix, anchor]
     end
     private :headline_prefix
@@ -183,7 +212,7 @@ EOT
         if label.nil?
           buf << %Q[<h#{level}>#{a_id}#{prefix}#{caption}</h#{level}>\n]
         else
-          buf << %Q[<h#{level} id="#{label}">#{a_id}#{prefix}#{caption}</h#{level}>\n]
+          buf << %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{prefix}#{caption}</h#{level}>\n]
         end
       end
       buf
@@ -196,7 +225,7 @@ EOT
         if label.nil?
           buf << %Q[<h#{level}>#{caption}</h#{level}>\n]
         else
-          buf << %Q[<h#{level} id="#{label}">#{caption}</h#{level}>\n]
+          buf << %Q[<h#{level} id="#{normalize_id(label)}">#{caption}</h#{level}>\n]
         end
       end
       buf
@@ -218,7 +247,7 @@ EOT
         if label.nil?
           buf << %Q[<h#{level}>#{a_id}#{caption}</h#{level}>\n]
         else
-          buf << %Q[<h#{level} id="#{label}">#{a_id}#{caption}</h#{level}>\n]
+          buf << %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{caption}</h#{level}>\n]
         end
       end
       buf
@@ -264,7 +293,7 @@ EOT
       unless caption.nil?
         buf << %Q[<p class="caption">#{caption}</p>\n]
       end
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         buf << blocked_lines.join("\n") << "\n"
       else
@@ -399,7 +428,7 @@ EOT
     end
 
     def read(lines)
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>\n]
       else
@@ -407,7 +436,7 @@ EOT
       end
     end
 
-    alias :lead read
+    alias_method :lead, :read
 
     def list(lines, id, caption)
       buf = %Q[<div class="caption-code">\n]
@@ -529,7 +558,7 @@ EOT
     private :quotedlist
 
     def quote(lines)
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         "<blockquote>#{blocked_lines.join("\n")}</blockquote>\n"
       else
@@ -539,7 +568,7 @@ EOT
 
     def doorquote(lines, ref)
       buf = ""
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         buf << %Q[<blockquote style="text-align:right;">\n]
         buf << "#{blocked_lines.join("\n")}\n"
@@ -559,7 +588,7 @@ QUOTE
 
     def talk(lines)
       puts %Q[<div class="talk">]
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         puts "#{blocked_lines.join("\n")}"
       else
@@ -572,7 +601,7 @@ QUOTE
 
     def texequation(lines)
       puts %Q[<div class="equation">]
-      if ReVIEW.book.param["mathml"]
+      if @book.config["mathml"]
         p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
       else
@@ -598,7 +627,7 @@ QUOTE
 
     def image_image(id, caption, metric)
       metrics = parse_metric("html", metric)
-      buf = %Q[<div class="image">\n]
+      buf = %Q[<div id="#{normalize_id(id)}" class="image">]
       buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(caption)}"#{metrics} />\n]
       buf << image_header(id, caption)
       buf << %Q[</div>\n]
@@ -642,7 +671,11 @@ QUOTE
       end
       rows = adjust_n_cols(rows)
 
-      buf = %Q[<div class="table">\n]
+      if id
+        buf = %Q[<div id="#{normalize_id(id)}" class="table">\n]
+      else
+        buf = %Q[<div class="table">\n]
+      end
       begin
         buf << table_header(id, caption) unless caption.nil?
       rescue KeyError
@@ -699,20 +732,20 @@ QUOTE
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
-      if ReVIEW.book.param["draft"]
+      if @book.config["draft"]
         str = lines.map{|line| escape_html(line) }.join("<br />")
         return %Q(<div class="draft-comment">#{str}</div>\n)
       else
         str = lines.join("\n")
-        return %Q(<!-- #{escape_html(str)} -->\n)
+        return %Q(<!-- #{escape_comment(str)} -->\n)
       end
     end
 
     def footnote(id, str)
-      if ReVIEW.book.param["epubversion"].to_i == 3
-        %Q(<div class="footnote" epub:type="footnote" id="fn-#{id}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{str}</p></div>\n)
+      if @book.config["epubversion"].to_i == 3
+        %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{str}</p></div>\n)
       else
-        %Q(<div class="footnote"><p class="footnote">[<a id="fn-#{id}">*#{@chapter.footnote(id).number}</a>] #{str}</p></div>\n)
+        %Q(<div class="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[<a href="#fnb-#{normalize_id(id)}">*#{@chapter.footnote(id).number}</a>] #{str}</p></div>\n)
       end
     end
 
@@ -735,14 +768,14 @@ QUOTE
       buf
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def hr
       "<hr />\n"
     end
 
     def label(id)
-      %Q(<a id="#{id}"></a>\n)
+      %Q(<a id="#{normalize_id(id)}"></a>)
     end
 
     def linebreak
@@ -770,13 +803,14 @@ QUOTE
       %Q[<a target='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</a>]
     end
 
-    alias inline_ref inline_labelref
+    alias_method :inline_ref, :inline_labelref
 
     def inline_chapref(id)
-      if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.display_string(id)}</a>)
+      title = super
+      if @book.config["chapterlink"]
+        %Q(<a href="./#{id}#{extname}">#{title}</a>)
       else
-        @chapter.env.chapter_index.display_string(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"
@@ -784,8 +818,8 @@ QUOTE
     end
 
     def inline_chap(id)
-      if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.number(id)}</a>)
+      if @book.config["chapterlink"]
+        %Q(<a href="./#{id}#{extname}">#{@chapter.env.chapter_index.number(id)}</a>)
       else
         @chapter.env.chapter_index.number(id)
       end
@@ -795,8 +829,8 @@ QUOTE
     end
 
     def inline_title(id)
-      if ReVIEW.book.param["chapterlink"]
-        %Q(<a href="./#{id}.html">#{@chapter.env.chapter_index.title(id)}</a>)
+      if @book.config["chapterlink"]
+        %Q(<a href="./#{id}#{extname}">#{@chapter.env.chapter_index.title(id)}</a>)
       else
         @chapter.env.chapter_index.title(id)
       end
@@ -806,16 +840,16 @@ QUOTE
     end
 
     def inline_fn(id)
-      if ReVIEW.book.param["epubversion"].to_i == 3
-        %Q(<a href="#fn-#{id}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
+      if @book.config["epubversion"].to_i == 3
+        %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
       else
-        %Q(<a href="#fn-#{id}" class="noteref">*#{@chapter.footnote(id).number}</a>)
+        %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref">*#{@chapter.footnote(id).number}</a>)
       end
     end
 
     def compile_ruby(base, ruby)
-      if ReVIEW.book.param["htmlversion"].to_i == 5
-        %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      if @book.config["htmlversion"].to_i == 5
+        %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
         %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       end
@@ -827,7 +861,7 @@ QUOTE
         then escape_html(word + " (#{alt.strip})")
         else escape_html(word)
         end +
-        "</b><!-- IDX:#{escape_html(word)} -->"
+        "</b><!-- IDX:#{escape_comment(escape_html(word))} -->"
     end
 
     def inline_i(str)
@@ -847,7 +881,7 @@ QUOTE
     end
 
     def inline_tti(str)
-      if ReVIEW.book.param["htmlversion"].to_i == 5
+      if @book.config["htmlversion"].to_i == 5
         %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
       else
         %Q(<tt><i>#{escape_html(str)}</i></tt>)
@@ -855,7 +889,7 @@ QUOTE
     end
 
     def inline_ttb(str)
-      if ReVIEW.book.param["htmlversion"].to_i == 5
+      if @book.config["htmlversion"].to_i == 5
         %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
       else
         %Q(<tt><b>#{escape_html(str)}</b></tt>)
@@ -867,7 +901,7 @@ QUOTE
     end
 
     def inline_code(str)
-      if ReVIEW.book.param["htmlversion"].to_i == 5
+      if @book.config["htmlversion"].to_i == 5
         %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
       else
         %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
@@ -875,11 +909,11 @@ QUOTE
     end
 
     def inline_idx(str)
-      %Q(#{escape_html(str)}<!-- IDX:#{escape_html(str)} -->)
+      %Q(#{escape_html(str)}<!-- IDX:#{escape_comment(escape_html(str))} -->)
     end
 
     def inline_hidx(str)
-      %Q(<!-- IDX:#{escape_html(str)} -->)
+      %Q(<!-- IDX:#{escape_comment(escape_html(str))} -->)
     end
 
     def inline_br(str)
@@ -887,7 +921,7 @@ QUOTE
     end
 
     def inline_m(str)
-      if ReVIEW.book.param["mathml"]
+      if @book.config["mathml"]
         p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{p.parse(str, nil)}</span>]
       else
@@ -910,10 +944,10 @@ QUOTE
     end
 
     def bibpaper_header(id, caption)
-      buf = %Q(<a id="bib-#{id}">)
+      buf = %Q(<a id="bib-#{normalize_id(id)}">)
       buf << "[#{@chapter.bibpaper(id).number}]"
       buf << %Q(</a>)
-      buf << " #{caption}\n"
+      buf << " #{compile_inline(caption)}"
     end
 
     def bibpaper_bibpaper(id, caption, lines)
@@ -926,17 +960,34 @@ QUOTE
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
-      if chap.number and ReVIEW.book.param["secnolevel"] >= n.split('.').size
+      if chap.number and @book.config["secnolevel"] >= n.split('.').size
         str = "「#{n} #{chap.headline(id).caption}」"
       else
         str = "「#{chap.headline(id).caption}」"
       end
-      if ReVIEW.book.param["chapterlink"]
+      if @book.config["chapterlink"]
         anchor = "h"+n.gsub(/\./, "-")
-        %Q(<a href="#{chap.id}.html\##{anchor}">#{str}</a>)
+        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{str}</a>)
       else
         str
       end
+    end
+
+    def column_label(id)
+      num = @chapter.column(id).number
+      "column-#{num}"
+    end
+    private :column_label
+
+    def inline_column(id)
+      if @book.config["chapterlink"]
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(@chapter.column(id).caption))}</a>)
+      else
+        escape_html(@chapter.column(id).caption)
+      end
+    rescue KeyError
+      error "unknown column: #{id}"
+      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_list(id)
@@ -953,10 +1004,16 @@ QUOTE
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
+      str = nil
       if get_chap(chapter).nil?
-        "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}"
+        str = "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}"
       else
-        "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
+        str = "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
+      end
+      if @book.config["chapterlink"]
+        %Q(<a href="./#{chapter.id}#{extname}##{id}">#{str}</a>)
+      else
+        str
       end
     rescue KeyError
       error "unknown table: #{id}"
@@ -965,10 +1022,16 @@ QUOTE
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
+      str = nil
       if get_chap(chapter).nil?
-        "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}"
+        str = "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}"
       else
-        "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
+        str = "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
+      end
+      if @book.config["chapterlink"]
+        %Q(<a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a>)
+      else
+        str
       end
     rescue KeyError
       error "unknown image: #{id}"
@@ -1032,7 +1095,7 @@ QUOTE
     end
 
     def inline_tt(str)
-      if ReVIEW.book.param["htmlversion"].to_i == 5
+      if @book.config["htmlversion"].to_i == 5
         %Q(<code class="tt">#{escape_html(str)}</code>)
       else
         %Q(<tt>#{escape_html(str)}</tt>)
@@ -1068,10 +1131,10 @@ QUOTE
     end
 
     def inline_comment(str)
-      if ReVIEW.book.param["draft"]
+      if @book.config["draft"]
         %Q(<span class="draft-comment">#{escape_html(str)}</span>)
       else
-        %Q(<!-- #{escape_html(str)} -->)
+        %Q(<!-- #{escape_comment(escape_html(str))} -->)
       end
     end
 
@@ -1089,7 +1152,7 @@ QUOTE
 
     def flushright(lines)
       result = ""
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         result << split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">") << "\n"
       else
         result << %Q[<div style="text-align:right;">\n]

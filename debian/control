@@ -13,10 +13,10 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ruby
 Recommends: zip
 Suggests: ptex-bin, okumura-clsfiles, libmathml-ruby
 Description: easy-to-use digital publishing system for Japanese books and ebooks
- ReVIEW is a digital publishing system for books and ebooks.
+ Re:VIEW is a digital publishing system for books and ebooks.
  It is aimed professional Japanese editorial use.
  .
- ReVIEW generates HTML, LaTeX, plain text, and Adobe InDesign XML
+ Re:VIEW generates HTML, LaTeX, plain text, and Adobe InDesign XML
  from a text file with simple and extensible tags.
  .
  This package provides the builders for EPUB and PDF.

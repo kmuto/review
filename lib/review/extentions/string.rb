@@ -5,19 +5,19 @@ end
 unless String.method_defined?(:lines)
   # Ruby 1.8
   class String
-    alias lines to_a
+    alias_method :lines, :to_a
   end
 end
 
 if String.method_defined?(:bytesize)
   # Ruby 1.9
   class String
-    alias charsize size
+    alias_method :charsize, :size
   end
 else
   # Ruby 1.8
   class String
-    alias bytesize size
+    alias_method :bytesize, :size
 
     def charsize
       split(//).size
@@ -28,6 +28,6 @@ end
 unless String.method_defined?(:each)
   # Ruby 1.9
   class String
-    alias each each_line
+    alias_method :each, :each_line
   end
 end

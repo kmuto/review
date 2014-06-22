@@ -185,10 +185,10 @@ class LineInputTest < Test::Unit::TestCase
     data = ''
     li.until_terminator(%r<\A//\}>) {|l| data << l }
     assert_equal "jkl\nmno", data
-    assert_equal 7, li.lineno
+    assert_equal 8, li.lineno
   end
 
-  def test_until_terminator
+  def test_until_terminator2
     io = StringIO.new("abc\ndef\n//}\nghi\n//}")
     li = LineInput.new(io)
 

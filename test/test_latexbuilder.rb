@@ -11,17 +11,16 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = LATEXBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
-      "subdirmode" => nil,
       "stylesheet" => nil,  # for EPUBBuilder
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(nil, 1, 'chap1', nil, StringIO.new)
+    @chapter = Book::Chapter.new(Book::Base.new(nil), 1, 'chap1', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
   end
@@ -33,7 +32,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
 
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    @config["secnolevel"] = 0
     result = @builder.headline(1,"test","this is test.")
     assert_equal %Q|\\chapter*{this is test.}\n\\addcontentsline{toc}{chapter}{this is test.}\n\\label{chap:chap1}\n|, result
   end
@@ -45,18 +44,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level2
     result = compile_headline("=={test} this is test.\n")
-    assert_equal %Q|\\section{this is test.}\n|, result
+    assert_equal %Q|\\section{this is test.}\n\\label{sec:1-1}\n|, result
   end
 
   def test_headline_level3
     result = @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\\subsection*{this is test.}\n|, result
+    assert_equal %Q|\\subsection*{this is test.}\n\\label{sec:1-0-1}\n|, result
   end
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     result = @builder.headline(3,"test","this is test.")
-    assert_equal %Q|\\subsection{this is test.}\n|, result
+    assert_equal %Q|\\subsection{this is test.}\n\\label{sec:1-0-1}\n|, result
   end
 
   def test_label
@@ -195,6 +194,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       Book::HeadlineIndex.new(items, self)
     end
 
+    @config["secnolevel"] = 3
     ret = compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「1.1.1 te\\textunderscore{}st」 test2|, ret
   end
@@ -210,6 +210,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
 =begin
+  def test_inline_idx
+    ret = @builder.compile_inline("@<idx>{__TEST%$}, @<hidx>{__TEST%$}")
+    assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$}, \\index{__TEST%$}|, ret
+  end
+
   def test_jis_x_0201_kana
     ret = @builder.compile_inline("foo･ｶﾝｼﾞ､テスト")
     assert_equal %Q|foo\\aj半角{・}\\aj半角{カ}\\aj半角{ン}\\aj半角{シ}\\aj半角{゛}\\aj半角{、}テスト|, ret
@@ -299,7 +304,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_image
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -310,7 +315,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -321,7 +326,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_image_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -332,7 +337,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_indepimage
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -343,7 +348,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -355,7 +360,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -366,7 +371,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -377,7 +382,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -433,19 +438,24 @@ EOS
     expect =<<-EOS
 
 \\begin{reviewcolumn}
+\\hypertarget{column:chap1:1}{}
 \\reviewcolumnhead{}{prev column}
+\\addcontentsline{toc}{subsection}{prev column}
 
 inside prev column
 
 \\end{reviewcolumn}
 
 \\begin{reviewcolumn}
+\\hypertarget{column:chap1:2}{}
 \\reviewcolumnhead{}{test}
+\\addcontentsline{toc}{subsection}{test}
 
 inside column
 
 \\end{reviewcolumn}
 EOS
+    @config["toclevel"] = 3
     assert_equal expect, column_helper(review)
   end
 
@@ -460,6 +470,7 @@ EOS
     expect =<<-EOS
 
 \\begin{reviewcolumn}
+\\hypertarget{column:chap1:1}{}
 \\reviewcolumnhead{}{test}
 
 inside column
@@ -467,8 +478,10 @@ inside column
 \\end{reviewcolumn}
 
 \\subsection*{next level}
+\\label{sec:1-0-1}
 EOS
 
+    @config["toclevel"] = 1
     assert_equal expect, column_helper(review)
   end
 
@@ -642,44 +655,31 @@ EOS
 
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw1
     @builder.raw("|latex|<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw2
     @builder.raw("|html, latex|<>!\"\\n& ")
-    expect =<<-EOS
-<>!\"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw3
     @builder.raw("|html, idgxml|<>!\"\\n& ")
-    expect =<<-EOS
-EOS
+    expect = ''
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw4
     @builder.raw("|latex <>!\"\\n& ")
-    expect =<<-EOS
-|latex <>!\"
-& 
-EOS
+    expect = %Q(|latex <>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 =end

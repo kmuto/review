@@ -4,7 +4,10 @@ require 'yaml'
 module ReVIEW
   class I18n
     def self.setup
-      user_i18n = YAML.load_file(File.expand_path "locale.yaml", ENV["PWD"])
+      lfile = File.expand_path "locale.yml", ENV["PWD"]
+      # backward compatibility
+      lfile = File.expand_path "locale.yaml", ENV["PWD"] unless File.exist?(lfile)
+      user_i18n = YAML.load_file(lfile)
       I18n.i18n user_i18n["locale"], user_i18n
     rescue
       I18n.i18n "ja"
@@ -12,7 +15,7 @@ module ReVIEW
 
     def self.i18n(locale, user_i18n = {})
       locale ||= "ja"
-      i18n_yaml_path = File.expand_path "i18n.yaml", File.dirname(__FILE__)
+      i18n_yaml_path = File.expand_path "i18n.yml", File.dirname(__FILE__)
       @i18n = YAML.load_file(i18n_yaml_path)[locale]
       if @i18n
         @i18n.merge!(user_i18n)

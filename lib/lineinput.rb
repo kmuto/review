@@ -65,6 +65,16 @@ class LineInput
     nil
   end
 
+  def getlines_while(re)
+    buf = []
+    while_match(re) do |line|
+      buf.push line
+    end
+    buf
+  end
+
+  alias_method :span, :getlines_while   # from Haskell
+
   def until_match(re)
     while line = gets()
       if re =~ line
@@ -75,6 +85,16 @@ class LineInput
     end
     nil
   end
+
+  def getlines_until(re)
+    buf = []
+    until_match(re) do |line|
+      buf.push line
+    end
+    buf
+  end
+
+  alias_method :break, :getlines_until   # from Haskell
 
   def until_terminator(re)
     while line = gets()

@@ -22,7 +22,7 @@ module ReVIEW
       def PageMetric.b5
         new(46, 80, 30, 74, 2)
       end
-      
+
       def initialize(list_lines, list_columns, text_lines, text_columns, page_per_kbyte)
         @list = MetricData.new(list_lines, list_columns)
         @text = MetricData.new(text_lines, text_columns)

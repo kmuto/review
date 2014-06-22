@@ -49,13 +49,13 @@ class I18nTest < Test::Unit::TestCase
   def _setup_htmlbuilder
     I18n.i18n "en"
     @builder = HTMLBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)

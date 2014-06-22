@@ -81,7 +81,7 @@ class BuidlerTest < Test::Unit::TestCase
       ].each do |m, instr, expstr|
         b = Builder.new
         b.bind(nil, nil, nil)
-        ReVIEW.book.param = params
+        ReVIEW.book.config = params
         b.__send__(m, instr)
         if "".respond_to?(:encode)
           assert_equal expstr.encode("UTF-8"), b.result
@@ -110,9 +110,9 @@ class BuidlerTest < Test::Unit::TestCase
   end
 
   def test_convert_outencoding
-    ReVIEW.book.param = {'outencoding' => "EUC"}
+    ReVIEW.book.config = {'outencoding' => "EUC"}
     b = Builder.new
-    ret = b.convert_outencoding("a", ReVIEW.book.param["outencoding"])
+    ret = b.convert_outencoding("a", ReVIEW.book.config["outencoding"])
     assert_equal "a", ret
   end
 

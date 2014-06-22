@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -30,9 +30,28 @@ include ReVIEW::HTMLUtils
 
 $essential_files = ['top', 'toc', 'colophon']
 def main
-  if ARGV.size != 1
-    puts "Usage: #{$0} configfile"
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0)} [options] configfile"
+  opts.on('-h', '--help', 'print this message and quit.') {
+    puts opts.help
     exit 0
+  }
+  opts.on('--[no-]debug', 'Keep temporary files.') do |debug|
+    config["debug"] = debug
+  end
+
+  begin
+    opts.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  if ARGV.empty?
+    $stderr.puts opts.help
+    exit 1
   end
 
   yamlfile = ARGV[0]
@@ -60,12 +79,12 @@ def main
   @identifier = values["urnid"].nil? ? "urn:uuid:#{UUID.create}" : values["urnid"]
 
   Dir.mkdir(@bookdir)
-  
+
   # MIME type
   File.open("#{@bookdir}/mimetype", "w") {|f|
     f.write "application/epub+zip"
   }
-  
+
   Dir.mkdir("#{@bookdir}/OEBPS")
   # XHTML
   @manifeststr = ""
@@ -83,12 +102,12 @@ def main
       else
         htmlfile = "part_#{part.number}.html"
         make_part_page(part, htmlfile, values)
+        file_id = "part_#{part.number}"
+        part_name = "#{ReVIEW::I18n.t("part", part.number)} #{part.name.strip}"
+        @tocdesc << [1, htmlfile, nil, part_name]
+        @manifeststr << %Q(<item id="rv-#{file_id}" href="#{htmlfile}" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="rv-#{file_id}" />\n)
       end
-      file_id = "part_#{part.number}"
-      part_name = "#{ReVIEW::I18n.t("part", part.number)} #{part.name.strip}"
-      @tocdesc << [1, htmlfile, nil, part_name]
-      @manifeststr << %Q(<item id="#{file_id}" href="#{htmlfile}" media-type="application/xhtml+xml" />\n)
-      @ncxstr << %Q(<itemref idref="#{file_id}" />\n)
     end
 
     part.chapters.each do |chap|
@@ -97,16 +116,19 @@ def main
     end
   end
 
+  # images
   if File.exist?("images")
+    allow_exts = values["image_ext"] || %w(png gif jpg jpeg svg ttf woff otf)
     Dir.mkdir("#{@bookdir}/OEBPS/images")
-    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images", :exts=>%w(png gif jpg jpeg svg))
+    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images", :exts=>allow_exts)
     image_files.each do |image_file|
       dirname = File.dirname(image_file)
       fname = File.basename(image_file)
       figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
       mime = nil
-      next unless fname =~ /\.(png|gif|jpg|jpeg|svg)$/i
-      case fname.downcase.match(/\.(png|gif|jpg|jpeg|svg)$/)[1]
+      fname_pattern = /\.(#{allow_exts.join("|")})$/i
+      next unless fname =~ fname_pattern
+      case fname.downcase.match(fname_pattern)[1]
       when "png"
         mime = "image/png"
       when "gif"
@@ -115,6 +137,10 @@ def main
         mime = "image/jpeg"
       when "svg"
         mime = "image/svg+xml"
+      when "ttf", "otf"
+        mime = "application/vnd.ms-opentype"
+      when "woff"
+        mime = "application/font-woff"
       else
         raise "unsupported type #{fname}"
       end
@@ -122,6 +148,33 @@ def main
         properties = ' properties="cover-image"'
       end
       @manifeststr << %Q(<item id="#{figid}" href="#{image_file}"#{properties} media-type="#{mime}" />\n)
+    end
+  end
+
+  # fonts
+  fontdir = values["fontdir"] || "fonts"
+  if File.exist?(fontdir)
+    font_ext = values["font_ext"]
+    Dir.mkdir("#{@bookdir}/OEBPS/#{fontdir}")
+    font_files = ReVIEW::MakerHelper.copy_images_to_dir(fontdir, "#{@bookdir}/OEBPS/#{fontdir}", :exts=>font_ext)
+    font_files.each do |font_file|
+      dirname = File.dirname(font_file)
+      fname = File.basename(font_file)
+      font_id = "font-"+fname
+      mime = nil
+      fname_pattern = /\.(#{font_ext.join("|")})$/i
+      next unless fname =~ fname_pattern
+      case fname.downcase.match(fname_pattern)[1]
+      when "svg"
+        mime = "image/svg+xml"
+      when "ttf", "otf"
+        mime = "application/vnd.ms-opentype"
+      when "woff"
+        mime = "application/font-woff"
+      else
+        raise "unsupported type #{fname}"
+      end
+      @manifeststr << %Q(<item id="#{font_id}" href="#{font_file}" media-type="#{mime}" />\n)
     end
   end
 
@@ -228,13 +281,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -280,13 +333,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -310,7 +363,7 @@ EOT
 <br />
 <br />
 </p>
-<h2 class="tp-author">#{values["aut"]}</h2>
+<h2 class="tp-author">#{join_names(values["aut"])}</h2>
 EOT
       end
       if values["prt"]
@@ -354,13 +407,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT
@@ -447,28 +500,15 @@ EOT
 
   # hook
   if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
-    fork {
-      exec(values["posthook"], @bookdir, Dir.pwd, yamlfile)
-    }
-    Process.waitall
+    system(values["posthook"], @bookdir, Dir.pwd, yamlfile)
   end
-  
-  # Zip epubファイルの作成。mimetypeは圧縮しないようにする
-  fork {
-    basedir = Dir.pwd
-    Dir.chdir(@bookdir) {|d|
-      exec("zip", "-0X", "#{basedir}/#{bookname}.epub", "mimetype")
-    }
-  }
-  Process.waitall
-  fork {
-    basedir = Dir.pwd
-    Dir.chdir(@bookdir) {|d|
-      exec("zip", "-Xr9D", "#{basedir}/#{bookname}.epub", "META-INF", "OEBPS")
-    }
-  }
-  Process.waitall
 
+  # Zip epubファイルの作成。mimetypeは圧縮しないようにする
+  basedir = Dir.pwd
+  Dir.chdir(@bookdir) {|d|
+    system("zip", "-0X", "#{basedir}/#{bookname}.epub", "mimetype")
+    system("zip", "-Xr9D", "#{basedir}/#{bookname}.epub", "META-INF", "OEBPS")
+  }
   FileUtils.rm_r(tmp) if values["debug"].nil?
 end
 
@@ -743,11 +783,7 @@ def output_chaps_by_file(l, values)
     exit 1
   end
   filename = "#{file_id}.html"
-  fork {
-    STDOUT.reopen("#{@bookdir}/OEBPS/#{filename}")
-    exec("review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l}")
-  }
-  Process.waitall
+  system("#{ReVIEW::MakerHelper.bindir}/review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l} > #{@bookdir}/OEBPS/#{filename}")
   getanchors("#{@bookdir}/OEBPS/#{filename}")
   if @epubversion == 3 && include_mathml?("#{@bookdir}/OEBPS/#{filename}")
     @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" properties="mathml" media-type="application/xhtml+xml" />\n)
@@ -764,6 +800,8 @@ def include_mathml?(filename)
     }
     return false
   }
+  rescue
+    false
 end
 
 def getFigId(filename)
@@ -789,6 +827,14 @@ def getanchors(filename)
   }
 end
 
+def join_names(param)
+  if param.respond_to?(:join)
+    param.join(ReVIEW::I18n.t("names_splitter"))
+  else
+    param
+  end
+end
+
 def make_colophon_page(tmp,bookname,values)
 
   header = <<EOT
@@ -804,13 +850,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     header += <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     header += <<EOT
@@ -850,13 +896,13 @@ EOT
       f.puts <<EOT
   <table>
 EOT
-      f.puts %Q[<tr>\n <th>著　者</th><td>#{values["aut"]}</td>\n</tr>] if values["aut"]
-      f.puts %Q[<tr>\n <th>監　修</th><td>#{values["csl"]}</td>\n</tr>] if values["csl"]
-      f.puts %Q[<tr>\n <th>翻　訳</th><td>#{values["trl"]}</td>\n</tr>] if values["trl"]
-      f.puts %Q[<tr>\n <th>デザイン</th><td>#{values["dsr"]}</td>\n</tr>] if values["dsr"]
-      f.puts %Q[<tr>\n <th>イラスト</th><td>#{values["ill"]}</td>\n</tr>] if values["ill"]
-      f.puts %Q[<tr>\n <th>表　紙</th><td>#{values["cov"]}</td>\n</tr>] if values["cov"]
-      f.puts %Q[<tr>\n <th>編　集</th><td>#{values["edt"]}</td>\n</tr>] if values["edt"]
+      f.puts %Q[<tr>\n <th>著　者</th><td>#{join_names(values["aut"]) + ReVIEW::I18n.t("author_postfix")}</td>\n</tr>] if values["aut"]
+      f.puts %Q[<tr>\n <th>監　修</th><td>#{join_names(values["csl"]) + ReVIEW::I18n.t("supervisor_postfix")}</td>\n</tr>] if values["csl"]
+      f.puts %Q[<tr>\n <th>翻　訳</th><td>#{join_names(values["trl"]) + ReVIEW::I18n.t("translator_postfix")}</td>\n</tr>] if values["trl"]
+      f.puts %Q[<tr>\n <th>デザイン</th><td>#{join_names(values["dsr"])}</td>\n</tr>] if values["dsr"]
+      f.puts %Q[<tr>\n <th>イラスト</th><td>#{join_names(values["ill"])}</td>\n</tr>] if values["ill"]
+      f.puts %Q[<tr>\n <th>表　紙</th><td>#{join_names(values["cov"])}</td>\n</tr>] if values["cov"]
+      f.puts %Q[<tr>\n <th>編　集</th><td>#{join_names(values["edt"])}</td>\n</tr>] if values["edt"]
       f.puts %Q[<tr>\n <th>発行所</th><td>#{values["prt"]}</td>\n</tr>] if values["prt"]
       f.puts <<EOT
    </table>
@@ -885,7 +931,7 @@ def make_part_page(part, filename, values)
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
   <title>#{values["booktitle"]}</title>
 </head>
     EOT
@@ -895,7 +941,7 @@ def make_part_page(part, filename, values)
 <head>
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
   <title>#{values["booktitle"]}</title>
 </head>
     EOT
@@ -937,13 +983,13 @@ EOT
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   else
     f.puts <<EOT
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
-  <meta name="generator" content="ReVIEW EPUB Maker"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
 EOT
   end
     f.puts <<EOT

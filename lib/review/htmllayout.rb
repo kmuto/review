@@ -2,12 +2,34 @@
 require 'erb'
 
 class HTMLLayout
-  def initialize(src, title, template)
-    @body = src
-    @title = title
+  include ERB::Util
+
+  def initialize(params, template)
+    @body = params['body']
+    @title = params['title']
+    @toc = params['toc']
+    @next = params['next']
+    @prev = params['prev']
+    @builder = params['builder']
     @template = template
   end
-  attr_reader :body, :title
+  attr_reader :body, :title, :toc
+
+  def next_chapter
+    if @next.present?
+      "<a href='#{h @next.id}.html'>#{h @builder.compile_inline @next.title}</a>"
+    else
+      ""
+    end
+  end
+
+  def prev_chapter
+    if @prev.present?
+      "<a href='#{h @prev.id}.html'>#{h @builder.compile_inline @prev.title}</a>"
+    else
+      ""
+    end
+  end
 
   def result
     if File.exist?(@template)

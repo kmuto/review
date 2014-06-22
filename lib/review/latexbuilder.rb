@@ -13,6 +13,7 @@
 require 'review/builder'
 require 'review/latexutils'
 require 'review/textutils'
+require 'review/sec_counter'
 
 module ReVIEW
 
@@ -33,12 +34,12 @@ module ReVIEW
     end
 
     def builder_init_file
-      #@index = indexes[:latex_index]
       @blank_needed = false
       @latex_tsize = nil
       @tsize = nil
       @table_caption = nil
       @ol_num = nil
+      @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
 
@@ -74,18 +75,30 @@ module ReVIEW
       6 => 'subparagraph'
     }
 
+    def headline_prefix(level)
+      @sec_counter.inc(level)
+      anchor = @sec_counter.anchor(level)
+      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
+      [prefix, anchor]
+    end
+    private :headline_prefix
+
+
     def headline(level, label, caption)
       buf = ""
+      _, anchor = headline_prefix(level)
       prefix = ""
-      if level > ReVIEW.book.param["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
+      if level > @book.config["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
       end
       buf << macro(HEADLINE[level]+prefix, caption) << "\n"
-      if prefix == "*" && level <= ReVIEW.book.param["toclevel"].to_i
-        buf << "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{caption}}\n" 
+      if prefix == "*" && level <= @book.config["toclevel"].to_i
+        buf << "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{caption}}\n"
       end
       if level == 1
         buf << macro('label', chapter_label) << "\n"
+      else
+        buf << macro('label', sec_label(anchor)) << "\n"
       end
       buf
     rescue
@@ -102,8 +115,15 @@ module ReVIEW
     def column_begin(level, label, caption)
       buf = "\n"
       buf << "\\begin{reviewcolumn}\n"
+      if label
+        buf << "\\hypertarget{#{column_label(label)}}{}\n"
+      else
+        buf << "\\hypertarget{#{column_label(caption)}}{}\n"
+      end
       buf << macro('reviewcolumnhead', nil, caption) << "\n"
-      buf
+      if level <= @book.config["toclevel"].to_i
+        buf << "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{caption}}" << "\n"
+      end
     end
 
     def column_end(level)
@@ -117,7 +137,7 @@ module ReVIEW
         buf << "\\reviewminicolumntitle{caption}}\n\n"
       end
 
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         buf << blocked_lines.join("\n\n") << "\n"
       else
@@ -205,7 +225,7 @@ module ReVIEW
       buf
     end
 
-    def parasep()
+    def parasep
       '\\parasep' + "\n"
     end
 
@@ -213,7 +233,7 @@ module ReVIEW
       latex_block 'quotation', lines
     end
 
-    alias lead read
+    alias_method :lead, :read
 
     def emlist(lines, caption = nil)
       buf = "\n"
@@ -345,15 +365,21 @@ module ReVIEW
     end
     private :existence
 
-    def image_label(id)
-      "image:#{@chapter.id}:#{id}"
+    def image_label(id, chapter=nil)
+      chapter ||= @chapter
+      "image:#{chapter.id}:#{id}"
     end
     private :image_label
 
-    def chapter_label()
+    def chapter_label
       "chap:#{@chapter.id}"
     end
     private :chapter_label
+
+    def sec_label(sec_anchor)
+      "sec:#{sec_anchor}"
+    end
+    private :sec_label
 
     def table_label(id)
       "table:#{@chapter.id}:#{id}"
@@ -364,6 +390,13 @@ module ReVIEW
       "bib:#{id}"
     end
     private :bib_label
+
+    def column_label(id)
+      filename = @chapter.id
+      num = @chapter.column(id).number
+      "column:#{filename}:#{num}"
+    end
+    private :column_label
 
     def indepimage(id, caption=nil, metric=nil)
       buf = ""
@@ -382,7 +415,7 @@ module ReVIEW
       buf
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def table(lines, id = nil, caption = nil)
       buf = ""
@@ -498,7 +531,7 @@ module ReVIEW
       latex_block 'center', lines
     end
 
-    alias centering center
+    alias_method :centering, :center
 
     def flushright(lines)
       latex_block 'flushright', lines
@@ -518,7 +551,7 @@ module ReVIEW
     def latex_block(type, lines)
       buf = "\n"
       buf << macro('begin', type) << "\n"
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         buf << blocked_lines.join("\n\n") << "\n"
       else
@@ -545,7 +578,7 @@ module ReVIEW
       buf = ""
       lines ||= []
       lines.unshift comment unless comment.blank?
-      if ReVIEW.book.param["draft"]
+      if @book.config["draft"]
         str = lines.join("")
         buf << macro('pdfcomment', str) << "\n"
       end
@@ -573,10 +606,11 @@ module ReVIEW
     end
 
     def inline_chapref(id)
-      if ReVIEW.book.param["chapterlink"]
-        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.display_string(id)}}"
+      title = super
+      if @book.config["chapterlink"]
+        "\\hyperref[chap:#{id}]{#{title}}"
       else
-        @chapter.env.chapter_index.display_string(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"
@@ -584,7 +618,7 @@ module ReVIEW
     end
 
     def inline_chap(id)
-      if ReVIEW.book.param["chapterlink"]
+      if @book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.number(id)}}"
       else
         @chapter.env.chapter_index.number(id)
@@ -595,7 +629,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      if ReVIEW.book.param["chapterlink"]
+      if @book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.title(id)}}"
       else
         @chapter.env.chapter_index.title(id)
@@ -619,18 +653,18 @@ module ReVIEW
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}", image_label(id))
+      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}", image_label(id, chapter))
     end
 
     def footnote(id, content)
-      if ReVIEW.book.param["footnotetext"]
+      if @book.config["footnotetext"]
         macro("footnotetext[#{@chapter.footnote(id).number}]",
                    content.strip) + "\n"
       end
     end
 
     def inline_fn(id)
-      if ReVIEW.book.param["footnotetext"]
+      if @book.config["footnotetext"]
         macro("footnotemark[#{@chapter.footnote(id).number}]", "")
       else
         macro('footnote', escape(@chapter.footnote(id).content.strip))
@@ -664,7 +698,7 @@ module ReVIEW
 
     # index
     def inline_idx(str)
-      text(str) + index(str)
+      escape(str) + index(str)
     end
 
     # hidden index??
@@ -717,7 +751,22 @@ module ReVIEW
     end
 
     def inline_hd_chap(chap, id)
-      "「#{chap.headline_index.number(id)} #{escape(chap.headline(id).caption)}」"
+      n = chap.headline_index.number(id)
+      if chap.number and @book.config["secnolevel"] >= n.split('.').size
+        str = "「#{chap.headline_index.number(id)} #{escape(chap.headline(id).caption)}」"
+      else
+        str = "「#{escape(chap.headline(id).caption)}」"
+      end
+      if @book.config["chapterlink"]
+        anchor = n.gsub(/\./, "-")
+        macro('reviewsecref', str, sec_label(anchor))
+      else
+        str
+      end
+    end
+
+    def inline_column(id)
+      macro('reviewcolumnref', "#{@chapter.column(id).caption}", column_label(id))
     end
 
     def inline_raw(str)
@@ -758,8 +807,8 @@ module ReVIEW
     end
 
     def inline_comment(str)
-      if ReVIEW.book.param["draft"]
-        macro('pdfcomment', str)
+      if @book.config["draft"]
+        macro('pdfcomment', escape(str))
       else
         ""
       end
@@ -821,7 +870,7 @@ module ReVIEW
     end
 
     def image_ext
-      "svg"
+      "pdf"
     end
 
     def olnum(num)

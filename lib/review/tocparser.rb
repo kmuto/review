@@ -119,14 +119,14 @@ module ReVIEW
       def add_child(c)
         @children.push c
       end
-      
+
       def each_node(&block)
         @children.each do |c|
           yield c
           c.each(&block)
         end
       end
-      
+
       def each_child(&block)
         @children.each(&block)
       end

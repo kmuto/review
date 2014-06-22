@@ -338,6 +338,8 @@ class ReVIEW::Compiler
       @pos = m.pos
       return m.ans
     end
+    alias_method :to_s, :string
+  end
 
     class RuleInfo
       def initialize(name, rendered)
@@ -528,6 +530,7 @@ require 'review/node'
     definline :hd
     definline :href
     definline :recipe
+    definline :column
 
     definline :abbr
     definline :acronym
@@ -559,6 +562,98 @@ require 'review/node'
     definline :comment
     definline :include
 
+    private
+
+    def do_compile
+      f = LineInput.new(Preprocessor::Strip.new(StringIO.new(@chapter.content)))
+      @strategy.bind self, @chapter, Location.new(@chapter.basename, f)
+      tagged_section_init
+      while f.next?
+        case f.peek
+        when /\A\#@/
+          f.gets # Nothing to do
+        when /\A=+[\[\s\{]/
+          compile_headline f.gets
+        when %r<\A\s+\*>
+          compile_ulist f
+        when %r<\A\s+\d+\.>
+          compile_olist f
+        when %r<\A\s*:\s>
+          compile_dlist f
+        when %r<\A//\}>
+          f.gets
+          error 'block end seen but not opened'
+        when %r<\A//[a-z]+>
+          name, args, lines = read_command(f)
+          syntax = syntax_descriptor(name)
+          unless syntax
+            error "unknown command: //#{name}"
+            compile_unknown_command args, lines
+            next
+          end
+          compile_command syntax, args, lines
+        when %r<\A//>
+          line = f.gets
+          warn "`//' seen but is not valid command: #{line.strip.inspect}"
+          if block_open?(line)
+            warn "skipping block..."
+            read_block(f)
+          end
+        else
+          if f.peek.strip.empty?
+            f.gets
+            next
+          end
+          compile_paragraph f
+        end
+      end
+      close_all_tagged_section
+    end
+
+    def compile_headline(line)
+      @headline_indexs ||= [@chapter.number.to_i - 1]
+      m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
+      level = m[1].size
+      tag = m[2]
+      label = m[3]
+      caption = m[4].strip
+      index = level - 1
+      if tag
+        if tag !~ /\A\//
+          close_current_tagged_section(level)
+          open_tagged_section(tag, level, label, caption)
+        else
+          open_tag = tag[1..-1]
+          prev_tag_info = @tagged_section.pop
+          unless prev_tag_info.first == open_tag
+            raise CompileError, "#{open_tag} is not opened."
+          end
+          close_tagged_section(*prev_tag_info)
+        end
+      else
+        if @headline_indexs.size > (index + 1)
+          @headline_indexs = @headline_indexs[0..index]
+        end
+        @headline_indexs[index] = 0 if @headline_indexs[index].nil?
+        @headline_indexs[index] += 1
+        close_current_tagged_section(level)
+        if ReVIEW.book.config["hdnumberingmode"]
+          caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
+          warn "--hdnumberingmode is deprecated. use --level option."
+        end
+        @strategy.headline level, label, caption
+      end
+    end
+
+    def close_current_tagged_section(level)
+      while @tagged_section.last and @tagged_section.last[1] >= level
+        close_tagged_section(* @tagged_section.pop)
+      end
+    end
+
+    def headline(level, label, caption)
+      @strategy.headline level, label, caption
+    end
 
     def tagged_section_init
       @tagged_section = []

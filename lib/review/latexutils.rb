@@ -43,6 +43,12 @@ module ReVIEW
       '⑧' => '\UTF{2467}',
       '⑨' => '\UTF{2468}',
       '⑩' => '\UTF{2469}',
+      '⑪' => '\UTF{246A}',
+      '⑫' => '\UTF{246B}',
+      '⑬' => '\UTF{246C}',
+      '⑭' => '\UTF{246D}',
+      '⑮' => '\UTF{246E}',
+      '⑯' => '\UTF{246F}',
     }
 
     kanalist = %w{｡ ｢ ｣ ､ ･ ｦ ｧ ｨ ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ ｱ ｲ ｳ ｴ ｵ ｶ ｷ ｸ ｹ ｺ ｻ ｼ ｽ ｾ ｿ ﾀ ﾁ ﾂ ﾃ ﾄ ﾅ ﾆ ﾇ ﾈ ﾉ ﾊ ﾋ ﾌ ﾍ ﾎ ﾏ ﾐ ﾑ ﾒ ﾓ ﾔ ﾕ ﾖ ﾗ ﾘ ﾙ ﾚ ﾛ ﾜ ﾝ ﾞ ﾟ}
@@ -61,7 +67,7 @@ module ReVIEW
       }
     end
 
-    alias escape escape_latex
+    alias_method :escape, :escape_latex
 
     def unescape_latex(str)
       metachars_invert_re = Regexp.new(METACHARS_INVERT.keys.collect{|key|  Regexp.escape(key)}.join('|'))
@@ -69,6 +75,8 @@ module ReVIEW
         METACHARS_INVERT[s] or raise "unknown trans char: #{s}"
       }
     end
+
+    alias_method :unescape, :unescape_latex
 
     def escape_index(str)
       str.gsub(/[@!|"]/) {|s| '"' + s }

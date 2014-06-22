@@ -12,15 +12,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = IDGXMLBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "nolf" => true,
-      "tableopt" => "10",
-      "subdirmode" => nil,
+      "tableopt" => "10"
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -33,7 +32,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    @config["secnolevel"] = 0
     result = @builder.headline(1,"test","this is test.")
     assert_equal %Q|<title id="test" aid:pstyle="h1">this is test.</title><?dtp level="1" section="this is test."?>|, result
   end
@@ -50,7 +49,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     result = @builder.headline(3,"test","this is test.")
     assert_equal %Q|<title id="test" aid:pstyle="h3">1.0.1　this is test.</title><?dtp level="3" section="1.0.1　this is test."?>|, result
   end
@@ -96,17 +95,17 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_in_table_without_cellwidth
-    @param["tableopt"] = nil
+    @config["tableopt"] = nil
     ret = @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
     assert_equal %Q|<table><tbody><tr type="header"><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, ret
-    @param["tableopt"] = 10
+    @config["tableopt"] = 10
   end
 
   def test_inline_in_table_without_header_and_cellwidth
-    @param["tableopt"] = nil
+    @config["tableopt"] = nil
     ret = @builder.table(["<b>1</b>\t<i>2</i>", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
     assert_equal %Q|<table><tbody><tr><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, ret
-    @param["tableopt"] = 10
+    @config["tableopt"] = 10
   end
 
   def test_inline_br
@@ -174,10 +173,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_quote_deprecated
     lines = ["foo","","buz"]
-    ReVIEW.book.param["deprecated-blocklines"] = true
+    ReVIEW.book.config["deprecated-blocklines"] = true
     result = @builder.quote(lines)
-    ReVIEW.book.param["deprecated-blocklines"] = nil
-    assert_equal %Q|<quote>foo\n\nbuz</quote>|, result
+    ReVIEW.book.config["deprecated-blocklines"] = nil
+    assert_equal %Q|<quote>foo\n\nbuz</quote>|, @builder.raw_result
   end
 
   ## XXX block content should be escaped.
@@ -200,9 +199,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_term_deprecated
-    ReVIEW.book.param["deprecated-blocklines"] = true
+    ReVIEW.book.config["deprecated-blocklines"] = true
     result = @builder.term(["test1", "test1.5", "", "test<i>2</i>"])
-    ReVIEW.book.param["deprecated-blocklines"] = nil
+    ReVIEW.book.config["deprecated-blocklines"] = nil
     assert_equal %Q|<term>test1\ntest1.5\n\ntest<i>2</i></term>|, result
   end
 
@@ -233,8 +232,8 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_emlist_listinfo
-    @param["listinfo"] = true
-    result = compile_blockelem("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    @config["listinfo"] = true
+    result = @builder.emlist(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
     assert_equal %Q|<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></list>|, result
   end
 
@@ -264,25 +263,22 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
-    @param["listinfo"] = true
-    ##@builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+    @config["listinfo"] = true
     result = compile_blockelem("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q|<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></codelist>|, result
   end
 
   def test_insn
-    @param["listinfo"] = true
-    ## @builder.insn(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    @config["listinfo"] = true
     result = compile_blockelem("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    @param["listinfo"] = nil
+    @config["listinfo"] = nil
     assert_equal %Q|<insn><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></insn>|, result
   end
 
   def test_box
-    @param["listinfo"] = true
-    ##@builder.box(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
+    @config["listinfo"] = true
     result = compile_blockelem("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    @param["listinfo"] = nil
+    @config["listinfo"] = nil
     assert_equal %Q|<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></box>|, result
   end
 
@@ -307,7 +303,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_image
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -318,7 +314,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -329,7 +325,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_image_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -340,7 +336,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -351,7 +347,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -362,7 +358,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -373,7 +369,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -384,7 +380,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -412,7 +408,7 @@ inside column
 EOS
     expect =<<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">prev column</title><p>inside prev column</p></column><column><title aid:pstyle="column-title">test</title><p>inside column</p></column></doc>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column id="column-1"><title aid:pstyle="column-title">prev column</title><p>inside prev column</p></column><column id="column-2"><title aid:pstyle="column-title">test</title><p>inside column</p></column></doc>
 EOS
     assert_equal expect, column_helper(review)
   end
@@ -427,7 +423,7 @@ inside column
 EOS
     expect =<<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">test</title><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?></doc>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column id="column-1"><title aid:pstyle="column-title">test</title><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?></doc>
 EOS
 
     assert_equal expect, column_helper(review)
@@ -566,46 +562,32 @@ EOS
   end
 
   def test_block_raw0
-    ##@builder.raw("<>!\"\\n& ")
     result = compile_blockelem("//raw[<>!\"\\n& ]\n")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, result
   end
 
   def test_block_raw1
-    result = @builder.raw("|idgxml|<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    result = compile_blockelem("//raw[|idgxml|<>!\"\\n& ]\n")
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, result
   end
 
   def test_block_raw2
-    result = @builder.raw("|idgxml, latex|<>!\"\\n& ")
-    expect =<<-EOS
-<>!\"
-& 
-EOS
+    result = compile_blockelem("//raw[|idgxml, latex|<>!\"\\n& ]\n")
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, result
   end
 
   def test_block_raw3
-    result = @builder.raw("|latex, html|<>!\"\\n& ")
-    expect =<<-EOS
-EOS
+    result = compile_blockelem("//raw[|latex, html|<>!\"\\n& ]\n")
+    expect = %Q()
     assert_equal expect.chomp, result
   end
 
   def test_block_raw4
-    result = @builder.raw("|idgxml <>!\"\\n& ")
-    expect =<<-EOS
-|idgxml <>!\"
-& 
-EOS
+    result = compile_blockelem("//raw[|idgxml <>!\"\\n& ]\n")
+    expect = %Q(|idgxml <>!\"\n& )
     assert_equal expect.chomp, result
   end
 end

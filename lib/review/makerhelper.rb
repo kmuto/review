@@ -1,15 +1,21 @@
 # encoding: utf-8
 #
-# Copyright (c) 2012 Yuto HAYAMIZU
+# Copyright (c) 2012-2014 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
+require 'pathname'
+require 'fileutils'
 
 module ReVIEW
   class MakerHelper
+    # Return review/bin directory
+    def self.bindir
+      Pathname.new("#{Pathname.new(__FILE__).realpath.dirname}/../../bin").realpath
+    end
 
     # Copy image files under from_dir to to_dir recursively
     # ==== Args
@@ -36,7 +42,7 @@ module ReVIEW
           if FileTest.directory?("#{from_dir}/#{fname}")
             image_files += copy_images_to_dir("#{from_dir}/#{fname}", "#{to_dir}/#{fname}", options)
           else
-            Dir.mkdir(to_dir) unless File.exist?(to_dir)
+            FileUtils.mkdir_p(to_dir) unless File.exist?(to_dir)
 
             is_converted = false
             (options[:convert] || {}).each do |orig_type, conv_type|
