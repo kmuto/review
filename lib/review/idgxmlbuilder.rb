@@ -700,13 +700,13 @@ module ReVIEW
     def compile_kw(word, alt)
       '<keyword>' +
         if alt
-        then escape_html("#{word}（#{alt.strip}）")
-        else escape_html(word)
+        then ("#{word}（#{alt.strip}）")
+        else (word)
         end +
       '</keyword>' +
-        %Q[<index value="#{escape_html(word)}" />] +
+        %Q[<index value="#{word}" />] +
         if alt
-          alt.split(/\s*,\s*/).collect! {|e| %Q[<index value="#{escape_html(e.strip)}" />] }.join
+          alt.split(/\s*,\s*/).collect! {|e| %Q[<index value="#{(e.strip)}" />] }.join
         else
           ""
         end
@@ -813,7 +813,7 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<ref idref='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
+      %Q[<ref idref='#{idref}'>「●●　#{idref}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
     alias_method :inline_ref, :inline_labelref
@@ -963,7 +963,7 @@ module ReVIEW
       buf = ""
       buf << "<#{type}>"
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
-      buf << "<title aid:pstyle='#{style}'>#{compile_inline(caption)}</title>" + @lf unless caption.nil?
+      buf << "<title aid:pstyle='#{style}'>#{(caption)}</title>" + @lf unless caption.nil?
       if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         buf << "#{blocked_lines.join}</#{type}>" << @lf

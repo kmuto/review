@@ -176,7 +176,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     ReVIEW.book.config["deprecated-blocklines"] = true
     result = @builder.quote(lines)
     ReVIEW.book.config["deprecated-blocklines"] = nil
-    assert_equal %Q|<quote>foo\n\nbuz</quote>|, @builder.raw_result
+    assert_equal %Q|<quote>foo\n\nbuz</quote>|, result
   end
 
   ## XXX block content should be escaped.

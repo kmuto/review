@@ -627,7 +627,7 @@ QUOTE
 
     def image_image(id, caption, metric)
       metrics = parse_metric("html", metric)
-      buf = %Q[<div id="#{normalize_id(id)}" class="image">]
+      buf = %Q[<div id="#{normalize_id(id)}" class="image">\n]
       buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(caption)}"#{metrics} />\n]
       buf << image_header(id, caption)
       buf << %Q[</div>\n]
@@ -775,7 +775,7 @@ QUOTE
     end
 
     def label(id)
-      %Q(<a id="#{normalize_id(id)}"></a>)
+      %Q(<a id="#{normalize_id(id)}"></a>\n)
     end
 
     def linebreak
@@ -800,7 +800,7 @@ QUOTE
     end
 
     def inline_labelref(idref)
-      %Q[<a target='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</a>]
+      %Q[<a target='#{(idref)}'>「●●　#{(idref)}」</a>]
     end
 
     alias_method :inline_ref, :inline_labelref
@@ -869,7 +869,7 @@ QUOTE
     end
 
     def inline_b(str)
-      %Q(<b>#{escape_html(str)}</b>)
+      %Q(<b>#{str}</b>)
     end
 
     def inline_ami(str)
@@ -947,7 +947,7 @@ QUOTE
       buf = %Q(<a id="bib-#{normalize_id(id)}">)
       buf << "[#{@chapter.bibpaper(id).number}]"
       buf << %Q(</a>)
-      buf << " #{compile_inline(caption)}"
+      buf << " #{(caption)}"
     end
 
     def bibpaper_bibpaper(id, caption, lines)

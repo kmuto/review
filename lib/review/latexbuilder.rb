@@ -708,7 +708,7 @@ module ReVIEW
 
     # bold
     def inline_b(str)
-      macro('textbf', escape(str))
+      macro('textbf', str)
     end
 
     # line break
@@ -852,7 +852,7 @@ module ReVIEW
     def compile_href(url, label)
       if /\A[a-z]+:/ =~ url
         if label
-          macro("href", escape_url(url), escape(label))
+          macro("href", escape_url(url), label)
         else
           macro("url", escape_url(url))
         end

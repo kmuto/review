@@ -144,6 +144,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|abc\\textbf{def}|, ret
   end
 
+  def test_escape
+    ret = compile_inline("test \\ test2")
+    assert_equal %Q|test \\reviewbackslash{} test2|, ret
+  end
+
   def test_inline_b_and_escape
     ret = compile_inline("test @<b>{inline<&;\\ test} test2")
     assert_equal %Q|test \\textbf{inline\\textless{}\\&;\\reviewbackslash{} test} test2|, ret
