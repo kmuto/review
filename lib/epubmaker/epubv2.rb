@@ -455,6 +455,12 @@ EOT
           find_jump = true if (item.level - level) > 1
           # deeper
           (level + 1).upto(item.level) do |n|
+            if e.size == 0
+              # empty span for epubcheck
+              es = e.add_element("span") 
+              es.add_text(REXML::Text.new("　", false, nil, true))
+            end
+
             e2 = e.add_element(type, {"class" => "toc-h#{n}"})
             e3 = e2.add_element("li")
             e = e3
