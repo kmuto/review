@@ -250,7 +250,8 @@ module ReVIEW
 
       def format_appendix(num)
         return num if num < 1 || num > 27
-        case @config["appendix_format"].downcase.strip
+        type = @config["appendix_format"].nil? ? "arabic" : @config["appendix_format"].downcase.strip
+        case type
         when "roman"
           %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII][num]
         when "alphabet", "alpha"
