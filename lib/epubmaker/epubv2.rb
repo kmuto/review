@@ -434,19 +434,30 @@ EOT
       require 'rexml/document'
       level = 1
       find_jump = nil
+      has_part = nil
+      toclevel = @producer.params["toclevel"].to_i
 
       # check part existance
       @producer.contents.each do |item|
-        if item.notoc.nil? && item.level == 0
-          level = 0
+        if item.notoc.nil? && item.chaptype == "part"
+          has_part = true
+          break
         end
+      end
+
+      if !has_part.nil?
+        @producer.contents.each do |item|
+          item.level += 1 if item.chaptype == "part" || item.chaptype == "body"
+          item.notoc = true if (item.chaptype == "pre" || item.chaptype == "post") && !item.level.nil? && (item.level + 1 == toclevel)
+        end
+        toclevel += 1
       end
 
       doc = REXML::Document.new(%Q[<#{type} class="toc-h#{level}"><li /></#{type}>])
 
       e = doc.root.elements[1] # first <li/>
       @producer.contents.each do |item|
-        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
+        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > toclevel
 
         if item.level == level
           e2 = e.parent.add_element("li")
@@ -455,6 +466,12 @@ EOT
           find_jump = true if (item.level - level) > 1
           # deeper
           (level + 1).upto(item.level) do |n|
+            if e.size == 0
+              # empty span for epubcheck
+              es = e.add_element("span") 
+              es.add_text(REXML::Text.new("　", false, nil, true))
+            end
+
             e2 = e.add_element(type, {"class" => "toc-h#{n}"})
             e3 = e2.add_element("li")
             e = e3

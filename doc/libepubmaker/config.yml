@@ -80,12 +80,14 @@ stylesheet: ["stylesheet.css"]
 # 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
 # flattocindent: true
 
+# 採番の設定。採番させたくない見出しには「==[nonum]」のようにnonum指定をする
+# 
 # 本文でセクション番号を表示する見出しレベル
 # secnolevel: 2
 # 前付でセクション番号を表示する見出しレベル
 # pre_secnolevel: 0
-# 後付でセクション番号を表示する見出しレベル
-# post_secnolevel: 0
+# 後付(付録)でセクション番号を表示する見出しレベル
+# post_secnolevel: 1
 # 部番号を表示する見出しレベル
 # part_secnolevel: 1
 
