@@ -85,7 +85,7 @@ module ReVIEW
         elsif chapter.on_PREDEF?
           "#{chapter.number}"
         elsif chapter.on_POSTDEF?
-          "#{I18n.t("appendix", chapter.number)}"
+          "#{I18n.t("appendix", ReVIEW.book.format_appendix(chapter.number))}"
         end
       rescue # part
         "#{I18n.t("part", chapter.number)}"

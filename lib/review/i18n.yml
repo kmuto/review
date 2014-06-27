@@ -6,7 +6,7 @@ ja:
   part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
-  appendix: 付録%d
+  appendix: 付録%s
   numberless_image: "図:"
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
@@ -48,7 +48,7 @@ zh_TW:
   part: 第%d部份
   chapter: 第%d章
   chapter_postfix: "　"
-  appendix: 附錄%d
+  appendix: 附錄%s
   numberless_image: "圖:"
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
