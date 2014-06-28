@@ -78,15 +78,16 @@ module ReVIEW
             type = @book.config["appendix_format"].downcase.strip
           end
 
-          case type
-            when "roman"
-              return ROMAN[@number]
-            when "alphabet", "alpha"
-              return ALPHA[@number]
-            else
-              # nil, "arabic", etc...
-              return "#{@number}"
-          end
+          appendix = case type
+                       when "roman"
+                         ROMAN[@number]
+                       when "alphabet", "alpha"
+                         ALPHA[@number]
+                       else
+                         # nil, "arabic", etc...
+                         "#{@number}"
+                     end
+          return "#{I18n.t("appendix", appendix)}"
         end
 
         "#{I18n.t("chapter", @number)}"

@@ -46,7 +46,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>1　this is test.</h1>\n|, @builder.raw_result
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録1　this is test.</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level1_postdef_roman
@@ -57,7 +57,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>I　this is test.</h1>\n|, @builder.raw_result
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録I　this is test.</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level1_postdef_alpha
@@ -68,7 +68,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>A　this is test.</h1>\n|, @builder.raw_result
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録A　this is test.</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level1_without_secno
