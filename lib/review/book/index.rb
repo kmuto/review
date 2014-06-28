@@ -80,13 +80,7 @@ module ReVIEW
 
       def number(id)
         chapter = @index.fetch(id)
-        if chapter.on_CHAPS?
-          "#{I18n.t("chapter", chapter.number)}"
-        elsif chapter.on_PREDEF?
-          "#{chapter.number}"
-        elsif chapter.on_POSTDEF?
-          "#{I18n.t("appendix", chapter.number)}"
-        end
+        chapter.format_number
       rescue # part
         "#{I18n.t("part", chapter.number)}"
       end
