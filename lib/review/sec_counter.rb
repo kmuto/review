@@ -47,23 +47,22 @@ module ReVIEW
 
       if level == 1
         if secnolevel >= 1
-          num = @chapter.number
-          placeholder = if @chapter.is_a? ReVIEW::Book::Part
-                          'part'
-                        elsif @chapter.on_POSTDEF?
-                          'appendix'
-                        else
-                          'chapter'
-                        end
-
-          num = ReVIEW.book.format_appendix(num) if placeholder == "appendix"
-          return "#{I18n.t(placeholder, num)}#{I18n.t("chapter_postfix")}"
+          if @chapter.is_a? ReVIEW::Book::Part
+            num = @chapter.number
+            return "#{I18n.t('part', num)}#{I18n.t("chapter_postfix")}"
+          else
+            return "#{@chapter.format_number}#{I18n.t("chapter_postfix")}"
+          end
         end
       else
         if secnolevel >= level
-          prefix = @chapter.number.to_s
-          prefix = ReVIEW.book.format_appendix(@chapter.number).to_s if @chapter.on_POSTDEF?
-          0.upto(level-2) do |i|
+          if @chapter.on_POSTDEF?
+            prefix = @chapter.format_number
+          else
+            prefix = @chapter.number.to_s
+          end
+
+          0.upto(level - 2) do |i|
             prefix << ".#{@counter[i]}"
           end
           prefix << I18n.t("chapter_postfix")

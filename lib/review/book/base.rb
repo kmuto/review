@@ -248,20 +248,6 @@ module ReVIEW
         @basedir
       end
 
-      def format_appendix(num)
-        return num if num < 1 || num > 27
-        type = @config["appendix_format"].nil? ? "arabic" : @config["appendix_format"].downcase.strip
-        case type
-        when "roman"
-          %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII][num]
-        when "alphabet", "alpha"
-          %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z][num]
-        else
-          # nil, "arabic", etc...
-          num
-        end
-      end
-
       private
 
       def read_parts
