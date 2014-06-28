@@ -260,12 +260,15 @@ EOT
 
     level = @params["secnolevel"]
 
-    if !ispart.nil?
-      level = @params["part_secnolevel"]
-    else
-      level = @params["pre_secnolevel"] if chap.on_PREDEF?
-      level = @params["post_secnolevel"] if chap.on_POSTDEF?
-    end
+# TODO: It would be nice if we can modify level in PART, PREDEF, or POSTDEF.
+#        But we have to care about section number reference (@<hd>) also.
+#
+#    if !ispart.nil?
+#      level = @params["part_secnolevel"]
+#    else
+#      level = @params["pre_secnolevel"] if chap.on_PREDEF?
+#      level = @params["post_secnolevel"] if chap.on_POSTDEF?
+#    end
 
     stylesheet = ""
     if @params["stylesheet"].size > 0
