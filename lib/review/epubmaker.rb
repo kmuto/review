@@ -37,10 +37,12 @@ module ReVIEW
   def produce(yamlfile, bookname=nil)
     load_yaml(yamlfile)
     bookname = @params["bookname"] if bookname.nil?
+    booktmpname = "#{bookname}-epub"
+
     log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
     File.unlink("#{bookname}.epub") if File.exist?("#{bookname}.epub")
-    FileUtils.rm_rf(bookname) if @params["debug"] && File.exist?(bookname)
+    FileUtils.rm_rf(booktmpname) if @params["debug"] && File.exist?(booktmpname)
 
     Dir.mktmpdir(bookname, Dir.pwd) do |basetmpdir|
       log("Created first temporary directory as #{basetmpdir}.")
@@ -81,8 +83,8 @@ module ReVIEW
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
       @epub.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
-      epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
-      Dir.mkdir(bookname) unless @params["debug"].nil?
+      epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{booktmpname}"
+      Dir.mkdir(booktmpname) unless @params["debug"].nil?
       log("Call ePUB producer.")
       @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
       log("Finished.")
