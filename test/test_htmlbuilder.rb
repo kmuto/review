@@ -49,6 +49,16 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<h1 id="test"><a id="h1"></a>付録1　this is test.</h1>\n|, @builder.raw_result
   end
 
+  def test_headline_level2_postdef
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(2,"test","this is test.")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, @builder.raw_result
+  end
+
   def test_headline_level1_postdef_roman
     @chapter.book.config["appendix_format"] = "roman"
     @chapter.instance_eval do
@@ -60,6 +70,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<h1 id="test"><a id="h1"></a>付録I　this is test.</h1>\n|, @builder.raw_result
   end
 
+  def test_headline_level2_postdef_roman
+    @chapter.book.config["appendix_format"] = "roman"
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(2,"test","this is test.")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>I.1　this is test.</h2>\n|, @builder.raw_result
+  end
+
   def test_headline_level1_postdef_alpha
     @chapter.book.config["appendix_format"] = "alpha"
     @chapter.instance_eval do
@@ -69,6 +90,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|<h1 id="test"><a id="h1"></a>付録A　this is test.</h1>\n|, @builder.raw_result
+  end
+
+  def test_headline_level2_postdef_alpha
+    @chapter.book.config["appendix_format"] = "alpha"
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(2,"test","this is test.")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>A.1　this is test.</h2>\n|, @builder.raw_result
   end
 
   def test_headline_level1_without_secno

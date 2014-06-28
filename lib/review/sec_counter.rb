@@ -56,12 +56,7 @@ module ReVIEW
         end
       else
         if secnolevel >= level
-          if @chapter.on_POSTDEF?
-            prefix = @chapter.format_number
-          else
-            prefix = @chapter.number.to_s
-          end
-
+          prefix = @chapter.format_number(false)
           0.upto(level - 2) do |i|
             prefix << ".#{@counter[i]}"
           end

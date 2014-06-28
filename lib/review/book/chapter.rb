@@ -64,7 +64,7 @@ module ReVIEW
         "\#<#{self.class} #{@number} #{@path}>"
       end
 
-      def format_number
+      def format_number(heading = true)
         if on_PREDEF?
           return "#{@number}"
         end
@@ -87,10 +87,19 @@ module ReVIEW
                          # nil, "arabic", etc...
                          "#{@number}"
                      end
-          return "#{I18n.t("appendix", appendix)}"
+
+          if heading
+            return "#{I18n.t("appendix", appendix)}"
+          else
+            return "#{appendix}"
+          end
         end
 
-        "#{I18n.t("chapter", @number)}"
+        if heading
+          "#{I18n.t("chapter", @number)}"
+        else
+          "#{@number}"
+        end
       end
 
       def on_CHAPS?
