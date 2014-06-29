@@ -1,3 +1,12 @@
+Sun Jun 29 10:40:02 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* Now review-epubmaker-ng becomes review-epubmaker.
+	  Previous review-epubmaker is renamed to review-epubmaker-legacy.
+	  We believe new review-epubmaker has a compatibility with
+	  previous version, but please inform us if you meet a different
+	  behavior. See doc/libepubmaker/config.yml for details of
+	  configurations.
+
 Fri Jun 27 22:49:17 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/epubmaker/epubv2.rb: insert dummy <span> element with
