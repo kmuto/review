@@ -44,7 +44,8 @@ module ReVIEW
     File.unlink("#{bookname}.epub") if File.exist?("#{bookname}.epub")
     FileUtils.rm_rf(booktmpname) if @params["debug"] && File.exist?(booktmpname)
 
-    Dir.mktmpdir(bookname, Dir.pwd) do |basetmpdir|
+    basetmpdir = Dir.mktmpdir("#{bookname}-", Dir.pwd)
+    begin
       log("Created first temporary directory as #{basetmpdir}.")
 
       log("Call hook_beforeprocess. (#{@params["hook_beforeprocess"]})")
@@ -88,7 +89,8 @@ module ReVIEW
       log("Call ePUB producer.")
       @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
       log("Finished.")
-
+    ensure
+      FileUtils.remove_entry_secure basetmpdir if @params["debug"].nil?
     end
   end
 
