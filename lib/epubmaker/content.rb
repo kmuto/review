@@ -28,6 +28,8 @@ module EPUBMaker
     attr_accessor :notoc
     # Properties (EPUB3)
     attr_accessor :properties
+    # Chapter type (pre/post/part/nil(body))
+    attr_accessor :chaptype
 
     # :call-seq:
     #    initialize(file, id, media, title, level, notoc)
@@ -35,7 +37,7 @@ module EPUBMaker
     # Construct Content object by passing a sequence of parameters or hash.
     # Keys of +hash+ relate with each parameters.
     # +file+ (or +hash+["file"]) is required. Others are optional.
-    def initialize(fileorhash, id=nil, media=nil, title=nil, level=nil, notoc=nil, properties=nil)
+    def initialize(fileorhash, id=nil, media=nil, title=nil, level=nil, notoc=nil, properties=nil, chaptype=nil)
       if fileorhash.instance_of?(Hash)
         @id = fileorhash["id"]
         @file = fileorhash["file"]
@@ -44,6 +46,7 @@ module EPUBMaker
         @level = fileorhash["level"]
         @notoc = fileorhash["notoc"]
         @properties = fileorhash["properties"] || []
+        @chaptype = fileorhash["chaptype"]
       else
         @file = fileorhash
         @id = id
@@ -52,6 +55,7 @@ module EPUBMaker
         @level = level
         @notoc = notoc
         @properties = properties || []
+        @chaptype = chaptype
       end
       complement
     end

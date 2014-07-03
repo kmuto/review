@@ -80,13 +80,20 @@ stylesheet: ["stylesheet.css"]
 # 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
 # flattocindent: true
 
+# 採番の設定。採番させたくない見出しには「==[nonum]」のようにnonum指定をする
+# 
 # 本文でセクション番号を表示する見出しレベル
 # secnolevel: 2
-# 前付でセクション番号を表示する見出しレベル
+
+# 付録の連番のスタイル。null(アラビア数字1〜。デフォルト)、alpha(英字A〜)、roman(ローマ数字I〜)
+# appendix_format: null
+
+# 以下のsecnolevelはまだ未実装。
+# 前付でセクション番号を表示する見出しレベル(未実装)
 # pre_secnolevel: 0
-# 後付でセクション番号を表示する見出しレベル
-# post_secnolevel: 0
-# 部番号を表示する見出しレベル
+# 後付(付録)でセクション番号を表示する見出しレベル(未実装)
+# post_secnolevel: 1
+# 部番号を表示する見出しレベル(未実装)
 # part_secnolevel: 1
 
 # NCX目次の見出しレベルごとの飾り(配列で設定)。EPUB3ではNCXは作られない

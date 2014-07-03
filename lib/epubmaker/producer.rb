@@ -197,7 +197,7 @@ module EPUBMaker
         "htmlversion" => 4,
         "secnolevel" => 2,
         "pre_secnolevel" => 0,
-        "post_secnolevel" => 0,
+        "post_secnolevel" => 1,
         "part_secnolevel" => 1,
         "titlepage" => nil,
         "titlefile" => nil,

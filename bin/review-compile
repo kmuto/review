@@ -157,6 +157,7 @@ def _main
 
       begin
         ReVIEW::Book::Chapter.intern_pathes(ARGV).each do |chap|
+          chap.book.config = config
           result = compiler.compile(chap)
           if output_filename
             write output_filename, result

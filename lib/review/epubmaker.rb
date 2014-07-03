@@ -37,12 +37,15 @@ module ReVIEW
   def produce(yamlfile, bookname=nil)
     load_yaml(yamlfile)
     bookname = @params["bookname"] if bookname.nil?
+    booktmpname = "#{bookname}-epub"
+
     log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
     File.unlink("#{bookname}.epub") if File.exist?("#{bookname}.epub")
-    FileUtils.rm_rf(bookname) if @params["debug"] && File.exist?(bookname)
+    FileUtils.rm_rf(booktmpname) if @params["debug"] && File.exist?(booktmpname)
 
-    Dir.mktmpdir(bookname, Dir.pwd) do |basetmpdir|
+    basetmpdir = Dir.mktmpdir("#{bookname}-", Dir.pwd)
+    begin
       log("Created first temporary directory as #{basetmpdir}.")
 
       log("Call hook_beforeprocess. (#{@params["hook_beforeprocess"]})")
@@ -81,12 +84,13 @@ module ReVIEW
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
       @epub.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
-      epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{bookname}"
-      Dir.mkdir(bookname) unless @params["debug"].nil?
+      epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{booktmpname}"
+      Dir.mkdir(booktmpname) unless @params["debug"].nil?
       log("Call ePUB producer.")
       @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
       log("Finished.")
-
+    ensure
+      FileUtils.remove_entry_secure basetmpdir if @params["debug"].nil?
     end
   end
 
@@ -191,7 +195,7 @@ module ReVIEW
           build_part(part, basetmpdir, htmlfile)
           title = ReVIEW::I18n.t("part", part.number)
           title += ReVIEW::I18n.t("chapter_postfix") + part.name.strip if part.name.strip.present?
-          write_tochtmltxt(basetmpdir, "0\t#{htmlfile}\t#{title}")
+          write_tochtmltxt(basetmpdir, "0\t#{htmlfile}\t#{title}\tchaptype=part")
           write_buildlogtxt(basetmpdir, htmlfile, "")
         end
       end
@@ -226,6 +230,12 @@ EOT
 
   def build_chap(chap, base_path, basetmpdir, yamlfile, ispart=nil)
     filename = ""
+
+    chaptype = "body"
+    chaptype = "part" unless ispart.nil?
+    chaptype = "pre" if chap.on_PREDEF?
+    chaptype = "post" if chap.on_POSTDEF?
+
     if !ispart.nil?
       filename = chap.path
     else
@@ -252,12 +262,15 @@ EOT
 
     level = @params["secnolevel"]
 
-    if !ispart.nil?
-      level = @params["part_secnolevel"]
-    else
-      level = @params["pre_secnolevel"] if chap.on_PREDEF?
-      level = @params["post_secnolevel"] if chap.on_POSTDEF?
-    end
+# TODO: It would be nice if we can modify level in PART, PREDEF, or POSTDEF.
+#        But we have to care about section number reference (@<hd>) also.
+#
+#    if !ispart.nil?
+#      level = @params["part_secnolevel"]
+#    else
+#      level = @params["pre_secnolevel"] if chap.on_PREDEF?
+#      level = @params["post_secnolevel"] if chap.on_POSTDEF?
+#    end
 
     stylesheet = ""
     if @params["stylesheet"].size > 0
@@ -266,10 +279,10 @@ EOT
 
     system("#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
 
-    write_info_body(basetmpdir, id, htmlfile, ispart)
+    write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
   end
 
-  def write_info_body(basetmpdir, id, filename, ispart=nil)
+  def write_info_body(basetmpdir, id, filename, ispart=nil, chaptype=nil)
     headlines = []
     # FIXME:nonumを修正する必要あり
     Document.parse_stream(File.new("#{basetmpdir}/#{filename}"), ReVIEWHeaderListener.new(headlines))
@@ -277,9 +290,9 @@ EOT
     headlines.each do |headline|
       headline["level"] = 0 if !ispart.nil? && headline["level"] == 1
       if first.nil?
-        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}")
+        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}\tchaptype=#{chaptype}")
       else
-        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true")
+        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true,chaptype=#{chaptype}")
         first = nil
       end
     end
@@ -290,6 +303,7 @@ EOT
       f.each_line do |l|
         force_include = nil
         customid = nil
+        chaptype = nil
         level, file, title, custom = l.chomp.split("\t")
         unless custom.nil?
           # custom setting
@@ -301,6 +315,8 @@ EOT
               customid = v
             when "force_include"
               force_include = true
+            when "chaptype"
+              chaptype = v
             end
           end
         end
@@ -308,9 +324,9 @@ EOT
         log("Push #{file} to ePUB contents.")
 
         if customid.nil?
-          @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title))
+          @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype))
         else
-          @epub.contents.push(Content.new("id" => customid, "file" => file, "level" => level.to_i, "title" => title))
+          @epub.contents.push(Content.new("id" => customid, "file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype))
         end
       end
     end
@@ -334,17 +350,17 @@ EOT
       else
         FileUtils.cp(@params["titlefile"], "#{basetmpdir}/titlepage.#{@params["htmlext"]}")
       end
-      write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@epub.res.v("titlepagetitle")}")
+      write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@epub.res.v("titlepagetitle")}\tchaptype=pre")
     end
 
     if !@params["originaltitlefile"].nil? && File.exist?(@params["originaltitlefile"])
       FileUtils.cp(@params["originaltitlefile"], "#{basetmpdir}/#{File.basename(@params["originaltitlefile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["originaltitlefile"])}\t#{@epub.res.v("originaltitle")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["originaltitlefile"])}\t#{@epub.res.v("originaltitle")}\tchaptype=pre")
     end
 
     if !@params["creditfile"].nil? && File.exist?(@params["creditfile"])
       FileUtils.cp(@params["creditfile"], "#{basetmpdir}/#{File.basename(@params["creditfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@epub.res.v("credittitle")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@epub.res.v("credittitle")}\tchaptype=pre")
     end
   end
 
@@ -377,12 +393,12 @@ EOT
   def copy_backmatter(basetmpdir)
     if @params["profile"]
       FileUtils.cp(@params["profile"], "#{basetmpdir}/#{File.basename(@params["profile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@epub.res.v("profiletitle")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@epub.res.v("profiletitle")}\tchaptype=post")
     end
 
     if @params["advfile"]
       FileUtils.cp(@params["advfile"], "#{basetmpdir}/#{File.basename(@params["advfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["advfile"])}\t#{@epub.res.v("advtitle")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["advfile"])}\t#{@epub.res.v("advtitle")}\tchaptype=post")
     end
 
     if @params["colophon"]
@@ -391,12 +407,12 @@ EOT
       else
         File.open("#{basetmpdir}/colophon.#{@params["htmlext"]}", "w") {|f| @epub.colophon(f) }
       end
-      write_tochtmltxt(basetmpdir, "1\tcolophon.#{@params["htmlext"]}\t#{@epub.res.v("colophontitle")}")
+      write_tochtmltxt(basetmpdir, "1\tcolophon.#{@params["htmlext"]}\t#{@epub.res.v("colophontitle")}\tchaptype=post")
     end
 
     if @params["backcover"]
       FileUtils.cp(@params["backcover"], "#{basetmpdir}/#{File.basename(@params["backcover"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["backcover"])}\t#{@epub.res.v("backcovertitle")}")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["backcover"])}\t#{@epub.res.v("backcovertitle")}\tchaptype=post")
     end
   end
 
