@@ -11,13 +11,12 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = TOPBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
-      "subdirmode" => nil,
+      "outencoding" => "UTF-8"
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(nil, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -37,7 +36,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    @config["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|■H1■this is test.\n|, @builder.raw_result
   end
@@ -53,7 +52,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|■H3■1.0.1　this is test.\n|, @builder.raw_result
   end
@@ -186,7 +185,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_image
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -197,7 +196,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -236,45 +235,61 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw1
     @builder.raw("|top|<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw2
     @builder.raw("|top, latex|<>!\"\\n& ")
-    expect =<<-EOS
-<>!\"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw3
     @builder.raw("|latex, idgxml|<>!\"\\n& ")
-    expect =<<-EOS
-EOS
+    expect = ''
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw4
     @builder.raw("|top <>!\"\\n& ")
-    expect =<<-EOS
-|top <>!\"
-& 
-EOS
+    expect = %Q(|top <>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
+  end
+
+  def column_helper(review)
+    chap_singleton = class << @chapter; self; end
+    chap_singleton.send(:define_method, :content) { review }
+    @compiler.compile(@chapter)
+  end
+
+  def test_column_ref
+    review =<<-EOS
+===[column]{foo} test
+
+inside column
+
+=== next level
+
+this is @<column>{foo}.
+EOS
+    expect =<<-EOS
+◆→開始:コラム←◆
+■test
+inside column
+◆→終了:コラム←◆
+
+■H3■next level
+this is test.
+EOS
+
+    assert_equal expect, column_helper(review)
   end
 
 end

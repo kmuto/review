@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = content.rb -- Content object for EPUBMaker.
 #
-# Copyright (c) 2010-2013 Kenshi Muto
+# Copyright (c) 2010-2014 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -26,6 +26,10 @@ module EPUBMaker
     attr_accessor :level
     # Show in TOC? nil:No.
     attr_accessor :notoc
+    # Properties (EPUB3)
+    attr_accessor :properties
+    # Chapter type (pre/post/part/nil(body))
+    attr_accessor :chaptype
 
     # :call-seq:
     #    initialize(file, id, media, title, level, notoc)
@@ -33,7 +37,7 @@ module EPUBMaker
     # Construct Content object by passing a sequence of parameters or hash.
     # Keys of +hash+ relate with each parameters.
     # +file+ (or +hash+["file"]) is required. Others are optional.
-    def initialize(fileorhash, id=nil, media=nil, title=nil, level=nil, notoc=nil)
+    def initialize(fileorhash, id=nil, media=nil, title=nil, level=nil, notoc=nil, properties=nil, chaptype=nil)
       if fileorhash.instance_of?(Hash)
         @id = fileorhash["id"]
         @file = fileorhash["file"]
@@ -41,6 +45,8 @@ module EPUBMaker
         @title = fileorhash["title"]
         @level = fileorhash["level"]
         @notoc = fileorhash["notoc"]
+        @properties = fileorhash["properties"] || []
+        @chaptype = fileorhash["chaptype"]
       else
         @file = fileorhash
         @id = id
@@ -48,6 +54,8 @@ module EPUBMaker
         @title = title
         @level = level
         @notoc = notoc
+        @properties = properties || []
+        @chaptype = chaptype
       end
       complement
     end
@@ -73,8 +81,9 @@ module EPUBMaker
       @media = "image/jpeg" if @media == "jpg" || @media == "jpeg" || @media == "image/jpg"
       @media = "image/png" if @media == "png"
       @media = "image/gif" if @media == "gif"
-      @media = "image/svg" if @media == "svg"
       @media = "image/svg+xml" if @media == "svg" || @media == "image/svg"
+      @media = "application/vnd.ms-opentype" if @media == "ttf" || @media == "otf"
+      @media = "application/font-woff" if @media == "woff"
 
       if @id.nil? || @file.nil? || @media.nil?
         raise "Type error: #{id}, #{file}, #{media}, #{title}, #{notoc}"

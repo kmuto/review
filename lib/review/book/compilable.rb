@@ -32,16 +32,19 @@ module ReVIEW
       end
 
       def name
+        return nil unless @name
         File.basename(@name, '.*')
       end
 
-      alias id name
+      alias_method :id, :name
 
       def title
-        @title = ""
+        return @title if @title
+
+        @title = ''
         open {|f|
           f.each_line {|l|
-            l = convert_inencoding(l, ReVIEW.book.param["inencoding"])
+            l = convert_inencoding(l, book.config["inencoding"])
             if l =~ /\A=+/
               @title = l.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
               break
@@ -68,7 +71,7 @@ module ReVIEW
 
       def content
         @content = convert_inencoding(File.read(path()),
-                                      ReVIEW.book.param["inencoding"])
+                                      book.config["inencoding"])
       rescue
         @content
       end
@@ -156,6 +159,22 @@ module ReVIEW
 
       def headline_index
         @headline_index ||= HeadlineIndex.parse(lines(), self)
+      end
+
+      def column(id)
+        column_index()[id]
+      end
+
+      def column_index
+        @column_index ||= ColumnIndex.parse(lines())
+      end
+
+      def next_chapter
+        book.next_chapter(self)
+      end
+
+      def prev_chapter
+        book.prev_chapter(self)
       end
     end
   end

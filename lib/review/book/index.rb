@@ -11,6 +11,7 @@
 
 require 'review/extentions'
 require 'review/exception'
+require 'review/book/image_finder'
 
 module ReVIEW
   module Book
@@ -49,12 +50,13 @@ module ReVIEW
           warn "warning: duplicate ID: #{i.id} (#{i})" unless @index[i.id].nil?
           @index[i.id] = i
         end
+        @image_finder = nil
       end
 
       def [](id)
         @index.fetch(id)
       rescue
-        raise KeyError
+        raise KeyError, "not found key '#{id}' for #{self.class}"
       end
 
       def number(id)
@@ -78,17 +80,15 @@ module ReVIEW
 
       def number(id)
         chapter = @index.fetch(id)
-        if chapter.on_CHAPS?
-          "#{I18n.t("chapter", chapter.number)}"
-        elsif chapter.on_PREDEF?
-          "#{chapter.number}"
-        elsif chapter.on_POSTDEF?
-          "#{I18n.t("appendix", chapter.number)}"
-        end
+        chapter.format_number
+      rescue # part
+        "#{I18n.t("part", chapter.number)}"
       end
 
       def title(id)
         @index.fetch(id).title
+      rescue # non-file part
+        @index.fetch(id).name
       end
 
       def display_string(id)
@@ -132,10 +132,11 @@ module ReVIEW
 
     class ImageIndex < Index
       class Item
+
         def initialize(id, number)
           @id = id
           @number = number
-          @pathes = nil
+          @path = nil
         end
 
         attr_reader :id
@@ -143,21 +144,20 @@ module ReVIEW
         attr_writer :index    # internal use only
 
         def bound?
-          not pathes().empty?
+          path
         end
 
         def path
-          pathes().first
+          @path ||= @index.find_path(id)
         end
 
-        def pathes
-          @pathes ||= @index.find_pathes(id)
-        end
       end
 
       def ImageIndex.item_type
         '(image|graph)'
       end
+
+      attr_reader :image_finder
 
       def initialize(items, chapid, basedir, types)
         super items
@@ -167,43 +167,35 @@ module ReVIEW
         @chapid = chapid
         @basedir = basedir
         @types = types
+
+        @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid,
+                                                      ReVIEW.book.config['builder'], types)
       end
 
-      # internal use only
-      def find_pathes(id)
-        if ReVIEW.book.param["subdirmode"]
-          re = /\A#{id}(?i:#{@types.join('|')})\z/x
-          entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{@chapid}/#{ent}" }
-        elsif ReVIEW.book.param["singledirmode"]
-          re = /\A#{id}(?i:#{@types.join('|')})\z/x
-          entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{ent}" }
-        else
-          re = /\A#{@chapid.gsub('+', '\\\+').gsub('-', '\\\-')}-#{id}(?i:#{@types.join('|')})\z/x
-          entries().select {|ent| re =~ ent }\
-            .sort_by {|ent| @types.index(File.extname(ent).downcase) }\
-            .map {|ent| "#{@basedir}/#{ent}" }
-        end
+      def find_path(id)
+        @image_finder.find_path(id)
       end
 
-      private
-
-      def entries
-        # @entries: do not cache for graph
-        if ReVIEW.book.param["subdirmode"]
-          @entries = Dir.entries(File.join(@basedir, @chapid))
-        else
-          @entries = Dir.entries(@basedir)
-        end
-      rescue Errno::ENOENT
-        @entries = []
-      end
     end
 
     class IconIndex < ImageIndex
+      def initialize(items, chapid, basedir, types)
+        @items = items
+        @index = {}
+        items.each do |i|
+          ## warn "warning: duplicate ID: #{i.id} (#{i})" unless @index[i.id].nil?
+          @index[i.id] = i
+        end
+        items.each do |i|
+          i.index = self
+        end
+        @chapid = chapid
+        @basedir = basedir
+        @types = types
+
+        @image_finder = ImageFinder.new(basedir, chapid, ReVIEW.book.config['builder'], types)
+      end
+
       def IconIndex.parse(src, *args)
         items = []
         seq = 1
@@ -262,7 +254,7 @@ module ReVIEW
         def initialize(id, number)
           @id = id
           @number = ""
-          @pathes = nil
+          @path = nil
         end
       end
 
@@ -280,7 +272,7 @@ module ReVIEW
         def initialize(id, number)
           @id = id
           @number = ""
-          @pathes = nil
+          @path = nil
         end
       end
 
@@ -294,14 +286,16 @@ module ReVIEW
     end
 
     class HeadlineIndex < Index
+      HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
       Item = Struct.new(:id, :number, :caption)
+      attr_reader :items
 
       def HeadlineIndex.parse(src, chap)
         items = []
         indexs = []
         headlines = []
         src.each do |line|
-          if m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
+          if m = HEADLINE_PATTERN.match(line)
             next if m[2] == 'column'
             index = m[1].size - 2
             if index >= 0
@@ -335,5 +329,31 @@ module ReVIEW
         return ([@chap.number] + @index.fetch(id).number).join(".")
       end
     end
+
+    class ColumnIndex < Index
+      COLUMN_PATTERN = /\A(=+)\[column\](?:\{(.+?)\})?(.*)/
+      Item = Struct.new(:id, :number, :caption)
+
+      def ColumnIndex.parse(src, *args)
+        items = []
+        seq = 1
+        src.each do |line|
+          if m = COLUMN_PATTERN.match(line)
+            level = m[1] ## not use it yet
+            id = m[2]
+            caption = m[3].strip
+            if !id || id == ""
+              id = caption
+            end
+
+            items.push item_class().new(id, seq, caption)
+            seq += 1
+          end
+        end
+        new(items)
+      end
+
+    end
+
   end
 end

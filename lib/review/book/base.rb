@@ -9,23 +9,24 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
+require 'review/configure'
+require 'review/catalog'
+
 module ReVIEW
   module Book
     class Base
 
-      attr_accessor :param
+      attr_writer :config
 
       def self.load_default
-        %w( . .. ../.. ).each do |basedir|
-          if File.file?("#{basedir}/CHAPS")
-            book = load(basedir)
-            if File.file?("#{basedir}/config.rb")
-              book.instance_variable_set("@parameters", Parameters.load("#{basedir}/config.rb"))
-            end
-            return book
-          end
+        basedir = "."
+        if File.file?("#{basedir}/CHAPS") ||
+            File.file?("#{basedir}/catalog.yml")
+          book = load(basedir)
+          book
+        else
+          new(basedir)
         end
-        new('.')
       end
 
       def self.load(dir)
@@ -37,11 +38,12 @@ module ReVIEW
 
       def self.update_rubyenv(dir)
         return if @basedir_seen.key?(dir)
-        if File.directory?("#{dir}/lib/review")
-          $LOAD_PATH.unshift "#{dir}/lib"
-        end
         if File.file?("#{dir}/review-ext.rb")
-          Kernel.load File.expand_path("#{dir}/review-ext.rb")
+          if ENV["REVIEW_SAFE_MODE"].to_i & 2 > 0
+            warn "review-ext.rb is prohibited in safe mode. ignored."
+          else
+            Kernel.load File.expand_path("#{dir}/review-ext.rb")
+          end
         end
         @basedir_seen[dir] = true
       end
@@ -64,6 +66,7 @@ module ReVIEW
       :ext,
       :image_dir,
       :image_types,
+      :image_types=,
       :page_metric
 
       def parts
@@ -92,37 +95,113 @@ module ReVIEW
         chapters.each(&block)
       end
 
+      def each_chapter_r(&block)
+        chapters.reverse.each(&block)
+      end
+
       def chapter_index
-        @chapter_index ||= ChapterIndex.new(chapters())
-        @chapter_index
+        return @chapter_index if @chapter_index
+
+        contents = chapters()
+        parts().each do |prt|
+          if prt.id.present?
+            contents << prt
+          end
+        end
+        @chapter_index = ChapterIndex.new(contents)
       end
 
       def chapter(id)
         chapter_index()[id]
       end
 
+      def next_chapter(chapter)
+        finded = false
+        each_chapter do |c|
+          return c if finded
+          finded = true if c == chapter
+        end
+        nil # not found
+      end
+
+      def prev_chapter(chapter)
+        finded = false
+        each_chapter_r do |c|
+          return c if finded
+          finded = true if c == chapter
+        end
+        nil # not found
+      end
+
       def volume
         Volume.sum(chapters.map {|chap| chap.volume })
       end
 
+      def config
+        @config ||= Configure.values
+      end
+
+      # backword compatible
+      def param=(param)
+        @config = param
+      end
+
+      # backword compatible
+      def param
+        @config
+      end
+
+      def catalog
+        return @catalog if @catalog.present?
+
+        catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
+        if File.exist? catalogfile_path
+          @catalog = Catalog.new(File.open catalogfile_path)
+        end
+
+        @catalog
+      end
+
       def read_CHAPS
-        read_FILE("chapter_file")
+        if catalog
+          catalog.chaps
+        else
+          read_FILE(chapter_file)
+        end
       end
 
       def read_PREDEF
-        read_FILE("predef_file")
+        if catalog
+          catalog.predef
+        else
+          read_FILE(predef_file)
+        end
       end
 
       def read_POSTDEF
-        read_FILE("postdef_file")
+        if catalog
+          catalog.postdef
+        else
+          read_FILE(postdef_file)
+        end
       end
 
       def read_PART
-        @read_PART ||= File.read("#{@basedir}/#{part_file}")
+        return @read_PART if @read_PART
+
+        if catalog
+          @read_PART = catalog.parts
+        else
+          @read_PART = File.read("#{@basedir}/#{part_file}")
+        end
       end
 
       def part_exist?
-        File.exist?("#{@basedir}/#{part_file}")
+        if catalog
+          catalog.parts.present?
+        else
+          File.exist?("#{@basedir}/#{part_file}")
+        end
       end
 
       def read_bib
@@ -134,6 +213,10 @@ module ReVIEW
       end
 
       def prefaces
+        if catalog
+          return mkpart_from_namelist(catalog.predef.split("\n"))
+        end
+
         if File.file?("#{@basedir}/#{predef_file}")
           begin
             return mkpart_from_namelistfile("#{@basedir}/#{predef_file}")
@@ -146,6 +229,10 @@ module ReVIEW
       end
 
       def postscripts
+        if catalog
+          return mkpart_from_namelist(catalog.postdef.split("\n"))
+        end
+
         if File.file?("#{@basedir}/#{postdef_file}")
           begin
             return mkpart_from_namelistfile("#{@basedir}/#{postdef_file}")
@@ -177,6 +264,21 @@ module ReVIEW
       def parse_chapters
         part = 0
         num = 0
+
+        if catalog
+          return catalog.parts_with_chaps.map do |entry|
+            if entry.is_a? Hash
+              chaps = entry.values.first.map do |chap|
+                Chapter.new(self, (num += 1), chap, "#{@basedir}/#{chap}")
+              end
+              Part.new(self, (part += 1), chaps, read_PART.split("\n")[part - 1])
+            else
+              chap = Chapter.new(self, (num += 1), entry, "#{@basedir}/#{entry}")
+              Part.new(self, nil, [chap])
+            end
+          end
+        end
+
         chap = read_CHAPS()\
           .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
           .map {|part_chunk|
@@ -220,15 +322,15 @@ module ReVIEW
         Chapter.new(self, number, name, path)
       end
 
-      def mkchap_ifexist(id)
-        name = "#{id}#{ext()}"
+      def mkchap_ifexist(name)
+        name += ext if File.extname(name) == ""
         path = "#{@basedir}/#{name}"
         File.file?(path) ? Chapter.new(self, nil, name, path) : nil
       end
 
       def read_FILE(filename)
         res = ""
-        File.open("#{@basedir}/#{eval(filename)}") do |f|
+        File.open("#{@basedir}/#{filename}") do |f|
           while line = f.gets
             line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
             if /\A#/ =~ line

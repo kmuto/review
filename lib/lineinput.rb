@@ -113,7 +113,7 @@ class LineInput
     buf
   end
 
-  alias span getlines_while   # from Haskell
+  alias_method :span, :getlines_while   # from Haskell
 
   def until_match(re)
     while line = gets()
@@ -134,7 +134,7 @@ class LineInput
     buf
   end
 
-  alias break getlines_until   # from Haskell
+  alias_method :break, :getlines_until   # from Haskell
 
   def until_terminator(re)
     while line = gets()

@@ -12,10 +12,9 @@ class INAOBuidlerTest < Test::Unit::TestCase
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
-      "subdirmode" => nil,
       "stylesheet" => nil,  # for HTMLBuilder
     }
-    ReVIEW.book.param = param
+    ReVIEW.book.config = param
   end
 
   def test_all

@@ -66,6 +66,7 @@ module ReVIEW
       @subsection = 0
       @subsubsection = 0
       @subsubsubsection = 0
+      @column = 0
       @noindent = nil
       @rootelement = "doc"
       @secttags = nil
@@ -75,8 +76,14 @@ module ReVIEW
 
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
-      alias puts print unless ReVIEW.book.param["nolf"].nil?
-      @secttags = true unless ReVIEW.book.param["structuredxml"].nil?
+      if @book.config["nolf"].present?
+        IDGXMLBuilder.class_eval do
+          def puts(arg)
+            print arg
+          end
+        end
+      end
+      @secttags = true unless @book.config["structuredxml"].nil?
     end
     private :builder_init_file
 
@@ -173,7 +180,7 @@ module ReVIEW
         end
         @section += 1
         print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
-        if ReVIEW.book.param["secnolevel"] >= 2
+        if @book.config["secnolevel"] >= 2
           if @chapter.number.blank? or @chapter.on_POSTDEF?
             prefix = ""
           else
@@ -193,7 +200,7 @@ module ReVIEW
 
         @subsection += 1
         print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
-        if ReVIEW.book.param["secnolevel"] >= 3
+        if @book.config["secnolevel"] >= 3
           if @chapter.number.blank? or @chapter.on_POSTDEF?
             prefix = ""
           else
@@ -210,8 +217,8 @@ module ReVIEW
         end
 
         @subsubsection += 1
-        print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil? 
-        if ReVIEW.book.param["secnolevel"] >= 4
+        print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
+        if @book.config["secnolevel"] >= 4
           if @chapter.number.blank? or @chapter.on_POSTDEF?
             prefix = ""
           else
@@ -227,7 +234,7 @@ module ReVIEW
 
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) unless @secttags.nil?
-        if ReVIEW.book.param["secnolevel"] >= 5
+        if @book.config["secnolevel"] >= 5
           if @chapter.number.blank? or @chapter.on_POSTDEF?
             prefix = ""
           else
@@ -239,7 +246,7 @@ module ReVIEW
         raise "caption level too deep or unsupported: #{level}"
       end
 
-      prefix = "" if (level.to_i > ReVIEW.book.param["secnolevel"])
+      prefix = "" if (level.to_i > @book.config["secnolevel"])
       label = label.nil? ? "" : " id=\"#{label}\""
       toccaption = escape_html(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>)
@@ -336,14 +343,31 @@ module ReVIEW
     end
 
     def read(lines)
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         puts %Q[<lead>#{split_paragraph(lines).join}</lead>]
       else
         puts %Q[<p aid:pstyle="lead">#{lines.join}</p>]
       end
     end
 
-    alias :lead read
+    alias_method :lead, :read
+
+    def column_label(id)
+      num = @chapter.column(id).number
+      "column-#{num}"
+    end
+    private :column_label
+
+    def inline_column(id)
+      if @book.config["chapterlink"]
+        %Q(<link href="#{column_label(id)}">#{escape_html(@chapter.column(id).caption)}</link>)
+      else
+        escape_html(@chapter.column(id).caption)
+      end
+    rescue KeyError
+      error "unknown column: #{id}"
+      nofunc_text("[UnknownColumn:#{id}]")
+    end
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
@@ -366,7 +390,7 @@ module ReVIEW
     def codelines_body(lines)
       no = 1
       lines.each do |line|
-        unless ReVIEW.book.param["listinfo"].nil?
+        unless @book.config["listinfo"].nil?
           print "<listinfo line=\"#{no}\""
           print " begin=\"1\"" if no == 1
           print " end=\"#{no}\"" if no == lines.size
@@ -374,7 +398,7 @@ module ReVIEW
         end
         print detab(line)
         print "\n"
-        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
+        print "</listinfo>" unless @book.config["listinfo"].nil?
         no += 1
       end
     end
@@ -401,7 +425,7 @@ module ReVIEW
       print %Q(<pre>)
       no = 1
       lines.each_with_index do |line, i|
-        unless ReVIEW.book.param["listinfo"].nil?
+        unless @book.config["listinfo"].nil?
           print "<listinfo line=\"#{no}\""
           print " begin=\"1\"" if no == 1
           print " end=\"#{no}\"" if no == lines.size
@@ -409,7 +433,7 @@ module ReVIEW
         end
         print detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
         print "\n"
-        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
+        print "</listinfo>" unless @book.config["listinfo"].nil?
         no += 1
       end
       puts "</pre></codelist>"
@@ -425,7 +449,7 @@ module ReVIEW
       print %Q[<pre>]
       no = 1
       lines.each do |line|
-        unless ReVIEW.book.param["listinfo"].nil?
+        unless @book.config["listinfo"].nil?
           print "<listinfo line=\"#{no}\""
           print " begin=\"1\"" if no == 1
           print " end=\"#{no}\"" if no == lines.size
@@ -433,7 +457,7 @@ module ReVIEW
         end
         print detab(line)
         print "\n"
-        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
+        print "</listinfo>" unless @book.config["listinfo"].nil?
         no += 1
       end
       puts '</pre></list>'
@@ -441,7 +465,7 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         puts "<quote>#{blocked_lines.join("")}</quote>"
       else
@@ -466,12 +490,12 @@ module ReVIEW
         "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}</span>"
       end
     end
- 
+
     def handle_metric(str)
       k, v = str.split('=', 2)
       return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
     end
-      
+
     def result_metric(array)
       " #{array.join(' ')}"
     end
@@ -485,13 +509,6 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      if ReVIEW.book.param["subdirmode"]
-        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{@chapter.id}/#{id}.eps")
-      elsif ReVIEW.book.param["singledirmode"]
-        warn "image file not exist: images/#{@chapter.id}/#{id}.eps" unless File.exist?("images/#{id}.eps")
-      else
-        warn "image file not exist: images/#{@chapter.id}-#{id}.eps" unless File.exist?("images/#{@chapter.id}-#{id}.eps")
-      end
       puts "<img>"
       print %Q[<pre aid:pstyle="dummyimage">]
       lines.each do |line|
@@ -523,8 +540,8 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       tablewidth = nil
       col = 0
-      unless ReVIEW.book.param["tableopt"].nil?
-        tablewidth = ReVIEW.book.param["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
+      unless @book.config["tableopt"].nil?
+        tablewidth = @book.config["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
       end
       puts "<table>"
       rows = []
@@ -567,7 +584,7 @@ module ReVIEW
 
       begin
         table_header id, caption unless caption.nil?
-      rescue KeyError => err
+      rescue KeyError
         error "no such table: #{id}"
       end
       return if rows.empty?
@@ -635,7 +652,7 @@ module ReVIEW
     def td(str)
       str
     end
-    
+
     def table_end
       print "<?dtp tablerow last?>"
     end
@@ -688,7 +705,7 @@ module ReVIEW
     end
 
     def inline_hint(str)
-      if ReVIEW.book.param["nolf"].nil?
+      if @book.config["nolf"].nil?
         %Q[\n<hint>#{escape_html(str)}</hint>]
       else
         %Q[<hint>#{escape_html(str)}</hint>]
@@ -744,7 +761,7 @@ module ReVIEW
       %Q(<tt style='bold'>#{escape_html(str)}</tt><index value='#{index}' />)
     end
 
-    alias :inline_ttbold inline_ttb
+    alias_method :inline_ttbold, :inline_ttb
 
     def inline_tti(str)
       %Q(<tt style='italic'>#{escape_html(str)}</tt>)
@@ -775,7 +792,7 @@ module ReVIEW
       %Q[<ref idref='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
-    alias inline_ref inline_labelref
+    alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(idref)
       %Q[<pageref idref='#{escape_html(idref)}'>●●</pageref>] # ページ番号を参照
@@ -822,7 +839,9 @@ module ReVIEW
     end
 
     def common_column_begin(type, caption)
-      print "<#{type}column>"
+      @column += 1
+      a_id = %Q[id="column-#{@column}"]
+      print "<#{type}column #{a_id}>"
       puts %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title>]
     end
 
@@ -903,7 +922,7 @@ module ReVIEW
     end
 
     def flushright(lines)
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         puts split_paragraph(lines).join.gsub("<p>", "<p align='right'>")
       else
         puts "<p align='right'>#{lines.join("\n")}</p>"
@@ -918,7 +937,7 @@ module ReVIEW
       print "<#{type}>"
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
       puts "<title aid:pstyle='#{style}'>#{compile_inline(caption)}</title>" unless caption.nil?
-      if ReVIEW.book.param["deprecated-blocklines"].nil?
+      if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
         puts "#{blocked_lines.join}</#{type}>"
       else
@@ -1001,7 +1020,7 @@ module ReVIEW
     def practice(lines)
       captionblock("practice", lines, nil)
     end
-    
+
     def expert(lines)
       captionblock("expert", lines, nil)
     end
@@ -1020,7 +1039,7 @@ module ReVIEW
       end
       no = 1
       lines.each do |line|
-        unless ReVIEW.book.param["listinfo"].nil?
+        unless @book.config["listinfo"].nil?
           print %Q[<listinfo line="#{no}"]
           print %Q[ begin="1"] if no == 1
           print %Q[ end="#{no}"] if no == lines.size
@@ -1028,7 +1047,7 @@ module ReVIEW
         end
         print detab(line)
         print "\n"
-        print "</listinfo>" unless ReVIEW.book.param["listinfo"].nil?
+        print "</listinfo>" unless @book.config["listinfo"].nil?
         no += 1
       end
       puts "</#{type}>"
@@ -1054,7 +1073,7 @@ module ReVIEW
       puts "</img>"
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def label(id)
       # FIXME
@@ -1104,9 +1123,9 @@ module ReVIEW
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless ReVIEW.book.param["chapref"].nil?
-        _chs = convert_inencoding(ReVIEW.book.param["chapref"],
-                                  ReVIEW.book.param["inencoding"]).split(",")
+      unless @book.config["chapref"].nil?
+        _chs = convert_inencoding(@book.config["chapref"],
+                                  @book.config["inencoding"]).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
@@ -1115,7 +1134,7 @@ module ReVIEW
       else
       end
       s = "#{chs[0]}#{@chapter.env.chapter_index.number(id)}#{chs[1]}#{@chapter.env.chapter_index.title(id)}#{chs[2]}"
-      if ReVIEW.book.param["chapterlink"]
+      if @book.config["chapterlink"]
         %Q(<link href="#{id}">#{s}</link>)
       else
         s
@@ -1126,7 +1145,7 @@ module ReVIEW
     end
 
     def inline_chap(id)
-      if ReVIEW.book.param["chapterlink"]
+      if @book.config["chapterlink"]
         %Q(<link href="#{id}">#{@chapter.env.chapter_index.number(id)}</link>)
       else
         @chapter.env.chapter_index.number(id)
@@ -1137,7 +1156,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      if ReVIEW.book.param["chapterlink"]
+      if @book.config["chapterlink"]
         %Q(<link href="#{id}">#{@chapter.env.chapter_index.title(id)}</link>)
       else
         @chapter.env.chapter_index.title(id)
@@ -1182,7 +1201,7 @@ module ReVIEW
     def inline_hd_chap(chap, id)
       if chap.number
         n = chap.headline_index.number(id)
-        if ReVIEW.book.param["secnolevel"] >= n.split('.').size
+        if @book.config["secnolevel"] >= n.split('.').size
           return "「#{n}　#{compile_inline(chap.headline(id).caption)}」"
         end
       end

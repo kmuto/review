@@ -30,10 +30,6 @@ module ReVIEW
 
     def initialize(strict = false, *args)
       @strict = strict
-      @tabwidth = nil
-      if ReVIEW.book.param && ReVIEW.book.param["tabwidth"]
-        @tabwidth = ReVIEW.book.param["tabwidth"]
-      end
       builder_init(*args)
     end
 
@@ -47,6 +43,10 @@ module ReVIEW
       @location = location
       @output = StringIO.new
       @book = ReVIEW.book
+      @tabwidth = nil
+      if @book.config && @book.config["tabwidth"]
+        @tabwidth = @book.config["tabwidth"]
+      end
       builder_init_file
     end
 
@@ -58,17 +58,17 @@ module ReVIEW
       @output.string
     end
 
-    alias :raw_result result
+    alias_method :raw_result, :result
 
     def print(*s)
-      @output.print *s.map{|i|
-        convert_outencoding(i, ReVIEW.book.param["outencoding"])
-      }
+      @output.print(*s.map{|i|
+        convert_outencoding(i, @book.config["outencoding"])
+      })
     end
 
     def puts(*s)
       @output.puts *s.map{|i|
-        convert_outencoding(i, ReVIEW.book.param["outencoding"])
+        convert_outencoding(i, @book.config["outencoding"])
       }
     end
 
@@ -120,7 +120,7 @@ module ReVIEW
 
       begin
         table_header id, caption unless caption.nil?
-      rescue KeyError => err
+      rescue KeyError
         error "no such table: #{id}"
       end
       return if rows.empty?
@@ -172,7 +172,7 @@ module ReVIEW
     end
 
     def inline_chapref(id)
-      @chapter.env.chapter_index.display_string(id)
+      compile_inline @chapter.env.chapter_index.display_string(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
@@ -257,10 +257,17 @@ module ReVIEW
     end
 
     def inline_hd(id)
-      m = /\A(\w+)\|(.+)/.match(id)
+      m = /\A([^|]+)\|(.+)/.match(id)
       chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
       return inline_hd_chap(chapter, m[2]) if chapter
       return inline_hd_chap(@chapter, id)
+    end
+
+    def inline_column(id)
+      @chapter.column(id).caption
+    rescue
+      error "unknown column: #{id}"
+      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def raw(str)
@@ -275,35 +282,6 @@ module ReVIEW
       else
         print str.gsub("\\n", "\n")
       end
-    end
-
-    def find_pathes(id)
-      if ReVIEW.book.param["subdirmode"]
-        re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-          .map {|ent| "#{@book.basedir}/#{@chapter.name}/#{ent}" }
-      elsif ReVIEW.book.param["singledirmode"]
-        re = /\A#{id}(?i:#{@chapter.name.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-          .map {|ent| "#{@book.basedir}/#{ent}" }
-      else
-        re = /\A#{@chapter.name}-#{id}(?i:#{@book.image_types.join('|')})\z/x
-        entries().select {|ent| re =~ ent }\
-          .sort_by {|ent| @book.image_types.index(File.extname(ent).downcase) }\
-          .map {|ent| "#{@book.basedir}/#{ent}" }
-      end
-    end
-
-    def entries
-      if ReVIEW.book.param["subdirmode"]
-        @entries ||= Dir.entries(File.join(@book.basedir + @book.image_dir, @chapter.name))
-      else
-        @entries ||= Dir.entries(@book.basedir + @book.image_dir)
-      end
-    rescue Errno::ENOENT
-    @entries = []
     end
 
     def warn(msg)
@@ -341,7 +319,7 @@ module ReVIEW
     end
 
     def get_chap(chapter = @chapter)
-      if ReVIEW.book.param["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
+      if @book.config["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
         return "#{chapter.number}"
       end
       return nil
@@ -369,17 +347,13 @@ module ReVIEW
     end
 
     def graph(lines, id, command, caption = nil)
-      dir = @book.basedir + @book.image_dir
-      file = "#{@chapter.name}-#{id}.#{image_ext}"
-      if ReVIEW.book.param["subdirmode"]
-        dir = File.join(dir, @chapter.name)
-        file = "#{id}.#{image_ext}"
-      elsif ReVIEW.book.param["singledirmode"]
-        file = "#{id}.#{image_ext}"
-      end
+      c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      dir = File.join(@book.basedir, @book.image_dir, c)
+      Dir.mkdir(dir) unless File.exist?(dir)
+      file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
-      line = CGI.unescapeHTML(lines.join("\n"))
+      line = self.unescape(lines.join("\n"))
       cmds = {
         :graphviz => "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
         :gnuplot  => "echo 'set terminal " +
@@ -393,7 +367,7 @@ module ReVIEW
       warn cmd
       system cmd
 
-      image(lines, id, caption)
+      image(lines, id, caption ||= "")
     end
 
     def image_ext
@@ -402,12 +376,12 @@ module ReVIEW
 
     def inline_include(file_name)
       compile_inline convert_inencoding(File.open(file_name).read,
-                                        ReVIEW.book.param["inencoding"])
+                                        @book.config["inencoding"])
     end
 
     def include(file_name)
       File.foreach(file_name) do |line|
-        paragraph([convert_inencoding(line, ReVIEW.book.param["inencoding"])])
+        paragraph([convert_inencoding(line, @book.config["inencoding"])])
       end
     end
 

@@ -1,5 +1,9 @@
-require 'bundler'
-Bundler::GemHelper.install_tasks
+begin
+  require 'bundler'
+  Bundler::GemHelper.install_tasks
+rescue LoadError
+  # ignore if bundler does not exist
+end
 
 require 'rubygems'
 require 'rake/testtask'

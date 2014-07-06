@@ -1,0 +1,1024 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+#
+# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+
+require 'tmpdir'
+require 'fileutils'
+require 'yaml'
+require 'optparse'
+require 'rexml/document'
+require 'time'
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'uuid'
+require 'review'
+require 'review/i18n'
+
+require 'review/htmlutils'
+include ReVIEW::HTMLUtils
+
+$essential_files = ['top', 'toc', 'colophon']
+def main
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0)} [options] configfile"
+  opts.on('-h', '--help', 'print this message and quit.') {
+    puts opts.help
+    exit 0
+  }
+  opts.on('--[no-]debug', 'Keep temporary files.') do |debug|
+    config["debug"] = debug
+  end
+
+  begin
+    opts.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  if ARGV.empty?
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  yamlfile = ARGV[0]
+  values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
+  bookname = values["bookname"]
+  $essential_files <<= bookname
+  tmp = values["debug"].nil? ? Dir.mktmpdir : "."
+  @bookdir = "#{tmp}/#{bookname}-epub"
+  @epubversion = values["epubversion"] || 2
+  @htmlversion = values["htmlversion"] || 4
+  if @epubversion == 3
+    ## if epubversion is 3, htmlversion should be 5
+    @htmlversion = 5
+  end
+
+  if File.exist?("#{bookname}.epub")
+    STDERR.puts "#{bookname}.epub exists. Please remove or rename first."
+    exit 1
+  end
+  if File.exist?(@bookdir)
+    STDERR.puts "#{@bookdir} directory exists. Please remove or rename first."
+    exit 1
+  end
+
+  @identifier = values["urnid"].nil? ? "urn:uuid:#{UUID.create}" : values["urnid"]
+
+  Dir.mkdir(@bookdir)
+
+  # MIME type
+  File.open("#{@bookdir}/mimetype", "w") {|f|
+    f.write "application/epub+zip"
+  }
+
+  Dir.mkdir("#{@bookdir}/OEBPS")
+  # XHTML
+  @manifeststr = ""
+  @ncxstr = ""
+  @tocdesc = Array.new
+
+  basedir = Dir.pwd
+  base_path = Pathname.new(basedir)
+  ReVIEW::Book.load(basedir).parts.each do |part|
+    if part.name.present?
+      if part.file?
+        filename = (base_path + part.path).to_s
+        output_chaps_by_file(filename, values)
+        htmlfile = File.basename(filename.chomp.strip,".*")+".html"
+      else
+        htmlfile = "part_#{part.number}.html"
+        make_part_page(part, htmlfile, values)
+        file_id = "part_#{part.number}"
+        part_name = "#{ReVIEW::I18n.t("part", part.number)} #{part.name.strip}"
+        @tocdesc << [1, htmlfile, nil, part_name]
+        @manifeststr << %Q(<item id="rv-#{file_id}" href="#{htmlfile}" media-type="application/xhtml+xml" />\n)
+        @ncxstr << %Q(<itemref idref="rv-#{file_id}" />\n)
+      end
+    end
+
+    part.chapters.each do |chap|
+      filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
+      output_chaps_by_file(filename, values)
+    end
+  end
+
+  # images
+  if File.exist?("images")
+    allow_exts = values["image_ext"] || %w(png gif jpg jpeg svg ttf woff otf)
+    Dir.mkdir("#{@bookdir}/OEBPS/images")
+    image_files = ReVIEW::MakerHelper.copy_images_to_dir("images", "#{@bookdir}/OEBPS/images", :exts=>allow_exts)
+    image_files.each do |image_file|
+      dirname = File.dirname(image_file)
+      fname = File.basename(image_file)
+      figid = getFigId(dirname.gsub(%r|/|,'-')+"-"+fname)
+      mime = nil
+      fname_pattern = /\.(#{allow_exts.join("|")})$/i
+      next unless fname =~ fname_pattern
+      case fname.downcase.match(fname_pattern)[1]
+      when "png"
+        mime = "image/png"
+      when "gif"
+        mime = "image/gif"
+      when "jpg", "jpeg"
+        mime = "image/jpeg"
+      when "svg"
+        mime = "image/svg+xml"
+      when "ttf", "otf"
+        mime = "application/vnd.ms-opentype"
+      when "woff"
+        mime = "application/font-woff"
+      else
+        raise "unsupported type #{fname}"
+      end
+      if @epubversion == 3 && File.join("images",values["coverimage"]) == image_file
+        properties = ' properties="cover-image"'
+      end
+      @manifeststr << %Q(<item id="#{figid}" href="#{image_file}"#{properties} media-type="#{mime}" />\n)
+    end
+  end
+
+  # fonts
+  fontdir = values["fontdir"] || "fonts"
+  if File.exist?(fontdir)
+    font_ext = values["font_ext"]
+    Dir.mkdir("#{@bookdir}/OEBPS/#{fontdir}")
+    font_files = ReVIEW::MakerHelper.copy_images_to_dir(fontdir, "#{@bookdir}/OEBPS/#{fontdir}", :exts=>font_ext)
+    font_files.each do |font_file|
+      dirname = File.dirname(font_file)
+      fname = File.basename(font_file)
+      font_id = "font-"+fname
+      mime = nil
+      fname_pattern = /\.(#{font_ext.join("|")})$/i
+      next unless fname =~ fname_pattern
+      case fname.downcase.match(fname_pattern)[1]
+      when "svg"
+        mime = "image/svg+xml"
+      when "ttf", "otf"
+        mime = "application/vnd.ms-opentype"
+      when "woff"
+        mime = "application/font-woff"
+      else
+        raise "unsupported type #{fname}"
+      end
+      @manifeststr << %Q(<item id="#{font_id}" href="#{font_file}" media-type="#{mime}" />\n)
+    end
+  end
+
+  # container
+  Dir.mkdir("#{@bookdir}/META-INF")
+  File.open("#{@bookdir}/META-INF/container.xml", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
+  <rootfiles>
+    <rootfile full-path="OEBPS/#{bookname}.opf" media-type="application/oebps-package+xml" />
+  </rootfiles>
+</container>
+EOT
+  }
+
+  # opf (meta info)
+  if @epubversion == 3
+    make_opf_filev3(values, bookname)
+  else
+    make_opf_file(values, bookname)
+  end
+
+  # ncx (toc)
+  if values["toc"]
+    File.open("#{@bookdir}/OEBPS/#{bookname}.ncx", "w") {|f|
+      f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head>
+    <meta name="dtb:uid" content="#{@identifier}"/>
+    <meta name="dtb:depth" content="1"/>
+    <meta name="dtb:totalPageCount" content="0"/>
+    <meta name="dtb:maxPageNumber" content="0"/>
+  </head>
+  <docTitle>
+    <text>#{values["booktitle"]}</text>
+  </docTitle>
+  <docAuthor>
+	<text>#{values["aut"].nil? ? "" : values["aut"]}</text>
+  </docAuthor>
+  <navMap>
+    <navPoint id="top" playOrder="1">
+      <navLabel>
+        <text>#{values["booktitle"]}</text>
+      </navLabel>
+      <content src="#{bookname}.html"/>
+    </navPoint>
+EOT
+
+      nav_count = 2
+
+      if values["mytoc"]
+        f.puts <<EOT
+    <navPoint id="toc" playOrder="2">
+      <navLabel>
+        <text>目次</text>
+      </navLabel>
+      <content src="toc.html"/>
+    </navPoint>
+EOT
+        nav_count = 3
+      end
+
+      @tocdesc.each {|item|
+        level, file, id, content = item
+        # values["level"]
+        next if level > values["toclevel"].to_i
+        indent = ""
+        if level > values["secnolevel"].to_i
+          indent = "- "
+        end
+        fragment_id = (id ? '#'+id : '')
+        f.puts <<EOT
+    <navPoint id="navPoint-#{nav_count}" playOrder="#{nav_count}">
+      <navLabel>
+        <text>#{indent}#{strip_html(content)}</text>
+      </navLabel>
+      <content src="#{file}#{fragment_id}"/>
+    </navPoint>
+EOT
+        nav_count += 1
+      }
+      f.puts <<EOT
+  </navMap>
+</ncx>
+EOT
+    }
+  end
+
+  # Cover page
+  File.open("#{@bookdir}/OEBPS/#{bookname}.html", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+EOT
+    doctype = make_doctype()
+    f.puts doctype
+    f.puts <<EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+EOT
+  if @htmlversion == 4
+    f.puts <<EOT
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  else
+    f.puts <<EOT
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  end
+    f.puts <<EOT
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+    if !values["coverfile"].nil? && File.exist?(values["coverfile"])
+      File.open(values["coverfile"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
+<h1>#{values["booktitle"]}</h1>
+EOT
+    end
+
+    f.puts <<EOT
+</body>
+</html>
+EOT
+  }
+
+  if values["backcoverfile"]
+    make_backcover_image(bookname, values)
+  end
+
+  # Title page
+  File.open("#{@bookdir}/OEBPS/top.html", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+EOT
+    doctype = make_doctype()
+    f.puts doctype
+    f.puts <<EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+EOT
+  if @htmlversion == 4
+    f.puts <<EOT
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  else
+    f.puts <<EOT
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  end
+    f.puts <<EOT
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+    if !values["titlepagefile"].nil? && File.exist?(values["titlepagefile"])
+      File.open(values["titlepagefile"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
+<h1 class="tp-title">#{values["booktitle"]}</h1>
+EOT
+      if values["aut"]
+        f.puts <<EOT
+<p>
+<br />
+<br />
+</p>
+<h2 class="tp-author">#{join_names(values["aut"])}</h2>
+EOT
+      end
+      if values["prt"]
+        f.puts <<EOT
+<p>
+<br />
+<br />
+<br />
+<br />
+</p>
+<h3 class="tp-publisher">#{values["prt"]}</h3>
+EOT
+      end
+    end
+
+    f.puts <<EOT
+</body>
+</html>
+EOT
+  }
+
+  # Additional toc page
+  if values["toc"] && values["mytoc"]
+    File.open("#{@bookdir}/OEBPS/toc.html", "w") {|f|
+      if @epubversion == 3
+        listelm = "ol"
+      else
+        listelm = "ul"
+      end
+      f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+EOT
+    doctype = make_doctype()
+    f.puts doctype
+    f.puts <<EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+EOT
+  if @htmlversion == 4
+    f.puts <<EOT
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  else
+    f.puts <<EOT
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  end
+    f.puts <<EOT
+  <title>目次</title>
+</head>
+<body>
+EOT
+    f.puts %q(<nav epub:type="toc" id="toc">) if @epubversion == 3
+    f.puts <<EOT
+<h1>目次</h1>
+<#{listelm} class=\"toc-h1\">
+EOT
+      current = 1
+      init_item = true
+      @tocdesc.each {|item|
+        level, file, id, content = item
+        # values["level"]
+        next if level > values["toclevel"].to_i
+        if level > current
+          current += 1
+          f.puts ""
+          f.puts "<#{listelm} class=\"toc-h#{current}\">"
+          while current < level
+            current += 1
+            f.puts "<li>"
+            f.puts "<#{listelm} class=\"toc-h#{current}\">"
+          end
+        elsif level < current
+          current -= 1
+          f.puts "</li>"
+          f.puts "</#{listelm}>"
+          f.puts "</li>"
+          while current > level
+            current -= 1
+            f.puts "</#{listelm}>"
+            f.puts "</li>"
+          end
+        elsif init_item
+          # noop
+        else
+          f.puts "</li>"
+        end
+        fragment_id = (id ? '#'+id : '')
+        f.write "<li><a href=\"#{file}#{fragment_id}\">#{strip_html(content)}</a>"
+        init_item = false
+      }
+
+      (current - 1).downto(1) {|n|
+        f.puts "</li>"
+        f.puts "</#{listelm}>"
+      }
+      if !init_item
+        f.puts "</li>"
+      end
+
+      f.puts "</#{listelm}>"
+      f.puts %q(</nav>) if @epubversion == 3
+      f.puts <<EOT
+</body>
+</html>
+EOT
+    }
+  end
+
+  # stylesheet
+  if File.exist?(values["stylesheet"])
+    FileUtils.cp values["stylesheet"], "#{@bookdir}/OEBPS/#{values["stylesheet"]}"
+  else
+    File.open("#{@bookdir}/OEBPS/#{values["stylesheet"]}", "w") {|f|
+      f.puts <<EOT
+/* sample style sheet for epub */
+@charset "utf-8";
+
+body {
+}
+EOT
+    }
+  end
+
+  # Colophon page
+  if values["colophon"]
+    make_colophon_page(tmp, bookname, values)
+  end
+
+  # hook
+  if !values["posthook"].nil? && !values["posthook"].empty? && FileTest.executable?(values["posthook"])
+    system(values["posthook"], @bookdir, Dir.pwd, yamlfile)
+  end
+
+  # Zip epubファイルの作成。mimetypeは圧縮しないようにする
+  basedir = Dir.pwd
+  Dir.chdir(@bookdir) {|d|
+    system("zip", "-0X", "#{basedir}/#{bookname}.epub", "mimetype")
+    system("zip", "-Xr9D", "#{basedir}/#{bookname}.epub", "META-INF", "OEBPS")
+  }
+  FileUtils.rm_r(tmp) if values["debug"].nil?
+end
+
+def make_doctype
+  if @htmlversion == 5
+    %q(<!DOCTYPE html>)
+  else
+    %q(<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">)
+  end
+end
+
+
+def make_opf_file(values, bookname)
+  File.open("#{@bookdir}/OEBPS/#{bookname}.opf", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+ <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+   <dc:title>#{values["booktitle"]}</dc:title>
+EOT
+
+   f.puts %Q(<dc:creator opf:role="aut">#{values["aut"]}</dc:creator>) unless values["aut"].nil? # FIXME: support multiple members
+
+   f.puts %Q(<dc:publisher>#{values["prt"]}</dc:publisher>) unless values["prt"].nil?
+
+   f.puts %Q(<dc:date>#{values["date"]}</dc:date>) unless values["date"].nil?
+   f.puts %Q(<dc:rights>#{values["rights"]}</dc:rights>) unless values["rights"].nil?
+
+   f.puts %Q(<dc:contributor opf:role="asn">#{values["asn"]}</dc:contributor>) unless values["asn"].nil?
+   f.puts %Q(<dc:contributor opf:role="ant">#{values["ant"]}</dc:contributor>) unless values["ant"].nil?
+   f.puts %Q(<dc:contributor opf:role="clb">#{values["clb"]}</dc:contributor>) unless values["clb"].nil?
+   f.puts %Q(<dc:contributor opf:role="edt">#{values["edt"]}</dc:contributor>) unless values["edt"].nil?
+   f.puts %Q(<dc:contributor opf:role="dsr">#{values["dsr"]}</dc:contributor>) unless values["dsr"].nil?
+   f.puts %Q(<dc:contributor opf:role="ill">#{values["ill"]}</dc:contributor>) unless values["ill"].nil?
+   f.puts %Q(<dc:contributor opf:role="pht">#{values["pht"]}</dc:contributor>) unless values["pht"].nil?
+   f.puts %Q(<dc:contributor opf:role="trl">#{values["trl"]}</dc:contributor>) unless values["trl"].nil?
+
+   f.puts %Q(<dc:description>#{values["description"]}</dc:description>) unless values["description"].nil?
+
+    if values["coverimage"]
+      f.puts %Q(<meta name="cover" content="#{getFigId("images-"+values["coverimage"])}"/>)
+    end
+    f.puts <<EOT
+   <dc:language>ja</dc:language>
+   <dc:identifier id="BookId">#{@identifier}</dc:identifier>
+ </metadata>
+ <manifest>
+EOT
+
+    if values["toc"]
+      f.puts <<EOT
+  <item id="ncx" href="#{bookname}.ncx" media-type="application/x-dtbncx+xml" />
+EOT
+    end
+
+    f.puts <<EOT
+  <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
+  <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
+  <item id="top" href="top.html" media-type="application/xhtml+xml" />
+EOT
+
+    if values["toc"] && values["mytoc"]
+      f.puts <<EOT
+  <item id="toc" href="toc.html" media-type="application/xhtml+xml" />
+EOT
+    end
+
+    f.puts @manifeststr
+    if values["colophon"]
+      f.puts <<EOT
+  <item id="colophon" href="colophon.html" media-type="application/xhtml+xml" />
+EOT
+    end
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <item id="backcover" href="#{values["backcoverfile"]}" media-type="application/xhtml+xml" />
+EOT
+    end
+
+    if values["cover_linear"] && values["cover_linear"] != "no"
+      cover_linear = "yes"
+    else
+      cover_linear = "no"
+    end
+
+    f.puts <<EOT
+ </manifest>
+ <spine toc="ncx">
+  <itemref idref="#{bookname}" linear="#{cover_linear}" />
+  <itemref idref="top" />
+EOT
+
+    if values["toc"] && values["mytoc"]
+      f.puts <<EOT
+  <itemref idref="toc" />
+EOT
+    end
+
+    f.puts @ncxstr
+    if values["colophon"]
+      f.puts <<EOT
+  <itemref idref="colophon" />
+EOT
+    end
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <itemref idref="backcover" />
+EOT
+    end
+    f.puts <<EOT
+ </spine>
+ <guide>
+EOT
+
+    if values["titlepage"]
+      f.puts <<EOT
+  <reference type="cover" title="表紙" href="#{bookname}.html"/>
+  <reference type="title-page" title="Title Page" href="top.html"/>
+EOT
+    end
+
+    if values["toc"] && values["mytoc"]
+      f.puts <<EOT
+  <reference type="toc" title="目次" href="toc.html"/>
+EOT
+    end
+    f.puts <<EOT
+ </guide>
+</package>
+EOT
+  }
+end
+
+def make_opf_filev3(values, bookname)
+  File.open("#{@bookdir}/OEBPS/#{bookname}.opf", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+ <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+   <dc:title>#{values["booktitle"]}</dc:title>
+EOT
+    unless values["aut"].nil? # FIXME: support multiple members
+      f.puts %Q(<dc:creator id="author">#{values["aut"]}</dc:creator>)
+      f.puts %Q(<meta refines="#author" property="role" scheme="marc:relators" id="role">aut</meta>)
+    end
+    f.puts %Q(<dc:publisher id="publisher">#{values["prt"]}</dc:publisher>) unless values["prt"].nil?
+
+    f.puts %Q(<dc:date>#{values["date"]}</dc:date>) unless values["date"].nil?
+    f.puts %Q(<dc:rights>#{values["rights"]}</dc:rights>) unless values["rights"].nil?
+
+    %w(asn ant clb edt dsr ill pht trl).each do |attr|
+      unless values[attr].nil?
+        f.puts %Q(<dc:contributor id="#{attr}">#{values[attr]}</dc:contributor>)
+        f.puts %Q(<meta refines='##{attr}' property='role' scheme='marc:relators'>#{attr}</meta>)
+      end
+    end
+   f.puts %Q(<dc:description>#{values["description"]}</dc:description>) unless values["description"].nil?
+    f.puts %Q(<meta property="dcterms:modified">#{Time.now.utc.iso8601(0)}</meta>)
+    if values["coverimage"]
+      f.puts %Q(<meta name="cover" content="#{getFigId("images-"+values["coverimage"])}"/>)
+    end
+    f.puts <<EOT
+   <dc:language>ja</dc:language>
+   <dc:identifier id="BookId">#{@identifier}</dc:identifier>
+ </metadata>
+ <manifest>
+EOT
+
+    if values["toc"]
+      f.puts <<EOT
+  <item id="ncx" href="#{bookname}.ncx" media-type="application/x-dtbncx+xml" />
+EOT
+    end
+
+    f.puts <<EOT
+  <item id="style" href="#{values["stylesheet"]}" media-type="text/css" />
+  <item id="#{bookname}" href="#{bookname}.html" media-type="application/xhtml+xml" />
+  <item id="top" href="top.html" media-type="application/xhtml+xml" />
+EOT
+
+    if values["toc"] && values["mytoc"]
+      f.puts <<EOT
+  <item id="toc" href="toc.html" properties="nav" media-type="application/xhtml+xml" />
+EOT
+    end
+
+    f.puts @manifeststr
+    if values["colophon"]
+      f.puts <<EOT
+  <item id="colophon" href="colophon.html" media-type="application/xhtml+xml" />
+EOT
+    end
+
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <item id="backcover" href="#{values["backcoverfile"]}" media-type="application/xhtml+xml" />
+EOT
+    end
+
+    if values["cover_linear"] && values["cover_linear"] != "no"
+      cover_linear = "yes"
+    else
+      cover_linear = "no"
+    end
+
+    f.puts <<EOT
+ </manifest>
+ <spine toc="ncx">
+  <itemref idref="#{bookname}" linear="#{cover_linear}" />
+  <itemref idref="top" />
+EOT
+
+    if values["toc"] && values["mytoc"]
+      f.puts <<EOT
+  <itemref idref="toc" />
+EOT
+    end
+
+    f.puts @ncxstr
+    if values["colophon"]
+      f.puts <<EOT
+  <itemref idref="colophon" />
+EOT
+    end
+    if values["backcoverfile"]
+      f.puts <<EOT
+  <itemref idref="backcover" />
+EOT
+    end
+    f.puts <<EOT
+ </spine>
+ <guide>
+EOT
+
+    if values["titlepage"]
+      f.puts <<EOT
+  <reference type="cover" title="表紙" href="#{bookname}.html"/>
+  <reference type="title-page" title="Title Page" href="top.html"/>
+EOT
+    end
+
+    if values["toc"] && values["mytoc"]
+      f.puts <<EOT
+  <reference type="toc" title="目次" href="toc.html"/>
+EOT
+    end
+    f.puts <<EOT
+ </guide>
+</package>
+EOT
+  }
+end
+
+
+def output_chaps(chapsfile, values)
+  File.open(chapsfile) {|chaps|
+    chaps.each_line {|l|
+      next if l =~ /^#/
+      output_chaps_by_file(l, values)
+    }
+  }
+end
+
+def output_chaps_by_file(l, values)
+  file_id = File.basename(l.chomp.strip,".*")
+  if (idx = $essential_files.index(file_id))
+    if idx == $essential_files.size - 1
+      STDERR.puts "#{file_id} is book name. Please rename #{l.chomp.strip}."
+    else
+      STDERR.puts "#{file_id} is special name. Please rename #{l.chomp.strip}."
+    end
+    exit 1
+  end
+  filename = "#{file_id}.html"
+  system("#{ReVIEW::MakerHelper.bindir}/review-compile --target=html --level=#{values["secnolevel"]} --htmlversion=#{values["htmlversion"]} --epubversion=#{values["epubversion"]} #{values["params"]} #{l} > #{@bookdir}/OEBPS/#{filename}")
+  getanchors("#{@bookdir}/OEBPS/#{filename}")
+  if @epubversion == 3 && include_mathml?("#{@bookdir}/OEBPS/#{filename}")
+    @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" properties="mathml" media-type="application/xhtml+xml" />\n)
+  else
+    @manifeststr << %Q(<item id="rv-#{file_id}" href="#{filename}" media-type="application/xhtml+xml" />\n)
+  end
+  @ncxstr << %Q(<itemref idref="rv-#{file_id}" />\n)
+end
+
+def include_mathml?(filename)
+  File.open(filename) {|f|
+    REXML::Document.new(f).each_element("//math"){
+      return true
+    }
+    return false
+  }
+  rescue
+    false
+end
+
+def getFigId(filename)
+  figid = filename.sub(/\.(png|gif|jpg|jpeg|svg)$/, '')
+  "fig-#{figid}"
+end
+
+def getTitle(filename)
+  File.open(filename) {|f|
+    return REXML::Document.new(f).elements["//html/head/title"].text
+  }
+end
+
+def getanchors(filename)
+  File.open(filename) {|f|
+    file = filename.sub(/.+\//, '')
+    f.each_line {|l|
+      if l =~ /\A<h(\d)[^>]*><a id=\"(.+?)\"><\/a>(.+?)<\/h/
+        # level, ID, content
+        @tocdesc << [$1.to_i, file, $2, $3]
+      end
+    }
+  }
+end
+
+def join_names(param)
+  if param.respond_to?(:join)
+    param.join(ReVIEW::I18n.t("names_splitter"))
+  else
+    param
+  end
+end
+
+def make_colophon_page(tmp,bookname,values)
+
+  header = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+EOT
+    header += make_doctype()
+    header += <<EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+EOT
+  if @htmlversion == 4
+    header += <<EOT
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  else
+    header += <<EOT
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  end
+    header += <<EOT
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+
+  footer = <<EOT
+</body>
+</html>
+EOT
+
+  colophon_path = "#{@bookdir}/OEBPS/colophon.html"
+  colophon = values["colophon"]
+  if colophon.kind_of?(String) && File.exist?(colophon)
+    File.open(colophon_path, "w") {|f|
+      f.puts header
+      File.open(values["colophon"]) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+      f.puts footer
+    }
+  else
+    File.open(colophon_path, "w") {|f|
+      f.puts header
+      f.puts <<EOT
+<div class="colophon">
+  <p class="title">#{values["booktitle"]}</p>
+EOT
+      if values["pubhistory"]
+        f.puts %Q[<div class="pubhistory">\n<p>#{values["pubhistory"].gsub(/\n/,"<br />")}</p>\n</div>]
+      end
+
+      f.puts <<EOT
+  <table>
+EOT
+      f.puts %Q[<tr>\n <th>著　者</th><td>#{join_names(values["aut"]) + ReVIEW::I18n.t("author_postfix")}</td>\n</tr>] if values["aut"]
+      f.puts %Q[<tr>\n <th>監　修</th><td>#{join_names(values["csl"]) + ReVIEW::I18n.t("supervisor_postfix")}</td>\n</tr>] if values["csl"]
+      f.puts %Q[<tr>\n <th>翻　訳</th><td>#{join_names(values["trl"]) + ReVIEW::I18n.t("translator_postfix")}</td>\n</tr>] if values["trl"]
+      f.puts %Q[<tr>\n <th>デザイン</th><td>#{join_names(values["dsr"])}</td>\n</tr>] if values["dsr"]
+      f.puts %Q[<tr>\n <th>イラスト</th><td>#{join_names(values["ill"])}</td>\n</tr>] if values["ill"]
+      f.puts %Q[<tr>\n <th>表　紙</th><td>#{join_names(values["cov"])}</td>\n</tr>] if values["cov"]
+      f.puts %Q[<tr>\n <th>編　集</th><td>#{join_names(values["edt"])}</td>\n</tr>] if values["edt"]
+      f.puts %Q[<tr>\n <th>発行所</th><td>#{values["prt"]}</td>\n</tr>] if values["prt"]
+      f.puts <<EOT
+   </table>
+EOT
+      if values["rights"]
+        f.puts %Q[<p class="copyright">#{values["rights"]}</p>]
+      end
+
+      f.puts "</div>"
+      f.puts footer
+    }
+  end
+end
+
+def make_part_page(part, filename, values)
+  File.open("#{@bookdir}/OEBPS/#{filename}", "w") {|f|
+    f.puts <<-EOT
+<?xml version="1.0" encoding="UTF-8"?>
+    EOT
+    doctype = make_doctype()
+    f.puts doctype
+  if @htmlversion == 4
+    header = <<-EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+    EOT
+  else
+    header = <<-EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+  <title>#{values["booktitle"]}</title>
+</head>
+    EOT
+  end
+    f.puts header
+
+    f.puts <<-EOT
+<body>
+<h1 class="part-number">#{ReVIEW::I18n.t("part", part.number)}</h1>
+    EOT
+
+    if part.name.strip.present?
+      f.puts <<-EOT
+<h2 class="part-title">#{part.name.strip}</h2>
+      EOT
+    end
+
+    f.puts <<-EOT
+</body>
+</html>
+    EOT
+  }
+end
+
+def make_backcover_image(bookname, values)
+  backcoverfile = values["backcoverfile"]
+  File.open("#{@bookdir}/OEBPS/#{backcoverfile}", "w") {|f|
+    f.puts <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+EOT
+    doctype = make_doctype()
+    f.puts doctype
+    f.puts <<EOT
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+EOT
+  if @htmlversion == 4
+    f.puts <<EOT
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  else
+    f.puts <<EOT
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="#{values["stylesheet"]}"/>
+  <meta name="generator" content="Re:VIEW EPUB Maker"/>
+EOT
+  end
+    f.puts <<EOT
+  <title>#{values["booktitle"]}</title>
+</head>
+<body>
+EOT
+    if File.exist?(backcoverfile)
+      File.open(backcoverfile) {|f2|
+        f2.each_line {|l|
+          f.puts l
+        }
+      }
+    else
+      f.puts <<EOT
+<div id="back-cover-image" class="full">
+  <img src="images/#{backcoverfile}" alt="back-cover"/>
+</div>
+EOT
+    end
+
+    f.puts <<EOT
+</body>
+</html>
+EOT
+  }
+end
+
+
+
+
+main

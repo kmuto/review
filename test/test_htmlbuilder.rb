@@ -11,14 +11,14 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = HTMLBuilder.new()
-    @param = {
+    @config = ReVIEW::Configure.values
+    @config.merge!({
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
-      "subdirmode" => nil,
       "stylesheet" => nil,  # for HTMLBuilder
-    }
-    ReVIEW.book.param = @param
+    })
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -26,7 +26,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_xmlns_ops_prefix_epub3
-    ReVIEW.book.param["epubversion"] = 3
+    ReVIEW.book.config["epubversion"] = 3
     assert_equal "epub", @builder.xmlns_ops_prefix
   end
 
@@ -39,10 +39,79 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
   end
 
+  def test_headline_level1_postdef
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(1,"test","this is test.")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録1　this is test.</h1>\n|, @builder.raw_result
+  end
+
+  def test_headline_level2_postdef
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(2,"test","this is test.")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, @builder.raw_result
+  end
+
+  def test_headline_level1_postdef_roman
+    @chapter.book.config["appendix_format"] = "roman"
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(1,"test","this is test.")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録I　this is test.</h1>\n|, @builder.raw_result
+  end
+
+  def test_headline_level2_postdef_roman
+    @chapter.book.config["appendix_format"] = "roman"
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(2,"test","this is test.")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>I.1　this is test.</h2>\n|, @builder.raw_result
+  end
+
+  def test_headline_level1_postdef_alpha
+    @chapter.book.config["appendix_format"] = "alpha"
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(1,"test","this is test.")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録A　this is test.</h1>\n|, @builder.raw_result
+  end
+
+  def test_headline_level2_postdef_alpha
+    @chapter.book.config["appendix_format"] = "alpha"
+    @chapter.instance_eval do
+      def on_POSTDEF?
+        true
+      end
+    end
+    @builder.headline(2,"test","this is test.")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>A.1　this is test.</h2>\n|, @builder.raw_result
+  end
+
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    ReVIEW.book.config["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, @builder.raw_result
+  end
+
+  def test_headline_level1_with_tricky_id
+    @builder.headline(1,"123 あ_;","this is test.")
+    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, @builder.raw_result
   end
 
   def test_headline_level1_with_inlinetag
@@ -61,7 +130,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    ReVIEW.book.config["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, @builder.raw_result
   end
@@ -69,6 +138,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_label
     @builder.label("label_test")
     assert_equal %Q|<a id="label_test"></a>\n|, @builder.raw_result
+  end
+
+  def test_label_with_tricky_id
+    @builder.label("123 あ_;")
+    assert_equal %Q|<a id="id_123-_E3_81_82___3B"></a>\n|, @builder.raw_result
   end
 
   def test_href
@@ -147,11 +221,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::HeadlineIndex.new(items, self)
     end
 
-    @param["secnolevel"] = 2
+    @config["secnolevel"] = 2
     ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「te_st」 test2|, ret
 
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
     assert_equal %Q|test 「1.1.1 te_st」 test2|, ret
   end
@@ -174,6 +248,19 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_inline_ref
     ret = @builder.compile_inline("@<ref>{外部参照<>&}")
     assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, ret
+  end
+
+  def test_inline_mathml
+    begin
+      require 'math_ml'
+      require "math_ml/symbol/character_reference"
+    rescue LoadError
+      return true
+    end
+    @config["mathml"] = true
+    ret = @builder.compile_inline("@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}")
+    @config["mathml"] = nil
+    assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", ret
   end
 
   def test_quote
@@ -207,39 +294,50 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_image
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
     @builder.image_image("sampleimg","sample photo",nil)
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
     @builder.image_image("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def test_image_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
     @builder.image_image("sampleimg","sample photo","scale=1.2,html::class=sample,latex::ignore=params")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_image_with_tricky_id
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("123 あ_;",1)
+      item.instance_eval{@path="./images/chap1-123 あ_;.png"}
+      item
+    end
+
+    @builder.image_image("123 あ_;","sample photo",nil)
+    assert_equal %Q|<div id="id_123-_E3_81_82___3B" class="image">\n<img src="images/chap1-123 あ_;.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, @builder.raw_result
   end
 
   def test_indepimage
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -250,7 +348,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -261,7 +359,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -272,7 +370,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -283,7 +381,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -297,12 +395,22 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
     @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
 
-    begin # FIXME: Use params instead of exception handling
-      require 'pygments'
-      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #666666">&lt;</span>i<span style="color: #666666">&gt;2&lt;/</span>i<span style="color: #666666">&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result
-    rescue LoadError
-      assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, @builder.raw_result
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, @builder.raw_result
+  end
+
+  def test_list_pygments
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
     end
+    begin
+      require 'pygments'
+    rescue LoadError
+      return true
+    end
+    ReVIEW.book.config["pygments"] = true
+    @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
+
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, @builder.raw_result
   end
 
   def test_emlist
@@ -428,6 +536,31 @@ EOS
       column_helper(review)
     end
   end
+
+  def test_column_ref
+    review =<<-EOS
+===[column]{foo} test
+
+inside column
+
+=== next level
+
+this is @<column>{foo}.
+EOS
+    expect =<<-EOS
+<div class="column">
+
+<h3 id="foo"><a id="column-1"></a>test</h3>
+<p>inside column</p>
+</div>
+
+<h3><a id="h1-0-1"></a>next level</h3>
+<p>this is test.</p>
+EOS
+
+    assert_equal expect, column_helper(review)
+  end
+
 
   def test_ul
     src =<<-EOS
@@ -611,44 +744,31 @@ EOS
 
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw1
     @builder.raw("|html|<>!\"\\n& ")
-    expect =<<-EOS
-<>!"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw2
     @builder.raw("|html, latex|<>!\"\\n& ")
-    expect =<<-EOS
-<>!\"
-& 
-EOS
+    expect = %Q(<>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw3
     @builder.raw("|latex, idgxml|<>!\"\\n& ")
-    expect =<<-EOS
-EOS
+    expect = ''
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw4
     @builder.raw("|html <>!\"\\n& ")
-    expect =<<-EOS
-|html <>!\"
-& 
-EOS
+    expect = %Q(|html <>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
@@ -657,7 +777,17 @@ EOS
     @chapter.instance_eval{@footnote_index=fn}
     @builder.footnote("foo",'bar\\a\\$buz')
     expect =<<-'EOS'
-<div class="footnote"><p class="footnote">[<a id="fn-foo">*1</a>] bar\a\$buz</p></div>
+<div class="footnote" id="fn-foo"><p class="footnote">[<a href="#fnb-foo">*1</a>] bar\a\$buz</p></div>
+EOS
+    assert_equal expect, @builder.raw_result
+  end
+
+  def test_inline_fn_with_tricky_id
+    fn = Book::FootnoteIndex.parse(['//footnote[123 あ_;][bar\\a\\$buz]'])
+    @chapter.instance_eval{@footnote_index=fn}
+    @builder.footnote("123 あ_;",'bar\\a\\$buz')
+    expect =<<-'EOS'
+<div class="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[<a href="#fnb-id_123-_E3_81_82___3B">*1</a>] bar\a\$buz</p></div>
 EOS
     assert_equal expect, @builder.raw_result
   end

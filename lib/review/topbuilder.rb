@@ -171,7 +171,7 @@ module ReVIEW
       else
         raise "caption level too deep or unsupported: #{level}"
       end
-      prefix = "" if (level.to_i > ReVIEW.book.param["secnolevel"])
+      prefix = "" if (level.to_i > @book.config["secnolevel"])
       puts "■H#{level}■#{prefix}#{compile_inline(caption)}"
     end
 
@@ -230,7 +230,7 @@ module ReVIEW
       blank
     end
 
-    alias :lead read
+    alias_method :lead, :read
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
@@ -381,7 +381,7 @@ module ReVIEW
     def td(str)
       str
     end
-    
+
     def table_end
       puts "◆→終了:#{@titles["table"]}←◆"
       blank
@@ -461,7 +461,7 @@ module ReVIEW
       "★#{str}☆"
     end
 
-    alias :inline_strong inline_b
+    alias_method :inline_strong, :inline_b
 
     def inline_tt(str)
       "△#{str}☆"
@@ -471,7 +471,7 @@ module ReVIEW
       "★#{str}☆◆→等幅フォント太字←◆"
     end
 
-    alias :inline_ttbold inline_ttb
+    alias_method :inline_ttbold, :inline_ttb
 
     def inline_tti(str)
       "▲#{str}☆◆→等幅フォントイタ←◆"
@@ -523,12 +523,12 @@ module ReVIEW
 
     def common_column_begin(type, caption)
       blank
-      puts "◆→開始:#{@titles["type"]}←◆"
+      puts "◆→開始:#{@titles[type]}←◆"
       puts %Q[■#{compile_inline(caption)}]
     end
 
     def common_column_end(type)
-      puts %Q[◆→終了:#{@titles["type"]}←◆]
+      puts %Q[◆→終了:#{@titles[type]}←◆]
       blank
     end
 
@@ -676,7 +676,7 @@ module ReVIEW
       base_block "insn", lines, caption
     end
 
-    alias :box insn
+    alias_method :box, :insn
 
     def indepimage(id, caption=nil, metric=nil)
       blank
@@ -690,7 +690,7 @@ module ReVIEW
       blank
     end
 
-    alias :numberlessimage indepimage
+    alias_method :numberlessimage, :indepimage
 
     def label(id)
       # FIXME
@@ -727,11 +727,11 @@ module ReVIEW
     def inline_br(str)
       %Q(\n)
     end
-    
+
     def text(str)
       str
     end
-    
+
     def inline_chap(id)
       #"「第#{super}章　#{inline_title(id)}」"
       # "第#{super}章"
@@ -740,9 +740,9 @@ module ReVIEW
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless ReVIEW.book.param["chapref"].nil?
-        _chs = convert_inencoding(ReVIEW.book.param["chapref"],
-                                  ReVIEW.book.param["inencoding"]).split(",")
+      unless @book.config["chapref"].nil?
+        _chs = convert_inencoding(@book.config["chapref"],
+                                  @book.config["inencoding"]).split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
@@ -768,7 +768,7 @@ module ReVIEW
       %Q(「◆→#{idref}←◆」) # 節、項を参照
     end
 
-    alias inline_ref inline_labelref
+    alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(idref)
       %Q(●ページ◆→#{idref}←◆) # ページ番号を参照

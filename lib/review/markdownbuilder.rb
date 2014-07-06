@@ -88,7 +88,15 @@ module ReVIEW
       "*#{str.gsub(/\*/, '\*')}*"
     end
 
+    def inline_em(str)
+      "*#{str.gsub(/\*/, '\*')}*"
+    end
+
     def inline_b(str)
+      "**#{str.gsub(/\*/, '\*')}**"
+    end
+
+    def inline_strong(str)
       "**#{str.gsub(/\*/, '\*')}**"
     end
 

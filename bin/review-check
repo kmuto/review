@@ -2,7 +2,7 @@
 #
 #
 # Copyright (c) 1999-2007 Minero Aoki
-# Copyright (c) 2010 Kenshi Muto, Minero Aoki
+# Copyright (c) 2010-2014 Kenshi Muto, Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -32,40 +32,42 @@ end
 
 def main
   $KCODE = 'UTF-8' unless defined?(Encoding)
-  @param = {
+  @config = ReVIEW::Configure.values
+  @config.merge!({
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8"
-  }
+  })
 
   modes = nil
   files = ARGV unless ARGV.empty?
-  parser = OptionParser.new
-  parser.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    @param["inencoding"] = enc
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
+    @config["inencoding"] = enc
   }
-  parser.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    @param["outencoding"] = enc
+  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
+    @config["outencoding"] = enc
   }
-  parser.on('-a', '--all-chapters', 'Check all chapters.') {
+  opts.on('-a', '--all-chapters', 'Check all chapters.') {
     files = ReVIEW.book.chapters.map {|ent| ent.path }
   }
-  parser.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
+  opts.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
     ents = ReVIEW.env.parts[Integer(n) - 1] or
         raise ReVIEW::ApplicationError, "section #{n} not exist"
     files = ents.map {|ent| ent.path }
   }
-  parser.on('--text', 'Check text.') {
+  opts.on('--text', 'Check text.') {
     (modes ||= []).push :text
   }
-  parser.on('--help', 'print this message and quit.') {
-    puts parser.help
+  opts.on('--help', 'print this message and quit.') {
+    puts opts.help
     exit 0
   }
   begin
-    parser.parse!
+    opts.parse!
   rescue OptionParser::ParseError => err
     $stderr.puts err.message
-    $stderr.puts parser.help
+    $stderr.puts opts.help
     exit 1
   end
   unless files
@@ -95,7 +97,7 @@ def check_text(files)
           next if neg and neg =~ s
           str, offset = find_line(para, re)
           out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
-          print convert_outencoding(out, @param["outencoding"])
+          print convert_outencoding(out, @config["outencoding"])
         end
       end
     }
@@ -137,7 +139,7 @@ end
 def each_paragraph(f)
   $ReVIEW_utils_word_ok = nil
   while line = f.gets
-    line = convert_inencoding(line, @param["inencoding"])
+    line = convert_inencoding(line, @config["inencoding"])
 
     case line
     when /\A\#@ok\((.*)\)/

@@ -23,19 +23,29 @@ module ReVIEW
       str.gsub(/[&"<>]/) {|c| t[c] }
     end
 
+    alias_method :escape, :escape_html
+
     def unescape_html(str)
       # FIXME better code
       str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
     end
 
+    alias_method :unescape, :unescape_html
+
     def strip_html(str)
       str.gsub(/<\/?[^>]*>/, "")
+    end
+
+    def escape_comment(str)
+      str.gsub('-', '&#45;')
     end
 
     def highlight(ops)
       body = ops[:body] || ''
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
+
+      return body if @book.config["pygments"].nil?
 
       begin
         require 'pygments'
@@ -55,5 +65,16 @@ module ReVIEW
           body
       end
     end
+
+    def normalize_id(id)
+      if id =~ /\A[a-z][a-z0-9_.-]*\Z/i
+        return id
+      elsif id =~ /\A[0-9_.-][a-z0-9_.-]*\Z/i
+        return "id_#{id}" # dummy prefix
+      else
+        return "id_#{CGI.escape(id.gsub("_", "__")).gsub("%", "_").gsub("+", "-")}" # escape all
+      end
+    end
   end
+
 end   # module ReVIEW

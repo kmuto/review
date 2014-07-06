@@ -4,6 +4,7 @@ require 'test_helper'
 require 'tmpdir'
 require 'fileutils'
 require 'yaml'
+require 'rbconfig'
 
 REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker', File.dirname(__FILE__))
 
@@ -23,14 +24,17 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
   end
 
   def test_epubmaker_cmd
-    config = prepare_samplebook(@tmpdir1)
-    builddir = @tmpdir1 + "/" + config['bookname'] + '-epub'
-    assert ! File.exists?(builddir)
+    if RUBY_VERSION !~ /^1.8/
+      config = prepare_samplebook(@tmpdir1)
+      builddir = @tmpdir1 + "/" + config['bookname'] + '-epub'
+      assert ! File.exist?(builddir)
 
-    Dir.chdir(@tmpdir1) do
-      system("#{REVIEW_EPUBMAKER} config.yml 1>/dev/null 2>/dev/null")
+      ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
+      Dir.chdir(@tmpdir1) do
+        system("#{ruby_cmd} -S #{REVIEW_EPUBMAKER} config.yml 1>/dev/null 2>/dev/null")
+      end
+
+      assert File.exist?(builddir)
     end
-
-    assert File.exists?(builddir)
   end
 end

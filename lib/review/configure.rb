@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 module ReVIEW
-  class Configure
+  class Configure < Hash
     def self.values
-      { # These parameters can be overridden by YAML file.
+      Configure[
+        # These parameters can be overridden by YAML file.
         "bookname"=> "example", # it defines epub file name also
-        "booktitle" => "ReVIEW EPUBサンプル",
+        "booktitle" => "Re:VIEW EPUBサンプル",
         "title" => nil,
         "aut" => nil, # author
         "prt" => nil, # printer(publisher)
@@ -32,7 +33,8 @@ module ReVIEW
         "toc" => true, # Use table of contents
         "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
-      }
+        "catalogfile" => 'catalog.yml',
+      ]
     end
   end
 end

@@ -35,7 +35,7 @@ module ReVIEW
       end
     end
 
-    alias to_s string
+    alias_method :to_s, :string
   end
 
 
@@ -187,6 +187,7 @@ module ReVIEW
     definline :hd
     definline :href
     definline :recipe
+    definline :column
 
     definline :abbr
     definline :acronym
@@ -293,7 +294,7 @@ module ReVIEW
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-        if ReVIEW.book.param["hdnumberingmode"]
+        if ReVIEW.book.config["hdnumberingmode"]
           caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
           warn "--hdnumberingmode is deprecated. use --level option."
         end

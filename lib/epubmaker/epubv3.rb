@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv3.rb -- EPUB version 3 producer.
 #
-# Copyright (c) 2010-2013 Kenshi Muto
+# Copyright (c) 2010-2014 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -12,51 +12,36 @@
 require 'epubmaker/epubv2'
 
 module EPUBMaker
-  
+
   # EPUBv3 is EPUB version 3 producer.
   class EPUBv3 < EPUBv2
+    def opf_guide
+      s = ""
+      s << %Q[  <guide>\n]
+      s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
+      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="titlepage.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["titlepage"].nil?
+      s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>\n]
+      s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil?
+      s << %Q[  </guide>\n]
+      s
+    end
+
     def ncx(indentarray)
-      # FIXME: handle indentarray
       s = common_header
       s << <<EOT
   <title>#{@producer.res.v("toctitle")}</title>
 </head>
 <body>
-  <nav epub:type="toc" id="toc">
+  <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>
-  <ul class="toc-h1">
 EOT
 
-      current = 1
-      init_item = true
-      @producer.contents.each do |item|
-        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
-        if item.level > current
-          s << %Q[\n<ul class="toc-h#{item.level}">\n]
-          current = item.level
-        elsif item.level < current
-          (current - 1).downto(item.level) do |n|
-            s << %Q[</li>\n</ul>\n]
-          end
-          s << %Q[</li>\n]
-          current = item.level
-        elsif init_item
-          # noop
-        else
-          s << %Q[</li>\n]
-        end
-        s << %Q[<li><a href="#{item.file}">#{item.title}</a>]
-        init_item = false
-      end
-      
-      (current - 1).downto(1) do |n|
-        s << %Q[</li>\n</ul>\n]
-      end
-      if !init_item
-      s << %Q[</li>\n]
+      if @producer.params["flattoc"].nil?
+        s << hierarchy_ncx("ol")
+      else
+        s << flat_ncx("ol", @producer.params["flattocindent"])
       end
       s << <<EOT
-  </ul>
   </nav>
 </body>
 </html>
@@ -97,7 +82,7 @@ EOT
       end
 
       # creator (should be array)
-      %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
+      %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
           s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:creator>\n]
@@ -106,7 +91,7 @@ EOT
       end
 
       # contributor (should be array)
-      %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
+      %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
           s << %Q[    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
@@ -139,10 +124,14 @@ EOT
           end
         end
       end
-      
+
       @producer.contents.each do |item|
         next if item.file =~ /#/ || item.id.nil? # skip subgroup, or id=nil (for cover)
-        s << %Q[    <item#{mathstr} id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
+        propstr = ""
+        if item.properties.size > 0
+          propstr = %Q[ properties="#{item.properties.sort.uniq.join(" ")}"]
+        end
+        s << %Q[    <item#{mathstr} id="#{item.id}" href="#{item.file}" media-type="#{item.media}"#{propstr}/>\n]
       end
       s << %Q[  </manifest>\n]
 
@@ -153,8 +142,8 @@ EOT
       s = ""
       s << %Q[  <spine>\n]
       s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="no"/>\n]
-      s << %Q[    <itemref idref="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" />\n] unless @producer.params["mytoc"].nil?
-      
+#      s << %Q[    <itemref idref="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" />\n]
+
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
         s << %Q[    <itemref idref="#{item.id}"/>\n] if item.notoc.nil?
@@ -202,7 +191,7 @@ EOT
           end
         end
       end
-      
+
       s << <<EOT
     <item id="#{@producer.params["bookname"]}" href="#{@producer.params["cover"]}" media-type="application/xhtml+xml"/>
 EOT
@@ -213,16 +202,17 @@ EOT
       s =<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2011/epub" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/epub" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
 <head>
   <meta charset="UTF-8" />
-  <meta name="generator" content="EPUBMaker::Producer"/>
+  <meta name="generator" content="Re:VIEW" />
 EOT
-      
+
       @producer.params["stylesheet"].each do |file|
         s << %Q[  <link rel="stylesheet" type="text/css" href="#{file}"/>\n]
       end
       s
     end
+
   end
 end

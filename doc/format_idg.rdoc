@@ -1,6 +1,6 @@
-= ReVIEW フォーマット InDesign XML 形式拡張
+= Re:VIEW フォーマット InDesign XML 形式拡張
 
-ReVIEW フォーマットから、Adobe 社の DTP ソフトウェア「InDesign」
+Re:VIEW フォーマットから、Adobe 社の DTP ソフトウェア「InDesign」
 で読み込んで利用しやすい XML 形式に変換できます (通常の XML とほぼ同じ
 ですが、文書構造ではなく見た目を指向した形態になっています)。
 現時点では idgxmlbuilder.rb と topbuilder.rb のみが拡張に対応しています。
@@ -107,7 +107,7 @@ XMLとしては<label id='〜' />と<labelref idref='〜' />というタグに
 という特別な書式を代わりに使います。
 
 == ロー指定
-現時点で ReVIEW はブロックの入れ子処理ができないため、ロー指定で XML
+現時点で Re:VIEW はブロックの入れ子処理ができないため、ロー指定で XML
 エレメントを指定しなければならないこともあります。
 
 インラインの@<raw>{ 〜 }の他に、単一行の//raw[〜]、ブロック版の //rawblock{ 〜 //} でも、フォーマット処理をせずにそのままの文字列が出力できます。

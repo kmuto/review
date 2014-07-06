@@ -1,3 +1,178 @@
+Sun Jun 29 22:12:58 2014  Masanori Kado <kdmsnr@gmail.com>
+
+	* Release 1.3.0.
+
+Sun Jun 29 10:40:02 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* Now review-epubmaker-ng becomes review-epubmaker.
+	  Previous review-epubmaker is renamed to review-epubmaker-legacy.
+	  We believe new review-epubmaker has a compatibility with
+	  previous version, but please inform us if you meet a different
+	  behavior. See doc/libepubmaker/config.yml for details of
+	  configurations.
+
+Fri Jun 27 22:49:17 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker/epubv2.rb: insert dummy <span> element with
+	  double-width space in tree toc when <li> element has only
+	  child <ol> element. Closes #285.
+
+Tue Jun 17 10:36:31 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/base.rb:
+	  remove (rarely used) features.
+	   * ignore ./config.rb file
+	   * ignore ./lib/review/* files
+	   * ignore ./*/*.re and ./*/*/*.re files
+
+Wed Jun 11 20:15:00 2014  KADO Masanori  <kdmsnr@gmail.com>
+
+	* lib/review/book/base.rb (ReVIEW::Book::Base#config):
+	  Rename method and instance variable from param to config.
+
+Sun Jun  8 22:55:39 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb, lib/review/htmlutils.rb,
+	  test/test_htmlbuilder.rb, test/test_htmlutils.rb:
+	  normalize html ID. ID must be /\A[a-z][0-9a-z_.-]*/
+	  with case insensitive.
+
+Sun Jun  8 22:04:29 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-epubmaker, bin/review-pdfmaker,
+	  lib/review/epubmaker.rb, lib/review/makerhelper.rb:
+	  review-*maker calls review-compile of exactly same
+	  directory. Closes #228, #288.
+
+Sat Jun  7 00:37:17 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlbuilder.rb:
+	  use the value of htmlext variable for html file
+	  extension, instead of static ".html".
+
+Sat Jun  7 00:06:37 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker/content.rb, lib/epubmaker/epubv3.rb,
+	  lib/review/epubmaker.rb:
+	  add properties='svg' attribute to OPF item of HTML
+	  which links SVG file (to satisfy EPUB3 spec.)
+
+Wed Jun  4 12:05:36 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* add safe mode.
+          This feature checks a numeric value of REVIEW_SAFE_MODE
+	  environment variable.
+           bit1(+1) : blocks any hooks of epubmaker.
+           bit2(+2) : blocks review-ext.rb.
+           bit3(+4) : blocks user's custom html layouts.
+
+Mon Jun  2 14:23:28 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yml, lib/epubmaker/producer.rb,
+	  lib/review/epubmaker.rb: implement strict image finder mode
+	  for review-epubmaker-ng.
+	  review-epubmaker-ng picks up the images which are used in each
+	  HTMLs and CSSs by declareing 'verify_target_images: true' in yml.
+
+Thu May 28 00:51:08 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/image_finder.rb:
+	  add new class ReVIEW::Book::ImageFinder extracted from ReVIEW::Book::Index
+
+	  Index#find_pathes moves to ImageFinder#find_path, and select only one (first) path
+	  because rest pathes is not used.
+	  ImageFinder is an independent class, so you can get image pathes without ImageIndex.
+
+
+Sat Apr 12 16:31:11 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/index.rb: allow same @<icon>s in one document (remove warning)
+
+Thu Apr  3 19:03:03 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* change all .yaml to .yml. (#244)
+	  locale.yaml is still supported for backward compatibility.
+	  (but locale.yml is preferred.)
+
+Thu Apr  3 18:41:42 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/latexbuilder.rb: escape idx string.
+
+Thu Apr  3 09:53:26 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/epubmaker: add zip_addpath parameter to include
+	  extra pathes in ePUB file.
+	* Rename sample YAML file's extension from .yaml to .yml.
+
+Wed Apr  2 22:34:56 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* Release 1.2.0.
+
+Tue Mar 25 19:11:36 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book/index.rb, bin/review-compile:
+	  improve the image file finder.
+	  Now review-compile finds a image file from:
+	  1. <imgdir>/<builder>/<chapid>/<id>.<ext>
+	  2. <imgdir>/<builder>/<chapid>-<id>.<ext>
+	  3. <imgdir>/<builder>/<id>.<ext>
+	  4. <imgdir>/<chapid>/<id>.<ext>
+	  5. <imgdir>/<chapid>-<id>.<ext>
+	  6. <imgdir>/<id>.<ext>
+
+Sun Mar 23 23:54:27 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yaml, lib/epubmaker/epubv2.rb,
+	  lib/epubmaker/epubv3.rb, lib/epubmaker/poducer.rb,
+	  test/test_epubmaker.rb: support both hierarchy toc and
+	  flat toc.
+
+Sun Mar 23 18:05:53 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yaml, lib/epubmaker/epubv2.rb,
+	  lib/epubmaker/epubv3.rb, lib/epubmaker/poducer.rb,
+	  lib/review/epubmaker.rb: use <bookname>-toc.<htmlext> for
+	  ePUB2 as same as ePUB3. dropped tocfile parameter.
+	  Closes: #237
+
+Tue Mar 18 18:37:12 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* doc/libepubmaker/config.yaml: add descriptions of some parameters.
+
+Tue Mar 18 17:57:23 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* epubmaker/content.rb, epubmaker/producer.rb, epubmaker.rb:
+	  add embeded font support. By default, review-epubmaker-ng
+	  takes fonts/*.{otf|ttf|woff} and images/*.{otf|ttf|woff}.
+	  You can change this behaviour by modifying image_ext, font_ext,
+	  fontdir, and imagedir in config.yaml.
+
+Thu Mar 13 11:34:15 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/htmlutils.rb, lib/review/epubmaker.rb, test_htmlbuilder.rb: use pygments higlighting only if "pygments: true" is defined.
+
+Thu Mar 13 09:52:50 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* epubmaker/epubv3.rb: <nav> needs own epub namespace. <nav> should use <ol>, not <ul>.
+
+Thu Mar 13 00:36:58 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/epubmaker.rb: remove unnecessary escape character for review-epubmaker-ng.
+
+Wed Mar 12 20:14:22 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* epubmaker/epubv2.rb, epubmaker/producer.rb, review/epubmaker.rb:
+	  - use system() instead of exec() for review-epubmaker-ng.
+	  - hand over stylesheet values to review-compile in review-epubmaker-ng.
+
+Wed Mar 12 20:03:12 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-pdfmaker: support LuaLaTeX.
+
+Sat Mar  8 23:16:52 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* 'ReVIEW' has been renamed to 'Re:VIEW'.
+
 Tue Oct  8 18:57:54 2013  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/htmlbuilder.rb:

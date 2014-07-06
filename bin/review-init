@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2013 Masanori Kado
+# Copyright (c) 2013-2014 Masanori Kado
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -8,22 +8,46 @@
 # For details of the GNU LGPL, see the file "COPYING".
 
 require 'fileutils'
+require 'optparse'
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review/version'
 
 def main
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0)} dirname"
+  opts.on('-h', '--help', 'print this message and quit.') {
+    puts opts.help
+    exit 0
+  }
+  begin
+    opts.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts opts.help
+    exit 1
+  end
+
   if ARGV.empty?
-    puts "Usage: #{File.basename($0)} dirname"
-    exit
+    $stderr.puts opts.help
+    exit 1
   end
 
   initdir = File.expand_path(ARGV.shift)
   @review_dir = File.dirname(File.expand_path(__FILE__ + "./../"))
 
   generate_dir(initdir) do |dir|
-    generate_review_setting_files(dir)
+    generate_catalog_file(dir)
     generate_sample(dir)
     generate_images_dir(dir)
     generate_cover_image(dir)
     generate_layout(dir)
+    generate_style(dir)
     generate_texmacro(dir)
     generate_config(dir)
     generate_rakefile(dir)
@@ -56,7 +80,7 @@ def generate_layout(dir)
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="stylesheet" type="text/css" href="style.css" />
-  <meta name="generator" content="ReVIEW" />
+  <meta name="generator" content="Re:VIEW" />
   <title><%= title %></title>
 </head>
 <body>
@@ -67,12 +91,18 @@ EOS
   end
 end
 
-def generate_review_setting_files(dir)
-  File.open(dir + "/PREDEF", "w")
-  File.open(dir + "/CHAPS", "w") do |file|
-    file.write("#{File.basename(dir)}.re")
+def generate_catalog_file(dir)
+  File.open(dir + "/catalog.yml", "w") do |file|
+    file.write <<-EOS
+PREDEF:
+
+CHAPS:
+  - #{File.basename(dir)}.re
+
+POSTDEF:
+
+EOS
   end
-  File.open(dir + "/POSTDEF", "w")
 end
 
 def generate_images_dir(dir)
@@ -88,7 +118,7 @@ def generate_config(dir)
 end
 
 def generate_style(dir)
-  File.open(dir + "/style.css", "w")
+  FileUtils.cp @review_dir + "/test/sample-book/src/style.css", dir
 end
 
 def generate_texmacro(dir)

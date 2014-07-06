@@ -245,8 +245,8 @@ class UUID
 		m = unpack[5].unpack 'C*'
 		'%02x%02x%02x%02x%02x%02x' % m
 	end
-	alias mac_address node
-	alias ieee802 node
+	alias_method :mac_address, :node
+	alias_method :ieee802, :node
 
 	# Generate the string representation (a.k.a GUID) of this UUID
 	def to_s
@@ -254,21 +254,21 @@ class UUID
 		a[-1] = mac_address
 		"%08x-%04x-%04x-%02x%02x-%s" % a
 	end
-	alias guid to_s
+	alias_method :guid, :to_s
 
 	# Convert into a RFC4122-comforming URN representation
 	def to_uri
 		"urn:uuid:" + self.to_s
 	end
-	alias urn to_uri
-	alias inspect to_uri
+	alias_method :urn, :to_uri
+	alias_method :inspect, :to_uri
 
 	# Convert into 128-bit unsigned integer
 	# Typically a Bignum instance, but can be a Fixnum.
 	def to_int
 		@num
 	end
-	alias to_i to_int
+	alias_method :to_i, :to_int
 
 	# Two  UUIDs  are  said  to  be  equal if  and  only  if  their  (byte-order
 	# canonicalized) integer representations are equivallent.  Refer RFC4122 for
@@ -276,7 +276,7 @@ class UUID
 	def == other
 		to_i == other.to_i
 	end
-	alias eql? ==
+	alias_method :eql?, :==
 
 	# Two identical UUIDs should have same hash
 	def hash

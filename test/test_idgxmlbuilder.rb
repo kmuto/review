@@ -11,15 +11,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = IDGXMLBuilder.new()
-    @param = {
+    @config = {
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "nolf" => true,
-      "tableopt" => "10",
-      "subdirmode" => nil,
+      "tableopt" => "10"
     }
-    ReVIEW.book.param = @param
+    ReVIEW.book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -32,7 +31,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    @param["secnolevel"] = 0
+    @config["secnolevel"] = 0
     @builder.headline(1,"test","this is test.")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><title id="test" aid:pstyle="h1">this is test.</title><?dtp level="1" section="this is test."?>|, @builder.raw_result
   end
@@ -49,7 +48,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
 
   def test_headline_level3_with_secno
-    @param["secnolevel"] = 3
+    @config["secnolevel"] = 3
     @builder.headline(3,"test","this is test.")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><title id="test" aid:pstyle="h3">1.0.1　this is test.</title><?dtp level="3" section="1.0.1　this is test."?>|, @builder.raw_result
   end
@@ -95,17 +94,17 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_in_table_without_cellwidth
-    @param["tableopt"] = nil
+    @config["tableopt"] = nil
     ret = @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><table><tbody><tr type="header"><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, @builder.raw_result
-    @param["tableopt"] = 10
+    @config["tableopt"] = 10
   end
 
   def test_inline_in_table_without_header_and_cellwidth
-    @param["tableopt"] = nil
+    @config["tableopt"] = nil
     ret = @builder.table(["<b>1</b>\t<i>2</i>", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><table><tbody><tr><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, @builder.raw_result
-    @param["tableopt"] = 10
+    @config["tableopt"] = 10
   end
 
   def test_inline_br
@@ -173,9 +172,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_quote_deprecated
     lines = ["foo","","buz"]
-    ReVIEW.book.param["deprecated-blocklines"] = true
+    ReVIEW.book.config["deprecated-blocklines"] = true
     @builder.quote(lines)
-    ReVIEW.book.param["deprecated-blocklines"] = nil
+    ReVIEW.book.config["deprecated-blocklines"] = nil
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote>foo\n\nbuz</quote>|, @builder.raw_result
   end
 
@@ -195,9 +194,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_term_deprecated
-    ReVIEW.book.param["deprecated-blocklines"] = true
+    ReVIEW.book.config["deprecated-blocklines"] = true
     @builder.term(["test1", "test1.5", "", "test<i>2</i>"])
-    ReVIEW.book.param["deprecated-blocklines"] = nil
+    ReVIEW.book.config["deprecated-blocklines"] = nil
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><term>test1\ntest1.5\n\ntest<i>2</i></term>|, @builder.raw_result
   end
 
@@ -227,7 +226,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_emlist_listinfo
-    @param["listinfo"] = true
+    @config["listinfo"] = true
     @builder.emlist(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></list>|, @builder.raw_result
   end
@@ -255,22 +254,22 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
-    @param["listinfo"] = true
+    @config["listinfo"] = true
     @builder.list(["test1", "test1.5", "", "test<i>2</i>"], "samplelist", "this is @<b>{test}<&>_")
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></codelist>|, @builder.raw_result
   end
 
   def test_insn
-    @param["listinfo"] = true
+    @config["listinfo"] = true
     @builder.insn(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
-    @param["listinfo"] = nil
+    @config["listinfo"] = nil
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><insn><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></insn>|, @builder.raw_result
   end
 
   def test_box
-    @param["listinfo"] = true
+    @config["listinfo"] = true
     @builder.box(["test1", "test1.5", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
-    @param["listinfo"] = nil
+    @config["listinfo"] = nil
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></box>|, @builder.raw_result
   end
 
@@ -294,7 +293,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_image
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -305,7 +304,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -316,7 +315,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_image_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -327,7 +326,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -338,7 +337,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -349,7 +348,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -360,7 +359,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -371,7 +370,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
-      item.instance_eval{@pathes=["./images/chap1-sampleimg.png"]}
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
       item
     end
 
@@ -399,7 +398,7 @@ inside column
 EOS
     expect =<<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">prev column</title><p>inside prev column</p></column><column><title aid:pstyle="column-title">test</title><p>inside column</p></column></doc>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column id="column-1"><title aid:pstyle="column-title">prev column</title><p>inside prev column</p></column><column id="column-2"><title aid:pstyle="column-title">test</title><p>inside column</p></column></doc>
 EOS
     assert_equal expect, column_helper(review)
   end
@@ -414,7 +413,7 @@ inside column
 EOS
     expect =<<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
-<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column><title aid:pstyle="column-title">test</title><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?></doc>
+<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><column id="column-1"><title aid:pstyle="column-title">test</title><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?></doc>
 EOS
 
     assert_equal expect, column_helper(review)
@@ -558,45 +557,31 @@ EOS
 
   def test_block_raw0
     @builder.raw("<>!\"\\n& ")
-    expect =<<-EOS
-<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!"
-& 
-EOS
+    expect = %Q(<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw1
     @builder.raw("|idgxml|<>!\"\\n& ")
-    expect =<<-EOS
-<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!"
-& 
-EOS
+    expect = %Q(<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw2
     @builder.raw("|idgxml, latex|<>!\"\\n& ")
-    expect =<<-EOS
-<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!\"
-& 
-EOS
+    expect = %Q(<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw3
     @builder.raw("|latex, html|<>!\"\\n& ")
-    expect =<<-EOS
-<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">
-EOS
+    expect = %Q(<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
     assert_equal expect.chomp, @builder.raw_result
   end
 
   def test_block_raw4
     @builder.raw("|idgxml <>!\"\\n& ")
-    expect =<<-EOS
-<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">|idgxml <>!\"
-& 
-EOS
+    expect = %Q(<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">|idgxml <>!\"\n& )
     assert_equal expect.chomp, @builder.raw_result
   end
 

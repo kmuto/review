@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# Copyright (c) 2010 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -13,55 +13,91 @@ require 'tmpdir'
 require 'yaml'
 require 'fileutils'
 require 'erb'
+require 'optparse'
 
 require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review'
+require 'review/i18n'
+
+include ReVIEW::LaTeXUtils
+
+include FileUtils
 
 def error(msg)
   $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
   exit 1
 end
 
-def usage
-  $stderr.puts "Usage: #{$0} configfile"
-  exit 0
+def warn(msg)
+  $stderr.puts "#{File.basename($0, '.*')}: warning: #{msg}"
 end
 
-def check_book(values)
-  pdf_file = values["bookname"]+".pdf"
-  if File.exists? pdf_file
+def check_book(config)
+  pdf_file = config["bookname"]+".pdf"
+  if File.exist? pdf_file
     error "file already exists:#{pdf_file}"
   end
 end
 
-def build_path(values)
-  if values["debug"].nil?
-    Dir.mktmpdir+"/#{values["bookname"]}-pdf"
+def build_path(config)
+  "./#{config["bookname"]}-pdf"
+end
+
+def check_compile_status(ignore_errors)
+  return unless @compile_errors
+
+  if ignore_errors
+    $stderr.puts "compile error, but try to generate PDF file"
   else
-    "./#{values["bookname"]}-pdf"
+    error "compile error, No PDF file output."
   end
 end
 
-def main
-  usage if ARGV.size != 1
 
+def main
+  config = ReVIEW::Configure.values
+  cmd_config = Hash.new
+
+  opts = OptionParser.new
+  opts.banner = "Usage: #{File.basename($0)} configfile"
+  opts.version = ReVIEW::VERSION
+  opts.on('--help', 'Prints this message and quit.') do
+    puts opts.help
+    exit 0
+  end
+  opts.on('--[no-]debug', 'Keep temporary files.') do |debug|
+    cmd_config["debug"] = debug
+  end
+  opts.on('--ignore-errors', 'Ignore review-compile errors.') do
+    cmd_config["ignore-errors"] = true
+  end
+
+  opts.parse!(ARGV)
+  if ARGV.size != 1
+    puts opts.help
+    exit 0
+  end
   yamlfile = ARGV[0]
-  values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
-  check_book(values)
+  config.merge!(YAML.load_file(yamlfile))
+  # YAML configs will be overridden by command line options.
+  config.merge!(cmd_config)
+
+  check_book(config)
   @basedir = Dir.pwd
-  @path = build_path(values)
-  bookname = values["bookname"]
+  @path = build_path(config)
+  bookname = config["bookname"]
   Dir.mkdir(@path)
 
   @chaps_fnames = Hash.new{|h, key| h[key] = ""}
+  @compile_errors = nil
 
   ReVIEW::Book.load(@basedir).parts.each do |part|
     if part.name.present?
       if part.file?
-        output_parts(part.name, values)
+        output_parts(part.name, config)
         @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
       else
         @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
@@ -70,20 +106,26 @@ def main
 
     part.chapters.each do |chap|
       filename = "#{File.basename(chap.path, ".*")}.tex"
-      output_chaps(filename, values)
+      output_chaps(filename, config)
       @chaps_fnames["PREDEF"]  << "\\input{#{filename}}\n" if chap.on_PREDEF?
       @chaps_fnames["CHAPS"]   << "\\input{#{filename}}\n" if chap.on_CHAPS?
       @chaps_fnames["POSTDEF"] << "\\input{#{filename}}\n" if chap.on_POSTDEF?
     end
   end
 
-  values["pre_str"]  = @chaps_fnames["PREDEF"]
-  values["chap_str"] = @chaps_fnames["CHAPS"]
-  values["post_str"] = @chaps_fnames["POSTDEF"]
+  check_compile_status(config["ignore-errors"])
 
-  values["usepackage"] = ""
-  if values["texstyle"]
-    values["usepackage"] = "\\usepackage{#{values['texstyle']}}"
+  config["pre_str"]  = @chaps_fnames["PREDEF"]
+  config["chap_str"] = @chaps_fnames["CHAPS"]
+  config["post_str"] = @chaps_fnames["POSTDEF"]
+
+  config["usepackage"] = ""
+  if config["texstyle"]
+    config["usepackage"] = "\\usepackage{#{config['texstyle']}}"
+  end
+
+  %w[aut csl trl dsr ill cov edt].each do |item|
+    config[item] = [config[item]] if !config[item].nil? && config[item].instance_of?(String)
   end
 
   copy_images("./images", "#{@path}/images")
@@ -91,49 +133,50 @@ def main
   copyStyToDir(Dir.pwd, @path, "tex")
 
   Dir.chdir(@path) {
-    template = get_template(values)
+    template = get_template(config)
     File.open("./book.tex", "wb"){|f| f.write(template)}
 
     ## do compile
-    enc = values["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
-    kanji = enc ? enc.split(/=/).last.gsub(/-/, '').downcase : 'utf8'
-    fork {
-      exec("platex -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("platex -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("platex -kanji=#{kanji} book.tex")
-    }
-    Process.waitall
-    fork {
-      exec("dvipdfmx -d 5 book.dvi")
-    }
-    Process.waitall
+    enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
+    kanji = 'utf8'
+    if enc
+      kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
+    end
+    texcommand = config["texcommand"] || "platex"
+    3.times do
+      system("#{texcommand} -kanji=#{kanji} book.tex")
+    end
+    if File.exist?("book.dvi")
+      system("dvipdfmx -d 5 book.dvi")
+    end
   }
   FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
+
+  unless config["debug"]
+    remove_entry_secure @path
+  end
 end
 
-def output_chaps(filename, values)
-  fork {
-    STDOUT.reopen("#{@path}/#{filename}")
-    $stderr.puts "compiling #{filename}"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}")
-  }
-  Process.waitall
+def output_chaps(filename, config)
+  $stderr.puts "compiling #{filename}"
+  cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename} > #{@path}/#{filename}"
+  if system cmd
+    # OK
+  else
+    @compile_errors = true
+    warn cmd
+  end
 end
 
-def output_parts(filename, values)
-  fork {
-    STDOUT.reopen("#{@path}/#{filename}.tex")
-    $stderr.puts "compiling #{filename}.tex"
-    exec("review-compile --target=latex --level=#{values["secnolevel"]} --toclevel=#{values["toclevel"]} #{values["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/")
-
-  }
-  Process.waitall
+def output_parts(filename, config)
+  $stderr.puts "compiling #{filename}.tex"
+  cmd = "review-compile --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/ > #{@path}/#{filename}.tex"
+  if system cmd
+    # OK
+  else
+    @compile_errors = true
+    warn cmd
+  end
 end
 
 
@@ -141,16 +184,15 @@ def copy_images(from, to)
   if File.exist?(from)
     Dir.mkdir(to)
     ReVIEW::MakerHelper.copy_images_to_dir(from, to)
-    Dir.chdir(to) {
-      fork {
-        begin
-          exec("extractbb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf;extractbb -m *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
-        rescue
-          exec("ebb *.png *.jpg *.pdf */*.jpg */*.png */*.pdf")
-        end
+    Dir.chdir(to) do
+      images = Dir.glob("**/*").find_all{|f|
+        File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
       }
-    }
-  Process.waitall
+      system("extractbb", *images)
+      unless system("extractbb", "-m", *images)
+        system("ebb", *images)
+      end
+    end
   end
 end
 
@@ -163,47 +205,52 @@ def make_custom_titlepage(coverfile)
   end
 end
 
-def get_template(values)
-  dclass = values["texdocumentclass"] || []
+def get_template(config)
+  dclass = config["texdocumentclass"] || []
   documentclass =  dclass[0] || "jsbook"
   documentclassoption =  dclass[1] || "oneside"
 
   okuduke = ""
   authors = ""
-  if values["aut"]
-    okuduke += "著　者 & #{values["aut"]} \\\\\n"
-    authors = values["aut"]+ "\\vspace*{1zh} 著"
+  if !config["aut"].nil? && !config["aut"].empty?
+    okuduke += "著　者 & #{escape_latex(config["aut"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+    authors = config["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
   end
-  if values["trl"]
-    authors += " \\\\\n"+values["trl"]+ "\\vspace*{1zh} 訳"
-    okuduke += "翻　訳 & #{values["trl"]} \\\\\n"
+  if !config["csl"].nil? && !config["csl"].empty?
+    okuduke += "監　修 & #{escape_latex(config["csl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+    authors += " \\\\\n"+config["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
   end
-  if values["dsr"]
-    okuduke += "デザイン & #{values["dsr"]} \\\\\n"
+  if !config["trl"].nil? && !config["trl"].empty?
+    okuduke += "翻　訳 & #{escape_latex(config["trl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+    authors += " \\\\\n"+config["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
   end
-  if values["ill"]
-    okuduke += "イラスト & #{values["ill"]} \\\\\n"
+  if !config["dsr"].nil? && !config["dsr"].empty?
+    okuduke += "デザイン & #{escape_latex(config["dsr"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
-  if values["cov"]
-    okuduke += "表　紙 & #{values["cov"]} \\\\\n"
+  if !config["ill"].nil? && !config["ill"].empty?
+    okuduke += "イラスト & #{escape_latex(config["ill"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
-  if values["edt"]
-    okuduke += "編集者 & #{values["edt"]} \\\\\n"
+  if !config["cov"].nil? && !config["cov"].empty?
+    okuduke += "表　紙 & #{escape_latex(config["cov"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+  end
+  if !config["edt"].nil? && !config["edt"].empty?
+    okuduke += "編集者 & #{escape_latex(config["edt"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
   okuduke += <<EOB
-発行所 & #{values["prt"]} \\\\
+発行所 & #{config["prt"]} \\\\
 EOB
 
-  custom_titlepage = make_custom_titlepage(values["coverfile"])
+  custom_titlepage = make_custom_titlepage(config["coverfile"])
 
   template = File.expand_path(File.dirname(__FILE__) +
                               '/../lib/review/review.tex.erb')
   layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
-  if File.exists?(layout_file)
+  if File.exist?(layout_file)
     template = layout_file
   end
 
   erb = ERB.new(File.open(template).read)
+  values = config # must be 'values' for legacy files
   erb.result(binding)
 end
 

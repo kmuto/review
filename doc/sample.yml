@@ -1,5 +1,5 @@
 # review-epubmaker向けの設定ファイルの例。
-# yamlファイルをReVIEWファイルのある場所に置き、
+# yamlファイルをRe:VIEWファイルのある場所に置き、
 # 「review-epubmaker yamlファイル」を実行すると、<bookname>.epubファイルが
 # 生成されます。
 # このファイルはUTF-8エンコーディングで記述してください。
@@ -7,14 +7,15 @@
 # ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
 bookname: review-sample
 # 書名
-booktitle: ReVIEW EPUBサンプル
+booktitle: Re:VIEW EPUBサンプル
 # 著者
-aut: 吟遊詩人
+aut: 執筆者
 # 以下はオプション
 # prt: 出版社
 # asn: Associated name
 # ant: Bibliographic antecedent
 # clb: 貢献者
+# csl: 監修者
 # edt: 編集者
 # dsr: デザイナ
 # ill: イラストレータ
@@ -30,12 +31,14 @@ aut: 吟遊詩人
 #
 # 固有IDに使用するドメイン。指定しない場合には、時刻に基づくランダムUUIDが入る
 # urnid: urn:uid:http://example.com/some-book-title/1.0.2/
-# CSSファイル (yamlファイルおよびReVIEWファイルを置いたディレクトリにあること)
+# CSSファイル (yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること)
 stylesheet: stylesheet.css
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
 # texstyle: samplemacro
 # LaTeX用のdocumentclassを指定する
 # texdocumentclass: ["jsarticle", "b5paper,oneside"]
+# LaTeX用のコマンドを指定する(platex or lualatex)
+# texcommand: "platex"
 # 目次として抽出するレベル
 toclevel: 3
 # セクション番号を表示するレベル
@@ -52,11 +55,13 @@ toc: true
 mytoc: null
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
 colophon: null
-# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:ReVIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
+# XHTML生成後に実行するプログラム。$1:HTMLの生成されたディレクトリ $2:Re:VIEWファイルのあるディレクトリ $3:起動時指定のyamlファイル名
 # posthook: hook.sh
 # EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
 cover_linear: null
 # review-compileに渡すパラメータ
 params: --stylesheet=sample.css
+# Pygmentsカラーリングを利用する (pygments外部gemが必要)
+# pygments: true
 # デバッグフラグ。nullでないときには一時ファイルをカレントディレクトリに作成し、削除もしない
 debug: null

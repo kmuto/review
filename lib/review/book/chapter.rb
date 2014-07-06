@@ -15,6 +15,9 @@ module ReVIEW
     class Chapter
       include Compilable
 
+      ROMAN = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
+      ALPHA = %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]
+
       def Chapter.intern_pathes(pathes)
         books = {}
         pathes.map {|path|
@@ -22,7 +25,7 @@ module ReVIEW
           book = (books[File.expand_path(basedir)] ||= Book.load(basedir))
           begin
             book.chapter(File.basename(path, '.*'))
-          rescue KeyError => err
+          rescue KeyError
             raise FileNotFound, "No such chapter in your book. Check if the catalog files contain the chapter. : #{path}"
           end
         }
@@ -54,10 +57,49 @@ module ReVIEW
         @numberless_image_index = nil
         @indepimage_index = nil
         @headline_index = nil
+        @column_index = nil
       end
 
       def inspect
         "\#<#{self.class} #{@number} #{@path}>"
+      end
+
+      def format_number(heading = true)
+        if on_PREDEF?
+          return "#{@number}"
+        end
+
+        if on_POSTDEF?
+          return "#{@number}" if @number < 1 || @number > 27
+
+          if @book.config["appendix_format"].blank?
+            type = "arabic"
+          else
+            type = @book.config["appendix_format"].downcase.strip
+          end
+
+          appendix = case type
+                       when "roman"
+                         ROMAN[@number]
+                       when "alphabet", "alpha"
+                         ALPHA[@number]
+                       else
+                         # nil, "arabic", etc...
+                         "#{@number}"
+                     end
+
+          if heading
+            return "#{I18n.t("appendix", appendix)}"
+          else
+            return "#{appendix}"
+          end
+        end
+
+        if heading
+          "#{I18n.t("chapter", @number)}"
+        else
+          "#{@number}"
+        end
       end
 
       def on_CHAPS?
