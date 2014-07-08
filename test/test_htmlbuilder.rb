@@ -452,6 +452,14 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<a href="./bib.html#bib-samplebib">[1]</a>|, @builder.inline_bib("samplebib")
   end
 
+  def test_bib_noramlized
+    def @chapter.bibpaper(id)
+      Book::BibpaperIndex::Item.new("sampleb=ib",1,"sample bib")
+    end
+
+    assert_equal %Q|<a href="./bib.html#bib-id_sample_3Dbib">[1]</a>|, @builder.inline_bib("sample=bib")
+  end
+
   def test_bibpaper
     def @chapter.bibpaper(id)
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
@@ -459,6 +467,15 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
     @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
     assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, @builder.raw_result
+  end
+
+  def test_bibpaper_normalized
+    def @chapter.bibpaper(id)
+      Book::BibpaperIndex::Item.new("sample=bib",1,"sample bib")
+    end
+
+    @builder.bibpaper(["a", "b"], "sample=bib", "sample bib @<b>{bold}")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, @builder.raw_result
   end
 
   def test_bibpaper_with_anchor
