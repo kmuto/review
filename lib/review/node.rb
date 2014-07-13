@@ -22,7 +22,8 @@ module ReVIEW
   class ParagraphNode < Node
 
     def to_s
-      content = @content.map(&:to_s)
+      #content = @content.map(&:to_s)
+      content = super
       @compiler.compile_paragraph(content)
     end
   end
@@ -31,15 +32,21 @@ module ReVIEW
 
     def to_s
       # content_str = super
-      @compiler.compile_command(@name, @args, @content)
+      args = @args.map(&:to_s)
+      content_lines = @content.map(&:to_s)
+      @compiler.compile_command(@name, args, content_lines)
     end
   end
 
   class InlineElementNode < Node
 
     def to_s
-      @compiler.compile_inline(@symbol, @content)
+      #content_str = super
+      @compiler.compile_inline(@symbol, @content.map(&:to_s))
     end
+  end
+
+  class InlineElementContentNode < Node
   end
 
   class TextNode < Node
@@ -68,9 +75,6 @@ module ReVIEW
   end
 
   class SinglelineContentNode < Node
-    def to_s
-      @content.to_s
-    end
   end
 
   class UlistNode < Node
