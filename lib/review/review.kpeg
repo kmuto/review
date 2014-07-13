@@ -416,9 +416,9 @@ require 'review/node'
 %% paragraph = ast ParagraphNode(compiler, content)
 %% block_element = ast BlockElementNode(compiler, name, args, content)
 %% inline_element = ast InlineElementNode(compiler, symbol, content)
+%% inline_element_content = ast InlineElementContentNode(compiler, content)
 %% text = ast TextNode(compiler, content)
 %% raw = ast RawNode(compiler, builder, content)
-%% bracket = ast BracketNode(compiler, content)
 %% brace = ast BraceNode(compiler, content)
 %% singleline_content = ast SinglelineContentNode(compiler, content)
 %% singleline_comment = ast SinglelineCommentNode(compiler, content)
@@ -428,13 +428,15 @@ require 'review/node'
 %% olist_element = ast OlistElementNode(compiler, num, content)
 %% dlist = ast DlistNode(compiler, content)
 %% dlist_element = ast DlistElementNode(compiler, text, content)
+%% bracket_arg = ast BracketArgNode(compiler, content)
 
 # %% dummy
 
 root = Start
 
-Start = &. { tagged_section_init } Block* { close_all_tagged_section }
+Start = &. { tagged_section_init } Document { close_all_tagged_section }
 
+Document = Block*:c { @strategy.output << c }
 
 ## TODO InlineElement の後に Ulist / Olist / Dlist が来ると先頭行じゃなくてマッチできてしまうかも
 ## using &. to detect EOF
@@ -446,7 +448,7 @@ Block = BlankLine*
         | Olist:c
         | Dlist:c
         | Paragraph:c
-        ) { @strategy.output << c }
+        ) { c }
 
 BlankLine = Newline
 
@@ -454,18 +456,18 @@ Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  Singlel
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
 
-Paragraph = !/\/\/A-Za-z/ ParagraphSub+:c  ~paragraph(self, c)
+Paragraph = !/\/\/A-Za-z/ ParagraphSub+:c  ~paragraph(self, c.flatten)
 
 ParagraphSub = ( InlineElement:c { c }
                | ContentText:c  { c }
-               )+:d  { e=d.join("") } Newline { e }
+               )+:d  { e=d.flatten } Newline { e }
 
-ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c.join("") }
+ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
 
 NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* Newline
-                 ~raw(self, b, r1.join(""))
+                 ~raw(self, b, r1)
                | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline
                   ~block_element(self, symbol, args, contents)
                | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline ~block_element(self, symbol, args, nil)
@@ -479,36 +481,50 @@ RawBlockBuilderSelectSub = ( LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBu
                              { [c1] }
                            )
 
-RawBlockElementArg = !"]" ( "\\]" { "]" } | "\\n" { "\n" } | < NonNewLine >  { text } )
+RawBlockElementArg = !"]" ( "\\]" { "]" }
+                          | "\\n" { "\n" }
+                          | < NonNewLine >  { text }
+                          )
 
 InlineElement =  ( RawInlineElement:c { c }
                  | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, symbol,contents)
                  )
 
-RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, builders,c.join(""))
+RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, builders,c)
 
-RawInlineElementContent = ( "\\}" { "}" } | < /[^\r\n\}]/ >  { text })
+RawInlineElementContent = ( "\\}" { "}" }
+                          | < /[^\r\n\}]/ >  { text }
+                          )
 
 InlineElementSymbol = < AlphanumericAscii+ > { text }
 
 InlineElementContents = !"}" InlineElementContentsSub:c { c }
 
 InlineElementContentsSub = !"}" ( InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 {  [c1]+c2 }
-                                  | InlineElementContent:c1 { [c1] }
-                                  )
+                                | InlineElementContent:c1 { [c1] }
+                                )
 
 
-InlineElementContent = ( InlineElement:c { c }
-                       | InlineElementContentText+:c { c.join("") }
+InlineElementContent = ( InlineElement:content ~inline_element_content(self, content)
+                       | InlineElementContentText+:content ~inline_element_content(self, content)
                        )
 
 ## XXX '\' (excpet '\}' and '\,' and '\\' ) => '\' is OK?
-InlineElementContentText =  ( "\\}" { "}" } | "\\," { "," } | "\\\\" { "\\" } | "\\" { "\\" } | !InlineElement < /[^\r\n\\},]/> ~text(self,text)  )
+InlineElementContentText =  ( "\\}" ~text(self, "}")
+                            | "\\," ~text(self, ",")
+                            | "\\\\" ~text(self, "\\" )
+                            | "\\" ~text(self, "\\" )
+                            | !InlineElement < /[^\r\n\\},]/> ~text(self,text)
+                            )
 
-BracketArg = "["  BracketArgContentInline+:c  "]" { c.join("") }
+BracketArg = "["  BracketArgContentInline+:content  "]" ~bracket_arg(self, content)
 
 ## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
-BracketArgContentInline = ( InlineElement:c { c } |  "\\]" { "]" } | "\\\\" { "\\" } | < /[^\r\n\]]/ > { compile_text(text) } )
+BracketArgContentInline = ( InlineElement:c { c }
+                          |  "\\]" ~text(self, "]")
+                          | "\\\\" ~text(self, "\\")
+                          | < /[^\r\n\]]/ >  ~text(self, text)
+                          )
 
 BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
 
@@ -516,26 +532,28 @@ BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
 BlockElementContents = BlockElementContent+:c { c }
 
 ## 各要素は Newline で終わらなければならない
-BlockElementContent = ( SinglelineComment:c
-                      | BlockElement:c
-                      | BlockElementParagraph:c
-                      | Newline:c { "" }
+### SinglelineContentではないような気がするけど改行は落としてあるのでとりあえずこれで
+BlockElementContent = ( SinglelineComment:c ~singleline_content(self, c)
+                      | BlockElement:c ~singleline_content(self, c)
+                      | BlockElementParagraph:c ~singleline_content(self, c)
+                      | Newline:c  ~singleline_content(self, "")
                       )
 
-BlockElementParagraph = BlockElementParagraphSub+:c Newline { c.join("") }
+## flattenでよい？
+BlockElementParagraph = BlockElementParagraphSub+:c Newline { c.flatten }
 
 BlockElementParagraphSub = ( InlineElement:c
                            | BlockElementContentText:c
                            )
 
-BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c.join("") }
+BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c }
 
 SinglelineContent = ContentInlines:c ~singleline_content(self,c)
 
-ContentInlines =  ContentInline+:c  { c.join }
+ContentInlines =  ContentInline+:c  { c }
 
 ContentInline = ( InlineElement:c { c }
-                | !Newline < NonNewLine > { compile_text(text) }
+                | !Newline < NonNewLine > ~text(self,text)
                 )
 
 ## ContentInlineText = !InlineElement !Newline  .:cc { p [:char,cc];cc }
