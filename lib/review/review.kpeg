@@ -309,7 +309,7 @@ require 'review/node'
       buf0 = ""
       level = 0
       content.each do |element|
-        current_level, buf = element.level, element.to_s
+        current_level, buf = element.level, element.to_doc
         if level == current_level
           buf0 << @strategy.ul_item_end
           # body
@@ -348,7 +348,7 @@ require 'review/node'
       buf0 << @strategy.ol_begin
       content.each do |element|
         ## XXX 1st arg should be String, not Array
-        buf0 << @strategy.ol_item(element.to_s.split(/\n/), element.num)
+        buf0 << @strategy.ol_item(element.to_doc.split(/\n/), element.num)
       end
       buf0 << @strategy.ol_end
       buf0
@@ -436,7 +436,7 @@ root = Start
 
 Start = &. { tagged_section_init } Document { close_all_tagged_section }
 
-Document = Block*:c { @strategy.output << c }
+Document = Block*:c { @strategy.output << c.to_doc }
 
 ## TODO InlineElement の後に Ulist / Olist / Dlist が来ると先頭行じゃなくてマッチできてしまうかも
 ## using &. to detect EOF
@@ -582,7 +582,7 @@ DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementCo
 
 DlistElementContent = /[ \t]+/ SinglelineContent:c
 
-SinglelineComment = ("#@" < NonNewLine+ > { "" } Newline)
+SinglelineComment = ("#@" < NonNewLine+ > Newline) ~singleline_comment(self, text)
 
 NonNewLine = /[^\r\n]/
 

@@ -664,7 +664,7 @@ require 'review/node'
       buf0 = ""
       level = 0
       content.each do |element|
-        current_level, buf = element.level, element.to_s
+        current_level, buf = element.level, element.to_doc
         if level == current_level
           buf0 << @strategy.ul_item_end
           # body
@@ -703,7 +703,7 @@ require 'review/node'
       buf0 << @strategy.ol_begin
       content.each do |element|
         ## XXX 1st arg should be String, not Array
-        buf0 << @strategy.ol_item(element.to_s.split(/\n/), element.num)
+        buf0 << @strategy.ol_item(element.to_doc.split(/\n/), element.num)
       end
       buf0 << @strategy.ol_end
       buf0
@@ -1027,7 +1027,7 @@ require 'review/node'
     return _tmp
   end
 
-  # Document = Block*:c { @strategy.output << c }
+  # Document = Block*:c { @strategy.output << c.to_doc }
   def _Document
 
     _save = self.pos
@@ -1045,7 +1045,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  @strategy.output << c ; end
+      @result = begin;  @strategy.output << c.to_doc ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3625,7 +3625,7 @@ require 'review/node'
     return _tmp
   end
 
-  # SinglelineComment = "#@" < NonNewLine+ > { "" } Newline
+  # SinglelineComment = "#@" < NonNewLine+ > Newline {singleline_comment(self, text)}
   def _SinglelineComment
 
     _save = self.pos
@@ -3654,13 +3654,13 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  "" ; end
-      _tmp = true
+      _tmp = apply(:_Newline)
       unless _tmp
         self.pos = _save
         break
       end
-      _tmp = apply(:_Newline)
+      @result = begin; singleline_comment(self, text); end
+      _tmp = true
       unless _tmp
         self.pos = _save
       end
@@ -3827,7 +3827,7 @@ require 'review/node'
   Rules = {}
   Rules[:_root] = rule_info("root", "Start")
   Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Document { close_all_tagged_section }")
-  Rules[:_Document] = rule_info("Document", "Block*:c { @strategy.output << c }")
+  Rules[:_Document] = rule_info("Document", "Block*:c { @strategy.output << c.to_doc }")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}")
@@ -3867,7 +3867,7 @@ require 'review/node'
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment):c Dlist?:cc")
   Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent:content Newline")
   Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c")
-  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > { \"\" } Newline")
+  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > Newline {singleline_comment(self, text)}")
   Rules[:_NonNewLine] = rule_info("NonNewLine", "/[^\\r\\n]/")
   Rules[:_Digits] = rule_info("Digits", "Digit+:c { c }")
   Rules[:_Space] = rule_info("Space", "/[ \\t]/")

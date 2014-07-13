@@ -6,7 +6,7 @@ require 'test/unit'
     @compiler.tagged_section_init
     @compiler.parse("Block")
     if force_to_s
-      @compiler.result.to_s
+      @compiler.result.to_doc
     else
       @compiler.result
     end
@@ -17,7 +17,7 @@ require 'test/unit'
     @compiler.tagged_section_init
     @compiler.parse("Paragraph")
     if force_to_s
-      @compiler.result.map(&:to_s).join
+      @compiler.result.map(&:to_doc).join
     else
       @compiler.result
     end
@@ -28,7 +28,7 @@ require 'test/unit'
     @compiler.tagged_section_init
     @compiler.parse("BlockElement")
     if force_to_s
-      @compiler.result.to_s
+      @compiler.result.to_doc
     else
       @compiler.result
     end
@@ -38,21 +38,21 @@ require 'test/unit'
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
     @compiler.parse("Headline")
-    @compiler.result.to_s
+    @compiler.result.to_doc
   end
 
 def ul_helper(src, expect)
   @compiler.setup_parser(src)
   @compiler.tagged_section_init
   @compiler.parse("Ulist")
-  assert_equal expect, @compiler.result.to_s
+  assert_equal expect, @compiler.result.to_doc
 end
 
 def ol_helper(src, expect)
   @compiler.setup_parser(src)
   @compiler.tagged_section_init
   @compiler.parse("Olist")
-  assert_equal expect, @compiler.result.to_s
+  assert_equal expect, @compiler.result.to_doc
 end
 
 def builder_helper(src, expect, method_sym)

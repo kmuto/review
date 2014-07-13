@@ -2,18 +2,20 @@ module ReVIEW
   class Node
     attr_accessor :content
 
-    def to_s
-      if !content.kind_of? Array
-        @content.to_s
+    def to_doc
+      if content.kind_of? String
+        @content
+      elsif !content.kind_of? Array
+        @content.to_doc
       else
-        @content.map{|o| o.to_s}.join("")
+        @content.map{|o| o.to_doc}.join("")
       end
     end
   end
 
   class HeadlineNode < Node
 
-    def to_s
+    def to_doc
       content_str = super
       @compiler.compile_headline(@level, @cmd, @label, content_str)
     end
@@ -21,8 +23,8 @@ module ReVIEW
 
   class ParagraphNode < Node
 
-    def to_s
-      #content = @content.map(&:to_s)
+    def to_doc
+      #content = @content.map(&:to_doc)
       content = super
       @compiler.compile_paragraph(content)
     end
@@ -30,19 +32,19 @@ module ReVIEW
 
   class BlockElementNode < Node
 
-    def to_s
+    def to_doc
       # content_str = super
-      args = @args.map(&:to_s)
-      content_lines = @content.map(&:to_s)
+      args = @args.map(&:to_doc)
+      content_lines = @content.map(&:to_doc)
       @compiler.compile_command(@name, args, content_lines)
     end
   end
 
   class InlineElementNode < Node
 
-    def to_s
+    def to_doc
       #content_str = super
-      @compiler.compile_inline(@symbol, @content.map(&:to_s))
+      @compiler.compile_inline(@symbol, @content)
     end
   end
 
@@ -51,7 +53,7 @@ module ReVIEW
 
   class TextNode < Node
 
-    def to_s
+    def to_doc
       content_str = super
       @compiler.compile_text(content_str)
     end
@@ -59,7 +61,7 @@ module ReVIEW
 
   class RawNode < Node
 
-    def to_s
+    def to_doc
       content_str = super
       @compiler.compile_raw(@builder, content_str)
     end
@@ -72,20 +74,23 @@ module ReVIEW
   end
 
   class SinglelineCommentNode < Node
+    def to_doc
+      ""
+    end
   end
 
   class SinglelineContentNode < Node
   end
 
   class UlistNode < Node
-    def to_s
+    def to_doc
       @compiler.compile_ulist(@content)
     end
   end
 
   class UlistElementNode < Node
-    def to_s
-      @content.map(&:to_s).join("")
+    def to_doc
+      @content.map(&:to_doc).join("")
     end
 
     def concat(elem)
@@ -94,15 +99,14 @@ module ReVIEW
   end
 
   class OlistNode < Node
-    def to_s
+    def to_doc
       @compiler.compile_olist(@content)
     end
   end
 
   class OlistElementNode < Node
-    def to_s
-      str = @content.map(&:to_s).join("")
-      str
+    def to_doc
+      @content.map(&:to_doc).join("")
     end
 
     def concat(elem)
