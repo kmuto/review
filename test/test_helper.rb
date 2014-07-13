@@ -1,12 +1,23 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
 require 'test/unit'
 
+  def compile_block(str, force_to_s=true)
+    @compiler.setup_parser(str)
+    @compiler.tagged_section_init
+    @compiler.parse("Block")
+    if force_to_s
+      @compiler.result.to_s
+    else
+      @compiler.result
+    end
+  end
+
   def compile_inline(str, force_to_s=true)
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
     @compiler.parse("Paragraph")
     if force_to_s
-      @compiler.result.to_s
+      @compiler.result.map(&:to_s).join
     else
       @compiler.result
     end
