@@ -132,9 +132,9 @@ module ReVIEW
 
     def captionblock(type, lines, caption)
       buf = ""
-      buf << "\\begin{reviewminicolumn}\n\n"
+      buf << "\\begin{reviewminicolumn}\n"
       unless caption.nil?
-        buf << "\\reviewminicolumntitle{caption}}\n\n"
+        buf << "\\reviewminicolumntitle{#{caption}}\n"
       end
 
       if @book.config["deprecated-blocklines"].nil?
@@ -146,7 +146,7 @@ module ReVIEW
         end
       end
 
-      buf << "\\end{reviewminicolumn}\n\n"
+      buf << "\\end{reviewminicolumn}\n"
       buf
     end
 
@@ -240,7 +240,7 @@ module ReVIEW
       if caption
         buf << macro('reviewemlistcaption', "#{caption}") << "\n"
       end
-      puts '\begin{reviewemlist}'
+      buf << '\begin{reviewemlist}' << "\n"
       lines.each do |line|
         buf << detab(line) << "\n"
       end
@@ -560,7 +560,6 @@ module ReVIEW
         end
       end
       buf << macro('end', type) << "\n"
-      buf << "\n"
       buf
     end
     private :latex_block
