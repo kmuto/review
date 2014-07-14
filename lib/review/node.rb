@@ -82,8 +82,7 @@ module ReVIEW
   class RawNode < Node
 
     def to_doc
-      content_str = super
-      @compiler.compile_raw(@builder, content_str)
+      @compiler.compile_raw(@builder, @content.join(""))
     end
   end
 
