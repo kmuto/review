@@ -681,8 +681,12 @@ module ReVIEW
     end
 
     # math
-    def inline_m(str)
-      " $#{str}$ "
+#    def inline_m(str)
+#      " $#{str}$ "
+#    end
+
+    def ast_inline_m(ast)
+      " $#{ast.to_raw}$ "
     end
 
     # hidden index
