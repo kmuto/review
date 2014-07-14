@@ -2,6 +2,16 @@ module ReVIEW
   class Node
     attr_accessor :content
 
+    def to_raw
+      if content.kind_of? String
+        @content
+      elsif !content.kind_of? Array
+        @content.to_raw
+      else
+        @content.map{|o| o.to_raw}.join("")
+      end
+    end
+
     def to_doc
       if content.kind_of? String
         @content
@@ -42,6 +52,11 @@ module ReVIEW
 
   class InlineElementNode < Node
 
+    def to_raw
+      content_str = super
+      "@<#{@symbol.to_s}>{#{content_str}}"
+    end
+
     def to_doc
       #content_str = super
       @compiler.compile_inline(@symbol, @content)
@@ -52,6 +67,11 @@ module ReVIEW
   end
 
   class TextNode < Node
+
+    def to_raw
+      content_str = super
+      content_str.to_s
+    end
 
     def to_doc
       content_str = super
