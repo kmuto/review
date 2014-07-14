@@ -734,10 +734,17 @@ require 'review/node'
       unless inline_defined?(op)
         raise ReVIEW::CompileError, "no such inline op: #{op}"
       end
+      if @strategy.respond_to?("ast_inline_#{op}")
+        return @strategy.__send__("ast_inline_#{op}", *args)
+      end
       unless @strategy.respond_to?("inline_#{op}")
         raise "strategy does not support inline op: @<#{op}>"
       end
-      @strategy.__send__("inline_#{op}", *args)
+      if !args
+        @strategy.__send__("inline_#{op}")
+      else
+        @strategy.__send__("inline_#{op}", *(args.map(&:to_doc)))
+      end
     rescue => err
       error err.message
     end
