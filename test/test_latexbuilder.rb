@@ -214,23 +214,19 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test \\UTF{2460} test2|, ret
   end
 
-=begin
   def test_inline_idx
-    ret = @builder.compile_inline("@<idx>{__TEST%$}, @<hidx>{__TEST%$}")
+    ret = compile_inline("@<idx>{__TEST%$}, @<hidx>{__TEST%$}")
     assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$}, \\index{__TEST%$}|, ret
   end
 
   def test_jis_x_0201_kana
-    ret = @builder.compile_inline("foo･ｶﾝｼﾞ､テスト")
+    ret = compile_inline("foo･ｶﾝｼﾞ､テスト")
     assert_equal %Q|foo\\aj半角{・}\\aj半角{カ}\\aj半角{ン}\\aj半角{シ}\\aj半角{゛}\\aj半角{、}テスト|, ret
   end
 
   def test_dlist
-    @builder.dl_begin
-    @builder.dt "foo"
-    @builder.dd ["foo.\n", "bar.\n"]
-    @builder.dl_end
-    assert_equal %Q|\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, @builder.result
+    ret = compile_block(": foo\n    foo.\n    bar.\n\n")
+    assert_equal %Q|\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, ret
   end
 
   def test_dlist_with_bracket
@@ -243,67 +239,67 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_cmd
     lines = ["foo", "bar", "","buz"]
-    @builder.cmd(lines)
-    assert_equal %Q|\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, @builder.result
+    ret = @builder.cmd(lines)
+    assert_equal %Q|\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, ret
   end
 
   def test_cmd_caption
     lines = ["foo", "bar", "","buz"]
-    @builder.cmd(lines, "cap1")
-    assert_equal %Q|\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, @builder.result
+    ret = @builder.cmd(lines, "cap1")
+    assert_equal %Q|\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, ret
   end
 
   def test_emlist
     lines = ["foo", "bar", "","buz"]
-    @builder.emlist(lines)
-    assert_equal %Q|\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, @builder.result
+    ret = @builder.emlist(lines)
+    assert_equal %Q|\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, ret
   end
 
   def test_emlist_caption
     lines = ["foo", "bar", "","buz"]
-    @builder.emlist(lines, "cap1")
-    assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, @builder.result
+    ret = @builder.emlist(lines, "cap1")
+    assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, ret
   end
 
   def test_emlist_with_tab
     lines = ["\tfoo", "\t\tbar", "","\tbuz"]
-    @builder.emlist(lines)
-    assert_equal %Q|\n\\begin{reviewemlist}\n        foo\n                bar\n\n        buz\n\\end{reviewemlist}\n|, @builder.result
+    ret = @builder.emlist(lines)
+    assert_equal %Q|\n\\begin{reviewemlist}\n        foo\n                bar\n\n        buz\n\\end{reviewemlist}\n|, ret
   end
 
   def test_emlist_with_tab4
     lines = ["\tfoo", "\t\tbar", "","\tbuz"]
     @builder.instance_eval{@tabwidth=4}
-    @builder.emlist(lines)
-    assert_equal %Q|\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n|, @builder.result
+    ret = @builder.emlist(lines)
+    assert_equal %Q|\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n|, ret
   end
 
   def test_quote
     lines = ["foo", "bar", "","buz"]
-    @builder.quote(lines)
-    assert_equal %Q|\n\\begin{quote}\nfoobar\n\nbuz\n\\end{quote}\n|, @builder.result
+    ret = @builder.quote(lines)
+    assert_equal %Q|\n\\begin{quote}\nfoobar\n\nbuz\n\\end{quote}\n|, ret
   end
 
   def test_memo
-    @builder.memo(["test1", "", "test<i>2</i>"], "this is @<b>{test}<&>_")
-    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest<i>2</i>\n\\end{reviewminicolumn}\n|, @builder.result
+    ret = compile_blockelem("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}<>\n//}\n")
+    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest\\textit{2}\\textless{}\\textgreater{}\n\\end{reviewminicolumn}\n|, ret
   end
 
   def test_flushright
-    @builder.flushright(["foo", "bar", "","buz"])
-    assert_equal %Q|\n\\begin{flushright}\nfoobar\n\nbuz\n\\end{flushright}\n|, @builder.raw_result
+    ret = @builder.flushright(["foo", "bar", "","buz"])
+    assert_equal %Q|\n\\begin{flushright}\nfoobar\n\nbuz\n\\end{flushright}\n|, ret
   end
 
   def test_centering
-    @builder.centering(["foo", "bar", "","buz"])
-    assert_equal %Q|\n\\begin{center}\nfoobar\n\nbuz\n\\end{center}\n|, @builder.raw_result
+    ret = @builder.centering(["foo", "bar", "","buz"])
+    assert_equal %Q|\n\\begin{center}\nfoobar\n\nbuz\n\\end{center}\n|, ret
   end
 
   def test_noindent
-    @builder.noindent
-    @builder.paragraph(["foo", "bar"])
-    @builder.paragraph(["foo2", "bar2"])
-    assert_equal %Q|\\noindent\nfoo\nbar\n\nfoo2\nbar2\n|, @builder.raw_result
+    ret = @builder.noindent
+    ret << @builder.paragraph(["foo", "bar"])
+    ret << @builder.paragraph(["foo2", "bar2"])
+    assert_equal %Q|\\noindent\nfoo\nbar\n\nfoo2\nbar2\n|, ret
   end
 
   def test_image
@@ -313,10 +309,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image_image("sampleimg","sample photo",nil)
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.image_image("sampleimg","sample photo",nil)
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, ret
   end
 
+=begin
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
