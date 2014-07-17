@@ -390,6 +390,9 @@ require 'review/node'
       parse()
     end
 
+    def convert_ast
+    end
+
     def compile_text(text)
       @strategy.nofunc_text(text)
     end
@@ -709,6 +712,17 @@ require 'review/node'
       buf0
     end
 
+    def compile_dlist(content)
+      buf = ""
+      buf << @strategy.dl_begin
+      content.each do |element|
+        buf << @strategy.dt(element.text.to_doc)
+        buf << @strategy.dd(element.content.map{|s| s.to_doc+"\n"})
+      end
+      buf << @strategy.dl_end
+      buf
+    end
+
 
     def compile_unknown_command(args, lines)
       @strategy.unknown_command(args, lines)
@@ -821,6 +835,14 @@ require 'review/node'
       end
       attr_reader :compiler
       attr_reader :text
+      attr_reader :content
+    end
+    class DocumentNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
       attr_reader :content
     end
     class HeadlineNode < Node
@@ -950,6 +972,9 @@ require 'review/node'
     def dlist_element(compiler, text, content)
       ::ReVIEW::DlistElementNode.new(compiler, text, content)
     end
+    def document(compiler, content)
+      ::ReVIEW::DocumentNode.new(compiler, content)
+    end
     def headline(compiler, level, cmd, label, content)
       ::ReVIEW::HeadlineNode.new(compiler, level, cmd, label, content)
     end
@@ -999,7 +1024,7 @@ require 'review/node'
     return _tmp
   end
 
-  # Start = &. { tagged_section_init } Document { close_all_tagged_section }
+  # Start = &. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.output << c.to_doc }
   def _Start
 
     _save = self.pos
@@ -1018,11 +1043,12 @@ require 'review/node'
         break
       end
       _tmp = apply(:_Document)
+      c = @result
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin;  close_all_tagged_section ; end
+      @result = begin;  close_all_tagged_section; @strategy.output << c.to_doc ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1034,7 +1060,7 @@ require 'review/node'
     return _tmp
   end
 
-  # Document = Block*:c { @strategy.output << c.to_doc }
+  # Document = Block*:c {document(self, c)}
   def _Document
 
     _save = self.pos
@@ -1052,7 +1078,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  @strategy.output << c.to_doc ; end
+      @result = begin; document(self, c); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1822,7 +1848,7 @@ require 'review/node'
     return _tmp
   end
 
-  # RawBlockBuilderSelectSub = (LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBuilderSelectSub:c2 { [c1.join("")]+ c2 } | < AlphanumericAscii+ >:c1 { [c1] })
+  # RawBlockBuilderSelectSub = (< AlphanumericAscii+ >:c1 Space* "," Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })
   def _RawBlockBuilderSelectSub
 
     _save = self.pos
@@ -1830,20 +1856,20 @@ require 'review/node'
 
       _save1 = self.pos
       while true # sequence
+        _text_start = self.pos
         _save2 = self.pos
-        _ary = []
-        _tmp = apply(:_LowerAlphabetAscii)
+        _tmp = apply(:_AlphanumericAscii)
         if _tmp
-          _ary << @result
           while true
-            _tmp = apply(:_LowerAlphabetAscii)
-            _ary << @result if _tmp
+            _tmp = apply(:_AlphanumericAscii)
             break unless _tmp
           end
           _tmp = true
-          @result = _ary
         else
           self.pos = _save2
+        end
+        if _tmp
+          text = get_text(_text_start)
         end
         c1 = @result
         unless _tmp
@@ -1879,7 +1905,7 @@ require 'review/node'
           self.pos = _save1
           break
         end
-        @result = begin;  [c1.join("")]+ c2 ; end
+        @result = begin;  [text] + c2 ; end
         _tmp = true
         unless _tmp
           self.pos = _save1
@@ -1912,7 +1938,7 @@ require 'review/node'
           self.pos = _save5
           break
         end
-        @result = begin;  [c1] ; end
+        @result = begin;  [text] ; end
         _tmp = true
         unless _tmp
           self.pos = _save5
@@ -3509,36 +3535,55 @@ require 'review/node'
     return _tmp
   end
 
-  # Dlist = (DlistElement | SinglelineComment):c Dlist?:cc
+  # Dlist = (DlistElement | SinglelineComment)+:content {dlist(self, content)}
   def _Dlist
 
     _save = self.pos
     while true # sequence
-
       _save1 = self.pos
+      _ary = []
+
+      _save2 = self.pos
       while true # choice
         _tmp = apply(:_DlistElement)
         break if _tmp
-        self.pos = _save1
+        self.pos = _save2
         _tmp = apply(:_SinglelineComment)
         break if _tmp
-        self.pos = _save1
+        self.pos = _save2
         break
       end # end choice
 
-      c = @result
+      if _tmp
+        _ary << @result
+        while true
+
+          _save3 = self.pos
+          while true # choice
+            _tmp = apply(:_DlistElement)
+            break if _tmp
+            self.pos = _save3
+            _tmp = apply(:_SinglelineComment)
+            break if _tmp
+            self.pos = _save3
+            break
+          end # end choice
+
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      content = @result
       unless _tmp
         self.pos = _save
         break
       end
-      _save2 = self.pos
-      _tmp = apply(:_Dlist)
-      @result = nil unless _tmp
-      unless _tmp
-        _tmp = true
-        self.pos = _save2
-      end
-      cc = @result
+      @result = begin; dlist(self, content); end
+      _tmp = true
       unless _tmp
         self.pos = _save
       end
@@ -3549,7 +3594,7 @@ require 'review/node'
     return _tmp
   end
 
-  # DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent:content Newline
+  # DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}
   def _DlistElement
 
     _save = self.pos
@@ -3593,13 +3638,28 @@ require 'review/node'
         self.pos = _save
         break
       end
+      _save3 = self.pos
+      _ary = []
       _tmp = apply(:_DlistElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_DlistElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save3
+      end
       content = @result
       unless _tmp
         self.pos = _save
         break
       end
-      _tmp = apply(:_Newline)
+      @result = begin; dlist_element(self, text, content); end
+      _tmp = true
       unless _tmp
         self.pos = _save
       end
@@ -3610,7 +3670,7 @@ require 'review/node'
     return _tmp
   end
 
-  # DlistElementContent = /[ \t]+/ SinglelineContent:c
+  # DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
   def _DlistElementContent
 
     _save = self.pos
@@ -3622,6 +3682,18 @@ require 'review/node'
       end
       _tmp = apply(:_SinglelineContent)
       c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      n = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
       unless _tmp
         self.pos = _save
       end
@@ -3833,8 +3905,8 @@ require 'review/node'
 
   Rules = {}
   Rules[:_root] = rule_info("root", "Start")
-  Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Document { close_all_tagged_section }")
-  Rules[:_Document] = rule_info("Document", "Block*:c { @strategy.output << c.to_doc }")
+  Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.output << c.to_doc }")
+  Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}")
@@ -3845,7 +3917,7 @@ require 'review/node'
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* Newline {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
-  Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(LowerAlphabetAscii+:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [c1.join(\"\")]+ c2 } | < AlphanumericAscii+ >:c1 { [c1] })")
+  Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(< AlphanumericAscii+ >:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })")
   Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
   Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, symbol,contents)})")
   Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawBlockBuilderSelect?:builders RawInlineElementContent+:c \"}\" {raw(self, builders,c)}")
@@ -3871,9 +3943,9 @@ require 'review/node'
   Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1].concat(c) }")
   Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}")
   Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { num=text } \".\" Space* SinglelineContent:c (EOF | Newline) {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }")
-  Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment):c Dlist?:cc")
-  Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent:content Newline")
-  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c")
+  Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
+  Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
+  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c Newline:n { c }")
   Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > Newline {singleline_comment(self, text)}")
   Rules[:_NonNewLine] = rule_info("NonNewLine", "/[^\\r\\n]/")
   Rules[:_Digits] = rule_info("Digits", "Digit+:c { c }")
