@@ -48,24 +48,6 @@ module ReVIEW
     end
     private :blank
 
-    def print(*s)
-      if @blank_needed
-        @output.puts
-        @blank_needed = false
-      end
-      super
-    end
-    private :print
-
-    def puts(*s)
-      if @blank_needed
-        @output.puts
-        @blank_needed = false
-      end
-      super
-    end
-    private :puts
-
     HEADLINE = {
       1 => 'chapter',
       2 => 'section',

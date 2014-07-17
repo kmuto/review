@@ -44,10 +44,6 @@ module ReVIEW
     private :builder_init_file
 
 
-    def result
-      @output.string
-    end
-
     def warn(msg)
       $stderr.puts "#{@location.filename}:#{@location.lineno}: warning: #{msg}"
     end
