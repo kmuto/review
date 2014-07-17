@@ -37,35 +37,35 @@ class CompilerTest < Test::Unit::TestCase
 
   def test_parse_args_with_brace1
     args = compile_blockelem("//dummy[fo[\\][\\]o][bar]", false)
-    assert_equal ["fo[][]o","bar"], args
+    assert_equal ["fo[][]o","bar"], args.map(&:to_doc)
   end
 
   def test_parse_args_with_brace2
     args = compile_blockelem("//dummy[f\\]o\\]o][bar]", false)
-    assert_equal ["f]o]o","bar"], args
+    assert_equal ["f]o]o","bar"], args.map(&:to_doc)
   end
 
   def test_parse_args_with_backslash
     args = compile_blockelem("//dummy[foo][bar\\buz]", false)
-    assert_equal ["foo","bar\\buz"], args
+    assert_equal ["foo","bar\\buz"], args.map(&:to_doc)
   end
 
   def test_parse_args_with_backslash2
     args = compile_blockelem("//dummy[foo][bar\\#\\[\\!]", false)
-    assert_equal ["foo","bar\\#\\[\\!"], args
+    assert_equal ["foo","bar\\#\\[\\!"], args.map(&:to_doc)
   end
 
   def test_parse_args_with_backslash3
     args = compile_blockelem("//dummy[foo][bar\\\\buz]", false)
-    assert_equal ["foo","bar\\buz"], args
+    assert_equal ["foo","bar\\buz"], args.map(&:to_doc)
   end
 
   def test_compile_inline
     def @compiler.compile_inline(op, args)
-      return args.map(&:to_s).join("")
+      return args.map(&:to_doc).join("")
     end
-    args = compile_inline("@<ruby>{abc}")
-    assert_equal "abc", args
+    args = compile_inline("@<ruby>{abc}",false)
+    assert_equal "abc", args.map(&:to_doc).join("")
   end
 
   def test_inline_ruby
@@ -77,10 +77,10 @@ class CompilerTest < Test::Unit::TestCase
 
   def test_compile_inline_backslash
     def @compiler.compile_inline(op, args)
-      return args.map(&:to_s).join("")
+      return args.map(&:to_doc).join("")
     end
     args = compile_inline("@<dummy>{abc\\d\\#a}", false)
-    assert_equal "abc\\d\\#a", args.to_s
+    assert_equal "abc\\d\\#a", args.map(&:to_doc).join("")
   end
 end
 

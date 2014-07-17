@@ -225,16 +225,16 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_dlist
-    ret = compile_block(": foo\n    foo.\n    bar.\n\n")
+    ret = compile_block("\n: foo\n    foo.\n    bar.\n")
     assert_equal %Q|\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, ret
   end
 
   def test_dlist_with_bracket
-    @builder.dl_begin
-    @builder.dt "foo[bar]"
-    @builder.dd ["foo.\n", "bar.\n"]
-    @builder.dl_end
-    assert_equal %Q|\n\\begin{description}\n\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, @builder.result
+    ret = @builder.dl_begin
+    ret << @builder.dt("foo[bar]")
+    ret << @builder.dd(["foo.\n", "bar.\n"])
+    ret << @builder.dl_end
+    assert_equal %Q|\n\\begin{description}\n\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n|, ret
   end
 
   def test_cmd
@@ -296,10 +296,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_noindent
-    ret = @builder.noindent
-    ret << @builder.paragraph(["foo", "bar"])
-    ret << @builder.paragraph(["foo2", "bar2"])
-    assert_equal %Q|\\noindent\nfoo\nbar\n\nfoo2\nbar2\n|, ret
+    # ret = @builder.noindent
+    # ret << @builder.paragraph(["foo", "bar"])
+    # ret << @builder.paragraph(["foo2", "bar2"])
+    ret = compile_document("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    assert_equal %Q|\\noindent\n\nfoobar\n\n\nfoo2bar2\n\n|, ret
   end
 
   def test_image
@@ -313,7 +314,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, ret
   end
 
-=begin
   def test_image_with_metric
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
@@ -321,8 +321,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image_image("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.image_image("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, ret
   end
 
   def test_image_with_metric2
@@ -332,8 +332,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image_image("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::height=3cm")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.image_image("sampleimg","sample photo","scale=1.2, html::class=\"sample\", latex::height=3cm")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, ret
   end
 
   def test_indepimage
@@ -343,8 +343,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg","sample photo",nil)
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.indepimage("sampleimg","sample photo",nil)
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, ret
   end
 
   def test_indepimage_without_caption
@@ -355,8 +355,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     # FIXME: indepimage's caption should not be with a counter.
-    @builder.indepimage("sampleimg",nil,nil)
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.indepimage("sampleimg",nil,nil)
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, ret
   end
 
   def test_indepimage_with_metric
@@ -366,8 +366,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.indepimage("sampleimg","sample photo","scale=1.2")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, ret
   end
 
   def test_indepimage_with_metric2
@@ -377,8 +377,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.indepimage("sampleimg","sample photo","scale=1.2, latex::height=3cm, html::class=\"sample\"")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.indepimage("sampleimg","sample photo","scale=1.2, latex::height=3cm, html::class=\"sample\"")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,height=3cm]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, ret
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -389,8 +389,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     # FIXME: indepimage's caption should not be with a counter.
-    @builder.indepimage("sampleimg",nil,"scale=1.2")
-    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, @builder.raw_result
+    ret = @builder.indepimage("sampleimg",nil,"scale=1.2")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, ret
   end
 
   def test_bib
@@ -406,8 +406,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    @builder.bibpaper(["a", "b"], "samplebib", "sample bib @<b>{bold}")
-    assert_equal %Q|[1] sample bib \\textbf{bold}\n\\label{bib:samplebib}\n\nab\n\n|, @builder.raw_result
+    ret = compile_blockelem("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    assert_equal %Q|[1] sample bib \\textbf{bold}\n\\label{bib:samplebib}\n\nab\n\n|, ret
   end
 
   def test_bibpaper_without_body
@@ -415,10 +415,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    @builder.bibpaper([], "samplebib", "sample bib")
-    assert_equal %Q|[1] sample bib\n\\label{bib:samplebib}\n\n|, @builder.raw_result
+    ret = @builder.bibpaper([], "samplebib", "sample bib")
+    assert_equal %Q|[1] sample bib\n\\label{bib:samplebib}\n\n|, ret
   end
 
+=begin
   def column_helper(review)
     chap_singleton = class << @chapter; self; end
     chap_singleton.send(:define_method, :content) { review }
@@ -500,6 +501,7 @@ EOS
     end
   end
 
+=end
   def test_ul
     src =<<-EOS
   * AAA
@@ -561,7 +563,6 @@ EOS
 \\begin{itemize}
 \\item AA
 \\end{itemize}
-
 \\end{itemize}
 EOS
     ul_helper(src, expect)
@@ -583,13 +584,11 @@ EOS
 \\begin{itemize}
 \\item AA
 \\end{itemize}
-
 \\item BBB
 
 \\begin{itemize}
 \\item BB
 \\end{itemize}
-
 \\end{itemize}
 EOS
     ul_helper(src, expect)
@@ -623,7 +622,8 @@ EOS
 \\item \\lbrack{}]BBB
 \\end{enumerate}
 EOS
-    builder_helper(src, expect, :compile_olist)
+    ret = compile_block(src)
+    assert_equal expect, ret
   end
 
   def test_inline_raw0
@@ -651,38 +651,37 @@ EOS
   end
 
   def test_inline_endash
-    ret = @builder.compile_inline("- -- --- ----")
+    ret = compile_inline("- -- --- ----")
     assert_equal "{-} {-}{-} {-}{-}{-} {-}{-}{-}{-}", ret
   end
 
   def test_block_raw0
-    @builder.raw("<>!\"\\n& ")
+    ret = @builder.raw("<>!\"\\n& ")
     expect = %Q(<>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, ret
   end
 
   def test_block_raw1
-    @builder.raw("|latex|<>!\"\\n& ")
+    ret = @builder.raw("|latex|<>!\"\\n& ")
     expect = %Q(<>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, ret
   end
 
   def test_block_raw2
-    @builder.raw("|html, latex|<>!\"\\n& ")
+    ret = @builder.raw("|html, latex|<>!\"\\n& ")
     expect = %Q(<>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, ret
   end
 
   def test_block_raw3
-    @builder.raw("|html, idgxml|<>!\"\\n& ")
+    ret = @builder.raw("|html, idgxml|<>!\"\\n& ")
     expect = ''
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, ret
   end
 
   def test_block_raw4
-    @builder.raw("|latex <>!\"\\n& ")
+    ret = @builder.raw("|latex <>!\"\\n& ")
     expect = %Q(|latex <>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, ret
   end
-=end
 end

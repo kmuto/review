@@ -179,7 +179,7 @@ module ReVIEW
         raise "caption level too deep or unsupported: #{level}"
       end
       prefix = "" if (level.to_i > @book.config["secnolevel"])
-      buf << "■H#{level}■#{prefix}#{caption}"
+      buf << "■H#{level}■#{prefix}#{caption}\n"
       blank_reset
       buf
     end

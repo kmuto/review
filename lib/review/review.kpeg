@@ -35,6 +35,9 @@ require 'review/node'
       parse()
     end
 
+    def convert_ast
+    end
+
     def compile_text(text)
       @strategy.nofunc_text(text)
     end
@@ -354,6 +357,17 @@ require 'review/node'
       buf0
     end
 
+    def compile_dlist(content)
+      buf = ""
+      buf << @strategy.dl_begin
+      content.each do |element|
+        buf << @strategy.dt(element.text.to_doc)
+        buf << @strategy.dd(element.content.map{|s| s.to_doc+"\n"})
+      end
+      buf << @strategy.dl_end
+      buf
+    end
+
 
     def compile_unknown_command(args, lines)
       @strategy.unknown_command(args, lines)
@@ -436,14 +450,15 @@ require 'review/node'
 %% dlist = ast DlistNode(compiler, content)
 %% dlist_element = ast DlistElementNode(compiler, text, content)
 %% bracket_arg = ast BracketArgNode(compiler, content)
+%% document = ast DocumentNode(compiler, content)
 
 # %% dummy
 
 root = Start
 
-Start = &. { tagged_section_init } Document { close_all_tagged_section }
+Start = &. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.output << c.to_doc }
 
-Document = Block*:c { @strategy.output << c.to_doc }
+Document = Block*:c ~document(self, c)
 
 ## TODO InlineElement の後に Ulist / Olist / Dlist が来ると先頭行じゃなくてマッチできてしまうかも
 ## using &. to detect EOF
@@ -482,10 +497,10 @@ BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Sp
 
 RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
 
-RawBlockBuilderSelectSub = ( LowerAlphabetAscii+:c1 Space* "," Space* RawBlockBuilderSelectSub:c2
-                             { [c1.join("")]+ c2 }
+RawBlockBuilderSelectSub = ( < AlphanumericAscii+ >:c1 Space* "," Space* RawBlockBuilderSelectSub:c2
+                             { [text] + c2 }
                            | < AlphanumericAscii+ >:c1
-                             { [c1] }
+                             { [text] }
                            )
 
 RawBlockElementArg = !"]" ( "\\]" { "]" }
@@ -583,11 +598,11 @@ OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c (EOF|N
 
 ## : 用語リスト
   ## 行頭から… の指定がない
-Dlist = (DlistElement | SinglelineComment):c Dlist?:cc
+Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, content)
 
-DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent:content Newline
+DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
 
-DlistElementContent = /[ \t]+/ SinglelineContent:c
+DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
 
 SinglelineComment = ("#@" < NonNewLine+ > Newline) ~singleline_comment(self, text)
 

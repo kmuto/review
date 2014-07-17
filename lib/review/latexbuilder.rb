@@ -191,7 +191,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      lines.join + "\n"
+      lines.join
     end
 
     def dl_end

@@ -35,7 +35,7 @@ module ReVIEW
 
     def to_doc
       #content = @content.map(&:to_doc)
-      content = super
+      content = super.split(/\n/)
       @compiler.compile_paragraph(content)
     end
   end
@@ -45,7 +45,11 @@ module ReVIEW
     def to_doc
       # content_str = super
       args = @args.map(&:to_doc)
-      content_lines = @content.map(&:to_doc)
+      if @content
+        content_lines = @content.map(&:to_doc)
+      else
+        content_lines = nil
+      end
       @compiler.compile_command(@name, args, content_lines)
     end
   end
@@ -134,11 +138,17 @@ module ReVIEW
   end
 
   class DlistNode < Node
+    def to_doc
+      @compiler.compile_dlist(@content)
+    end
   end
 
   class DlistElementNode < Node
-    def initialize(compiler, text, content)
-      @compiler, @text, @content = compiler, text, content
+    def to_doc
+      @content.map(&:to_doc).join("")
     end
+  end
+
+  class DocumentNode < Node
   end
 end

@@ -32,7 +32,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1
-    result = @builder.headline(1,"test","this is test.\n")
+    result = @builder.headline(1,"test","this is test.")
     assert_equal %Q|■H1■第1章　this is test.\n|, result
   end
 
@@ -43,18 +43,18 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level2
-    result = @builder.headline(2,"test","this is test.\n")
+    result = @builder.headline(2,"test","this is test.")
     assert_equal %Q|■H2■1.1　this is test.\n|, result
   end
 
   def test_headline_level3
-    result = @builder.headline(3,"test","this is test.\n")
+    result = @builder.headline(3,"test","this is test.")
     assert_equal %Q|■H3■this is test.\n|, result
   end
 
   def test_headline_level3_with_secno
     @config["secnolevel"] = 3
-    result = @builder.headline(3,"test","this is test.\n")
+    result = @builder.headline(3,"test","this is test.")
     assert_equal %Q|■H3■1.0.1　this is test.\n|, result
   end
 
