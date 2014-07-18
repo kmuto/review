@@ -151,4 +151,12 @@ module ReVIEW
 
   class DocumentNode < Node
   end
+
+  class TaggedSectionNode < Node
+
+    def to_doc
+      @compiler.compile_column(@content)
+    end
+  end
+
 end

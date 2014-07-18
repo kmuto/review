@@ -451,6 +451,7 @@ require 'review/node'
 %% dlist_element = ast DlistElementNode(compiler, text, content)
 %% bracket_arg = ast BracketArgNode(compiler, content)
 %% document = ast DocumentNode(compiler, content)
+%% tagged_section = ast TaggedSectionNode(compiler, level, label, caption, content)
 
 # %% dummy
 
