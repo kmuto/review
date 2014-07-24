@@ -237,7 +237,7 @@ def get_template(config)
     okuduke += "編集者 & #{escape_latex(config["edt"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
   end
   okuduke += <<EOB
-発行所 & #{config["prt"]} \\\\
+印刷 & #{config["prt"]} \\\\
 EOB
 
   custom_titlepage = make_custom_titlepage(config["coverfile"])
