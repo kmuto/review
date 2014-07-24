@@ -75,7 +75,7 @@ module EPUBMaker
         "c-edt" => "編　集",
         "c-pht" => "撮　影",
         "c-trl" => "翻　訳",
-        "c-prt" => "発行所",
+        "c-prt" => "印刷",
       }
     end
   end
