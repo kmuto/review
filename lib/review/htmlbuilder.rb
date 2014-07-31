@@ -625,6 +625,7 @@ QUOTE
       puts %Q[</pre>]
       image_header id, caption
       puts %Q[</div>]
+      warn "no such image: #{id}"
     end
 
     def image_header(id, caption)

@@ -518,6 +518,7 @@ module ReVIEW
       print %Q[</pre>]
       image_header id, caption
       puts "</img>"
+      warn "no such image: #{id}"
     end
 
     def image_header(id, caption)
