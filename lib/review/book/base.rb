@@ -230,7 +230,11 @@ module ReVIEW
 
       def postscripts
         if catalog
-          return mkpart_from_namelist(catalog.postdef.split("\n"))
+          names = catalog.postdef.split("\n")
+          chaps = names.each_with_index.map {|n, idx|
+            mkchap_ifexist(n, idx)
+          }.compact
+          return mkpart(chaps)
         end
 
         if File.file?("#{@basedir}/#{postdef_file}")
@@ -322,10 +326,13 @@ module ReVIEW
         Chapter.new(self, number, name, path)
       end
 
-      def mkchap_ifexist(name)
+      def mkchap_ifexist(name, idx = nil)
         name += ext if File.extname(name) == ""
         path = "#{@basedir}/#{name}"
-        File.file?(path) ? Chapter.new(self, nil, name, path) : nil
+        if File.file?(path)
+          idx += 1 if idx
+          Chapter.new(self, idx, name, path)
+        end
       end
 
       def read_FILE(filename)
