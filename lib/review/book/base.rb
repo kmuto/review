@@ -186,6 +186,10 @@ module ReVIEW
         end
       end
 
+      def read_BACKDEF
+        catalog.backdef
+      end
+
       def read_PART
         return @read_PART if @read_PART
 
@@ -228,7 +232,7 @@ module ReVIEW
         end
       end
 
-      def postscripts
+      def appendix
         if catalog
           names = catalog.postdef.split("\n")
           chaps = names.each_with_index.map {|n, idx|
@@ -248,6 +252,12 @@ module ReVIEW
         end
       end
 
+      def postscripts
+        if catalog
+          mkpart_from_namelist(catalog.backdef.split("\n"))
+        end
+      end
+
       def basedir
         @basedir
       end
@@ -259,8 +269,11 @@ module ReVIEW
         if pre = prefaces
           list.unshift pre
         end
-        if post = postscripts
+        if post = appendix
           list.push post
+        end
+        if back = postscripts
+          list.push back
         end
         list
       end

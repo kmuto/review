@@ -157,7 +157,6 @@
  }
 
 \newcommand{\reviewcolophon}[0]{%
-  \backmatter
   \clearpage}
 \newcommand{\reviewappendix}[0]{%
   \appendix}
@@ -228,6 +227,15 @@
 \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~#1}{}}
 \reviewappendix
 <%= values["post_str"] %>
+
+%% backmatter begins
+<% if values["back_str"] or values["colophon"] %>
+\backmatter
+<% end %>
+
+<% if values["back_str"] %>
+<%= values["back_str"] %>
+<% end %>
 
 <% if values["colophon"] %>
 %% okuduke

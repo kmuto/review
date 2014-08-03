@@ -110,6 +110,7 @@ def main
       @chaps_fnames["PREDEF"]  << "\\input{#{filename}}\n" if chap.on_PREDEF?
       @chaps_fnames["CHAPS"]   << "\\input{#{filename}}\n" if chap.on_CHAPS?
       @chaps_fnames["POSTDEF"] << "\\input{#{filename}}\n" if chap.on_POSTDEF?
+      @chaps_fnames["BACKDEF"] << "\\input{#{filename}}\n" if chap.on_BACKDEF?
     end
   end
 
@@ -118,6 +119,7 @@ def main
   config["pre_str"]  = @chaps_fnames["PREDEF"]
   config["chap_str"] = @chaps_fnames["CHAPS"]
   config["post_str"] = @chaps_fnames["POSTDEF"]
+  config["back_str"] = @chaps_fnames["BACKDEF"]
 
   config["usepackage"] = ""
   if config["texstyle"]

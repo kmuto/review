@@ -103,15 +103,19 @@ module ReVIEW
       end
 
       def on_CHAPS?
-        on_FILE?(@book.read_CHAPS())
+        on_FILE?(@book.read_CHAPS)
       end
 
       def on_PREDEF?
-        on_FILE?(@book.read_PREDEF())
+        on_FILE?(@book.read_PREDEF)
       end
 
       def on_POSTDEF?
-        on_FILE?(@book.read_POSTDEF())
+        on_FILE?(@book.read_POSTDEF)
+      end
+
+      def on_BACKDEF?
+        on_FILE?(@book.read_BACKDEF)
       end
 
       private

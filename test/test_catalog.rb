@@ -72,6 +72,15 @@ part2.re
                  sut.parts_with_chaps)
   end
 
+  def test_backdef
+    sut = Catalog.new(yaml)
+    exp =<<-EOS
+back01.re
+back02.re
+    EOS
+    assert_equal(exp.chomp, sut.backdef)
+  end
+
   private
   def yaml
     StringIO.new <<-EOS
@@ -88,6 +97,9 @@ POSTDEF:
   - post01.re
   - post02.re
 
+BACKDEF:
+  - back01.re
+  - back02.re
     EOS
   end
 
