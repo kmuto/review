@@ -119,6 +119,11 @@ module ReVIEW
       "`#{str}`"
     end
 
+    def inline_tt(str)
+      "`#{str}`"
+    end
+
+
     def image_image(id, caption, metric)
       blank
       puts "![#{caption}](/images/#{id}.#{image_ext})"
@@ -220,6 +225,15 @@ module ReVIEW
 
     def table_end
       blank
+    end
+
+    def footnote(id, str)
+      puts "[^#{id}]: #{compile_inline(str)}"
+      blank
+    end
+
+    def inline_fn(id)
+      "[^#{id}]"
     end
 
     def inline_br(str)
