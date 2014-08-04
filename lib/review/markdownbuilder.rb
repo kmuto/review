@@ -31,6 +31,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      blank
       prefix = "#" * level
       puts "#{prefix} #{caption}"
     end
