@@ -31,6 +31,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      blank
       prefix = "#" * level
       puts "#{prefix} #{caption}"
     end
@@ -117,6 +118,11 @@ module ReVIEW
     def inline_code(str)
       "`#{str}`"
     end
+
+    def inline_tt(str)
+      "`#{str}`"
+    end
+
 
     def image_image(id, caption, metric)
       blank
@@ -219,6 +225,15 @@ module ReVIEW
 
     def table_end
       blank
+    end
+
+    def footnote(id, str)
+      puts "[^#{id}]: #{compile_inline(str)}"
+      blank
+    end
+
+    def inline_fn(id)
+      "[^#{id}]"
     end
 
     def inline_br(str)
