@@ -1,0 +1,114 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2014 Masanori Kado
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
+# Convert old PREDEF/CHAPS/PARTS/POSTDEF files into catalog.yml.
+
+require 'pathname'
+require 'optparse'
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+require 'review/version'
+require 'review/extentions'
+
+def main
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0)} dirname"
+  opts.on('-h', '--help', 'print this message and quit.') do
+    puts opts.help
+    exit 0
+  end
+
+  begin
+    opts.parse!
+  rescue OptionParser::ParseError => err
+    $stderr.puts err.message
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  dir = Dir.pwd
+
+  # confirmation
+  if File.exist?("#{dir}/catalog.yml")
+    while true
+      print "The catalog.yml already exists. Do you want to overwrite it? [y/n]"
+      case gets
+      when /^[yY]/
+        puts "Start writing..."
+        break
+      when /^[nN]/, /^$/
+        puts "bye."
+        exit
+      end
+    end
+  end
+
+  File.open("#{dir}/catalog.yml", "w") do |catalog|
+    # predef
+    if File.exist?("#{dir}/PREDEF")
+      catalog << parse_predef(File.open("#{dir}/PREDEF").read)
+    end
+    # chaps and parts
+    if File.exist?("#{dir}/CHAPS")
+      if File.exist?("#{dir}/PARTS")
+        catalog << parse_parts(File.open("#{dir}/PARTS").read,
+                               File.open("#{dir}/CHAPS").read)
+      else
+        catalog << parse_chaps(File.open("#{dir}/CHAPS").read)
+      end
+    end
+    # postdef
+    if File.exist?("#{dir}/POSTDEF")
+      catalog << parse_postdef(File.open("#{dir}/POSTDEF").read)
+    end
+  end
+
+  puts File.open("#{dir}/catalog.yml").read
+end
+
+def _parse(str, header)
+  if str.present?
+    header + "  - " + str.split("\n").join("\n  - ") + "\n"
+  else
+    header
+  end
+end
+
+def parse_predef(str)
+  header = "PREDEF:\n"
+  _parse(str, header) + "\n"
+end
+
+def parse_chaps(str)
+  header = "CHAPS:\n"
+  _parse(str, header) + "\n"
+end
+
+def parse_postdef(str)
+  header = "POSTDEF:\n"
+  _parse(str, header) + "\n"
+end
+
+def parse_parts(parts_str, chaps_str)
+  if parts_str.blank? or chaps_str.blank?
+    return "CHAPS:\n\n"
+  end
+
+  parts = parts_str.split("\n")
+  chaps = chaps_str.split("\n\n")
+  "CHAPS:\n" + parts.zip(chaps).map{|k, vs|
+    "  - #{k}:\n" + vs.split("\n").map{|i| "    - #{i}\n"}.join
+  }.join + "\n"
+end
+
+if File.basename($0) == File.basename(__FILE__)
+  main()
+end
