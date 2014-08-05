@@ -67,7 +67,17 @@ def main
     end
     # postdef
     if File.exist?("#{dir}/POSTDEF")
-      catalog << parse_postdef(File.open("#{dir}/POSTDEF").read)
+      postdef = File.open("#{dir}/POSTDEF").read
+      while true
+        print "Do you want to convert POSTDEF into APPENDIX? [y/n]"
+        case gets
+        when /^[yY]/
+          catalog << parse_postdef(postdef, true)
+        when /^[nN]/, /^$/
+          catalog << parse_postdef(postdef)
+        end
+        break
+      end
     end
   end
 
@@ -76,7 +86,7 @@ end
 
 def _parse(str, header)
   if str.present?
-    header + "  - " + str.split("\n").join("\n  - ") + "\n"
+    header + str.split("\n").map{|i| "  - #{i}\n" }.join
   else
     header
   end
@@ -92,8 +102,12 @@ def parse_chaps(str)
   _parse(str, header) + "\n"
 end
 
-def parse_postdef(str)
-  header = "POSTDEF:\n"
+def parse_postdef(str, to_appendix = false)
+  if to_appendix
+    header = "APPENDIX:\n"
+  else
+    header = "POSTDEF:\n"
+  end
   _parse(str, header) + "\n"
 end
 

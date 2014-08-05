@@ -4,25 +4,9 @@ require 'fileutils'
 require 'yaml'
 require 'rbconfig'
 
-CMD =
-  File.expand_path('../bin/review-catalog-converter', File.dirname(__FILE__))
-load CMD
+load File.expand_path('../bin/review-catalog-converter', File.dirname(__FILE__))
 
 class CatalogConverterCmdTest < Test::Unit::TestCase
-#  def setup
-#    @tmpdir1 = Dir.mktmpdir
-#    @tmpdir2 = Dir.mktmpdir
-#
-#    @old_rubylib = ENV['RUBYLIB']
-#    ENV['RUBYLIB'] = File.expand_path('../lib', File.dirname(__FILE__))
-#  end
-#
-#  def teardown
-#    FileUtils.rm_rf @tmpdir1
-#    FileUtils.rm_rf @tmpdir2
-#    ENV['RUBYLIB'] = @old_rubylib
-#  end
-
   def test_parse_chaps
     input = <<-EOS
 ch01.re
@@ -80,5 +64,10 @@ CHAPS:
     assert_equal "CHAPS:\n\n", parse_parts("", "")
     assert_equal "CHAPS:\n\n", parse_parts(nil, nil)
   end
-end
 
+  def test_parse_postdef
+    assert_equal "APPENDIX:\n\n", parse_postdef("", true)
+    assert_equal "POSTDEF:\n\n", parse_postdef("")
+    assert_equal "POSTDEF:\n\n", parse_postdef("", false)
+  end
+end
