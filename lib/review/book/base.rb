@@ -269,11 +269,11 @@ module ReVIEW
         if pre = prefaces
           list.unshift pre
         end
-        if post = appendix
-          list.push post
+        if app = appendix
+          list.push app
         end
-        if back = postscripts
-          list.push back
+        if post = postscripts
+          list.push post
         end
         list
       end
