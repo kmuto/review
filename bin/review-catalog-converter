@@ -8,7 +8,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-# Convert old PREDEF/CHAPS/PARTS/POSTDEF files into catalog.yml.
+# Convert old PREDEF/CHAPS/PART/POSTDEF files into catalog.yml.
 
 require 'pathname'
 require 'optparse'
@@ -58,8 +58,8 @@ def main
     end
     # chaps and parts
     if File.exist?("#{dir}/CHAPS")
-      if File.exist?("#{dir}/PARTS")
-        catalog << parse_parts(File.open("#{dir}/PARTS").read,
+      if File.exist?("#{dir}/PART")
+        catalog << parse_parts(File.open("#{dir}/PART").read,
                                File.open("#{dir}/CHAPS").read)
       else
         catalog << parse_chaps(File.open("#{dir}/CHAPS").read)
