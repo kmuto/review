@@ -114,8 +114,8 @@ module ReVIEW
         on_FILE?(@book.read_APPENDIX)
       end
 
-      def on_BACKDEF?
-        on_FILE?(@book.read_BACKDEF)
+      def on_POSTDEF?
+        on_FILE?(@book.read_POSTDEF)
       end
 
       private

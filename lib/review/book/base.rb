@@ -182,12 +182,12 @@ module ReVIEW
         if catalog
           catalog.appendix
         else
-          read_FILE(postdef_file)
+          read_FILE(postdef_file) # for backward compatibility
         end
       end
 
-      def read_BACKDEF
-        catalog.backdef
+      def read_POSTDEF
+        catalog.postdef
       end
 
       def read_PART
@@ -254,7 +254,7 @@ module ReVIEW
 
       def postscripts
         if catalog
-          mkpart_from_namelist(catalog.backdef.split("\n"))
+          mkpart_from_namelist(catalog.postdef.split("\n"))
         end
       end
 

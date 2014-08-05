@@ -435,7 +435,7 @@ EOC
   end
 
   def test_postscripts
-    mktmpbookdir 'catalog.yml' => "BACKDEF:\n  - b01.re",
+    mktmpbookdir 'catalog.yml' => "POSTDEF:\n  - b01.re",
                  'b01.re' => '= back'  do |dir, book, files|
       assert_kind_of Book::Part, book.postscripts
       assert_equal 1, book.postscripts.chapters.size

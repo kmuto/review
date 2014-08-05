@@ -28,7 +28,7 @@ ch02.re
     assert_equal("", sut.chaps)
   end
 
-  def test_postdef
+  def test_appendix
     sut = Catalog.new(yaml)
     exp =<<-EOS
 post01.re
@@ -72,13 +72,13 @@ part2.re
                  sut.parts_with_chaps)
   end
 
-  def test_backdef
+  def test_postdef
     sut = Catalog.new(yaml)
     exp =<<-EOS
 back01.re
 back02.re
     EOS
-    assert_equal(exp.chomp, sut.backdef)
+    assert_equal(exp.chomp, sut.postdef)
   end
 
   private
@@ -97,7 +97,7 @@ APPENDIX:
   - post01.re
   - post02.re
 
-BACKDEF:
+POSTDEF:
   - back01.re
   - back02.re
     EOS

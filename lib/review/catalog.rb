@@ -44,9 +44,9 @@ module ReVIEW
       @yaml["APPENDIX"].join("\n")
     end
 
-    def backdef
-      return "" unless @yaml["BACKDEF"]
-      @yaml["BACKDEF"].join("\n")
+    def postdef
+      return "" unless @yaml["POSTDEF"]
+      @yaml["POSTDEF"].join("\n")
     end
   end
 end
