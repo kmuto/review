@@ -427,7 +427,7 @@ EOC
       end
     end
 
-    mktmpbookdir 'catalog.yml' => "POSTDEF:\n  - p01.re",
+    mktmpbookdir 'catalog.yml' => "APPENDIX:\n  - p01.re",
                  'p01.re' => '= appendix'  do |dir, book, files|
       assert_equal 'appendix', book.appendix.chapters.first.title
       assert_equal 1, book.appendix.chapters.first.number

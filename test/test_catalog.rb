@@ -34,7 +34,7 @@ ch02.re
 post01.re
 post02.re
     EOS
-    assert_equal(exp.chomp, sut.postdef)
+    assert_equal(exp.chomp, sut.appendix)
   end
 
   def test_chaps_with_parts
@@ -93,7 +93,7 @@ CHAPS:
   - ch01.re
   - ch02.re
 
-POSTDEF:
+APPENDIX:
   - post01.re
   - post02.re
 

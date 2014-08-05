@@ -178,9 +178,9 @@ module ReVIEW
         end
       end
 
-      def read_POSTDEF
+      def read_APPENDIX
         if catalog
-          catalog.postdef
+          catalog.appendix
         else
           read_FILE(postdef_file)
         end
@@ -234,7 +234,7 @@ module ReVIEW
 
       def appendix
         if catalog
-          names = catalog.postdef.split("\n")
+          names = catalog.appendix.split("\n")
           chaps = names.each_with_index.map {|n, idx|
             mkchap_ifexist(n, idx)
           }.compact

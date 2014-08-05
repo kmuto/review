@@ -41,7 +41,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_postdef
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -51,7 +51,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level2_postdef
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -62,7 +62,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level1_postdef_roman
     @chapter.book.config["appendix_format"] = "roman"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -73,7 +73,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level2_postdef_roman
     @chapter.book.config["appendix_format"] = "roman"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -84,7 +84,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level1_postdef_alpha
     @chapter.book.config["appendix_format"] = "alpha"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -95,7 +95,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level2_postdef_alpha
     @chapter.book.config["appendix_format"] = "alpha"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
