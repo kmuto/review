@@ -73,10 +73,11 @@ def main
         case gets
         when /^[yY]/
           catalog << parse_postdef(postdef, true)
+          break
         when /^[nN]/, /^$/
           catalog << parse_postdef(postdef)
+          break
         end
-        break
       end
     end
   end
