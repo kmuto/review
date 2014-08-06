@@ -1,3 +1,8 @@
+Wed Aug  6 18:55:31 2014  KADO Masanori  <kdmsnr@gmail.com>
+
+	* bin/review-catalog-converter: add review-catalog-converter for
+	  converting old style catalog files into a new style catalog.yml file.
+
 Thu Jul 31 15:05:34 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/htmlbuilder.rb, lib/review/idgxmlbuilder.rb: 
