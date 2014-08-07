@@ -84,8 +84,7 @@ class ChapterTest < Test::Unit::TestCase
 
     dir_files = {
       'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-      'preface.re' => 'preface',
+      'ch1.re' => 'ch1'
     }
     mktmpbookdir dir_files do |dir, book, files|
       paths = files.values.grep(/\.re\z/)
