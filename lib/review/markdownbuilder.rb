@@ -17,6 +17,7 @@ module ReVIEW
 
     def builder_init_file
       @ul_indent = 0
+      @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
     end
     private :builder_init_file
 
@@ -34,6 +35,7 @@ module ReVIEW
       blank
       prefix = "#" * level
       puts "#{prefix} #{caption}"
+      blank
     end
 
     def quote(lines)
@@ -82,6 +84,9 @@ module ReVIEW
 
     def emlist(lines, caption = nil)
       blank
+      if caption
+        puts caption
+      end
       puts "```"
       lines.each do |line|
         puts detab(line)
@@ -126,7 +131,7 @@ module ReVIEW
 
     def image_image(id, caption, metric)
       blank
-      puts "![#{caption}](/images/#{id}.#{image_ext})"
+      puts "![#{compile_inline(caption)}](#{@chapter.image(id).path.sub(/\A\.\//, "")})"
       blank
     end
 
@@ -139,6 +144,12 @@ module ReVIEW
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
+    end
+
+    def indepimage(id, caption="", metric=nil)
+      blank
+      puts "![#{compile_inline(caption)}](#{@chapter.image(id).path.sub(/\A\.\//, "")})"
+      blank
     end
 
     def pagebreak
