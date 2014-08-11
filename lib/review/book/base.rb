@@ -227,8 +227,6 @@ module ReVIEW
           rescue FileNotFound => err
             raise FileNotFound, "preface #{err.message}"
           end
-        else
-          mkpart_from_namelist(%w(preface))
         end
       end
 
@@ -247,8 +245,6 @@ module ReVIEW
           rescue FileNotFound => err
             raise FileNotFound, "postscript #{err.message}"
           end
-        else
-          mkpart_from_namelist(%w(appendix postscript))
         end
       end
 

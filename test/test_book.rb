@@ -278,17 +278,7 @@ EOC
       assert_equal nil, book.prefaces
     end
 
-    mktmpbookdir 'preface.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.prefaces
-      assert_equal '', book.prefaces.name
-      assert_equal 1, book.prefaces.chapters.size
-      assert_equal "preface", book.prefaces.chapters.first.name
-      assert_equal files['preface.re'], book.prefaces.chapters.first.path
-      assert_equal nil, book.prefaces.chapters.first.number
-    end
-
-    mktmpbookdir 'preface.re' => '',
-                 'PREDEF' => '' do |dir, book, files|
+    mktmpbookdir 'PREDEF' => '' do |dir, book, files|
       assert_equal nil, book.prefaces # XXX: OK?
     end
 
@@ -347,42 +337,6 @@ EOC
   def test_appendix
     mktmpbookdir do |dir, book, files|
       assert_equal nil, book.appendix
-    end
-
-    mktmpbookdir 'appendix.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.appendix
-      assert_equal '', book.appendix.name
-      assert_equal 1, book.appendix.chapters.size
-      assert_equal "appendix", book.appendix.chapters.first.name
-      assert_equal files['appendix.re'], book.appendix.chapters.first.path
-      assert_equal nil, book.appendix.chapters.first.number
-    end
-
-    mktmpbookdir 'postscript.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.appendix
-      assert_equal '', book.appendix.name
-      assert_equal 1, book.appendix.chapters.size
-      assert_equal "postscript", book.appendix.chapters.first.name
-      assert_equal files['postscript.re'], book.appendix.chapters.first.path
-      assert_equal nil, book.appendix.chapters.first.number
-    end
-
-    mktmpbookdir 'appendix.re' => '',
-                 'postscript.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.appendix
-      assert_equal '', book.appendix.name
-      assert_equal 2, book.appendix.chapters.size
-      assert_equal "appendix", book.appendix.chapters.first.name
-      assert_equal files['appendix.re'], book.appendix.chapters.first.path
-      assert_equal nil, book.appendix.chapters.first.number
-      assert_equal "postscript", book.appendix.chapters.last.name
-      assert_equal files['postscript.re'], book.appendix.chapters.last.path
-      assert_equal nil, book.appendix.chapters.last.number
-    end
-
-    mktmpbookdir 'preface.re' => '',
-                 'POSTDEF' => '' do |dir, book, files|
-      assert_equal nil, book.appendix # XXX: OK?
     end
 
     mktmpbookdir 'POSTDEF' => '' do |dir, book, files|
@@ -467,62 +421,14 @@ EOC
       book.each_part {|p| tmp << p.number }
       assert_equal [1, 2], tmp
     end
-
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'preface.re' => '' do |dir, book, files|
-      parts = book.parts
-      assert_equal 3, parts.size
-      assert book.part(1)
-      assert book.part(2)
-      assert !book.part(3)
-      assert book.part(nil) # XXX: OK?
-      assert_equal 'preface', parts.first.chapters.first.name
-
-      tmp = []
-      book.each_part {|p| tmp << p.number }
-      assert_equal [nil, 1, 2], tmp
-    end
-
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'postscript.re' => '' do |dir, book, files|
-      parts = book.parts
-      assert_equal 3, parts.size
-      assert book.part(1)
-      assert book.part(2)
-      assert !book.part(3)
-      assert book.part(nil) # XXX: OK?
-      assert_equal 'postscript', parts.last.chapters.last.name
-
-      tmp = []
-      book.each_part {|p| tmp << p.number }
-      assert_equal [1, 2, nil], tmp
-    end
-
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
-      parts = book.parts
-      assert_equal 4, parts.size
-      assert book.part(1)
-      assert book.part(2)
-      assert !book.part(3)
-      assert !book.part(4)
-      assert book.part(nil) # XXX: OK?
-      assert_equal 'preface', parts.first.chapters.first.name
-      assert_equal 'postscript', parts.last.chapters.last.name
-
-      tmp = []
-      book.each_part {|p| tmp << p.number }
-      assert_equal [nil, 1, 2, nil], tmp
-    end
   end
 
   def test_chapters
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3" do |dir, book, files|
       chapters = book.chapters
-      assert_equal 5, chapters.size
+      assert_equal 3, chapters.size
 
-      ch_names = %w(preface ch1 ch2 ch3 postscript)
+      ch_names = %w(ch1 ch2 ch3)
       tmp = []
       book.each_chapter {|ch| tmp << ch.name }
       assert_equal ch_names, tmp
@@ -537,12 +443,11 @@ EOC
       end
     end
 
-    mktmpbookdir 'CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt",
-                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+    mktmpbookdir 'CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt" do |dir, book, files|
       chapters = book.chapters
-      assert_equal 5, chapters.size
+      assert_equal 3, chapters.size
 
-      ch_names = %w(preface ch1 ch2 ch3 postscript)
+      ch_names = %w(ch1 ch2 ch3)
       tmp = []
       book.each_chapter {|ch| tmp << ch.name }
       assert_equal ch_names, tmp
