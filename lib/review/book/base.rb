@@ -178,12 +178,16 @@ module ReVIEW
         end
       end
 
-      def read_POSTDEF
+      def read_APPENDIX
         if catalog
-          catalog.postdef
+          catalog.appendix
         else
-          read_FILE(postdef_file)
+          read_FILE(postdef_file) # for backward compatibility
         end
+      end
+
+      def read_POSTDEF
+        catalog.postdef
       end
 
       def read_PART
@@ -226,9 +230,9 @@ module ReVIEW
         end
       end
 
-      def postscripts
+      def appendix
         if catalog
-          names = catalog.postdef.split("\n")
+          names = catalog.appendix.split("\n")
           chaps = names.each_with_index.map {|n, idx|
             mkchap_ifexist(n, idx)
           }.compact
@@ -244,6 +248,12 @@ module ReVIEW
         end
       end
 
+      def postscripts
+        if catalog
+          mkpart_from_namelist(catalog.postdef.split("\n"))
+        end
+      end
+
       def basedir
         @basedir
       end
@@ -254,6 +264,9 @@ module ReVIEW
         list = parse_chapters
         if pre = prefaces
           list.unshift pre
+        end
+        if app = appendix
+          list.push app
         end
         if post = postscripts
           list.push post

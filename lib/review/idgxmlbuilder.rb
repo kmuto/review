@@ -160,7 +160,7 @@ module ReVIEW
           placeholder = if @chapter.is_a? ReVIEW::Book::Part
                           level = 0
                           'part'
-                        elsif @chapter.on_POSTDEF?
+                        elsif @chapter.on_APPENDIX?
                           'appendix'
                         else
                           'chapter'
@@ -181,7 +181,7 @@ module ReVIEW
         @section += 1
         print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
         if @book.config["secnolevel"] >= 2
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
+          if @chapter.number.blank? or @chapter.on_APPENDIX?
             prefix = ""
           else
             prefix = "#{@chapter.number}.#{@section}#{I18n.t("chapter_postfix")}"
@@ -201,7 +201,7 @@ module ReVIEW
         @subsection += 1
         print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
         if @book.config["secnolevel"] >= 3
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
+          if @chapter.number.blank? or @chapter.on_APPENDIX?
             prefix = ""
           else
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}"
@@ -219,7 +219,7 @@ module ReVIEW
         @subsubsection += 1
         print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
         if @book.config["secnolevel"] >= 4
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
+          if @chapter.number.blank? or @chapter.on_APPENDIX?
             prefix = ""
           else
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}"
@@ -235,7 +235,7 @@ module ReVIEW
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) unless @secttags.nil?
         if @book.config["secnolevel"] >= 5
-          if @chapter.number.blank? or @chapter.on_POSTDEF?
+          if @chapter.number.blank? or @chapter.on_APPENDIX?
             prefix = ""
           else
             prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}"

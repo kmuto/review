@@ -99,6 +99,8 @@ PREDEF:
 CHAPS:
   - #{File.basename(dir)}.re
 
+APPENDIX:
+
 POSTDEF:
 
 EOS

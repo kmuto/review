@@ -109,6 +109,7 @@ def main
       output_chaps(filename, config)
       @chaps_fnames["PREDEF"]  << "\\input{#{filename}}\n" if chap.on_PREDEF?
       @chaps_fnames["CHAPS"]   << "\\input{#{filename}}\n" if chap.on_CHAPS?
+      @chaps_fnames["APPENDIX"] << "\\input{#{filename}}\n" if chap.on_APPENDIX?
       @chaps_fnames["POSTDEF"] << "\\input{#{filename}}\n" if chap.on_POSTDEF?
     end
   end
@@ -117,6 +118,7 @@ def main
 
   config["pre_str"]  = @chaps_fnames["PREDEF"]
   config["chap_str"] = @chaps_fnames["CHAPS"]
+  config["appendix_str"] = @chaps_fnames["APPENDIX"]
   config["post_str"] = @chaps_fnames["POSTDEF"]
 
   config["usepackage"] = ""
