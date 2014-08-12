@@ -232,9 +232,13 @@ EOT
     filename = ""
 
     chaptype = "body"
-    chaptype = "part" unless ispart.nil?
-    chaptype = "pre" if chap.on_PREDEF?
-    chaptype = "post" if chap.on_APPENDIX?
+    if !ispart.nil?
+      chaptype = "part"
+    elsif chap.on_PREDEF?
+      chaptype = "pre"
+    elsif chap.on_APPENDIX?
+      chaptype = "post"
+    end
 
     if !ispart.nil?
       filename = chap.path
