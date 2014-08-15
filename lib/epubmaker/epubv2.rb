@@ -123,9 +123,15 @@ EOT
     end
 
     def opf_tocx
+      if @producer.params["cover_linear"] && @producer.params["cover_linear"] != "no"
+        cover_linear = "yes"
+      else
+        cover_linear = "no"
+      end
+
       s = ""
       s << %Q[  <spine toc="ncx">\n]
-      s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="no"/>\n]
+      s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="#{cover_linear}"/>\n]
       s << %Q[    <itemref idref="toc" />\n] unless @producer.params["mytoc"].nil?
 
       @producer.contents.each do |item|

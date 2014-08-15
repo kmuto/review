@@ -178,12 +178,16 @@ module ReVIEW
         end
       end
 
-      def read_POSTDEF
+      def read_APPENDIX
         if catalog
-          catalog.postdef
+          catalog.appendix
         else
-          read_FILE(postdef_file)
+          read_FILE(postdef_file) # for backward compatibility
         end
+      end
+
+      def read_POSTDEF
+        catalog.postdef
       end
 
       def read_PART
@@ -223,14 +227,16 @@ module ReVIEW
           rescue FileNotFound => err
             raise FileNotFound, "preface #{err.message}"
           end
-        else
-          mkpart_from_namelist(%w(preface))
         end
       end
 
-      def postscripts
+      def appendix
         if catalog
-          return mkpart_from_namelist(catalog.postdef.split("\n"))
+          names = catalog.appendix.split("\n")
+          chaps = names.each_with_index.map {|n, idx|
+            mkchap_ifexist(n, idx)
+          }.compact
+          return mkpart(chaps)
         end
 
         if File.file?("#{@basedir}/#{postdef_file}")
@@ -239,8 +245,12 @@ module ReVIEW
           rescue FileNotFound => err
             raise FileNotFound, "postscript #{err.message}"
           end
-        else
-          mkpart_from_namelist(%w(appendix postscript))
+        end
+      end
+
+      def postscripts
+        if catalog
+          mkpart_from_namelist(catalog.postdef.split("\n"))
         end
       end
 
@@ -254,6 +264,9 @@ module ReVIEW
         list = parse_chapters
         if pre = prefaces
           list.unshift pre
+        end
+        if app = appendix
+          list.push app
         end
         if post = postscripts
           list.push post
@@ -322,10 +335,13 @@ module ReVIEW
         Chapter.new(self, number, name, path)
       end
 
-      def mkchap_ifexist(name)
+      def mkchap_ifexist(name, idx = nil)
         name += ext if File.extname(name) == ""
         path = "#{@basedir}/#{name}"
-        File.file?(path) ? Chapter.new(self, nil, name, path) : nil
+        if File.file?(path)
+          idx += 1 if idx
+          Chapter.new(self, idx, name, path)
+        end
       end
 
       def read_FILE(filename)

@@ -42,7 +42,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_postdef
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -52,7 +52,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level2_postdef
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -63,7 +63,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level1_postdef_roman
     @chapter.book.config["appendix_format"] = "roman"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -74,7 +74,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level2_postdef_roman
     @chapter.book.config["appendix_format"] = "roman"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -85,7 +85,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level1_postdef_alpha
     @chapter.book.config["appendix_format"] = "alpha"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -96,7 +96,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level2_postdef_alpha
     @chapter.book.config["appendix_format"] = "alpha"
     @chapter.instance_eval do
-      def on_POSTDEF?
+      def on_APPENDIX?
         true
       end
     end
@@ -456,6 +456,14 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<a href="./bib.html#bib-samplebib">[1]</a>|, @builder.inline_bib("samplebib")
   end
 
+  def test_bib_noramlized
+    def @chapter.bibpaper(id)
+      Book::BibpaperIndex::Item.new("sampleb=ib",1,"sample bib")
+    end
+
+    assert_equal %Q|<a href="./bib.html#bib-id_sample_3Dbib">[1]</a>|, @builder.inline_bib("sample=bib")
+  end
+
   def test_bibpaper
     def @chapter.bibpaper(id)
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
@@ -463,6 +471,15 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
     result = compile_blockelem("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
     assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b><p>ab</p></div>\n|, result
+  end
+
+  def test_bibpaper_normalized
+    def @chapter.bibpaper(id)
+      Book::BibpaperIndex::Item.new("sample=bib",1,"sample bib")
+    end
+
+    @builder.bibpaper(["a", "b"], "sample=bib", "sample bib @<b>{bold}")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, @builder.raw_result
   end
 
   def test_bibpaper_with_anchor

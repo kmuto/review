@@ -219,6 +219,7 @@ module EPUBMaker
         "font_ext" => %w(ttf woff otf),
         "verify_target_images" => nil,
         "force_include_images" => [],
+        "cover_linear" => nil,
       }
 
       defaults.each_pair do |k, v|

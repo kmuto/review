@@ -69,7 +69,7 @@ module ReVIEW
           return "#{@number}"
         end
 
-        if on_POSTDEF?
+        if on_APPENDIX?
           return "#{@number}" if @number < 1 || @number > 27
 
           if @book.config["appendix_format"].blank?
@@ -103,15 +103,19 @@ module ReVIEW
       end
 
       def on_CHAPS?
-        on_FILE?(@book.read_CHAPS())
+        on_FILE?(@book.read_CHAPS)
       end
 
       def on_PREDEF?
-        on_FILE?(@book.read_PREDEF())
+        on_FILE?(@book.read_PREDEF)
+      end
+
+      def on_APPENDIX?
+        on_FILE?(@book.read_APPENDIX)
       end
 
       def on_POSTDEF?
-        on_FILE?(@book.read_POSTDEF())
+        on_FILE?(@book.read_POSTDEF)
       end
 
       private
