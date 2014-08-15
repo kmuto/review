@@ -27,7 +27,9 @@ module ReVIEW
 
     def to_doc
       content_str = super
-      @compiler.compile_headline(@level, @cmd, @label, content_str)
+      cmd = @cmd ? @cmd.to_doc : nil
+      label = @label ? @label.to_doc : nil
+      @compiler.compile_headline(@level, cmd, label, content_str)
     end
   end
 
