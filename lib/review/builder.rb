@@ -22,6 +22,7 @@ module ReVIEW
     CAPTION_TITLES = %w(note memo tip info planning best important security caution term link notice point shoot reference practice expert)
 
     attr_accessor :output
+    attr_accessor :ast
 
     def pre_paragraph
       nil
@@ -43,6 +44,7 @@ module ReVIEW
       @compiler = compiler
       @chapter = chapter
       @location = location
+      @ast = nil
       @output = StringIO.new
       @book = ReVIEW.book
       @tabwidth = nil

@@ -33,9 +33,12 @@ require 'review/node'
       @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, self)
       setup_parser(@chapter.content)
       parse()
+      convert_ast
     end
 
     def convert_ast
+      ast = @strategy.ast
+      @strategy.output << ast.to_doc
     end
 
     def compile_text(text)
@@ -457,7 +460,7 @@ require 'review/node'
 
 root = Start
 
-Start = &. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.output << c.to_doc }
+Start = &. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.ast = c }
 
 Document = Block*:c ~document(self, c)
 
