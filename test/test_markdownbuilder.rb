@@ -24,6 +24,12 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
     @builder.bind(@compiler, @chapter, location)
   end
 
+  def test_quote
+    lines = ["foo", "bar", "","buz"]
+    result = @builder.quote(lines)
+    assert_equal %Q|\n> foobar\n> \n> buz\n\n|, @builder.raw_result
+  end
+
   def test_inline_em
     assert_equal "test*foo*abc", @builder.compile_inline("test@<em>{foo}abc")
   end
