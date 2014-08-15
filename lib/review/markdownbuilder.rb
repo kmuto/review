@@ -21,21 +21,31 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def puts(str)
+    def blank_reset
       @blank_seen = false
-      super
     end
 
+#    def puts(str)
+#      @blank_seen = false
+#      "#{str}\n"
+#    end
+
     def blank
-      @output.puts unless @blank_seen
+      buf = ""
+      unless @blank_seen
+        buf = "\n"
+      end
       @blank_seen = true
+      buf
     end
 
     def headline(level, label, caption)
-      blank
+      buf = ""
+      buf << blank
       prefix = "#" * level
-      puts "#{prefix} #{caption}"
-      blank
+      buf << "#{prefix} #{caption}\n"
+      buf << "\n"
+      buf
     end
 
     def quote(lines)
