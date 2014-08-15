@@ -667,8 +667,8 @@ module ReVIEW
 #      " $#{str}$ "
 #    end
 
-    def node_inline_m(ast)
-      " $#{ast.to_raw}$ "
+    def node_inline_m(node)
+      " $#{node[0].to_raw}$ "
     end
 
     # hidden index
