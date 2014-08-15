@@ -1,3 +1,4 @@
+require 'core_extensions'
 module ReVIEW
   class Node
     attr_accessor :content
@@ -22,6 +23,19 @@ module ReVIEW
         @content.map{|o| o.__send__(meth)}.join("")
       end
     end
+
+    def inspect
+      if content.kind_of? String
+        '"'+@content.gsub(/\"/,'\\"')+'"'
+      elsif content == nil
+        "null"
+      elsif !content.kind_of? Array
+        @content.inspect
+      else
+        "["+@content.map(&:inspect).join(",")+"]"
+      end
+    end
+
   end
 
   class HeadlineNode < Node
