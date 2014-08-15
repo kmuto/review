@@ -377,7 +377,12 @@ require 'review/node'
     end
 
     def compile_block(syntax, args, lines)
-      @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, (lines || default_block(syntax)), *args)
+      else
+        @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+      end
     end
 
     def default_block(syntax)
@@ -388,7 +393,12 @@ require 'review/node'
     end
 
     def compile_single(syntax, args)
-      @strategy.__send__(syntax.name, *args)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, *args)
+      else
+        @strategy.__send__(syntax.name, *args)
+      end
     end
 
 
@@ -396,8 +406,8 @@ require 'review/node'
       unless inline_defined?(op)
         raise ReVIEW::CompileError, "no such inline op: #{op}"
       end
-      if @strategy.respond_to?("ast_inline_#{op}")
-        return @strategy.__send__("ast_inline_#{op}", *args)
+      if @strategy.respond_to?("node_inline_#{op}")
+        return @strategy.__send__("node_inline_#{op}", *args)
       end
       unless @strategy.respond_to?("inline_#{op}")
         raise "strategy does not support inline op: @<#{op}>"
