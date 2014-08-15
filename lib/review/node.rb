@@ -1,4 +1,6 @@
 require 'core_extensions'
+require 'json'
+
 module ReVIEW
   class Node
     attr_accessor :content
@@ -24,16 +26,21 @@ module ReVIEW
       end
     end
 
-    def inspect
+    def to_json
       if content.kind_of? String
-        '"'+@content.gsub(/\"/,'\\"')+'"'
+        val = '"'+@content.gsub(/\"/,'\\"')+'"'
       elsif content == nil
-        "null"
+        val = "null"
       elsif !content.kind_of? Array
-        @content.inspect
+        val = @content.to_json
       else
-        "["+@content.map(&:inspect).join(",")+"]"
+        val = "["+@content.map(&:to_json).join(",")+"]"
       end
+      '{"t":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '","c":' + val + '}'
+    end
+
+    def inspect
+      self.to_json
     end
 
   end
@@ -45,6 +52,13 @@ module ReVIEW
       cmd = @cmd ? @cmd.to_doc : nil
       label = @label
       @compiler.compile_headline(@level, cmd, label, content_str)
+    end
+
+    def to_json
+      '{"t":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
+        %Q|"cmd":"#{@cmd.to_json}",|+
+        %Q|"label":"#{@label.to_json}",|+
+        '"c":' + @content.to_json + '}'
     end
   end
 
@@ -81,6 +95,12 @@ module ReVIEW
     def to_doc
       #content_str = super
       @compiler.compile_inline(@symbol, @content)
+    end
+
+    def to_json
+      '{"t":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
+        %Q|"symbol":"#{@symbol}",| +
+        '"c":[' + @content.map(&:to_json).join(",") + ']}'
     end
   end
 
