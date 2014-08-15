@@ -5,6 +5,8 @@ module ReVIEW
     def to_raw
       if content.kind_of? String
         @content
+      elsif content == nil
+        nil
       elsif !content.kind_of? Array
         @content.to_raw
       else
@@ -15,6 +17,8 @@ module ReVIEW
     def to_doc
       if content.kind_of? String
         @content
+      elsif content == nil
+        nil
       elsif !content.kind_of? Array
         @content.to_doc
       else
