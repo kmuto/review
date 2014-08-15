@@ -686,14 +686,19 @@ module ReVIEW
       escape(str) + index(str)
     end
 
-    def node_inline_idx(node)
-      content = node.content.to_doc
+    def node_inline_idx(nodelist)
+      content = nodelist[0].to_raw
       escape(content) + index(content)
     end
 
     # hidden index??
     def inline_hidx(str)
       index(str)
+    end
+
+    def node_inline_hidx(nodelist)
+      content = nodelist[0].to_raw
+      index(content)
     end
 
     # bold
