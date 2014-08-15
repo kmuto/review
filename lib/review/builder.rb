@@ -267,7 +267,8 @@ module ReVIEW
       buf
     end
 
-    def inline_hd(id)
+    def node_inline_hd(nodelist)
+      id = nodelist[0].to_raw
       m = /\A([^|]+)\|(.+)/.match(id)
       chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
       return inline_hd_chap(chapter, m[2]) if chapter
