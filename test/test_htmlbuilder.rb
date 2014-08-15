@@ -470,7 +470,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     result = compile_blockelem("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b><p>ab</p></div>\n|, result
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, result
   end
 
   def test_bibpaper_normalized
@@ -478,8 +478,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("sample=bib",1,"sample bib")
     end
 
-    @builder.bibpaper(["a", "b"], "sample=bib", "sample bib @<b>{bold}")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, @builder.raw_result
+    result = compile_blockelem("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, result
   end
 
   def test_bibpaper_with_anchor
@@ -488,7 +488,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     result = compile_blockelem("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a><p>ab</p></div>\n|, result
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, result
   end
 
 =begin

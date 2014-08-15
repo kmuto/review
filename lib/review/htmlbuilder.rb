@@ -956,7 +956,7 @@ QUOTE
       buf = %Q(<a id="bib-#{normalize_id(id)}">)
       buf << "[#{@chapter.bibpaper(id).number}]"
       buf << %Q(</a>)
-      buf << " #{(caption)}"
+      buf << " #{(caption)}" << "\n"
     end
 
     def bibpaper_bibpaper(id, caption, lines)
