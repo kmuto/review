@@ -667,7 +667,7 @@ module ReVIEW
 #      " $#{str}$ "
 #    end
 
-    def ast_inline_m(ast)
+    def node_inline_m(ast)
       " $#{ast.to_raw}$ "
     end
 
@@ -684,6 +684,11 @@ module ReVIEW
     # index
     def inline_idx(str)
       escape(str) + index(str)
+    end
+
+    def node_inline_idx(node)
+      content = node.content.to_doc
+      escape(content) + index(content)
     end
 
     # hidden index??
