@@ -106,20 +106,7 @@ module ReVIEW
       @blank_seen = false
     end
 
-    def print(s)
-      @blank_seen = false
-      super
-    end
-    private :print
-
-    def puts(s)
-      @blank_seen = false
-      super
-    end
-    private :puts
-
     def blank
-      # @output.puts unless @blank_seen
       seen = @blank_seen
       @blank_seen = true
       unless seen
@@ -190,7 +177,7 @@ module ReVIEW
 
     def ul_item(lines)
       blank_reset
-      "●\t#{lines.join}"
+      "●\t#{lines.join}\n"
     end
 
     def ul_end
@@ -227,6 +214,7 @@ module ReVIEW
         buf << "\t#{paragraph.gsub(/\n/, '')}\n"
       end
       blank_reset
+      buf
     end
 
     def dl_end
@@ -243,6 +231,7 @@ module ReVIEW
       buf << "◆→開始:#{@titles["lead"]}←◆\n"
       buf << split_paragraph(lines).join("\n") << "\n"
       buf << "◆→終了:#{@titles["lead"]}←◆\n"
+      blank_reset
       buf << blank
       buf
     end
@@ -313,7 +302,7 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil)
       buf = ""
-      blank
+      buf << blank
       buf << "◆→開始:#{@titles["emlist"]}←◆\n"
       buf << "■#{caption}\n" unless caption.nil?
       _lines = []
@@ -587,7 +576,7 @@ module ReVIEW
 
     def common_column_end(type)
       buf = ""
-      buf << %Q[◆→終了:#{@titles["type"]}←◆]
+      buf << %Q[◆→終了:#{@titles[type]}←◆\n]
       blank_reset
       buf << blank
       buf
