@@ -814,21 +814,7 @@ module ReVIEW
     end
 
     def index(str)
-      str.sub!(/\(\)/, '')
-      decl = ''
-      if /@\z/ =~ str
-        str.chop!
-        decl = '|IndexDecl'
-      end
-      unless /[^ -~]/ =~ str
-        if /\^/ =~ str
-          macro('index', escape_index(str.gsub(/\^/, '')) + '@' + escape_index(text(str)) + decl)
-        else
-          '\index{' + escape_index(text(str)) + decl + '}'
-        end
-      else
-        '\index{' + escape_index(@index_db[str]) + '@' + escape_index(text(str)) + '}'
-      end
+     "\\index{" + str + "}"
     end
 
     def compile_kw(word, alt)
