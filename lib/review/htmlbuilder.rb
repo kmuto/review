@@ -257,30 +257,33 @@ EOT
     end
 
     def xcolumn_begin(level, label, caption)
-      puts %Q[<div class="xcolumn">]
-      headline(level, label, caption)
+      buf << %Q[<div class="xcolumn">\n]
+      buf << headline(level, label, caption)
+      buf
     end
 
     def xcolumn_end(level)
-      puts '</div>'
+      "</div>\n"
     end
 
     def ref_begin(level, label, caption)
-      print %Q[<div class="reference">]
-      headline(level, label, caption)
+      buf << %Q[<div class="reference">\n]
+      buf << headline(level, label, caption)
+      buf
     end
 
     def ref_end(level)
-      puts '</div>'
+      "</div>\n"
     end
 
     def sup_begin(level, label, caption)
-      print %Q[<div class="supplement">]
-      headline(level, label, caption)
+      buf << %Q[<div class="supplement">\n]
+      buf << headline(level, label, caption)
+      buf
     end
 
     def sup_end(level)
-      puts '</div>'
+      "</div>\n"
     end
 
     def tsize(str)
@@ -347,12 +350,14 @@ EOT
     end
 
     def box(lines, caption = nil)
-      puts %Q[<div class="syntax">]
-      puts %Q[<p class="caption">#{caption}</p>] unless caption.nil?
-      print %Q[<pre class="syntax">]
-      lines.each {|line| puts detab(line) }
-      puts '</pre>'
-      puts '</div>'
+      buf = ""
+      buf << %Q[<div class="syntax">\n]
+      buf << %Q[<p class="caption">#{caption}</p>\n] unless caption.nil?
+      buf << %Q[<pre class="syntax">]
+      lines.each {|line| buf << detab(line) << "\n" }
+      buf << "</pre>\n"
+      buf << "</div>\n"
+      buf
     end
 
     def note(lines, caption = nil)
@@ -531,8 +536,9 @@ EOT
       lines.each_with_index do |line, i|
         buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
       end
-      puts '</pre>'
-      puts '</div>'
+      buf << "</pre>\n"
+      buf << "</div>\n"
+      buf
     end
 
     def cmd(lines, caption = nil)
@@ -586,29 +592,32 @@ QUOTE
     end
 
     def talk(lines)
-      puts %Q[<div class="talk">]
+      buf = ""
+      buf << %Q[<div class="talk">\n]
       if @book.config["deprecated-blocklines"].nil?
         blocked_lines = split_paragraph(lines)
-        puts "#{blocked_lines.join("\n")}"
+        buf << "#{blocked_lines.join("\n")}\n"
       else
-        print '<pre>'
-        puts "#{lines.join("\n")}"
-        puts '</pre>'
+        buf << '<pre>'
+        buf << "#{lines.join("\n")}\n"
+        buf << "</pre>\n"
       end
-      puts '</div>'
+      buf << "</div>\n"
+      buf
     end
 
     def texequation(lines)
-      puts %Q[<div class="equation">]
+      buf << %Q[<div class="equation">\n]
       if @book.config["mathml"]
         p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
-        puts p.parse(unescape_html(lines.join("\n")), true)
+        buf << p.parse(unescape_html(lines.join("\n")), true) << "\n
       else
-        print '<pre>'
-        puts "#{lines.join("\n")}"
-        puts '</pre>'
+        buf << '<pre>'
+        buf << "#{lines.join("\n")}\n"
+        buf << "</pre>\n"
       end
-      puts '</div>'
+      buf << "</div>\n"
+      buf
     end
 
     def handle_metric(str)
