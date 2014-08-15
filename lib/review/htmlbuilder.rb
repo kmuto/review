@@ -101,7 +101,6 @@ module ReVIEW
       # default XHTML header/footer
       header = <<EOT
 <?xml version="1.0" encoding="#{@book.config["outencoding"] || :UTF-8}"?>
->>>>>>> master
 EOT
       if @book.config["htmlversion"].to_i == 5
         header += <<EOT
