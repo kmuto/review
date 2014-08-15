@@ -388,9 +388,12 @@ require 'review/node'
       @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, self)
       setup_parser(@chapter.content)
       parse()
+      convert_ast
     end
 
     def convert_ast
+      ast = @strategy.ast
+      @strategy.output << ast.to_doc
     end
 
     def compile_text(text)
@@ -729,7 +732,12 @@ require 'review/node'
     end
 
     def compile_block(syntax, args, lines)
-      @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, (lines || default_block(syntax)), *args)
+      else
+        @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+      end
     end
 
     def default_block(syntax)
@@ -740,7 +748,12 @@ require 'review/node'
     end
 
     def compile_single(syntax, args)
-      @strategy.__send__(syntax.name, *args)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, *args)
+      else
+        @strategy.__send__(syntax.name, *args)
+      end
     end
 
 
@@ -748,8 +761,8 @@ require 'review/node'
       unless inline_defined?(op)
         raise ReVIEW::CompileError, "no such inline op: #{op}"
       end
-      if @strategy.respond_to?("ast_inline_#{op}")
-        return @strategy.__send__("ast_inline_#{op}", *args)
+      if @strategy.respond_to?("node_inline_#{op}")
+        return @strategy.__send__("node_inline_#{op}", args)
       end
       unless @strategy.respond_to?("inline_#{op}")
         raise "strategy does not support inline op: @<#{op}>"
@@ -929,6 +942,20 @@ require 'review/node'
       attr_reader :compiler
       attr_reader :content
     end
+    class TaggedSectionNode < Node
+      def initialize(compiler, level, label, caption, content)
+        @compiler = compiler
+        @level = level
+        @label = label
+        @caption = caption
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :level
+      attr_reader :label
+      attr_reader :caption
+      attr_reader :content
+    end
     class TextNode < Node
       def initialize(compiler, content)
         @compiler = compiler
@@ -1002,6 +1029,9 @@ require 'review/node'
     def singleline_content(compiler, content)
       ::ReVIEW::SinglelineContentNode.new(compiler, content)
     end
+    def tagged_section(compiler, level, label, caption, content)
+      ::ReVIEW::TaggedSectionNode.new(compiler, level, label, caption, content)
+    end
     def text(compiler, content)
       ::ReVIEW::TextNode.new(compiler, content)
     end
@@ -1024,7 +1054,7 @@ require 'review/node'
     return _tmp
   end
 
-  # Start = &. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.output << c.to_doc }
+  # Start = &. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.ast = c }
   def _Start
 
     _save = self.pos
@@ -1048,7 +1078,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  close_all_tagged_section; @strategy.output << c.to_doc ; end
+      @result = begin;  close_all_tagged_section; @strategy.ast = c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3905,7 +3935,7 @@ require 'review/node'
 
   Rules = {}
   Rules[:_root] = rule_info("root", "Start")
-  Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.output << c.to_doc }")
+  Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.ast = c }")
   Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
