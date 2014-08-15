@@ -28,7 +28,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   def test_quote
     lines = ["foo", "bar", "","buz"]
     result = @builder.quote(lines)
-    assert_equal %Q|\n> foobar\n> \n> buz\n\n|, @builder.raw_result
+    assert_equal %Q|\n> foobar\n> \n> buz\n\n|, result
   end
 
   def test_inline_em
@@ -59,12 +59,12 @@ EOS
   end
 
   def test_cmd
-    @builder.cmd(["lineA","lineB"])
-    assert_equal "```\nlineA\nlineB\n```\n", @builder.raw_result
+    result = @builder.cmd(["lineA","lineB"])
+    assert_equal "```\nlineA\nlineB\n```\n", result
   end
 
   def test_table
-    @builder.table(["testA\ttestB","------------","contentA\tcontentB"])
-    assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", @builder.raw_result
+    result = @builder.table(["testA\ttestB","------------","contentA\tcontentB"])
+    assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", result
   end
 end
