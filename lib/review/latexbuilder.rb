@@ -109,7 +109,9 @@ module ReVIEW
     end
 
     def column_end(level)
+      buf = ""
       buf << "\\end{reviewcolumn}\n\n"
+      buf
     end
 
     def captionblock(type, lines, caption)
