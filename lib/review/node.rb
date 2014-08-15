@@ -3,26 +3,23 @@ module ReVIEW
     attr_accessor :content
 
     def to_raw
-      if content.kind_of? String
-        @content
-      elsif content == nil
-        nil
-      elsif !content.kind_of? Array
-        @content.to_raw
-      else
-        @content.map{|o| o.to_raw}.join("")
-      end
+      to_s_by(:to_raw)
     end
 
     def to_doc
+      to_s_by(:to_doc)
+    end
+
+    def to_s_by(meth)
       if content.kind_of? String
         @content
       elsif content == nil
         nil
       elsif !content.kind_of? Array
-        @content.to_doc
+        @content.__send__(meth)
       else
-        @content.map{|o| o.to_doc}.join("")
+        ##@content.map(&meth).join("")
+        @content.map{|o| o.__send__(meth)}.join("")
       end
     end
   end
