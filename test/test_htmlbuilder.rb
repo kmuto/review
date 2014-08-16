@@ -491,12 +491,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, result
   end
 
-=begin
+
   def column_helper(review)
-    #chap_singleton = class << @chapter; self; end
-    #chap_singleton.send(:define_method, :content) { review }
-    #@compiler.compile(@chapter).match(/<body>\n(.+)<\/body>/m)[1]
-    compile_block(review)
+    chap_singleton = class << @chapter; self; end
+    chap_singleton.send(:define_method, :content) { review }
+    @compiler.compile(@chapter).match(/<body>\n(.+)<\/body>/m)[1]
   end
 
   def test_column_1
@@ -584,7 +583,7 @@ EOS
 
     assert_equal expect, column_helper(review)
   end
-=end
+
 
   def test_ul
     src =<<-EOS

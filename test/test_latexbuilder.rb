@@ -419,7 +419,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|[1] sample bib\n\\label{bib:samplebib}\n\n|, ret
   end
 
-=begin
   def column_helper(review)
     chap_singleton = class << @chapter; self; end
     chap_singleton.send(:define_method, :content) { review }
@@ -501,7 +500,6 @@ EOS
     end
   end
 
-=end
   def test_ul
     src =<<-EOS
   * AAA
