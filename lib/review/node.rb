@@ -189,10 +189,13 @@ module ReVIEW
   class DocumentNode < Node
   end
 
-  class TaggedSectionNode < Node
+  class ColumnNode < Node
 
     def to_doc
-      @compiler.compile_column(@content)
+      level = @level
+      label = @label
+      caption = @caption ? @caption.to_doc : nil
+      @compiler.compile_column(level, label, caption, @content)
     end
   end
 
