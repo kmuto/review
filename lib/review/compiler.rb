@@ -393,7 +393,46 @@ require 'review/node'
 
     def convert_ast
       ast = @strategy.ast
+      ast = convert_column(ast)
       @strategy.output << ast.to_doc
+    end
+
+    def flush_column(new_content)
+      if @current_column
+        new_content << @current_column
+        @current_column = nil
+      end
+    end
+
+    def convert_column(ast)
+      @column_stack = []
+      content = ast.content
+      new_content = []
+      @current_content = new_content
+      content.each do |elem|
+        if elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc == "column"
+          flush_column(new_content)
+          @current_content = []
+          @current_column = ReVIEW::ColumnNode.new(elem.compiler, elem.level,
+                                                  elem.label, elem.content, @current_content)
+          next
+        elsif elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc =~ %r|^/|
+          cmd_name = elem.cmd.to_doc[1..-1]
+          if cmd_name != "column"
+            raise ReVIEW::CompileError, "#{cmd_name} is not opened."
+          end
+          flush_column(new_content)
+          @current_content = new_content
+          next
+        elsif elem.kind_of?(ReVIEW::HeadlineNode) && @current_column && elem.level <= @current_column.level
+          flush_column(new_content)
+          @current_content = new_content
+        end
+        @current_content << elem
+      end
+      flush_column(new_content)
+      ast.content = new_content
+      ast
     end
 
     def compile_text(text)
@@ -534,6 +573,7 @@ require 'review/node'
     definline :hd
     definline :href
     definline :recipe
+    definline :column
 
     definline :abbr
     definline :acronym
@@ -567,37 +607,26 @@ require 'review/node'
 
 
     def tagged_section_init
-      @tagged_section = []
+      # noop
     end
 
     def open_tagged_section(tag, level, label, caption)
-      buf = ""
-      mid = "#{tag}_begin"
-      unless @strategy.respond_to?(mid)
-        error "strategy does not support tagged section: #{tag}"
-        return
-      end
-      @tagged_section.push [tag, level]
-      buf << @strategy.__send__(mid, level, label, caption)
-      buf
+      #noop
     end
 
     def close_tagged_section(tag, level)
-      buf = ""
-      mid = "#{tag}_end"
-      if @strategy.respond_to?(mid)
-        buf << @strategy.__send__(mid, level)
-      else
-        error "strategy does not support block op: #{mid}"
-      end
-      buf
+      # noop
     end
 
     def close_all_tagged_section
-      buf  = ""
-      until @tagged_section.empty?
-        buf << close_tagged_section(* @tagged_section.pop)
-      end
+      # noop
+    end
+
+    def compile_column(level, label, caption, content)
+      buf = ""
+      buf << @strategy.__send__("column_begin", level, label, caption)
+      buf << content.to_doc
+      buf << @strategy.__send__("column_end", level)
       buf
     end
 
@@ -630,36 +659,32 @@ require 'review/node'
       caption ||= ""
       caption.strip!
       index = level - 1
-      if tag
-        if tag !~ /\A\//
-          buf << close_current_tagged_section(level)
-          buf << open_tagged_section(tag, level, label, caption)
-        else
-          open_tag = tag[1..-1]
-          prev_tag_info = @tagged_section.pop
-          if !prev_tag_info || prev_tag_info.first != open_tag
-            raise ReVIEW::CompileError, "#{open_tag} is not opened."
-          end
-          buf << close_tagged_section(*prev_tag_info)
-        end
-      else
+      # if tag
+      #   if tag !~ /\A\//
+      #     buf << close_current_tagged_section(level)
+      #     buf << open_tagged_section(tag, level, label, caption)
+      #   else
+      #     open_tag = tag[1..-1]
+      #     prev_tag_info = @tagged_section.pop
+      #     if !prev_tag_info || prev_tag_info.first != open_tag
+      #       raise ReVIEW::CompileError, "#{open_tag} is not opened."
+      #     end
+      #     buf << close_tagged_section(*prev_tag_info)
+      #   end
+      # else
         if @headline_indexs.size > (index + 1)
           @headline_indexs = @headline_indexs[0..index]
         end
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
-        buf << close_current_tagged_section(level)
+        # buf << close_current_tagged_section(level)
         buf << @strategy.headline(level, label, caption)
-      end
+      # end
       buf
     end
 
     def close_current_tagged_section(level)
-      buf = ""
-      while @tagged_section.last and @tagged_section.last[1] >= level
-        buf << close_tagged_section(* @tagged_section.pop)
-      end
-      buf
+      # noop
     end
 
     def comment(text)
@@ -772,8 +797,8 @@ require 'review/node'
       else
         @strategy.__send__("inline_#{op}", *(args.map(&:to_doc)))
       end
-    rescue => err
-      error err.message
+#    rescue => err
+#      error err.message
     end
 
     def compile_paragraph(buf)
@@ -830,6 +855,20 @@ require 'review/node'
         @content = content
       end
       attr_reader :compiler
+      attr_reader :content
+    end
+    class ColumnNode < Node
+      def initialize(compiler, level, label, caption, content)
+        @compiler = compiler
+        @level = level
+        @label = label
+        @caption = caption
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :level
+      attr_reader :label
+      attr_reader :caption
       attr_reader :content
     end
     class DlistNode < Node
@@ -942,20 +981,6 @@ require 'review/node'
       attr_reader :compiler
       attr_reader :content
     end
-    class TaggedSectionNode < Node
-      def initialize(compiler, level, label, caption, content)
-        @compiler = compiler
-        @level = level
-        @label = label
-        @caption = caption
-        @content = content
-      end
-      attr_reader :compiler
-      attr_reader :level
-      attr_reader :label
-      attr_reader :caption
-      attr_reader :content
-    end
     class TextNode < Node
       def initialize(compiler, content)
         @compiler = compiler
@@ -993,6 +1018,9 @@ require 'review/node'
     def bracket_arg(compiler, content)
       ::ReVIEW::BracketArgNode.new(compiler, content)
     end
+    def column(compiler, level, label, caption, content)
+      ::ReVIEW::ColumnNode.new(compiler, level, label, caption, content)
+    end
     def dlist(compiler, content)
       ::ReVIEW::DlistNode.new(compiler, content)
     end
@@ -1028,9 +1056,6 @@ require 'review/node'
     end
     def singleline_content(compiler, content)
       ::ReVIEW::SinglelineContentNode.new(compiler, content)
-    end
-    def tagged_section(compiler, level, label, caption, content)
-      ::ReVIEW::TaggedSectionNode.new(compiler, level, label, caption, content)
     end
     def text(compiler, content)
       ::ReVIEW::TextNode.new(compiler, content)
