@@ -48,6 +48,11 @@ module ReVIEW
     end
     private :blank
 
+    def blank_reset
+      @blank_needed = false
+    end
+    private :blank_reset
+
     HEADLINE = {
       1 => 'chapter',
       2 => 'section',
@@ -95,7 +100,12 @@ module ReVIEW
     end
 
     def column_begin(level, label, caption)
-      buf = "\n"
+      buf = ""
+      blank
+      if @blank_needed
+        buf << "\n"
+        blank_reset
+      end
       buf << "\\begin{reviewcolumn}\n"
       if label
         buf << "\\hypertarget{#{column_label(label)}}{}\n"
@@ -106,11 +116,13 @@ module ReVIEW
       if level <= @book.config["toclevel"].to_i
         buf << "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{caption}}" << "\n"
       end
+      buf
     end
 
     def column_end(level)
       buf = ""
-      buf << "\\end{reviewcolumn}\n\n"
+      buf << "\\end{reviewcolumn}\n"
+      blank
       buf
     end
 
