@@ -625,7 +625,7 @@ QUOTE
         return "width=\"#{($1.to_f * 100).round}%\""
       else
         k, v = str.split('=', 2)
-        return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
+        return %Q|#{k}=\"#{v.sub(/\A&quot;/, '').sub(/\A["']/, '').sub(/&quot;\Z/, '').sub(/["']\Z/, '')}\"|
       end
     end
 
