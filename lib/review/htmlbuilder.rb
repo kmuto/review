@@ -900,8 +900,11 @@ QUOTE
 
     def inline_m(str)
       if @book.config["mathml"]
-        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
-        %Q[<span class="equation">#{p.parse(str, nil)}</span>]
+        require 'math_ml'
+        require 'math_ml/symbol/character_reference'
+        parser = MathML::LaTeX::Parser.new(
+          :symbol => MathML::Symbol::CharacterReference)
+        %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
       end

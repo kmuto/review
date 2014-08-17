@@ -90,8 +90,6 @@ def _main
   opts.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| config["stylesheet"] = files.split(/\s*,\s*/) }
   opts.on('--mathml', 'Use MathML for TeX equation in HTML') do
     config["mathml"] = true
-    require 'math_ml'
-    require "math_ml/symbol/character_reference"
   end
   opts.on('--htmlversion=VERSION', 'HTML version.') do |v|
     v = v.to_i
