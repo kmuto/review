@@ -32,3 +32,17 @@ def prepare_samplebook(srcdir)
   FileUtils.cp_r(Dir.glob(samplebook_dir + "/*"), srcdir)
   YAML.load(File.open(srcdir + "/config.yml"))
 end
+
+def compile_block(text)
+  @chapter.content = text
+  matched = @compiler.compile(@chapter).match(/<body>\n(.+)<\/body>/m)
+  if matched && matched.size > 1
+    matched[1]
+  else
+    ""
+  end
+end
+
+def compile_inline(text)
+  @builder.compile_inline(text)
+end
