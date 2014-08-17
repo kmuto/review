@@ -34,6 +34,11 @@ def prepare_samplebook(srcdir)
 end
 
 def compile_block(text)
+  method_name = "compile_block_#{@builder.target_name}"
+  self.send(method_name, text)
+end
+
+def compile_block_html(text)
   @chapter.content = text
   matched = @compiler.compile(@chapter).match(/<body>\n(.+)<\/body>/m)
   if matched && matched.size > 1
@@ -41,6 +46,11 @@ def compile_block(text)
   else
     ""
   end
+end
+
+def compile_block_latex(text)
+  @chapter.content = text
+  @compiler.compile(@chapter)
 end
 
 def compile_inline(text)
