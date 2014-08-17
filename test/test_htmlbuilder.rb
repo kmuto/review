@@ -759,31 +759,31 @@ EOS
   end
 
   def test_block_raw0
-    result = compile_block("//raw[<>!\"\\n& ]")
+    result = compile_block("//raw[<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
     assert_equal expect, result
   end
 
   def test_block_raw1
-    result = compile_block("//raw[|html|<>!\"\\n& ]")
+    result = compile_block("//raw[|html|<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
     assert_equal expect, result
   end
 
   def test_block_raw2
-    result = compile_block("//raw[|html, latex|<>!\"\\n& ]")
+    result = compile_block("//raw[|html, latex|<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
     assert_equal expect, result
   end
 
   def test_block_raw3
-    result = compile_block("//raw[|latex, idgxml|<>!\"\\n& ]")
+    result = compile_block("//raw[|latex, idgxml|<>!\"\\n& ]\n")
     expect = ''
     assert_equal expect, result
   end
 
   def test_block_raw4
-    result = compile_block("//raw[|html <>!\"\\n& ]")
+    result = compile_block("//raw[|html <>!\"\\n& ]\n")
     expect = %Q(|html <>!\"\n& )
     assert_equal expect.chomp, result
   end
@@ -791,7 +791,7 @@ EOS
   def test_inline_fn
     fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
     @chapter.instance_eval{@footnote_index=fn}
-    result = compile_block("//footnote[foo][bar\\a\\$buz]")
+    result = compile_block("//footnote[foo][bar\\a\\$buz]\n")
     expect =<<-'EOS'
 <div class="footnote" id="fn-foo"><p class="footnote">[<a href="#fnb-foo">*1</a>] bar\a\$buz</p></div>
 EOS
@@ -801,7 +801,7 @@ EOS
   def test_inline_fn_with_tricky_id
     fn = Book::FootnoteIndex.parse(['//footnote[123 あ_;][bar\\a\\$buz]'])
     @chapter.instance_eval{@footnote_index=fn}
-    result = compile_block("//footnote[123 あ_;][bar\\a\\$buz]")
+    result = compile_block("//footnote[123 あ_;][bar\\a\\$buz]\n")
     expect =<<-'EOS'
 <div class="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[<a href="#fnb-id_123-_E3_81_82___3B">*1</a>] bar\a\$buz</p></div>
 EOS
