@@ -72,6 +72,10 @@ module ReVIEW
       }
     end
 
+    def target_name
+      self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+    end
+
     def list(lines, id, caption)
       begin
         list_header id, caption
@@ -273,7 +277,7 @@ module ReVIEW
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
-        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+        c = target_name
         if builders.include?(c)
           print matched[2].gsub("\\n", "\n")
         else
@@ -347,7 +351,7 @@ module ReVIEW
     end
 
     def graph(lines, id, command, caption = nil)
-      c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      c = target_name
       dir = File.join(@book.basedir, @book.image_dir, c)
       Dir.mkdir(dir) unless File.exist?(dir)
       file = "#{id}.#{image_ext}"
