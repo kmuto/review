@@ -146,73 +146,73 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_href
-    ret = @builder.compile_href("http://github.com", "GitHub")
-    assert_equal %Q|<a href="http://github.com" class="link">GitHub</a>|, ret
+    result = @builder.compile_href("http://github.com", "GitHub")
+    assert_equal %Q|<a href="http://github.com" class="link">GitHub</a>|, result
   end
 
   def test_href_without_label
-    ret = @builder.compile_href("http://github.com",nil)
-    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, ret
+    result = @builder.compile_href("http://github.com",nil)
+    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, result
   end
 
   def test_inline_href
-    ret = @builder.inline_href("http://github.com, Git\\,Hub")
-    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, ret
+    result = @builder.inline_href("http://github.com, Git\\,Hub")
+    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, result
   end
 
   def test_inline_href_without_label
-    ret = @builder.inline_href("http://github.com")
-    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, ret
+    result = @builder.inline_href("http://github.com")
+    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, result
   end
 
   def test_inline_raw
-    ret = @builder.inline_raw("@<tt>{inline}")
-    assert_equal %Q|@<tt>{inline}|, ret
+    result = @builder.inline_raw("@<tt>{inline}")
+    assert_equal %Q|@<tt>{inline}|, result
   end
 
   def test_inline_in_table
-    ret = @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
+    @builder.table(["<b>1</b>\t<i>2</i>", "------------", "<b>3</b>\t<i>4</i>&lt;&gt;&amp;"])
     assert_equal %Q|<div class="table">\n<table>\n<tr><th><b>1</b></th><th><i>2</i></th></tr>\n<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|, @builder.raw_result
   end
 
   def test_inline_br
-    ret = @builder.inline_br("")
-    assert_equal %Q|<br />|, ret
+    result = @builder.inline_br("")
+    assert_equal %Q|<br />|, result
   end
 
   def test_inline_i
-    ret = @builder.compile_inline("test @<i>{inline test} test2")
-    assert_equal %Q|test <i>inline test</i> test2|, ret
+    result = @builder.compile_inline("test @<i>{inline test} test2")
+    assert_equal %Q|test <i>inline test</i> test2|, result
   end
 
   def test_inline_i_and_escape
-    ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
-    assert_equal %Q|test <i>inline&lt;&amp;;\\ test</i> test2|, ret
+    result = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test <i>inline&lt;&amp;;\\ test</i> test2|, result
   end
 
   def test_inline_b
-    ret = @builder.compile_inline("test @<b>{inline test} test2")
-    assert_equal %Q|test <b>inline test</b> test2|, ret
+    result = @builder.compile_inline("test @<b>{inline test} test2")
+    assert_equal %Q|test <b>inline test</b> test2|, result
   end
 
   def test_inline_b_and_escape
-    ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
-    assert_equal %Q|test <b>inline&lt;&amp;;\\ test</b> test2|, ret
+    result = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test <b>inline&lt;&amp;;\\ test</b> test2|, result
   end
 
   def test_inline_tt
-    ret = @builder.compile_inline("test @<tt>{inline test} test2")
-    assert_equal %Q|test <tt>inline test</tt> test2|, ret
+    result = @builder.compile_inline("test @<tt>{inline test} test2")
+    assert_equal %Q|test <tt>inline test</tt> test2|, result
   end
 
   def test_inline_tti
-    ret = @builder.compile_inline("test @<tti>{inline test} test2")
-    assert_equal %Q|test <tt><i>inline test</i></tt> test2|, ret
+    result = @builder.compile_inline("test @<tti>{inline test} test2")
+    assert_equal %Q|test <tt><i>inline test</i></tt> test2|, result
   end
 
   def test_inline_ttb
-    ret = @builder.compile_inline("test @<ttb>{inline test} test2")
-    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, ret
+    result = @builder.compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, result
   end
 
   def test_inline_hd_chap
@@ -222,32 +222,32 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @config["secnolevel"] = 2
-    ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
-    assert_equal %Q|test 「te_st」 test2|, ret
+    result = @builder.compile_inline("test @<hd>{chap1|test} test2")
+    assert_equal %Q|test 「te_st」 test2|, result
 
     @config["secnolevel"] = 3
-    ret = @builder.compile_inline("test @<hd>{chap1|test} test2")
-    assert_equal %Q|test 「1.1.1 te_st」 test2|, ret
+    result = @builder.compile_inline("test @<hd>{chap1|test} test2")
+    assert_equal %Q|test 「1.1.1 te_st」 test2|, result
   end
 
   def test_inline_uchar
-    ret = @builder.compile_inline("test @<uchar>{2460} test2")
-    assert_equal %Q|test &#x2460; test2|, ret
+    result = @builder.compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test &#x2460; test2|, result
   end
 
   def test_inline_ruby
-    ret = @builder.compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
-    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", ret
+    result = @builder.compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
+    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", result
   end
 
   def test_inline_ruby_comma
-    ret = @builder.compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
-    assert_equal "<ruby><rb>foo, bar, buz</rb><rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", ret
+    result = @builder.compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
+    assert_equal "<ruby><rb>foo, bar, buz</rb><rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", result
   end
 
   def test_inline_ref
-    ret = @builder.compile_inline("@<ref>{外部参照<>&}")
-    assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, ret
+    result = @builder.compile_inline("@<ref>{外部参照<>&}")
+    assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, result
   end
 
   def test_inline_mathml
@@ -258,9 +258,9 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       return true
     end
     @config["mathml"] = true
-    ret = @builder.compile_inline("@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}")
+    result = @builder.compile_inline("@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}")
     @config["mathml"] = nil
-    assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", ret
+    assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", result
   end
 
   def test_quote

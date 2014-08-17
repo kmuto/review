@@ -58,78 +58,78 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_href
-    ret = @builder.compile_href("http://github.com", "GitHub")
-    assert_equal %Q|GitHub（△http://github.com☆）|, ret
+    result = @builder.compile_href("http://github.com", "GitHub")
+    assert_equal %Q|GitHub（△http://github.com☆）|, result
   end
 
   def test_href_without_label
-    ret = @builder.compile_href("http://github.com",nil)
-    assert_equal %Q|△http://github.com☆|, ret
+    result = @builder.compile_href("http://github.com",nil)
+    assert_equal %Q|△http://github.com☆|, result
   end
 
   def test_inline_raw
-    ret = @builder.inline_raw("@<tt>{inline}")
-    assert_equal %Q|@<tt>{inline}|, ret
+    result = @builder.inline_raw("@<tt>{inline}")
+    assert_equal %Q|@<tt>{inline}|, result
   end
 
   def test_inline_ruby
-    ret = @builder.compile_ruby("coffin", "bed")
-    assert_equal %Q|coffin◆→DTP連絡:「coffin」に「bed」とルビ←◆|, ret
+    result = @builder.compile_ruby("coffin", "bed")
+    assert_equal %Q|coffin◆→DTP連絡:「coffin」に「bed」とルビ←◆|, result
   end
 
   def test_inline_kw
-    ret = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
-    assert_equal %Q|★ISO☆（International Organization for Standardization） ★Ruby<>☆|, ret
+    result = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
+    assert_equal %Q|★ISO☆（International Organization for Standardization） ★Ruby<>☆|, result
   end
 
   def test_inline_maru
-    ret = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
-    assert_equal %Q|1◆→丸数字1←◆20◆→丸数字20←◆A◆→丸数字A←◆z◆→丸数字z←◆|, ret
+    result = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
+    assert_equal %Q|1◆→丸数字1←◆20◆→丸数字20←◆A◆→丸数字A←◆z◆→丸数字z←◆|, result
   end
 
   def test_inline_br
-    ret = @builder.inline_br("")
-    assert_equal %Q|\n|, ret
+    result = @builder.inline_br("")
+    assert_equal %Q|\n|, result
   end
 
   def test_inline_i
-    ret = @builder.compile_inline("test @<i>{inline test} test2")
-    assert_equal %Q|test ▲inline test☆ test2|, ret
+    result = @builder.compile_inline("test @<i>{inline test} test2")
+    assert_equal %Q|test ▲inline test☆ test2|, result
   end
 
   def test_inline_i_and_escape
-    ret = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
-    assert_equal %Q|test ▲inline<&;\\ test☆ test2|, ret
+    result = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test ▲inline<&;\\ test☆ test2|, result
   end
 
   def test_inline_b
-    ret = @builder.compile_inline("test @<b>{inline test} test2")
-    assert_equal %Q|test ★inline test☆ test2|, ret
+    result = @builder.compile_inline("test @<b>{inline test} test2")
+    assert_equal %Q|test ★inline test☆ test2|, result
   end
 
   def test_inline_b_and_escape
-    ret = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
-    assert_equal %Q|test ★inline<&;\\ test☆ test2|, ret
+    result = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test ★inline<&;\\ test☆ test2|, result
   end
 
   def test_inline_tt
-    ret = @builder.compile_inline("test @<tt>{inline test} test2@<tt>{\\}}")
-    assert_equal %Q|test △inline test☆ test2△}☆|, ret
+    result = @builder.compile_inline("test @<tt>{inline test} test2@<tt>{\\}}")
+    assert_equal %Q|test △inline test☆ test2△}☆|, result
   end
 
   def test_inline_tti
-    ret = @builder.compile_inline("test @<tti>{inline test} test2")
-    assert_equal %Q|test ▲inline test☆◆→等幅フォントイタ←◆ test2|, ret
+    result = @builder.compile_inline("test @<tti>{inline test} test2")
+    assert_equal %Q|test ▲inline test☆◆→等幅フォントイタ←◆ test2|, result
   end
 
   def test_inline_ttb
-    ret = @builder.compile_inline("test @<ttb>{inline test} test2")
-    assert_equal %Q|test ★inline test☆◆→等幅フォント太字←◆ test2|, ret
+    result = @builder.compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test ★inline test☆◆→等幅フォント太字←◆ test2|, result
   end
 
   def test_inline_uchar
-    ret = @builder.compile_inline("test @<uchar>{2460} test2")
-    assert_equal %Q|test ① test2|, ret
+    result = @builder.compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test ① test2|, result
   end
 
   def test_inline_in_table

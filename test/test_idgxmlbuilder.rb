@@ -59,28 +59,28 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_ref
-    ret = @builder.compile_inline("@<ref>{外部参照<>&}")
-    assert_equal %Q|<ref idref='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</ref>|, ret
+    result = @builder.compile_inline("@<ref>{外部参照<>&}")
+    assert_equal %Q|<ref idref='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</ref>|, result
   end
 
   def test_href
-    ret = @builder.compile_href("http://github.com", "GitHub")
-    assert_equal %Q|<a linkurl='http://github.com'>GitHub</a>|, ret
+    result = @builder.compile_href("http://github.com", "GitHub")
+    assert_equal %Q|<a linkurl='http://github.com'>GitHub</a>|, result
   end
 
   def test_href_without_label
-    ret = @builder.compile_href("http://github.com",nil)
-    assert_equal %Q|<a linkurl='http://github.com'>http://github.com</a>|, ret
+    result = @builder.compile_href("http://github.com",nil)
+    assert_equal %Q|<a linkurl='http://github.com'>http://github.com</a>|, result
   end
 
   def test_inline_href
-    ret = @builder.inline_href("http://github.com, Git\\,Hub")
-    assert_equal %Q|<a linkurl='http://github.com'>Git,Hub</a>|, ret
+    result = @builder.inline_href("http://github.com, Git\\,Hub")
+    assert_equal %Q|<a linkurl='http://github.com'>Git,Hub</a>|, result
   end
 
   def test_inline_raw
-    ret = @builder.inline_raw("@<tt>{inline}")
-    assert_equal %Q|@<tt>{inline}|, ret
+    result = @builder.inline_raw("@<tt>{inline}")
+    assert_equal %Q|@<tt>{inline}|, result
   end
 
   def test_inline_in_table
@@ -108,48 +108,48 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_br
-    ret = @builder.inline_br("")
-    assert_equal %Q|\n|, ret
+    result = @builder.inline_br("")
+    assert_equal %Q|\n|, result
   end
 
   def test_inline_uchar
-    ret = @builder.compile_inline("test @<uchar>{2460} test2")
-    assert_equal %Q|test &#x2460; test2|, ret
+    result = @builder.compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test &#x2460; test2|, result
   end
 
   def test_inline_ruby
-    ret = @builder.compile_ruby("coffin", "bed")
-    assert_equal %Q|<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>coffin</aid:rb><aid:rt>bed</aid:rt></aid:ruby></GroupRuby>|, ret
+    result = @builder.compile_ruby("coffin", "bed")
+    assert_equal %Q|<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>coffin</aid:rb><aid:rt>bed</aid:rt></aid:ruby></GroupRuby>|, result
   end
 
   def test_inline_kw
-    ret = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
-    assert_equal %Q|<keyword>ISO（International Organization for Standardization）</keyword><index value="ISO" /><index value="International Organization for Standardization" /> <keyword>Ruby&lt;&gt;</keyword><index value="Ruby&lt;&gt;" />|, ret
+    result = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
+    assert_equal %Q|<keyword>ISO（International Organization for Standardization）</keyword><index value="ISO" /><index value="International Organization for Standardization" /> <keyword>Ruby&lt;&gt;</keyword><index value="Ruby&lt;&gt;" />|, result
   end
 
   def test_inline_maru
-    ret = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
-    assert_equal %Q|&#x2460;&#x2473;&#x24b6;&#x24e9;|, ret
+    result = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
+    assert_equal %Q|&#x2460;&#x2473;&#x24b6;&#x24e9;|, result
   end
 
   def test_inline_ttb
-    ret = @builder.inline_ttb("test * <>\"")
-    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, ret
+    result = @builder.inline_ttb("test * <>\"")
+    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, result
   end
 
   def test_inline_ttbold
-    ret = @builder.inline_ttbold("test * <>\"")
-    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, ret
+    result = @builder.inline_ttbold("test * <>\"")
+    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, result
   end
 
   def test_inline_balloon
-    ret = @builder.inline_balloon("@maru[1]test")
-    assert_equal %Q|<balloon>&#x2460;test</balloon>|, ret
+    result = @builder.inline_balloon("@maru[1]test")
+    assert_equal %Q|<balloon>&#x2460;test</balloon>|, result
   end
 
   def test_inline_m
-    ret = @builder.compile_inline("@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}")
-    assert_equal %Q|<replace idref="texinline-1"><pre>\\sin</pre></replace> <replace idref="texinline-2"><pre>\\frac{1}{2}</pre></replace>|, ret
+    result = @builder.compile_inline("@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}")
+    assert_equal %Q|<replace idref="texinline-1"><pre>\\sin</pre></replace> <replace idref="texinline-2"><pre>\\frac{1}{2}</pre></replace>|, result
   end
 
   def test_paragraph
