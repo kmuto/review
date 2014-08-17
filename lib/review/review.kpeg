@@ -453,7 +453,7 @@ require 'review/node'
     def compile_raw(builders, content)
       c = @strategy.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
       if !builders || builders.include?(c)
-        content
+        content.gsub("\\n", "\n")
       else
         ""
       end
