@@ -155,7 +155,7 @@ module ReVIEW
         return @catalog if @catalog.present?
 
         catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
-        if File.exist? catalogfile_path
+        if File.file? catalogfile_path
           @catalog = Catalog.new(File.open catalogfile_path)
         end
 
