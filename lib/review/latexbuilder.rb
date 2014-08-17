@@ -812,7 +812,22 @@ module ReVIEW
           '\index{' + escape_index(text(str)) + decl + '}'
         end
       else
-        '\index{' + escape_index(@index_db[str]) + '@' + escape_index(text(str)) + '}'
+        raise "set yahoo_appid" if ReVIEW.book.config["yahoo_appid"].nil?
+        require 'net/http'
+        require 'uri'
+        require 'cgi'
+        require 'rexml/document'
+        result = Net::HTTP.get(URI.parse("http://jlp.yahooapis.jp/FuriganaService/V1/furigana?appid=#{ReVIEW.book.config["yahoo_appid"]}&grade=1&sentence=#{CGI.escape(str)}"))
+        doc = REXML::Document.new(result)
+        yomi = ""
+        doc.each_element("/ResultSet/Result/WordList/Word/Surface") do |elm|
+          if !elm.next_element.nil? && elm.next_element.name == "Furigana"
+            yomi += elm.next_element[0].to_s
+          else
+            yomi += elm[0].to_s
+          end
+        end
+        '\index{' + escape_index(yomi) + '@' + escape_index(text(str)) + '}'
       end
     end
 
