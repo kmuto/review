@@ -31,155 +31,151 @@ class TOPBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|■H1■第1章　this is test.\n|, @builder.raw_result
+    result = compile_block("={test} this is test.\n")
+    assert_equal %Q|■H1■第1章　this is test.\n|, result
   end
 
   def test_headline_level1_without_secno
     @config["secnolevel"] = 0
-    @builder.headline(1,"test","this is test.")
-    assert_equal %Q|■H1■this is test.\n|, @builder.raw_result
+    result = compile_block("={test} this is test.\n")
+    assert_equal %Q|■H1■this is test.\n|, result
   end
 
   def test_headline_level2
-    @builder.headline(2,"test","this is test.")
-    assert_equal %Q|■H2■1.1　this is test.\n|, @builder.raw_result
+    result = compile_block("=={test} this is test.\n")
+    assert_equal %Q|■H2■1.1　this is test.\n|, result
   end
 
   def test_headline_level3
-    @builder.headline(3,"test","this is test.")
-    assert_equal %Q|■H3■this is test.\n|, @builder.raw_result
+    result = compile_block("==={test} this is test.\n")
+    assert_equal %Q|■H3■this is test.\n|, result
   end
 
   def test_headline_level3_with_secno
     @config["secnolevel"] = 3
-    @builder.headline(3,"test","this is test.")
-    assert_equal %Q|■H3■1.0.1　this is test.\n|, @builder.raw_result
+    result = compile_block("==={test} this is test.\n")
+    assert_equal %Q|■H3■1.0.1　this is test.\n|, result
   end
 
   def test_href
-    result = @builder.compile_href("http://github.com", "GitHub")
+    result = compile_inline("@<href>{http://github.com, GitHub}")
     assert_equal %Q|GitHub（△http://github.com☆）|, result
   end
 
   def test_href_without_label
-    result = @builder.compile_href("http://github.com",nil)
+    result = compile_inline("@<href>{http://github.com}")
     assert_equal %Q|△http://github.com☆|, result
   end
 
   def test_inline_raw
-    result = @builder.inline_raw("@<tt>{inline}")
+    result = compile_inline("@<raw>{@<tt>{inline\}}")
     assert_equal %Q|@<tt>{inline}|, result
   end
 
   def test_inline_ruby
-    result = @builder.compile_ruby("coffin", "bed")
+    result = compile_inline("@<ruby>{coffin,bed}")
     assert_equal %Q|coffin◆→DTP連絡:「coffin」に「bed」とルビ←◆|, result
   end
 
   def test_inline_kw
-    result = @builder.compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
+    result = compile_inline("@<kw>{ISO, International Organization for Standardization } @<kw>{Ruby<>}")
     assert_equal %Q|★ISO☆（International Organization for Standardization） ★Ruby<>☆|, result
   end
 
   def test_inline_maru
-    result = @builder.compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
+    result = compile_inline("@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}")
     assert_equal %Q|1◆→丸数字1←◆20◆→丸数字20←◆A◆→丸数字A←◆z◆→丸数字z←◆|, result
   end
 
   def test_inline_br
-    result = @builder.inline_br("")
+    result = compile_inline("@<br>{}")
     assert_equal %Q|\n|, result
   end
 
   def test_inline_i
-    result = @builder.compile_inline("test @<i>{inline test} test2")
+    result = compile_inline("test @<i>{inline test} test2")
     assert_equal %Q|test ▲inline test☆ test2|, result
   end
 
   def test_inline_i_and_escape
-    result = @builder.compile_inline("test @<i>{inline<&;\\ test} test2")
+    result = compile_inline("test @<i>{inline<&;\\ test} test2")
     assert_equal %Q|test ▲inline<&;\\ test☆ test2|, result
   end
 
   def test_inline_b
-    result = @builder.compile_inline("test @<b>{inline test} test2")
+    result = compile_inline("test @<b>{inline test} test2")
     assert_equal %Q|test ★inline test☆ test2|, result
   end
 
   def test_inline_b_and_escape
-    result = @builder.compile_inline("test @<b>{inline<&;\\ test} test2")
+    result = compile_inline("test @<b>{inline<&;\\ test} test2")
     assert_equal %Q|test ★inline<&;\\ test☆ test2|, result
   end
 
   def test_inline_tt
-    result = @builder.compile_inline("test @<tt>{inline test} test2@<tt>{\\}}")
+    result = compile_inline("test @<tt>{inline test} test2@<tt>{\\}}")
     assert_equal %Q|test △inline test☆ test2△}☆|, result
   end
 
   def test_inline_tti
-    result = @builder.compile_inline("test @<tti>{inline test} test2")
+    result = compile_inline("test @<tti>{inline test} test2")
     assert_equal %Q|test ▲inline test☆◆→等幅フォントイタ←◆ test2|, result
   end
 
   def test_inline_ttb
-    result = @builder.compile_inline("test @<ttb>{inline test} test2")
+    result = compile_inline("test @<ttb>{inline test} test2")
     assert_equal %Q|test ★inline test☆◆→等幅フォント太字←◆ test2|, result
   end
 
   def test_inline_uchar
-    result = @builder.compile_inline("test @<uchar>{2460} test2")
+    result = compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test ① test2|, result
   end
 
   def test_inline_in_table
-    @builder.table(["★1☆\t▲2☆", "------------", "★3☆\t▲4☆<>&"])
-    assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, @builder.raw_result
+    result = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
+    assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, result
   end
 
   def test_paragraph
-    lines = ["foo","bar"]
-    @builder.paragraph(lines)
-    assert_equal %Q|foobar\n|, @builder.raw_result
+    result = compile_block("foo\nbar\n")
+    assert_equal %Q|foobar\n|, result
   end
 
   def test_tabbed_paragraph
-    lines = ["\tfoo","bar"]
-    @builder.paragraph(lines)
-    assert_equal %Q|\tfoobar\n|, @builder.raw_result
+    result = compile_block("\tfoo\nbar\n")
+    assert_equal %Q|\tfoobar\n|, result
   end
 
   def test_flushright
-    @builder.flushright(["foo", "bar", "","buz"])
-    assert_equal %Q|◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n|, @builder.raw_result
+    result = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n|, result
   end
 
   def test_noindent
-    @builder.noindent
-    @builder.paragraph(["foo", "bar"])
-    @builder.paragraph(["foo2", "bar2"])
-    assert_equal %Q|◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n|, @builder.raw_result
+    result = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    assert_equal %Q|◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n|, result
   end
 
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("test",1)
     end
-    @builder.list(["foo", "bar"], "test", "this is @<b>{test}<&>_")
-    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
+    result = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n|, result
   end
 
   def test_listnum
     def @chapter.list(id)
       Book::ListIndex::Item.new("test",1)
     end
-    @builder.listnum(["foo", "bar"], "test", "this is @<b>{test}<&>_")
-    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n|, @builder.raw_result
+    result = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    assert_equal %Q|◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n|, result
   end
 
   def test_emlistnum
-    @builder.emlistnum(["foo", "bar"], "this is @<b>{test}<&>_")
-    assert_equal %Q|◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n|, @builder.raw_result
+    result = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    assert_equal %Q|◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n|, result
   end
 
   def test_image
@@ -189,8 +185,8 @@ class TOPBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image(["foo"], "sampleimg","sample photo",nil)
-    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, @builder.raw_result
+    result = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
+    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, result
   end
 
   def test_image_with_metric
@@ -200,73 +196,71 @@ class TOPBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    @builder.image(["foo"], "sampleimg","sample photo","scale=1.2")
-    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, @builder.raw_result
+    result = compile_block("//image[sampleimg][sample photo][scale=1.2]{\nfoo\n//}\n")
+    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, result
   end
 
   def test_texequation
-    @builder.texequation(["\\sin", "1^{2}"])
-    assert_equal %Q|◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n|, @builder.raw_result
+    result = compile_block("//texequation{\n\\sin\n1^{2}\n//}\n")
+    assert_equal %Q|◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n|, result
   end
 
   def test_inline_raw0
-    assert_equal "normal", @builder.inline_raw("normal")
+    assert_equal "normal", compile_inline("@<raw>{normal}")
   end
 
   def test_inline_raw1
-    assert_equal "body", @builder.inline_raw("|top|body")
+    assert_equal "body", compile_inline("@<raw>{|top|body}")
   end
 
   def test_inline_raw2
-    assert_equal "body", @builder.inline_raw("|top, latex|body")
+    assert_equal "body", compile_inline("@<raw>{|top, latex|body}")
   end
 
   def test_inline_raw3
-    assert_equal "", @builder.inline_raw("|idgxml, html|body")
+    assert_equal "", compile_inline("@<raw>{|idgxml, html|body}")
   end
 
   def test_inline_raw4
-    assert_equal "|top body", @builder.inline_raw("|top body")
+    assert_equal "|top body", compile_inline("@<raw>{|top body}")
   end
 
   def test_inline_raw5
-    assert_equal "nor\nmal", @builder.inline_raw("|top|nor\\nmal")
+    assert_equal "nor\nmal", compile_inline("@<raw>{|top|nor\\nmal}")
   end
 
   def test_block_raw0
-    @builder.raw("<>!\"\\n& ")
+    result = compile_block("//raw[<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw1
-    @builder.raw("|top|<>!\"\\n& ")
+    result = compile_block("//raw[|top|<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw2
-    @builder.raw("|top, latex|<>!\"\\n& ")
+    result = compile_block("//raw[|top, latex|<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw3
-    @builder.raw("|latex, idgxml|<>!\"\\n& ")
+    result = compile_block("//raw[|latex, idgxml|<>!\"\\n& ]\n")
     expect = ''
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def test_block_raw4
-    @builder.raw("|top <>!\"\\n& ")
+    result = compile_block("//raw[|top <>!\"\\n& ]\n")
     expect = %Q(|top <>!\"\n& )
-    assert_equal expect.chomp, @builder.raw_result
+    assert_equal expect.chomp, result
   end
 
   def column_helper(review)
-    chap_singleton = class << @chapter; self; end
-    chap_singleton.send(:define_method, :content) { review }
-    @compiler.compile(@chapter)
+    compile_block(review)
   end
 
   def test_column_ref
