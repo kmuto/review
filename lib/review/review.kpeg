@@ -578,7 +578,7 @@ InlineElementContentText =  ( "\\}" ~text(self, "}")
                             | !InlineElement < /[^\r\n\\},]/> ~text(self,text)
                             )
 
-BracketArg = "["  BracketArgContentInline+:content  "]" ~bracket_arg(self, content)
+BracketArg = "["  BracketArgContentInline*:content  "]" ~bracket_arg(self, content)
 
 ## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
 BracketArgContentInline = ( InlineElement:c { c }
