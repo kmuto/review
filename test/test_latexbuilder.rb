@@ -636,31 +636,31 @@ EOS
   end
 
   def test_block_raw0
-    result = compile_inline("@<raw>{<>!\"\\n& }")
+    result = compile_block("//raw[<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
     assert_equal expect, result
   end
 
   def test_block_raw1
-    result = compile_inline("@<raw>{|latex|<>!\"\\n& }")
+    result = compile_block("//raw[|latex|<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
     assert_equal expect, result
   end
 
   def test_block_raw2
-    result = compile_inline("@<raw>{|html, latex|<>!\"\\n& }")
+    result = compile_block("//raw[|html, latex|<>!\"\\n& ]\n")
     expect = %Q(<>!\"\n& )
     assert_equal expect, result
   end
 
   def test_block_raw3
-    result = compile_inline("@<raw>{|html, idgxml|<>!\"\\n& }")
+    result = compile_block("//raw[|html, idgxml|<>!\"\\n& ]\n")
     expect = ''
     assert_equal expect, result
   end
 
   def test_block_raw4
-    result = compile_inline("@<raw>{|latex <>!\"\\n& }")
+    result = compile_block("//raw[|latex <>!\"\\n& ]\n")
     expect = %Q(|latex <>!\"\n& )
     assert_equal expect, result
   end
