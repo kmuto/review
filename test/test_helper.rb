@@ -12,12 +12,21 @@ def prepare_samplebook(srcdir)
   YAML.load(File.open(srcdir + "/config.yml"))
 end
 
+def compile_inline(text)
+  @builder.compile_inline(text)
+end
+
 def compile_block(text)
   method_name = "compile_block_#{@builder.target_name}"
   if !self.respond_to?(method_name, true)
     method_name = "compile_block_default"
   end
   self.__send__(method_name, text)
+end
+
+def compile_block_default(text)
+  @chapter.content = text
+  @compiler.compile(@chapter)
 end
 
 def compile_block_html(text)
@@ -30,17 +39,7 @@ def compile_block_html(text)
   end
 end
 
-def compile_block_default(text)
-  @chapter.content = text
-  @compiler.compile(@chapter)
-end
-
 def compile_block_idgxml(text)
   @chapter.content = text
   @compiler.compile(@chapter).gsub(/<\/doc>\n/, "")
-end
-
-
-def compile_inline(text)
-  @builder.compile_inline(text)
 end
