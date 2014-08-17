@@ -438,7 +438,7 @@ require 'review/node'
         raise "strategy does not support inline op: @<#{op}>"
       end
       if !args
-        @strategy.__send__("inline_#{op}")
+        @strategy.__send__("inline_#{op}", "")
       else
         @strategy.__send__("inline_#{op}", *(args.map(&:to_doc)))
       end
