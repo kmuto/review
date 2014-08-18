@@ -25,8 +25,8 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   end
 
   def test_quote
-    result = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|\n> foobar\n> \n> buz\n\n|, result
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\n> foobar\n> \n> buz\n\n|, actual
   end
 
   def test_inline_em
@@ -42,9 +42,9 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   * AAA
   * BBB
 EOS
-    expect = "\n* AAA\n* BBB\n\n"
-    result = compile_block(src)
-    assert_equal expect, result
+    expected = "\n* AAA\n* BBB\n\n"
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_nest1
@@ -53,18 +53,18 @@ EOS
   ** AA
   *** A
 EOS
-    expect = "\n* AAA\n  * AA\n    * A\n\n"
-    result = compile_block(src)
-    assert_equal expect, result
+    expected = "\n* AAA\n  * AA\n    * A\n\n"
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_cmd
-    result = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal "```\nlineA\nlineB\n```\n", result
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    assert_equal "```\nlineA\nlineB\n```\n", actual
   end
 
   def test_table
-    result = compile_block("//table{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
-    assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", result
+    actual = compile_block("//table{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
+    assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", actual
   end
 end

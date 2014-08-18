@@ -35,8 +35,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1
-    result = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, result
+    actual = compile_block("={test} this is test.\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, actual
   end
 
   def test_headline_level1_postdef
@@ -45,8 +45,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         true
       end
     end
-    result = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録1　this is test.</h1>\n|, result
+    actual = compile_block("={test} this is test.\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録1　this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef
@@ -55,8 +55,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         true
       end
     end
-    result = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, result
+    actual = compile_block("=={test} this is test.\n")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_roman
@@ -66,8 +66,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         true
       end
     end
-    result = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録I　this is test.</h1>\n|, result
+    actual = compile_block("={test} this is test.\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録I　this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_roman
@@ -77,8 +77,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         true
       end
     end
-    result = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>I.1　this is test.</h2>\n|, result
+    actual = compile_block("=={test} this is test.\n")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>I.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_alpha
@@ -88,8 +88,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         true
       end
     end
-    result = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録A　this is test.</h1>\n|, result
+    actual = compile_block("={test} this is test.\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録A　this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_alpha
@@ -99,115 +99,115 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         true
       end
     end
-    result = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>A.1　this is test.</h2>\n|, result
+    actual = compile_block("=={test} this is test.\n")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>A.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_without_secno
     ReVIEW.book.config["secnolevel"] = 0
-    result = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, result
+    actual = compile_block("={test} this is test.\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, actual
   end
 
   def test_headline_level1_with_tricky_id
-    result = compile_block("={123 あ_;} this is test.\n")
-    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, result
+    actual = compile_block("={123 あ_;} this is test.\n")
+    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, actual
   end
 
   def test_headline_level1_with_inlinetag
-    result = compile_block("={test} this @<b>{is} test.<&\">\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, result
+    actual = compile_block("={test} this @<b>{is} test.<&\">\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, actual
   end
 
   def test_headline_level2
-    result = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, result
+    actual = compile_block("=={test} this is test.\n")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level3
-    result = compile_block("==={test} this is test.\n")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, result
+    actual = compile_block("==={test} this is test.\n")
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, actual
   end
 
   def test_headline_level3_with_secno
     ReVIEW.book.config["secnolevel"] = 3
-    result = compile_block("==={test} this is test.\n")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, result
+    actual = compile_block("==={test} this is test.\n")
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, actual
   end
 
   def test_label
-    result = compile_block("//label[label_test]\n")
-    assert_equal %Q|<a id="label_test"></a>\n|, result
+    actual = compile_block("//label[label_test]\n")
+    assert_equal %Q|<a id="label_test"></a>\n|, actual
   end
 
   def test_label_with_tricky_id
-    result = compile_block("//label[123 あ_;]\n")
-    assert_equal %Q|<a id="id_123-_E3_81_82___3B"></a>\n|, result
+    actual = compile_block("//label[123 あ_;]\n")
+    assert_equal %Q|<a id="id_123-_E3_81_82___3B"></a>\n|, actual
   end
 
   def test_href
-    result = compile_inline("@<href>{http://github.com,GitHub}")
-    assert_equal %Q|<a href="http://github.com" class="link">GitHub</a>|, result
+    actual = compile_inline("@<href>{http://github.com,GitHub}")
+    assert_equal %Q|<a href="http://github.com" class="link">GitHub</a>|, actual
   end
 
   def test_href_without_label
-    result = compile_inline("@<href>{http://github.com}")
-    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, result
+    actual = compile_inline("@<href>{http://github.com}")
+    assert_equal %Q|<a href="http://github.com" class="link">http://github.com</a>|, actual
   end
 
   def test_inline_href
-    result = compile_inline("@<href>{http://github.com,Git\\,Hub}")
-    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, result
+    actual = compile_inline("@<href>{http://github.com,Git\\,Hub}")
+    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, actual
   end
 
   def test_inline_raw
-    result = compile_inline("@<raw>{@<tt>{inline\\}}")
-    assert_equal %Q|@<tt>{inline}|, result
+    actual = compile_inline("@<raw>{@<tt>{inline\\}}")
+    assert_equal %Q|@<tt>{inline}|, actual
   end
 
   def test_inline_in_table
-    result = compile_block("//table{\n@<b>{1}\t@<i>{2}\n------------\n@<b>{3}\t@<i>{4}<>&\n//}\n")
-    assert_equal %Q|<div class="table">\n<table>\n<tr><th><b>1</b></th><th><i>2</i></th></tr>\n<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|, result
+    actual = compile_block("//table{\n@<b>{1}\t@<i>{2}\n------------\n@<b>{3}\t@<i>{4}<>&\n//}\n")
+    assert_equal %Q|<div class="table">\n<table>\n<tr><th><b>1</b></th><th><i>2</i></th></tr>\n<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|, actual
   end
 
   def test_inline_br
-    result = compile_inline("@<br>{}")
-    assert_equal %Q|<br />|, result
+    actual = compile_inline("@<br>{}")
+    assert_equal %Q|<br />|, actual
   end
 
   def test_inline_i
-    result = compile_inline("test @<i>{inline test} test2")
-    assert_equal %Q|test <i>inline test</i> test2|, result
+    actual = compile_inline("test @<i>{inline test} test2")
+    assert_equal %Q|test <i>inline test</i> test2|, actual
   end
 
   def test_inline_i_and_escape
-    result = compile_inline("test @<i>{inline<&;\\ test} test2")
-    assert_equal %Q|test <i>inline&lt;&amp;;\\ test</i> test2|, result
+    actual = compile_inline("test @<i>{inline<&;\\ test} test2")
+    assert_equal %Q|test <i>inline&lt;&amp;;\\ test</i> test2|, actual
   end
 
   def test_inline_b
-    result = compile_inline("test @<b>{inline test} test2")
-    assert_equal %Q|test <b>inline test</b> test2|, result
+    actual = compile_inline("test @<b>{inline test} test2")
+    assert_equal %Q|test <b>inline test</b> test2|, actual
   end
 
   def test_inline_b_and_escape
-    result = compile_inline("test @<b>{inline<&;\\ test} test2")
-    assert_equal %Q|test <b>inline&lt;&amp;;\\ test</b> test2|, result
+    actual = compile_inline("test @<b>{inline<&;\\ test} test2")
+    assert_equal %Q|test <b>inline&lt;&amp;;\\ test</b> test2|, actual
   end
 
   def test_inline_tt
-    result = compile_inline("test @<tt>{inline test} test2")
-    assert_equal %Q|test <tt>inline test</tt> test2|, result
+    actual = compile_inline("test @<tt>{inline test} test2")
+    assert_equal %Q|test <tt>inline test</tt> test2|, actual
   end
 
   def test_inline_tti
-    result = compile_inline("test @<tti>{inline test} test2")
-    assert_equal %Q|test <tt><i>inline test</i></tt> test2|, result
+    actual = compile_inline("test @<tti>{inline test} test2")
+    assert_equal %Q|test <tt><i>inline test</i></tt> test2|, actual
   end
 
   def test_inline_ttb
-    result = compile_inline("test @<ttb>{inline test} test2")
-    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, result
+    actual = compile_inline("test @<ttb>{inline test} test2")
+    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, actual
   end
 
   def test_inline_hd_chap
@@ -217,32 +217,32 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     @config["secnolevel"] = 2
-    result = compile_inline("test @<hd>{chap1|test} test2")
-    assert_equal %Q|test 「te_st」 test2|, result
+    actual = compile_inline("test @<hd>{chap1|test} test2")
+    assert_equal %Q|test 「te_st」 test2|, actual
 
     @config["secnolevel"] = 3
-    result = compile_inline("test @<hd>{chap1|test} test2")
-    assert_equal %Q|test 「1.1.1 te_st」 test2|, result
+    actual = compile_inline("test @<hd>{chap1|test} test2")
+    assert_equal %Q|test 「1.1.1 te_st」 test2|, actual
   end
 
   def test_inline_uchar
-    result = compile_inline("test @<uchar>{2460} test2")
-    assert_equal %Q|test &#x2460; test2|, result
+    actual = compile_inline("test @<uchar>{2460} test2")
+    assert_equal %Q|test &#x2460; test2|, actual
   end
 
   def test_inline_ruby
-    result = compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
-    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", result
+    actual = compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
+    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", actual
   end
 
   def test_inline_ruby_comma
-    result = compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
-    assert_equal "<ruby><rb>foo, bar, buz</rb><rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", result
+    actual = compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
+    assert_equal "<ruby><rb>foo, bar, buz</rb><rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", actual
   end
 
   def test_inline_ref
-    result = compile_inline("@<ref>{外部参照<>&}")
-    assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, result
+    actual = compile_inline("@<ref>{外部参照<>&}")
+    assert_equal %Q|<a target='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</a>|, actual
   end
 
   def test_inline_mathml
@@ -253,35 +253,35 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       return true
     end
     @config["mathml"] = true
-    result = compile_inline("@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}")
+    actual = compile_inline("@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}")
     @config["mathml"] = nil
-    assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", result
+    assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", actual
   end
 
   def test_quote
-    result = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, result
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, actual
   end
 
   def test_memo
-    result = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, result
+    actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n|, actual
   end
 
   def test_noindent
     @builder.noindent
-    result = compile_block("foo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q|<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n|, result
+    actual = compile_block("foo\nbar\n\nfoo2\nbar2\n")
+    assert_equal %Q|<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n|, actual
   end
 
   def test_flushright
-    result = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|<p class="flushright">foobar</p>\n<p class="flushright">buz</p>\n|, result
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|<p class="flushright">foobar</p>\n<p class="flushright">buz</p>\n|, actual
   end
 
   def test_centering
-    result = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|<p class="center">foobar</p>\n<p class="center">buz</p>\n|, result
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|<p class="center">foobar</p>\n<p class="center">buz</p>\n|, actual
   end
 
   def test_image
@@ -291,8 +291,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//image[sampleimg][sample photo]{\n//}\n")
-    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, result
+    actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_image_with_metric
@@ -302,8 +302,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, result
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_image_with_metric2
@@ -313,8 +313,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, result
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_image_with_tricky_id
@@ -324,8 +324,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//image[123 あ_;][sample photo]{\n//}\n")
-    assert_equal %Q|<div id="id_123-_E3_81_82___3B" class="image">\n<img src="images/chap1-123 あ_;.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, result
+    actual = compile_block("//image[123 あ_;][sample photo]{\n//}\n")
+    assert_equal %Q|<div id="id_123-_E3_81_82___3B" class="image">\n<img src="images/chap1-123 あ_;.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage
@@ -335,8 +335,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//indepimage[sampleimg][sample photo]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, result
+    actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption
@@ -346,8 +346,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//indepimage[sampleimg]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, result
+    actual = compile_block("//indepimage[sampleimg]\n")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric
@@ -357,8 +357,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, result
+    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric2
@@ -368,8 +368,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, result
+    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -379,16 +379,16 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    result = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, result
+    actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, actual
   end
 
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
-    result = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, result
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
   end
 
   def test_list_pygments
@@ -401,40 +401,40 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       return true
     end
     ReVIEW.book.config["pygments"] = true
-    result = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, result
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, actual
   end
 
   def test_emlist
-    result = compile_block("//emlist{\nlineA\nlineB\n//}\n")
-    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, result
+    actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, actual
   end
 
   def test_emlist_caption
-    result = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
-    assert_equal %Q|<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, result
+    actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
+    assert_equal %Q|<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, actual
   end
 
   def test_emlist_with_tab
-    result = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
-    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">        lineA\n                lineB\n        lineC\n</pre>\n</div>\n|, result
+    actual = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">        lineA\n                lineB\n        lineC\n</pre>\n</div>\n|, actual
   end
 
   def test_emlist_with_4tab
     @config["tabwidth"] = 4
-    result = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
-    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">    lineA\n        lineB\n    lineC\n</pre>\n</div>\n|, result
+    actual = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
+    assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">    lineA\n        lineB\n    lineC\n</pre>\n</div>\n|, actual
   end
 
   def test_cmd
-    result = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, result
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    assert_equal %Q|<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, actual
   end
 
   def test_cmd_caption
-    result = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
-    assert_equal %Q|<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, result
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    assert_equal %Q|<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n|, actual
   end
 
   def test_bib
@@ -458,8 +458,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    result = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, result
+    actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, actual
   end
 
   def test_bibpaper_normalized
@@ -467,8 +467,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("sample=bib",1,"sample bib")
     end
 
-    result = compile_block("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, result
+    actual = compile_block("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, actual
   end
 
   def test_bibpaper_with_anchor
@@ -476,8 +476,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    result = compile_block("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, result
+    actual = compile_block("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, actual
   end
 
   def column_helper(review)
@@ -496,7 +496,7 @@ inside column
 
 ===[/column]
 EOS
-    expect =<<-EOS
+    expected =<<-EOS
 <div class="column">
 
 <h3><a id="column-1"></a>prev column</h3>
@@ -508,7 +508,7 @@ EOS
 <p>inside column</p>
 </div>
 EOS
-    assert_equal expect, column_helper(review)
+    assert_equal expected, column_helper(review)
   end
 
   def test_column_2
@@ -519,7 +519,7 @@ inside column
 
 === next level
 EOS
-    expect =<<-EOS
+    expected =<<-EOS
 <div class="column">
 
 <h3><a id="column-1"></a>test</h3>
@@ -529,7 +529,7 @@ EOS
 <h3><a id="h1-0-1"></a>next level</h3>
 EOS
 
-    assert_equal expect, column_helper(review)
+    assert_equal expected, column_helper(review)
   end
 
   def test_column_3
@@ -555,7 +555,7 @@ inside column
 
 this is @<column>{foo}.
 EOS
-    expect =<<-EOS
+    expected =<<-EOS
 <div class="column">
 
 <h3 id="foo"><a id="column-1"></a>test</h3>
@@ -566,7 +566,7 @@ EOS
 <p>this is test.</p>
 EOS
 
-    assert_equal expect, column_helper(review)
+    assert_equal expected, column_helper(review)
   end
 
 
@@ -575,9 +575,9 @@ EOS
   * AAA
   * BBB
 EOS
-    expect = "<ul>\n<li>AAA</li>\n<li>BBB</li>\n</ul>\n"
-    result = compile_block(src)
-    assert_equal expect, result
+    expected = "<ul>\n<li>AAA</li>\n<li>BBB</li>\n</ul>\n"
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_cont
@@ -587,9 +587,9 @@ EOS
   * BBB
     -BB
 EOS
-    expect = "<ul>\n<li>AAA-AA</li>\n<li>BBB-BB</li>\n</ul>\n"
-    result = compile_block(src)
-    assert_equal expect, result
+    expected = "<ul>\n<li>AAA-AA</li>\n<li>BBB-BB</li>\n</ul>\n"
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_nest1
@@ -598,7 +598,7 @@ EOS
   ** AA
 EOS
 
-    expect =<<-EOS
+    expected =<<-EOS
 <ul>
 <li>AAA<ul>
 <li>AA</li>
@@ -606,8 +606,8 @@ EOS
 </li>
 </ul>
 EOS
-    result = compile_block(src)
-    assert_equal expect, result
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_nest2
@@ -618,7 +618,7 @@ EOS
   ** BB
 EOS
 
-    expect =<<-EOS
+    expected =<<-EOS
 <ul>
 <li>AAA<ul>
 <li>AA</li>
@@ -630,8 +630,8 @@ EOS
 </li>
 </ul>
 EOS
-    result = compile_block(src)
-    assert_equal expect, result
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_nest3
@@ -642,7 +642,7 @@ EOS
   ** BB
 EOS
 
-    expect =<<-EOS
+    expected =<<-EOS
 <ul>
 <li><ul>
 <li>AAA</li>
@@ -655,8 +655,8 @@ EOS
 </li>
 </ul>
 EOS
-    result = compile_block(src)
-    assert_equal expect, result
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_nest4
@@ -668,7 +668,7 @@ EOS
   ** BB
 EOS
 
-    expect =<<-EOS
+    expected =<<-EOS
 <ul>
 <li>A<ul>
 <li>AA<ul>
@@ -683,8 +683,8 @@ EOS
 </li>
 </ul>
 EOS
-    result = compile_block(src)
-    assert_equal expect, result
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_nest5
@@ -696,7 +696,7 @@ EOS
   ** BB
 EOS
 
-    expect =<<-EOS
+    expected =<<-EOS
 <ul>
 <li>A<ul>
 <li>AA<ul>
@@ -714,8 +714,8 @@ EOS
 </li>
 </ul>
 EOS
-    result = compile_block(src)
-    assert_equal expect, result
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ol
@@ -724,14 +724,14 @@ EOS
   3. BBB
 EOS
 
-    expect =<<-EOS
+    expected =<<-EOS
 <ol>
 <li>AAA</li>
 <li>BBB</li>
 </ol>
 EOS
-    result = compile_block(src)
-    assert_equal expect, result
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_inline_raw0
@@ -759,52 +759,52 @@ EOS
   end
 
   def test_block_raw0
-    result = compile_block("//raw[<>!\"\\n& ]\n")
-    expect = %Q(<>!\"\n& )
-    assert_equal expect, result
+    actual = compile_block("//raw[<>!\"\\n& ]\n")
+    expected = %Q(<>!\"\n& )
+    assert_equal expected, actual
   end
 
   def test_block_raw1
-    result = compile_block("//raw[|html|<>!\"\\n& ]\n")
-    expect = %Q(<>!\"\n& )
-    assert_equal expect, result
+    actual = compile_block("//raw[|html|<>!\"\\n& ]\n")
+    expected = %Q(<>!\"\n& )
+    assert_equal expected, actual
   end
 
   def test_block_raw2
-    result = compile_block("//raw[|html, latex|<>!\"\\n& ]\n")
-    expect = %Q(<>!\"\n& )
-    assert_equal expect, result
+    actual = compile_block("//raw[|html, latex|<>!\"\\n& ]\n")
+    expected = %Q(<>!\"\n& )
+    assert_equal expected, actual
   end
 
   def test_block_raw3
-    result = compile_block("//raw[|latex, idgxml|<>!\"\\n& ]\n")
-    expect = ''
-    assert_equal expect, result
+    actual = compile_block("//raw[|latex, idgxml|<>!\"\\n& ]\n")
+    expected = ''
+    assert_equal expected, actual
   end
 
   def test_block_raw4
-    result = compile_block("//raw[|html <>!\"\\n& ]\n")
-    expect = %Q(|html <>!\"\n& )
-    assert_equal expect.chomp, result
+    actual = compile_block("//raw[|html <>!\"\\n& ]\n")
+    expected = %Q(|html <>!\"\n& )
+    assert_equal expected, actual
   end
 
   def test_inline_fn
     fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
     @chapter.instance_eval{@footnote_index=fn}
-    result = compile_block("//footnote[foo][bar\\a\\$buz]\n")
-    expect =<<-'EOS'
+    actual = compile_block("//footnote[foo][bar\\a\\$buz]\n")
+    expected =<<-'EOS'
 <div class="footnote" id="fn-foo"><p class="footnote">[<a href="#fnb-foo">*1</a>] bar\a\$buz</p></div>
 EOS
-    assert_equal expect, result
+    assert_equal expected, actual
   end
 
   def test_inline_fn_with_tricky_id
     fn = Book::FootnoteIndex.parse(['//footnote[123 あ_;][bar\\a\\$buz]'])
     @chapter.instance_eval{@footnote_index=fn}
-    result = compile_block("//footnote[123 あ_;][bar\\a\\$buz]\n")
-    expect =<<-'EOS'
+    actual = compile_block("//footnote[123 あ_;][bar\\a\\$buz]\n")
+    expected =<<-'EOS'
 <div class="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[<a href="#fnb-id_123-_E3_81_82___3B">*1</a>] bar\a\$buz</p></div>
 EOS
-    assert_equal expect, result
+    assert_equal expected, actual
   end
 end
