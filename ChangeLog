@@ -1,3 +1,10 @@
+Wed Aug 20 00:30:07 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/parameters.rb, lib/review/book/base.rb,
+	  test/test_book.rb, test/test_book_parameter.rb:
+
+	  remove unused method: ReVIEW::Book::Parameters.default and ReVIEW::Book::Parameters.load
+
 Thu Aug  7 16:25:23 2014  KADO Masanori  <kdmsnr@gmail.com>
 
 	* lib/review/book/base.rb (Base#prefaces, postscripts):

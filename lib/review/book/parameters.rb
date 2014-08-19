@@ -13,28 +13,6 @@ module ReVIEW
   module Book
     class Parameters
 
-      def Parameters.default
-        new()
-      end
-
-      def Parameters.load(path)
-        mod = Module.new
-        mod.module_eval File.read(path), path
-        new(
-          :chapter_file => const_get_safe(mod, :CHAPS_FILE),
-          :part_file    => const_get_safe(mod, :PART_FILE),
-          :bib_file     => const_get_safe(mod, :BIB_FILE),
-          :reject_file  => const_get_safe(mod, :REJECT_FILE) ||
-          const_get_safe(mod, :WORDS_FILE),
-          :predef_file  => const_get_safe(mod, :PREDEF_FILE),
-          :postdef_file => const_get_safe(mod, :POSTDEF_FILE),
-          :ext          => const_get_safe(mod, :EXT),
-          :image_dir    => const_get_safe(mod, :IMAGE_DIR),
-          :image_types  => const_get_safe(mod, :IMAGE_TYPES),
-          :page_metric  => get_page_metric(mod)
-          )
-      end
-
       def Parameters.get_page_metric(mod)
         if paper = const_get_safe(mod, :PAPER)
           unless PageMetric.respond_to?(paper.downcase)

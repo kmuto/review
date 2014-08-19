@@ -37,7 +37,7 @@ class BookTest < Test::Unit::TestCase
   def test_s_load
     Dir.mktmpdir do |dir|
       book = Book.load(dir)
-      defs = get_instance_variables(Book::Parameters.default)
+      defs = get_instance_variables(Book::Parameters.new)
       pars = get_instance_variables(book.instance_eval { @parameters })
       assert_equal defs, pars
     end

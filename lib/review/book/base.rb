@@ -48,7 +48,7 @@ module ReVIEW
         @basedir_seen[dir] = true
       end
 
-      def initialize(basedir, parameters = Parameters.default)
+      def initialize(basedir, parameters = Parameters.new)
         @basedir = basedir
         @parameters = parameters
         @parts = nil
