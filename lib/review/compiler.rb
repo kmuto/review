@@ -793,12 +793,12 @@ require 'review/node'
         raise "strategy does not support inline op: @<#{op}>"
       end
       if !args
-        @strategy.__send__("inline_#{op}")
+        @strategy.__send__("inline_#{op}", "")
       else
         @strategy.__send__("inline_#{op}", *(args.map(&:to_doc)))
       end
-#    rescue => err
-#      error err.message
+    rescue => err
+      error err.message
     end
 
     def compile_paragraph(buf)
@@ -808,7 +808,7 @@ require 'review/node'
     def compile_raw(builders, content)
       c = @strategy.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
       if !builders || builders.include?(c)
-        content
+        content.gsub("\\n", "\n")
       else
         ""
       end
@@ -2639,7 +2639,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BracketArg = "[" BracketArgContentInline+:content "]" {bracket_arg(self, content)}
+  # BracketArg = "[" BracketArgContentInline*:content "]" {bracket_arg(self, content)}
   def _BracketArg
 
     _save = self.pos
@@ -2649,21 +2649,14 @@ require 'review/node'
         self.pos = _save
         break
       end
-      _save1 = self.pos
       _ary = []
-      _tmp = apply(:_BracketArgContentInline)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_BracketArgContentInline)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
+      while true
+        _tmp = apply(:_BracketArgContentInline)
+        _ary << @result if _tmp
+        break unless _tmp
       end
+      _tmp = true
+      @result = _ary
       content = @result
       unless _tmp
         self.pos = _save
@@ -3982,7 +3975,7 @@ require 'review/node'
   Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 {  [c1]+c2 } | InlineElementContent:c1 { [c1] })")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:content {inline_element_content(self, content)} | InlineElementContentText+:content {inline_element_content(self, content)})")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" {text(self, \"}\")} | \"\\\\,\" {text(self, \",\")} | \"\\\\\\\\\" {text(self, \"\\\\\" )} | \"\\\\\" {text(self, \"\\\\\" )} | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self,text)})")
-  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline+:content \"]\" {bracket_arg(self, content)}")
+  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline*:content \"]\" {bracket_arg(self, content)}")
   Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
