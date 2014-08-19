@@ -15,7 +15,7 @@ require 'test/unit'
   def compile_block(str, force_to_s=true)
     @compiler.setup_parser(str)
     @compiler.tagged_section_init
-    @compiler.parse("Block")
+    @compiler.parse("Document")
     if force_to_s
       @compiler.result.to_doc
     else
