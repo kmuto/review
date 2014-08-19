@@ -3,6 +3,11 @@
 {<img src="https://secure.travis-ci.org/kmuto/review.png"/>}[http://travis-ci.org/kmuto/review]
 {<img src="https://badge.fury.io/rb/review.png" alt="Gem Version" />}[http://badge.fury.io/rb/review]
 
+home :: https://github.com/kmuto/review
+gems :: https://rubygems.org/gems/review
+wiki :: https://github.com/kmuto/review/wiki
+bugs :: https://github.com/kmuto/review/issues
+
 Re:VIEW is an easy-to-use digital publishing system for books and ebooks.
 
 == Format
@@ -30,6 +35,32 @@ And some useful commands.
 * review-vol: figure out size of Re:VIEW files.
 * review-index: generate index with various format.
 * review-preproc: preprocessor.
+
+== Installation
+
+Install gem yourself as:
+
+    $ gem install review
+
+Or build from source:
+
+    $ git clone https://github.com/kmuto/review.git
+    $ cd review
+    $ rake install
+
+Or add the `./bin` directory to your $PATH:
+
+    $ echo "export PATH=PATH_OF_REVIEW/bin:$PATH" >> ~/.profile
+
+== Resources
+=== Documents
+
+* Wiki pages: https://github.com/kmuto/review/wiki
+* doc/* files (in Japanese)
+
+=== Issues tracker
+
+* GitHub: https://github.com/kmuto/review
 
 == Note on Patches/Pull Requests
  
