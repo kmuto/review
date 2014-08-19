@@ -27,25 +27,4 @@ class ParametersTest < Test::Unit::TestCase
      assert_equal '/images', params.image_dir
      assert_equal %w(.ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg), params.image_types
    end
-
-  def test_s_get_page_metric
-    mod = Module.new
-    assert_nothing_raised do # XXX: OK?
-      params = Book::Parameters.get_page_metric(mod)
-      assert params
-    end
-
-    mod = Module.new
-    mod.module_eval { const_set(:PAPER, 'A5') }
-    assert_nothing_raised do
-      params = Book::Parameters.get_page_metric(mod)
-      assert params
-    end
-
-    mod = Module.new
-    mod.module_eval { const_set(:PAPER, 'X5') }
-    assert_raises ConfigError do
-      Book::Parameters.get_page_metric(mod)
-    end
-  end
 end

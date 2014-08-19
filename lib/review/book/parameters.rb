@@ -12,27 +12,6 @@
 module ReVIEW
   module Book
     class Parameters
-
-      def Parameters.get_page_metric(mod)
-        if paper = const_get_safe(mod, :PAPER)
-          unless PageMetric.respond_to?(paper.downcase)
-            raise ConfigError, "unknown paper size: #{paper}"
-          end
-          return PageMetric.send(paper.downcase)
-        end
-        PageMetric.new(const_get_safe(mod, :LINES_PER_PAGE_list) || 46,
-          const_get_safe(mod, :COLUMNS_list)        || 80,
-          const_get_safe(mod, :LINES_PER_PAGE_text) || 30,
-          const_get_safe(mod, :COLUMNS_text)        || 74,  # 37zw
-          const_get_safe(mod, :PAGE_PER_KBYTE)         ||  1)  # 37zw
-      end
-
-      def Parameters.const_get_safe(mod, name)
-        return nil unless mod.const_defined?(name)
-        mod.const_get(name)
-      end
-      private_class_method :const_get_safe
-
       def initialize(params = {})
         @chapter_file = '/CHAPS'
         @part_file    = '/PART'
