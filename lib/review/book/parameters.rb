@@ -34,23 +34,17 @@ module ReVIEW
       private_class_method :const_get_safe
 
       def initialize(params = {})
-        @chapter_file = params[:chapter_file] || 'CHAPS'
-        @part_file    = params[:part_file]    || 'PART'
-        @reject_file  = params[:reject_file]  || 'REJECT'
-        @predef_file  = params[:predef_file]  || 'PREDEF'
-        @postdef_file = params[:postdef_file] || 'POSTDEF'
-        @page_metric  = params[:page_metric]  || PageMetric.a5
-        @ext          = params[:ext]          || '.re'
-        @image_dir    = params[:image_dir]    || 'images'
-        @image_types  = unify_exts(params[:image_types]  ||
-          %w( ai psd eps pdf tif tiff png bmp jpg jpeg gif svg ))
-        @bib_file  = params[:bib_file]        || "bib#{@ext}"
+        @chapter_file = 'CHAPS'
+        @part_file    = 'PART'
+        @reject_file  = 'REJECT'
+        @predef_file  = 'PREDEF'
+        @postdef_file = 'POSTDEF'
+        @page_metric  = PageMetric.a5
+        @ext          = '.re'
+        @image_dir    = 'images'
+        @image_types  = %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg )
+        @bib_file     = "bib#{@ext}"
       end
-
-      def unify_exts(list)
-        list.map {|ext| (ext[0] == '.') ? ext : ".#{ext}" }
-      end
-      private :unify_exts
 
       def self.path_param(name)
         module_eval(<<-End, __FILE__, __LINE__ + 1)

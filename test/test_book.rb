@@ -257,12 +257,12 @@ EOC
     ].each do |n_parts, chaps_text, parts_text, part_names|
       n_test += 1
       Dir.mktmpdir do |dir|
-        params = Book::Parameters.new(:part_file => 'PARTS')
+        params = Book::Parameters.new(:part_file => 'PART')
         book = Book::Base.new(dir, params)
         chaps_path = File.join(dir, 'CHAPS')
         File.open(chaps_path, 'w') {|o| o.print chaps_text }
         unless parts_text.nil?
-          parts_path = File.join(dir, 'PARTS')
+          parts_path = File.join(dir, 'PART')
           File.open(parts_path, 'w') {|o| o.print parts_text }
         end
 
