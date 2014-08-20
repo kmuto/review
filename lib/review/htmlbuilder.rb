@@ -935,7 +935,7 @@ QUOTE
     end
 
     def inline_bib(id)
-      %Q(<a href=".#{@book.bib_file.gsub(/re\Z/, "html")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
+      %Q(<a href="#{@book.bib_file.gsub(/re\Z/, "html")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
     def inline_hd_chap(chap, id)

@@ -442,7 +442,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    assert_equal %Q|<a href="./bib.html#bib-samplebib">[1]</a>|, compile_inline("@<bib>{samplebib}")
+    assert_equal %Q|<a href="bib.html#bib-samplebib">[1]</a>|, compile_inline("@<bib>{samplebib}")
   end
 
   def test_bib_noramlized
@@ -450,7 +450,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("sampleb=ib",1,"sample bib")
     end
 
-    assert_equal %Q|<a href="./bib.html#bib-id_sample_3Dbib">[1]</a>|, compile_inline("@<bib>{sample=bib}")
+    assert_equal %Q|<a href="bib.html#bib-id_sample_3Dbib">[1]</a>|, compile_inline("@<bib>{sample=bib}")
   end
 
   def test_bibpaper

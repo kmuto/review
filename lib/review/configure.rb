@@ -34,6 +34,17 @@ module ReVIEW
         "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
         "catalogfile" => 'catalog.yml',
+
+        "chapter_file" => 'CHAPS',
+        "part_file"    => 'PART',
+        "reject_file"  => 'REJECT',
+        "predef_file"  => 'PREDEF',
+        "postdef_file" => 'POSTDEF',
+        "page_metric"  => ReVIEW::Book::PageMetric.a5,
+        "ext"          => '.re',
+        "image_dir"    => 'images',
+        "image_types"  => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
+        "bib_file"     => "bib.re",
       ]
     end
   end

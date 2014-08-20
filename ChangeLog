@@ -1,3 +1,7 @@
+Wed Aug 20 01:51:02 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/parameters.rb: remove ReVIEW::Book::Parameters
+
 Wed Aug 20 00:30:07 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/book/parameters.rb, lib/review/book/base.rb,
