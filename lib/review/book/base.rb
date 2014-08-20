@@ -200,7 +200,11 @@ module ReVIEW
       end
 
       def read_POSTDEF
-        catalog.postdef
+        if catalog
+          catalog.postdef
+        else
+          ""
+        end
       end
 
       def read_PART
