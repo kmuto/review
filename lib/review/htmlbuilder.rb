@@ -100,21 +100,21 @@ module ReVIEW
 
       # default XHTML header/footer
       header = <<EOT
-<?xml version="1.0" encoding="#{@book.config["outencoding"] || :UTF-8}"?>
+<?xml version="1.0" encoding="#{@book.config["outencoding"] || "UTF-8"}"?>
 EOT
       if @book.config["htmlversion"].to_i == 5
         header += <<EOT
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta charset="#{@book.config["outencoding"] || :UTF-8}" />
+  <meta charset="#{@book.config["outencoding"] || "UTF-8"}" />
 EOT
       else
         header += <<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || :UTF-8}" />
+  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || "UTF-8"}" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
       end
