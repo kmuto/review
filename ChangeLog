@@ -1,3 +1,7 @@
+Wed Aug 20 17:15:04 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/chapter.rb: remove unused method Chapter.for_stdin and Chapter.for_path
+
 Wed Aug 20 01:51:02 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/book/parameters.rb: remove ReVIEW::Book::Parameters

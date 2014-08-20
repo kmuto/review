@@ -94,14 +94,6 @@ class ChapterTest < Test::Unit::TestCase
     end
   end
 
-  def test_s_for_stdin
-    assert Book::Chapter.for_stdin
-  end
-
-  def test_s_for_path
-    assert Book::Chapter.for_path(1, __FILE__)
-  end
-
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
     assert_equal :book, ch.env

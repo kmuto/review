@@ -31,14 +31,6 @@ module ReVIEW
         }
       end
 
-      def Chapter.for_stdin
-        new(nil, nil, '-', nil, $stdin)
-      end
-
-      def Chapter.for_path(number, path)
-        new(nil, number, File.basename(path), path)
-      end
-
       attr_reader :number
 
       def initialize(book, number, name, path, io = nil)
