@@ -52,6 +52,7 @@ module ReVIEW
         @basedir = basedir
         @parts = nil
         @chapter_index = nil
+        @config = ReVIEW::Configure.values
       end
 
       def bib_file
