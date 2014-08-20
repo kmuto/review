@@ -11,16 +11,18 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = IDGXMLBuilder.new()
-    @config = {
+    @config = ReVIEW::Configure.values
+    @config.merge!({
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "nolf" => true,
       "tableopt" => "10"
-    }
-    ReVIEW.book.config = @config
+    })
+    @book = Book::Base.new(nil)
+    @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
+    @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
   end
@@ -168,9 +170,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_quote_deprecated
-    ReVIEW.book.config["deprecated-blocklines"] = true
+    @book.config["deprecated-blocklines"] = true
     actual = compile_block("//quote{\nfoo\n\nbuz\n//}\n")
-    ReVIEW.book.config["deprecated-blocklines"] = nil
+    @book.config["deprecated-blocklines"] = nil
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><quote>foo\n\nbuz</quote>|, actual
   end
 
@@ -190,9 +192,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_term_deprecated
-    ReVIEW.book.config["deprecated-blocklines"] = true
+    @book.config["deprecated-blocklines"] = true
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    ReVIEW.book.config["deprecated-blocklines"] = nil
+    @book.config["deprecated-blocklines"] = nil
     assert_equal %Q|<?xml version="1.0" encoding="UTF-8"?>\n<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><term>test1\ntest1.5\n\ntest<i>2</i></term>|, actual
   end
 

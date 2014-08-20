@@ -11,14 +11,16 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def setup
     @builder = TOPBuilder.new()
-    @config = {
+    @config = ReVIEW::Configure.values
+    @config.merge!({
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8"
-    }
-    ReVIEW.book.config = @config
+    })
+    @book = Book::Base.new(nil)
+    @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(nil, 1, '-', nil, StringIO.new)
+    @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
 
