@@ -87,7 +87,7 @@ def main
 end
 
 def check_text(files)
-  re, neg = words_re(ReVIEW.book.basedir + ReVIEW.book.reject_file)
+  re, neg = words_re("#{ReVIEW.book.basedir}/#{ReVIEW.book.reject_file}")
   files.each do |path|
     File.open(path) {|f|
       each_paragraph(f) do |para, lineno|
