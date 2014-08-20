@@ -115,6 +115,52 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
+  def test_read_APPENDIX
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal "", book.read_APPENDIX
+
+      post_path = File.join(dir, 'POSTDEF')
+      re1_path = File.join(dir, "123#{book.ext}")
+      re2_path = File.join(dir, "456#{book.ext}")
+
+      File.open(post_path, 'w') {|o| o.print "abc\n" }
+      File.open(re1_path, 'w') {|o| o.print "123\n" }
+      File.open(re2_path, 'w') {|o| o.print "456\n" }
+
+      assert_equal "abc\n", book.read_APPENDIX
+
+      File.unlink(post_path)
+      assert_equal "#{re1_path}\n#{re2_path}", book.read_APPENDIX
+
+      File.unlink(re1_path)
+      assert_equal "#{re2_path}", book.read_APPENDIX
+
+      File.unlink(re2_path)
+      assert_equal "", book.read_APPENDIX
+    end
+  end
+
+  def test_read_POSTDEF
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal "", book.read_POSTDEF
+
+      post_path = File.join(dir, 'POSTDEF')
+      re1_path = File.join(dir, "123#{book.ext}")
+      re2_path = File.join(dir, "456#{book.ext}")
+
+      File.open(post_path, 'w') {|o| o.print "abc\n" }
+      File.open(re1_path, 'w') {|o| o.print "123\n" }
+      File.open(re2_path, 'w') {|o| o.print "456\n" }
+
+      assert_equal "", book.read_POSTDEF
+
+      File.unlink(post_path)
+      assert_equal "", book.read_POSTDEF
+    end
+  end
+
   def test_read_bib
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
