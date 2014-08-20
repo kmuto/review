@@ -41,6 +41,7 @@ def _main
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8"
   }
+  book = ReVIEW::Book::Base.load_default
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
@@ -52,18 +53,18 @@ def _main
   }
   opts.on('-a', '--all', 'print all chapters.') {
     begin
-      source = ReVIEW.book
+      source = book
     rescue ReVIEW::Error => err
       error_exit err.message
     end
   }
   opts.on('-p', '--part N', 'list only part N.') {|n|
-    source = ReVIEW.book.part(Integer(n)) or
+    source = book.part(Integer(n)) or
         error_exit "part #{n} does not exist in this book"
   }
   opts.on('-c', '--chapter C', 'list only chapter C.') {|c|
     begin
-      source = ReVIEW::Book::Part.new(nil, 1, [ReVIEW.book.chapter(c)])
+      source = ReVIEW::Book::Part.new(nil, 1, [book.chapter(c)])
     rescue
       error_exit "chapter #{c} does not exist in this book"
     end

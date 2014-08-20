@@ -159,7 +159,7 @@ module ReVIEW
 
       attr_reader :image_finder
 
-      def initialize(items, chapid, basedir, types)
+      def initialize(items, chapid, basedir, types, builder)
         super items
         items.each do |i|
           i.index = self
@@ -169,7 +169,7 @@ module ReVIEW
         @types = types
 
         @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid,
-                                                      ReVIEW.book.config['builder'], types)
+                                                      builder, types)
       end
 
       def find_path(id)
@@ -179,7 +179,7 @@ module ReVIEW
     end
 
     class IconIndex < ImageIndex
-      def initialize(items, chapid, basedir, types)
+      def initialize(items, chapid, basedir, types, builder)
         @items = items
         @index = {}
         items.each do |i|
@@ -193,7 +193,7 @@ module ReVIEW
         @basedir = basedir
         @types = types
 
-        @image_finder = ImageFinder.new(basedir, chapid, ReVIEW.book.config['builder'], types)
+        @image_finder = ImageFinder.new(basedir, chapid, builder, types)
       end
 
       def IconIndex.parse(src, *args)

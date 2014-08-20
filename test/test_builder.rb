@@ -79,7 +79,7 @@ class BuidlerTest < Test::Unit::TestCase
         [:puts,  "#{utf8_str}\n", "#{expect}\n"],
       ].each do |m, instr, expstr|
         b = Builder.new
-        b.bind(nil, nil, nil)
+        b.bind(nil, chapter, nil)
         ReVIEW.book.config = params
         b.__send__(m, instr)
         if "".respond_to?(:encode)

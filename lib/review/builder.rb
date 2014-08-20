@@ -42,9 +42,9 @@ module ReVIEW
       @chapter = chapter
       @location = location
       @output = StringIO.new
-      @book = ReVIEW.book
+      @book = @chapter.book
       @tabwidth = nil
-      if @book.config && @book.config["tabwidth"]
+      if @book && @book.config && @book.config["tabwidth"]
         @tabwidth = @book.config["tabwidth"]
       end
       builder_init_file
