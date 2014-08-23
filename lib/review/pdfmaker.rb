@@ -218,28 +218,28 @@ module ReVIEW
     def make_colophon(config)
       okuduke = ""
       if !config["aut"].nil? && !config["aut"].empty?
-        okuduke += "著　者 & #{escape_latex(config["aut"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        okuduke += "#{ReVIEW::I18n.t("aut")} & #{escape_latex(config["aut"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       end
       if !config["csl"].nil? && !config["csl"].empty?
-        okuduke += "監　修 & #{escape_latex(config["csl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        okuduke += "#{ReVIEW::I18n.t("csl")} & #{escape_latex(config["csl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       end
       if !config["trl"].nil? && !config["trl"].empty?
-        okuduke += "翻　訳 & #{escape_latex(config["trl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        okuduke += "#{ReVIEW::I18n.t("trl")} & #{escape_latex(config["trl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       end
       if !config["dsr"].nil? && !config["dsr"].empty?
-        okuduke += "デザイン & #{escape_latex(config["dsr"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        okuduke += "#{ReVIEW::I18n.t("dsr")} & #{escape_latex(config["dsr"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       end
       if !config["ill"].nil? && !config["ill"].empty?
-        okuduke += "イラスト & #{escape_latex(config["ill"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        okuduke += "#{ReVIEW::I18n.t("ill")} & #{escape_latex(config["ill"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       end
       if !config["cov"].nil? && !config["cov"].empty?
-        okuduke += "表　紙 & #{escape_latex(config["cov"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        okuduke += "#{ReVIEW::I18n.t("cov")} & #{escape_latex(config["cov"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       end
       if !config["edt"].nil? && !config["edt"].empty?
-        okuduke += "編集者 & #{escape_latex(config["edt"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        okuduke += "#{ReVIEW::I18n.t("edt")} & #{escape_latex(config["edt"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       end
       okuduke += <<EOB
-発行所 & #{config["prt"]} \\\\
+#{ReVIEW::I18n.t("prt")} & #{config["prt"]} \\\\
 EOB
       okuduke
     end
