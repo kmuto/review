@@ -99,4 +99,23 @@ class PDFMakerTest < Test::Unit::TestCase
                    okuduke)
     end
   end
+
+
+  def test_make_okuduke_dojin
+    config = {
+      "aut"=>["テスト太郎","テスト次郎"],
+      "csl"=>["監修三郎"],
+      "ill"=>["イラスト七郎","イラスト八郎"],
+      "pbl"=>"テスト出版",
+      "prt"=>"テスト印刷",
+      "contact"=>"tarou@example.jp",
+    }
+    Dir.mktmpdir do |dir|
+      I18n.i18n("ja", {"prt" => "印刷所"})
+      okuduke = @maker.make_colophon(config)
+      assert_equal("著　者 & テスト太郎、テスト次郎 \\\\\n監　修 & 監修三郎 \\\\\nイラスト & イラスト七郎、イラスト八郎 \\\\\n発行所 & テスト出版 \\\\\n連絡先 & tarou@example.jp \\\\\n印刷所 & テスト印刷 \\\\\n",
+                   okuduke)
+    end
+  end
+
 end

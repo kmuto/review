@@ -27,6 +27,7 @@ ja:
   ## XXX Backward Compatibility: `prt` should be "印刷所"
   prt: "発行所"
   pbl: "発行所"
+  contact: "連絡先"
   author_postfix: "　著"
   supervisor_postfix: "　監修"
   translator_postfix: "　訳"
@@ -58,6 +59,7 @@ en:
   trl: "Translator"
   prt: "Printer"
   pbl: "Publisher"
+  contact: "Contact"
   names_splitter: ", "
 
 zh_TW:

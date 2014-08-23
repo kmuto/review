@@ -134,10 +134,6 @@ module ReVIEW
         config["usepackage"] = "\\usepackage{#{config['texstyle']}}"
       end
 
-      %w[aut csl trl dsr ill cov edt].each do |item|
-        config[item] = [config[item]] if !config[item].nil? && config[item].instance_of?(String)
-      end
-
       copy_images("./images", "#{@path}/images")
       copyStyToDir(Dir.pwd + "/sty", @path)
       copyStyToDir(Dir.pwd, @path, "tex")
@@ -215,45 +211,47 @@ module ReVIEW
       end
     end
 
+    def join_with_separator(value, sep)
+      if value.kind_of? Array
+        value.join(sep)
+      else
+        value
+      end
+    end
+
+    def make_colophon_role(role, config)
+      if !config[role].nil? && !config[role].empty?
+        return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(config[role], ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+      else
+        ""
+      end
+    end
+
     def make_colophon(config)
-      okuduke = ""
-      if !config["aut"].nil? && !config["aut"].empty?
-        okuduke += "#{ReVIEW::I18n.t("aut")} & #{escape_latex(config["aut"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-      end
-      if !config["csl"].nil? && !config["csl"].empty?
-        okuduke += "#{ReVIEW::I18n.t("csl")} & #{escape_latex(config["csl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-      end
-      if !config["trl"].nil? && !config["trl"].empty?
-        okuduke += "#{ReVIEW::I18n.t("trl")} & #{escape_latex(config["trl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-      end
-      if !config["dsr"].nil? && !config["dsr"].empty?
-        okuduke += "#{ReVIEW::I18n.t("dsr")} & #{escape_latex(config["dsr"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-      end
-      if !config["ill"].nil? && !config["ill"].empty?
-        okuduke += "#{ReVIEW::I18n.t("ill")} & #{escape_latex(config["ill"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-      end
-      if !config["cov"].nil? && !config["cov"].empty?
-        okuduke += "#{ReVIEW::I18n.t("cov")} & #{escape_latex(config["cov"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-      end
-      if !config["edt"].nil? && !config["edt"].empty?
-        okuduke += "#{ReVIEW::I18n.t("edt")} & #{escape_latex(config["edt"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-      end
-      okuduke += <<EOB
-#{ReVIEW::I18n.t("prt")} & #{config["prt"]} \\\\
-EOB
-      okuduke
+      colophon = ""
+      colophon += make_colophon_role("aut", config)
+      colophon += make_colophon_role("csl", config)
+      colophon += make_colophon_role("trl", config)
+      colophon += make_colophon_role("dsr", config)
+      colophon += make_colophon_role("ill", config)
+      colophon += make_colophon_role("cov", config)
+      colophon += make_colophon_role("edt", config)
+      colophon += make_colophon_role("pbl", config)
+      colophon += make_colophon_role("contact", config)
+      colophon += make_colophon_role("prt", config)
+      colophon
     end
 
     def make_authors(config)
       authors = ""
       if !config["aut"].nil? && !config["aut"].empty?
-        authors = config["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
+        authors = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
       end
       if !config["csl"].nil? && !config["csl"].empty?
-        authors += " \\\\\n"+config["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
+        authors += " \\\\\n"+join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
       end
       if !config["trl"].nil? && !config["trl"].empty?
-        authors += " \\\\\n"+config["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
+        authors += " \\\\\n"+join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
       end
       authors
     end
