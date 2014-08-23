@@ -60,7 +60,7 @@ module ReVIEW
       cmd_config = Hash.new
       opts = OptionParser.new
 
-      opts.banner = "Usage: #{File.basename($0)} configfile"
+      opts.banner = "Usage: review-pdfmaker configfile"
       opts.version = ReVIEW::VERSION
       opts.on('--help', 'Prints this message and quit.') do
         puts opts.help
