@@ -215,24 +215,16 @@ module ReVIEW
       end
     end
 
-    def get_template(config)
-      dclass = config["texdocumentclass"] || []
-      documentclass =  dclass[0] || "jsbook"
-      documentclassoption =  dclass[1] || "oneside"
-
+    def make_colophon(config)
       okuduke = ""
-      authors = ""
       if !config["aut"].nil? && !config["aut"].empty?
         okuduke += "著　者 & #{escape_latex(config["aut"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-        authors = config["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
       end
       if !config["csl"].nil? && !config["csl"].empty?
         okuduke += "監　修 & #{escape_latex(config["csl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-        authors += " \\\\\n"+config["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
       end
       if !config["trl"].nil? && !config["trl"].empty?
         okuduke += "翻　訳 & #{escape_latex(config["trl"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
-        authors += " \\\\\n"+config["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
       end
       if !config["dsr"].nil? && !config["dsr"].empty?
         okuduke += "デザイン & #{escape_latex(config["dsr"].join(ReVIEW::I18n.t("names_splitter")))} \\\\\n"
@@ -249,6 +241,30 @@ module ReVIEW
       okuduke += <<EOB
 発行所 & #{config["prt"]} \\\\
 EOB
+      okuduke
+    end
+
+    def make_authors(config)
+      authors = ""
+      if !config["aut"].nil? && !config["aut"].empty?
+        authors = config["aut"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
+      end
+      if !config["csl"].nil? && !config["csl"].empty?
+        authors += " \\\\\n"+config["csl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
+      end
+      if !config["trl"].nil? && !config["trl"].empty?
+        authors += " \\\\\n"+config["trl"].join(ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
+      end
+      authors
+    end
+
+    def get_template(config)
+      dclass = config["texdocumentclass"] || []
+      documentclass =  dclass[0] || "jsbook"
+      documentclassoption =  dclass[1] || "oneside"
+
+      okuduke = make_colophon(config)
+      authors = make_authors(config)
 
       custom_titlepage = make_custom_titlepage(config["coverfile"])
 
