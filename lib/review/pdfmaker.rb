@@ -229,7 +229,7 @@ module ReVIEW
 
     def make_colophon(config)
       colophon = ""
-      %w(aut csl trl dsr ill cov edt pbl contact prt).each do |role|
+      config["colophon_order"].each do |role|
         colophon += make_colophon_role(role, config)
       end
       colophon
