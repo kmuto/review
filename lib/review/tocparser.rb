@@ -21,14 +21,14 @@ module ReVIEW
     def TOCParser.parse(chap)
       chap.open {|f|
         stream = Preprocessor::Strip.new(f)
-        new.parse(stream, chap.id, chap.path).map {|root|
+        new.parse(stream, chap.id, chap.path, chap).map {|root|
           root.number = chap.number
           root
         }
       }
     end
 
-    def parse(f, id, filename)
+    def parse(f, id, filename, chap)
       roots = []
       path = []
 
@@ -80,7 +80,7 @@ module ReVIEW
           #  error! filename, f.lineno, 'text found before section label'
           #end
           next if path.empty?
-          path.last.add_child(par = Paragraph.new)
+          path.last.add_child(par = Paragraph.new(chap.book.page_metric))
           par.add line
           while line = f.gets
             break if /\A\s*\z/ =~ line
@@ -239,8 +239,9 @@ module ReVIEW
 
     class Paragraph < Node
 
-      def initialize
+      def initialize(page_metric)
         @bytes = 0
+        @page_metric = page_metric
       end
 
       def inspect
@@ -252,7 +253,7 @@ module ReVIEW
       end
 
       def estimated_lines
-        (@bytes + 2) / ReVIEW.book.page_metric.text.n_columns + 1
+        (@bytes + 2) / @page_metric.text.n_columns + 1
       end
 
       def yield_section

@@ -8,13 +8,12 @@ class INAOBuidlerTest < Test::Unit::TestCase
   include BookTestHelper
 
   def setup
-    param = {
+    @param = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     }
-    ReVIEW.book.config = param
   end
 
   def test_all
