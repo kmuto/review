@@ -229,16 +229,9 @@ module ReVIEW
 
     def make_colophon(config)
       colophon = ""
-      colophon += make_colophon_role("aut", config)
-      colophon += make_colophon_role("csl", config)
-      colophon += make_colophon_role("trl", config)
-      colophon += make_colophon_role("dsr", config)
-      colophon += make_colophon_role("ill", config)
-      colophon += make_colophon_role("cov", config)
-      colophon += make_colophon_role("edt", config)
-      colophon += make_colophon_role("pbl", config)
-      colophon += make_colophon_role("contact", config)
-      colophon += make_colophon_role("prt", config)
+      %w(aut csl trl dsr ill cov edt pbl contact prt).each do |role|
+        colophon += make_colophon_role(role, config)
+      end
       colophon
     end
 
