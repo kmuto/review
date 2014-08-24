@@ -83,6 +83,14 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
+  def test_make_authors_only_aut
+    @config.merge!({"aut"=>"テスト太郎"})
+    Dir.mktmpdir do |dir|
+      authors = @maker.make_authors(@config)
+      assert_equal("テスト太郎　著", authors)
+    end
+  end
+
   def test_make_okuduke
     @config.merge!({
       "aut"=>["テスト太郎","テスト次郎"],
