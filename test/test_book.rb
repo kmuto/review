@@ -34,15 +34,6 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
-  def test_s_load
-    Dir.mktmpdir do |dir|
-      book = Book.load(dir)
-      defs = get_instance_variables(Book::Parameters.default)
-      pars = get_instance_variables(book.instance_eval { @parameters })
-      assert_equal defs, pars
-    end
-  end
-
   def test_s_update_rubyenv
     save_load_path = $LOAD_PATH.dup
 
@@ -121,6 +112,52 @@ class BookTest < Test::Unit::TestCase
 
       File.open(chaps_path, 'w') {|o| o.print "XYZ\n" }
       assert_equal chaps_content, book.read_PART
+    end
+  end
+
+  def test_read_APPENDIX
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal "", book.read_APPENDIX
+
+      post_path = File.join(dir, 'POSTDEF')
+      re1_path = File.join(dir, "123#{book.ext}")
+      re2_path = File.join(dir, "456#{book.ext}")
+
+      File.open(post_path, 'w') {|o| o.print "abc\n" }
+      File.open(re1_path, 'w') {|o| o.print "123\n" }
+      File.open(re2_path, 'w') {|o| o.print "456\n" }
+
+      assert_equal "abc\n", book.read_APPENDIX
+
+      File.unlink(post_path)
+      assert_equal "#{re1_path}\n#{re2_path}", book.read_APPENDIX
+
+      File.unlink(re1_path)
+      assert_equal "#{re2_path}", book.read_APPENDIX
+
+      File.unlink(re2_path)
+      assert_equal "", book.read_APPENDIX
+    end
+  end
+
+  def test_read_POSTDEF
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal "", book.read_POSTDEF
+
+      post_path = File.join(dir, 'POSTDEF')
+      re1_path = File.join(dir, "123#{book.ext}")
+      re2_path = File.join(dir, "456#{book.ext}")
+
+      File.open(post_path, 'w') {|o| o.print "abc\n" }
+      File.open(re1_path, 'w') {|o| o.print "123\n" }
+      File.open(re2_path, 'w') {|o| o.print "456\n" }
+
+      assert_equal "", book.read_POSTDEF
+
+      File.unlink(post_path)
+      assert_equal "", book.read_POSTDEF
     end
   end
 
@@ -257,12 +294,11 @@ EOC
     ].each do |n_parts, chaps_text, parts_text, part_names|
       n_test += 1
       Dir.mktmpdir do |dir|
-        params = Book::Parameters.new(:part_file => 'PARTS')
-        book = Book::Base.new(dir, params)
+        book = Book::Base.new(dir)
         chaps_path = File.join(dir, 'CHAPS')
         File.open(chaps_path, 'w') {|o| o.print chaps_text }
         unless parts_text.nil?
-          parts_path = File.join(dir, 'PARTS')
+          parts_path = File.join(dir, 'PART')
           File.open(parts_path, 'w') {|o| o.print parts_text }
         end
 

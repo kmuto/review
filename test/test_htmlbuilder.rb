@@ -18,15 +18,16 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     })
-    ReVIEW.book.config = @config
+    @book = Book::Base.new(".")
+    @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
+    @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
   end
 
   def test_xmlns_ops_prefix_epub3
-    ReVIEW.book.config["epubversion"] = 3
+    @book.config["epubversion"] = 3
     assert_equal "epub", @builder.xmlns_ops_prefix
   end
 
@@ -104,7 +105,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_without_secno
-    ReVIEW.book.config["secnolevel"] = 0
+    @book.config["secnolevel"] = 0
     actual = compile_block("={test} this is test.\n")
     assert_equal %Q|<h1 id="test"><a id="h1"></a>this is test.</h1>\n|, actual
   end
@@ -130,7 +131,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level3_with_secno
-    ReVIEW.book.config["secnolevel"] = 3
+    @book.config["secnolevel"] = 3
     actual = compile_block("==={test} this is test.\n")
     assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, actual
   end
@@ -400,7 +401,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     rescue LoadError
       return true
     end
-    ReVIEW.book.config["pygments"] = true
+    @book.config["pygments"] = true
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
     assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, actual
@@ -442,7 +443,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
     end
 
-    assert_equal %Q|<a href="./bib.html#bib-samplebib">[1]</a>|, compile_inline("@<bib>{samplebib}")
+    assert_equal %Q|<a href="bib.html#bib-samplebib">[1]</a>|, compile_inline("@<bib>{samplebib}")
   end
 
   def test_bib_noramlized
@@ -450,7 +451,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::BibpaperIndex::Item.new("sampleb=ib",1,"sample bib")
     end
 
-    assert_equal %Q|<a href="./bib.html#bib-id_sample_3Dbib">[1]</a>|, compile_inline("@<bib>{sample=bib}")
+    assert_equal %Q|<a href="bib.html#bib-id_sample_3Dbib">[1]</a>|, compile_inline("@<bib>{sample=bib}")
   end
 
   def test_bibpaper
@@ -481,9 +482,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def column_helper(review)
-    chap_singleton = class << @chapter; self; end
-    chap_singleton.send(:define_method, :content) { review }
-    @compiler.compile(@chapter).match(/<body>\n(.+)<\/body>/m)[1]
+    compile_block(review)
   end
 
   def test_column_1

@@ -52,27 +52,6 @@ require 'test/unit'
     @compiler.result.to_doc
   end
 
-def ul_helper(src, expect)
-  @compiler.setup_parser(src)
-  @compiler.tagged_section_init
-  @compiler.parse("Ulist")
-  assert_equal expect, @compiler.result.to_doc
-end
-
-def ol_helper(src, expect)
-  @compiler.setup_parser(src)
-  @compiler.tagged_section_init
-  @compiler.parse("Olist")
-  assert_equal expect, @compiler.result.to_doc
-end
-
-def builder_helper(src, expect, method_sym)
-  io = StringIO.new(src)
-  li = LineInput.new(io)
-  ret = @compiler.__send__(method_sym, li)
-  assert_equal expect, ret
-end
-
 def touch_file(path)
   File.open(path, "w").close
   path
@@ -82,4 +61,32 @@ def prepare_samplebook(srcdir)
   samplebook_dir = File.expand_path("sample-book/src/", File.dirname(__FILE__))
   FileUtils.cp_r(Dir.glob(samplebook_dir + "/*"), srcdir)
   YAML.load(File.open(srcdir + "/config.yml"))
+end
+
+def compile_block(text)
+  method_name = "compile_block_#{@builder.target_name}"
+  if !self.respond_to?(method_name, true)
+    method_name = "compile_block_default"
+  end
+  self.__send__(method_name, text)
+end
+
+def compile_block_default(text)
+  @chapter.content = text
+  @compiler.compile(@chapter)
+end
+
+def compile_block_html(text)
+  @chapter.content = text
+  matched = @compiler.compile(@chapter).match(/<body>\n(.+)<\/body>/m)
+  if matched && matched.size > 1
+    matched[1]
+  else
+    ""
+  end
+end
+
+def compile_block_idgxml(text)
+  @chapter.content = text
+  @compiler.compile(@chapter).gsub(/.*<doc xmlns:aid="http:\/\/ns.adobe.com\/AdobeInDesign\/4.0\/">/m,"").gsub(/<\/doc>\n/, "")
 end

@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2012 Minero Aoki, Kenshi Muto
+#               2008-2014 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -778,12 +778,12 @@ module ReVIEW
     end
 
     def inline_tt(str)
-      %Q(<tt>#{escape_html(str)}</tt>)
+      %Q(<tt>#{str}</tt>)
     end
 
     def inline_ttb(str)
-      index = escape_html(str).gsub(/<.*?>/, "").gsub(/\*/, "ESCAPED_ASTERISK").gsub(/'/, "&#27;")
-      %Q(<tt style='bold'>#{escape_html(str)}</tt><index value='#{index}' />)
+      index = str.gsub(/<.*?>/, "").gsub(/\*/, "ESCAPED_ASTERISK").gsub(/'/, "&#27;")
+      %Q(<tt style='bold'>#{str}</tt><index value='#{index}' />)
     end
 
     alias_method :inline_ttbold, :inline_ttb
@@ -838,6 +838,7 @@ module ReVIEW
 
     def noindent
       @noindent = true
+      ""
     end
 
     def linebreak
@@ -1101,7 +1102,7 @@ module ReVIEW
       rescue
         warn %Q[no such image: #{id}]
       end
-      buf << %Q[<caption>#{caption}</caption>] + @lf if !caption.nil? && !caption.empty?
+      buf << %Q[<caption>#{caption}</caption>] + @lf if caption.present?
       buf << "</img>" << @lf
       buf
     end

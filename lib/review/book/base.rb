@@ -48,26 +48,40 @@ module ReVIEW
         @basedir_seen[dir] = true
       end
 
-      def initialize(basedir, parameters = Parameters.default)
+      def initialize(basedir)
         @basedir = basedir
-        @parameters = parameters
         @parts = nil
         @chapter_index = nil
+        @config = ReVIEW::Configure.values
       end
 
-      extend Forwardable
-      def_delegators '@parameters',
-      :chapter_file,
-      :part_file,
-      :bib_file,
-      :reject_file,
-      :predef_file,
-      :postdef_file,
-      :ext,
-      :image_dir,
-      :image_types,
-      :image_types=,
-      :page_metric
+      def bib_file
+        config["bib_file"]
+      end
+
+      def reject_file
+        config["reject_file"]
+      end
+
+      def ext
+        config["ext"]
+      end
+
+      def image_dir
+        config["image_dir"]
+      end
+
+      def image_types
+        config["image_types"]
+      end
+
+      def image_types=(types)
+        config["image_types"] = types
+      end
+
+      def page_metric
+        config["page_metric"]
+      end
 
       def parts
         @parts ||= read_parts()
@@ -155,7 +169,7 @@ module ReVIEW
         return @catalog if @catalog.present?
 
         catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
-        if File.exist? catalogfile_path
+        if File.file? catalogfile_path
           @catalog = Catalog.new(File.open catalogfile_path)
         end
 
@@ -166,7 +180,7 @@ module ReVIEW
         if catalog
           catalog.chaps
         else
-          read_FILE(chapter_file)
+          read_FILE(config["chapter_file"])
         end
       end
 
@@ -174,7 +188,7 @@ module ReVIEW
         if catalog
           catalog.predef
         else
-          read_FILE(predef_file)
+          read_FILE(config["predef_file"])
         end
       end
 
@@ -182,12 +196,16 @@ module ReVIEW
         if catalog
           catalog.appendix
         else
-          read_FILE(postdef_file) # for backward compatibility
+          read_FILE(config["postdef_file"]) # for backward compatibility
         end
       end
 
       def read_POSTDEF
-        catalog.postdef
+        if catalog
+          catalog.postdef
+        else
+          ""
+        end
       end
 
       def read_PART
@@ -196,7 +214,7 @@ module ReVIEW
         if catalog
           @read_PART = catalog.parts
         else
-          @read_PART = File.read("#{@basedir}/#{part_file}")
+          @read_PART = File.read("#{@basedir}/#{config["part_file"]}")
         end
       end
 
@@ -204,7 +222,7 @@ module ReVIEW
         if catalog
           catalog.parts.present?
         else
-          File.exist?("#{@basedir}/#{part_file}")
+          File.exist?("#{@basedir}/#{config["part_file"]}")
         end
       end
 
@@ -221,9 +239,9 @@ module ReVIEW
           return mkpart_from_namelist(catalog.predef.split("\n"))
         end
 
-        if File.file?("#{@basedir}/#{predef_file}")
+        if File.file?("#{@basedir}/#{config["predef_file"]}")
           begin
-            return mkpart_from_namelistfile("#{@basedir}/#{predef_file}")
+            return mkpart_from_namelistfile("#{@basedir}/#{config["predef_file"]}")
           rescue FileNotFound => err
             raise FileNotFound, "preface #{err.message}"
           end
@@ -239,9 +257,9 @@ module ReVIEW
           return mkpart(chaps)
         end
 
-        if File.file?("#{@basedir}/#{postdef_file}")
+        if File.file?("#{@basedir}/#{config["postdef_file"]}")
           begin
-            return mkpart_from_namelistfile("#{@basedir}/#{postdef_file}")
+            return mkpart_from_namelistfile("#{@basedir}/#{config["postdef_file"]}")
           rescue FileNotFound => err
             raise FileNotFound, "postscript #{err.message}"
           end
@@ -359,6 +377,8 @@ module ReVIEW
         res
       rescue Errno::ENOENT
         Dir.glob("#{@basedir}/*#{ext()}").sort.join("\n")
+      rescue Errno::EISDIR
+        ""
       end
     end
   end

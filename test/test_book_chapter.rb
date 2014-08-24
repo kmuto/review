@@ -94,14 +94,6 @@ class ChapterTest < Test::Unit::TestCase
     end
   end
 
-  def test_s_for_stdin
-    assert Book::Chapter.for_stdin
-  end
-
-  def test_s_for_path
-    assert Book::Chapter.for_path(1, __FILE__)
-  end
-
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
     assert_equal :book, ch.env
@@ -160,11 +152,12 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_title
     io = StringIO.new
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, nil, io)
     assert_equal '', ch.title
 
     io = StringIO.new("=1\n=2\n")
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
+    ch = Book::Chapter.new(book, nil, nil, nil, io)
     assert_equal '1', ch.title
 
 
@@ -175,8 +168,8 @@ class ChapterTest < Test::Unit::TestCase
       ['XYZ', @eucjp_str],
     ].each do |enc, instr|
       io = StringIO.new("= #{instr}\n")
-      ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
-      ReVIEW.book.config = {'inencoding' => enc}
+      ch = Book::Chapter.new(book, nil, nil, nil, io)
+      book.config['inencoding'] = enc
       assert_equal @utf8_str, ch.title
       assert_equal @utf8_str, ch.instance_eval { @title }
     end
@@ -190,12 +183,13 @@ class ChapterTest < Test::Unit::TestCase
       ['XYZ', @eucjp_str],
     ].each do |enc, instr|
       tf = Tempfile.new('chapter_test')
+      book = Book::Base.new(nil)
       begin
         tf.print instr
         tf.close
 
-        ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf.path)
-        ReVIEW.book.config = {'inencoding' => enc}
+        ch = Book::Chapter.new(book, nil, nil, tf.path)
+        book.config['inencoding'] = enc
         assert_equal @utf8_str, ch.content
         assert_equal @utf8_str, ch.instance_eval { @content }
       ensure
@@ -211,8 +205,8 @@ class ChapterTest < Test::Unit::TestCase
         tf2.puts instr
         tf1.close
 
-        ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf1.path, tf2)
-        ReVIEW.book.config = {'inencoding' => enc}
+        ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2)
+        book.config['inencoding'] = enc
         assert_equal "#{@utf8_str}\n#{@utf8_str}\n", ch.content # XXX: OK?
       ensure
         tf1.close(true)
@@ -227,7 +221,8 @@ class ChapterTest < Test::Unit::TestCase
     tf.print lines.join('')
     tf.close
 
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf.path)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf.path)
     assert_equal lines, ch.lines
 
     lines = ["1\n", "2\n", "3"]
@@ -239,7 +234,7 @@ class ChapterTest < Test::Unit::TestCase
     tf2.puts lines.join('')
     tf2.close
 
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf1.path, tf2.path)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2.path)
     assert_equal lines, ch.lines # XXX: OK?
   end
 
@@ -355,7 +350,8 @@ E
 
 
   def test_column_index
-    ReVIEW.book.config = {"inencoding" => "utf-8"}
+    book = Book::Base.new(nil)
+    book.config["inencoding"] = "utf-8"
     do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)
 = dummy1
 ===[column]{abc} aaaa

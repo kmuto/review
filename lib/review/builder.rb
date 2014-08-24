@@ -46,9 +46,9 @@ module ReVIEW
       @location = location
       @ast = nil
       @output = StringIO.new
-      @book = ReVIEW.book
+      @book = @chapter.book
       @tabwidth = nil
-      if @book.config && @book.config["tabwidth"]
+      if @book && @book.config && @book.config["tabwidth"]
         @tabwidth = @book.config["tabwidth"]
       end
       builder_init_file
@@ -76,6 +76,10 @@ module ReVIEW
 #      @output.puts *s.map{|i|
 #        convert_outencoding(i, @book.param["outencoding"])
 #      }
+    end
+
+    def target_name
+      self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
     end
 
     def list(lines, id, caption)
@@ -285,7 +289,7 @@ module ReVIEW
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
-        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+        c = target_name
         if builders.include?(c)
           matched[2].gsub("\\n", "\n")
         else
@@ -359,7 +363,7 @@ module ReVIEW
     end
 
     def graph(lines, id, command, caption = nil)
-      c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      c = target_name
       dir = File.join(@book.basedir, @book.image_dir, c)
       Dir.mkdir(dir) unless File.exist?(dir)
       file = "#{id}.#{image_ext}"

@@ -37,6 +37,8 @@ def main
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8"
   })
+  @book = ReVIEW::Book::Base.load_default
+  @book.config = @config
 
   modes = nil
   files = ARGV unless ARGV.empty?
@@ -49,7 +51,7 @@ def main
     @config["outencoding"] = enc
   }
   opts.on('-a', '--all-chapters', 'Check all chapters.') {
-    files = ReVIEW.book.chapters.map {|ent| ent.path }
+    files = @book.chapters.map {|ent| ent.path }
   }
   opts.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
     ents = ReVIEW.env.parts[Integer(n) - 1] or
@@ -87,7 +89,7 @@ def main
 end
 
 def check_text(files)
-  re, neg = words_re(ReVIEW.book.basedir + ReVIEW.book.reject_file)
+  re, neg = words_re("#{@book.basedir}/#{@book.reject_file}")
   files.each do |path|
     File.open(path) {|f|
       each_paragraph(f) do |para, lineno|

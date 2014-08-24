@@ -36,6 +36,7 @@ module ReVIEW
         @bytes = bytes
         @chars = chars
         @lines = lines
+        @book  = ReVIEW::Book::Base.load_default
       end
 
       attr_reader :bytes
@@ -47,7 +48,7 @@ module ReVIEW
       end
 
       def page
-        (kbytes.to_f/ReVIEW.book.page_metric.page_per_kbyte).ceil
+        (kbytes.to_f/@book.page_metric.page_per_kbyte).ceil
       end
 
       def to_s

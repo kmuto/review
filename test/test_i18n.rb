@@ -42,8 +42,8 @@ class I18nTest < Test::Unit::TestCase
 
   def test_htmlbuilder
     _setup_htmlbuilder
-    result = @builder.headline(1,"test","this is test.")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>Chapter 1. this is test.</h1>\n|, result
+    actual = compile_block("={test} this is test.\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>Chapter 1. this is test.</h1>\n|, actual
   end
 
   def _setup_htmlbuilder
@@ -54,10 +54,12 @@ class I18nTest < Test::Unit::TestCase
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
+      "ext" => ".re"
     }
-    ReVIEW.book.config = @config
+    @book = Book::Base.new(".")
+    @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
+    @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
   end

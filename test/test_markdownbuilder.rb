@@ -4,7 +4,7 @@ require 'test_helper'
 require 'review'
 require 'review/compiler'
 require 'review/book'
-require 'review/htmlbuilder'
+require 'review/markdownbuilder'
 require 'review/i18n'
 
 class MARKDOWNBuilderTest < Test::Unit::TestCase
@@ -18,17 +18,17 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
       "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     }
-    ReVIEW.book.config = @config
+    @book = Book::Base.new(nil)
+    @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
+    @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
   end
 
   def test_quote
-    lines = ["foo", "bar", "","buz"]
-    result = @builder.quote(lines)
-    assert_equal %Q|\n> foobar\n> \n> buz\n\n|, result
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\n> foobar\n> \n> buz\n\n|, actual
   end
 
   def test_inline_em
@@ -36,7 +36,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   end
 
   def test_inline_strong
-    assert_equal "test**foo**abc",compile_inline("test@<strong>{foo}abc")
+    assert_equal "test**foo**abc", compile_inline("test@<strong>{foo}abc")
   end
 
   def test_ul
@@ -44,8 +44,9 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   * AAA
   * BBB
 EOS
-    expect = "\n* AAA\n* BBB\n\n"
-    ul_helper(src, expect)
+    expected = "\n* AAA\n* BBB\n\n"
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_ul_nest1
@@ -54,17 +55,18 @@ EOS
   ** AA
   *** A
 EOS
-    expect = "\n* AAA\n  * AA\n    * A\n\n"
-    ul_helper(src, expect)
+    expected = "\n* AAA\n  * AA\n    * A\n\n"
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_cmd
-    result = @builder.cmd(["lineA","lineB"])
-    assert_equal "```\nlineA\nlineB\n```\n", result
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    assert_equal "```\nlineA\nlineB\n```\n", actual
   end
 
   def test_table
-    result = @builder.table(["testA\ttestB","------------","contentA\tcontentB"])
-    assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", result
+    actual = compile_block("//table{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
+    assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", actual
   end
 end

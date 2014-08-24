@@ -100,21 +100,21 @@ module ReVIEW
 
       # default XHTML header/footer
       header = <<EOT
-<?xml version="1.0" encoding="#{@book.config["outencoding"] || :UTF-8}"?>
+<?xml version="1.0" encoding="#{@book.config["outencoding"] || "UTF-8"}"?>
 EOT
       if @book.config["htmlversion"].to_i == 5
         header += <<EOT
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta charset="#{@book.config["outencoding"] || :UTF-8}" />
+  <meta charset="#{@book.config["outencoding"] || "UTF-8"}" />
 EOT
       else
         header += <<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || :UTF-8}" />
+  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || "UTF-8"}" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
       end
@@ -931,8 +931,11 @@ QUOTE
 
     def inline_m(str)
       if @book.config["mathml"]
-        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
-        %Q[<span class="equation">#{p.parse(str, nil)}</span>]
+        require 'math_ml'
+        require 'math_ml/symbol/character_reference'
+        parser = MathML::LaTeX::Parser.new(
+          :symbol => MathML::Symbol::CharacterReference)
+        %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
       end
@@ -964,7 +967,7 @@ QUOTE
     end
 
     def inline_bib(id)
-      %Q(<a href=".#{@book.bib_file.gsub(/re\Z/, "html")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
+      %Q(<a href="#{@book.bib_file.gsub(/re\Z/, "html")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
     def inline_hd_chap(chap, id)

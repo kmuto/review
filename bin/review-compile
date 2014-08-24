@@ -90,8 +90,6 @@ def _main
   opts.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| config["stylesheet"] = files.split(/\s*,\s*/) }
   opts.on('--mathml', 'Use MathML for TeX equation in HTML') do
     config["mathml"] = true
-    require 'math_ml'
-    require "math_ml/symbol/character_reference"
   end
   opts.on('--htmlversion=VERSION', 'HTML version.') do |v|
     v = v.to_i
@@ -146,7 +144,6 @@ def _main
   begin
     config["builder"] = target
 
-    ReVIEW.book.config = config
     compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
     case mode
     when :files
@@ -157,7 +154,7 @@ def _main
 
       begin
         ReVIEW::Book::Chapter.intern_pathes(ARGV).each do |chap|
-          chap.book.config = config
+          chap.book.config = config # needs only at the first time
           result = compiler.compile(chap)
           if output_filename
             write output_filename, result
@@ -167,8 +164,10 @@ def _main
         end
       rescue => e
         # PART
-        part = ReVIEW.book.parts_in_file.select do |part|
-          ARGV.map{|path| File.basename path}.include? part.path
+        book = ReVIEW::Book::Base.load_default
+        book.config = config
+        part = book.parts_in_file.select do |part_item|
+          ARGV.map{|path| File.basename path}.include? part_item.path
         end
         if part.present?
           result = compiler.compile(part.first)
@@ -182,7 +181,8 @@ def _main
         end
       end
     when :dir
-      book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
+      book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load_default
+      book.config = config
       book.chapters.each do |chap|
         str = compiler.compile(chap)
         write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
