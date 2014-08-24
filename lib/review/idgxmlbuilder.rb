@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2012 Minero Aoki, Kenshi Muto
+#               2008-2014 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -1070,7 +1070,7 @@ module ReVIEW
       rescue
         warn %Q[no such image: #{id}]
       end
-      puts %Q[<caption>#{compile_inline(caption)}</caption>] if !caption.nil? && !caption.empty?
+      puts %Q[<caption>#{compile_inline(caption)}</caption>] if caption.present?
       puts "</img>"
     end
 
