@@ -220,7 +220,7 @@ module ReVIEW
     end
 
     def make_colophon_role(role, config)
-      if !config[role].nil? && !config[role].empty?
+      if config[role].present?
         return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(config[role], ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       else
         ""
@@ -237,13 +237,13 @@ module ReVIEW
 
     def make_authors(config)
       authors = ""
-      if !config["aut"].nil? && !config["aut"].empty?
+      if config["aut"].present?
         authors = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
       end
-      if !config["csl"].nil? && !config["csl"].empty?
+      if config["csl"].present?
         authors += " \\\\\n"+join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
       end
-      if !config["trl"].nil? && !config["trl"].empty?
+      if config["trl"].present?
         authors += " \\\\\n"+join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
       end
       authors
