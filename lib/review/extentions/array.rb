@@ -1,7 +1,3 @@
-#
-# core extensions for Re:VIEW
-#
-
 class Array
 
   # for ReVIEW::Node

@@ -1,4 +1,3 @@
-require 'core_extensions'
 require 'json'
 
 module ReVIEW
