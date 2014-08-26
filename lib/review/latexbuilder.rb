@@ -215,7 +215,7 @@ module ReVIEW
     def paragraph(lines)
       buf = "\n"
       lines.each do |line|
-        buf << line << "\n"
+        buf << line
       end
       buf << "\n"
       buf
@@ -602,7 +602,7 @@ module ReVIEW
     end
 
     def noindent
-      '\noindent' + "\n"
+      '\noindent'
     end
 
     def inline_chapref(id)
