@@ -588,6 +588,11 @@ module ReVIEW
       macro('label', id) + "\n"
     end
 
+    def node_label(node)
+      id = node.args[0].to_raw
+      macro('label', id) + "\n"
+    end
+
     def pagebreak
       '\pagebreak' + "\n"
     end
