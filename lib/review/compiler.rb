@@ -745,7 +745,7 @@ require 'review/node'
       buf << @strategy.dl_begin
       content.each do |element|
         buf << @strategy.dt(element.text.to_doc)
-        buf << @strategy.dd(element.content.map{|s| s.to_doc+"\n"})
+        buf << @strategy.dd(element.content.map{|s| s.to_doc})
       end
       buf << @strategy.dl_end
       buf
