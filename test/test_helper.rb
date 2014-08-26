@@ -41,5 +41,5 @@ end
 
 def compile_block_idgxml(text)
   @chapter.content = text
-  @compiler.compile(@chapter).gsub(/<\/doc>\n/, "")
+  @compiler.compile(@chapter).gsub(/.*<doc xmlns:aid="http:\/\/ns.adobe.com\/AdobeInDesign\/4.0\/">/m,"").gsub(/<\/doc>\n/, "")
 end
