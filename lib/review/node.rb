@@ -82,6 +82,17 @@ module ReVIEW
       end
       @compiler.compile_command(@name, args, content_lines, self)
     end
+
+    def parse_args(*patterns)
+      patterns.map.with_index do |pattern, i|
+        if @args[i]
+          @args[i].__send__("to_#{pattern}")
+        else
+          nil
+        end
+      end
+    end
+
   end
 
   class InlineElementNode < Node

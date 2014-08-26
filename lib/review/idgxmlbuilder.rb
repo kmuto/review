@@ -1108,9 +1108,7 @@ module ReVIEW
     end
 
     def node_indepimage(node)
-      id = node.args[0].to_raw
-      caption = node.args[1] ? node.args[1].to_doc : nil
-      metric = node.args[2] ? node.args[2].to_raw : nil
+      id, caption, metric = node.parse_args(:raw, :doc, :raw)
       buf = ""
       metrics = parse_metric("idgxml", metric)
       buf << "<img>" << @lf
