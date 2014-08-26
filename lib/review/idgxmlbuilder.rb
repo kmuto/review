@@ -1107,6 +1107,24 @@ module ReVIEW
       buf
     end
 
+    def node_indepimage(node)
+      id = node.args[0].to_raw
+      caption = node.args[1] ? node.args[1].to_doc : nil
+      metric = node.args[2] ? node.args[2].to_raw : nil
+      buf = ""
+      metrics = parse_metric("idgxml", metric)
+      buf << "<img>" << @lf
+      begin
+        buf << %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}"#{metrics} />] << @lf
+      rescue
+        warn %Q[no such image: #{id}]
+      end
+      buf << %Q[<caption>#{caption}</caption>] + @lf if caption.present?
+      buf << "</img>" << @lf
+      buf
+    end
+
+
     alias_method :numberlessimage, :indepimage
 
     def label(id)
