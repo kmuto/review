@@ -277,7 +277,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q|\\noindent\nfoo\nbar\n\nfoo2\nbar2\n|, actual
+    assert_equal %Q|\\noindent\nfoobar\n\nfoo2bar2\n|, actual
   end
 
   def test_image
