@@ -84,13 +84,15 @@ module ReVIEW
     end
 
     def parse_args(*patterns)
-      patterns.map.with_index do |pattern, i|
+      ret = []
+      patterns.each_index do |i|
         if @args[i]
-          @args[i].__send__("to_#{pattern}")
+          ret << @args[i].__send__("to_#{patterns[i]}")
         else
-          nil
+          ret << nil
         end
       end
+      ret
     end
 
   end
