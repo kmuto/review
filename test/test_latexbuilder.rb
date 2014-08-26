@@ -420,7 +420,6 @@ EOS
 \\addcontentsline{toc}{subsection}{prev column}
 
 inside prev column
-
 \\end{reviewcolumn}
 
 \\begin{reviewcolumn}
@@ -429,7 +428,6 @@ inside prev column
 \\addcontentsline{toc}{subsection}{test}
 
 inside column
-
 \\end{reviewcolumn}
 EOS
     @config["toclevel"] = 3
@@ -451,9 +449,7 @@ EOS
 \\reviewcolumnhead{}{test}
 
 inside column
-
 \\end{reviewcolumn}
-
 \\subsection*{next level}
 \\label{sec:1-0-1}
 EOS
@@ -539,7 +535,6 @@ EOS
 \\begin{itemize}
 \\item AA
 \\end{itemize}
-
 \\end{itemize}
 EOS
     actual = compile_block(src)
@@ -562,13 +557,11 @@ EOS
 \\begin{itemize}
 \\item AA
 \\end{itemize}
-
 \\item BBB
 
 \\begin{itemize}
 \\item BB
 \\end{itemize}
-
 \\end{itemize}
 EOS
     actual = compile_block(src)
