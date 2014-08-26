@@ -24,7 +24,7 @@ class CompilerTest < Test::Unit::TestCase
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
 
-    def @compiler.compile_command(name, args, lines)
+    def @compiler.compile_command(name, args, lines, node)
       args
     end
 
