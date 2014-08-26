@@ -384,6 +384,16 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, actual
   end
 
+  def test_dlist
+    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    assert_equal %Q|<dl>\n<dt>foo</dt>\n<dd>foo.bar.</dd>\n</dl>\n|, actual
+  end
+
+  def test_dlist_with_bracket
+    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    assert_equal %Q|<dl>\n<dt>foo[bar]</dt>\n<dd>foo.bar.</dd>\n</dl>\n|, actual
+  end
+
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
