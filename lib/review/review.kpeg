@@ -1,6 +1,7 @@
 %% name = ReVIEW::Compiler
 
 %% {
+$KCODE='u' ## for Ruby 1.8 :-(
 
   class Error; end
 
