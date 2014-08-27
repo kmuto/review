@@ -24,11 +24,14 @@ class PDFMakerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         FileUtils.touch(File.join(dir, "sample.pdf"))
+        $stderr = StringIO.new
         assert_raises SystemExit do
           @maker.check_book(@config)
         end
       end
     end
+  ensure
+    $stderr = STDERR
   end
 
   def test_check_book_none
