@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'test_helper'
-require 'review/compiler'
 require 'review/book'
+require 'review/compiler'
 require 'review/latexbuilder'
 require 'review/i18n'
 
