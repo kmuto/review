@@ -3,7 +3,6 @@ require 'test/unit'
 
   def compile_document(str, force_to_s=true)
     @compiler.setup_parser(str)
-    @compiler.tagged_section_init
     @compiler.parse("Document")
     if force_to_s
       @compiler.result.to_doc
@@ -14,7 +13,6 @@ require 'test/unit'
 
   def compile_block(str, force_to_s=true)
     @compiler.setup_parser(str)
-    @compiler.tagged_section_init
     @compiler.parse("Document")
     if force_to_s
       @compiler.result.to_doc
@@ -25,7 +23,6 @@ require 'test/unit'
 
   def compile_inline(str, force_to_s=true)
     @compiler.setup_parser(str)
-    @compiler.tagged_section_init
     @compiler.parse("Paragraph")
     if force_to_s
       @compiler.result.map(&:to_doc).join
@@ -36,7 +33,6 @@ require 'test/unit'
 
   def compile_blockelem(str, force_to_s=true)
     @compiler.setup_parser(str)
-    @compiler.tagged_section_init
     @compiler.parse("BlockElement")
     if force_to_s
       @compiler.result.to_doc
@@ -47,7 +43,6 @@ require 'test/unit'
 
   def compile_headline(str)
     @compiler.setup_parser(str)
-    @compiler.tagged_section_init
     @compiler.parse("Headline")
     @compiler.result.to_doc
   end

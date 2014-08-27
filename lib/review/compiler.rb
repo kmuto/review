@@ -605,22 +605,6 @@ require 'review/node'
     definline :include
 
 
-    def tagged_section_init
-      # noop
-    end
-
-    def open_tagged_section(tag, level, label, caption)
-      #noop
-    end
-
-    def close_tagged_section(tag, level)
-      # noop
-    end
-
-    def close_all_tagged_section
-      # noop
-    end
-
     def compile_column(level, label, caption, content)
       buf = ""
       buf << @strategy.__send__("column_begin", level, label, caption)
@@ -658,32 +642,13 @@ require 'review/node'
       caption ||= ""
       caption.strip!
       index = level - 1
-      # if tag
-      #   if tag !~ /\A\//
-      #     buf << close_current_tagged_section(level)
-      #     buf << open_tagged_section(tag, level, label, caption)
-      #   else
-      #     open_tag = tag[1..-1]
-      #     prev_tag_info = @tagged_section.pop
-      #     if !prev_tag_info || prev_tag_info.first != open_tag
-      #       raise ReVIEW::CompileError, "#{open_tag} is not opened."
-      #     end
-      #     buf << close_tagged_section(*prev_tag_info)
-      #   end
-      # else
-        if @headline_indexs.size > (index + 1)
-          @headline_indexs = @headline_indexs[0..index]
-        end
-        @headline_indexs[index] = 0 if @headline_indexs[index].nil?
-        @headline_indexs[index] += 1
-        # buf << close_current_tagged_section(level)
-        buf << @strategy.headline(level, label, caption)
-      # end
+      if @headline_indexs.size > (index + 1)
+        @headline_indexs = @headline_indexs[0..index]
+      end
+      @headline_indexs[index] = 0 if @headline_indexs[index].nil?
+      @headline_indexs[index] += 1
+      buf << @strategy.headline(level, label, caption)
       buf
-    end
-
-    def close_current_tagged_section(level)
-      # noop
     end
 
     def comment(text)
@@ -1078,7 +1043,7 @@ require 'review/node'
     return _tmp
   end
 
-  # Start = &. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.ast = c }
+  # Start = &. Document:c { @strategy.ast = c }
   def _Start
 
     _save = self.pos
@@ -1090,19 +1055,13 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  tagged_section_init ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
       _tmp = apply(:_Document)
       c = @result
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin;  close_all_tagged_section; @strategy.ast = c ; end
+      @result = begin;  @strategy.ast = c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3952,7 +3911,7 @@ require 'review/node'
 
   Rules = {}
   Rules[:_root] = rule_info("root", "Start")
-  Rules[:_Start] = rule_info("Start", "&. { tagged_section_init } Document:c { close_all_tagged_section; @strategy.ast = c }")
+  Rules[:_Start] = rule_info("Start", "&. Document:c { @strategy.ast = c }")
   Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
