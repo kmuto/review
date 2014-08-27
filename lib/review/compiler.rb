@@ -356,8 +356,6 @@ class ReVIEW::Compiler
   # :startdoc:
 
 
-$KCODE='u' ## for 1.8
-
   class Error; end
 
 require 'review/location'

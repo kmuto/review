@@ -1,3 +1,5 @@
+$KCODE='u' ## for Ruby 1.8 :-(
+
 ##
 # Provides Literals appropriate for your ruby version.
 #--
