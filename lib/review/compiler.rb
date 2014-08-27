@@ -356,6 +356,7 @@ class ReVIEW::Compiler
   # :startdoc:
 
 
+$KCODE='u' ## for 1.8
 
   class Error; end
 
@@ -393,7 +394,7 @@ require 'review/node'
 
     def convert_ast
       ast = @strategy.ast
-      ast = convert_column(ast)
+      convert_column(ast)
       @strategy.output << ast.to_doc
     end
 
