@@ -65,17 +65,11 @@ module ReVIEW
     alias_method :raw_result, :result
 
     def print(*s)
-      raise NotImplementedError, "XXX: do not use print"
-#      @output.print(*s.map{|i|
-#        convert_outencoding(i, @book.param["outencoding"])
-#      })
+      raise NotImplementedError, "XXX: `print` method is obsoleted. Do not use it."
     end
 
     def puts(*s)
-      raise NotImplementedError, "XXX: do not use puts"
-#      @output.puts *s.map{|i|
-#        convert_outencoding(i, @book.param["outencoding"])
-#      }
+      raise NotImplementedError, "XXX: `puts` method is obsoleted. Do not use it."
     end
 
     def target_name
