@@ -456,7 +456,7 @@ EOT
       if !has_part.nil?
         @producer.contents.each do |item|
           item.level += 1 if item.chaptype == "part" || item.chaptype == "body"
-          item.notoc = true if (item.chaptype == "pre" || item.chaptype == "post") && !item.level.nil? && (item.level + 1 == toclevel)
+          item.notoc = true if (item.chaptype == "pre" || item.chaptype == "post") && !item.level.nil? && (item.level + 1 == toclevel) # FIXME: 部があるときに前後の処理が困難
         end
         toclevel += 1
       end
