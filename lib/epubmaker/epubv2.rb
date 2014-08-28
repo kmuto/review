@@ -257,12 +257,14 @@ EOT
     end
 
     # Return cover content.
-    def cover
+    def cover(type=nil)
+      bodyext = type.nil? ? "" : " epub:type=\"#{type}\""
+
       s = common_header
       s << <<EOT
   <title>#{CGI.escapeHTML(@producer.params["title"])}</title>
 </head>
-<body>
+<body#{bodyext}>
 EOT
       if @producer.params["coverimage"].nil?
         s << <<EOT

@@ -235,7 +235,7 @@ EOT
       s =<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/epub" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
 <head>
   <meta charset="UTF-8" />
   <meta name="generator" content="Re:VIEW" />
@@ -246,6 +246,5 @@ EOT
       end
       s
     end
-
   end
 end
