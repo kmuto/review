@@ -4,9 +4,9 @@ require 'yaml'
 module ReVIEW
   class I18n
     def self.setup
-      lfile = File.expand_path "locale.yml", ENV["PWD"]
+      lfile = File.expand_path "locale.yml", Dir.pwd
       # backward compatibility
-      lfile = File.expand_path "locale.yaml", ENV["PWD"] unless File.exist?(lfile)
+      lfile = File.expand_path "locale.yaml", Dir.pwd unless File.exist?(lfile)
       user_i18n = YAML.load_file(lfile)
       I18n.i18n user_i18n["locale"], user_i18n
     rescue
