@@ -32,6 +32,41 @@ class I18nTest < Test::Unit::TestCase
         end
       end
     end
+
+    def test_load_foo_yaml
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "foo.yml")
+          File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
+          I18n.setup("foo.yml")
+          assert_equal "bar", I18n.t("foo")
+        end
+      end
+    end
+
+    def test_update_foo_yaml
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "foo.yml")
+          File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
+          i18n = ReVIEW::I18n.new("ja")
+          i18n.update_localefile(File.join(Dir.pwd, "foo.yml"))
+          assert_equal "bar", i18n.t("foo")
+        end
+      end
+    end
+
+    def test_update_foo_yaml_i18nclass
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "foo.yml")
+          File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
+          I18n.setup(nil)
+          I18n.setup("foo.yml")
+          assert_equal "bar", I18n.t("foo")
+        end
+      end
+    end
   end
 
   def test_ja
@@ -87,6 +122,13 @@ class I18nTest < Test::Unit::TestCase
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
+  end
+
+  def test_update
+    i18n = ReVIEW::I18n.new("ja")
+    hash = {"locale"=>"ja","foo"=>"bar"}
+    i18n.update(hash)
+    assert_equal "bar", i18n.t("foo")
   end
 
   def teardown
