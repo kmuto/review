@@ -10,6 +10,8 @@ require 'tmpdir'
 class I18nTest < Test::Unit::TestCase
   include ReVIEW
 
+  if RUBY_VERSION !~ /^1.8/
+
   def test_load_locale_yml
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
@@ -30,6 +32,8 @@ class I18nTest < Test::Unit::TestCase
         assert_equal "bar", I18n.t("foo")
       end
     end
+  end
+
   end
 
   def test_ja
