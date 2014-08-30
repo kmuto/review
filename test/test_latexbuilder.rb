@@ -324,6 +324,17 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, actual
   end
 
+  def test_indepimage_esc
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block("//indepimage[sean_2_10][sample photo][]\n")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, actual
+  end
+
   def test_indepimage_without_caption
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)

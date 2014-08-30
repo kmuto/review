@@ -31,8 +31,8 @@ class CompilerTest < Test::Unit::TestCase
   end
 
   def test_parse_args
-    args = compile_blockelem("//dummy[foo][bar]\n")
-    assert_equal ["foo","bar"], args
+    args = compile_blockelem("//dummy[foo][bar]\n", false)
+    assert_equal ["foo","bar"], args.parse_args(:doc,:doc)
   end
 
   def test_parse_args_with_brace1

@@ -80,7 +80,7 @@ module ReVIEW
       else
         content_lines = nil
       end
-      @compiler.compile_command(@name, args, content_lines, self)
+      @compiler.compile_command(@name, @args, content_lines, self)
     end
 
     def parse_args(*patterns)

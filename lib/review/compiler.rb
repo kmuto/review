@@ -439,10 +439,11 @@ require 'review/node'
     end
 
     class SyntaxElement
-      def initialize(name, type, argc, &block)
+      def initialize(name, type, argc, esc, &block)
         @name = name
         @type = type
         @argc_spec = argc
+        @esc_patterns = esc
         @checker = block
       end
 
@@ -464,6 +465,20 @@ require 'review/node'
         end
       end
 
+      def parse_args(args)
+        if @esc_patterns
+          args.map.with_index do |pattern, i|
+            if @esc_patterns[i]
+              args[i].__send__("to_#{@esc_patterns[i]}")
+            else
+              args[i].to_doc
+            end
+          end
+        else
+          args.map(&:to_doc)
+        end
+      end
+
       def block_required?
         @type == :block
       end
@@ -475,16 +490,16 @@ require 'review/node'
 
     SYNTAX = {}
 
-    def self.defblock(name, argc, optional = false, &block)
-      defsyntax name, (optional ? :optional : :block), argc, &block
+    def self.defblock(name, argc, optional = false, esc = nil, &block)
+      defsyntax(name, (optional ? :optional : :block), argc, esc, &block)
     end
 
     def self.defsingle(name, argc, &block)
       defsyntax name, :line, argc, &block
     end
 
-    def self.defsyntax(name, type, argc, &block)
-      SYNTAX[name] = SyntaxElement.new(name, type, argc, &block)
+    def self.defsyntax(name, type, argc, esc = nil, &block)
+      SYNTAX[name] = SyntaxElement.new(name, type, argc, esc, &block)
     end
 
     def syntax_defined?(name)
@@ -515,12 +530,12 @@ require 'review/node'
 
     defblock :read, 0
     defblock :lead, 0
-    defblock :list, 2
+    defblock :list, 2, nil, [:raw,:doc]
     defblock :emlist, 0..1
     defblock :cmd, 0..1
     defblock :table, 0..2
     defblock :quote, 0
-    defblock :image, 2..3, true
+    defblock :image, 2..3, true, [:raw,:doc,:raw]
     defblock :source, 0..1
     defblock :listnum, 2
     defblock :emlistnum, 0..1
@@ -725,7 +740,8 @@ require 'review/node'
       if @strategy.respond_to?(node_name)
         @strategy.__send__(node_name, node)
       else
-        @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+        args_conv = syntax.parse_args(args)
+        @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args_conv)
       end
     end
 
@@ -741,7 +757,8 @@ require 'review/node'
       if @strategy.respond_to?(node_name)
         @strategy.__send__(node_name, node)
       else
-        @strategy.__send__(syntax.name, *args)
+        args_conv = syntax.parse_args(args)
+        @strategy.__send__(syntax.name, *args_conv)
       end
     end
 
