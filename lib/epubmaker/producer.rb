@@ -101,7 +101,8 @@ module EPUBMaker
     # If Producer#params["coverimage"] is defined, it will be used for
     # the cover image.
     def cover(wobj)
-      s = @epub.cover
+      type = (@params["epubversion"] >= 3) ? "cover" : nil
+      s = @epub.cover(type)
       wobj.puts s if !s.nil? && !wobj.nil?
     end
 

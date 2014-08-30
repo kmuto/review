@@ -85,21 +85,48 @@ EOT
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
-          s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:creator>\n]
-          s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n]
+          if v.instance_of?(Hash)
+            s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:creator>\n]
+            s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n]
+            v.each_pair do |name, val|
+              next if name == "name"
+              s << %Q[    <meta refines="##{role.sub('a-', '')}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n]
+            end
+          else
+            s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:creator>\n]
+            s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n]
+          end
         end
       end
 
       # contributor (should be array)
-      %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
+      %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pbd pbl pht prt red rev spn ths trc trl].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
-          s << %Q[    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
-          s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
+          if v.instance_of?(Hash)
+            s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:creator>\n]
+            s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
+            v.each_pair do |name, val|
+              next if name == "name"
+              s << %Q[    <meta refines="##{role}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n]
+            end
+          else
+            s << %Q[    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
+            s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
+          end
 
-          if role == "prt"
-            s << %Q[    <dc:publisher id="prt">#{CGI.escapeHTML(v)}</dc:publisher>\n]
-            s << %Q[    <meta refines="#prt" property="role" scheme="marc:relators">prt</meta>\n]
+          if role == "prt" || role == "pbl"
+            if v.instance_of?(Hash)
+              s << %Q[    <dc:publisher id="pub-#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:publisher>\n]
+              s << %Q[    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
+              v.each_pair do |name, val|
+                next if name == "name"
+                s << %Q[    <meta refines="#pub-#{role}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n]
+              end
+            else
+              s << %Q[    <dc:publisher id="pub-#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:publisher>\n]
+              s << %Q[    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">prt</meta>\n]
+            end
           end
         end
       end
@@ -208,7 +235,7 @@ EOT
       s =<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/epub" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
 <head>
   <meta charset="UTF-8" />
   <meta name="generator" content="Re:VIEW" />
@@ -219,6 +246,5 @@ EOT
       end
       s
     end
-
   end
 end
