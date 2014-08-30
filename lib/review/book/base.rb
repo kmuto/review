@@ -156,12 +156,12 @@ module ReVIEW
         @config ||= Configure.values
       end
 
-      # backword compatible
+      # backward compatible
       def param=(param)
         @config = param
       end
 
-      # backword compatible
+      # backward compatible
       def param
         @config
       end
