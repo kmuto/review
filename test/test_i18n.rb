@@ -10,30 +10,28 @@ require 'tmpdir'
 class I18nTest < Test::Unit::TestCase
   include ReVIEW
 
-  if RUBY_VERSION !~ /^1.8/
-
-  def test_load_locale_yml
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        file = File.join(dir, "locale.yml")
-        File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
-        I18n.setup
-        assert_equal "bar", I18n.t("foo")
+  if RUBY_VERSION !~ /^1.8/  ## to avoid Travis error :-(
+    def test_load_locale_yml
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
+          I18n.setup
+          assert_equal "bar", I18n.t("foo")
+        end
       end
     end
-  end
 
-  def test_load_locale_yaml
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        file = File.join(dir, "locale.yaml")
-        File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
-        I18n.setup
-        assert_equal "bar", I18n.t("foo")
+    def test_load_locale_yaml
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yaml")
+          File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
+          I18n.setup
+          assert_equal "bar", I18n.t("foo")
+        end
       end
     end
-  end
-
   end
 
   def test_ja
