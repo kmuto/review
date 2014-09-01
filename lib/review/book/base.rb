@@ -53,6 +53,7 @@ module ReVIEW
         @parts = nil
         @chapter_index = nil
         @config = ReVIEW::Configure.values
+        @catalog = nil
       end
 
       def bib_file
@@ -155,12 +156,12 @@ module ReVIEW
         @config ||= Configure.values
       end
 
-      # backword compatible
+      # backward compatible
       def param=(param)
         @config = param
       end
 
-      # backword compatible
+      # backward compatible
       def param
         @config
       end
