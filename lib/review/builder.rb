@@ -42,7 +42,7 @@ module ReVIEW
       @chapter = chapter
       @location = location
       @output = StringIO.new
-      @book = @chapter.book
+      @book = @chapter.book if @chapter.present?
       @tabwidth = nil
       if @book && @book.config && @book.config["tabwidth"]
         @tabwidth = @book.config["tabwidth"]
