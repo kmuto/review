@@ -57,7 +57,7 @@ def main
     exit 1
   end
 
-  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load_deafult
+  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load_default
   book.config = @config
   if part_sensitive
     sep = ""
