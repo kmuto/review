@@ -553,8 +553,8 @@ EOT
     end
 
     def export_zip(tmpdir, epubfile)
-      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage1"]} #{epubfile} mimetype") }
-      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}") }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage1"]} #{epubfile} mimetype` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}` }
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)
