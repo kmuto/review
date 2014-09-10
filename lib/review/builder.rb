@@ -370,6 +370,7 @@ module ReVIEW
       cmd = cmds[command.to_sym]
       warn cmd
       system cmd
+      @chapter.image_index.image_finder.add_entry(file_path)
 
       image(lines, id, caption ||= "")
     end
