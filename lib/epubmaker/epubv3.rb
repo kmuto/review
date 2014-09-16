@@ -82,7 +82,7 @@ EOT
       end
 
       # creator (should be array)
-      %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
+      %w[a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl aut].each do |role|
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
           if v.instance_of?(Hash)
@@ -104,7 +104,7 @@ EOT
         next if @producer.params[role].nil?
         @producer.params[role].each_with_index do |v, i|
           if v.instance_of?(Hash)
-            s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:creator>\n]
+            s << %Q[    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:contributor>\n]
             s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
             v.each_pair do |name, val|
               next if name == "name"
