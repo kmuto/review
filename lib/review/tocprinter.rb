@@ -126,9 +126,12 @@ module ReVIEW
           end
         end
       end
+      layout_file = File.join(book.basedir, "layouts", "layout.html.erb")
+      unless File.exist?(layout_file) # backward compatibility
+        layout_file = File.join(book.basedir, "layouts", "layout.erb")
+      end
       puts HTMLLayout.new(
-        {'body' => html, 'title' => "目次"},
-        File.join(book.basedir, "layouts", "layout.erb")).result
+        {'body' => html, 'title' => "目次"}, layout_file).result
     end
 
     private

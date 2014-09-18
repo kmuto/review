@@ -63,7 +63,10 @@ module ReVIEW
     private :builder_init_file
 
     def result
-      layout_file = File.join(@book.basedir, "layouts", "layout.erb")
+      layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
+      unless File.exist?(layout_file) # backward compatibility
+        layout_file = File.join(@book.basedir, "layouts", "layout.erb")
+      end
       if File.exist?(layout_file)
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."

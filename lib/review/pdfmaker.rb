@@ -259,7 +259,7 @@ module ReVIEW
 
       custom_titlepage = make_custom_titlepage(config["coverfile"])
 
-      template = File.expand_path('review.tex.erb', File.dirname(__FILE__))
+      template = File.expand_path('layout.tex.erb', File.dirname(__FILE__))
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
       if File.exist?(layout_file)
         template = layout_file

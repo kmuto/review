@@ -1,3 +1,7 @@
+Thu Sep 18 13:48:24 2014  KADO Masanori  <kdmsnr@gmail.com>
+
+	* bin/review-init, doc/format.rdoc, lib/review/htmlbuilder.rb, lib/review/pdfmaker.rb, lib/review/tocprinter.rb, lib/review/review.tex.erb: change the name of layout template files to "layout.html.erb" and "layout.tex.erb"
+
 Wed Aug 20 17:15:04 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/book/chapter.rb: remove unused method Chapter.for_stdin and Chapter.for_path
