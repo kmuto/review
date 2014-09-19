@@ -505,7 +505,9 @@ EOT
 
     def emlist(lines, caption = nil)
       puts %Q[<div class="emlist-code">]
-      puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       print %Q[<pre class="emlist">]
       lines.each do |line|
         puts detab(line)
@@ -516,7 +518,9 @@ EOT
 
     def emlistnum(lines, caption = nil)
       puts %Q[<div class="emlistnum-code">]
-      puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       print %Q[<pre class="emlist">]
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
@@ -527,7 +531,9 @@ EOT
 
     def cmd(lines, caption = nil)
       puts %Q[<div class="cmd-code">]
-      puts %Q(<p class="caption">#{caption}</p>) unless caption.nil?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       print %Q[<pre class="cmd">]
       lines.each do |line|
         puts detab(line)
