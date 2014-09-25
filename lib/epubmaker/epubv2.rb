@@ -229,7 +229,7 @@ EOT
         s << <<EOT
     <navPoint id="nav-#{nav_count}" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{indent[level]}#{item.title}</text>
+        <text>#{indent[level]}#{CGI.escapeHTML(item.title)}</text>
       </navLabel>
       <content src="#{item.file}"/>
     </navPoint>
@@ -508,7 +508,7 @@ EOT
       @producer.contents.each do |item|
         next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
         is = indent == true ? "　" * item.level : ""
-        s << %Q[<li><a href="#{item.file}">#{is}#{item.title}</a></li>\n]
+        s << %Q[<li><a href="#{item.file}">#{is}#{CGI.escapeHTML(item.title)}</a></li>\n]
       end
       s << %Q[</#{type}>\n]
 
