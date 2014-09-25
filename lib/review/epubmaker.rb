@@ -11,6 +11,7 @@ require 'review'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
+require 'cgi'
 
 module ReVIEW
  class EPUBMaker
@@ -510,7 +511,7 @@ EOT
 
     def text(text)
       unless @level.nil?
-        @content << text.gsub("\t", "　") # FIXME:区切り文字
+        @content << CGI.escapeHTML(text.gsub("\t", "　")) # FIXME:区切り文字
       end
     end
   end
