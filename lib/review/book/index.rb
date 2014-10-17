@@ -335,10 +335,7 @@ module ReVIEW
         @chap = chap
         @index = {}
         items.each do |i|
-          unless @index[i.id].nil?
-            warn items
-            warn "warning: duplicate ID: #{i.id}"
-          end
+          warn "warning: duplicate ID: #{i.id}" unless @index[i.id].nil?
           @index[i.id] = i
         end
       end
