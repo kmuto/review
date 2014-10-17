@@ -294,10 +294,24 @@ module ReVIEW
         items = []
         indexs = []
         headlines = []
+        inside_column = false
         src.each do |line|
           if m = HEADLINE_PATTERN.match(line)
             next if m[1].size > 10 # Ignore too deep index
-            next if m[2] == 'column' ||  m[2] == '/column'
+
+            # column
+            if m[2] == 'column'
+              inside_column = true
+              next
+            end
+            if m[2] == '/column'
+              inside_column = false
+              next
+            end
+            if inside_column
+              next
+            end
+
             index = m[1].size - 2
             if index >= 0
               if indexs.size > (index + 1)
@@ -321,7 +335,10 @@ module ReVIEW
         @chap = chap
         @index = {}
         items.each do |i|
-          warn "warning: duplicate ID: #{i.id}" unless @index[i.id].nil?
+          unless @index[i.id].nil?
+            warn items
+            warn "warning: duplicate ID: #{i.id}"
+          end
           @index[i.id] = i
         end
       end
