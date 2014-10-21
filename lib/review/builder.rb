@@ -190,7 +190,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      @chapter.env.chapter_index.title(id)
+      compile_inline @chapter.env.chapter_index.title(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")

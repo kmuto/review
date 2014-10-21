@@ -816,10 +816,11 @@ QUOTE
     end
 
     def inline_title(id)
+      title = super
       if @book.config["chapterlink"]
-        %Q(<a href="./#{id}#{extname}">#{compile_inline(@chapter.env.chapter_index.title(id))}</a>)
+        %Q(<a href="./#{id}#{extname}">#{title}</a>)
       else
-        @chapter.env.chapter_index.title(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"
