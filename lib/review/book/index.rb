@@ -298,6 +298,7 @@ module ReVIEW
         src.each do |line|
           if m = HEADLINE_PATTERN.match(line)
             next if m[1].size > 10 # Ignore too deep index
+            index = m[1].size - 2
 
             # column
             if m[2] == 'column'
@@ -308,11 +309,13 @@ module ReVIEW
               inside_column = false
               next
             end
+            if indexs.present? and indexs[-1] <= index
+              inside_column = false
+            end
             if inside_column
               next
             end
 
-            index = m[1].size - 2
             if index >= 0
               if indexs.size > (index + 1)
                 indexs = indexs.take(index + 1)

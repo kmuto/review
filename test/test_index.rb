@@ -35,7 +35,9 @@ class IndexTest < Test::Unit::TestCase
 == sec1-2
 === sec1-2-1
 ===[column] column1
+==== inside_column
 ===[/column]
+===[column] column2
 === sec1-2-2
 == sec1-3
 ==== sec1-3-0-1
