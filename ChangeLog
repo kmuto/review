@@ -1,3 +1,7 @@
+Wed Oct 29 18:54:28 2014  KADO Masanori  <kdmsnr@gmail.com>
+
+	* Release 1.4.0.
+
 Thu Sep 18 13:48:24 2014  KADO Masanori  <kdmsnr@gmail.com>
 
 	* bin/review-init, doc/format.rdoc, lib/review/htmlbuilder.rb, lib/review/pdfmaker.rb, lib/review/tocprinter.rb, lib/review/review.tex.erb: change the name of layout template files to "layout.html.erb" and "layout.tex.erb"
