@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2002-2009 Minero Aoki
+# Copyright (c) 2002-2014 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -11,6 +11,7 @@ require 'review/book/index'
 require 'review/exception'
 require 'review/textutils'
 require 'review/compiler'
+require 'review/sec_counter'
 require 'stringio'
 require 'cgi'
 
@@ -51,6 +52,7 @@ module ReVIEW
     end
 
     def builder_init_file
+      @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
 
@@ -75,6 +77,14 @@ module ReVIEW
     def target_name
       self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
     end
+
+    def headline_prefix(level)
+      @sec_counter.inc(level)
+      anchor = @sec_counter.anchor(level)
+      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
+      [prefix, anchor]
+    end
+    private :headline_prefix
 
     def list(lines, id, caption)
       begin

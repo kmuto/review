@@ -13,7 +13,6 @@
 require 'review/builder'
 require 'review/latexutils'
 require 'review/textutils'
-require 'review/sec_counter'
 
 module ReVIEW
 
@@ -74,15 +73,6 @@ module ReVIEW
       5 => 'paragraph',
       6 => 'subparagraph'
     }
-
-    def headline_prefix(level)
-      @sec_counter.inc(level)
-      anchor = @sec_counter.anchor(level)
-      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
-      [prefix, anchor]
-    end
-    private :headline_prefix
-
 
     def headline(level, label, caption)
       _, anchor = headline_prefix(level)

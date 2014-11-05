@@ -66,6 +66,7 @@ module ReVIEW
       @subsection = 0
       @subsubsection = 0
       @subsubsubsection = 0
+      @sec_counter = SecCounter.new(5, @chapter)
       @column = 0
       @noindent = nil
       @rootelement = "doc"
@@ -73,7 +74,6 @@ module ReVIEW
       @tsize = nil
       @texblockequation = 0
       @texinlineequation = 0
-
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
       if @book.config["nolf"].present?
@@ -142,7 +142,6 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
-      prefix = ""
       case level
       when 1
         unless @secttags.nil?
@@ -154,19 +153,6 @@ module ReVIEW
 
         print %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
 
-        if @chapter.number.blank?
-          prefix = ""
-        else
-          placeholder = if @chapter.is_a? ReVIEW::Book::Part
-                          level = 0
-                          'part'
-                        elsif @chapter.on_APPENDIX?
-                          'appendix'
-                        else
-                          'chapter'
-                        end
-          prefix = "#{I18n.t(placeholder, @chapter.number)}#{I18n.t("chapter_postfix")}"
-        end
         @section = 0
         @subsection = 0
         @subsubsection = 0
@@ -180,14 +166,7 @@ module ReVIEW
         end
         @section += 1
         print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 2
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}#{I18n.t("chapter_postfix")}"
-          end
-        end
-
+      
         @subsection = 0
         @subsubsection = 0
         @subsubsubsection = 0
@@ -200,13 +179,6 @@ module ReVIEW
 
         @subsection += 1
         print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 3
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
 
         @subsubsection = 0
         @subsubsubsection = 0
@@ -218,13 +190,6 @@ module ReVIEW
 
         @subsubsection += 1
         print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 4
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
 
         @subsubsubsection = 0
       when 5
@@ -234,19 +199,12 @@ module ReVIEW
 
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 5
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
-
       else
         raise "caption level too deep or unsupported: #{level}"
       end
 
-      prefix = "" if (level.to_i > @book.config["secnolevel"])
+      prefix, anchor = headline_prefix(level)
+
       label = label.nil? ? "" : " id=\"#{label}\""
       toccaption = escape_html(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>)

@@ -13,7 +13,6 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/htmllayout'
 require 'review/textutils'
-require 'review/sec_counter'
 
 module ReVIEW
 
@@ -191,14 +190,6 @@ EOT
       }.join('') +
       "</ul>\n"
     end
-
-    def headline_prefix(level)
-      @sec_counter.inc(level)
-      anchor = @sec_counter.anchor(level)
-      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
-      [prefix, anchor]
-    end
-    private :headline_prefix
 
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
