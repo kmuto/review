@@ -1,3 +1,9 @@
+Wed Nov  5 19:11:02 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:
+	  stop providing a index from @<ttb>.
+	  That behavior just makes a confuse.
+
 Wed Oct 29 18:54:28 2014  KADO Masanori  <kdmsnr@gmail.com>
 
 	* Release 1.4.0.

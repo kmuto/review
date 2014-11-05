@@ -136,12 +136,12 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_ttb
     actual = compile_inline("@<ttb>{test * <>\"}")
-    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, actual
+    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt>|, actual
   end
 
   def test_inline_ttbold
     actual = compile_inline("@<ttbold>{test * <>\"}")
-    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt><index value='test ESCAPED_ASTERISK &lt;&gt;&quot;' />|, actual
+    assert_equal %Q|<tt style='bold'>test * &lt;&gt;&quot;</tt>|, actual
   end
 
   def test_inline_balloon

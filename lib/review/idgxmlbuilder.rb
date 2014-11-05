@@ -716,8 +716,7 @@ module ReVIEW
     end
 
     def inline_ttb(str)
-      index = escape_html(str).gsub(/<.*?>/, "").gsub(/\*/, "ESCAPED_ASTERISK").gsub(/'/, "&#27;")
-      %Q(<tt style='bold'>#{escape_html(str)}</tt><index value='#{index}' />)
+      %Q(<tt style='bold'>#{escape_html(str)}</tt>)
     end
 
     alias_method :inline_ttbold, :inline_ttb
