@@ -229,7 +229,7 @@ EOT
         s << <<EOT
     <navPoint id="nav-#{nav_count}" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{indent[level]}#{item.title}</text>
+        <text>#{indent[level]}#{CGI.escapeHTML(item.title)}</text>
       </navLabel>
       <content src="#{item.file}"/>
     </navPoint>
@@ -508,7 +508,7 @@ EOT
       @producer.contents.each do |item|
         next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params["toclevel"].to_i
         is = indent == true ? "　" * item.level : ""
-        s << %Q[<li><a href="#{item.file}">#{is}#{item.title}</a></li>\n]
+        s << %Q[<li><a href="#{item.file}">#{is}#{CGI.escapeHTML(item.title)}</a></li>\n]
       end
       s << %Q[</#{type}>\n]
 
@@ -553,8 +553,8 @@ EOT
     end
 
     def export_zip(tmpdir, epubfile)
-      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage1"]} #{epubfile} mimetype") }
-      Dir.chdir(tmpdir) {|d| system("#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}") }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage1"]} #{epubfile} mimetype` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}` }
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)

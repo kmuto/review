@@ -190,7 +190,7 @@ EOT
 
   def stage3
     # add more items
-    @producer.contents << Content.new({"file" => "ch01.html", "title" => "CH01", "level" => 1})
+    @producer.contents << Content.new({"file" => "ch01.html", "title" => "CH01<>&\"", "level" => 1})
     @producer.contents << Content.new({"file" => "ch02.html", "title" => "CH02", "level" => 1})
     @producer.contents << Content.new({"file" => "ch02.html#S1", "title" => "CH02.1", "level" => 2})
     @producer.contents << Content.new({"file" => "ch02.html#S1.1", "title" => "CH02.1.1", "level" => 3})
@@ -214,7 +214,7 @@ EOT
   def test_stage3_add_various_items
     stage3
     expect = [
-              Content.new("ch01.html", "ch01-html", "application/xhtml+xml", "CH01", 1),
+              Content.new("ch01.html", "ch01-html", "application/xhtml+xml", "CH01<>&\"", 1),
               Content.new("ch02.html", "ch02-html", "application/xhtml+xml", "CH02", 1),
               Content.new("ch02.html#S1", "ch02-html#S1","html#s1","CH02.1", 2),
               Content.new("ch02.html#S1.1", "ch02-html#S1-1", "1", "CH02.1.1", 3),
@@ -306,7 +306,7 @@ EOT
     </navPoint>
     <navPoint id="nav-2" playOrder="2">
       <navLabel>
-        <text>CH01</text>
+        <text>CH01&lt;&gt;&amp;&quot;</text>
       </navLabel>
       <content src="ch01.html"/>
     </navPoint>
@@ -404,7 +404,7 @@ EOT
 <body>
   <h1 class="toc-title">Table of Contents</h1>
 
-<ul class="toc-h1"><li><a href="ch01.html">CH01</a></li>
+<ul class="toc-h1"><li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
 <li><a href="ch02.html">CH02</a>
 <ul class="toc-h2"><li><a href="ch02.html#S1">CH02.1</a></li>
 <li><a href="ch02.html#S2">CH02.2</a></li>
@@ -436,7 +436,7 @@ EOT
 <body>
   <h1 class="toc-title">Table of Contents</h1>
 <ul class="toc-h1">
-<li><a href="ch01.html">CH01</a></li>
+<li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
 <li><a href="ch02.html">CH02</a></li>
 <li><a href="ch02.html#S1">CH02.1</a></li>
 <li><a href="ch02.html#S2">CH02.2</a></li>

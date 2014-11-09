@@ -25,6 +25,13 @@ module ReVIEW
         Dir.glob(File.join(@basedir, "**/*.*"))
       end
 
+      def add_entry(path)
+        unless @entries.include?(path)
+          @entries << path
+        end
+        @entries
+      end
+
       def find_path(id)
         targets = target_list(id)
         targets.each do |target|

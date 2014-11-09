@@ -66,6 +66,7 @@ module ReVIEW
       @subsection = 0
       @subsubsection = 0
       @subsubsubsection = 0
+      @sec_counter = SecCounter.new(5, @chapter)
       @column = 0
       @noindent = nil
       @rootelement = "doc"
@@ -76,10 +77,10 @@ module ReVIEW
 
       @output << %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       @output << %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
-      if @book.config["nolf"].nil?
-        @lf = "\n"
-      else
+      if @book.config["nolf"].present?
         @lf = ""
+      else
+        @lf = "\n"
       end
       @secttags = true unless @book.config["structuredxml"].nil?
     end
@@ -141,7 +142,6 @@ module ReVIEW
 
     def headline(level, label, caption)
       buf = ""
-      prefix = ""
       case level
       when 1
         unless @secttags.nil?
@@ -150,22 +150,7 @@ module ReVIEW
           buf << "</sect2>" if @subsection > 0
           buf << "</sect>" if @section > 0
         end
-
         buf << %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
-
-        if @chapter.number.blank?
-          prefix = ""
-        else
-          placeholder = if @chapter.is_a? ReVIEW::Book::Part
-                          level = 0
-                          'part'
-                        elsif @chapter.on_APPENDIX?
-                          'appendix'
-                        else
-                          'chapter'
-                        end
-          prefix = "#{I18n.t(placeholder, @chapter.number)}#{I18n.t("chapter_postfix")}"
-        end
         @section = 0
         @subsection = 0
         @subsubsection = 0
@@ -179,14 +164,6 @@ module ReVIEW
         end
         @section += 1
         buf << %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 2
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}#{I18n.t("chapter_postfix")}"
-          end
-        end
-
         @subsection = 0
         @subsubsection = 0
         @subsubsubsection = 0
@@ -196,17 +173,8 @@ module ReVIEW
           buf << "</sect3>" if @subsubsection > 0
           buf << "</sect2>" if @subsection > 0
         end
-
         @subsection += 1
         buf << %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 3
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
-
         @subsubsection = 0
         @subsubsubsection = 0
       when 4
@@ -214,17 +182,8 @@ module ReVIEW
           buf << "</sect4>" if @subsubsubsection > 0
           buf << "</sect3>" if @subsubsection > 0
         end
-
         @subsubsection += 1
         buf << %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 4
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
-
         @subsubsubsection = 0
       when 5
         unless @secttags.nil?
@@ -233,19 +192,12 @@ module ReVIEW
 
         @subsubsubsection += 1
         buf << %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) unless @secttags.nil?
-        if @book.config["secnolevel"] >= 5
-          if @chapter.number.blank? or @chapter.on_APPENDIX?
-            prefix = ""
-          else
-            prefix = "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}#{I18n.t("chapter_postfix")}"
-          end
-        end
-
       else
         raise "caption level too deep or unsupported: #{level}"
       end
 
-      prefix = "" if (level.to_i > @book.config["secnolevel"])
+      prefix, anchor = headline_prefix(level)
+
       label = label.nil? ? "" : " id=\"#{label}\""
       toccaption = escape_html(caption.gsub(/@<fn>\{.+?\}/, '').gsub(/<[^>]+>/, ''))
       buf << %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{caption}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>) << @lf
@@ -782,8 +734,7 @@ module ReVIEW
     end
 
     def inline_ttb(str)
-      index = str.gsub(/<.*?>/, "").gsub(/\*/, "ESCAPED_ASTERISK").gsub(/'/, "&#27;")
-      %Q(<tt style='bold'>#{str}</tt><index value='#{index}' />)
+      %Q(<tt style='bold'>#{str}</tt>)
     end
 
     alias_method :inline_ttbold, :inline_ttb
@@ -1208,10 +1159,11 @@ module ReVIEW
     end
 
     def inline_title(id)
+      title = super
       if @book.config["chapterlink"]
-        %Q(<link href="#{id}">#{@chapter.env.chapter_index.title(id)}</link>)
+        %Q(<link href="#{id}">#{title}</link>)
       else
-        @chapter.env.chapter_index.title(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"

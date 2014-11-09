@@ -13,7 +13,6 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/htmllayout'
 require 'review/textutils'
-require 'review/sec_counter'
 
 module ReVIEW
 
@@ -63,7 +62,10 @@ module ReVIEW
     private :builder_init_file
 
     def result
-      layout_file = File.join(@book.basedir, "layouts", "layout.erb")
+      layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
+      unless File.exist?(layout_file) # backward compatibility
+        layout_file = File.join(@book.basedir, "layouts", "layout.erb")
+      end
       if File.exist?(layout_file)
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
@@ -188,14 +190,6 @@ EOT
       }.join('') +
       "</ul>\n"
     end
-
-    def headline_prefix(level)
-      @sec_counter.inc(level)
-      anchor = @sec_counter.anchor(level)
-      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
-      [prefix, anchor]
-    end
-    private :headline_prefix
 
     def headline(level, label, caption)
       buf = ""
@@ -519,7 +513,9 @@ EOT
 
     def emlist(lines, caption = nil)
       buf = %Q[<div class="emlist-code">\n]
-      buf << %Q(<p class="caption">#{caption}</p>\n) unless caption.nil?
+      if caption.present?
+        buf << %Q(<p class="caption">#{caption}</p>\n)
+      end
       buf << %Q[<pre class="emlist">]
       lines.each do |line|
         buf << detab(line) << "\n"
@@ -531,7 +527,9 @@ EOT
 
     def emlistnum(lines, caption = nil)
       buf = %Q[<div class="emlistnum-code">\n]
-      buf << %Q(<p class="caption">#{caption}</p>\n) unless caption.nil?
+      if caption.present?
+        buf << %Q(<p class="caption">#{caption}</p>\n)
+      end
       buf << %Q[<pre class="emlist">\n]
       lines.each_with_index do |line, i|
         buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
@@ -543,7 +541,9 @@ EOT
 
     def cmd(lines, caption = nil)
       buf = %Q[<div class="cmd-code">\n]
-      buf << %Q(<p class="caption">#{caption}</p>\n) unless caption.nil?
+      if caption.present?
+        buf << %Q(<p class="caption">#{caption}</p>\n)
+      end
       buf << %Q[<pre class="cmd">]
       lines.each do |line|
         buf << detab(line) << "\n"
@@ -838,10 +838,11 @@ QUOTE
     end
 
     def inline_title(id)
+      title = super
       if @book.config["chapterlink"]
-        %Q(<a href="./#{id}#{extname}">#{@chapter.env.chapter_index.title(id)}</a>)
+        %Q(<a href="./#{id}#{extname}">#{title}</a>)
       else
-        @chapter.env.chapter_index.title(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"
