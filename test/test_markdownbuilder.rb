@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 require 'test_helper'
-require 'review'
 require 'review/compiler'
 require 'review/book'
 require 'review/markdownbuilder'
