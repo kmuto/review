@@ -153,7 +153,13 @@ module ReVIEW
           system("#{texcommand} -kanji=#{kanji} book.tex")
         end
         if File.exist?("book.dvi")
-          system("dvipdfmx -d 5 book.dvi")
+          opt = "-d 5"
+          if config.has_key?("pdffontmap")
+            opt << " -f #{config["pdffontmap"]}"
+          end
+          cmd = "dvipdfmx #{opt} book.dvi"
+          $stderr.puts cmd
+          system(cmd)
         end
       }
       FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
