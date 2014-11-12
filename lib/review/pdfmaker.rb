@@ -22,6 +22,10 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
+    def system(*args)
+      Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
+    end
+
     def error(msg)
       $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
       exit 1
