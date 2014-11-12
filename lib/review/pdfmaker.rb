@@ -22,7 +22,7 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
-    def system(*args)
+    def system_or_raise(*args)
       Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
     end
 
@@ -154,10 +154,10 @@ module ReVIEW
         end
         texcommand = config["texcommand"] || "platex"
         3.times do
-          system("#{texcommand} -kanji=#{kanji} book.tex")
+          system_or_raise("#{texcommand} -kanji=#{kanji} book.tex")
         end
         if File.exist?("book.dvi")
-          system("dvipdfmx -d 5 book.dvi")
+          system_or_raise("dvipdfmx -d 5 book.dvi")
         end
       }
       FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
@@ -200,7 +200,7 @@ module ReVIEW
           }
           system("extractbb", *images)
           unless system("extractbb", "-m", *images)
-            system("ebb", *images)
+            system_or_raise("ebb", *images)
           end
         end
       end
