@@ -344,7 +344,24 @@ module ReVIEW
       end
 
       def number(id)
-        return ([@chap.number] + @index.fetch(id).number).join(".")
+        n = @chap.number
+        begin
+          if @chap.on_APPENDIX? && @chap.number > 1 && @chap.number < 28
+            type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
+            n = case type
+                when "roman"
+                  ROMAN[@chap.number]
+                when "alphabet", "alpha"
+                  ALPHA[@chap.number]
+                else
+                  # nil, "arabic", etc...
+                  "#{@chap.number}"
+                end
+          end
+        rescue
+          # FIXME
+        end
+        return ([n] + @index.fetch(id).number).join(".")
       end
     end
 

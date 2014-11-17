@@ -1,3 +1,9 @@
+Mon Nov 17 09:28:21 2014  Kenshi Muto  <kmuto@debian.org>
+
+	* lib/review/book/chapter.rb, lib/review/book/index.rb:
+	fix @<hd> to show appendix correctly with respecting
+	appendix_format yaml parameter.
+
 Wed Nov  5 19:11:02 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/idgxmlbuilder.rb, test/test_idgxmlbuilder.rb:
