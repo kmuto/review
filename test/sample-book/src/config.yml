@@ -6,50 +6,172 @@
 
 # ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
 bookname: book
+# 記述言語。省略した場合はja
+language: ja
 # 書名
 booktitle: Re:VIEWサンプル書籍
-# 著者
+# 固有IDに使用するドメイン。省略した場合は時刻に基づくランダムUUIDが入る
+urnid: urn:uid:http://tatsu-zine.com/books/review-sample-book/1.0.0/
+# ISBN。省略した場合はurnidが入る
+# isbn: null
+# 著者名。["高橋征義", "John Doe"] のように配列を使うことで複数指定可
 aut: 高橋征義
+# 出版社。配列書式で複数指定可能
 prt: 達人出版会
-prt_url:  http://github.com/takahashim/review-sample-book/
+# 編集者。配列書式で複数指定可能
 edt: 高橋征義
+# 刊行日。YYYY-MM-DD形式。省略した場合は本日の日付
 date: 2011-08-03
-rights: |
-  (C) 2011 Masayoshi Takahashi
-description: 
-# 以下はオプション
-# prt: 出版社
-# asn: Associated name
-# ant: Bibliographic antecedent
-# clb: 貢献者
-# edt: 編集者
+# 発行年月。YYYY-MM-DD形式による配列指定。省略した場合はdateを使用する
+# 複数指定する場合は次のように記述する
+# [["初版第第1刷の日付", "初版第第2刷の日付"], ["第2版第1刷の日付"]]
+# 日付の後ろを空白文字で区切り、任意の文字列を置くことも可能。
+history: [["2011-08-03 v1.0.0版発行"]]
+# 権利表記
+rights: (C) 2011 Masayoshi Takahashi
+
+# 以下はオプション(autと同じように配列書式で複数指定可能)。
+# adp: 異なるメディア向けに作り直した者
+# ann: 注釈記述者
+# arr: アレンジした者
+# art: グラフィックデザインおよび芸術家
+# asn: 関連・かつての所有者・関係者
+# aqt: 大きく引用された人物
+# aft: 後書き・奥付の責任者
+# aui: 序論・序文・前書きの責任者
+# ant: 目録責任者
+# bkp: メディア制作責任者
+# clb: 限定参加または補足者
+# cmm: 解釈・分析・考察者
 # dsr: デザイナ
+# edt: 編集者
 # ill: イラストレータ
-# pht: 撮影者
+# lyr: 歌詞作成者
+# mdc: メタデータセットの一次的責任者
+# mus: 音楽家
+# nrt: 語り手
+# oth: その他
+# pht: 撮影責任者
+# red: 項目の枠組起草者
+# rev: 評論者
+# spn: 援助者
+# ths: 監督者
+# trc: 筆記・タイプ作業者
 # trl: 翻訳者
-# date: 刊行日
-# rights: 権利表記
 # description: ブックの説明
-#
-# coverfile: カバーページのbody要素内に挿入する内容を記述したファイル名
-coverfile: _cover.html
-# coverimage: 表紙用画像ファイル
-coverimage: cover.jpg
-# 固有IDに使用するドメイン
-urnid: http://tatsu-zine.com/books/review-sample-book/1.0.0/
-# CSSファイル (yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること
-stylesheet: style.css
-# 目次として抽出するレベル
+# subject: 短い説明用タグ
+# type: 書籍のカテゴリーなど
+# format: メディアタイプおよび特徴
+# source: 出版物生成の重要なリソース情報
+# relation: 補助的リソース
+# coverage: 内容の範囲や領域
+
+# htmlext: HTMLファイルの拡張子(省略した場合はhtml)
+# CSSファイル(配列で複数指定可、yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること)
+stylesheet: ["style.css"]
+
+# ePUBのバージョン (2か3) 省略した場合は2
+epubversion: 3
+# HTMLのバージョン (4か5。epubversionを3にしたときには5にする)
+# htmlversion: 5
+
+# 目次として抽出する見出しレベル。省略した場合は2
 toclevel: 2
-# セクション番号を表示するレベル
+# 本文でセクション番号を表示する見出しレベル。省略した場合は2
+# 採番させたくない見出しには「==[nonum]」のようにnonum指定をする
 secnolevel: 3
-# review-compileに渡すパラメータ
-params: --stylesheet=style.css
-# 目次生成用？
-mytoc: true
-# 奥付生成用
+# EPUB2標準の目次以外に物理目次ファイルを作成するか。省略した場合はnull (作成しない)
+# ePUB3においてはこの設定によらず必ず作成される
+# mytoc: true
+# 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
+# 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
+# パスしない目次ができるが、そのようなときにはこれをtrueにする
+# flattoc: null
+# 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
+# flattocindent: true
+# 付録の連番のスタイル。null(アラビア数字1〜。デフォルト)、alpha(英字A〜)、roman(ローマ数字I〜)
+# appendix_format: null
+
+# 表紙にするHTMLファイル。ファイル名を指定すると表紙として入る
+# cover: _cover.html
+# 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)
+coverimage: cover.jpg
+# 表紙の後に大扉ページを作成するか。省略した場合はnull (作成しない)
+# titlepage: null
+# 自動生成される大扉ページを上書きするファイル。ファイル名を指定すると大扉として入る
+# titlefile: null
+# 原書大扉ページにするHTMLファイル。ファイル名を指定すると原書大扉として入る
+# originaltitlefile: null
+# 権利表記ページファイル。ファイル名を指定すると権利表記として入る
+# creditfile: null
+# プロフィールページファイル。ファイル名を指定すると著者紹介として入る
+# profile: null
+# プロフィールページの目次上の見出し
+# profiletitle: 著者紹介
+# 広告ファイル。ファイル名を指定すると広告として入る
+# advfile: null
+# 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
 colophon: true
+# 裏表紙ファイル (画像はcoversまたはimagesに配置する)。ファイル名を指定すると裏表紙として入る
+# backcover: null
+
+# フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
+# プログラムには実行権限が必要
+
+# ファイル変換処理の前に実行するプログラム。スタイルシートのコンパイルをしたいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_beforeprocess: null
+
+# 前付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_afterfrontmatter: null
+
+# 本文の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_afterbody: null
+
+# 後付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_afterbackmatter: null
+
+# 画像およびフォントをコピーした後に実行するプログラム。別の画像やフォントを追加したいときなどに利用する。
+# 渡される引数1=作業用展開ディレクトリ
+# hook_aftercopyimage: null
+
+# ePUB zipアーカイブ直前に実行するプログラム。メタ情報などを加工したいときなどに利用する。
+# 渡される引数1=ePUB準備ディレクトリ
+# hook_prepack: null
+
+# ハイライトを有効にするか。pygments.gemが必要
+# pygments: null
+
+# 取り込む画像が格納されているディレクトリ。省略した場合は以下
+# imagedir: images
+
+# 取り込むフォントが格納されているディレクトリ。省略した場合は以下
+# fontdir: fonts
+
+# imagedir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
+# image_ext: ["png", "gif", "jpg", "jpeg", "svg", "ttf", "woff", "otf"]
+
+# fontdir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
+# font_ext: ["ttf", "woff", "otf"]
+
+# 変換したHTMLファイルおよびCSSを解析して厳密に使用している画像ファイルだけを取り込むか。デフォルトはnull(imagesディレクトリすべてを取り込む)
+# なお、フォント、カバー、広告についてはこの設定によらずディレクトリ内のものがすべて取り込まれる
+# verify_target_images: null
+# verify_target_imagesがtrueの状態において、解析で発見されなくても強制的に取り込むファイルの相対パスの配列
+# force_include_images: []
+
+# Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
+# rename_for_legacy: null
+
+# ePUBアーカイブの非圧縮実行
+# zip_stage1: "zip -0Xq"
+# ePUBアーカイブの圧縮実行
+# zip_stage2: "zip -Xr9Dq"
+# ePUBアーカイブに追加するパス(デフォルトはmimetype、META-INF、OEBPS)
+# zip_addpath: null
+
 texstyle: reviewmacro
-pubhistory: |
-  2011年08月03日 v1.0.0版発行
 debug: true
