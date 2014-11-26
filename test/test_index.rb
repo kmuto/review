@@ -83,5 +83,20 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [3,1], index['sec1-3|sec1-3-1'].number
     assert_equal "1.3.1", index.number('sec1-3|sec1-3-1')
   end
+
+  def test_HeadelineIndex4
+    src = <<-EOB
+= chap1
+====[column] c1
+== sec1-1
+== sec1-2
+=== sec1-2-1
+=== sec1-2-2
+    EOB
+    chap = Book::Chapter.new(nil, 1, '-', nil) # dummy
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [2,2], index['sec1-2|sec1-2-2'].number
+    assert_equal "1.2.2", index.number('sec1-2|sec1-2-2')
+  end
 end
 
