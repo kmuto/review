@@ -309,7 +309,7 @@ module ReVIEW
               inside_column = false
               next
             end
-            if indexs.present? and indexs[-1] <= index
+            if indexs.blank? || index <= indexs[-1]
               inside_column = false
             end
             if inside_column
