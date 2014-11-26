@@ -294,7 +294,7 @@ module ReVIEW
         items = []
         indexs = []
         headlines = []
-        inside_column = false
+        inside_column_level = nil
         src.each do |line|
           if m = HEADLINE_PATTERN.match(line)
             next if m[1].size > 10 # Ignore too deep index
@@ -302,17 +302,17 @@ module ReVIEW
 
             # column
             if m[2] == 'column'
-              inside_column = true
+              inside_column_level = index
               next
             end
             if m[2] == '/column'
-              inside_column = false
+              inside_column_level = nil
               next
             end
-            if indexs.present? and indexs[-1] <= index
-              inside_column = false
+            if (indexs.present? and indexs[-1] <= index) || (inside_column_level && index <= inside_column_level)
+              inside_column_level = nil
             end
-            if inside_column
+            if inside_column_level
               next
             end
 
