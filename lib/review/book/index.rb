@@ -12,6 +12,7 @@
 require 'review/extentions'
 require 'review/exception'
 require 'review/book/image_finder'
+require 'review/i18n'
 
 module ReVIEW
   module Book
