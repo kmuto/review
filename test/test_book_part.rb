@@ -25,7 +25,8 @@ class PartTest < Test::Unit::TestCase
   end
 
   def test_volume
-    part = Book::Part.new(nil, nil, [])
+    book = Book::Base.new(nil)
+    part = Book::Part.new(book, nil, [])
     assert part.volume
     assert_equal 0, part.volume.bytes
     assert_equal 0, part.volume.chars
@@ -35,16 +36,16 @@ class PartTest < Test::Unit::TestCase
     tfs = []  ## prevent from removing Tempfile
     Tempfile.open('part_test') do |o|
       o.print "12345"
-      chs << Book::Chapter.new(nil, nil, nil, o.path)
+      chs << Book::Chapter.new(book, nil, nil, o.path)
       tfs << o
     end
     Tempfile.open('part_test') do |o|
       o.print "67890"
-      chs << Book::Chapter.new(nil, nil, nil, o.path)
+      chs << Book::Chapter.new(book, nil, nil, o.path)
       tfs << o
     end
 
-    part = Book::Part.new(nil, nil, chs)
+    part = Book::Part.new(book, nil, chs)
     assert part.volume
     assert part.volume.bytes > 0
     assert part.volume.chars > 0

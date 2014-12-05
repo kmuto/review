@@ -248,11 +248,13 @@ class ChapterTest < Test::Unit::TestCase
     tf2.print content
     tf2.close
 
-    ch = Book::Chapter.new(nil, nil, nil, tf1.path)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes
 
-    ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?
   end
