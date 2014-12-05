@@ -81,7 +81,11 @@ module ReVIEW
       end
 
       def page_metric
-        config["page_metric"]
+        if config["page_metric"].respond_to?(:downcase) && config["page_metric"].upcase =~ /^[A-Z0-9_]+$/
+          ReVIEW::Book::PageMetric.const_get(config["page_metric"].upcase)
+        else
+          config["page_metric"]
+        end
       end
 
       def parts
