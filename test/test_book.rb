@@ -559,7 +559,7 @@ EOC
   def test_page_metric
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
-      assert_equal ReVIEW::Book::PageMetric.a5, book.page_metric
+      assert_equal ReVIEW::Book::PageMetric::A5, book.page_metric
     end
   end
 end
