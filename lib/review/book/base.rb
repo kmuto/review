@@ -161,6 +161,11 @@ module ReVIEW
         @config = param
       end
 
+      def load_config(filename)
+        new_conf = YAML.load_file(filename)
+        @config.merge!(new_conf)
+      end
+
       # backward compatible
       def param
         @config
