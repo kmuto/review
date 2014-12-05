@@ -33,6 +33,10 @@ module ReVIEW
       attr_reader :text
       attr_reader :page_per_kbyte
 
+      def ==(other)
+        self.list == other.list && self.text == other.text && self.page_per_kbyte == other.page_per_kbyte
+      end
+
     end
   end
 end
