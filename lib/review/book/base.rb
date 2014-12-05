@@ -153,7 +153,9 @@ module ReVIEW
       end
 
       def volume
-        Volume.sum(chapters.map {|chap| chap.volume })
+        vol = Volume.sum(chapters.map {|chap| chap.volume })
+        vol.page_per_kbyte = page_metric.page_per_kbyte
+        vol
       end
 
       def config
