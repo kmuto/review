@@ -18,20 +18,6 @@ class BookTest < Test::Unit::TestCase
         assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir CHAPS"
       end
     end
-
-    # tests for ReVIEW.book
-    default_book = nil
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        default_book = ReVIEW.book
-        assert default_book
-      end
-    end
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        assert_equal default_book, ReVIEW.book, "chdir mktmpdir"
-      end
-    end
   end
 
   def test_s_update_rubyenv
