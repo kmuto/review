@@ -304,10 +304,6 @@ EOC
       assert_equal nil, book.prefaces # XXX: OK?
     end
 
-    mktmpbookdir 'PREDEF' => '' do |dir, book, files|
-      assert_equal nil, book.prefaces
-    end
-
     mktmpbookdir 'PREDEF' => 'chapter1',
                  'chapter1.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.prefaces
