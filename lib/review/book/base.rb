@@ -83,6 +83,8 @@ module ReVIEW
       def page_metric
         if config["page_metric"].respond_to?(:downcase) && config["page_metric"].upcase =~ /^[A-Z0-9_]+$/
           ReVIEW::Book::PageMetric.const_get(config["page_metric"].upcase)
+        elsif config["page_metric"].kind_of?(Array) && config["page_metric"].size == 5
+          ReVIEW::Book::PageMetric.new(*config["page_metric"])
         else
           config["page_metric"]
         end
