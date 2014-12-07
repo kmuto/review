@@ -65,3 +65,5 @@ params: --stylesheet=sample.css
 # pygments: true
 # デバッグフラグ。nullでないときには一時ファイルをカレントディレクトリに作成し、削除もしない
 debug: null
+# カタログファイル名を指定する
+# catalogfile: catalog.yml
