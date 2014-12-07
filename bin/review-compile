@@ -151,34 +151,18 @@ def _main
         exit 1
       end
 
-      begin
-        ReVIEW::Book::Chapter.intern_pathes(ARGV).each do |chap|
-          chap.book.config = config # needs only at the first time
-          compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
-          result = compiler.compile(chap)
-          if output_filename
-            write output_filename, result
-          else
-            puts result unless check_only
-          end
-        end
-      rescue => e
-        # PART
-        book = ReVIEW::Book::Base.load_default
-        book.config = config
-        part = book.parts_in_file.select do |part_item|
-          ARGV.map{|path| File.basename path}.include? part_item.path
-        end
+      basedir = File.dirname(ARGV[0])
+      book = ReVIEW::Book::Base.load(basedir)
+      book.config = config # needs only at the first time
+      ARGV.each do |item|
+        chap_name = File.basename(item, '.*')
+        chap = book.chapter(chap_name)
         compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
-        if part.present?
-          result = compiler.compile(part.first)
-          if output_filename
-            write output_filename, result
-          else
-            puts result unless check_only
-          end
+        result = compiler.compile(chap)
+        if output_filename
+          write output_filename, result
         else
-          raise e
+          puts result unless check_only
         end
       end
     when :dir
