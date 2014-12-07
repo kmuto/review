@@ -185,7 +185,9 @@ module ReVIEW
 
     basedir = Dir.pwd
     base_path = Pathname.new(basedir)
-    ReVIEW::Book.load(basedir).parts.each do |part|
+    book = ReVIEW::Book.load(basedir)
+    book.load_config(yamlfile)
+    book.parts.each do |part|
       htmlfile = nil
       if part.name.present?
         if part.file?
