@@ -18,19 +18,6 @@ module ReVIEW
     class Chapter
       include Compilable
 
-      def Chapter.intern_pathes(pathes)
-        books = {}
-        pathes.map {|path|
-          basedir = File.dirname(path)
-          book = (books[File.expand_path(basedir)] ||= Book.load(basedir))
-          begin
-            book.chapter(File.basename(path, '.*'))
-          rescue KeyError
-            raise FileNotFound, "No such chapter in your book. Check if the catalog files contain the chapter. : #{path}"
-          end
-        }
-      end
-
       attr_reader :number, :book
 
       def initialize(book, number, name, path, io = nil)

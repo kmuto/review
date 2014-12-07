@@ -1,3 +1,9 @@
+Sun Dec  7 16:57:01 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/book/chapter.rb, test/test_book_chapter.rb:
+	  remove Chapter.intern_pathes.
+	  To get chapters, use Book::Base.load and Book::Base#chapter.
+
 Mon Nov 17 09:28:21 2014  Kenshi Muto  <kmuto@debian.org>
 
 	* lib/review/book/chapter.rb, lib/review/book/index.rb:
