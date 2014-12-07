@@ -583,9 +583,9 @@ module ReVIEW
 
     def inline_chap(id)
       if @book.config["chapterlink"]
-        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.number(id)}}"
+        "\\hyperref[chap:#{id}]{#{@book.chapter_index.number(id)}}"
       else
-        @chapter.env.chapter_index.number(id)
+        @book.chapter_index.number(id)
       end
     rescue KeyError
       error "unknown chapter: #{id}"

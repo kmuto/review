@@ -797,9 +797,9 @@ QUOTE
 
     def inline_chap(id)
       if @book.config["chapterlink"]
-        %Q(<a href="./#{id}#{extname}">#{@chapter.env.chapter_index.number(id)}</a>)
+        %Q(<a href="./#{id}#{extname}">#{@book.chapter_index.number(id)}</a>)
       else
-        @chapter.env.chapter_index.number(id)
+        @book.chapter_index.number(id)
       end
     rescue KeyError
       error "unknown chapter: #{id}"

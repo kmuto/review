@@ -96,7 +96,6 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
-    assert_equal :book, ch.env
     assert_equal :book, ch.book
     assert_equal :number, ch.number
     assert_equal '/foo/bar', ch.path
