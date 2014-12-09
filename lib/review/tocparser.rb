@@ -99,7 +99,7 @@ module ReVIEW
 
     def compile_label(line)
       b = ReVIEW::TEXTBuilder.new
-      dummy_book = ReVIEW::Book::Base.load_default
+      dummy_book = ReVIEW::Book::Base.load
       dummy_chapter = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
       dummy_loc = Location.new("", StringIO.new)
       b.bind(ReVIEW::Compiler.new(b), dummy_chapter, dummy_loc)

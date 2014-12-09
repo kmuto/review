@@ -19,17 +19,11 @@ module ReVIEW
       attr_writer :config
 
       def self.load_default
-        basedir = "."
-        if File.file?("#{basedir}/CHAPS") ||
-            File.file?("#{basedir}/catalog.yml")
-          book = load(basedir)
-          book
-        else
-          new(basedir)
-        end
+        warn 'Book::Base.load_default() is obsoleted. Use Book::Base.load().'
+        load()
       end
 
-      def self.load(dir)
+      def self.load(dir = ".")
         update_rubyenv dir
         new(dir)
       end

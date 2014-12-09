@@ -26,7 +26,7 @@ module ReVIEW
   @default_book = nil
 
   def ReVIEW.book
-    @default_book ||= Book::Base.load_default
+    @default_book ||= Book::Base.load
   end
 
   module Book
