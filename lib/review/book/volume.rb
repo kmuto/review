@@ -36,19 +36,20 @@ module ReVIEW
         @bytes = bytes
         @chars = chars
         @lines = lines
-        @book  = ReVIEW::Book::Base.load_default
+        @page_per_kbyte = nil
       end
 
       attr_reader :bytes
       attr_reader :chars
       attr_accessor :lines
+      attr_accessor :page_per_kbyte
 
       def kbytes
         (@bytes.to_f / 1024).ceil
       end
 
       def page
-        (kbytes.to_f/@book.page_metric.page_per_kbyte).ceil
+        (kbytes.to_f/@page_per_kbyte).ceil
       end
 
       def to_s

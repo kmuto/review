@@ -67,3 +67,6 @@ params: --stylesheet=sample.css
 debug: null
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
+# あるいは、配列で指定することもできる
+# 各数字の意味は、順にリストの行数、リストの1行字数、テキストの行数、テキストの1行字数、1kバイト毎のページ数
+# catalogfile: [40,80,40,80,2]

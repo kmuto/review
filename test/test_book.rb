@@ -544,4 +544,22 @@ EOC
       assert_equal ReVIEW::Book::PageMetric::A5, book.page_metric
     end
   end
+
+  def test_page_metric_config
+    mktmpbookdir('config.yml'=>"bookname: book\npage_metric: B5\n") do |dir, book, files|
+      book = Book::Base.new(dir)
+      config_file = File.join(dir,"config.yml")
+      book.load_config(config_file)
+      assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
+    end
+  end
+
+  def test_page_metric_config_array
+    mktmpbookdir('config.yml'=>"bookname: book\npage_metric: [46, 80, 30, 74, 2]\n") do |dir, book, files|
+      book = Book::Base.new(dir)
+      config_file = File.join(dir,"config.yml")
+      book.load_config(config_file)
+      assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
+    end
+  end
 end

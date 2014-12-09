@@ -81,7 +81,13 @@ module ReVIEW
       end
 
       def page_metric
-        config["page_metric"]
+        if config["page_metric"].respond_to?(:downcase) && config["page_metric"].upcase =~ /^[A-Z0-9_]+$/
+          ReVIEW::Book::PageMetric.const_get(config["page_metric"].upcase)
+        elsif config["page_metric"].kind_of?(Array) && config["page_metric"].size == 5
+          ReVIEW::Book::PageMetric.new(*config["page_metric"])
+        else
+          config["page_metric"]
+        end
       end
 
       def parts
@@ -149,7 +155,9 @@ module ReVIEW
       end
 
       def volume
-        Volume.sum(chapters.map {|chap| chap.volume })
+        vol = Volume.sum(chapters.map {|chap| chap.volume })
+        vol.page_per_kbyte = page_metric.page_per_kbyte
+        vol
       end
 
       def config

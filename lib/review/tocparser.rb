@@ -44,7 +44,7 @@ module ReVIEW
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
           if path.empty?
             # missing chapter label
-            path.push Chapter.new(get_label(line), id, filename)
+            path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
             roots.push path.first
           end
           next if get_label(line) =~ /\A\[\// # ex) "[/column]"
@@ -57,7 +57,7 @@ module ReVIEW
 
         when /\A= /
           path.clear
-          path.push Chapter.new(get_label(line), id, filename)
+          path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
           roots.push path.first
 
         when %r<\A//\w+(?:\[.*?\])*\{\s*\z>
@@ -209,10 +209,11 @@ module ReVIEW
 
     class Chapter < Section
 
-      def initialize(label, id, path)
+      def initialize(label, id, path, page_metric)
         super 1, label, path
         @chapter_id = id
         @path = path
+        @page_metric = page_metric
         @volume = nil
         @number = nil
       end
@@ -229,6 +230,7 @@ module ReVIEW
         return @volume if @volume
         return Book::Volume.dummy unless @path
         @volume = Book::Volume.count_file(@path)
+        @volume.page_per_kbyte = @page_metric.page_per_kbyte
         @volume.lines = estimated_lines()
         @volume
       end
