@@ -22,6 +22,10 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
+    def system_or_raise(*args)
+      Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
+    end
+
     def error(msg)
       $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
       exit 1
@@ -102,7 +106,9 @@ module ReVIEW
       @chaps_fnames = Hash.new{|h, key| h[key] = ""}
       @compile_errors = nil
 
-      ReVIEW::Book.load(@basedir).parts.each do |part|
+      book = ReVIEW::Book.load(@basedir)
+      book.config = config
+      book.parts.each do |part|
         if part.name.present?
           if part.file?
             output_parts(part.name, config)
@@ -150,10 +156,10 @@ module ReVIEW
         end
         texcommand = config["texcommand"] || "platex"
         3.times do
-          system("#{texcommand} -kanji=#{kanji} book.tex")
+          system_or_raise("#{texcommand} -kanji=#{kanji} book.tex")
         end
         if File.exist?("book.dvi")
-          system("dvipdfmx -d 5 book.dvi")
+          system_or_raise("dvipdfmx -d 5 book.dvi")
         end
       }
       FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
@@ -196,7 +202,7 @@ module ReVIEW
           }
           system("extractbb", *images)
           unless system("extractbb", "-m", *images)
-            system("ebb", *images)
+            system_or_raise("ebb", *images)
           end
         end
       end

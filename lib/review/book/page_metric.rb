@@ -15,23 +15,32 @@ module ReVIEW
 
       MetricData = Struct.new(:n_lines, :n_columns)
 
-      def PageMetric.a5
-        new(46, 80, 30, 74, 1)
-      end
-
-      def PageMetric.b5
-        new(46, 80, 30, 74, 2)
-      end
-
       def initialize(list_lines, list_columns, text_lines, text_columns, page_per_kbyte)
         @list = MetricData.new(list_lines, list_columns)
         @text = MetricData.new(text_lines, text_columns)
         @page_per_kbyte = page_per_kbyte
       end
 
+      A5 = PageMetric.new(46, 80, 30, 74, 1)
+      B5 = PageMetric.new(46, 80, 30, 74, 2)
+
+      # backward compatible
+      def PageMetric.a5
+        ReVIEW::Book::PageMetric::A5
+      end
+
+      # backward compatible
+      def PageMetric.b5
+        ReVIEW::Book::PageMetric::B5
+      end
+
       attr_reader :list
       attr_reader :text
       attr_reader :page_per_kbyte
+
+      def ==(other)
+        self.list == other.list && self.text == other.text && self.page_per_kbyte == other.page_per_kbyte
+      end
 
     end
   end

@@ -12,6 +12,7 @@
 require 'review/extentions'
 require 'review/exception'
 require 'review/book/image_finder'
+require 'review/i18n'
 
 module ReVIEW
   module Book
@@ -309,7 +310,7 @@ module ReVIEW
               inside_column = false
               next
             end
-            if indexs.present? and indexs[-1] <= index
+            if indexs.blank? || index <= indexs[-1]
               inside_column = false
             end
             if inside_column
@@ -344,7 +345,20 @@ module ReVIEW
       end
 
       def number(id)
-        return ([@chap.number] + @index.fetch(id).number).join(".")
+        n = @chap.number
+        if @chap.on_APPENDIX? && @chap.number > 1 && @chap.number < 28
+          type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
+          n = case type
+              when "roman"
+                ROMAN[@chap.number]
+              when "alphabet", "alpha"
+                ALPHA[@chap.number]
+              else
+                # nil, "arabic", etc...
+                "#{@chap.number}"
+              end
+        end
+        return ([n] + @index.fetch(id).number).join(".")
       end
     end
 

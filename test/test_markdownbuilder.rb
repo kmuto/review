@@ -64,6 +64,23 @@ EOS
     assert_equal "```\nlineA\nlineB\n```\n", actual
   end
 
+  def test_list
+    actual = compile_block(<<-EOS)
+//list[name][caption]{
+AAA
+BBB
+//}
+    EOS
+
+    assert_equal <<-EOS, actual
+リスト1.1 caption
+```
+AAA
+BBB
+```
+    EOS
+  end
+
   def test_table
     actual = compile_block("//table{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
     assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", actual

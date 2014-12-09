@@ -18,20 +18,6 @@ class BookTest < Test::Unit::TestCase
         assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir CHAPS"
       end
     end
-
-    # tests for ReVIEW.book
-    default_book = nil
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        default_book = ReVIEW.book
-        assert default_book
-      end
-    end
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        assert_equal default_book, ReVIEW.book, "chdir mktmpdir"
-      end
-    end
   end
 
   def test_s_update_rubyenv
@@ -318,10 +304,6 @@ EOC
       assert_equal nil, book.prefaces # XXX: OK?
     end
 
-    mktmpbookdir 'PREDEF' => '' do |dir, book, files|
-      assert_equal nil, book.prefaces
-    end
-
     mktmpbookdir 'PREDEF' => 'chapter1',
                  'chapter1.re' => '' do |dir, book, files|
       assert_kind_of Book::Part, book.prefaces
@@ -553,6 +535,31 @@ EOC
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
       assert_equal dir, book.basedir
+    end
+  end
+
+  def test_page_metric
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal ReVIEW::Book::PageMetric::A5, book.page_metric
+    end
+  end
+
+  def test_page_metric_config
+    mktmpbookdir('config.yml'=>"bookname: book\npage_metric: B5\n") do |dir, book, files|
+      book = Book::Base.new(dir)
+      config_file = File.join(dir,"config.yml")
+      book.load_config(config_file)
+      assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
+    end
+  end
+
+  def test_page_metric_config_array
+    mktmpbookdir('config.yml'=>"bookname: book\npage_metric: [46, 80, 30, 74, 2]\n") do |dir, book, files|
+      book = Book::Base.new(dir)
+      config_file = File.join(dir,"config.yml")
+      book.load_config(config_file)
+      assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
     end
   end
 end

@@ -12,26 +12,13 @@
 require 'review/book/compilable'
 module ReVIEW
   module Book
+    ROMAN = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
+    ALPHA = %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]
+    
     class Chapter
       include Compilable
 
-      ROMAN = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
-      ALPHA = %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]
-
-      def Chapter.intern_pathes(pathes)
-        books = {}
-        pathes.map {|path|
-          basedir = File.dirname(path)
-          book = (books[File.expand_path(basedir)] ||= Book.load(basedir))
-          begin
-            book.chapter(File.basename(path, '.*'))
-          rescue KeyError
-            raise FileNotFound, "No such chapter in your book. Check if the catalog files contain the chapter. : #{path}"
-          end
-        }
-      end
-
-      attr_reader :number
+      attr_reader :number, :book
 
       def initialize(book, number, name, path, io = nil)
         @book = book
@@ -64,12 +51,7 @@ module ReVIEW
         if on_APPENDIX?
           return "#{@number}" if @number < 1 || @number > 27
 
-          if @book.config["appendix_format"].blank?
-            type = "arabic"
-          else
-            type = @book.config["appendix_format"].downcase.strip
-          end
-
+          type = @book.config["appendix_format"].blank? ? "arabic" : @book.config["appendix_format"].downcase.strip
           appendix = case type
                        when "roman"
                          ROMAN[@number]
@@ -79,7 +61,6 @@ module ReVIEW
                          # nil, "arabic", etc...
                          "#{@number}"
                      end
-
           if heading
             return "#{I18n.t("appendix", appendix)}"
           else

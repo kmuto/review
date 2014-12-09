@@ -175,7 +175,7 @@ EOT
       s = ""
       s << %Q[  <spine>\n]
       s << %Q[    <itemref idref="#{@producer.params["bookname"]}" linear="#{cover_linear}"/>\n]
-#      s << %Q[    <itemref idref="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" />\n]
+      s << %Q[    <itemref idref="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" />\n] if @producer.params["toc"]
 
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML

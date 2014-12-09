@@ -24,79 +24,8 @@ class ChapterTest < Test::Unit::TestCase
 =end
   end
 
-  def test_s_intern_pathes
-    dir1_files = {
-      'CHAPS' => "ch1.re\nch2.re\n",
-      'ch1.re' => 'ch1',
-      'ch2.re' => 'ch2',
-    }
-    dir2_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-    }
-    mktmpbookdir dir1_files do |dir1, book1, files1|
-      mktmpbookdir dir2_files do |dir2, book2, files2|
-        paths = (files1.values + files2.values).flatten.grep(/\.re\z/)
-        chs = Book::Chapter.intern_pathes(paths)
-
-        assert_equal 3, chs.size
-        assert chs[0].book == chs[1].book
-        assert chs[0].book != chs[2].book
-        assert dir1, chs[0].book.basedir
-        assert dir2, chs[2].book.basedir
-      end
-    end
-
-    dir_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      paths << __FILE__ + ' not exist file.re'
-      assert_raises ReVIEW::FileNotFound do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-
-    dir_files = {
-      'ch1.re' => 'ch1 not in CHAPS',
-      'ch2.re' => 'ch2 not in CHAPS',
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      assert_nothing_raised do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-
-    dir_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-      'ch2.re' => 'ch2 not in CHAPS',
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      assert_raises KeyError::FileNotFound do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-
-    dir_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1'
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      assert_nothing_raised do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-  end
-
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
-    assert_equal :book, ch.env
     assert_equal :book, ch.book
     assert_equal :number, ch.number
     assert_equal '/foo/bar', ch.path
@@ -248,11 +177,13 @@ class ChapterTest < Test::Unit::TestCase
     tf2.print content
     tf2.close
 
-    ch = Book::Chapter.new(nil, nil, nil, tf1.path)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes
 
-    ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?
   end

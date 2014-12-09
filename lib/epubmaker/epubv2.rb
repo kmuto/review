@@ -112,7 +112,7 @@ EOT
     <item id="#{@producer.params["bookname"]}" href="#{@producer.params["cover"]}" media-type="application/xhtml+xml"/>
 EOT
 
-      s << %Q[    <item id="toc" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" media-type="application/xhtml+xml"/>\n] unless @producer.params["mytoc"].nil?
+      s << %Q[    <item id="toc" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" media-type="application/xhtml+xml"/>\n] if @producer.params["toc"] && @producer.params["mytoc"]
 
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup

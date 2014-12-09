@@ -65,6 +65,23 @@ module ReVIEW
       buf
     end
 
+    def list_header(id, caption)
+      if get_chap.nil?
+        %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```\n"
+      else
+        %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```\n"
+      end
+    end
+
+    def list_body(id, lines)
+      buf = ""
+      lines.each do |line|
+        buf << detab(line) << "\n"
+      end
+      buf << '```' << "\n"
+      buf
+    end
+
     def ul_begin
       buf = ""
       buf << blank if @ul_indent == 0

@@ -59,7 +59,11 @@ module ReVIEW
       end
 
       def volume
-        @volume ||= Volume.count_file(path())
+        if !@volume
+          @volume = Volume.count_file(path())
+          @volume.page_per_kbyte = @book.page_metric.page_per_kbyte
+        end
+        @volume
       end
 
       def open(&block)

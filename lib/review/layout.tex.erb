@@ -83,7 +83,7 @@
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
-{\noindent\large ■コラム: #2}}
+{\noindent\large <%= I18n.t("column_head")%>: #2}}
 
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
@@ -107,20 +107,24 @@
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
 \newcommand{\reviewimageref}[2]{%
-  図 #1}
+  <%= I18n.t("image")%> #1}
 \newcommand{\reviewtableref}[2]{%
-  表 #1}
+  <%= I18n.t("table")%> #1}
 \newcommand{\reviewlistref}[1]{%
-  リスト #1}
+  <%= I18n.t("list")%> #1}
 \newcommand{\reviewbibref}[2]{%
   #1}
 \newcommand{\reviewcolumnref}[2]{%
-  コラム #1}
+  <%= I18n.t("columnname")%> #1}
 \newcommand{\reviewsecref}[2]{%
   #1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
-  {\large ■メモ：#1}\\}
+  {\large <%= I18n.t("memo_head")%>: #1}\\}
+
+<% if values["toctitle"].present? %>
+\renewcommand{\contentsname}{<%= values["toctitle"]%>}
+<% end %>
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
@@ -203,7 +207,7 @@
         <%= authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= values["date"] %> 版\hspace{2zw}<%= values["prt"] %>　発行\par}%
+    {\large <%= values["date"] %> <%= I18n.t("version")%>\hspace{2zw}<%= values["prt"] %> <%= I18n.t("published_by")%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
