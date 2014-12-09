@@ -3,11 +3,14 @@ ja:
   table: 表
   list: リスト
   column: "コラム「%s」"
+  columnname: "コラム"
+  column_head: "■コラム"
   part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
   appendix: 付録%s
   numberless_image: "図:"
+  memo_head: ■メモ
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
@@ -32,6 +35,8 @@ ja:
   supervisor_postfix: "　監修"
   translator_postfix: "　訳"
   names_splitter: "、"
+  version: "版"
+  published_by: "発行"
 
 en:
   image: "Figure "
@@ -61,6 +66,7 @@ en:
   pbl: "Publisher"
   contact: "Contact"
   names_splitter: ", "
+  version: "Version"
 
 zh_TW:
   image: 圖
@@ -79,4 +85,19 @@ zh_TW:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  aut: "著作人"
+  csl: "監　修"
+  dsr: "美術編輯"
+  cov: "封面設計"
+  edt: "編　輯"
+  pht: "攝　影"
+  trl: "翻　譯"
+  prt: "印刷所"
+  pbl: "發行所"
+  contact: "联系方式"
+  author_postfix: "　著"
+  supervisor_postfix: "　監修"
+  translator_postfix: "　譯"
   names_splitter: ", "
+  Version: "版"
+  published_by: "出版"

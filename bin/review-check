@@ -54,7 +54,7 @@ def main
     files = @book.chapters.map {|ent| ent.path }
   }
   opts.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
-    ents = ReVIEW.env.parts[Integer(n) - 1] or
+    ents = @book.parts[Integer(n) - 1] or
         raise ReVIEW::ApplicationError, "section #{n} not exist"
     files = ents.map {|ent| ent.path }
   }
