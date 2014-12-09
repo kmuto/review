@@ -93,10 +93,10 @@ module ReVIEW
       config.merge!(YAML.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
       config.merge!(cmd_config)
-      generate_pdf(config)
+      generate_pdf(config, yamlfile)
     end
 
-    def generate_pdf(config)
+    def generate_pdf(config, yamlfile)
       check_book(config)
       @basedir = Dir.pwd
       @path = build_path(config)
@@ -111,7 +111,7 @@ module ReVIEW
       book.parts.each do |part|
         if part.name.present?
           if part.file?
-            output_parts(part.name, config)
+            output_parts(part.name, config, yamlfile)
             @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
           else
             @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
@@ -120,7 +120,7 @@ module ReVIEW
 
         part.chapters.each do |chap|
           filename = "#{File.basename(chap.path, ".*")}.tex"
-          output_chaps(filename, config)
+          output_chaps(filename, config, yamlfile)
           @chaps_fnames["PREDEF"]  << "\\input{#{filename}}\n" if chap.on_PREDEF?
           @chaps_fnames["CHAPS"]   << "\\input{#{filename}}\n" if chap.on_CHAPS?
           @chaps_fnames["APPENDIX"] << "\\input{#{filename}}\n" if chap.on_APPENDIX?
@@ -169,9 +169,9 @@ module ReVIEW
       end
     end
 
-    def output_chaps(filename, config)
+    def output_chaps(filename, config, yamlfile)
       $stderr.puts "compiling #{filename}"
-      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename} > #{@path}/#{filename}"
+      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename} > #{@path}/#{filename}"
       if system cmd
         # OK
       else
@@ -180,7 +180,7 @@ module ReVIEW
       end
     end
 
-    def output_parts(filename, config)
+    def output_parts(filename, config, yamlfile)
       $stderr.puts "compiling #{filename}.tex"
       cmd = "review-compile --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/ > #{@path}/#{filename}.tex"
       if system cmd
