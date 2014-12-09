@@ -111,7 +111,7 @@ module ReVIEW
       book.parts.each do |part|
         if part.name.present?
           if part.file?
-            output_parts(part.name, config, yamlfile)
+            output_chaps(part.name, config, yamlfile)
             @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
           else
             @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
@@ -119,12 +119,12 @@ module ReVIEW
         end
 
         part.chapters.each do |chap|
-          filename = "#{File.basename(chap.path, ".*")}.tex"
+          filename = File.basename(chap.path, ".*")
           output_chaps(filename, config, yamlfile)
-          @chaps_fnames["PREDEF"]  << "\\input{#{filename}}\n" if chap.on_PREDEF?
-          @chaps_fnames["CHAPS"]   << "\\input{#{filename}}\n" if chap.on_CHAPS?
-          @chaps_fnames["APPENDIX"] << "\\input{#{filename}}\n" if chap.on_APPENDIX?
-          @chaps_fnames["POSTDEF"] << "\\input{#{filename}}\n" if chap.on_POSTDEF?
+          @chaps_fnames["PREDEF"]  << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
+          @chaps_fnames["CHAPS"]   << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
+          @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
+          @chaps_fnames["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
         end
       end
 
@@ -170,19 +170,8 @@ module ReVIEW
     end
 
     def output_chaps(filename, config, yamlfile)
-      $stderr.puts "compiling #{filename}"
-      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename} > #{@path}/#{filename}"
-      if system cmd
-        # OK
-      else
-        @compile_errors = true
-        warn cmd
-      end
-    end
-
-    def output_parts(filename, config, yamlfile)
       $stderr.puts "compiling #{filename}.tex"
-      cmd = "review-compile --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
+      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
       if system cmd
         # OK
       else
@@ -190,7 +179,6 @@ module ReVIEW
         warn cmd
       end
     end
-
 
     def copy_images(from, to)
       if File.exist?(from)
