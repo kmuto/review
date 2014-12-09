@@ -1,3 +1,9 @@
+Tue Dec  9 15:25:38 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/configure.rb:
+	  update default value of "toc" as nil.
+	  If you need TOC page in body, you should add "toc: true" in config.yml (EPUB2/3, LaTeX).
+
 Tue Dec  9 10:27:21 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* bin/review-vol:
