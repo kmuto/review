@@ -1,3 +1,9 @@
+Tue Dec  9 10:27:21 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* bin/review-vol:
+	  add --yaml option to specify config.yml
+	  add a parameter `page_metric` in config.yml
+
 Sun Dec  7 16:57:01 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/book/chapter.rb, test/test_book_chapter.rb:
