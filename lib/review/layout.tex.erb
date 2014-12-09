@@ -122,6 +122,10 @@
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large <%= I18n.t("memo_head")%>: #1}\\}
 
+<% if values["toctitle"].present? %>
+\renewcommand{\contentsname}{<%= values["toctitle"]%>}
+<% end %>
+
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
   \end{screen}\vspace{2zw}}
