@@ -76,14 +76,18 @@ module ReVIEW
 
     def headline(level, label, caption)
       _, anchor = headline_prefix(level)
+      headline_name = HEADLINE[level]
+      if @chapter.kind_of? ReVIEW::Book::Part
+        headline_name = "part"
+      end
       prefix = ""
       if level > @book.config["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
       end
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level]+prefix, compile_inline(caption))
+      puts macro(headline_name+prefix, compile_inline(caption))
       if prefix == "*" && level <= @book.config["toclevel"].to_i
-        puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
+        puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline(caption)}}"
       end
       if level == 1
         puts macro('label', chapter_label)

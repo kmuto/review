@@ -182,7 +182,7 @@ module ReVIEW
 
     def output_parts(filename, config, yamlfile)
       $stderr.puts "compiling #{filename}.tex"
-      cmd = "review-compile --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename}.re | sed -e s/\\chapter{/\\part{/ > #{@path}/#{filename}.tex"
+      cmd = "review-compile --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
       if system cmd
         # OK
       else
