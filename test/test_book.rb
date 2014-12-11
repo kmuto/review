@@ -11,15 +11,6 @@ class BookTest < Test::Unit::TestCase
     assert_equal ex_path, re_path, *options
   end
 
-  def test_s_load_default
-    Dir.mktmpdir do |dir|
-      File.open(File.join(dir, 'CHAPS'), 'w') {}
-      Dir.chdir(dir) do
-        assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir CHAPS"
-      end
-    end
-  end
-
   def test_s_update_rubyenv
     save_load_path = $LOAD_PATH.dup
 

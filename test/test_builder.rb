@@ -26,7 +26,7 @@ class BuidlerTest < Test::Unit::TestCase
 
   def test_bind
     b = Builder.new
-    chap = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load_default, nil, '-', nil)
+    chap = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
     assert_nothing_raised do
       b.bind(nil, chap, nil)
     end
@@ -39,7 +39,7 @@ class BuidlerTest < Test::Unit::TestCase
     end
 
     b = Builder.new
-    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load_default, nil, '-', nil)
+    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
     b.bind(nil, chapter, nil)
     assert_equal '', b.result
   end
@@ -82,7 +82,7 @@ class BuidlerTest < Test::Unit::TestCase
         [:puts,  "#{utf8_str}\n", "#{expect}\n"],
       ].each do |m, instr, expstr|
         b = Builder.new
-        chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load_default, nil, '-', nil)
+        chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
         b.bind(nil, chapter, nil)
         chapter.book.config = params
         b.__send__(m, instr)

@@ -61,7 +61,7 @@ def main
     exit 1
   end
 
-  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load_default
+  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load
   book.config = @config
   if yamlfile
     book.load_config(yamlfile)
