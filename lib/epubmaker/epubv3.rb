@@ -9,12 +9,17 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'epubmaker/epubv2'
+require 'epubmaker/epubcommon'
 
 module EPUBMaker
 
   # EPUBv3 is EPUB version 3 producer.
-  class EPUBv3 < EPUBv2
+  class EPUBv3 < EPUBCommon
+    # Construct object with parameter hash +params+ and message resource hash +res+.
+    def initialize(producer)
+      super
+    end
+
     def opf_guide
       s = ""
       s << %Q[  <guide>\n]
