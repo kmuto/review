@@ -585,6 +585,8 @@ QUOTE
     def texequation(lines)
       puts %Q[<div class="equation">]
       if @book.config["mathml"]
+        require 'math_ml'
+        require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
       else
