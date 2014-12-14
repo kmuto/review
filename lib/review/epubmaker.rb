@@ -306,7 +306,7 @@ EOT
     headlines = []
     # FIXME:nonumを修正する必要あり
     path = File.join(basetmpdir, filename)
-    Document.parse_stream(path, ReVIEWHeaderListener.new(headlines))
+    Document.parse_stream(File.new(path), ReVIEWHeaderListener.new(headlines))
     properties = detect_properties(path)
     prop_str = ""
     if properties.present?
@@ -352,11 +352,14 @@ EOT
         next if level.to_i > @params["toclevel"] && force_include.nil?
         log("Push #{file} to ePUB contents.")
 
-        if customid.nil?
-          @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype, "properties" => properties))
-        else
-          @epub.contents.push(Content.new("id" => customid, "file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype, "properties" => properties))
+        hash = {"file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype}
+        if customid.present?
+          hash["id"] = customid
         end
+        if properties.present?
+          hash["properties"] = properties.split(" ")
+        end
+        @epub.contents.push(Content.new(hash))
       end
     end
   end
