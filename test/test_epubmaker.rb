@@ -11,7 +11,7 @@ class EPUBMakerTest < Test::Unit::TestCase
     @producer.merge_params({
                             "bookname" => "sample",
                             "title" => "Sample Book",
-                            "version" => 2,
+                            "epubversion" => 2,
                             "urnid" => "http://example.jp/",
                             "date" => "2011-01-01",
                             "language" => "en",
