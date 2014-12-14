@@ -327,6 +327,7 @@ EOT
       end
 
       doc = REXML::Document.new(%Q[<#{type} class="toc-h#{level}"><li /></#{type}>])
+      doc.context[:attribute_quote] = :quote
 
       e = doc.root.elements[1] # first <li/>
       @producer.contents.each do |item|
@@ -365,7 +366,7 @@ EOT
 
       warn "found level jumping in table of contents. consider to use 'flattoc: true' for strict ePUB validator." unless find_jump.nil?
 
-      doc.to_s.gsub("<li/>", "").gsub("</li>", "</li>\n").gsub("href='", "href=\"").gsub(" class='", " class=\"").gsub("'>", "\">").gsub("<#{type} ", "\n" + '\&') # ugly
+      doc.to_s.gsub("<li/>", "").gsub("</li>", "</li>\n").gsub("<#{type} ", "\n" + '\&') # ugly
     end
 
     def flat_ncx(type, indent=nil)
