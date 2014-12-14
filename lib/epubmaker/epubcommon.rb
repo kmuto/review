@@ -342,8 +342,9 @@ EOT
           (level + 1).upto(item.level) do |n|
             if e.size == 0
               # empty span for epubcheck
-              es = e.add_element("span") 
-              es.add_text(REXML::Text.new("　", false, nil, true))
+              e.attributes["style"] = "list-style-type: none;"
+              es = e.add_element("span", {"style"=>"display:none;"})
+              es.add_text(REXML::Text.new("&nbsp;", false, nil, true))
             end
 
             e2 = e.add_element(type, {"class" => "toc-h#{n}"})
