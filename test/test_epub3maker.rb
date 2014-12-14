@@ -2,6 +2,7 @@
 
 require 'test_helper'
 require 'epubmaker'
+require 'review/epubmaker'
 
 class EPUB3MakerTest < Test::Unit::TestCase
   include EPUBMaker
@@ -183,7 +184,7 @@ EOT
     @producer.contents << Content.new({"file" => "ch02.html#S1.1.2", "title" => "CH02.1.1.2", "level" => 4})
     @producer.contents << Content.new({"file" => "ch02.html#S2", "title" => "CH02.2", "level" => 2})
     @producer.contents << Content.new({"file" => "ch02.html#S2.1", "title" => "CH02.2.1", "level" => 3})
-    @producer.contents << Content.new({"file" => "ch03.html", "title" => "CH03", "level" => 1})
+    @producer.contents << Content.new({"file" => "ch03.html", "title" => "CH03", "level" => 1, "properties" => ["mathml"]})
     @producer.contents << Content.new({"file" => "ch03.html#S1", "title" => "CH03.1", "level" => 2})
     @producer.contents << Content.new({"file" => "ch03.html#S1.1", "title" => "CH03.1.1", "level" => 3})
     @producer.contents << Content.new({"file" => "ch04.html", "title" => "CH04", "level" => 1})
@@ -207,7 +208,7 @@ EOT
               Content.new("ch02.html#S1.1.2", "ch02-html#S1-1-2", "2", "CH02.1.1.2", 4),
               Content.new("ch02.html#S2", "ch02-html#S2", "html#s2", "CH02.2", 2),
               Content.new("ch02.html#S2.1", "ch02-html#S2-1", "1", "CH02.2.1", 3),
-              Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1),
+              Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1, nil, ["mathml"]),
               Content.new("ch03.html#S1", "ch03-html#S1", "html#s1", "CH03.1", 2),
               Content.new("ch03.html#S1.1", "ch03-html#S1-1", "1", "CH03.1.1", 3),
               Content.new("ch04.html", "ch04-html", "application/xhtml+xml", "CH04", 1),
@@ -240,7 +241,7 @@ EOT
     <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
     <item id="ch01-html" href="ch01.html" media-type="application/xhtml+xml"/>
     <item id="ch02-html" href="ch02.html" media-type="application/xhtml+xml"/>
-    <item id="ch03-html" href="ch03.html" media-type="application/xhtml+xml"/>
+    <item id="ch03-html" href="ch03.html" media-type="application/xhtml+xml" properties="mathml"/>
     <item id="ch04-html" href="ch04.html" media-type="application/xhtml+xml"/>
     <item id="sample-png" href="sample.png" media-type="image/png"/>
     <item id="sample-jpg" href="sample.jpg" media-type="image/jpeg"/>
@@ -469,4 +470,58 @@ EOT
 #    end
 #  end
 
+  def test_detect_mathml
+    Dir.mktmpdir do |dir|
+      epubmaker = ReVIEW::EPUBMaker.new
+      path = File.join(dir,"test.html")
+      html = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title>Colophon</title>
+</head>
+<body>
+  <div>
+   <p><span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span></p>
+  </div>
+</body>
+</html>
+EOT
+      File.open(path, "w") do |f|
+        f.write(html)
+      end
+      assert_equal ["mathml"], epubmaker.detect_properties(path)
+    end
+  end
+
+
+  def test_detect_mathml_ns
+    Dir.mktmpdir do |dir|
+      epubmaker = ReVIEW::EPUBMaker.new
+      path = File.join(dir,"test.html")
+      html = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title>Colophon</title>
+</head>
+<body>
+  <div>
+   <p><span class=\"equation\"><m:math xmlns:m='http://www.w3.org/1998/Math/MathML' display='inline'><m:mfrac><m:mrow><m:mo stretchy='false'>-</m:mo><m:mi>b</m:mi><m:mo stretchy='false'>&#xb1;</m:mo><m:msqrt><m:mrow><m:msup><m:mi>b</m:mi><m:mn>2</m:mn></m:msup><m:mo stretchy='false'>-</m:mo><m:mn>4</m:mn><m:mi>a</m:mi><m:mi>c</m:mi></m:mrow></m:msqrt></m:mrow><m:mrow><m:mn>2</m:mn><m:mi>a</m:mi></m:mrow></m:mfrac></m:math></span></p>
+  </div>
+</body>
+</html>
+EOT
+      File.open(path, "w") do |f|
+        f.write(html)
+      end
+      assert_equal ["mathml"], epubmaker.detect_properties(path)
+    end
+  end
 end
