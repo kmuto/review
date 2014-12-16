@@ -75,6 +75,12 @@ module ReVIEW
     }
 
     def headline(level, label, caption)
+      def compile_inline_runhead(s)
+        s_cleansed = s
+          .gsub(/@<fn>\{[^}]*?\}/, '')
+          .gsub(/@<\w+?>\{([^}]*?)\}/){$1}
+        compile_inline(s_cleansed)
+      end
       _, anchor = headline_prefix(level)
       headline_name = HEADLINE[level]
       if @chapter.kind_of? ReVIEW::Book::Part
@@ -83,11 +89,13 @@ module ReVIEW
       prefix = ""
       if level > @book.config["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
+      else
+        prefix = "[#{compile_inline_runhead(caption)}]"
       end
       blank unless @output.pos == 0
       puts macro(headline_name+prefix, compile_inline(caption))
       if prefix == "*" && level <= @book.config["toclevel"].to_i
-        puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline(caption)}}"
+        puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline_runhead(caption)}}"
       end
       if level == 1
         puts macro('label', chapter_label)

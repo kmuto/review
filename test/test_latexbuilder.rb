@@ -28,7 +28,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|\\chapter{this is test.}\n\\label{chap:chap1}\n|, actual
+    assert_equal %Q|\\chapter[this is test.]{this is test.}\n\\label{chap:chap1}\n|, actual
   end
 
   def test_headline_level1_without_secno
@@ -39,12 +39,17 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_with_inlinetag
     actual = compile_block("={test} this @<b>{is} test.<&\"_>\n")
-    assert_equal %Q|\\chapter{this \\textbf{is} test.\\textless{}\\&\"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n|, actual
+    assert_equal %Q|\\chapter[this is test.\\textless{}\\&\"\\textunderscore{}\\textgreater{}]{this \\textbf{is} test.\\textless{}\\&\"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n|, actual
+  end
+
+  def test_headline_level1_with_footnote
+    actual = compile_block("={test} this @<b>{is} test.@<fn>{fn1}\n//footnote[fn1][Fn.]\n")
+    assert_equal %Q|\\chapter[this is test.]{this \\textbf{is} test.\\footnote{Fn.}}\n\\label{chap:chap1}\n|, actual
   end
 
   def test_headline_level2
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\\section{this is test.}\n\\label{sec:1-1}\n|, actual
+    assert_equal %Q|\\section[this is test.]{this is test.}\n\\label{sec:1-1}\n|, actual
   end
 
   def test_headline_level3
@@ -56,7 +61,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_headline_level3_with_secno
     @config["secnolevel"] = 3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q|\\subsection{this is test.}\n\\label{sec:1-0-1}\n|, actual
+    assert_equal %Q|\\subsection[this is test.]{this is test.}\n\\label{sec:1-0-1}\n|, actual
   end
 
   def test_label
