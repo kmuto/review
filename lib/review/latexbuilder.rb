@@ -94,8 +94,8 @@ module ReVIEW
       else
         puts macro('label', sec_label(anchor))
       end
-    rescue
-      error "unknown level: #{level}"
+    rescue => e
+      error "unknown level: #{level} (#{e.inspect})"
     end
 
     def nonum_begin(level, label, caption)
