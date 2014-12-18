@@ -271,6 +271,19 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal expected, actual
   end
 
+  def test_inline_imgref2
+    def @chapter.image(id)
+      item = Book::NumberlessImageIndex::Item.new("sampleimg", 1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "<p>図1.1</p>\n"
+    assert_equal expected, actual
+  end
+
+
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, actual

@@ -221,7 +221,13 @@ module ReVIEW
     end
 
     def inline_imgref(id)
-      "#{inline_img(id)}#{I18n.t('imgref', @chapter.image(id).caption)}"
+      img = inline_img(id)
+
+      if @chapter.image(id).caption
+        "#{img}#{I18n.t('imgref', @chapter.image(id).caption)}"
+      else
+        img
+      end
     end
 
     def inline_table(id)

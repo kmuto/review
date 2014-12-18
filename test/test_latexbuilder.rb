@@ -637,6 +637,30 @@ EOS
     assert_equal "{-} {-}{-} {-}{-}{-} {-}{-}{-}{-}", actual
   end
 
+  def test_inline_imgref
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}「sample photo」\n"
+    assert_equal expected, actual
+  end
+
+  def test_inline_imgref2
+    def @chapter.image(id)
+      item = Book::NumberlessImageIndex::Item.new("sampleimg", 1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}\n"
+    assert_equal expected, actual
+  end
+
   def test_block_raw0
     actual = compile_block("//raw[<>!\"\\n& ]\n")
     expected = %Q(<>!\"\n& )
