@@ -259,6 +259,18 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", actual
   end
 
+  def test_inline_imgref
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "<p>図1.1「sample photo」</p>\n"
+    assert_equal expected, actual
+  end
+
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, actual

@@ -172,6 +172,7 @@ module ReVIEW
     definline :chap
     definline :title
     definline :img
+    definline :imgref
     definline :icon
     definline :list
     definline :table

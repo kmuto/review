@@ -220,6 +220,10 @@ module ReVIEW
       nofunc_text("[UnknownImage:#{id}]")
     end
 
+    def inline_imgref(id)
+      "#{inline_img(id)}#{@chapter.image(id).display_caption}"
+    end
+
     def inline_table(id)
       "#{I18n.t("table")}#{@chapter.table(id).number}"
     rescue KeyError
