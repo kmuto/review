@@ -170,11 +170,6 @@ module ReVIEW
         def path
           @path ||= @index.find_path(id)
         end
-
-        def display_caption
-          "「#{caption}」"
-        end
-
       end
 
       def ImageIndex.item_type

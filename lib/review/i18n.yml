@@ -15,6 +15,7 @@ ja:
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
   format_number_header_without_chapter: "%d:"
+  imgref: "「%s」"
   caption_prefix: " "
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
