@@ -224,7 +224,7 @@ module ReVIEW
       img = inline_img(id)
 
       if @chapter.image(id).caption
-        "#{img}#{I18n.t('imgref', @chapter.image(id).caption)}"
+        "#{img}#{I18n.t('image_quote', @chapter.image(id).caption)}"
       else
         img
       end

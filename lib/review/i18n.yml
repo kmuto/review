@@ -15,7 +15,7 @@ ja:
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
   format_number_header_without_chapter: "%d:"
-  imgref: "「%s」"
+  image_quote: "「%s」"
   caption_prefix: " "
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
@@ -52,6 +52,7 @@ en:
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
   format_number_header_without_chapter: "%d:"
+  image_quote: '"%s"'
   caption_prefix: " "
   caption_prefix_idgxml: "　"
   ruby_prefix: "("
@@ -82,6 +83,7 @@ zh_TW:
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
   format_number_header_without_chapter: "%d:"
+  image_quote: '"%s"'
   caption_prefix: " "
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
