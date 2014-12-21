@@ -449,6 +449,19 @@ module ReVIEW
       end
     end
 
+    def inline_imgref(id)
+      chapter, id = extract_chapter_id(id)
+      if chapter.image(id).caption.blank?
+        inline_img(id)
+      else
+        if get_chap(chapter).nil?
+          "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}#{I18n.t('image_quote', chapter.image(id).caption)}</span>"
+        else
+          "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}#{I18n.t('image_quote', chapter.image(id).caption)}</span>"
+        end
+      end
+    end
+
     def handle_metric(str)
       k, v = str.split('=', 2)
       return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
