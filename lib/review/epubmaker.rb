@@ -283,6 +283,7 @@ EOT
       stylesheet = "--stylesheet=#{@params["stylesheet"].join(",")}"
     end
 
+    ENV["REVIEWFNAME"] = filename
     system("#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
 
     write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
