@@ -367,8 +367,9 @@ module ReVIEW
     end
     private :sec_label
 
-    def table_label(id)
-      "table:#{@chapter.id}:#{id}"
+    def table_label(id, chapter=nil)
+      chapter ||= @chapter
+      "table:#{chapter.id}:#{id}"
     end
     private :table_label
 
@@ -617,7 +618,7 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id))
+      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id, chapter))
     end
 
     def inline_img(id)
