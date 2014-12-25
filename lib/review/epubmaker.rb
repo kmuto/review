@@ -289,17 +289,37 @@ EOT
     write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
   end
 
+  def detect_properties(path)
+    properties = []
+    File.open(path) do |f|
+      doc = REXML::Document.new(f)
+      if REXML::XPath.first(doc, "//m:math", {'m' => 'http://www.w3.org/1998/Math/MathML'})
+        properties<< "mathml"
+      end
+      if REXML::XPath.first(doc, "//s:svg", {'s' => 'http://www.w3.org/2000/svg'})
+        properties<< "svg"
+      end
+    end
+    properties
+  end
+
   def write_info_body(basetmpdir, id, filename, ispart=nil, chaptype=nil)
     headlines = []
     # FIXME:nonumを修正する必要あり
-    Document.parse_stream(File.new("#{basetmpdir}/#{filename}"), ReVIEWHeaderListener.new(headlines))
+    path = File.join(basetmpdir, filename)
+    Document.parse_stream(File.new(path), ReVIEWHeaderListener.new(headlines))
+    properties = detect_properties(path)
+    prop_str = ""
+    if properties.present?
+      prop_str = ",properties="+properties.join(" ")
+    end
     first = true
     headlines.each do |headline|
       headline["level"] = 0 if !ispart.nil? && headline["level"] == 1
       if first.nil?
         write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}\tchaptype=#{chaptype}")
       else
-        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true,chaptype=#{chaptype}")
+        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true,chaptype=#{chaptype}#{prop_str}")
         first = nil
       end
     end
@@ -311,6 +331,7 @@ EOT
         force_include = nil
         customid = nil
         chaptype = nil
+        properties = nil
         level, file, title, custom = l.chomp.split("\t")
         unless custom.nil?
           # custom setting
@@ -324,17 +345,22 @@ EOT
               force_include = true
             when "chaptype"
               chaptype = v
+            when "properties"
+              properties = v
             end
           end
         end
         next if level.to_i > @params["toclevel"] && force_include.nil?
         log("Push #{file} to ePUB contents.")
 
-        if customid.nil?
-          @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype))
-        else
-          @epub.contents.push(Content.new("id" => customid, "file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype))
+        hash = {"file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype}
+        if customid.present?
+          hash["id"] = customid
         end
+        if properties.present?
+          hash["properties"] = properties.split(" ")
+        end
+        @epub.contents.push(Content.new(hash))
       end
     end
   end

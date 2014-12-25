@@ -22,7 +22,6 @@ module EPUBMaker
 
     # Return opf file content.
     def opf
-      mathstr = @producer.params["mathml"].nil? ? "" : %Q[ properties="mathml"]
       s = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="#{@producer.params["language"]}">
@@ -33,7 +32,7 @@ EOT
 
       s << %Q[  </metadata>\n]
 
-      s << opf_manifest(mathstr)
+      s << opf_manifest
       s << opf_tocx
       s << opf_guide # same as ePUB2
 
@@ -115,11 +114,11 @@ EOT
       s
     end
 
-    def opf_manifest(mathstr)
+    def opf_manifest
       s = ""
       s << <<EOT
   <manifest>
-    <item properties="nav#{mathstr.empty? ? '' : ' mathml'}" id="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" media-type="application/xhtml+xml"/>
+    <item properties="nav" id="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}" media-type="application/xhtml+xml"/>
     <item id="#{@producer.params["bookname"]}" href="#{@producer.params["cover"]}" media-type="application/xhtml+xml"/>
 EOT
 
@@ -139,7 +138,7 @@ EOT
         if item.properties.size > 0
           propstr = %Q[ properties="#{item.properties.sort.uniq.join(" ")}"]
         end
-        s << %Q[    <item#{mathstr} id="#{item.id}" href="#{item.file}" media-type="#{item.media}"#{propstr}/>\n]
+        s << %Q[    <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"#{propstr}/>\n]
       end
       s << %Q[  </manifest>\n]
 
