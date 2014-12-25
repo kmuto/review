@@ -68,7 +68,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録I　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hI"></a>付録I　this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_roman
@@ -79,7 +79,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>I.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a>I.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_alpha
@@ -90,7 +90,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録A　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hA"></a>付録A　this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_alpha
@@ -101,7 +101,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>A.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a>A.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_without_secno
