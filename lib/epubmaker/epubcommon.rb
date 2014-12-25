@@ -344,7 +344,7 @@ EOT
               # empty span for epubcheck
               e.attributes["style"] = "list-style-type: none;"
               es = e.add_element("span", {"style"=>"display:none;"})
-              es.add_text(REXML::Text.new("&nbsp;", false, nil, true))
+              es.add_text(REXML::Text.new("&#xa0;", false, nil, true))
             end
 
             e2 = e.add_element(type, {"class" => "toc-h#{n}"})
