@@ -36,8 +36,25 @@ ja:
   supervisor_postfix: "　監修"
   translator_postfix: "　訳"
   names_splitter: "、"
-  version: "版"
+  edition: "版"
+  nth_edition: "第%s版"
+  first_edition: "初版"
+  nth_impression: "第%s刷"
   published_by: "発行"
+  published_by1: "%s　%s　発行"
+  published_by2: "%s　発行"
+  published_by3: "%s　%s"
+  date_format: '%%Y年%%-m月%%-d日'
+  toctitle: "目次"
+  covertitle: "表紙"
+  titlepagetitle: "大扉"
+  originaltitle: "原書大扉"
+  credittitle: "クレジット"
+  colophontitle: "奥付"
+  advtitle: "広告"
+  profiletitle: "著者紹介"
+  backcovertitle: "裏表紙"
+
 
 en:
   image: "Figure "
@@ -68,7 +85,26 @@ en:
   pbl: "Publisher"
   contact: "Contact"
   names_splitter: ", "
-  version: "Version"
+  edition: "edition"
+  impression: "impression"
+  nth_edition: "%s edition"
+  first_edition: "first edition"
+  nth_impression: "%s impression"
+  published_by: "published"
+  published_by1: "published by %s %s"
+  published_by2: "published by %s"
+  published_by3: "%s %s"
+  date_format: '%%b. %%e, %%Y'
+  toctitle: "Table of Contents"
+  covertitle: "Cover"
+  titlepagetitle: "Title Page"
+  originaltitle: "Title Page of Original"
+  credittitle: "Credit"
+  colophontitle: "Colophon"
+  advtitle: "Advertisement"
+  profiletitle: "Profile"
+  backcovertitle: "Back Cover"
+
 
 zh_TW:
   image: 圖
@@ -102,5 +138,6 @@ zh_TW:
   supervisor_postfix: "　監修"
   translator_postfix: "　譯"
   names_splitter: ", "
-  Version: "版"
-  published_by: "出版"
+  edition: "版"
+  impression: "刷"
+  published_by1: "出版"

@@ -10,6 +10,7 @@
 #
 
 require 'epubmaker/producer'
+require 'review/i18n'
 require 'cgi'
 
 module EPUBMaker
@@ -223,20 +224,20 @@ EOT
         if @producer.params["history"]
           @producer.params["history"].each_with_index do |items, edit|
             items.each_with_index do |item, rev|
-              editstr = (edit == 0) ? "初版" : "第#{edit + 1}版" # FIXME:i18n
-              revstr = "第#{rev + 1}刷"
+              editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}") # FIXME:i18n
+              revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
               if item =~ /\A\d+\-\d+\-\d+\Z/
-                s << %Q[      <p>#{date_to_s(item)}　#{editstr}#{revstr}　発行</p>\n] # FIXME:i18n
+                s << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n] # FIXME:i18n
               else
                 # custom date with string
                 item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
-                  s << %Q[      <p>#{date_to_s(m[1])}　#{m[2]}</p>\n]
+                  s << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
                 end
               end
             end
           end
         else
-          s << %Q[      <p>#{date_to_s(@producer.params["date"])}　発行</p>\n] #FIXME:i18n
+          s << %Q[      <p>#{ReVIEW::I18n.t("published_by2", date_to_s(@producer.params["date"]))}</p>\n] #FIXME:i18n
         end
         s << %Q[    </div>\n]
       end
@@ -276,8 +277,9 @@ EOT
     end
 
     def date_to_s(date)
-      ymd = date.to_s.split('-')
-      "#{ymd[0]}年#{ymd[1].sub(/\A0/, '')}月#{ymd[2].sub(/\A0/, '')}日" # FIXME:i18n
+      require 'date'
+      d = Date.parse(date)
+      d.strftime(ReVIEW::I18n.t("date_format"))
     end
 
     # Return own toc content.
