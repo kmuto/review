@@ -353,7 +353,7 @@ module ReVIEW
 
       def number(id)
         n = @chap.number
-        if @chap.on_APPENDIX? && @chap.number > 1 && @chap.number < 28
+        if @chap.on_APPENDIX? && @chap.number > 0 && @chap.number < 28
           type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
           n = case type
               when "roman"
