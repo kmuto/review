@@ -31,8 +31,12 @@ def main
 
   part_sensitive = false
   basedir = nil
+  yamlfile = nil
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
+  opts.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
+    yamlfile = yaml
+  end
   opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
     part_sensitive = true
   }
@@ -57,8 +61,12 @@ def main
     exit 1
   end
 
-  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW.book
-  ReVIEW.book.config = @config
+  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load
+  book.config = @config
+  if yamlfile
+    book.load_config(yamlfile)
+  end
+
   if part_sensitive
     sep = ""
     book.each_part do |part|

@@ -30,10 +30,22 @@ module ReVIEW
         "posthook" => nil, # command path of post hook
         "epubversion" => 2,
         "titlepage" => true, # Use title page
-        "toc" => true, # Use table of contents
+        "toc" => nil, # Use table of contents in body
         "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
         "catalogfile" => 'catalog.yml',
+
+        "chapter_file" => 'CHAPS',
+        "part_file"    => 'PART',
+        "reject_file"  => 'REJECT',
+        "predef_file"  => 'PREDEF',
+        "postdef_file" => 'POSTDEF',
+        "page_metric"  => ReVIEW::Book::PageMetric.a5,
+        "ext"          => '.re',
+        "image_dir"    => 'images',
+        "image_types"  => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
+        "bib_file"     => "bib.re",
+        "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
       ]
     end
   end

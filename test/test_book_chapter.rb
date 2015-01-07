@@ -24,88 +24,8 @@ class ChapterTest < Test::Unit::TestCase
 =end
   end
 
-  def test_s_intern_pathes
-    dir1_files = {
-      'CHAPS' => "ch1.re\nch2.re\n",
-      'ch1.re' => 'ch1',
-      'ch2.re' => 'ch2',
-    }
-    dir2_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-    }
-    mktmpbookdir dir1_files do |dir1, book1, files1|
-      mktmpbookdir dir2_files do |dir2, book2, files2|
-        paths = (files1.values + files2.values).flatten.grep(/\.re\z/)
-        chs = Book::Chapter.intern_pathes(paths)
-
-        assert_equal 3, chs.size
-        assert chs[0].book == chs[1].book
-        assert chs[0].book != chs[2].book
-        assert dir1, chs[0].book.basedir
-        assert dir2, chs[2].book.basedir
-      end
-    end
-
-    dir_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      paths << __FILE__ + ' not exist file.re'
-      assert_raises ReVIEW::FileNotFound do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-
-    dir_files = {
-      'ch1.re' => 'ch1 not in CHAPS',
-      'ch2.re' => 'ch2 not in CHAPS',
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      assert_nothing_raised do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-
-    dir_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-      'ch2.re' => 'ch2 not in CHAPS',
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      assert_raises KeyError::FileNotFound do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-
-    dir_files = {
-      'CHAPS' => "ch1.re\n",
-      'ch1.re' => 'ch1',
-      'preface.re' => 'preface',
-    }
-    mktmpbookdir dir_files do |dir, book, files|
-      paths = files.values.grep(/\.re\z/)
-      assert_nothing_raised do
-        Book::Chapter.intern_pathes(paths)
-      end
-    end
-  end
-
-  def test_s_for_stdin
-    assert Book::Chapter.for_stdin
-  end
-
-  def test_s_for_path
-    assert Book::Chapter.for_path(1, __FILE__)
-  end
-
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
-    assert_equal :book, ch.env
     assert_equal :book, ch.book
     assert_equal :number, ch.number
     assert_equal '/foo/bar', ch.path
@@ -161,11 +81,12 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_title
     io = StringIO.new
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, nil, io)
     assert_equal '', ch.title
 
     io = StringIO.new("=1\n=2\n")
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
+    ch = Book::Chapter.new(book, nil, nil, nil, io)
     assert_equal '1', ch.title
 
 
@@ -176,8 +97,8 @@ class ChapterTest < Test::Unit::TestCase
       ['XYZ', @eucjp_str],
     ].each do |enc, instr|
       io = StringIO.new("= #{instr}\n")
-      ch = Book::Chapter.new(ReVIEW.book, nil, nil, nil, io)
-      ReVIEW.book.config = {'inencoding' => enc}
+      ch = Book::Chapter.new(book, nil, nil, nil, io)
+      book.config['inencoding'] = enc
       assert_equal @utf8_str, ch.title
       assert_equal @utf8_str, ch.instance_eval { @title }
     end
@@ -191,12 +112,13 @@ class ChapterTest < Test::Unit::TestCase
       ['XYZ', @eucjp_str],
     ].each do |enc, instr|
       tf = Tempfile.new('chapter_test')
+      book = Book::Base.new(nil)
       begin
         tf.print instr
         tf.close
 
-        ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf.path)
-        ReVIEW.book.config = {'inencoding' => enc}
+        ch = Book::Chapter.new(book, nil, nil, tf.path)
+        book.config['inencoding'] = enc
         assert_equal @utf8_str, ch.content
         assert_equal @utf8_str, ch.instance_eval { @content }
       ensure
@@ -212,8 +134,8 @@ class ChapterTest < Test::Unit::TestCase
         tf2.puts instr
         tf1.close
 
-        ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf1.path, tf2)
-        ReVIEW.book.config = {'inencoding' => enc}
+        ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2)
+        book.config['inencoding'] = enc
         assert_equal "#{@utf8_str}\n#{@utf8_str}\n", ch.content # XXX: OK?
       ensure
         tf1.close(true)
@@ -228,7 +150,8 @@ class ChapterTest < Test::Unit::TestCase
     tf.print lines.join('')
     tf.close
 
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf.path)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf.path)
     assert_equal lines, ch.lines
 
     lines = ["1\n", "2\n", "3"]
@@ -240,7 +163,7 @@ class ChapterTest < Test::Unit::TestCase
     tf2.puts lines.join('')
     tf2.close
 
-    ch = Book::Chapter.new(ReVIEW.book, nil, nil, tf1.path, tf2.path)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2.path)
     assert_equal lines, ch.lines # XXX: OK?
   end
 
@@ -254,11 +177,13 @@ class ChapterTest < Test::Unit::TestCase
     tf2.print content
     tf2.close
 
-    ch = Book::Chapter.new(nil, nil, nil, tf1.path)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes
 
-    ch = Book::Chapter.new(nil, nil, nil, tf1.path, tf2)
+    book = Book::Base.new(nil)
+    ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?
   end
@@ -356,7 +281,8 @@ E
 
 
   def test_column_index
-    ReVIEW.book.config = {"inencoding" => "utf-8"}
+    book = Book::Base.new(nil)
+    book.config["inencoding"] = "utf-8"
     do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)
 = dummy1
 ===[column]{abc} aaaa

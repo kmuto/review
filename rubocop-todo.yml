@@ -441,3 +441,16 @@ WhileUntilModifier:
 # Cop supports --auto-correct.
 WordArray:
   MinSize: 7
+
+BarePercentLiterals:
+  Enabled: false
+
+UnusedMethodArgument:
+  Enabled: false
+
+PercentQLiterals:
+  Enabled: false
+
+UnneededPercentQ:
+  Enabled: false
+

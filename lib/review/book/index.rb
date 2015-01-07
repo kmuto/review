@@ -12,6 +12,7 @@
 require 'review/extentions'
 require 'review/exception'
 require 'review/book/image_finder'
+require 'review/i18n'
 
 module ReVIEW
   module Book
@@ -131,16 +132,35 @@ module ReVIEW
 
 
     class ImageIndex < Index
+      def self.parse(src, *args)
+        items = []
+        seq = 1
+        src.grep(%r<^//#{item_type()}>) do |line|
+          # ex. ["//image", "id", "", "caption"]
+          elements = line.split(/\[(.*?)\]/)
+          if elements[1].present?
+            items.push item_class().new(elements[1], seq, elements[3])
+            seq += 1
+            if elements[1] == ""
+              warn "warning: no ID of #{item_type()} in #{line}"
+            end
+          end
+        end
+        new(items, *args)
+      end
+
       class Item
 
-        def initialize(id, number)
+        def initialize(id, number, caption = nil)
           @id = id
           @number = number
+          @caption = caption
           @path = nil
         end
 
         attr_reader :id
         attr_reader :number
+        attr_reader :caption
         attr_writer :index    # internal use only
 
         def bound?
@@ -150,7 +170,6 @@ module ReVIEW
         def path
           @path ||= @index.find_path(id)
         end
-
       end
 
       def ImageIndex.item_type
@@ -159,7 +178,7 @@ module ReVIEW
 
       attr_reader :image_finder
 
-      def initialize(items, chapid, basedir, types)
+      def initialize(items, chapid, basedir, types, builder)
         super items
         items.each do |i|
           i.index = self
@@ -169,17 +188,16 @@ module ReVIEW
         @types = types
 
         @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid,
-                                                      ReVIEW.book.config['builder'], types)
+                                                      builder, types)
       end
 
       def find_path(id)
         @image_finder.find_path(id)
       end
-
     end
 
     class IconIndex < ImageIndex
-      def initialize(items, chapid, basedir, types)
+      def initialize(items, chapid, basedir, types, builder)
         @items = items
         @index = {}
         items.each do |i|
@@ -193,7 +211,7 @@ module ReVIEW
         @basedir = basedir
         @types = types
 
-        @image_finder = ImageFinder.new(basedir, chapid, ReVIEW.book.config['builder'], types)
+        @image_finder = ImageFinder.new(basedir, chapid, builder, types)
       end
 
       def IconIndex.parse(src, *args)
@@ -251,11 +269,6 @@ module ReVIEW
 
     class NumberlessImageIndex < ImageIndex
       class Item < ImageIndex::Item
-        def initialize(id, number)
-          @id = id
-          @number = ""
-          @path = nil
-        end
       end
 
       def NumberlessImageIndex.item_type
@@ -269,11 +282,6 @@ module ReVIEW
 
     class IndepImageIndex < ImageIndex
       class Item < ImageIndex::Item
-        def initialize(id, number)
-          @id = id
-          @number = ""
-          @path = nil
-        end
       end
 
       def IndepImageIndex.item_type
@@ -294,10 +302,28 @@ module ReVIEW
         items = []
         indexs = []
         headlines = []
+        inside_column = false
         src.each do |line|
           if m = HEADLINE_PATTERN.match(line)
-            next if m[2] == 'column'
+            next if m[1].size > 10 # Ignore too deep index
             index = m[1].size - 2
+
+            # column
+            if m[2] == 'column'
+              inside_column = true
+              next
+            end
+            if m[2] == '/column'
+              inside_column = false
+              next
+            end
+            if indexs.blank? || index <= indexs[-1]
+              inside_column = false
+            end
+            if inside_column
+              next
+            end
+
             if index >= 0
               if indexs.size > (index + 1)
                 indexs = indexs.take(index + 1)
@@ -326,7 +352,20 @@ module ReVIEW
       end
 
       def number(id)
-        return ([@chap.number] + @index.fetch(id).number).join(".")
+        n = @chap.number
+        if @chap.on_APPENDIX? && @chap.number > 1 && @chap.number < 28
+          type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
+          n = case type
+              when "roman"
+                ROMAN[@chap.number]
+              when "alphabet", "alpha"
+                ALPHA[@chap.number]
+              else
+                # nil, "arabic", etc...
+                "#{@chap.number}"
+              end
+        end
+        return ([n] + @index.fetch(id).number).join(".")
       end
     end
 

@@ -35,7 +35,7 @@ module ReVIEW
     end
 
     def anchor(level)
-      str = "#{@chapter.number}"
+      str = "#{@chapter.format_number(false)}"
       0.upto(level-2) do |i|
         str << "-#{@counter[i]}"
       end

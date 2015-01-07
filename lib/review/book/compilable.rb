@@ -59,7 +59,11 @@ module ReVIEW
       end
 
       def volume
-        @volume ||= Volume.count_file(path())
+        if !@volume
+          @volume = Volume.count_file(path())
+          @volume.page_per_kbyte = @book.page_metric.page_per_kbyte
+        end
+        @volume
       end
 
       def open(&block)
@@ -118,29 +122,29 @@ module ReVIEW
       def numberless_image_index
         @numberless_image_index ||=
           NumberlessImageIndex.parse(lines(), id(),
-          "#{book.basedir}#{@book.image_dir}",
-          @book.image_types)
+          "#{book.basedir}/#{@book.image_dir}",
+          @book.image_types, @book.config['builder'])
       end
 
       def image_index
         @image_index ||= ImageIndex.parse(lines(), id(),
-          "#{book.basedir}#{@book.image_dir}",
-          @book.image_types)
+          "#{book.basedir}/#{@book.image_dir}",
+          @book.image_types, @book.config['builder'])
         @image_index
       end
 
       def icon_index
         @icon_index ||= IconIndex.parse(lines(), id(),
-          "#{book.basedir}#{@book.image_dir}",
-          @book.image_types)
+          "#{book.basedir}/#{@book.image_dir}",
+          @book.image_types, @book.config['builder'])
         @icon_index
       end
 
       def indepimage_index
         @indepimage_index ||=
           IndepImageIndex.parse(lines(), id(),
-          "#{book.basedir}#{@book.image_dir}",
-          @book.image_types)
+          "#{book.basedir}/#{@book.image_dir}",
+          @book.image_types, @book.config['builder'])
       end
 
       def bibpaper(id)

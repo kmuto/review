@@ -18,7 +18,6 @@ require 'nkf'
 require 'review/book/base'
 require 'review/book/chapter'
 require 'review/book/part'
-require 'review/book/parameters'
 require 'review/book/page_metric'
 require 'review/book/volume'
 require 'review/book/index'
@@ -27,7 +26,7 @@ module ReVIEW
   @default_book = nil
 
   def ReVIEW.book
-    @default_book ||= Book::Base.load_default
+    @default_book ||= Book::Base.load
   end
 
   module Book

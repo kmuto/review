@@ -19,17 +19,11 @@ module ReVIEW
       attr_writer :config
 
       def self.load_default
-        basedir = "."
-        if File.file?("#{basedir}/CHAPS") ||
-            File.file?("#{basedir}/catalog.yml")
-          book = load(basedir)
-          book
-        else
-          new(basedir)
-        end
+        warn 'Book::Base.load_default() is obsoleted. Use Book::Base.load().'
+        load()
       end
 
-      def self.load(dir)
+      def self.load(dir = ".")
         update_rubyenv dir
         new(dir)
       end
@@ -48,26 +42,47 @@ module ReVIEW
         @basedir_seen[dir] = true
       end
 
-      def initialize(basedir, parameters = Parameters.default)
+      def initialize(basedir)
         @basedir = basedir
-        @parameters = parameters
         @parts = nil
         @chapter_index = nil
+        @config = ReVIEW::Configure.values
+        @catalog = nil
       end
 
-      extend Forwardable
-      def_delegators '@parameters',
-      :chapter_file,
-      :part_file,
-      :bib_file,
-      :reject_file,
-      :predef_file,
-      :postdef_file,
-      :ext,
-      :image_dir,
-      :image_types,
-      :image_types=,
-      :page_metric
+      def bib_file
+        config["bib_file"]
+      end
+
+      def reject_file
+        config["reject_file"]
+      end
+
+      def ext
+        config["ext"]
+      end
+
+      def image_dir
+        config["image_dir"]
+      end
+
+      def image_types
+        config["image_types"]
+      end
+
+      def image_types=(types)
+        config["image_types"] = types
+      end
+
+      def page_metric
+        if config["page_metric"].respond_to?(:downcase) && config["page_metric"].upcase =~ /^[A-Z0-9_]+$/
+          ReVIEW::Book::PageMetric.const_get(config["page_metric"].upcase)
+        elsif config["page_metric"].kind_of?(Array) && config["page_metric"].size == 5
+          ReVIEW::Book::PageMetric.new(*config["page_metric"])
+        else
+          config["page_metric"]
+        end
+      end
 
       def parts
         @parts ||= read_parts()
@@ -134,19 +149,26 @@ module ReVIEW
       end
 
       def volume
-        Volume.sum(chapters.map {|chap| chap.volume })
+        vol = Volume.sum(chapters.map {|chap| chap.volume })
+        vol.page_per_kbyte = page_metric.page_per_kbyte
+        vol
       end
 
       def config
         @config ||= Configure.values
       end
 
-      # backword compatible
+      # backward compatible
       def param=(param)
         @config = param
       end
 
-      # backword compatible
+      def load_config(filename)
+        new_conf = YAML.load_file(filename)
+        @config.merge!(new_conf)
+      end
+
+      # backward compatible
       def param
         @config
       end
@@ -155,7 +177,7 @@ module ReVIEW
         return @catalog if @catalog.present?
 
         catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
-        if File.exist? catalogfile_path
+        if File.file? catalogfile_path
           @catalog = Catalog.new(File.open catalogfile_path)
         end
 
@@ -166,7 +188,7 @@ module ReVIEW
         if catalog
           catalog.chaps
         else
-          read_FILE(chapter_file)
+          read_FILE(config["chapter_file"])
         end
       end
 
@@ -174,7 +196,15 @@ module ReVIEW
         if catalog
           catalog.predef
         else
-          read_FILE(predef_file)
+          read_FILE(config["predef_file"])
+        end
+      end
+
+      def read_APPENDIX
+        if catalog
+          catalog.appendix
+        else
+          read_FILE(config["postdef_file"]) # for backward compatibility
         end
       end
 
@@ -182,7 +212,7 @@ module ReVIEW
         if catalog
           catalog.postdef
         else
-          read_FILE(postdef_file)
+          ""
         end
       end
 
@@ -192,7 +222,7 @@ module ReVIEW
         if catalog
           @read_PART = catalog.parts
         else
-          @read_PART = File.read("#{@basedir}/#{part_file}")
+          @read_PART = File.read("#{@basedir}/#{config["part_file"]}")
         end
       end
 
@@ -200,7 +230,7 @@ module ReVIEW
         if catalog
           catalog.parts.present?
         else
-          File.exist?("#{@basedir}/#{part_file}")
+          File.exist?("#{@basedir}/#{config["part_file"]}")
         end
       end
 
@@ -217,30 +247,36 @@ module ReVIEW
           return mkpart_from_namelist(catalog.predef.split("\n"))
         end
 
-        if File.file?("#{@basedir}/#{predef_file}")
+        if File.file?("#{@basedir}/#{config["predef_file"]}")
           begin
-            return mkpart_from_namelistfile("#{@basedir}/#{predef_file}")
+            return mkpart_from_namelistfile("#{@basedir}/#{config["predef_file"]}")
           rescue FileNotFound => err
             raise FileNotFound, "preface #{err.message}"
           end
-        else
-          mkpart_from_namelist(%w(preface))
+        end
+      end
+
+      def appendix
+        if catalog
+          names = catalog.appendix.split("\n")
+          chaps = names.each_with_index.map {|n, idx|
+            mkchap_ifexist(n, idx)
+          }.compact
+          return mkpart(chaps)
+        end
+
+        if File.file?("#{@basedir}/#{config["postdef_file"]}")
+          begin
+            return mkpart_from_namelistfile("#{@basedir}/#{config["postdef_file"]}")
+          rescue FileNotFound => err
+            raise FileNotFound, "postscript #{err.message}"
+          end
         end
       end
 
       def postscripts
         if catalog
-          return mkpart_from_namelist(catalog.postdef.split("\n"))
-        end
-
-        if File.file?("#{@basedir}/#{postdef_file}")
-          begin
-            return mkpart_from_namelistfile("#{@basedir}/#{postdef_file}")
-          rescue FileNotFound => err
-            raise FileNotFound, "postscript #{err.message}"
-          end
-        else
-          mkpart_from_namelist(%w(appendix postscript))
+          mkpart_from_namelist(catalog.postdef.split("\n"))
         end
       end
 
@@ -254,6 +290,9 @@ module ReVIEW
         list = parse_chapters
         if pre = prefaces
           list.unshift pre
+        end
+        if app = appendix
+          list.push app
         end
         if post = postscripts
           list.push post
@@ -322,10 +361,13 @@ module ReVIEW
         Chapter.new(self, number, name, path)
       end
 
-      def mkchap_ifexist(name)
+      def mkchap_ifexist(name, idx = nil)
         name += ext if File.extname(name) == ""
         path = "#{@basedir}/#{name}"
-        File.file?(path) ? Chapter.new(self, nil, name, path) : nil
+        if File.file?(path)
+          idx += 1 if idx
+          Chapter.new(self, idx, name, path)
+        end
       end
 
       def read_FILE(filename)
@@ -343,6 +385,8 @@ module ReVIEW
         res
       rescue Errno::ENOENT
         Dir.glob("#{@basedir}/*#{ext()}").sort.join("\n")
+      rescue Errno::EISDIR
+        ""
       end
     end
   end

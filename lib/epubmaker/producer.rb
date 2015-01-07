@@ -101,7 +101,8 @@ module EPUBMaker
     # If Producer#params["coverimage"] is defined, it will be used for
     # the cover image.
     def cover(wobj)
-      s = @epub.cover
+      type = (@params["epubversion"] >= 3) ? "cover" : nil
+      s = @epub.cover(type)
       wobj.puts s if !s.nil? && !wobj.nil?
     end
 
@@ -219,6 +220,7 @@ module EPUBMaker
         "font_ext" => %w(ttf woff otf),
         "verify_target_images" => nil,
         "force_include_images" => [],
+        "cover_linear" => nil,
       }
 
       defaults.each_pair do |k, v|
@@ -231,7 +233,7 @@ module EPUBMaker
         raise "Key #{k} must have a value. Abort." if @params[k].nil?
       end
       # array
-      %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl stylesheet rights].each do |item|
+      %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl stylesheet rights].each do |item|
         @params[item] = [@params[item]] if !@params[item].nil? && @params[item].instance_of?(String)
       end
       # optional

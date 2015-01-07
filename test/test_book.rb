@@ -11,38 +11,6 @@ class BookTest < Test::Unit::TestCase
     assert_equal ex_path, re_path, *options
   end
 
-  def test_s_load_default
-    Dir.mktmpdir do |dir|
-      File.open(File.join(dir, 'CHAPS'), 'w') {}
-      Dir.chdir(dir) do
-        assert_same_path dir, File.expand_path(Book.load_default.basedir), "error in dir CHAPS"
-      end
-    end
-
-    # tests for ReVIEW.book
-    default_book = nil
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        default_book = ReVIEW.book
-        assert default_book
-      end
-    end
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        assert_equal default_book, ReVIEW.book, "chdir mktmpdir"
-      end
-    end
-  end
-
-  def test_s_load
-    Dir.mktmpdir do |dir|
-      book = Book.load(dir)
-      defs = get_instance_variables(Book::Parameters.default)
-      pars = get_instance_variables(book.instance_eval { @parameters })
-      assert_equal defs, pars
-    end
-  end
-
   def test_s_update_rubyenv
     save_load_path = $LOAD_PATH.dup
 
@@ -121,6 +89,52 @@ class BookTest < Test::Unit::TestCase
 
       File.open(chaps_path, 'w') {|o| o.print "XYZ\n" }
       assert_equal chaps_content, book.read_PART
+    end
+  end
+
+  def test_read_APPENDIX
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal "", book.read_APPENDIX
+
+      post_path = File.join(dir, 'POSTDEF')
+      re1_path = File.join(dir, "123#{book.ext}")
+      re2_path = File.join(dir, "456#{book.ext}")
+
+      File.open(post_path, 'w') {|o| o.print "abc\n" }
+      File.open(re1_path, 'w') {|o| o.print "123\n" }
+      File.open(re2_path, 'w') {|o| o.print "456\n" }
+
+      assert_equal "abc\n", book.read_APPENDIX
+
+      File.unlink(post_path)
+      assert_equal "#{re1_path}\n#{re2_path}", book.read_APPENDIX
+
+      File.unlink(re1_path)
+      assert_equal "#{re2_path}", book.read_APPENDIX
+
+      File.unlink(re2_path)
+      assert_equal "", book.read_APPENDIX
+    end
+  end
+
+  def test_read_POSTDEF
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal "", book.read_POSTDEF
+
+      post_path = File.join(dir, 'POSTDEF')
+      re1_path = File.join(dir, "123#{book.ext}")
+      re2_path = File.join(dir, "456#{book.ext}")
+
+      File.open(post_path, 'w') {|o| o.print "abc\n" }
+      File.open(re1_path, 'w') {|o| o.print "123\n" }
+      File.open(re2_path, 'w') {|o| o.print "456\n" }
+
+      assert_equal "", book.read_POSTDEF
+
+      File.unlink(post_path)
+      assert_equal "", book.read_POSTDEF
     end
   end
 
@@ -257,12 +271,11 @@ EOC
     ].each do |n_parts, chaps_text, parts_text, part_names|
       n_test += 1
       Dir.mktmpdir do |dir|
-        params = Book::Parameters.new(:part_file => 'PARTS')
-        book = Book::Base.new(dir, params)
+        book = Book::Base.new(dir)
         chaps_path = File.join(dir, 'CHAPS')
         File.open(chaps_path, 'w') {|o| o.print chaps_text }
         unless parts_text.nil?
-          parts_path = File.join(dir, 'PARTS')
+          parts_path = File.join(dir, 'PART')
           File.open(parts_path, 'w') {|o| o.print parts_text }
         end
 
@@ -278,22 +291,8 @@ EOC
       assert_equal nil, book.prefaces
     end
 
-    mktmpbookdir 'preface.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.prefaces
-      assert_equal '', book.prefaces.name
-      assert_equal 1, book.prefaces.chapters.size
-      assert_equal "preface", book.prefaces.chapters.first.name
-      assert_equal files['preface.re'], book.prefaces.chapters.first.path
-      assert_equal nil, book.prefaces.chapters.first.number
-    end
-
-    mktmpbookdir 'preface.re' => '',
-                 'PREDEF' => '' do |dir, book, files|
-      assert_equal nil, book.prefaces # XXX: OK?
-    end
-
     mktmpbookdir 'PREDEF' => '' do |dir, book, files|
-      assert_equal nil, book.prefaces
+      assert_equal nil, book.prefaces # XXX: OK?
     end
 
     mktmpbookdir 'PREDEF' => 'chapter1',
@@ -344,82 +343,67 @@ EOC
     end
   end
 
-  def test_postscripts
+  def test_appendix
     mktmpbookdir do |dir, book, files|
-      assert_equal nil, book.postscripts
-    end
-
-    mktmpbookdir 'appendix.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.postscripts
-      assert_equal '', book.postscripts.name
-      assert_equal 1, book.postscripts.chapters.size
-      assert_equal "appendix", book.postscripts.chapters.first.name
-      assert_equal files['appendix.re'], book.postscripts.chapters.first.path
-      assert_equal nil, book.postscripts.chapters.first.number
-    end
-
-    mktmpbookdir 'postscript.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.postscripts
-      assert_equal '', book.postscripts.name
-      assert_equal 1, book.postscripts.chapters.size
-      assert_equal "postscript", book.postscripts.chapters.first.name
-      assert_equal files['postscript.re'], book.postscripts.chapters.first.path
-      assert_equal nil, book.postscripts.chapters.first.number
-    end
-
-    mktmpbookdir 'appendix.re' => '',
-                 'postscript.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.postscripts
-      assert_equal '', book.postscripts.name
-      assert_equal 2, book.postscripts.chapters.size
-      assert_equal "appendix", book.postscripts.chapters.first.name
-      assert_equal files['appendix.re'], book.postscripts.chapters.first.path
-      assert_equal nil, book.postscripts.chapters.first.number
-      assert_equal "postscript", book.postscripts.chapters.last.name
-      assert_equal files['postscript.re'], book.postscripts.chapters.last.path
-      assert_equal nil, book.postscripts.chapters.last.number
-    end
-
-    mktmpbookdir 'preface.re' => '',
-                 'POSTDEF' => '' do |dir, book, files|
-      assert_equal nil, book.postscripts # XXX: OK?
+      assert_equal nil, book.appendix
     end
 
     mktmpbookdir 'POSTDEF' => '' do |dir, book, files|
-      assert_equal nil, book.postscripts
+      assert_equal nil, book.appendix
     end
 
     mktmpbookdir 'POSTDEF' => 'chapter1',
                  'chapter1.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.postscripts
-      assert_equal '', book.postscripts.name
-      assert_equal 1, book.postscripts.chapters.size
-      assert_equal "chapter1", book.postscripts.chapters.first.name
-      assert_equal files['chapter1.re'], book.postscripts.chapters.first.path
+      assert_kind_of Book::Part, book.appendix
+      assert_equal '', book.appendix.name
+      assert_equal 1, book.appendix.chapters.size
+      assert_equal "chapter1", book.appendix.chapters.first.name
+      assert_equal files['chapter1.re'], book.appendix.chapters.first.path
+      assert_equal 1, book.appendix.chapters.first.number
     end
 
     mktmpbookdir 'POSTDEF' => "chapter1\n\nchapter2",
                  'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.postscripts
-      assert_equal '', book.postscripts.name
-      assert_equal 2, book.postscripts.chapters.size
-      assert_equal "chapter1", book.postscripts.chapters.first.name
-      assert_equal files['chapter1.re'], book.postscripts.chapters.first.path
-      assert_equal "chapter2", book.postscripts.chapters.last.name
-      assert_equal files['chapter2.re'], book.postscripts.chapters.last.path
+      assert_kind_of Book::Part, book.appendix
+      assert_equal '', book.appendix.name
+      assert_equal 2, book.appendix.chapters.size
+      assert_equal "chapter1", book.appendix.chapters.first.name
+      assert_equal files['chapter1.re'], book.appendix.chapters.first.path
+      assert_equal "chapter2", book.appendix.chapters.last.name
+      assert_equal files['chapter2.re'], book.appendix.chapters.last.path
+      assert_equal 1, book.appendix.chapters.first.number
+      assert_equal 2, book.appendix.chapters.last.number
     end
 
     mktmpbookdir 'POSTDEF' => "chapter1 chapter2",
                  'chapter1.re' => '', 'chapter2.re' => '' do |dir, book, files|
-      assert_kind_of Book::Part, book.postscripts
-      assert_equal '', book.postscripts.name
-      assert_equal 2, book.postscripts.chapters.size # XXX: OK?
+      assert_kind_of Book::Part, book.appendix
+      assert_equal '', book.appendix.name
+      assert_equal 2, book.appendix.chapters.size # XXX: OK?
+      assert_equal 1, book.appendix.chapters.first.number
+      assert_equal 2, book.appendix.chapters.last.number
     end
 
     mktmpbookdir 'POSTDEF' => 'not_exist' do |dir, book, files|
       assert_raises FileNotFound do
-        assert_equal nil, book.postscripts
+        assert_equal nil, book.appendix
       end
+    end
+
+    mktmpbookdir 'catalog.yml' => "APPENDIX:\n  - p01.re",
+                 'p01.re' => '= appendix'  do |dir, book, files|
+      assert_equal 'appendix', book.appendix.chapters.first.title
+      assert_equal 1, book.appendix.chapters.first.number
+    end
+  end
+
+  def test_postscripts
+    mktmpbookdir 'catalog.yml' => "POSTDEF:\n  - b01.re",
+                 'b01.re' => '= back'  do |dir, book, files|
+      assert_kind_of Book::Part, book.postscripts
+      assert_equal 1, book.postscripts.chapters.size
+      assert_equal 'back', book.postscripts.chapters.first.title
+      assert_equal nil, book.postscripts.chapters.first.number
     end
   end
 
@@ -446,62 +430,14 @@ EOC
       book.each_part {|p| tmp << p.number }
       assert_equal [1, 2], tmp
     end
-
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'preface.re' => '' do |dir, book, files|
-      parts = book.parts
-      assert_equal 3, parts.size
-      assert book.part(1)
-      assert book.part(2)
-      assert !book.part(3)
-      assert book.part(nil) # XXX: OK?
-      assert_equal 'preface', parts.first.chapters.first.name
-
-      tmp = []
-      book.each_part {|p| tmp << p.number }
-      assert_equal [nil, 1, 2], tmp
-    end
-
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'postscript.re' => '' do |dir, book, files|
-      parts = book.parts
-      assert_equal 3, parts.size
-      assert book.part(1)
-      assert book.part(2)
-      assert !book.part(3)
-      assert book.part(nil) # XXX: OK?
-      assert_equal 'postscript', parts.last.chapters.last.name
-
-      tmp = []
-      book.each_part {|p| tmp << p.number }
-      assert_equal [1, 2, nil], tmp
-    end
-
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
-      parts = book.parts
-      assert_equal 4, parts.size
-      assert book.part(1)
-      assert book.part(2)
-      assert !book.part(3)
-      assert !book.part(4)
-      assert book.part(nil) # XXX: OK?
-      assert_equal 'preface', parts.first.chapters.first.name
-      assert_equal 'postscript', parts.last.chapters.last.name
-
-      tmp = []
-      book.each_part {|p| tmp << p.number }
-      assert_equal [nil, 1, 2, nil], tmp
-    end
   end
 
   def test_chapters
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3",
-                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3" do |dir, book, files|
       chapters = book.chapters
-      assert_equal 5, chapters.size
+      assert_equal 3, chapters.size
 
-      ch_names = %w(preface ch1 ch2 ch3 postscript)
+      ch_names = %w(ch1 ch2 ch3)
       tmp = []
       book.each_chapter {|ch| tmp << ch.name }
       assert_equal ch_names, tmp
@@ -516,12 +452,11 @@ EOC
       end
     end
 
-    mktmpbookdir 'CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt",
-                 'preface.re' => '', 'postscript.re' => '' do |dir, book, files|
+    mktmpbookdir 'CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt" do |dir, book, files|
       chapters = book.chapters
-      assert_equal 5, chapters.size
+      assert_equal 3, chapters.size
 
-      ch_names = %w(preface ch1 ch2 ch3 postscript)
+      ch_names = %w(ch1 ch2 ch3)
       tmp = []
       book.each_chapter {|ch| tmp << ch.name }
       assert_equal ch_names, tmp
@@ -591,6 +526,31 @@ EOC
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
       assert_equal dir, book.basedir
+    end
+  end
+
+  def test_page_metric
+    Dir.mktmpdir do |dir|
+      book = Book::Base.new(dir)
+      assert_equal ReVIEW::Book::PageMetric::A5, book.page_metric
+    end
+  end
+
+  def test_page_metric_config
+    mktmpbookdir('config.yml'=>"bookname: book\npage_metric: B5\n") do |dir, book, files|
+      book = Book::Base.new(dir)
+      config_file = File.join(dir,"config.yml")
+      book.load_config(config_file)
+      assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
+    end
+  end
+
+  def test_page_metric_config_array
+    mktmpbookdir('config.yml'=>"bookname: book\npage_metric: [46, 80, 30, 74, 2]\n") do |dir, book, files|
+      book = Book::Base.new(dir)
+      config_file = File.join(dir,"config.yml")
+      book.load_config(config_file)
+      assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
     end
   end
 end

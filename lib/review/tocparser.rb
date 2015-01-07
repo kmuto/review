@@ -21,14 +21,14 @@ module ReVIEW
     def TOCParser.parse(chap)
       chap.open {|f|
         stream = Preprocessor::Strip.new(f)
-        new.parse(stream, chap.id, chap.path).map {|root|
+        new.parse(stream, chap.id, chap.path, chap).map {|root|
           root.number = chap.number
           root
         }
       }
     end
 
-    def parse(f, id, filename)
+    def parse(f, id, filename, chap)
       roots = []
       path = []
 
@@ -44,7 +44,7 @@ module ReVIEW
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
           if path.empty?
             # missing chapter label
-            path.push Chapter.new(get_label(line), id, filename)
+            path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
             roots.push path.first
           end
           next if get_label(line) =~ /\A\[\// # ex) "[/column]"
@@ -57,7 +57,7 @@ module ReVIEW
 
         when /\A= /
           path.clear
-          path.push Chapter.new(get_label(line), id, filename)
+          path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
           roots.push path.first
 
         when %r<\A//\w+(?:\[.*?\])*\{\s*\z>
@@ -80,7 +80,7 @@ module ReVIEW
           #  error! filename, f.lineno, 'text found before section label'
           #end
           next if path.empty?
-          path.last.add_child(par = Paragraph.new)
+          path.last.add_child(par = Paragraph.new(chap.book.page_metric))
           par.add line
           while line = f.gets
             break if /\A\s*\z/ =~ line
@@ -99,7 +99,10 @@ module ReVIEW
 
     def compile_label(line)
       b = ReVIEW::TEXTBuilder.new
-      b.bind(ReVIEW::Compiler.new(b), nil, nil)
+      dummy_book = ReVIEW::Book::Base.load
+      dummy_chapter = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
+      dummy_loc = Location.new("", StringIO.new)
+      b.bind(ReVIEW::Compiler.new(b), dummy_chapter, dummy_loc)
       b.compile_inline(line)
     end
 
@@ -206,10 +209,11 @@ module ReVIEW
 
     class Chapter < Section
 
-      def initialize(label, id, path)
+      def initialize(label, id, path, page_metric)
         super 1, label, path
         @chapter_id = id
         @path = path
+        @page_metric = page_metric
         @volume = nil
         @number = nil
       end
@@ -226,6 +230,7 @@ module ReVIEW
         return @volume if @volume
         return Book::Volume.dummy unless @path
         @volume = Book::Volume.count_file(@path)
+        @volume.page_per_kbyte = @page_metric.page_per_kbyte
         @volume.lines = estimated_lines()
         @volume
       end
@@ -239,8 +244,9 @@ module ReVIEW
 
     class Paragraph < Node
 
-      def initialize
+      def initialize(page_metric)
         @bytes = 0
+        @page_metric = page_metric
       end
 
       def inspect
@@ -252,7 +258,7 @@ module ReVIEW
       end
 
       def estimated_lines
-        (@bytes + 2) / ReVIEW.book.page_metric.text.n_columns + 1
+        (@bytes + 2) / @page_metric.text.n_columns + 1
       end
 
       def yield_section

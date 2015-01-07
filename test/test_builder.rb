@@ -16,7 +16,8 @@ class BuidlerTest < Test::Unit::TestCase
 
   def setup
     @b = Builder.new
-    @b.bind(MockCompiler.new, nil, nil)
+    chap = ReVIEW::Book::Chapter.new(nil, nil, '-', nil)
+    @b.bind(MockCompiler.new, chap, nil)
   end
 
   def test_initialize
@@ -25,8 +26,9 @@ class BuidlerTest < Test::Unit::TestCase
 
   def test_bind
     b = Builder.new
+    chap = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
     assert_nothing_raised do
-      b.bind(nil, nil, nil)
+      b.bind(nil, chap, nil)
     end
   end
 
@@ -37,7 +39,8 @@ class BuidlerTest < Test::Unit::TestCase
     end
 
     b = Builder.new
-    b.bind(nil, nil, nil)
+    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
+    b.bind(nil, chapter, nil)
     assert_equal '', b.result
   end
 
@@ -79,8 +82,9 @@ class BuidlerTest < Test::Unit::TestCase
         [:puts,  "#{utf8_str}\n", "#{expect}\n"],
       ].each do |m, instr, expstr|
         b = Builder.new
-        b.bind(nil, nil, nil)
-        ReVIEW.book.config = params
+        chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
+        b.bind(nil, chapter, nil)
+        chapter.book.config = params
         b.__send__(m, instr)
         if "".respond_to?(:encode)
           assert_equal expstr.encode("UTF-8"), b.result
@@ -128,9 +132,10 @@ class BuidlerTest < Test::Unit::TestCase
   end
 
   def test_convert_outencoding
-    ReVIEW.book.config = {'outencoding' => "EUC"}
+    book = ReVIEW::Book::Base.new(nil)
+    book.config = {'outencoding' => "EUC"}
     b = Builder.new
-    ret = b.convert_outencoding("a", ReVIEW.book.config["outencoding"])
+    ret = b.convert_outencoding("a", book.config["outencoding"])
     assert_equal "a", ret
   end
 

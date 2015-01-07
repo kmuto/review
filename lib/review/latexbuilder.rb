@@ -13,7 +13,6 @@
 require 'review/builder'
 require 'review/latexutils'
 require 'review/textutils'
-require 'review/sec_counter'
 
 module ReVIEW
 
@@ -75,25 +74,20 @@ module ReVIEW
       6 => 'subparagraph'
     }
 
-    def headline_prefix(level)
-      @sec_counter.inc(level)
-      anchor = @sec_counter.anchor(level)
-      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
-      [prefix, anchor]
-    end
-    private :headline_prefix
-
-
     def headline(level, label, caption)
       _, anchor = headline_prefix(level)
+      headline_name = HEADLINE[level]
+      if @chapter.kind_of? ReVIEW::Book::Part
+        headline_name = "part"
+      end
       prefix = ""
       if level > @book.config["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
       end
       blank unless @output.pos == 0
-      puts macro(HEADLINE[level]+prefix, compile_inline(caption))
+      puts macro(headline_name+prefix, compile_inline(caption))
       if prefix == "*" && level <= @book.config["toclevel"].to_i
-        puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
+        puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline(caption)}}"
       end
       if level == 1
         puts macro('label', chapter_label)
@@ -373,8 +367,9 @@ module ReVIEW
     end
     private :sec_label
 
-    def table_label(id)
-      "table:#{@chapter.id}:#{id}"
+    def table_label(id, chapter=nil)
+      chapter ||= @chapter
+      "table:#{chapter.id}:#{id}"
     end
     private :table_label
 
@@ -593,9 +588,9 @@ module ReVIEW
 
     def inline_chap(id)
       if @book.config["chapterlink"]
-        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.number(id)}}"
+        "\\hyperref[chap:#{id}]{#{@book.chapter_index.number(id)}}"
       else
-        @chapter.env.chapter_index.number(id)
+        @book.chapter_index.number(id)
       end
     rescue KeyError
       error "unknown chapter: #{id}"
@@ -603,10 +598,11 @@ module ReVIEW
     end
 
     def inline_title(id)
+      title = super
       if @book.config["chapterlink"]
-        "\\hyperref[chap:#{id}]{#{@chapter.env.chapter_index.title(id)}}"
+        "\\hyperref[chap:#{id}]{#{title}}"
       else
-        @chapter.env.chapter_index.title(id)
+        title
       end
     rescue KeyError
       error "unknown chapter: #{id}"
@@ -622,7 +618,7 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id))
+      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id, chapter))
     end
 
     def inline_img(id)

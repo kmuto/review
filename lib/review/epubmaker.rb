@@ -185,7 +185,9 @@ module ReVIEW
 
     basedir = Dir.pwd
     base_path = Pathname.new(basedir)
-    ReVIEW::Book.load(basedir).parts.each do |part|
+    book = ReVIEW::Book.load(basedir)
+    book.load_config(yamlfile)
+    book.parts.each do |part|
       htmlfile = nil
       if part.name.present?
         if part.file?
@@ -232,9 +234,13 @@ EOT
     filename = ""
 
     chaptype = "body"
-    chaptype = "part" unless ispart.nil?
-    chaptype = "pre" if chap.on_PREDEF?
-    chaptype = "post" if chap.on_POSTDEF?
+    if !ispart.nil?
+      chaptype = "part"
+    elsif chap.on_PREDEF?
+      chaptype = "pre"
+    elsif chap.on_APPENDIX?
+      chaptype = "post"
+    end
 
     if !ispart.nil?
       filename = chap.path
@@ -247,7 +253,7 @@ EOT
       if chap.on_PREDEF?
         @precount += 1
         id = sprintf("pre%02d", @precount)
-      elsif chap.on_POSTDEF?
+      elsif chap.on_APPENDIX?
         @postcount += 1
         id = sprintf("post%02d", @postcount)
       else
@@ -269,7 +275,7 @@ EOT
 #      level = @params["part_secnolevel"]
 #    else
 #      level = @params["pre_secnolevel"] if chap.on_PREDEF?
-#      level = @params["post_secnolevel"] if chap.on_POSTDEF?
+#      level = @params["post_secnolevel"] if chap.on_APPENDIX?
 #    end
 
     stylesheet = ""
@@ -277,22 +283,43 @@ EOT
       stylesheet = "--stylesheet=#{@params["stylesheet"].join(",")}"
     end
 
+    ENV["REVIEWFNAME"] = filename
     system("#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
 
     write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
   end
 
+  def detect_properties(path)
+    properties = []
+    File.open(path) do |f|
+      doc = REXML::Document.new(f)
+      if REXML::XPath.first(doc, "//m:math", {'m' => 'http://www.w3.org/1998/Math/MathML'})
+        properties<< "mathml"
+      end
+      if REXML::XPath.first(doc, "//s:svg", {'s' => 'http://www.w3.org/2000/svg'})
+        properties<< "svg"
+      end
+    end
+    properties
+  end
+
   def write_info_body(basetmpdir, id, filename, ispart=nil, chaptype=nil)
     headlines = []
     # FIXME:nonumを修正する必要あり
-    Document.parse_stream(File.new("#{basetmpdir}/#{filename}"), ReVIEWHeaderListener.new(headlines))
+    path = File.join(basetmpdir, filename)
+    Document.parse_stream(File.new(path), ReVIEWHeaderListener.new(headlines))
+    properties = detect_properties(path)
+    prop_str = ""
+    if properties.present?
+      prop_str = ",properties="+properties.join(" ")
+    end
     first = true
     headlines.each do |headline|
       headline["level"] = 0 if !ispart.nil? && headline["level"] == 1
       if first.nil?
         write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}\tchaptype=#{chaptype}")
       else
-        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true,chaptype=#{chaptype}")
+        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true,chaptype=#{chaptype}#{prop_str}")
         first = nil
       end
     end
@@ -304,6 +331,7 @@ EOT
         force_include = nil
         customid = nil
         chaptype = nil
+        properties = nil
         level, file, title, custom = l.chomp.split("\t")
         unless custom.nil?
           # custom setting
@@ -317,17 +345,22 @@ EOT
               force_include = true
             when "chaptype"
               chaptype = v
+            when "properties"
+              properties = v
             end
           end
         end
         next if level.to_i > @params["toclevel"] && force_include.nil?
         log("Push #{file} to ePUB contents.")
 
-        if customid.nil?
-          @epub.contents.push(Content.new("file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype))
-        else
-          @epub.contents.push(Content.new("id" => customid, "file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype))
+        hash = {"file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype}
+        if customid.present?
+          hash["id"] = customid
         end
+        if properties.present?
+          hash["properties"] = properties.split(" ")
+        end
+        @epub.contents.push(Content.new(hash))
       end
     end
   end

@@ -2,8 +2,9 @@
 
 require 'test_helper'
 require 'epubmaker'
+require 'review/epubmaker'
 
-class EPUBMakerTest < Test::Unit::TestCase
+class EPUB3MakerTest < Test::Unit::TestCase
   include EPUBMaker
 
   def setup
@@ -11,10 +12,11 @@ class EPUBMakerTest < Test::Unit::TestCase
     @producer.merge_params({
                             "bookname" => "sample",
                             "title" => "Sample Book",
-                            "epubversion" => 2,
+                            "epubversion" => 3,
                             "urnid" => "http://example.jp/",
                             "date" => "2011-01-01",
                             "language" => "en",
+                            "modified" => "2014-12-13T14:15:16Z"
                           })
     @output = StringIO.new
   end
@@ -55,22 +57,24 @@ EOT
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-    <dc:title>Sample Book</dc:title>
-    <dc:language>en</dc:language>
-    <dc:date>2011-01-01</dc:date>
+    <dc:title id="title">Sample Book</dc:title>
+    <dc:language id="language">en</dc:language>
+    <dc:date id="date">2011-01-01</dc:date>
+    <meta property="dcterms:modified">2014-12-13T14:15:16Z</meta>
     <dc:identifier id="BookId">http://example.jp/</dc:identifier>
   </metadata>
   <manifest>
-    <item id="ncx" href="sample.ncx" media-type="application/x-dtbncx+xml"/>
+    <item properties="nav" id="sample-toc.html" href="sample-toc.html" media-type="application/xhtml+xml"/>
     <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
   </manifest>
-  <spine toc="ncx">
+  <spine>
     <itemref idref="sample" linear="no"/>
   </spine>
   <guide>
     <reference type="cover" title="Cover" href="sample.html"/>
+    <reference type="toc" title="Table of Contents" href="sample-toc.html"/>
   </guide>
 </package>
 EOT
@@ -81,28 +85,20 @@ EOT
     @producer.ncx(@output)
    expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
-  <head>
-    <meta name="dtb:depth" content="1"/>
-    <meta name="dtb:totalPageCount" content="0"/>
-    <meta name="dtb:maxPageNumber" content="0"/>
-    <meta name="dtb:uid" content="http://example.jp/"/>
-  </head>
-  <docTitle>
-    <text>Sample Book</text>
-  </docTitle>
-  <docAuthor>
-    <text></text>
-  </docAuthor>
-  <navMap>
-    <navPoint id="top" playOrder="1">
-      <navLabel>
-        <text>Sample Book</text>
-      </navLabel>
-      <content src="sample.html"/>
-    </navPoint>
-  </navMap>
-</ncx>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title>Table of Contents</title>
+</head>
+<body>
+  <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
+  <h1 class="toc-title">Table of Contents</h1>
+
+<ol class="toc-h1"></ol>  </nav>
+</body>
+</html>
 EOT
     assert_equal expect, @output.string
   end
@@ -127,24 +123,26 @@ EOT
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-    <dc:title>Sample Book</dc:title>
-    <dc:language>en</dc:language>
-    <dc:date>2011-01-01</dc:date>
+    <dc:title id="title">Sample Book</dc:title>
+    <dc:language id="language">en</dc:language>
+    <dc:date id="date">2011-01-01</dc:date>
+    <meta property="dcterms:modified">2014-12-13T14:15:16Z</meta>
     <dc:identifier id="BookId">http://example.jp/</dc:identifier>
   </metadata>
   <manifest>
-    <item id="ncx" href="sample.ncx" media-type="application/x-dtbncx+xml"/>
+    <item properties="nav" id="sample-toc.html" href="sample-toc.html" media-type="application/xhtml+xml"/>
     <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
     <item id="ch01-html" href="ch01.html" media-type="application/xhtml+xml"/>
   </manifest>
-  <spine toc="ncx">
+  <spine>
     <itemref idref="sample" linear="no"/>
     <itemref idref="ch01-html"/>
   </spine>
   <guide>
     <reference type="cover" title="Cover" href="sample.html"/>
+    <reference type="toc" title="Table of Contents" href="sample-toc.html"/>
   </guide>
 </package>
 EOT
@@ -156,34 +154,21 @@ EOT
     @producer.ncx(@output)
    expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
-  <head>
-    <meta name="dtb:depth" content="1"/>
-    <meta name="dtb:totalPageCount" content="0"/>
-    <meta name="dtb:maxPageNumber" content="0"/>
-    <meta name="dtb:uid" content="http://example.jp/"/>
-  </head>
-  <docTitle>
-    <text>Sample Book</text>
-  </docTitle>
-  <docAuthor>
-    <text></text>
-  </docAuthor>
-  <navMap>
-    <navPoint id="top" playOrder="1">
-      <navLabel>
-        <text>Sample Book</text>
-      </navLabel>
-      <content src="sample.html"/>
-    </navPoint>
-    <navPoint id="nav-2" playOrder="2">
-      <navLabel>
-        <text>CH01</text>
-      </navLabel>
-      <content src="ch01.html"/>
-    </navPoint>
-  </navMap>
-</ncx>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title>Table of Contents</title>
+</head>
+<body>
+  <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
+  <h1 class="toc-title">Table of Contents</h1>
+
+<ol class="toc-h1"><li><a href="ch01.html">CH01</a></li>
+</ol>  </nav>
+</body>
+</html>
 EOT
     assert_equal expect, @output.string
   end
@@ -199,7 +184,7 @@ EOT
     @producer.contents << Content.new({"file" => "ch02.html#S1.1.2", "title" => "CH02.1.1.2", "level" => 4})
     @producer.contents << Content.new({"file" => "ch02.html#S2", "title" => "CH02.2", "level" => 2})
     @producer.contents << Content.new({"file" => "ch02.html#S2.1", "title" => "CH02.2.1", "level" => 3})
-    @producer.contents << Content.new({"file" => "ch03.html", "title" => "CH03", "level" => 1})
+    @producer.contents << Content.new({"file" => "ch03.html", "title" => "CH03", "level" => 1, "properties" => ["mathml"]})
     @producer.contents << Content.new({"file" => "ch03.html#S1", "title" => "CH03.1", "level" => 2})
     @producer.contents << Content.new({"file" => "ch03.html#S1.1", "title" => "CH03.1.1", "level" => 3})
     @producer.contents << Content.new({"file" => "ch04.html", "title" => "CH04", "level" => 1})
@@ -223,7 +208,7 @@ EOT
               Content.new("ch02.html#S1.1.2", "ch02-html#S1-1-2", "2", "CH02.1.1.2", 4),
               Content.new("ch02.html#S2", "ch02-html#S2", "html#s2", "CH02.2", 2),
               Content.new("ch02.html#S2.1", "ch02-html#S2-1", "1", "CH02.2.1", 3),
-              Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1),
+              Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1, nil, ["mathml"]),
               Content.new("ch03.html#S1", "ch03-html#S1", "html#s1", "CH03.1", 2),
               Content.new("ch03.html#S1.1", "ch03-html#S1-1", "1", "CH03.1.1", 3),
               Content.new("ch04.html", "ch04-html", "application/xhtml+xml", "CH04", 1),
@@ -243,19 +228,20 @@ EOT
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-    <dc:title>Sample Book</dc:title>
-    <dc:language>en</dc:language>
-    <dc:date>2011-01-01</dc:date>
+    <dc:title id="title">Sample Book</dc:title>
+    <dc:language id="language">en</dc:language>
+    <dc:date id="date">2011-01-01</dc:date>
+    <meta property="dcterms:modified">2014-12-13T14:15:16Z</meta>
     <dc:identifier id="BookId">http://example.jp/</dc:identifier>
   </metadata>
   <manifest>
-    <item id="ncx" href="sample.ncx" media-type="application/x-dtbncx+xml"/>
+    <item properties="nav" id="sample-toc.html" href="sample-toc.html" media-type="application/xhtml+xml"/>
     <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
     <item id="ch01-html" href="ch01.html" media-type="application/xhtml+xml"/>
     <item id="ch02-html" href="ch02.html" media-type="application/xhtml+xml"/>
-    <item id="ch03-html" href="ch03.html" media-type="application/xhtml+xml"/>
+    <item id="ch03-html" href="ch03.html" media-type="application/xhtml+xml" properties="mathml"/>
     <item id="ch04-html" href="ch04.html" media-type="application/xhtml+xml"/>
     <item id="sample-png" href="sample.png" media-type="image/png"/>
     <item id="sample-jpg" href="sample.jpg" media-type="image/jpeg"/>
@@ -264,7 +250,7 @@ EOT
     <item id="sample-GIF" href="sample.GIF" media-type="image/gif"/>
     <item id="sample-css" href="sample.css" media-type="text/css"/>
   </manifest>
-  <spine toc="ncx">
+  <spine>
     <itemref idref="sample" linear="no"/>
     <itemref idref="ch01-html"/>
     <itemref idref="ch02-html"/>
@@ -273,6 +259,7 @@ EOT
   </spine>
   <guide>
     <reference type="cover" title="Cover" href="sample.html"/>
+    <reference type="toc" title="Table of Contents" href="sample-toc.html"/>
   </guide>
 </package>
 EOT
@@ -284,106 +271,29 @@ EOT
     @producer.ncx(@output)
    expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
-  <head>
-    <meta name="dtb:depth" content="1"/>
-    <meta name="dtb:totalPageCount" content="0"/>
-    <meta name="dtb:maxPageNumber" content="0"/>
-    <meta name="dtb:uid" content="http://example.jp/"/>
-  </head>
-  <docTitle>
-    <text>Sample Book</text>
-  </docTitle>
-  <docAuthor>
-    <text></text>
-  </docAuthor>
-  <navMap>
-    <navPoint id="top" playOrder="1">
-      <navLabel>
-        <text>Sample Book</text>
-      </navLabel>
-      <content src="sample.html"/>
-    </navPoint>
-    <navPoint id="nav-2" playOrder="2">
-      <navLabel>
-        <text>CH01&lt;&gt;&amp;&quot;</text>
-      </navLabel>
-      <content src="ch01.html"/>
-    </navPoint>
-    <navPoint id="nav-3" playOrder="3">
-      <navLabel>
-        <text>CH02</text>
-      </navLabel>
-      <content src="ch02.html"/>
-    </navPoint>
-    <navPoint id="nav-4" playOrder="4">
-      <navLabel>
-        <text>CH02.1</text>
-      </navLabel>
-      <content src="ch02.html#S1"/>
-    </navPoint>
-    <navPoint id="nav-5" playOrder="5">
-      <navLabel>
-        <text>CH02.1.1</text>
-      </navLabel>
-      <content src="ch02.html#S1.1"/>
-    </navPoint>
-    <navPoint id="nav-6" playOrder="6">
-      <navLabel>
-        <text>CH02.1.1.1</text>
-      </navLabel>
-      <content src="ch02.html#S1.1.1"/>
-    </navPoint>
-    <navPoint id="nav-7" playOrder="7">
-      <navLabel>
-        <text>CH02.1.1.1.1</text>
-      </navLabel>
-      <content src="ch02.html#S1.1.1.1"/>
-    </navPoint>
-    <navPoint id="nav-8" playOrder="8">
-      <navLabel>
-        <text>CH02.1.1.2</text>
-      </navLabel>
-      <content src="ch02.html#S1.1.2"/>
-    </navPoint>
-    <navPoint id="nav-9" playOrder="9">
-      <navLabel>
-        <text>CH02.2</text>
-      </navLabel>
-      <content src="ch02.html#S2"/>
-    </navPoint>
-    <navPoint id="nav-10" playOrder="10">
-      <navLabel>
-        <text>CH02.2.1</text>
-      </navLabel>
-      <content src="ch02.html#S2.1"/>
-    </navPoint>
-    <navPoint id="nav-11" playOrder="11">
-      <navLabel>
-        <text>CH03</text>
-      </navLabel>
-      <content src="ch03.html"/>
-    </navPoint>
-    <navPoint id="nav-12" playOrder="12">
-      <navLabel>
-        <text>CH03.1</text>
-      </navLabel>
-      <content src="ch03.html#S1"/>
-    </navPoint>
-    <navPoint id="nav-13" playOrder="13">
-      <navLabel>
-        <text>CH03.1.1</text>
-      </navLabel>
-      <content src="ch03.html#S1.1"/>
-    </navPoint>
-    <navPoint id="nav-14" playOrder="14">
-      <navLabel>
-        <text>CH04</text>
-      </navLabel>
-      <content src="ch04.html"/>
-    </navPoint>
-  </navMap>
-</ncx>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title>Table of Contents</title>
+</head>
+<body>
+  <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
+  <h1 class="toc-title">Table of Contents</h1>
+
+<ol class="toc-h1"><li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
+<li><a href="ch02.html">CH02</a>
+<ol class="toc-h2"><li><a href="ch02.html#S1">CH02.1</a></li>
+<li><a href="ch02.html#S2">CH02.2</a></li>
+</ol></li>
+<li><a href="ch03.html">CH03</a>
+<ol class="toc-h2"><li><a href="ch03.html#S1">CH03.1</a></li>
+</ol></li>
+<li><a href="ch04.html">CH04</a></li>
+</ol>  </nav>
+</body>
+</html>
 EOT
     assert_equal expect, @output.string
   end
@@ -393,12 +303,11 @@ EOT
     @producer.mytoc(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="Re:VIEW"/>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
   <title>Table of Contents</title>
 </head>
 <body>
@@ -425,12 +334,11 @@ EOT
     @producer.mytoc(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="Re:VIEW"/>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
   <title>Table of Contents</title>
 </head>
 <body>
@@ -455,15 +363,14 @@ EOT
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="Re:VIEW"/>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
   <title>Sample Book</title>
 </head>
-<body>
+<body epub:type="cover">
 <h1 class="cover-title">Sample Book</h1>
 </body>
 </html>
@@ -477,15 +384,14 @@ EOT
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="Re:VIEW"/>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
   <title>Sample Book</title>
 </head>
-<body>
+<body epub:type="cover">
   <div id="cover-image" class="cover-image">
     <img src="sample.png" alt="Sample Book" class="max"/>
   </div>
@@ -501,12 +407,11 @@ EOT
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="Re:VIEW"/>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
   <title>Colophon</title>
 </head>
 <body>
@@ -533,12 +438,11 @@ EOT
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="Re:VIEW"/>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
   <title>Colophon</title>
 </head>
 <body>
@@ -566,4 +470,58 @@ EOT
 #    end
 #  end
 
+  def test_detect_mathml
+    Dir.mktmpdir do |dir|
+      epubmaker = ReVIEW::EPUBMaker.new
+      path = File.join(dir,"test.html")
+      html = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title>Colophon</title>
+</head>
+<body>
+  <div>
+   <p><span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span></p>
+  </div>
+</body>
+</html>
+EOT
+      File.open(path, "w") do |f|
+        f.write(html)
+      end
+      assert_equal ["mathml"], epubmaker.detect_properties(path)
+    end
+  end
+
+
+  def test_detect_mathml_ns
+    Dir.mktmpdir do |dir|
+      epubmaker = ReVIEW::EPUBMaker.new
+      path = File.join(dir,"test.html")
+      html = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title>Colophon</title>
+</head>
+<body>
+  <div>
+   <p><span class=\"equation\"><m:math xmlns:m='http://www.w3.org/1998/Math/MathML' display='inline'><m:mfrac><m:mrow><m:mo stretchy='false'>-</m:mo><m:mi>b</m:mi><m:mo stretchy='false'>&#xb1;</m:mo><m:msqrt><m:mrow><m:msup><m:mi>b</m:mi><m:mn>2</m:mn></m:msup><m:mo stretchy='false'>-</m:mo><m:mn>4</m:mn><m:mi>a</m:mi><m:mi>c</m:mi></m:mrow></m:msqrt></m:mrow><m:mrow><m:mn>2</m:mn><m:mi>a</m:mi></m:mrow></m:mfrac></m:math></span></p>
+  </div>
+</body>
+</html>
+EOT
+      File.open(path, "w") do |f|
+        f.write(html)
+      end
+      assert_equal ["mathml"], epubmaker.detect_properties(path)
+    end
+  end
 end

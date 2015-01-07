@@ -39,6 +39,11 @@ module ReVIEW
       @yaml["CHAPS"].flatten.reject{|entry| entry.nil?}
     end
 
+    def appendix
+      return "" unless @yaml["APPENDIX"]
+      @yaml["APPENDIX"].join("\n")
+    end
+
     def postdef
       return "" unless @yaml["POSTDEF"]
       @yaml["POSTDEF"].join("\n")

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2002-2009 Minero Aoki
+# Copyright (c) 2002-2014 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -11,6 +11,7 @@ require 'review/book/index'
 require 'review/exception'
 require 'review/textutils'
 require 'review/compiler'
+require 'review/sec_counter'
 require 'stringio'
 require 'cgi'
 
@@ -42,15 +43,16 @@ module ReVIEW
       @chapter = chapter
       @location = location
       @output = StringIO.new
-      @book = ReVIEW.book
+      @book = @chapter.book if @chapter.present?
       @tabwidth = nil
-      if @book.config && @book.config["tabwidth"]
+      if @book && @book.config && @book.config["tabwidth"]
         @tabwidth = @book.config["tabwidth"]
       end
       builder_init_file
     end
 
     def builder_init_file
+      @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
 
@@ -71,6 +73,18 @@ module ReVIEW
         convert_outencoding(i, @book.config["outencoding"])
       }
     end
+
+    def target_name
+      self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+    end
+
+    def headline_prefix(level)
+      @sec_counter.inc(level)
+      anchor = @sec_counter.anchor(level)
+      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
+      [prefix, anchor]
+    end
+    private :headline_prefix
 
     def list(lines, id, caption)
       begin
@@ -172,21 +186,21 @@ module ReVIEW
     end
 
     def inline_chapref(id)
-      compile_inline @chapter.env.chapter_index.display_string(id)
+      compile_inline @book.chapter_index.display_string(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_chap(id)
-      @chapter.env.chapter_index.number(id)
+      @book.chapter_index.number(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_title(id)
-      @chapter.env.chapter_index.title(id)
+      compile_inline @book.chapter_index.title(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
@@ -204,6 +218,16 @@ module ReVIEW
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
+    end
+
+    def inline_imgref(id)
+      img = inline_img(id)
+
+      if @chapter.image(id).caption
+        "#{img}#{I18n.t('image_quote', @chapter.image(id).caption)}"
+      else
+        img
+      end
     end
 
     def inline_table(id)
@@ -273,7 +297,7 @@ module ReVIEW
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
-        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+        c = target_name
         if builders.include?(c)
           print matched[2].gsub("\\n", "\n")
         else
@@ -347,7 +371,7 @@ module ReVIEW
     end
 
     def graph(lines, id, command, caption = nil)
-      c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      c = target_name
       dir = File.join(@book.basedir, @book.image_dir, c)
       Dir.mkdir(dir) unless File.exist?(dir)
       file = "#{id}.#{image_ext}"
@@ -366,6 +390,7 @@ module ReVIEW
       cmd = cmds[command.to_sym]
       warn cmd
       system cmd
+      @chapter.image_index.image_finder.add_entry(file_path)
 
       image(lines, id, caption ||= "")
     end

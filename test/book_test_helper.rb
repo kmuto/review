@@ -16,7 +16,7 @@ module BookTestHelper
         File.open(path, 'w') {|o| o.print content }
         created_files[basename] = path
       end
-      book = Book::Base.new(dir)
+      book = Book::Base.load(dir)
       yield(dir, book, created_files)
     end
   end
