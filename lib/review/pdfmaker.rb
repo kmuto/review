@@ -37,9 +37,7 @@ module ReVIEW
 
     def check_book(config)
       pdf_file = config["bookname"]+".pdf"
-      if File.exist? pdf_file
-        error "file already exists:#{pdf_file}"
-      end
+      File.unlink(pdf_file) if File.exist?(pdf_file)
     end
 
     def build_path(config)
