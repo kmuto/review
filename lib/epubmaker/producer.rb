@@ -12,10 +12,10 @@ require 'tmpdir'
 require 'fileutils'
 require 'yaml'
 require 'uuid'
-require 'epubmaker/resource'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'
+require 'review/i18n'
 
 module EPUBMaker
   # EPUBMaker produces EPUB file.
@@ -25,7 +25,7 @@ module EPUBMaker
     # Parameter hash.
     attr_accessor :params
     # Message resource object.
-    attr_accessor :res
+    attr_reader :res
 
     # Take YAML +file+ and return parameter hash.
     def Producer.load(file)
@@ -47,6 +47,7 @@ module EPUBMaker
       @params = {}
       @epub = nil
       @params["epubversion"] = version unless version.nil?
+      @res = ReVIEW::I18n
 
       unless params.nil?
         merge_params(params)
@@ -57,7 +58,6 @@ module EPUBMaker
     def merge_params(params)
       @params = @params.merge(params)
       complement
-      @res = EPUBMaker::Resource.new(@params)
 
       unless @params["epubversion"].nil?
         case @params["epubversion"].to_i
@@ -68,6 +68,9 @@ module EPUBMaker
         else
           raise "Invalid EPUB version (#{@params["epubversion"]}.)"
         end
+      end
+      if params["language"]
+        ReVIEW::I18n.locale = params["language"]
       end
       support_legacy_maker
     end
