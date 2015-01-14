@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -186,6 +186,7 @@ module ReVIEW
           images = Dir.glob("**/*").find_all{|f|
             File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
           }
+          break if images.empty?
           system("extractbb", *images)
           unless system("extractbb", "-m", *images)
             system_or_raise("ebb", *images)
