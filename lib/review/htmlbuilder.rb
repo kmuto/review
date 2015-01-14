@@ -47,7 +47,6 @@ module ReVIEW
 
     def builder_init(no_error = false)
       @no_error = no_error
-      @column = 0
       @noindent = nil
       @ol_num = nil
     end
@@ -57,6 +56,7 @@ module ReVIEW
       @warns = []
       @errors = []
       @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
+      @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
