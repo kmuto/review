@@ -780,7 +780,7 @@ QUOTE
     end
 
     def inline_labelref(idref)
-      %Q[<a target='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</a>]
+      %Q[<a target='#{escape_html(idref)}'>「#{I18n.t("label_marker")}#{escape_html(idref)}」</a>]
     end
 
     alias_method :inline_ref, :inline_labelref

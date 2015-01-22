@@ -8,6 +8,7 @@ ja:
   part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
+  chapter_quote: "「%s」"
   appendix: 付録%s
   numberless_image: "図:"
   memo_head: ■メモ
@@ -20,6 +21,7 @@ ja:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  label_marker: "●●　"
   aut: "著　者"
   csl: "監　修"
   dsr: "デザイン"
@@ -46,6 +48,7 @@ en:
   column: "Column %s"
   chapter: Chapter %d
   chapter_postfix: ". "
+  chapter_quote: '"%s"'
   appendix: Appendix %s
   numberless_image: "Figure:"
   format_number: "%s.%d"
@@ -57,6 +60,7 @@ en:
   caption_prefix_idgxml: "　"
   ruby_prefix: "("
   ruby_postfix: ")"
+  label_marker: "●●　"
   aut: "Author"
   csl: "Consultant"
   dsr: "Design"
@@ -77,6 +81,7 @@ zh_TW:
   part: 第%d部份
   chapter: 第%d章
   chapter_postfix: "　"
+  chapter_quote: "「%s」"
   appendix: 附錄%s
   numberless_image: "圖:"
   format_number: "%s.%d"
@@ -88,6 +93,7 @@ zh_TW:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  label_marker: "●●　"
   aut: "著作人"
   csl: "監　修"
   dsr: "美術編輯"

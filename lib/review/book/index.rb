@@ -93,7 +93,7 @@ module ReVIEW
       end
 
       def display_string(id)
-        "#{number(id)}「#{title(id)}」"
+        "#{number(id)}#{I18n.t("chapter_quote", title(id))}"
       end
     end
 

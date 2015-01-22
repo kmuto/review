@@ -760,7 +760,7 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<ref idref='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
+      %Q[<ref idref='#{escape_html(idref)}'>「#{I18n.t("label_marker")}#{escape_html(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
     alias_method :inline_ref, :inline_labelref
