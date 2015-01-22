@@ -552,6 +552,31 @@ EOS
     assert_equal "nor\nmal", compile_inline("@<raw>{|idgxml|nor\\nmal}")
   end
 
+  def test_inline_imgref
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "<p><span type='image'>図1.1「sample photo」</span></p>"
+    assert_equal expected, actual
+  end
+
+  def test_inline_imgref2
+    def @chapter.image(id)
+      item = Book::NumberlessImageIndex::Item.new("sampleimg", 1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "<p><span type='image'>図1.1</span></p>"
+    assert_equal expected, actual
+  end
+
+
   def test_block_raw0
     actual = compile_block("//raw[<>!\"\\n& ]\n")
     expected = %Q(<>!\"\n& )

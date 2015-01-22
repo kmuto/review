@@ -42,7 +42,7 @@ class IndexTest < Test::Unit::TestCase
 == sec1-3
 ==== sec1-3-0-1
     EOB
-    book = Book::Base.load_default
+    book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
     assert_equal [2,2], index['sec1-2|sec1-2-2'].number
@@ -59,7 +59,7 @@ class IndexTest < Test::Unit::TestCase
 == sec1-3
 === sec1-3-1
     EOB
-    book = Book::Base.load_default
+    book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
     assert_equal [3,1], index['sec1-3|sec1-3-1'].number
@@ -77,7 +77,7 @@ class IndexTest < Test::Unit::TestCase
 == sec1-3
 === sec1-3-1
     EOB
-    book = Book::Base.load_default
+    book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
     assert_equal [2,2], index['sec1-2|sec1-2-2'].number
@@ -96,7 +96,7 @@ class IndexTest < Test::Unit::TestCase
 === sec1-2-1
 === sec1-2-2
     EOB
-    book = Book::Base.load_default
+    book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
     assert_equal [2,2], index['sec1-2|sec1-2-2'].number

@@ -2,7 +2,7 @@
 # $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
 #
 # Copyright (c) 2002-2008 Minero Aoki
-#               2009 Minero Aoki, Kenshi Muto
+#               2009-2014 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -39,6 +39,14 @@ module ReVIEW
 
       def file?
         (name.present? and path =~ /\.re\z/) ? true : false
+      end
+
+      def format_number(heading = true)
+        if heading
+          "#{I18n.t("part", @number)}"
+        else
+          "#{@number}"
+        end
       end
 
     end

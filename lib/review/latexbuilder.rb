@@ -64,13 +64,17 @@ module ReVIEW
     def headline(level, label, caption)
       buf = ""
       _, anchor = headline_prefix(level)
+      headline_name = HEADLINE[level]
+      if @chapter.kind_of? ReVIEW::Book::Part
+        headline_name = "part"
+      end
       prefix = ""
       if level > @book.config["secnolevel"] || (@chapter.number.to_s.empty? && level > 1)
         prefix = "*"
       end
-      buf << macro(HEADLINE[level]+prefix, caption) << "\n"
+      buf << macro(headline_name+prefix, caption) << "\n"
       if prefix == "*" && level <= @book.config["toclevel"].to_i
-        buf << "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{caption}}\n"
+        buf << "\\addcontentsline{toc}{#{headline_name}}{#{caption}}\n"
       end
       if level == 1
         buf << macro('label', chapter_label) << "\n"
@@ -367,8 +371,9 @@ module ReVIEW
     end
     private :sec_label
 
-    def table_label(id)
-      "table:#{@chapter.id}:#{id}"
+    def table_label(id, chapter=nil)
+      chapter ||= @chapter
+      "table:#{chapter.id}:#{id}"
     end
     private :table_label
 
@@ -639,7 +644,7 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id))
+      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id, chapter))
     end
 
     def inline_img(id)

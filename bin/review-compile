@@ -166,7 +166,7 @@ def _main
         end
       end
     when :dir
-      book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load_default
+      book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load
       book.config = config
       compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
       book.chapters.each do |chap|
@@ -176,9 +176,6 @@ def _main
       # PART
       book.parts_in_file.each do |part|
         str = compiler.compile(part)
-        if compiler.strategy.extname == ".tex"
-          str.gsub!(/\A\\chapter\{/, '\part{') # FIXME: UGLY...
-        end
         write "#{part.name}#{compiler.strategy.extname}", str  unless check_only
       end
     else

@@ -67,6 +67,8 @@ params: --stylesheet=sample.css
 debug: null
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
+# 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)。
+# page_metric: A5
 # あるいは、配列で指定することもできる
 # 各数字の意味は、順にリストの行数、リストの1行字数、テキストの行数、テキストの1行字数、1kバイト毎のページ数
-# catalogfile: [40,80,40,80,2]
+# page_metric: [40,80,40,80,2]

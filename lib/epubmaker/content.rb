@@ -64,8 +64,8 @@ module EPUBMaker
       if self.class != obj.class
         return false
       end
-      [self.id, self.file, self.media, self.title, self.level, self.notoc] ==
-        [obj.id, obj.file, obj.media, obj.title, obj.level, obj.notoc]
+      [self.id, self.file, self.media, self.title, self.level, self.notoc, self.chaptype, self.properties] ==
+        [obj.id, obj.file, obj.media, obj.title, obj.level, obj.notoc, obj.chaptype, obj.properties]
     end
 
     private

@@ -41,7 +41,7 @@ def _main
     "inencoding" => "UTF-8",
     "outencoding" => "UTF-8"
   }
-  book = ReVIEW::Book::Base.load_default
+  book = ReVIEW::Book::Base.load
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION

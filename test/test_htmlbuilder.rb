@@ -68,7 +68,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録I　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hI"></a>付録I　this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_roman
@@ -79,7 +79,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>I.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a>I.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_alpha
@@ -90,7 +90,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録A　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hA"></a>付録A　this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_alpha
@@ -101,7 +101,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>A.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a>A.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_without_secno
@@ -226,6 +226,38 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test 「1.1.1 te_st」 test2|, actual
   end
 
+  def test_inline_hd_chap_postdef_roman
+    @chapter.book.config["appendix_format"] = "roman"
+    @chapter.instance_eval do
+      def on_APPENDIX?
+        true
+      end
+    end
+    def @chapter.headline_index
+      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+      Book::HeadlineIndex.new(items, self)
+    end
+
+    actual = compile_inline("test @<hd>{test} test2")
+    assert_equal %Q|test 「I.1 te_st」 test2|, actual
+  end
+
+  def test_inline_hd_chap_postdef_alpha
+    @chapter.book.config["appendix_format"] = "alpha"
+    @chapter.instance_eval do
+      def on_APPENDIX?
+        true
+      end
+    end
+    def @chapter.headline_index
+      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+      Book::HeadlineIndex.new(items, self)
+    end
+
+    actual = compile_inline("test @<hd>{test} test2")
+    assert_equal %Q|test 「A.1 te_st」 test2|, actual
+  end
+
   def test_inline_uchar
     actual = compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test &#x2460; test2|, actual
@@ -258,6 +290,31 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @config["mathml"] = nil
     assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", actual
   end
+
+  def test_inline_imgref
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "<p>図1.1「sample photo」</p>\n"
+    assert_equal expected, actual
+  end
+
+  def test_inline_imgref2
+    def @chapter.image(id)
+      item = Book::NumberlessImageIndex::Item.new("sampleimg", 1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<imgref>{sampleimg}"
+    expected = "<p>図1.1</p>\n"
+    assert_equal expected, actual
+  end
+
 
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
@@ -574,7 +631,7 @@ EOS
 </div>
 
 <h3><a id="h1-0-1"></a>next level</h3>
-<p>this is test.</p>
+<p>this is コラム「test」.</p>
 EOS
 
     assert_equal expected, column_helper(review)

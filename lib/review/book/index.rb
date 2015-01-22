@@ -93,7 +93,7 @@ module ReVIEW
       end
 
       def display_string(id)
-        "#{number(id)}「#{title(id)}」"
+        "#{number(id)}#{I18n.t("chapter_quote", title(id))}"
       end
     end
 
@@ -132,16 +132,35 @@ module ReVIEW
 
 
     class ImageIndex < Index
+      def self.parse(src, *args)
+        items = []
+        seq = 1
+        src.grep(%r<^//#{item_type()}>) do |line|
+          # ex. ["//image", "id", "", "caption"]
+          elements = line.split(/\[(.*?)\]/)
+          if elements[1].present?
+            items.push item_class().new(elements[1], seq, elements[3])
+            seq += 1
+            if elements[1] == ""
+              warn "warning: no ID of #{item_type()} in #{line}"
+            end
+          end
+        end
+        new(items, *args)
+      end
+
       class Item
 
-        def initialize(id, number)
+        def initialize(id, number, caption = nil)
           @id = id
           @number = number
+          @caption = caption
           @path = nil
         end
 
         attr_reader :id
         attr_reader :number
+        attr_reader :caption
         attr_writer :index    # internal use only
 
         def bound?
@@ -151,7 +170,6 @@ module ReVIEW
         def path
           @path ||= @index.find_path(id)
         end
-
       end
 
       def ImageIndex.item_type
@@ -176,7 +194,6 @@ module ReVIEW
       def find_path(id)
         @image_finder.find_path(id)
       end
-
     end
 
     class IconIndex < ImageIndex
@@ -252,11 +269,6 @@ module ReVIEW
 
     class NumberlessImageIndex < ImageIndex
       class Item < ImageIndex::Item
-        def initialize(id, number)
-          @id = id
-          @number = ""
-          @path = nil
-        end
       end
 
       def NumberlessImageIndex.item_type
@@ -270,11 +282,6 @@ module ReVIEW
 
     class IndepImageIndex < ImageIndex
       class Item < ImageIndex::Item
-        def initialize(id, number)
-          @id = id
-          @number = ""
-          @path = nil
-        end
       end
 
       def IndepImageIndex.item_type
@@ -346,7 +353,7 @@ module ReVIEW
 
       def number(id)
         n = @chap.number
-        if @chap.on_APPENDIX? && @chap.number > 1 && @chap.number < 28
+        if @chap.on_APPENDIX? && @chap.number > 0 && @chap.number < 28
           type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
           n = case type
               when "roman"

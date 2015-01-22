@@ -457,6 +457,19 @@ module ReVIEW
       end
     end
 
+    def inline_imgref(id)
+      chapter, id = extract_chapter_id(id)
+      if chapter.image(id).caption.blank?
+        inline_img(id)
+      else
+        if get_chap(chapter).nil?
+          "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}#{I18n.t('image_quote', chapter.image(id).caption)}</span>"
+        else
+          "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}#{I18n.t('image_quote', chapter.image(id).caption)}</span>"
+        end
+      end
+    end
+
     def handle_metric(str)
       k, v = str.split('=', 2)
       return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
@@ -765,13 +778,13 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<ref idref='#{idref}'>「●●　#{idref}」</ref>] # FIXME:節名とタイトルも込みで要出力
+      %Q[<ref idref='#{(idref)}'>「#{I18n.t("label_marker")}#{(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
     alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(idref)
-      %Q[<pageref idref='#{escape_html(idref)}'>●●</pageref>] # ページ番号を参照
+      %Q[<pageref idref='#{(idref)}'>●●</pageref>] # ページ番号を参照
     end
 
     def inline_balloon(str)

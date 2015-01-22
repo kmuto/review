@@ -23,16 +23,10 @@ class PDFMakerTest < Test::Unit::TestCase
   def test_check_book_existed
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
-        FileUtils.touch(File.join(dir, "sample.pdf"))
-        tmperr = $stderr
-        $stderr = StringIO.new
-        begin
-          assert_raises SystemExit do
-            @maker.check_book(@config)
-          end
-        ensure
-          $stderr = tmperr
-        end
+        pdf_file = File.join(dir, "sample.pdf")
+        FileUtils.touch(pdf_file)
+        @maker.check_book(@config)
+        assert !File.exist?(pdf_file)
       end
     end
   ensure
