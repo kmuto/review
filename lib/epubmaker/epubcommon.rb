@@ -179,7 +179,8 @@ EOT
 EOT
       end
 
-      if @producer.params["prt"]
+      publisher = @producer.params["pbl"] || @producer.params["prt"] # XXX Backward Compatiblity
+      if publisher
         s << <<EOT
   <p>
     <br />
@@ -187,7 +188,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</h3>
+  <h3 class="tp-publisher">#{CGI.escapeHTML(publisher.join(", "))}</h3>
 EOT
       end
 
