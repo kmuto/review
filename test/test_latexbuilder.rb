@@ -644,7 +644,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}「sample photo」\n"
     assert_equal expected, actual
   end
@@ -656,7 +656,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}\n"
     assert_equal expected, actual
   end
