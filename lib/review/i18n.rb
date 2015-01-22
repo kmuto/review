@@ -23,7 +23,7 @@ module ReVIEW
     end
 
     def self.i18n(locale, user_i18n = {})
-      locale ||= "ja"
+      locale ||= "en"
       @i18n = ReVIEW::I18n.new(locale)
       unless user_i18n.empty?
         @i18n.update(user_i18n)
@@ -61,6 +61,8 @@ module ReVIEW
       locale ||= @locale
       if @store[locale]
         @store[locale].merge!(user_i18n)
+      else
+        @store[locale] = user_i18n
       end
     end
 

@@ -126,8 +126,16 @@ class I18nTest < Test::Unit::TestCase
 
   def test_update
     i18n = ReVIEW::I18n.new("ja")
-    hash = {"locale"=>"ja","foo"=>"bar"}
+    hash = {"foo"=>"bar"}
     i18n.update(hash)
+    assert_equal "bar", i18n.t("foo")
+  end
+
+  def test_update_newlocale
+    i18n = ReVIEW::I18n.new("ja")
+    hash = {"foo"=>"bar"}
+    i18n.update(hash, "abc")
+    i18n.locale = "abc"
     assert_equal "bar", i18n.t("foo")
   end
 
