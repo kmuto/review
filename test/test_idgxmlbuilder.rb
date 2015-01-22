@@ -559,7 +559,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p><span type='image'>図1.1「sample photo」</span></p>"
     assert_equal expected, actual
   end
@@ -571,7 +571,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p><span type='image'>図1.1</span></p>"
     assert_equal expected, actual
   end
