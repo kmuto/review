@@ -298,7 +298,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p>図1.1「sample photo」</p>\n"
     assert_equal expected, actual
   end
@@ -310,7 +310,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p>図1.1</p>\n"
     assert_equal expected, actual
   end
