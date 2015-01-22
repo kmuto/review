@@ -631,7 +631,7 @@ EOS
 </div>
 
 <h3><a id="h1-0-1"></a>next level</h3>
-<p>this is test.</p>
+<p>this is コラム「test」.</p>
 EOS
 
     assert_equal expected, column_helper(review)

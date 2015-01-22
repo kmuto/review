@@ -966,7 +966,7 @@ QUOTE
       if @book.config["chapterlink"]
         %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(@chapter.column(id).caption))}</a>)
       else
-        escape_html(@chapter.column(id).caption)
+        I18n.t("column", escape_html(@chapter.column(id).caption))
       end
     rescue KeyError
       error "unknown column: #{id}"
