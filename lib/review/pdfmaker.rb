@@ -149,15 +149,25 @@ module ReVIEW
         ## do compile
         enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
         kanji = 'utf8'
-        if enc
-          kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
+        texcommand = "platex"
+        dvicommand = "dvipdfmx"
+        dvioptions = "-d 5"
+
+        if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
+          warn "command configuration is prohibited in safe mode. ignored."
+        else
+          texcommand = config["texcommand"] if config["texcommand"]
+          dvicommand = config["dvicommand"] if config["dvicommand"]
+          dvioptions = config["dvioptions"] if config["dvioptions"]
+          if enc
+            kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
+          end
         end
-        texcommand = config["texcommand"] || "platex"
         3.times do
           system_or_raise("#{texcommand} -kanji=#{kanji} book.tex")
         end
         if File.exist?("book.dvi")
-          system_or_raise("dvipdfmx -d 5 book.dvi")
+          system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
         end
       }
       FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
