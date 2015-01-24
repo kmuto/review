@@ -875,4 +875,23 @@ EOS
 EOS
     assert_equal expected, actual
   end
+
+
+  ## inline nesting tests
+  def test_href_nest
+    actual = compile_inline("@<href>{http://github.com,@<b>{G}itHub}")
+    assert_equal %Q|<a href="http://github.com" class="link"><b>G</b>itHub</a>|, actual
+  end
+
+  def test_inline_tti_nest
+    actual = compile_inline("test @<tt>{aa@<i>{inline test}bb} test2")
+    assert_equal %Q|test <tt>aa<i>inline test</i>bb</tt> test2|, actual
+  end
+
+  def test_inline_ttib_nest
+    actual = compile_inline("test @<tt>{aa@<i>{inline @<b>{te}st}bb} test2")
+    assert_equal %Q|test <tt>aa<i>inline <b>te</b>st</i>bb</tt> test2|, actual
+  end
+
+
 end
