@@ -861,9 +861,9 @@ QUOTE
 
     def compile_ruby(base, ruby)
       if @book.config["htmlversion"].to_i == 5
-        %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+        %Q[<ruby>#{(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
-        %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+        %Q[<ruby><rb>#{(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       end
     end
 
@@ -885,26 +885,26 @@ QUOTE
     end
 
     def inline_ami(str)
-      %Q(<span class="ami">#{escape_html(str)}</span>)
+      %Q(<span class="ami">#{(str)}</span>)
     end
 
     def inline_bou(str)
-      %Q(<span class="bou">#{escape_html(str)}</span>)
+      %Q(<span class="bou">#{(str)}</span>)
     end
 
     def inline_tti(str)
       if @book.config["htmlversion"].to_i == 5
-        %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
+        %Q(<code class="tt"><i>#{(str)}</i></code>)
       else
-        %Q(<tt><i>#{escape_html(str)}</i></tt>)
+        %Q(<tt><i>#{(str)}</i></tt>)
       end
     end
 
     def inline_ttb(str)
       if @book.config["htmlversion"].to_i == 5
-        %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
+        %Q(<code class="tt"><b>#{(str)}</b></code>)
       else
-        %Q(<tt><b>#{escape_html(str)}</b></tt>)
+        %Q(<tt><b>#{(str)}</b></tt>)
       end
     end
 
@@ -914,14 +914,14 @@ QUOTE
 
     def inline_code(str)
       if @book.config["htmlversion"].to_i == 5
-        %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
+        %Q(<code class="inline-code tt">#{(str)}</code>)
       else
-        %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
+        %Q(<tt class="inline-code">#{(str)}</tt>)
       end
     end
 
     def inline_idx(str)
-      %Q(#{escape_html(str)}<!-- IDX:#{escape_comment(escape_html(str))} -->)
+      %Q(#{(str)}<!-- IDX:#{escape_comment(escape_html(str))} -->)
     end
 
     def inline_hidx(str)
@@ -940,7 +940,7 @@ QUOTE
           :symbol => MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
       else
-        %Q[<span class="equation">#{escape_html(str)}</span>]
+        %Q[<span class="equation">#{(str)}</span>]
       end
     end
 
@@ -996,9 +996,9 @@ QUOTE
 
     def inline_column(id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(@chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", (@chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", escape_html(@chapter.column(id).caption))
+        I18n.t("column", (@chapter.column(id).caption))
       end
     rescue KeyError
       error "unknown column: #{id}"
@@ -1054,7 +1054,7 @@ QUOTE
     end
 
     def inline_asis(str, tag)
-      %Q(<#{tag}>#{escape_html(str)}</#{tag}>)
+      %Q(<#{tag}>#{(str)}</#{tag}>)
     end
 
     def inline_abbr(str)
@@ -1111,9 +1111,9 @@ QUOTE
 
     def inline_tt(str)
       if @book.config["htmlversion"].to_i == 5
-        %Q(<code class="tt">#{escape_html(str)}</code>)
+        %Q(<code class="tt">#{(str)}</code>)
       else
-        %Q(<tt>#{escape_html(str)}</tt>)
+        %Q(<tt>#{(str)}</tt>)
       end
     end
 
@@ -1126,11 +1126,11 @@ QUOTE
     end
 
     def inline_u(str)
-      %Q(<u>#{escape_html(str)}</u>)
+      %Q(<u>#{(str)}</u>)
     end
 
     def inline_recipe(str)
-      %Q(<span class="recipe">「#{escape_html(str)}」</span>)
+      %Q(<span class="recipe">「#{(str)}」</span>)
     end
 
     def inline_icon(id)
@@ -1147,7 +1147,7 @@ QUOTE
 
     def inline_comment(str)
       if @book.config["draft"]
-        %Q(<span class="draft-comment">#{escape_html(str)}</span>)
+        %Q(<span class="draft-comment">#{(str)}</span>)
       else
         %Q(<!-- #{escape_comment(escape_html(str))} -->)
       end
@@ -1162,7 +1162,7 @@ QUOTE
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? (url) : (label)}</a>)
     end
 
     def flushright(lines)
