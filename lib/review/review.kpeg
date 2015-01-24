@@ -501,9 +501,9 @@ HeadlinePrefix = < /={1,5}/ > { text.length }
 
 Paragraph = !/\/\/A-Za-z/ ParagraphSub+:c  ~paragraph(self, c.flatten)
 
-ParagraphSub = ( InlineElement:c { c }
-               | ContentText:c  { c }
-               )+:d  { e=d.flatten } Newline { e }
+ParagraphSub = Inline+:d  { e=d.flatten } Newline { e }
+
+Inline = ( InlineElement | ContentText)
 
 ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
 
@@ -548,9 +548,11 @@ InlineElementContentsSub = !"}" ( InlineElementContent:c1 Space* "," Space* Inli
                                 )
 
 
-InlineElementContent = ( InlineElement:content ~inline_element_content(self, content)
-                       | InlineElementContentText+:content ~inline_element_content(self, content)
-                       )
+InlineElementContent = InlineElementContentSub+:d { d }
+
+InlineElementContentSub = ( InlineElement:c { c }
+                          | !InlineElement InlineElementContentText+:content ~inline_element_content(self, content)
+                          )
 
 ## XXX '\' (excpet '\}' and '\,' and '\\' ) => '\' is OK?
 InlineElementContentText =  ( "\\}" ~text(self, "}")

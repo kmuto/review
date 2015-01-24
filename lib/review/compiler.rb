@@ -1347,104 +1347,18 @@ require 'review/node'
     return _tmp
   end
 
-  # ParagraphSub = (InlineElement:c { c } | ContentText:c { c })+:d { e=d.flatten } Newline { e }
+  # ParagraphSub = Inline+:d { e=d.flatten } Newline { e }
   def _ParagraphSub
 
     _save = self.pos
     while true # sequence
       _save1 = self.pos
       _ary = []
-
-      _save2 = self.pos
-      while true # choice
-
-        _save3 = self.pos
-        while true # sequence
-          _tmp = apply(:_InlineElement)
-          c = @result
-          unless _tmp
-            self.pos = _save3
-            break
-          end
-          @result = begin;  c ; end
-          _tmp = true
-          unless _tmp
-            self.pos = _save3
-          end
-          break
-        end # end sequence
-
-        break if _tmp
-        self.pos = _save2
-
-        _save4 = self.pos
-        while true # sequence
-          _tmp = apply(:_ContentText)
-          c = @result
-          unless _tmp
-            self.pos = _save4
-            break
-          end
-          @result = begin;  c ; end
-          _tmp = true
-          unless _tmp
-            self.pos = _save4
-          end
-          break
-        end # end sequence
-
-        break if _tmp
-        self.pos = _save2
-        break
-      end # end choice
-
+      _tmp = apply(:_Inline)
       if _tmp
         _ary << @result
         while true
-
-          _save5 = self.pos
-          while true # choice
-
-            _save6 = self.pos
-            while true # sequence
-              _tmp = apply(:_InlineElement)
-              c = @result
-              unless _tmp
-                self.pos = _save6
-                break
-              end
-              @result = begin;  c ; end
-              _tmp = true
-              unless _tmp
-                self.pos = _save6
-              end
-              break
-            end # end sequence
-
-            break if _tmp
-            self.pos = _save5
-
-            _save7 = self.pos
-            while true # sequence
-              _tmp = apply(:_ContentText)
-              c = @result
-              unless _tmp
-                self.pos = _save7
-                break
-              end
-              @result = begin;  c ; end
-              _tmp = true
-              unless _tmp
-                self.pos = _save7
-              end
-              break
-            end # end sequence
-
-            break if _tmp
-            self.pos = _save5
-            break
-          end # end choice
-
+          _tmp = apply(:_Inline)
           _ary << @result if _tmp
           break unless _tmp
         end
@@ -1478,6 +1392,24 @@ require 'review/node'
     end # end sequence
 
     set_failed_rule :_ParagraphSub unless _tmp
+    return _tmp
+  end
+
+  # Inline = (InlineElement | ContentText)
+  def _Inline
+
+    _save = self.pos
+    while true # choice
+      _tmp = apply(:_InlineElement)
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_ContentText)
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_Inline unless _tmp
     return _tmp
   end
 
@@ -2437,8 +2369,45 @@ require 'review/node'
     return _tmp
   end
 
-  # InlineElementContent = (InlineElement:content {inline_element_content(self, content)} | InlineElementContentText+:content {inline_element_content(self, content)})
+  # InlineElementContent = InlineElementContentSub+:d { d }
   def _InlineElementContent
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_InlineElementContentSub)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_InlineElementContentSub)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      d = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  d ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementContent unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContentSub = (InlineElement:c { c } | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})
+  def _InlineElementContentSub
 
     _save = self.pos
     while true # choice
@@ -2446,12 +2415,12 @@ require 'review/node'
       _save1 = self.pos
       while true # sequence
         _tmp = apply(:_InlineElement)
-        content = @result
+        c = @result
         unless _tmp
           self.pos = _save1
           break
         end
-        @result = begin; inline_element_content(self, content); end
+        @result = begin;  c ; end
         _tmp = true
         unless _tmp
           self.pos = _save1
@@ -2465,6 +2434,14 @@ require 'review/node'
       _save2 = self.pos
       while true # sequence
         _save3 = self.pos
+        _tmp = apply(:_InlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save3
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _save4 = self.pos
         _ary = []
         _tmp = apply(:_InlineElementContentText)
         if _tmp
@@ -2477,7 +2454,7 @@ require 'review/node'
           _tmp = true
           @result = _ary
         else
-          self.pos = _save3
+          self.pos = _save4
         end
         content = @result
         unless _tmp
@@ -2497,7 +2474,7 @@ require 'review/node'
       break
     end # end choice
 
-    set_failed_rule :_InlineElementContent unless _tmp
+    set_failed_rule :_InlineElementContentSub unless _tmp
     return _tmp
   end
 
@@ -3936,7 +3913,8 @@ require 'review/node'
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
   Rules[:_Paragraph] = rule_info("Paragraph", "!/\\/\\/A-Za-z/ ParagraphSub+:c {paragraph(self, c.flatten)}")
-  Rules[:_ParagraphSub] = rule_info("ParagraphSub", "(InlineElement:c { c } | ContentText:c { c })+:d { e=d.flatten } Newline { e }")
+  Rules[:_ParagraphSub] = rule_info("ParagraphSub", "Inline+:d { e=d.flatten } Newline { e }")
+  Rules[:_Inline] = rule_info("Inline", "(InlineElement | ContentText)")
   Rules[:_ContentText] = rule_info("ContentText", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* Newline {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline {block_element(self, symbol, args, nil)})")
@@ -3949,7 +3927,8 @@ require 'review/node'
   Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< AlphanumericAscii+ > { text }")
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
   Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 {  [c1]+c2 } | InlineElementContent:c1 { [c1] })")
-  Rules[:_InlineElementContent] = rule_info("InlineElementContent", "(InlineElement:content {inline_element_content(self, content)} | InlineElementContentText+:content {inline_element_content(self, content)})")
+  Rules[:_InlineElementContent] = rule_info("InlineElementContent", "InlineElementContentSub+:d { d }")
+  Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" {text(self, \"}\")} | \"\\\\,\" {text(self, \",\")} | \"\\\\\\\\\" {text(self, \"\\\\\" )} | \"\\\\\" {text(self, \"\\\\\" )} | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self,text)})")
   Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline*:content \"]\" {bracket_arg(self, content)}")
   Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
