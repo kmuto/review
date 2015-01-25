@@ -20,7 +20,7 @@ require 'review/version'
 
 def main
   @config = {}
-  @config["lang"] ||= "ja"  ## current default
+  @config["language"] ||= "ja"  ## current default
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
@@ -30,7 +30,7 @@ def main
     exit 0
   end
   opts.on('--lang=LANG', 'set language to locale.yml') do |lang|
-    @config["lang"] = lang
+    @config["language"] = lang
   end
   begin
     opts.parse!
@@ -125,7 +125,7 @@ end
 
 def generate_config(dir)
   config_yml = File.read(@review_dir + "/test/sample-book/src/config.yml")
-  config_yml.gsub!(/^language:.*$/, "language: #{@config["lang"]}")
+  config_yml.gsub!(/^language:.*$/, "language: #{@config["language"]}")
   File.open(dir + "/config.yml", "w") do |f|
     f.write(config_yml)
   end
@@ -147,9 +147,9 @@ end
 
 def generate_locale(dir)
   yaml = YAML.load_file(@review_dir + "/lib/review/i18n.yml")
-  if yaml.keys.include?(@config["lang"])
-    yaml_local = yaml[@config["lang"]]
-    locale = {"language"=>@config["lang"]}.merge(yaml_local)
+  if yaml.keys.include?(@config["language"])
+    yaml_local = yaml[@config["language"]]
+    locale = {"language"=>@config["language"]}.merge(yaml_local)
     File.open(dir+ "/locale.yml","w") do |f|
       f.write(locale.to_yaml)
     end
