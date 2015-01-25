@@ -11,6 +11,7 @@ require 'fileutils'
 require 'optparse'
 
 require 'pathname'
+require 'yaml'
 
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
@@ -18,13 +19,19 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/version'
 
 def main
+  @config = {}
+  @config["lang"] ||= "ja"  ## current default
+
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} dirname"
-  opts.on('-h', '--help', 'print this message and quit.') {
+  opts.on('-h', '--help', 'print this message and quit.') do
     puts opts.help
     exit 0
-  }
+  end
+  opts.on('--lang=LANG', 'set language to locale.yml') do |lang|
+    @config["lang"] = lang
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
@@ -51,6 +58,7 @@ def main
     generate_texmacro(dir)
     generate_config(dir)
     generate_rakefile(dir)
+    generate_locale(dir)
   end
 end
 
@@ -116,7 +124,11 @@ def generate_cover_image(dir)
 end
 
 def generate_config(dir)
-  FileUtils.cp @review_dir + "/test/sample-book/src/config.yml", dir
+  config_yml = File.read(@review_dir + "/test/sample-book/src/config.yml")
+  config_yml.gsub!(/^language:.*$/, "language: #{@config["lang"]}")
+  File.open(dir + "/config.yml", "w") do |f|
+    f.write(config_yml)
+  end
 end
 
 def generate_style(dir)
@@ -131,6 +143,17 @@ end
 
 def generate_rakefile(dir)
   FileUtils.cp @review_dir + "/test/sample-book/src/Rakefile", dir
+end
+
+def generate_locale(dir)
+  yaml = YAML.load_file(@review_dir + "/lib/review/i18n.yml")
+  if yaml.keys.include?(@config["lang"])
+    yaml_local = yaml[@config["lang"]]
+    locale = {"language"=>@config["lang"]}.merge(yaml_local)
+    File.open(dir+ "/locale.yml","w") do |f|
+      f.write(locale.to_yaml)
+    end
+  end
 end
 
 if File.basename($0) == File.basename(__FILE__)
