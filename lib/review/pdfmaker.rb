@@ -231,13 +231,16 @@ module ReVIEW
     def make_authors(config)
       authors = ""
       if config["aut"].present?
-        authors = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
+        author_names = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter"))
+        authors = ReVIEW::I18n.t("author_with_label", author_names)
       end
       if config["csl"].present?
-        authors += " \\\\\n"+join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
+        csl_names = join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter"))
+        authors += " \\\\\n"+ ReVIEW::I18n.t("supervisor_with_label", csl_names)
       end
       if config["trl"].present?
-        authors += " \\\\\n"+join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
+        trl_names = join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter"))
+        authors += " \\\\\n"+ ReVIEW::I18n.t("translator_with_label", trl_names)
       end
       authors
     end
