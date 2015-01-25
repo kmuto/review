@@ -46,11 +46,15 @@ en:
   table: "Table "
   list: "List "
   column: "Column %s"
+  columnname: "Column"
+  column_head: "Column"
+  part: "Part %s"
   chapter: Chapter %d
   chapter_postfix: ". "
   chapter_quote: '"%s"'
   appendix: Appendix %s
   numberless_image: "Figure:"
+  memo_head: Note
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
@@ -71,6 +75,9 @@ en:
   prt: "Printer"
   pbl: "Publisher"
   contact: "Contact"
+  author_postfix: ""
+  supervisor_postfix: ""
+  translator_postfix: ""
   names_splitter: ", "
   version: "Version"
 
