@@ -30,7 +30,11 @@ module ReVIEW
     end
 
     def self.locale=(locale)
-      @i18n.locale = locale
+      if @i18n
+        @i18n.locale = locale
+      else
+        I18n.setup(locale)
+      end
     end
 
     class << self
