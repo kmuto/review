@@ -24,6 +24,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @chapter = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
+    I18n.setup("ja")
   end
 
   def test_headline_level1
@@ -644,7 +645,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}「sample photo」\n"
     assert_equal expected, actual
   end
@@ -656,7 +657,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}\n"
     assert_equal expected, actual
   end

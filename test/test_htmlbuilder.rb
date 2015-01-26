@@ -25,6 +25,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
+    I18n.setup("ja")
   end
 
   def test_xmlns_ops_prefix_epub3
@@ -299,7 +300,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p>図1.1「sample photo」</p>\n"
     assert_equal expected, actual
   end
@@ -311,7 +312,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p>図1.1</p>\n"
     assert_equal expected, actual
   end

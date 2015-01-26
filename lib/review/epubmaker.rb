@@ -36,6 +36,7 @@ module ReVIEW
 
   def produce(yamlfile, bookname=nil)
     load_yaml(yamlfile)
+    I18n.setup(@params["language"])
     bookname = @params["bookname"] if bookname.nil?
     booktmpname = "#{bookname}-epub"
 

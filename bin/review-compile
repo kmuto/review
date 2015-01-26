@@ -19,6 +19,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review'
 require 'review/compiler'
 require 'review/book'
+require 'review/i18n'
 require 'fileutils'
 require 'optparse'
 
@@ -143,6 +144,7 @@ def _main
 
   begin
     config["builder"] = target
+    ReVIEW::I18n.setup(config["language"])
 
     case mode
     when :files

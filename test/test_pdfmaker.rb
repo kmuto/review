@@ -15,9 +15,10 @@ class PDFMakerTest < Test::Unit::TestCase
                      "version" => 2,
                      "urnid" => "http://example.jp/",
                      "date" => "2011-01-01",
-                     "language" => "en",
+                     "language" => "ja",
                    })
     @output = StringIO.new
+    I18n.setup(@config["language"])
   end
 
   def test_check_book_existed
@@ -120,7 +121,7 @@ class PDFMakerTest < Test::Unit::TestCase
       "contact"=>"tarou@example.jp",
     })
     Dir.mktmpdir do |dir|
-      I18n.i18n("ja", {"prt" => "印刷所"})
+      I18n.update({"prt" => "印刷所"},"ja")
       okuduke = @maker.make_colophon(@config)
       assert_equal("著　者 & テスト太郎、テスト次郎 \\\\\n監　修 & 監修三郎 \\\\\nイラスト & イラスト七郎、イラスト八郎 \\\\\n発行所 & テスト出版 \\\\\n連絡先 & tarou@example.jp \\\\\n印刷所 & テスト印刷 \\\\\n",
                    okuduke)

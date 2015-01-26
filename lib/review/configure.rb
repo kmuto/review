@@ -5,7 +5,7 @@ module ReVIEW
       Configure[
         # These parameters can be overridden by YAML file.
         "bookname"=> "example", # it defines epub file name also
-        "booktitle" => "Re:VIEW EPUBサンプル",
+        "booktitle" => "Re:VIEW Sample Book",
         "title" => nil,
         "aut" => nil, # author
         "prt" => nil, # printer(publisher)

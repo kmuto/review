@@ -25,6 +25,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
+    I18n.setup("ja")
   end
 
   def test_headline_level1
@@ -557,7 +558,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p><span type='image'>図1.1「sample photo」</span></p>"
     assert_equal expected, actual
   end
@@ -569,7 +570,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p><span type='image'>図1.1</span></p>"
     assert_equal expected, actual
   end
