@@ -150,6 +150,7 @@ module ReVIEW
         enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
         kanji = 'utf8'
         texcommand = "platex"
+        texoptions = "-kanji=#{kanji}"
         dvicommand = "dvipdfmx"
         dvioptions = "-d 5"
 
@@ -161,10 +162,12 @@ module ReVIEW
           dvioptions = config["dvioptions"] if config["dvioptions"]
           if enc
             kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
+            texoptions = "-kanji=#{kanji}"
           end
+          texoptions = config["texoptions"] if config["texoptions"]
         end
         3.times do
-          system_or_raise("#{texcommand} -kanji=#{kanji} book.tex")
+          system_or_raise("#{texcommand} #{texoptions} book.tex")
         end
         if File.exist?("book.dvi")
           system_or_raise("#{dvicommand} #{dvioptions} book.dvi")

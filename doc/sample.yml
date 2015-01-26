@@ -39,6 +39,8 @@ stylesheet: stylesheet.css
 # texdocumentclass: ["jsarticle", "b5paper,oneside"]
 # LaTeX用のコマンドを指定する(platex or lualatex)
 # texcommand: "platex"
+# LaTeX用のオプションを指定する(default: "-kanji=#{kanji}")
+# texoptions: "-kanji=utf-8"
 # LaTeX用のdvi変換コマンドを指定する(dvipdfmx)
 # dvicommand: "dvipdfmx"
 # LaTeX用のdvi変換コマンドのオプションを指定する
