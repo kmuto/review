@@ -3,7 +3,9 @@ require 'yaml'
 
 module ReVIEW
   class I18n
-    def self.setup(ymlfile = "locale.yml")
+    def self.setup(locale="ja", ymlfile = "locale.yml")
+      @i18n = ReVIEW::I18n.new(locale)
+
       lfile = nil
       if ymlfile
         lfile = File.expand_path(ymlfile, Dir.pwd)
@@ -14,24 +16,17 @@ module ReVIEW
         end
       end
 
-      I18n.i18n "ja"
       if lfile && File.file?(lfile)
         @i18n.update_localefile(lfile)
-      end
-    rescue
-      I18n.i18n "ja"
-    end
-
-    def self.i18n(locale, user_i18n = {})
-      locale ||= "en"
-      @i18n = ReVIEW::I18n.new(locale)
-      unless user_i18n.empty?
-        @i18n.update(user_i18n)
       end
     end
 
     def self.t(str, args = nil)
       @i18n.t(str, args)
+    end
+
+    def self.update(user_i18n, locale = nil)
+      @i18n.update(user_i18n, locale)
     end
 
 
@@ -72,6 +67,4 @@ module ReVIEW
       str
     end
   end
-
-  I18n.setup
 end

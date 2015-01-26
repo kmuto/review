@@ -15,7 +15,8 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @config.merge!({
       "secnolevel" => 2,
       "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8"
+      "outencoding" => "UTF-8",
+      "language" => "ja",
     })
     @book = Book::Base.new(nil)
     @book.config = @config
@@ -30,6 +31,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
         puts msg
       end
     end
+    I18n.setup(@config["language"])
   end
 
   def test_headline_level1

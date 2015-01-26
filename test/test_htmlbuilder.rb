@@ -24,6 +24,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
+    I18n.setup("ja")
   end
 
   def test_xmlns_ops_prefix_epub3

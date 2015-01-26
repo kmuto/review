@@ -91,6 +91,7 @@ module ReVIEW
       config.merge!(YAML.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
       config.merge!(cmd_config)
+      I18n.setup(config["language"])
       generate_pdf(config, yamlfile)
     end
 
