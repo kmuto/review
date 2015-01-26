@@ -12,6 +12,12 @@ require 'review/htmlbuilder'
 
 module ReVIEW
   class AHHTMLBuilder < HTMLBuilder
+    def builder_init_file
+      @warns = []
+      @errors = []
+      @chapter.book.image_types = %w( .eps .tif .tiff .png .jpg .jpeg .gif .svg )
+      @sec_counter = SecCounter.new(5, @chapter)
+    end
 
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
