@@ -139,6 +139,16 @@ class I18nTest < Test::Unit::TestCase
     assert_equal "bar", i18n.t("foo")
   end
 
+  def test_i18n_error
+    I18n.setup
+    assert_raises NotImplementedError do
+      I18n.i18n("ja")
+    end
+    assert_raises NotImplementedError do
+      I18n.i18n("ja",{})
+    end
+  end
+
   def teardown
     I18n.setup "ja"
   end
