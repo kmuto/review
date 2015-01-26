@@ -141,6 +141,8 @@ module ReVIEW
 
       copy_images("./images", "#{@path}/images")
       copyStyToDir(Dir.pwd + "/sty", @path)
+      copyStyToDir(Dir.pwd + "/sty", @path, "fd")
+      copyStyToDir(Dir.pwd + "/sty", @path, "cls")
       copyStyToDir(Dir.pwd, @path, "tex")
 
       Dir.chdir(@path) {
