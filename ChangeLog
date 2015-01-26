@@ -1,3 +1,12 @@
+Tue Jan 13 19:26:04 2015  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* lib/review/pdfmaker.rb:
+	  review-pdfmaker removes a PDF file if already exists
+
+	  As a PDF file can be re-generated from source files, review-pdfmaker
+	  remove the file when the file exists rather than exiting with error.
+	  review-epubmaker do the same way.
+
 Tue Dec  9 15:25:38 2014  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* lib/review/configure.rb:

@@ -93,7 +93,7 @@ module ReVIEW
       end
 
       def display_string(id)
-        "#{number(id)}「#{title(id)}」"
+        "#{number(id)}#{I18n.t("chapter_quote", title(id))}"
       end
     end
 
@@ -353,7 +353,7 @@ module ReVIEW
 
       def number(id)
         n = @chap.number
-        if @chap.on_APPENDIX? && @chap.number > 1 && @chap.number < 28
+        if @chap.on_APPENDIX? && @chap.number > 0 && @chap.number < 28
           type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
           n = case type
               when "roman"

@@ -8,6 +8,7 @@ ja:
   part: 第%d部
   chapter: 第%d章
   chapter_postfix: "　"
+  chapter_quote: "「%s」"
   appendix: 付録%s
   numberless_image: "図:"
   memo_head: ■メモ
@@ -20,6 +21,7 @@ ja:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  label_marker: "●●　"
   aut: "著　者"
   csl: "監　修"
   dsr: "デザイン"
@@ -32,22 +34,27 @@ ja:
   prt: "発行所"
   pbl: "発行所"
   contact: "連絡先"
-  author_postfix: "　著"
-  supervisor_postfix: "　監修"
-  translator_postfix: "　訳"
+  author_with_label: "%s　著"
+  supervisor_with_label: "%s　監修"
+  translator_with_label: "%s　訳"
   names_splitter: "、"
   version: "版"
-  published_by: "発行"
+  published_by: "%s 発行"
 
 en:
   image: "Figure "
   table: "Table "
   list: "List "
   column: "Column %s"
+  columnname: "Column"
+  column_head: "Column"
+  part: "Part %s"
   chapter: Chapter %d
   chapter_postfix: ". "
+  chapter_quote: '"%s"'
   appendix: Appendix %s
   numberless_image: "Figure:"
+  memo_head: Note
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
@@ -57,18 +64,24 @@ en:
   caption_prefix_idgxml: "　"
   ruby_prefix: "("
   ruby_postfix: ")"
+  label_marker: "●●　"
   aut: "Author"
   csl: "Consultant"
   dsr: "Design"
   ill: "Illustrator"
+  cov: "Cover"
   edt: "Editor"
   pht: "Photographer"
   trl: "Translator"
   prt: "Printer"
   pbl: "Publisher"
   contact: "Contact"
+  author_with_label: "Author: %s"
+  supervisor_with_label: "Supervisor: %s"
+  translator_with_label: "Translator: %s"
   names_splitter: ", "
   version: "Version"
+  published_by: "%s"
 
 zh_TW:
   image: 圖
@@ -77,6 +90,7 @@ zh_TW:
   part: 第%d部份
   chapter: 第%d章
   chapter_postfix: "　"
+  chapter_quote: "「%s」"
   appendix: 附錄%s
   numberless_image: "圖:"
   format_number: "%s.%d"
@@ -88,6 +102,7 @@ zh_TW:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  label_marker: "●●　"
   aut: "著作人"
   csl: "監　修"
   dsr: "美術編輯"
@@ -98,9 +113,9 @@ zh_TW:
   prt: "印刷所"
   pbl: "發行所"
   contact: "联系方式"
-  author_postfix: "　著"
-  supervisor_postfix: "　監修"
-  translator_postfix: "　譯"
+  author_with_label: "%s　著"
+  supervisor_with_label: "%s　監修"
+  translator_with_label: "%s　譯"
   names_splitter: ", "
   Version: "版"
-  published_by: "出版"
+  published_by: "%s 出版"

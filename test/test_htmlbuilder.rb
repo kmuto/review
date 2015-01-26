@@ -24,6 +24,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
+    I18n.setup("ja")
   end
 
   def test_xmlns_ops_prefix_epub3
@@ -226,6 +227,38 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test 「1.1.1 te_st」 test2|, actual
   end
 
+  def test_inline_hd_chap_postdef_roman
+    @chapter.book.config["appendix_format"] = "roman"
+    @chapter.instance_eval do
+      def on_APPENDIX?
+        true
+      end
+    end
+    def @chapter.headline_index
+      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+      Book::HeadlineIndex.new(items, self)
+    end
+
+    actual = compile_inline("test @<hd>{test} test2")
+    assert_equal %Q|test 「I.1 te_st」 test2|, actual
+  end
+
+  def test_inline_hd_chap_postdef_alpha
+    @chapter.book.config["appendix_format"] = "alpha"
+    @chapter.instance_eval do
+      def on_APPENDIX?
+        true
+      end
+    end
+    def @chapter.headline_index
+      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+      Book::HeadlineIndex.new(items, self)
+    end
+
+    actual = compile_inline("test @<hd>{test} test2")
+    assert_equal %Q|test 「A.1 te_st」 test2|, actual
+  end
+
   def test_inline_uchar
     actual = compile_inline("test @<uchar>{2460} test2")
     assert_equal %Q|test &#x2460; test2|, actual
@@ -266,7 +299,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p>図1.1「sample photo」</p>\n"
     assert_equal expected, actual
   end
@@ -278,7 +311,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}"
+    actual = compile_block "@<imgref>{sampleimg}\n"
     expected = "<p>図1.1</p>\n"
     assert_equal expected, actual
   end
@@ -599,7 +632,7 @@ EOS
 </div>
 
 <h3><a id="h1-0-1"></a>next level</h3>
-<p>this is test.</p>
+<p>this is コラム「test」.</p>
 EOS
 
     assert_equal expected, column_helper(review)

@@ -47,7 +47,6 @@ module ReVIEW
 
     def builder_init(no_error = false)
       @no_error = no_error
-      @column = 0
       @noindent = nil
       @ol_num = nil
     end
@@ -57,6 +56,7 @@ module ReVIEW
       @warns = []
       @errors = []
       @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
+      @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
@@ -780,7 +780,7 @@ QUOTE
     end
 
     def inline_labelref(idref)
-      %Q[<a target='#{escape_html(idref)}'>「●●　#{escape_html(idref)}」</a>]
+      %Q[<a target='#{escape_html(idref)}'>「#{I18n.t("label_marker")}#{escape_html(idref)}」</a>]
     end
 
     alias_method :inline_ref, :inline_labelref
@@ -966,7 +966,7 @@ QUOTE
       if @book.config["chapterlink"]
         %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(@chapter.column(id).caption))}</a>)
       else
-        escape_html(@chapter.column(id).caption)
+        I18n.t("column", escape_html(@chapter.column(id).caption))
       end
     rescue KeyError
       error "unknown column: #{id}"

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -37,9 +37,7 @@ module ReVIEW
 
     def check_book(config)
       pdf_file = config["bookname"]+".pdf"
-      if File.exist? pdf_file
-        error "file already exists:#{pdf_file}"
-      end
+      File.unlink(pdf_file) if File.exist?(pdf_file)
     end
 
     def build_path(config)
@@ -93,6 +91,7 @@ module ReVIEW
       config.merge!(YAML.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
       config.merge!(cmd_config)
+      I18n.setup(config["language"])
       generate_pdf(config, yamlfile)
     end
 
@@ -188,6 +187,7 @@ module ReVIEW
           images = Dir.glob("**/*").find_all{|f|
             File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
           }
+          break if images.empty?
           system("extractbb", *images)
           unless system("extractbb", "-m", *images)
             system_or_raise("ebb", *images)
@@ -232,13 +232,16 @@ module ReVIEW
     def make_authors(config)
       authors = ""
       if config["aut"].present?
-        authors = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
+        author_names = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter"))
+        authors = ReVIEW::I18n.t("author_with_label", author_names)
       end
       if config["csl"].present?
-        authors += " \\\\\n"+join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
+        csl_names = join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter"))
+        authors += " \\\\\n"+ ReVIEW::I18n.t("supervisor_with_label", csl_names)
       end
       if config["trl"].present?
-        authors += " \\\\\n"+join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
+        trl_names = join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter"))
+        authors += " \\\\\n"+ ReVIEW::I18n.t("translator_with_label", trl_names)
       end
       authors
     end

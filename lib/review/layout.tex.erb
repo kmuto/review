@@ -207,7 +207,7 @@
         <%= authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= values["date"] %> <%= I18n.t("version")%>\hspace{2zw}<%= values["prt"] %> <%= I18n.t("published_by")%>\par}%
+    {\large <%= values["date"] %> <%= I18n.t("version")%>\hspace{2zw}<%= I18n.t("published_by", values["prt"])%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
