@@ -66,7 +66,7 @@ module ReVIEW
       end
 
       def number(id)
-        @index.fetch(id).number.to_s
+        self[id].number.to_s
       end
 
       def each(&block)
@@ -85,16 +85,16 @@ module ReVIEW
       end
 
       def number(id)
-        chapter = @index.fetch(id)
+        chapter = self[id]
         chapter.format_number
       rescue # part
         "#{I18n.t("part", chapter.number)}"
       end
 
       def title(id)
-        @index.fetch(id).title
+        self[id].title
       rescue # non-file part
-        @index.fetch(id).name
+        self[id].name
       end
 
       def display_string(id)
@@ -370,7 +370,7 @@ module ReVIEW
                 "#{@chap.number}"
               end
         end
-        return ([n] + @index.fetch(id).number).join(".")
+        return ([n] + self[id].number).join(".")
       end
     end
 
