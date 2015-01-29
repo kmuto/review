@@ -57,6 +57,11 @@ module ReVIEW
       def [](id)
         @index.fetch(id)
       rescue
+        @index.each do |k, v|
+          if k.split(/\|/).include?(id)
+            return v
+          end
+        end
         raise KeyError, "not found key '#{id}' for #{self.class}"
       end
 
