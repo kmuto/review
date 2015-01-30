@@ -57,9 +57,9 @@ module ReVIEW
       def [](id)
         @index.fetch(id)
       rescue
-        if @index.keys.map{|i| i.split(/\|/) }.flatten # unfold all ids
-            .reduce(Hash.new(0)){|h, i| h[i] += 1; h}  # number of occurrences
-            .select{|k, v| k == id && v > 1 }.present? # detect duplicated
+        if @index.keys.map{|i| i.split(/\|/) }.flatten. # unfold all ids
+            reduce(Hash.new(0)){|h, i| h[i] += 1; h}.  # number of occurrences
+            select{|k, v| k == id && v > 1 }.present? # detect duplicated
           warn "warning: key '#{id}' is ambiguous for #{self.class}"
         end
         @index.each do |k, v|
