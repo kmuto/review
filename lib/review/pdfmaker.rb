@@ -145,9 +145,22 @@ module ReVIEW
       copyStyToDir(Dir.pwd + "/sty", @path, "cls")
       copyStyToDir(Dir.pwd, @path, "tex")
 
+      beforetexcompile_hook = nil
+      beforetexcompile_hook = File.absolute_path(config["hook_beforetexcompile"]) if config["hook_beforetexcompile"]
+      curdir = Dir.pwd
+
       Dir.chdir(@path) {
         template = get_template(config)
         File.open("./book.tex", "wb"){|f| f.write(template)}
+
+        ## prehook
+        if beforetexcompile_hook
+          if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
+            warn "hook configuration is prohibited in safe mode. ignored."
+          else
+            system_or_raise("#{beforetexcompile_hook} #{Dir.pwd} #{curdir}")
+          end
+        end
 
         ## do compile
         enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
