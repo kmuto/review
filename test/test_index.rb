@@ -118,5 +118,24 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [2,2], index['sec1-2-2'].number
     assert_equal "1.2.2", index.number('sec1-2-2')
   end
+
+  def test_HeadelineIndex6
+    src = <<-EOB
+= chap1
+== sec1
+=== target
+       ^-- dummy target
+== sec2
+=== target
+       ^-- real target but it cannot be detected, because there is another one.
+
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [1,1], index['target'].number
+    assert_equal "1.1.1", index.number('target')
+  end
+
 end
 
