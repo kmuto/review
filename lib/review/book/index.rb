@@ -62,9 +62,9 @@ module ReVIEW
             select{|k, v| k == id && v > 1 }.present? # detect duplicated
           warn "warning: key '#{id}' is ambiguous for #{self.class}"
         end
-        @index.each do |k, v|
-          if k.split(/\|/).include?(id)
-            return v
+        @items.each do |i|
+          if i.id.split(/\|/).include?(id)
+            return i
           end
         end
         raise KeyError, "not found key '#{id}' for #{self.class}"
