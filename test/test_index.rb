@@ -124,6 +124,22 @@ class IndexTest < Test::Unit::TestCase
 = chap1
 == sec1
 === target
+== sec2
+
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [1,1], index['target'].number
+    assert_equal "1.1.1", index.number('target')
+  end
+
+
+  def test_HeadelineIndex7
+    src = <<-EOB
+= chap1
+== sec1
+=== target
        ^-- dummy target
 == sec2
 === target
@@ -133,8 +149,10 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal [1,1], index['target'].number
-    assert_equal "1.1.1", index.number('target')
+
+    assert_raise ReVIEW::KeyError do
+      assert_equal [1,1], index['target'].number
+    end
   end
 
 end
