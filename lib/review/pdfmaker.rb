@@ -145,22 +145,11 @@ module ReVIEW
       copyStyToDir(Dir.pwd + "/sty", @path, "cls")
       copyStyToDir(Dir.pwd, @path, "tex")
 
-      beforetexcompile_hook = nil
-      beforetexcompile_hook = File.absolute_path(config["hook_beforetexcompile"]) if config["hook_beforetexcompile"]
-      curdir = Dir.pwd
-
       Dir.chdir(@path) {
         template = get_template(config)
         File.open("./book.tex", "wb"){|f| f.write(template)}
 
-        ## prehook
-        if beforetexcompile_hook
-          if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
-            warn "hook configuration is prohibited in safe mode. ignored."
-          else
-            system_or_raise("#{beforetexcompile_hook} #{Dir.pwd} #{curdir}")
-          end
-        end
+        call_hook("hook_beforetexcompile", config)
 
         ## do compile
         enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
@@ -185,10 +174,14 @@ module ReVIEW
         3.times do
           system_or_raise("#{texcommand} #{texoptions} book.tex")
         end
-        if File.exist?("book.dvi")
+        call_hook("hook_aftertexcompile", config)
+
+      if File.exist?("book.dvi")
           system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
         end
       }
+      call_hook("hook_afterdvipdf", config)
+      
       FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
 
       unless config["debug"]
@@ -310,6 +303,17 @@ module ReVIEW
           end
         }
       }
+    end
+
+    def call_hook(hookname, config)
+      if config["pdfmaker"].instance_of?(Hash) && config["pdfmaker"][hookname]
+        hook = File.absolute_path(config["pdfmaker"][hookname], @basedir)
+        if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
+          warn "hook configuration is prohibited in safe mode. ignored."
+        else
+          system_or_raise("#{hook} #{Dir.pwd} #{@basedir}")
+        end
+      end
     end
   end
 end
