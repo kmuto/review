@@ -57,11 +57,21 @@ module ReVIEW
       def [](id)
         @index.fetch(id)
       rescue
+        if @index.keys.map{|i| i.split(/\|/) }.flatten. # unfold all ids
+            reduce(Hash.new(0)){|h, i| h[i] += 1; h}.  # number of occurrences
+            select{|k, v| k == id && v > 1 }.present? # detect duplicated
+          raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
+        end
+        @items.each do |i|
+          if i.id.split(/\|/).include?(id)
+            return i
+          end
+        end
         raise KeyError, "not found key '#{id}' for #{self.class}"
       end
 
       def number(id)
-        @index.fetch(id).number.to_s
+        self[id].number.to_s
       end
 
       def each(&block)
@@ -365,7 +375,7 @@ module ReVIEW
                 "#{@chap.number}"
               end
         end
-        return ([n] + @index.fetch(id).number).join(".")
+        return ([n] + self[id].number).join(".")
       end
     end
 
