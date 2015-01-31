@@ -420,7 +420,7 @@ EOT
   end
 
   def test_stage3_flat
-    @producer.merge_params({"flattoc" => true, "flattocindent" => false})
+    @producer.merge_params({"epubmaker" => {"flattoc" => true, "flattocindent" => false}})
     stage3
     @producer.mytoc(@output)
     expect = <<EOT
