@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv2.rb -- EPUB version 2 producer.
 #
-# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -102,7 +102,7 @@ EOT
     end
 
     def opf_tocx
-      if @producer.params["cover_linear"] && @producer.params["cover_linear"] != "no"
+      if @producer.params["epubmaker"]["cover_linear"] && @producer.params["epubmaker"]["cover_linear"] != "no"
         cover_linear = "yes"
       else
         cover_linear = "no"
@@ -162,10 +162,10 @@ EOT
     def produce(epubfile, basedir, tmpdir)
       produce_write_common(basedir, tmpdir)
 
-      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["ncxindent"]) }
+      File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.ncx", "w") {|f| @producer.ncx(f, @producer.params["epubmaker"]["ncxindent"]) }
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}", "w") {|f| @producer.mytoc(f) } unless @producer.params["mytoc"].nil?
 
-      @producer.call_hook(@producer.params["hook_prepack"], tmpdir)
+      @producer.call_hook(@producer.params["epubmaker"]["hook_prepack"], tmpdir)
       export_zip(tmpdir, epubfile)
     end
 

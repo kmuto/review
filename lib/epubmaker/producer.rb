@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2014 Kenshi Muto
+# Copyright (c) 2010-2015 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -191,8 +191,6 @@ module EPUBMaker
         "urnid" => "urn:uid:#{UUID.create}",
         "isbn" => nil,
         "toclevel" => 2,
-        "flattoc" => nil,
-        "flattocindent" => true,
         "stylesheet" => [],
         "epubversion" => 2,
         "htmlversion" => 4,
@@ -205,26 +203,66 @@ module EPUBMaker
         "originaltitlefile" => nil,
         "profile" => nil,
         "colophon" => nil,
-        "zip_stage1" => "zip -0Xq",
-        "zip_stage2" => "zip -Xr9Dq",
-        "hook_beforeprocess" => nil,
-        "hook_afterfrontmatter" => nil,
-        "hook_afterbody" => nil,
-        "hook_afterbackmatter" => nil,
-        "hook_aftercopyimage" => nil,
-        "hook_prepack" => nil,
-        "rename_for_legacy" => nil,
+        "epubmaker" => {
+          "flattoc" => nil,
+          "flattocindent" => true,
+          "ncx_indent" => [],
+          "zip_stage1" => "zip -0Xq",
+          "zip_stage2" => "zip -Xr9Dq",
+          "zip_addpath" => nil,
+          "hook_beforeprocess" => nil,
+          "hook_afterfrontmatter" => nil,
+          "hook_afterbody" => nil,
+          "hook_afterbackmatter" => nil,
+          "hook_aftercopyimage" => nil,
+          "hook_prepack" => nil,
+          "rename_for_legacy" => nil,
+          "verify_target_images" => nil,
+          "force_include_images" => [],
+          "cover_linear" => nil,
+        },
         "imagedir" => "images",
         "fontdir" => "fonts",
         "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
         "font_ext" => %w(ttf woff otf),
-        "verify_target_images" => nil,
-        "force_include_images" => [],
-        "cover_linear" => nil,
       }
 
       defaults.each_pair do |k, v|
-        @params[k] = v if @params[k].nil?
+        if k == "epubmaker" && !@params[k].nil?
+          v.each_pair do |k2, v2|
+            @params[k][k2] = v2 if @params[k][k2].nil?
+          end
+        else
+          @params[k] = v if @params[k].nil?
+        end
+      end
+
+      deprecated_parameters = {
+        "ncxindent" => "epubmaker:ncxindent",
+        "flattoc" => "epubmaker:flattoc",
+        "flattocindent" => "epubmaker:flattocindent",
+        "hook_beforeprocess" => "epubmaker:hook_beforeprocess",
+        "hook_afterfrontmatter" => "epubmaker:hook_afterfrontmatter",
+        "hook_afterbody" => "epubmaker:hook_afterbody",
+        "hook_afterbackmatter" => "epubmaker:hook_afterbackmatter",
+        "hook_aftercopyimage" => "epubmaker:hook_aftercopyimage",
+        "hook_prepack" => "epubmaker:hook_prepack",
+        "rename_for_legacy" => "epubmaker:rename_for_legacy",
+        "zip_stage1" => "epubmaker:zip_stage1",
+        "zip_stage2" => "epubmaker:zip_stage2",
+        "zip_addpath" => "epubmaker:zip_addpath",
+        "verify_target_images" => "epubmaker:verify_target_images",
+        "force_include_images" => "epubmaker:force_include_images",
+        "cover_linear" => "epubmaker:cover_linear",
+      }
+
+      deprecated_parameters.each_pair do |k, v|
+        unless @params[k].nil?
+          sa = v.split(":", 2)
+          warn "Parameter #{k} is deprecated. Use:\n#{sa[0]}:\n  #{sa[1]}: ...\n\n"
+          @params[sa[0]][sa[1]] = @params[k]
+          @params.delete(k)
+        end
       end
 
       @params["htmlversion"] == 5 if @params["epubversion"] >= 3

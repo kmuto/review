@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -49,26 +49,26 @@ module ReVIEW
     begin
       log("Created first temporary directory as #{basetmpdir}.")
 
-      log("Call hook_beforeprocess. (#{@params["hook_beforeprocess"]})")
-      call_hook(@params["hook_beforeprocess"], basetmpdir)
+      log("Call hook_beforeprocess. (#{@params["epubmaker"]["hook_beforeprocess"]})")
+      call_hook(@params["epubmaker"]["hook_beforeprocess"], basetmpdir)
 
       copy_stylesheet(basetmpdir)
 
       copy_frontmatter(basetmpdir)
-      log("Call hook_afterfrontmatter. (#{@params["hook_afterfrontmatter"]})")
-      call_hook(@params["hook_afterfrontmatter"], basetmpdir)
+      log("Call hook_afterfrontmatter. (#{@params["epubmaker"]["hook_afterfrontmatter"]})")
+      call_hook(@params["epubmaker"]["hook_afterfrontmatter"], basetmpdir)
 
       build_body(basetmpdir, yamlfile)
-      log("Call hook_afterbody. (#{@params["hook_afterbody"]})")
-      call_hook(@params["hook_afterbody"], basetmpdir)
+      log("Call hook_afterbody. (#{@params["epubmaker"]["hook_afterbody"]})")
+      call_hook(@params["epubmaker"]["hook_afterbody"], basetmpdir)
 
       copy_backmatter(basetmpdir)
-      log("Call hook_afterbackmatter. (#{@params["hook_afterbackmatter"]})")
-      call_hook(@params["hook_afterbackmatter"], basetmpdir)
+      log("Call hook_afterbackmatter. (#{@params["epubmaker"]["hook_afterbackmatter"]})")
+      call_hook(@params["epubmaker"]["hook_afterbackmatter"], basetmpdir)
 
       push_contents(basetmpdir)
 
-      if !@params["verify_target_images"].nil?
+      if !@params["epubmaker"]["verify_target_images"].nil?
         verify_target_images(basetmpdir)
         copy_images(@params["imagedir"], basetmpdir)
       else
@@ -79,8 +79,8 @@ module ReVIEW
       copy_resources("adv", "#{basetmpdir}/images")
       copy_resources(@params["fontdir"], "#{basetmpdir}/fonts", @params["font_ext"])
 
-      log("Call hook_aftercopyimage. (#{@params["hook_aftercopyimage"]})")
-      call_hook(@params["hook_aftercopyimage"], basetmpdir)
+      log("Call hook_aftercopyimage. (#{@params["epubmaker"]["hook_aftercopyimage"]})")
+      call_hook(@params["epubmaker"]["hook_aftercopyimage"], basetmpdir)
 
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
       @epub.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
@@ -111,7 +111,7 @@ module ReVIEW
 
         File.open("#{basetmpdir}/#{content.file}") do |f|
           Document.new(File.new(f)).each_element("//img") do |e|
-            @params["force_include_images"].push(e.attributes["src"])
+            @params["epubmaker"]["force_include_images"].push(e.attributes["src"])
             if e.attributes["src"] =~ /svg\Z/i
               content.properties.push("svg")
             end
@@ -121,21 +121,21 @@ module ReVIEW
         File.open("#{basetmpdir}/#{content.file}") do |f|
           f.each_line do |l|
             l.scan(/url\((.+?)\)/) do |m|
-              @params["force_include_images"].push($1.strip)
+              @params["epubmaker"]["force_include_images"].push($1.strip)
             end
           end
         end
       end
     end
-    @params["force_include_images"] = @params["force_include_images"].sort.uniq
+    @params["epubmaker"]["force_include_images"] = @params["epubmaker"]["force_include_images"].sort.uniq
   end
 
   def copy_images(resdir, destdir, allow_exts=nil)
     return nil unless File.exist?(resdir)
     allow_exts = @params["image_ext"] if allow_exts.nil?
     FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
-    if !@params["verify_target_images"].nil?
-      @params["force_include_images"].each do |file|
+    if !@params["epubmaker"]["verify_target_images"].nil?
+      @params["epubmaker"]["force_include_images"].each do |file|
         unless File.exist?(file)
           warn "#{file} is not found, skip." if file !~ /\Ahttp[s]?:/
           next
@@ -250,7 +250,7 @@ EOT
     end
     id = filename.sub(/\.re\Z/, "")
 
-    if @params["rename_for_legacy"] && ispart.nil?
+    if @params["epubmaker"]["rename_for_legacy"] && ispart.nil?
       if chap.on_PREDEF?
         @precount += 1
         id = sprintf("pre%02d", @precount)

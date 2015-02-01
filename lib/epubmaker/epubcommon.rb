@@ -290,10 +290,10 @@ EOT
   <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>
 EOT
 
-      if @producer.params["flattoc"].nil?
+      if @producer.params["epubmaker"]["flattoc"].nil?
         s << hierarchy_ncx("ul")
       else
-        s << flat_ncx("ul", @producer.params["flattocindent"])
+        s << flat_ncx("ul", @producer.params["epubmaker"]["flattocindent"])
       end
 
       s << <<EOT
@@ -365,7 +365,7 @@ EOT
         e2.add_text(REXML::Text.new(item.title, true))
       end
 
-      warn "found level jumping in table of contents. consider to use 'flattoc: true' for strict ePUB validator." unless find_jump.nil?
+      warn "found level jumping in table of contents. consider to use 'epubmaker:flattoc: true' for strict ePUB validator." unless find_jump.nil?
 
       doc.to_s.gsub("<li/>", "").gsub("</li>", "</li>\n").gsub("<#{type} ", "\n" + '\&') # ugly
     end
@@ -407,8 +407,8 @@ EOT
     end
 
     def export_zip(tmpdir, epubfile)
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage1"]} #{epubfile} mimetype` }
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage1"]} #{epubfile} mimetype` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["epubmaker"]["zip_addpath"]}` }
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)
