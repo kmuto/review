@@ -33,6 +33,7 @@ module ReVIEW
         "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
         "catalogfile" => 'catalog.yml',
+        "language" => 'ja', # XXX default language should be JA??
 
         "chapter_file" => 'CHAPS',
         "part_file"    => 'PART',
