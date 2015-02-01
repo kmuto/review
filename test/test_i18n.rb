@@ -66,6 +66,31 @@ class I18nTest < Test::Unit::TestCase
         end
       end
     end
+
+    def test_load_locale_yml_i18n
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("ja:\n  foo: \"bar\"\nen:\n  foo: \"buz\"\n")}
+          I18n.setup
+          assert_equal "bar", I18n.t("foo")
+          I18n.setup("en")
+          assert_equal "buz", I18n.t("foo")
+        end
+      end
+    end
+
+    def test_load_locale_invalid_yml
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("local: ja\nfoo: \"bar\"\n")}
+          assert_raises(ReVIEW::KeyError) do
+            I18n.setup
+          end
+        end
+      end
+    end
   end
 
   def test_ja
