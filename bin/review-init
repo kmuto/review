@@ -19,8 +19,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/version'
 
 def main
-  @config = {}
-  @config["language"] ||= "ja"  ## current default
+  @config = ReVIEW::Configure.values
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
