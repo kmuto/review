@@ -425,14 +425,14 @@ EOT
 
     alias_method :lead, :read
 
-    def list(lines, id, caption)
+    def list(lines, id, caption, lang = nil)
       puts %Q[<div class="caption-code">]
       begin
         list_header id, caption
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines
+      list_body id, lines, lang
       puts '</div>'
     end
 
@@ -444,11 +444,11 @@ EOT
       end
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       id ||= ''
       print %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = File.extname(id).gsub(/\./, '')
+      lexer = lang || File.extname(id).gsub(/\./, '')
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
@@ -475,47 +475,49 @@ EOT
       puts '</pre>'
     end
 
-    def listnum(lines, id, caption)
+    def listnum(lines, id, caption, lang = nil)
       puts %Q[<div class="code">]
       begin
         list_header id, caption
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines
+      listnum_body lines, lang
       puts '</div>'
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       print %Q[<pre class="list">]
-      lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = lang
+      puts highlight(:body => body, :lexer => lexer, :format => 'html',
+                     :options => {:linenos => 'inline'})
       puts '</pre>'
     end
 
-    def emlist(lines, caption = nil)
+    def emlist(lines, caption = nil, lang = nil)
       puts %Q[<div class="emlist-code">]
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       print %Q[<pre class="emlist">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = lang
+      puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
       puts '</div>'
     end
 
-    def emlistnum(lines, caption = nil)
+    def emlistnum(lines, caption = nil, lang = nil)
       puts %Q[<div class="emlistnum-code">]
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       print %Q[<pre class="emlist">]
-      lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = lang
+      puts highlight(:body => body, :lexer => lexer, :format => 'html',
+                     :options => {:linenos => 'inline'})
       puts '</pre>'
       puts '</div>'
     end
@@ -526,9 +528,9 @@ EOT
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       print %Q[<pre class="cmd">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = 'shell-session'
+      puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
       puts '</div>'
     end

@@ -130,15 +130,15 @@ module ReVIEW
 
     defblock :read, 0
     defblock :lead, 0
-    defblock :list, 2
-    defblock :emlist, 0..1
+    defblock :list, 2..3
+    defblock :emlist, 0..2
     defblock :cmd, 0..1
     defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true
     defblock :source, 0..1
-    defblock :listnum, 2
-    defblock :emlistnum, 0..1
+    defblock :listnum, 2..3
+    defblock :emlistnum, 0..2
     defblock :bibpaper, 2..3, true
     defblock :doorquote, 1
     defblock :talk, 0
