@@ -44,7 +44,10 @@ module ReVIEW
       body = ops[:body] || ''
       lexer = ops[:lexer] || ''
       format = ops[:format] || ''
-
+      options = {:nowrap => true, :noclasses => true}
+      if ops[:options] && ops[:options].kind_of?(Hash)
+        options.merge!(ops[:options])
+      end
       return body if @book.config["pygments"].nil?
 
       begin
@@ -52,10 +55,7 @@ module ReVIEW
         begin
           Pygments.highlight(
                    unescape_html(body),
-                   :options => {
-                               :nowrap => true,
-                               :noclasses => true
-                             },
+                   :options => options,
                    :formatter => format,
                    :lexer => lexer)
         rescue MentosError

@@ -491,7 +491,7 @@ EOT
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                     :options => {:linenos => 'inline'})
+                     :options => {:linenos => 'inline', :nowrap => false})
       puts '</pre>'
     end
 
@@ -517,7 +517,7 @@ EOT
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                     :options => {:linenos => 'inline'})
+                     :options => {:linenos => 'inline', :nowrap => false})
       puts '</pre>'
       puts '</div>'
     end
