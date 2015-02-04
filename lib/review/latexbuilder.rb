@@ -230,7 +230,7 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def emlist(lines, caption = nil)
+    def emlist(lines, caption = nil, lang = nil)
       blank
       if caption
         puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
@@ -243,7 +243,7 @@ module ReVIEW
       blank
     end
 
-    def emlistnum(lines, caption = nil)
+    def emlistnum(lines, caption = nil, lang = nil)
       blank
       if caption
         puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
@@ -256,7 +256,7 @@ module ReVIEW
       blank
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       puts '\begin{reviewlist}'
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + ": " + line)
@@ -279,11 +279,11 @@ module ReVIEW
       blank
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       puts '\begin{reviewlist}'
       lines.each do |line|
         puts detab(line)

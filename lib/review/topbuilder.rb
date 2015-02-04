@@ -242,7 +242,7 @@ module ReVIEW
 
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       blank
       puts "◆→開始:#{@titles["list"]}←◆"
       if get_chap.nil?
@@ -253,7 +253,7 @@ module ReVIEW
       blank
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       lines.each do |line|
         puts detab(line)
       end
@@ -279,11 +279,11 @@ module ReVIEW
       blank
     end
 
-    def emlist(lines, caption = nil)
+    def emlist(lines, caption = nil, lang = nil)
       base_block "emlist", lines, caption
     end
 
-    def emlistnum(lines, caption = nil)
+    def emlistnum(lines, caption = nil, lang = nil)
       blank
       puts "◆→開始:#{@titles["emlist"]}←◆"
       puts "■#{compile_inline(caption)}" unless caption.nil?
@@ -295,7 +295,7 @@ module ReVIEW
       blank
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       lines.each_with_index do |line, i|
         puts (i + 1).to_s.rjust(2) + ": #{line}"
       end

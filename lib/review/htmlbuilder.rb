@@ -428,7 +428,7 @@ EOT
     def list(lines, id, caption, lang = nil)
       puts %Q[<div class="caption-code">]
       begin
-        list_header id, caption
+        list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end
@@ -436,7 +436,7 @@ EOT
       puts '</div>'
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       if get_chap.nil?
         puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       else
@@ -478,7 +478,7 @@ EOT
     def listnum(lines, id, caption, lang = nil)
       puts %Q[<div class="code">]
       begin
-        list_header id, caption
+        list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end

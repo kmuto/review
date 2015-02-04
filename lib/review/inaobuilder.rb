@@ -184,7 +184,7 @@ module ReVIEW
       end
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       puts "◆list/◆"
       if get_chap.nil?
         puts %Q[●リスト#{@chapter.list(id).number}　#{compile_inline(caption)}]
@@ -193,14 +193,14 @@ module ReVIEW
       end
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       lines.each do |line|
         puts detab(line)
       end
       puts "◆/list◆"
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       lines.each_with_index do |line, i|
         puts detab((i+1).to_s.rjust(2) + " " +line)
       end

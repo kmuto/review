@@ -336,7 +336,7 @@ module ReVIEW
       end
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       puts %Q[<codelist>]
       if get_chap.nil?
         puts %Q[<caption>#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
@@ -361,17 +361,17 @@ module ReVIEW
       end
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       print %Q(<pre>)
       codelines_body(lines)
       puts "</pre></codelist>"
     end
 
-    def emlist(lines, caption = nil)
+    def emlist(lines, caption = nil, lang = nil)
       quotedlist lines, 'emlist', caption
     end
 
-    def emlistnum(lines, caption = nil)
+    def emlistnum(lines, caption = nil, lang = nil)
       _lines = []
       lines.each_with_index do |line, i|
         _lines << detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
@@ -379,7 +379,7 @@ module ReVIEW
       quotedlist _lines, 'emlistnum', caption
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       print %Q(<pre>)
       no = 1
       lines.each_with_index do |line, i|

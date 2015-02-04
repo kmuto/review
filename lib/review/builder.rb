@@ -86,22 +86,22 @@ module ReVIEW
     end
     private :headline_prefix
 
-    def list(lines, id, caption)
+    def list(lines, id, caption, lang = nil)
       begin
-        list_header id, caption
+        list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines
+      list_body id, lines, lang
     end
 
-    def listnum(lines, id, caption)
+    def listnum(lines, id, caption, lang = nil)
       begin
-        list_header id, caption
+        list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines
+      listnum_body lines, lang
     end
 
     def source(lines, caption)
