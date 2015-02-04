@@ -52,8 +52,16 @@ module ReVIEW
     def update_localefile(path)
       user_i18n = YAML.load_file(path)
       locale = user_i18n["locale"]
-      user_i18n.delete("locale")
-      @store[locale].merge!(user_i18n)
+      if locale
+        user_i18n.delete("locale")
+        @store[locale].merge!(user_i18n)
+      else
+        key = user_i18n.keys.first
+        if !user_i18n[key].kind_of? Hash
+          raise KeyError, "Invalid locale file: #{path}"
+        end
+        @store.merge!(user_i18n)
+      end
     end
 
     def update(user_i18n, locale = nil)
