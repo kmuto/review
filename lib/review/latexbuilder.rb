@@ -230,84 +230,112 @@ module ReVIEW
 
     alias_method :lead, :read
 
+    def highlight_listings?
+      @book.config["highlight"] && @book.config["highlight"]["latex"] == "listings"
+    end
+    private :highlight_listings?
+
     def emlist(lines, caption = nil, lang = nil)
       blank
-      if caption
-        puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
+      if highlight_listings?
+        common_code_block_lst(lines, 'reviewemlistlst', 'title', caption, lang)
+      else
+        common_code_block(lines, 'reviewemlist', caption, lang) do |line|
+          detab(line) + "\n"
+        end
       end
-      puts '\begin{reviewemlist}'
-      lines.each do |line|
-        puts detab(line)
-      end
-      puts '\end{reviewemlist}'
-      blank
     end
 
     def emlistnum(lines, caption = nil, lang = nil)
       blank
+      if highlight_listings?
+        common_code_block_lst(lines, 'reviewemlistnumlst', 'title', caption, lang)
+      else
+        common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
+          detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
+        end
+      end
+    end
+
+    ## override Builder#list
+    def list(lines, id, caption, lang = nil)
+      if highlight_listings?
+        common_code_block_lst(lines, 'reviewlistlst', 'caption', caption, lang)
+      else
+        begin
+          puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
+        rescue KeyError
+          error "no such list: #{id}"
+        end
+        common_code_block(lines, 'reviewlist', nil, lang) do |line, idx|
+          detab(line) + "\n"
+        end
+      end
+    end
+
+    ## override Builder#listnum
+    def listnum(lines, id, caption, lang = nil)
+      if highlight_listings?
+        common_code_block_lst(lines, 'reviewlistnumlst', 'caption', caption, lang)
+      else
+        begin
+          puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
+        rescue KeyError
+          error "no such list: #{id}"
+        end
+        common_code_block(lines, 'reviewlist', caption, lang) do |line, idx|
+          detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
+        end
+      end
+    end
+
+    def cmd(lines, caption = nil, lang = nil)
+      if highlight_listings?
+        common_code_block_lst(lines, 'reviewcmdlst', 'title', caption, lang)
+      else
+        blank
+        common_code_block(lines, 'reviewcmd', caption, lang) do |line, idx|
+          detab(line) + "\n"
+        end
+      end
+    end
+
+    def common_code_block(lines, command, caption, lang)
       if caption
-        puts macro('reviewemlistcaption', "#{compile_inline(caption)}")
+        puts macro(command + 'caption', "#{compile_inline(caption)}")
       end
-      puts '\begin{reviewemlist}'
-      lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
+      body = ""
+      lines.each_with_index do |line, idx|
+        body.concat(yield(line, idx))
       end
-      puts '\end{reviewemlist}'
+      puts macro('begin' ,command)
+      print body
+      puts macro('end' ,command)
       blank
     end
 
-    def listnum_body(lines, lang)
-      puts '\begin{reviewlist}'
-      lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
+    def common_code_block_lst(lines, command, title, caption, lang)
+      caption_str = compile_inline((caption || ""))
+      if title == "title" && caption_str == ""
+        caption_str = "\\relax" ## dummy charactor to remove lstname
+        print "\\vspace{-1.5em}"
       end
-      puts '\end{reviewlist}'
+      lexer = lang || ""
+      body = lines.inject(''){|i, j| i + detab(unescape_latex(j)) + "\n"}
+      puts "\\begin{"+command+"}["+title+"={"+caption_str+"},language={"+ lexer+"}]"
+      print body
+      puts "\\end{"+ command + "}"
       blank
-
-    end
-
-    def cmd(lines, caption = nil)
-      blank
-      if caption
-        puts macro('reviewcmdcaption', "#{compile_inline(caption)}")
-      end
-      puts '\begin{reviewcmd}'
-      lines.each do |line|
-        puts detab(line)
-      end
-      puts '\end{reviewcmd}'
-      blank
-    end
-
-    def list_header(id, caption, lang)
-      puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
-    end
-
-    def list_body(id, lines, lang)
-      puts '\begin{reviewlist}'
-      lines.each do |line|
-        puts detab(line)
-      end
-      puts '\end{reviewlist}'
-      puts ""
     end
 
     def source(lines, caption)
       puts '\begin{reviewlist}'
-      source_header caption
-      source_body lines
-      puts '\end{reviewlist}'
-      puts ""
-    end
-
-    def source_header(caption)
       puts macro('reviewlistcaption', compile_inline(caption))
-    end
-
-    def source_body(lines)
       lines.each do |line|
         puts detab(line)
       end
+      puts '\end{reviewlist}'
+      puts ""
     end
 
 

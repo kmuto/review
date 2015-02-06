@@ -6,6 +6,10 @@
 \usepackage{wrapfig}
 \definecolor{shadecolor}{gray}{0.9}
 \definecolor{shadecolorb}{gray}{0.1}
+\definecolor{reviewgreen}{rgb}{0,0.4,0}
+\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
+\definecolor{reviewred}{rgb}{0.7,0,0}
+\definecolor{reviewdarkred}{rgb}{0.3,0,0}
 \usepackage[utf8]{inputenc}
 \usepackage{ascmac}
 \usepackage{float}
@@ -41,6 +45,43 @@
 \usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={<%= values["booktitle"] %>},%
             pdfauthor={<%= values["aut"] %>}]{hyperref}
+
+<% if config["highlight"] && config["highlight"]["latex"] == "listings" %>
+<%   if config["language"] == "ja" %>
+\usepackage{listings,jlisting}
+<%   else %>
+\usepackage{listings}
+<%   end %>
+\renewcommand{\lstlistingname}{<%I18n.t("list")%>}
+\lstset{%
+  breaklines=true,%
+  breakautoindent=false,%
+  breakindent=0pt,%
+  fontadjust=true,%
+  backgroundcolor=\color{shadecolor},%
+  frame=single,%
+  framerule=0pt,%
+  basicstyle=\ttfamily\scriptsize,%
+  commentstyle=\color{reviewgreen},%
+  identifierstyle=\color{reviewblue},%
+  stringstyle=\color{reviewred},%
+  keywordstyle=\bfseries\color{reviewdarkred},%
+}
+\lstnewenvironment{reviewemlistlst}[1][]{%
+  \lstset{#1}}{}
+
+\lstnewenvironment{reviewemlistnumlst}[1][]{%
+  \lstset{numbers=left, #1}}{}
+
+\lstnewenvironment{reviewlistlst}[1][]{%
+  \lstset{#1}}{}
+
+\lstnewenvironment{reviewlistnumlst}[1][]{%
+  \lstset{numbers=left, #1}}{}
+
+\lstnewenvironment{reviewcmdlst}[1][]{%
+  \lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
+<% end %>
 
 \newenvironment{reviewimage}{%
   \begin{figure}[H]
@@ -166,6 +207,8 @@
   \appendix}
 
 \makeatletter
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
 \def\maxwidth{%
   \ifdim\Gin@nat@width>\linewidth
     \linewidth
