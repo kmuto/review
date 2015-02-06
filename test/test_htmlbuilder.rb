@@ -10,6 +10,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW
 
   def setup
+    ReVIEW::I18n.setup
     @builder = HTMLBuilder.new()
     @config = ReVIEW::Configure.values
     @config.merge!({

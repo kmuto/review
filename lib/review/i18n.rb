@@ -29,10 +29,21 @@ module ReVIEW
       @i18n.t(str, args)
     end
 
+    def self.locale=(locale)
+      if @i18n
+        @i18n.locale = locale
+      else
+        I18n.setup(locale)
+      end
+    end
+
+    class << self
+      alias v t  ## for EPUBMaker backward compatibility
+    end
+
     def self.update(user_i18n, locale = nil)
       @i18n.update(user_i18n, locale)
     end
-
 
     attr_accessor :locale
 

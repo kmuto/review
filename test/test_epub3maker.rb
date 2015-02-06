@@ -403,7 +403,7 @@ EOT
 
   def test_colophon_default
     @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["prt"] = ["BLUEPRINT"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -418,7 +418,7 @@ EOT
   <div class="colophon">
     <p class="title">Sample Book</p>
     <div class="pubhistory">
-      <p>2011年1月1日　発行</p>
+      <p>published by Jan.  1, 2011</p>
     </div>
     <table class="colophon">
       <tr><th>Author</th><td>Mr.Smith</td></tr>
@@ -433,7 +433,7 @@ EOT
 
   def test_colophon_pht
     @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["prt"] = ["BLUEPRINT"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
     @producer.params["pht"] = ["Mrs.Smith"]
     @producer.colophon(@output)
     expect = <<EOT
@@ -449,7 +449,7 @@ EOT
   <div class="colophon">
     <p class="title">Sample Book</p>
     <div class="pubhistory">
-      <p>2011年1月1日　発行</p>
+      <p>published by Jan.  1, 2011</p>
     </div>
     <table class="colophon">
       <tr><th>Author</th><td>Mr.Smith</td></tr>
