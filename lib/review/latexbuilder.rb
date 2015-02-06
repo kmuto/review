@@ -240,7 +240,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(lines, 'reviewemlistlst', 'title', caption, lang)
       else
-        common_code_block(lines, 'reviewemlist', caption, lang) do |line|
+        common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
           detab(line) + "\n"
         end
       end
