@@ -12,6 +12,7 @@ require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
 require 'lineinput'
+require 'strscan'
 
 module ReVIEW
 
