@@ -235,9 +235,23 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, actual
   end
 
+  def test_cmd_lst
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    actual = compile_block("//cmd{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\\vspace{-1.5em}\\begin{reviewcmdlst}[title={\\relax},language={}]\nfoo\nbar\n\nbuz\n\\end{reviewcmdlst}\n|, actual
+  end
+
   def test_emlist
     actual = compile_block("//emlist{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, actual
+  end
+
+  def test_emlist_lst
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    actual = compile_block("//emlist[][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
+    assert_equal %Q|\n\\vspace{-1.5em}\\begin{reviewemlistlst}[title={\\relax},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n|, actual
   end
 
   def test_emlist_caption
@@ -254,6 +268,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @config["tabwidth"] = 4
     actual = compile_block("//emlist{\n\tfoo\n\t\tbar\n\n\tbuz\n//}\n")
     assert_equal %Q|\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n|, actual
+  end
+
+  def test_listnum
+    actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    assert_equal %Q|\\reviewlistcaption{リスト1.1: ruby}\n\\reviewlistcaption{ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n|, actual
+  end
+
+  def test_listnum_lst
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    assert_equal %Q|\\begin{reviewlistnumlst}[caption={ruby},language={}]\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n\\end{reviewlistnumlst}\n|, actual
   end
 
   def test_quote
