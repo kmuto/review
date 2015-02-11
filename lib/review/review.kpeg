@@ -495,7 +495,7 @@ Block = BlankLine*
 
 BlankLine = Newline
 
-Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption (Newline|EOF)  ~headline(self, level, cmd, label, caption)
+Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption EOL  ~headline(self, level, cmd, label, caption)
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
 
@@ -509,11 +509,11 @@ Inline = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  ( Inli
 
 NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
-BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* Newline
+BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
                  ~raw(self, b, r1)
-               | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline
+               | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL
                   ~block_element(self, symbol, args, contents)
-               | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline ~block_element(self, symbol, args, nil)
+               | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL ~block_element(self, symbol, args, nil)
                )
 
 RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
@@ -609,15 +609,15 @@ ContentInline = ( InlineElement
 
 Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ ~ulist(self, @ulist_elem)
 
-UlistElement = " "+ "*"+:level " "* SinglelineContent:c (EOF|Newline) { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
-UlistContLine = " " " "+ !"*" SinglelineContent:c (EOF|Newline) {  @ulist_elem[-1].concat(c) }
+UlistElement = " "+ "*"+:level " "* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
+UlistContLine = " " " "+ !"*" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }
 
 ## 1. 番号付き箇条書き
 ## 行頭から… の指定がない
 
 Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c ~olist(self, @olist_elem)
 
-OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c (EOF|Newline) {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
+OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
 
 ## : 用語リスト
   ## 行頭から… の指定がない
@@ -627,7 +627,7 @@ DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementCo
 
 DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
 
-SinglelineComment = ("#@" < NonNewLine+ > Newline) ~singleline_comment(self, text)
+SinglelineComment = ("#@" < NonNewLine+ > EOL) ~singleline_comment(self, text)
 
 NonNewLine = /[^\r\n]/
 
@@ -635,6 +635,8 @@ Digits = Digit+:c { c }
 
 ## Space = /[ 　\t]/
 Space = /[ \t]/
+
+EOL = (Newline|EOF)
 
 EOF = !.
 

@@ -1192,7 +1192,7 @@ require 'review/node'
     return _tmp
   end
 
-  # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}
+  # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, level, cmd, label, caption)}
   def _Headline
 
     _save = self.pos
@@ -1248,18 +1248,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-
-      _save5 = self.pos
-      while true # choice
-        _tmp = apply(:_Newline)
-        break if _tmp
-        self.pos = _save5
-        _tmp = apply(:_EOF)
-        break if _tmp
-        self.pos = _save5
-        break
-      end # end choice
-
+      _tmp = apply(:_EOL)
       unless _tmp
         self.pos = _save
         break
@@ -1496,7 +1485,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* Newline {raw(self, b, r1)} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* Newline {block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* Newline {block_element(self, symbol, args, nil)})
+  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL {raw(self, b, r1)} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL {block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})
   def _BlockElement
 
     _save = self.pos
@@ -1548,7 +1537,7 @@ require 'review/node'
           self.pos = _save1
           break
         end
-        _tmp = apply(:_Newline)
+        _tmp = apply(:_EOL)
         unless _tmp
           self.pos = _save1
           break
@@ -1643,7 +1632,7 @@ require 'review/node'
           self.pos = _save5
           break
         end
-        _tmp = apply(:_Newline)
+        _tmp = apply(:_EOL)
         unless _tmp
           self.pos = _save5
           break
@@ -1702,7 +1691,7 @@ require 'review/node'
           self.pos = _save11
           break
         end
-        _tmp = apply(:_Newline)
+        _tmp = apply(:_EOL)
         unless _tmp
           self.pos = _save11
           break
@@ -3149,7 +3138,7 @@ require 'review/node'
     return _tmp
   end
 
-  # UlistElement = " "+ "*"+:level " "* SinglelineContent:c (EOF | Newline) { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
+  # UlistElement = " "+ "*"+:level " "* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
   def _UlistElement
 
     _save = self.pos
@@ -3204,18 +3193,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-
-      _save4 = self.pos
-      while true # choice
-        _tmp = apply(:_EOF)
-        break if _tmp
-        self.pos = _save4
-        _tmp = apply(:_Newline)
-        break if _tmp
-        self.pos = _save4
-        break
-      end # end choice
-
+      _tmp = apply(:_EOL)
       unless _tmp
         self.pos = _save
         break
@@ -3232,7 +3210,7 @@ require 'review/node'
     return _tmp
   end
 
-  # UlistContLine = " " " "+ !"*" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1].concat(c) }
+  # UlistContLine = " " " "+ !"*" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }
   def _UlistContLine
 
     _save = self.pos
@@ -3271,18 +3249,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-
-      _save3 = self.pos
-      while true # choice
-        _tmp = apply(:_EOF)
-        break if _tmp
-        self.pos = _save3
-        _tmp = apply(:_Newline)
-        break if _tmp
-        self.pos = _save3
-        break
-      end # end choice
-
+      _tmp = apply(:_EOL)
       unless _tmp
         self.pos = _save
         break
@@ -3364,7 +3331,7 @@ require 'review/node'
     return _tmp
   end
 
-  # OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c (EOF | Newline) {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
+  # OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
   def _OlistElement
 
     _save = self.pos
@@ -3429,18 +3396,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-
-      _save4 = self.pos
-      while true # choice
-        _tmp = apply(:_EOF)
-        break if _tmp
-        self.pos = _save4
-        _tmp = apply(:_Newline)
-        break if _tmp
-        self.pos = _save4
-        break
-      end # end choice
-
+      _tmp = apply(:_EOL)
       unless _tmp
         self.pos = _save
         break
@@ -3626,7 +3582,7 @@ require 'review/node'
     return _tmp
   end
 
-  # SinglelineComment = "#@" < NonNewLine+ > Newline {singleline_comment(self, text)}
+  # SinglelineComment = "#@" < NonNewLine+ > EOL {singleline_comment(self, text)}
   def _SinglelineComment
 
     _save = self.pos
@@ -3655,7 +3611,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-      _tmp = apply(:_Newline)
+      _tmp = apply(:_EOL)
       unless _tmp
         self.pos = _save
         break
@@ -3720,6 +3676,24 @@ require 'review/node'
   def _Space
     _tmp = scan(/\A(?-mix:[ \t])/)
     set_failed_rule :_Space unless _tmp
+    return _tmp
+  end
+
+  # EOL = (Newline | EOF)
+  def _EOL
+
+    _save = self.pos
+    while true # choice
+      _tmp = apply(:_Newline)
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_EOF)
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_EOL unless _tmp
     return _tmp
   end
 
@@ -3831,13 +3805,13 @@ require 'review/node'
   Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
-  Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption (Newline | EOF) {headline(self, level, cmd, label, caption)}")
+  Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c.flatten)}")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "Inline+:d { e=d.flatten } Newline { e }")
   Rules[:_Inline] = rule_info("Inline", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist (InlineElement | NonInlineElement)")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
-  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* Newline {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* Newline {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* Newline {block_element(self, symbol, args, nil)})")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
   Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(< AlphanumericAscii+ >:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })")
   Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
@@ -3862,17 +3836,18 @@ require 'review/node'
   Rules[:_ContentInlines] = rule_info("ContentInlines", "ContentInline+:c { c }")
   Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement | NonInlineElement)")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
-  Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c (EOF | Newline) { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
-  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1].concat(c) }")
+  Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
+  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }")
   Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}")
-  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { num=text } \".\" Space* SinglelineContent:c (EOF | Newline) {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }")
+  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { num=text } \".\" Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
   Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
   Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c Newline:n { c }")
-  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > Newline {singleline_comment(self, text)}")
+  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > EOL {singleline_comment(self, text)}")
   Rules[:_NonNewLine] = rule_info("NonNewLine", "/[^\\r\\n]/")
   Rules[:_Digits] = rule_info("Digits", "Digit+:c { c }")
   Rules[:_Space] = rule_info("Space", "/[ \\t]/")
+  Rules[:_EOL] = rule_info("EOL", "(Newline | EOF)")
   Rules[:_EOF] = rule_info("EOF", "!.")
   Rules[:_ElementName] = rule_info("ElementName", "< LowerAlphabetAscii+ > { text }")
   Rules[:_Alphanumeric] = rule_info("Alphanumeric", "%literals.Alphanumeric")

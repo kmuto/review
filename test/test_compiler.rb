@@ -36,27 +36,27 @@ class CompilerTest < Test::Unit::TestCase
 
   def test_parse_args_with_brace1
     args = compile_blockelem("//dummy[fo[\\][\\]o][bar]", false)
-    assert_equal ["fo[][]o","bar"], args.map(&:to_doc)
+    assert_equal ["fo[][]o","bar"], args.parse_args(:doc, :doc)
   end
 
   def test_parse_args_with_brace2
     args = compile_blockelem("//dummy[f\\]o\\]o][bar]", false)
-    assert_equal ["f]o]o","bar"], args.map(&:to_doc)
+    assert_equal ["f]o]o","bar"], args.parse_args(:doc, :doc)
   end
 
   def test_parse_args_with_backslash
     args = compile_blockelem("//dummy[foo][bar\\buz]", false)
-    assert_equal ["foo","bar\\buz"], args.map(&:to_doc)
+    assert_equal ["foo","bar\\buz"], args.parse_args(:doc, :doc)
   end
 
   def test_parse_args_with_backslash2
     args = compile_blockelem("//dummy[foo][bar\\#\\[\\!]", false)
-    assert_equal ["foo","bar\\#\\[\\!"], args.map(&:to_doc)
+    assert_equal ["foo","bar\\#\\[\\!"], args.parse_args(:doc, :doc)
   end
 
   def test_parse_args_with_backslash3
     args = compile_blockelem("//dummy[foo][bar\\\\buz]", false)
-    assert_equal ["foo","bar\\buz"], args.map(&:to_doc)
+    assert_equal ["foo","bar\\buz"], args.parse_args(:doc, :doc)
   end
 
   def test_compile_inline
