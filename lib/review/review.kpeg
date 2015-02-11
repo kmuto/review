@@ -501,7 +501,7 @@ HeadlinePrefix = < /={1,5}/ > { text.length }
 
 Paragraph = ParagraphSub+:c  ~paragraph(self, c.flatten)
 
-ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  Inline+:d  { e=d.flatten } Newline { e }
+ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  SinglelineContent:c Newline { c }
 
 Inline = ( InlineElement | NonInlineElement)
 
@@ -583,7 +583,7 @@ BlockElementContent = ( SinglelineComment:c { c }
                       )
 
 ## flattenでよい？
-BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:c Newline { c.flatten }
+BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
 
 SinglelineContent = Inline+:c ~singleline_content(self,c)
 

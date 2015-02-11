@@ -1328,7 +1328,7 @@ require 'review/node'
     return _tmp
   end
 
-  # ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:d { e=d.flatten } Newline { e }
+  # ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
   def _ParagraphSub
 
     _save = self.pos
@@ -1381,28 +1381,8 @@ require 'review/node'
         self.pos = _save
         break
       end
-      _save7 = self.pos
-      _ary = []
-      _tmp = apply(:_Inline)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_Inline)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save7
-      end
-      d = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  e=d.flatten ; end
-      _tmp = true
+      _tmp = apply(:_SinglelineContent)
+      c = @result
       unless _tmp
         self.pos = _save
         break
@@ -1412,7 +1392,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  e ; end
+      @result = begin;  c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2826,7 +2806,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:c Newline { c.flatten }
+  # BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
   def _BlockElementParagraph
 
     _save = self.pos
@@ -2879,21 +2859,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-      _save7 = self.pos
-      _ary = []
-      _tmp = apply(:_Inline)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_Inline)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save7
-      end
+      _tmp = apply(:_SinglelineContent)
       c = @result
       unless _tmp
         self.pos = _save
@@ -2904,7 +2870,7 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  c.flatten ; end
+      @result = begin;  c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -3701,7 +3667,7 @@ require 'review/node'
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c.flatten)}")
-  Rules[:_ParagraphSub] = rule_info("ParagraphSub", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:d { e=d.flatten } Newline { e }")
+  Rules[:_ParagraphSub] = rule_info("ParagraphSub", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
   Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
@@ -3722,7 +3688,7 @@ require 'review/node'
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, \"\")})")
-  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:c Newline { c.flatten }")
+  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")

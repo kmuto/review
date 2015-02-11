@@ -25,7 +25,8 @@ require 'test/unit'
     @compiler.setup_parser(str)
     @compiler.parse("Paragraph")
     if force_to_s
-      @compiler.result.map(&:to_doc).join
+##      @compiler.result.map(&:to_doc).join
+      @compiler.result.to_doc
     else
       @compiler.result
     end

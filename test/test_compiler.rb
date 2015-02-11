@@ -4,6 +4,7 @@ require 'test_helper'
 require 'review/compiler'
 require 'review/book'
 require 'review/latexbuilder'
+require 'review/htmlbuilder'
 
 class CompilerTest < Test::Unit::TestCase
   include ReVIEW
@@ -60,11 +61,11 @@ class CompilerTest < Test::Unit::TestCase
   end
 
   def test_compile_inline
-    def @compiler.compile_inline(op, args)
-      return args.map(&:to_doc).join("")
+    def @compiler.inline_ruby(*args)
+      return args
     end
     args = compile_inline("@<ruby>{abc}",false)
-    assert_equal "abc", args.map(&:to_doc).join("")
+    assert_equal "abc", args.content[0].content.to_doc
   end
 
   def test_inline_ruby
@@ -75,11 +76,11 @@ class CompilerTest < Test::Unit::TestCase
   end
 
   def test_compile_inline_backslash
-    def @compiler.compile_inline(op, args)
-      return args.map(&:to_doc).join("")
+    def @compiler.inline_dummy(*args)
+      return args
     end
     args = compile_inline("@<dummy>{abc\\d\\#a}", false)
-    assert_equal "abc\\d\\#a", args.map(&:to_doc).join("")
+    assert_equal "abc\\d\\#a", args.content[0].content.to_doc
   end
 end
 
