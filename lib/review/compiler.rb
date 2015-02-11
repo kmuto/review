@@ -2826,70 +2826,8 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementParagraph = BlockElementParagraphSub+:c Newline { c.flatten }
+  # BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:c Newline { c.flatten }
   def _BlockElementParagraph
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _ary = []
-      _tmp = apply(:_BlockElementParagraphSub)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_BlockElementParagraphSub)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
-      end
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_Newline)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c.flatten ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_BlockElementParagraph unless _tmp
-    return _tmp
-  end
-
-  # BlockElementParagraphSub = (InlineElement:c | BlockElementContentText:c)
-  def _BlockElementParagraphSub
-
-    _save = self.pos
-    while true # choice
-      _tmp = apply(:_InlineElement)
-      c = @result
-      break if _tmp
-      self.pos = _save
-      _tmp = apply(:_BlockElementContentText)
-      c = @result
-      break if _tmp
-      self.pos = _save
-      break
-    end # end choice
-
-    set_failed_rule :_BlockElementParagraphSub unless _tmp
-    return _tmp
-  end
-
-  # BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
-  def _BlockElementContentText
 
     _save = self.pos
     while true # sequence
@@ -2943,11 +2881,11 @@ require 'review/node'
       end
       _save7 = self.pos
       _ary = []
-      _tmp = apply(:_NonInlineElement)
+      _tmp = apply(:_Inline)
       if _tmp
         _ary << @result
         while true
-          _tmp = apply(:_NonInlineElement)
+          _tmp = apply(:_Inline)
           _ary << @result if _tmp
           break unless _tmp
         end
@@ -2961,7 +2899,12 @@ require 'review/node'
         self.pos = _save
         break
       end
-      @result = begin;  c ; end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c.flatten ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2969,7 +2912,7 @@ require 'review/node'
       break
     end # end sequence
 
-    set_failed_rule :_BlockElementContentText unless _tmp
+    set_failed_rule :_BlockElementParagraph unless _tmp
     return _tmp
   end
 
@@ -3779,9 +3722,7 @@ require 'review/node'
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, \"\")})")
-  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphSub+:c Newline { c.flatten }")
-  Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "(InlineElement:c | BlockElementContentText:c)")
-  Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }")
+  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:c Newline { c.flatten }")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")

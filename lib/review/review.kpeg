@@ -583,13 +583,7 @@ BlockElementContent = ( SinglelineComment:c { c }
                       )
 
 ## flattenでよい？
-BlockElementParagraph = BlockElementParagraphSub+:c Newline { c.flatten }
-
-BlockElementParagraphSub = ( InlineElement:c
-                           | BlockElementContentText:c
-                           )
-
-BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c }
+BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist Inline+:c Newline { c.flatten }
 
 SinglelineContent = Inline+:c ~singleline_content(self,c)
 
