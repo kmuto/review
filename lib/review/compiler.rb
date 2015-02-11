@@ -3089,7 +3089,7 @@ require 'review/node'
     return _tmp
   end
 
-  # ContentInline = (InlineElement:c { c } | !Newline < NonNewLine > {text(self,text)})
+  # ContentInline = (InlineElement:c { c } | NonInlineElement)
   def _ContentInline
 
     _save = self.pos
@@ -3113,34 +3113,7 @@ require 'review/node'
 
       break if _tmp
       self.pos = _save
-
-      _save2 = self.pos
-      while true # sequence
-        _save3 = self.pos
-        _tmp = apply(:_Newline)
-        _tmp = _tmp ? nil : true
-        self.pos = _save3
-        unless _tmp
-          self.pos = _save2
-          break
-        end
-        _text_start = self.pos
-        _tmp = apply(:_NonNewLine)
-        if _tmp
-          text = get_text(_text_start)
-        end
-        unless _tmp
-          self.pos = _save2
-          break
-        end
-        @result = begin; text(self,text); end
-        _tmp = true
-        unless _tmp
-          self.pos = _save2
-        end
-        break
-      end # end sequence
-
+      _tmp = apply(:_NonInlineElement)
       break if _tmp
       self.pos = _save
       break
@@ -3940,7 +3913,7 @@ require 'review/node'
   Rules[:_BlockElementContentText] = rule_info("BlockElementContentText", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "ContentInlines:c {singleline_content(self,c)}")
   Rules[:_ContentInlines] = rule_info("ContentInlines", "ContentInline+:c { c }")
-  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | !Newline < NonNewLine > {text(self,text)})")
+  Rules[:_ContentInline] = rule_info("ContentInline", "(InlineElement:c { c } | NonInlineElement)")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c (EOF | Newline) { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
   Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c (EOF | Newline) {  @ulist_elem[-1].concat(c) }")

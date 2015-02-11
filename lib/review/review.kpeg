@@ -598,7 +598,7 @@ SinglelineContent = ContentInlines:c ~singleline_content(self,c)
 ContentInlines =  ContentInline+:c  { c }
 
 ContentInline = ( InlineElement:c { c }
-                | !Newline < NonNewLine > ~text(self,text)
+                | NonInlineElement
                 )
 
 ## ContentInlineText = !InlineElement !Newline  .:cc { p [:char,cc];cc }
