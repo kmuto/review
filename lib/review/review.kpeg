@@ -501,9 +501,9 @@ HeadlinePrefix = < /={1,5}/ > { text.length }
 
 Paragraph = ParagraphSub+:c  ~paragraph(self, c.flatten)
 
-ParagraphSub = Inline+:d  { e=d.flatten } Newline { e }
+ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  Inline+:d  { e=d.flatten } Newline { e }
 
-Inline = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  ( InlineElement | NonInlineElement)
+Inline = ( InlineElement | NonInlineElement)
 
 NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
@@ -591,13 +591,8 @@ BlockElementParagraphSub = ( InlineElement:c
 
 BlockElementContentText = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist  NonInlineElement+:c  { c }
 
-SinglelineContent = ContentInlines:c ~singleline_content(self,c)
+SinglelineContent = Inline+:c ~singleline_content(self,c)
 
-ContentInlines =  ContentInline+:c  { c }
-
-ContentInline = ( InlineElement
-                | NonInlineElement
-                )
 
 ## * 箇条書き
 ## 行頭から… の指定がない
