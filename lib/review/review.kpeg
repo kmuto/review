@@ -576,7 +576,7 @@ BlockElementContents = BlockElementContent+:c { c }
 
 ## 各要素は Newline で終わらなければならない
 ### SinglelineContentではないような気がするけど改行は落としてあるのでとりあえずこれで
-BlockElementContent = ( SinglelineComment:c ~singleline_content(self, c)
+BlockElementContent = ( SinglelineComment:c { c }
                       | BlockElement:c ~singleline_content(self, c)
                       | BlockElementParagraph:c ~singleline_content(self, c)
                       | Newline:c  ~singleline_content(self, "")
