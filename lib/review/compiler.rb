@@ -1192,6 +1192,52 @@ require 'review/node'
     return _tmp
   end
 
+  # SinglelineComment = "#@" < NonNewLine+ > EOL {singleline_comment(self, text)}
+  def _SinglelineComment
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("\#@")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _text_start = self.pos
+      _save1 = self.pos
+      _tmp = apply(:_NonNewLine)
+      if _tmp
+        while true
+          _tmp = apply(:_NonNewLine)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_EOL)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; singleline_comment(self, text); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_SinglelineComment unless _tmp
+    return _tmp
+  end
+
   # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, level, cmd, label, caption)}
   def _Headline
 
@@ -1401,58 +1447,6 @@ require 'review/node'
     end # end sequence
 
     set_failed_rule :_ParagraphSub unless _tmp
-    return _tmp
-  end
-
-  # Inline = (InlineElement | NonInlineElement)
-  def _Inline
-
-    _save = self.pos
-    while true # choice
-      _tmp = apply(:_InlineElement)
-      break if _tmp
-      self.pos = _save
-      _tmp = apply(:_NonInlineElement)
-      break if _tmp
-      self.pos = _save
-      break
-    end # end choice
-
-    set_failed_rule :_Inline unless _tmp
-    return _tmp
-  end
-
-  # NonInlineElement = !InlineElement < NonNewLine > {text(self, text)}
-  def _NonInlineElement
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = apply(:_InlineElement)
-      _tmp = _tmp ? nil : true
-      self.pos = _save1
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _text_start = self.pos
-      _tmp = apply(:_NonNewLine)
-      if _tmp
-        text = get_text(_text_start)
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; text(self, text); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_NonInlineElement unless _tmp
     return _tmp
   end
 
@@ -1926,6 +1920,983 @@ require 'review/node'
     end # end sequence
 
     set_failed_rule :_RawBlockElementArg unless _tmp
+    return _tmp
+  end
+
+  # BracketArg = "[" BracketArgContentInline*:content "]" {bracket_arg(self, content)}
+  def _BracketArg
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("[")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+        _tmp = apply(:_BracketArgContentInline)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      content = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("]")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; bracket_arg(self, content); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BracketArg unless _tmp
+    return _tmp
+  end
+
+  # BracketArgContentInline = (InlineElement:c { c } | "\\]" {text(self, "]")} | "\\\\" {text(self, "\\")} | < /[^\r\n\]]/ > {text(self, text)})
+  def _BracketArgContentInline
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_InlineElement)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = match_string("\\]")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin; text(self, "]"); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _tmp = match_string("\\\\")
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin; text(self, "\\"); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _text_start = self.pos
+        _tmp = scan(/\A(?-mix:[^\r\n\]])/)
+        if _tmp
+          text = get_text(_text_start)
+        end
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin; text(self, text); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_BracketArgContentInline unless _tmp
+    return _tmp
+  end
+
+  # BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
+  def _BraceArg
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("{")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _text_start = self.pos
+      _tmp = scan(/\A(?-mix:([^\r\n}\\]|\\[^\r\n])*)/)
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("}")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BraceArg unless _tmp
+    return _tmp
+  end
+
+  # BlockElementContents = BlockElementContent+:c { c }
+  def _BlockElementContents
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_BlockElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_BlockElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BlockElementContents unless _tmp
+    return _tmp
+  end
+
+  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, "")})
+  def _BlockElementContent
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_SinglelineComment)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = apply(:_BlockElement)
+        c = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin; singleline_content(self, c); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _tmp = apply(:_BlockElementParagraph)
+        c = @result
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin; singleline_content(self, c); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _tmp = apply(:_Newline)
+        c = @result
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin; singleline_content(self, ""); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_BlockElementContent unless _tmp
+    return _tmp
+  end
+
+  # BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+  def _BlockElementParagraph
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("//}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_SinglelineComment)
+      _tmp = _tmp ? nil : true
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = apply(:_BlockElement)
+      _tmp = _tmp ? nil : true
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save4 = self.pos
+      _tmp = apply(:_Ulist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save4
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save5 = self.pos
+      _tmp = apply(:_Olist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save5
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = apply(:_Dlist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BlockElementParagraph unless _tmp
+    return _tmp
+  end
+
+  # Ulist = &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}
+  def _Ulist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = get_byte
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @ulist_elem=[] ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistElement)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+
+      _save3 = self.pos
+      while true # choice
+        _tmp = apply(:_UlistElement)
+        break if _tmp
+        self.pos = _save3
+        _tmp = apply(:_UlistContLine)
+        break if _tmp
+        self.pos = _save3
+        _tmp = apply(:_SinglelineComment)
+        break if _tmp
+        self.pos = _save3
+        break
+      end # end choice
+
+      if _tmp
+        while true
+
+          _save4 = self.pos
+          while true # choice
+            _tmp = apply(:_UlistElement)
+            break if _tmp
+            self.pos = _save4
+            _tmp = apply(:_UlistContLine)
+            break if _tmp
+            self.pos = _save4
+            _tmp = apply(:_SinglelineComment)
+            break if _tmp
+            self.pos = _save4
+            break
+          end # end choice
+
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; ulist(self, @ulist_elem); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Ulist unless _tmp
+    return _tmp
+  end
+
+  # UlistElement = " "+ "*"+:level " "* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
+  def _UlistElement
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string(" ")
+      if _tmp
+        while true
+          _tmp = match_string(" ")
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _ary = []
+      _tmp = match_string("*")
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = match_string("*")
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save2
+      end
+      level = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = match_string(" ")
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_EOL)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistElement unless _tmp
+    return _tmp
+  end
+
+  # UlistContLine = " " " "+ !"*" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }
+  def _UlistContLine
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string(" ")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save1 = self.pos
+      _tmp = match_string(" ")
+      if _tmp
+        while true
+          _tmp = match_string(" ")
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = match_string("*")
+      _tmp = _tmp ? nil : true
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_EOL)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;   @ulist_elem[-1].concat(c) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistContLine unless _tmp
+    return _tmp
+  end
+
+  # Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}
+  def _Olist
+
+    _save = self.pos
+    while true # sequence
+      @result = begin;  @olist_elem = [] ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save1 = self.pos
+      _ary = []
+
+      _save2 = self.pos
+      while true # choice
+        _tmp = apply(:_OlistElement)
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_SinglelineComment)
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      if _tmp
+        _ary << @result
+        while true
+
+          _save3 = self.pos
+          while true # choice
+            _tmp = apply(:_OlistElement)
+            break if _tmp
+            self.pos = _save3
+            _tmp = apply(:_SinglelineComment)
+            break if _tmp
+            self.pos = _save3
+            break
+          end # end choice
+
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; olist(self, @olist_elem); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Olist unless _tmp
+    return _tmp
+  end
+
+  # OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
+  def _OlistElement
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string(" ")
+      if _tmp
+        while true
+          _tmp = match_string(" ")
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _text_start = self.pos
+      _save2 = self.pos
+      _tmp = scan(/\A(?-mix:\d)/)
+      if _tmp
+        while true
+          _tmp = scan(/\A(?-mix:\d)/)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  num=text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string(".")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_EOL)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; @olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_OlistElement unless _tmp
+    return _tmp
+  end
+
+  # Dlist = (DlistElement | SinglelineComment)+:content {dlist(self, content)}
+  def _Dlist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+
+      _save2 = self.pos
+      while true # choice
+        _tmp = apply(:_DlistElement)
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_SinglelineComment)
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      if _tmp
+        _ary << @result
+        while true
+
+          _save3 = self.pos
+          while true # choice
+            _tmp = apply(:_DlistElement)
+            break if _tmp
+            self.pos = _save3
+            _tmp = apply(:_SinglelineComment)
+            break if _tmp
+            self.pos = _save3
+            break
+          end # end choice
+
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      content = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; dlist(self, content); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Dlist unless _tmp
+    return _tmp
+  end
+
+  # DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}
+  def _DlistElement
+
+    _save = self.pos
+    while true # sequence
+      while true
+        _tmp = match_string(" ")
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string(":")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string(" ")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      text = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _ary = []
+      _tmp = apply(:_DlistElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_DlistElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save3
+      end
+      content = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; dlist_element(self, text, content); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_DlistElement unless _tmp
+    return _tmp
+  end
+
+  # DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
+  def _DlistElementContent
+
+    _save = self.pos
+    while true # sequence
+      _tmp = scan(/\A(?-mix:[ \t]+)/)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      n = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_DlistElementContent unless _tmp
+    return _tmp
+  end
+
+  # SinglelineContent = Inline+:c {singleline_content(self,c)}
+  def _SinglelineContent
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Inline)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Inline)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; singleline_content(self,c); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_SinglelineContent unless _tmp
+    return _tmp
+  end
+
+  # Inline = (InlineElement | NonInlineElement)
+  def _Inline
+
+    _save = self.pos
+    while true # choice
+      _tmp = apply(:_InlineElement)
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_NonInlineElement)
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_Inline unless _tmp
+    return _tmp
+  end
+
+  # NonInlineElement = !InlineElement < NonNewLine > {text(self, text)}
+  def _NonInlineElement
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = apply(:_InlineElement)
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _text_start = self.pos
+      _tmp = apply(:_NonNewLine)
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; text(self, text); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_NonInlineElement unless _tmp
     return _tmp
   end
 
@@ -2516,977 +3487,6 @@ require 'review/node'
     return _tmp
   end
 
-  # BracketArg = "[" BracketArgContentInline*:content "]" {bracket_arg(self, content)}
-  def _BracketArg
-
-    _save = self.pos
-    while true # sequence
-      _tmp = match_string("[")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _ary = []
-      while true
-        _tmp = apply(:_BracketArgContentInline)
-        _ary << @result if _tmp
-        break unless _tmp
-      end
-      _tmp = true
-      @result = _ary
-      content = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = match_string("]")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; bracket_arg(self, content); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_BracketArg unless _tmp
-    return _tmp
-  end
-
-  # BracketArgContentInline = (InlineElement:c { c } | "\\]" {text(self, "]")} | "\\\\" {text(self, "\\")} | < /[^\r\n\]]/ > {text(self, text)})
-  def _BracketArgContentInline
-
-    _save = self.pos
-    while true # choice
-
-      _save1 = self.pos
-      while true # sequence
-        _tmp = apply(:_InlineElement)
-        c = @result
-        unless _tmp
-          self.pos = _save1
-          break
-        end
-        @result = begin;  c ; end
-        _tmp = true
-        unless _tmp
-          self.pos = _save1
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-
-      _save2 = self.pos
-      while true # sequence
-        _tmp = match_string("\\]")
-        unless _tmp
-          self.pos = _save2
-          break
-        end
-        @result = begin; text(self, "]"); end
-        _tmp = true
-        unless _tmp
-          self.pos = _save2
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-
-      _save3 = self.pos
-      while true # sequence
-        _tmp = match_string("\\\\")
-        unless _tmp
-          self.pos = _save3
-          break
-        end
-        @result = begin; text(self, "\\"); end
-        _tmp = true
-        unless _tmp
-          self.pos = _save3
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-
-      _save4 = self.pos
-      while true # sequence
-        _text_start = self.pos
-        _tmp = scan(/\A(?-mix:[^\r\n\]])/)
-        if _tmp
-          text = get_text(_text_start)
-        end
-        unless _tmp
-          self.pos = _save4
-          break
-        end
-        @result = begin; text(self, text); end
-        _tmp = true
-        unless _tmp
-          self.pos = _save4
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-      break
-    end # end choice
-
-    set_failed_rule :_BracketArgContentInline unless _tmp
-    return _tmp
-  end
-
-  # BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
-  def _BraceArg
-
-    _save = self.pos
-    while true # sequence
-      _tmp = match_string("{")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _text_start = self.pos
-      _tmp = scan(/\A(?-mix:([^\r\n}\\]|\\[^\r\n])*)/)
-      if _tmp
-        text = get_text(_text_start)
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = match_string("}")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  text ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_BraceArg unless _tmp
-    return _tmp
-  end
-
-  # BlockElementContents = BlockElementContent+:c { c }
-  def _BlockElementContents
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _ary = []
-      _tmp = apply(:_BlockElementContent)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_BlockElementContent)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
-      end
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_BlockElementContents unless _tmp
-    return _tmp
-  end
-
-  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, "")})
-  def _BlockElementContent
-
-    _save = self.pos
-    while true # choice
-
-      _save1 = self.pos
-      while true # sequence
-        _tmp = apply(:_SinglelineComment)
-        c = @result
-        unless _tmp
-          self.pos = _save1
-          break
-        end
-        @result = begin;  c ; end
-        _tmp = true
-        unless _tmp
-          self.pos = _save1
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-
-      _save2 = self.pos
-      while true # sequence
-        _tmp = apply(:_BlockElement)
-        c = @result
-        unless _tmp
-          self.pos = _save2
-          break
-        end
-        @result = begin; singleline_content(self, c); end
-        _tmp = true
-        unless _tmp
-          self.pos = _save2
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-
-      _save3 = self.pos
-      while true # sequence
-        _tmp = apply(:_BlockElementParagraph)
-        c = @result
-        unless _tmp
-          self.pos = _save3
-          break
-        end
-        @result = begin; singleline_content(self, c); end
-        _tmp = true
-        unless _tmp
-          self.pos = _save3
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-
-      _save4 = self.pos
-      while true # sequence
-        _tmp = apply(:_Newline)
-        c = @result
-        unless _tmp
-          self.pos = _save4
-          break
-        end
-        @result = begin; singleline_content(self, ""); end
-        _tmp = true
-        unless _tmp
-          self.pos = _save4
-        end
-        break
-      end # end sequence
-
-      break if _tmp
-      self.pos = _save
-      break
-    end # end choice
-
-    set_failed_rule :_BlockElementContent unless _tmp
-    return _tmp
-  end
-
-  # BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
-  def _BlockElementParagraph
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = match_string("//}")
-      _tmp = _tmp ? nil : true
-      self.pos = _save1
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save2 = self.pos
-      _tmp = apply(:_SinglelineComment)
-      _tmp = _tmp ? nil : true
-      self.pos = _save2
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save3 = self.pos
-      _tmp = apply(:_BlockElement)
-      _tmp = _tmp ? nil : true
-      self.pos = _save3
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save4 = self.pos
-      _tmp = apply(:_Ulist)
-      _tmp = _tmp ? nil : true
-      self.pos = _save4
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save5 = self.pos
-      _tmp = apply(:_Olist)
-      _tmp = _tmp ? nil : true
-      self.pos = _save5
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save6 = self.pos
-      _tmp = apply(:_Dlist)
-      _tmp = _tmp ? nil : true
-      self.pos = _save6
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_Newline)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_BlockElementParagraph unless _tmp
-    return _tmp
-  end
-
-  # SinglelineContent = Inline+:c {singleline_content(self,c)}
-  def _SinglelineContent
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _ary = []
-      _tmp = apply(:_Inline)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_Inline)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
-      end
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; singleline_content(self,c); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_SinglelineContent unless _tmp
-    return _tmp
-  end
-
-  # Ulist = &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}
-  def _Ulist
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = get_byte
-      self.pos = _save1
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  @ulist_elem=[] ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_UlistElement)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save2 = self.pos
-
-      _save3 = self.pos
-      while true # choice
-        _tmp = apply(:_UlistElement)
-        break if _tmp
-        self.pos = _save3
-        _tmp = apply(:_UlistContLine)
-        break if _tmp
-        self.pos = _save3
-        _tmp = apply(:_SinglelineComment)
-        break if _tmp
-        self.pos = _save3
-        break
-      end # end choice
-
-      if _tmp
-        while true
-
-          _save4 = self.pos
-          while true # choice
-            _tmp = apply(:_UlistElement)
-            break if _tmp
-            self.pos = _save4
-            _tmp = apply(:_UlistContLine)
-            break if _tmp
-            self.pos = _save4
-            _tmp = apply(:_SinglelineComment)
-            break if _tmp
-            self.pos = _save4
-            break
-          end # end choice
-
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save2
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; ulist(self, @ulist_elem); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_Ulist unless _tmp
-    return _tmp
-  end
-
-  # UlistElement = " "+ "*"+:level " "* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
-  def _UlistElement
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = match_string(" ")
-      if _tmp
-        while true
-          _tmp = match_string(" ")
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save1
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save2 = self.pos
-      _ary = []
-      _tmp = match_string("*")
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = match_string("*")
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save2
-      end
-      level = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      while true
-        _tmp = match_string(" ")
-        break unless _tmp
-      end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_EOL)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_UlistElement unless _tmp
-    return _tmp
-  end
-
-  # UlistContLine = " " " "+ !"*" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }
-  def _UlistContLine
-
-    _save = self.pos
-    while true # sequence
-      _tmp = match_string(" ")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save1 = self.pos
-      _tmp = match_string(" ")
-      if _tmp
-        while true
-          _tmp = match_string(" ")
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save1
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save2 = self.pos
-      _tmp = match_string("*")
-      _tmp = _tmp ? nil : true
-      self.pos = _save2
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_EOL)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;   @ulist_elem[-1].concat(c) ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_UlistContLine unless _tmp
-    return _tmp
-  end
-
-  # Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}
-  def _Olist
-
-    _save = self.pos
-    while true # sequence
-      @result = begin;  @olist_elem = [] ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save1 = self.pos
-      _ary = []
-
-      _save2 = self.pos
-      while true # choice
-        _tmp = apply(:_OlistElement)
-        break if _tmp
-        self.pos = _save2
-        _tmp = apply(:_SinglelineComment)
-        break if _tmp
-        self.pos = _save2
-        break
-      end # end choice
-
-      if _tmp
-        _ary << @result
-        while true
-
-          _save3 = self.pos
-          while true # choice
-            _tmp = apply(:_OlistElement)
-            break if _tmp
-            self.pos = _save3
-            _tmp = apply(:_SinglelineComment)
-            break if _tmp
-            self.pos = _save3
-            break
-          end # end choice
-
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
-      end
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; olist(self, @olist_elem); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_Olist unless _tmp
-    return _tmp
-  end
-
-  # OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
-  def _OlistElement
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = match_string(" ")
-      if _tmp
-        while true
-          _tmp = match_string(" ")
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save1
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _text_start = self.pos
-      _save2 = self.pos
-      _tmp = scan(/\A(?-mix:\d)/)
-      if _tmp
-        while true
-          _tmp = scan(/\A(?-mix:\d)/)
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save2
-      end
-      if _tmp
-        text = get_text(_text_start)
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  num=text ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = match_string(".")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      while true
-        _tmp = apply(:_Space)
-        break unless _tmp
-      end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_EOL)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; @olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_OlistElement unless _tmp
-    return _tmp
-  end
-
-  # Dlist = (DlistElement | SinglelineComment)+:content {dlist(self, content)}
-  def _Dlist
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _ary = []
-
-      _save2 = self.pos
-      while true # choice
-        _tmp = apply(:_DlistElement)
-        break if _tmp
-        self.pos = _save2
-        _tmp = apply(:_SinglelineComment)
-        break if _tmp
-        self.pos = _save2
-        break
-      end # end choice
-
-      if _tmp
-        _ary << @result
-        while true
-
-          _save3 = self.pos
-          while true # choice
-            _tmp = apply(:_DlistElement)
-            break if _tmp
-            self.pos = _save3
-            _tmp = apply(:_SinglelineComment)
-            break if _tmp
-            self.pos = _save3
-            break
-          end # end choice
-
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
-      end
-      content = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; dlist(self, content); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_Dlist unless _tmp
-    return _tmp
-  end
-
-  # DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}
-  def _DlistElement
-
-    _save = self.pos
-    while true # sequence
-      while true
-        _tmp = match_string(" ")
-        break unless _tmp
-      end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = match_string(":")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = match_string(" ")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      while true
-        _tmp = apply(:_Space)
-        break unless _tmp
-      end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      text = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_Newline)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save3 = self.pos
-      _ary = []
-      _tmp = apply(:_DlistElementContent)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_DlistElementContent)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save3
-      end
-      content = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; dlist_element(self, text, content); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_DlistElement unless _tmp
-    return _tmp
-  end
-
-  # DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
-  def _DlistElementContent
-
-    _save = self.pos
-    while true # sequence
-      _tmp = scan(/\A(?-mix:[ \t]+)/)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_Newline)
-      n = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_DlistElementContent unless _tmp
-    return _tmp
-  end
-
-  # SinglelineComment = "#@" < NonNewLine+ > EOL {singleline_comment(self, text)}
-  def _SinglelineComment
-
-    _save = self.pos
-    while true # sequence
-      _tmp = match_string("\#@")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _text_start = self.pos
-      _save1 = self.pos
-      _tmp = apply(:_NonNewLine)
-      if _tmp
-        while true
-          _tmp = apply(:_NonNewLine)
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save1
-      end
-      if _tmp
-        text = get_text(_text_start)
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_EOL)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin; singleline_comment(self, text); end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_SinglelineComment unless _tmp
-    return _tmp
-  end
-
   # NonNewLine = /[^\r\n]/
   def _NonNewLine
     _tmp = scan(/\A(?-mix:[^\r\n])/)
@@ -3664,16 +3664,32 @@ require 'review/node'
   Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
+  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > EOL {singleline_comment(self, text)}")
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c.flatten)}")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
-  Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
-  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
   Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(< AlphanumericAscii+ >:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })")
   Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
+  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline*:content \"]\" {bracket_arg(self, content)}")
+  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
+  Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
+  Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
+  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, \"\")})")
+  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
+  Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
+  Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
+  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }")
+  Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}")
+  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { num=text } \".\" Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }")
+  Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
+  Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
+  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c Newline:n { c }")
+  Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
+  Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
+  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
   Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, symbol,contents)})")
   Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawBlockBuilderSelect?:builders RawInlineElementContent+:c \"}\" {raw(self, builders,c)}")
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
@@ -3683,22 +3699,6 @@ require 'review/node'
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "InlineElementContentSub+:d { d }")
   Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" {text(self, \"}\")} | \"\\\\,\" {text(self, \",\")} | \"\\\\\\\\\" {text(self, \"\\\\\" )} | \"\\\\\" {text(self, \"\\\\\" )} | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self,text)})")
-  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline*:content \"]\" {bracket_arg(self, content)}")
-  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
-  Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
-  Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
-  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, \"\")})")
-  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
-  Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
-  Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
-  Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
-  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }")
-  Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}")
-  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { num=text } \".\" Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }")
-  Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
-  Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
-  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c Newline:n { c }")
-  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > EOL {singleline_comment(self, text)}")
   Rules[:_NonNewLine] = rule_info("NonNewLine", "/[^\\r\\n]/")
   Rules[:_Digits] = rule_info("Digits", "Digit+:c { c }")
   Rules[:_Space] = rule_info("Space", "/[ \\t]/")

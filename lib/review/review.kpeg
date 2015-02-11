@@ -495,6 +495,8 @@ Block = BlankLine*
 
 BlankLine = Newline
 
+SinglelineComment = ("#@" < NonNewLine+ > EOL) ~singleline_comment(self, text)
+
 Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption EOL  ~headline(self, level, cmd, label, caption)
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
@@ -502,10 +504,6 @@ HeadlinePrefix = < /={1,5}/ > { text.length }
 Paragraph = ParagraphSub+:c  ~paragraph(self, c.flatten)
 
 ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  SinglelineContent:c Newline { c }
-
-Inline = ( InlineElement | NonInlineElement)
-
-NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
                  ~raw(self, b, r1)
@@ -526,6 +524,60 @@ RawBlockElementArg = !"]" ( "\\]" { "]" }
                           | "\\n" { "\n" }
                           | < NonNewLine >  { text }
                           )
+
+BracketArg = "["  BracketArgContentInline*:content  "]" ~bracket_arg(self, content)
+
+## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
+BracketArgContentInline = ( InlineElement:c { c }
+                          |  "\\]" ~text(self, "]")
+                          | "\\\\" ~text(self, "\\")
+                          | < /[^\r\n\]]/ >  ~text(self, text)
+                          )
+
+BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
+
+## contents との差は paragraph を切るか切らないか
+BlockElementContents = BlockElementContent+:c { c }
+
+## 各要素は Newline で終わらなければならない
+### SinglelineContentではないような気がするけど改行は落としてあるのでとりあえずこれで
+BlockElementContent = ( SinglelineComment:c { c }
+                      | BlockElement:c ~singleline_content(self, c)
+                      | BlockElementParagraph:c ~singleline_content(self, c)
+                      | Newline:c  ~singleline_content(self, "")
+                      )
+
+## flattenでよい？
+BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+
+## * 箇条書き
+## 行頭から… の指定がない
+
+Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ ~ulist(self, @ulist_elem)
+
+UlistElement = " "+ "*"+:level " "* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
+UlistContLine = " " " "+ !"*" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }
+
+## 1. 番号付き箇条書き
+## 行頭から… の指定がない
+
+Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c ~olist(self, @olist_elem)
+
+OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
+
+## : 用語リスト
+  ## 行頭から… の指定がない
+Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, content)
+
+DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
+
+DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
+
+SinglelineContent = Inline+:c ~singleline_content(self,c)
+
+Inline = ( InlineElement | NonInlineElement)
+
+NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
 InlineElement =  ( RawInlineElement:c { c }
                  | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, symbol,contents)
@@ -559,59 +611,6 @@ InlineElementContentText =  ( "\\}" ~text(self, "}")
                             | "\\" ~text(self, "\\" )
                             | !InlineElement < /[^\r\n\\},]/> ~text(self,text)
                             )
-
-BracketArg = "["  BracketArgContentInline*:content  "]" ~bracket_arg(self, content)
-
-## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
-BracketArgContentInline = ( InlineElement:c { c }
-                          |  "\\]" ~text(self, "]")
-                          | "\\\\" ~text(self, "\\")
-                          | < /[^\r\n\]]/ >  ~text(self, text)
-                          )
-
-BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
-
-## contents との差は paragraph を切るか切らないか
-BlockElementContents = BlockElementContent+:c { c }
-
-## 各要素は Newline で終わらなければならない
-### SinglelineContentではないような気がするけど改行は落としてあるのでとりあえずこれで
-BlockElementContent = ( SinglelineComment:c { c }
-                      | BlockElement:c ~singleline_content(self, c)
-                      | BlockElementParagraph:c ~singleline_content(self, c)
-                      | Newline:c  ~singleline_content(self, "")
-                      )
-
-## flattenでよい？
-BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
-
-SinglelineContent = Inline+:c ~singleline_content(self,c)
-
-
-## * 箇条書き
-## 行頭から… の指定がない
-
-Ulist =  &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ ~ulist(self, @ulist_elem)
-
-UlistElement = " "+ "*"+:level " "* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
-UlistContLine = " " " "+ !"*" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }
-
-## 1. 番号付き箇条書き
-## 行頭から… の指定がない
-
-Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c ~olist(self, @olist_elem)
-
-OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
-
-## : 用語リスト
-  ## 行頭から… の指定がない
-Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, content)
-
-DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
-
-DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
-
-SinglelineComment = ("#@" < NonNewLine+ > EOL) ~singleline_comment(self, text)
 
 NonNewLine = /[^\r\n]/
 
