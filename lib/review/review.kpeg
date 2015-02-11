@@ -505,8 +505,6 @@ ParagraphSub = Inline+:d  { e=d.flatten } Newline { e }
 
 Inline = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  ( InlineElement | NonInlineElement)
 
-#ContentText = NonInlineElement
-
 NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
@@ -600,9 +598,6 @@ ContentInlines =  ContentInline+:c  { c }
 ContentInline = ( InlineElement
                 | NonInlineElement
                 )
-
-## ContentInlineText = !InlineElement !Newline  .:cc { p [:char,cc];cc }
-
 
 ## * 箇条書き
 ## 行頭から… の指定がない
