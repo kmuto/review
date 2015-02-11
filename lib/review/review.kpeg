@@ -499,13 +499,13 @@ Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  Singlel
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
 
-Paragraph = !/\/\/A-Za-z/ ParagraphSub+:c  ~paragraph(self, c.flatten)
+Paragraph = ParagraphSub+:c  ~paragraph(self, c.flatten)
 
 ParagraphSub = Inline+:d  { e=d.flatten } Newline { e }
 
-Inline = ( InlineElement | ContentText)
+Inline = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  ( InlineElement | NonInlineElement)
 
-ContentText = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist NonInlineElement+:c { c }
+#ContentText = NonInlineElement
 
 NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
 
@@ -597,7 +597,7 @@ SinglelineContent = ContentInlines:c ~singleline_content(self,c)
 
 ContentInlines =  ContentInline+:c  { c }
 
-ContentInline = ( InlineElement:c { c }
+ContentInline = ( InlineElement
                 | NonInlineElement
                 )
 
