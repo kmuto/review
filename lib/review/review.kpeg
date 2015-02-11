@@ -547,7 +547,6 @@ BlockElementContent = ( SinglelineComment:c { c }
                       | Newline:c  ~singleline_content(self, "")
                       )
 
-## flattenでよい？
 BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
 
 ## * 箇条書き
