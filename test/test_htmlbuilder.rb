@@ -318,7 +318,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, actual
+    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p>\n</blockquote>\n|, actual
   end
 
   def test_memo
@@ -527,7 +527,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, actual
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p>\n</div>\n|, actual
   end
 
   def test_bibpaper_normalized
@@ -536,7 +536,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, actual
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p>\n</div>\n|, actual
   end
 
   def test_bibpaper_with_anchor
@@ -545,7 +545,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, actual
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p>\n</div>\n|, actual
   end
 
   def column_helper(review)
@@ -834,8 +834,7 @@ EOS
 <div class=\"note\">
 <p>aaaabbb</p>
 <div class="emlist-code">
-<pre class="emlist">
-abc
+<pre class="emlist">abc
 ddd
  * A
  * B

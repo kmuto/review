@@ -460,7 +460,10 @@ EOT
       buf
     end
 
-    def source(lines, caption = nil)
+    def node_source(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = %Q[<div class="source-code">\n]
       buf << source_header(caption)
       buf << source_body(caption, lines)
@@ -484,7 +487,10 @@ EOT
       buf
     end
 
-    def listnum(lines, id, caption)
+    def node_listnum(node)
+      id, caption = node.parse_args(:raw, :doc)
+      lines = node.raw_lines
+
       buf = %Q[<div class="code">\n]
       begin
         buf << list_header(id, caption)
@@ -660,7 +666,10 @@ EOT
       buf
     end
 
-    def table(lines, id = nil, caption = nil)
+    def node_table(node)
+      id, caption = node.parse_args(:raw, :doc)
+      lines = node.raw_lines
+
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|

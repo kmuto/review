@@ -480,11 +480,15 @@ require 'review/node'
       end
 
       def block_required?
-        @type == :block
+        @type == :block or @type == :code_block
       end
 
       def block_allowed?
-        @type == :block or @type == :optional
+        @type == :block or @type == :code_block or @type == :optional
+      end
+
+      def code_block?
+        @type == :code_block
       end
     end
 
@@ -492,6 +496,10 @@ require 'review/node'
 
     def self.defblock(name, argc, optional = false, esc = nil, &block)
       defsyntax(name, (optional ? :optional : :block), argc, esc, &block)
+    end
+
+    def self.defcodeblock(name, argc, optional = false, esc = nil, &block)
+      defsyntax(name, :code_block, argc, esc, &block)
     end
 
     def self.defsingle(name, argc, &block)
@@ -530,20 +538,21 @@ require 'review/node'
 
     defblock :read, 0
     defblock :lead, 0
-    defblock :list, 2, nil, [:raw,:doc]
-    defblock :emlist, 0..1
-    defblock :cmd, 0..1
-    defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true, [:raw,:doc,:raw]
-    defblock :source, 0..1
-    defblock :listnum, 2
-    defblock :emlistnum, 0..1
     defblock :bibpaper, 2..3, true
     defblock :doorquote, 1
     defblock :talk, 0
-    defblock :texequation, 0
     defblock :graph, 1..3
+
+    defcodeblock :emlist, 0..1
+    defcodeblock :cmd, 0..1
+    defcodeblock :source, 0..1
+    defcodeblock :list, 2, nil
+    defcodeblock :listnum, 2
+    defcodeblock :emlistnum, 0..1
+    defcodeblock :texequation, 0
+    defcodeblock :table, 0..2
 
     defblock :address, 0
     defblock :blockquote, 0
@@ -631,7 +640,7 @@ require 'review/node'
 
     def compile_command(name, args, lines, node)
       syntax = syntax_descriptor(name)
-      if !syntax || !@strategy.respond_to?(syntax.name)
+      if !syntax || (!@strategy.respond_to?(syntax.name) && !@strategy.respond_to?("node_#{syntax.name}"))
         error "strategy does not support command: //#{name}"
         compile_unknown_command args, lines
         return
@@ -839,6 +848,18 @@ require 'review/node'
       attr_reader :compiler
       attr_reader :content
     end
+    class CodeBlockElementNode < Node
+      def initialize(compiler, name, args, content)
+        @compiler = compiler
+        @name = name
+        @args = args
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :name
+      attr_reader :args
+      attr_reader :content
+    end
     class ColumnNode < Node
       def initialize(compiler, level, label, caption, content)
         @compiler = compiler
@@ -904,6 +925,14 @@ require 'review/node'
       attr_reader :content
     end
     class InlineElementContentNode < Node
+      def initialize(compiler, content)
+        @compiler = compiler
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :content
+    end
+    class NewLineNode < Node
       def initialize(compiler, content)
         @compiler = compiler
         @content = content
@@ -1000,6 +1029,9 @@ require 'review/node'
     def bracket_arg(compiler, content)
       ::ReVIEW::BracketArgNode.new(compiler, content)
     end
+    def code_block_element(compiler, name, args, content)
+      ::ReVIEW::CodeBlockElementNode.new(compiler, name, args, content)
+    end
     def column(compiler, level, label, caption, content)
       ::ReVIEW::ColumnNode.new(compiler, level, label, caption, content)
     end
@@ -1020,6 +1052,9 @@ require 'review/node'
     end
     def inline_element_content(compiler, content)
       ::ReVIEW::InlineElementContentNode.new(compiler, content)
+    end
+    def newline(compiler, content)
+      ::ReVIEW::NewLineNode.new(compiler, content)
     end
     def olist(compiler, content)
       ::ReVIEW::OlistNode.new(compiler, content)
@@ -1121,15 +1156,25 @@ require 'review/node'
     return _tmp
   end
 
-  # Block = BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }
+  # Block = BlankLine*:c { c } (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }
   def _Block
 
     _save = self.pos
     while true # sequence
+      _ary = []
       while true
         _tmp = apply(:_BlankLine)
+        _ary << @result if _tmp
         break unless _tmp
       end
+      _tmp = true
+      @result = _ary
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -1450,7 +1495,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL {raw(self, b, r1)} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL {block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})
+  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL {raw(self, b, r1)} | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL {code_block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL {block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})
   def _BlockElement
 
     _save = self.pos
@@ -1539,6 +1584,13 @@ require 'review/node'
           self.pos = _save5
           break
         end
+        _save7 = self.pos
+        _tmp = begin;  syntax = syntax_descriptor(symbol); syntax.code_block? ; end
+        self.pos = _save7
+        unless _tmp
+          self.pos = _save5
+          break
+        end
         _ary = []
         while true
           _tmp = apply(:_BracketArg)
@@ -1571,12 +1623,12 @@ require 'review/node'
           self.pos = _save5
           break
         end
-        _save9 = self.pos
-        _tmp = apply(:_BlockElementContents)
+        _save10 = self.pos
+        _tmp = apply(:_CodeBlockElementContents)
         @result = nil unless _tmp
         unless _tmp
           _tmp = true
-          self.pos = _save9
+          self.pos = _save10
         end
         contents = @result
         unless _tmp
@@ -1602,7 +1654,7 @@ require 'review/node'
           self.pos = _save5
           break
         end
-        @result = begin; block_element(self, symbol, args, contents); end
+        @result = begin; code_block_element(self, symbol, args, contents); end
         _tmp = true
         unless _tmp
           self.pos = _save5
@@ -1613,25 +1665,25 @@ require 'review/node'
       break if _tmp
       self.pos = _save
 
-      _save11 = self.pos
+      _save12 = self.pos
       while true # sequence
-        _save12 = self.pos
+        _save13 = self.pos
         _tmp = match_string("//raw")
         _tmp = _tmp ? nil : true
-        self.pos = _save12
+        self.pos = _save13
         unless _tmp
-          self.pos = _save11
+          self.pos = _save12
           break
         end
         _tmp = match_string("//")
         unless _tmp
-          self.pos = _save11
+          self.pos = _save12
           break
         end
         _tmp = apply(:_ElementName)
         symbol = @result
         unless _tmp
-          self.pos = _save11
+          self.pos = _save12
           break
         end
         _ary = []
@@ -1644,7 +1696,12 @@ require 'review/node'
         @result = _ary
         args = @result
         unless _tmp
-          self.pos = _save11
+          self.pos = _save12
+          break
+        end
+        _tmp = match_string("{")
+        unless _tmp
+          self.pos = _save12
           break
         end
         while true
@@ -1653,18 +1710,108 @@ require 'review/node'
         end
         _tmp = true
         unless _tmp
-          self.pos = _save11
+          self.pos = _save12
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save12
+          break
+        end
+        _save16 = self.pos
+        _tmp = apply(:_BlockElementContents)
+        @result = nil unless _tmp
+        unless _tmp
+          _tmp = true
+          self.pos = _save16
+        end
+        contents = @result
+        unless _tmp
+          self.pos = _save12
+          break
+        end
+        _tmp = match_string("//}")
+        unless _tmp
+          self.pos = _save12
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save12
           break
         end
         _tmp = apply(:_EOL)
         unless _tmp
-          self.pos = _save11
+          self.pos = _save12
+          break
+        end
+        @result = begin; block_element(self, symbol, args, contents); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save12
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save18 = self.pos
+      while true # sequence
+        _save19 = self.pos
+        _tmp = match_string("//raw")
+        _tmp = _tmp ? nil : true
+        self.pos = _save19
+        unless _tmp
+          self.pos = _save18
+          break
+        end
+        _tmp = match_string("//")
+        unless _tmp
+          self.pos = _save18
+          break
+        end
+        _tmp = apply(:_ElementName)
+        symbol = @result
+        unless _tmp
+          self.pos = _save18
+          break
+        end
+        _ary = []
+        while true
+          _tmp = apply(:_BracketArg)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+        args = @result
+        unless _tmp
+          self.pos = _save18
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save18
+          break
+        end
+        _tmp = apply(:_EOL)
+        unless _tmp
+          self.pos = _save18
           break
         end
         @result = begin; block_element(self, symbol, args, nil); end
         _tmp = true
         unless _tmp
-          self.pos = _save11
+          self.pos = _save18
         end
         break
       end # end sequence
@@ -2125,7 +2272,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | BlankLine:c {singleline_content(self, "")})
+  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })
   def _BlockElementContent
 
     _save = self.pos
@@ -2158,7 +2305,7 @@ require 'review/node'
           self.pos = _save2
           break
         end
-        @result = begin; singleline_content(self, c); end
+        @result = begin;  c ; end
         _tmp = true
         unless _tmp
           self.pos = _save2
@@ -2168,16 +2315,24 @@ require 'review/node'
 
       break if _tmp
       self.pos = _save
+      _tmp = apply(:_Ulist)
+      c = @result
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_Olist)
+      c = @result
+      break if _tmp
+      self.pos = _save
 
       _save3 = self.pos
       while true # sequence
-        _tmp = apply(:_BlockElementParagraph)
+        _tmp = apply(:_BlankLine)
         c = @result
         unless _tmp
           self.pos = _save3
           break
         end
-        @result = begin; singleline_content(self, c); end
+        @result = begin;  c ; end
         _tmp = true
         unless _tmp
           self.pos = _save3
@@ -2190,13 +2345,13 @@ require 'review/node'
 
       _save4 = self.pos
       while true # sequence
-        _tmp = apply(:_BlankLine)
+        _tmp = apply(:_BlockElementParagraph)
         c = @result
         unless _tmp
           self.pos = _save4
           break
         end
-        @result = begin; singleline_content(self, ""); end
+        @result = begin;  c ; end
         _tmp = true
         unless _tmp
           self.pos = _save4
@@ -2213,8 +2368,45 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+  # BlockElementParagraph = BlockElementParagraphSub+:c {paragraph(self, c.flatten)}
   def _BlockElementParagraph
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_BlockElementParagraphSub)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_BlockElementParagraphSub)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; paragraph(self, c.flatten); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BlockElementParagraph unless _tmp
+    return _tmp
+  end
+
+  # BlockElementParagraphSub = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
+  def _BlockElementParagraphSub
 
     _save = self.pos
     while true # sequence
@@ -2227,7 +2419,7 @@ require 'review/node'
         break
       end
       _save2 = self.pos
-      _tmp = apply(:_SinglelineComment)
+      _tmp = apply(:_BlankLine)
       _tmp = _tmp ? nil : true
       self.pos = _save2
       unless _tmp
@@ -2235,7 +2427,7 @@ require 'review/node'
         break
       end
       _save3 = self.pos
-      _tmp = apply(:_BlockElement)
+      _tmp = apply(:_SinglelineComment)
       _tmp = _tmp ? nil : true
       self.pos = _save3
       unless _tmp
@@ -2243,7 +2435,7 @@ require 'review/node'
         break
       end
       _save4 = self.pos
-      _tmp = apply(:_Ulist)
+      _tmp = apply(:_BlockElement)
       _tmp = _tmp ? nil : true
       self.pos = _save4
       unless _tmp
@@ -2251,7 +2443,7 @@ require 'review/node'
         break
       end
       _save5 = self.pos
-      _tmp = apply(:_Olist)
+      _tmp = apply(:_Ulist)
       _tmp = _tmp ? nil : true
       self.pos = _save5
       unless _tmp
@@ -2259,9 +2451,17 @@ require 'review/node'
         break
       end
       _save6 = self.pos
-      _tmp = apply(:_Dlist)
+      _tmp = apply(:_Olist)
       _tmp = _tmp ? nil : true
       self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save7 = self.pos
+      _tmp = apply(:_Dlist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save7
       unless _tmp
         self.pos = _save
         break
@@ -2273,6 +2473,44 @@ require 'review/node'
         break
       end
       _tmp = apply(:_Newline)
+      n = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  [c, n] ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BlockElementParagraphSub unless _tmp
+    return _tmp
+  end
+
+  # CodeBlockElementContents = CodeBlockElementContent+:c { c }
+  def _CodeBlockElementContents
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_CodeBlockElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_CodeBlockElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
       unless _tmp
         self.pos = _save
         break
@@ -2285,7 +2523,90 @@ require 'review/node'
       break
     end # end sequence
 
-    set_failed_rule :_BlockElementParagraph unless _tmp
+    set_failed_rule :_CodeBlockElementContents unless _tmp
+    return _tmp
+  end
+
+  # CodeBlockElementContent = (SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, "\n") } | !"//}" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, "\n")] })
+  def _CodeBlockElementContent
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_SinglelineComment)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = apply(:_BlankLine)
+        c = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  ::ReVIEW::TextNode.new(self, "\n") ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _save4 = self.pos
+        _tmp = match_string("//}")
+        _tmp = _tmp ? nil : true
+        self.pos = _save4
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        _tmp = apply(:_SinglelineContent)
+        c = @result
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        _tmp = apply(:_Newline)
+        n = @result
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin;  [c, ::ReVIEW::TextNode.new(self, "\n")] ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_CodeBlockElementContent unless _tmp
     return _tmp
   end
 
@@ -3637,9 +3958,25 @@ require 'review/node'
     return _tmp
   end
 
-  # Newline = %literals.Newline
+  # Newline = %literals.Newline:n {newline(self, "\n")}
   def _Newline
-    _tmp = @_grammar_literals.external_invoke(self, :_Newline)
+
+    _save = self.pos
+    while true # sequence
+      _tmp = @_grammar_literals.external_invoke(self, :_Newline)
+      n = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; newline(self, "\n"); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
     set_failed_rule :_Newline unless _tmp
     return _tmp
   end
@@ -3662,14 +3999,14 @@ require 'review/node'
   Rules[:_root] = rule_info("root", "Start")
   Rules[:_Start] = rule_info("Start", "&. Document:c { @strategy.ast = c }")
   Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
-  Rules[:_Block] = rule_info("Block", "BlankLine* (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
+  Rules[:_Block] = rule_info("Block", "BlankLine*:c { c } (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
   Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > EOL {singleline_comment(self, text)}")
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c.flatten)}")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
-  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax.code_block? } BracketArg*:args \"{\" Space* Newline CodeBlockElementContents?:contents \"//}\" Space* EOL {code_block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
   Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(< AlphanumericAscii+ >:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })")
   Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
@@ -3677,8 +4014,11 @@ require 'review/node'
   Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
-  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | BlankLine:c {singleline_content(self, \"\")})")
-  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
+  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })")
+  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphSub+:c {paragraph(self, c.flatten)}")
+  Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }")
+  Rules[:_CodeBlockElementContents] = rule_info("CodeBlockElementContents", "CodeBlockElementContent+:c { c }")
+  Rules[:_CodeBlockElementContent] = rule_info("CodeBlockElementContent", "(SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, \"\\n\") } | !\"//}\" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, \"\\n\")] })")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
   Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }")
@@ -3710,7 +4050,7 @@ require 'review/node'
   Rules[:_LowerAlphabetAscii] = rule_info("LowerAlphabetAscii", "%literals.LowerAlphabetAscii")
   Rules[:_Digit] = rule_info("Digit", "%literals.Digit")
   Rules[:_BOM] = rule_info("BOM", "%literals.BOM")
-  Rules[:_Newline] = rule_info("Newline", "%literals.Newline")
+  Rules[:_Newline] = rule_info("Newline", "%literals.Newline:n {newline(self, \"\\n\")}")
   Rules[:_NonAlphanumeric] = rule_info("NonAlphanumeric", "%literals.NonAlphanumeric")
   Rules[:_Spacechar] = rule_info("Spacechar", "%literals.Spacechar")
   # :startdoc:

@@ -125,11 +125,15 @@ require 'review/node'
       end
 
       def block_required?
-        @type == :block
+        @type == :block or @type == :code_block
       end
 
       def block_allowed?
-        @type == :block or @type == :optional
+        @type == :block or @type == :code_block or @type == :optional
+      end
+
+      def code_block?
+        @type == :code_block
       end
     end
 
@@ -137,6 +141,10 @@ require 'review/node'
 
     def self.defblock(name, argc, optional = false, esc = nil, &block)
       defsyntax(name, (optional ? :optional : :block), argc, esc, &block)
+    end
+
+    def self.defcodeblock(name, argc, optional = false, esc = nil, &block)
+      defsyntax(name, :code_block, argc, esc, &block)
     end
 
     def self.defsingle(name, argc, &block)
@@ -175,20 +183,21 @@ require 'review/node'
 
     defblock :read, 0
     defblock :lead, 0
-    defblock :list, 2, nil, [:raw,:doc]
-    defblock :emlist, 0..1
-    defblock :cmd, 0..1
-    defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true, [:raw,:doc,:raw]
-    defblock :source, 0..1
-    defblock :listnum, 2
-    defblock :emlistnum, 0..1
     defblock :bibpaper, 2..3, true
     defblock :doorquote, 1
     defblock :talk, 0
-    defblock :texequation, 0
     defblock :graph, 1..3
+
+    defcodeblock :emlist, 0..1
+    defcodeblock :cmd, 0..1
+    defcodeblock :source, 0..1
+    defcodeblock :list, 2, nil
+    defcodeblock :listnum, 2
+    defcodeblock :emlistnum, 0..1
+    defcodeblock :texequation, 0
+    defcodeblock :table, 0..2
 
     defblock :address, 0
     defblock :blockquote, 0
@@ -456,6 +465,7 @@ require 'review/node'
 %% headline = ast HeadlineNode(compiler, level, cmd, label, content)
 %% paragraph = ast ParagraphNode(compiler, content)
 %% block_element = ast BlockElementNode(compiler, name, args, content)
+%% code_block_element = ast CodeBlockElementNode(compiler, name, args, content)
 %% inline_element = ast InlineElementNode(compiler, symbol, content)
 %% inline_element_content = ast InlineElementContentNode(compiler, content)
 %% text = ast TextNode(compiler, content)
@@ -508,6 +518,8 @@ ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  
 
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
                  ~raw(self, b, r1)
+               | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL
+                  ~code_block_element(self, symbol, args, contents)
                | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL
                   ~block_element(self, symbol, args, contents)
                | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL ~block_element(self, symbol, args, nil)
@@ -546,13 +558,20 @@ BlockElementContent = ( SinglelineComment:c { c }
                       | BlockElement:c { c }
                       | Ulist:c
                       | Olist:c
-                      | BlankLine:c ~newline(self, c)
-                      | BlockElementParagraph:c ~singleline_content(self, c)
+                      | BlankLine:c { c }
+                      | BlockElementParagraph:c { c }
                       )
 
 ## it's like Paragraph, but it's in a block, so do not allow '//}\n'
 BlockElementParagraph = BlockElementParagraphSub+:c  ~paragraph(self, c.flatten)
 BlockElementParagraphSub = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
+
+## In CodeBlockElementContents, newline should no be ingored. So we use TextNode instead of NewLineNode.
+CodeBlockElementContents = CodeBlockElementContent+:c { c }
+CodeBlockElementContent = ( SinglelineComment:c { c }
+                          | BlankLine:c { ::ReVIEW::TextNode.new(self, "\n") }
+                          | !"//}" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, "\n")] }
+                          )
 
 ## * 箇条書き
 ## 行頭から… の指定がない

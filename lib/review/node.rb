@@ -25,7 +25,7 @@ module ReVIEW
       end
     end
 
-    def to_json
+    def to_json(*args)
       if content.kind_of? String
         val = '"'+@content.gsub(/\"/,'\\"')+'"'
       elsif content == nil
@@ -92,12 +92,36 @@ module ReVIEW
         end
       end
     end
+  end
 
-    def raw_lines
-      self.to_raw.split(/\n/)
+  class CodeBlockElementNode < Node
+
+    def to_doc
+      # content_str = super
+      args = @args.map(&:to_doc)
+      if @content
+        content_lines = @content.map(&:to_doc)
+      else
+        content_lines = nil
+      end
+      @compiler.compile_command(@name, @args, content_lines, self)
     end
 
+    def parse_args(*patterns)
+      patterns.map.with_index do |pattern, i|
+        if @args[i]
+          @args[i].__send__("to_#{pattern}")
+        else
+          nil
+        end
+      end
+    end
+
+    def raw_lines
+      self.content.to_doc.split(/\n/)
+    end
   end
+
 
   class InlineElementNode < Node
 
