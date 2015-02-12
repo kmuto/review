@@ -786,6 +786,71 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_ul_in_note
+    src =<<-EOS
+//note{
+
+aaaa
+bbb
+
+ * A
+ * B
+//}
+EOS
+
+    expected =<<-EOS
+<div class=\"note\">
+<p>aaaabbb</p>
+<ul>
+<li>A</li>
+<li>B</li>
+</ul>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_ul_in_note_and_emlist
+    src =<<-EOS
+//note{
+
+aaaa
+bbb
+
+//emlist{
+abc
+ddd
+ * A
+ * B
+//}
+
+ * A
+ * B
+//}
+EOS
+
+    expected =<<-EOS
+<div class=\"note\">
+<p>aaaabbb</p>
+<div class="emlist-code">
+<pre class="emlist">
+abc
+ddd
+ * A
+ * B
+</pre>
+</div>
+<ul>
+<li>A</li>
+<li>B</li>
+</ul>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
   def test_ol
     src =<<-EOS
   3. AAA

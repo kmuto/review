@@ -276,7 +276,7 @@ require 'review/node'
 
     def compile_command(name, args, lines, node)
       syntax = syntax_descriptor(name)
-      if !syntax || !@strategy.respond_to?(syntax.name)
+      if !syntax || (!@strategy.respond_to?(syntax.name) && !@strategy.respond_to?("node_#{syntax.name}"))
         error "strategy does not support command: //#{name}"
         compile_unknown_command args, lines
         return
@@ -472,6 +472,7 @@ require 'review/node'
 %% bracket_arg = ast BracketArgNode(compiler, content)
 %% document = ast DocumentNode(compiler, content)
 %% column = ast ColumnNode(compiler, level, label, caption, content)
+%% newline = ast NewLineNode(compiler, content)
 
 # %% dummy
 
@@ -483,7 +484,7 @@ Document = Block*:c ~document(self, c)
 
 ## TODO InlineElement の後に Ulist / Olist / Dlist が来ると先頭行じゃなくてマッチできてしまうかも
 ## using &. to detect EOF
-Block = BlankLine*
+Block = BlankLine*:c { c }
         ( SinglelineComment:c
         | Headline:c
         | BlockElement:c
@@ -542,12 +543,16 @@ BlockElementContents = BlockElementContent+:c { c }
 ## 各要素は Newline で終わらなければならない
 ### SinglelineContentではないような気がするけど改行は落としてあるのでとりあえずこれで
 BlockElementContent = ( SinglelineComment:c { c }
-                      | BlockElement:c ~singleline_content(self, c)
+                      | BlockElement:c { c }
+                      | Ulist:c
+                      | Olist:c
+                      | BlankLine:c ~newline(self, c)
                       | BlockElementParagraph:c ~singleline_content(self, c)
-                      | BlankLine:c ~singleline_content(self, "")
                       )
 
-BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+## it's like Paragraph, but it's in a block, so do not allow '//}\n'
+BlockElementParagraph = BlockElementParagraphSub+:c  ~paragraph(self, c.flatten)
+BlockElementParagraphSub = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
 
 ## * 箇条書き
 ## 行頭から… の指定がない
@@ -630,6 +635,6 @@ AlphanumericAscii = %literals.AlphanumericAscii
 LowerAlphabetAscii = %literals.LowerAlphabetAscii
 Digit              = %literals.Digit
 BOM               = %literals.BOM
-Newline           = %literals.Newline
+Newline           = %literals.Newline:n ~newline(self, "\n")
 NonAlphanumeric   = %literals.NonAlphanumeric
 Spacechar         = %literals.Spacechar

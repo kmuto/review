@@ -34,13 +34,6 @@ module ReVIEW
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
 
-    def pre_paragraph
-      '<p>'
-    end
-    def post_paragraph
-      '</p>'
-    end
-
     def extname
       ".#{@book.config["htmlext"]}"
     end
@@ -290,10 +283,9 @@ EOT
         buf << %Q[<p class="caption">#{caption}</p>\n]
       end
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        buf << blocked_lines.join("\n") << "\n"
+        buf << lines.join("")
       else
-        lines.each {|l| buf << "<p>#{l}</p>\n" }
+        error "deprecated-blocklines is obsoleted."
       end
       buf << "</div>\n"
       buf
@@ -427,16 +419,18 @@ EOT
 
     def read(lines)
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>\n]
+        %Q[<div class="lead">\n#{lines.join("")}\n</div>\n]
       else
-        %Q[<p class="lead">\n#{lines.join("\n")}\n</p>\n]
+        error "deprecated-blocklines is obsoleted."
       end
     end
 
     alias_method :lead, :read
 
-    def list(lines, id, caption)
+    def node_list(node)
+      id, caption = node.parse_args(:raw, :doc)
+      lines = node.raw_lines
+
       buf = %Q[<div class="caption-code">\n]
       begin
         buf << list_header(id, caption)
@@ -511,7 +505,10 @@ EOT
       buf
     end
 
-    def emlist(lines, caption = nil)
+    def node_emlist(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = %Q[<div class="emlist-code">\n]
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
@@ -525,7 +522,10 @@ EOT
       buf
     end
 
-    def emlistnum(lines, caption = nil)
+    def node_emlistnum(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = %Q[<div class="emlistnum-code">\n]
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
@@ -539,7 +539,10 @@ EOT
       buf
     end
 
-    def cmd(lines, caption = nil)
+    def node_cmd(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = %Q[<div class="cmd-code">\n]
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
@@ -564,29 +567,21 @@ EOT
 
     def quote(lines)
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        "<blockquote>#{blocked_lines.join("\n")}</blockquote>\n"
+        "<blockquote>#{lines.join("")}</blockquote>\n"
       else
-        "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>\n"
+        error "deprecated-blocklines is obsoleted."
       end
     end
 
     def doorquote(lines, ref)
       buf = ""
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
         buf << %Q[<blockquote style="text-align:right;">\n]
-        buf << "#{blocked_lines.join("\n")}\n"
+        buf << "#{lines.join("")}\n"
         buf << %Q[<p>#{ref}より</p>\n]
         buf << %Q[</blockquote>\n]
       else
-        buf << <<-QUOTE
-<blockquote style="text-align:right;">
-  <pre>#{lines.join("\n")}
-
-#{ref}より</pre>
-</blockquote>
-QUOTE
+        error "deprecated-blocklines is obsoleted."
       end
       buf
     end
@@ -595,12 +590,9 @@ QUOTE
       buf = ""
       buf << %Q[<div class="talk">\n]
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        buf << "#{blocked_lines.join("\n")}\n"
-      else
-        buf << '<pre>'
         buf << "#{lines.join("\n")}\n"
-        buf << "</pre>\n"
+      else
+        error "deprecated-blocklines is obsoleted."
       end
       buf << "</div>\n"
       buf
@@ -966,7 +958,7 @@ QUOTE
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      split_paragraph(lines).join("")
+      lines.join("")
     end
 
     def inline_bib(id)
@@ -1168,19 +1160,15 @@ QUOTE
     def flushright(lines)
       result = ""
       if @book.config["deprecated-blocklines"].nil?
-        result << split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">") << "\n"
+        result << lines.join("").gsub("<p>", "<p class=\"flushright\">")
       else
-        result << %Q[<div style="text-align:right;">\n]
-        result << %Q[<pre class="flushright">]
-        lines.each {|line| result << detab(line) << "\n" }
-        result << "</pre>\n"
-        result << "</div>\n"
+        error "deprecated-blocklines is obsoleted."
       end
       result
     end
 
     def centering(lines)
-      split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"center\">") + "\n"
+      lines.join("").gsub("<p>", "<p class=\"center\">")
     end
 
     def image_ext
