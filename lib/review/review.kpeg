@@ -544,7 +544,7 @@ BlockElementContents = BlockElementContent+:c { c }
 BlockElementContent = ( SinglelineComment:c { c }
                       | BlockElement:c ~singleline_content(self, c)
                       | BlockElementParagraph:c ~singleline_content(self, c)
-                      | Newline:c  ~singleline_content(self, "")
+                      | BlankLine:c ~singleline_content(self, "")
                       )
 
 BlockElementParagraph = !"//}" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }

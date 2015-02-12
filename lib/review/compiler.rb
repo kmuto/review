@@ -2125,7 +2125,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, "")})
+  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | BlankLine:c {singleline_content(self, "")})
   def _BlockElementContent
 
     _save = self.pos
@@ -2190,7 +2190,7 @@ require 'review/node'
 
       _save4 = self.pos
       while true # sequence
-        _tmp = apply(:_Newline)
+        _tmp = apply(:_BlankLine)
         c = @result
         unless _tmp
           self.pos = _save4
@@ -3677,7 +3677,7 @@ require 'review/node'
   Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
-  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | Newline:c {singleline_content(self, \"\")})")
+  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c {singleline_content(self, c)} | BlockElementParagraph:c {singleline_content(self, c)} | BlankLine:c {singleline_content(self, \"\")})")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "!\"//}\" !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
   Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
