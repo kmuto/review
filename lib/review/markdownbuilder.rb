@@ -65,15 +65,16 @@ module ReVIEW
       buf
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
+      lang ||= ""
       if get_chap.nil?
-        %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```\n"
+        %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```#{lang}\n"
       else
-        %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```\n"
+        %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```#{lang}\n"
       end
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       buf = ""
       lines.each do |line|
         buf << detab(line) << "\n"
@@ -130,7 +131,7 @@ module ReVIEW
     end
 
     def node_emlist(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       buf = ""
@@ -138,7 +139,8 @@ module ReVIEW
       if caption
         buf << caption << "\n"
       end
-      buf << "```\n"
+      lang ||= ""
+      buf << "```#{lang}\n"
       blank_reset
       lines.each do |line|
         buf << detab(line) << "\n"
@@ -231,7 +233,7 @@ module ReVIEW
       lines = node.raw_lines
 
       buf = ""
-      buf << "```" << "\n"
+      buf << "```shell-session" << "\n"
       blank_reset
       lines.each do |line|
         buf << detab(line) << "\n"

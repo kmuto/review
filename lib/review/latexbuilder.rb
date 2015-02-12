@@ -222,76 +222,128 @@ module ReVIEW
 
     alias_method :lead, :read
 
+    def highlight_listings?
+      @book.config["highlight"] && @book.config["highlight"]["latex"] == "listings"
+    end
+    private :highlight_listings?
+
     def node_emlist(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       buf = "\n"
-      if caption
-        buf << macro('reviewemlistcaption', "#{caption}") << "\n"
+      if highlight_listings?
+        buf << common_code_block_lst(lines, 'reviewemlistlst', 'title', caption, lang)
+      else
+        buf << common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
+          detab(line) + "\n"
+        end
       end
-      buf << '\begin{reviewemlist}' << "\n"
-      lines.each do |line|
-        buf << detab(line) << "\n"
-      end
-      buf << '\end{reviewemlist}' << "\n"
       buf
     end
 
-    def node_emlistnum()
-      caption, = node.parse_args(:doc)
+    def node_emlistnum(node)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       buf = "\n"
-      if caption
-        buf << macro('reviewemlistcaption', "#{caption}") << "\n"
+      if highlight_listings?
+        buf << common_code_block_lst(lines, 'reviewemlistnumlst', 'title', caption, lang)
+      else
+        buf << common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
+          detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
+        end
       end
-      buf << '\begin{reviewemlist}' << "\n"
-      lines.each_with_index do |line, i|
-        buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
-      end
-      buf << '\end{reviewemlist}' << "\n"
       buf
     end
 
-    def listnum_body(lines)
+    ## override Builder#list
+    def node_list(node)
+      id, caption, lang = node.parse_args(:raw, :doc, :raw)
+      lines = node.raw_lines
+
       buf = ""
-      buf << '\begin{reviewlist}'
-      lines.each_with_index do |line, i|
-        buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
+      if highlight_listings?
+        buf << common_code_block_lst(lines, 'reviewlistlst', 'caption', caption, lang)
+      else
+        begin
+          buf << macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
+        rescue KeyError
+          error "no such list: #{id}"
+        end
+        buf << common_code_block(lines, 'reviewlist', nil, lang) do |line, idx|
+          detab(line) + "\n"
+        end
       end
-      buf << '\end{reviewlist}' << "\n"
+      buf
+    end
+
+
+    ## override Builder#listnum
+    def node_listnum(node)
+      id, caption, lang = node.parse_args(:raw, :doc, :raw)
+      lines = node.raw_lines
+
+      buf = ""
+      if highlight_listings?
+        buf << common_code_block_lst(lines, 'reviewlistnumlst', 'caption', caption, lang)
+      else
+        begin
+          buf << macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
+        rescue KeyError
+          error "no such list: #{id}"
+        end
+        buf << common_code_block(lines, 'reviewlist', caption, lang) do |line, idx|
+          detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
+        end
+      end
       buf
     end
 
     def node_cmd(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
-      buf = "\n"
-      if caption
-        buf << macro('reviewcmdcaption', "#{caption}") << "\n"
+
+      buf = ""
+      if highlight_listings?
+        buf << common_code_block_lst(lines, 'reviewcmdlst', 'title', caption, lang)
+      else
+        buf << "\n"
+        buf << common_code_block(lines, 'reviewcmd', caption, lang) do |line, idx|
+          detab(line) + "\n"
+        end
       end
-      buf << '\begin{reviewcmd}' "\n"
-      lines.each do |line|
-        buf << detab(line) << "\n"
-      end
-      buf << '\end{reviewcmd}' << "\n"
       buf
     end
 
-    def list_header(id, caption)
-      macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
+    def common_code_block(lines, command, caption, lang)
+      buf = ""
+      if caption
+        buf << macro(command + 'caption', "#{caption}") + "\n"
+      end
+      body = ""
+      lines.each_with_index do |line, idx|
+        body.concat(yield(line, idx))
+      end
+      buf << macro('begin' ,command) + "\n"
+      buf << body
+      buf << macro('end' ,command) + "\n"
+      buf
     end
 
-    def list_body(id, lines)
+    def common_code_block_lst(lines, command, title, caption, lang)
       buf = ""
-      buf << '\begin{reviewlist}' << "\n"
-      lines.each do |line|
-        buf << detab(line) << "\n"
+      caption_str = (caption || "")
+      if title == "title" && caption_str == ""
+        caption_str = "\\relax" ## dummy charactor to remove lstname
+        buf << "\\vspace{-1.5em}"
       end
-      buf << '\end{reviewlist}' << "\n"
-      buf << "\n"
+      lexer = lang || ""
+      body = lines.inject(''){|i, j| i + detab(unescape_latex(j)) + "\n"}
+      buf << "\\begin{"+command+"}["+title+"={"+caption_str+"},language={"+ lexer+"}]" + "\n"
+      buf << body
+      buf << "\\end{"+ command + "}" + "\n"
       buf
     end
 

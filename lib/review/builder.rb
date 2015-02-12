@@ -87,30 +87,30 @@ module ReVIEW
     private :headline_prefix
 
     def node_list(node)
-      id, caption = node.parse_args(:raw, :doc)
+      id, caption, lang = node.parse_args(:raw, :doc, :raw)
       lines = node.raw_lines
 
       buf = ""
       begin
-        buf << list_header(id, caption)
+        buf << list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      buf << list_body(id, lines)
+      buf << list_body(id, lines, lang)
       buf
     end
 
     def node_listnum(node)
-      id, caption = node.parse_args(:raw, :doc)
+      id, caption, lang = node.parse_args(:raw, :doc, :raw)
       lines = node.raw_lines
 
       buf = ""
       begin
-        buf << list_header(id, caption)
+        buf << list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      buf << listnum_body(lines)
+      buf << listnum_body(lines, lang)
       buf
     end
 

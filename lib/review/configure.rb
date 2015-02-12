@@ -27,13 +27,13 @@ module ReVIEW
         "params" => "", # specify review2html parameters
         "toclevel" => 3, # level of toc
         "secnolevel" => 2, # level of section #
-        "posthook" => nil, # command path of post hook
         "epubversion" => 2,
         "titlepage" => true, # Use title page
         "toc" => nil, # Use table of contents in body
         "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
         "catalogfile" => 'catalog.yml',
+        "language" => 'ja', # XXX default language should be JA??
 
         "chapter_file" => 'CHAPS',
         "part_file"    => 'PART',

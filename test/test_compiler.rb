@@ -69,10 +69,15 @@ class CompilerTest < Test::Unit::TestCase
   end
 
   def test_inline_ruby
-    str = compile_inline("@<ruby>{foo,bar}")
-    assert_equal "<ruby><rb>foo</rb><rp>（</rp><rt>bar</rt><rp>）</rp></ruby>", str.to_s
-    str = compile_inline("@<ruby>{foo\\,\\,,\\,bar\\,buz}")
-    assert_equal "<ruby><rb>foo,,</rb><rp>（</rp><rt>,bar,buz</rt><rp>）</rp></ruby>", str.to_s
+#    def @compiler.inline_ruby(*args)
+#      return args
+#    end
+    args = compile_inline("@<ruby>{foo,bar}",false)
+    assert_equal "foo", args.content[0].content[0].to_doc
+    assert_equal "bar", args.content[0].content[1].to_doc
+    args = compile_inline("@<ruby>{foo\\,\\,,\\,bar\\,buz}", false)
+    assert_equal "foo,,", args.content[0].content[0].to_doc
+    assert_equal ",bar,buz", args.content[0].content[1].to_doc
   end
 
   def test_compile_inline_backslash

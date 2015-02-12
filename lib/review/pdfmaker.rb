@@ -91,6 +91,7 @@ module ReVIEW
       config.merge!(YAML.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
       config.merge!(cmd_config)
+      I18n.setup(config["language"])
       generate_pdf(config, yamlfile)
     end
 
@@ -140,26 +141,47 @@ module ReVIEW
 
       copy_images("./images", "#{@path}/images")
       copyStyToDir(Dir.pwd + "/sty", @path)
+      copyStyToDir(Dir.pwd + "/sty", @path, "fd")
+      copyStyToDir(Dir.pwd + "/sty", @path, "cls")
       copyStyToDir(Dir.pwd, @path, "tex")
 
       Dir.chdir(@path) {
         template = get_template(config)
         File.open("./book.tex", "wb"){|f| f.write(template)}
 
+        call_hook("hook_beforetexcompile", config)
+
         ## do compile
         enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
         kanji = 'utf8'
-        if enc
-          kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
+        texcommand = "platex"
+        texoptions = "-kanji=#{kanji}"
+        dvicommand = "dvipdfmx"
+        dvioptions = "-d 5"
+
+        if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
+          warn "command configuration is prohibited in safe mode. ignored."
+        else
+          texcommand = config["texcommand"] if config["texcommand"]
+          dvicommand = config["dvicommand"] if config["dvicommand"]
+          dvioptions = config["dvioptions"] if config["dvioptions"]
+          if enc
+            kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
+            texoptions = "-kanji=#{kanji}"
+          end
+          texoptions = config["texoptions"] if config["texoptions"]
         end
-        texcommand = config["texcommand"] || "platex"
         3.times do
-          system_or_raise("#{texcommand} -kanji=#{kanji} book.tex")
+          system_or_raise("#{texcommand} #{texoptions} book.tex")
         end
-        if File.exist?("book.dvi")
-          system_or_raise("dvipdfmx -d 5 book.dvi")
+        call_hook("hook_aftertexcompile", config)
+
+      if File.exist?("book.dvi")
+          system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
         end
       }
+      call_hook("hook_afterdvipdf", config)
+      
       FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
 
       unless config["debug"]
@@ -231,13 +253,16 @@ module ReVIEW
     def make_authors(config)
       authors = ""
       if config["aut"].present?
-        authors = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("author_postfix")
+        author_names = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter"))
+        authors = ReVIEW::I18n.t("author_with_label", author_names)
       end
       if config["csl"].present?
-        authors += " \\\\\n"+join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("supervisor_postfix")
+        csl_names = join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter"))
+        authors += " \\\\\n"+ ReVIEW::I18n.t("supervisor_with_label", csl_names)
       end
       if config["trl"].present?
-        authors += " \\\\\n"+join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter")) + ReVIEW::I18n.t("translator_postfix")
+        trl_names = join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter"))
+        authors += " \\\\\n"+ ReVIEW::I18n.t("translator_with_label", trl_names)
       end
       authors
     end
@@ -278,6 +303,17 @@ module ReVIEW
           end
         }
       }
+    end
+
+    def call_hook(hookname, config)
+      if config["pdfmaker"].instance_of?(Hash) && config["pdfmaker"][hookname]
+        hook = File.absolute_path(config["pdfmaker"][hookname], @basedir)
+        if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
+          warn "hook configuration is prohibited in safe mode. ignored."
+        else
+          system_or_raise("#{hook} #{Dir.pwd} #{@basedir}")
+        end
+      end
     end
   end
 end

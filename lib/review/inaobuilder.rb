@@ -173,7 +173,7 @@ module ReVIEW
       end
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       buf = "◆list/◆\n"
       if get_chap.nil?
         buf << %Q[●リスト#{@chapter.list(id).number}　#{caption}\n]
@@ -183,7 +183,7 @@ module ReVIEW
       buf
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       buf = ""
       lines.each do |line|
         buf << detab(line) << "\n"
@@ -192,7 +192,7 @@ module ReVIEW
       buf
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       buf = ""
       lines.each_with_index do |line, i|
         buf << detab((i+1).to_s.rjust(2) + " " +line) << "\n"

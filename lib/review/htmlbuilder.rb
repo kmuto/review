@@ -428,21 +428,21 @@ EOT
     alias_method :lead, :read
 
     def node_list(node)
-      id, caption = node.parse_args(:raw, :doc)
+      id, caption, lang = node.parse_args(:raw, :doc, :raw)
       lines = node.raw_lines
 
       buf = %Q[<div class="caption-code">\n]
       begin
-        buf << list_header(id, caption)
+        buf << list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      buf << list_body(id, lines)
+      buf << list_body(id, lines, lang)
       buf << "</div>\n"
       buf
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       if get_chap.nil?
         %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}</p>\n]
       else
@@ -450,11 +450,11 @@ EOT
       end
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       id ||= ''
       buf = %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = File.extname(id).gsub(/\./, '')
+      lexer = lang || File.extname(id).gsub(/\./, '')
       buf << highlight(:body => body, :lexer => lexer, :format => 'html')
       buf << "</pre>\n"
       buf
@@ -488,31 +488,32 @@ EOT
     end
 
     def node_listnum(node)
-      id, caption = node.parse_args(:raw, :doc)
+      id, caption, lang = node.parse_args(:raw, :doc, :raw)
       lines = node.raw_lines
 
       buf = %Q[<div class="code">\n]
       begin
-        buf << list_header(id, caption)
+        buf << list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      buf << listnum_body(lines)
+      buf << listnum_body(lines, lang)
       buf << "</div>"
       buf
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       buf = %Q[<pre class="list">\n]
-      lines.each_with_index do |line, i|
-        buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = lang
+      buf << highlight(:body => body, :lexer => lexer, :format => 'html',
+                     :options => {:linenos => 'inline', :nowrap => false})
       buf << "</pre>\n"
       buf
     end
 
     def node_emlist(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       buf = %Q[<div class="emlist-code">\n]
@@ -520,16 +521,16 @@ EOT
         buf << %Q(<p class="caption">#{caption}</p>\n)
       end
       buf << %Q[<pre class="emlist">]
-      lines.each do |line|
-        buf << detab(line) << "\n"
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = lang
+      buf << highlight(:body => body, :lexer => lexer, :format => 'html')
       buf << "</pre>\n"
       buf << "</div>\n"
       buf
     end
 
     def node_emlistnum(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       buf = %Q[<div class="emlistnum-code">\n]
@@ -537,9 +538,10 @@ EOT
         buf << %Q(<p class="caption">#{caption}</p>\n)
       end
       buf << %Q[<pre class="emlist">\n]
-      lines.each_with_index do |line, i|
-        buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = lang
+      buf << highlight(:body => body, :lexer => lexer, :format => 'html',
+                     :options => {:linenos => 'inline', :nowrap => false})
       buf << "</pre>\n"
       buf << "</div>\n"
       buf
@@ -554,9 +556,9 @@ EOT
         buf << %Q(<p class="caption">#{caption}</p>\n)
       end
       buf << %Q[<pre class="cmd">]
-      lines.each do |line|
-        buf << detab(line) << "\n"
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = 'shell-session'
+      buf << highlight(:body => body, :lexer => lexer, :format => 'html')
       buf << "</pre>\n"
       buf << "</div>\n"
       buf

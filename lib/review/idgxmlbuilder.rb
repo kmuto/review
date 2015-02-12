@@ -327,7 +327,7 @@ module ReVIEW
       end
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       buf = ""
       buf << %Q[<codelist>] << @lf
       if get_chap.nil?
@@ -356,7 +356,7 @@ module ReVIEW
       buf
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       buf = ""
       buf << %Q(<pre>)
       buf << codelines_body(lines)
@@ -365,14 +365,14 @@ module ReVIEW
     end
 
     def node_emlist(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       quotedlist lines, 'emlist', caption
     end
 
     def node_emlistnum(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       _lines = []
@@ -383,7 +383,7 @@ module ReVIEW
       quotedlist _lines, 'emlistnum', caption
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       buf = ""
       buf << %Q(<pre>)
       no = 1

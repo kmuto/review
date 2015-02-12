@@ -189,12 +189,12 @@ require 'review/node'
     defblock :talk, 0
     defblock :graph, 1..3
 
-    defcodeblock :emlist, 0..1
+    defcodeblock :emlist, 0..2
     defcodeblock :cmd, 0..1
     defcodeblock :source, 0..1
-    defcodeblock :list, 2, nil
-    defcodeblock :listnum, 2
-    defcodeblock :emlistnum, 0..1
+    defcodeblock :list, 2..3, nil
+    defcodeblock :listnum, 2..3
+    defcodeblock :emlistnum, 0..2
     defcodeblock :texequation, 0
     defcodeblock :table, 0..2
     defcodeblock :image, 2..3, true, [:raw,:doc,:raw]

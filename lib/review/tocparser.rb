@@ -13,7 +13,6 @@
 require 'review/preprocessor'
 require 'review/book'
 require 'review/textbuilder'
-require 'forwardable'
 
 module ReVIEW
 

@@ -3,7 +3,9 @@ require 'yaml'
 
 module ReVIEW
   class I18n
-    def self.setup(ymlfile = "locale.yml")
+    def self.setup(locale="ja", ymlfile = "locale.yml")
+      @i18n = ReVIEW::I18n.new(locale)
+
       lfile = nil
       if ymlfile
         lfile = File.expand_path(ymlfile, Dir.pwd)
@@ -14,26 +16,34 @@ module ReVIEW
         end
       end
 
-      I18n.i18n "ja"
       if lfile && File.file?(lfile)
         @i18n.update_localefile(lfile)
       end
-    rescue
-      I18n.i18n "ja"
     end
 
-    def self.i18n(locale, user_i18n = {})
-      locale ||= "en"
-      @i18n = ReVIEW::I18n.new(locale)
-      unless user_i18n.empty?
-        @i18n.update(user_i18n)
-      end
+    def self.i18n(*args)
+      raise NotImplementedError, "I18n.i18n is obsoleted. Please use I18n.setup(locale, [ymlfile])"
     end
 
     def self.t(str, args = nil)
       @i18n.t(str, args)
     end
 
+    def self.locale=(locale)
+      if @i18n
+        @i18n.locale = locale
+      else
+        I18n.setup(locale)
+      end
+    end
+
+    class << self
+      alias v t  ## for EPUBMaker backward compatibility
+    end
+
+    def self.update(user_i18n, locale = nil)
+      @i18n.update(user_i18n, locale)
+    end
 
     attr_accessor :locale
 
@@ -53,8 +63,16 @@ module ReVIEW
     def update_localefile(path)
       user_i18n = YAML.load_file(path)
       locale = user_i18n["locale"]
-      user_i18n.delete("locale")
-      @store[locale].merge!(user_i18n)
+      if locale
+        user_i18n.delete("locale")
+        @store[locale].merge!(user_i18n)
+      else
+        key = user_i18n.keys.first
+        if !user_i18n[key].kind_of? Hash
+          raise KeyError, "Invalid locale file: #{path}"
+        end
+        @store.merge!(user_i18n)
+      end
     end
 
     def update(user_i18n, locale = nil)
@@ -72,6 +90,4 @@ module ReVIEW
       str
     end
   end
-
-  I18n.setup
 end

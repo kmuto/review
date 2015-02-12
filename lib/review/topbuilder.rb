@@ -223,7 +223,7 @@ module ReVIEW
       end
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       buf = ""
       #buf << "\n"
       buf << "◆→開始:#{@titles["list"]}←◆\n"
@@ -236,7 +236,7 @@ module ReVIEW
       buf
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       buf = ""
       lines.each do |line|
         buf << detab(line) << "\n"
@@ -268,18 +268,17 @@ module ReVIEW
     end
 
     def node_emlist(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       base_block "emlist", lines, caption
     end
 
     def node_emlistnum(node)
-      caption, = node.parse_args(:doc)
+      caption, lang = node.parse_args(:doc, :raw)
       lines = node.raw_lines
 
       buf = ""
-      #buf << "\n"
       buf << "◆→開始:#{@titles["emlist"]}←◆\n"
       buf << "■#{caption}\n" unless caption.nil?
       _lines = []
@@ -291,7 +290,7 @@ module ReVIEW
       buf
     end
 
-    def listnum_body(lines)
+    def listnum_body(lines, lang)
       buf = ""
       lines.each_with_index do |line, i|
         buf << (i + 1).to_s.rjust(2) + ": #{line}\n"

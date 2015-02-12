@@ -10,6 +10,7 @@
 #
 
 require 'epubmaker/producer'
+require 'review/i18n'
 require 'cgi'
 
 module EPUBMaker
@@ -178,7 +179,8 @@ EOT
 EOT
       end
 
-      if @producer.params["prt"]
+      publisher = @producer.params["pbl"] || @producer.params["prt"] # XXX Backward Compatiblity
+      if publisher
         s << <<EOT
   <p>
     <br />
@@ -186,7 +188,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</h3>
+  <h3 class="tp-publisher">#{CGI.escapeHTML(publisher.join(", "))}</h3>
 EOT
       end
 
@@ -223,33 +225,34 @@ EOT
         if @producer.params["history"]
           @producer.params["history"].each_with_index do |items, edit|
             items.each_with_index do |item, rev|
-              editstr = (edit == 0) ? "初版" : "第#{edit + 1}版" # FIXME:i18n
-              revstr = "第#{rev + 1}刷"
+              editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}")
+              revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
               if item =~ /\A\d+\-\d+\-\d+\Z/
-                s << %Q[      <p>#{date_to_s(item)}　#{editstr}#{revstr}　発行</p>\n] # FIXME:i18n
+                s << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n]
               else
                 # custom date with string
                 item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
-                  s << %Q[      <p>#{date_to_s(m[1])}　#{m[2]}</p>\n]
+                  s << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
                 end
               end
             end
           end
         else
-          s << %Q[      <p>#{date_to_s(@producer.params["date"])}　発行</p>\n] #FIXME:i18n
+          s << %Q[      <p>#{ReVIEW::I18n.t("published_by2", date_to_s(@producer.params["date"]))}</p>\n]
         end
         s << %Q[    </div>\n]
       end
 
       s << %Q[    <table class="colophon">\n]
-      s << %Q[      <tr><th>#{@producer.res.v("c-aut")}</th><td>#{CGI.escapeHTML(@producer.params["aut"].join(", "))}</td></tr>\n] unless @producer.params["aut"].nil?
-      s << %Q[      <tr><th>#{@producer.res.v("c-csl")}</th><td>#{CGI.escapeHTML(@producer.params["csl"].join(", "))}</td></tr>\n] unless @producer.params["csl"].nil?
-      s << %Q[      <tr><th>#{@producer.res.v("c-trl")}</th><td>#{CGI.escapeHTML(@producer.params["trl"].join(", "))}</td></tr>\n] unless @producer.params["trl"].nil?
-      s << %Q[      <tr><th>#{@producer.res.v("c-dsr")}</th><td>#{CGI.escapeHTML(@producer.params["dsr"].join(", "))}</td></tr>\n] unless @producer.params["dsr"].nil?
-      s << %Q[      <tr><th>#{@producer.res.v("c-ill")}</th><td>#{CGI.escapeHTML(@producer.params["ill"].join(", "))}</td></tr>\n] unless @producer.params["ill"].nil?
-      s << %Q[      <tr><th>#{@producer.res.v("c-edt")}</th><td>#{CGI.escapeHTML(@producer.params["edt"].join(", "))}</td></tr>\n] unless @producer.params["edt"].nil?
-      s << %Q[      <tr><th>#{@producer.res.v("c-prt")}</th><td>#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</td></tr>\n] unless @producer.params["prt"].nil?
-      s << %Q[      <tr><th>#{@producer.res.v("c-pht")}</th><td>#{CGI.escapeHTML(@producer.params["pht"].join(", "))}</td></tr>\n] unless @producer.params["pht"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("aut")}</th><td>#{CGI.escapeHTML(@producer.params["aut"].join(", "))}</td></tr>\n] unless @producer.params["aut"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("csl")}</th><td>#{CGI.escapeHTML(@producer.params["csl"].join(", "))}</td></tr>\n] unless @producer.params["csl"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("trl")}</th><td>#{CGI.escapeHTML(@producer.params["trl"].join(", "))}</td></tr>\n] unless @producer.params["trl"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("dsr")}</th><td>#{CGI.escapeHTML(@producer.params["dsr"].join(", "))}</td></tr>\n] unless @producer.params["dsr"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("ill")}</th><td>#{CGI.escapeHTML(@producer.params["ill"].join(", "))}</td></tr>\n] unless @producer.params["ill"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("edt")}</th><td>#{CGI.escapeHTML(@producer.params["edt"].join(", "))}</td></tr>\n] unless @producer.params["edt"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("pbl")}</th><td>#{CGI.escapeHTML(@producer.params["pbl"].join(", "))}</td></tr>\n] unless @producer.params["pbl"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("prt")}</th><td>#{CGI.escapeHTML(@producer.params["prt"].join(", "))}</td></tr>\n] unless @producer.params["prt"].nil?
+      s << %Q[      <tr><th>#{@producer.res.v("pht")}</th><td>#{CGI.escapeHTML(@producer.params["pht"].join(", "))}</td></tr>\n] unless @producer.params["pht"].nil?
       if @producer.params["isbn"].to_s =~ /\A\d{10}\Z/ || @producer.params["isbn"].to_s =~ /\A\d{13}\Z/
         isbn = nil
         str = @producer.params["isbn"].to_s
@@ -276,8 +279,9 @@ EOT
     end
 
     def date_to_s(date)
-      ymd = date.to_s.split('-')
-      "#{ymd[0]}年#{ymd[1].sub(/\A0/, '')}月#{ymd[2].sub(/\A0/, '')}日" # FIXME:i18n
+      require 'date'
+      d = Date.parse(date)
+      d.strftime(ReVIEW::I18n.t("date_format"))
     end
 
     # Return own toc content.
@@ -290,10 +294,10 @@ EOT
   <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>
 EOT
 
-      if @producer.params["flattoc"].nil?
+      if @producer.params["epubmaker"]["flattoc"].nil?
         s << hierarchy_ncx("ul")
       else
-        s << flat_ncx("ul", @producer.params["flattocindent"])
+        s << flat_ncx("ul", @producer.params["epubmaker"]["flattocindent"])
       end
 
       s << <<EOT
@@ -365,7 +369,7 @@ EOT
         e2.add_text(REXML::Text.new(item.title, true))
       end
 
-      warn "found level jumping in table of contents. consider to use 'flattoc: true' for strict ePUB validator." unless find_jump.nil?
+      warn "found level jumping in table of contents. consider to use 'epubmaker:flattoc: true' for strict ePUB validator." unless find_jump.nil?
 
       doc.to_s.gsub("<li/>", "").gsub("</li>", "</li>\n").gsub("<#{type} ", "\n" + '\&') # ugly
     end
@@ -407,8 +411,8 @@ EOT
     end
 
     def export_zip(tmpdir, epubfile)
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage1"]} #{epubfile} mimetype` }
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["zip_addpath"]}` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage1"]} #{epubfile} mimetype` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["epubmaker"]["zip_addpath"]}` }
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)
