@@ -210,7 +210,7 @@ module ReVIEW
 
     def dd(lines)
       buf = ""
-      split_paragraph(lines).each do |paragraph|
+      lines.each do |paragraph|
         buf << "\t#{paragraph.gsub(/\n/, '')}\n"
       end
       blank_reset
@@ -229,7 +229,7 @@ module ReVIEW
     def read(lines)
       buf = ""
       buf << "◆→開始:#{@titles["lead"]}←◆\n"
-      buf << split_paragraph(lines).join("\n") << "\n"
+      buf << lines.join("\n") << "\n"
       buf << "◆→終了:#{@titles["lead"]}←◆\n"
       blank_reset
       buf << blank
@@ -277,7 +277,7 @@ module ReVIEW
       buf  << blank
       buf << "◆→開始:#{@titles[type]}←◆\n"
       buf << "■#{caption}\n" unless caption.nil?
-      buf << lines.join("\n") << "\n"
+      buf << lines.join("")
       buf << "◆→終了:#{@titles[type]}←◆\n"
       blank_reset
       buf << blank
@@ -289,18 +289,24 @@ module ReVIEW
       buf << blank
       buf << "◆→開始:#{@titles[type]}←◆\n"
       buf << "■#{caption}\n" unless caption.nil?
-      buf << split_paragraph(lines).join("\n") << "\n"
+      buf << lines.join("")
       buf << "◆→終了:#{@titles[type]}←◆\n"
       blank_reset
       buf << blank
       buf
     end
 
-    def emlist(lines, caption = nil)
+    def node_emlist(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       base_block "emlist", lines, caption
     end
 
-    def emlistnum(lines, caption = nil)
+    def node_emlistnum(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = ""
       buf << blank
       buf << "◆→開始:#{@titles["emlist"]}←◆\n"
@@ -326,7 +332,10 @@ module ReVIEW
       buf
     end
 
-    def cmd(lines, caption = nil)
+    def node_cmd(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       base_block "cmd", lines, caption
     end
 
@@ -376,7 +385,9 @@ module ReVIEW
       buf
     end
 
-    def texequation(lines)
+    def node_texequation(node)
+      lines = node.raw_lines
+
       buf = ""
       buf << "◆→開始:#{@titles["texequation"]}←◆\n"
       buf << "#{lines.join("\n")}\n"
