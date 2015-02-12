@@ -124,16 +124,13 @@ module ReVIEW
       buf = ""
       buf << "\\begin{reviewminicolumn}\n"
       unless caption.nil?
-        buf << "\\reviewminicolumntitle{#{caption}}\n"
+        buf << "\\reviewminicolumntitle{#{caption}}"
       end
 
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        buf << blocked_lines.join("\n\n") << "\n"
+        buf << lines.join("")
       else
-        lines.each do |line|
-          buf << line << "\n"
-        end
+        error "deprecated-blocklines is obsoleted."
       end
 
       buf << "\\end{reviewminicolumn}\n"
@@ -225,7 +222,10 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def emlist(lines, caption = nil)
+    def node_emlist(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = "\n"
       if caption
         buf << macro('reviewemlistcaption', "#{caption}") << "\n"
@@ -238,7 +238,10 @@ module ReVIEW
       buf
     end
 
-    def emlistnum(lines, caption = nil)
+    def node_emlistnum()
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = "\n"
       if caption
         buf << macro('reviewemlistcaption', "#{caption}") << "\n"
@@ -261,7 +264,10 @@ module ReVIEW
       buf
     end
 
-    def cmd(lines, caption = nil)
+    def node_cmd(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = "\n"
       if caption
         buf << macro('reviewcmdcaption', "#{caption}") << "\n"
@@ -289,7 +295,10 @@ module ReVIEW
       buf
     end
 
-    def source(lines, caption)
+    def node_source(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = "\n"
       buf << '\begin{reviewlist}' << "\n"
       buf << source_header(caption)
@@ -408,7 +417,10 @@ module ReVIEW
 
     alias_method :numberlessimage, :indepimage
 
-    def table(lines, id = nil, caption = nil)
+    def node_table(node)
+      id, caption = node.parse_args(:raw, :doc)
+      lines = node.raw_lines
+
       buf = ""
       rows = []
       sepidx = nil
@@ -528,7 +540,9 @@ module ReVIEW
       latex_block 'flushright', lines
     end
 
-    def texequation(lines)
+    def node_texequation(node)
+      lines = node.raw_lines
+
       buf = "\n"
       buf << macro('begin','equation*') << "\n"
       lines.each do |line|
@@ -541,14 +555,11 @@ module ReVIEW
 
     def latex_block(type, lines)
       buf = "\n"
-      buf << macro('begin', type) << "\n"
+      buf << macro('begin', type)
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        buf << blocked_lines.join("\n\n") << "\n"
+        buf << lines.join("")
       else
-        lines.each do |line|
-          buf << line << "\n"
-        end
+        error "deprecated-blocklines is obsoleted."
       end
       buf << macro('end', type) << "\n"
       buf
@@ -824,13 +835,26 @@ module ReVIEW
       end
     end
 
+    def bibpaper(lines, id, caption)
+      buf = ""
+      buf << bibpaper_header(id, caption)
+      if lines.empty?
+        buf << "\n"
+      else
+        buf << "\n"
+        buf << bibpaper_bibpaper(id, caption, lines)
+      end
+      buf << "\n"
+      buf
+    end
+
     def bibpaper_header(id, caption)
       "[#{@chapter.bibpaper(id).number}] #{caption}\n" +
-        macro('label', bib_label(id)) + "\n"
+        macro('label', bib_label(id))
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      split_paragraph(lines).join("") + "\n"
+      lines.join("")
     end
 
     def index(str)

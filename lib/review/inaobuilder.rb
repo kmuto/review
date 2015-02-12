@@ -60,7 +60,7 @@ module ReVIEW
       buf = ""
       buf << "◆#{@titles[type]}/◆\n"
       buf << "■■■■■#{caption}\n" unless caption.nil?
-      buf << split_paragraph(lines).join("\n") << "\n"
+      buf << lines.join("")
       buf << "◆/#{@titles[type]}◆\n"
       buf << "\n"
       buf
@@ -123,7 +123,8 @@ module ReVIEW
     end
 
     def quote(lines)
-      base_parablock "quote", lines, nil
+      lines_fixed = lines.map{|line| line.sub(/^　/,"")} ## インデントを消す
+      base_parablock "quote", lines_fixed, nil
     end
 
     def column_begin(level, label, caption)
@@ -200,7 +201,10 @@ module ReVIEW
       buf
     end
 
-    def emlist(lines, caption=nil)
+    def node_emlist(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = ""
       buf << "◆list/◆\n"
       buf << %Q[●#{caption}\n] unless caption.nil?
@@ -222,7 +226,10 @@ module ReVIEW
     end
 
     # whiteリスト代用
-    def cmd(lines, caption=nil)
+    def node_cmd(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = "◆list-white/◆\n"
       buf << %Q[●#{caption}\n] unless caption.nil?
       lines.each do |line|
@@ -252,7 +259,7 @@ module ReVIEW
         buf << @chapter.image(id).path << "\n"
       else
         lines.each do |line|
-          buf << line << "\n"
+          buf << line
         end
       end
       buf
@@ -267,7 +274,10 @@ module ReVIEW
       end
     end
 
-    def table(lines, id = nil, caption = nil)
+    def node_table(node)
+      id, caption = node.parse_args(:raw, :doc)
+      lines = node.raw_lines
+
       buf = ""
       rows = []
       sepidx = nil

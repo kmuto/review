@@ -23,7 +23,7 @@ module ReVIEW
     [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon].each {|e| Compiler.definline(e) }
     Compiler.defsingle(:dtp, 1)
 
-    Compiler.defblock(:insn, 0..1)
+    Compiler.defcodeblock(:insn, 1)
     Compiler.defblock(:memo, 0..1)
     Compiler.defblock(:tip, 0..1)
     Compiler.defblock(:info, 0..1)
@@ -41,14 +41,6 @@ module ReVIEW
     Compiler.defblock(:practice, 0)
     Compiler.defblock(:expert, 0)
     Compiler.defblock(:rawblock, 0)
-
-    def pre_paragraph
-      '<p>'
-    end
-
-    def post_paragraph
-      '</p>'
-    end
 
     def extname
       '.xml'
@@ -300,9 +292,10 @@ module ReVIEW
 
     def read(lines)
       if @book.config["deprecated-blocklines"].nil?
-        %Q[<lead>#{split_paragraph(lines).join}</lead>] + @lf
+        %Q[<lead>#{lines.join}</lead>] + @lf
       else
-        %Q[<p aid:pstyle="lead">#{lines.join}</p>] + @lf
+        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join()
+        %Q[<p aid:pstyle="lead">#{str}</p>] + @lf
       end
     end
 
@@ -371,13 +364,20 @@ module ReVIEW
       buf
     end
 
-    def emlist(lines, caption = nil)
+    def node_emlist(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       quotedlist lines, 'emlist', caption
     end
 
-    def emlistnum(lines, caption = nil)
+    def node_emlistnum(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       _lines = []
       lines.each_with_index do |line, i|
+        line.chomp! ## new parser don't remove LF in table (code block)
         _lines << detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
       end
       quotedlist _lines, 'emlistnum', caption
@@ -403,7 +403,10 @@ module ReVIEW
       buf
     end
 
-    def cmd(lines, caption = nil)
+    def node_cmd(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       quotedlist lines, 'cmd', caption
     end
 
@@ -432,10 +435,10 @@ module ReVIEW
 
     def quote(lines)
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        "<quote>#{blocked_lines.join("")}</quote>" + @lf
+        "<quote>#{lines.join("")}</quote>" + @lf
       else
-        "<quote>#{lines.join("\n")}</quote>" + @lf
+        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join("\n")
+        "<quote>#{str}</quote>" + @lf
       end
     end
 
@@ -511,7 +514,9 @@ module ReVIEW
       end
     end
 
-    def texequation(lines)
+    def node_texequation(node)
+      lines = node.raw_lines
+
       buf = ""
       @texblockequation += 1
       buf << %Q[<replace idref="texblock-#{@texblockequation}">] << @lf
@@ -532,6 +537,7 @@ module ReVIEW
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
+        line.chomp! ## new parser don't remove LF in table (code block)
         if /\A[\=\-]{12}/ =~ line
           sepidx ||= idx
           next
@@ -915,14 +921,15 @@ module ReVIEW
 
     def flushright(lines)
       if @book.config["deprecated-blocklines"].nil?
-        split_paragraph(lines).join.gsub("<p>", "<p align='right'>") + @lf
+        lines.join("").gsub("<p>", "<p align='right'>") + @lf
       else
-        "<p align='right'>#{lines.join("\n")}</p>" + @lf
+        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join("\n")
+        "<p align='right'>#{str}</p>" + @lf
       end
     end
 
     def centering(lines)
-      split_paragraph(lines).join.gsub("<p>", "<p align='center'>") + @lf
+      lines.join("").gsub("<p>", "<p align='center'>") + @lf
     end
 
     def captionblock(type, lines, caption, specialstyle = nil)
@@ -931,10 +938,10 @@ module ReVIEW
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
       buf << "<title aid:pstyle='#{style}'>#{(caption)}</title>" + @lf unless caption.nil?
       if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        buf << "#{blocked_lines.join}</#{type}>" << @lf
+        buf << "#{lines.join}</#{type}>" << @lf
       else
-        buf << "#{lines.join("\n")}</#{type}>" << @lf
+        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join("\n")
+        buf << "#{str}</#{type}>" << @lf
       end
       buf
     end
@@ -1034,6 +1041,7 @@ module ReVIEW
       end
       no = 1
       lines.each do |line|
+        line.chomp!
         unless @book.config["listinfo"].nil?
           buf << %Q[<listinfo line="#{no}"]
           buf << %Q[ begin="1"] if no == 1
@@ -1049,11 +1057,17 @@ module ReVIEW
       buf
     end
 
-    def insn(lines, caption = nil)
+    def node_insn(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       syntaxblock("insn", lines, caption)
     end
 
-    def box(lines, caption = nil)
+    def node_box(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       syntaxblock("box", lines, caption)
     end
 
@@ -1216,7 +1230,7 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      split_paragraph(lines).join("")
+      lines.join("")
     end
 
     def inline_bib(id)

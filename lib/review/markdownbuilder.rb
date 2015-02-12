@@ -52,7 +52,7 @@ module ReVIEW
     def quote(lines)
       buf = ""
       buf << blank
-      buf << split_paragraph(lines).map{|line| "> #{line}"}.join("\n> \n") << "\n"
+      buf << lines.map{|line| line.chomp!;line.chomp!;"> #{line}"}.join("\n") << "\n"
       blank_reset
       buf << "\n"
       buf
@@ -129,7 +129,10 @@ module ReVIEW
       buf
     end
 
-    def emlist(lines, caption = nil)
+    def node_emlist(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = ""
       buf << blank
       if caption
@@ -223,7 +226,10 @@ module ReVIEW
       "jpg"
     end
 
-    def cmd(lines)
+    def node_cmd(node)
+      caption, = node.parse_args(:doc)
+      lines = node.raw_lines
+
       buf = ""
       buf << "```" << "\n"
       blank_reset
@@ -234,7 +240,10 @@ module ReVIEW
       buf
     end
 
-    def table(lines, id = nil, caption = nil)
+    def node_table(node)
+      id, caption = node.parse_args(:raw, :doc)
+      lines = node.raw_lines
+
       buf = ""
       rows = []
       sepidx = nil

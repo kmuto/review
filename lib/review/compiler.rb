@@ -484,11 +484,11 @@ require 'review/node'
       end
 
       def block_allowed?
-        @type == :block or @type == :code_block or @type == :optional
+        @type == :block or @type == :code_block or @type == :optional or @type == :optional_code_block
       end
 
       def code_block?
-        @type == :code_block
+        @type == :code_block or @type == :optional_code_block
       end
     end
 
@@ -499,7 +499,7 @@ require 'review/node'
     end
 
     def self.defcodeblock(name, argc, optional = false, esc = nil, &block)
-      defsyntax(name, :code_block, argc, esc, &block)
+      defsyntax(name, (optional ? :optional_code_block : :code_block), argc, esc, &block)
     end
 
     def self.defsingle(name, argc, &block)
@@ -539,7 +539,6 @@ require 'review/node'
     defblock :read, 0
     defblock :lead, 0
     defblock :quote, 0
-    defblock :image, 2..3, true, [:raw,:doc,:raw]
     defblock :bibpaper, 2..3, true
     defblock :doorquote, 1
     defblock :talk, 0
@@ -553,6 +552,8 @@ require 'review/node'
     defcodeblock :emlistnum, 0..1
     defcodeblock :texequation, 0
     defcodeblock :table, 0..2
+    defcodeblock :image, 2..3, true, [:raw,:doc,:raw]
+    defcodeblock :box, 0..1
 
     defblock :address, 0
     defblock :blockquote, 0
@@ -560,7 +561,6 @@ require 'review/node'
     defblock :flushright, 0
     defblock :centering, 0
     defblock :note, 0..1
-    defblock :box, 0..1
     defblock :comment, 0..1, true
 
     defsingle :footnote, 2
@@ -1495,7 +1495,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL {raw(self, b, r1)} | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL {code_block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL {block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})
+  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL {raw(self, b, r1)} | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL {code_block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL {block_element(self, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})
   def _BlockElement
 
     _save = self.pos
@@ -1585,7 +1585,7 @@ require 'review/node'
           break
         end
         _save7 = self.pos
-        _tmp = begin;  syntax = syntax_descriptor(symbol); syntax.code_block? ; end
+        _tmp = begin;  syntax = syntax_descriptor(symbol); syntax && syntax.code_block? ; end
         self.pos = _save7
         unless _tmp
           self.pos = _save5
@@ -4006,7 +4006,7 @@ require 'review/node'
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
   Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c.flatten)}")
   Rules[:_ParagraphSub] = rule_info("ParagraphSub", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
-  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax.code_block? } BracketArg*:args \"{\" Space* Newline CodeBlockElementContents?:contents \"//}\" Space* EOL {code_block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args \"{\" Space* Newline CodeBlockElementContents?:contents \"//}\" Space* EOL {code_block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
   Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(< AlphanumericAscii+ >:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })")
   Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")

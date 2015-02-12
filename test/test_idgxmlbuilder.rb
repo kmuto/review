@@ -197,7 +197,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @book.config["deprecated-blocklines"] = true
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     @book.config["deprecated-blocklines"] = nil
-    assert_equal %Q|<term>test1\ntest1.5\n\ntest<i>2</i></term>|, actual
+    assert_equal %Q|<term>test1test1.5\n\ntest<i>2</i></term>|, actual
   end
 
   def test_notice

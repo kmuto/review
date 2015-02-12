@@ -604,7 +604,9 @@ EOT
       buf
     end
 
-    def texequation(lines)
+    def node_texequation(node)
+      lines = node.raw_lines
+
       buf << %Q[<div class="equation">\n]
       if @book.config["mathml"]
         require 'math_ml'

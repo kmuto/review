@@ -30,6 +30,7 @@ class TextUtilsTest < Test::Unit::TestCase
     assert_equal "    abc def", detabed
   end
 
+=begin
   def test_split_paragraph_empty_nil
     ret = @tu_nil.split_paragraph([])
     assert_equal ret, [""]
@@ -65,4 +66,6 @@ class TextUtilsTest < Test::Unit::TestCase
     ret = @tu_nil.split_paragraph(["abc","","","def","ghi"])
     assert_equal ["abc","defghi"], ret
   end
+=end
+
 end
