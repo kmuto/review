@@ -364,17 +364,11 @@ module ReVIEW
       buf
     end
 
-    def node_emlist(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlist(lines, caption = nil, lang = nil)
       quotedlist lines, 'emlist', caption
     end
 
-    def node_emlistnum(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlistnum(lines, caption = nil, lang = nil)
       _lines = []
       lines.each_with_index do |line, i|
         line.chomp! ## new parser don't remove LF in table (code block)
@@ -403,10 +397,7 @@ module ReVIEW
       buf
     end
 
-    def node_cmd(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def cmd(lines, caption = nil)
       quotedlist lines, 'cmd', caption
     end
 
@@ -514,9 +505,7 @@ module ReVIEW
       end
     end
 
-    def node_texequation(node)
-      lines = node.raw_lines
-
+    def texequation(lines)
       buf = ""
       @texblockequation += 1
       buf << %Q[<replace idref="texblock-#{@texblockequation}">] << @lf
@@ -1057,17 +1046,11 @@ module ReVIEW
       buf
     end
 
-    def node_insn(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def insn(lines, caption = nil)
       syntaxblock("insn", lines, caption)
     end
 
-    def node_box(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def box(lines, caption = nil)
       syntaxblock("box", lines, caption)
     end
 
@@ -1084,22 +1067,6 @@ module ReVIEW
       buf << "</img>" << @lf
       buf
     end
-
-    def node_indepimage(node)
-      id, caption, metric = node.parse_args(:raw, :doc, :raw)
-      buf = ""
-      metrics = parse_metric("idgxml", metric)
-      buf << "<img>" << @lf
-      begin
-        buf << %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}"#{metrics} />] << @lf
-      rescue
-        warn %Q[no such image: #{id}]
-      end
-      buf << %Q[<caption>#{caption}</caption>] + @lf if caption.present?
-      buf << "</img>" << @lf
-      buf
-    end
-
 
     alias_method :numberlessimage, :indepimage
 

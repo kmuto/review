@@ -227,10 +227,7 @@ module ReVIEW
     end
     private :highlight_listings?
 
-    def node_emlist(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlist(lines, caption = nil, lang = nil)
       buf = "\n"
       if highlight_listings?
         buf << common_code_block_lst(lines, 'reviewemlistlst', 'title', caption, lang)
@@ -242,10 +239,7 @@ module ReVIEW
       buf
     end
 
-    def node_emlistnum(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlistnum(lines, caption = nil, lang = nil)
       buf = "\n"
       if highlight_listings?
         buf << common_code_block_lst(lines, 'reviewemlistnumlst', 'title', caption, lang)
@@ -258,10 +252,7 @@ module ReVIEW
     end
 
     ## override Builder#list
-    def node_list(node)
-      id, caption, lang = node.parse_args(:raw, :doc, :raw)
-      lines = node.raw_lines
-
+    def list(lines, id, caption = nil, lang = nil)
       buf = ""
       if highlight_listings?
         buf << common_code_block_lst(lines, 'reviewlistlst', 'caption', caption, lang)
@@ -280,10 +271,7 @@ module ReVIEW
 
 
     ## override Builder#listnum
-    def node_listnum(node)
-      id, caption, lang = node.parse_args(:raw, :doc, :raw)
-      lines = node.raw_lines
-
+    def listnum(lines, id, caption = nil, lang = nil)
       buf = ""
       if highlight_listings?
         buf << common_code_block_lst(lines, 'reviewlistnumlst', 'caption', caption, lang)
@@ -300,11 +288,7 @@ module ReVIEW
       buf
     end
 
-    def node_cmd(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
-
+    def cmd(lines, caption = nil, lang = nil)
       buf = ""
       if highlight_listings?
         buf << common_code_block_lst(lines, 'reviewcmdlst', 'title', caption, lang)
@@ -347,10 +331,7 @@ module ReVIEW
       buf
     end
 
-    def node_source(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def source(lines, caption = nil)
       buf = "\n"
       buf << '\begin{reviewlist}' << "\n"
       buf << source_header(caption)
@@ -469,10 +450,7 @@ module ReVIEW
 
     alias_method :numberlessimage, :indepimage
 
-    def node_table(node)
-      id, caption = node.parse_args(:raw, :doc)
-      lines = node.raw_lines
-
+    def table(lines, id = nil, caption = nil)
       buf = ""
       rows = []
       sepidx = nil
@@ -592,9 +570,7 @@ module ReVIEW
       latex_block 'flushright', lines
     end
 
-    def node_texequation(node)
-      lines = node.raw_lines
-
+    def texequation(lines)
       buf = "\n"
       buf << macro('begin','equation*') << "\n"
       lines.each do |line|

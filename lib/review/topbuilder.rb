@@ -267,17 +267,11 @@ module ReVIEW
       buf
     end
 
-    def node_emlist(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlist(lines, caption = nil, lang = nil)
       base_block "emlist", lines, caption
     end
 
-    def node_emlistnum(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlistnum(lines, caption = nil, lang = nil)
       buf = ""
       buf << "◆→開始:#{@titles["emlist"]}←◆\n"
       buf << "■#{caption}\n" unless caption.nil?
@@ -300,10 +294,7 @@ module ReVIEW
       buf
     end
 
-    def node_cmd(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def cmd(lines, caption = nil)
       base_block "cmd", lines, caption
     end
 
@@ -351,9 +342,7 @@ module ReVIEW
       buf
     end
 
-    def node_texequation(node)
-      lines = node.raw_lines
-
+    def texequation(lines)
       buf = ""
       buf << "◆→開始:#{@titles["texequation"]}←◆\n"
       buf << "#{lines.join("\n")}\n"

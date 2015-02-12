@@ -427,10 +427,7 @@ EOT
 
     alias_method :lead, :read
 
-    def node_list(node)
-      id, caption, lang = node.parse_args(:raw, :doc, :raw)
-      lines = node.raw_lines
-
+    def list(lines, id, caption, lang = nil)
       buf = %Q[<div class="caption-code">\n]
       begin
         buf << list_header(id, caption, lang)
@@ -460,10 +457,7 @@ EOT
       buf
     end
 
-    def node_source(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def source(lines, caption = nil)
       buf = %Q[<div class="source-code">\n]
       buf << source_header(caption)
       buf << source_body(caption, lines)
@@ -487,10 +481,7 @@ EOT
       buf
     end
 
-    def node_listnum(node)
-      id, caption, lang = node.parse_args(:raw, :doc, :raw)
-      lines = node.raw_lines
-
+    def listnum(lines, id, caption, lang = nil)
       buf = %Q[<div class="code">\n]
       begin
         buf << list_header(id, caption, lang)
@@ -512,10 +503,7 @@ EOT
       buf
     end
 
-    def node_emlist(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlist(lines, caption = nil, lang = nil)
       buf = %Q[<div class="emlist-code">\n]
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
@@ -529,10 +517,7 @@ EOT
       buf
     end
 
-    def node_emlistnum(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlistnum(lines, caption = nil, lang = nil)
       buf = %Q[<div class="emlistnum-code">\n]
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
@@ -547,10 +532,7 @@ EOT
       buf
     end
 
-    def node_cmd(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def cmd(lines, caption = nil)
       buf = %Q[<div class="cmd-code">\n]
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
@@ -606,9 +588,7 @@ EOT
       buf
     end
 
-    def node_texequation(node)
-      lines = node.raw_lines
-
+    def texequation(lines)
       buf << %Q[<div class="equation">\n]
       if @book.config["mathml"]
         require 'math_ml'
@@ -670,10 +650,7 @@ EOT
       buf
     end
 
-    def node_table(node)
-      id, caption = node.parse_args(:raw, :doc)
-      lines = node.raw_lines
-
+    def table(lines, id = nil, caption = nil)
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|

@@ -86,10 +86,7 @@ module ReVIEW
     end
     private :headline_prefix
 
-    def node_list(node)
-      id, caption, lang = node.parse_args(:raw, :doc, :raw)
-      lines = node.raw_lines
-
+    def list(lines, id, caption = nil, lang = nil)
       buf = ""
       begin
         buf << list_header(id, caption, lang)
@@ -100,10 +97,7 @@ module ReVIEW
       buf
     end
 
-    def node_listnum(node)
-      id, caption, lang = node.parse_args(:raw, :doc, :raw)
-      lines = node.raw_lines
-
+    def listnum(lines, id, caption = nil, lang = nil)
       buf = ""
       begin
         buf << list_header(id, caption, lang)
@@ -114,10 +108,7 @@ module ReVIEW
       buf
     end
 
-    def node_source(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def source(lines, caption = nil)
       buf = ""
       buf << source_header(caption)
       buf << source_body(lines)

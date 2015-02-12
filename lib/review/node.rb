@@ -100,7 +100,7 @@ module ReVIEW
       # content_str = super
       args = @args.map(&:to_doc)
       if @content
-        content_lines = @content.map(&:to_doc)
+        content_lines = raw_lines
       else
         content_lines = nil
       end

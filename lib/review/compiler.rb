@@ -502,8 +502,8 @@ require 'review/node'
       defsyntax(name, (optional ? :optional_code_block : :code_block), argc, esc, &block)
     end
 
-    def self.defsingle(name, argc, &block)
-      defsyntax name, :line, argc, &block
+    def self.defsingle(name, argc, esc = nil, &block)
+      defsyntax name, :line, argc, esc, &block
     end
 
     def self.defsyntax(name, type, argc, esc = nil, &block)
@@ -539,21 +539,21 @@ require 'review/node'
     defblock :read, 0
     defblock :lead, 0
     defblock :quote, 0
-    defblock :bibpaper, 2..3, true
-    defblock :doorquote, 1
+    defblock :bibpaper, 2..3, true, [:raw, :doc, :doc]
+    defblock :doorquote, 1, false, [:doc]
     defblock :talk, 0
-    defblock :graph, 1..3
+    defblock :graph, 1..3, false, [:raw, :raw, :doc]
 
-    defcodeblock :emlist, 0..2
-    defcodeblock :cmd, 0..1
-    defcodeblock :source, 0..1
-    defcodeblock :list, 2..3, nil
-    defcodeblock :listnum, 2..3
-    defcodeblock :emlistnum, 0..2
-    defcodeblock :texequation, 0
-    defcodeblock :table, 0..2
+    defcodeblock :emlist, 0..2, false, [:doc, :raw]
+    defcodeblock :cmd, 0..1, false, [:doc]
+    defcodeblock :source, 0..1, false, [:doc]
+    defcodeblock :list, 2..3, false, [:raw, :doc, :raw]
+    defcodeblock :listnum, 2..3, false, [:raw, :doc, :raw]
+    defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
+    defcodeblock :texequation, 0, false
+    defcodeblock :table, 0..2, [:raw, :doc]
     defcodeblock :image, 2..3, true, [:raw,:doc,:raw]
-    defcodeblock :box, 0..1
+    defcodeblock :box, 0..1, false, [:doc]
 
     defblock :address, 0
     defblock :blockquote, 0
@@ -563,19 +563,19 @@ require 'review/node'
     defblock :note, 0..1
     defblock :comment, 0..1, true
 
-    defsingle :footnote, 2
+    defsingle :footnote, 2, [:raw, :doc]
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
-    defsingle :indepimage, 1..3
-    defsingle :numberlessimage, 1..3
+    defsingle :indepimage, 1..3, [:raw, :doc, :raw]
+    defsingle :numberlessimage, 1..3, [:raw, :doc, :raw]
     defsingle :hr, 0
     defsingle :parasep, 0
-    defsingle :label, 1
-    defsingle :raw, 1
-    defsingle :tsize, 1
-    defsingle :include, 1
-    defsingle :olnum, 1
+    defsingle :label, 1, [:raw]
+    defsingle :raw, 1, [:raw]
+    defsingle :tsize, 1, [:raw]
+    defsingle :include, 1, [:raw]
+    defsingle :olnum, 1, [:raw]
 
     definline :chapref
     definline :chap

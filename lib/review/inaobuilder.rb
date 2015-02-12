@@ -201,10 +201,7 @@ module ReVIEW
       buf
     end
 
-    def node_emlist(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def emlist(lines, caption = nil)
       buf = ""
       buf << "◆list/◆\n"
       buf << %Q[●#{caption}\n] unless caption.nil?
@@ -226,10 +223,7 @@ module ReVIEW
     end
 
     # whiteリスト代用
-    def node_cmd(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def cmd(lines, caption = nil)
       buf = "◆list-white/◆\n"
       buf << %Q[●#{caption}\n] unless caption.nil?
       lines.each do |line|
@@ -259,7 +253,7 @@ module ReVIEW
         buf << @chapter.image(id).path << "\n"
       else
         lines.each do |line|
-          buf << line
+          buf << line + "\n"
         end
       end
       buf
@@ -274,10 +268,7 @@ module ReVIEW
       end
     end
 
-    def node_table(node)
-      id, caption = node.parse_args(:raw, :doc)
-      lines = node.raw_lines
-
+    def table(lines, id = nil, caption = nil)
       buf = ""
       rows = []
       sepidx = nil

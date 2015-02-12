@@ -130,10 +130,7 @@ module ReVIEW
       buf
     end
 
-    def node_emlist(node)
-      caption, lang = node.parse_args(:doc, :raw)
-      lines = node.raw_lines
-
+    def emlist(lines, caption = nil, lang = nil)
       buf = ""
       buf << blank
       if caption
@@ -228,10 +225,7 @@ module ReVIEW
       "jpg"
     end
 
-    def node_cmd(node)
-      caption, = node.parse_args(:doc)
-      lines = node.raw_lines
-
+    def cmd(lines, caption = nil)
       buf = ""
       buf << "```shell-session" << "\n"
       blank_reset
@@ -242,10 +236,7 @@ module ReVIEW
       buf
     end
 
-    def node_table(node)
-      id, caption = node.parse_args(:raw, :doc)
-      lines = node.raw_lines
-
+    def table(lines, id = nil, caption = nil)
       buf = ""
       rows = []
       sepidx = nil
