@@ -93,6 +93,10 @@ module ReVIEW
       end
     end
 
+    def raw_lines
+      self.to_raw.split(/\n/)
+    end
+
   end
 
   class InlineElementNode < Node
@@ -127,6 +131,13 @@ module ReVIEW
     def to_doc
       content_str = super
       @compiler.compile_text(content_str)
+    end
+  end
+
+  class NewLineNode < Node
+
+    def to_doc
+      ""
     end
   end
 
