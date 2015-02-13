@@ -506,15 +506,15 @@ Block = BlankLine*:c { c }
 
 BlankLine = Newline
 
-SinglelineComment = ("#@" < NonNewLine+ > EOL) ~singleline_comment(self, text)
+SinglelineComment = ("#@" < NonNewline+ > EOL) ~singleline_comment(self, text)
 
 Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption EOL  ~headline(self, level, cmd, label, caption)
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
 
-Paragraph = ParagraphSub+:c  ~paragraph(self, c.flatten)
+Paragraph = ParagraphLine+:c  ~paragraph(self, c.flatten)
 
-ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  SinglelineContent:c Newline { c }
+ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  SinglelineContent:c Newline { c }
 
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
                  ~raw(self, b, r1)
@@ -535,17 +535,17 @@ RawBlockBuilderSelectSub = ( < AlphanumericAscii+ >:c1 Space* "," Space* RawBloc
 
 RawBlockElementArg = !"]" ( "\\]" { "]" }
                           | "\\n" { "\n" }
-                          | < NonNewLine >  { text }
+                          | < NonNewline >  { text }
                           )
 
-BracketArg = "["  BracketArgContentInline*:content  "]" ~bracket_arg(self, content)
+BracketArg = "["  BracketArgInline*:content  "]" ~bracket_arg(self, content)
 
 ## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
-BracketArgContentInline = ( InlineElement:c { c }
-                          |  "\\]" ~text(self, "]")
-                          | "\\\\" ~text(self, "\\")
-                          | < /[^\r\n\]]/ >  ~text(self, text)
-                          )
+BracketArgInline = ( InlineElement:c { c }
+                   |  "\\]" ~text(self, "]")
+                   | "\\\\" ~text(self, "\\")
+                   | < /[^\r\n\]]/ >  ~text(self, text)
+                   )
 
 BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
 
@@ -563,8 +563,8 @@ BlockElementContent = ( SinglelineComment:c { c }
                       )
 
 ## it's like Paragraph, but it's in a block, so do not allow '//}\n'
-BlockElementParagraph = BlockElementParagraphSub+:c  ~paragraph(self, c.flatten)
-BlockElementParagraphSub = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
+BlockElementParagraph = BlockElementParagraphLine+:c  ~paragraph(self, c.flatten)
+BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
 
 ## In CodeBlockElementContents, newline should no be ingored. So we use TextNode instead of NewLineNode.
 CodeBlockElementContents = CodeBlockElementContent+:c { c }
@@ -598,9 +598,12 @@ DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
 
 SinglelineContent = Inline+:c ~singleline_content(self,c)
 
+
+# Inline Element and Non Inline Element
+
 Inline = ( InlineElement | NonInlineElement)
 
-NonInlineElement = !InlineElement < NonNewLine > ~text(self, text)
+NonInlineElement = !InlineElement < NonNewline > ~text(self, text)
 
 InlineElement =  ( RawInlineElement:c { c }
                  | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, symbol,contents)
@@ -635,7 +638,7 @@ InlineElementContentText =  ( "\\}" ~text(self, "}")
                             | !InlineElement < /[^\r\n\\},]/> ~text(self,text)
                             )
 
-NonNewLine = /[^\r\n]/
+NonNewline = /[^\r\n]/
 
 Digits = Digit+:c { c }
 

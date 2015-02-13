@@ -1237,7 +1237,7 @@ require 'review/node'
     return _tmp
   end
 
-  # SinglelineComment = "#@" < NonNewLine+ > EOL {singleline_comment(self, text)}
+  # SinglelineComment = "#@" < NonNewline+ > EOL {singleline_comment(self, text)}
   def _SinglelineComment
 
     _save = self.pos
@@ -1249,10 +1249,10 @@ require 'review/node'
       end
       _text_start = self.pos
       _save1 = self.pos
-      _tmp = apply(:_NonNewLine)
+      _tmp = apply(:_NonNewline)
       if _tmp
         while true
-          _tmp = apply(:_NonNewLine)
+          _tmp = apply(:_NonNewline)
           break unless _tmp
         end
         _tmp = true
@@ -1382,18 +1382,18 @@ require 'review/node'
     return _tmp
   end
 
-  # Paragraph = ParagraphSub+:c {paragraph(self, c.flatten)}
+  # Paragraph = ParagraphLine+:c {paragraph(self, c.flatten)}
   def _Paragraph
 
     _save = self.pos
     while true # sequence
       _save1 = self.pos
       _ary = []
-      _tmp = apply(:_ParagraphSub)
+      _tmp = apply(:_ParagraphLine)
       if _tmp
         _ary << @result
         while true
-          _tmp = apply(:_ParagraphSub)
+          _tmp = apply(:_ParagraphLine)
           _ary << @result if _tmp
           break unless _tmp
         end
@@ -1419,8 +1419,8 @@ require 'review/node'
     return _tmp
   end
 
-  # ParagraphSub = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
-  def _ParagraphSub
+  # ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+  def _ParagraphLine
 
     _save = self.pos
     while true # sequence
@@ -1491,7 +1491,7 @@ require 'review/node'
       break
     end # end sequence
 
-    set_failed_rule :_ParagraphSub unless _tmp
+    set_failed_rule :_ParagraphLine unless _tmp
     return _tmp
   end
 
@@ -1983,7 +1983,7 @@ require 'review/node'
     return _tmp
   end
 
-  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewLine > { text })
+  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewline > { text })
   def _RawBlockElementArg
 
     _save = self.pos
@@ -2039,7 +2039,7 @@ require 'review/node'
         _save5 = self.pos
         while true # sequence
           _text_start = self.pos
-          _tmp = apply(:_NonNewLine)
+          _tmp = apply(:_NonNewline)
           if _tmp
             text = get_text(_text_start)
           end
@@ -2070,7 +2070,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BracketArg = "[" BracketArgContentInline*:content "]" {bracket_arg(self, content)}
+  # BracketArg = "[" BracketArgInline*:content "]" {bracket_arg(self, content)}
   def _BracketArg
 
     _save = self.pos
@@ -2082,7 +2082,7 @@ require 'review/node'
       end
       _ary = []
       while true
-        _tmp = apply(:_BracketArgContentInline)
+        _tmp = apply(:_BracketArgInline)
         _ary << @result if _tmp
         break unless _tmp
       end
@@ -2110,8 +2110,8 @@ require 'review/node'
     return _tmp
   end
 
-  # BracketArgContentInline = (InlineElement:c { c } | "\\]" {text(self, "]")} | "\\\\" {text(self, "\\")} | < /[^\r\n\]]/ > {text(self, text)})
-  def _BracketArgContentInline
+  # BracketArgInline = (InlineElement:c { c } | "\\]" {text(self, "]")} | "\\\\" {text(self, "\\")} | < /[^\r\n\]]/ > {text(self, text)})
+  def _BracketArgInline
 
     _save = self.pos
     while true # choice
@@ -2195,7 +2195,7 @@ require 'review/node'
       break
     end # end choice
 
-    set_failed_rule :_BracketArgContentInline unless _tmp
+    set_failed_rule :_BracketArgInline unless _tmp
     return _tmp
   end
 
@@ -2368,18 +2368,18 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementParagraph = BlockElementParagraphSub+:c {paragraph(self, c.flatten)}
+  # BlockElementParagraph = BlockElementParagraphLine+:c {paragraph(self, c.flatten)}
   def _BlockElementParagraph
 
     _save = self.pos
     while true # sequence
       _save1 = self.pos
       _ary = []
-      _tmp = apply(:_BlockElementParagraphSub)
+      _tmp = apply(:_BlockElementParagraphLine)
       if _tmp
         _ary << @result
         while true
-          _tmp = apply(:_BlockElementParagraphSub)
+          _tmp = apply(:_BlockElementParagraphLine)
           _ary << @result if _tmp
           break unless _tmp
         end
@@ -2405,8 +2405,8 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementParagraphSub = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
-  def _BlockElementParagraphSub
+  # BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
+  def _BlockElementParagraphLine
 
     _save = self.pos
     while true # sequence
@@ -2486,7 +2486,7 @@ require 'review/node'
       break
     end # end sequence
 
-    set_failed_rule :_BlockElementParagraphSub unless _tmp
+    set_failed_rule :_BlockElementParagraphLine unless _tmp
     return _tmp
   end
 
@@ -3187,7 +3187,7 @@ require 'review/node'
     return _tmp
   end
 
-  # NonInlineElement = !InlineElement < NonNewLine > {text(self, text)}
+  # NonInlineElement = !InlineElement < NonNewline > {text(self, text)}
   def _NonInlineElement
 
     _save = self.pos
@@ -3201,7 +3201,7 @@ require 'review/node'
         break
       end
       _text_start = self.pos
-      _tmp = apply(:_NonNewLine)
+      _tmp = apply(:_NonNewline)
       if _tmp
         text = get_text(_text_start)
       end
@@ -3808,10 +3808,10 @@ require 'review/node'
     return _tmp
   end
 
-  # NonNewLine = /[^\r\n]/
-  def _NonNewLine
+  # NonNewline = /[^\r\n]/
+  def _NonNewline
     _tmp = scan(/\A(?-mix:[^\r\n])/)
-    set_failed_rule :_NonNewLine unless _tmp
+    set_failed_rule :_NonNewline unless _tmp
     return _tmp
   end
 
@@ -4001,22 +4001,22 @@ require 'review/node'
   Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine*:c { c } (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
-  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewLine+ > EOL {singleline_comment(self, text)}")
+  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewline+ > EOL {singleline_comment(self, text)}")
   Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, level, cmd, label, caption)}")
   Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
-  Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphSub+:c {paragraph(self, c.flatten)}")
-  Rules[:_ParagraphSub] = rule_info("ParagraphSub", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
+  Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphLine+:c {paragraph(self, c.flatten)}")
+  Rules[:_ParagraphLine] = rule_info("ParagraphLine", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
   Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, r1)} | !\"//raw\" \"//\" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args \"{\" Space* Newline CodeBlockElementContents?:contents \"//}\" Space* EOL {code_block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents?:contents \"//}\" Space* EOL {block_element(self, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, symbol, args, nil)})")
   Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
   Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(< AlphanumericAscii+ >:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })")
-  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewLine > { text })")
-  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgContentInline*:content \"]\" {bracket_arg(self, content)}")
-  Rules[:_BracketArgContentInline] = rule_info("BracketArgContentInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
+  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewline > { text })")
+  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgInline*:content \"]\" {bracket_arg(self, content)}")
+  Rules[:_BracketArgInline] = rule_info("BracketArgInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })")
-  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphSub+:c {paragraph(self, c.flatten)}")
-  Rules[:_BlockElementParagraphSub] = rule_info("BlockElementParagraphSub", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }")
+  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphLine+:c {paragraph(self, c.flatten)}")
+  Rules[:_BlockElementParagraphLine] = rule_info("BlockElementParagraphLine", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }")
   Rules[:_CodeBlockElementContents] = rule_info("CodeBlockElementContents", "CodeBlockElementContent+:c { c }")
   Rules[:_CodeBlockElementContent] = rule_info("CodeBlockElementContent", "(SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, \"\\n\") } | !\"//}\" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, \"\\n\")] })")
   Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
@@ -4029,7 +4029,7 @@ require 'review/node'
   Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c Newline:n { c }")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
   Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
-  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewLine > {text(self, text)}")
+  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewline > {text(self, text)}")
   Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, symbol,contents)})")
   Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawBlockBuilderSelect?:builders RawInlineElementContent+:c \"}\" {raw(self, builders,c)}")
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
@@ -4039,7 +4039,7 @@ require 'review/node'
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "InlineElementContentSub+:d { d }")
   Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" {text(self, \"}\")} | \"\\\\,\" {text(self, \",\")} | \"\\\\\\\\\" {text(self, \"\\\\\" )} | \"\\\\\" {text(self, \"\\\\\" )} | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self,text)})")
-  Rules[:_NonNewLine] = rule_info("NonNewLine", "/[^\\r\\n]/")
+  Rules[:_NonNewline] = rule_info("NonNewline", "/[^\\r\\n]/")
   Rules[:_Digits] = rule_info("Digits", "Digit+:c { c }")
   Rules[:_Space] = rule_info("Space", "/[ \\t]/")
   Rules[:_EOL] = rule_info("EOL", "(Newline | EOF)")
