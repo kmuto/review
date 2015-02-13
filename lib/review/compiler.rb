@@ -2272,7 +2272,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })
+  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Dlist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })
   def _BlockElementContent
 
     _save = self.pos
@@ -2316,6 +2316,10 @@ require 'review/node'
       break if _tmp
       self.pos = _save
       _tmp = apply(:_Ulist)
+      c = @result
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_Dlist)
       c = @result
       break if _tmp
       self.pos = _save
@@ -4014,7 +4018,7 @@ require 'review/node'
   Rules[:_BracketArgInline] = rule_info("BracketArgInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, \"]\")} | \"\\\\\\\\\" {text(self, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, text)})")
   Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
-  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })")
+  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Dlist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphLine+:c {paragraph(self, c.flatten)}")
   Rules[:_BlockElementParagraphLine] = rule_info("BlockElementParagraphLine", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }")
   Rules[:_CodeBlockElementContents] = rule_info("CodeBlockElementContents", "CodeBlockElementContent+:c { c }")

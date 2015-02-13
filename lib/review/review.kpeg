@@ -490,10 +490,10 @@ root = Start
 
 Start = &. Document:c { @strategy.ast = c }
 
+## a Document is a set of Blocks
 Document = Block*:c ~document(self, c)
 
-## TODO InlineElement の後に Ulist / Olist / Dlist が来ると先頭行じゃなくてマッチできてしまうかも
-## using &. to detect EOF
+## ignore leading blank lines
 Block = BlankLine*:c { c }
         ( SinglelineComment:c
         | Headline:c
@@ -516,6 +516,7 @@ Paragraph = ParagraphLine+:c  ~paragraph(self, c.flatten)
 
 ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  SinglelineContent:c Newline { c }
 
+# There are 3 types of Block Element: raw Block, Code Block, and Normal Block
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
                  ~raw(self, b, r1)
                | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL
@@ -549,14 +550,15 @@ BracketArgInline = ( InlineElement:c { c }
 
 BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
 
-## contents との差は paragraph を切るか切らないか
+## Standard BlockElement has nested blocks. Texts in content of block are parsed as Paragraph.
 BlockElementContents = BlockElementContent+:c { c }
 
-## 各要素は Newline で終わらなければならない
-### SinglelineContentではないような気がするけど改行は落としてあるのでとりあえずこれで
+### Headline is prohibited.
+### Note: do not allow "//}" at front of Paragraph.
 BlockElementContent = ( SinglelineComment:c { c }
                       | BlockElement:c { c }
                       | Ulist:c
+                      | Dlist:c
                       | Olist:c
                       | BlankLine:c { c }
                       | BlockElementParagraph:c { c }
