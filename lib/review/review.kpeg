@@ -583,10 +583,11 @@ CodeBlockElementContent = ( SinglelineComment:c { c }
                           | !"//}" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, "\n")] }
                           )
 
+## Ulist and Olist
+
 Indent = " "
 Bullet = "*"
 Enumerator = < /[0-9]+/ > { num = text } "." { num.to_i }
-
 
 Ulist = Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item
         { if b.size > 1 then item.level = b.size end }
@@ -609,6 +610,11 @@ UlistItemMore = Indent+:s Bullet Bullet+:b Space+ &{ check_indent(s) } UlistItem
 UlistItem = Indent+:s Bullet      Space+ &{ check_indent(s) } UlistItemBlock:item { item }
 OlistItem = Indent+:s Enumerator:e Space+ &{ check_indent(s) } OlistItemBlock:item { item.num = e; item }
 
+## NestedList is markdown-like indented syntax.
+## You can write nested Ulist and Olist with this syntax.
+
+NestedList = (NestedUlist | NestedOlist)
+
 NestedUlist = Indent+:s Bullet     Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item
         (UlistItem | NestedList)*:items &{ s == @list_stack.pop }
         ~ulist(self, items.unshift(item))
@@ -616,8 +622,6 @@ NestedOlist = Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_
         { item.num = e }
         (OlistItem | NestedList)*:items &{ s == @list_stack.pop }
         ~olist(self, items.unshift(item))
-
-NestedList = (NestedUlist | NestedOlist)
 
 
 
