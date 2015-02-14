@@ -813,6 +813,14 @@ require 'review/node'
       @strategy.error msg
     end
 
+    def check_indent(s)
+      s.size >= @list_stack.last.size
+    end
+
+    def check_nested_indent(s)
+      s.size >= @list_stack.last.size + 2
+    end
+
 
 
 
@@ -1096,7 +1104,7 @@ require 'review/node'
     return _tmp
   end
 
-  # Start = &. Document:c { @strategy.ast = c }
+  # Start = &. { @list_stack = Array.new } Document:c { @strategy.ast = c }
   def _Start
 
     _save = self.pos
@@ -1104,6 +1112,12 @@ require 'review/node'
       _save1 = self.pos
       _tmp = get_byte
       self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack = Array.new ; end
+      _tmp = true
       unless _tmp
         self.pos = _save
         break
@@ -2614,73 +2628,170 @@ require 'review/node'
     return _tmp
   end
 
-  # Ulist = &. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}
-  def _Ulist
+  # Indent = " "
+  def _Indent
+    _tmp = match_string(" ")
+    set_failed_rule :_Indent unless _tmp
+    return _tmp
+  end
+
+  # Bullet = "*"
+  def _Bullet
+    _tmp = match_string("*")
+    set_failed_rule :_Bullet unless _tmp
+    return _tmp
+  end
+
+  # Enumerator = < /[0-9]+/ > { num = text } "." { num.to_i }
+  def _Enumerator
 
     _save = self.pos
     while true # sequence
-      _save1 = self.pos
-      _tmp = get_byte
-      self.pos = _save1
+      _text_start = self.pos
+      _tmp = scan(/\A(?-mix:[0-9]+)/)
+      if _tmp
+        text = get_text(_text_start)
+      end
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin;  @ulist_elem=[] ; end
+      @result = begin;  num = text ; end
       _tmp = true
       unless _tmp
         self.pos = _save
         break
       end
-      _tmp = apply(:_UlistElement)
+      _tmp = match_string(".")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  num.to_i ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Enumerator unless _tmp
+    return _tmp
+  end
+
+  # Ulist = Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item { if b.size > 1 then item.level = b.size end } (UlistItem | UlistItemMore | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, items.unshift(item))}
+  def _Ulist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
       unless _tmp
         self.pos = _save
         break
       end
       _save2 = self.pos
-
-      _save3 = self.pos
-      while true # choice
-        _tmp = apply(:_UlistElement)
-        break if _tmp
-        self.pos = _save3
-        _tmp = apply(:_UlistContLine)
-        break if _tmp
-        self.pos = _save3
-        _tmp = apply(:_SinglelineComment)
-        break if _tmp
-        self.pos = _save3
+      _ary = []
+      _tmp = apply(:_Bullet)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Bullet)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save2
+      end
+      b = @result
+      unless _tmp
+        self.pos = _save
         break
-      end # end choice
-
+      end
+      _save3 = self.pos
+      _tmp = apply(:_Space)
       if _tmp
         while true
-
-          _save4 = self.pos
-          while true # choice
-            _tmp = apply(:_UlistElement)
-            break if _tmp
-            self.pos = _save4
-            _tmp = apply(:_UlistContLine)
-            break if _tmp
-            self.pos = _save4
-            _tmp = apply(:_SinglelineComment)
-            break if _tmp
-            self.pos = _save4
-            break
-          end # end choice
-
+          _tmp = apply(:_Space)
           break unless _tmp
         end
         _tmp = true
       else
-        self.pos = _save2
+        self.pos = _save3
       end
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin; ulist(self, @ulist_elem); end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  if b.size > 1 then item.level = b.size end ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save5 = self.pos
+        while true # choice
+          _tmp = apply(:_UlistItem)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_UlistItemMore)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save5
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; ulist(self, items.unshift(item)); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2692,174 +2803,18 @@ require 'review/node'
     return _tmp
   end
 
-  # UlistElement = " "+ "*"+:level " "* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }
-  def _UlistElement
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _tmp = match_string(" ")
-      if _tmp
-        while true
-          _tmp = match_string(" ")
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save1
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save2 = self.pos
-      _ary = []
-      _tmp = match_string("*")
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = match_string("*")
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save2
-      end
-      level = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      while true
-        _tmp = match_string(" ")
-        break unless _tmp
-      end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_EOL)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_UlistElement unless _tmp
-    return _tmp
-  end
-
-  # UlistContLine = " " " "+ !"*" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }
-  def _UlistContLine
-
-    _save = self.pos
-    while true # sequence
-      _tmp = match_string(" ")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save1 = self.pos
-      _tmp = match_string(" ")
-      if _tmp
-        while true
-          _tmp = match_string(" ")
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save1
-      end
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _save2 = self.pos
-      _tmp = match_string("*")
-      _tmp = _tmp ? nil : true
-      self.pos = _save2
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      _tmp = apply(:_EOL)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;   @ulist_elem[-1].concat(c) ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_UlistContLine unless _tmp
-    return _tmp
-  end
-
-  # Olist = { @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}
+  # Olist = Indent+:s Enumerator:e Space+ { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, items.unshift(item))}
   def _Olist
 
     _save = self.pos
     while true # sequence
-      @result = begin;  @olist_elem = [] ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-        break
-      end
       _save1 = self.pos
       _ary = []
-
-      _save2 = self.pos
-      while true # choice
-        _tmp = apply(:_OlistElement)
-        break if _tmp
-        self.pos = _save2
-        _tmp = apply(:_SinglelineComment)
-        break if _tmp
-        self.pos = _save2
-        break
-      end # end choice
-
+      _tmp = apply(:_Indent)
       if _tmp
         _ary << @result
         while true
-
-          _save3 = self.pos
-          while true # choice
-            _tmp = apply(:_OlistElement)
-            break if _tmp
-            self.pos = _save3
-            _tmp = apply(:_SinglelineComment)
-            break if _tmp
-            self.pos = _save3
-            break
-          end # end choice
-
+          _tmp = apply(:_Indent)
           _ary << @result if _tmp
           break unless _tmp
         end
@@ -2868,12 +2823,82 @@ require 'review/node'
       else
         self.pos = _save1
       end
-      c = @result
+      s = @result
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin; olist(self, @olist_elem); end
+      _tmp = apply(:_Enumerator)
+      e = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_OlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.num = e ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save4 = self.pos
+        while true # choice
+          _tmp = apply(:_OlistItem)
+          break if _tmp
+          self.pos = _save4
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save4
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save5 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save5
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; olist(self, items.unshift(item)); end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2885,61 +2910,151 @@ require 'review/node'
     return _tmp
   end
 
-  # OlistElement = " "+ < /\d/+ > { num=text } "." Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }
-  def _OlistElement
+  # UlistItemBlock = ListItemFirstLine:c ListItemLine*:d {ulist_element(self, @list_stack.size, d.unshift(c))}
+  def _UlistItemBlock
+
+    _save = self.pos
+    while true # sequence
+      _tmp = apply(:_ListItemFirstLine)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+        _tmp = apply(:_ListItemLine)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      d = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; ulist_element(self, @list_stack.size, d.unshift(c)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistItemBlock unless _tmp
+    return _tmp
+  end
+
+  # OlistItemBlock = ListItemFirstLine:c ListItemLine*:d {olist_element(self, 0, d.unshift(c))}
+  def _OlistItemBlock
+
+    _save = self.pos
+    while true # sequence
+      _tmp = apply(:_ListItemFirstLine)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+        _tmp = apply(:_ListItemLine)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      d = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; olist_element(self, 0, d.unshift(c)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_OlistItemBlock unless _tmp
+    return _tmp
+  end
+
+  # ListItemFirstLine = SinglelineContent:c Newline { c }
+  def _ListItemFirstLine
+
+    _save = self.pos
+    while true # sequence
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ListItemFirstLine unless _tmp
+    return _tmp
+  end
+
+  # ListItemLine = Indent+:s !Bullet !Enumerator !Space SinglelineContent:c &{ check_indent(s) } Newline { c }
+  def _ListItemLine
 
     _save = self.pos
     while true # sequence
       _save1 = self.pos
-      _tmp = match_string(" ")
+      _ary = []
+      _tmp = apply(:_Indent)
       if _tmp
+        _ary << @result
         while true
-          _tmp = match_string(" ")
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
           break unless _tmp
         end
         _tmp = true
+        @result = _ary
       else
         self.pos = _save1
       end
+      s = @result
       unless _tmp
         self.pos = _save
         break
       end
-      _text_start = self.pos
       _save2 = self.pos
-      _tmp = scan(/\A(?-mix:\d)/)
-      if _tmp
-        while true
-          _tmp = scan(/\A(?-mix:\d)/)
-          break unless _tmp
-        end
-        _tmp = true
-      else
-        self.pos = _save2
-      end
-      if _tmp
-        text = get_text(_text_start)
-      end
+      _tmp = apply(:_Bullet)
+      _tmp = _tmp ? nil : true
+      self.pos = _save2
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin;  num=text ; end
-      _tmp = true
+      _save3 = self.pos
+      _tmp = apply(:_Enumerator)
+      _tmp = _tmp ? nil : true
+      self.pos = _save3
       unless _tmp
         self.pos = _save
         break
       end
-      _tmp = match_string(".")
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      while true
-        _tmp = apply(:_Space)
-        break unless _tmp
-      end
-      _tmp = true
+      _save4 = self.pos
+      _tmp = apply(:_Space)
+      _tmp = _tmp ? nil : true
+      self.pos = _save4
       unless _tmp
         self.pos = _save
         break
@@ -2950,12 +3065,19 @@ require 'review/node'
         self.pos = _save
         break
       end
-      _tmp = apply(:_EOL)
+      _save5 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save5
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin; @olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) ; end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2963,7 +3085,477 @@ require 'review/node'
       break
     end # end sequence
 
-    set_failed_rule :_OlistElement unless _tmp
+    set_failed_rule :_ListItemLine unless _tmp
+    return _tmp
+  end
+
+  # UlistItemMore = Indent+:s Bullet Bullet+:b Space+ &{ check_indent(s) } UlistItemBlock:item { item.level = b.size+1; item }
+  def _UlistItemMore
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Bullet)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _ary = []
+      _tmp = apply(:_Bullet)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Bullet)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save2
+      end
+      b = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save3
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save4 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save4
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.level = b.size+1; item ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistItemMore unless _tmp
+    return _tmp
+  end
+
+  # UlistItem = Indent+:s Bullet Space+ &{ check_indent(s) } UlistItemBlock:item { item }
+  def _UlistItem
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Bullet)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistItem unless _tmp
+    return _tmp
+  end
+
+  # OlistItem = Indent+:s Enumerator:e Space+ &{ check_indent(s) } OlistItemBlock:item { item.num = e; item }
+  def _OlistItem
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Enumerator)
+      e = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_OlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.num = e; item ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_OlistItem unless _tmp
+    return _tmp
+  end
+
+  # NestedUlist = Indent+:s Bullet Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item (UlistItem | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, items.unshift(item))}
+  def _NestedUlist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Bullet)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_nested_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save5 = self.pos
+        while true # choice
+          _tmp = apply(:_UlistItem)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save5
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; ulist(self, items.unshift(item)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_NestedUlist unless _tmp
+    return _tmp
+  end
+
+  # NestedOlist = Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, items.unshift(item))}
+  def _NestedOlist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Enumerator)
+      e = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_nested_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_OlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.num = e ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save5 = self.pos
+        while true # choice
+          _tmp = apply(:_OlistItem)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save5
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; olist(self, items.unshift(item)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_NestedOlist unless _tmp
+    return _tmp
+  end
+
+  # NestedList = (NestedUlist | NestedOlist)
+  def _NestedList
+
+    _save = self.pos
+    while true # choice
+      _tmp = apply(:_NestedUlist)
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_NestedOlist)
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_NestedList unless _tmp
     return _tmp
   end
 
@@ -4001,7 +4593,7 @@ require 'review/node'
 
   Rules = {}
   Rules[:_root] = rule_info("root", "Start")
-  Rules[:_Start] = rule_info("Start", "&. Document:c { @strategy.ast = c }")
+  Rules[:_Start] = rule_info("Start", "&. { @list_stack = Array.new } Document:c { @strategy.ast = c }")
   Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine*:c { c } (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
@@ -4023,11 +4615,21 @@ require 'review/node'
   Rules[:_BlockElementParagraphLine] = rule_info("BlockElementParagraphLine", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }")
   Rules[:_CodeBlockElementContents] = rule_info("CodeBlockElementContents", "CodeBlockElementContent+:c { c }")
   Rules[:_CodeBlockElementContent] = rule_info("CodeBlockElementContent", "(SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, \"\\n\") } | !\"//}\" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, \"\\n\")] })")
-  Rules[:_Ulist] = rule_info("Ulist", "&. { @ulist_elem=[] } UlistElement (UlistElement | UlistContLine | SinglelineComment)+ {ulist(self, @ulist_elem)}")
-  Rules[:_UlistElement] = rule_info("UlistElement", "\" \"+ \"*\"+:level \" \"* SinglelineContent:c EOL { @ulist_elem << ::ReVIEW::UlistElementNode.new(self, level.size, [c]) }")
-  Rules[:_UlistContLine] = rule_info("UlistContLine", "\" \" \" \"+ !\"*\" SinglelineContent:c EOL {  @ulist_elem[-1].concat(c) }")
-  Rules[:_Olist] = rule_info("Olist", "{ @olist_elem = [] } (OlistElement | SinglelineComment)+:c {olist(self, @olist_elem)}")
-  Rules[:_OlistElement] = rule_info("OlistElement", "\" \"+ < /\\d/+ > { num=text } \".\" Space* SinglelineContent:c EOL {@olist_elem << ReVIEW::OlistElementNode.new(self, num.to_i, [c]) }")
+  Rules[:_Indent] = rule_info("Indent", "\" \"")
+  Rules[:_Bullet] = rule_info("Bullet", "\"*\"")
+  Rules[:_Enumerator] = rule_info("Enumerator", "< /[0-9]+/ > { num = text } \".\" { num.to_i }")
+  Rules[:_Ulist] = rule_info("Ulist", "Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item { if b.size > 1 then item.level = b.size end } (UlistItem | UlistItemMore | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, items.unshift(item))}")
+  Rules[:_Olist] = rule_info("Olist", "Indent+:s Enumerator:e Space+ { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, items.unshift(item))}")
+  Rules[:_UlistItemBlock] = rule_info("UlistItemBlock", "ListItemFirstLine:c ListItemLine*:d {ulist_element(self, @list_stack.size, d.unshift(c))}")
+  Rules[:_OlistItemBlock] = rule_info("OlistItemBlock", "ListItemFirstLine:c ListItemLine*:d {olist_element(self, 0, d.unshift(c))}")
+  Rules[:_ListItemFirstLine] = rule_info("ListItemFirstLine", "SinglelineContent:c Newline { c }")
+  Rules[:_ListItemLine] = rule_info("ListItemLine", "Indent+:s !Bullet !Enumerator !Space SinglelineContent:c &{ check_indent(s) } Newline { c }")
+  Rules[:_UlistItemMore] = rule_info("UlistItemMore", "Indent+:s Bullet Bullet+:b Space+ &{ check_indent(s) } UlistItemBlock:item { item.level = b.size+1; item }")
+  Rules[:_UlistItem] = rule_info("UlistItem", "Indent+:s Bullet Space+ &{ check_indent(s) } UlistItemBlock:item { item }")
+  Rules[:_OlistItem] = rule_info("OlistItem", "Indent+:s Enumerator:e Space+ &{ check_indent(s) } OlistItemBlock:item { item.num = e; item }")
+  Rules[:_NestedUlist] = rule_info("NestedUlist", "Indent+:s Bullet Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item (UlistItem | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, items.unshift(item))}")
+  Rules[:_NestedOlist] = rule_info("NestedOlist", "Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, items.unshift(item))}")
+  Rules[:_NestedList] = rule_info("NestedList", "(NestedUlist | NestedOlist)")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
   Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
   Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c Newline:n { c }")

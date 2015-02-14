@@ -194,6 +194,10 @@ module ReVIEW
   end
 
   class UlistElementNode < Node
+    def level=(level)
+      @level = level
+    end
+
     def to_doc
       @content.map(&:to_doc).join("")
     end
@@ -210,6 +214,10 @@ module ReVIEW
   end
 
   class OlistElementNode < Node
+    def num=(num)
+      @num = num
+    end
+
     def to_doc
       @content.map(&:to_doc).join("")
     end
