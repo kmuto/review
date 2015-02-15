@@ -44,59 +44,6 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal '', b.result
   end
 
-=begin
-  def test_print_and_puts
-    b = Builder.new
-    assert_raises(NoMethodError) do # XXX: OK?
-      b.print ""
-    end
-    assert_raises(NoMethodError) do # XXX: OK?
-      b.puts ""
-    end
-
-    if "".respond_to?(:encode)
-      utf8_str = "あいうえお"
-      eucjp_str = "あいうえお".encode("EUC-JP")
-      sjis_str = "あいうえお".encode("Shift_JIS")
-      jis_str = "あいうえお".encode("ISO-2022-JP")
-    else
-      utf8_str = "\xe3\x81\x82\xe3\x81\x84\xe3\x81\x86\xe3\x81\x88\xe3\x81\x8a" # "あいうえお"
-      eucjp_str = "\xa4\xa2\xa4\xa4\xa4\xa6\xa4\xa8\xa4\xaa"
-      sjis_str = "\x82\xa0\x82\xa2\x82\xa4\x82\xa6\x82\xa8"
-      jis_str = "\x1b\x24\x42\x24\x22\x24\x24\x24\x26\x24\x28\x24\x2a\x1b\x28\x42"
-    end
-
-    [
-      ['EUC', eucjp_str],
-      ['SJIS', sjis_str],
-#      ['JIS', jis_str],
-#      ['jis', jis_str],
-#      ['jIs', jis_str],
-      ['XYZ', utf8_str],
-    ].each do |enc, expect|
-      params = {"outencoding" => enc}
-
-      [
-        [:print, utf8_str, expect],
-        [:puts,  utf8_str, "#{expect}\n"],
-        [:print, "#{utf8_str}\n", "#{expect}\n"],
-        [:puts,  "#{utf8_str}\n", "#{expect}\n"],
-      ].each do |m, instr, expstr|
-        b = Builder.new
-        chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
-        b.bind(nil, chapter, nil)
-        chapter.book.config = params
-        b.__send__(m, instr)
-        if "".respond_to?(:encode)
-          assert_equal expstr.encode("UTF-8"), b.result
-        else
-          assert_equal expstr, b.result
-        end
-      end
-    end
-  end
-=end
-
   def test_not_implemented_methods
     ex = NoMethodError # XXX: OK?
     [
