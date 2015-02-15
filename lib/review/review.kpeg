@@ -499,7 +499,7 @@ root = Start
 Start = &. { @list_stack = Array.new } Document:c { @strategy.ast = c }
 
 ## a Document is a set of Blocks
-Document = Block*:c ~document(self, c)
+Document = BOM? Block*:c ~document(self, c)
 
 ## ignore leading blank lines
 Block = BlankLine*:c { c }
@@ -574,18 +574,17 @@ BlockElementContent = ( SinglelineComment:c { c }
 
 ## it's like Paragraph, but it's in a block, so do not allow '//}\n'
 BlockElementParagraph = BlockElementParagraphLine+:c  ~paragraph(self, c.flatten)
-BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
+BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
 
 ## In CodeBlockElementContents, newline should no be ingored. So we use TextNode instead of NewLineNode.
 CodeBlockElementContents = CodeBlockElementContent+:c { c }
 CodeBlockElementContent = ( SinglelineComment:c { c }
                           | BlankLine:c { ::ReVIEW::TextNode.new(self, "\n") }
-                          | !"//}" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, "\n")] }
+                          | !"//}" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, "\n")] }
                           )
 
 ## Ulist and Olist
 
-Indent = " "
 Bullet = "*"
 Enumerator = < /[0-9]+/ > { num = text } "." { num.to_i }
 
@@ -628,7 +627,7 @@ Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, content)
 
 DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
 
-DlistElementContent = Space+ SinglelineContent:c Newline:n { c }
+DlistElementContent = Space+ SinglelineContent:c Newline { c }
 
 SinglelineContent = Inline+:c ~singleline_content(self,c)
 
@@ -674,10 +673,9 @@ InlineElementContentText =  ( "\\}" ~text(self, "}")
 
 NonNewline = /[^\r\n]/
 
-Digits = Digit+:c { c }
-
-## Space = /[ 　\t]/
 Space = /[ \t]/
+
+Indent = " "
 
 EOL = (Newline|EOF)
 

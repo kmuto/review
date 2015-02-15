@@ -1140,11 +1140,21 @@ require 'review/node'
     return _tmp
   end
 
-  # Document = Block*:c {document(self, c)}
+  # Document = BOM? Block*:c {document(self, c)}
   def _Document
 
     _save = self.pos
     while true # sequence
+      _save1 = self.pos
+      _tmp = apply(:_BOM)
+      unless _tmp
+        _tmp = true
+        self.pos = _save1
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
       _ary = []
       while true
         _tmp = apply(:_Block)
@@ -2423,7 +2433,7 @@ require 'review/node'
     return _tmp
   end
 
-  # BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }
+  # BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
   def _BlockElementParagraphLine
 
     _save = self.pos
@@ -2491,12 +2501,11 @@ require 'review/node'
         break
       end
       _tmp = apply(:_Newline)
-      n = @result
       unless _tmp
         self.pos = _save
         break
       end
-      @result = begin;  [c, n] ; end
+      @result = begin;  c ; end
       _tmp = true
       unless _tmp
         self.pos = _save
@@ -2545,7 +2554,7 @@ require 'review/node'
     return _tmp
   end
 
-  # CodeBlockElementContent = (SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, "\n") } | !"//}" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, "\n")] })
+  # CodeBlockElementContent = (SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, "\n") } | !"//}" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, "\n")] })
   def _CodeBlockElementContent
 
     _save = self.pos
@@ -2606,7 +2615,6 @@ require 'review/node'
           break
         end
         _tmp = apply(:_Newline)
-        n = @result
         unless _tmp
           self.pos = _save3
           break
@@ -2625,13 +2633,6 @@ require 'review/node'
     end # end choice
 
     set_failed_rule :_CodeBlockElementContent unless _tmp
-    return _tmp
-  end
-
-  # Indent = " "
-  def _Indent
-    _tmp = match_string(" ")
-    set_failed_rule :_Indent unless _tmp
     return _tmp
   end
 
@@ -3695,7 +3696,7 @@ require 'review/node'
     return _tmp
   end
 
-  # DlistElementContent = Space+ SinglelineContent:c Newline:n { c }
+  # DlistElementContent = Space+ SinglelineContent:c Newline { c }
   def _DlistElementContent
 
     _save = self.pos
@@ -3722,7 +3723,6 @@ require 'review/node'
         break
       end
       _tmp = apply(:_Newline)
-      n = @result
       unless _tmp
         self.pos = _save
         break
@@ -4422,47 +4422,17 @@ require 'review/node'
     return _tmp
   end
 
-  # Digits = Digit+:c { c }
-  def _Digits
-
-    _save = self.pos
-    while true # sequence
-      _save1 = self.pos
-      _ary = []
-      _tmp = apply(:_Digit)
-      if _tmp
-        _ary << @result
-        while true
-          _tmp = apply(:_Digit)
-          _ary << @result if _tmp
-          break unless _tmp
-        end
-        _tmp = true
-        @result = _ary
-      else
-        self.pos = _save1
-      end
-      c = @result
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
-      break
-    end # end sequence
-
-    set_failed_rule :_Digits unless _tmp
-    return _tmp
-  end
-
   # Space = /[ \t]/
   def _Space
     _tmp = scan(/\A(?-mix:[ \t])/)
     set_failed_rule :_Space unless _tmp
+    return _tmp
+  end
+
+  # Indent = " "
+  def _Indent
+    _tmp = match_string(" ")
+    set_failed_rule :_Indent unless _tmp
     return _tmp
   end
 
@@ -4605,7 +4575,7 @@ require 'review/node'
   Rules = {}
   Rules[:_root] = rule_info("root", "Start")
   Rules[:_Start] = rule_info("Start", "&. { @list_stack = Array.new } Document:c { @strategy.ast = c }")
-  Rules[:_Document] = rule_info("Document", "Block*:c {document(self, c)}")
+  Rules[:_Document] = rule_info("Document", "BOM? Block*:c {document(self, c)}")
   Rules[:_Block] = rule_info("Block", "BlankLine*:c { c } (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
   Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
   Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewline+ > EOL {singleline_comment(self, text)}")
@@ -4623,10 +4593,9 @@ require 'review/node'
   Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent+:c { c }")
   Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Dlist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })")
   Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphLine+:c {paragraph(self, c.flatten)}")
-  Rules[:_BlockElementParagraphLine] = rule_info("BlockElementParagraphLine", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline:n { [c, n] }")
+  Rules[:_BlockElementParagraphLine] = rule_info("BlockElementParagraphLine", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
   Rules[:_CodeBlockElementContents] = rule_info("CodeBlockElementContents", "CodeBlockElementContent+:c { c }")
-  Rules[:_CodeBlockElementContent] = rule_info("CodeBlockElementContent", "(SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, \"\\n\") } | !\"//}\" SinglelineContent:c Newline:n { [c, ::ReVIEW::TextNode.new(self, \"\\n\")] })")
-  Rules[:_Indent] = rule_info("Indent", "\" \"")
+  Rules[:_CodeBlockElementContent] = rule_info("CodeBlockElementContent", "(SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, \"\\n\") } | !\"//}\" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, \"\\n\")] })")
   Rules[:_Bullet] = rule_info("Bullet", "\"*\"")
   Rules[:_Enumerator] = rule_info("Enumerator", "< /[0-9]+/ > { num = text } \".\" { num.to_i }")
   Rules[:_Ulist] = rule_info("Ulist", "Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item { if b.size > 1 then item.level = b.size end } (UlistItem | UlistItemMore | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, items.unshift(item))}")
@@ -4643,7 +4612,7 @@ require 'review/node'
   Rules[:_NestedOlist] = rule_info("NestedOlist", "Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, items.unshift(item))}")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
   Rules[:_DlistElement] = rule_info("DlistElement", "Indent* \":\" Space+ SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
-  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "Space+ SinglelineContent:c Newline:n { c }")
+  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "Space+ SinglelineContent:c Newline { c }")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
   Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewline > {text(self, text)}")
@@ -4657,8 +4626,8 @@ require 'review/node'
   Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" {text(self, \"}\")} | \"\\\\,\" {text(self, \",\")} | \"\\\\\\\\\" {text(self, \"\\\\\" )} | \"\\\\\" {text(self, \"\\\\\" )} | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self,text)})")
   Rules[:_NonNewline] = rule_info("NonNewline", "/[^\\r\\n]/")
-  Rules[:_Digits] = rule_info("Digits", "Digit+:c { c }")
   Rules[:_Space] = rule_info("Space", "/[ \\t]/")
+  Rules[:_Indent] = rule_info("Indent", "\" \"")
   Rules[:_EOL] = rule_info("EOL", "(Newline | EOF)")
   Rules[:_EOF] = rule_info("EOF", "!.")
   Rules[:_ElementName] = rule_info("ElementName", "< LowerAlphabetAscii+ > { text }")
