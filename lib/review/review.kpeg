@@ -652,16 +652,25 @@ InlineElementSymbol = < AlphanumericAscii+ > { text }
 
 InlineElementContents = !"}" InlineElementContentsSub:c { c }
 
-InlineElementContentsSub = !"}" ( InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 {  [c1]+c2 }
-                                | InlineElementContent:c1 { [c1] }
+InlineElementContentsSub = !"}" ( Space* InlineElementContent:c1 Space* "," InlineElementContentsSub:c2 {  [c1]+c2 }
+                                | Space* InlineElementContent:c1 Space* { [c1] }
                                 )
 
 
 InlineElementContent = InlineElementContentSub+:d { d }
 
 InlineElementContentSub = ( InlineElement:c { c }
+                          | !InlineElement QuotedInlineText:content ~inline_element_content(self, content)
                           | !InlineElement InlineElementContentText+:content ~inline_element_content(self, content)
                           )
+
+## Quoted Inline Text is "..."
+## In Quoted Inline Text, "\\" is "\", "\'" is "'", other characters are kept as is.
+QuotedInlineText =  "\""
+                            ( "\\\"" { "\"" }
+                            | "\\\\" { "\\" }
+                            | < /[^"\r\n\\]/ > { text }
+                            )+:str "\"" ~text(self, str.join(""))
 
 ## XXX '\' (excpet '\}' and '\,' and '\\' ) => '\' is OK?
 InlineElementContentText =  ( "\\}" ~text(self, "}")

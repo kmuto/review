@@ -4096,7 +4096,7 @@ require 'review/node'
     return _tmp
   end
 
-  # InlineElementContentsSub = !"}" (InlineElementContent:c1 Space* "," Space* InlineElementContentsSub:c2 {  [c1]+c2 } | InlineElementContent:c1 { [c1] })
+  # InlineElementContentsSub = !"}" (Space* InlineElementContent:c1 Space* "," InlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })
   def _InlineElementContentsSub
 
     _save = self.pos
@@ -4115,6 +4115,15 @@ require 'review/node'
 
         _save3 = self.pos
         while true # sequence
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+            break
+          end
           _tmp = apply(:_InlineElementContent)
           c1 = @result
           unless _tmp
@@ -4131,15 +4140,6 @@ require 'review/node'
             break
           end
           _tmp = match_string(",")
-          unless _tmp
-            self.pos = _save3
-            break
-          end
-          while true
-            _tmp = apply(:_Space)
-            break unless _tmp
-          end
-          _tmp = true
           unless _tmp
             self.pos = _save3
             break
@@ -4163,8 +4163,26 @@ require 'review/node'
 
         _save6 = self.pos
         while true # sequence
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save6
+            break
+          end
           _tmp = apply(:_InlineElementContent)
           c1 = @result
+          unless _tmp
+            self.pos = _save6
+            break
+          end
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
           unless _tmp
             self.pos = _save6
             break
@@ -4229,7 +4247,7 @@ require 'review/node'
     return _tmp
   end
 
-  # InlineElementContentSub = (InlineElement:c { c } | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})
+  # InlineElementContentSub = (InlineElement:c { c } | !InlineElement QuotedInlineText:content {inline_element_content(self, content)} | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})
   def _InlineElementContentSub
 
     _save = self.pos
@@ -4264,21 +4282,7 @@ require 'review/node'
           self.pos = _save2
           break
         end
-        _save4 = self.pos
-        _ary = []
-        _tmp = apply(:_InlineElementContentText)
-        if _tmp
-          _ary << @result
-          while true
-            _tmp = apply(:_InlineElementContentText)
-            _ary << @result if _tmp
-            break unless _tmp
-          end
-          _tmp = true
-          @result = _ary
-        else
-          self.pos = _save4
-        end
+        _tmp = apply(:_QuotedInlineText)
         content = @result
         unless _tmp
           self.pos = _save2
@@ -4294,10 +4298,224 @@ require 'review/node'
 
       break if _tmp
       self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _save5 = self.pos
+        _tmp = apply(:_InlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save5
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        _save6 = self.pos
+        _ary = []
+        _tmp = apply(:_InlineElementContentText)
+        if _tmp
+          _ary << @result
+          while true
+            _tmp = apply(:_InlineElementContentText)
+            _ary << @result if _tmp
+            break unless _tmp
+          end
+          _tmp = true
+          @result = _ary
+        else
+          self.pos = _save6
+        end
+        content = @result
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin; inline_element_content(self, content); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
       break
     end # end choice
 
     set_failed_rule :_InlineElementContentSub unless _tmp
+    return _tmp
+  end
+
+  # QuotedInlineText = "\"" ("\\\"" { "\"" } | "\\\\" { "\\" } | < /[^"\r\n\\]/ > { text })+:str "\"" {text(self, str.join(""))}
+  def _QuotedInlineText
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("\"")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save1 = self.pos
+      _ary = []
+
+      _save2 = self.pos
+      while true # choice
+
+        _save3 = self.pos
+        while true # sequence
+          _tmp = match_string("\\\"")
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          @result = begin;  "\"" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save4 = self.pos
+        while true # sequence
+          _tmp = match_string("\\\\")
+          unless _tmp
+            self.pos = _save4
+            break
+          end
+          @result = begin;  "\\" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save4
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save5 = self.pos
+        while true # sequence
+          _text_start = self.pos
+          _tmp = scan(/\A(?-mix:[^"\r\n\\])/)
+          if _tmp
+            text = get_text(_text_start)
+          end
+          unless _tmp
+            self.pos = _save5
+            break
+          end
+          @result = begin;  text ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save5
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      if _tmp
+        _ary << @result
+        while true
+
+          _save6 = self.pos
+          while true # choice
+
+            _save7 = self.pos
+            while true # sequence
+              _tmp = match_string("\\\"")
+              unless _tmp
+                self.pos = _save7
+                break
+              end
+              @result = begin;  "\"" ; end
+              _tmp = true
+              unless _tmp
+                self.pos = _save7
+              end
+              break
+            end # end sequence
+
+            break if _tmp
+            self.pos = _save6
+
+            _save8 = self.pos
+            while true # sequence
+              _tmp = match_string("\\\\")
+              unless _tmp
+                self.pos = _save8
+                break
+              end
+              @result = begin;  "\\" ; end
+              _tmp = true
+              unless _tmp
+                self.pos = _save8
+              end
+              break
+            end # end sequence
+
+            break if _tmp
+            self.pos = _save6
+
+            _save9 = self.pos
+            while true # sequence
+              _text_start = self.pos
+              _tmp = scan(/\A(?-mix:[^"\r\n\\])/)
+              if _tmp
+                text = get_text(_text_start)
+              end
+              unless _tmp
+                self.pos = _save9
+                break
+              end
+              @result = begin;  text ; end
+              _tmp = true
+              unless _tmp
+                self.pos = _save9
+              end
+              break
+            end # end sequence
+
+            break if _tmp
+            self.pos = _save6
+            break
+          end # end choice
+
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      str = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("\"")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; text(self, str.join("")); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_QuotedInlineText unless _tmp
     return _tmp
   end
 
@@ -4621,9 +4839,10 @@ require 'review/node'
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
   Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< AlphanumericAscii+ > { text }")
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
-  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (InlineElementContent:c1 Space* \",\" Space* InlineElementContentsSub:c2 {  [c1]+c2 } | InlineElementContent:c1 { [c1] })")
+  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (Space* InlineElementContent:c1 Space* \",\" InlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "InlineElementContentSub+:d { d }")
-  Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})")
+  Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement QuotedInlineText:content {inline_element_content(self, content)} | !InlineElement InlineElementContentText+:content {inline_element_content(self, content)})")
+  Rules[:_QuotedInlineText] = rule_info("QuotedInlineText", "\"\\\"\" (\"\\\\\\\"\" { \"\\\"\" } | \"\\\\\\\\\" { \"\\\\\" } | < /[^\"\\r\\n\\\\]/ > { text })+:str \"\\\"\" {text(self, str.join(\"\"))}")
   Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" {text(self, \"}\")} | \"\\\\,\" {text(self, \",\")} | \"\\\\\\\\\" {text(self, \"\\\\\" )} | \"\\\\\" {text(self, \"\\\\\" )} | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self,text)})")
   Rules[:_NonNewline] = rule_info("NonNewline", "/[^\\r\\n]/")
   Rules[:_Space] = rule_info("Space", "/[ \\t]/")
