@@ -3618,13 +3618,13 @@ require 'review/node'
     return _tmp
   end
 
-  # DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}
+  # DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}
   def _DlistElement
 
     _save = self.pos
     while true # sequence
       while true
-        _tmp = match_string(" ")
+        _tmp = apply(:_Indent)
         break unless _tmp
       end
       _tmp = true
@@ -3637,16 +3637,17 @@ require 'review/node'
         self.pos = _save
         break
       end
-      _tmp = match_string(" ")
-      unless _tmp
-        self.pos = _save
-        break
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
       end
-      while true
-        _tmp = apply(:_Space)
-        break unless _tmp
-      end
-      _tmp = true
       unless _tmp
         self.pos = _save
         break
@@ -3694,12 +3695,22 @@ require 'review/node'
     return _tmp
   end
 
-  # DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
+  # DlistElementContent = Space+ SinglelineContent:c Newline:n { c }
   def _DlistElementContent
 
     _save = self.pos
     while true # sequence
-      _tmp = scan(/\A(?-mix:[ \t]+)/)
+      _save1 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
       unless _tmp
         self.pos = _save
         break
@@ -4631,8 +4642,8 @@ require 'review/node'
   Rules[:_NestedUlist] = rule_info("NestedUlist", "Indent+:s Bullet Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item (UlistItem | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, items.unshift(item))}")
   Rules[:_NestedOlist] = rule_info("NestedOlist", "Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, items.unshift(item))}")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
-  Rules[:_DlistElement] = rule_info("DlistElement", "\" \"* \":\" \" \" Space* SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
-  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "/[ \\t]+/ SinglelineContent:c Newline:n { c }")
+  Rules[:_DlistElement] = rule_info("DlistElement", "Indent* \":\" Space+ SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
+  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "Space+ SinglelineContent:c Newline:n { c }")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
   Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewline > {text(self, text)}")

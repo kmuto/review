@@ -623,15 +623,12 @@ NestedOlist = Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_
         (OlistItem | NestedList)*:items &{ s == @list_stack.pop }
         ~olist(self, items.unshift(item))
 
-
-
-## : 用語リスト
-  ## 行頭から… の指定がない
+# Dlist
 Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, content)
 
-DlistElement = " "* ":" " " Space* SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
+DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
 
-DlistElementContent = /[ \t]+/ SinglelineContent:c Newline:n { c }
+DlistElementContent = Space+ SinglelineContent:c Newline:n { c }
 
 SinglelineContent = Inline+:c ~singleline_content(self,c)
 
