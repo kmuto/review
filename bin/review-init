@@ -64,7 +64,7 @@ def generate_dir(dir)
 end
 
 def generate_sample(dir)
-  File.open("#{dir}/#{File.basename(dir)}.re", "w") do |file|
+  File.open("#{dir}/#{File.basename(dir)}.re", "w:utf8") do |file|
     file.write("= ")
   end
 end
