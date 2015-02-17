@@ -42,7 +42,7 @@ module ReVIEW
 
     def highlight(ops)
       body = ops[:body] || ''
-      lexer = ops[:lexer] || ''
+      lexer = ops[:lexer].blank? ? 'text' : ops[:lexer]
       format = ops[:format] || ''
       options = {:nowrap => true, :noclasses => true}
       if ops[:options] && ops[:options].kind_of?(Hash)
