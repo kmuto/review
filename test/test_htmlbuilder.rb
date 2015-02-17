@@ -497,6 +497,22 @@ class HTMLBuidlerTest < Test::Unit::TestCase
                  %Q|</div>\n|, actual
   end
 
+  def test_list_pygments_nulllang
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    begin
+      require 'pygments'
+    rescue LoadError
+      $stderr.puts "skip test_list_pygments_nulllang"
+      return true
+    end
+    @book.config["pygments"] = true
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n</pre>\n</div>\n", actual
+  end
+
   def test_listnum_pygments_lang
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
