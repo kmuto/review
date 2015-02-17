@@ -468,6 +468,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_list_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
@@ -483,6 +484,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_list_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
@@ -504,7 +506,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
-      $stderr.puts "skip test_list_pygments_nulllang"
+      $stderr.puts "skip test_list_pygments_nulllang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
@@ -520,6 +522,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_listnum_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
@@ -537,6 +540,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_emlist_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
