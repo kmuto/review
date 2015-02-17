@@ -26,5 +26,6 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency("rake")
   gem.add_development_dependency("test-unit")
+  gem.add_development_dependency("pygments.rb")
 end
 
