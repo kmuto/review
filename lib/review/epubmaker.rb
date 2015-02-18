@@ -165,7 +165,7 @@ module ReVIEW
           recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
         else
           if fname =~ /\.(#{allow_exts.join("|")})\Z/i
-            Dir.mkdir(destdir) unless File.exist?(destdir)
+            FileUtils.mkdir_p(destdir) unless File.exist?(destdir)
             log("Copy #{resdir}/#{fname} to the temporary directory.")
             FileUtils.cp("#{resdir}/#{fname}", destdir)
           end
