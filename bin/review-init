@@ -20,10 +20,13 @@ require 'review/version'
 def main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.banner = "Usage: #{File.basename($0)} dirname"
+  opts.banner = "Usage: #{File.basename($0)} [option] dirname"
   opts.on('-h', '--help', 'print this message and quit.') {
     puts opts.help
     exit 0
+  }
+  opts.on('--force', 'generate files (except *.re) if directory has already existed.') {
+    @force = true
   }
   begin
     opts.parse!
@@ -43,7 +46,9 @@ def main
 
   generate_dir(initdir) do |dir|
     generate_catalog_file(dir)
-    generate_sample(dir)
+    if !@force
+      generate_sample(dir)
+    end
     generate_images_dir(dir)
     generate_cover_image(dir)
     generate_layout(dir)
@@ -55,7 +60,7 @@ def main
 end
 
 def generate_dir(dir)
-  if File.exist? dir
+  if File.exist?(dir) && !@force
     puts "#{dir} already exists."
     exit
   end
@@ -70,7 +75,7 @@ def generate_sample(dir)
 end
 
 def generate_layout(dir)
-  Dir.mkdir dir + '/layouts'
+  FileUtils.mkdir_p dir + '/layouts'
   File.open("#{dir}/layouts/layout.html.erb", "w") do |file|
     file.write <<-EOS
 <?xml version="1.0" encoding="UTF-8"?>
@@ -108,7 +113,7 @@ EOS
 end
 
 def generate_images_dir(dir)
-  Dir.mkdir dir + '/images'
+  FileUtils.mkdir_p dir + '/images'
 end
 
 def generate_cover_image(dir)
@@ -125,7 +130,7 @@ end
 
 def generate_texmacro(dir)
   texmacrodir = dir + '/sty'
-  Dir.mkdir texmacrodir
+  FileUtils.mkdir_p texmacrodir
   FileUtils.cp @review_dir + "/test/sample-book/src/sty/reviewmacro.sty", texmacrodir
 end
 
