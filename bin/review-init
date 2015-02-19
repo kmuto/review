@@ -25,7 +25,7 @@ def main
     puts opts.help
     exit 0
   }
-  opts.on('--force', 'generate files (except *.re) if directory has already existed.') {
+  opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') {
     @force = true
   }
   begin
@@ -46,9 +46,7 @@ def main
 
   generate_dir(initdir) do |dir|
     generate_catalog_file(dir)
-    if !@force
-      generate_sample(dir)
-    end
+    generate_sample(dir)
     generate_images_dir(dir)
     generate_cover_image(dir)
     generate_layout(dir)
@@ -69,8 +67,10 @@ def generate_dir(dir)
 end
 
 def generate_sample(dir)
-  File.open("#{dir}/#{File.basename(dir)}.re", "w") do |file|
-    file.write("= ")
+  if !@force
+    File.open("#{dir}/#{File.basename(dir)}.re", "w") do |file|
+      file.write("= ")
+    end
   end
 end
 
