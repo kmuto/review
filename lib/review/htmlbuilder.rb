@@ -487,12 +487,10 @@ EOT
     end
 
     def listnum_body(lines, lang)
-      print %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       puts highlight(:body => body, :lexer => lexer, :format => 'html',
                      :options => {:linenos => 'inline', :nowrap => false})
-      puts '</pre>'
     end
 
     def emlist(lines, caption = nil, lang = nil)
@@ -513,12 +511,10 @@ EOT
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
-      print %Q[<pre class="emlist">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       puts highlight(:body => body, :lexer => lexer, :format => 'html',
                      :options => {:linenos => 'inline', :nowrap => false})
-      puts '</pre>'
       puts '</div>'
     end
 
