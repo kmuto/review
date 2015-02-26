@@ -1,6 +1,6 @@
-# Re:VIEW format guide
+# Re:VIEW Format Guide
 
-This is a brief guide for Re:VIEW markup syntax.
+The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII, influenced RD and other Wiki system's syntax.
 
@@ -17,7 +17,7 @@ and paragraph.
 Next paragraph is ...
 ```
 
-two empy lines or more are same as one empty line.
+two empty lines or more are same as one empty line.
 
 ## Chapter, Section, Subsection (headings)
 
@@ -51,14 +51,14 @@ Usage:
 
 `=` and `[column]` should be closed to.  Any spaces are not permitted.
 
-Columns is closed with next headings.
+Columns are closed with next headings.
 
 ```
 == head 01
 
 ===[column] a column
 
-== head 02 and the end of column 'a column'
+== head 02 and the end of  'a column'
 
 
 If you want to close column without headings, you can use `===[/column]`
@@ -72,7 +72,7 @@ Compiler-compiler is ...
 
 ===[/column]
 
-blah, blah, blah (this is paragraphes outside of column)
+blah, blah, blah (this is paragraphs outside of the column)
 ```
 
 ## Itemize
@@ -108,7 +108,7 @@ Usage:
 3. 3rd condition
 ```
 
-The value of Number are ignored.
+The value of Number is ignored.
 
 ```
 1. 1st condition
@@ -134,8 +134,8 @@ Usage:
     RISC CPU made by SUN.
 ```
 
-`:` in line head is not used as text.
-The text after `:` is as term (dt in HTML).
+`:` in line head is not used as a text.
+The text after `:` is as the term (dt in HTML).
 
 In definition list, `:` at line head allow space characters.
 After dt line, space-indented lines are descriptions(dd in HTML).
@@ -144,7 +144,7 @@ You can use inline markup in texts of lists.
 
 ## Code list
 
-Code list like source codes uses `//list`. If you don't need numbers, you can use ``em`` prefix (as embedded). If you need line numbers, you can use ``num`` postfix.  So you can use 4 types of lists.
+Code list like source codes is `//list`. If you don't need numbers, you can use ``em`` prefix (as embedded). If you need line numbers, you can use ``num`` postfix.  So you can use four types of lists.
 
 * ``//list[ID][caption][language]{ ... //}``
   * normal list. language is optional.
@@ -195,7 +195,7 @@ puts "hello world!"
 
 You can use inline markup in blocks.
 
-When you refer a list like `see list X`, you can use ID in `//list`
+When you refer a list like `see list X`, you can use an ID in `//list`
 such as `@<list>{main}`.
 
 
@@ -212,9 +212,9 @@ puts "hello world!"
 ```
 
 `//source` and `//emlist` with caption is not so different.
-You can use them with different style with CSS (in HTML) and stylefile (in LaTeX).
+You can use them with different style with CSS (in HTML) and style file (in LaTeX).
 
-`//source` can be refered same as list.
+`//source` can be referred same as the list.
 
 Usage:
 
@@ -249,7 +249,7 @@ You can use inline markup in `//cmd` blocks.
 ## Figure
 
 You can use `//image{ ... //}` for figures.
-You can write comments or Ascii art in the block as alternative description.
+You can write comments or Ascii art in the block as an alternative description.
 When publishing, it's simply ignored.
 
 
@@ -288,10 +288,10 @@ The order of finding image is as follows.  The first matched one is used.
 * ``<imgdir>`` is `images` as default.
 * ``<builder>`` is a builder (target) name to use.  When you use review-comile commmand with ``--target=html``, `<imagedir>/<builder>` is `images/html`.
 * ``<chapid>`` is basename of *.re file.  If the filename is `ch01.re`, chapid is `ch01`.
-* ``<id>`` is ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
+* ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
 
-## images without captino counter
+## images without caption counter
 
 `//indepimage[filename][caption]` makes images without caption counter.
 caption is optional.
@@ -302,14 +302,14 @@ Usage:
 //indepimage[unixhistory2]
 ```
 
-Note that there are similar markup `//numberlessimage`, but it is depricated.
+Note that there are similar markup `//numberlessimage`, but it is deprecated.
 
 
 ## figures with graph tools
 
 Re:VIEW generates image files using graph tool with command `//graph[filename][commandname][caption]`. The caption is optional.
 
-Usage: using with gnuplot
+Usage: using with Gnuplot
 
 ```
 //graph[sin_x][gnuplot]{
@@ -317,7 +317,7 @@ plot sin(x)
 //}
 ```
 
-You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure` as command name.
+You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure` as the command name.
 Before using these tools, you should installed them.
 
 ## Tables
@@ -325,9 +325,9 @@ Before using these tools, you should installed them.
 The markup of table is `//table[ID][caption]{ ... //}`
 You can separate header and content with `------------`.
 
-The columns are splited by TAB character. When the first character in the column is `.`, the character is removed.  If you want to write `.` at the first, you should write `..`.
+The columns are splitted by TAB character. When the first character in the column is `.`, the character is removed.  If you want to write `.` at the first, you should write `..`.
 
-When you want to use empty column, you write `.`.
+When you want to use an empty column, you write `.`.
 
 Usage:
 
@@ -338,12 +338,12 @@ Name            Comment
 PATH            Directories where commands exist
 TERM            Terminal. ex: linux, kterm, vt100
 LANG            default local of users. ja_JP.eucJP and ja_JP.utf8 are popular in Japan
-LOGNAME         login name of user
+LOGNAME         login name of the user
 TEMP            temporary directory. ex: /tmp
 PAGER           text viewer on man command. ex: less, more
 EDITOR          default editor. ex: vi, emacs
 MANPATH         Directories where sources of man exist
-DISPLAY         default ddisplay of X Window System
+DISPLAY         default display of X Window System
 //}
 ```
 
@@ -373,8 +373,8 @@ You can use `//footnote` to write footnotes.
 Usage:
 
 ```
-You can get the packages from support site of the book.@<fn>{site}
-You should get and install it before read the book.
+You can get the packages from support site for the book.@<fn>{site}
+You should get and install it before reading the book.
 //footnote[site][support site of the book: http://i.loveruby.net/ja/stdcompiler ]
 ```
 
@@ -386,11 +386,11 @@ Note that In LATEXBuilder, you should use `footnotetext` option to use `@<fn>{..
 ### --footnotetext option
 
 When you want to use `footnotetext` option, you can add `--footnotetext` with `params` in config.yml.
-With this option, you can use footnote in tables and shortnotes.
+With this option, you can use footnote in tables and short notes.
 
 Note that there are some constraints that (because of normal footnote )
 
-And you cannot use footnote and footnotemark/footnotetext at same time.
+And you cannot use footnote and footnotemark/footnotetext at the same time.
 
 Note that with this option, Re:VIEW use footnotemark and footnotetext instead of normal footnote.
 There are some constraints to use this option.
@@ -398,7 +398,7 @@ You cannot use footnote and footnotemark/footnotetext at the same time.
 
 ## Bibliography
 
-When you want to use bibliography, you should write them in the file `bib.re`.
+When you want to use a bibliography, you should write them in the file `bib.re`.
 
 ```
 //bibpaper[cite][caption]{..comment..}
@@ -438,8 +438,8 @@ Usage:
 
 ```
 //lead{
-In the chapter, I instroduce brief summary of the book,
-and I show the way how to write program in Linux.
+In the chapter, I introduce brief summary of the book,
+and I show the way how to write a program in Linux.
 //}
 ```
 
@@ -467,12 +467,12 @@ Usage:
 
 ## comments
 
-If you want to write some comments which do not output in the document, you can use comment notation `#@#`.
+If you want to write some comments that do not output in the document, you can use comment notation `#@#`.
 
 Usage:
 
 ```
-#@# Must one empty lines
+#@# Must one empty line
 ```
 
 If you want to write some warnings, use `#@warn(...)`.
@@ -483,7 +483,7 @@ Usage:
 #@warn(TBD)
 ```
 
-When you want to write comments in output document, use `//comment` and `@<comment>` with the option `--draft` of review-compile command.
+When you want to write comments in the output document, use `//comment` and `@<comment>` with the option `--draft` of review-compile command.
 
 Usage:
 
@@ -523,7 +523,7 @@ Note: `//raw` and `@<raw>` may break structured document easily.
 ## other grammar
 
 In Re:VIEW, you can add your customized blocks.  So you can define
-speial block for some books.
+special block for some books.
 
 * `//prototype` : function prototype. It's used in the book `Futu no Linux programming`.
 * `//type` : type definition. It's used in the book `Futu no Haskell programming`.
@@ -568,7 +568,7 @@ A,B,C
 @<kw>{Credential, credential}:: keyword.
 @<chap>{advanced}:: chapter number like `Chapter 17`
 @<title>{advanced}:: title of the chapter
-@<chapref>{advanced}:: chapter number and chapter title like `Chapter 17. advanced topic`
+@<chapref>{advanced}:: a chapter number and chapter title like `Chapter 17. advanced topic`
 @<bou>{appropriate}:: bou-ten.
 @<ruby>{直截, ちょくせつ}:: ruby
 @<ami>{point}:: ami-kake (shaded text)
@@ -590,13 +590,13 @@ A,B,C
 
 ## Tags for Authors (pre-processor commands)
 
-These tags are used in output document. In constrast,
-tags as below are not used in output document, to use
-for author.
+These tags are used in the output document. In contrast,
+tags as below are not used in the output document,  used
+by the author.
 
 ```
 #@#:: Comments. All texts in this line are ignored.
-#@warn(...):: Warning messages. The messages are showed when pre-proceess.
+#@warn(...):: Warning messages. The messages are showed when pre-process.
 #@require, #@provide:: Define dependency with keywords.
 #@mapfile(filename) ... #@end:: Insert all content of files.
 #@maprange(filename, range name) ... #@end:: Insert some area in content of files.
@@ -649,9 +649,9 @@ PART:
 In version 1.3 or after, you can use catalog.yml file.
 For more information of catalog.yml, see Re:VIEW catalog file guide(catalog.md).
 
-## Refering headings
+## Referring headings
 
-`@<hd>` generate refered section title and section number.
+`@<hd>` generate referred section title and section number.
 You can use deeper section with separator `|`.
 
 Usage:
@@ -666,7 +666,7 @@ If section title is unique, `|` is not needed.
 @<hd>{first section}
 ```
 
-If you want to refer other chapter (file), you should add ID of chapter.
+If you want to refer another chapter (file), you should add the ID of chapter.
 
 Usage:
 
@@ -674,7 +674,7 @@ Usage:
 @<hd>{preface|Introduction|first section}
 ```
 
-When section has the label, you can use label.
+When section has the label, you can use the label.
 
 ```
 =={intro} Introduction
@@ -687,7 +687,7 @@ When section has the label, you can use label.
 
 ### heading of columns
 
-You can refer the heading of column with `@<column>`.
+You can refer the heading of a column with `@<column>`.
 
 Usage:
 
@@ -705,8 +705,8 @@ You can refer labels.
 
 ## Links
 
-You can add hyperlink with `@<href>` and `//label`.
-Notation of the markup is `@<href>{URL, anchor}`. if you can use URL itself
+You can add a hyperlink with `@<href>` and `//label`.
+Notation of the markup is `@<href>{URL, anchor}`. If you can use URL itself
 as anchor, use `@<href>{URL}`.
 If you want to use `,` in URL, use `\,`.
 
