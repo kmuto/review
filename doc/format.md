@@ -570,7 +570,7 @@ A,B,C
 @<title>{advanced}:: title of the chapter
 @<chapref>{advanced}:: a chapter number and chapter title like `Chapter 17. advanced topic`
 @<bou>{appropriate}:: bou-ten.
-@<ruby>{直截, ちょくせつ}:: ruby
+@<ruby>{Matsumoto, Matz}:: ruby
 @<ami>{point}:: ami-kake (shaded text)
 @<b>{Please}:: bold
 @<i>{Please}:: italic
@@ -692,7 +692,7 @@ You can refer the heading of a column with `@<column>`.
 Usage:
 
 ```
-@<column>{Re:VIEWの用途いろいろ}
+@<column>{The usage of Re:VIEW}
 ```
 
 You can refer labels.
