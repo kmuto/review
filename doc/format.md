@@ -59,7 +59,7 @@ Columns are closed with next headings.
 ===[column] a column
 
 == head 02 and the end of  'a column'
-
+```
 
 If you want to close column without headings, you can use `===[/column]`
 
@@ -611,7 +611,7 @@ You can use ERb tags in the layout files.
 
 Sample layout file(layout.html.erb):
 
-```
+```html
 <html>
   <head>
     <title><%= title %></title>
@@ -730,7 +730,7 @@ You add the file locale.yml in the project directory.
 
 Sample local.yml file:
 
-```
+```yaml
 locale: ja
 ```
 
@@ -739,7 +739,7 @@ Default locale configuration file is in lib/review/i18n.yml.
 
 Sample local.yml file:
 
-```
+```yaml
 locale: en
 image: Fig.
 table: Tbl.
