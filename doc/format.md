@@ -6,7 +6,7 @@ Re:VIEW is based on EWB of ASCII, influenced RD and other Wiki system's syntax.
 
 ## Paragraph
 
-Paragraph needs one empty line.
+Paragraphs are separated by an empty line.
 
 Usage:
 
@@ -14,10 +14,10 @@ Usage:
 This is a paragraph, paragraph,
 and paragraph.
 
-Next paragraph is ...
+Next paragraph here is ...
 ```
 
-two empty lines or more are same as one empty line.
+Two empty lines or more are same as one empty line.
 
 ## Chapter, Section, Subsection (headings)
 
@@ -272,7 +272,7 @@ inline reference markup like `@<img>{unixhistory}`.
 
 When you want to use images in paragraph or other inline context, you can use `@<icon>`.
 
-### find image path
+### Finding image pathes
 
 The order of finding image is as follows.  The first matched one is used.
 
@@ -291,7 +291,7 @@ The order of finding image is as follows.  The first matched one is used.
 * ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
 
-## images without caption counter
+## Images without caption counter
 
 `//indepimage[filename][caption]` makes images without caption counter.
 caption is optional.
@@ -305,7 +305,7 @@ Usage:
 Note that there are similar markup `//numberlessimage`, but it is deprecated.
 
 
-## figures with graph tools
+## Figures with graph tools
 
 Re:VIEW generates image files using graph tool with command `//graph[filename][commandname][caption]`. The caption is optional.
 
@@ -429,7 +429,7 @@ Usage:
 … is the well-known project.(@<bib>{lins})
 ```
 
-## leed sentences
+## Lead sentences
 
 lead sentences are `//lead{ ... //}`.
 You can write as `//read{ ... //}`.
@@ -465,7 +465,7 @@ Usage:
 
 `//linebreak` and `//pagebreak` will be obsoleted.
 
-## comments
+## Comments
 
 If you want to write some comments that do not output in the document, you can use comment notation `#@#`.
 
@@ -491,7 +491,7 @@ Usage:
 @<comment>{TODO}
 ```
 
-## raw data block
+## Raw data block
 
 When you want to write non-Re:VIEW line, use `//raw`.
 
@@ -520,7 +520,7 @@ this is a special line.
 
 Note: `//raw` and `@<raw>` may break structured document easily.
 
-## other grammar
+## Other syntax
 
 In Re:VIEW, you can add your customized blocks.  So you can define
 special block for some books.
@@ -685,7 +685,7 @@ When section has the label, you can use the label.
 ```
 
 
-### heading of columns
+### Heading of columns
 
 You can refer the heading of a column with `@<column>`.
 
