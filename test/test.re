@@ -1,7 +1,7 @@
 = 見出し
 以下を実行
 //emlist{
-./bin/review-compile --inencoding=UTF-8 --outencoding=UTF-8 --hdnumberingmode test.re --target=html
+./bin/review-compile --hdnumberingmode test.re --target=html
 }
 == 節１
 

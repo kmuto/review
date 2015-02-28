@@ -13,8 +13,6 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
     @builder = MARKDOWNBuilder.new()
     @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     }
     @book = Book::Base.new(nil)

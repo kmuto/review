@@ -53,8 +53,6 @@ def _main
     "nolf" => nil,        # for IDGXML
     "chapref" => nil,     # for IDGXML
     "structuredxml" => nil, # for IDGXML
-    "inencoding" => "UTF-8",
-    "outencoding" => "UTF-8",
     "stylesheet" => [],   # for HTML
     "mathml" => nil,      # for HTML
     "language" => "ja",   # for HTML
@@ -71,8 +69,6 @@ def _main
     require 'yaml'
     config = config.merge(YAML.load_file(yaml))
   end
-  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc| config["inencoding"] = enc }
-  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc| config["outencoding"] = enc }
   opts.on('-c', '--check', 'Check manuscript') { check_only = true }
   opts.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
   opts.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }

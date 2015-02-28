@@ -37,23 +37,12 @@ end
 def main
   $KCODE = 'UTF-8' unless defined?(Encoding)
 
-  param = {
-    "inencoding" => "UTF-8",
-    "outencoding" => "UTF-8",
-  }
+  param = {}
 
   mode = :output
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} [-c|-d|-s|--replace] [<file>...]"
-  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and
-SJIS)') {|enc|
-    param["inencoding"] = enc
-  }
-  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC
-, JIS, and SJIS)') {|enc|
-    param["outencoding"] = enc
-  }
   opts.on('-c', '--check', 'Check if preprocess is needed.') {
     mode = :check
   }

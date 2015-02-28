@@ -136,8 +136,6 @@ class I18nTest < Test::Unit::TestCase
     @builder = HTMLBuilder.new()
     @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
       "ext" => ".re"
     }
