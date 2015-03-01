@@ -12,6 +12,7 @@
 require 'epubmaker/producer'
 require 'review/i18n'
 require 'cgi'
+require 'shellwords'
 
 module EPUBMaker
 
@@ -411,8 +412,8 @@ EOT
     end
 
     def export_zip(tmpdir, epubfile)
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage1"]} #{epubfile} mimetype` }
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["epubmaker"]["zip_addpath"]}` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage1"]} #{epubfile.shellescape} mimetype` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage2"]} #{epubfile.shellescape} META-INF OEBPS #{@producer.params["epubmaker"]["zip_addpath"]}` }
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)
