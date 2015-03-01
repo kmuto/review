@@ -155,5 +155,20 @@ class IndexTest < Test::Unit::TestCase
     end
   end
 
+  def test_HeadelineIndex8
+    src = <<-EOB
+= chap1
+== sec1
+=== sec1-1
+==== sec1-1-1
+
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil)
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal "1.1.1", index.number('sec1-1')
+  end
+
+
 end
 
