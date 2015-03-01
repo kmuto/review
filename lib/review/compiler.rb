@@ -243,14 +243,14 @@ module ReVIEW
           f.gets
           error 'block end seen but not opened'
         when %r<\A//[a-z]+>
-          name, args, lines = read_command(f)
+          name, args, lines, options = read_command(f)
           syntax = syntax_descriptor(name)
           unless syntax
             error "unknown command: //#{name}"
             compile_unknown_command args, lines
             next
           end
-          compile_command syntax, args, lines
+          compile_command syntax, args, lines, options
         when %r<\A//>
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -425,13 +425,14 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).intern
-      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
+      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.gsub(/\{\z|\{\|(.+?)\|\z/, ''), name)
+      options = $1
       lines = block_open?(line) ? read_block(f) : nil
-      return name, args, lines
+      return name, args, lines, options
     end
 
     def block_open?(line)
-      line.rstrip[-1,1] == '{'
+      !!line.chomp.match(/\{\z|\{\|(.+?)\|\z/)
     end
 
     def read_block(f)
@@ -468,7 +469,7 @@ module ReVIEW
       return words
     end
 
-    def compile_command(syntax, args, lines)
+    def compile_command(syntax, args, lines, options)
       unless @strategy.respond_to?(syntax.name)
         error "strategy does not support command: //#{syntax.name}"
         compile_unknown_command args, lines
@@ -481,12 +482,12 @@ module ReVIEW
         args = ['(NoArgument)'] * syntax.min_argc
       end
       if syntax.block_allowed?
-        compile_block syntax, args, lines
+        compile_block syntax, args, lines, options
       else
         if lines
           error "block is not allowed for command //#{syntax.name}; ignore"
         end
-        compile_single syntax, args
+        compile_single syntax, args, options
       end
     end
 
@@ -494,8 +495,13 @@ module ReVIEW
       @strategy.unknown_command args, lines
     end
 
-    def compile_block(syntax, args, lines)
-      @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+    def compile_block(syntax, args, lines, options)
+      body = lines || default_block(syntax)
+      if options
+        @strategy.__send__(syntax.name, body, *args) { options }
+      else
+        @strategy.__send__(syntax.name, body, *args)
+      end
     end
 
     def default_block(syntax)
@@ -505,8 +511,12 @@ module ReVIEW
       []
     end
 
-    def compile_single(syntax, args)
-      @strategy.__send__(syntax.name, *args)
+    def compile_single(syntax, args, options)
+      if options
+        @strategy.__send__(syntax.name, *args) { options }
+      else
+        @strategy.__send__(syntax.name, *args)
+      end
     end
 
     def text(str)
