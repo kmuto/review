@@ -254,6 +254,15 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\vspace{-1.5em}\\begin{reviewemlistlst}[title={\\relax},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n|, actual
   end
 
+  def test_emlist_lst_without_lang
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    @book.config["highlight"]["lang"] = "sql"
+    actual = compile_block("//emlist[]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
+    assert_equal %Q|\n\\vspace{-1.5em}\\begin{reviewemlistlst}[title={\\relax},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n|, actual
+  end
+
+
   def test_emlist_caption
     actual = compile_block("//emlist[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n|, actual

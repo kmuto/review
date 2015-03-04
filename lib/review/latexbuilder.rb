@@ -320,7 +320,12 @@ module ReVIEW
         caption_str = "\\relax" ## dummy charactor to remove lstname
         print "\\vspace{-1.5em}"
       end
-      lexer = lang || ""
+      if @book.config["highlight"] && @book.config["highlight"]["lang"]
+        lexer = @book.config["highlight"]["lang"] # default setting
+      else
+        lexer = ""
+      end
+      lexer = lang if lang.present?
       body = lines.inject(''){|i, j| i + detab(unescape_latex(j)) + "\n"}
       puts "\\begin{"+command+"}["+title+"={"+caption_str+"},language={"+ lexer+"}]"
       print body
