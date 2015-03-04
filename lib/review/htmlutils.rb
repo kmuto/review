@@ -47,7 +47,12 @@ module ReVIEW
 
     def highlight(ops)
       body = ops[:body] || ''
-      lexer = ops[:lexer].blank? ? 'text' : ops[:lexer]
+      if @book.config["highlight"] && @book.config["highlight"]["lang"]
+        lexer = @book.config["highlight"]["lang"] # default setting
+      else
+        lexer = 'text'
+      end
+      lexer = ops[:lexer] if ops[:lexer].present?
       format = ops[:format] || ''
       options = {:nowrap => true, :noclasses => true}
       if ops[:options] && ops[:options].kind_of?(Hash)

@@ -531,6 +531,25 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
   end
 
+  def test_listnum_pygments_lang_without_lang
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    begin
+      require 'pygments'
+    rescue LoadError
+      $stderr.puts "skip test_listnum_pygments_lang (cannot find pygments.rb)"
+      return true
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
+    @book.config["highlight"]["lang"] = "ruby"
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
+  end
+
+
   def test_emlist
     actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
     assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n|, actual
