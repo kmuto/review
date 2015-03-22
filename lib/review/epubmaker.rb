@@ -18,7 +18,7 @@ module ReVIEW
   include REXML
 
   def initialize
-    @epub = nil
+    @producer = nil
     @tochtmltxt = "toc-html.txt"
     @buildlogtxt = "build-log.txt"
   end
@@ -29,9 +29,9 @@ module ReVIEW
 
   def load_yaml(yamlfile)
     @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile)) # FIXME:設定がRe:VIEW側とepubmaker/producer.rb側の2つに分かれて面倒
-    @epub = Producer.new(@params)
-    @epub.load(yamlfile)
-    @params = @epub.params
+    @producer = Producer.new(@params)
+    @producer.load(yamlfile)
+    @params = @producer.params
   end
 
   def produce(yamlfile, bookname=nil)
@@ -77,8 +77,8 @@ module ReVIEW
 
       call_hook("hook_aftercopyimage", basetmpdir)
 
-      @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
-      @epub.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
+      @producer.import_imageinfo("#{basetmpdir}/images", basetmpdir)
+      @producer.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
       epubtmpdir = nil
       if @params["debug"].present?
@@ -86,7 +86,7 @@ module ReVIEW
         Dir.mkdir(epubtmpdir)
       end
       log("Call ePUB producer.")
-      @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
+      @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
       log("Finished.")
     ensure
       FileUtils.remove_entry_secure basetmpdir if @params["debug"].nil?
@@ -106,7 +106,7 @@ module ReVIEW
   end
 
   def verify_target_images(basetmpdir)
-    @epub.contents.each do |content|
+    @producer.contents.each do |content|
       if content.media == "application/xhtml+xml"
 
         File.open("#{basetmpdir}/#{content.file}") do |f|
@@ -361,7 +361,7 @@ EOT
         if properties.present?
           hash["properties"] = properties.split(" ")
         end
-        @epub.contents.push(Content.new(hash))
+        @producer.contents.push(Content.new(hash))
       end
     end
   end
@@ -370,7 +370,7 @@ EOT
     if @params["stylesheet"].size > 0
       @params["stylesheet"].each do |sfile|
         FileUtils.cp(sfile, basetmpdir)
-        @epub.contents.push(Content.new("file" => sfile))
+        @producer.contents.push(Content.new("file" => sfile))
       end
     end
   end
@@ -384,17 +384,17 @@ EOT
       else
         FileUtils.cp(@params["titlefile"], "#{basetmpdir}/titlepage.#{@params["htmlext"]}")
       end
-      write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@epub.res.v("titlepagetitle")}\tchaptype=pre")
+      write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@producer.res.v("titlepagetitle")}\tchaptype=pre")
     end
 
     if !@params["originaltitlefile"].nil? && File.exist?(@params["originaltitlefile"])
       FileUtils.cp(@params["originaltitlefile"], "#{basetmpdir}/#{File.basename(@params["originaltitlefile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["originaltitlefile"])}\t#{@epub.res.v("originaltitle")}\tchaptype=pre")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["originaltitlefile"])}\t#{@producer.res.v("originaltitle")}\tchaptype=pre")
     end
 
     if !@params["creditfile"].nil? && File.exist?(@params["creditfile"])
       FileUtils.cp(@params["creditfile"], "#{basetmpdir}/#{File.basename(@params["creditfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@epub.res.v("credittitle")}\tchaptype=pre")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@producer.res.v("credittitle")}\tchaptype=pre")
     end
   end
 
@@ -427,26 +427,26 @@ EOT
   def copy_backmatter(basetmpdir)
     if @params["profile"]
       FileUtils.cp(@params["profile"], "#{basetmpdir}/#{File.basename(@params["profile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@epub.res.v("profiletitle")}\tchaptype=post")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@producer.res.v("profiletitle")}\tchaptype=post")
     end
 
     if @params["advfile"]
       FileUtils.cp(@params["advfile"], "#{basetmpdir}/#{File.basename(@params["advfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["advfile"])}\t#{@epub.res.v("advtitle")}\tchaptype=post")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["advfile"])}\t#{@producer.res.v("advtitle")}\tchaptype=post")
     end
 
     if @params["colophon"]
       if @params["colophon"].instance_of?(String) # FIXME:このやり方はやめる？
         FileUtils.cp(@params["colophon"], "#{basetmpdir}/colophon.#{@params["htmlext"]}")
       else
-        File.open("#{basetmpdir}/colophon.#{@params["htmlext"]}", "w") {|f| @epub.colophon(f) }
+        File.open("#{basetmpdir}/colophon.#{@params["htmlext"]}", "w") {|f| @producer.colophon(f) }
       end
-      write_tochtmltxt(basetmpdir, "1\tcolophon.#{@params["htmlext"]}\t#{@epub.res.v("colophontitle")}\tchaptype=post")
+      write_tochtmltxt(basetmpdir, "1\tcolophon.#{@params["htmlext"]}\t#{@producer.res.v("colophontitle")}\tchaptype=post")
     end
 
     if @params["backcover"]
       FileUtils.cp(@params["backcover"], "#{basetmpdir}/#{File.basename(@params["backcover"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["backcover"])}\t#{@epub.res.v("backcovertitle")}\tchaptype=post")
+      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["backcover"])}\t#{@producer.res.v("backcovertitle")}\tchaptype=post")
     end
   end
 
