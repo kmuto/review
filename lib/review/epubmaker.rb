@@ -42,8 +42,8 @@ module ReVIEW
 
     log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
-    File.unlink("#{bookname}.epub") if File.exist?("#{bookname}.epub")
-    FileUtils.rm_rf(booktmpname) if @params["debug"] && File.exist?(booktmpname)
+    FileUtils.rm_f("#{bookname}.epub")
+    FileUtils.rm_rf(booktmpname) if @params["debug"]
 
     basetmpdir = Dir.mktmpdir("#{bookname}-", Dir.pwd)
     begin
