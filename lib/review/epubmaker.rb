@@ -49,22 +49,18 @@ module ReVIEW
     begin
       log("Created first temporary directory as #{basetmpdir}.")
 
-      log("Call hook_beforeprocess. (#{@params["epubmaker"]["hook_beforeprocess"]})")
-      call_hook(@params["epubmaker"]["hook_beforeprocess"], basetmpdir)
+      call_hook("hook_beforeprocess", basetmpdir)
 
       copy_stylesheet(basetmpdir)
 
       copy_frontmatter(basetmpdir)
-      log("Call hook_afterfrontmatter. (#{@params["epubmaker"]["hook_afterfrontmatter"]})")
-      call_hook(@params["epubmaker"]["hook_afterfrontmatter"], basetmpdir)
+      call_hook("hook_afterfrontmatter", basetmpdir)
 
       build_body(basetmpdir, yamlfile)
-      log("Call hook_afterbody. (#{@params["epubmaker"]["hook_afterbody"]})")
-      call_hook(@params["epubmaker"]["hook_afterbody"], basetmpdir)
+      call_hook("hook_afterbody", basetmpdir)
 
       copy_backmatter(basetmpdir)
-      log("Call hook_afterbackmatter. (#{@params["epubmaker"]["hook_afterbackmatter"]})")
-      call_hook(@params["epubmaker"]["hook_afterbackmatter"], basetmpdir)
+      call_hook("hook_afterbackmatter", basetmpdir)
 
       push_contents(basetmpdir)
 
@@ -79,8 +75,7 @@ module ReVIEW
       copy_resources("adv", "#{basetmpdir}/images")
       copy_resources(@params["fontdir"], "#{basetmpdir}/fonts", @params["font_ext"])
 
-      log("Call hook_aftercopyimage. (#{@params["epubmaker"]["hook_aftercopyimage"]})")
-      call_hook(@params["epubmaker"]["hook_aftercopyimage"], basetmpdir)
+      call_hook("hook_aftercopyimage", basetmpdir)
 
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
       @epub.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
@@ -98,7 +93,9 @@ module ReVIEW
     end
   end
 
-  def call_hook(filename, *params)
+  def call_hook(hook_name, *params)
+    filename = @params["epubmaker"][hook_name]
+    log("Call #{hook_name}. (#{filename})")
     if !filename.nil? && File.exist?(filename) && FileTest.executable?(filename)
       if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
         warn "hook is prohibited in safe mode. ignored."
