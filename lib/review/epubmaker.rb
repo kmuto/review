@@ -24,7 +24,7 @@ module ReVIEW
   end
 
   def log(s)
-    puts s unless @params["debug"].nil?
+    puts s if @params["debug"].present?
   end
 
   def load_yaml(yamlfile)
@@ -51,6 +51,7 @@ module ReVIEW
 
       call_hook("hook_beforeprocess", basetmpdir)
 
+      ## copy all files into basetmpdir
       copy_stylesheet(basetmpdir)
 
       copy_frontmatter(basetmpdir)
@@ -62,9 +63,10 @@ module ReVIEW
       copy_backmatter(basetmpdir)
       call_hook("hook_afterbackmatter", basetmpdir)
 
+      ## push contents in basetmpdir into @producer
       push_contents(basetmpdir)
 
-      if !@params["epubmaker"]["verify_target_images"].nil?
+      if @params["epubmaker"]["verify_target_images"].present?
         verify_target_images(basetmpdir)
         copy_images(@params["imagedir"], basetmpdir)
       else
@@ -96,7 +98,7 @@ module ReVIEW
   def call_hook(hook_name, *params)
     filename = @params["epubmaker"][hook_name]
     log("Call #{hook_name}. (#{filename})")
-    if !filename.nil? && File.exist?(filename) && FileTest.executable?(filename)
+    if filename.present? && File.exist?(filename) && FileTest.executable?(filename)
       if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
         warn "hook is prohibited in safe mode. ignored."
       else
@@ -134,7 +136,7 @@ module ReVIEW
     return nil unless File.exist?(resdir)
     allow_exts = @params["image_ext"] if allow_exts.nil?
     FileUtils.mkdir_p(destdir)
-    if !@params["epubmaker"]["verify_target_images"].nil?
+    if @params["epubmaker"]["verify_target_images"].present?
       @params["epubmaker"]["force_include_images"].each do |file|
         unless File.exist?(file)
           warn "#{file} is not found, skip." if file !~ /\Ahttp[s]?:/
@@ -235,7 +237,7 @@ EOT
     filename = ""
 
     chaptype = "body"
-    if !ispart.nil?
+    if ispart.present?
       chaptype = "part"
     elsif chap.on_PREDEF?
       chaptype = "pre"
@@ -243,7 +245,7 @@ EOT
       chaptype = "post"
     end
 
-    if !ispart.nil?
+    if ispart.present?
       filename = chap.path
     else
       filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
@@ -316,7 +318,7 @@ EOT
     end
     first = true
     headlines.each do |headline|
-      headline["level"] = 0 if !ispart.nil? && headline["level"] == 1
+      headline["level"] = 0 if ispart.present? && headline["level"] == 1
       if first.nil?
         write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}\tchaptype=#{chaptype}")
       else
@@ -334,7 +336,7 @@ EOT
         chaptype = nil
         properties = nil
         level, file, title, custom = l.chomp.split("\t")
-        unless custom.nil?
+        if custom.present?
           # custom setting
           vars = custom.split(/,\s*/)
           vars.each do |var|
@@ -376,7 +378,7 @@ EOT
   end
 
   def copy_frontmatter(basetmpdir)
-    FileUtils.cp(@params["cover"], "#{basetmpdir}/#{File.basename(@params["cover"])}") if !@params["cover"].nil? && File.exist?(@params["cover"])
+    FileUtils.cp(@params["cover"], "#{basetmpdir}/#{File.basename(@params["cover"])}") if @params["cover"].present? && File.exist?(@params["cover"])
 
     if @params["titlepage"]
       if @params["titlefile"].nil?
@@ -387,12 +389,12 @@ EOT
       write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@producer.res.v("titlepagetitle")}\tchaptype=pre")
     end
 
-    if !@params["originaltitlefile"].nil? && File.exist?(@params["originaltitlefile"])
+    if @params["originaltitlefile"].present? && File.exist?(@params["originaltitlefile"])
       FileUtils.cp(@params["originaltitlefile"], "#{basetmpdir}/#{File.basename(@params["originaltitlefile"])}")
       write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["originaltitlefile"])}\t#{@producer.res.v("originaltitle")}\tchaptype=pre")
     end
 
-    if !@params["creditfile"].nil? && File.exist?(@params["creditfile"])
+    if @params["creditfile"].present? && File.exist?(@params["creditfile"])
       FileUtils.cp(@params["creditfile"], "#{basetmpdir}/#{File.basename(@params["creditfile"])}")
       write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@producer.res.v("credittitle")}\tchaptype=pre")
     end
@@ -515,15 +517,15 @@ EOT
 
     def tag_start(name, attrs)
       if name =~ /\Ah(\d+)/
-        unless @level.nil?
+        if @level.present?
           raise "#{name}, #{attrs}"
         end
         @level = $1.to_i
-        @id = attrs["id"] if !attrs["id"].nil?
+        @id = attrs["id"] if attrs["id"].present?
       elsif !@level.nil?
-        if name == "img" && !attrs["alt"].nil?
+        if name == "img" && attrs["alt"].present?
           @content << attrs["alt"]
-        elsif name == "a" && !attrs["id"].nil?
+        elsif name == "a" && attrs["id"].present?
           @id = attrs["id"]
         end
       end
@@ -531,7 +533,7 @@ EOT
 
     def tag_end(name)
       if name =~ /\Ah\d+/
-        @headlines.push({"level" => @level, "id" => @id, "title" => @content}) unless @id.nil?
+        @headlines.push({"level" => @level, "id" => @id, "title" => @content}) if @id.present?
         @content = ""
         @level = nil
         @id = nil
@@ -539,7 +541,7 @@ EOT
     end
 
     def text(text)
-      unless @level.nil?
+      if @level.present?
         @content << text.gsub("\t", "　") # FIXME:区切り文字
       end
     end
