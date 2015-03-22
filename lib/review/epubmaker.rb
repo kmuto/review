@@ -133,7 +133,7 @@ module ReVIEW
   def copy_images(resdir, destdir, allow_exts=nil)
     return nil unless File.exist?(resdir)
     allow_exts = @params["image_ext"] if allow_exts.nil?
-    FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
+    FileUtils.mkdir_p(destdir)
     if !@params["epubmaker"]["verify_target_images"].nil?
       @params["epubmaker"]["force_include_images"].each do |file|
         unless File.exist?(file)
@@ -141,7 +141,7 @@ module ReVIEW
           next
         end
         basedir = File.dirname(file)
-        FileUtils.mkdir_p("#{destdir}/#{basedir}") unless FileTest.directory?("#{destdir}/#{basedir}")
+        FileUtils.mkdir_p("#{destdir}/#{basedir}")
         log("Copy #{file} to the temporary directory.")
         FileUtils.cp(file, "#{destdir}/#{basedir}")
       end
@@ -153,7 +153,7 @@ module ReVIEW
   def copy_resources(resdir, destdir, allow_exts=nil)
     return nil unless File.exist?(resdir)
     allow_exts = @params["image_ext"] if allow_exts.nil?
-    FileUtils.mkdir_p(destdir) unless FileTest.directory?(destdir)
+    FileUtils.mkdir_p(destdir)
     recursive_copy_files(resdir, destdir, allow_exts)
   end
 
@@ -165,7 +165,7 @@ module ReVIEW
           recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
         else
           if fname =~ /\.(#{allow_exts.join("|")})\Z/i
-            FileUtils.mkdir_p(destdir) unless File.exist?(destdir)
+            FileUtils.mkdir_p(destdir)
             log("Copy #{resdir}/#{fname} to the temporary directory.")
             FileUtils.cp("#{resdir}/#{fname}", destdir)
           end
