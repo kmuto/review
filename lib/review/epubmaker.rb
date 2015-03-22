@@ -85,8 +85,11 @@ module ReVIEW
       @epub.import_imageinfo("#{basetmpdir}/images", basetmpdir)
       @epub.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
-      epubtmpdir = @params["debug"].nil? ? nil : "#{Dir.pwd}/#{booktmpname}"
-      Dir.mkdir(booktmpname) unless @params["debug"].nil?
+      epubtmpdir = nil
+      if @params["debug"].present?
+        epubtmpdir = "#{Dir.pwd}/#{booktmpname}"
+        Dir.mkdir(epubtmpdir)
+      end
       log("Call ePUB producer.")
       @epub.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
       log("Finished.")
