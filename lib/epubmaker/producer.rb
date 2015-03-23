@@ -180,6 +180,18 @@ module EPUBMaker
       end
     end
 
+    def isbn_hyphen
+      str = @params["isbn"].to_s
+
+      if str =~ /\A\d{10}\Z/
+        "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
+      elsif str =~ /\A\d{13}\Z/
+        "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
+      else
+        nil
+      end
+    end
+
     private
 
     # Complement parameters.
