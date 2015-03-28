@@ -133,6 +133,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
   end
 
+  def test_headline_level2_doesnt_break_after_prefix
+    @book.config["break_after_chapter_prefix"] = true
+    actual = compile_block("=={test} this is test.\n")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
+  end
+
   def test_headline_level3
     actual = compile_block("==={test} this is test.\n")
     assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, actual

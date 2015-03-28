@@ -200,7 +200,7 @@ EOT
       unless anchor.nil?
         a_id = %Q[<a id="h#{anchor}"></a>]
       end
-      if @book.config["break_after_chapter_prefix"] == true
+      if @book.config["break_after_chapter_prefix"] == true && level == 1
         br = "<br />"
       end
       if caption.empty?
