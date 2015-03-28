@@ -74,12 +74,14 @@ debug: null
 toclevel: 3
 
 # 採番の設定。採番させたくない見出しには「==[nonum]」のようにnonum指定をする
-# 
+#
 # 本文でセクション番号を表示する見出しレベル
 secnolevel: 2
 
 # 付録の連番のスタイル。null(アラビア数字1〜。デフォルト)、alpha(英字A〜)、roman(ローマ数字I〜)
 # appendix_format: null
+# 章番号の後に改行を入れる。省略した場合は改行しない
+# break_after_chapter_prefix: true
 
 # 以下のsecnolevelはまだ未実装。
 # 前付でセクション番号を表示する見出しレベル(未実装)
@@ -164,8 +166,8 @@ params: --stylesheet=sample.css
 #  flattocindent: true
 # NCX目次の見出しレベルごとの飾り(配列で設定)。EPUB3ではNCXは作られない
 #  ncxindent:
-#- 
-#- - 
+#-
+#- -
 # フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
 # プログラムには実行権限が必要
 # ファイル変換処理の前に実行するプログラム。スタイルシートのコンパイルをしたいときなどに利用する。
