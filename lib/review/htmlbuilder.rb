@@ -195,16 +195,21 @@ EOT
       prefix, anchor = headline_prefix(level)
       puts '' if level > 1
       a_id = ""
+      br = ""
+
       unless anchor.nil?
         a_id = %Q[<a id="h#{anchor}"></a>]
+      end
+      if @book.config["break_after_chapter_prefix"] == true
+        br = "<br />"
       end
       if caption.empty?
         puts a_id unless label.nil?
       else
         if label.nil?
-          puts %Q[<h#{level}>#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level}>#{a_id}#{prefix}#{br}#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
+          puts %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{prefix}#{br}#{compile_inline(caption)}</h#{level}>]
         end
       end
     end
