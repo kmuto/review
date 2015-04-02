@@ -42,6 +42,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">第1章　</span>this is test.</h1>\n|, actual
   end
 
+  def test_headline_level1_break_after_prefix
+    @book.config["break_after_chapter_prefix"] = true
+    actual = compile_block("={test} this is test.\n")
+    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　<br />this is test.</h1>\n|, actual
+  end
+
   def test_headline_level1_postdef
     @chapter.instance_eval do
       def on_APPENDIX?
@@ -125,6 +131,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level2
     actual = compile_block("=={test} this is test.\n")
     assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
+  end
+
+  def test_headline_level2_doesnt_break_after_prefix
+    @book.config["break_after_chapter_prefix"] = true
+    actual = compile_block("=={test} this is test.\n")
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
   end
 
   def test_headline_level3
