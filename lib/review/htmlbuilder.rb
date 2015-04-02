@@ -193,6 +193,9 @@ EOT
 
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
+      unless prefix.nil?
+        prefix = %Q[<span class="secno">#{prefix}</span>]
+      end
       puts '' if level > 1
       a_id = ""
       unless anchor.nil?
