@@ -11,7 +11,6 @@
 require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
-require 'lineinput'
 require 'strscan'
 
 module ReVIEW
@@ -409,6 +408,7 @@ module ReVIEW
         @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
         @strategy.dd f.break(/\A(\S|\s*:)/).map {|line| text(line.strip) }
         f.skip_blank_lines
+        f.skip_comment_lines
       end
       @strategy.dl_end
     end

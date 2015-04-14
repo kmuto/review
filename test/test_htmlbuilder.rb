@@ -453,6 +453,18 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<dl>\n<dt>foo[bar]</dt>\n<dd>foo.bar.</dd>\n</dl>\n|, actual
   end
 
+  def test_dlist_with_comment
+    actual = compile_block(<<-EOS)
+: title
+  body
+#@ comment
+#@ comment
+: title2
+  body2
+EOS
+    assert_equal %Q|<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n|, actual
+  end
+
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
