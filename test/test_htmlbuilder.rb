@@ -454,14 +454,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_dlist_with_comment
-    actual = compile_block(<<-EOS)
-: title
-  body
-#@ comment
-#@ comment
-: title2
-  body2
-EOS
+    source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
+    actual = compile_block(source)
     assert_equal %Q|<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n|, actual
   end
 
