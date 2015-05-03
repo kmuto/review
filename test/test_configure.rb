@@ -1,13 +1,13 @@
 # encoding: utf-8
 
 require 'test_helper'
-require 'review/pdfmaker'
+require 'review/epubmaker'
 
-class PDFMakerTest < Test::Unit::TestCase
+class ConfigureTest < Test::Unit::TestCase
   include ReVIEW
 
   def setup
-    @maker = ReVIEW::PDFMaker.new
+    @maker = ReVIEW::EPUBMaker.new
     @config = ReVIEW::Configure.values
     @config.merge!({
                      "bookname" => "sample",
@@ -20,6 +20,10 @@ class PDFMakerTest < Test::Unit::TestCase
                    })
     @output = StringIO.new
     I18n.setup(@config["language"])
+  end
+
+  def test_configure_class
+    assert_equal ReVIEW::Configure, @config.class
   end
 
   def test_configure_get
