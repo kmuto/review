@@ -27,7 +27,7 @@ module ReVIEW
 
     def to_json(*args)
       if content.kind_of? String
-        val = '"'+@content.gsub(/\"/,'\\"')+'"'
+        val = '"'+@content.gsub(/\"/,'\\"').gsub(/\n/,'\\n')+'"'
       elsif content == nil
         val = "null"
       elsif !content.kind_of? Array
@@ -35,7 +35,10 @@ module ReVIEW
       else
         val = "["+@content.map(&:to_json).join(",")+"]"
       end
-      '{"t":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '","c":' + val + '}'
+      '{"ruleName":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
+        "\"offset\":#{position.pos},\"line\":#{position.line},\"column\":#{position.col}," +
+        '"childNodes":' + val +
+        '}'
     end
 
     def inspect
@@ -54,10 +57,11 @@ module ReVIEW
     end
 
     def to_json
-      '{"t":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
+      '{"ruleName":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
         %Q|"cmd":"#{@cmd.to_json}",|+
         %Q|"label":"#{@label.to_json}",|+
-        '"c":' + @content.to_json + '}'
+        "\"offset\":#{position.pos},\"line\":#{position.line},\"column\":#{position.col}," +
+        '"childNodes":' + @content.to_json + '}'
     end
   end
 
@@ -136,9 +140,10 @@ module ReVIEW
     end
 
     def to_json
-      '{"t":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
+      '{"ruleName":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
         %Q|"symbol":"#{@symbol}",| +
-        '"c":[' + @content.map(&:to_json).join(",") + ']}'
+        "\"offset\":#{position.pos},\"line\":#{position.line},\"column\":#{position.col}," +
+        '"childNodes":[' + @content.map(&:to_json).join(",") + ']}'
     end
   end
 
@@ -155,6 +160,13 @@ module ReVIEW
     def to_doc
       content_str = super
       @compiler.compile_text(content_str)
+    end
+
+    def to_json(*args)
+      val = '"'+@content.gsub(/\"/,'\\"').gsub(/\n/,'\\n')+'"'
+      '{"ruleName":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
+        "\"offset\":#{position.pos},\"line\":#{position.line},\"column\":#{position.col}," +
+        '"text":' + val + '}'
     end
   end
 

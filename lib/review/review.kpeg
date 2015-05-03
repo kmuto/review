@@ -2,6 +2,14 @@
 
 %% {
   class Error; end
+  class Position
+    attr_accessor :pos, :line, :col
+    def initialize(compiler)
+      @pos  = compiler.pos
+      @line = compiler.current_line
+      @col  = compiler.current_column
+    end
+  end
 
 require 'review/location'
 require 'review/extentions'
@@ -18,6 +26,8 @@ require 'review/node'
   ## redifine Compiler.new
   def initialize(strategy)
     @strategy = strategy
+    @current_column = nil
+    @chapter = nil
   end
 
   attr_accessor :strategy
@@ -38,6 +48,11 @@ require 'review/node'
     def convert_ast
       ast = @strategy.ast
       convert_column(ast)
+      if $DEBUG
+        File.open("review-dump.json","w") do |f|
+          f.write(ast.to_json)
+        end
+      end
       @strategy.output << ast.to_doc
     end
 
@@ -57,7 +72,7 @@ require 'review/node'
         if elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc == "column"
           flush_column(new_content)
           @current_content = []
-          @current_column = ReVIEW::ColumnNode.new(elem.compiler, elem.level,
+          @current_column = ReVIEW::ColumnNode.new(elem.compiler, elem.position, elem.level,
                                                   elem.label, elem.content, @current_content)
           next
         elsif elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc =~ %r|^/|
@@ -466,31 +481,35 @@ require 'review/node'
       s.size >= @list_stack.last.size + 2
     end
 
+    def position
+      Position.new(self)
+    end
+
 
 }
 
 %% ast-location = ::ReVIEW
-%% headline = ast HeadlineNode(compiler, level, cmd, label, content)
-%% paragraph = ast ParagraphNode(compiler, content)
-%% block_element = ast BlockElementNode(compiler, name, args, content)
-%% code_block_element = ast CodeBlockElementNode(compiler, name, args, content)
-%% inline_element = ast InlineElementNode(compiler, symbol, content)
-%% inline_element_content = ast InlineElementContentNode(compiler, content)
-%% text = ast TextNode(compiler, content)
-%% raw = ast RawNode(compiler, builder, content)
-%% brace = ast BraceNode(compiler, content)
-%% singleline_content = ast SinglelineContentNode(compiler, content)
-%% singleline_comment = ast SinglelineCommentNode(compiler, content)
-%% ulist = ast UlistNode(compiler, content)
-%% ulist_element = ast UlistElementNode(compiler, level, content)
-%% olist = ast OlistNode(compiler, content)
-%% olist_element = ast OlistElementNode(compiler, num, content)
-%% dlist = ast DlistNode(compiler, content)
-%% dlist_element = ast DlistElementNode(compiler, text, content)
-%% bracket_arg = ast BracketArgNode(compiler, content)
-%% document = ast DocumentNode(compiler, content)
-%% column = ast ColumnNode(compiler, level, label, caption, content)
-%% newline = ast NewLineNode(compiler, content)
+%% headline = ast HeadlineNode(compiler, position, level, cmd, label, content)
+%% paragraph = ast ParagraphNode(compiler, position, content)
+%% block_element = ast BlockElementNode(compiler, position, name, args, content)
+%% code_block_element = ast CodeBlockElementNode(compiler, position, name, args, content)
+%% inline_element = ast InlineElementNode(compiler, position, symbol, content)
+%% inline_element_content = ast InlineElementContentNode(compiler, position, content)
+%% text = ast TextNode(compiler, position, content)
+%% raw = ast RawNode(compiler, builder, position, content)
+%% brace = ast BraceNode(compiler, position, content)
+%% singleline_content = ast SinglelineContentNode(compiler, position, content)
+%% singleline_comment = ast SinglelineCommentNode(compiler, position, content)
+%% ulist = ast UlistNode(compiler, position, content)
+%% ulist_element = ast UlistElementNode(compiler, position, level, content)
+%% olist = ast OlistNode(compiler, position, content)
+%% olist_element = ast OlistElementNode(compiler, position, num, content)
+%% dlist = ast DlistNode(compiler, position, content)
+%% dlist_element = ast DlistElementNode(compiler, position, text, content)
+%% bracket_arg = ast BracketArgNode(compiler, position, content)
+%% document = ast DocumentNode(compiler, position, content)
+%% column = ast ColumnNode(compiler, position, level, label, caption, content)
+%% newline = ast NewLineNode(compiler, position, content)
 
 # %% dummy
 
@@ -499,7 +518,7 @@ root = Start
 Start = &. { @list_stack = Array.new } Document:c { @strategy.ast = c }
 
 ## a Document is a set of Blocks
-Document = BOM? Block*:c ~document(self, c)
+Document = BOM? Block*:c ~document(self, position, c)
 
 ## ignore leading blank lines
 Block = BlankLine*:c { c }
@@ -514,24 +533,24 @@ Block = BlankLine*:c { c }
 
 BlankLine = Newline
 
-SinglelineComment = ("#@" < NonNewline+ > EOL) ~singleline_comment(self, text)
+SinglelineComment = ("#@" < NonNewline+ > EOL) ~singleline_comment(self, position, text)
 
-Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption EOL  ~headline(self, level, cmd, label, caption)
+Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption EOL  ~headline(self, position, level, cmd, label, caption)
 
 HeadlinePrefix = < /={1,5}/ > { text.length }
 
-Paragraph = ParagraphLine+:c  ~paragraph(self, c.flatten)
+Paragraph = ParagraphLine+:c  ~paragraph(self, position, c.flatten)
 
 ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  SinglelineContent:c Newline { c }
 
 # There are 3 types of Block Element: raw Block, Code Block, and Normal Block
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
-                 ~raw(self, b, r1)
+                 ~raw(self, position, b, r1)
                | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL
-                  ~code_block_element(self, symbol, args, contents)
+                  ~code_block_element(self, position, symbol, args, contents)
                | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL
-                  ~block_element(self, symbol, args, contents)
-               | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL ~block_element(self, symbol, args, nil)
+                  ~block_element(self, position, symbol, args, contents)
+               | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL ~block_element(self, position, symbol, args, nil)
                )
 
 RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
@@ -547,13 +566,13 @@ RawBlockElementArg = !"]" ( "\\]" { "]" }
                           | < NonNewline >  { text }
                           )
 
-BracketArg = "["  BracketArgInline*:content  "]" ~bracket_arg(self, content)
+BracketArg = "["  BracketArgInline*:content  "]" ~bracket_arg(self, position, content)
 
 ## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
 BracketArgInline = ( InlineElement:c { c }
-                   |  "\\]" ~text(self, "]")
-                   | "\\\\" ~text(self, "\\")
-                   | < /[^\r\n\]]/ >  ~text(self, text)
+                   |  "\\]" ~text(self, position, "]")
+                   | "\\\\" ~text(self, position, "\\")
+                   | < /[^\r\n\]]/ >  ~text(self, position, text)
                    )
 
 BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
@@ -573,14 +592,14 @@ BlockElementContent = ( SinglelineComment:c { c }
                       )
 
 ## it's like Paragraph, but it's in a block, so do not allow '//}\n'
-BlockElementParagraph = BlockElementParagraphLine+:c  ~paragraph(self, c.flatten)
+BlockElementParagraph = BlockElementParagraphLine+:c  ~paragraph(self, position, c.flatten)
 BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
 
 ## In CodeBlockElementContents, newline should no be ingored. So we use TextNode instead of NewLineNode.
 CodeBlockElementContents = CodeBlockElementContent+:c { c }
 CodeBlockElementContent = ( SinglelineComment:c { c }
-                          | BlankLine:c { ::ReVIEW::TextNode.new(self, "\n") }
-                          | !"//}" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, "\n")] }
+                          | BlankLine:c { ::ReVIEW::TextNode.new(self, position, "\n") }
+                          | !"//}" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, position, "\n")] }
                           )
 
 ## Ulist and Olist
@@ -591,15 +610,15 @@ Enumerator = < /[0-9]+/ > { num = text } "." { num.to_i }
 Ulist = Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item
         { if b.size > 1 then item.level = b.size end }
         (UlistItem | UlistItemMore | NestedList)*:items &{ s == @list_stack.pop }
-        ~ulist(self, items.unshift(item))
+        ~ulist(self, position, items.unshift(item))
 
 Olist = Indent+:s Enumerator:e Space+ { @list_stack.push(s) } OlistItemBlock:item
         { item.num = e }
         (OlistItem | NestedList)*:items &{ s == @list_stack.pop }
-        ~olist(self, items.unshift(item))
+        ~olist(self, position, items.unshift(item))
 
-UlistItemBlock = ListItemFirstLine:c ListItemLine*:d ~ulist_element(self, @list_stack.size, d.unshift(c))
-OlistItemBlock = ListItemFirstLine:c ListItemLine*:d ~olist_element(self, 0, d.unshift(c))
+UlistItemBlock = ListItemFirstLine:c ListItemLine*:d ~ulist_element(self, position, @list_stack.size, d.unshift(c))
+OlistItemBlock = ListItemFirstLine:c ListItemLine*:d ~olist_element(self, position, 0, d.unshift(c))
 
 ListItemFirstLine = SinglelineContent:c Newline { c }
 ListItemLine = Indent+:s !Bullet !Enumerator !Space SinglelineContent:c &{ check_indent(s) } Newline { c }
@@ -616,35 +635,35 @@ NestedList = (NestedUlist | NestedOlist)
 
 NestedUlist = Indent+:s Bullet     Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item
         (UlistItem | NestedList)*:items &{ s == @list_stack.pop }
-        ~ulist(self, items.unshift(item))
+        ~ulist(self, position, items.unshift(item))
 NestedOlist = Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item
         { item.num = e }
         (OlistItem | NestedList)*:items &{ s == @list_stack.pop }
-        ~olist(self, items.unshift(item))
+        ~olist(self, position, items.unshift(item))
 
 # Dlist
-Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, content)
+Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, position, content)
 
-DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
+DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, position, text, content)
 
 DlistElementContent = (SinglelineComment:c { c }
                       |Space+ SinglelineContent:c Newline { c }
                       )
 
-SinglelineContent = Inline+:c ~singleline_content(self,c)
+SinglelineContent = Inline+:c ~singleline_content(self, position, c)
 
 
 # Inline Element and Non Inline Element
 
 Inline = ( InlineElement | NonInlineElement)
 
-NonInlineElement = !InlineElement < NonNewline > ~text(self, text)
+NonInlineElement = !InlineElement < NonNewline > ~text(self, position, text)
 
 InlineElement =  ( RawInlineElement:c { c }
-                 | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, symbol,contents)
+                 | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, position, symbol,contents)
                  )
 
-RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, builders,c)
+RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, position, builders,c)
 
 RawInlineElementContent = ( "\\}" { "}" }
                           | < /[^\r\n\}]/ >  { text }
@@ -662,8 +681,8 @@ InlineElementContentsSub = !"}" ( Space* InlineElementContent:c1 Space* "," Inli
 InlineElementContent = InlineElementContentSub+:d { d }
 
 InlineElementContentSub = ( InlineElement:c { c }
-                          | !InlineElement QuotedInlineText:content ~inline_element_content(self, content)
-                          | !InlineElement InlineElementContentText+:content ~inline_element_content(self, content)
+                          | !InlineElement QuotedInlineText:content ~inline_element_content(self, position, content)
+                          | !InlineElement InlineElementContentText+:content ~inline_element_content(self, position, content)
                           )
 
 ## Quoted Inline Text is "..."
@@ -672,14 +691,14 @@ QuotedInlineText =  "\""
                             ( "\\\"" { "\"" }
                             | "\\\\" { "\\" }
                             | < /[^"\r\n\\]/ > { text }
-                            )+:str "\"" ~text(self, str.join(""))
+                            )+:str "\"" ~text(self, position, str.join(""))
 
 ## XXX '\' (excpet '\}' and '\,' and '\\' ) => '\' is OK?
-InlineElementContentText =  ( "\\}" ~text(self, "}")
-                            | "\\," ~text(self, ",")
-                            | "\\\\" ~text(self, "\\" )
-                            | "\\" ~text(self, "\\" )
-                            | !InlineElement < /[^\r\n\\},]/> ~text(self,text)
+InlineElementContentText =  ( "\\}" ~text(self, position, "}")
+                            | "\\," ~text(self, position, ",")
+                            | "\\\\" ~text(self, position, "\\" )
+                            | "\\" ~text(self, position, "\\" )
+                            | !InlineElement < /[^\r\n\\},]/> ~text(self, position, text)
                             )
 
 NonNewline = /[^\r\n]/
@@ -700,6 +719,6 @@ AlphanumericAscii = %literals.AlphanumericAscii
 LowerAlphabetAscii = %literals.LowerAlphabetAscii
 Digit              = %literals.Digit
 BOM               = %literals.BOM
-Newline           = %literals.Newline:n ~newline(self, "\n")
+Newline           = %literals.Newline:n ~newline(self, position, "\n")
 NonAlphanumeric   = %literals.NonAlphanumeric
 Spacechar         = %literals.Spacechar
