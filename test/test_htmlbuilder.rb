@@ -39,7 +39,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">第1章　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level1_postdef
@@ -49,7 +49,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録1　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">付録1　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef
@@ -59,7 +59,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_roman
@@ -70,7 +70,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hI"></a>付録I　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hI"></a><span class="secno">付録I　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_roman
@@ -81,7 +81,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a>I.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_alpha
@@ -92,7 +92,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hA"></a>付録A　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_alpha
@@ -103,7 +103,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a>A.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_without_secno
@@ -114,17 +114,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_with_tricky_id
     actual = compile_block("={123 あ_;} this is test.\n")
-    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a><span class="secno">第1章　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level1_with_inlinetag
     actual = compile_block("={test} this @<b>{is} test.<&\">\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">第1章　</span>this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, actual
   end
 
   def test_headline_level2
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level3
@@ -135,7 +135,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level3_with_secno
     @book.config["secnolevel"] = 3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, actual
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a><span class="secno">1.0.1　</span>this is test.</h3>\n|, actual
   end
 
   def test_label
@@ -453,6 +453,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<dl>\n<dt>foo[bar]</dt>\n<dd>foo.bar.</dd>\n</dl>\n|, actual
   end
 
+  def test_dlist_with_comment
+    source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
+    actual = compile_block(source)
+    assert_equal %Q|<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n|, actual
+  end
+
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
@@ -468,12 +474,13 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_list_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<span style="color: #008000; font-weight: bold">&lt;i&gt;</span>2<span style="color: #008000; font-weight: bold">&lt;/i&gt;</span>\n</pre>\n</div>\n|, actual
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
   end
 
   def test_list_pygments_lang
@@ -483,6 +490,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_list_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
@@ -497,6 +505,22 @@ class HTMLBuidlerTest < Test::Unit::TestCase
                  %Q|</div>\n|, actual
   end
 
+  def test_list_pygments_nulllang
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    begin
+      require 'pygments'
+    rescue LoadError
+      $stderr.puts "skip test_list_pygments_nulllang (cannot find pygments.rb)"
+      return true
+    end
+    @book.config["pygments"] = true
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n</pre>\n</div>\n", actual
+  end
+
   def test_listnum_pygments_lang
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
@@ -504,13 +528,33 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_listnum_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n  (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n  <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"color: #008000; font-weight: bold\">end</span>\n</pre>\n</div>\n", actual
+    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
   end
+
+  def test_listnum_pygments_lang_without_lang
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    begin
+      require 'pygments'
+    rescue LoadError
+      $stderr.puts "skip test_listnum_pygments_lang (cannot find pygments.rb)"
+      return true
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
+    @book.config["highlight"]["lang"] = "ruby"
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
+  end
+
 
   def test_emlist
     actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
@@ -521,6 +565,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     begin
       require 'pygments'
     rescue LoadError
+      $stderr.puts "skip test_emlist_pygments_lang (cannot find pygments.rb)"
       return true
     end
     @book.config["pygments"] = true

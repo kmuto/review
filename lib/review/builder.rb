@@ -350,7 +350,7 @@ module ReVIEW
 
     def get_chap(chapter = @chapter)
       if @book.config["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
-        return "#{chapter.number}"
+        return chapter.format_number(nil)
       end
       return nil
     end

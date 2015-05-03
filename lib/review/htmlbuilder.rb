@@ -187,7 +187,9 @@ EOT
     def headline(level, label, caption)
       buf = ""
       prefix, anchor = headline_prefix(level)
-      buf << "\n" if level > 1
+      unless prefix.nil?
+        prefix = %Q[<span class="secno">#{prefix}</span>]
+      end
       a_id = ""
       unless anchor.nil?
         a_id = %Q[<a id="h#{anchor}"></a>]
@@ -494,12 +496,10 @@ EOT
     end
 
     def listnum_body(lines, lang)
-      buf = %Q[<pre class="list">\n]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       buf << highlight(:body => body, :lexer => lexer, :format => 'html',
                      :options => {:linenos => 'inline', :nowrap => false})
-      buf << "</pre>\n"
       buf
     end
 
@@ -522,12 +522,10 @@ EOT
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
       end
-      buf << %Q[<pre class="emlist">\n]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       buf << highlight(:body => body, :lexer => lexer, :format => 'html',
                      :options => {:linenos => 'inline', :nowrap => false})
-      buf << "</pre>\n"
       buf << "</div>\n"
       buf
     end
@@ -958,9 +956,9 @@ EOT
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       if chap.number and @book.config["secnolevel"] >= n.split('.').size
-        str = "「#{n} #{chap.headline(id).caption}」"
+        str = I18n.t("chapter_quote", "#{n} #{chap.headline(id).caption}")
       else
-        str = "「#{chap.headline(id).caption}」"
+        str = I18n.t("chapter_quote", chap.headline(id).caption)
       end
       if @book.config["chapterlink"]
         anchor = "h"+n.gsub(/\./, "-")

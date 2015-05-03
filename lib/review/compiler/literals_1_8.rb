@@ -365,7 +365,7 @@ class ReVIEW::Compiler::Literals
 
   # Alphanumeric = /[0-9A-Za-z\200-\377]/n
   def _Alphanumeric
-    _tmp = scan(/\A(?-mix:[0-9A-Za-z\200-\377])/)
+    _tmp = scan(/\A(?-mix:[0-9A-Za-z\200-\377])/n)
     set_failed_rule :_Alphanumeric unless _tmp
     return _tmp
   end
@@ -393,7 +393,7 @@ class ReVIEW::Compiler::Literals
 
   # BOM = "ï»¿"
   def _BOM
-    _tmp = match_string("\u{ef}\u{bb}\u{bf}")
+    _tmp = match_string("\303\257\302\273\302\277")
     set_failed_rule :_BOM unless _tmp
     return _tmp
   end
@@ -407,7 +407,7 @@ class ReVIEW::Compiler::Literals
 
   # NonAlphanumeric = /[\000-\057\072-\100\133-\140\173-\177]/n
   def _NonAlphanumeric
-    _tmp = scan(/\A(?-mix:[\000-\057\072-\100\133-\140\173-\177])/)
+    _tmp = scan(/\A(?-mix:[\000-\057\072-\100\133-\140\173-\177])/n)
     set_failed_rule :_NonAlphanumeric unless _tmp
     return _tmp
   end

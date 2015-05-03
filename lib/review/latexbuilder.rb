@@ -323,7 +323,12 @@ module ReVIEW
         caption_str = "\\relax" ## dummy charactor to remove lstname
         buf << "\\vspace{-1.5em}"
       end
-      lexer = lang || ""
+      if @book.config["highlight"] && @book.config["highlight"]["lang"]
+        lexer = @book.config["highlight"]["lang"] # default setting
+      else
+        lexer = ""
+      end
+      lexer = lang if lang.present?
       body = lines.inject(''){|i, j| i + detab(unescape_latex(j)) + "\n"}
       buf << "\\begin{"+command+"}["+title+"={"+caption_str+"},language={"+ lexer+"}]" + "\n"
       buf << body
@@ -802,9 +807,9 @@ module ReVIEW
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       if chap.number and @book.config["secnolevel"] >= n.split('.').size
-        str = "「#{chap.headline_index.number(id)} #{escape(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", "#{chap.headline_index.number(id)} #{chap.headline(id).caption}")
       else
-        str = "「#{escape(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", chap.headline(id).caption)
       end
       if @book.config["chapterlink"]
         anchor = n.gsub(/\./, "-")

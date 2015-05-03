@@ -12,6 +12,7 @@
 require 'epubmaker/producer'
 require 'review/i18n'
 require 'cgi'
+require 'shellwords'
 
 module EPUBMaker
 
@@ -389,10 +390,10 @@ EOT
     def produce_write_common(basedir, tmpdir)
       File.open("#{tmpdir}/mimetype", "w") {|f| @producer.mimetype(f) }
 
-      Dir.mkdir("#{tmpdir}/META-INF") unless File.exist?("#{tmpdir}/META-INF")
+      FileUtils.mkdir_p("#{tmpdir}/META-INF")
       File.open("#{tmpdir}/META-INF/container.xml", "w") {|f| @producer.container(f) }
 
-      Dir.mkdir("#{tmpdir}/OEBPS") unless File.exist?("#{tmpdir}/OEBPS")
+      FileUtils.mkdir_p("#{tmpdir}/OEBPS")
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}.opf", "w") {|f| @producer.opf(f) }
 
       if File.exist?("#{basedir}/#{@producer.params["cover"]}")
@@ -405,14 +406,14 @@ EOT
         next if item.file =~ /#/ # skip subgroup
         fname = "#{basedir}/#{item.file}"
         raise "#{fname} doesn't exist. Abort." unless File.exist?(fname)
-        FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}")) unless File.exist?(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
+        FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
         FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
       end
     end
 
     def export_zip(tmpdir, epubfile)
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage1"]} #{epubfile} mimetype` }
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage2"]} #{epubfile} META-INF OEBPS #{@producer.params["epubmaker"]["zip_addpath"]}` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage1"]} #{epubfile.shellescape} mimetype` }
+      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage2"]} #{epubfile.shellescape} META-INF OEBPS #{@producer.params["epubmaker"]["zip_addpath"]}` }
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)

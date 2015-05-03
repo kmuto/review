@@ -46,7 +46,9 @@ EOT
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
-          s << @producer.params[item].map.with_index {|v, i| %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v.to_s)}</dc:#{item}>\n]}.join
+          @producer.params[item].each_with_index {|v, i|
+            s << %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v.to_s)}</dc:#{item}>\n]
+          }
         else
           s << %Q[    <dc:#{item} id="#{item}">#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
         end
