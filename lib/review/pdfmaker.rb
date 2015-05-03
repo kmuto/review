@@ -154,6 +154,10 @@ module ReVIEW
 
         call_hook("hook_beforetexcompile", config)
 
+        if @params["params"].present?
+          warn "params: is deprecated. Use attributes of config.yml directly."
+        end
+
         ## do compile
         enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
         kanji = 'utf8'

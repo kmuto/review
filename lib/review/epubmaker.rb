@@ -286,6 +286,10 @@ EOT
       stylesheet = "--stylesheet=#{@params["stylesheet"].join(",")}"
     end
 
+    if @params["params"].present?
+      warn "params: is deprecated. Use attributes of config.yml directly."
+    end
+
     ENV["REVIEWFNAME"] = filename
     system("#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
 
