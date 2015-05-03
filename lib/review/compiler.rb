@@ -3696,44 +3696,71 @@ require 'review/node'
     return _tmp
   end
 
-  # DlistElementContent = Space+ SinglelineContent:c Newline { c }
+  # DlistElementContent = (SinglelineComment:c { c } | Space+ SinglelineContent:c Newline { c })
   def _DlistElementContent
 
     _save = self.pos
-    while true # sequence
+    while true # choice
+
       _save1 = self.pos
-      _tmp = apply(:_Space)
-      if _tmp
-        while true
-          _tmp = apply(:_Space)
-          break unless _tmp
+      while true # sequence
+        _tmp = apply(:_SinglelineComment)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
         end
+        @result = begin;  c ; end
         _tmp = true
-      else
-        self.pos = _save1
-      end
-      unless _tmp
-        self.pos = _save
+        unless _tmp
+          self.pos = _save1
+        end
         break
-      end
-      _tmp = apply(:_SinglelineContent)
-      c = @result
-      unless _tmp
-        self.pos = _save
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _save3 = self.pos
+        _tmp = apply(:_Space)
+        if _tmp
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+        else
+          self.pos = _save3
+        end
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = apply(:_SinglelineContent)
+        c = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
         break
-      end
-      _tmp = apply(:_Newline)
-      unless _tmp
-        self.pos = _save
-        break
-      end
-      @result = begin;  c ; end
-      _tmp = true
-      unless _tmp
-        self.pos = _save
-      end
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
       break
-    end # end sequence
+    end # end choice
 
     set_failed_rule :_DlistElementContent unless _tmp
     return _tmp
@@ -4830,7 +4857,7 @@ require 'review/node'
   Rules[:_NestedOlist] = rule_info("NestedOlist", "Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, items.unshift(item))}")
   Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, content)}")
   Rules[:_DlistElement] = rule_info("DlistElement", "Indent* \":\" Space+ SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, text, content)}")
-  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "Space+ SinglelineContent:c Newline { c }")
+  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "(SinglelineComment:c { c } | Space+ SinglelineContent:c Newline { c })")
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self,c)}")
   Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewline > {text(self, text)}")

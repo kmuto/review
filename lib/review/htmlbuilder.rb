@@ -496,6 +496,7 @@ EOT
     end
 
     def listnum_body(lines, lang)
+      buf = ""
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       buf << highlight(:body => body, :lexer => lexer, :format => 'html',
