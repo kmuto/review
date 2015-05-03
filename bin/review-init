@@ -28,6 +28,9 @@ def main
   opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') {
     @force = true
   }
+  opts.on('-l', '--locale', 'generate locale.yml file.') {
+    @locale = true
+  }
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
@@ -53,6 +56,7 @@ def main
     generate_style(dir)
     generate_texmacro(dir)
     generate_config(dir)
+    generate_locale(dir) if @locale
     generate_rakefile(dir)
   end
 end
@@ -136,6 +140,10 @@ end
 
 def generate_rakefile(dir)
   FileUtils.cp @review_dir + "/test/sample-book/src/Rakefile", dir
+end
+
+def generate_locale(dir)
+  FileUtils.cp @review_dir + '/lib/review/i18n.yml', dir + '/locale.yml'
 end
 
 if File.basename($0) == File.basename(__FILE__)
