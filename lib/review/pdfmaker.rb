@@ -22,6 +22,10 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
+    def initialize
+      @basedir = Dir.pwd
+    end
+
     def system_or_raise(*args)
       Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
     end
@@ -97,7 +101,6 @@ module ReVIEW
 
     def generate_pdf(config, yamlfile)
       check_book(config)
-      @basedir = Dir.pwd
       @path = build_path(config)
       bookname = config["bookname"]
       Dir.mkdir(@path)
@@ -217,10 +220,10 @@ module ReVIEW
       end
     end
 
-    def make_custom_titlepage(coverfile)
-      coverfile_sty = coverfile.to_s.sub(/\.[^.]+$/, ".tex")
-      if File.exist?(coverfile_sty)
-        File.read(coverfile_sty)
+    def make_custom_page(file)
+      file_sty = file.to_s.sub(/\.[^.]+$/, ".tex")
+      if File.exist?(file_sty)
+        File.read(file_sty)
       else
         nil
       end
@@ -275,7 +278,16 @@ module ReVIEW
       okuduke = make_colophon(config)
       authors = make_authors(config)
 
-      custom_titlepage = make_custom_titlepage(config["coverfile"])
+      custom_titlepage = make_custom_page(config["coverfile"])
+      custom_originaltitlepage = make_custom_page(config["originaltitlefile"])
+      custom_creditpage = make_custom_page(config["creditfile"])
+
+      custom_profilepage = make_custom_page(config["profile"])
+      custom_advfilepage = make_custom_page(config["advfile"])
+      if config["colophon"] && config["colophon"].kind_of?(String)
+        custom_colophonpage = make_custom_page(config["colophon"])
+      end
+      custom_backcoverpage = make_custom_page(config["backcover"])
 
       template = File.expand_path('layout.tex.erb', File.dirname(__FILE__))
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")

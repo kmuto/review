@@ -193,6 +193,9 @@ EOT
 
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
+      unless prefix.nil?
+        prefix = %Q[<span class="secno">#{prefix}</span>]
+      end
       puts '' if level > 1
       a_id = ""
       unless anchor.nil?
@@ -942,9 +945,9 @@ QUOTE
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       if chap.number and @book.config["secnolevel"] >= n.split('.').size
-        str = "「#{n} #{compile_inline(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", "#{n} #{compile_inline(chap.headline(id).caption)}")
       else
-        str = "「#{compile_inline(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", compile_inline(chap.headline(id).caption))
       end
       if @book.config["chapterlink"]
         anchor = "h"+n.gsub(/\./, "-")

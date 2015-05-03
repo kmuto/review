@@ -1,4 +1,4 @@
-\documentclass[<%= documentclassoption %>]{<%= documentclass %>}
+\documentclass[oneside]{jsbook}
 \usepackage[deluxe]{otf}
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
@@ -43,45 +43,10 @@
 \fi
 
 \usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={<%= values["booktitle"] %>},%
-            pdfauthor={<%= values["aut"] %>}]{hyperref}
+            pdftitle={Re:VIEW Sample Book},%
+            pdfauthor={}]{hyperref}
 
-<% if config["highlight"] && config["highlight"]["latex"] == "listings" %>
-<%   if config["language"] == "ja" %>
-\usepackage{listings,jlisting}
-<%   else %>
-\usepackage{listings}
-<%   end %>
-\renewcommand{\lstlistingname}{<%= I18n.t("list")%>}
-\lstset{%
-  breaklines=true,%
-  breakautoindent=false,%
-  breakindent=0pt,%
-  fontadjust=true,%
-  backgroundcolor=\color{shadecolor},%
-  frame=single,%
-  framerule=0pt,%
-  basicstyle=\ttfamily\scriptsize,%
-  commentstyle=\color{reviewgreen},%
-  identifierstyle=\color{reviewblue},%
-  stringstyle=\color{reviewred},%
-  keywordstyle=\bfseries\color{reviewdarkred},%
-}
-\lstnewenvironment{reviewemlistlst}[1][]{%
-  \lstset{#1}}{}
 
-\lstnewenvironment{reviewemlistnumlst}[1][]{%
-  \lstset{numbers=left, #1}}{}
-
-\lstnewenvironment{reviewlistlst}[1][]{%
-  \lstset{#1}}{}
-
-\lstnewenvironment{reviewlistnumlst}[1][]{%
-  \lstset{numbers=left, #1}}{}
-
-\lstnewenvironment{reviewcmdlst}[1][]{%
-  \lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
-<% end %>
 
 \newenvironment{reviewimage}{%
   \begin{figure}[H]
@@ -124,7 +89,7 @@
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
-{\noindent\large <%= I18n.t("column_head")%>: #2}}
+{\noindent\large ■コラム: #2}}
 
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
@@ -148,24 +113,22 @@
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
 \newcommand{\reviewimageref}[2]{%
-  <%= I18n.t("image")%> #1}
+  図 #1}
 \newcommand{\reviewtableref}[2]{%
-  <%= I18n.t("table")%> #1}
+  表 #1}
 \newcommand{\reviewlistref}[1]{%
-  <%= I18n.t("list")%> #1}
+  リスト #1}
 \newcommand{\reviewbibref}[2]{%
   #1}
 \newcommand{\reviewcolumnref}[2]{%
-  <%= I18n.t("columnname")%> #1}
+  コラム #1}
 \newcommand{\reviewsecref}[2]{%
   #1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
-  {\large <%= I18n.t("memo_head")%>: #1}\\}
+  {\large ■メモ: #1}\\}
 
-<% if values["toctitle"].present? %>
-\renewcommand{\contentsname}{<%= values["toctitle"]%>}
-<% end %>
+
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
@@ -182,8 +145,6 @@
 
 \newcommand{\reviewstrong}[1]{%
   \textbf{#1}}
-
-\newcommand{\reviewunderline}{\Underline}
 
 %% @<del> is ignored in LaTeX with default style
 \newcommand{\reviewstrike}[1]{#1}
@@ -220,7 +181,7 @@
 }
 \makeatother
 
-<%= values["usepackage"] %>
+
 
 \usepackage[T1]{fontenc}
 
@@ -228,115 +189,67 @@
 
 \reviewmainfont
 
-<% if values["titlepage"] %>
-<% if custom_titlepage %>
-<%= custom_titlepage %>
-<% else %>
+
+
 \begin{titlepage}
-  <% if values["coverimage"] %>
-  \begin{center}
-    %%%\mbox{}\vskip5zw%
-    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{./images/<%= values["coverimage"] %>}
-  \end{center}
-  \clearpage
-  <% end %>
+  
 \thispagestyle{empty}
 \begin{center}%
   \mbox{} \vskip5zw
    \reviewtitlefont%
-    {\Huge <%= values["booktitle"] %> \par}%
+    {\Huge Re:VIEW Sample Book \par}%
     \vskip 15em%
     {\huge
       \lineskip .75em
       \begin{tabular}[t]{c}%
-        <%= authors %>
+        
       \end{tabular}\par}%
     \vfill
-    {\large <%= values["date"] %> <%= I18n.t("version")%>\hspace{2zw}<%= I18n.t("published_by", values["prt"])%>\par}%
+    {\large 2011-01-01 version\hspace{2zw} 発行\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
-<% end %>
-<% end %>
+
+
 
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
 
 %%% originaltitle
-<% if values["originaltitlefile"] %>
-<%= custom_originaltitlepage %>
-<% end %>
+
 
 %%% credit
-<% if values["creditfile"] %>
-<%= custom_creditpage %>
-<% end %>
+
 
 
 %% preface
-<%= values["pre_str"] %>
 
-<% if values["toc"] %>
-\setcounter{tocdepth}{<%= values["toclevel"] %>}
-\tableofcontents
-<% end %>
+
+
 
 \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~#1}{}}
 \mainmatter
-<%= values["chap_str"] %>
+
 \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~#1}{}}
 \reviewappendix
-<%= values["appendix_str"] %>
+
 
 %% backmatter begins
-<% if values["post_str"] or values["colophon"] %>
-\backmatter
-<% end %>
 
-<% if values["post_str"] %>
-<%= values["post_str"] %>
-<% end %>
+
+
 
 
 %%% profile
-<% if values["profile"] %>
-<%= custom_profilepage %>
-<% end %>
+
 
 %%% advfile
-<% if values["advfile"] %>
-<%= custom_advfilepage %>
-<% end %>
+
 
 %%% colophon
-<% if values["colophon"] %>
-<%   if custom_colophonpage %>
-<%= custom_colophonpage %>
-<%   else %>
-%% okuduke
-\reviewcolophon
-\thispagestyle{empty}
 
-\vspace*{\fill}
-
-{\noindent\reviewtitlefont\Large <%= values["booktitle"] %>} \\
-\rule[8pt]{14cm}{1pt} \\
-{\noindent
-<%= values["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent"} %>
-}
-
-\begin{tabular}{ll}
-<%= okuduke %>
-\end{tabular}
-　\\
-\rule[0pt]{14cm}{1pt} \\
-<%= values["rights"] %> \\
-<%   end %>
-<% end %>
 
 %%% backcover
-<% if values["backcover"] %>
-<%= custom_backcoverpage %>
-<% end %>
+
 
 \end{document}

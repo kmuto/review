@@ -1174,10 +1174,10 @@ module ReVIEW
       if chap.number
         n = chap.headline_index.number(id)
         if @book.config["secnolevel"] >= n.split('.').size
-          return "「#{n}　#{compile_inline(chap.headline(id).caption)}」"
+          return I18n.t("chapter_quote", "#{n}　#{compile_inline(chap.headline(id).caption)}")
         end
       end
-      "「#{compile_inline(chap.headline(id).caption)}」"
+      I18n.t("chapter_quote", compile_inline(chap.headline(id).caption))
     end
 
     def inline_recipe(id)

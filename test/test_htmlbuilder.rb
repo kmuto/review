@@ -39,7 +39,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">第1章　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level1_postdef
@@ -49,7 +49,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>付録1　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">付録1　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef
@@ -59,7 +59,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_roman
@@ -70,7 +70,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hI"></a>付録I　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hI"></a><span class="secno">付録I　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_roman
@@ -81,7 +81,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a>I.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_postdef_alpha
@@ -92,7 +92,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hA"></a>付録A　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level2_postdef_alpha
@@ -103,7 +103,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a>A.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level1_without_secno
@@ -114,17 +114,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_with_tricky_id
     actual = compile_block("={123 あ_;} this is test.\n")
-    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a>第1章　this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a><span class="secno">第1章　</span>this is test.</h1>\n|, actual
   end
 
   def test_headline_level1_with_inlinetag
     actual = compile_block("={test} this @<b>{is} test.<&\">\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>第1章　this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">第1章　</span>this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n|, actual
   end
 
   def test_headline_level2
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a>1.1　this is test.</h2>\n|, actual
+    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level3
@@ -135,7 +135,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_headline_level3_with_secno
     @book.config["secnolevel"] = 3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>1.0.1　this is test.</h3>\n|, actual
+    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a><span class="secno">1.0.1　</span>this is test.</h3>\n|, actual
   end
 
   def test_label
@@ -451,6 +451,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_dlist_with_bracket
     actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
     assert_equal %Q|<dl>\n<dt>foo[bar]</dt>\n<dd>foo.bar.</dd>\n</dl>\n|, actual
+  end
+
+  def test_dlist_with_comment
+    source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
+    actual = compile_block(source)
+    assert_equal %Q|<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n|, actual
   end
 
   def test_list

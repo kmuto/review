@@ -128,7 +128,7 @@ class I18nTest < Test::Unit::TestCase
   def test_htmlbuilder
     _setup_htmlbuilder
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>Chapter 1. this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">Chapter 1. </span>this is test.</h1>\n|, actual
   end
 
   def _setup_htmlbuilder
