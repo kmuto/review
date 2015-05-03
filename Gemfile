@@ -4,7 +4,3 @@ source 'https://rubygems.org'
 gemspec
 
 gem "json"
-
-group :development do
-  gem "kpeg"
-end
