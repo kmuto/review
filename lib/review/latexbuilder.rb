@@ -813,9 +813,9 @@ module ReVIEW
       end
       if @book.config["chapterlink"]
         anchor = n.gsub(/\./, "-")
-        macro('reviewsecref', str, sec_label(anchor))
+        macro('reviewsecref', escape(str), sec_label(anchor))
       else
-        str
+        escape(str)
       end
     end
 
