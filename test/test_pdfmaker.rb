@@ -153,8 +153,7 @@ class PDFMakerTest < Test::Unit::TestCase
 
         expect = File.read(File.join(assets_dir,"test_template_backmatter.tex"))
 
-        maker = ReVIEW::PDFMaker.new
-        tmpl = maker.get_template(@config)
+        tmpl = @maker.get_template(@config)
         tmpl.gsub!(/\A.*%% backmatter begins\n/m,"")
         assert_equal(expect, tmpl)
       end
