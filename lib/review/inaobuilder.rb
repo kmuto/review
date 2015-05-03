@@ -195,7 +195,7 @@ module ReVIEW
     def listnum_body(lines, lang)
       buf = ""
       lines.each_with_index do |line, i|
-        buf << detab((i+1).to_s.rjust(2) + " " +line) << "\n"
+        buf << detab((i+1).to_s.rjust(2) + " " + line) << "\n"
       end
       buf << "◆/list◆\n"
       buf
