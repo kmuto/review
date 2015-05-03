@@ -627,7 +627,9 @@ Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, content)
 
 DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, text, content)
 
-DlistElementContent = Space+ SinglelineContent:c Newline { c }
+DlistElementContent = (SinglelineComment:c { c }
+                      |Space+ SinglelineContent:c Newline { c }
+                      )
 
 SinglelineContent = Inline+:c ~singleline_content(self,c)
 
