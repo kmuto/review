@@ -183,7 +183,7 @@
 \newcommand{\reviewstrong}[1]{%
   \textbf{#1}}
 
-\newcommand{\reviewunderline}{\underline}
+\newcommand{\reviewunderline}{\Underline}
 
 %% @<del> is ignored in LaTeX with default style
 \newcommand{\reviewstrike}[1]{#1}
@@ -221,13 +221,6 @@
 \makeatother
 
 <%= values["usepackage"] %>
-
-%%%% if jumoline.sty is loaded, use it as underline
-\makeatletter
-\@ifpackageloaded{jumoline}
-{\renewcommand{\reviewunderline}{\Underline}}
-{}
-\makeatother
 
 \usepackage[T1]{fontenc}
 
