@@ -126,7 +126,7 @@ EOT
 
       if @producer.params["coverimage"]
         @producer.contents.each do |item|
-          if item.media =~ /\Aimage/ && item.file =~ /#{@producer.params["coverimage"]}\Z/
+          if item.media =~ /\Aimage/ && File.basename(item.file) == @producer.params["coverimage"]
             s << %Q[    <item properties="cover-image" id="cover-#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n]
             item.id = nil
             break
