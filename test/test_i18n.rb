@@ -74,8 +74,10 @@ class I18nTest < Test::Unit::TestCase
           File.open(file, "w"){|f| f.write("ja:\n  foo: \"bar\"\nen:\n  foo: \"buz\"\n")}
           I18n.setup
           assert_equal "bar", I18n.t("foo")
+          assert_equal "図", I18n.t("image")
           I18n.setup("en")
           assert_equal "buz", I18n.t("foo")
+          assert_equal "Figure ", I18n.t("image")
         end
       end
     end

@@ -67,11 +67,10 @@ module ReVIEW
         user_i18n.delete("locale")
         @store[locale].merge!(user_i18n)
       else
-        key = user_i18n.keys.first
-        if !user_i18n[key].kind_of? Hash
-          raise KeyError, "Invalid locale file: #{path}"
+        user_i18n.each do |key, values|
+          raise KeyError, "Invalid locale file: #{path}" unless values.kind_of? Hash
+          @store[key].merge!(values)
         end
-        @store.merge!(user_i18n)
       end
     end
 
