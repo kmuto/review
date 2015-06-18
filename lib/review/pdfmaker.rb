@@ -278,7 +278,7 @@ module ReVIEW
       okuduke = make_colophon(config)
       authors = make_authors(config)
 
-      custom_titlepage = make_custom_page(config["coverfile"])
+      custom_titlepage = make_custom_page(config["cover"]) || make_custom_page(config["coverfile"])
       custom_originaltitlepage = make_custom_page(config["originaltitlefile"])
       custom_creditpage = make_custom_page(config["creditfile"])
 
