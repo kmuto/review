@@ -104,9 +104,9 @@ module ReVIEW
       listnum_body lines, lang
     end
 
-    def source(lines, caption)
+    def source(lines, caption, lang = nil)
       source_header caption
-      source_body lines
+      source_body lines, lang
     end
 
     def image(lines, id, caption, metric = nil)

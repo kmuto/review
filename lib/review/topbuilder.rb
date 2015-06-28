@@ -756,7 +756,7 @@ module ReVIEW
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-    def source(lines, caption = nil)
+    def source(lines, caption = nil, lang = nil)
       base_block "source", lines, caption
     end
 

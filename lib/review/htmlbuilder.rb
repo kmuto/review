@@ -456,10 +456,10 @@ EOT
       puts '</pre>'
     end
 
-    def source(lines, caption = nil)
+    def source(lines, caption = nil, lang = nil)
       puts %Q[<div class="source-code">]
       source_header caption
-      source_body caption, lines
+      source_body caption, lines, lang
       puts '</div>'
     end
 
@@ -469,11 +469,11 @@ EOT
       end
     end
 
-    def source_body(id, lines)
+    def source_body(id, lines, lang)
       id ||= ''
       print %Q[<pre class="source">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = File.extname(id).gsub(/\./, '')
+      lexer = lang || File.extname(id).gsub(/\./, '')
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end

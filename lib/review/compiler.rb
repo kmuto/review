@@ -136,7 +136,7 @@ module ReVIEW
     defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true
-    defblock :source, 0..1
+    defblock :source, 0..2
     defblock :listnum, 2..3
     defblock :emlistnum, 0..2
     defblock :bibpaper, 2..3, true

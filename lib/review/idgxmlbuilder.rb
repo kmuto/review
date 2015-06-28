@@ -1143,7 +1143,7 @@ module ReVIEW
       puts %Q[<caption>#{compile_inline(caption)}</caption>]
     end
 
-    def source_body(lines)
+    def source_body(lines, lang)
       puts %Q[<pre>]
       codelines_body(lines)
       puts %Q[</pre></source>]
