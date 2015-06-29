@@ -1,3 +1,5 @@
+language: ruby
+
 rvm:
   - 1.9.3
   - 2.0.0
@@ -7,3 +9,11 @@ rvm:
 branches:
   only:
     - master
+
+before_install:
+  - gem install rubocop
+
+script:
+  - rubocop
+
+

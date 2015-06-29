@@ -177,7 +177,7 @@ EOT
       "<ul>\n" +
         @errors.map {|file, line, msg|
         "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
-      }.join('') +
+        }.join('') +
       "</ul>\n"
     end
 

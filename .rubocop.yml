@@ -1,1 +1,20 @@
-inherit_from: rubocop-todo.yml
+AllCops:
+  Exclude:
+    - lib/lineinput.rb
+    - lib/uuid.rb
+
+inherit_from: .rubocop_todo.yml
+
+Lint/BlockAlignment:
+  Enabled: true
+
+Lint/EndAlignment:
+  Enabled: AlignWith
+
+Performance/ReverseEach:
+  Enabled: true
+
+
+
+
+

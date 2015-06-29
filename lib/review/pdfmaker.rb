@@ -179,7 +179,7 @@ module ReVIEW
         end
         call_hook("hook_aftertexcompile", config)
 
-      if File.exist?("book.dvi")
+        if File.exist?("book.dvi")
           system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
         end
       }
