@@ -2,28 +2,28 @@
 
 ## In general
 * Stop supporting Ruby 1.8.7
-* Enable to set default language for code highlighting (#403)
-* Use I18n in inline ``@<hd>`` chap (#420)
+* Enable to set default language for code highlighting ([#403](https://github.com/kmuto/review/issues/403))
+* Use I18n in inline ``@<hd>`` chap ([#420](https://github.com/kmuto/review/issues/420))
 * Support highlighting and lang option in ``//source``
 
 ## Bug Fix
-* Fix ``@<hd>`` to detect the target header-index in the middle of indexes (#400)
-* Fix epubmaker to escape pathname includes whitespace (#398)
-* Fix ``Builder#get_chap`` to return formatted appendix name correctly (#405)
-* Fix missing listing name when using syntax highlighting (#418)
-* Fix i18n to merge settings correctly (#423)
-* Fix epubmaker to match coverimage strictly (#417)
-* Fix htmlversion when epubversion == 3 (#433)
+* Fix ``@<hd>`` to detect the target header-index in the middle of indexes ([#400](https://github.com/kmuto/review/issues/400))
+* Fix epubmaker to escape pathname includes whitespace ([#398](https://github.com/kmuto/review/issues/398))
+* Fix ``Builder#get_chap`` to return formatted appendix name correctly ([#405](https://github.com/kmuto/review/issues/405))
+* Fix missing listing name when using syntax highlighting ([#418](https://github.com/kmuto/review/issues/418))
+* Fix i18n to merge settings correctly ([#423](https://github.com/kmuto/review/issues/423))
+* Fix epubmaker to match coverimage strictly ([#417](https://github.com/kmuto/review/issues/417))
+* Fix htmlversion when epubversion == 3 ([#433](https://github.com/kmuto/review/issues/433))
 
 ## Commands
 
 ### review-init
-* Add option to create locale.yml (#425)
+* Add option to create locale.yml ([#425](https://github.com/kmuto/review/issues/425))
 
 ## Builders and Makers
 
 ### htmlbuilder
-* Markup section number by span (#415)
+* Markup section number by span ([#415](https://github.com/kmuto/review/issues/415))
 
 ### latexbuilder
 * Support ``config["conver"]``
@@ -32,16 +32,14 @@
 * Support file insertion (same as EPUBMaker)
 
 ### epubmaker
-* Add ``toc`` property to config.yml (#413)
+* Add ``toc`` property to config.yml ([#413](https://github.com/kmuto/review/issues/413))
 
 ## Code contributors
-
-* keiji
-* orangain
-* akinomurasame
-* krororo
-* masarakki
-
+* [@keiji](https://github.com/keiji)
+* [@orangain](https://github.com/orangain)
+* [@akinomurasame](https://github.com/akinomurasame) 
+* [@krororo](https://github.com/krororo)
+* [@masarakki](https://github.com/masarakki)
 
 # version 1.5.0
 ## Notice
