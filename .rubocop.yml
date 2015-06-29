@@ -1,3 +1,8 @@
+AllCops:
+  Exclude:
+    - lib/lineinput.rb
+    - lib/uuid.rb
+
 inherit_from: .rubocop_todo.yml
 
 Lint/BlockAlignment:
