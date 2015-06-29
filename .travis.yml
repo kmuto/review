@@ -15,5 +15,4 @@ before_install:
 
 script:
   - rubocop
-
-
+  - bundle exec rake test
