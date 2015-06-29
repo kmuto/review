@@ -10,6 +10,10 @@ branches:
   only:
     - master
 
+before_install:
+  - gem install rubocop
+
 script:
-  - bundle exec rubocop
+  - rubocop
+
 
