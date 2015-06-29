@@ -2,29 +2,29 @@
 
 ## 全般
 * Ruby 1.8.7のサポートを終了しました
-* コードハイライトのデフォルト言語を設定できるようにしました ([#403](https://github.com/kmuto/review/issues/403))
-* 見出し参照の際のクォートもI18nを使うようにしました ([#420](https://github.com/kmuto/review/issues/420))
+* コードハイライトのデフォルト言語を設定できるようにしました ([#403])
+* 見出し参照の際のクォートもI18nを使うようにしました ([#420])
 * ``//source`` 記法でハイライトの設定と使用言語のオプションをサポートしました
 * 設定ファイルに ``toc`` を追加しました
 
 ## バグ修正
-* ``@<hd>`` で子要素を指定できないバグを修正しました ([#400](https://github.com/kmuto/review/issues/400))
-* プロジェクトのパスに空白スペースが含まれているときにEPUBが正しく生成されないバグを修正しました ([#398](https://github.com/kmuto/review/issues/398))
-* ``@<img>``などを付録で使ったときに``appendix_format:alpha``にしておいても``図1.1``のようになってしまうバグを修正しました ([#405](https://github.com/kmuto/review/issues/405))
-* ハイライト時にリスト名が表示されないバグを修正しました ([#418](https://github.com/kmuto/review/issues/418))
-* i18nの設定がうまくマージされないバグを修正しました ([#423](https://github.com/kmuto/review/issues/423))
-* EPUBの表紙画像が厳密にマッチされないバグを修正しました ([#417](https://github.com/kmuto/review/issues/417))
-* EPUBのバージョンが3のときに ``htmlversion`` が正しく設定されないバグを修正しました ([#433](https://github.com/kmuto/review/issues/433))
+* ``@<hd>`` で子要素を指定できないバグを修正しました ([#400])
+* プロジェクトのパスに空白スペースが含まれているときにEPUBが正しく生成されないバグを修正しました ([#398])
+* ``@<img>``などを付録で使ったときに``appendix_format:alpha``にしておいても``図1.1``のようになってしまうバグを修正しました ([#405])
+* ハイライト時にリスト名が表示されないバグを修正しました ([#418])
+* i18nの設定がうまくマージされないバグを修正しました ([#423])
+* EPUBの表紙画像が厳密にマッチされないバグを修正しました ([#417])
+* EPUBのバージョンが3のときに ``htmlversion`` が正しく設定されないバグを修正しました ([#433])
 
 ## コマンド
 
 ### review-init
-* locale.ymlを生成するオプションを追加しました ([#425](https://github.com/kmuto/review/issues/425))
+* locale.ymlを生成するオプションを追加しました ([#425])
 
 ## ビルダーとメーカー
 
 ### htmlbuilder
-* 章番号を ``span`` タグでマークアップしました ([#415](https://github.com/kmuto/review/issues/415))
+* 章番号を ``span`` タグでマークアップしました ([#415])
 
 ### latexbuilder
 * ``config["conver"]`` をサポートしました
@@ -33,7 +33,7 @@
 * EPUBMakerと同様のファイルの挿入機能をサポートしました
 
 ### epubmaker
-* ``toc`` プロパティをconfig.ymlに追加しました ([#413](https://github.com/kmuto/review/issues/413))
+* ``toc`` プロパティをconfig.ymlに追加しました ([#413])
 
 ## コードコントリビュータ
 * [@keiji](https://github.com/keiji)
@@ -41,6 +41,19 @@
 * [@akinomurasame](https://github.com/akinomurasame)
 * [@krororo](https://github.com/krororo)
 * [@masarakki](https://github.com/masarakki)
+
+[#398]: https://github.com/kmuto/review/issues/398
+[#400]: https://github.com/kmuto/review/issues/400
+[#405]: https://github.com/kmuto/review/issues/405
+[#403]: https://github.com/kmuto/review/issues/403
+[#413]: https://github.com/kmuto/review/issues/413
+[#415]: https://github.com/kmuto/review/issues/415
+[#417]: https://github.com/kmuto/review/issues/417
+[#418]: https://github.com/kmuto/review/issues/418
+[#420]: https://github.com/kmuto/review/issues/420
+[#423]: https://github.com/kmuto/review/issues/423
+[#425]: https://github.com/kmuto/review/issues/425
+[#433]: https://github.com/kmuto/review/issues/433
 
 # Version 1.5.0の主な変更点
 
