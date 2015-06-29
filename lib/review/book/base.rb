@@ -111,7 +111,7 @@ module ReVIEW
       end
 
       def each_chapter_r(&block)
-        chapters.reverse.each(&block)
+        chapters.reverse_each(&block)
       end
 
       def chapter_index

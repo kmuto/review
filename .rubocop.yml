@@ -6,6 +6,9 @@ Lint/BlockAlignment:
 Lint/EndAlignment:
   Enabled: AlignWith
 
+Performance/ReverseEach:
+  Enabled: true
+
 
 
 
