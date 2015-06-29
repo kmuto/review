@@ -38,6 +38,7 @@
 ## コードコントリビュータ
 * [@keiji](https://github.com/keiji)
 * [@orangain](https://github.com/orangain)
+* [@akinomurasame](https://github.com/akinomurasame)
 * [@krororo](https://github.com/krororo)
 * [@masarakki](https://github.com/masarakki)
 
