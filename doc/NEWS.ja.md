@@ -1,33 +1,112 @@
-# version 1.5.0
-
-(under development)
+# Version 1.6.0の主な変更点
 
 ## 全般
+* Ruby 1.8.7のサポートを終了しました
+* コードハイライトのデフォルト言語を設定できるようにしました (#403)
+* 見出し参照の際のクォートもI18nを使うようにしました (#420)
+* ``//source`` 記法でハイライトの設定と使用言語のオプションをサポートしました
+* 設定ファイルに ``toc`` を追加しました
 
-* 引数`lang`が `//list`, `//listnum`, `//emlist`, `//emlistnum`, `//cmd`の各コマンドに追加されました。
-  この値はシンタックスハイライトに利用されます。
-  なお、この変更によりreview-ext.rbの互換性が一部保たれなくなります。
+## バグ修正
+* ``@<hd>`` で子要素を指定できないバグを修正しました (#400)
+* プロジェクトのパスに空白スペースが含まれているときにEPUBが正しく生成されないバグを修正しました (#398)
+* ``@<img>``などを付録で使ったときに``appendix_format:alpha``にしておいても``図1.1``のようになってしまうバグを修正しました (#405)
+* ハイライト時にリスト名が表示されないバグを修正しました (#418)
+* i18nの設定がうまくマージされないバグを修正しました (#423)
+* EPUBの表紙画像が厳密にマッチされないバグを修正しました (#417)
+* EPUBのバージョンが3のときに ``htmlversion`` が正しく設定されないバグを修正しました (#433)
 
-## Commands
+## コマンド
 
-### review-vol
+### review-init
+* locale.ymlを生成するオプションを追加しました (#425)
 
-* config.ymlの指定用に`--yaml`オプションが追加されました。
+## ビルダーとメーカー
 
+### htmlbuilder
+* 章番号を ``span`` タグでマークアップしました (#415)
 
-## Builders and Makers
+### latexbuilder
+* ``config["conver"]`` をサポートしました
 
 ### pdfmaker
-
-* PDF生成時のフック関数が追加されました。
-* config.ymlに`texoptions`, `dvicommand`, `dvioptions`が追加されました。
-* styディレクトリ内のファイルのうち、`sty/*.sty`だけではなく`sty/*.fd`と`sty/*.cls`が
-  実行時にコピーされ使われるようになりました。
+* EPUBMakerと同様のファイルの挿入機能をサポートしました
 
 ### epubmaker
+* ``toc`` プロパティをconfig.ymlに追加しました (#413)
 
+## コードコントリビュータ
+* keiji
+* orangain
+* krororo
+* masarakki
+
+# Version 1.5.0の主な変更点
+
+## 注意
+* 後述するリストハイライト時の言語指定のため、``//list``、``//emlist``等のリストブロック記法をreview-ext.rbで拡張している場合、既存のコードにエラーが出ることがあります。その場合、review-ext.rbを修正する必要があります（review-ext.rbを使っていない場合は影響はありません）。
+
+## 全般
+* config.ymlに設定項目を追加しました。
+* ``@<hd>``で付録の表記を正しく参照できるようにしました。
+* 浅いレベルのコラムを参照できない問題を修正しました。
+* i18n.ymlの項目を追加しました。
+* ``ReVIEW::Book::Base.load_default``を廃止しました。
+* ``@<imgref>``記法を追加しました。
+* サンプルのRakefileにpdf/epub/cleanタスクを追加しました。
+* ドキュメントのフォーマットをRDocからMarkdownに変更しました。
+* 「Re:VIEW Quick Start Guide」を追加しました。
+* ``@<hd>``でidが一意なターゲットを指定するときに``|``を省略できるようにしました。
+* リストのハイライト表示のときに言語を指定できるようにしました。
+* 「Re:VIEW Format Guide」を追加しました。
+* ハイライトを使うときのconfig.ymlの設定名として``highlight``を追加しました。
+
+## コマンド
+### review-epubmaker
+* config.ymlの``toc``をサポートしました。
+
+### review-init
+* ディレクトリが存在しているときでも実行できる``--force``オプションを追加しました。
+
+### review-vol
+* ``--yaml``オプションを追加しました。
+
+## Builders and Makers
+### markdownbuilder
+* ``list_header()``と``list_body()``を追加しました。
+
+### htmlbuilder
+* ``HTMLBuilder#texequation``のMathMLのエラーを修正しました。
+
+### idgxmlbuilder
+* ``@<ttb>``の``index``タグを廃止しました。
+
+### latexbuilder
+* ``@<table>``で他の章のテーブルを参照できるようにしました。
+* listings packageによるハイライトをサポートしました。
+
+### pdfmaker
+* LaTeXツールがないときにエラーを出すようにしました。
+* config.ymlの``toctitle``をサポートしました。
+* すでにPDFファイルが存在しているときに削除するようにしました。
+* config.ymlの``dvicommand``と``dvioptions``をサポートしました。
+* config.ymlの``texoptions``をサポートしました。
+* ``sty/*.fd``や``sty/*.cls``を読み込むようにしました。
+* TeXの処理フックを追加しました。
+* LaTeXコマンドの失敗時に例外を上げて処理が止まるようにしました
+* 一部sedコマンドを利用していた部分を修正し依存しないようにしました。
+
+### epubmaker
+* MathMLのサポートを改善しました。
+* ダミーの``<li>``要素を見せないようにしました。
+* config.ymlにツリー構造を導入しました。
 * 国際化のリソースとしてEPUBMaker::Resourceの代わりにReVIEW::I18nが使われるようになりました。
 
+## コードコントリビュータ
+* akinomurasameさん
+* gfxさん
+* krororoさん
+* orangainさん
 
 
 # Version 1.4.0の主な変更点

@@ -1,34 +1,113 @@
-# version 1.5.0
-
-(under development)
+# Version 1.6.0
 
 ## In general
+* Stop supporting Ruby 1.8.7
+* Enable to set default language for code highlighting (#403)
+* Use I18n in inline ``@<hd>`` chap (#420)
+* Support highlighting and lang option in ``//source``
 
-* Add an argument `lang` to `//list`, `//listnum`, `//emlist`, `//emlistnum`, and `//cmd`.
-  It's used in Syntax Hilighting.
-  It might break copmatibility of review-ext.rb.
-
+## Bug Fix
+* Fix ``@<hd>`` to detect the target header-index in the middle of indexes (#400)
+* Fix epubmaker to escape pathname includes whitespace (#398)
+* Fix ``Builder#get_chap`` to return formatted appendix name correctly (#405)
+* Fix missing listing name when using syntax highlighting (#418)
+* Fix i18n to merge settings correctly (#423)
+* Fix epubmaker to match coverimage strictly (#417)
+* Fix htmlversion when epubversion == 3 (#433)
 
 ## Commands
 
-### review-vol
-
-* Add `--yaml` option to specify config.yml.
-
+### review-init
+* Add option to create locale.yml (#425)
 
 ## Builders and Makers
 
-### pdfmaker
+### htmlbuilder
+* Markup section number by span (#415)
 
-* Add hook functions to execute something while PDF generating process.
-* Add parameters `texoptions`, `dvicommand` and `dvioptions` in config.yml.
-* Copy more tex files from user's sty directory, not only `sty/*.sty`
-  but also `sty/*.fd` and `sty/*.cls`.
+### latexbuilder
+* Support ``config["conver"]``
+
+### pdfmaker
+* Support file insertion (same as EPUBMaker)
 
 ### epubmaker
+* Add ``toc`` property to config.yml (#413)
 
-* use ReVIEW::I18n instead of EPUBMaker::Resource
+## Code contributors
 
+* keiji
+* orangain
+* akinomurasame
+* krororo
+* masarakki
+
+
+# version 1.5.0
+## Notice
+To support language parameter for syntax highlighting, if you use review-ext.rb to extend code block markup such as ``//list`` and ``//emlist``, you should fix it (if you don't use review-ext.rb, you don't have to do anything).
+
+## In general
+* Add default properties in config.yml
+* Fix appendix format with ``@<hd>``.
+* Fix index error in shallow column.
+* Add more items in i18n.yml.
+* Obsolete ``ReVIEW::Book::Base.load_default``.
+* Add ``@<imgref>`` notation.
+* Add pdf, epub and cleanup tasks to sample Rakefile.
+* Change all formats of documents from RDoc to Markdown.
+* Add "Re:VIEW Quick Start Guide (EN)".
+* Enable ``@<hd>`` to identify the target, has unique id, without ``|``.
+* Add an argument lang to list related notations when highlighting.
+* Add "Re:VIEW Format Guide (EN)".
+* Add ``highlight`` property in config.yml as setting of highlight.
+
+## Commands
+### review-epubmaker
+* Support ``toc`` in config.yml
+
+### review-init
+* Add ``--force`` option to generate files even if directory is existed.
+
+### review-vol
+* Add ``--yaml`` option.
+
+## Builders and Makers
+### markdownbuilder
+* Implement ``list_header()`` and ``list_body()``.
+
+### htmlbuilder
+* Fix MathML error in ``HTMLBuilder#texequation``.
+
+### idgxmlbuilder
+*  Stop providing a index for ``@<ttb>``.
+
+### latexbuilder
+* Fix ``@<table>`` to refer the table on another chapter.
+* Support syntax highlighting with listings.
+
+### pdfmaker
+* Raise errors if no LaTeX tools are installed.
+* Support ``toctitle`` in config.yml.
+* Remove a PDF file if already exists.
+* Add parameters ``dvicommand`` and ``dvioptions`` in config.yml.
+* Add parameters ``texoptions`` in config.yml.
+* Load ``sty/*.fd`` and ``sty/*.cls``
+* Provide hooks before/after TeX compiling.
+* remove dependency on sed command
+* raise errors and stop building when LaTeX command failed
+
+### epubmaker
+* Improve to support of MathML.
+* Make dummy ``<li>`` item hidden in nav file.
+* Introduce structured YAML tree for config.yml.
+* Use ``ReVIEW::I18n`` instead of ``EPUBMaker::Resource``
+
+## Code contributors
+* akinomurasame
+* gfx
+* krororo
+* orangain
 
 # version 1.4.0
 
