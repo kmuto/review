@@ -9,3 +9,7 @@ rvm:
 branches:
   only:
     - master
+
+script:
+  - bundle exec rubocop
+
