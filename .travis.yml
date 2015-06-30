@@ -10,9 +10,7 @@ branches:
   only:
     - master
 
-before_install:
-  - gem install rubocop
-
 script:
-  - rubocop
   - bundle exec rake test
+  - bundle exec rubocop
+
