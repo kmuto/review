@@ -155,7 +155,6 @@ module ReVIEW
         call_hook("hook_beforetexcompile", config)
 
         ## do compile
-        enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
         kanji = 'utf8'
         texcommand = "platex"
         texoptions = "-kanji=#{kanji}"
@@ -168,10 +167,6 @@ module ReVIEW
           texcommand = config["texcommand"] if config["texcommand"]
           dvicommand = config["dvicommand"] if config["dvicommand"]
           dvioptions = config["dvioptions"] if config["dvioptions"]
-          if enc
-            kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
-            texoptions = "-kanji=#{kanji}"
-          end
           texoptions = config["texoptions"] if config["texoptions"]
         end
         3.times do

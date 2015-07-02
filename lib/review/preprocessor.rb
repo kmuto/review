@@ -24,24 +24,10 @@ module ReVIEW
     end
 
     def warn(msg)
-      if @config["outencoding"] =~ /^EUC$/
-        msg = NKF.nkf("-W -e", msg)
-      elsif @config["outencoding"] =~ /^SJIS$/
-        msg = NKF.nkf("-W -s", msg)
-      elsif @config["outencoding"] =~ /^JIS$/
-        msg = NKF.nkf("-W -j", msg)
-      end
       $stderr.puts "#{location()}: warning: #{msg}"
     end
 
     def error(msg)
-      if @config["outencoding"] =~ /^EUC$/
-        msg = NKF.nkf("-W -e", msg)
-      elsif @config["outencoding"] =~ /^SJIS$/
-        msg = NKF.nkf("-W -s", msg)
-      elsif @config["outencoding"] =~ /^JIS$/
-        msg = NKF.nkf("-W -j", msg)
-      end
       @errutils_err = true
       raise ApplicationError, "#{location()}: #{msg}"
     end
@@ -183,34 +169,11 @@ module ReVIEW
       KNOWN_DIRECTIVES.index(op)
     end
 
-    def convert_outencoding(*s)
-      ine = ""
-      if @config["inencoding"] =~ /^EUC$/i
-        ine = "-E,"
-      elsif @config["inencoding"] =~ /^SJIS$/i
-        ine = "-S,"
-      elsif @config["inencoding"] =~ /^JIS$/i
-        ine = "-J,"
-      elsif @config["inencoding"] =~ /^UTF\-8$/i
-        ine = "-W,"
-      end
-
-      if @config["outencoding"] =~ /^EUC$/i
-        NKF.nkf("#{ine} -m0x -e", *s)
-      elsif @config["outencoding"] =~ /^SJIS$/i
-        NKF.nkf("#{ine} -m0x -s", *s)
-      elsif @config["outencoding"] =~ /^JIS$/i
-        NKF.nkf("#{ine} -m0x -j", *s)
-      else
-        NKF.nkf("#{ine} -m0x -w", *s)
-      end
-    end
-
     def replace_block(f, directive_line, newlines, with_lineno)
       @f.print directive_line
       newlines.each do |line|
         print_number line.number if with_lineno
-        @f.print convert_outencoding(line.string)
+        @f.print line.string
       end
       skip_list f
     end

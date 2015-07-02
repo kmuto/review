@@ -14,8 +14,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config.merge!({
       "secnolevel" => 2,
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
       "nolf" => true,
       "tableopt" => "10"
     })

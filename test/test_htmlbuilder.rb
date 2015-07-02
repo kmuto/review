@@ -15,8 +15,6 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config.merge!({
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     })
     @book = Book::Base.new(".")

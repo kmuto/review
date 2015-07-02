@@ -33,10 +33,6 @@ end
 def main
   $KCODE = 'UTF-8' unless defined?(Encoding)
   @config = ReVIEW::Configure.values
-  @config.merge!({
-    "inencoding" => "UTF-8",
-    "outencoding" => "UTF-8"
-  })
   @book = ReVIEW::Book::Base.load
   @book.config = @config
 
@@ -44,12 +40,6 @@ def main
   files = ARGV unless ARGV.empty?
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    @config["inencoding"] = enc
-  }
-  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    @config["outencoding"] = enc
-  }
   opts.on('-a', '--all-chapters', 'Check all chapters.') {
     files = @book.chapters.map {|ent| ent.path }
   }
@@ -99,7 +89,7 @@ def check_text(files)
           next if neg and neg =~ s
           str, offset = find_line(para, re)
           out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
-          print convert_outencoding(out, @config["outencoding"])
+          print out
         end
       end
     }
@@ -141,8 +131,6 @@ end
 def each_paragraph(f)
   $ReVIEW_utils_word_ok = nil
   while line = f.gets
-    line = convert_inencoding(line, @config["inencoding"])
-
     case line
     when /\A\#@ok\((.*)\)/
       $ReVIEW_utils_word_ok = $1

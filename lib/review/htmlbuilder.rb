@@ -70,7 +70,7 @@ module ReVIEW
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
         else
-          title = convert_outencoding(strip_html(compile_inline(@chapter.title)), @book.config["outencoding"])
+          title = strip_html(compile_inline(@chapter.title))
 
           toc = ""
           toc_level = 0
@@ -102,21 +102,21 @@ module ReVIEW
 
       # default XHTML header/footer
       header = <<EOT
-<?xml version="1.0" encoding="#{@book.config["outencoding"] || "UTF-8"}"?>
+<?xml version="1.0" encoding="UTF-8"?>
 EOT
       if @book.config["htmlversion"].to_i == 5
         header += <<EOT
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta charset="#{@book.config["outencoding"] || "UTF-8"}" />
+  <meta charset="UTF-8" />
 EOT
       else
         header += <<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || "UTF-8"}" />
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
       end
@@ -130,7 +130,7 @@ EOT
       end
       header += <<EOT
   <meta name="generator" content="Re:VIEW" />
-  <title>#{convert_outencoding(strip_html(compile_inline(@chapter.title)), @book.config["outencoding"])}</title>
+  <title>#{strip_html(compile_inline(@chapter.title))}</title>
 </head>
 <body>
 EOT
@@ -138,7 +138,7 @@ EOT
 </body>
 </html>
 EOT
-      header + messages() + convert_outencoding(@output.string, @book.config["outencoding"]) + footer
+      header + messages() + @output.string + footer
     end
 
     def xmlns_ops_prefix
