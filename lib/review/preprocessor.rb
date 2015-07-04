@@ -206,8 +206,8 @@ module ReVIEW
     class Directive
       def initialize(op, args, opts)
         @op = op
-	@args = args
-	@opts = opts
+        @args = args
+        @opts = opts
       end
 
       attr_reader :op
