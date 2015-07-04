@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="<%= @producer.params["language"] %>">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+<%= @opf_metainfo %>
+  </metadata>
+<%= @opf_manifest %>
+<%= @opf_toc %>
+  <guide>
+    <reference type="cover" title="<%= @producer.res.v("covertitle") %>" href="<%= @producer.params["cover"] %>"/>
+<% if @producer.params["titlepage"].present? %>
+    <reference type="title-page" title="<%= @producer.res.v("titlepagetitle") %>" href="titlepage.<%= @producer.params["htmlext"] %>"/>
+<% end %>
+    <reference type="toc" title="<%= @producer.res.v("toctitle") %>" href="<%= @producer.params["bookname"] %>-toc.<%= @producer.params["htmlext"] %>"/>
+<% if @producer.params["colophon"].present? %>
+    <reference type="colophon" title="<%= @producer.res.v("colophontitle") %>" href="colophon.<%= @producer.params["htmlext"] %>"/>
+<% end %>
+  </guide>
+</package>
