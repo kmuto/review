@@ -333,14 +333,18 @@ module ReVIEW
       blank
     end
 
-    def source(lines, caption)
-      puts '\begin{reviewlist}'
-      puts macro('reviewlistcaption', compile_inline(caption))
-      lines.each do |line|
-        puts detab(line)
+    def source(lines, caption, lang = nil)
+      if highlight_listings?
+        common_code_block_lst(lines, 'reviewlistlst', 'title', caption, lang)
+      else
+        puts '\begin{reviewlist}'
+        puts macro('reviewlistcaption', compile_inline(caption))
+        lines.each do |line|
+          puts detab(line)
+        end
+        puts '\end{reviewlist}'
+        puts ""
       end
-      puts '\end{reviewlist}'
-      puts ""
     end
 
 

@@ -63,15 +63,11 @@ module ReVIEW
     alias_method :raw_result, :result
 
     def print(*s)
-      @output.print(*s.map{|i|
-        convert_outencoding(i, @book.config["outencoding"])
-      })
+      @output.print(*s)
     end
 
     def puts(*s)
-      @output.puts *s.map{|i|
-        convert_outencoding(i, @book.config["outencoding"])
-      }
+      @output.puts(*s)
     end
 
     def target_name
@@ -104,9 +100,9 @@ module ReVIEW
       listnum_body lines, lang
     end
 
-    def source(lines, caption)
+    def source(lines, caption, lang = nil)
       source_header caption
-      source_body lines
+      source_body lines, lang
     end
 
     def image(lines, id, caption, metric = nil)
@@ -400,13 +396,12 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline convert_inencoding(File.open(file_name).read,
-                                        @book.config["inencoding"])
+      compile_inline File.open(file_name).read
     end
 
     def include(file_name)
       File.foreach(file_name) do |line|
-        paragraph([convert_inencoding(line, @book.config["inencoding"])])
+        paragraph([line])
       end
     end
 

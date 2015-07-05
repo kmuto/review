@@ -136,7 +136,7 @@ module ReVIEW
     defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true
-    defblock :source, 0..1
+    defblock :source, 0..2
     defblock :listnum, 2..3
     defblock :emlistnum, 0..2
     defblock :bibpaper, 2..3, true
@@ -362,7 +362,7 @@ module ReVIEW
         elsif level < current_level # down
           level_diff = current_level - level
           level = current_level
-          (1..(level_diff - 1)).to_a.reverse.each do |i|
+          (1..(level_diff - 1)).to_a.reverse_each do |i|
             @strategy.ul_begin {i}
             @strategy.ul_item_begin []
           end
@@ -371,7 +371,7 @@ module ReVIEW
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
-          (1..level_diff).to_a.reverse.each do |i|
+          (1..level_diff).to_a.reverse_each do |i|
             @strategy.ul_item_end
             @strategy.ul_end {level + i}
           end
@@ -381,7 +381,7 @@ module ReVIEW
         end
       end
 
-      (1..level).to_a.reverse.each do |i|
+      (1..level).to_a.reverse_each do |i|
         @strategy.ul_item_end
         @strategy.ul_end {i}
       end
