@@ -51,9 +51,9 @@ module ReVIEW
 
     def list_header(id, caption, lang)
       if get_chap.nil?
-        puts %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}]
+        print %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n\n]
       else
-        puts %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}]
+        print %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n\n]
       end
       lang ||= ""
       puts "```#{lang}"
@@ -103,6 +103,7 @@ module ReVIEW
       blank
       if caption
         puts caption
+        puts
       end
       lang ||= ""
       puts "```#{lang}"
