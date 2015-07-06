@@ -72,6 +72,7 @@ BBB
 
     assert_equal <<-EOS, actual
 リスト1.1 caption
+
 ```
 AAA
 BBB
@@ -89,6 +90,7 @@ BBB
 
     assert_equal <<-EOS, actual
 リスト1.1 caption
+
 ```ruby
 AAA
 BBB
@@ -107,6 +109,7 @@ BBB
     assert_equal <<-EOS, actual
 
 caption
+
 ```ruby
 AAA
 BBB

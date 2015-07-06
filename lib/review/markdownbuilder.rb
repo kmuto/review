@@ -103,7 +103,7 @@ module ReVIEW
       blank
       if caption
         puts caption
-        puts
+        print "\n"
       end
       lang ||= ""
       puts "```#{lang}"
