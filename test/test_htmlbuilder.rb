@@ -625,6 +625,15 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<a href="bib.html#bib-id_sample_3Dbib">[1]</a>|, compile_inline("@<bib>{sample=bib}")
   end
 
+  def test_bib_htmlext
+    def @chapter.bibpaper(id)
+      Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    @config["htmlext"] = "xhtml"
+    assert_equal %Q|<a href="bib.xhtml#bib-samplebib">[1]</a>|, compile_inline("@<bib>{samplebib}")
+  end
+
   def test_bibpaper
     def @chapter.bibpaper(id)
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
