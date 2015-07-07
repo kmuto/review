@@ -332,31 +332,15 @@ EOT
 
   def push_contents(basetmpdir)
     @htmltoc.each_item do |level, file, title, args|
-      force_include = nil
-      customid = nil
-      chaptype = nil
-      properties = nil
-      args.each do |k, v|
-        case k
-        when :id
-          customid = v
-        when :force_include
-          force_include = true
-        when :chaptype
-          chaptype = v
-        when :properties
-          properties = v
-        end
-      end
-      next if level.to_i > @params["toclevel"] && force_include.nil?
+      next if level.to_i > @params["toclevel"] && args[:force_include].nil?
       log("Push #{file} to ePUB contents.")
 
-      hash = {"file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype}
-      if customid.present?
-        hash["id"] = customid
+      hash = {"file" => file, "level" => level.to_i, "title" => title, "chaptype" => args[:chaptype]}
+      if args[:id].present?
+        hash["id"] = args[:id]
       end
-      if properties.present?
-        hash["properties"] = properties.split(" ")
+      if args[:properties].present?
+        hash["properties"] = args[:properties].split(" ")
       end
       @producer.contents.push(Content.new(hash))
     end
