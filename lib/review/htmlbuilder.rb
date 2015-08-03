@@ -104,7 +104,7 @@ module ReVIEW
       header = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 EOT
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         header += <<EOT
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
@@ -830,7 +830,7 @@ QUOTE
     end
 
     def compile_ruby(base, ruby)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
         %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
@@ -863,7 +863,7 @@ QUOTE
     end
 
     def inline_tti(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
       else
         %Q(<tt><i>#{escape_html(str)}</i></tt>)
@@ -871,7 +871,7 @@ QUOTE
     end
 
     def inline_ttb(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
       else
         %Q(<tt><b>#{escape_html(str)}</b></tt>)
@@ -883,7 +883,7 @@ QUOTE
     end
 
     def inline_code(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
       else
         %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
@@ -1079,7 +1079,7 @@ QUOTE
     end
 
     def inline_tt(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt">#{escape_html(str)}</code>)
       else
         %Q(<tt>#{escape_html(str)}</tt>)

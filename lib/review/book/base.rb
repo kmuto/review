@@ -84,6 +84,14 @@ module ReVIEW
         end
       end
 
+      def htmlversion
+        if config["htmlversion"].blank?
+          nil
+        else
+          config["htmlversion"].to_i
+        end
+      end
+
       def parts
         @parts ||= read_parts()
       end
