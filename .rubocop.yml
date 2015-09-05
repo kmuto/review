@@ -18,3 +18,7 @@ Performance/ReverseEach:
 Style/ExtraSpacing:
   Enabled: true
 
+# Use tr instead of gsub.
+Performance/StringReplacement:
+  Enabled: false
+
