@@ -451,7 +451,7 @@ Style/RegexpLiteral:
 # Offense count: 8
 # Cop supports --auto-correct.
 Style/SelfAssignment:
-  Enabled: false
+  Enabled: true
 
 # Offense count: 6
 # Cop supports --auto-correct.

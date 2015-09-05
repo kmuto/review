@@ -29,3 +29,7 @@ Style/Alias:
 # Do not introduce global variables.
 Style/GlobalVars:
   Enabled: true
+
+# Use self-assignment shorthand +=.
+Style/SelfAssignment:
+  Enabled: true

@@ -541,7 +541,7 @@ module ReVIEW
           totallength = 0
           cellwidth.size.times do |n|
             cellwidth[n] = cellwidth[n].to_f / 0.351 # mm -> pt
-            totallength = totallength + cellwidth[n]
+            totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
           end
           if cellwidth.size < col
@@ -1084,7 +1084,7 @@ module ReVIEW
       lines.each do |l|
         print l.gsub("&lt;", "<").gsub("&gt;", ">").gsub("&quot;", "\"").gsub("&amp;", "&")
         print "\n" unless lines.length == no
-        no = no + 1
+        no += 1
       end
     end
 
