@@ -424,7 +424,7 @@ module ReVIEW
 
     def read_command(f)
       line = f.gets
-      name = line.slice(/[a-z]+/).intern
+      name = line.slice(/[a-z]+/).to_sym
       args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
       lines = block_open?(line) ? read_block(f) : nil
       return name, args, lines

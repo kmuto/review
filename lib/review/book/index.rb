@@ -245,12 +245,12 @@ module ReVIEW
       end
 
       def title(id)
-        sprintf(@locale["#{@index.item_type}_caption_format".intern],
+        sprintf(@locale["#{@index.item_type}_caption_format".to_sym],
           @index.title(id))
       end
 
       def number(id)
-        sprintf(@locale["#{@index.item_type}_number_format".intern],
+        sprintf(@locale["#{@index.item_type}_number_format".to_sym],
           @index.number(id))
       end
 
