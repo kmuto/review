@@ -99,14 +99,14 @@ end
 def find_line(lines, re)
   # single line?
   lines.each_with_index do |line, idx|
-    return line.gsub(re, '<<<\&>>>'), idx  if re =~ line
+    return line.gsub(re, '<<<\&>>>'), idx if re =~ line
   end
 
   # multiple lines?
   i = 0
   while i < lines.size - 1
     str = lines[i] + lines[i+1]
-    return str.gsub(re, '<<<\&>>>'), i  if re =~ str
+    return str.gsub(re, '<<<\&>>>'), i if re =~ str
     i += 1
   end
 
@@ -117,7 +117,7 @@ def words_re(rc)
   words = []
   nega = []
   File.foreach(rc) do |line|
-    next  if line[0,1] == '#'
+    next if line[0,1] == '#'
     if / !/ =~ line
       line, n = *line.split(/!/, 2)
       nega.push n.strip

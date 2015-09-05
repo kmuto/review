@@ -19,7 +19,7 @@ module ReVIEW
   class TOCPrinter
 
     def TOCPrinter.default_upper_level
-      99   # no one use 99 level nest
+      99 # no one use 99 level nest
     end
 
     def initialize(print_upper, param)
@@ -71,7 +71,7 @@ module ReVIEW
     def volume_columns(level, volstr)
       cols = ["", "", "", nil]
       cols[level - 1] = volstr
-      cols[0, 3]   # does not display volume of level-4 section
+      cols[0, 3] # does not display volume of level-4 section
     end
 
   end

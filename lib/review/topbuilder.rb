@@ -786,4 +786,4 @@ module ReVIEW
 
   end
 
-end   # module ReVIEW
+end # module ReVIEW

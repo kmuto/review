@@ -10,7 +10,7 @@ require 'tmpdir'
 class I18nTest < Test::Unit::TestCase
   include ReVIEW
 
-  if RUBY_VERSION !~ /^1.8/  ## to avoid Travis error :-(
+  if RUBY_VERSION !~ /^1.8/ ## to avoid Travis error :-(
     def test_load_locale_yml
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do

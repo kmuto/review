@@ -169,12 +169,12 @@ def _main
       compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
       book.chapters.each do |chap|
         str = compiler.compile(chap)
-        write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
+        write "#{chap.name}#{compiler.strategy.extname}", str unless check_only
       end
       # PART
       book.parts_in_file.each do |part|
         str = compiler.compile(part)
-        write "#{part.name}#{compiler.strategy.extname}", str  unless check_only
+        write "#{part.name}#{compiler.strategy.extname}", str unless check_only
       end
     else
       raise "must not happen: #{mode}"

@@ -373,7 +373,7 @@ EOT
 
     def ol_begin
       if @ol_num
-        puts "<ol start=\"#{@ol_num}\">"  ## it's OK in HTML5, but not OK in XHTML1.1
+        puts "<ol start=\"#{@ol_num}\">" ## it's OK in HTML5, but not OK in XHTML1.1
         @ol_num = nil
       else
         puts '<ol>'
@@ -1177,4 +1177,4 @@ QUOTE
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

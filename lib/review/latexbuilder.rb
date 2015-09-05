@@ -505,7 +505,7 @@ module ReVIEW
 
     def th(s)
       ## use shortstack for @<br>
-      if  /\\\\/i =~ s
+      if /\\\\/i =~ s
         macro('reviewth', macro('shortstack[l]', s))
       else
         macro('reviewth', s)
@@ -514,7 +514,7 @@ module ReVIEW
 
     def td(s)
       ## use shortstack for @<br>
-      if  /\\\\/ =~ s
+      if /\\\\/ =~ s
         macro('shortstack[l]', s)
       else
         s

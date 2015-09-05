@@ -267,8 +267,8 @@ module ReVIEW
 
     def get_template(config)
       dclass = config["texdocumentclass"] || []
-      documentclass =  dclass[0] || "jsbook"
-      documentclassoption =  dclass[1] || "oneside"
+      documentclass = dclass[0] || "jsbook"
+      documentclassoption = dclass[1] || "oneside"
 
       okuduke = make_colophon(config)
       authors = make_authors(config)

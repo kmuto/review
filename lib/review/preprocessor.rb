@@ -153,7 +153,7 @@ module ReVIEW
           warn "unkown directive: #{line.strip}" unless known_directive?(op)
           @f.print line
 
-        when /\A\s*\z/   # empty line
+        when /\A\s*\z/ # empty line
           @f.puts
         else
           @f.print line
@@ -428,7 +428,7 @@ module ReVIEW
       repo = {'file' => whole}
       curr = {'WHOLE' => whole}
       lineno = 1
-      yacchack = false   # remove ';'-only lines.
+      yacchack = false # remove ';'-only lines.
       opened = [['(not opened)', '(not opened)']] * 3
 
       f.each do |line|
@@ -473,7 +473,7 @@ module ReVIEW
         when /(?:\A\#@|\#@@)yacchack/
           yacchack = true
 
-        when /\A\#@-/   # does not increment line number.
+        when /\A\#@-/ # does not increment line number.
           line = canonical($')
           curr.each_value do |list|
             list.push Line.new(nil, line)

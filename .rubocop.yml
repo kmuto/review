@@ -14,7 +14,7 @@ Lint/EndAlignment:
 Performance/ReverseEach:
   Enabled: true
 
-
-
-
+# Unnecessary spacing detected.
+Style/ExtraSpacing:
+  Enabled: true
 

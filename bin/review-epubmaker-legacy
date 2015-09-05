@@ -800,8 +800,8 @@ def include_mathml?(filename)
     }
     return false
   }
-  rescue
-    false
+rescue
+  false
 end
 
 def getFigId(filename)

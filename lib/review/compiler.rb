@@ -446,7 +446,7 @@ module ReVIEW
         error "unexpected EOF (block begins at: #{head})"
         return buf
       end
-      f.gets   # discard terminator
+      f.gets # discard terminator
       buf
     end
 
@@ -524,7 +524,7 @@ module ReVIEW
     rescue => err
       error err.message
     end
-    public :text   # called from strategy
+    public :text # called from strategy
 
     def compile_inline(str)
       op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
@@ -550,4 +550,4 @@ module ReVIEW
 
   end
 
-end   # module ReVIEW
+end # module ReVIEW
