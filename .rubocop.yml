@@ -33,3 +33,7 @@ Style/GlobalVars:
 # Use self-assignment shorthand +=.
 Style/SelfAssignment:
   Enabled: true
+
+# When defining the == operator, name its argument other.
+Style/OpMethod:
+  Enabled: true

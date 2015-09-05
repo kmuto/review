@@ -395,10 +395,6 @@ Style/NumericLiterals:
   MinDigits: 6
 
 # Offense count: 1
-Style/OpMethod:
-  Enabled: false
-
-# Offense count: 1
 # Cop supports --auto-correct.
 # Configuration parameters: AllowSafeAssignment.
 Style/ParenthesesAroundCondition:
