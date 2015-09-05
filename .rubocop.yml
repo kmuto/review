@@ -22,3 +22,6 @@ Style/ExtraSpacing:
 Performance/StringReplacement:
   Enabled: false
 
+# Use alias_method instead of alias.
+Style/Alias:
+  Enabled: true

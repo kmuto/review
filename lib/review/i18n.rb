@@ -38,7 +38,7 @@ module ReVIEW
     end
 
     class << self
-      alias v t ## for EPUBMaker backward compatibility
+      alias_method :v, :t ## for EPUBMaker backward compatibility
     end
 
     def self.update(user_i18n, locale = nil)
