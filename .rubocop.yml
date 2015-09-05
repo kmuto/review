@@ -37,3 +37,7 @@ Style/SelfAssignment:
 # When defining the == operator, name its argument other.
 Style/OpMethod:
   Enabled: true
+
+# Use snake_case for variable names.
+Style/VariableName:
+  Enabled: true

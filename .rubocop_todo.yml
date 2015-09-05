@@ -592,11 +592,6 @@ Style/UnlessElse:
 Style/UnneededPercentQ:
   Enabled: false
 
-# Offense count: 2
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-Style/VariableName:
-  Enabled: false
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: MaxLineLength.
