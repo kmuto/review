@@ -490,10 +490,18 @@ EOT
     end
 
     def listnum_body(lines, lang)
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = lang
-      puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                     :options => {:linenos => 'inline', :nowrap => false})
+      if highlight?
+        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        lexer = lang
+        puts highlight(:body => body, :lexer => lexer, :format => 'html',
+                       :options => {:linenos => 'inline', :nowrap => false})
+      else
+        print '<pre class="list">'
+        lines.each_with_index do |line, i|
+          puts detab((i+1).to_s.rjust(2) + ": " + line)
+        end
+        puts '</pre>'
+      end
     end
 
     def emlist(lines, caption = nil, lang = nil)
@@ -514,10 +522,20 @@ EOT
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = lang
-      puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                     :options => {:linenos => 'inline', :nowrap => false})
+
+      if highlight?
+        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        lexer = lang
+        puts highlight(:body => body, :lexer => lexer, :format => 'html',
+                       :options => {:linenos => 'inline', :nowrap => false})
+      else
+        print '<pre class="emlist">'
+        lines.each_with_index do |line, i|
+          puts detab((i+1).to_s.rjust(2) + ": " + line)
+        end
+        puts '</pre>'
+      end
+
       puts '</div>'
     end
 

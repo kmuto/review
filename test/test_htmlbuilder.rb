@@ -520,6 +520,35 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n</pre>\n</div>\n", actual
   end
 
+  def test_listnum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+
+    @book.config["highlight"] = false
+    actual = compile_block(<<-EOS)
+//listnum[samplelist][this is @<b>{test}<&>_][ruby]{
+def foo(a1, a2=:test)
+  (1..3).times{|i| a.include?(:foo)}
+  return true
+end
+//}
+EOS
+
+    expected =<<-EOS
+<div class="code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<pre class="list"> 1: def foo(a1, a2=:test)
+ 2:   (1..3).times{|i| a.include?(:foo)}
+ 3:   return true
+ 4: end
+</pre>
+</div>
+EOS
+
+    assert_equal expected, actual
+  end
+
   def test_listnum_pygments_lang
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
@@ -580,6 +609,19 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_emlist_with_tab
     actual = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
     assert_equal %Q|<div class="emlist-code">\n<pre class="emlist">        lineA\n                lineB\n        lineC\n</pre>\n</div>\n|, actual
+  end
+
+  def test_emlistnum
+    @book.config["highlight"] = false
+    actual = compile_block("//emlistnum{\nlineA\nlineB\n//}\n")
+    expected =<<-EOS
+<div class="emlistnum-code">
+<pre class="emlist"> 1: lineA
+ 2: lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_with_4tab

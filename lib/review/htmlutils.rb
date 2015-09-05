@@ -40,7 +40,7 @@ module ReVIEW
       str.gsub('-', '&#45;')
     end
 
-    def highlight_pygments?
+    def highlight?
       @book.config["pygments"].present? ||
         @book.config["highlight"] && @book.config["highlight"]["html"] == "pygments"
     end
@@ -58,7 +58,7 @@ module ReVIEW
       if ops[:options] && ops[:options].kind_of?(Hash)
         options.merge!(ops[:options])
       end
-      return body if !highlight_pygments?
+      return body if !highlight?
 
       begin
         require 'pygments'
