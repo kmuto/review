@@ -25,3 +25,7 @@ Performance/StringReplacement:
 # Use alias_method instead of alias.
 Style/Alias:
   Enabled: true
+
+# Do not introduce global variables.
+Style/GlobalVars:
+  Enabled: true

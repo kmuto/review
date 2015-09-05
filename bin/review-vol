@@ -21,8 +21,6 @@ require 'optparse'
 include ReVIEW::TextUtils
 
 def main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
-
   @config = ReVIEW::Configure.values
 
   part_sensitive = false

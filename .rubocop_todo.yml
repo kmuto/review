@@ -288,11 +288,6 @@ Style/For:
 Style/FormatString:
   Enabled: false
 
-# Offense count: 13
-# Configuration parameters: AllowedVariables.
-Style/GlobalVars:
-  Enabled: false
-
 # Offense count: 31
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:

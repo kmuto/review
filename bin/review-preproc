@@ -35,8 +35,6 @@ rescue Errno::EPIPE
 end
 
 def main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
-
   param = {}
 
   mode = :output

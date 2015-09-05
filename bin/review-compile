@@ -34,8 +34,6 @@ rescue Errno::EPIPE
 end
 
 def _main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
-
   mode = :files
   basedir = nil
   if /\Areview2/ =~ File.basename($0)

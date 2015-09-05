@@ -32,8 +32,6 @@ rescue Errno::EPIPE
 end
 
 def _main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
-
   printer_class = ReVIEW::TextTOCPrinter
   source = nil
   upper = ReVIEW::TOCPrinter.default_upper_level

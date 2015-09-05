@@ -31,7 +31,6 @@ rescue Errno::EPIPE
 end
 
 def main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
   @config = ReVIEW::Configure.values
   @book = ReVIEW::Book::Base.load
   @book.config = @config
@@ -85,7 +84,7 @@ def check_text(files)
       each_paragraph(f) do |para, lineno|
         s = para.join('')
         if m = re.match(s)
-          next if m[0] == $ReVIEW_utils_word_ok
+          next if m[0] == @ReVIEW_utils_word_ok
           next if neg and neg =~ s
           str, offset = find_line(para, re)
           out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
@@ -129,11 +128,11 @@ def words_re(rc)
 end
 
 def each_paragraph(f)
-  $ReVIEW_utils_word_ok = nil
+  @ReVIEW_utils_word_ok = nil
   while line = f.gets
     case line
     when /\A\#@ok\((.*)\)/
-      $ReVIEW_utils_word_ok = $1
+      @ReVIEW_utils_word_ok = $1
     when /\A\#@/
       ;
     when %r[\A//caption\{(.*?)//\}]
@@ -156,7 +155,7 @@ def each_paragraph(f)
         buf.push line.strip
       end
       yield buf, lineno
-      $ReVIEW_utils_word_ok = nil
+      @ReVIEW_utils_word_ok = nil
     end
   end
 end
