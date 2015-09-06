@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 module ReVIEW
   class Configure < Hash
+
+    attr_accessor :maker
+
     def self.values
       Configure[
         # These parameters can be overridden by YAML file.
@@ -47,6 +50,15 @@ module ReVIEW
         "bib_file"     => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
       ]
+    end
+
+    def [](key)
+      if self.key?(key)
+        return self.fetch(key)
+      end
+      if @maker && self.key?(@maker)
+        return self.fetch(@maker).fetch(key, nil)
+      end
     end
   end
 end
