@@ -437,7 +437,7 @@ EOT
   end
 
   def header(title)
-    # titleはすでにエスケープ済みと想定
+    # title should be escaped.
     s = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 EOT
