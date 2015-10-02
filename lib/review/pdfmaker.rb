@@ -22,6 +22,8 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
+    attr_accessor :config, :basedir
+
     def initialize
       @basedir = Dir.pwd
     end
@@ -39,13 +41,16 @@ module ReVIEW
       $stderr.puts "#{File.basename($0, '.*')}: warning: #{msg}"
     end
 
-    def check_book(config)
-      pdf_file = config["bookname"]+".pdf"
-      File.unlink(pdf_file) if File.exist?(pdf_file)
+    def pdf_filepath
+      File.join(@basedir, @config["bookname"]+".pdf")
     end
 
-    def build_path(config)
-      "./#{config["bookname"]}-pdf"
+    def remove_old_file
+      FileUtils.rm_f(pdf_filepath)
+    end
+
+    def build_path
+      "./#{@config["bookname"]}-pdf"
     end
 
     def check_compile_status(ignore_errors)
@@ -89,31 +94,30 @@ module ReVIEW
     end
 
     def execute(*args)
-      config = ReVIEW::Configure.values
+      @config = ReVIEW::Configure.values
       cmd_config, yamlfile = parse_opts(args)
 
-      config.merge!(YAML.load_file(yamlfile))
+      @config.merge!(YAML.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
-      config.merge!(cmd_config)
-      I18n.setup(config["language"])
-      generate_pdf(config, yamlfile)
+      @config.merge!(cmd_config)
+      I18n.setup(@config["language"])
+      generate_pdf(yamlfile)
     end
 
-    def generate_pdf(config, yamlfile)
-      check_book(config)
-      @path = build_path(config)
-      bookname = config["bookname"]
+    def generate_pdf(yamlfile)
+      remove_old_file
+      @path = build_path()
       Dir.mkdir(@path)
 
       @chaps_fnames = Hash.new{|h, key| h[key] = ""}
       @compile_errors = nil
 
       book = ReVIEW::Book.load(@basedir)
-      book.config = config
+      book.config = @config
       book.parts.each do |part|
         if part.name.present?
           if part.file?
-            output_chaps(part.name, config, yamlfile)
+            output_chaps(part.name, yamlfile)
             @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
           else
             @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
@@ -122,7 +126,7 @@ module ReVIEW
 
         part.chapters.each do |chap|
           filename = File.basename(chap.path, ".*")
-          output_chaps(filename, config, yamlfile)
+          output_chaps(filename, yamlfile)
           @chaps_fnames["PREDEF"]  << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
           @chaps_fnames["CHAPS"]   << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
           @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
@@ -130,29 +134,29 @@ module ReVIEW
         end
       end
 
-      check_compile_status(config["ignore-errors"])
+      check_compile_status(@config["ignore-errors"])
 
-      config["pre_str"]  = @chaps_fnames["PREDEF"]
-      config["chap_str"] = @chaps_fnames["CHAPS"]
-      config["appendix_str"] = @chaps_fnames["APPENDIX"]
-      config["post_str"] = @chaps_fnames["POSTDEF"]
+      @config["pre_str"]  = @chaps_fnames["PREDEF"]
+      @config["chap_str"] = @chaps_fnames["CHAPS"]
+      @config["appendix_str"] = @chaps_fnames["APPENDIX"]
+      @config["post_str"] = @chaps_fnames["POSTDEF"]
 
-      config["usepackage"] = ""
-      if config["texstyle"]
-        config["usepackage"] = "\\usepackage{#{config['texstyle']}}"
+      @config["usepackage"] = ""
+      if @config["texstyle"]
+        @config["usepackage"] = "\\usepackage{#{@config['texstyle']}}"
       end
 
-      copy_images("./images", "#{@path}/images")
-      copyStyToDir(Dir.pwd + "/sty", @path)
-      copyStyToDir(Dir.pwd + "/sty", @path, "fd")
-      copyStyToDir(Dir.pwd + "/sty", @path, "cls")
+      copy_images("./images", File.join(@path, "images"))
+      copyStyToDir(File.join(Dir.pwd, "sty"), @path)
+      copyStyToDir(File.join(Dir.pwd, "sty"), @path, "fd")
+      copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
       copyStyToDir(Dir.pwd, @path, "tex")
 
-      Dir.chdir(@path) {
-        template = get_template(config)
+      Dir.chdir(@path) do
+        template = get_template
         File.open("./book.tex", "wb"){|f| f.write(template)}
 
-        call_hook("hook_beforetexcompile", config)
+        call_hook("hook_beforetexcompile")
 
         ## do compile
         kanji = 'utf8'
@@ -164,32 +168,32 @@ module ReVIEW
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "command configuration is prohibited in safe mode. ignored."
         else
-          texcommand = config["texcommand"] if config["texcommand"]
-          dvicommand = config["dvicommand"] if config["dvicommand"]
-          dvioptions = config["dvioptions"] if config["dvioptions"]
-          texoptions = config["texoptions"] if config["texoptions"]
+          texcommand = @config["texcommand"] if @config["texcommand"]
+          dvicommand = @config["dvicommand"] if @config["dvicommand"]
+          dvioptions = @config["dvioptions"] if @config["dvioptions"]
+          texoptions = @config["texoptions"] if @config["texoptions"]
         end
         3.times do
           system_or_raise("#{texcommand} #{texoptions} book.tex")
         end
-        call_hook("hook_aftertexcompile", config)
+        call_hook("hook_aftertexcompile")
 
         if File.exist?("book.dvi")
           system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
         end
-      }
-      call_hook("hook_afterdvipdf", config)
-      
-      FileUtils.cp("#{@path}/book.pdf", "#{@basedir}/#{bookname}.pdf")
+      end
+      call_hook("hook_afterdvipdf")
 
-      unless config["debug"]
+      FileUtils.cp(File.join(@path, "book.pdf"), pdf_filepath)
+
+      unless @config["debug"]
         remove_entry_secure @path
       end
     end
 
-    def output_chaps(filename, config, yamlfile)
+    def output_chaps(filename, yamlfile)
       $stderr.puts "compiling #{filename}.tex"
-      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=latex --level=#{config["secnolevel"]} --toclevel=#{config["toclevel"]} #{config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
+      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=latex --level=#{@config["secnolevel"]} --toclevel=#{@config["toclevel"]} #{@config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
       if system cmd
         # OK
       else
@@ -198,6 +202,8 @@ module ReVIEW
       end
     end
 
+    # PDFMaker#copy_images should copy image files _AND_ execute extractbb (or ebb).
+    #
     def copy_images(from, to)
       if File.exist?(from)
         Dir.mkdir(to)
@@ -232,57 +238,57 @@ module ReVIEW
       end
     end
 
-    def make_colophon_role(role, config)
-      if config[role].present?
-        return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(config[role], ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+    def make_colophon_role(role)
+      if @config[role].present?
+        return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(@config[role], ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       else
         ""
       end
     end
 
-    def make_colophon(config)
+    def make_colophon
       colophon = ""
-      config["colophon_order"].each do |role|
-        colophon += make_colophon_role(role, config)
+      @config["colophon_order"].each do |role|
+        colophon += make_colophon_role(role)
       end
       colophon
     end
 
-    def make_authors(config)
+    def make_authors
       authors = ""
-      if config["aut"].present?
-        author_names = join_with_separator(config["aut"], ReVIEW::I18n.t("names_splitter"))
+      if @config["aut"].present?
+        author_names = join_with_separator(@config["aut"], ReVIEW::I18n.t("names_splitter"))
         authors = ReVIEW::I18n.t("author_with_label", author_names)
       end
-      if config["csl"].present?
-        csl_names = join_with_separator(config["csl"], ReVIEW::I18n.t("names_splitter"))
+      if @config["csl"].present?
+        csl_names = join_with_separator(@config["csl"], ReVIEW::I18n.t("names_splitter"))
         authors += " \\\\\n"+ ReVIEW::I18n.t("supervisor_with_label", csl_names)
       end
-      if config["trl"].present?
-        trl_names = join_with_separator(config["trl"], ReVIEW::I18n.t("names_splitter"))
+      if @config["trl"].present?
+        trl_names = join_with_separator(@config["trl"], ReVIEW::I18n.t("names_splitter"))
         authors += " \\\\\n"+ ReVIEW::I18n.t("translator_with_label", trl_names)
       end
       authors
     end
 
-    def get_template(config)
-      dclass = config["texdocumentclass"] || []
+    def get_template
+      dclass = @config["texdocumentclass"] || []
       documentclass = dclass[0] || "jsbook"
       documentclassoption = dclass[1] || "oneside"
 
-      okuduke = make_colophon(config)
-      authors = make_authors(config)
+      okuduke = make_colophon
+      authors = make_authors
 
-      custom_titlepage = make_custom_page(config["cover"]) || make_custom_page(config["coverfile"])
-      custom_originaltitlepage = make_custom_page(config["originaltitlefile"])
-      custom_creditpage = make_custom_page(config["creditfile"])
+      custom_titlepage = make_custom_page(@config["cover"]) || make_custom_page(@config["coverfile"])
+      custom_originaltitlepage = make_custom_page(@config["originaltitlefile"])
+      custom_creditpage = make_custom_page(@config["creditfile"])
 
-      custom_profilepage = make_custom_page(config["profile"])
-      custom_advfilepage = make_custom_page(config["advfile"])
-      if config["colophon"] && config["colophon"].kind_of?(String)
-        custom_colophonpage = make_custom_page(config["colophon"])
+      custom_profilepage = make_custom_page(@config["profile"])
+      custom_advfilepage = make_custom_page(@config["advfile"])
+      if @config["colophon"] && @config["colophon"].kind_of?(String)
+        custom_colophonpage = make_custom_page(@config["colophon"])
       end
-      custom_backcoverpage = make_custom_page(config["backcover"])
+      custom_backcoverpage = make_custom_page(@config["backcover"])
 
       template = File.expand_path('layout.tex.erb', File.dirname(__FILE__))
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
@@ -291,30 +297,29 @@ module ReVIEW
       end
 
       erb = ERB.new(File.open(template).read)
-      values = config # must be 'values' for legacy files
+      values = @config # must be 'values' for legacy files
       erb.result(binding)
     end
 
     def copyStyToDir(dirname, copybase, extname = "sty")
       unless File.directory?(dirname)
-        $stderr.puts "No such directory - #{dirname}"
+        warn "No such directory - #{dirname}"
         return
       end
 
-      Dir.open(dirname) {|dir|
-        dir.each {|fname|
-          next if fname =~ /^\./
-          if fname =~ /\.(#{extname})$/i
-            Dir.mkdir(copybase) unless File.exist?(copybase)
-            FileUtils.cp "#{dirname}/#{fname}", copybase
+      Dir.open(dirname) do |dir|
+        dir.each do |fname|
+          if File.extname(fname).downcase == "."+extname
+            FileUtils.mkdir_p(copybase)
+            FileUtils.cp File.join(dirname, fname), copybase
           end
-        }
-      }
+        end
+      end
     end
 
-    def call_hook(hookname, config)
-      if config["pdfmaker"].instance_of?(Hash) && config["pdfmaker"][hookname]
-        hook = File.absolute_path(config["pdfmaker"][hookname], @basedir)
+    def call_hook(hookname)
+      if @config["pdfmaker"].instance_of?(Hash) && @config["pdfmaker"][hookname]
+        hook = File.absolute_path(@config["pdfmaker"][hookname], @basedir)
         if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
           warn "hook configuration is prohibited in safe mode. ignored."
         else
