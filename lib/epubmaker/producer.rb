@@ -268,7 +268,7 @@ module EPUBMaker
         end
       end
 
-      @params["htmlversion"] == 5 if @params["epubversion"] >= 3
+      @params["htmlversion"] = 5 if @params["epubversion"] >= 3
 
       %w[bookname title].each do |k|
         raise "Key #{k} must have a value. Abort." if @params[k].nil?

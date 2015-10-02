@@ -32,25 +32,14 @@ rescue Errno::EPIPE
 end
 
 def _main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
-
   printer_class = ReVIEW::TextTOCPrinter
   source = nil
   upper = ReVIEW::TOCPrinter.default_upper_level
-  param = {
-    "inencoding" => "UTF-8",
-    "outencoding" => "UTF-8"
-  }
+  param = {}
   book = ReVIEW::Book::Base.load
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    param["inencoding"] = enc
-  }
-  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    param["outencoding"] = enc
-  }
   opts.on('-a', '--all', 'print all chapters.') {
     begin
       source = book
@@ -71,7 +60,7 @@ def _main
   }
   opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') {|n|
     upper = Integer(n)
-    unless (0..4).include?(upper)  # 0 is hidden option
+    unless (0..4).include?(upper) # 0 is hidden option
       $stderr.puts "-l/--level option accepts only 1..4"
       exit 1
     end

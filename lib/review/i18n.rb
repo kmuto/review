@@ -38,7 +38,7 @@ module ReVIEW
     end
 
     class << self
-      alias v t  ## for EPUBMaker backward compatibility
+      alias_method :v, :t ## for EPUBMaker backward compatibility
     end
 
     def self.update(user_i18n, locale = nil)
@@ -65,7 +65,11 @@ module ReVIEW
       locale = user_i18n["locale"]
       if locale
         user_i18n.delete("locale")
-        @store[locale].merge!(user_i18n)
+        if @store[locale]
+          @store[locale].merge!(user_i18n)
+        else
+          @store[locale] = user_i18n
+        end
       else
         user_i18n.each do |key, values|
           raise KeyError, "Invalid locale file: #{path}" unless values.kind_of? Hash

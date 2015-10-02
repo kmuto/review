@@ -13,8 +13,6 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
     @builder = MARKDOWNBuilder.new()
     @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
     }
     @book = Book::Base.new(nil)
@@ -74,6 +72,7 @@ BBB
 
     assert_equal <<-EOS, actual
 リスト1.1 caption
+
 ```
 AAA
 BBB
@@ -91,6 +90,7 @@ BBB
 
     assert_equal <<-EOS, actual
 リスト1.1 caption
+
 ```ruby
 AAA
 BBB
@@ -109,6 +109,7 @@ BBB
     assert_equal <<-EOS, actual
 
 caption
+
 ```ruby
 AAA
 BBB

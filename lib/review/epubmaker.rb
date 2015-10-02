@@ -11,6 +11,7 @@ require 'review'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
+require 'review/htmltoc'
 
 module ReVIEW
  class EPUBMaker
@@ -19,7 +20,7 @@ module ReVIEW
 
   def initialize
     @producer = nil
-    @tochtmltxt = "toc-html.txt"
+    @htmltoc = nil
     @buildlogtxt = "build-log.txt"
   end
 
@@ -51,6 +52,7 @@ module ReVIEW
 
       call_hook("hook_beforeprocess", basetmpdir)
 
+      @htmltoc = ReVIEW::HTMLToc.new(basetmpdir)
       ## copy all files into basetmpdir
       copy_stylesheet(basetmpdir)
 
@@ -200,7 +202,7 @@ module ReVIEW
           build_part(part, basetmpdir, htmlfile)
           title = ReVIEW::I18n.t("part", part.number)
           title += ReVIEW::I18n.t("chapter_postfix") + part.name.strip if part.name.strip.present?
-          write_tochtmltxt(basetmpdir, "0\t#{htmlfile}\t#{title}\tchaptype=part")
+          @htmltoc.add_item(0, htmlfile, title, {:chaptype => "part"})
           write_buildlogtxt(basetmpdir, htmlfile, "")
         end
       end
@@ -320,51 +322,27 @@ EOT
     headlines.each do |headline|
       headline["level"] = 0 if ispart.present? && headline["level"] == 1
       if first.nil?
-        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}##{headline["id"]}\t#{headline["title"]}\tchaptype=#{chaptype}")
+        @htmltoc.add_item(headline["level"], filename+"#"+headline["id"], headline["title"], {:chaptype => chaptype})
       else
-        write_tochtmltxt(basetmpdir, "#{headline["level"]}\t#{filename}\t#{headline["title"]}\tforce_include=true,chaptype=#{chaptype}#{prop_str}")
+        @htmltoc.add_item(headline["level"], filename, headline["title"], {:force_include => true, :chaptype => chaptype+prop_str})
         first = nil
       end
     end
   end
 
   def push_contents(basetmpdir)
-    File.open("#{basetmpdir}/#{@tochtmltxt}") do |f|
-      f.each_line do |l|
-        force_include = nil
-        customid = nil
-        chaptype = nil
-        properties = nil
-        level, file, title, custom = l.chomp.split("\t")
-        if custom.present?
-          # custom setting
-          vars = custom.split(/,\s*/)
-          vars.each do |var|
-            k, v = var.split("=")
-            case k
-            when "id"
-              customid = v
-            when "force_include"
-              force_include = true
-            when "chaptype"
-              chaptype = v
-            when "properties"
-              properties = v
-            end
-          end
-        end
-        next if level.to_i > @params["toclevel"] && force_include.nil?
-        log("Push #{file} to ePUB contents.")
+    @htmltoc.each_item do |level, file, title, args|
+      next if level.to_i > @params["toclevel"] && args[:force_include].nil?
+      log("Push #{file} to ePUB contents.")
 
-        hash = {"file" => file, "level" => level.to_i, "title" => title, "chaptype" => chaptype}
-        if customid.present?
-          hash["id"] = customid
-        end
-        if properties.present?
-          hash["properties"] = properties.split(" ")
-        end
-        @producer.contents.push(Content.new(hash))
+      hash = {"file" => file, "level" => level.to_i, "title" => title, "chaptype" => args[:chaptype]}
+      if args[:id].present?
+        hash["id"] = args[:id]
       end
+      if args[:properties].present?
+        hash["properties"] = args[:properties].split(" ")
+      end
+      @producer.contents.push(Content.new(hash))
     end
   end
 
@@ -386,17 +364,17 @@ EOT
       else
         FileUtils.cp(@params["titlefile"], "#{basetmpdir}/titlepage.#{@params["htmlext"]}")
       end
-      write_tochtmltxt(basetmpdir, "1\ttitlepage.#{@params["htmlext"]}\t#{@producer.res.v("titlepagetitle")}\tchaptype=pre")
+      @htmltoc.add_item(1, "titlepage.#{@params['htmlext']}", @producer.res.v("titlepagetitle"), {:chaptype => "pre"})
     end
 
     if @params["originaltitlefile"].present? && File.exist?(@params["originaltitlefile"])
       FileUtils.cp(@params["originaltitlefile"], "#{basetmpdir}/#{File.basename(@params["originaltitlefile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["originaltitlefile"])}\t#{@producer.res.v("originaltitle")}\tchaptype=pre")
+      @htmltoc.add_item(1, File.basename(@params["originaltitlefile"]), @producer.res.v("originaltitle"), {:chaptype => "pre"})
     end
 
     if @params["creditfile"].present? && File.exist?(@params["creditfile"])
       FileUtils.cp(@params["creditfile"], "#{basetmpdir}/#{File.basename(@params["creditfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["creditfile"])}\t#{@producer.res.v("credittitle")}\tchaptype=pre")
+      @htmltoc.add_item(1, File.basename(@params["creditfile"]), @producer.res.v("credittitle"), {:chaptype => "pre"})
     end
   end
 
@@ -429,12 +407,12 @@ EOT
   def copy_backmatter(basetmpdir)
     if @params["profile"]
       FileUtils.cp(@params["profile"], "#{basetmpdir}/#{File.basename(@params["profile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["profile"])}\t#{@producer.res.v("profiletitle")}\tchaptype=post")
+      @htmltoc.add_item(1, File.basename(@params["profile"]), @producer.res.v("profiletitle"), {:chaptype => "post"})
     end
 
     if @params["advfile"]
       FileUtils.cp(@params["advfile"], "#{basetmpdir}/#{File.basename(@params["advfile"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["advfile"])}\t#{@producer.res.v("advtitle")}\tchaptype=post")
+      @htmltoc.add_item(1, File.basename(@params["advfile"]), @producer.res.v("advtitle"), {:chaptype => "post"})
     end
 
     if @params["colophon"]
@@ -443,18 +421,12 @@ EOT
       else
         File.open("#{basetmpdir}/colophon.#{@params["htmlext"]}", "w") {|f| @producer.colophon(f) }
       end
-      write_tochtmltxt(basetmpdir, "1\tcolophon.#{@params["htmlext"]}\t#{@producer.res.v("colophontitle")}\tchaptype=post")
+      @htmltoc.add_item(1, "colophon.#{@params["htmlext"]}", @producer.res.v("colophontitle"), {:chaptype => "post"})
     end
 
     if @params["backcover"]
       FileUtils.cp(@params["backcover"], "#{basetmpdir}/#{File.basename(@params["backcover"])}")
-      write_tochtmltxt(basetmpdir, "1\t#{File.basename(@params["backcover"])}\t#{@producer.res.v("backcovertitle")}\tchaptype=post")
-    end
-  end
-
-  def write_tochtmltxt(basetmpdir, s)
-    File.open("#{basetmpdir}/#{@tochtmltxt}", "a") do |f|
-      f.puts s
+      @htmltoc.add_item(1, File.basename(@params["backcover"]), @producer.res.v("backcovertitle"), {:chaptype => "post"})
     end
   end
 
@@ -465,7 +437,7 @@ EOT
   end
 
   def header(title)
-    # titleはすでにエスケープ済みと想定
+    # title should be escaped.
     s = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 EOT

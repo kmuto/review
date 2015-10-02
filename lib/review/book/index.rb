@@ -58,7 +58,7 @@ module ReVIEW
         @index.fetch(id)
       rescue
         if @index.keys.map{|i| i.split(/\|/).last }.flatten. # unfold all ids
-            reduce(Hash.new(0)){|h, i| h[i] += 1; h}.  # number of occurrences
+            reduce(Hash.new(0)){|h, i| h[i] += 1; h}. # number of occurrences
             select{|k, v| k == id && v > 1 }.present? # detect duplicated
           raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
         end
@@ -172,7 +172,7 @@ module ReVIEW
         attr_reader :id
         attr_reader :number
         attr_reader :caption
-        attr_writer :index    # internal use only
+        attr_writer :index # internal use only
 
         def bound?
           path
@@ -245,12 +245,12 @@ module ReVIEW
       end
 
       def title(id)
-        sprintf(@locale["#{@index.item_type}_caption_format".intern],
+        sprintf(@locale["#{@index.item_type}_caption_format".to_sym],
           @index.title(id))
       end
 
       def number(id)
-        sprintf(@locale["#{@index.item_type}_number_format".intern],
+        sprintf(@locale["#{@index.item_type}_number_format".to_sym],
           @index.number(id))
       end
 

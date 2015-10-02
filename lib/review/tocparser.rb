@@ -323,11 +323,11 @@ module ReVIEW
     end
   end
 
-  class Book::Base   # reopen
+  class Book::Base # reopen
     include TOCRoot
   end
 
-  class Book::ChapterSet   # reopen
+  class Book::ChapterSet # reopen
     include TOCRoot
   end
 
@@ -335,7 +335,7 @@ module ReVIEW
     include TOCRoot
   end
 
-  class Book::Chapter   # reopen
+  class Book::Chapter # reopen
     def toc
       @toc ||= TOCParser.parse(self)
       unless @toc.size == 1

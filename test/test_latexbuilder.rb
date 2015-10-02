@@ -14,8 +14,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @config.merge!( {
       "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for EPUBBuilder
     })
     @book = Book::Base.new(nil)

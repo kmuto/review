@@ -155,7 +155,6 @@ module ReVIEW
         call_hook("hook_beforetexcompile", config)
 
         ## do compile
-        enc = config["params"].to_s.split(/\s+/).find{|i| i =~ /\A--outencoding=/ }
         kanji = 'utf8'
         texcommand = "platex"
         texoptions = "-kanji=#{kanji}"
@@ -168,10 +167,6 @@ module ReVIEW
           texcommand = config["texcommand"] if config["texcommand"]
           dvicommand = config["dvicommand"] if config["dvicommand"]
           dvioptions = config["dvioptions"] if config["dvioptions"]
-          if enc
-            kanji = enc.split(/\=/).last.gsub(/-/, '').downcase
-            texoptions = "-kanji=#{kanji}"
-          end
           texoptions = config["texoptions"] if config["texoptions"]
         end
         3.times do
@@ -179,7 +174,7 @@ module ReVIEW
         end
         call_hook("hook_aftertexcompile", config)
 
-      if File.exist?("book.dvi")
+        if File.exist?("book.dvi")
           system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
         end
       }
@@ -272,13 +267,13 @@ module ReVIEW
 
     def get_template(config)
       dclass = config["texdocumentclass"] || []
-      documentclass =  dclass[0] || "jsbook"
-      documentclassoption =  dclass[1] || "oneside"
+      documentclass = dclass[0] || "jsbook"
+      documentclassoption = dclass[1] || "oneside"
 
       okuduke = make_colophon(config)
       authors = make_authors(config)
 
-      custom_titlepage = make_custom_page(config["coverfile"])
+      custom_titlepage = make_custom_page(config["cover"]) || make_custom_page(config["coverfile"])
       custom_originaltitlepage = make_custom_page(config["originaltitlefile"])
       custom_creditpage = make_custom_page(config["creditfile"])
 

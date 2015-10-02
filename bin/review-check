@@ -31,12 +31,7 @@ rescue Errno::EPIPE
 end
 
 def main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
   @config = ReVIEW::Configure.values
-  @config.merge!({
-    "inencoding" => "UTF-8",
-    "outencoding" => "UTF-8"
-  })
   @book = ReVIEW::Book::Base.load
   @book.config = @config
 
@@ -44,12 +39,6 @@ def main
   files = ARGV unless ARGV.empty?
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    @config["inencoding"] = enc
-  }
-  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    @config["outencoding"] = enc
-  }
   opts.on('-a', '--all-chapters', 'Check all chapters.') {
     files = @book.chapters.map {|ent| ent.path }
   }
@@ -95,11 +84,11 @@ def check_text(files)
       each_paragraph(f) do |para, lineno|
         s = para.join('')
         if m = re.match(s)
-          next if m[0] == $ReVIEW_utils_word_ok
+          next if m[0] == @review_utils_word_ok
           next if neg and neg =~ s
           str, offset = find_line(para, re)
           out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
-          print convert_outencoding(out, @config["outencoding"])
+          print out
         end
       end
     }
@@ -109,14 +98,14 @@ end
 def find_line(lines, re)
   # single line?
   lines.each_with_index do |line, idx|
-    return line.gsub(re, '<<<\&>>>'), idx  if re =~ line
+    return line.gsub(re, '<<<\&>>>'), idx if re =~ line
   end
 
   # multiple lines?
   i = 0
   while i < lines.size - 1
     str = lines[i] + lines[i+1]
-    return str.gsub(re, '<<<\&>>>'), i  if re =~ str
+    return str.gsub(re, '<<<\&>>>'), i if re =~ str
     i += 1
   end
 
@@ -127,7 +116,7 @@ def words_re(rc)
   words = []
   nega = []
   File.foreach(rc) do |line|
-    next  if line[0,1] == '#'
+    next if line[0,1] == '#'
     if / !/ =~ line
       line, n = *line.split(/!/, 2)
       nega.push n.strip
@@ -139,13 +128,11 @@ def words_re(rc)
 end
 
 def each_paragraph(f)
-  $ReVIEW_utils_word_ok = nil
+  @review_utils_word_ok = nil
   while line = f.gets
-    line = convert_inencoding(line, @config["inencoding"])
-
     case line
     when /\A\#@ok\((.*)\)/
-      $ReVIEW_utils_word_ok = $1
+      @review_utils_word_ok = $1
     when /\A\#@/
       ;
     when %r[\A//caption\{(.*?)//\}]
@@ -168,7 +155,7 @@ def each_paragraph(f)
         buf.push line.strip
       end
       yield buf, lineno
-      $ReVIEW_utils_word_ok = nil
+      @review_utils_word_ok = nil
     end
   end
 end

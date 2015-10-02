@@ -549,7 +549,7 @@ module ReVIEW
           totallength = 0
           cellwidth.size.times do |n|
             cellwidth[n] = cellwidth[n].to_f / 0.351 # mm -> pt
-            totallength = totallength + cellwidth[n]
+            totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
           end
           if cellwidth.size < col
@@ -1109,7 +1109,7 @@ module ReVIEW
       lines.each do |l|
         buf << l.gsub("&lt;", "<").gsub("&gt;", ">").gsub("&quot;", "\"").gsub("&amp;", "&")
         buf << "\n" unless lines.length == no
-        no = no + 1
+        no += 1
       end
       buf
     end
@@ -1121,8 +1121,7 @@ module ReVIEW
     def inline_chapref(id)
       chs = ["", "「", "」"]
       unless @book.config["chapref"].nil?
-        _chs = convert_inencoding(@book.config["chapref"],
-                                  @book.config["inencoding"]).split(",")
+        _chs = @book.config["chapref"].split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
@@ -1171,7 +1170,7 @@ module ReVIEW
       buf
     end
 
-    def source_body(lines)
+    def source_body(lines, lang)
       buf = ""
       buf << %Q[<pre>] << @lf
       buf << codelines_body(lines)

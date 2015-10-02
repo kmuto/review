@@ -14,4 +14,4 @@ module ReVIEW
   class TEXTBuilder < TOPBuilder
   end
 
-end   # module ReVIEW
+end # module ReVIEW

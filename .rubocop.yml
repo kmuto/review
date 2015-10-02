@@ -1,1 +1,43 @@
-inherit_from: rubocop-todo.yml
+AllCops:
+  Exclude:
+    - lib/lineinput.rb
+    - lib/uuid.rb
+
+inherit_from: .rubocop_todo.yml
+
+Lint/BlockAlignment:
+  Enabled: true
+
+Lint/EndAlignment:
+  Enabled: AlignWith
+
+Performance/ReverseEach:
+  Enabled: true
+
+# Unnecessary spacing detected.
+Style/ExtraSpacing:
+  Enabled: true
+
+# Use tr instead of gsub.
+Performance/StringReplacement:
+  Enabled: false
+
+# Use alias_method instead of alias.
+Style/Alias:
+  Enabled: true
+
+# Do not introduce global variables.
+Style/GlobalVars:
+  Enabled: true
+
+# Use self-assignment shorthand +=.
+Style/SelfAssignment:
+  Enabled: true
+
+# When defining the == operator, name its argument other.
+Style/OpMethod:
+  Enabled: true
+
+# Use snake_case for variable names.
+Style/VariableName:
+  Enabled: true

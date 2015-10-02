@@ -63,7 +63,7 @@ module ReVIEW
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
         else
-          title = convert_outencoding(strip_html(@chapter.title), @book.config["outencoding"])
+          title = strip_html(@chapter.title)
 
           toc = ""
           toc_level = 0
@@ -95,21 +95,21 @@ module ReVIEW
 
       # default XHTML header/footer
       header = <<EOT
-<?xml version="1.0" encoding="#{@book.config["outencoding"] || "UTF-8"}"?>
+<?xml version="1.0" encoding="UTF-8"?>
 EOT
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         header += <<EOT
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta charset="#{@book.config["outencoding"] || "UTF-8"}" />
+  <meta charset="UTF-8" />
 EOT
       else
         header += <<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || "UTF-8"}" />
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
 EOT
       end
@@ -123,7 +123,7 @@ EOT
       end
       header += <<EOT
   <meta name="generator" content="Re:VIEW" />
-  <title>#{convert_outencoding(strip_html(@chapter.title), @book.config["outencoding"])}</title>
+  <title>#{strip_html(@chapter.title)}</title>
 </head>
 <body>
 EOT
@@ -131,7 +131,7 @@ EOT
 </body>
 </html>
 EOT
-      header + messages() + convert_outencoding(@output.string, @book.config["outencoding"]) + footer
+      header + messages() + @output.string + footer
     end
 
     def xmlns_ops_prefix
@@ -170,7 +170,7 @@ EOT
       "<ul>\n" +
         @errors.map {|file, line, msg|
         "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
-      }.join('') +
+        }.join('') +
       "</ul>\n"
     end
 
@@ -459,10 +459,10 @@ EOT
       buf
     end
 
-    def source(lines, caption = nil)
+    def source(lines, caption = nil, lang = nil)
       buf = %Q[<div class="source-code">\n]
       buf << source_header(caption)
-      buf << source_body(caption, lines)
+      buf << source_body(caption, lines, lang)
       buf << "</div>\n"
       buf
     end
@@ -473,11 +473,11 @@ EOT
       end
     end
 
-    def source_body(id, lines)
+    def source_body(id, lines, lang)
       id ||= ''
       buf = %Q[<pre class="source">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = File.extname(id).gsub(/\./, '')
+      lexer = lang || File.extname(id).gsub(/\./, '')
       buf << highlight(:body => body, :lexer => lexer, :format => 'html')
       buf << "</pre>\n"
       buf
@@ -497,10 +497,18 @@ EOT
 
     def listnum_body(lines, lang)
       buf = ""
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = lang
-      buf << highlight(:body => body, :lexer => lexer, :format => 'html',
-                     :options => {:linenos => 'inline', :nowrap => false})
+      if highlight?
+        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        lexer = lang
+        buf << highlight(:body => body, :lexer => lexer, :format => 'html',
+                         :options => {:linenos => 'inline', :nowrap => false})
+      else
+        buf << '<pre class="list">'
+        lines.each_with_index do |line, i|
+          buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
+        end
+        buf << '</pre>' << "\n"
+      end
       buf
     end
 
@@ -523,11 +531,20 @@ EOT
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
       end
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = lang
-      buf << highlight(:body => body, :lexer => lexer, :format => 'html',
-                     :options => {:linenos => 'inline', :nowrap => false})
-      buf << "</div>\n"
+      if highlight?
+        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        lexer = lang
+        buf << highlight(:body => body, :lexer => lexer, :format => 'html',
+                         :options => {:linenos => 'inline', :nowrap => false})
+      else
+        buf << '<pre class="emlist">'
+        lines.each_with_index do |line, i|
+          buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
+        end
+        buf << '</pre>' << "\n"
+      end
+
+      buf << '</div>' << "\n"
       buf
     end
 
@@ -841,8 +858,8 @@ EOT
     end
 
     def compile_ruby(base, ruby)
-      if @book.config["htmlversion"].to_i == 5
-        %Q[<ruby>#{(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      if @book.htmlversion == 5
+        %Q[<ruby>#{base}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
         %Q[<ruby><rb>#{(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       end
@@ -874,7 +891,7 @@ EOT
     end
 
     def inline_tti(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt"><i>#{(str)}</i></code>)
       else
         %Q(<tt><i>#{(str)}</i></tt>)
@@ -882,7 +899,7 @@ EOT
     end
 
     def inline_ttb(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt"><b>#{(str)}</b></code>)
       else
         %Q(<tt><b>#{(str)}</b></tt>)
@@ -894,7 +911,7 @@ EOT
     end
 
     def inline_code(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="inline-code tt">#{(str)}</code>)
       else
         %Q(<tt class="inline-code">#{(str)}</tt>)
@@ -951,7 +968,7 @@ EOT
     end
 
     def inline_bib(id)
-      %Q(<a href="#{@book.bib_file.gsub(/re\Z/, "html")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
+      %Q(<a href="#{@book.bib_file.gsub(/\.re\Z/, ".#{@book.config['htmlext']}")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
     def inline_hd_chap(chap, id)
@@ -1091,7 +1108,7 @@ EOT
     end
 
     def inline_tt(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt">#{(str)}</code>)
       else
         %Q(<tt>#{(str)}</tt>)
@@ -1169,4 +1186,4 @@ EOT
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

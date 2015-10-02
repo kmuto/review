@@ -336,7 +336,10 @@ module ReVIEW
       buf
     end
 
-    def source(lines, caption = nil)
+    def source(lines, caption = nil, lang = nil)
+      if highlight_listings?
+        common_code_block_lst(lines, 'reviewlistlst', 'title', caption, lang)
+      else
       buf = "\n"
       buf << '\begin{reviewlist}' << "\n"
       buf << source_header(caption)
@@ -344,6 +347,7 @@ module ReVIEW
       buf << '\end{reviewlist}' << "\n"
       buf << "\n"
       buf
+      end
     end
 
     def source_header(caption)
@@ -527,7 +531,7 @@ module ReVIEW
 
     def th(s)
       ## use shortstack for @<br>
-      if  /\\\\/i =~ s
+      if /\\\\/i =~ s
         macro('reviewth', macro('shortstack[l]', s))
       else
         macro('reviewth', s)
@@ -536,7 +540,7 @@ module ReVIEW
 
     def td(s)
       ## use shortstack for @<br>
-      if  /\\\\/ =~ s
+      if /\\\\/ =~ s
         macro('shortstack[l]', s)
       else
         s

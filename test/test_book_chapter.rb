@@ -3,21 +3,6 @@ require 'book_test_helper'
 class ChapterTest < Test::Unit::TestCase
   include BookTestHelper
 
-  def setup
-
-    if "".respond_to?(:encode)
-      @utf8_str = "あいうえお"
-      @eucjp_str = "あいうえお".encode("EUC-JP")
-      @sjis_str = "あいうえお".encode("Shift_JIS")
-      @jis_str = "あいうえお".encode("ISO-2022-JP")
-    else
-      @utf8_str = "\xe3\x81\x82\xe3\x81\x84\xe3\x81\x86\xe3\x81\x88\xe3\x81\x8a" # "あいうえお"
-      @eucjp_str = "\xa4\xa2\xa4\xa4\xa4\xa6\xa4\xa8\xa4\xaa"
-      @sjis_str = "\x82\xa0\x82\xa2\x82\xa4\x82\xa6\x82\xa8"
-      @jis_str = "\x1b\x24\x42\x24\x22\x24\x24\x24\x26\x24\x28\x24\x2a\x1b\x28\x42"
-    end
-  end
-
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
     assert_equal :book, ch.book
@@ -82,60 +67,6 @@ class ChapterTest < Test::Unit::TestCase
     io = StringIO.new("=1\n=2\n")
     ch = Book::Chapter.new(book, nil, nil, nil, io)
     assert_equal '1', ch.title
-
-
-    [
-      ['EUC', @eucjp_str],
-      ['SJIS', @sjis_str],
-#      ['JIS', @jis_str],
-      ['XYZ', @eucjp_str],
-    ].each do |enc, instr|
-      io = StringIO.new("= #{instr}\n")
-      ch = Book::Chapter.new(book, nil, nil, nil, io)
-      book.config['inencoding'] = enc
-      assert_equal @utf8_str, ch.title
-      assert_equal @utf8_str, ch.instance_eval { @title }
-    end
-  end
-
-  def test_content
-    [
-      ['EUC', @eucjp_str],
-      ['SJIS', @sjis_str],
-      ['JIS', @jis_str],
-      ['XYZ', @eucjp_str],
-    ].each do |enc, instr|
-      tf = Tempfile.new('chapter_test')
-      book = Book::Base.new(nil)
-      begin
-        tf.print instr
-        tf.close
-
-        ch = Book::Chapter.new(book, nil, nil, tf.path)
-        book.config['inencoding'] = enc
-        assert_equal @utf8_str, ch.content
-        assert_equal @utf8_str, ch.instance_eval { @content }
-      ensure
-        tf.close(true)
-      end
-
-      tf1 = Tempfile.new('chapter_test1')
-      tf2 = Tempfile.new('chapter_test2')
-      begin
-        tf1.puts instr
-        tf1.puts instr
-        tf1.close
-        tf2.puts instr
-        tf1.close
-
-        ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2)
-        book.config['inencoding'] = enc
-        assert_equal "#{@utf8_str}\n#{@utf8_str}\n", ch.content # XXX: OK?
-      ensure
-        tf1.close(true)
-        tf2.close(true)
-      end
-    end
   end
 
   def test_lines
@@ -276,7 +207,6 @@ E
 
   def test_column_index
     book = Book::Base.new(nil)
-    book.config["inencoding"] = "utf-8"
     do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)
 = dummy1
 ===[column]{abc} aaaa

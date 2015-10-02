@@ -68,9 +68,9 @@ module ReVIEW
     def list_header(id, caption, lang)
       lang ||= ""
       if get_chap.nil?
-        %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```#{lang}\n"
+        %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n\n] + "```#{lang}\n"
       else
-        %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n] + "```#{lang}\n"
+        %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n\n] + "```#{lang}\n"
       end
     end
 
@@ -134,7 +134,7 @@ module ReVIEW
       buf = ""
       buf << blank
       if caption
-        buf << caption << "\n"
+        buf << caption << "\n\n"
       end
       lang ||= ""
       buf << "```#{lang}\n"
@@ -336,4 +336,4 @@ module ReVIEW
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

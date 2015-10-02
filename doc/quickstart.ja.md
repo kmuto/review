@@ -161,7 +161,7 @@ sample.re を HTML に変換すると、次のようになります。
 </html>
 ```
 
-Re:VIEW フォーマットについての詳細は、 [format.rdoc](https://github.com/kmuto/review/blob/master/doc/format.rdoc) を参照してください。
+Re:VIEW フォーマットについての詳細は、 [format.ja.md](https://github.com/kmuto/review/blob/master/doc/format.ja.md) を参照してください。
 
 review-compile を含め、ほとんどのコマンドは `--help` オプションを付けるとオプションについてのヘルプが表示されます。`review-compile` には多数のオプションがあるので確認してください。
 

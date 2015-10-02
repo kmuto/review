@@ -10,7 +10,7 @@ require 'tmpdir'
 class I18nTest < Test::Unit::TestCase
   include ReVIEW
 
-  if RUBY_VERSION !~ /^1.8/  ## to avoid Travis error :-(
+  if RUBY_VERSION !~ /^1.8/ ## to avoid Travis error :-(
     def test_load_locale_yml
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
@@ -138,8 +138,6 @@ class I18nTest < Test::Unit::TestCase
     @builder = HTMLBuilder.new()
     @config = {
       "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
       "stylesheet" => nil,  # for HTMLBuilder
       "ext" => ".re"
     }

@@ -60,12 +60,12 @@ module EPUBMaker
       complement
     end
 
-    def ==(obj)
-      if self.class != obj.class
+    def ==(other)
+      if self.class != other.class
         return false
       end
       [self.id, self.file, self.media, self.title, self.level, self.notoc, self.chaptype, self.properties] ==
-        [obj.id, obj.file, obj.media, obj.title, obj.level, obj.notoc, obj.chaptype, obj.properties]
+        [other.id, other.file, other.media, other.title, other.level, other.notoc, other.chaptype, other.properties]
     end
 
     private

@@ -60,12 +60,24 @@ class BuidlerTest < Test::Unit::TestCase
     end
   end
 
-  def test_convert_outencoding
-    book = ReVIEW::Book::Base.new(nil)
-    book.config = {'outencoding' => "EUC"}
-    b = Builder.new
-    ret = b.convert_outencoding("a", book.config["outencoding"])
-    assert_equal "a", ret
+  def test_compile_inline
+    text = "abc"
+    assert_equal [:text, text], @b.compile_inline(text)
+  end
+
+  def test_inline_ruby
+    def @b.compile_ruby(base,ruby)
+      [base,ruby]
+    end
+    str = @b.inline_ruby("foo,bar")
+    assert_equal str, ["foo","bar"]
+    str = @b.inline_ruby("foo\\,\\,,\\,bar,buz")
+    assert_equal str, ["foo,,",",bar,buz"]
+  end
+
+  def test_compile_inline_backslash
+    text = "abc\\d\\#a"
+    assert_equal [:text, text], @b.compile_inline(text)
   end
 
   class XBuilder < Builder

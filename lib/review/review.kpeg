@@ -206,7 +206,7 @@ require 'review/node'
 
     defcodeblock :emlist, 0..2, false, [:doc, :raw]
     defcodeblock :cmd, 0..1, false, [:doc]
-    defcodeblock :source, 0..1, false, [:doc]
+    defcodeblock :source, 0..2, false, [:doc, :raw]
     defcodeblock :list, 2..3, false, [:raw, :doc, :raw]
     defcodeblock :listnum, 2..3, false, [:raw, :doc, :raw]
     defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
@@ -352,7 +352,7 @@ require 'review/node'
         elsif level < current_level # down
           level_diff = current_level - level
           level = current_level
-          (1..(level_diff - 1)).to_a.reverse.each do |i|
+          (1..(level_diff - 1)).to_a.reverse_each do |i|
             buf0 << @strategy.ul_begin{i}
             buf0 << @strategy.ul_item_begin([])
           end
@@ -361,7 +361,7 @@ require 'review/node'
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
-          (1..level_diff).to_a.reverse.each do |i|
+          (1..level_diff).to_a.reverse_each do |i|
             buf0 << @strategy.ul_item_end
             buf0 << @strategy.ul_end{level + i}
           end
@@ -371,7 +371,7 @@ require 'review/node'
         end
       end
 
-      (1..level).to_a.reverse.each do |i|
+      (1..level).to_a.reverse_each do |i|
         buf0 << @strategy.ul_item_end
         buf0 << @strategy.ul_end{i}
       end
@@ -545,7 +545,7 @@ ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist 
 
 # There are 3 types of Block Element: raw Block, Code Block, and Normal Block
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
-                 ~raw(self, position, b, r1)
+                 ~raw(self, b, position, r1)
                | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL
                   ~code_block_element(self, position, symbol, args, contents)
                | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL
@@ -663,7 +663,7 @@ InlineElement =  ( RawInlineElement:c { c }
                  | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, position, symbol,contents)
                  )
 
-RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, position, builders,c)
+RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, builders, position, c)
 
 RawInlineElementContent = ( "\\}" { "}" }
                           | < /[^\r\n\}]/ >  { text }

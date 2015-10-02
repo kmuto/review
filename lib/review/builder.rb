@@ -72,6 +72,7 @@ module ReVIEW
 
     def puts(*s)
       raise NotImplementedError, "XXX: `puts` method is obsoleted. Do not use it."
+      @output.print(*s)
     end
 
     def target_name
@@ -111,7 +112,7 @@ module ReVIEW
     def source(lines, caption = nil)
       buf = ""
       buf << source_header(caption)
-      buf << source_body(lines)
+      buf << source_body(lines, lang)
       buf
     end
 
@@ -405,9 +406,13 @@ module ReVIEW
       raise NotImplementedError
     end
 
+    def inline_include(file_name)
+      compile_inline File.open(file_name).read
+    end
+
     def include(file_name)
       File.foreach(file_name) do |line|
-        paragraph([convert_inencoding(line, @book.config["inencoding"])])
+        paragraph([line])
       end
     end
 
@@ -445,4 +450,4 @@ module ReVIEW
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

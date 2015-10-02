@@ -21,13 +21,7 @@ require 'optparse'
 include ReVIEW::TextUtils
 
 def main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
-
   @config = ReVIEW::Configure.values
-  @config.merge!({
-    "inencoding" => "UTF-8",
-    "outencoding" => "UTF-8"
-  })
 
   part_sensitive = false
   basedir = nil
@@ -39,12 +33,6 @@ def main
   end
   opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
     part_sensitive = true
-  }
-  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc|
-    @config["inencoding"] = enc
-  }
-  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc|
-    @config["outencoding"] = enc
   }
   opts.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
     basedir = path
@@ -95,7 +83,7 @@ end
 
 def print_chapter_volume(chap)
   vol = chap.volume
-  title = convert_outencoding(chap.title, @config["outencoding"])
+  title = chap.title
   printf "%s %3dKB %6dC %5dL %3dP %s %-s\n",
          chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines, vol.page,
          "#{chap.name} ".ljust(25, '.'), title
