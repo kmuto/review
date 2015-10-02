@@ -209,7 +209,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      compile_inline @book.chapter_index.title(id)
+      @book.chapter_index.title(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
@@ -407,7 +407,7 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline File.open(file_name).read
+      File.open(file_name).read
     end
 
     def include(file_name)
