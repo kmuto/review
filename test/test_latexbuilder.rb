@@ -12,9 +12,9 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @builder = LATEXBuilder.new()
     @config = ReVIEW::Configure.values
     @config.merge!( {
-      "secnolevel" => 2,    # for IDGXMLBuilder, EPUBBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,
-      "stylesheet" => nil,  # for EPUBBuilder
+      "stylesheet" => nil, # for EPUBBuilder
     })
     @book = Book::Base.new(nil)
     @book.config = @config

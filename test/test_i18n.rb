@@ -137,8 +137,8 @@ class I18nTest < Test::Unit::TestCase
     I18n.setup "en"
     @builder = HTMLBuilder.new()
     @config = {
-      "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "stylesheet" => nil,  # for HTMLBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
+      "stylesheet" => nil, # for HTMLBuilder
       "ext" => ".re"
     }
     @book = Book::Base.new(".")

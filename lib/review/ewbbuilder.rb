@@ -263,10 +263,10 @@ module ReVIEW
       if abbr
         add_index(word) + "//g{#{word}//}" +
         add_index(abbr) + "（#{abbr}, " +
-        add_index(eng)  + "#{eng}）"
+        add_index(eng) + "#{eng}）"
       elsif eng
         add_index(word) + "//g{#{word}//}" +
-        add_index(eng)  + "（#{eng}）"
+        add_index(eng) + "（#{eng}）"
       else
         add_index(word) + "//g{#{word}//}"
       end

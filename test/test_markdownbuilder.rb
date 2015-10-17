@@ -12,8 +12,8 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   def setup
     @builder = MARKDOWNBuilder.new()
     @config = {
-      "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "stylesheet" => nil,  # for HTMLBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
+      "stylesheet" => nil, # for HTMLBuilder
     }
     @book = Book::Base.new(nil)
     @book.config = @config

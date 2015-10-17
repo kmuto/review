@@ -14,8 +14,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @builder = HTMLBuilder.new()
     @config = ReVIEW::Configure.values
     @config.merge!({
-      "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "stylesheet" => nil,  # for HTMLBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
+      "stylesheet" => nil, # for HTMLBuilder
       "htmlext" => "html",
     })
     @book = Book::Base.new(".")
