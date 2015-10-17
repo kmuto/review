@@ -44,4 +44,4 @@ Style/VariableName:
 
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 1500
+  Max: 4500
