@@ -96,7 +96,7 @@ module ReVIEW
       # default XHTML header/footer
       @error_messages = error_messages
       @warning_messages = warning_messages
-      @title = strip_html(compile_inline(@chapter.title))
+      @title = strip_html(@chapter.title)
       @body = @output.string
       @language = @book.config['language']
       @stylesheets = @book.config["stylesheet"]
