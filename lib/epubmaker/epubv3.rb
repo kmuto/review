@@ -22,23 +22,13 @@ module EPUBMaker
 
     # Return opf file content.
     def opf
-      s = <<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="#{@producer.params["language"]}">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-EOT
+      @opf_metainfo = opf_metainfo
+      @opf_manifest = opf_manifest
+      @opf_toc = opf_tocx
 
-      s << opf_metainfo
-
-      s << %Q[  </metadata>\n]
-
-      s << opf_manifest
-      s << opf_tocx
-      s << opf_guide # same as ePUB2
-
-      s << %Q[</package>\n]
-
-      s
+      tmplfile = File.expand_path('./opf/epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      tmpl = ReVIEW::Template.load(tmplfile)
+      return tmpl.result(binding)
     end
 
     def opf_metainfo
@@ -172,38 +162,25 @@ EOT
       s
     end
 
-    def opf_guide
-      s = ""
-      s << %Q[  <guide>\n]
-      s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
-      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="titlepage.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["titlepage"].nil?
-      s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>\n]
-      s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil?
-      s << %Q[  </guide>\n]
-      s
-    end
-
     def ncx(indentarray)
-      s = common_header
-      s << <<EOT
-  <title>#{@producer.res.v("toctitle")}</title>
-</head>
-<body>
+      if @producer.params["epubmaker"]["flattoc"].nil?
+        ncx_main = hierarchy_ncx("ol")
+      else
+        ncx_main = flat_ncx("ol", @producer.params["epubmaker"]["flattocindent"])
+      end
+
+      @body = <<EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>
+#{ncx_main}  </nav>
 EOT
 
-      if @producer.params["epubmaker"]["flattoc"].nil?
-        s << hierarchy_ncx("ol")
-      else
-        s << flat_ncx("ol", @producer.params["epubmaker"]["flattocindent"])
-      end
-      s << <<EOT
-  </nav>
-</body>
-</html>
-EOT
-      s
+      @title = @producer.res.v("toctitle")
+      @language = @producer.params['language']
+      @stylesheets = @producer.params["stylesheet"]
+      tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      tmpl = ReVIEW::Template.load(tmplfile)
+      return tmpl.result(binding)
     end
 
     # Produce EPUB file +epubfile+.
@@ -241,20 +218,5 @@ EOT
       s
     end
 
-    def common_header
-      s =<<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="generator" content="Re:VIEW" />
-EOT
-
-      @producer.params["stylesheet"].each do |file|
-        s << %Q[  <link rel="stylesheet" type="text/css" href="#{file}"/>\n]
-      end
-      s
-    end
   end
 end

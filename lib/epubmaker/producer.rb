@@ -54,6 +54,18 @@ module EPUBMaker
       end
     end
 
+    def coverimage
+      if !params["coverimage"]
+        return nil
+      end
+      @contents.each do |item|
+        if item.media =~ /\Aimage/ && item.file =~ /#{params["coverimage"]}\Z/ # /
+          return item.file
+        end
+      end
+      return nil
+    end
+
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
       @params = @params.merge(params)

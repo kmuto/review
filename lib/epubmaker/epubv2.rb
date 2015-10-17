@@ -23,24 +23,14 @@ module EPUBMaker
 
     # Return opf file content.
     def opf
-      s = <<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-EOT
+      @opf_metainfo = opf_metainfo
+      @opf_coverimage = opf_coverimage
+      @opf_manifest = opf_manifest
+      @opf_toc = opf_tocx
 
-      s << opf_metainfo
-      s << opf_coverimage
-
-      s << %Q[  </metadata>\n]
-
-      s << opf_manifest
-      s << opf_tocx
-      s << opf_guide
-
-      s << %Q[</package>\n]
-
-      s
+      tmplfile = File.expand_path('./opf/epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      tmpl = ReVIEW::Template.load(tmplfile)
+      return tmpl.result(binding)
     end
 
     def opf_metainfo
@@ -121,39 +111,15 @@ EOT
       s
     end
 
-    def opf_guide
-      s = ""
-      s << %Q[  <guide>\n]
-      s << %Q[    <reference type="cover" title="#{@producer.res.v("covertitle")}" href="#{@producer.params["cover"]}"/>\n]
-      s << %Q[    <reference type="title-page" title="#{@producer.res.v("titlepagetitle")}" href="titlepage.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["titlepage"].nil?
-      s << %Q[    <reference type="toc" title="#{@producer.res.v("toctitle")}" href="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["mytoc"].nil?
-      s << %Q[    <reference type="colophon" title="#{@producer.res.v("colophontitle")}" href="colophon.#{@producer.params["htmlext"]}"/>\n] unless @producer.params["colophon"].nil?
-      s << %Q[  </guide>\n]
-      s
-    end
-
     # Return ncx content. +indentarray+ has prefix marks for each level.
     def ncx(indentarray)
-      s = <<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
-  <head>
-    <meta name="dtb:depth" content="1"/>
-    <meta name="dtb:totalPageCount" content="0"/>
-    <meta name="dtb:maxPageNumber" content="0"/>
-EOT
-      s << ncx_isbn
+      @ncx_isbn = ncx_isbn
+      @ncx_doctitle = ncx_doctitle
+      @ncx_navmap = ncx_navmap(indentarray)
 
-      s << <<EOT
-  </head>
-EOT
-      s << ncx_doctitle
-      s << ncx_navmap(indentarray)
-
-      s << <<EOT
-</ncx>
-EOT
-      s
+      tmplfile = File.expand_path('./ncx/epubv2.ncx.erb', ReVIEW::Template::TEMPLATE_DIR)
+      tmpl = ReVIEW::Template.load(tmplfile)
+      return tmpl.result(binding)
     end
 
     # Produce EPUB file +epubfile+.
@@ -169,24 +135,5 @@ EOT
       export_zip(tmpdir, epubfile)
     end
 
-    private
-
-    # Return common XHTML headder
-    def common_header
-      s =<<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@producer.params["language"]}">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta http-equiv="Content-Style-Type" content="text/css"/>
-  <meta name="generator" content="Re:VIEW"/>
-EOT
-
-      @producer.params["stylesheet"].each do |file|
-        s << %Q[  <link rel="stylesheet" type="text/css" href="#{file}"/>\n]
-      end
-      s
-    end
   end
 end

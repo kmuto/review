@@ -217,21 +217,23 @@ module ReVIEW
   def build_part(part, basetmpdir, htmlfile)
     log("Create #{htmlfile} from a template.")
     File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
-      f.puts header(CGI.escapeHTML(@params["booktitle"]))
-      f.puts <<EOT
-<div class="part">
-<h1 class="part-number">#{ReVIEW::I18n.t("part", part.number)}</h1>
-EOT
+      @body = ""
+      @body << "<div class=\"part\">\n"
+      @body << "<h1 class=\"part-number\">#{ReVIEW::I18n.t("part", part.number)}</h1>\n"
       if part.name.strip.present?
-        f.puts <<EOT
-<h2 class="part-title">#{part.name.strip}</h2>
-EOT
+        @body << "<h2 class=\"part-title\">#{part.name.strip}</h2>\n"
       end
+      @body << "</div>\n"
 
-      f.puts <<EOT
-</div>
-EOT
-      f.puts footer
+      @language = @producer.params['language']
+      @stylesheets = @producer.params["stylesheet"]
+      if @producer.params["htmlversion"].to_i == 5
+        tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      else
+        tmplfile = File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      end
+      tmpl = ReVIEW::Template.load(tmplfile)
+      f.write tmpl.result(binding)
     end
   end
 
@@ -380,27 +382,26 @@ EOT
 
   def build_titlepage(basetmpdir, htmlfile)
     File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
-      f.puts header(CGI.escapeHTML(@params["booktitle"]))
-      f.puts <<EOT
-<div class="titlepage">
-<h1 class="tp-title">#{CGI.escapeHTML(@params["booktitle"])}</h1>
-EOT
-
+      @body = ""
+      @body << "<div class=\"titlepage\">"
+      @body << "<h1 class=\"tp-title\">#{CGI.escapeHTML(@params["booktitle"])}</h1>"
       if @params["aut"]
-        f.puts <<EOT
-<h2 class="tp-author">#{@params["aut"].join(", ")}</h2>
-EOT
+        @body << "<h2 class=\"tp-author\">#{@params["aut"].join(", ")}</h2>"
       end
       if @params["prt"]
-        f.puts <<EOT
-<h3 class="tp-publisher">#{@params["prt"].join(", ")}</h3>
-EOT
+        @body << "<h3 class=\"tp-publisher\">#{@params["prt"].join(", ")}</h3>"
       end
+      @body << "</div>"
 
-      f.puts <<EOT
-</div>
-EOT
-      f.puts footer
+      @language = @producer.params['language']
+      @stylesheets = @producer.params["stylesheet"]
+      if @producer.params["htmlversion"].to_i == 5
+        tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      else
+        tmplfile = File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      end
+      tmpl = ReVIEW::Template.load(tmplfile)
+      f.write tmpl.result(binding)
     end
   end
 
@@ -434,49 +435,6 @@ EOT
     File.open("#{basetmpdir}/#{@buildlogtxt}", "a") do |f|
       f.puts "#{htmlfile},#{reviewfile}"
     end
-  end
-
-  def header(title)
-    # title should be escaped.
-    s = <<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-EOT
-    if @params["htmlversion"] == 5
-      s << <<EOT
-<!DOCTYPE html>
-<html xml:lang='ja' xmlns:ops='http://www.idpf.org/2007/ops' xmlns='http://www.w3.org/1999/xhtml'>
-<head>
-  <meta charset="UTF-8" />
-EOT
-    else
-      s << <<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xml:lang='ja' xmlns:ops='http://www.idpf.org/2007/ops' xmlns='http://www.w3.org/1999/xhtml'>
-<head>
-  <meta http-equiv='Content-Type' content='text/html;charset=UTF-8' />
-  <meta http-equiv='Content-Style-Type' content='text/css' />
-EOT
-    end
-    if @params["stylesheet"].size > 0
-      @params["stylesheet"].each do |sfile|
-        s << <<EOT
-  <link rel='stylesheet' type='text/css' href='#{sfile}' />
-EOT
-      end
-    end
-    s << <<EOT
-  <meta content='Re:VIEW' name='generator'/>
-  <title>#{title}</title>
-</head>
-<body>
-EOT
-  end
-
-  def footer
-    <<EOT
-</body>
-</html>
-EOT
   end
 
   class ReVIEWHeaderListener

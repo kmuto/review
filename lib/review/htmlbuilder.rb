@@ -94,44 +94,21 @@ module ReVIEW
       end
 
       # default XHTML header/footer
-      header = <<EOT
-<?xml version="1.0" encoding="UTF-8"?>
-EOT
-      if @book.htmlversion == 5
-        header += <<EOT
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
-<head>
-  <meta charset="UTF-8" />
-EOT
-      else
-        header += <<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-EOT
-      end
+      @error_messages = error_messages
+      @warning_messages = warning_messages
+      @title = strip_html(compile_inline(@chapter.title))
+      @body = @output.string
+      @language = @book.config['language']
+      @stylesheets = @book.config["stylesheet"]
 
-      unless @book.config["stylesheet"].nil?
-        @book.config["stylesheet"].each do |style|
-          header += <<EOT
-  <link rel="stylesheet" type="text/css" href="#{style}" />
-EOT
-        end
+      if @book.htmlversion == 5
+        htmlfilename = "layout-html5.html.erb"
+      else
+        htmlfilename = "layout-xhtml1.html.erb"
       end
-      header += <<EOT
-  <meta name="generator" content="Re:VIEW" />
-  <title>#{strip_html(@chapter.title)}</title>
-</head>
-<body>
-EOT
-      footer = <<EOT
-</body>
-</html>
-EOT
-      header + messages() + @output.string + footer
+      tmplfile = File.expand_path('./html/'+htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
+      tmpl = ReVIEW::Template.load(tmplfile)
+      tmpl.result(binding)
     end
 
     def xmlns_ops_prefix
