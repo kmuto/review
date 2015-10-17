@@ -376,7 +376,7 @@ module ReVIEW
       line = self.unescape(lines.join("\n"))
       cmds = {
         :graphviz => "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
-        :gnuplot  => "echo 'set terminal " +
+        :gnuplot => "echo 'set terminal " +
         "#{(image_ext == "eps") ? "postscript eps" : image_ext}\n" +
         " set output \"#{file_path}\"\n#{line}' | gnuplot",
         :blockdiag => "echo '#{line}' "+

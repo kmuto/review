@@ -46,14 +46,14 @@ def _main
 
   config = ReVIEW::Configure.values
   config.merge!({
-    "secnolevel" => 2,    # for IDGXML and HTML
-    "tableopt" => nil,    # for IDGXML
-    "nolf" => nil,        # for IDGXML
-    "chapref" => nil,     # for IDGXML
+    "secnolevel" => 2, # for IDGXML and HTML
+    "tableopt" => nil, # for IDGXML
+    "nolf" => nil, # for IDGXML
+    "chapref" => nil, # for IDGXML
     "structuredxml" => nil, # for IDGXML
-    "stylesheet" => [],   # for HTML
-    "mathml" => nil,      # for HTML
-    "language" => "ja",   # for HTML
+    "stylesheet" => [], # for HTML
+    "mathml" => nil, # for HTML
+    "language" => "ja", # for HTML
     "deprecated-blocklines" => nil,
     "footnotetext" => false,
     "htmlext" => "html",

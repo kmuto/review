@@ -17,8 +17,8 @@ module ReVIEW
   module LaTeXUtils
 
     METACHARS = {
-      '#'  => '\#',
-      "$"  => '\textdollar{}',
+      '#' => '\#',
+      "$" => '\textdollar{}',
       '%' => '\%',
       '&' => '\&',
       '{' => '\{',
@@ -27,8 +27,8 @@ module ReVIEW
       '^' => '\textasciicircum{}',
       '~' => '\textasciitilde{}',
       '|' => '\textbar{}',
-      '<'  => '\textless{}',
-      '>'  => '\textgreater{}',
+      '<' => '\textless{}',
+      '>' => '\textgreater{}',
       "\\" => '\reviewbackslash{}',
       "-" => '{-}',
 

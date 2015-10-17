@@ -134,7 +134,7 @@ module ReVIEW
           path = expand(direc.arg)
           ent = @repository.fetch_file(path)
           ent = evaluate(path, ent) if direc['eval']
-          replace_block f, line, ent, false   # FIXME: turn off lineno: tmp
+          replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
         when /\A\#@map(?:range)?/
           direc = parse_directive(line, 2, 'unindent')
@@ -142,7 +142,7 @@ module ReVIEW
           ent = @repository.fetch_range(path, direc.args[1]) or
                   error "unknown range: #{path}: #{direc.args[1]}"
           ent = (direc['unindent'] ? unindent(ent, direc['unindent']) : ent)
-          replace_block f, line, ent, false   # FIXME: turn off lineno: tmp
+          replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
         when /\A\#@end/
           error 'unbaranced #@end'
@@ -260,12 +260,12 @@ module ReVIEW
 
     def optarg_value(spec)
       case spec
-      when 'true'  then true      # [name=true]
-      when 'false' then false     # [name=false]
-      when 'nil'   then nil       # [name=nil]
-      when nil     then true      # [name]
-      when /^\d+$/ then $&.to_i   # [name=8]
-      else                        # [name=val]
+      when 'true' then true # [name=true]
+      when 'false' then false # [name=false]
+      when 'nil' then nil # [name=nil]
+      when nil then true # [name]
+      when /^\d+$/ then $&.to_i # [name=8]
+      else # [name=val]
         spec
       end
     end

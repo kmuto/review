@@ -127,8 +127,8 @@ module ReVIEW
         part.chapters.each do |chap|
           filename = File.basename(chap.path, ".*")
           output_chaps(filename, yamlfile)
-          @chaps_fnames["PREDEF"]  << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
-          @chaps_fnames["CHAPS"]   << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
+          @chaps_fnames["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
+          @chaps_fnames["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
           @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
           @chaps_fnames["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
         end
@@ -136,7 +136,7 @@ module ReVIEW
 
       check_compile_status(@config["ignore-errors"])
 
-      @config["pre_str"]  = @chaps_fnames["PREDEF"]
+      @config["pre_str"] = @chaps_fnames["PREDEF"]
       @config["chap_str"] = @chaps_fnames["CHAPS"]
       @config["appendix_str"] = @chaps_fnames["APPENDIX"]
       @config["post_str"] = @chaps_fnames["POSTDEF"]
