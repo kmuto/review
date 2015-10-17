@@ -1,4 +1,4 @@
-class ReVIEW::Compiler # rubocop:disable all
+class ReVIEW::Compiler
   # :stopdoc:
 
     # This is distinct from setup_parser so that a standalone parser
@@ -373,11 +373,8 @@ require 'review/preprocessor'
 require 'review/exception'
 require 'review/node'
   require 'lineinput'
-  if RUBY_VERSION > '1.9' then
-    require 'review/compiler/literals_1_9'
-  else
-    require 'review/compiler/literals_1_8'
-  end
+  require 'review/compiler/literals_1_9'
+  # require 'review/compiler/literals_1_8'
 
   ## redifine Compiler.new
   def initialize(strategy)
