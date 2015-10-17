@@ -19,6 +19,6 @@ module ReVIEW
       end
     end
 
-    alias to_s string
+    alias_method :to_s, :string
   end
 end

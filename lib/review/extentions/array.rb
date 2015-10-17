@@ -18,7 +18,7 @@ class Array
       if !block_given?
         return to_enum :map
       else
-        collect(&block)  ## XXX same as original
+        collect(&block) ## XXX same as original
       end
     end
   end

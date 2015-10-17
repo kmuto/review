@@ -661,8 +661,10 @@ module ReVIEW
     def compile_kw(word, alt)
       '<keyword>' +
         if alt
-        then ("#{word}（#{alt.strip}）")
-        else (word)
+        then
+          ("#{word}（#{alt.strip}）")
+        else
+          (word)
         end +
       '</keyword>' +
         %Q[<index value="#{word}" />] +

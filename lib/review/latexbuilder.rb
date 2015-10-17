@@ -144,7 +144,7 @@ module ReVIEW
       end
       buf << '\begin{reviewbox}' << "\n"
       lines.each do |line|
-        buf <<  detab(line) << "\n"
+        buf << detab(line) << "\n"
       end<
       buf << '\end{reviewbox}' << "\n"
     end

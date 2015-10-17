@@ -72,7 +72,6 @@ module ReVIEW
 
     def puts(*s)
       raise NotImplementedError, "XXX: `puts` method is obsoleted. Do not use it."
-      @output.print(*s)
     end
 
     def target_name

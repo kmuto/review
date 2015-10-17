@@ -353,7 +353,7 @@ module ReVIEW
       if @ol_num
         num = @ol_num
         @ol_num = nil
-        "<ol start=\"#{num}\">\n"  ## it's OK in HTML5, but not OK in XHTML1.1
+        "<ol start=\"#{num}\">\n" ## it's OK in HTML5, but not OK in XHTML1.1
       else
         "<ol>\n"
       end
@@ -392,7 +392,7 @@ module ReVIEW
       end
     end
 
-    def parasep()
+    def parasep
       "<br />\n"
     end
 
@@ -587,10 +587,10 @@ module ReVIEW
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
-        buf << p.parse(unescape_html(lines.join("\n")), true) << "\n
+        buf << p.parse(unescape_html(lines.join("\n")), true) << "\n"
       else
         buf << '<pre>'
-        buf << "#{lines.join("\n")}\n"
+        buf << lines.join("\n") << "\n"
         buf << "</pre>\n"
       end
       buf << "</div>\n"

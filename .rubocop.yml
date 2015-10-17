@@ -41,3 +41,7 @@ Style/OpMethod:
 # Use snake_case for variable names.
 Style/VariableName:
   Enabled: true
+
+# Configuration parameters: CountComments.
+Metrics/ClassLength:
+  Max: 1500

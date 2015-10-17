@@ -1,4 +1,4 @@
-class ReVIEW::Compiler
+class ReVIEW::Compiler # rubocop:disable all
   # :stopdoc:
 
     # This is distinct from setup_parser so that a standalone parser
@@ -360,12 +360,13 @@ class ReVIEW::Compiler
   class Position
     attr_accessor :pos, :line, :col
     def initialize(compiler)
-      @pos  = compiler.pos
+      @pos = compiler.pos
       @line = compiler.current_line
-      @col  = compiler.current_column
+      @col = compiler.current_column
     end
   end
 
+# rubocop:disable all
 require 'review/location'
 require 'review/extentions'
 require 'review/preprocessor'
@@ -699,7 +700,8 @@ require 'review/node'
       buf0 = ""
       level = 0
       content.each do |element|
-        current_level, buf = element.level, element.to_doc
+        current_level = element.level
+        buf = element.to_doc
         if level == current_level
           buf0 << @strategy.ul_item_end
           # body

@@ -12,11 +12,11 @@ class CompilerTest < Test::Unit::TestCase
   def setup
     @builder = HTMLBuilder.new()
     @param = {
-      "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
       "inencoding" => "UTF-8",
       "outencoding" => "UTF-8",
       "subdirmode" => nil,
-      "stylesheet" => nil,  # for HTMLBuilder
+      "stylesheet" => nil, # for HTMLBuilder
     }
     ReVIEW.book.param = @param
     @compiler = ReVIEW::Compiler.new(@builder)

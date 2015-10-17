@@ -15,7 +15,7 @@ module ReVIEW
     def to_s_by(meth)
       if content.kind_of? String
         @content
-      elsif content == nil
+      elsif content.nil?
         nil
       elsif !content.kind_of? Array
         @content.__send__(meth)
@@ -28,7 +28,7 @@ module ReVIEW
     def to_json(*args)
       if content.kind_of? String
         val = '"'+@content.gsub(/\"/,'\\"').gsub(/\n/,'\\n')+'"'
-      elsif content == nil
+      elsif content.nil?
         val = "null"
       elsif !content.kind_of? Array
         val = @content.to_json
@@ -131,7 +131,7 @@ module ReVIEW
 
     def to_raw
       content_str = super
-      "@<#{@symbol.to_s}>{#{content_str}}"
+      "@<#{@symbol}>{#{content_str}}"
     end
 
     def to_doc

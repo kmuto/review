@@ -216,7 +216,7 @@ module ReVIEW
     end
 
     def pagebreak
-      buf  = ""
+      buf = ""
       buf << "{pagebreak}" << "\n"
       buf
     end
