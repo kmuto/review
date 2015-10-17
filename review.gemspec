@@ -2,7 +2,6 @@
 $:.push File.expand_path("../lib", __FILE__)
 require "review/version"
 
-# rubocop:disable Style/ExtraSpacing
 Gem::Specification.new do |gem|
   gem.name        = "review"
   gem.version     = ReVIEW::VERSION
