@@ -1,3 +1,25 @@
+# Version 1.7.0の主な変更点
+
+## 全般
+* Rubocopの設定の追加とそれに伴うリファクタリングを実施しました
+* 内部の文字コードをUTF-8に統一しました ([#399])
+* Dockerfileを追加しました
+
+## バグ修正
+* コードハイライト無効時に、htmlbuilderでlistnumおよびemlistnumにおいて行番号が表示されないバグを修正しました ([#449])
+
+## ビルダーとメーカー
+
+### epubmaker
+* 綴じ方向を設定する``direction``パラメータをサポートしました ([#435])
+
+## コードコントリビュータ
+* [@snoozer05](https://github.com/snoozer05)
+
+[#399]: https://github.com/kmuto/review/pull/399
+[#435]: https://github.com/kmuto/review/pull/435
+[#449]: https://github.com/kmuto/review/issues/449
+
 # Version 1.6.0の主な変更点
 
 ## 全般
