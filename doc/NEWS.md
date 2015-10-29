@@ -1,3 +1,25 @@
+# Version 1.7.0
+
+## In general
+* Set up Rubocop settings and refactor code with the settings
+* Change the internal encoding to UTF-8 altogether ([#399])
+* Add a Dockerfile
+
+## Bug Fix
+* Fix htmlbuilder to display line numbers with listnum/emlistnum under a syntax highlighting environment ([#449])
+
+## Builders and Makers
+
+### epubmaker
+* Support ``direction`` parameter to set binding direction ([#435])
+
+## Code contributors
+* [@snoozer05](https://github.com/snoozer05)
+
+[#399]: https://github.com/kmuto/review/pull/399
+[#435]: https://github.com/kmuto/review/pull/435
+[#449]: https://github.com/kmuto/review/issues/449
+
 # Version 1.6.0
 
 ## In general
