@@ -205,7 +205,7 @@ require 'review/node'
     defcodeblock :emlist, 0..2, false, [:doc, :raw]
     defcodeblock :cmd, 0..1, false, [:doc]
     defcodeblock :source, 0..2, false, [:doc, :raw]
-    defcodeblock :list, 2..4, false, [:doc, :raw, :raw, :raw]
+    defcodeblock :list, 2..4, false, [:raw, :doc, :raw, :raw]
     defcodeblock :listnum, 2..3, false, [:raw, :doc, :raw]
     defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
     defcodeblock :texequation, 0, false
