@@ -193,7 +193,7 @@ module ReVIEW
 
     def output_chaps(filename, yamlfile)
       $stderr.puts "compiling #{filename}.tex"
-      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=latex --level=#{@config["secnolevel"]} --toclevel=#{@config["toclevel"]} #{@config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
+      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile-peg --yaml=#{yamlfile} --target=latex --level=#{@config["secnolevel"]} --toclevel=#{@config["toclevel"]} #{@config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
       if system cmd
         # OK
       else

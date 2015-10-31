@@ -685,7 +685,8 @@ module ReVIEW
 
 
     # FIXME: use TeX native label/ref.
-    def inline_list(id)
+    def node_inline_list(node)
+      id = node[0].to_raw
       chapter, id = extract_chapter_id(id)
       macro('reviewlistref', "#{chapter.number}.#{chapter.list(id).number}")
     end
@@ -707,7 +708,8 @@ module ReVIEW
       end
     end
 
-    def inline_fn(id)
+    def node_inline_fn(node)
+      id = node[0].to_raw
       if @book.config["footnotetext"]
         macro("footnotemark[#{@chapter.footnote(id).number}]", "")
       else

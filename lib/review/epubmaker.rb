@@ -291,7 +291,7 @@ module ReVIEW
     end
 
     ENV["REVIEWFNAME"] = filename
-    system("#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
+    system("#{ReVIEW::MakerHelper.bindir}/review-compile-peg --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
 
     write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
   end
