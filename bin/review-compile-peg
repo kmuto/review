@@ -136,7 +136,7 @@ def _main
     exit 1
   end
 
-  begin
+## begin
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])
 
@@ -177,11 +177,11 @@ def _main
     else
       raise "must not happen: #{mode}"
     end
-  rescue ReVIEW::ApplicationError => err
-    raise if $DEBUG
-    error err.message
-    exit 1
-  end
+#  rescue ReVIEW::ApplicationError => err
+#    raise if $DEBUG
+#    error err.message
+#    exit 1
+#  end
 end
 
 def error(msg)

@@ -447,8 +447,8 @@ require 'review/node'
       else
         @strategy.__send__("inline_#{op}", *(args.map(&:to_doc)))
       end
-    rescue => err
-      error err.message
+#    rescue => err
+#      error err.message
     end
 
     def compile_paragraph(buf)
