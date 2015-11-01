@@ -185,13 +185,18 @@ require 'review/node'
     end
 
     INLINE = {}
+    COMPLEX_INLINE = {}
 
     def self.definline(name)
       INLINE[name] = InlineSyntaxElement.new(name)
     end
 
+    def self.defcomplexinline(name)
+      COMPLEX_INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
     def inline_defined?(name)
-      INLINE.key?(name.to_sym)
+      INLINE.key?(name.to_sym) || COMPLEX_INLINE.key?(name.to_sym)
     end
 
     defblock :read, 0
@@ -244,8 +249,6 @@ require 'review/node'
     definline :list
     definline :table
     definline :fn
-    definline :kw
-    definline :ruby
     definline :bou
     definline :ami
     definline :b
@@ -253,7 +256,6 @@ require 'review/node'
     definline :code
     definline :bib
     definline :hd
-    definline :href
     definline :recipe
     definline :column
 
@@ -287,6 +289,9 @@ require 'review/node'
     definline :comment
     definline :include
 
+    defcomplexinline :kw
+    defcomplexinline :ruby
+    defcomplexinline :href
 
     def compile_column(level, label, caption, content)
       buf = ""
@@ -480,6 +485,14 @@ require 'review/node'
       s.size >= @list_stack.last.size + 2
     end
 
+    def check_inline_element_symbol(name)
+      INLINE.key?(name.to_sym)
+    end
+
+    def check_complex_inline_element_symbol(name)
+      COMPLEX_INLINE.key?(name.to_sym)
+    end
+
     def position
       Position.new(self)
     end
@@ -494,6 +507,8 @@ require 'review/node'
 %% code_block_element = ast CodeBlockElementNode(compiler, position, name, args, content)
 %% inline_element = ast InlineElementNode(compiler, position, symbol, content)
 %% inline_element_content = ast InlineElementContentNode(compiler, position, content)
+%% complex_inline_element = ast ComplexInlineElementNode(compiler, position, symbol, content)
+%% complex_inline_element_content = ast ComplexInlineElementContentNode(compiler, position, content)
 %% text = ast TextNode(compiler, position, content)
 %% raw = ast RawNode(compiler, builder, position, content)
 %% brace = ast BraceNode(compiler, position, content)
@@ -660,6 +675,7 @@ NonInlineElement = !InlineElement < NonNewline > ~text(self, position, text)
 
 InlineElement =  ( RawInlineElement:c { c }
                  | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, position, symbol,contents)
+                 | !RawInlineElement "@<" ComplexInlineElementSymbol:symbol ">" "{" ComplexInlineElementContents?:contents "}" ~complex_inline_element(self, position, symbol,contents)
                  )
 
 RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, builders, position, c)
@@ -668,11 +684,17 @@ RawInlineElementContent = ( "\\}" { "}" }
                           | < /[^\r\n\}]/ >  { text }
                           )
 
-InlineElementSymbol = < AlphanumericAscii+ > { text }
+InlineElementSymbol = < AlphanumericAscii+ >:s &{ check_inline_element_symbol(text) } { text }
 
 InlineElementContents = !"}" InlineElementContentsSub:c { c }
 
-InlineElementContentsSub = !"}" ( Space* InlineElementContent:c1 Space* "," InlineElementContentsSub:c2 {  [c1]+c2 }
+InlineElementContentsSub = !"}" Space* InlineElementContent:c1 Space* { [c1] }
+
+ComplexInlineElementSymbol = < AlphanumericAscii+ > &{ check_complex_inline_element_symbol(text) } { text }
+
+ComplexInlineElementContents = !"}" ComplexInlineElementContentsSub:c { c }
+
+ComplexInlineElementContentsSub = !"}" ( Space* InlineElementContent:c1 Space* "," ComplexInlineElementContentsSub:c2 {  [c1]+c2 }
                                 | Space* InlineElementContent:c1 Space* { [c1] }
                                 )
 

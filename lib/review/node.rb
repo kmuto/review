@@ -128,7 +128,25 @@ module ReVIEW
 
 
   class InlineElementNode < Node
+    def to_raw
+      content_str = super
+      "@<#{@symbol}>{#{content_str}}"
+    end
 
+    def to_doc
+      #content_str = super
+      @compiler.compile_inline(@symbol, @content)
+    end
+
+    def to_json
+      '{"ruleName":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
+        %Q|"symbol":"#{@symbol}",| +
+        "\"offset\":#{position.pos},\"line\":#{position.line},\"column\":#{position.col}," +
+        '"childNodes":[' + @content.map(&:to_json).join(",") + ']}'
+    end
+  end
+
+  class ComplexInlineElementNode < Node
     def to_raw
       content_str = super
       "@<#{@symbol}>{#{content_str}}"
@@ -148,6 +166,9 @@ module ReVIEW
   end
 
   class InlineElementContentNode < Node
+  end
+
+  class ComplexInlineElementContentNode < Node
   end
 
   class TextNode < Node
