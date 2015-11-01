@@ -6,7 +6,7 @@ require 'fileutils'
 require 'yaml'
 require 'rbconfig'
 
-REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker', File.dirname(__FILE__))
+REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker-peg', File.dirname(__FILE__))
 
 class EPUBMakerCmdTest < Test::Unit::TestCase
   def setup

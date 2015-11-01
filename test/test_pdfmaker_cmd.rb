@@ -6,7 +6,7 @@ require 'fileutils'
 require 'yaml'
 require 'rbconfig'
 
-REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
+REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker-peg', File.dirname(__FILE__))
 
 class PDFMakerCmdTest < Test::Unit::TestCase
   def setup
