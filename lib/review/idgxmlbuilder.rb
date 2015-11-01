@@ -676,15 +676,15 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      %Q[<a linkurl='#{escape_html(url)}'>#{label.nil? ? escape_html(url) : escape_html(label)}</a>]
+      %Q[<a linkurl='#{url}'>#{label.nil? ? url : label}</a>]
     end
 
     def inline_sup(str)
-      %Q[<sup>#{escape_html(str)}</sup>]
+      %Q[<sup>#{str}</sup>]
     end
 
     def inline_sub(str)
-      %Q[<sub>#{escape_html(str)}</sub>]
+      %Q[<sub>#{str}</sub>]
     end
 
     def inline_raw(str)
@@ -693,9 +693,9 @@ module ReVIEW
 
     def inline_hint(str)
       if @book.config["nolf"].nil?
-        %Q[\n<hint>#{escape_html(str)}</hint>]
+        %Q[\n<hint>#{str}</hint>]
       else
-        %Q[<hint>#{escape_html(str)}</hint>]
+        %Q[<hint>#{str}</hint>]
       end
     end
 
@@ -720,23 +720,23 @@ module ReVIEW
     end
 
     def inline_idx(str)
-      %Q(#{escape_html(str)}<index value="#{escape_html(str)}" />)
+      %Q(#{str}<index value="#{str}" />)
     end
 
     def inline_hidx(str)
-      %Q(<index value="#{escape_html(str)}" />)
+      %Q(<index value="#{str}" />)
     end
 
     def inline_ami(str)
-      %Q(<ami>#{escape_html(str)}</ami>)
+      %Q(<ami>#{str}</ami>)
     end
 
     def inline_i(str)
-      %Q(<i>#{escape_html(str)}</i>)
+      %Q(<i>#{str}</i>)
     end
 
     def inline_b(str)
-      %Q(<b>#{escape_html(str)}</b>)
+      %Q(<b>#{str}</b>)
     end
 
     def inline_tt(str)
@@ -750,11 +750,11 @@ module ReVIEW
     alias_method :inline_ttbold, :inline_ttb
 
     def inline_tti(str)
-      %Q(<tt style='italic'>#{escape_html(str)}</tt>)
+      %Q(<tt style='italic'>#{str}</tt>)
     end
 
     def inline_u(str)
-      %Q(<underline>#{escape_html(str)}</underline>)
+      %Q(<underline>#{str}</underline>)
     end
 
     def inline_icon(id)
@@ -767,11 +767,11 @@ module ReVIEW
     end
 
     def inline_bou(str)
-      %Q[<bou>#{escape_html(str)}</bou>]
+      %Q[<bou>#{str}</bou>]
     end
 
     def inline_keytop(str)
-      %Q[<keytop>#{escape_html(str)}</keytop>]
+      %Q[<keytop>#{str}</keytop>]
     end
 
     def inline_labelref(idref)
@@ -785,7 +785,7 @@ module ReVIEW
     end
 
     def inline_balloon(str)
-      %Q[<balloon>#{escape_html(str).gsub(/@maru\[(\d+)\]/) {|m| inline_maru($1)}}</balloon>]
+      %Q[<balloon>#{str.gsub(/@maru\[(\d+)\]/) {|m| inline_maru($1)}}</balloon>]
     end
 
     def inline_uchar(str)
@@ -794,7 +794,7 @@ module ReVIEW
 
     def inline_m(str)
       @texinlineequation += 1
-      %Q[<replace idref="texinline-#{@texinlineequation}"><pre>#{escape_html(str)}</pre></replace>]
+      %Q[<replace idref="texinline-#{@texinlineequation}"><pre>#{str}</pre></replace>]
     end
 
     def noindent
@@ -812,7 +812,7 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
-      %Q[<title aid:pstyle="h#{level}">#{caption}</title><?dtp level="#{level}" section="#{escape_html(caption)}"?>] + @lf
+      %Q[<title aid:pstyle="h#{level}">#{caption}</title><?dtp level="#{level}" section="#{caption}"?>] + @lf
     end
 
     def nonum_end(level)
@@ -1098,7 +1098,7 @@ module ReVIEW
     end
 
     def inline_code(str)
-      %Q[<tt type='inline-code'>#{escape_html(str)}</tt>]
+      %Q[<tt type='inline-code'>#{str}</tt>]
     end
 
     def inline_br(str)
@@ -1217,7 +1217,7 @@ module ReVIEW
 
     def inline_recipe(id)
       # FIXME
-      %Q(<recipe idref="#{escape_html(id)}">[XXX]「#{escape_html(id)}」　p.XX</recipe>)
+      %Q(<recipe idref="#{id}">[XXX]「#{id}」　p.XX</recipe>)
     end
 
     def nofunc_text(str)
