@@ -84,6 +84,7 @@ class CompilerTest < Test::Unit::TestCase
     def @compiler.inline_dummy(*args)
       return args
     end
+    Compiler.definline :dummy
     args = compile_inline("@<dummy>{abc\\d\\#a}", false)
     assert_equal "abc\\d\\#a", args.content[0].content.to_doc
   end
