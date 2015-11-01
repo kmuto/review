@@ -193,48 +193,42 @@ module ReVIEW
 #      @compiler.text(s)
 #    end
 
-    def node_inline_chapref(nodelist)
-      id = nodelist[0].to_raw
+    def inline_chapref(id)
       @book.chapter_index.display_string(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-    def node_inline_chap(nodelist)
-      id = nodelist[0].to_raw
+    def inline_chap(id)
       @book.chapter_index.number(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-    def node_inline_title(nodelist)
-      id = nodelist[0].to_raw
+    def inline_title(id)
       @book.chapter_index.title(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-    def node_inline_list(nodelist)
-      id = nodelist[0].to_raw
+    def inline_list(id)
       "#{I18n.t("list")}#{@chapter.list(id).number}"
     rescue KeyError
       error "unknown list: #{id}"
       nofunc_text("[UnknownList:#{id}]")
     end
 
-    def node_inline_img(nodelist)
-      id = nodelist[0].to_raw
+    def inline_img(id)
       "#{I18n.t("image")}#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
     end
 
-    def node_inline_imgref(nodelist)
-      id = nodelist[0].to_raw
+    def inline_imgref(id)
       img = inline_img(id)
 
       if @chapter.image(id).caption
@@ -244,16 +238,14 @@ module ReVIEW
       end
     end
 
-    def node_inline_table(nodelist)
-      id = nodelist[0].to_raw
+    def inline_table(id)
       "#{I18n.t("table")}#{@chapter.table(id).number}"
     rescue KeyError
       error "unknown table: #{id}"
       nofunc_text("[UnknownTable:#{id}]")
     end
 
-    def node_inline_fn(nodelist)
-      id = nodelist[0].to_raw
+    def inline_fn(id)
       @chapter.footnote(id).content
     rescue KeyError
       error "unknown footnote: #{id}"
@@ -301,8 +293,7 @@ module ReVIEW
       return inline_hd_chap(@chapter, id)
     end
 
-    def node_inline_column(nodelist)
-      id = nodelist[0].to_raw
+    def inline_column(id)
       @chapter.column(id).caption
     rescue
       error "unknown column: #{id}"
