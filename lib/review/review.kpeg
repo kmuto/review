@@ -209,7 +209,7 @@ require 'review/node'
     defcodeblock :listnum, 2..3, false, [:raw, :doc, :raw]
     defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
     defcodeblock :texequation, 0, false
-    defcodeblock :table, 0..2, [:raw, :doc]
+    defcodeblock :table, 0..2, false, [:raw, :doc]
     defcodeblock :image, 2..3, true, [:raw,:doc,:raw]
     defcodeblock :box, 0..1, false, [:doc]
 
