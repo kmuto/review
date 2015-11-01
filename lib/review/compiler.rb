@@ -540,13 +540,18 @@ require 'review/node'
     end
 
     INLINE = {}
+    COMPLEX_INLINE = {}
 
     def self.definline(name)
       INLINE[name] = InlineSyntaxElement.new(name)
     end
 
+    def self.defcomplexinline(name)
+      COMPLEX_INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
     def inline_defined?(name)
-      INLINE.key?(name.to_sym)
+      INLINE.key?(name.to_sym) || COMPLEX_INLINE.key?(name.to_sym)
     end
 
     defblock :read, 0
@@ -564,7 +569,7 @@ require 'review/node'
     defcodeblock :listnum, 2..3, false, [:raw, :doc, :raw]
     defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
     defcodeblock :texequation, 0, false
-    defcodeblock :table, 0..2, [:raw, :doc]
+    defcodeblock :table, 0..2, false, [:raw, :doc]
     defcodeblock :image, 2..3, true, [:raw,:doc,:raw]
     defcodeblock :box, 0..1, false, [:doc]
 
@@ -599,8 +604,6 @@ require 'review/node'
     definline :list
     definline :table
     definline :fn
-    definline :kw
-    definline :ruby
     definline :bou
     definline :ami
     definline :b
@@ -608,7 +611,6 @@ require 'review/node'
     definline :code
     definline :bib
     definline :hd
-    definline :href
     definline :recipe
     definline :column
 
@@ -642,6 +644,9 @@ require 'review/node'
     definline :comment
     definline :include
 
+    defcomplexinline :kw
+    defcomplexinline :ruby
+    defcomplexinline :href
 
     def compile_column(level, label, caption, content)
       buf = ""
@@ -835,6 +840,14 @@ require 'review/node'
       s.size >= @list_stack.last.size + 2
     end
 
+    def check_inline_element_symbol(name)
+      INLINE.key?(name.to_sym)
+    end
+
+    def check_complex_inline_element_symbol(name)
+      COMPLEX_INLINE.key?(name.to_sym)
+    end
+
     def position
       Position.new(self)
     end
@@ -908,6 +921,28 @@ require 'review/node'
       attr_reader :level
       attr_reader :label
       attr_reader :caption
+      attr_reader :content
+    end
+    class ComplexInlineElementNode < Node
+      def initialize(compiler, position, symbol, content)
+        @compiler = compiler
+        @position = position
+        @symbol = symbol
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :symbol
+      attr_reader :content
+    end
+    class ComplexInlineElementContentNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
       attr_reader :content
     end
     class DlistNode < Node
@@ -1102,6 +1137,12 @@ require 'review/node'
     end
     def column(compiler, position, level, label, caption, content)
       ::ReVIEW::ColumnNode.new(compiler, position, level, label, caption, content)
+    end
+    def complex_inline_element(compiler, position, symbol, content)
+      ::ReVIEW::ComplexInlineElementNode.new(compiler, position, symbol, content)
+    end
+    def complex_inline_element_content(compiler, position, content)
+      ::ReVIEW::ComplexInlineElementContentNode.new(compiler, position, content)
     end
     def dlist(compiler, position, content)
       ::ReVIEW::DlistNode.new(compiler, position, content)
@@ -3915,7 +3956,7 @@ require 'review/node'
     return _tmp
   end
 
-  # InlineElement = (RawInlineElement:c { c } | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" {inline_element(self, position, symbol,contents)})
+  # InlineElement = (RawInlineElement:c { c } | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" {inline_element(self, position, symbol,contents)} | !RawInlineElement "@<" ComplexInlineElementSymbol:symbol ">" "{" ComplexInlineElementContents?:contents "}" {complex_inline_element(self, position, symbol,contents)})
   def _InlineElement
 
     _save = self.pos
@@ -3992,6 +4033,65 @@ require 'review/node'
         _tmp = true
         unless _tmp
           self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save5 = self.pos
+      while true # sequence
+        _save6 = self.pos
+        _tmp = apply(:_RawInlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save6
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("@<")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = apply(:_ComplexInlineElementSymbol)
+        symbol = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string(">")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("{")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _save7 = self.pos
+        _tmp = apply(:_ComplexInlineElementContents)
+        @result = nil unless _tmp
+        unless _tmp
+          _tmp = true
+          self.pos = _save7
+        end
+        contents = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("}")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin; complex_inline_element(self, position, symbol,contents); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
         end
         break
       end # end sequence
@@ -4116,7 +4216,7 @@ require 'review/node'
     return _tmp
   end
 
-  # InlineElementSymbol = < AlphanumericAscii+ > { text }
+  # InlineElementSymbol = < AlphanumericAscii+ >:s &{ check_inline_element_symbol(text) } { text }
   def _InlineElementSymbol
 
     _save = self.pos
@@ -4136,6 +4236,14 @@ require 'review/node'
       if _tmp
         text = get_text(_text_start)
       end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = begin;  check_inline_element_symbol(text) ; end
+      self.pos = _save2
       unless _tmp
         self.pos = _save
         break
@@ -4183,8 +4291,131 @@ require 'review/node'
     return _tmp
   end
 
-  # InlineElementContentsSub = !"}" (Space* InlineElementContent:c1 Space* "," InlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })
+  # InlineElementContentsSub = !"}" Space* InlineElementContent:c1 Space* { [c1] }
   def _InlineElementContentsSub
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_InlineElementContent)
+      c1 = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  [c1] ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementContentsSub unless _tmp
+    return _tmp
+  end
+
+  # ComplexInlineElementSymbol = < AlphanumericAscii+ > &{ check_complex_inline_element_symbol(text) } { text }
+  def _ComplexInlineElementSymbol
+
+    _save = self.pos
+    while true # sequence
+      _text_start = self.pos
+      _save1 = self.pos
+      _tmp = apply(:_AlphanumericAscii)
+      if _tmp
+        while true
+          _tmp = apply(:_AlphanumericAscii)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = begin;  check_complex_inline_element_symbol(text) ; end
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ComplexInlineElementSymbol unless _tmp
+    return _tmp
+  end
+
+  # ComplexInlineElementContents = !"}" ComplexInlineElementContentsSub:c { c }
+  def _ComplexInlineElementContents
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_ComplexInlineElementContentsSub)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ComplexInlineElementContents unless _tmp
+    return _tmp
+  end
+
+  # ComplexInlineElementContentsSub = !"}" (Space* InlineElementContent:c1 Space* "," ComplexInlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })
+  def _ComplexInlineElementContentsSub
 
     _save = self.pos
     while true # sequence
@@ -4231,7 +4462,7 @@ require 'review/node'
             self.pos = _save3
             break
           end
-          _tmp = apply(:_InlineElementContentsSub)
+          _tmp = apply(:_ComplexInlineElementContentsSub)
           c2 = @result
           unless _tmp
             self.pos = _save3
@@ -4293,7 +4524,7 @@ require 'review/node'
       break
     end # end sequence
 
-    set_failed_rule :_InlineElementContentsSub unless _tmp
+    set_failed_rule :_ComplexInlineElementContentsSub unless _tmp
     return _tmp
   end
 
@@ -4921,12 +5152,15 @@ require 'review/node'
   Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self, position, c)}")
   Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
   Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewline > {text(self, position, text)}")
-  Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, position, symbol,contents)})")
+  Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, position, symbol,contents)} | !RawInlineElement \"@<\" ComplexInlineElementSymbol:symbol \">\" \"{\" ComplexInlineElementContents?:contents \"}\" {complex_inline_element(self, position, symbol,contents)})")
   Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawBlockBuilderSelect?:builders RawInlineElementContent+:c \"}\" {raw(self, builders, position, c)}")
   Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
-  Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< AlphanumericAscii+ > { text }")
+  Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< AlphanumericAscii+ >:s &{ check_inline_element_symbol(text) } { text }")
   Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
-  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" (Space* InlineElementContent:c1 Space* \",\" InlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })")
+  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" Space* InlineElementContent:c1 Space* { [c1] }")
+  Rules[:_ComplexInlineElementSymbol] = rule_info("ComplexInlineElementSymbol", "< AlphanumericAscii+ > &{ check_complex_inline_element_symbol(text) } { text }")
+  Rules[:_ComplexInlineElementContents] = rule_info("ComplexInlineElementContents", "!\"}\" ComplexInlineElementContentsSub:c { c }")
+  Rules[:_ComplexInlineElementContentsSub] = rule_info("ComplexInlineElementContentsSub", "!\"}\" (Space* InlineElementContent:c1 Space* \",\" ComplexInlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })")
   Rules[:_InlineElementContent] = rule_info("InlineElementContent", "InlineElementContentSub+:d { d }")
   Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement QuotedInlineText:content {inline_element_content(self, position, content)} | !InlineElement InlineElementContentText+:content {inline_element_content(self, position, content)})")
   Rules[:_QuotedInlineText] = rule_info("QuotedInlineText", "\"\\\"\" (\"\\\\\\\"\" { \"\\\"\" } | \"\\\\\\\\\" { \"\\\\\" } | < /[^\"\\r\\n\\\\]/ > { text })+:str \"\\\"\" {text(self, position, str.join(\"\"))}")
