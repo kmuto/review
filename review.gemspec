@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
   gem.email       = "kmuto@debian.org"
   gem.homepage    = "http://github.com/kmuto/review"
   gem.summary     = "Re:VIEW peg: a easy-to-use digital publishing system (PEG version)"
-  gem.description = "Re:VIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX."
+  gem.description = "Re:VIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.  This gem is experimental version with PEG grammar"
   gem.required_rubygems_version = Gem::Requirement.new(">= 0") if gem.respond_to? :required_rubygems_version=
 
   gem.files         = `git ls-files`.split("\n")
