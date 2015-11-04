@@ -581,13 +581,14 @@ module ReVIEW
       buf
     end
 
-    def texequation(lines)
+    def node_texequation(node)
+      buf = ""
       buf << %Q[<div class="equation">\n]
       if @book.config["mathml"]
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
-        buf << p.parse(unescape_html(lines.join("\n")), true) << "\n"
+        buf << p.parse(node.to_raw, true).to_s << "\n"
       else
         buf << '<pre>'
         buf << lines.join("\n") << "\n"
