@@ -459,7 +459,13 @@ module ReVIEW
 
     alias_method :numberlessimage, :indepimage
 
-    def table(lines, id = nil, caption = nil)
+    def node_table(node)
+      id = node.args[0].to_doc
+      caption = node.args[1].to_doc
+      lines = []
+      node.content.each do |line|
+        lines << line.to_doc
+      end
       buf = ""
       rows = []
       sepidx = nil
@@ -549,7 +555,7 @@ module ReVIEW
 
     def tr(rows)
       buf = ""
-      buf << rows.join(' & ') << "\n"
+      buf << rows.join(' & ')
       buf << ' \\\\  \hline' << "\n"
       buf
     end
