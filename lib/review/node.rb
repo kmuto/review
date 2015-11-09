@@ -142,7 +142,7 @@ module ReVIEW
       '{"ruleName":"' + self.class.to_s.sub(/ReVIEW::/,"").sub(/Node$/,"") + '",' +
         %Q|"symbol":"#{@symbol}",| +
         "\"offset\":#{position.pos},\"line\":#{position.line},\"column\":#{position.col}," +
-        '"childNodes":[' + @content.map(&:to_json).join(",") + ']}'
+        (@concat ? '"childNodes":[' + @content.map(&:to_json).join(",") + ']' : '"childNodes":[]') + '}'
     end
   end
 
