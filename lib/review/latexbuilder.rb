@@ -460,7 +460,7 @@ module ReVIEW
     alias_method :numberlessimage, :indepimage
 
     def node_table(node)
-      id = node.args[0].to_doc
+      id = node.args[0].to_raw
       caption = node.args[1].to_doc
       lines = []
       node.content.each do |line|
