@@ -697,12 +697,14 @@ module ReVIEW
       macro('reviewlistref', "#{chapter.number}.#{chapter.list(id).number}")
     end
 
-    def inline_table(id)
+    def node_inline_table(node)
+      id = node[0].to_raw
       chapter, id = extract_chapter_id(id)
       macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id, chapter))
     end
 
-    def inline_img(id)
+    def node_inline_img(node)
+      id = node[0].to_raw
       chapter, id = extract_chapter_id(id)
       macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}", image_label(id, chapter))
     end
