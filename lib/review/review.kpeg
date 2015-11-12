@@ -1,5 +1,10 @@
 %% name = ReVIEW::Compiler
 
+%% header {
+# coding: UTF-8
+
+}
+
 %% {
   class Error; end
   class Position
@@ -18,7 +23,7 @@ require 'review/preprocessor'
 require 'review/exception'
 require 'review/node'
   require 'lineinput'
-  require 'review/compiler/literals_1_9'
+  # require 'review/compiler/literals_1_9'
   # require 'review/compiler/literals_1_8'
 
   ## redifine Compiler.new
@@ -734,12 +739,8 @@ EOF = !.
 
 ElementName = < LowerAlphabetAscii+ > { text }
 
-%literals         = ReVIEW::Compiler::Literals
-Alphanumeric      = %literals.Alphanumeric
-AlphanumericAscii = %literals.AlphanumericAscii
-LowerAlphabetAscii = %literals.LowerAlphabetAscii
-Digit              = %literals.Digit
-BOM               = %literals.BOM
-Newline           = %literals.Newline:n ~newline(self, position, "\n")
-NonAlphanumeric   = %literals.NonAlphanumeric
-Spacechar         = %literals.Spacechar
+AlphanumericAscii = /[A-Za-z0-9]/
+LowerAlphabetAscii = /[a-z]/
+Digit             = /[0-9]/
+BOM               = "\uFEFF"
+Newline           = /\n|\r\n?|\p{Zl}|\p{Zp}/ ~newline(self, position, "\n")

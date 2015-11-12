@@ -1,3 +1,4 @@
+# coding: UTF-8
 class ReVIEW::Compiler
   # :stopdoc:
 
@@ -35,22 +36,16 @@ class ReVIEW::Compiler
     end
 
     def current_line(target=pos)
-      cur_offset = 0
-      cur_line = 0
-
-      string.each_line do |line|
-        cur_line += 1
-        cur_offset += line.size
-        return cur_line if cur_offset >= target
-      end
+      offset = @sizes_memo.bsearch{|line, cur_offset| cur_offset >= target}
+      if offset
+        return offset[0]
+       end
 
       -1
     end
 
     def lines
-      lines = []
-      string.each_line { |l| lines << l }
-      lines
+      @lines_memo
     end
 
 
@@ -61,9 +56,22 @@ class ReVIEW::Compiler
 
     # Sets the string and current parsing position for the parser.
     def set_string string, pos
-      @string = string
-      @string_size = string ? string.size : 0
+      @string = string.freeze
       @pos = pos
+      @sizes_memo = []
+      if string
+        @string_size = string.size
+        @lines_memo = string.lines
+        cur_offset = cur_line = 0
+        @lines_memo.each do |line|
+          cur_line += 1
+          cur_offset += line.size
+          @sizes_memo << [cur_line, cur_offset]
+        end
+      else
+        @string_size = 0
+        @lines_memo = []
+      end
     end
 
     def show_pos
@@ -373,7 +381,7 @@ require 'review/preprocessor'
 require 'review/exception'
 require 'review/node'
   require 'lineinput'
-  require 'review/compiler/literals_1_9'
+  # require 'review/compiler/literals_1_9'
   # require 'review/compiler/literals_1_8'
 
   ## redifine Compiler.new
@@ -1194,9 +1202,7 @@ require 'review/node'
     end
   end
   include ::ReVIEWConstruction
-  def setup_foreign_grammar
-    @_grammar_literals = ReVIEW::Compiler::Literals.new(nil)
-  end
+  def setup_foreign_grammar; end
 
   # root = Start
   def _root
@@ -5036,48 +5042,40 @@ require 'review/node'
     return _tmp
   end
 
-  # Alphanumeric = %literals.Alphanumeric
-  def _Alphanumeric
-    _tmp = @_grammar_literals.external_invoke(self, :_Alphanumeric)
-    set_failed_rule :_Alphanumeric unless _tmp
-    return _tmp
-  end
-
-  # AlphanumericAscii = %literals.AlphanumericAscii
+  # AlphanumericAscii = /[A-Za-z0-9]/
   def _AlphanumericAscii
-    _tmp = @_grammar_literals.external_invoke(self, :_AlphanumericAscii)
+    _tmp = scan(/\A(?-mix:[A-Za-z0-9])/)
     set_failed_rule :_AlphanumericAscii unless _tmp
     return _tmp
   end
 
-  # LowerAlphabetAscii = %literals.LowerAlphabetAscii
+  # LowerAlphabetAscii = /[a-z]/
   def _LowerAlphabetAscii
-    _tmp = @_grammar_literals.external_invoke(self, :_LowerAlphabetAscii)
+    _tmp = scan(/\A(?-mix:[a-z])/)
     set_failed_rule :_LowerAlphabetAscii unless _tmp
     return _tmp
   end
 
-  # Digit = %literals.Digit
+  # Digit = /[0-9]/
   def _Digit
-    _tmp = @_grammar_literals.external_invoke(self, :_Digit)
+    _tmp = scan(/\A(?-mix:[0-9])/)
     set_failed_rule :_Digit unless _tmp
     return _tmp
   end
 
-  # BOM = %literals.BOM
+  # BOM = "uFEFF"
   def _BOM
-    _tmp = @_grammar_literals.external_invoke(self, :_BOM)
+    _tmp = match_string("uFEFF")
     set_failed_rule :_BOM unless _tmp
     return _tmp
   end
 
-  # Newline = %literals.Newline:n {newline(self, position, "\n")}
+  # Newline = /\n|\r\n?|\p{Zl}|\p{Zp}/ {newline(self, position, "\n")}
   def _Newline
 
     _save = self.pos
     while true # sequence
-      _tmp = @_grammar_literals.external_invoke(self, :_Newline)
-      n = @result
+      _tmp = scan(/\A(?-mix:\n|\r\n?|\p{Zl}|\p{Zp})/)
       unless _tmp
         self.pos = _save
         break
@@ -5091,20 +5089,6 @@ require 'review/node'
     end # end sequence
 
     set_failed_rule :_Newline unless _tmp
-    return _tmp
-  end
-
-  # NonAlphanumeric = %literals.NonAlphanumeric
-  def _NonAlphanumeric
-    _tmp = @_grammar_literals.external_invoke(self, :_NonAlphanumeric)
-    set_failed_rule :_NonAlphanumeric unless _tmp
-    return _tmp
-  end
-
-  # Spacechar = %literals.Spacechar
-  def _Spacechar
-    _tmp = @_grammar_literals.external_invoke(self, :_Spacechar)
-    set_failed_rule :_Spacechar unless _tmp
     return _tmp
   end
 
@@ -5171,13 +5155,10 @@ require 'review/node'
   Rules[:_EOL] = rule_info("EOL", "(Newline | EOF)")
   Rules[:_EOF] = rule_info("EOF", "!.")
   Rules[:_ElementName] = rule_info("ElementName", "< LowerAlphabetAscii+ > { text }")
-  Rules[:_Alphanumeric] = rule_info("Alphanumeric", "%literals.Alphanumeric")
-  Rules[:_AlphanumericAscii] = rule_info("AlphanumericAscii", "%literals.AlphanumericAscii")
-  Rules[:_LowerAlphabetAscii] = rule_info("LowerAlphabetAscii", "%literals.LowerAlphabetAscii")
-  Rules[:_Digit] = rule_info("Digit", "%literals.Digit")
-  Rules[:_BOM] = rule_info("BOM", "%literals.BOM")
-  Rules[:_Newline] = rule_info("Newline", "%literals.Newline:n {newline(self, position, \"\\n\")}")
-  Rules[:_NonAlphanumeric] = rule_info("NonAlphanumeric", "%literals.NonAlphanumeric")
-  Rules[:_Spacechar] = rule_info("Spacechar", "%literals.Spacechar")
+  Rules[:_AlphanumericAscii] = rule_info("AlphanumericAscii", "/[A-Za-z0-9]/")
+  Rules[:_LowerAlphabetAscii] = rule_info("LowerAlphabetAscii", "/[a-z]/")
+  Rules[:_Digit] = rule_info("Digit", "/[0-9]/")
+  Rules[:_BOM] = rule_info("BOM", "\"uFEFF\"")
+  Rules[:_Newline] = rule_info("Newline", "/\\n|\\r\\n?|\\p{Zl}|\\p{Zp}/ {newline(self, position, \"\\n\")}")
   # :startdoc:
 end

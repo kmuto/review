@@ -44,22 +44,16 @@ class ReVIEW::Compiler::Literals
     end
 
     def current_line(target=pos)
-      cur_offset = 0
-      cur_line = 0
-
-      string.each_line do |line|
-        cur_line += 1
-        cur_offset += line.size
-        return cur_line if cur_offset >= target
-      end
+      offset = @sizes_memo.bsearch{|line, cur_offset| cur_offset >= target}
+      if offset
+        return offset[0]
+       end
 
       -1
     end
 
     def lines
-      lines = []
-      string.each_line { |l| lines << l }
-      lines
+      @lines_memo
     end
 
 
@@ -70,9 +64,22 @@ class ReVIEW::Compiler::Literals
 
     # Sets the string and current parsing position for the parser.
     def set_string string, pos
-      @string = string
-      @string_size = string ? string.size : 0
+      @string = string.freeze
       @pos = pos
+      @sizes_memo = []
+      if string
+        @string_size = string.size
+        @lines_memo = string.lines
+        cur_offset = cur_line = 0
+        @lines_memo.each do |line|
+          cur_line += 1
+          cur_offset += line.size
+          @sizes_memo << [cur_line, cur_offset]
+        end
+      else
+        @string_size = 0
+        @lines_memo = []
+      end
     end
 
     def show_pos
