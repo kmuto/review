@@ -654,8 +654,9 @@ module ReVIEW
       '\noindent'
     end
 
-    def inline_chapref(id)
-      title = super
+    def node_inline_chapref(node)
+      id = node[0].to_raw
+      title = @book.chapter_index.display_string(id)
       if @book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{title}}"
       else
@@ -666,7 +667,8 @@ module ReVIEW
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-    def inline_chap(id)
+    def node_inline_chap(node)
+      id = node[0].to_raw
       if @book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{@book.chapter_index.number(id)}}"
       else
@@ -677,7 +679,8 @@ module ReVIEW
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-    def inline_title(id)
+    def node_inline_title(node)
+      id = node[0].to_raw
       title = super
       if @book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{title}}"
@@ -814,7 +817,8 @@ module ReVIEW
       macro('texttt', macro('textbf', str))
     end
 
-    def inline_bib(id)
+    def node_inline_bib(node)
+      id = node[0].to_raw
       macro('reviewbibref', "[#{@chapter.bibpaper(id).number}]", bib_label(id))
     end
 
@@ -833,7 +837,8 @@ module ReVIEW
       end
     end
 
-    def inline_column(id)
+    def node_inline_column(node)
+      id = node[0].to_raw
       macro('reviewcolumnref', "#{@chapter.column(id).caption}", column_label(id))
     end
 
@@ -865,7 +870,8 @@ module ReVIEW
       macro('reviewami', str)
     end
 
-    def inline_icon(id)
+    def node_inline_icon(node)
+      id = node[0].to_raw
       macro('includegraphics', @chapter.image(id).path)
     end
 
