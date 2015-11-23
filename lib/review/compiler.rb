@@ -39,7 +39,7 @@ class ReVIEW::Compiler
       offset = @sizes_memo.bsearch{|line, cur_offset| cur_offset >= target}
       if offset
         return offset[0]
-       end
+      end
 
       -1
     end
