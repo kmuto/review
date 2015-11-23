@@ -279,7 +279,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_listnum
     actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
-    assert_equal %Q|\\reviewlistcaption{リスト1.1: ruby}\n\\reviewlistcaption{ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n|, actual
+    assert_equal %Q|\n\\reviewlistcaption{リスト1.1: ruby}\n\\reviewlistcaption{ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n|, actual
   end
 
   def test_listnum_lst

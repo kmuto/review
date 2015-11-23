@@ -258,6 +258,7 @@ module ReVIEW
         buf << common_code_block_lst(lines, 'reviewlistlst', 'caption', caption, lang)
       else
         begin
+          buf << "\n"
           buf << macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
         rescue KeyError
           error "no such list: #{id}"
@@ -277,6 +278,7 @@ module ReVIEW
         buf << common_code_block_lst(lines, 'reviewlistnumlst', 'caption', caption, lang)
       else
         begin
+          buf << "\n"
           buf << macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
         rescue KeyError
           error "no such list: #{id}"
