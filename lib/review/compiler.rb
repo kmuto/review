@@ -36,9 +36,17 @@ class ReVIEW::Compiler
     end
 
     def current_line(target=pos)
-      offset = @sizes_memo.bsearch{|line, cur_offset| cur_offset >= target}
-      if offset
-        return offset[0]
+      if @sizes_memo.respond_to?(:bsearch)
+        offset = @sizes_memo.bsearch{|line, cur_offset| cur_offset >= target}
+        if offset
+          return offset[0]
+        end
+      else
+        @sizes_memo.each do |line, cur_offset|
+          if cur_offset >= target
+            return cur_offset
+          end
+        end
       end
 
       -1
