@@ -723,7 +723,7 @@ module ReVIEW
       if @book.config["footnotetext"]
         macro("footnotemark[#{@chapter.footnote(id).number}]", "")
       else
-        macro('footnote', escape(@chapter.footnote(id).content.strip))
+        macro('footnote', @chapter.footnote(id).content.strip)
       end
     end
 
