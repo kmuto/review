@@ -230,9 +230,9 @@ module ReVIEW
     def emlist(lines, caption = nil, lang = nil)
       buf = "\n"
       if highlight_listings?
-        buf << common_code_block_lst(lines, 'reviewemlistlst', 'title', caption, lang)
+        buf << common_code_block_lst(nil, lines, 'reviewemlistlst', 'title', caption, lang)
       else
-        buf << common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
+        buf << common_code_block(nil, lines, 'reviewemlist', caption, lang) do |line, idx|
           detab(line) + "\n"
         end
       end
@@ -242,9 +242,9 @@ module ReVIEW
     def emlistnum(lines, caption = nil, lang = nil)
       buf = "\n"
       if highlight_listings?
-        buf << common_code_block_lst(lines, 'reviewemlistnumlst', 'title', caption, lang)
+        buf << common_code_block_lst(nil, lines, 'reviewemlistnumlst', 'title', caption, lang)
       else
-        buf << common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
+        buf << common_code_block(nil, lines, 'reviewemlist', caption, lang) do |line, idx|
           detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
         end
       end
@@ -255,15 +255,9 @@ module ReVIEW
     def list(lines, id, caption = nil, lang = nil)
       buf = ""
       if highlight_listings?
-        buf << common_code_block_lst(lines, 'reviewlistlst', 'caption', caption, lang)
+        buf << common_code_block_lst(id, lines, 'reviewlistlst', 'caption', caption, lang)
       else
-        begin
-          buf << "\n"
-          buf << macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
-        rescue KeyError
-          error "no such list: #{id}"
-        end
-        buf << common_code_block(lines, 'reviewlist', nil, lang) do |line, idx|
+        buf << common_code_block(id, lines, 'reviewlist', caption, lang) do |line, idx|
           detab(line) + "\n"
         end
       end
@@ -275,15 +269,9 @@ module ReVIEW
     def listnum(lines, id, caption = nil, lang = nil)
       buf = ""
       if highlight_listings?
-        buf << common_code_block_lst(lines, 'reviewlistnumlst', 'caption', caption, lang)
+        buf << common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang)
       else
-        begin
-          buf << "\n"
-          buf << macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
-        rescue KeyError
-          error "no such list: #{id}"
-        end
-        buf << common_code_block(lines, 'reviewlist', caption, lang) do |line, idx|
+        buf << common_code_block(id, lines, 'reviewlist', caption, lang) do |line, idx|
           detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
         end
       end
@@ -293,20 +281,29 @@ module ReVIEW
     def cmd(lines, caption = nil, lang = nil)
       buf = ""
       if highlight_listings?
-        buf << common_code_block_lst(lines, 'reviewcmdlst', 'title', caption, lang)
+        buf << common_code_block_lst(nil, lines, 'reviewcmdlst', 'title', caption, lang)
       else
         buf << "\n"
-        buf << common_code_block(lines, 'reviewcmd', caption, lang) do |line, idx|
+        buf << common_code_block(nil, lines, 'reviewcmd', caption, lang) do |line, idx|
           detab(line) + "\n"
         end
       end
       buf
     end
 
-    def common_code_block(lines, command, caption, lang)
+    def common_code_block(id, lines, command, caption, lang)
       buf = ""
       if caption
-        buf << macro(command + 'caption', "#{caption}") + "\n"
+        if command =~ /emlist/ || command =~ /cmd/
+          buf << macro(command + 'caption', "#{caption}") + "\n"
+        else
+          begin
+            buf << "\n"
+            buf << macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{caption}") + "\n"
+          rescue KeyError
+            error "no such list: #{id}"
+          end
+        end
       end
       body = ""
       lines.each_with_index do |line, idx|
@@ -318,7 +315,7 @@ module ReVIEW
       buf
     end
 
-    def common_code_block_lst(lines, command, title, caption, lang)
+    def common_code_block_lst(id, lines, command, title, caption, lang)
       buf = ""
       caption_str = (caption || "")
       if title == "title" && caption_str == ""
@@ -340,7 +337,7 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       if highlight_listings?
-        common_code_block_lst(lines, 'reviewlistlst', 'title', caption, lang)
+        common_code_block_lst(nil, lines, 'reviewlistlst', 'title', caption, lang)
       else
       buf = "\n"
       buf << '\begin{reviewlist}' << "\n"
