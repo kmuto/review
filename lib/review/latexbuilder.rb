@@ -681,7 +681,7 @@ module ReVIEW
 
     def node_inline_title(node)
       id = node[0].to_raw
-      title = super
+      title = @book.chapter_index.title(id)
       if @book.config["chapterlink"]
         "\\hyperref[chap:#{id}]{#{title}}"
       else
