@@ -228,8 +228,14 @@ module ReVIEW
       nofunc_text("[UnknownImage:#{id}]")
     end
 
-    def inline_imgref(id)
-      img = inline_img(id)
+    def node_inline_img(node)
+      id = node[0].to_raw
+      inline_img(id)
+    end
+
+    def node_inline_imgref(node)
+      id = node[0].to_raw
+      img = node_inline_img(node)
 
       if @chapter.image(id).caption
         "#{img}#{I18n.t('image_quote', @chapter.image(id).caption)}"

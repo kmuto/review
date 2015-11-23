@@ -442,7 +442,8 @@ module ReVIEW
       end
     end
 
-    def inline_img(id)
+    def node_inline_img(node)
+      id = node[0].to_raw
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?
         "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}</span>"
@@ -451,10 +452,11 @@ module ReVIEW
       end
     end
 
-    def inline_imgref(id)
+    def node_inline_imgref(node)
+      id = node[0].to_raw
       chapter, id = extract_chapter_id(id)
       if chapter.image(id).caption.blank?
-        inline_img(id)
+        node_inline_img(node)
       else
         if get_chap(chapter).nil?
           "<span type='image'>#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}#{I18n.t('image_quote', chapter.image(id).caption)}</span>"
