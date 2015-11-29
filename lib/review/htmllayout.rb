@@ -11,6 +11,8 @@ class HTMLLayout
     @next = params['next']
     @prev = params['prev']
     @builder = params['builder']
+    @language = params['language']
+    @stylesheets = params['stylesheets']
     @template = template
   end
   attr_reader :body, :title, :toc

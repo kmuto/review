@@ -71,6 +71,8 @@ module ReVIEW
           warn "user's layout is prohibited in safe mode. ignored."
         else
           title = strip_html(compile_inline(@chapter.title))
+          language = @book.config['language']
+          stylesheets = @book.config["stylesheet"]
 
           toc = ""
           toc_level = 0
@@ -94,6 +96,8 @@ module ReVIEW
             HTMLLayout.new(
             {'body' => @output.string, 'title' => title, 'toc' => toc,
              'builder' => self,
+             'language' => language,
+             'stylesheets' => stylesheets,
              'next' => @chapter.next_chapter,
              'prev' => @chapter.prev_chapter},
             layout_file).result
