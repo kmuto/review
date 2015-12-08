@@ -277,6 +277,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n|, actual
   end
 
+  def test_emlistnum_caption
+    actual = compile_block("//emlistnum[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\n 1: foo\n 2: bar\n 3: \n 4: buz\n\\end{reviewemlist}\n|, actual
+  end
+
   def test_list
     actual = compile_block("//list[id1][cap1]{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|\\reviewlistcaption{リスト1.1: cap1}\n\\begin{reviewlist}\nfoo\nbar\n\nbuz\n\\end{reviewlist}\n|, actual
