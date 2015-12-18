@@ -99,6 +99,22 @@ module ReVIEW
       blank
     end
 
+    def dl_begin
+      puts '<dl>'
+    end
+
+    def dt(line)
+      puts "<dt>#{line}</dt>"
+    end
+
+    def dd(lines)
+      puts "<dd>#{lines.join}</dd>"
+    end
+
+    def dl_end
+      puts '</dl>'
+    end
+
     def emlist(lines, caption = nil, lang = nil)
       blank
       if caption
