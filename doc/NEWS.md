@@ -1,3 +1,9 @@
+# Version 1.7.2
+
+## Bug Fix
+* Fix latexbuilder to show caption in `//list` without highliting ([#465])
+* Fix markdownbuilder to use definition list ([#473])
+
 # Version 1.7.1
 
 ## Bug Fix
