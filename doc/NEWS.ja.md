@@ -1,3 +1,9 @@
+# Version 1.7.2の主な変更点
+
+## バグ修正
+* latexbuilderで`//list`がhighlitingなしのときにキャプションが表示されなくなっていたのを修正しました ([#465])
+* markdownbuilderでdefinition listを使うとエラーになるのを修正しました ([#473])
+
 # Version 1.7.1の主な変更点
 
 ## バグ修正
