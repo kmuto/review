@@ -279,15 +279,31 @@ module ReVIEW
     def inline_hd(id)
       m = /\A([^|]+)\|(.+)/.match(id)
       chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
-      return inline_hd_chap(chapter, m[2]) if chapter
-      return inline_hd_chap(@chapter, id)
+      if chapter
+        inline_hd_chap(chapter, m[2])
+      else
+        inline_hd_chap(@chapter, id)
+      end
+    rescue KeyError
+      error "unknown hd: #{id}"
+      nofunc_text("[UnknownHeader:#{id}]")
     end
 
     def inline_column(id)
-      @chapter.column(id).caption
-    rescue
+      m = /\A([^|]+)\|(.+)/.match(id)
+      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      if chapter
+        inline_column_chap(chapter, m[2])
+      else
+        inline_column_chap(@chapter, id)
+      end
+    rescue KeyError
       error "unknown column: #{id}"
       nofunc_text("[UnknownColumn:#{id}]")
+    end
+
+    def inline_column_chap(chapter, id)
+      chapter.column(id).caption
     end
 
     def raw(str)

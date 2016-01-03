@@ -962,15 +962,12 @@ QUOTE
     end
     private :column_label
 
-    def inline_column(id)
+    def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(@chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", escape_html(@chapter.column(id).caption))
+        I18n.t("column", escape_html(chapter.column(id).caption))
       end
-    rescue KeyError
-      error "unknown column: #{id}"
-      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_list(id)

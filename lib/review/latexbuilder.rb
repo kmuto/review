@@ -771,8 +771,8 @@ module ReVIEW
       end
     end
 
-    def inline_column(id)
-      macro('reviewcolumnref', "#{@chapter.column(id).caption}", column_label(id))
+    def inline_column_chap(chapter, id)
+      macro('reviewcolumnref', "#{chapter.column(id).caption}", column_label(id))
     end
 
     def inline_raw(str)
