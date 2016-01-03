@@ -316,15 +316,12 @@ module ReVIEW
     end
     private :column_label
 
-    def inline_column(id)
+    def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<link href="#{column_label(id)}">#{escape_html(@chapter.column(id).caption)}</link>)
+        %Q(<link href="#{column_label(id)}">#{escape_html(chapter.column(id).caption)}</link>)
       else
-        escape_html(@chapter.column(id).caption)
+        escape_html(chapter.column(id).caption)
       end
-    rescue KeyError
-      error "unknown column: #{id}"
-      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_list(id)

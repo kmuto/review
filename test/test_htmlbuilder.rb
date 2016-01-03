@@ -1,10 +1,7 @@
 # encoding: utf-8
 
 require 'test_helper'
-require 'review/compiler'
-require 'review/book'
-require 'review/htmlbuilder'
-require 'review/i18n'
+require 'review'
 
 class HTMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW
@@ -792,6 +789,16 @@ EOS
     assert_equal expected, column_helper(review)
   end
 
+  def test_column_in_aother_chapter_ref
+    def @chapter.column_index
+      items = [Book::ColumnIndex::Item.new("chap1|column", 1, "column_cap")]
+      Book::ColumnIndex.new(items)
+    end
+
+    actual = compile_inline("test @<column>{chap1|column} test2")
+    expected = "test コラム「column_cap」 test2"
+    assert_equal expected, actual
+  end
 
   def test_ul
     src =<<-EOS
