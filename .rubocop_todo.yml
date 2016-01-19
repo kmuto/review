@@ -606,3 +606,12 @@ Style/WhileUntilModifier:
 # Configuration parameters: WordRegex.
 Style/WordArray:
   MinSize: 10
+
+Style/IfInsideElse:
+  Enabled: false
+
+Performance/RedundantMatch:
+  Enabled: false
+
+Performance/Casecmp:
+  Enabled: false

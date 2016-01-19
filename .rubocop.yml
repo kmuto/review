@@ -54,3 +54,5 @@ Style/MutableConstant:
 Style/UnneededInterpolation:
   Enabled: false
 
+Performance/RedundantMerge:
+  Enabled: false
