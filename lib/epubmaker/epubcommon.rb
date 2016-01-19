@@ -236,7 +236,7 @@ EOT
       end
 
       @body << %Q[    <table class="colophon">\n]
-      @body << %w[aut csl trl dsr ill edt pbl prt pht].map{ |role|
+      @body << @producer.params["colophon_order"].map{ |role|
         if @producer.params[role]
           %Q[      <tr><th>#{@producer.res.v(role)}</th><td>#{CGI.escapeHTML(@producer.params[role].join(", "))}</td></tr>\n]
         else
