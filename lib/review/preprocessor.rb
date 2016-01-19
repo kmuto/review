@@ -161,8 +161,6 @@ module ReVIEW
       end
     end
 
-    private
-
     KNOWN_DIRECTIVES = %w( require provide warn ok )
 
     def known_directive?(op)
@@ -406,7 +404,7 @@ module ReVIEW
     end
 
     def git?(fname)
-      fname =~ /\Agit\|/
+      fname.start_with?('git|')
     end
 
     def parse_git_blob(g_obj)
