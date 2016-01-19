@@ -164,7 +164,7 @@ module ReVIEW
   def recursive_copy_files(resdir, destdir, allow_exts)
     Dir.open(resdir) do |dir|
       dir.each do |fname|
-        next if fname =~ /\A\./
+        next if fname.start_with?('.')
         if FileTest.directory?("#{resdir}/#{fname}")
           recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
         else
