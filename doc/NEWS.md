@@ -1,3 +1,11 @@
+# Version X.X.X
+
+## Commands
+
+### review-compile
+
+* load `./config.yml` if exists ([#477])
+
 # Version 1.7.2
 
 ## Bug Fix
