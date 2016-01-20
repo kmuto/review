@@ -340,16 +340,16 @@ module ReVIEW
       return "" if metric.blank?
       params = metric.split(/,\s*/)
       results = []
-      params.each do |p|
-        if p =~ /\A.+?::/
-          if p =~ /\A#{type}::/
-              p.sub!(/\A#{type}::/, '')
+      params.each do |param|
+        if param =~ /\A.+?::/
+          if param =~ /\A#{type}::/
+              param.sub!(/\A#{type}::/, '')
           else
             next
           end
         end
-        p = handle_metric(p)
-        results.push(p)
+        param2 = handle_metric(param)
+        results.push(param2)
       end
       return result_metric(results)
     end
