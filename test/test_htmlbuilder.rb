@@ -359,7 +359,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_image_with_metric2
@@ -370,7 +370,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_image_with_tricky_id
@@ -414,7 +414,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric2
@@ -425,7 +425,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -436,7 +436,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, actual
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />\n</div>\n|, actual
   end
 
   def test_dlist
