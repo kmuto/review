@@ -616,7 +616,7 @@ QUOTE
           attrs[k] = [item[k]]
         end
       end
-      " "+attrs.map{|k, v|  %Q|#{k}="#{v.join(' ')}"| }.join(' ')
+      " "+attrs.map{|k, v| %Q|#{k}="#{v.join(' ')}"| }.join(' ')
     end
 
     def image_image(id, caption, metric)
