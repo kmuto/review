@@ -227,13 +227,17 @@ module ReVIEW
 
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
-      if @producer.params["htmlversion"].to_i == 5
-        tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      else
-        tmplfile = File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      end
+      tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
       tmpl = ReVIEW::Template.load(tmplfile)
       f.write tmpl.result(binding)
+    end
+  end
+
+  def template_name
+    if @producer.params["htmlversion"].to_i == 5
+      './html/layout-html5.html.erb'
+    else
+      './html/layout-xhtml1.html.erb'
     end
   end
 
@@ -395,11 +399,7 @@ module ReVIEW
 
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
-      if @producer.params["htmlversion"].to_i == 5
-        tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      else
-        tmplfile = File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      end
+      tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
       tmpl = ReVIEW::Template.load(tmplfile)
       f.write tmpl.result(binding)
     end
