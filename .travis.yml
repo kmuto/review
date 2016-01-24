@@ -9,6 +9,10 @@ rvm:
   - 2.3.0
   - ruby-head
 
+addons:
+  apt_packages:
+    - libgmp3-dev
+
 branches:
   only:
     - master
