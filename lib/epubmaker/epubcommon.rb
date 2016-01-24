@@ -49,11 +49,8 @@ module EPUBMaker
     end
 
     def ncx_isbn
-      if @producer.params["isbn"].nil?
-        %Q[    <meta name="dtb:uid" content="#{@producer.params["urnid"]}"/>\n]
-      else
-        %Q[    <meta name="dtb:uid" content="#{@producer.params["isbn"]}"/>\n]
-      end
+      uid = @producer.params["isbn"] || @producer.params["urnid"]
+      %Q[    <meta name="dtb:uid" content="#{uid}"/>\n]
     end
 
     def ncx_doctitle
