@@ -22,9 +22,12 @@ Style/ExtraSpacing:
 Performance/StringReplacement:
   Enabled: false
 
+Performance/RangeInclude:
+  Enabled: false
+
 # Use alias_method instead of alias.
 Style/Alias:
-  Enabled: true
+  Enabled: false
 
 # Do not introduce global variables.
 Style/GlobalVars:
@@ -45,3 +48,15 @@ Style/VariableName:
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
   Max: 4500
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/MutableConstant:
+  Enabled: false
+
+Style/UnneededInterpolation:
+  Enabled: false
+
+Performance/RedundantMerge:
+  Enabled: false

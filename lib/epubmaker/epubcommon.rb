@@ -37,7 +37,7 @@ module EPUBMaker
       if @producer.params["coverimage"]
         file = nil
         @producer.contents.each do |item|
-          if item.media =~ /\Aimage/ && item.file =~ /#{@producer.params["coverimage"]}\Z/
+          if item.media.start_with?('image') && item.file =~ /#{@producer.params["coverimage"]}\Z/
             s << %Q[    <meta name="cover" content="#{item.id}"/>\n]
             file = item.file
             break
@@ -49,11 +49,8 @@ module EPUBMaker
     end
 
     def ncx_isbn
-      if @producer.params["isbn"].nil?
-        %Q[    <meta name="dtb:uid" content="#{@producer.params["urnid"]}"/>\n]
-      else
-        %Q[    <meta name="dtb:uid" content="#{@producer.params["isbn"]}"/>\n]
-      end
+      uid = @producer.params["isbn"] || @producer.params["urnid"]
+      %Q[    <meta name="dtb:uid" content="#{uid}"/>\n]
     end
 
     def ncx_doctitle
@@ -62,7 +59,7 @@ module EPUBMaker
     <text>#{CGI.escapeHTML(@producer.params["title"])}</text>
   </docTitle>
   <docAuthor>
-    <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(@producer.params["aut"].join(", "))}</text>
+    <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(join_with_separator(@producer.params["aut"], ", "))}</text>
   </docAuthor>
 EOT
     end
@@ -167,7 +164,7 @@ EOT
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{CGI.escapeHTML(@producer.params["aut"].join(", "))}</h2>
+  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params["aut"], ", "))}</h2>
 EOT
       end
 
@@ -180,7 +177,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{CGI.escapeHTML(publisher.join(", "))}</h3>
+  <h3 class="tp-publisher">#{CGI.escapeHTML(join_with_separator(publisher, ", "))}</h3>
 EOT
       end
 
@@ -236,9 +233,9 @@ EOT
       end
 
       @body << %Q[    <table class="colophon">\n]
-      @body << %w[aut csl trl dsr ill edt pbl prt pht].map{ |role|
+      @body << @producer.params["colophon_order"].map{ |role|
         if @producer.params[role]
-          %Q[      <tr><th>#{@producer.res.v(role)}</th><td>#{CGI.escapeHTML(@producer.params[role].join(", "))}</td></tr>\n]
+          %Q[      <tr><th>#{@producer.res.v(role)}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params[role], ", "))}</td></tr>\n]
         else
           ""
         end
@@ -256,7 +253,7 @@ EOT
       end
       @body << %Q[    </table>\n]
       if !@producer.params["rights"].nil? && @producer.params["rights"].size > 0
-        @body << %Q[    <p class="copyright">#{@producer.params["rights"].join("<br />")}</p>]
+        @body << %Q[    <p class="copyright">#{join_with_separator(@producer.params["rights"], "<br />")}</p>]
       end
       @body << %Q[  </div>\n]
 
@@ -418,6 +415,14 @@ EOT
 
       File.open(writefile, "w") do |f|
         f.puts s
+      end
+    end
+
+    def join_with_separator(value, sep)
+      if value.kind_of? Array
+        value.join(sep)
+      else
+        value
       end
     end
   end

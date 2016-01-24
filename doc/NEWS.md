@@ -1,3 +1,23 @@
+# Version X.X.X
+
+## Commands
+
+### review-compile
+
+* load `./config.yml` if exists ([#477])
+
+# Version 1.7.2
+
+## Bug Fix
+* Fix latexbuilder to show caption in `//list` without highliting ([#465])
+* Fix markdownbuilder to use definition list ([#473])
+
+# Version 1.7.1
+
+## Bug Fix
+* Fix latexbuilder to display caption twice in `//listnum` ([#465])
+* Fix review-init to generate non-valid EPUB3 file with epubcheck 4.0.1 ([#456])
+
 # Version 1.7.0
 
 ## In general

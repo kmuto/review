@@ -22,6 +22,9 @@ require 'review/book'
 require 'review/i18n'
 require 'fileutils'
 require 'optparse'
+require 'yaml'
+
+DEFAULT_CONFIG_FILENAME = "config.yml"
 
 def main
   Signal.trap(:INT) { exit 1 }
@@ -63,10 +66,7 @@ def _main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} [--target=FMT]"
-  opts.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
-    require 'yaml'
-    config = config.merge(YAML.load_file(yaml))
-  end
+  opts.on('--yaml=YAML', 'Read configurations from YAML file.') {|yaml| config["yaml"] = yaml}
   opts.on('-c', '--check', 'Check manuscript') { check_only = true }
   opts.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
   opts.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }
@@ -137,6 +137,16 @@ def _main
   end
 
 ## begin
+    if config["yaml"]
+      config = config.merge(YAML.load_file(config["yaml"]))
+    else
+      if File.exist?(DEFAULT_CONFIG_FILENAME)
+        config = config.merge(YAML.load_file(DEFAULT_CONFIG_FILENAME))
+      end
+    end
+
+
+
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])
 

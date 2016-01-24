@@ -64,6 +64,8 @@ module ReVIEW
           warn "user's layout is prohibited in safe mode. ignored."
         else
           title = strip_html(@chapter.title)
+          language = @book.config['language']
+          stylesheets = @book.config["stylesheet"]
 
           toc = ""
           toc_level = 0
@@ -87,6 +89,8 @@ module ReVIEW
             HTMLLayout.new(
             {'body' => @output.string, 'title' => title, 'toc' => toc,
              'builder' => self,
+             'language' => language,
+             'stylesheets' => stylesheets,
              'next' => @chapter.next_chapter,
              'prev' => @chapter.prev_chapter},
             layout_file).result
@@ -970,15 +974,12 @@ module ReVIEW
     end
     private :column_label
 
-    def inline_column(id)
+    def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", (@chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", (chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", (@chapter.column(id).caption))
+        I18n.t("column", (chapter.column(id).caption))
       end
-    rescue KeyError
-      error "unknown column: #{id}"
-      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_list(id)

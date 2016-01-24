@@ -566,4 +566,71 @@ EOT
 #    end
 #  end
 
+  def test_title
+    @producer.params["aut"] = ["Mr.Smith"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
+    @producer.titlepage(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="Re:VIEW"/>
+  <title>Sample Book</title>
+</head>
+<body>
+  <h1 class="tp-title">Sample Book</h1>
+  <p>
+    <br />
+    <br />
+  </p>
+  <h2 class="tp-author">Mr.Smith</h2>
+  <p>
+    <br />
+    <br />
+    <br />
+    <br />
+  </p>
+  <h3 class="tp-publisher">BLUEPRINT</h3>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
+
+  def test_title_single_value_param
+    @producer.params["aut"] = "Mr.Smith"
+    @producer.params["pbl"] = "BLUEPRINT"
+    @producer.titlepage(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="Re:VIEW"/>
+  <title>Sample Book</title>
+</head>
+<body>
+  <h1 class="tp-title">Sample Book</h1>
+  <p>
+    <br />
+    <br />
+  </p>
+  <h2 class="tp-author">Mr.Smith</h2>
+  <p>
+    <br />
+    <br />
+    <br />
+    <br />
+  </p>
+  <h3 class="tp-publisher">BLUEPRINT</h3>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
 end

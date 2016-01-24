@@ -569,7 +569,10 @@ Style/TrailingBlankLines:
 # Offense count: 32
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyleForMultiline, SupportedStyles.
-Style/TrailingComma:
+Style/TrailingCommaInLiteral:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
   Enabled: false
 
 # Offense count: 3
@@ -602,4 +605,13 @@ Style/WhileUntilModifier:
 # Cop supports --auto-correct.
 # Configuration parameters: WordRegex.
 Style/WordArray:
-  MinSize: 7
+  MinSize: 10
+
+Style/IfInsideElse:
+  Enabled: false
+
+Performance/RedundantMatch:
+  Enabled: false
+
+Performance/Casecmp:
+  Enabled: false

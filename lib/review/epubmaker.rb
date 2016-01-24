@@ -164,7 +164,7 @@ module ReVIEW
   def recursive_copy_files(resdir, destdir, allow_exts)
     Dir.open(resdir) do |dir|
       dir.each do |fname|
-        next if fname =~ /\A\./
+        next if fname.start_with?('.')
         if FileTest.directory?("#{resdir}/#{fname}")
           recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
         else
@@ -227,13 +227,17 @@ module ReVIEW
 
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
-      if @producer.params["htmlversion"].to_i == 5
-        tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      else
-        tmplfile = File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      end
+      tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
       tmpl = ReVIEW::Template.load(tmplfile)
       f.write tmpl.result(binding)
+    end
+  end
+
+  def template_name
+    if @producer.params["htmlversion"].to_i == 5
+      './html/layout-html5.html.erb'
+    else
+      './html/layout-xhtml1.html.erb'
     end
   end
 
@@ -395,11 +399,7 @@ module ReVIEW
 
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
-      if @producer.params["htmlversion"].to_i == 5
-        tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      else
-        tmplfile = File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      end
+      tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
       tmpl = ReVIEW::Template.load(tmplfile)
       f.write tmpl.result(binding)
     end

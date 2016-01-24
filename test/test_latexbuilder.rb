@@ -277,6 +277,31 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n|, actual
   end
 
+  def test_emlistnum_caption
+    actual = compile_block("//emlistnum[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\n 1: foo\n 2: bar\n 3: \n 4: buz\n\\end{reviewemlist}\n|, actual
+  end
+
+  def test_list
+    actual = compile_block("//list[id1][cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\n\\reviewlistcaption{リスト1.1: cap1}\n\\begin{reviewlist}\nfoo\nbar\n\nbuz\n\\end{reviewlist}\n|, actual
+  end
+
+  def test_list_lst
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    actual = compile_block("//list[id1][cap1][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
+    assert_equal %Q|\\begin{reviewlistlst}[caption={cap1},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewlistlst}\n|, actual
+  end
+
+  def test_list_lst_with_lang
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    @book.config["highlight"]["lang"] = "sql"
+    actual = compile_block("//list[id1][cap1]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
+    assert_equal %Q|\\begin{reviewlistlst}[caption={cap1},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewlistlst}\n|, actual
+  end
+
   def test_listnum
     actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
     assert_equal %Q|\n\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n|, actual

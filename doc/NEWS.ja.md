@@ -1,3 +1,15 @@
+# Version 1.7.2の主な変更点
+
+## バグ修正
+* latexbuilderで`//list`がhighlitingなしのときにキャプションが表示されなくなっていたのを修正しました ([#465])
+* markdownbuilderでdefinition listを使うとエラーになるのを修正しました ([#473])
+
+# Version 1.7.1の主な変更点
+
+## バグ修正
+* latexbuilderで`//listnum`のキャプションが2重に出力されるバグを修正しました ([#465])
+* review-initで生成される雛形を元にEPUB3のファイルを作成するとepubcheck 4.0.1でエラーになるバグを修正しました ([#456])
+
 # Version 1.7.0の主な変更点
 
 ## 全般

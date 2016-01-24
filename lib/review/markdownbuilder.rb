@@ -130,6 +130,22 @@ module ReVIEW
       buf
     end
 
+    def dl_begin
+      "<dl>\n"
+    end
+
+    def dt(line)
+      "<dt>#{line}</dt>\n"
+    end
+
+    def dd(lines)
+      "<dd>#{lines.join}</dd>\n"
+    end
+
+    def dl_end
+      "</dl>\n"
+    end
+
     def emlist(lines, caption = nil, lang = nil)
       buf = ""
       buf << blank
