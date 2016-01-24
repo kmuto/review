@@ -661,14 +661,14 @@ module ReVIEW
       '<keyword>' +
         if alt
         then
-          ("#{word}（#{alt.strip}）")
+          "#{word}（#{alt.strip}）"
         else
-          (word)
+          word
         end +
       '</keyword>' +
         %Q[<index value="#{word}" />] +
         if alt
-          alt.split(/\s*,\s*/).collect! {|e| %Q[<index value="#{(e.strip)}" />] }.join
+          alt.split(/\s*,\s*/).collect! {|e| %Q[<index value="#{e.strip}" />] }.join
         else
           ""
         end
@@ -774,13 +774,13 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<ref idref='#{(idref)}'>「#{I18n.t("label_marker")}#{(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
+      %Q[<ref idref='#{idref}'>「#{I18n.t("label_marker")}#{idref}」</ref>] # FIXME:節名とタイトルも込みで要出力
     end
 
     alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(idref)
-      %Q[<pageref idref='#{(idref)}'>●●</pageref>] # ページ番号を参照
+      %Q[<pageref idref='#{idref}'>●●</pageref>] # ページ番号を参照
     end
 
     def inline_balloon(str)
@@ -829,7 +829,7 @@ module ReVIEW
       @column += 1
       a_id = %Q[id="column-#{@column}"]
       buf << "<#{type}column #{a_id}>"
-      buf << %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title>] << @lf
+      buf << %Q[<title aid:pstyle="#{type}column-title">#{caption}</title>] << @lf
       buf
     end
 
@@ -926,7 +926,7 @@ module ReVIEW
       buf = ""
       buf << "<#{type}>"
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
-      buf << "<title aid:pstyle='#{style}'>#{(caption)}</title>" + @lf unless caption.nil?
+      buf << "<title aid:pstyle='#{style}'>#{caption}</title>" + @lf unless caption.nil?
       if @book.config["deprecated-blocklines"].nil?
         buf << "#{lines.join}</#{type}>" << @lf
       else

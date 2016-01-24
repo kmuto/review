@@ -11,16 +11,6 @@ require 'test/unit'
     end
   end
 
-  def compile_block(str, force_to_s=true)
-    @compiler.setup_parser(str)
-    @compiler.parse("Document")
-    if force_to_s
-      @compiler.result.to_doc
-    else
-      @compiler.result
-    end
-  end
-
   def compile_inline(str, force_to_s=true)
     @compiler.setup_parser(str)
     @compiler.parse("Paragraph")

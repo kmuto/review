@@ -618,7 +618,7 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric("html", metric)
       buf = %Q[<div id="#{normalize_id(id)}" class="image">\n]
-      buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(caption)}"#{metrics} />\n]
+      buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}"#{metrics} />\n]
       buf << image_header(id, caption)
       buf << %Q[</div>\n]
       buf
@@ -745,7 +745,7 @@ module ReVIEW
       caption = "" if caption.nil?
       buf = %Q[<div class="image">\n]
       begin
-        buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(caption)}"#{metrics} />\n]
+        buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}"#{metrics} />\n]
       rescue
         buf << %Q[<pre>missing image: #{id}</pre>\n]
       end
@@ -791,7 +791,7 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<a target='#{(idref)}'>「#{I18n.t("label_marker")}#{(idref)}」</a>]
+      %Q[<a target='#{idref}'>「#{I18n.t("label_marker")}#{idref}」</a>]
     end
 
     alias_method :inline_ref, :inline_labelref
@@ -843,7 +843,7 @@ module ReVIEW
       if @book.htmlversion == 5
         %Q[<ruby>#{base}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
-        %Q[<ruby><rb>#{(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+        %Q[<ruby><rb>#{base}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       end
     end
 
@@ -865,26 +865,26 @@ module ReVIEW
     end
 
     def inline_ami(str)
-      %Q(<span class="ami">#{(str)}</span>)
+      %Q(<span class="ami">#{str}</span>)
     end
 
     def inline_bou(str)
-      %Q(<span class="bou">#{(str)}</span>)
+      %Q(<span class="bou">#{str}</span>)
     end
 
     def inline_tti(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt"><i>#{(str)}</i></code>)
+        %Q(<code class="tt"><i>#{str}</i></code>)
       else
-        %Q(<tt><i>#{(str)}</i></tt>)
+        %Q(<tt><i>#{str}</i></tt>)
       end
     end
 
     def inline_ttb(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt"><b>#{(str)}</b></code>)
+        %Q(<code class="tt"><b>#{str}</b></code>)
       else
-        %Q(<tt><b>#{(str)}</b></tt>)
+        %Q(<tt><b>#{str}</b></tt>)
       end
     end
 
@@ -894,14 +894,14 @@ module ReVIEW
 
     def inline_code(str)
       if @book.htmlversion == 5
-        %Q(<code class="inline-code tt">#{(str)}</code>)
+        %Q(<code class="inline-code tt">#{str}</code>)
       else
-        %Q(<tt class="inline-code">#{(str)}</tt>)
+        %Q(<tt class="inline-code">#{str}</tt>)
       end
     end
 
     def inline_idx(str)
-      %Q(#{(str)}<!-- IDX:#{escape_comment(escape_html(str))} -->)
+      %Q(#{str}<!-- IDX:#{escape_comment(escape_html(str))} -->)
     end
 
     def inline_hidx(str)
@@ -920,7 +920,7 @@ module ReVIEW
           :symbol => MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
       else
-        %Q[<span class="equation">#{(str)}</span>]
+        %Q[<span class="equation">#{str}</span>]
       end
     end
 
@@ -942,7 +942,7 @@ module ReVIEW
       buf = %Q(<a id="bib-#{normalize_id(id)}">)
       buf << "[#{@chapter.bibpaper(id).number}]"
       buf << %Q(</a>)
-      buf << " #{(caption)}" << "\n"
+      buf << " #{caption}" << "\n"
     end
 
     def bibpaper_bibpaper(id, caption, lines)
@@ -976,9 +976,9 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", (chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", chapter.column(id).caption)}</a>)
       else
-        I18n.t("column", (chapter.column(id).caption))
+        I18n.t("column", chapter.column(id).caption)
       end
     end
 
@@ -1031,7 +1031,7 @@ module ReVIEW
     end
 
     def inline_asis(str, tag)
-      %Q(<#{tag}>#{(str)}</#{tag}>)
+      %Q(<#{tag}>#{str}</#{tag}>)
     end
 
     def inline_abbr(str)
@@ -1088,9 +1088,9 @@ module ReVIEW
 
     def inline_tt(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt">#{(str)}</code>)
+        %Q(<code class="tt">#{str}</code>)
       else
-        %Q(<tt>#{(str)}</tt>)
+        %Q(<tt>#{str}</tt>)
       end
     end
 
@@ -1103,11 +1103,11 @@ module ReVIEW
     end
 
     def inline_u(str)
-      %Q(<u>#{(str)}</u>)
+      %Q(<u>#{str}</u>)
     end
 
     def inline_recipe(str)
-      %Q(<span class="recipe">「#{(str)}」</span>)
+      %Q(<span class="recipe">「#{str}」</span>)
     end
 
     def inline_icon(id)
@@ -1124,7 +1124,7 @@ module ReVIEW
 
     def inline_comment(str)
       if @book.config["draft"]
-        %Q(<span class="draft-comment">#{(str)}</span>)
+        %Q(<span class="draft-comment">#{str}</span>)
       else
         %Q(<!-- #{escape_comment(escape_html(str))} -->)
       end
@@ -1139,7 +1139,7 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? (url) : (label)}</a>)
+      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? url : label}</a>)
     end
 
     def flushright(lines)

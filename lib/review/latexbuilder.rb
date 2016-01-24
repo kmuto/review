@@ -520,7 +520,7 @@ module ReVIEW
         buf << macro('begin', 'reviewtable', @latex_tsize) << "\n"
       elsif @tsize
         cellwidth = @tsize.split(/\s*,\s*/)
-        buf << macro('begin', 'reviewtable', '|'+(cellwidth.collect{|i| "p{#{i}mm}"}.join('|'))+'|') << "\n"
+        buf << macro('begin', 'reviewtable', '|'+cellwidth.collect{|i| "p{#{i}mm}"}.join('|')+'|') << "\n"
       else
         buf << macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l')) << "\n"
       end
