@@ -3,6 +3,11 @@ require 'yaml'
 
 module ReVIEW
   class I18n
+    ALPHA_U = %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]
+    ALPHA_L = %w[0 a b c d e f g h i j k l m n o p q r s t u v w x y z]
+    ROMAN_U = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
+    ROMAN_L = %w[0 i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx xxi xxii xxiii xxiv xxv xxvi xxvii]
+
     def self.setup(locale="ja", ymlfile = "locale.yml")
       @i18n = ReVIEW::I18n.new(locale)
 
@@ -88,7 +93,29 @@ module ReVIEW
     end
 
     def t(str, args = nil)
-      @store[@locale][str] % args
+      args = [args] unless args.is_a? Array
+
+      frmt = @store[@locale][str]
+      frmt.gsub!('%%', '##')
+      percents = frmt.scan(/%\w\w?/)
+      percents.each_with_index do |i, idx|
+        case i
+        when "%pA"
+          frmt.sub!(i, ALPHA_U[args[idx]])
+          args.delete idx
+        when "%pa"
+          frmt.sub!(i, ALPHA_L[args[idx]])
+          args.delete idx
+        when "%pR"
+          frmt.sub!(i, ROMAN_U[args[idx]])
+          args.delete idx
+        when "%pr"
+          frmt.sub!(i, ROMAN_L[args[idx]])
+          args.delete idx
+        end
+      end
+      frmt.gsub!('##', '%%')
+      frmt % args
     rescue
       str
     end

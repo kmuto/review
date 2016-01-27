@@ -89,6 +89,29 @@ class I18nTest < Test::Unit::TestCase
         end
       end
     end
+
+    def test_custom_format
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pa章")}
+          I18n.setup("ja")
+          assert_equal "第a章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pA章")}
+          I18n.setup("ja")
+          assert_equal "第B章", I18n.t("chapter", 2)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pR章")}
+          I18n.setup("ja")
+          assert_equal "第I章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pr章")}
+          I18n.setup("ja")
+          assert_equal "第ii章", I18n.t("chapter", 2)
+        end
+      end
+    end
   end
 
   def test_ja
