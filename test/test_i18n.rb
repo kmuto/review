@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'test_helper'
-require 'review/i18n'
-
-require 'review/compiler'
-require 'review/book'
-require 'review/htmlbuilder'
+require 'review'
 require 'tmpdir'
 
 class I18nTest < Test::Unit::TestCase
