@@ -102,6 +102,28 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
+  def test_headline_level1_postdef_alpha_i18n
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        @chapter.book.config["appendix_format"] = "alpha" # config is strong
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
+        file = File.join(dir, "locale.yml") # i18n is weak
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pr")}
+        I18n.setup("ja")
+        actual = compile_block("={test} this is test.\n")
+        assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
+
+        actual = compile_block("=={test} this is test.\n")
+        assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
+      end
+    end
+  end
+
   def test_headline_level1_without_secno
     @book.config["secnolevel"] = 0
     actual = compile_block("={test} this is test.\n")
