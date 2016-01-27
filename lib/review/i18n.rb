@@ -50,6 +50,10 @@ module ReVIEW
       @i18n.update(user_i18n, locale)
     end
 
+    def self.get(word, locale = nil)
+      @i18n.get(word, locale)
+    end
+
     attr_accessor :locale
 
     def initialize(locale = nil)
@@ -90,6 +94,11 @@ module ReVIEW
       else
         @store[locale] = user_i18n
       end
+    end
+
+    def get(word, locale = nil)
+      locale ||= @locale
+      @store[locale][word]
     end
 
     def t(str, args = nil)
