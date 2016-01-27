@@ -59,7 +59,7 @@ module EPUBMaker
         return nil
       end
       @contents.each do |item|
-        if item.media =~ /\Aimage/ && item.file =~ /#{params["coverimage"]}\Z/ # /
+        if item.media.start_with?('image') && item.file =~ /#{params["coverimage"]}\Z/ # /
           return item.file
         end
       end
@@ -145,7 +145,7 @@ module EPUBMaker
       return nil unless File.exist?(path)
       allow_exts = @params["image_ext"] if allow_exts.nil?
       Dir.foreach(path) do |f|
-        next if f =~ /\A\./
+        next if f.start_with?('.')
         if f =~ /\.(#{allow_exts.join("|")})\Z/i
           path.chop! if path =~ /\/\Z/
           if base.nil?
@@ -218,6 +218,7 @@ module EPUBMaker
         "originaltitlefile" => nil,
         "profile" => nil,
         "colophon" => nil,
+        "colophon_order" => %w[aut csl trl dsr ill edt pbl prt pht],
         "epubmaker" => {
           "flattoc" => nil,
           "flattocindent" => true,

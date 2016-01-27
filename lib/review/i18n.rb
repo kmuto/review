@@ -58,7 +58,7 @@ module ReVIEW
     end
 
     def load_default
-      load_file(File.expand_path "i18n.yml", File.dirname(__FILE__))
+      load_file(File.expand_path("i18n.yml", File.dirname(__FILE__)))
     end
 
     def load_file(path)

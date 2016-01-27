@@ -22,9 +22,12 @@ Style/ExtraSpacing:
 Performance/StringReplacement:
   Enabled: false
 
+Performance/RangeInclude:
+  Enabled: false
+
 # Use alias_method instead of alias.
 Style/Alias:
-  Enabled: true
+  Enabled: false
 
 # Do not introduce global variables.
 Style/GlobalVars:
@@ -41,3 +44,15 @@ Style/OpMethod:
 # Use snake_case for variable names.
 Style/VariableName:
   Enabled: true
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/MutableConstant:
+  Enabled: false
+
+Style/UnneededInterpolation:
+  Enabled: false
+
+Performance/RedundantMerge:
+  Enabled: false

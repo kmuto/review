@@ -66,15 +66,13 @@ def main
       puts '    --------------------'
       print_volume part.volume
     end
-    puts '============================='
-    print_volume book.volume #puts "Total #{book.volume}"
   else
     book.each_chapter do |chap|
       print_chapter_volume chap
     end
-    puts '============================='
-    print_volume book.volume #puts "Total #{book.volume}"
   end
+  puts '============================='
+  print_volume book.volume #puts "Total #{book.volume}"
 rescue ReVIEW::ApplicationError, Errno::ENOENT => err
   raise if $DEBUG
   $stderr.puts "#{File.basename($0)}: #{err.message}"

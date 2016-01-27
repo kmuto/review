@@ -186,7 +186,7 @@ module ReVIEW
 
         catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
         if File.file? catalogfile_path
-          @catalog = Catalog.new(File.open catalogfile_path)
+          @catalog = Catalog.new(File.open(catalogfile_path))
         end
 
         @catalog
@@ -327,8 +327,8 @@ module ReVIEW
         end
 
         chap = read_CHAPS()\
-          .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
-          .map {|part_chunk|
+               .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
+               .map {|part_chunk|
           chaps = part_chunk.split.map {|chapid|
             Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
           }
