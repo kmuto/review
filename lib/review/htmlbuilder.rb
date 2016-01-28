@@ -599,15 +599,24 @@ QUOTE
 
     def handle_metric(str)
       if str =~ /\Ascale=([\d.]+)\Z/
-        return "width=\"#{($1.to_f * 100).round}%\""
+        return {'class' => sprintf("width-%03dper", ($1.to_f * 100).round)}
       else
         k, v = str.split('=', 2)
-        return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
+        return {k => v.sub(/\A["']/, '').sub(/["']\Z/, '')}
       end
     end
 
     def result_metric(array)
-      " #{array.join(' ')}"
+      attrs = {}
+      array.each do |item|
+        k = item.keys[0]
+        if attrs[k]
+          attrs[k] << item[k]
+        else
+          attrs[k] = [item[k]]
+        end
+      end
+      " "+attrs.map{|k, v| %Q|#{k}="#{v.join(' ')}"| }.join(' ')
     end
 
     def image_image(id, caption, metric)
