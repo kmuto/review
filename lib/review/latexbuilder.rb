@@ -796,7 +796,7 @@ module ReVIEW
     end
 
     def inline_u(str)
-      macro('Underline', escape(str))
+      macro('reviewunderline', escape(str))
     end
 
     def inline_ami(str)
