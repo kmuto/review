@@ -327,10 +327,6 @@ module ReVIEW
     include TOCRoot
   end
 
-  class Book::ChapterSet # reopen
-    include TOCRoot
-  end
-
   class Book::Part
     include TOCRoot
   end
