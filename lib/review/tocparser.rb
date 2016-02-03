@@ -28,7 +28,7 @@ module ReVIEW
     end
 
     def parse(f, chap)
-      roots = []
+      roots = [] ## list of chapters
       node_stack = []
       filename = chap.path
       while line = f.gets
@@ -44,8 +44,9 @@ module ReVIEW
           label = get_label(line)
           if node_stack.empty?
             # missing chapter label
-            node_stack.push Chapter.new(label, chap)
-            roots.push node_stack.first
+            dummy_chapter = Chapter.new(label, chap)
+            node_stack.push dummy_chapter
+            roots.push dummy_chapter
           end
           next if label =~ /\A\[\// # ex) "[/column]"
           sec = Section.new(lev, label.gsub(/\A\{.*?\}\s?/, ""))
@@ -58,8 +59,9 @@ module ReVIEW
         when /\A= /
           label = get_label(line)
           node_stack.clear
-          node_stack.push Chapter.new(label, chap)
-          roots.push node_stack.first
+          new_chapter = Chapter.new(label, chap)
+          node_stack.push new_chapter
+          roots.push new_chapter
 
         when %r<\A//\w+(?:\[.*?\])*\{\s*\z>
           if node_stack.empty?
