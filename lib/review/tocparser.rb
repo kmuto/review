@@ -29,7 +29,7 @@ module ReVIEW
 
     def parse(f, chap)
       roots = []
-      path = []
+      node_stack = []
       filename = chap.path
       while line = f.gets
         line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
@@ -41,29 +41,31 @@ module ReVIEW
         when /\A(={2,})[\[\s\{]/
           lev = $1.size
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
-          if path.empty?
+          label = get_label(line)
+          if node_stack.empty?
             # missing chapter label
-            path.push Chapter.new(get_label(line), chap)
-            roots.push path.first
+            node_stack.push Chapter.new(label, chap)
+            roots.push node_stack.first
           end
-          next if get_label(line) =~ /\A\[\// # ex) "[/column]"
-          new = Section.new(lev, get_label(line).gsub(/\A\{.*?\}\s?/, ""))
-          until path.last.level < new.level
-            path.pop
+          next if label =~ /\A\[\// # ex) "[/column]"
+          sec = Section.new(lev, label.gsub(/\A\{.*?\}\s?/, ""))
+          until node_stack.last.level < sec.level
+            node_stack.pop
           end
-          path.last.add_child new
-          path.push new
+          node_stack.last.add_child sec
+          node_stack.push sec
 
         when /\A= /
-          path.clear
-          path.push Chapter.new(get_label(line), chap)
-          roots.push path.first
+          label = get_label(line)
+          node_stack.clear
+          node_stack.push Chapter.new(label, chap)
+          roots.push node_stack.first
 
         when %r<\A//\w+(?:\[.*?\])*\{\s*\z>
-          if path.empty?
+          if node_stack.empty?
             error! filename, f.lineno, 'list found before section label'
           end
-          path.last.add_child(list = List.new)
+          node_stack.last.add_child(list = List.new)
           beg = f.lineno
           list.add line
           while line = f.gets
@@ -75,11 +77,11 @@ module ReVIEW
         when %r<\A//\w>
           ;
         else
-          #if path.empty?
+          #if node_stack.empty?
           #  error! filename, f.lineno, 'text found before section label'
           #end
-          next if path.empty?
-          path.last.add_child(par = Paragraph.new(chap))
+          next if node_stack.empty?
+          node_stack.last.add_child(par = Paragraph.new(chap))
           par.add line
           while line = f.gets
             break if /\A\s*\z/ =~ line
