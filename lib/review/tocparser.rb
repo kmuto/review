@@ -30,7 +30,6 @@ module ReVIEW
     def parse(f, chap)
       roots = []
       path = []
-      id = chap.id
       filename = chap.path
       while line = f.gets
         line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
@@ -44,7 +43,7 @@ module ReVIEW
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
           if path.empty?
             # missing chapter label
-            path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
+            path.push Chapter.new(get_label(line), chap)
             roots.push path.first
           end
           next if get_label(line) =~ /\A\[\// # ex) "[/column]"
@@ -57,7 +56,7 @@ module ReVIEW
 
         when /\A= /
           path.clear
-          path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
+          path.push Chapter.new(get_label(line), chap)
           roots.push path.first
 
         when %r<\A//\w+(?:\[.*?\])*\{\s*\z>
@@ -80,7 +79,7 @@ module ReVIEW
           #  error! filename, f.lineno, 'text found before section label'
           #end
           next if path.empty?
-          path.last.add_child(par = Paragraph.new(chap.book.page_metric))
+          path.last.add_child(par = Paragraph.new(chap))
           par.add line
           while line = f.gets
             break if /\A\s*\z/ =~ line
@@ -209,11 +208,11 @@ module ReVIEW
 
     class Chapter < Section
 
-      def initialize(label, id, path, page_metric)
-        super 1, label, path
-        @chapter_id = id
-        @path = path
-        @page_metric = page_metric
+      def initialize(label, chap)
+        super 1, label, chap.path
+        @chapter_id = chap.id
+        @path = chap.path
+        @page_metric = chap.book.page_metric
         @volume = nil
         @number = nil
       end
@@ -244,9 +243,9 @@ module ReVIEW
 
     class Paragraph < Node
 
-      def initialize(page_metric)
+      def initialize(chap)
         @bytes = 0
-        @page_metric = page_metric
+        @page_metric = chap.book.page_metric
       end
 
       def inspect
