@@ -20,17 +20,18 @@ module ReVIEW
     def TOCParser.parse(chap)
       chap.open {|f|
         stream = Preprocessor::Strip.new(f)
-        new.parse(stream, chap.id, chap.path, chap).map {|root|
+        new.parse(stream, chap).map {|root|
           root.number = chap.number
           root
         }
       }
     end
 
-    def parse(f, id, filename, chap)
+    def parse(f, chap)
       roots = []
       path = []
-
+      id = chap.id
+      filename = chap.path
       while line = f.gets
         line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
         case line
