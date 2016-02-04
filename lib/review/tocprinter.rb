@@ -128,7 +128,7 @@ module ReVIEW
       chap.each_section do |sec|
         res << h3(escape_html(sec.label))
         next unless print?(4)
-        next if sec.n_sections == 0
+        next if sec.section_size == 0
         res << "<ul>"
         sec.each_section do |node|
           res << li(escape_html(node.label))

@@ -155,7 +155,7 @@ module ReVIEW
         end
       end
 
-      def n_sections
+      def section_size
         cnt = 0
         @children.each do |n|
           n.yield_section { cnt += 1 }
@@ -318,7 +318,7 @@ module ReVIEW
       end
     end
 
-    def n_sections
+    def section_size
       chapters.size
     end
 
