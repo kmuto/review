@@ -206,6 +206,7 @@ module ReVIEW
 
       def initialize(label, chap)
         super 1, label, chap.path
+        @chapter = chap
         @chapter_id = chap.id
         @path = chap.path
         @page_metric = chap.book.page_metric
@@ -223,9 +224,7 @@ module ReVIEW
 
       def volume
         return @volume if @volume
-        return Book::Volume.dummy unless @path
-        @volume = Book::Volume.count_file(@path)
-        @volume.page_per_kbyte = @page_metric.page_per_kbyte
+        @volume = @chapter.volume
         @volume.lines = estimated_lines()
         @volume
       end
