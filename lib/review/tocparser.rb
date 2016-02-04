@@ -187,14 +187,6 @@ module ReVIEW
       attr_reader :level
       attr_reader :label
 
-      def display_label
-        if @filename
-          @label + ' ' + @filename
-        else
-          @label
-        end
-      end
-
       def estimated_lines
         @children.inject(0) {|sum, n| sum + n.estimated_lines }
       end
