@@ -57,7 +57,7 @@ module ReVIEW
                chapnumstr(node.number),
                vol.kbytes, vol.chars, vol.lines,
                node.label, node.chapter_id
-      else
+      else ## for section node
         printf "%17s %5dL  %s\n",
                '', node.estimated_lines,
                "  #{'   ' * (node.level - 1)}#{number} #{node.label}"
@@ -107,8 +107,12 @@ module ReVIEW
       unless File.exist?(layout_file) # backward compatibility
         layout_file = File.join(book.basedir, "layouts", "layout.erb")
       end
-      puts HTMLLayout.new(
-        {'body' => html, 'title' => "目次"}, layout_file).result
+      if File.exist?(layout_file)
+        puts HTMLLayout.new(
+               {'body' => html, 'title' => "目次"}, layout_file).result
+      else
+        puts html
+      end
     end
 
     private
@@ -123,7 +127,7 @@ module ReVIEW
       return res.join("\n")
     end
 
-    def print_chapter_to_s(chap)
+    def chapter_to_s(chap)
       res = []
       chap.each_section do |sec|
         res << h3(escape_html(sec.label))
