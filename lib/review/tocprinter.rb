@@ -96,37 +96,33 @@ module ReVIEW
     include HTMLUtils
 
     def print_book(book)
-      return unless print?(1)
-      html = ""
       book.each_part do |part|
-        html << h1(part.name) if part.name
-        part.each_chapter do |chap|
-          chap_node = TOCParser.chapter_node(chap)
-          if chap_node.number
-            name = "chap#{chap_node.number}"
-            label = "第#{chap_node.number}章 #{chap_node.label}"
-            html << h2(a_name(escape_html(name), escape_html(label)))
-          else
-            label = "#{chap_node.label}"
-            html << h2(escape_html(label))
-          end
-          return unless print?(2)
-          if print?(3)
-            html << chap_sections_to_s(chap_node)
-          else
-            html << chapter_to_s(chap_node)
-          end
-        end
+        print_part(part)
       end
-      layout_file = File.join(book.basedir, "layouts", "layout.html.erb")
-      unless File.exist?(layout_file) # backward compatibility
-        layout_file = File.join(book.basedir, "layouts", "layout.erb")
+    end
+
+    def print_part(part)
+      puts h1(part.name) if part.name
+      part.each_chapter do |chap|
+        print_chapter(chap)
       end
-      if File.exist?(layout_file)
-        puts HTMLLayout.new(
-               {'body' => html, 'title' => "目次"}, layout_file).result
+    end
+
+    def print_chapter(chap)
+      chap_node = TOCParser.chapter_node(chap)
+      if chap_node.number
+        name = "chap#{chap_node.number}"
+        label = "第#{chap_node.number}章 #{chap_node.label}"
+        puts h2(a_name(escape_html(name), escape_html(label)))
       else
-        puts html
+        label = "#{chap_node.label}"
+        puts h2(escape_html(label))
+      end
+      return unless print?(2)
+      if print?(3)
+        puts chap_sections_to_s(chap_node)
+      else
+        puts chapter_to_s(chap_node)
       end
     end
 
