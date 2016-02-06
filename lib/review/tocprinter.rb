@@ -35,7 +35,13 @@ module ReVIEW
 
   class TextTOCPrinter < TOCPrinter
     def print_book(book)
-      print_children book
+      book.each_part do |part|
+        part.each_chapter do |chap|
+          chap_node = TOCParser.chapter_node(chap)
+          print_node 1, chap_node
+          print_children chap_node
+        end
+      end
     end
 
     private
@@ -86,20 +92,21 @@ module ReVIEW
       html = ""
       book.each_part do |part|
         html << h1(part.name) if part.name
-        part.each_section do |chap|
-          if chap.number
-            name = "chap#{chap.number}"
-            label = "第#{chap.number}章 #{chap.label}"
+        part.each_chapter do |chap|
+          chap_node = TOCParser.chapter_node(chap)
+          if chap_node.number
+            name = "chap#{chap_node.number}"
+            label = "第#{chap_node.number}章 #{chap_node.label}"
             html << h2(a_name(escape_html(name), escape_html(label)))
           else
-            label = "#{chap.label}"
+            label = "#{chap_node.label}"
             html << h2(escape_html(label))
           end
           return unless print?(2)
           if print?(3)
-            html << chap_sections_to_s(chap)
+            html << chap_sections_to_s(chap_node)
           else
-            html << chapter_to_s(chap)
+            html << chapter_to_s(chap_node)
           end
         end
       end
@@ -167,9 +174,16 @@ module ReVIEW
   class IDGTOCPrinter < TOCPrinter
     def print_book(book)
       puts %Q(<?xml version="1.0" encoding="UTF-8"?>)
-      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
+      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'>)
+      puts %Q(<title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
       puts %Q(<ul aid:pstyle='ul-partblock'>)
-      print_children book
+      book.each_part do |part|
+        part.each_chapter do |chap|
+          chap_node = TOCParser.chapter_node(chap)
+          print_node 1, chap_node
+          print_children chap_node
+        end
+      end
       puts %Q(</ul></doc>)
     end
 
