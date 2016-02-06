@@ -91,7 +91,12 @@ def _main
   end
 
   begin
-    printer_class.new(upper, param).print_book source
+    printer = printer_class.new(upper, param)
+    if source.kind_of?(ReVIEW::Book::Part)
+      printer.print_part source
+    else
+      printer.print_book source
+    end
   rescue ReVIEW::Error, Errno::ENOENT => err
     raise if $DEBUG
     error_exit err.message

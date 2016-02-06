@@ -36,12 +36,20 @@ module ReVIEW
   class TextTOCPrinter < TOCPrinter
     def print_book(book)
       book.each_part do |part|
-        part.each_chapter do |chap|
-          chap_node = TOCParser.chapter_node(chap)
-          print_node 1, chap_node
-          print_children chap_node
-        end
+        print_part(part)
       end
+    end
+
+    def print_part(part)
+      part.each_chapter do |chap|
+        print_chapter(chap)
+      end
+    end
+
+    def print_chapter(chap)
+      chap_node = TOCParser.chapter_node(chap)
+      print_node 1, chap_node
+      print_children chap_node
     end
 
     private
@@ -178,13 +186,21 @@ module ReVIEW
       puts %Q(<title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
       puts %Q(<ul aid:pstyle='ul-partblock'>)
       book.each_part do |part|
-        part.each_chapter do |chap|
-          chap_node = TOCParser.chapter_node(chap)
-          print_node 1, chap_node
-          print_children chap_node
-        end
+        print_part(part)
       end
       puts %Q(</ul></doc>)
+    end
+
+    def print_part(part)
+      part.each_chapter do |chap|
+        print_chapter(chap)
+      end
+    end
+
+    def print_chapter(chap)
+      chap_node = TOCParser.chapter_node(chap)
+      print_node 1, chap_node
+      print_children chap_node
     end
 
     private
