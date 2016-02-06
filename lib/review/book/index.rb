@@ -380,7 +380,7 @@ module ReVIEW
         seq = 1
         src.each do |line|
           if m = COLUMN_PATTERN.match(line)
-            level = m[1] ## not use it yet
+            _level = m[1] ## not use it yet
             id = m[2]
             caption = m[3].strip
             if !id || id == ""
