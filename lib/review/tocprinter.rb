@@ -187,7 +187,6 @@ module ReVIEW
 
     def print_node(seq, node)
       if node.chapter?
-        vol = node.volume
         printf "<li aid:pstyle='ul-part'>%s</li>\n",
                "#{chapnumstr(node.number)}#{node.label}"
       else
