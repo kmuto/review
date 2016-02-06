@@ -34,6 +34,7 @@ module ReVIEW
         @indepimage_index = nil
         @headline_index = nil
         @column_index = nil
+        @volume = nil
       end
 
       def inspect
