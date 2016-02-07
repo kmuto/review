@@ -296,18 +296,6 @@ module ReVIEW
       n == INF_INDENT ? 0 : n
     end
 
-    def check_ruby_syntax(rbfile)
-      status = spawn {
-        exec("ruby -c #{rbfile} 2>&1 > /dev/null")
-      }
-      error "syntax check failed: #{rbfile}" unless status.exitstatus == 0
-    end
-
-    def spawn
-      _pid, status = *Process.waitpid2(fork { yield }) ## pid not used
-      status
-    end
-
     def evaluate(path, chunk)
       outputs = get_output("ruby #{path}", false).split(/\n/).map {|s| s.strip }
       chunk.map {|line|
