@@ -304,7 +304,7 @@ module ReVIEW
     end
 
     def spawn
-      pid, status = *Process.waitpid2(fork { yield })
+      _pid, status = *Process.waitpid2(fork { yield }) ## pid not used
       status
     end
 

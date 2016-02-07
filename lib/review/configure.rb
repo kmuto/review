@@ -5,7 +5,7 @@ module ReVIEW
     attr_accessor :maker
 
     def self.values
-      Configure[
+      conf = Configure[
         # These parameters can be overridden by YAML file.
         "bookname"=> "example", # it defines epub file name also
         "booktitle" => "Re:VIEW Sample Book",
@@ -50,6 +50,8 @@ module ReVIEW
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
       ]
+      conf.maker = nil
+      conf
     end
 
     def [](key)

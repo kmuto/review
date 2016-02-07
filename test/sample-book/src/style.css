@@ -249,3 +249,25 @@ strong{
 em {
     font-style: italic;
 }
+
+/**
+ * from EBPAJ EPUB 3 File Creation Guide sample style
+ *
+ * cf. http://ebpaj.jp/counsel/guide
+ */
+
+/* image width definition(pacentage)  */
+.width-010per { width:  10%; }
+.width-020per { width:  20%; }
+.width-025per { width:  25%; }
+.width-030per { width:  30%; }
+.width-033per { width:  33%; }
+.width-040per { width:  40%; }
+.width-050per { width:  50%; }
+.width-060per { width:  60%; }
+.width-067per { width:  67%; }
+.width-070per { width:  70%; }
+.width-075per { width:  75%; }
+.width-080per { width:  80%; }
+.width-090per { width:  90%; }
+.width-100per { width: 100%; }

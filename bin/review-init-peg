@@ -21,19 +21,19 @@ def main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} [option] dirname"
-  opts.on('-h', '--help', 'print this message and quit.') {
+  opts.on('-h', '--help', 'print this message and quit.') do
     puts opts.help
     exit 0
-  }
-  opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') {
+  end
+  opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') do
     @force = true
-  }
-  opts.on('-l', '--locale', 'generate locale.yml file.') {
+  end
+  opts.on('-l', '--locale', 'generate locale.yml file.') do
     @locale = true
-  }
-  opts.on('', '--epub-version VERSION', 'define EPUB version') { |version|
+  end
+  opts.on('', '--epub-version VERSION', 'define EPUB version') do |version|
     @epub_version = version
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err

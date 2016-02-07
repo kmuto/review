@@ -154,7 +154,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_u
     actual = compile_inline("abc@<u>{def}ghi")
-    assert_equal %Q|abc\\Underline{def}ghi|, actual
+    assert_equal %Q|abc\\reviewunderline{def}ghi|, actual
   end
 
   def test_inline_m

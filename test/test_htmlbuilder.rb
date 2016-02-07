@@ -102,6 +102,28 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
+  def test_headline_level1_postdef_alpha_i18n
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        @chapter.book.config["appendix_format"] = "alpha" # config is strong
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
+        file = File.join(dir, "locale.yml") # i18n is weak
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pr")}
+        I18n.setup("ja")
+        actual = compile_block("={test} this is test.\n")
+        assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
+
+        actual = compile_block("=={test} this is test.\n")
+        assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
+      end
+    end
+  end
+
   def test_headline_level1_without_secno
     @book.config["secnolevel"] = 0
     actual = compile_block("={test} this is test.\n")
@@ -359,7 +381,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_image_with_metric2
@@ -370,7 +392,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_image_with_tricky_id
@@ -414,7 +436,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric2
@@ -425,7 +447,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" width="120%" class="sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -436,7 +458,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" width="120%" />\n</div>\n|, actual
+    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />\n</div>\n|, actual
   end
 
   def test_dlist

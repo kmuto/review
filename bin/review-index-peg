@@ -41,11 +41,7 @@ def _main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.on('-a', '--all', 'print all chapters.') {
-    begin
-      source = book
-    rescue ReVIEW::Error => err
-      error_exit err.message
-    end
+    source = book
   }
   opts.on('-p', '--part N', 'list only part N.') {|n|
     source = book.part(Integer(n)) or

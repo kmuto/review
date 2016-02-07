@@ -731,7 +731,7 @@ You add the file locale.yml in the project directory.
 Sample local.yml file:
 
 ```yaml
-locale: ja
+locale: en
 ```
 
 If you want to customize texts, overwrite items.
@@ -744,3 +744,12 @@ locale: en
 image: Fig.
 table: Tbl.
 ```
+
+### Re:VIEW custom format
+
+In locale.yml, you can use these Re:VIEW custom format.
+
+* ``%pA``: Alphabet (A, B, C, ...)
+* ``%pa``: alphabet (a, b, c, ...)
+* ``%pR``: Roman Number (I, II, III, ...)
+* ``%pr``: roman number (i, ii, iii, ...)

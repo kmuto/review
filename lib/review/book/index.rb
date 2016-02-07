@@ -369,16 +369,7 @@ module ReVIEW
       def number(id)
         n = @chap.number
         if @chap.on_APPENDIX? && @chap.number > 0 && @chap.number < 28
-          type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
-          n = case type
-              when "roman"
-                ROMAN[@chap.number]
-              when "alphabet", "alpha"
-                ALPHA[@chap.number]
-              else
-                # nil, "arabic", etc...
-                "#{@chap.number}"
-              end
+          n = @chap.format_number(false)
         end
         return ([n] + self[id].number).join(".")
       end
@@ -393,7 +384,7 @@ module ReVIEW
         seq = 1
         src.each do |line|
           if m = COLUMN_PATTERN.match(line)
-            level = m[1] ## not use it yet
+            _level = m[1] ## not use it yet
             id = m[2]
             caption = m[3].strip
             if !id || id == ""

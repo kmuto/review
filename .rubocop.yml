@@ -60,3 +60,7 @@ Style/UnneededInterpolation:
 
 Performance/RedundantMerge:
   Enabled: false
+
+Style/ZeroLengthPredicate:
+  Enabled: false
+
