@@ -498,6 +498,7 @@ EOT
   def test_colophon_default
     @producer.params["aut"] = ["Mr.Smith"]
     @producer.params["pbl"] = ["BLUEPRINT"]
+    @producer.params["isbn"] = "9784797372274"
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -518,6 +519,7 @@ EOT
     <table class="colophon">
       <tr><th>Author</th><td>Mr.Smith</td></tr>
       <tr><th>Publisher</th><td>BLUEPRINT</td></tr>
+      <tr><th>ISBN</th><td>978-4-79737-227-4</td></tr>
     </table>
   </div>
 </body>
@@ -557,6 +559,21 @@ EOT
 </html>
 EOT
     assert_equal expect, @output.string
+  end
+
+  def test_isbn13
+    @producer.params["isbn"] = "9784797372274"
+    assert_equal "978-4-79737-227-4", @producer.isbn_hyphen
+  end
+
+  def test_isbn10
+    @producer.params["isbn"] = "4797372273"
+    assert_equal "4-79737-227-3", @producer.isbn_hyphen
+  end
+
+  def test_isbn_nil
+    @producer.params["isbn"] = nil
+    assert_equal nil, @producer.isbn_hyphen
   end
 
 #  def test_duplicate_id

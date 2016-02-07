@@ -241,15 +241,8 @@ EOT
         end
       }.join("")
 
-      if @producer.params["isbn"].to_s =~ /\A\d{10}\Z/ || @producer.params["isbn"].to_s =~ /\A\d{13}\Z/
-        isbn = nil
-        str = @producer.params["isbn"].to_s
-        if str.size == 10
-          isbn = "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
-        else
-          isbn = "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
-        end
-        @body << %Q[      <tr><th>ISBN</th><td>#{isbn}</td></tr>\n]
+      if @producer.isbn_hyphen
+        @body << %Q[      <tr><th>ISBN</th><td>#{@producer.isbn_hyphen}</td></tr>\n]
       end
       @body << %Q[    </table>\n]
       if !@producer.params["rights"].nil? && @producer.params["rights"].size > 0
