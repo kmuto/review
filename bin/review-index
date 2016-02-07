@@ -67,9 +67,6 @@ def _main
   opts.on('--html', 'output in HTML (deprecated)') {
     printer_class = ReVIEW::HTMLTOCPrinter
   }
-  opts.on('--idg', 'output in InDesign XML') {
-    printer_class = ReVIEW::IDGTOCPrinter
-  }
   opts.on('--help', 'print this message and quit.') {
     puts opts.help
     exit 0

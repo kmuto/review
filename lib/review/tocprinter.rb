@@ -168,47 +168,4 @@ module ReVIEW
 
   end
 
-  class IDGTOCPrinter < TOCPrinter
-
-    LABEL_LEN = 54
-
-    def print_book(book)
-      puts %Q(<?xml version="1.0" encoding="UTF-8"?>)
-      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'>)
-      puts %Q(<title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
-      puts %Q(<ul aid:pstyle='ul-partblock'>)
-      super
-      puts %Q(</ul></doc>)
-    end
-
-    private
-
-    def print_children(node)
-      return unless print?(node.level + 1)
-      node.each_section_with_index do |sec, idx|
-        print_node idx+1, sec
-        print_children sec
-      end
-    end
-
-    def print_node(seq, node)
-      if node.chapter?
-        printf "<li aid:pstyle='ul-part'>%s</li>\n",
-               "#{chapnumstr(node.number)}#{node.label}"
-      else
-        printf "<li>%-#{LABEL_LEN}s\n",
-               "  #{'   ' * (node.level - 1)}#{seq}　#{node.label}</li>"
-      end
-    end
-
-    def chapnumstr(n)
-      n ? sprintf('第%d章　', n) : ''
-    end
-
-    def volume_columns(level, volstr)
-      cols = ["", "", "", nil]
-      cols[level - 1] = volstr
-      cols[0, 3]
-    end
-  end
 end
