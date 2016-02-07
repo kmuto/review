@@ -12,8 +12,6 @@
 
 require 'review/exception'
 require 'review/extentions'
-require 'forwardable'
-require 'nkf'
 
 require 'review/book/base'
 require 'review/book/chapter'

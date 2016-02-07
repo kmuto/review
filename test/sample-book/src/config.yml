@@ -67,6 +67,7 @@ rights: (C) 2011 Masayoshi Takahashi
 # coverage: 内容の範囲や領域
 
 # htmlext: HTMLファイルの拡張子(省略した場合はhtml)
+htmlext: xhtml
 # CSSファイル(配列で複数指定可、yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること)
 stylesheet: ["style.css"]
 
@@ -74,6 +75,9 @@ stylesheet: ["style.css"]
 epubversion: 3
 # HTMLのバージョン (4か5。epubversionを3にしたときには5にする)
 # htmlversion: 5
+
+# 目次を作成するか。省略した場合はnull（作成しない）
+# toc: true
 
 # 目次として抽出する見出しレベル。省略した場合は2
 toclevel: 2
@@ -83,12 +87,7 @@ secnolevel: 3
 # EPUB2標準の目次以外に物理目次ファイルを作成するか。省略した場合はnull (作成しない)
 # ePUB3においてはこの設定によらず必ず作成される
 # mytoc: true
-# 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
-# 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
-# パスしない目次ができるが、そのようなときにはこれをtrueにする
-# flattoc: null
-# 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
-# flattocindent: true
+
 # 付録の連番のスタイル。null(アラビア数字1〜。デフォルト)、alpha(英字A〜)、roman(ローマ数字I〜)
 # appendix_format: null
 
@@ -115,32 +114,59 @@ colophon: true
 # 裏表紙ファイル (画像はcoversまたはimagesに配置する)。ファイル名を指定すると裏表紙として入る
 # backcover: null
 
+# 以下のパラメータを有効にするときには、
+# epubmaker:
+#    パラメータ: 値
+#    パラメータ: 値
+#   ...
+# という構成にする必要がある(インデントさせる)
+
+# epubmaker:
+# 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
+# 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
+# パスしない目次ができるが、そのようなときにはこれをtrueにする
+#  flattoc: null
+# 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
+#  flattocindent: true
+# NCX目次の見出しレベルごとの飾り(配列で設定)。EPUB3ではNCXは作られない
+#  ncxindent:
+#- 
+#- - 
 # フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
 # プログラムには実行権限が必要
-
 # ファイル変換処理の前に実行するプログラム。スタイルシートのコンパイルをしたいときなどに利用する。
 # 渡される引数1=作業用展開ディレクトリ
-# hook_beforeprocess: null
-
+#  hook_beforeprocess: null
 # 前付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
 # 渡される引数1=作業用展開ディレクトリ
-# hook_afterfrontmatter: null
-
+#  hook_afterfrontmatter: null
 # 本文の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
 # 渡される引数1=作業用展開ディレクトリ
-# hook_afterbody: null
-
+#  hook_afterbody: null
 # 後付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
 # 渡される引数1=作業用展開ディレクトリ
-# hook_afterbackmatter: null
-
+#  hook_afterbackmatter: null
 # 画像およびフォントをコピーした後に実行するプログラム。別の画像やフォントを追加したいときなどに利用する。
 # 渡される引数1=作業用展開ディレクトリ
-# hook_aftercopyimage: null
-
+#  hook_aftercopyimage: null
 # ePUB zipアーカイブ直前に実行するプログラム。メタ情報などを加工したいときなどに利用する。
 # 渡される引数1=ePUB準備ディレクトリ
-# hook_prepack: null
+#  hook_prepack: null
+# 変換したHTMLファイルおよびCSSを解析して厳密に使用している画像ファイルだけを取り込むか。デフォルトはnull(imagesディレクトリすべてを取り込む)
+# なお、フォント、カバー、広告についてはこの設定によらずディレクトリ内のものがすべて取り込まれる
+#  verify_target_images: null
+#  verify_target_imagesがtrueの状態において、解析で発見されなくても強制的に取り込むファイルの相対パスの配列
+#  force_include_images: []
+# Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
+#  rename_for_legacy: null
+# ePUBアーカイブの非圧縮実行
+#  zip_stage1: "zip -0Xq"
+# ePUBアーカイブの圧縮実行
+#  zip_stage2: "zip -Xr9Dq"
+# ePUBアーカイブに追加するパス(デフォルトはmimetype、META-INF、OEBPS)
+#  zip_addpath: null
+#
+# epubmaker:階層を使うものはここまで
 
 # ハイライトを有効にするか。pygments.gemが必要
 # pygments: null
@@ -156,22 +182,6 @@ colophon: true
 
 # fontdir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
 # font_ext: ["ttf", "woff", "otf"]
-
-# 変換したHTMLファイルおよびCSSを解析して厳密に使用している画像ファイルだけを取り込むか。デフォルトはnull(imagesディレクトリすべてを取り込む)
-# なお、フォント、カバー、広告についてはこの設定によらずディレクトリ内のものがすべて取り込まれる
-# verify_target_images: null
-# verify_target_imagesがtrueの状態において、解析で発見されなくても強制的に取り込むファイルの相対パスの配列
-# force_include_images: []
-
-# Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
-# rename_for_legacy: null
-
-# ePUBアーカイブの非圧縮実行
-# zip_stage1: "zip -0Xq"
-# ePUBアーカイブの圧縮実行
-# zip_stage2: "zip -Xr9Dq"
-# ePUBアーカイブに追加するパス(デフォルトはmimetype、META-INF、OEBPS)
-# zip_addpath: null
 
 texstyle: reviewmacro
 debug: true

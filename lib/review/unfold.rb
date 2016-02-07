@@ -47,7 +47,7 @@ module ReVIEW
 
     private
 
-    ZSPACE = "\241\241"  # EUC-JP zen-kaku space
+    ZSPACE = "\241\241" # EUC-JP zen-kaku space
 
     def do_unfold(input)
       @blank_needed = false
@@ -135,4 +135,4 @@ module ReVIEW
 
   end
 
-end   # module ReVIEW
+end # module ReVIEW

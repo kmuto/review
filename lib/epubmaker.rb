@@ -19,7 +19,6 @@
 #  epub.produce
 
 require 'epubmaker/producer'
-require 'epubmaker/resource'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'

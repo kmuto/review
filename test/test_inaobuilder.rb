@@ -9,10 +9,8 @@ class INAOBuidlerTest < Test::Unit::TestCase
 
   def setup
     @param = {
-      "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
-      "stylesheet" => nil,  # for HTMLBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
+      "stylesheet" => nil, # for HTMLBuilder
     }
   end
 

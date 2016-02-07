@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+#
+# review: Wrapper command to call subcommand
+#
+# ex.
+#    review epubmaker config.yml
+#      -> call `review-epubmaker config.yml`
+#
+
+require 'pathname'
+
+def usage
+  message = <<-EOB
+usage: review <command> [<args>]
+
+ReVIEW commands are:
+  init
+  preproc
+  compile
+  epubmaker
+  pdfmaker
+  vol
+  check
+  index
+  validate
+EOB
+  print message
+  exit 1
+end
+
+usage if ARGV.length == 0
+
+command = "review-#{ARGV.shift}"
+bindir = Pathname.new(__FILE__).realpath.dirname
+command_path = File.join(bindir, command)
+
+if !File.exist?(command_path)
+  print "cannot find command: #{command}\n\n"
+  usage
+end
+
+exec(command_path, *ARGV)
+
+
+

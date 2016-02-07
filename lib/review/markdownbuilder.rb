@@ -49,16 +49,17 @@ module ReVIEW
       puts "\n"
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       if get_chap.nil?
-        puts %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}]
+        print %Q[リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n\n]
       else
-        puts %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}]
+        print %Q[リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n\n]
       end
-      puts '```'
+      lang ||= ""
+      puts "```#{lang}"
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       lines.each do |line|
         puts detab(line)
       end
@@ -98,12 +99,30 @@ module ReVIEW
       blank
     end
 
-    def emlist(lines, caption = nil)
+    def dl_begin
+      puts '<dl>'
+    end
+
+    def dt(line)
+      puts "<dt>#{line}</dt>"
+    end
+
+    def dd(lines)
+      puts "<dd>#{lines.join}</dd>"
+    end
+
+    def dl_end
+      puts '</dl>'
+    end
+
+    def emlist(lines, caption = nil, lang = nil)
       blank
       if caption
         puts caption
+        print "\n"
       end
-      puts "```"
+      lang ||= ""
+      puts "```#{lang}"
       lines.each do |line|
         puts detab(line)
       end
@@ -177,7 +196,7 @@ module ReVIEW
     end
 
     def cmd(lines)
-      puts "```"
+      puts "```shell-session"
       lines.each do |line|
         puts detab(line)
       end
@@ -272,4 +291,4 @@ module ReVIEW
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

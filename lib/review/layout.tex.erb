@@ -6,6 +6,10 @@
 \usepackage{wrapfig}
 \definecolor{shadecolor}{gray}{0.9}
 \definecolor{shadecolorb}{gray}{0.1}
+\definecolor{reviewgreen}{rgb}{0,0.4,0}
+\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
+\definecolor{reviewred}{rgb}{0.7,0,0}
+\definecolor{reviewdarkred}{rgb}{0.3,0,0}
 \usepackage[utf8]{inputenc}
 \usepackage{ascmac}
 \usepackage{float}
@@ -41,6 +45,43 @@
 \usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={<%= values["booktitle"] %>},%
             pdfauthor={<%= values["aut"] %>}]{hyperref}
+
+<% if config["highlight"] && config["highlight"]["latex"] == "listings" %>
+<%   if config["language"] == "ja" %>
+\usepackage{listings,jlisting}
+<%   else %>
+\usepackage{listings}
+<%   end %>
+\renewcommand{\lstlistingname}{<%= I18n.t("list")%>}
+\lstset{%
+  breaklines=true,%
+  breakautoindent=false,%
+  breakindent=0pt,%
+  fontadjust=true,%
+  backgroundcolor=\color{shadecolor},%
+  frame=single,%
+  framerule=0pt,%
+  basicstyle=\ttfamily\scriptsize,%
+  commentstyle=\color{reviewgreen},%
+  identifierstyle=\color{reviewblue},%
+  stringstyle=\color{reviewred},%
+  keywordstyle=\bfseries\color{reviewdarkred},%
+}
+\lstnewenvironment{reviewemlistlst}[1][]{%
+  \lstset{#1}}{}
+
+\lstnewenvironment{reviewemlistnumlst}[1][]{%
+  \lstset{numbers=left, #1}}{}
+
+\lstnewenvironment{reviewlistlst}[1][]{%
+  \lstset{#1}}{}
+
+\lstnewenvironment{reviewlistnumlst}[1][]{%
+  \lstset{numbers=left, #1}}{}
+
+\lstnewenvironment{reviewcmdlst}[1][]{%
+  \lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
+<% end %>
 
 \newenvironment{reviewimage}{%
   \begin{figure}[H]
@@ -142,6 +183,8 @@
 \newcommand{\reviewstrong}[1]{%
   \textbf{#1}}
 
+\newcommand{\reviewunderline}{\Underline}
+
 %% @<del> is ignored in LaTeX with default style
 \newcommand{\reviewstrike}[1]{#1}
 
@@ -166,6 +209,8 @@
   \appendix}
 
 \makeatletter
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
 \def\maxwidth{%
   \ifdim\Gin@nat@width>\linewidth
     \linewidth
@@ -207,7 +252,7 @@
         <%= authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= values["date"] %> <%= I18n.t("version")%>\hspace{2zw}<%= values["prt"] %> <%= I18n.t("published_by")%>\par}%
+    {\large <%= values["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", values["prt"])%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
@@ -216,6 +261,17 @@
 
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
+
+%%% originaltitle
+<% if values["originaltitlefile"] %>
+<%= custom_originaltitlepage %>
+<% end %>
+
+%%% credit
+<% if values["creditfile"] %>
+<%= custom_creditpage %>
+<% end %>
+
 
 %% preface
 <%= values["pre_str"] %>
@@ -241,7 +297,22 @@
 <%= values["post_str"] %>
 <% end %>
 
+
+%%% profile
+<% if values["profile"] %>
+<%= custom_profilepage %>
+<% end %>
+
+%%% advfile
+<% if values["advfile"] %>
+<%= custom_advfilepage %>
+<% end %>
+
+%%% colophon
 <% if values["colophon"] %>
+<%   if custom_colophonpage %>
+<%= custom_colophonpage %>
+<%   else %>
 %% okuduke
 \reviewcolophon
 \thispagestyle{empty}
@@ -260,7 +331,12 @@
 　\\
 \rule[0pt]{14cm}{1pt} \\
 <%= values["rights"] %> \\
+<%   end %>
 <% end %>
 
+%%% backcover
+<% if values["backcover"] %>
+<%= custom_backcoverpage %>
+<% end %>
 
 \end{document}

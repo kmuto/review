@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2014 Kenshi Muto
+# Copyright (c) 2010-2015 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -12,10 +12,10 @@ require 'tmpdir'
 require 'fileutils'
 require 'yaml'
 require 'uuid'
-require 'epubmaker/resource'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'
+require 'review/i18n'
 
 module EPUBMaker
   # EPUBMaker produces EPUB file.
@@ -25,7 +25,7 @@ module EPUBMaker
     # Parameter hash.
     attr_accessor :params
     # Message resource object.
-    attr_accessor :res
+    attr_reader :res
 
     # Take YAML +file+ and return parameter hash.
     def Producer.load(file)
@@ -47,17 +47,29 @@ module EPUBMaker
       @params = {}
       @epub = nil
       @params["epubversion"] = version unless version.nil?
+      @res = ReVIEW::I18n
 
       unless params.nil?
         merge_params(params)
       end
     end
 
+    def coverimage
+      if !params["coverimage"]
+        return nil
+      end
+      @contents.each do |item|
+        if item.media.start_with?('image') && item.file =~ /#{params["coverimage"]}\Z/ # /
+          return item.file
+        end
+      end
+      return nil
+    end
+
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
       @params = @params.merge(params)
       complement
-      @res = EPUBMaker::Resource.new(@params)
 
       unless @params["epubversion"].nil?
         case @params["epubversion"].to_i
@@ -68,6 +80,9 @@ module EPUBMaker
         else
           raise "Invalid EPUB version (#{@params["epubversion"]}.)"
         end
+      end
+      if params["language"]
+        ReVIEW::I18n.locale = params["language"]
       end
       support_legacy_maker
     end
@@ -130,7 +145,7 @@ module EPUBMaker
       return nil unless File.exist?(path)
       allow_exts = @params["image_ext"] if allow_exts.nil?
       Dir.foreach(path) do |f|
-        next if f =~ /\A\./
+        next if f.start_with?('.')
         if f =~ /\.(#{allow_exts.join("|")})\Z/i
           path.chop! if path =~ /\/\Z/
           if base.nil?
@@ -177,6 +192,18 @@ module EPUBMaker
       end
     end
 
+    def isbn_hyphen
+      str = @params["isbn"].to_s
+
+      if str =~ /\A\d{10}\Z/
+        "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
+      elsif str =~ /\A\d{13}\Z/
+        "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
+      else
+        nil
+      end
+    end
+
     private
 
     # Complement parameters.
@@ -191,8 +218,6 @@ module EPUBMaker
         "urnid" => "urn:uid:#{UUID.create}",
         "isbn" => nil,
         "toclevel" => 2,
-        "flattoc" => nil,
-        "flattocindent" => true,
         "stylesheet" => [],
         "epubversion" => 2,
         "htmlversion" => 4,
@@ -205,29 +230,70 @@ module EPUBMaker
         "originaltitlefile" => nil,
         "profile" => nil,
         "colophon" => nil,
-        "zip_stage1" => "zip -0Xq",
-        "zip_stage2" => "zip -Xr9Dq",
-        "hook_beforeprocess" => nil,
-        "hook_afterfrontmatter" => nil,
-        "hook_afterbody" => nil,
-        "hook_afterbackmatter" => nil,
-        "hook_aftercopyimage" => nil,
-        "hook_prepack" => nil,
-        "rename_for_legacy" => nil,
+        "colophon_order" => %w[aut csl trl dsr ill edt pbl prt pht],
+        "epubmaker" => {
+          "flattoc" => nil,
+          "flattocindent" => true,
+          "ncx_indent" => [],
+          "zip_stage1" => "zip -0Xq",
+          "zip_stage2" => "zip -Xr9Dq",
+          "zip_addpath" => nil,
+          "hook_beforeprocess" => nil,
+          "hook_afterfrontmatter" => nil,
+          "hook_afterbody" => nil,
+          "hook_afterbackmatter" => nil,
+          "hook_aftercopyimage" => nil,
+          "hook_prepack" => nil,
+          "rename_for_legacy" => nil,
+          "verify_target_images" => nil,
+          "force_include_images" => [],
+          "cover_linear" => nil,
+        },
         "imagedir" => "images",
         "fontdir" => "fonts",
         "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
         "font_ext" => %w(ttf woff otf),
-        "verify_target_images" => nil,
-        "force_include_images" => [],
-        "cover_linear" => nil,
       }
 
       defaults.each_pair do |k, v|
-        @params[k] = v if @params[k].nil?
+        if k == "epubmaker" && !@params[k].nil?
+          v.each_pair do |k2, v2|
+            @params[k][k2] = v2 if @params[k][k2].nil?
+          end
+        else
+          @params[k] = v if @params[k].nil?
+        end
       end
 
-      @params["htmlversion"] == 5 if @params["epubversion"] >= 3
+      deprecated_parameters = {
+        "ncxindent" => "epubmaker:ncxindent",
+        "flattoc" => "epubmaker:flattoc",
+        "flattocindent" => "epubmaker:flattocindent",
+        "hook_beforeprocess" => "epubmaker:hook_beforeprocess",
+        "hook_afterfrontmatter" => "epubmaker:hook_afterfrontmatter",
+        "hook_afterbody" => "epubmaker:hook_afterbody",
+        "hook_afterbackmatter" => "epubmaker:hook_afterbackmatter",
+        "hook_aftercopyimage" => "epubmaker:hook_aftercopyimage",
+        "hook_prepack" => "epubmaker:hook_prepack",
+        "rename_for_legacy" => "epubmaker:rename_for_legacy",
+        "zip_stage1" => "epubmaker:zip_stage1",
+        "zip_stage2" => "epubmaker:zip_stage2",
+        "zip_addpath" => "epubmaker:zip_addpath",
+        "verify_target_images" => "epubmaker:verify_target_images",
+        "force_include_images" => "epubmaker:force_include_images",
+        "cover_linear" => "epubmaker:cover_linear",
+      }
+
+      deprecated_parameters.each_pair do |k, v|
+        unless @params[k].nil?
+          sa = v.split(":", 2)
+          warn "Parameter #{k} is deprecated. Use:\n#{sa[0]}:\n  #{sa[1]}: ...\n\n"
+          @params[sa[0]][sa[1]] = @params[k]
+          @params.delete(k)
+        end
+      end
+
+      @params["htmlversion"] = 5 if @params["epubversion"] >= 3
 
       %w[bookname title].each do |k|
         raise "Key #{k} must have a value. Abort." if @params[k].nil?

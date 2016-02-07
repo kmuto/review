@@ -102,5 +102,73 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [2,2], index['sec1-2|sec1-2-2'].number
     assert_equal "1.2.2", index.number('sec1-2|sec1-2-2')
   end
+
+  def test_HeadelineIndex5
+    src = <<-EOB
+= chap1
+====[column] c1
+== sec1-1
+== sec1-2
+=== sec1-2-1
+=== sec1-2-2
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [2,2], index['sec1-2-2'].number
+    assert_equal "1.2.2", index.number('sec1-2-2')
+  end
+
+  def test_HeadelineIndex6
+    src = <<-EOB
+= chap1
+== sec1
+=== target
+== sec2
+
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [1,1], index['target'].number
+    assert_equal "1.1.1", index.number('target')
+  end
+
+
+  def test_HeadelineIndex7
+    src = <<-EOB
+= chap1
+== sec1
+=== target
+       ^-- dummy target
+== sec2
+=== target
+       ^-- real target but it cannot be detected, because there is another one.
+
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
+    index = Book::HeadlineIndex.parse(src, chap)
+
+    assert_raise ReVIEW::KeyError do
+      assert_equal [1,1], index['target'].number
+    end
+  end
+
+  def test_HeadelineIndex8
+    src = <<-EOB
+= chap1
+== sec1
+=== sec1-1
+==== sec1-1-1
+
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil)
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal "1.1.1", index.number('sec1-1')
+  end
+
+
 end
 

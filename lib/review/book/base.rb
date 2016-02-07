@@ -84,6 +84,14 @@ module ReVIEW
         end
       end
 
+      def htmlversion
+        if config["htmlversion"].blank?
+          nil
+        else
+          config["htmlversion"].to_i
+        end
+      end
+
       def parts
         @parts ||= read_parts()
       end
@@ -111,7 +119,7 @@ module ReVIEW
       end
 
       def each_chapter_r(&block)
-        chapters.reverse.each(&block)
+        chapters.reverse_each(&block)
       end
 
       def chapter_index
@@ -178,7 +186,7 @@ module ReVIEW
 
         catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
         if File.file? catalogfile_path
-          @catalog = Catalog.new(File.open catalogfile_path)
+          @catalog = Catalog.new(File.open(catalogfile_path))
         end
 
         @catalog
@@ -217,12 +225,12 @@ module ReVIEW
       end
 
       def read_PART
-        return @read_PART if @read_PART
+        return @read_part if @read_part
 
         if catalog
-          @read_PART = catalog.parts
+          @read_part = catalog.parts
         else
-          @read_PART = File.read("#{@basedir}/#{config["part_file"]}")
+          @read_part = File.read("#{@basedir}/#{config["part_file"]}")
         end
       end
 
@@ -319,8 +327,8 @@ module ReVIEW
         end
 
         chap = read_CHAPS()\
-          .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
-          .map {|part_chunk|
+               .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
+               .map {|part_chunk|
           chaps = part_chunk.split.map {|chapid|
             Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
           }

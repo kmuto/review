@@ -70,7 +70,9 @@ module ReVIEW
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
         else
-          title = convert_outencoding(strip_html(compile_inline(@chapter.title)), @book.config["outencoding"])
+          title = strip_html(compile_inline(@chapter.title))
+          language = @book.config['language']
+          stylesheets = @book.config["stylesheet"]
 
           toc = ""
           toc_level = 0
@@ -94,6 +96,8 @@ module ReVIEW
             HTMLLayout.new(
             {'body' => @output.string, 'title' => title, 'toc' => toc,
              'builder' => self,
+             'language' => language,
+             'stylesheets' => stylesheets,
              'next' => @chapter.next_chapter,
              'prev' => @chapter.prev_chapter},
             layout_file).result
@@ -101,44 +105,21 @@ module ReVIEW
       end
 
       # default XHTML header/footer
-      header = <<EOT
-<?xml version="1.0" encoding="#{@book.config["outencoding"] || "UTF-8"}"?>
-EOT
-      if @book.config["htmlversion"].to_i == 5
-        header += <<EOT
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:#{xmlns_ops_prefix}="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
-<head>
-  <meta charset="#{@book.config["outencoding"] || "UTF-8"}" />
-EOT
-      else
-        header += <<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="#{@book.config["language"]}">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=#{@book.config["outencoding"] || "UTF-8"}" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-EOT
-      end
+      @error_messages = error_messages
+      @warning_messages = warning_messages
+      @title = strip_html(compile_inline(@chapter.title))
+      @body = @output.string
+      @language = @book.config['language']
+      @stylesheets = @book.config["stylesheet"]
 
-      unless @book.config["stylesheet"].nil?
-        @book.config["stylesheet"].each do |style|
-          header += <<EOT
-  <link rel="stylesheet" type="text/css" href="#{style}" />
-EOT
-        end
+      if @book.htmlversion == 5
+        htmlfilename = "layout-html5.html.erb"
+      else
+        htmlfilename = "layout-xhtml1.html.erb"
       end
-      header += <<EOT
-  <meta name="generator" content="Re:VIEW" />
-  <title>#{convert_outencoding(strip_html(compile_inline(@chapter.title)), @book.config["outencoding"])}</title>
-</head>
-<body>
-EOT
-      footer = <<EOT
-</body>
-</html>
-EOT
-      header + messages() + convert_outencoding(@output.string, @book.config["outencoding"]) + footer
+      tmplfile = File.expand_path('./html/'+htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
+      tmpl = ReVIEW::Template.load(tmplfile)
+      tmpl.result(binding)
     end
 
     def xmlns_ops_prefix
@@ -177,7 +158,7 @@ EOT
       "<ul>\n" +
         @errors.map {|file, line, msg|
         "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
-      }.join('') +
+        }.join('') +
       "</ul>\n"
     end
 
@@ -193,6 +174,9 @@ EOT
 
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
+      unless prefix.nil?
+        prefix = %Q[<span class="secno">#{prefix}</span>]
+      end
       puts '' if level > 1
       a_id = ""
       unless anchor.nil?
@@ -370,7 +354,7 @@ EOT
 
     def ol_begin
       if @ol_num
-        puts "<ol start=\"#{@ol_num}\">"  ## it's OK in HTML5, but not OK in XHTML1.1
+        puts "<ol start=\"#{@ol_num}\">" ## it's OK in HTML5, but not OK in XHTML1.1
         @ol_num = nil
       else
         puts '<ol>'
@@ -425,18 +409,18 @@ EOT
 
     alias_method :lead, :read
 
-    def list(lines, id, caption)
+    def list(lines, id, caption, lang = nil)
       puts %Q[<div class="caption-code">]
       begin
-        list_header id, caption
+        list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines
+      list_body id, lines, lang
       puts '</div>'
     end
 
-    def list_header(id, caption)
+    def list_header(id, caption, lang)
       if get_chap.nil?
         puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
       else
@@ -444,19 +428,19 @@ EOT
       end
     end
 
-    def list_body(id, lines)
+    def list_body(id, lines, lang)
       id ||= ''
       print %Q[<pre class="list">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = File.extname(id).gsub(/\./, '')
+      lexer = lang || File.extname(id).gsub(/\./, '')
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 
-    def source(lines, caption = nil)
+    def source(lines, caption = nil, lang = nil)
       puts %Q[<div class="source-code">]
       source_header caption
-      source_body caption, lines
+      source_body caption, lines, lang
       puts '</div>'
     end
 
@@ -466,57 +450,73 @@ EOT
       end
     end
 
-    def source_body(id, lines)
+    def source_body(id, lines, lang)
       id ||= ''
       print %Q[<pre class="source">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = File.extname(id).gsub(/\./, '')
+      lexer = lang || File.extname(id).gsub(/\./, '')
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
 
-    def listnum(lines, id, caption)
+    def listnum(lines, id, caption, lang = nil)
       puts %Q[<div class="code">]
       begin
-        list_header id, caption
+        list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines
+      listnum_body lines, lang
       puts '</div>'
     end
 
-    def listnum_body(lines)
-      print %Q[<pre class="list">]
-      lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
+    def listnum_body(lines, lang)
+      if highlight?
+        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        lexer = lang
+        puts highlight(:body => body, :lexer => lexer, :format => 'html',
+                       :options => {:linenos => 'inline', :nowrap => false})
+      else
+        print '<pre class="list">'
+        lines.each_with_index do |line, i|
+          puts detab((i+1).to_s.rjust(2) + ": " + line)
+        end
+        puts '</pre>'
       end
-      puts '</pre>'
     end
 
-    def emlist(lines, caption = nil)
+    def emlist(lines, caption = nil, lang = nil)
       puts %Q[<div class="emlist-code">]
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       print %Q[<pre class="emlist">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = lang
+      puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
       puts '</div>'
     end
 
-    def emlistnum(lines, caption = nil)
+    def emlistnum(lines, caption = nil, lang = nil)
       puts %Q[<div class="emlistnum-code">]
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
-      print %Q[<pre class="emlist">]
-      lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + ": " + line)
+
+      if highlight?
+        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        lexer = lang
+        puts highlight(:body => body, :lexer => lexer, :format => 'html',
+                       :options => {:linenos => 'inline', :nowrap => false})
+      else
+        print '<pre class="emlist">'
+        lines.each_with_index do |line, i|
+          puts detab((i+1).to_s.rjust(2) + ": " + line)
+        end
+        puts '</pre>'
       end
-      puts '</pre>'
+
       puts '</div>'
     end
 
@@ -526,9 +526,9 @@ EOT
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       print %Q[<pre class="cmd">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      lexer = 'shell-session'
+      puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
       puts '</div>'
     end
@@ -599,15 +599,24 @@ QUOTE
 
     def handle_metric(str)
       if str =~ /\Ascale=([\d.]+)\Z/
-        return "width=\"#{($1.to_f * 100).round}%\""
+        return {'class' => sprintf("width-%03dper", ($1.to_f * 100).round)}
       else
         k, v = str.split('=', 2)
-        return %Q|#{k}=\"#{v.sub(/\A["']/, '').sub(/["']\Z/, '')}\"|
+        return {k => v.sub(/\A["']/, '').sub(/["']\Z/, '')}
       end
     end
 
     def result_metric(array)
-      " #{array.join(' ')}"
+      attrs = {}
+      array.each do |item|
+        k = item.keys[0]
+        if attrs[k]
+          attrs[k] << item[k]
+        else
+          attrs[k] = [item[k]]
+        end
+      end
+      " "+attrs.map{|k, v| %Q|#{k}="#{v.join(' ')}"| }.join(' ')
     end
 
     def image_image(id, caption, metric)
@@ -829,7 +838,7 @@ QUOTE
     end
 
     def compile_ruby(base, ruby)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
       else
         %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
@@ -862,7 +871,7 @@ QUOTE
     end
 
     def inline_tti(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
       else
         %Q(<tt><i>#{escape_html(str)}</i></tt>)
@@ -870,7 +879,7 @@ QUOTE
     end
 
     def inline_ttb(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
       else
         %Q(<tt><b>#{escape_html(str)}</b></tt>)
@@ -882,7 +891,7 @@ QUOTE
     end
 
     def inline_code(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
       else
         %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
@@ -938,15 +947,15 @@ QUOTE
     end
 
     def inline_bib(id)
-      %Q(<a href="#{@book.bib_file.gsub(/re\Z/, "html")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
+      %Q(<a href="#{@book.bib_file.gsub(/\.re\Z/, ".#{@book.config['htmlext']}")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
     end
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       if chap.number and @book.config["secnolevel"] >= n.split('.').size
-        str = "「#{n} #{compile_inline(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", "#{n} #{compile_inline(chap.headline(id).caption)}")
       else
-        str = "「#{compile_inline(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", compile_inline(chap.headline(id).caption))
       end
       if @book.config["chapterlink"]
         anchor = "h"+n.gsub(/\./, "-")
@@ -962,15 +971,12 @@ QUOTE
     end
     private :column_label
 
-    def inline_column(id)
+    def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(@chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", escape_html(@chapter.column(id).caption))
+        I18n.t("column", escape_html(chapter.column(id).caption))
       end
-    rescue KeyError
-      error "unknown column: #{id}"
-      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_list(id)
@@ -1078,7 +1084,7 @@ QUOTE
     end
 
     def inline_tt(str)
-      if @book.config["htmlversion"].to_i == 5
+      if @book.htmlversion == 5
         %Q(<code class="tt">#{escape_html(str)}</code>)
       else
         %Q(<tt>#{escape_html(str)}</tt>)
@@ -1158,4 +1164,4 @@ QUOTE
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

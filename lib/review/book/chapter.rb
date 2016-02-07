@@ -12,9 +12,6 @@
 require 'review/book/compilable'
 module ReVIEW
   module Book
-    ROMAN = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
-    ALPHA = %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]
-    
     class Chapter
       include Compilable
 
@@ -37,6 +34,7 @@ module ReVIEW
         @indepimage_index = nil
         @headline_index = nil
         @column_index = nil
+        @volume = nil
       end
 
       def inspect
@@ -51,20 +49,29 @@ module ReVIEW
         if on_APPENDIX?
           return "#{@number}" if @number < 1 || @number > 27
 
-          type = @book.config["appendix_format"].blank? ? "arabic" : @book.config["appendix_format"].downcase.strip
-          appendix = case type
-                       when "roman"
-                         ROMAN[@number]
-                       when "alphabet", "alpha"
-                         ALPHA[@number]
-                       else
-                         # nil, "arabic", etc...
-                         "#{@number}"
-                     end
+          i18n_appendix = I18n.get("appendix")
+          fmt = i18n_appendix.scan(/%p\w/).first || "%s"
+
+          # Backward compatibility
+          if @book.config["appendix_format"]
+            type = @book.config["appendix_format"].downcase.strip
+            case type
+            when "roman"
+              fmt = "%pR"
+            when "alphabet", "alpha"
+              fmt = "%pA"
+            else
+              fmt = "%s"
+            end
+            I18n.update({"appendix" => i18n_appendix.gsub(/%\w\w?/, fmt)})
+          end
+
+          I18n.update({"appendix_without_heading" => fmt})
+
           if heading
-            return "#{I18n.t("appendix", appendix)}"
+            return I18n.t("appendix", @number)
           else
-            return "#{appendix}"
+            return I18n.t("appendix_without_heading", @number)
           end
         end
 
@@ -93,7 +100,7 @@ module ReVIEW
 
       private
       def on_FILE?(contents)
-        contents.lines.map(&:strip).include?(id() + @book.ext())
+        contents.lines.map(&:strip).include?("#{id()}#{@book.ext()}")
       end
     end
   end

@@ -21,6 +21,7 @@ module ReVIEW
         @chapters = chapters
         @path = name
         @name = name ? File.basename(name, '.re') : nil
+        @volume = nil
       end
 
       attr_reader :number
@@ -38,7 +39,7 @@ module ReVIEW
       end
 
       def file?
-        (name.present? and path =~ /\.re\z/) ? true : false
+        (name.present? and path.end_with?('.re')) ? true : false
       end
 
       def format_number(heading = true)

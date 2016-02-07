@@ -420,7 +420,7 @@ EOT
   end
 
   def test_stage3_flat
-    @producer.merge_params({"flattoc" => true, "flattocindent" => false})
+    @producer.merge_params({"epubmaker" => {"flattoc" => true, "flattocindent" => false}})
     stage3
     @producer.mytoc(@output)
     expect = <<EOT
@@ -497,7 +497,8 @@ EOT
 
   def test_colophon_default
     @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["prt"] = ["BLUEPRINT"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
+    @producer.params["isbn"] = "9784797372274"
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -513,11 +514,12 @@ EOT
   <div class="colophon">
     <p class="title">Sample Book</p>
     <div class="pubhistory">
-      <p>2011年1月1日　発行</p>
+      <p>published by Jan.  1, 2011</p>
     </div>
     <table class="colophon">
       <tr><th>Author</th><td>Mr.Smith</td></tr>
       <tr><th>Publisher</th><td>BLUEPRINT</td></tr>
+      <tr><th>ISBN</th><td>978-4-79737-227-4</td></tr>
     </table>
   </div>
 </body>
@@ -528,7 +530,7 @@ EOT
 
   def test_colophon_pht
     @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["prt"] = ["BLUEPRINT"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
     @producer.params["pht"] = ["Mrs.Smith"]
     @producer.colophon(@output)
     expect = <<EOT
@@ -545,7 +547,7 @@ EOT
   <div class="colophon">
     <p class="title">Sample Book</p>
     <div class="pubhistory">
-      <p>2011年1月1日　発行</p>
+      <p>published by Jan.  1, 2011</p>
     </div>
     <table class="colophon">
       <tr><th>Author</th><td>Mr.Smith</td></tr>
@@ -559,6 +561,21 @@ EOT
     assert_equal expect, @output.string
   end
 
+  def test_isbn13
+    @producer.params["isbn"] = "9784797372274"
+    assert_equal "978-4-79737-227-4", @producer.isbn_hyphen
+  end
+
+  def test_isbn10
+    @producer.params["isbn"] = "4797372273"
+    assert_equal "4-79737-227-3", @producer.isbn_hyphen
+  end
+
+  def test_isbn_nil
+    @producer.params["isbn"] = nil
+    assert_equal nil, @producer.isbn_hyphen
+  end
+
 #  def test_duplicate_id
 #    stage3
 #    assert_raise(Error) do
@@ -566,4 +583,71 @@ EOT
 #    end
 #  end
 
+  def test_title
+    @producer.params["aut"] = ["Mr.Smith"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
+    @producer.titlepage(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="Re:VIEW"/>
+  <title>Sample Book</title>
+</head>
+<body>
+  <h1 class="tp-title">Sample Book</h1>
+  <p>
+    <br />
+    <br />
+  </p>
+  <h2 class="tp-author">Mr.Smith</h2>
+  <p>
+    <br />
+    <br />
+    <br />
+    <br />
+  </p>
+  <h3 class="tp-publisher">BLUEPRINT</h3>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
+
+  def test_title_single_value_param
+    @producer.params["aut"] = "Mr.Smith"
+    @producer.params["pbl"] = "BLUEPRINT"
+    @producer.titlepage(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="Re:VIEW"/>
+  <title>Sample Book</title>
+</head>
+<body>
+  <h1 class="tp-title">Sample Book</h1>
+  <p>
+    <br />
+    <br />
+  </p>
+  <h2 class="tp-author">Mr.Smith</h2>
+  <p>
+    <br />
+    <br />
+    <br />
+    <br />
+  </p>
+  <h3 class="tp-publisher">BLUEPRINT</h3>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
 end

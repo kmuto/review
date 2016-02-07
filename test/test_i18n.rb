@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 require 'test_helper'
-require 'review/i18n'
-
-require 'review/compiler'
-require 'review/book'
-require 'review/htmlbuilder'
+require 'review'
 require 'tmpdir'
 
 class I18nTest < Test::Unit::TestCase
   include ReVIEW
 
-  if RUBY_VERSION !~ /^1.8/  ## to avoid Travis error :-(
+  if RUBY_VERSION !~ /^1.8/ ## to avoid Travis error :-(
     def test_load_locale_yml
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
@@ -38,7 +34,7 @@ class I18nTest < Test::Unit::TestCase
         Dir.chdir(dir) do
           file = File.join(dir, "foo.yml")
           File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
-          I18n.setup("foo.yml")
+          I18n.setup("ja","foo.yml")
           assert_equal "bar", I18n.t("foo")
         end
       end
@@ -61,16 +57,65 @@ class I18nTest < Test::Unit::TestCase
         Dir.chdir(dir) do
           file = File.join(dir, "foo.yml")
           File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
-          I18n.setup(nil)
-          I18n.setup("foo.yml")
+          I18n.setup("ja", "foo.yml")
           assert_equal "bar", I18n.t("foo")
+        end
+      end
+    end
+
+    def test_load_locale_yml_i18n
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("ja:\n  foo: \"bar\"\nen:\n  foo: \"buz\"\n")}
+          I18n.setup
+          assert_equal "bar", I18n.t("foo")
+          assert_equal "図", I18n.t("image")
+          I18n.setup("en")
+          assert_equal "buz", I18n.t("foo")
+          assert_equal "Figure ", I18n.t("image")
+        end
+      end
+    end
+
+    def test_load_locale_invalid_yml
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("local: ja\nfoo: \"bar\"\n")}
+          assert_raises(ReVIEW::KeyError) do
+            I18n.setup
+          end
+        end
+      end
+    end
+
+    def test_custom_format
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pa章")}
+          I18n.setup("ja")
+          assert_equal "第a章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pA章")}
+          I18n.setup("ja")
+          assert_equal "第B章", I18n.t("chapter", 2)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pR章")}
+          I18n.setup("ja")
+          assert_equal "第I章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pr章")}
+          I18n.setup("ja")
+          assert_equal "第ii章", I18n.t("chapter", 2)
         end
       end
     end
   end
 
   def test_ja
-    I18n.i18n "ja"
+    I18n.setup("ja")
     assert_equal "図", I18n.t("image")
     assert_equal "表", I18n.t("table")
     assert_equal "第1章", I18n.t("chapter", 1)
@@ -78,15 +123,16 @@ class I18nTest < Test::Unit::TestCase
   end
 
   def test_ja_with_user_i18n
-    I18n.i18n "ja", {"image" => "ず"}
-    assert_equal "ず", I18n.t("image")
-    assert_equal "表", I18n.t("table")
-    assert_equal "第1章", I18n.t("chapter", 1) 
-    assert_equal "etc", I18n.t("etc")
+    i18n = I18n.new("ja")
+    i18n.update({"image" => "ず"}, "ja")
+    assert_equal "ず", i18n.t("image")
+    assert_equal "表", i18n.t("table")
+    assert_equal "第1章", i18n.t("chapter", 1)
+    assert_equal "etc", i18n.t("etc")
   end
 
   def test_en
-    I18n.i18n "en"
+    I18n.setup "en"
     assert_equal "Figure ", I18n.t("image")
     assert_equal "Table ", I18n.t("table")
     assert_equal "Chapter 1", I18n.t("chapter", 1)
@@ -94,7 +140,7 @@ class I18nTest < Test::Unit::TestCase
   end
 
   def test_nil
-    I18n.i18n "nil"
+    I18n.setup "nil"
     assert_equal "image", I18n.t("image")
     assert_equal "table", I18n.t("table")
     assert_equal "etc", I18n.t("etc")
@@ -103,17 +149,15 @@ class I18nTest < Test::Unit::TestCase
   def test_htmlbuilder
     _setup_htmlbuilder
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>Chapter 1. this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">Chapter 1. </span>this is test.</h1>\n|, actual
   end
 
   def _setup_htmlbuilder
-    I18n.i18n "en"
+    I18n.setup "en"
     @builder = HTMLBuilder.new()
     @config = {
-      "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
-      "stylesheet" => nil,  # for HTMLBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
+      "stylesheet" => nil, # for HTMLBuilder
       "ext" => ".re"
     }
     @book = Book::Base.new(".")
@@ -139,7 +183,17 @@ class I18nTest < Test::Unit::TestCase
     assert_equal "bar", i18n.t("foo")
   end
 
+  def test_i18n_error
+    I18n.setup
+    assert_raises NotImplementedError do
+      I18n.i18n("ja")
+    end
+    assert_raises NotImplementedError do
+      I18n.i18n("ja",{})
+    end
+  end
+
   def teardown
-    I18n.i18n "ja"
+    I18n.setup "ja"
   end
 end

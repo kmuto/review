@@ -57,11 +57,22 @@ module ReVIEW
       def [](id)
         @index.fetch(id)
       rescue
+        if @index.keys.map{|i| i.split(/\|/).last }.flatten. # unfold all ids
+           reduce(Hash.new(0)){|h, i| h[i] += 1; h}. # number of occurrences
+           select{|k, v| k == id && v > 1 }.present? # detect duplicated
+          raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
+        end
+
+        @items.each do |i|
+          if i.id.split(/\|/).include?(id)
+            return i
+          end
+        end
         raise KeyError, "not found key '#{id}' for #{self.class}"
       end
 
       def number(id)
-        @index.fetch(id).number.to_s
+        self[id].number.to_s
       end
 
       def each(&block)
@@ -161,7 +172,7 @@ module ReVIEW
         attr_reader :id
         attr_reader :number
         attr_reader :caption
-        attr_writer :index    # internal use only
+        attr_writer :index # internal use only
 
         def bound?
           path
@@ -234,12 +245,12 @@ module ReVIEW
       end
 
       def title(id)
-        sprintf(@locale["#{@index.item_type}_caption_format".intern],
+        sprintf(@locale["#{@index.item_type}_caption_format".to_sym],
           @index.title(id))
       end
 
       def number(id)
-        sprintf(@locale["#{@index.item_type}_number_format".intern],
+        sprintf(@locale["#{@index.item_type}_number_format".to_sym],
           @index.number(id))
       end
 
@@ -354,18 +365,9 @@ module ReVIEW
       def number(id)
         n = @chap.number
         if @chap.on_APPENDIX? && @chap.number > 0 && @chap.number < 28
-          type = @chap.book.config["appendix_format"].blank? ? "arabic" : @chap.book.config["appendix_format"].downcase.strip
-          n = case type
-              when "roman"
-                ROMAN[@chap.number]
-              when "alphabet", "alpha"
-                ALPHA[@chap.number]
-              else
-                # nil, "arabic", etc...
-                "#{@chap.number}"
-              end
+          n = @chap.format_number(false)
         end
-        return ([n] + @index.fetch(id).number).join(".")
+        return ([n] + self[id].number).join(".")
       end
     end
 
@@ -378,7 +380,7 @@ module ReVIEW
         seq = 1
         src.each do |line|
           if m = COLUMN_PATTERN.match(line)
-            level = m[1] ## not use it yet
+            _level = m[1] ## not use it yet
             id = m[2]
             caption = m[3].strip
             if !id || id == ""

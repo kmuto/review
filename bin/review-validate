@@ -15,7 +15,7 @@ colcount = 0
 ln = 0
 
 ARGF.each {|line|
-  ln = ln + 1
+  ln += 1
   if line =~ /\A\/\/([a-z]+).+\{/
     # block
     _block = $1

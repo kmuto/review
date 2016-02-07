@@ -15,9 +15,11 @@ class PDFMakerTest < Test::Unit::TestCase
                      "version" => 2,
                      "urnid" => "http://example.jp/",
                      "date" => "2011-01-01",
-                     "language" => "en",
+                     "language" => "ja",
                    })
+    @maker.config = @config
     @output = StringIO.new
+    I18n.setup(@config["language"])
   end
 
   def test_check_book_existed
@@ -25,7 +27,8 @@ class PDFMakerTest < Test::Unit::TestCase
       Dir.chdir(dir) do
         pdf_file = File.join(dir, "sample.pdf")
         FileUtils.touch(pdf_file)
-        @maker.check_book(@config)
+        @maker.basedir = Dir.pwd
+        @maker.remove_old_file
         assert !File.exist?(pdf_file)
       end
     end
@@ -34,13 +37,13 @@ class PDFMakerTest < Test::Unit::TestCase
   def test_check_book_none
     Dir.mktmpdir do |dir|
       assert_nothing_raised do
-        @maker.check_book(@config)
+        @maker.remove_old_file
       end
     end
   end
 
   def test_buildpath
-    assert_equal(@maker.build_path(@config), "./sample-pdf")
+    assert_equal(@maker.build_path, "./sample-pdf")
   end
 
   def test_parse_opts_help
@@ -62,12 +65,12 @@ class PDFMakerTest < Test::Unit::TestCase
     assert_equal yml, "hoge.yml"
   end
 
-  def test_make_custom_titlepage
+  def test_make_custom_page
     Dir.mktmpdir do |dir|
       coverfile = "cover.html"
       content = "<html><body>test</body></html>"
       File.open(File.join(dir, "cover.tex"),"w"){|f| f.write(content) }
-      page = @maker.make_custom_titlepage(File.join(dir, coverfile))
+      page = @maker.make_custom_page(File.join(dir, coverfile))
       assert_equal(content, page)
     end
   end
@@ -77,7 +80,7 @@ class PDFMakerTest < Test::Unit::TestCase
             "csl"=>["監修三郎"],
             "trl"=>["翻訳四郎","翻訳五郎",]})
     Dir.mktmpdir do |dir|
-      authors = @maker.make_authors(@config)
+      authors = @maker.make_authors
       assert_equal("テスト太郎、テスト次郎　著 \\\\\n監修三郎　監修 \\\\\n翻訳四郎、翻訳五郎　訳",
                    authors)
     end
@@ -86,7 +89,7 @@ class PDFMakerTest < Test::Unit::TestCase
   def test_make_authors_only_aut
     @config.merge!({"aut"=>"テスト太郎"})
     Dir.mktmpdir do |dir|
-      authors = @maker.make_authors(@config)
+      authors = @maker.make_authors
       assert_equal("テスト太郎　著", authors)
     end
   end
@@ -103,7 +106,7 @@ class PDFMakerTest < Test::Unit::TestCase
       "prt"=>"テスト出版",
     })
     Dir.mktmpdir do |dir|
-      okuduke = @maker.make_colophon(@config)
+      okuduke = @maker.make_colophon
       assert_equal("著　者 & テスト太郎、テスト次郎 \\\\\n監　修 & 監修三郎 \\\\\n翻　訳 & 翻訳四郎、翻訳五郎 \\\\\nデザイン & デザイン六郎 \\\\\nイラスト & イラスト七郎、イラスト八郎 \\\\\n表　紙 & 表紙九郎 \\\\\n編　集 & 編集十郎 \\\\\n発行所 & テスト出版 \\\\\n",
                    okuduke)
     end
@@ -120,10 +123,46 @@ class PDFMakerTest < Test::Unit::TestCase
       "contact"=>"tarou@example.jp",
     })
     Dir.mktmpdir do |dir|
-      I18n.i18n("ja", {"prt" => "印刷所"})
-      okuduke = @maker.make_colophon(@config)
+      I18n.update({"prt" => "印刷所"},"ja")
+      okuduke = @maker.make_colophon
       assert_equal("著　者 & テスト太郎、テスト次郎 \\\\\n監　修 & 監修三郎 \\\\\nイラスト & イラスト七郎、イラスト八郎 \\\\\n発行所 & テスト出版 \\\\\n連絡先 & tarou@example.jp \\\\\n印刷所 & テスト印刷 \\\\\n",
                    okuduke)
+    end
+  end
+
+  def test_gettemplate
+    Dir.mktmpdir do |dir|
+      tmpl = @maker.get_template
+      expect = File.read(File.join(assets_dir,"test_template.tex"))
+      assert_equal(expect, tmpl)
+    end
+  end
+
+  def test_gettemplate_with_backmatter
+    if RUBY_VERSION =~ /^1.8/
+      $stderr.puts "skip test_gettemplate_with_backmatter (for travis error)"
+      return
+    end
+    @config.merge!({
+      "backcover"=>"backcover.html",
+      "profile"=>"profile.html",
+      "advfile"=>"advfile.html",
+    })
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        profile = "\\thispagestyle{empty}\\chapter*{Profile}\nsome profile\n"
+        File.open(File.join(dir, "profile.tex"),"w"){|f| f.write(profile) }
+        advfile = "\\thispagestyle{empty}\\chapter*{Ad}\nsome ad content\n"
+        File.open(File.join(dir, "advfile.tex"),"w"){|f| f.write(advfile) }
+        backcover = "\\clearpage\n\\thispagestyle{empty}\\AddToShipoutPictureBG{%\n\\AtPageLowerLeft{\\includegraphics[width=\\paperwidth,height=\\paperheight]{images/backcover.png}}\n}\n\\null"
+        File.open(File.join(dir, "backcover.tex"),"w"){|f| f.write(backcover) }
+
+        expect = File.read(File.join(assets_dir,"test_template_backmatter.tex"))
+
+        tmpl = @maker.get_template
+        tmpl.gsub!(/\A.*%% backmatter begins\n/m,"")
+        assert_equal(expect, tmpl)
+      end
     end
   end
 

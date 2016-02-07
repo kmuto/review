@@ -40,22 +40,32 @@ module ReVIEW
       str.gsub('-', '&#45;')
     end
 
+    def highlight?
+      @book.config["pygments"].present? ||
+        @book.config["highlight"] && @book.config["highlight"]["html"] == "pygments"
+    end
+
     def highlight(ops)
       body = ops[:body] || ''
-      lexer = ops[:lexer] || ''
+      if @book.config["highlight"] && @book.config["highlight"]["lang"]
+        lexer = @book.config["highlight"]["lang"] # default setting
+      else
+        lexer = 'text'
+      end
+      lexer = ops[:lexer] if ops[:lexer].present?
       format = ops[:format] || ''
-
-      return body if @book.config["pygments"].nil?
+      options = {:nowrap => true, :noclasses => true}
+      if ops[:options] && ops[:options].kind_of?(Hash)
+        options.merge!(ops[:options])
+      end
+      return body if !highlight?
 
       begin
         require 'pygments'
         begin
           Pygments.highlight(
                    unescape_html(body),
-                   :options => {
-                               :nowrap => true,
-                               :noclasses => true
-                             },
+                   :options => options,
                    :formatter => format,
                    :lexer => lexer)
         rescue MentosError
@@ -77,4 +87,4 @@ module ReVIEW
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

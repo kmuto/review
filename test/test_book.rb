@@ -158,14 +158,14 @@ class BookTest < Test::Unit::TestCase
   def test_setParameter
     book = Book::Base.new(File.dirname(__FILE__))
     book.param = :test
-    assert_equal :test, book.param  # old way
+    assert_equal :test, book.param # old way
     assert_equal :test, book.config # new way
   end
 
   def test_setConfig
     book = Book::Base.new(File.dirname(__FILE__))
     book.config = :test
-    assert_equal :test, book.param  # old way
+    assert_equal :test, book.param # old way
     assert_equal :test, book.config # new way
   end
 
@@ -391,7 +391,7 @@ EOC
     end
 
     mktmpbookdir 'catalog.yml' => "APPENDIX:\n  - p01.re",
-                 'p01.re' => '= appendix'  do |dir, book, files|
+                 'p01.re' => '= appendix' do |dir, book, files|
       assert_equal 'appendix', book.appendix.chapters.first.title
       assert_equal 1, book.appendix.chapters.first.number
     end
@@ -399,7 +399,7 @@ EOC
 
   def test_postscripts
     mktmpbookdir 'catalog.yml' => "POSTDEF:\n  - b01.re",
-                 'b01.re' => '= back'  do |dir, book, files|
+                 'b01.re' => '= back' do |dir, book, files|
       assert_kind_of Book::Part, book.postscripts
       assert_equal 1, book.postscripts.chapters.size
       assert_equal 'back', book.postscripts.chapters.first.title
