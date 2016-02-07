@@ -63,15 +63,11 @@ module ReVIEW
     alias_method :raw_result, :result
 
     def print(*s)
-      @output.print(*s.map{|i|
-        convert_outencoding(i, @book.config["outencoding"])
-      })
+      @output.print(*s)
     end
 
     def puts(*s)
-      @output.puts *s.map{|i|
-        convert_outencoding(i, @book.config["outencoding"])
-      }
+      @output.puts(*s)
     end
 
     def target_name
@@ -104,9 +100,9 @@ module ReVIEW
       listnum_body lines, lang
     end
 
-    def source(lines, caption)
+    def source(lines, caption, lang = nil)
       source_header caption
-      source_body lines
+      source_body lines, lang
     end
 
     def image(lines, id, caption, metric = nil)
@@ -283,15 +279,31 @@ module ReVIEW
     def inline_hd(id)
       m = /\A([^|]+)\|(.+)/.match(id)
       chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
-      return inline_hd_chap(chapter, m[2]) if chapter
-      return inline_hd_chap(@chapter, id)
+      if chapter
+        inline_hd_chap(chapter, m[2])
+      else
+        inline_hd_chap(@chapter, id)
+      end
+    rescue KeyError
+      error "unknown hd: #{id}"
+      nofunc_text("[UnknownHeader:#{id}]")
     end
 
     def inline_column(id)
-      @chapter.column(id).caption
-    rescue
+      m = /\A([^|]+)\|(.+)/.match(id)
+      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      if chapter
+        inline_column_chap(chapter, m[2])
+      else
+        inline_column_chap(@chapter, id)
+      end
+    rescue KeyError
       error "unknown column: #{id}"
       nofunc_text("[UnknownColumn:#{id}]")
+    end
+
+    def inline_column_chap(chapter, id)
+      chapter.column(id).caption
     end
 
     def raw(str)
@@ -328,16 +340,16 @@ module ReVIEW
       return "" if metric.blank?
       params = metric.split(/,\s*/)
       results = []
-      params.each do |p|
-        if p =~ /\A.+?::/
-          if p =~ /\A#{type}::/
-              p.sub!(/\A#{type}::/, '')
+      params.each do |param|
+        if param =~ /\A.+?::/
+          if param =~ /\A#{type}::/
+              param.sub!(/\A#{type}::/, '')
           else
             next
           end
         end
-        p = handle_metric(p)
-        results.push(p)
+        param2 = handle_metric(param)
+        results.push(param2)
       end
       return result_metric(results)
     end
@@ -380,7 +392,7 @@ module ReVIEW
       line = self.unescape(lines.join("\n"))
       cmds = {
         :graphviz => "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
-        :gnuplot  => "echo 'set terminal " +
+        :gnuplot => "echo 'set terminal " +
         "#{(image_ext == "eps") ? "postscript eps" : image_ext}\n" +
         " set output \"#{file_path}\"\n#{line}' | gnuplot",
         :blockdiag => "echo '#{line}' "+
@@ -400,13 +412,12 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline convert_inencoding(File.open(file_name).read,
-                                        @book.config["inencoding"])
+      compile_inline File.open(file_name).read
     end
 
     def include(file_name)
       File.foreach(file_name) do |line|
-        paragraph([convert_inencoding(line, @book.config["inencoding"])])
+        paragraph([line])
       end
     end
 
@@ -443,4 +454,4 @@ module ReVIEW
     end
   end
 
-end   # module ReVIEW
+end # module ReVIEW

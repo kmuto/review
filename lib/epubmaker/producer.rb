@@ -54,6 +54,18 @@ module EPUBMaker
       end
     end
 
+    def coverimage
+      if !params["coverimage"]
+        return nil
+      end
+      @contents.each do |item|
+        if item.media.start_with?('image') && item.file =~ /#{params["coverimage"]}\Z/ # /
+          return item.file
+        end
+      end
+      return nil
+    end
+
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
       @params = @params.merge(params)
@@ -133,7 +145,7 @@ module EPUBMaker
       return nil unless File.exist?(path)
       allow_exts = @params["image_ext"] if allow_exts.nil?
       Dir.foreach(path) do |f|
-        next if f =~ /\A\./
+        next if f.start_with?('.')
         if f =~ /\.(#{allow_exts.join("|")})\Z/i
           path.chop! if path =~ /\/\Z/
           if base.nil?
@@ -218,6 +230,7 @@ module EPUBMaker
         "originaltitlefile" => nil,
         "profile" => nil,
         "colophon" => nil,
+        "colophon_order" => %w[aut csl trl dsr ill edt pbl prt pht],
         "epubmaker" => {
           "flattoc" => nil,
           "flattocindent" => true,
@@ -280,7 +293,7 @@ module EPUBMaker
         end
       end
 
-      @params["htmlversion"] == 5 if @params["epubversion"] >= 3
+      @params["htmlversion"] = 5 if @params["epubversion"] >= 3
 
       %w[bookname title].each do |k|
         raise "Key #{k} must have a value. Abort." if @params[k].nil?

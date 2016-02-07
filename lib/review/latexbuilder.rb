@@ -238,9 +238,9 @@ module ReVIEW
     def emlist(lines, caption = nil, lang = nil)
       blank
       if highlight_listings?
-        common_code_block_lst(lines, 'reviewemlistlst', 'title', caption, lang)
+        common_code_block_lst(nil, lines, 'reviewemlistlst', 'title', caption, lang)
       else
-        common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) do |line, idx|
           detab(line) + "\n"
         end
       end
@@ -249,9 +249,9 @@ module ReVIEW
     def emlistnum(lines, caption = nil, lang = nil)
       blank
       if highlight_listings?
-        common_code_block_lst(lines, 'reviewemlistnumlst', 'title', caption, lang)
+        common_code_block_lst(nil, lines, 'reviewemlistnumlst', 'title', caption, lang)
       else
-        common_code_block(lines, 'reviewemlist', caption, lang) do |line, idx|
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) do |line, idx|
           detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
         end
       end
@@ -260,14 +260,9 @@ module ReVIEW
     ## override Builder#list
     def list(lines, id, caption, lang = nil)
       if highlight_listings?
-        common_code_block_lst(lines, 'reviewlistlst', 'caption', caption, lang)
+        common_code_block_lst(id, lines, 'reviewlistlst', 'caption', caption, lang)
       else
-        begin
-          puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
-        rescue KeyError
-          error "no such list: #{id}"
-        end
-        common_code_block(lines, 'reviewlist', nil, lang) do |line, idx|
+        common_code_block(id, lines, 'reviewlist', caption, lang) do |line, idx|
           detab(line) + "\n"
         end
       end
@@ -276,14 +271,9 @@ module ReVIEW
     ## override Builder#listnum
     def listnum(lines, id, caption, lang = nil)
       if highlight_listings?
-        common_code_block_lst(lines, 'reviewlistnumlst', 'caption', caption, lang)
+        common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang)
       else
-        begin
-          puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
-        rescue KeyError
-          error "no such list: #{id}"
-        end
-        common_code_block(lines, 'reviewlist', caption, lang) do |line, idx|
+        common_code_block(id, lines, 'reviewlist', caption, lang) do |line, idx|
           detab((idx+1).to_s.rjust(2)+": " + line) + "\n"
         end
       end
@@ -291,18 +281,27 @@ module ReVIEW
 
     def cmd(lines, caption = nil, lang = nil)
       if highlight_listings?
-        common_code_block_lst(lines, 'reviewcmdlst', 'title', caption, lang)
+        common_code_block_lst(nil, lines, 'reviewcmdlst', 'title', caption, lang)
       else
         blank
-        common_code_block(lines, 'reviewcmd', caption, lang) do |line, idx|
+        common_code_block(nil, lines, 'reviewcmd', caption, lang) do |line, idx|
           detab(line) + "\n"
         end
       end
     end
 
-    def common_code_block(lines, command, caption, lang)
+    def common_code_block(id, lines, command, caption, lang)
+      buf = ""
       if caption
-        puts macro(command + 'caption', "#{compile_inline(caption)}")
+        if command =~ /emlist/ || command =~ /cmd/
+          puts macro(command + 'caption', "#{compile_inline(caption)}")
+        else
+          begin
+            puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
+          rescue KeyError
+            error "no such list: #{id}"
+          end
+        end
       end
       body = ""
       lines.each_with_index do |line, idx|
@@ -314,7 +313,7 @@ module ReVIEW
       blank
     end
 
-    def common_code_block_lst(lines, command, title, caption, lang)
+    def common_code_block_lst(id, lines, command, title, caption, lang)
       caption_str = compile_inline((caption || ""))
       if title == "title" && caption_str == ""
         caption_str = "\\relax" ## dummy charactor to remove lstname
@@ -333,14 +332,18 @@ module ReVIEW
       blank
     end
 
-    def source(lines, caption)
-      puts '\begin{reviewlist}'
-      puts macro('reviewlistcaption', compile_inline(caption))
-      lines.each do |line|
-        puts detab(line)
+    def source(lines, caption, lang = nil)
+      if highlight_listings?
+        common_code_block_lst(nil, lines, 'reviewlistlst', 'title', caption, lang)
+      else
+        puts '\begin{reviewlist}'
+        puts macro('reviewlistcaption', compile_inline(caption))
+        lines.each do |line|
+          puts detab(line)
+        end
+        puts '\end{reviewlist}'
+        puts ""
       end
-      puts '\end{reviewlist}'
-      puts ""
     end
 
 
@@ -486,7 +489,7 @@ module ReVIEW
         puts macro('begin', 'reviewtable', @latex_tsize)
       elsif @tsize
         cellwidth = @tsize.split(/\s*,\s*/)
-        puts macro('begin', 'reviewtable', '|'+(cellwidth.collect{|i| "p{#{i}mm}"}.join('|'))+'|')
+        puts macro('begin', 'reviewtable', '|'+cellwidth.collect{|i| "p{#{i}mm}"}.join('|')+'|')
       else
         puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
       end
@@ -501,7 +504,7 @@ module ReVIEW
 
     def th(s)
       ## use shortstack for @<br>
-      if  /\\\\/i =~ s
+      if /\\\\/i =~ s
         macro('reviewth', macro('shortstack[l]', s))
       else
         macro('reviewth', s)
@@ -510,7 +513,7 @@ module ReVIEW
 
     def td(s)
       ## use shortstack for @<br>
-      if  /\\\\/ =~ s
+      if /\\\\/ =~ s
         macro('shortstack[l]', s)
       else
         s
@@ -756,9 +759,9 @@ module ReVIEW
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       if chap.number and @book.config["secnolevel"] >= n.split('.').size
-        str = "「#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", "#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}")
       else
-        str = "「#{compile_inline(chap.headline(id).caption)}」"
+        str = I18n.t("chapter_quote", compile_inline(chap.headline(id).caption))
       end
       if @book.config["chapterlink"]
         anchor = n.gsub(/\./, "-")
@@ -768,8 +771,8 @@ module ReVIEW
       end
     end
 
-    def inline_column(id)
-      macro('reviewcolumnref', "#{@chapter.column(id).caption}", column_label(id))
+    def inline_column_chap(chapter, id)
+      macro('reviewcolumnref', "#{chapter.column(id).caption}", column_label(id))
     end
 
     def inline_raw(str)
@@ -793,7 +796,7 @@ module ReVIEW
     end
 
     def inline_u(str)
-      macro('Underline', escape(str))
+      macro('reviewunderline', escape(str))
     end
 
     def inline_ami(str)

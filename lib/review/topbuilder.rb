@@ -741,8 +741,7 @@ module ReVIEW
     def inline_chapref(id)
       chs = ["", "「", "」"]
       unless @book.config["chapref"].nil?
-        _chs = convert_inencoding(@book.config["chapref"],
-                                  @book.config["inencoding"]).split(",")
+        _chs = @book.config["chapref"].split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
@@ -756,7 +755,7 @@ module ReVIEW
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
-    def source(lines, caption = nil)
+    def source(lines, caption = nil, lang = nil)
       base_block "source", lines, caption
     end
 
@@ -787,4 +786,4 @@ module ReVIEW
 
   end
 
-end   # module ReVIEW
+end # module ReVIEW

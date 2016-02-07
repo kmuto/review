@@ -52,7 +52,7 @@
 <%   else %>
 \usepackage{listings}
 <%   end %>
-\renewcommand{\lstlistingname}{<%I18n.t("list")%>}
+\renewcommand{\lstlistingname}{<%= I18n.t("list")%>}
 \lstset{%
   breaklines=true,%
   breakautoindent=false,%
@@ -183,6 +183,8 @@
 \newcommand{\reviewstrong}[1]{%
   \textbf{#1}}
 
+\newcommand{\reviewunderline}{\Underline}
+
 %% @<del> is ignored in LaTeX with default style
 \newcommand{\reviewstrike}[1]{#1}
 
@@ -250,7 +252,7 @@
         <%= authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= values["date"] %> <%= I18n.t("version")%>\hspace{2zw}<%= I18n.t("published_by", values["prt"])%>\par}%
+    {\large <%= values["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", values["prt"])%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
@@ -259,6 +261,17 @@
 
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
+
+%%% originaltitle
+<% if values["originaltitlefile"] %>
+<%= custom_originaltitlepage %>
+<% end %>
+
+%%% credit
+<% if values["creditfile"] %>
+<%= custom_creditpage %>
+<% end %>
+
 
 %% preface
 <%= values["pre_str"] %>
@@ -284,7 +297,22 @@
 <%= values["post_str"] %>
 <% end %>
 
+
+%%% profile
+<% if values["profile"] %>
+<%= custom_profilepage %>
+<% end %>
+
+%%% advfile
+<% if values["advfile"] %>
+<%= custom_advfilepage %>
+<% end %>
+
+%%% colophon
 <% if values["colophon"] %>
+<%   if custom_colophonpage %>
+<%= custom_colophonpage %>
+<%   else %>
 %% okuduke
 \reviewcolophon
 \thispagestyle{empty}
@@ -303,7 +331,12 @@
 　\\
 \rule[0pt]{14cm}{1pt} \\
 <%= values["rights"] %> \\
+<%   end %>
 <% end %>
 
+%%% backcover
+<% if values["backcover"] %>
+<%= custom_backcoverpage %>
+<% end %>
 
 \end{document}

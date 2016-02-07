@@ -62,7 +62,7 @@ module ReVIEW
       lines.each do |line|
         if noescape
           puts detab(line)
-        elsif /\AC:.*?>(.+)/ =~ line   # DOS prompt hack
+        elsif /\AC:.*?>(.+)/ =~ line # DOS prompt hack
           prompt, cmd = *line.split('>', 2)
           puts "#{escape(prompt)}>//command{#{escape(cmd)}}//}"
         else
@@ -198,7 +198,7 @@ module ReVIEW
       # FIXME
     end
 
-    Z_SPACE = "\241\241"   # zen-kaku space in EUC-JP
+    Z_SPACE = "\241\241" # zen-kaku space in EUC-JP
 
     def paragraph(lines)
       if @noindent
@@ -263,10 +263,10 @@ module ReVIEW
       if abbr
         add_index(word) + "//g{#{word}//}" +
         add_index(abbr) + "（#{abbr}, " +
-        add_index(eng)  + "#{eng}）"
+        add_index(eng) + "#{eng}）"
       elsif eng
         add_index(word) + "//g{#{word}//}" +
-        add_index(eng)  + "（#{eng}）"
+        add_index(eng) + "（#{eng}）"
       else
         add_index(word) + "//g{#{word}//}"
       end

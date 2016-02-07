@@ -3,6 +3,11 @@ require 'yaml'
 
 module ReVIEW
   class I18n
+    ALPHA_U = %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]
+    ALPHA_L = %w[0 a b c d e f g h i j k l m n o p q r s t u v w x y z]
+    ROMAN_U = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
+    ROMAN_L = %w[0 i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx xxi xxii xxiii xxiv xxv xxvi xxvii]
+
     def self.setup(locale="ja", ymlfile = "locale.yml")
       @i18n = ReVIEW::I18n.new(locale)
 
@@ -38,11 +43,15 @@ module ReVIEW
     end
 
     class << self
-      alias v t  ## for EPUBMaker backward compatibility
+      alias_method :v, :t ## for EPUBMaker backward compatibility
     end
 
     def self.update(user_i18n, locale = nil)
       @i18n.update(user_i18n, locale)
+    end
+
+    def self.get(word, locale = nil)
+      @i18n.get(word, locale)
     end
 
     attr_accessor :locale
@@ -53,7 +62,7 @@ module ReVIEW
     end
 
     def load_default
-      load_file(File.expand_path "i18n.yml", File.dirname(__FILE__))
+      load_file(File.expand_path("i18n.yml", File.dirname(__FILE__)))
     end
 
     def load_file(path)
@@ -65,13 +74,16 @@ module ReVIEW
       locale = user_i18n["locale"]
       if locale
         user_i18n.delete("locale")
-        @store[locale].merge!(user_i18n)
-      else
-        key = user_i18n.keys.first
-        if !user_i18n[key].kind_of? Hash
-          raise KeyError, "Invalid locale file: #{path}"
+        if @store[locale]
+          @store[locale].merge!(user_i18n)
+        else
+          @store[locale] = user_i18n
         end
-        @store.merge!(user_i18n)
+      else
+        user_i18n.each do |key, values|
+          raise KeyError, "Invalid locale file: #{path}" unless values.kind_of? Hash
+          @store[key].merge!(values)
+        end
       end
     end
 
@@ -84,8 +96,35 @@ module ReVIEW
       end
     end
 
+    def get(word, locale = nil)
+      locale ||= @locale
+      @store[locale][word]
+    end
+
     def t(str, args = nil)
-      @store[@locale][str] % args
+      args = [args] unless args.is_a? Array
+
+      frmt = @store[@locale][str]
+      frmt.gsub!('%%', '##')
+      percents = frmt.scan(/%\w\w?/)
+      percents.each_with_index do |i, idx|
+        case i
+        when "%pA"
+          frmt.sub!(i, ALPHA_U[args[idx]])
+          args.delete idx
+        when "%pa"
+          frmt.sub!(i, ALPHA_L[args[idx]])
+          args.delete idx
+        when "%pR"
+          frmt.sub!(i, ROMAN_U[args[idx]])
+          args.delete idx
+        when "%pr"
+          frmt.sub!(i, ROMAN_L[args[idx]])
+          args.delete idx
+        end
+      end
+      frmt.gsub!('##', '%%')
+      frmt % args
     rescue
       str
     end

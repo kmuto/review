@@ -191,7 +191,7 @@ You can get HTML file as follows:
 </html>
 ```
 
-For more information about Re:VIEW format, see [format.rdoc](https://github.com/kmuto/review/blob/master/doc/format.rdoc).
+For more information about Re:VIEW format, see [format.md](https://github.com/kmuto/review/blob/master/doc/format.md).
 
 review-compile and other commands in Re:VIEW has `--help` option to output help.  `review-compile` has many options, so you may see them.
 

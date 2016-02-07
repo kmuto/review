@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 module ReVIEW
   class Configure < Hash
+
+    attr_accessor :maker
+
     def self.values
-      Configure[
+      conf = Configure[
         # These parameters can be overridden by YAML file.
         "bookname"=> "example", # it defines epub file name also
         "booktitle" => "Re:VIEW Sample Book",
@@ -36,17 +39,28 @@ module ReVIEW
         "language" => 'ja', # XXX default language should be JA??
 
         "chapter_file" => 'CHAPS',
-        "part_file"    => 'PART',
-        "reject_file"  => 'REJECT',
-        "predef_file"  => 'PREDEF',
+        "part_file" => 'PART',
+        "reject_file" => 'REJECT',
+        "predef_file" => 'PREDEF',
         "postdef_file" => 'POSTDEF',
-        "page_metric"  => ReVIEW::Book::PageMetric.a5,
-        "ext"          => '.re',
-        "image_dir"    => 'images',
-        "image_types"  => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
-        "bib_file"     => "bib.re",
+        "page_metric" => ReVIEW::Book::PageMetric.a5,
+        "ext" => '.re',
+        "image_dir" => 'images',
+        "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
+        "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
       ]
+      conf.maker = nil
+      conf
+    end
+
+    def [](key)
+      if self.key?(key)
+        return self.fetch(key)
+      end
+      if @maker && self.key?(@maker)
+        return self.fetch(@maker).fetch(key, nil)
+      end
     end
   end
 end

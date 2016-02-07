@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 require 'test_helper'
-require 'review/i18n'
-
-require 'review/compiler'
-require 'review/book'
-require 'review/htmlbuilder'
+require 'review'
 require 'tmpdir'
 
 class I18nTest < Test::Unit::TestCase
   include ReVIEW
 
-  if RUBY_VERSION !~ /^1.8/  ## to avoid Travis error :-(
+  if RUBY_VERSION !~ /^1.8/ ## to avoid Travis error :-(
     def test_load_locale_yml
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
@@ -74,8 +70,10 @@ class I18nTest < Test::Unit::TestCase
           File.open(file, "w"){|f| f.write("ja:\n  foo: \"bar\"\nen:\n  foo: \"buz\"\n")}
           I18n.setup
           assert_equal "bar", I18n.t("foo")
+          assert_equal "図", I18n.t("image")
           I18n.setup("en")
           assert_equal "buz", I18n.t("foo")
+          assert_equal "Figure ", I18n.t("image")
         end
       end
     end
@@ -88,6 +86,29 @@ class I18nTest < Test::Unit::TestCase
           assert_raises(ReVIEW::KeyError) do
             I18n.setup
           end
+        end
+      end
+    end
+
+    def test_custom_format
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yml")
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pa章")}
+          I18n.setup("ja")
+          assert_equal "第a章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pA章")}
+          I18n.setup("ja")
+          assert_equal "第B章", I18n.t("chapter", 2)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pR章")}
+          I18n.setup("ja")
+          assert_equal "第I章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pr章")}
+          I18n.setup("ja")
+          assert_equal "第ii章", I18n.t("chapter", 2)
         end
       end
     end
@@ -128,17 +149,15 @@ class I18nTest < Test::Unit::TestCase
   def test_htmlbuilder
     _setup_htmlbuilder
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="h1"></a>Chapter 1. this is test.</h1>\n|, actual
+    assert_equal %Q|<h1 id="test"><a id="h1"></a><span class="secno">Chapter 1. </span>this is test.</h1>\n|, actual
   end
 
   def _setup_htmlbuilder
     I18n.setup "en"
     @builder = HTMLBuilder.new()
     @config = {
-      "secnolevel" => 2,    # for IDGXMLBuilder, HTMLBuilder
-      "inencoding" => "UTF-8",
-      "outencoding" => "UTF-8",
-      "stylesheet" => nil,  # for HTMLBuilder
+      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
+      "stylesheet" => nil, # for HTMLBuilder
       "ext" => ".re"
     }
     @book = Book::Base.new(".")

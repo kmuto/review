@@ -22,6 +22,9 @@ require 'review/book'
 require 'review/i18n'
 require 'fileutils'
 require 'optparse'
+require 'yaml'
+
+DEFAULT_CONFIG_FILENAME = "config.yml"
 
 def main
   Signal.trap(:INT) { exit 1 }
@@ -34,8 +37,6 @@ rescue Errno::EPIPE
 end
 
 def _main
-  $KCODE = 'UTF-8' unless defined?(Encoding)
-
   mode = :files
   basedir = nil
   if /\Areview2/ =~ File.basename($0)
@@ -48,16 +49,14 @@ def _main
 
   config = ReVIEW::Configure.values
   config.merge!({
-    "secnolevel" => 2,    # for IDGXML and HTML
-    "tableopt" => nil,    # for IDGXML
-    "nolf" => nil,        # for IDGXML
-    "chapref" => nil,     # for IDGXML
+    "secnolevel" => 2, # for IDGXML and HTML
+    "tableopt" => nil, # for IDGXML
+    "nolf" => nil, # for IDGXML
+    "chapref" => nil, # for IDGXML
     "structuredxml" => nil, # for IDGXML
-    "inencoding" => "UTF-8",
-    "outencoding" => "UTF-8",
-    "stylesheet" => [],   # for HTML
-    "mathml" => nil,      # for HTML
-    "language" => "ja",   # for HTML
+    "stylesheet" => [], # for HTML
+    "mathml" => nil, # for HTML
+    "language" => "ja", # for HTML
     "deprecated-blocklines" => nil,
     "footnotetext" => false,
     "htmlext" => "html",
@@ -67,12 +66,7 @@ def _main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} [--target=FMT]"
-  opts.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
-    require 'yaml'
-    config = config.merge(YAML.load_file(yaml))
-  end
-  opts.on('--inencoding=ENCODING', 'Set input encoding. (UTF-8, EUC, JIS, and SJIS)') {|enc| config["inencoding"] = enc }
-  opts.on('--outencoding=ENCODING', 'Set output encoding. (UTF-8[default], EUC, JIS, and SJIS)') {|enc| config["outencoding"] = enc }
+  opts.on('--yaml=YAML', 'Read configurations from YAML file.') {|yaml| config["yaml"] = yaml}
   opts.on('-c', '--check', 'Check manuscript') { check_only = true }
   opts.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
   opts.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }
@@ -143,6 +137,16 @@ def _main
   end
 
   begin
+    if config["yaml"]
+      config = config.merge(YAML.load_file(config["yaml"]))
+    else
+      if File.exist?(DEFAULT_CONFIG_FILENAME)
+        config = config.merge(YAML.load_file(DEFAULT_CONFIG_FILENAME))
+      end
+    end
+
+
+
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])
 
@@ -173,12 +177,12 @@ def _main
       compiler = ReVIEW::Compiler.new(load_strategy_class(target, check_only))
       book.chapters.each do |chap|
         str = compiler.compile(chap)
-        write "#{chap.name}#{compiler.strategy.extname}", str  unless check_only
+        write "#{chap.name}#{compiler.strategy.extname}", str unless check_only
       end
       # PART
       book.parts_in_file.each do |part|
         str = compiler.compile(part)
-        write "#{part.name}#{compiler.strategy.extname}", str  unless check_only
+        write "#{part.name}#{compiler.strategy.extname}", str unless check_only
       end
     else
       raise "must not happen: #{mode}"

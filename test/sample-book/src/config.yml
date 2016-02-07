@@ -67,6 +67,7 @@ rights: (C) 2011 Masayoshi Takahashi
 # coverage: 内容の範囲や領域
 
 # htmlext: HTMLファイルの拡張子(省略した場合はhtml)
+htmlext: xhtml
 # CSSファイル(配列で複数指定可、yamlファイルおよびRe:VIEWファイルを置いたディレクトリにあること)
 stylesheet: ["style.css"]
 
@@ -74,6 +75,9 @@ stylesheet: ["style.css"]
 epubversion: 3
 # HTMLのバージョン (4か5。epubversionを3にしたときには5にする)
 # htmlversion: 5
+
+# 目次を作成するか。省略した場合はnull（作成しない）
+# toc: true
 
 # 目次として抽出する見出しレベル。省略した場合は2
 toclevel: 2

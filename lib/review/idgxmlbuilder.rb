@@ -316,15 +316,12 @@ module ReVIEW
     end
     private :column_label
 
-    def inline_column(id)
+    def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<link href="#{column_label(id)}">#{escape_html(@chapter.column(id).caption)}</link>)
+        %Q(<link href="#{column_label(id)}">#{escape_html(chapter.column(id).caption)}</link>)
       else
-        escape_html(@chapter.column(id).caption)
+        escape_html(chapter.column(id).caption)
       end
-    rescue KeyError
-      error "unknown column: #{id}"
-      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_list(id)
@@ -541,7 +538,7 @@ module ReVIEW
           totallength = 0
           cellwidth.size.times do |n|
             cellwidth[n] = cellwidth[n].to_f / 0.351 # mm -> pt
-            totallength = totallength + cellwidth[n]
+            totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
           end
           if cellwidth.size < col
@@ -1084,7 +1081,7 @@ module ReVIEW
       lines.each do |l|
         print l.gsub("&lt;", "<").gsub("&gt;", ">").gsub("&quot;", "\"").gsub("&amp;", "&")
         print "\n" unless lines.length == no
-        no = no + 1
+        no += 1
       end
     end
 
@@ -1095,8 +1092,7 @@ module ReVIEW
     def inline_chapref(id)
       chs = ["", "「", "」"]
       unless @book.config["chapref"].nil?
-        _chs = convert_inencoding(@book.config["chapref"],
-                                  @book.config["inencoding"]).split(",")
+        _chs = @book.config["chapref"].split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
@@ -1143,7 +1139,7 @@ module ReVIEW
       puts %Q[<caption>#{compile_inline(caption)}</caption>]
     end
 
-    def source_body(lines)
+    def source_body(lines, lang)
       puts %Q[<pre>]
       codelines_body(lines)
       puts %Q[</pre></source>]
@@ -1174,10 +1170,10 @@ module ReVIEW
       if chap.number
         n = chap.headline_index.number(id)
         if @book.config["secnolevel"] >= n.split('.').size
-          return "「#{n}　#{compile_inline(chap.headline(id).caption)}」"
+          return I18n.t("chapter_quote", "#{n}　#{compile_inline(chap.headline(id).caption)}")
         end
       end
-      "「#{compile_inline(chap.headline(id).caption)}」"
+      I18n.t("chapter_quote", compile_inline(chap.headline(id).caption))
     end
 
     def inline_recipe(id)
@@ -1195,4 +1191,4 @@ module ReVIEW
 
   end
 
-end   # module ReVIEW
+end # module ReVIEW

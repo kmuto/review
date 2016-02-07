@@ -15,4 +15,4 @@ module ReVIEW
   class EPUBBuilder < HTMLBuilder
   end
 
-end   # module ReVIEW
+end # module ReVIEW

@@ -28,7 +28,7 @@ require 'review/i18n'
 require 'review/htmlutils'
 include ReVIEW::HTMLUtils
 
-$essential_files = ['top', 'toc', 'colophon']
+@essential_files = ['top', 'toc', 'colophon']
 def main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
@@ -57,7 +57,7 @@ def main
   yamlfile = ARGV[0]
   values = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile))
   bookname = values["bookname"]
-  $essential_files <<= bookname
+  @essential_files <<= bookname
   tmp = values["debug"].nil? ? Dir.mktmpdir : "."
   @bookdir = "#{tmp}/#{bookname}-epub"
   @epubversion = values["epubversion"] || 2
@@ -774,8 +774,8 @@ end
 
 def output_chaps_by_file(l, values)
   file_id = File.basename(l.chomp.strip,".*")
-  if (idx = $essential_files.index(file_id))
-    if idx == $essential_files.size - 1
+  if (idx = @essential_files.index(file_id))
+    if idx == @essential_files.size - 1
       STDERR.puts "#{file_id} is book name. Please rename #{l.chomp.strip}."
     else
       STDERR.puts "#{file_id} is special name. Please rename #{l.chomp.strip}."
@@ -800,8 +800,8 @@ def include_mathml?(filename)
     }
     return false
   }
-  rescue
-    false
+rescue
+  false
 end
 
 def getFigId(filename)

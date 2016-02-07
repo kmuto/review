@@ -18,19 +18,19 @@ module ReVIEW
 
   class TOCParser
     def TOCParser.parse(chap)
-      chap.open {|f|
+      chap.open do |f|
         stream = Preprocessor::Strip.new(f)
-        new.parse(stream, chap.id, chap.path, chap).map {|root|
+        new.parse(stream, chap).map do |root|
           root.number = chap.number
           root
-        }
-      }
+        end
+      end
     end
 
-    def parse(f, id, filename, chap)
-      roots = []
-      path = []
-
+    def parse(f, chap)
+      roots = [] ## list of chapters
+      node_stack = []
+      filename = chap.path
       while line = f.gets
         line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
         case line
@@ -41,29 +41,33 @@ module ReVIEW
         when /\A(={2,})[\[\s\{]/
           lev = $1.size
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
-          if path.empty?
+          label = get_label(line)
+          if node_stack.empty?
             # missing chapter label
-            path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
-            roots.push path.first
+            dummy_chapter = Chapter.new(label, chap)
+            node_stack.push dummy_chapter
+            roots.push dummy_chapter
           end
-          next if get_label(line) =~ /\A\[\// # ex) "[/column]"
-          new = Section.new(lev, get_label(line).gsub(/\A\{.*?\}\s?/, ""))
-          until path.last.level < new.level
-            path.pop
+          next if label =~ /\A\[\// # ex) "[/column]"
+          sec = Section.new(lev, label.gsub(/\A\{.*?\}\s?/, ""))
+          until node_stack.last.level < sec.level
+            node_stack.pop
           end
-          path.last.add_child new
-          path.push new
+          node_stack.last.add_child sec
+          node_stack.push sec
 
         when /\A= /
-          path.clear
-          path.push Chapter.new(get_label(line), id, filename, chap.book.page_metric)
-          roots.push path.first
+          label = get_label(line)
+          node_stack.clear
+          new_chapter = Chapter.new(label, chap)
+          node_stack.push new_chapter
+          roots.push new_chapter
 
         when %r<\A//\w+(?:\[.*?\])*\{\s*\z>
-          if path.empty?
+          if node_stack.empty?
             error! filename, f.lineno, 'list found before section label'
           end
-          path.last.add_child(list = List.new)
+          node_stack.last.add_child(list = List.new)
           beg = f.lineno
           list.add line
           while line = f.gets
@@ -75,11 +79,11 @@ module ReVIEW
         when %r<\A//\w>
           ;
         else
-          #if path.empty?
+          #if node_stack.empty?
           #  error! filename, f.lineno, 'text found before section label'
           #end
-          next if path.empty?
-          path.last.add_child(par = Paragraph.new(chap.book.page_metric))
+          next if node_stack.empty?
+          node_stack.last.add_child(par = Paragraph.new(chap))
           par.add line
           while line = f.gets
             break if /\A\s*\z/ =~ line
@@ -151,7 +155,7 @@ module ReVIEW
         end
       end
 
-      def n_sections
+      def section_size
         cnt = 0
         @children.each do |n|
           n.yield_section { cnt += 1 }
@@ -183,14 +187,6 @@ module ReVIEW
       attr_reader :level
       attr_reader :label
 
-      def display_label
-        if @filename
-          @label + ' ' + @filename
-        else
-          @label
-        end
-      end
-
       def estimated_lines
         @children.inject(0) {|sum, n| sum + n.estimated_lines }
       end
@@ -208,11 +204,12 @@ module ReVIEW
 
     class Chapter < Section
 
-      def initialize(label, id, path, page_metric)
-        super 1, label, path
-        @chapter_id = id
-        @path = path
-        @page_metric = page_metric
+      def initialize(label, chap)
+        super 1, label, chap.path
+        @chapter = chap
+        @chapter_id = chap.id
+        @path = chap.path
+        @page_metric = chap.book.page_metric
         @volume = nil
         @number = nil
       end
@@ -227,9 +224,7 @@ module ReVIEW
 
       def volume
         return @volume if @volume
-        return Book::Volume.dummy unless @path
-        @volume = Book::Volume.count_file(@path)
-        @volume.page_per_kbyte = @page_metric.page_per_kbyte
+        @volume = @chapter.volume
         @volume.lines = estimated_lines()
         @volume
       end
@@ -243,9 +238,9 @@ module ReVIEW
 
     class Paragraph < Node
 
-      def initialize(page_metric)
+      def initialize(chap)
         @bytes = 0
-        @page_metric = page_metric
+        @page_metric = chap.book.page_metric
       end
 
       def inspect
@@ -314,7 +309,7 @@ module ReVIEW
       end
     end
 
-    def n_sections
+    def section_size
       chapters.size
     end
 
@@ -323,11 +318,7 @@ module ReVIEW
     end
   end
 
-  class Book::Base   # reopen
-    include TOCRoot
-  end
-
-  class Book::ChapterSet   # reopen
+  class Book::Base # reopen
     include TOCRoot
   end
 
@@ -335,7 +326,7 @@ module ReVIEW
     include TOCRoot
   end
 
-  class Book::Chapter   # reopen
+  class Book::Chapter # reopen
     def toc
       @toc ||= TOCParser.parse(self)
       unless @toc.size == 1

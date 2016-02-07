@@ -13,14 +13,13 @@
 
 require 'review/htmlutils'
 require 'review/htmllayout'
-require 'nkf'
 
 module ReVIEW
 
   class TOCPrinter
 
     def TOCPrinter.default_upper_level
-      99   # no one use 99 level nest
+      99 # no one use 99 level nest
     end
 
     def initialize(print_upper, param)
@@ -30,28 +29,6 @@ module ReVIEW
 
     def print?(level)
       level <= @print_upper
-    end
-
-    def nkffilter(line)
-      inc = ""
-      outc = "-w"
-      if @config["inencoding"] =~ /^EUC$/
-        inc = "-E"
-      elsif @config["inencoding"] =~ /^SJIS$/
-        inc = "-S"
-      elsif @config["inencoding"]  =~ /^JIS$/
-        inc = "-J"
-      end
-
-      if @config["outencoding"] =~ /^EUC$/
-        outc = "-e"
-      elsif @config["outencoding"] =~ /^SJIS$/
-        outc = "-s"
-      elsif @config["outencoding"]  =~ /^JIS$/
-        outc = "-j"
-      end
-
-      NKF.nkf("#{inc} #{outc}", line)
     end
   end
 
@@ -79,11 +56,11 @@ module ReVIEW
         printf "%3s %3dKB %6dC %5dL  %s (%s)\n",
                chapnumstr(node.number),
                vol.kbytes, vol.chars, vol.lines,
-               nkffilter(node.label), node.chapter_id
-      else
+               node.label, node.chapter_id
+      else ## for section node
         printf "%17s %5dL  %s\n",
                '', node.estimated_lines,
-               nkffilter("  #{'   ' * (node.level - 1)}#{number} #{node.label}")
+               "  #{'   ' * (node.level - 1)}#{number} #{node.label}"
       end
     end
 
@@ -94,7 +71,7 @@ module ReVIEW
     def volume_columns(level, volstr)
       cols = ["", "", "", nil]
       cols[level - 1] = volstr
-      cols[0, 3]   # does not display volume of level-4 section
+      cols[0, 3] # does not display volume of level-4 section
     end
 
   end
@@ -130,8 +107,12 @@ module ReVIEW
       unless File.exist?(layout_file) # backward compatibility
         layout_file = File.join(book.basedir, "layouts", "layout.erb")
       end
-      puts HTMLLayout.new(
-        {'body' => html, 'title' => "目次"}, layout_file).result
+      if File.exist?(layout_file)
+        puts HTMLLayout.new(
+               {'body' => html, 'title' => "目次"}, layout_file).result
+      else
+        puts html
+      end
     end
 
     private
@@ -146,12 +127,12 @@ module ReVIEW
       return res.join("\n")
     end
 
-    def print_chapter_to_s(chap)
+    def chapter_to_s(chap)
       res = []
       chap.each_section do |sec|
         res << h3(escape_html(sec.label))
         next unless print?(4)
-        next if sec.n_sections == 0
+        next if sec.section_size == 0
         res << "<ul>"
         sec.each_section do |node|
           res << li(escape_html(node.label))
@@ -186,7 +167,7 @@ module ReVIEW
   class IDGTOCPrinter < TOCPrinter
     def print_book(book)
       puts %Q(<?xml version="1.0" encoding="UTF-8"?>)
-      puts nkffilter(%Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>)) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
+      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
       puts %Q(<ul aid:pstyle='ul-partblock'>)
       print_children book
       puts %Q(</ul></doc>)
@@ -206,17 +187,16 @@ module ReVIEW
 
     def print_node(seq, node)
       if node.chapter?
-        vol = node.volume
         printf "<li aid:pstyle='ul-part'>%s</li>\n",
-               nkffilter("#{chapnumstr(node.number)}#{node.label}")
+               "#{chapnumstr(node.number)}#{node.label}"
       else
         printf "<li>%-#{LABEL_LEN}s\n",
-               nkffilter("  #{'   ' * (node.level - 1)}#{seq}　#{node.label}</li>")
+               "  #{'   ' * (node.level - 1)}#{seq}　#{node.label}</li>"
       end
     end
 
     def chapnumstr(n)
-      n ? nkffilter(sprintf('第%d章　', n)) : ''
+      n ? sprintf('第%d章　', n) : ''
     end
 
     def volume_columns(level, volstr)

@@ -17,18 +17,18 @@ module ReVIEW
   module LaTeXUtils
 
     METACHARS = {
-      '#'  => '\#',
-      "$"  => '\textdollar{}',
+      '#' => '\#',
+      "$" => '\textdollar{}',
       '%' => '\%',
       '&' => '\&',
       '{' => '\{',
       '}' => '\}',
-      '_'  => '\textunderscore{}',
+      '_' => '\textunderscore{}',
       '^' => '\textasciicircum{}',
       '~' => '\textasciitilde{}',
       '|' => '\textbar{}',
-      '<'  => '\textless{}',
-      '>'  => '\textgreater{}',
+      '<' => '\textless{}',
+      '>' => '\textgreater{}',
       "\\" => '\reviewbackslash{}',
       "-" => '{-}',
 
@@ -70,7 +70,7 @@ module ReVIEW
     alias_method :escape, :escape_latex
 
     def unescape_latex(str)
-      metachars_invert_re = Regexp.new(METACHARS_INVERT.keys.collect{|key|  Regexp.escape(key)}.join('|'))
+      metachars_invert_re = Regexp.new(METACHARS_INVERT.keys.collect{|key| Regexp.escape(key)}.join('|'))
       str.gsub(metachars_invert_re) {|s|
         METACHARS_INVERT[s] or raise "unknown trans char: #{s}"
       }

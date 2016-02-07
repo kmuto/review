@@ -24,24 +24,10 @@ module ReVIEW
     end
 
     def warn(msg)
-      if @config["outencoding"] =~ /^EUC$/
-        msg = NKF.nkf("-W -e", msg)
-      elsif @config["outencoding"] =~ /^SJIS$/
-        msg = NKF.nkf("-W -s", msg)
-      elsif @config["outencoding"] =~ /^JIS$/
-        msg = NKF.nkf("-W -j", msg)
-      end
       $stderr.puts "#{location()}: warning: #{msg}"
     end
 
     def error(msg)
-      if @config["outencoding"] =~ /^EUC$/
-        msg = NKF.nkf("-W -e", msg)
-      elsif @config["outencoding"] =~ /^SJIS$/
-        msg = NKF.nkf("-W -s", msg)
-      elsif @config["outencoding"] =~ /^JIS$/
-        msg = NKF.nkf("-W -j", msg)
-      end
       @errutils_err = true
       raise ApplicationError, "#{location()}: #{msg}"
     end
@@ -148,7 +134,7 @@ module ReVIEW
           path = expand(direc.arg)
           ent = @repository.fetch_file(path)
           ent = evaluate(path, ent) if direc['eval']
-          replace_block f, line, ent, false   # FIXME: turn off lineno: tmp
+          replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
         when /\A\#@map(?:range)?/
           direc = parse_directive(line, 2, 'unindent')
@@ -156,7 +142,7 @@ module ReVIEW
           ent = @repository.fetch_range(path, direc.args[1]) or
                   error "unknown range: #{path}: #{direc.args[1]}"
           ent = (direc['unindent'] ? unindent(ent, direc['unindent']) : ent)
-          replace_block f, line, ent, false   # FIXME: turn off lineno: tmp
+          replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
         when /\A\#@end/
           error 'unbaranced #@end'
@@ -167,7 +153,7 @@ module ReVIEW
           warn "unkown directive: #{line.strip}" unless known_directive?(op)
           @f.print line
 
-        when /\A\s*\z/   # empty line
+        when /\A\s*\z/ # empty line
           @f.puts
         else
           @f.print line
@@ -175,42 +161,17 @@ module ReVIEW
       end
     end
 
-    private
-
     KNOWN_DIRECTIVES = %w( require provide warn ok )
 
     def known_directive?(op)
       KNOWN_DIRECTIVES.index(op)
     end
 
-    def convert_outencoding(*s)
-      ine = ""
-      if @config["inencoding"] =~ /^EUC$/i
-        ine = "-E,"
-      elsif @config["inencoding"] =~ /^SJIS$/i
-        ine = "-S,"
-      elsif @config["inencoding"] =~ /^JIS$/i
-        ine = "-J,"
-      elsif @config["inencoding"] =~ /^UTF\-8$/i
-        ine = "-W,"
-      end
-
-      if @config["outencoding"] =~ /^EUC$/i
-        NKF.nkf("#{ine} -m0x -e", *s)
-      elsif @config["outencoding"] =~ /^SJIS$/i
-        NKF.nkf("#{ine} -m0x -s", *s)
-      elsif @config["outencoding"] =~ /^JIS$/i
-        NKF.nkf("#{ine} -m0x -j", *s)
-      else
-        NKF.nkf("#{ine} -m0x -w", *s)
-      end
-    end
-
     def replace_block(f, directive_line, newlines, with_lineno)
       @f.print directive_line
       newlines.each do |line|
         print_number line.number if with_lineno
-        @f.print convert_outencoding(line.string)
+        @f.print line.string
       end
       skip_list f
     end
@@ -243,8 +204,8 @@ module ReVIEW
     class Directive
       def initialize(op, args, opts)
         @op = op
-	@args = args
-	@opts = opts
+        @args = args
+        @opts = opts
       end
 
       attr_reader :op
@@ -297,12 +258,12 @@ module ReVIEW
 
     def optarg_value(spec)
       case spec
-      when 'true'  then true      # [name=true]
-      when 'false' then false     # [name=false]
-      when 'nil'   then nil       # [name=nil]
-      when nil     then true      # [name]
-      when /^\d+$/ then $&.to_i   # [name=8]
-      else                        # [name=val]
+      when 'true' then true # [name=true]
+      when 'false' then false # [name=false]
+      when 'nil' then nil # [name=nil]
+      when nil then true # [name]
+      when /^\d+$/ then $&.to_i # [name=8]
+      else # [name=val]
         spec
       end
     end
@@ -343,7 +304,7 @@ module ReVIEW
     end
 
     def spawn
-      pid, status = *Process.waitpid2(fork { yield })
+      _pid, status = *Process.waitpid2(fork { yield }) ## pid not used
       status
     end
 
@@ -443,7 +404,7 @@ module ReVIEW
     end
 
     def git?(fname)
-      fname =~ /\Agit\|/
+      fname.start_with?('git|')
     end
 
     def parse_git_blob(g_obj)
@@ -465,7 +426,7 @@ module ReVIEW
       repo = {'file' => whole}
       curr = {'WHOLE' => whole}
       lineno = 1
-      yacchack = false   # remove ';'-only lines.
+      yacchack = false # remove ';'-only lines.
       opened = [['(not opened)', '(not opened)']] * 3
 
       f.each do |line|
@@ -510,7 +471,7 @@ module ReVIEW
         when /(?:\A\#@|\#@@)yacchack/
           yacchack = true
 
-        when /\A\#@-/   # does not increment line number.
+        when /\A\#@-/ # does not increment line number.
           line = canonical($')
           curr.each_value do |list|
             list.push Line.new(nil, line)

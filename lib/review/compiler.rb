@@ -11,7 +11,6 @@
 require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
-require 'lineinput'
 require 'strscan'
 
 module ReVIEW
@@ -137,7 +136,7 @@ module ReVIEW
     defblock :table, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true
-    defblock :source, 0..1
+    defblock :source, 0..2
     defblock :listnum, 2..3
     defblock :emlistnum, 0..2
     defblock :bibpaper, 2..3, true
@@ -363,7 +362,7 @@ module ReVIEW
         elsif level < current_level # down
           level_diff = current_level - level
           level = current_level
-          (1..(level_diff - 1)).to_a.reverse.each do |i|
+          (1..(level_diff - 1)).to_a.reverse_each do |i|
             @strategy.ul_begin {i}
             @strategy.ul_item_begin []
           end
@@ -372,7 +371,7 @@ module ReVIEW
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
-          (1..level_diff).to_a.reverse.each do |i|
+          (1..level_diff).to_a.reverse_each do |i|
             @strategy.ul_item_end
             @strategy.ul_end {level + i}
           end
@@ -382,7 +381,7 @@ module ReVIEW
         end
       end
 
-      (1..level).to_a.reverse.each do |i|
+      (1..level).to_a.reverse_each do |i|
         @strategy.ul_item_end
         @strategy.ul_end {i}
       end
@@ -409,6 +408,7 @@ module ReVIEW
         @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
         @strategy.dd f.break(/\A(\S|\s*:)/).map {|line| text(line.strip) }
         f.skip_blank_lines
+        f.skip_comment_lines
       end
       @strategy.dl_end
     end
@@ -424,7 +424,7 @@ module ReVIEW
 
     def read_command(f)
       line = f.gets
-      name = line.slice(/[a-z]+/).intern
+      name = line.slice(/[a-z]+/).to_sym
       args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
       lines = block_open?(line) ? read_block(f) : nil
       return name, args, lines
@@ -446,7 +446,7 @@ module ReVIEW
         error "unexpected EOF (block begins at: #{head})"
         return buf
       end
-      f.gets   # discard terminator
+      f.gets # discard terminator
       buf
     end
 
@@ -524,7 +524,7 @@ module ReVIEW
     rescue => err
       error err.message
     end
-    public :text   # called from strategy
+    public :text # called from strategy
 
     def compile_inline(str)
       op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
@@ -550,4 +550,4 @@ module ReVIEW
 
   end
 
-end   # module ReVIEW
+end # module ReVIEW

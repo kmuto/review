@@ -28,6 +28,12 @@ def main
   opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') {
     @force = true
   }
+  opts.on('-l', '--locale', 'generate locale.yml file.') {
+    @locale = true
+  }
+  opts.on('', '--epub-version VERSION', 'define EPUB version') { |version|
+    @epub_version = version
+  }
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
@@ -53,6 +59,7 @@ def main
     generate_style(dir)
     generate_texmacro(dir)
     generate_config(dir)
+    generate_locale(dir) if @locale
     generate_rakefile(dir)
   end
 end
@@ -76,23 +83,10 @@ end
 
 def generate_layout(dir)
   FileUtils.mkdir_p dir + '/layouts'
-  File.open("#{dir}/layouts/layout.html.erb", "w") do |file|
-    file.write <<-EOS
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <meta name="generator" content="Re:VIEW" />
-  <title><%= title %></title>
-</head>
-<body>
-<%= body %>
-</body>
-</html>
-EOS
+  if @epub_version.to_i == 2
+    FileUtils.cp @review_dir + "/templates/html/layout-xhtml1.html.erb", dir + '/layouts/layout.html.erb'
+  else
+    FileUtils.cp @review_dir + "/templates/html/layout-html5.html.erb", dir + '/layouts/layout.html.erb'
   end
 end
 
@@ -121,7 +115,11 @@ def generate_cover_image(dir)
 end
 
 def generate_config(dir)
-  FileUtils.cp @review_dir + "/test/sample-book/src/config.yml", dir
+  if @epub_version.to_i == 2
+    FileUtils.cp @review_dir + "/test/sample-book/src/config-epub2.yml", File.join(dir, "config.yml")
+  else
+    FileUtils.cp @review_dir + "/test/sample-book/src/config.yml", dir
+  end
 end
 
 def generate_style(dir)
@@ -136,6 +134,10 @@ end
 
 def generate_rakefile(dir)
   FileUtils.cp @review_dir + "/test/sample-book/src/Rakefile", dir
+end
+
+def generate_locale(dir)
+  FileUtils.cp @review_dir + '/lib/review/i18n.yml', dir + '/locale.yml'
 end
 
 if File.basename($0) == File.basename(__FILE__)
