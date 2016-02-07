@@ -119,7 +119,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
 
         actual = compile_block("=={test} this is test.\n")
-        assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
+        assert_equal %Q|<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
       end
     end
   end
