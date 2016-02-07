@@ -27,13 +27,6 @@ module ReVIEW
       @config = param
     end
 
-    def print?(level)
-      level <= @print_upper
-    end
-  end
-
-
-  class TextTOCPrinter < TOCPrinter
     def print_book(book)
       book.each_part do |part|
         print_part(part)
@@ -51,6 +44,14 @@ module ReVIEW
       print_node 1, chap_node
       print_children chap_node
     end
+
+    def print?(level)
+      level <= @print_upper
+    end
+  end
+
+
+  class TextTOCPrinter < TOCPrinter
 
     private
 
@@ -95,17 +96,9 @@ module ReVIEW
 
     include HTMLUtils
 
-    def print_book(book)
-      book.each_part do |part|
-        print_part(part)
-      end
-    end
-
     def print_part(part)
       puts h1(part.name) if part.name
-      part.each_chapter do |chap|
-        print_chapter(chap)
-      end
+      super
     end
 
     def print_chapter(chap)
@@ -176,27 +169,16 @@ module ReVIEW
   end
 
   class IDGTOCPrinter < TOCPrinter
+
+    LABEL_LEN = 54
+
     def print_book(book)
       puts %Q(<?xml version="1.0" encoding="UTF-8"?>)
       puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'>)
       puts %Q(<title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
       puts %Q(<ul aid:pstyle='ul-partblock'>)
-      book.each_part do |part|
-        print_part(part)
-      end
+      super
       puts %Q(</ul></doc>)
-    end
-
-    def print_part(part)
-      part.each_chapter do |chap|
-        print_chapter(chap)
-      end
-    end
-
-    def print_chapter(chap)
-      chap_node = TOCParser.chapter_node(chap)
-      print_node 1, chap_node
-      print_children chap_node
     end
 
     private
@@ -208,8 +190,6 @@ module ReVIEW
         print_children sec
       end
     end
-
-    LABEL_LEN = 54
 
     def print_node(seq, node)
       if node.chapter?
