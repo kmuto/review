@@ -105,8 +105,11 @@ module ReVIEW
       dummy_book = ReVIEW::Book::Base.load
       dummy_chapter = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
       dummy_loc = Location.new("", StringIO.new)
-      b.bind(ReVIEW::Compiler.new(b), dummy_chapter, dummy_loc)
-      b.compile_inline(line)
+      c = ReVIEW::Compiler.new(b)
+      b.bind(c, dummy_chapter, dummy_loc)
+      c.setup_parser(line)
+      c.parse("Paragraph")
+      c.result.to_doc
     end
 
     def error!(filename, lineno, msg)
