@@ -115,11 +115,10 @@ module ReVIEW
       if chap_node.number
         name = "chap#{chap_node.number}"
         label = "#{chap.number} #{chap.title}"
-        puts li(a_name(path, escape_html(label)))
       else
         label = chap.title
-        puts li(a_name(path, escape_html(label)))
       end
+      puts li(a_name(path, escape_html(label)))
       return unless print?(2)
       if print?(3)
         puts chap_sections_to_s(chap_node)
