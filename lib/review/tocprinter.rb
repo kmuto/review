@@ -11,8 +11,7 @@
 # For details of LGPL, see the file "COPYING".
 #
 
-require 'review/htmlutils'
-require 'review/htmllayout'
+require 'review'
 
 module ReVIEW
 
@@ -96,20 +95,30 @@ module ReVIEW
 
     include HTMLUtils
 
+    def print_book(book)
+      puts '<ul class="book-toc">'
+      book.each_part do |part|
+        print_part(part)
+      end
+      puts '</ul>'
+    end
+
     def print_part(part)
-      puts h1(part.name) if part.name
+      puts li(part.name) if part.name
       super
     end
 
     def print_chapter(chap)
       chap_node = TOCParser.chapter_node(chap)
+      ext = chap.book.config["htmlext"] || ".html"
+      path = chap.path.sub(/\.re/, ext)
       if chap_node.number
         name = "chap#{chap_node.number}"
-        label = "第#{chap_node.number}章 #{chap_node.label}"
-        puts h2(a_name(escape_html(name), escape_html(label)))
+        label = "#{chap.number} #{chap.title}"
+        puts li(a_name(path, escape_html(label)))
       else
-        label = "#{chap_node.label}"
-        puts h2(escape_html(label))
+        label = chap.title
+        puts li(a_name(path, escape_html(label)))
       end
       return unless print?(2)
       if print?(3)
@@ -134,28 +143,17 @@ module ReVIEW
     def chapter_to_s(chap)
       res = []
       chap.each_section do |sec|
-        res << h3(escape_html(sec.label))
+        res << li(escape_html(sec.label))
         next unless print?(4)
-        next if sec.section_size == 0
-        res << "<ul>"
-        sec.each_section do |node|
-          res << li(escape_html(node.label))
+        if sec.section_size > 0
+          res << "<ul>"
+          sec.each_section do |node|
+            res << li(escape_html(node.label))
+          end
+          res << "</ul>"
         end
-        res << "</ul>"
       end
       return res.join("\n")
-    end
-
-    def h1(label)
-      "<h1>#{label}</h1>"
-    end
-
-    def h2(label)
-      "<h2>#{label}</h2>"
-    end
-
-    def h3(label)
-      "<h3>#{label}</h3>"
     end
 
     def li(content)
