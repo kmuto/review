@@ -24,6 +24,7 @@ Gem::Specification.new do |gem|
   ]
   gem.require_paths = ["lib"]
 
+  gem.add_dependency("rubyzip")
   gem.add_development_dependency("rake")
   gem.add_development_dependency("test-unit")
   gem.add_development_dependency("pygments.rb")
