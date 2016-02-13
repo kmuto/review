@@ -135,8 +135,8 @@ secnolevel: 2
 # fontdir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
 # font_ext: ["ttf", "woff", "otf"]
 
-# review-compileに渡すパラメータ
-params: --stylesheet=sample.css
+# review-compileに渡すパラメータ(deprecated)
+# params: --stylesheet=sample.css
 # Pygmentsカラーリングを利用する (pygments外部gemが必要)
 # pygments: true
 

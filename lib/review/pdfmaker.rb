@@ -158,6 +158,10 @@ module ReVIEW
 
         call_hook("hook_beforetexcompile")
 
+        if @params["params"].present?
+          warn "params: is deprecated. Use attributes of config.yml directly."
+        end
+
         ## do compile
         kanji = 'utf8'
         texcommand = "platex"
