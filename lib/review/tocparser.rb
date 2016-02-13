@@ -27,6 +27,14 @@ module ReVIEW
       end
     end
 
+    def TOCParser.chapter_node(chap)
+      toc = TOCParser.parse(chap)
+      unless toc.size == 1
+        $stderr.puts "warning: chapter #{toc.join} contains more than 1 chapter"
+      end
+      toc.first
+    end
+
     def parse(f, chap)
       roots = [] ## list of chapters
       node_stack = []
@@ -285,55 +293,5 @@ module ReVIEW
     end
 
   end
-
-
-  module TOCRoot
-    def level
-      0
-    end
-
-    def chapter?
-      false
-    end
-
-    def each_section_with_index
-      idx = -1
-      each_section do |node|
-        yield node, (idx += 1)
-      end
-    end
-
-    def each_section(&block)
-      each_chapter do |chap|
-        yield chap.toc
-      end
-    end
-
-    def section_size
-      chapters.size
-    end
-
-    def estimated_lines
-      chapters.inject(0) {|sum, chap| sum + chap.toc.estimated_lines }
-    end
-  end
-
-  class Book::Base # reopen
-    include TOCRoot
-  end
-
-  class Book::Part
-    include TOCRoot
-  end
-
-  class Book::Chapter # reopen
-    def toc
-      @toc ||= TOCParser.parse(self)
-      unless @toc.size == 1
-        $stderr.puts "warning: chapter #{@toc.join} contains more than 1 chapter"
-      end
-      @toc.first
-    end
-  end
-
 end
+
