@@ -11,8 +11,7 @@
 # For details of LGPL, see the file "COPYING".
 #
 
-require 'review/htmlutils'
-require 'review/htmllayout'
+require 'review'
 
 module ReVIEW
 
@@ -27,6 +26,24 @@ module ReVIEW
       @config = param
     end
 
+    def print_book(book)
+      book.each_part do |part|
+        print_part(part)
+      end
+    end
+
+    def print_part(part)
+      part.each_chapter do |chap|
+        print_chapter(chap)
+      end
+    end
+
+    def print_chapter(chap)
+      chap_node = TOCParser.chapter_node(chap)
+      print_node 1, chap_node
+      print_children chap_node
+    end
+
     def print?(level)
       level <= @print_upper
     end
@@ -34,9 +51,6 @@ module ReVIEW
 
 
   class TextTOCPrinter < TOCPrinter
-    def print_book(book)
-      print_children book
-    end
 
     private
 
@@ -82,36 +96,34 @@ module ReVIEW
     include HTMLUtils
 
     def print_book(book)
-      return unless print?(1)
-      html = ""
+      puts '<ul class="book-toc">'
       book.each_part do |part|
-        html << h1(part.name) if part.name
-        part.each_section do |chap|
-          if chap.number
-            name = "chap#{chap.number}"
-            label = "第#{chap.number}章 #{chap.label}"
-            html << h2(a_name(escape_html(name), escape_html(label)))
-          else
-            label = "#{chap.label}"
-            html << h2(escape_html(label))
-          end
-          return unless print?(2)
-          if print?(3)
-            html << chap_sections_to_s(chap)
-          else
-            html << chapter_to_s(chap)
-          end
-        end
+        print_part(part)
       end
-      layout_file = File.join(book.basedir, "layouts", "layout.html.erb")
-      unless File.exist?(layout_file) # backward compatibility
-        layout_file = File.join(book.basedir, "layouts", "layout.erb")
-      end
-      if File.exist?(layout_file)
-        puts HTMLLayout.new(
-               {'body' => html, 'title' => "目次"}, layout_file).result
+      puts '</ul>'
+    end
+
+    def print_part(part)
+      puts li(part.name) if part.name
+      super
+    end
+
+    def print_chapter(chap)
+      chap_node = TOCParser.chapter_node(chap)
+      ext = chap.book.config["htmlext"] || ".html"
+      path = chap.path.sub(/\.re/, ext)
+      if chap_node.number
+        name = "chap#{chap_node.number}"
+        label = "#{chap.number} #{chap.title}"
       else
-        puts html
+        label = chap.title
+      end
+      puts li(a_name(path, escape_html(label)))
+      return unless print?(2)
+      if print?(3)
+        puts chap_sections_to_s(chap_node)
+      else
+        puts chapter_to_s(chap_node)
       end
     end
 
@@ -130,28 +142,17 @@ module ReVIEW
     def chapter_to_s(chap)
       res = []
       chap.each_section do |sec|
-        res << h3(escape_html(sec.label))
+        res << li(escape_html(sec.label))
         next unless print?(4)
-        next if sec.section_size == 0
-        res << "<ul>"
-        sec.each_section do |node|
-          res << li(escape_html(node.label))
+        if sec.section_size > 0
+          res << "<ul>"
+          sec.each_section do |node|
+            res << li(escape_html(node.label))
+          end
+          res << "</ul>"
         end
-        res << "</ul>"
       end
       return res.join("\n")
-    end
-
-    def h1(label)
-      "<h1>#{label}</h1>"
-    end
-
-    def h2(label)
-      "<h2>#{label}</h2>"
-    end
-
-    def h3(label)
-      "<h3>#{label}</h3>"
     end
 
     def li(content)
@@ -164,45 +165,4 @@ module ReVIEW
 
   end
 
-  class IDGTOCPrinter < TOCPrinter
-    def print_book(book)
-      puts %Q(<?xml version="1.0" encoding="UTF-8"?>)
-      puts %Q(<doc xmlns:aid='http://ns.adobe.com/AdobeInDesign/4.0/'><title aid:pstyle="h0">1　パート1</title><?dtp level="0" section="第1部　パート1"?>) # FIXME: 部タイトルを取るには？ & 部ごとに結果を分けるには？
-      puts %Q(<ul aid:pstyle='ul-partblock'>)
-      print_children book
-      puts %Q(</ul></doc>)
-    end
-
-    private
-
-    def print_children(node)
-      return unless print?(node.level + 1)
-      node.each_section_with_index do |sec, idx|
-        print_node idx+1, sec
-        print_children sec
-      end
-    end
-
-    LABEL_LEN = 54
-
-    def print_node(seq, node)
-      if node.chapter?
-        printf "<li aid:pstyle='ul-part'>%s</li>\n",
-               "#{chapnumstr(node.number)}#{node.label}"
-      else
-        printf "<li>%-#{LABEL_LEN}s\n",
-               "  #{'   ' * (node.level - 1)}#{seq}　#{node.label}</li>"
-      end
-    end
-
-    def chapnumstr(n)
-      n ? sprintf('第%d章　', n) : ''
-    end
-
-    def volume_columns(level, volstr)
-      cols = ["", "", "", nil]
-      cols[level - 1] = volstr
-      cols[0, 3]
-    end
-  end
 end
