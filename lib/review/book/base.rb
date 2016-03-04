@@ -110,6 +110,15 @@ module ReVIEW
         parts.each(&block)
       end
 
+      def contents
+        # TODO: includes predef, appendix, postdef
+        if parts.present?
+          chapters + parts
+        else
+          chapters
+        end
+      end
+
       def chapters
         parts().map {|p| p.chapters }.flatten
       end
