@@ -18,12 +18,11 @@ module ReVIEW
 
   class TOCParser
     def TOCParser.parse(chap)
-      chap.open do |f|
-        stream = Preprocessor::Strip.new(f)
-        new.parse(stream, chap).map do |root|
-          root.number = chap.number
-          root
-        end
+      f = StringIO.new(chap.content)
+      stream = Preprocessor::Strip.new(f)
+      new.parse(stream, chap).map do |root|
+        root.number = chap.number
+        root
       end
     end
 

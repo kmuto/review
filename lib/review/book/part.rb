@@ -20,6 +20,9 @@ module ReVIEW
         @number = number
         @chapters = chapters
         @path = name
+        if @path && File.exist?(@path)
+          @content = File.read(@path)
+        end
         @name = name ? File.basename(name, '.re') : nil
         @volume = nil
       end

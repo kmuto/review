@@ -42,19 +42,17 @@ module ReVIEW
         return @title if @title
 
         @title = ''
-        open {|f|
-          f.each_line {|l|
-            if l =~ /\A=+/
-              @title = l.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
-              break
-            end
-          }
-        }
+        content.each_line do |line|
+          if line =~ /\A=+/
+            @title = line.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
+            break
+          end
+        end
         @title
       end
 
       def size
-        File.size(path())
+        content.size
       end
 
       def volume
@@ -65,16 +63,15 @@ module ReVIEW
         @volume
       end
 
+      # deprecated; use content()
       def open(&block)
         return (block_given?() ? yield(@io) : @io) if @io
-        File.open(path(), &block)
+        StringIO.new(content)
       end
 
       attr_writer :content
 
       def content
-        @content = File.read(path())
-      rescue
         @content
       end
 
