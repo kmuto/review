@@ -256,11 +256,10 @@ E
 
       book = Book::Base.new(dir)
 
-      ch = nil
       File.open(path, 'w') do |o|
         o.print content
-        ch = Book::Chapter.new(book, 1, 'chapter', o.path)
       end
+      ch = Book::Chapter.new(book, 1, 'chapter', path)
 
       assert ch.__send__(ref_method, 'abc')
       assert ch.__send__(ref_method, 'def')
