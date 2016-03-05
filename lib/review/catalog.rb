@@ -5,7 +5,7 @@ module ReVIEW
     def initialize(file)
       if file.respond_to? :read
         @yaml = YAML.load(file.read)
-      else  ## as Object
+      else ## as Object
         @yaml = file
       end
       @yaml ||= {}
