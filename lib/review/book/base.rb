@@ -201,6 +201,10 @@ module ReVIEW
         @catalog
       end
 
+      def catalog=(catalog)
+        @catalog = catalog
+      end
+
       def read_CHAPS
         if catalog
           catalog.chaps

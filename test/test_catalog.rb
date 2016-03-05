@@ -81,6 +81,16 @@ back02.re
     assert_equal(exp.chomp, sut.postdef)
   end
 
+  def test_from_object
+    sut = Catalog.new(yaml_hash)
+    exp =<<-EOS
+ch01.re
+ch02.re
+    EOS
+    assert_equal(exp.chomp, sut.chaps)
+  end
+
+
   private
   def yaml
     StringIO.new <<-EOS
@@ -101,6 +111,13 @@ POSTDEF:
   - back01.re
   - back02.re
     EOS
+  end
+
+  def yaml_hash
+    {"PREDEF" => %w(pre01.re pre02.re),
+     "CHAPS" => %w(ch01.re ch02.re),
+     "APPENDIX" => %w(post01.re post02.re),
+     "POSTDEF" => %w(back01.re back02.re)}
   end
 
   def yaml_with_parts
