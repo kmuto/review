@@ -15,13 +15,17 @@ module ReVIEW
     class Part
       include Compilable
 
-      def initialize(book, number, chapters, name="")
+      def initialize(book, number, chapters, name = "", io = nil)
         @book = book
         @number = number
         @chapters = chapters
         @path = name
-        if @path && File.exist?(@path)
+        if io
+          @content = io.read
+        elsif @path && File.exist?(@path)
           @content = File.read(@path)
+        else
+          @content = nil
         end
         @name = name ? File.basename(name, '.re') : nil
         @volume = nil
