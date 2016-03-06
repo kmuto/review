@@ -96,6 +96,10 @@ module ReVIEW
         @parts ||= read_parts()
       end
 
+      def parts=(parts)
+        @parts = parts
+      end
+
       def parts_in_file
         parts.find_all{|part|
           part if part.present? and part.file?
@@ -321,6 +325,8 @@ module ReVIEW
         list
       end
 
+      # return Array of Part, not Chapter
+      #
       def parse_chapters
         part = 0
         num = 0
