@@ -57,6 +57,9 @@ module ReVIEW
         end
       end
 
+      def on_APPENDIX?
+        false
+      end
     end
   end
 end
