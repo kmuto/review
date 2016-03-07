@@ -1074,4 +1074,20 @@ EOS
     hd = builder.inline_hd("ch1|test1-1")
     assert_equal "「1.1 test1-1」", hd
   end
+
+  def test_inline_hd_for_part
+    book = ReVIEW::Book::Base.load
+    book.catalog = ReVIEW::Catalog.new({"CHAPS"=>%w(ch1.re ch2.re)})
+    io1 = StringIO.new("= test1\n\nfoo\n\n== test1-1\n\nbar\n\n== test1-2\n\nbar\n\n")
+    io2 = StringIO.new("= test2\n\nfoo\n\n== test2-1\n\nbar\n\n== test2-2\n\nbar\n\n")
+    io_p1 = StringIO.new("= part1\n\nfoo\n\n== part1-1\n\nbar\n\n== part1-2\n\nbar\n\n")
+    chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
+    chap2 = ReVIEW::Book::Chapter.new(book, 2, 'ch2', 'ch2.re', io2)
+    book.parts = [ReVIEW::Book::Part.new(self, 1, [chap1, chap2], "part1.re", io_p1)]
+    builder = ReVIEW::HTMLBuilder.new
+    comp = ReVIEW::Compiler.new(builder)
+    builder.bind(comp, chap2, nil)
+    hd = builder.inline_hd("part1|part1-1")
+    assert_equal "「1.1 part1-1」", hd
+  end
 end
