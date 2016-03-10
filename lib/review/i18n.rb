@@ -104,7 +104,7 @@ module ReVIEW
     def t(str, args = nil)
       args = [args] unless args.is_a? Array
 
-      frmt = @store[@locale][str]
+      frmt = @store[@locale][str].dup
       frmt.gsub!('%%', '##')
       percents = frmt.scan(/%\w\w?/)
       percents.each_with_index do |i, idx|
