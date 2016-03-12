@@ -37,6 +37,9 @@ module ReVIEW
         "debug" => nil, # debug flag
         "catalogfile" => 'catalog.yml',
         "language" => 'ja', # XXX default language should be JA??
+        "mathml" => nil, # for HTML
+        "htmlext" => "html",
+        "htmlversion" => 4,
 
         "chapter_file" => 'CHAPS',
         "part_file" => 'PART',
