@@ -13,6 +13,7 @@ require 'rexml/streamlistener'
 require 'epubmaker'
 require 'review/htmltoc'
 require 'review/converter'
+require 'review/htmlbuilder'
 
 module ReVIEW
  class EPUBMaker
@@ -200,7 +201,7 @@ module ReVIEW
     base_path = Pathname.new(basedir)
     book = ReVIEW::Book.load(basedir)
     book.config = @params
-    @converter = ReVIEW::Converter.new(book, "html")
+    @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
     @compile_errors = nil
     book.parts.each do |part|
       htmlfile = nil

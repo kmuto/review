@@ -9,9 +9,9 @@ module ReVIEW
   class Converter
     attr_accessor :target
 
-    def initialize(book, target)
+    def initialize(book, builder)
       @book = book
-      @compiler = ReVIEW::Compiler.new(load_builder(target))
+      @compiler = ReVIEW::Compiler.new(builder)
     end
 
     def convert(file, output_path)
@@ -21,13 +21,6 @@ module ReVIEW
       File.open(output_path, 'w') do |f|
         f.puts result
       end
-    end
-
-    private
-
-    def load_builder(target)
-      require "review/#{target}builder"
-      ReVIEW.const_get("#{target.upcase}Builder").new
     end
   end
 end

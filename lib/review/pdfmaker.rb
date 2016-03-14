@@ -15,6 +15,7 @@ require 'erb'
 require 'review'
 require 'review/i18n'
 require 'review/converter'
+require 'review/latexbuilder'
 
 
 module ReVIEW
@@ -116,7 +117,7 @@ module ReVIEW
 
       book = ReVIEW::Book.load(@basedir)
       book.config = @config
-      @converter = ReVIEW::Converter.new(book, "latex")
+      @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
       book.parts.each do |part|
         if part.name.present?
           if part.file?
