@@ -14,6 +14,8 @@ require 'erb'
 
 require 'review'
 require 'review/i18n'
+require 'review/converter'
+require 'review/latexbuilder'
 
 
 module ReVIEW
@@ -25,7 +27,7 @@ module ReVIEW
     attr_accessor :config, :basedir
 
     def initialize
-      @basedir = Dir.pwd
+      @basedir = nil
     end
 
     def system_or_raise(*args)
@@ -101,6 +103,7 @@ module ReVIEW
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
+      @basedir = File.dirname(yamlfile)
       generate_pdf(yamlfile)
     end
 
@@ -114,6 +117,7 @@ module ReVIEW
 
       book = ReVIEW::Book.load(@basedir)
       book.config = @config
+      @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
       book.parts.each do |part|
         if part.name.present?
           if part.file?
@@ -193,12 +197,12 @@ module ReVIEW
 
     def output_chaps(filename, yamlfile)
       $stderr.puts "compiling #{filename}.tex"
-      cmd = "#{ReVIEW::MakerHelper.bindir}/review-compile --yaml=#{yamlfile} --target=latex --level=#{@config["secnolevel"]} --toclevel=#{@config["toclevel"]} #{@config["params"]} #{filename}.re > #{@path}/#{filename}.tex"
-      if system cmd
-        # OK
-      else
+      begin
+        @converter.convert(filename+".re", File.join(@path, filename+".tex"))
+      rescue => e
         @compile_errors = true
-        warn cmd
+        warn "compile error in #{filename}.tex (#{e.class})"
+        warn e.message
       end
     end
 
