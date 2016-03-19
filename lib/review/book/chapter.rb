@@ -30,6 +30,8 @@ module ReVIEW
           rescue
             @content = nil
           end
+        else
+          @content = nil
         end
         if !@content && @path && File.exist?(@path)
           @content = File.read(@path)

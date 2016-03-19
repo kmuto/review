@@ -48,6 +48,7 @@ module ReVIEW
         @chapter_index = nil
         @config = ReVIEW::Configure.values
         @catalog = nil
+        @read_part = nil
       end
 
       def bib_file
