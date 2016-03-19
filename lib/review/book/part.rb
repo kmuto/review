@@ -23,7 +23,7 @@ module ReVIEW
         if io
           @content = io.read
         elsif @path && File.exist?(@path)
-          @content = File.read(@path)
+          @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
         else
           @content = nil
         end

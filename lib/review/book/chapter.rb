@@ -34,7 +34,7 @@ module ReVIEW
           @content = nil
         end
         if !@content && @path && File.exist?(@path)
-          @content = File.read(@path)
+          @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
         end
         @list_index = nil
         @table_index = nil
