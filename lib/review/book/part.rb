@@ -15,6 +15,8 @@ module ReVIEW
     class Part
       include Compilable
 
+      # if Part is dummy, `number` is nil.
+      #
       def initialize(book, number, chapters, name = "", io = nil)
         @book = book
         @number = number

@@ -352,10 +352,10 @@ module ReVIEW
           chaps = part_chunk.split.map {|chapid|
             Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
           }
-          if part_exist? && read_PART.split("\n").size >= part
+          if part_exist? && read_PART.split("\n").size > part
             Part.new(self, (part += 1), chaps, read_PART.split("\n")[part-1])
           else
-            Part.new(self, (part += 1), chaps)
+            Part.new(self, nil, chaps)
           end
         }
         return chap

@@ -179,7 +179,7 @@ class BookTest < Test::Unit::TestCase
       parts = book.instance_eval { parse_chapters }
       assert_equal 1, parts.size
 
-      assert_equal 1, parts[0].number
+      assert_equal nil, parts[0].number
       assert_equal 2, parts[0].chapters.size
       chaps = parts[0].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
@@ -203,7 +203,7 @@ EOC
       parts = book.instance_eval { parse_chapters }
       assert_equal 3, parts.size
 
-      assert_equal 1, parts[0].number
+      assert_equal nil, parts[0].number
       assert_equal 2, parts[0].chapters.size
       chaps = parts[0].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
@@ -212,7 +212,7 @@ EOC
       ]
       assert_equal expect, chaps
 
-      assert_equal 2, parts[1].number
+      assert_equal nil, parts[1].number
       assert_equal 3, parts[1].chapters.size
       chaps = parts[1].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
@@ -222,7 +222,7 @@ EOC
       ]
       assert_equal expect, chaps
 
-      assert_equal 3, parts[2].number
+      assert_equal nil, parts[2].number
       assert_equal 1, parts[2].chapters.size
       chaps = parts[2].chapters.map {|ch| [ch.number, ch.name, ch.path] }
       expect = [
@@ -248,7 +248,7 @@ EOC
         "part1\n",
         [
           "part1",
-          nil, # XXX: OK?
+          "", # XXX: OK?
           ""
         ],
       ],
@@ -257,7 +257,7 @@ EOC
         "part1_chapter1.re\n",
         "",
         [
-          nil, # XXX: OK?
+          "", # XXX: OK?
         ],
       ],
       [
@@ -418,12 +418,12 @@ EOC
       assert tmp.empty?
     end
 
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3" do |dir, book, files|
+    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3", 'PART' => "foo\nbar\n" do |dir, book, files|
       parts = book.parts
       assert_equal 2, parts.size
       assert !book.part(0)
-      assert book.part(1)
-      assert book.part(2)
+      assert_equal "foo", book.part(1).name
+      assert_equal "bar", book.part(2).name
       assert !book.part(3)
 
       tmp = []
