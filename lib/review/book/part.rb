@@ -22,6 +22,7 @@ module ReVIEW
         @number = number
         @chapters = chapters
         @path = name
+        @title = nil
         if io
           @content = io.read
         elsif @path && File.exist?(@path)

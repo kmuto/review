@@ -42,6 +42,7 @@ module ReVIEW
         return @title if @title
 
         @title = ''
+        return @title if !content
         content.each_line do |line|
           if line =~ /\A=+/
             @title = line.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
