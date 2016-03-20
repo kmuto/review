@@ -1151,7 +1151,9 @@ EOS
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
-    hd = builder.inline_hd("ch1|test1-1")
+    comp.setup_parser("@<hd>{ch1|test1-1}")
+    comp.parse("Paragraph")
+    hd = comp.result.to_doc
     assert_equal "「1.1 test1-1」", hd
   end
 
@@ -1167,7 +1169,9 @@ EOS
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
-    hd = builder.inline_hd("part1|part1-1")
+    comp.setup_parser("@<hd>{part1|part1-1}")
+    comp.parse("Paragraph")
+    hd = comp.result.to_doc
     assert_equal "「1.1 part1-1」", hd
   end
 end
