@@ -21,9 +21,10 @@ module ReVIEW
       99 # no one use 99 level nest
     end
 
-    def initialize(print_upper, param)
+    def initialize(print_upper, param, out = $stdout)
       @print_upper = print_upper
       @config = param
+      @out = out
     end
 
     def print_book(book)
@@ -67,12 +68,12 @@ module ReVIEW
     def print_node(number, node)
       if node.chapter?
         vol = node.volume
-        printf "%3s %3dKB %6dC %5dL  %s (%s)\n",
+        @out.printf "%3s %3dKB %6dC %5dL  %s (%s)\n",
                chapnumstr(node.number),
                vol.kbytes, vol.chars, vol.lines,
                node.label, node.chapter_id
       else ## for section node
-        printf "%17s %5dL  %s\n",
+        @out.printf "%17s %5dL  %s\n",
                '', node.estimated_lines,
                "  #{'   ' * (node.level - 1)}#{number} #{node.label}"
       end
@@ -96,40 +97,42 @@ module ReVIEW
     include HTMLUtils
 
     def print_book(book)
-      puts '<ul class="book-toc">'
+      @out.puts '<ul class="book-toc">'
       book.each_part do |part|
         print_part(part)
       end
-      puts '</ul>'
+      @out.puts '</ul>'
     end
 
     def print_part(part)
-      puts li(part.name) if part.name
+      if part.number
+        @out.puts li(part.title)
+      end
       super
     end
 
     def print_chapter(chap)
       chap_node = TOCParser.chapter_node(chap)
-      ext = chap.book.config["htmlext"] || ".html"
-      path = chap.path.sub(/\.re/, ext)
-      if chap_node.number
-        name = "chap#{chap_node.number}"
+      ext = chap.book.config["htmlext"] || "html"
+      path = chap.path.sub(/\.re/, "."+ext)
+      if chap_node.number && chap.on_CHAPS?
         label = "#{chap.number} #{chap.title}"
       else
         label = chap.title
       end
-      puts li(a_name(path, escape_html(label)))
+      @out.puts li(a_name(path, escape_html(label)))
       return unless print?(2)
       if print?(3)
-        puts chap_sections_to_s(chap_node)
+        @out.puts chap_sections_to_s(chap_node)
       else
-        puts chapter_to_s(chap_node)
+        @out.puts chapter_to_s(chap_node)
       end
     end
 
     private
 
     def chap_sections_to_s(chap)
+      return "" if chap.section_size < 1
       res = []
       res << "<ol>"
       chap.each_section do |sec|

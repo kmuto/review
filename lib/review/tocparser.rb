@@ -63,7 +63,7 @@ module ReVIEW
           node_stack.last.add_child sec
           node_stack.push sec
 
-        when /\A= /
+        when /\A=[^=]/
           label = get_label(line)
           node_stack.clear
           new_chapter = Chapter.new(label, chap)
