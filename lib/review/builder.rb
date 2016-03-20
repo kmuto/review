@@ -294,7 +294,9 @@ module ReVIEW
     def node_inline_hd(nodelist)
       id = nodelist[0].to_raw
       m = /\A([^|]+)\|(.+)/.match(id)
-      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      if m && m[1]
+        chapter = @book.contents.detect{|chap| chap.id == m[1]}
+      end
       if chapter
         inline_hd_chap(chapter, m[2])
       else
@@ -380,7 +382,7 @@ module ReVIEW
     def extract_chapter_id(chap_ref)
       m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
       if m
-        return [@book.chapters.detect{|chap| chap.id == m[1]}, m[2]]
+        return [@book.contents.detect{|chap| chap.id == m[1]}, m[2]]
       else
         return [@chapter, chap_ref]
       end

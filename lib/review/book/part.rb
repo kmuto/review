@@ -15,11 +15,21 @@ module ReVIEW
     class Part
       include Compilable
 
-      def initialize(book, number, chapters, name="")
+      # if Part is dummy, `number` is nil.
+      #
+      def initialize(book, number, chapters, name = "", io = nil)
         @book = book
         @number = number
         @chapters = chapters
         @path = name
+        @title = nil
+        if io
+          @content = io.read
+        elsif @path && File.exist?(@path)
+          @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
+        else
+          @content = nil
+        end
         @name = name ? File.basename(name, '.re') : nil
         @volume = nil
       end
@@ -50,6 +60,9 @@ module ReVIEW
         end
       end
 
+      def on_APPENDIX?
+        false
+      end
     end
   end
 end

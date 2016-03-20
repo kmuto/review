@@ -63,7 +63,7 @@ debug: null
 # htmlext: HTMLファイルの拡張子(省略した場合はhtml)
 #
 # CSSファイル(配列で複数指定可)
-# stylesheet: ["stylesheet.css"]
+stylesheet: ["sample.css"]
 
 # ePUBのバージョン (2か3)
 # epubversion: 2
@@ -135,8 +135,9 @@ secnolevel: 2
 # fontdir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
 # font_ext: ["ttf", "woff", "otf"]
 
-# review-compileに渡すパラメータ
-params: --stylesheet=sample.css
+# (deprecated)review-compileに渡すパラメータ(epubmaker, pdfmakerでは無視される)
+# params: --stylesheet=sample.css
+
 # Pygmentsカラーリングを利用する (pygments外部gemが必要)
 # pygments: true
 

@@ -18,12 +18,11 @@ module ReVIEW
 
   class TOCParser
     def TOCParser.parse(chap)
-      chap.open do |f|
-        stream = Preprocessor::Strip.new(f)
-        new.parse(stream, chap).map do |root|
-          root.number = chap.number
-          root
-        end
+      f = StringIO.new(chap.content)
+      stream = Preprocessor::Strip.new(f)
+      new.parse(stream, chap).map do |root|
+        root.number = chap.number
+        root
       end
     end
 
@@ -64,7 +63,7 @@ module ReVIEW
           node_stack.last.add_child sec
           node_stack.push sec
 
-        when /\A= /
+        when /\A=[^=]/
           label = get_label(line)
           node_stack.clear
           new_chapter = Chapter.new(label, chap)

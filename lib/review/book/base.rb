@@ -48,6 +48,7 @@ module ReVIEW
         @chapter_index = nil
         @config = ReVIEW::Configure.values
         @catalog = nil
+        @read_part = nil
       end
 
       def bib_file
@@ -96,6 +97,10 @@ module ReVIEW
         @parts ||= read_parts()
       end
 
+      def parts=(parts)
+        @parts = parts
+      end
+
       def parts_in_file
         parts.find_all{|part|
           part if part.present? and part.file?
@@ -108,6 +113,15 @@ module ReVIEW
 
       def each_part(&block)
         parts.each(&block)
+      end
+
+      def contents
+        # TODO: includes predef, appendix, postdef
+        if parts.present?
+          chapters + parts
+        else
+          chapters
+        end
       end
 
       def chapters
@@ -190,6 +204,10 @@ module ReVIEW
         end
 
         @catalog
+      end
+
+      def catalog=(catalog)
+        @catalog = catalog
       end
 
       def read_CHAPS
@@ -308,6 +326,8 @@ module ReVIEW
         list
       end
 
+      # return Array of Part, not Chapter
+      #
       def parse_chapters
         part = 0
         num = 0
@@ -332,10 +352,10 @@ module ReVIEW
           chaps = part_chunk.split.map {|chapid|
             Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
           }
-          if part_exist? && read_PART.split("\n").size >= part
+          if part_exist? && read_PART.split("\n").size > part
             Part.new(self, (part += 1), chaps, read_PART.split("\n")[part-1])
           else
-            Part.new(self, (part += 1), chaps)
+            Part.new(self, nil, chaps)
           end
         }
         return chap

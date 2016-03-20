@@ -183,6 +183,14 @@ class I18nTest < Test::Unit::TestCase
     assert_equal "bar", i18n.t("foo")
   end
 
+  def test_ja_appendix_alphabet
+    i18n = I18n.new("ja")
+    i18n.update({"appendix" => "付録%pA"}, "ja")
+    assert_equal "付録A", i18n.t("appendix", 1)
+    assert_equal "付録B", i18n.t("appendix", 2)
+    assert_equal "付録C", i18n.t("appendix", 3)
+  end
+
   def test_i18n_error
     I18n.setup
     assert_raises NotImplementedError do

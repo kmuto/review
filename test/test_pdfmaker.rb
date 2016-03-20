@@ -39,6 +39,7 @@ class PDFMakerTest < Test::Unit::TestCase
   def test_check_book_none
     Dir.mktmpdir do |dir|
       assert_nothing_raised do
+        @maker.basedir = Dir.pwd
         @maker.remove_old_file
       end
     end
@@ -134,6 +135,7 @@ class PDFMakerTest < Test::Unit::TestCase
 
   def test_gettemplate
     Dir.mktmpdir do |dir|
+      @maker.basedir = Dir.pwd
       tmpl = @maker.get_template
       expect = File.read(File.join(assets_dir,"test_template.tex"))
       assert_equal(expect, tmpl)
@@ -161,6 +163,7 @@ class PDFMakerTest < Test::Unit::TestCase
 
         expect = File.read(File.join(assets_dir,"test_template_backmatter.tex"))
 
+        @maker.basedir = Dir.pwd
         tmpl = @maker.get_template
         tmpl.gsub!(/\A.*%% backmatter begins\n/m,"")
         assert_equal(expect, tmpl)

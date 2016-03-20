@@ -12,6 +12,8 @@ require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
 require 'review/htmltoc'
+require 'review/converter'
+require 'review/htmlbuilder'
 
 module ReVIEW
  class EPUBMaker
@@ -178,6 +180,13 @@ module ReVIEW
     end
   end
 
+  def check_compile_status
+    return unless @compile_errors
+
+    $stderr.puts "compile error, No EPUB file output."
+    exit 1
+  end
+
   def build_body(basetmpdir, yamlfile)
     @precount = 0
     @bodycount = 0
@@ -188,15 +197,17 @@ module ReVIEW
     @tocdesc = Array.new
     # toccount = 2  ## not used
 
-    basedir = Dir.pwd
+    basedir = File.dirname(yamlfile)
     base_path = Pathname.new(basedir)
     book = ReVIEW::Book.load(basedir)
-    book.load_config(yamlfile)
+    book.config = @params
+    @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
+    @compile_errors = nil
     book.parts.each do |part|
       htmlfile = nil
       if part.name.present?
         if part.file?
-          build_chap(part, base_path, basetmpdir, yamlfile, true)
+          build_chap(part, base_path, basetmpdir, true)
         else
           htmlfile = "part_#{part.number}.#{@params["htmlext"]}"
           build_part(part, basetmpdir, htmlfile)
@@ -208,10 +219,11 @@ module ReVIEW
       end
 
       part.chapters.each do |chap|
-        build_chap(chap, base_path, basetmpdir, yamlfile, nil)
+        build_chap(chap, base_path, basetmpdir, false)
       end
 
     end
+    check_compile_status()
   end
 
   def build_part(part, basetmpdir, htmlfile)
@@ -241,11 +253,11 @@ module ReVIEW
     end
   end
 
-  def build_chap(chap, base_path, basetmpdir, yamlfile, ispart=nil)
+  def build_chap(chap, base_path, basetmpdir, ispart)
     filename = ""
 
     chaptype = "body"
-    if ispart.present?
+    if ispart
       chaptype = "part"
     elsif chap.on_PREDEF?
       chaptype = "pre"
@@ -277,8 +289,6 @@ module ReVIEW
     write_buildlogtxt(basetmpdir, htmlfile, filename)
     log("Create #{htmlfile} from #{filename}.")
 
-    level = @params["secnolevel"]
-
 # TODO: It would be nice if we can modify level in PART, PREDEF, or POSTDEF.
 #        But we have to care about section number reference (@<hd>) also.
 #
@@ -289,15 +299,20 @@ module ReVIEW
 #      level = @params["post_secnolevel"] if chap.on_APPENDIX?
 #    end
 
-    stylesheet = ""
-    if @params["stylesheet"].size > 0
-      stylesheet = "--stylesheet=#{@params["stylesheet"].join(",")}"
+    if @params["params"].present?
+      warn "'params:' in config.yml is obsoleted."
+      if @params["params"] =~ /stylesheet=/
+        warn "stylesheets should be defined in 'stylesheet:', not in 'params:'"
+      end
     end
-
-    ENV["REVIEWFNAME"] = filename
-    system("#{ReVIEW::MakerHelper.bindir}/review-compile-peg --yaml=#{yamlfile} --target=html --level=#{level} --htmlversion=#{@params["htmlversion"]} --epubversion=#{@params["epubversion"]} #{stylesheet} #{@params["params"]} #{filename} > \"#{basetmpdir}/#{htmlfile}\"")
-
-    write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
+    begin
+      @converter.convert(filename, File.join(basetmpdir, htmlfile))
+      write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
+    rescue => e
+      @compile_errors = true
+      warn "compile error in #{filename} (#{e.class})"
+      warn e.message
+    end
   end
 
   def detect_properties(path)

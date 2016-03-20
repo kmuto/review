@@ -24,7 +24,18 @@ module ReVIEW
         @path = path
         @io = io
         @title = nil
-        @content = nil
+        if @io
+          begin
+            @content = @io.read
+          rescue
+            @content = nil
+          end
+        else
+          @content = nil
+        end
+        if !@content && @path && File.exist?(@path)
+          @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
+        end
         @list_index = nil
         @table_index = nil
         @footnote_index = nil

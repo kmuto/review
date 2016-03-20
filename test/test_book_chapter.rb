@@ -40,10 +40,6 @@ class ChapterTest < Test::Unit::TestCase
     ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal :io, ch.open
     assert_equal [:io], ch.open {|io| [io] }
-
-    ch = Book::Chapter.new(nil, nil, nil, __FILE__)
-    assert_equal __FILE__, ch.open.path
-    assert_equal [__FILE__], ch.open {|io| [io.path] }
   end
 
   def test_size
@@ -52,9 +48,7 @@ class ChapterTest < Test::Unit::TestCase
 
     File.open(__FILE__, 'r') do |i|
       ch = Book::Chapter.new(nil, nil, nil, nil, i)
-      assert_raises(TypeError) do # XXX: OK?
-        ch.size
-      end
+      assert_equal File.size(__FILE__), ch.size
     end
   end
 
@@ -256,11 +250,10 @@ E
 
       book = Book::Base.new(dir)
 
-      ch = nil
       File.open(path, 'w') do |o|
         o.print content
-        ch = Book::Chapter.new(book, 1, 'chapter', o.path)
       end
+      ch = Book::Chapter.new(book, 1, 'chapter', path)
 
       assert ch.__send__(ref_method, 'abc')
       assert ch.__send__(ref_method, 'def')
