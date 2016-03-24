@@ -35,6 +35,14 @@ rescue Errno::EPIPE
 end
 
 def main
+  if File.file?("review-preproc-ext.rb")
+    if ENV["REVIEW_SAFE_MODE"].to_i & 2 > 0
+      warn "review-preproc-ext.rb is prohibited in safe mode. ignored."
+    else
+      Kernel.load File.expand_path("review-preproc-ext.rb")
+    end
+  end
+
   param = {}
 
   mode = :output
