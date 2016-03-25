@@ -1,3 +1,9 @@
+Fri Mar 25 22:16:33 2016  Kenshi Muto  <kmuto@debian.org>
+
+	* bin/review-preproc:
+	  load review-preproc-ext.rb if it exists, to overwrite
+	  review-preproc.
+
 Sun Dec 27 16:25:45 2015  Masayoshi Takahashi  <takahashimm@gmail.com>
 
 	* Release 1.7.2
