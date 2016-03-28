@@ -146,13 +146,13 @@ class UUID
 					node[0] |= 0x01 # multicast bit
 					node = node.pack "C*"
 					k = rand 0x40000
-					open STATE_FILE, 'w' do |fp|
+					open STATE_FILE, 'wb' do |fp|
 						fp.flock IO::LOCK_EX
 						write_state fp, k, node
 						fp.chmod 0o777 # must be world writable
 					end
 				end
-				open STATE_FILE, 'r+' do |fp|
+				open STATE_FILE, 'rb+' do |fp|
 					fp.flock IO::LOCK_EX
 					c, m = read_state fp
 					c += 1 # important; increment here
