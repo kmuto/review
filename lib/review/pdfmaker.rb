@@ -300,7 +300,7 @@ module ReVIEW
         template = layout_file
       end
 
-      erb = ERB.new(File.open(template).read)
+      erb = ERB.new(File.read(template))
       values = @config # must be 'values' for legacy files
       erb.result(binding)
     end

@@ -200,7 +200,7 @@ module ReVIEW
 
         catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
         if File.file? catalogfile_path
-          @catalog = Catalog.new(File.open(catalogfile_path))
+          @catalog = File.open(catalogfile_path){|f| Catalog.new(f) }
         end
 
         @catalog
