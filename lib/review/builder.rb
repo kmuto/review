@@ -414,7 +414,7 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline File.open(file_name).read
+      compile_inline File.read(file_name)
     end
 
     def include(file_name)
