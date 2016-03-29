@@ -21,7 +21,7 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'uuid'
+require 'securerandom'
 require 'review'
 require 'review/i18n'
 
@@ -76,7 +76,7 @@ def main
     exit 1
   end
 
-  @identifier = values["urnid"].nil? ? "urn:uuid:#{UUID.create}" : values["urnid"]
+  @identifier = values["urnid"].nil? ? "urn:uuid:#{SecureRandom.uuid}" : values["urnid"]
 
   Dir.mkdir(@bookdir)
 
