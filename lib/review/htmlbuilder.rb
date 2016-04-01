@@ -11,7 +11,7 @@
 
 require 'review/builder'
 require 'review/htmlutils'
-require 'review/htmllayout'
+require 'review/template'
 require 'review/textutils'
 
 module ReVIEW
@@ -58,6 +58,12 @@ module ReVIEW
     private :builder_init_file
 
     def result
+      if @book.htmlversion == 5
+        htmlfilename = "./html/layout-html5.html.erb"
+      else
+        htmlfilename = "./html/layout-xhtml1.html.erb"
+      end
+
       layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
       if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
         raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
@@ -65,39 +71,10 @@ module ReVIEW
       if File.exist?(layout_file)
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
-        else
-          title = strip_html(compile_inline(@chapter.title))
-          language = @book.config['language']
-          stylesheets = @book.config["stylesheet"]
-
-          toc = ""
-          toc_level = 0
-          @chapter.headline_index.items.each do |i|
-            caption = "<li>#{strip_html(compile_inline(i.caption))}</li>\n"
-            if toc_level == i.number.size
-              # do nothing
-            elsif toc_level < i.number.size
-              toc += "<ul>\n" * (i.number.size - toc_level)
-              toc_level = i.number.size
-            elsif toc_level > i.number.size
-              toc += "</ul>\n" * (toc_level - i.number.size)
-              toc_level = i.number.size
-              toc += "<ul>\n" * (toc_level - 1)
-            end
-            toc += caption
-          end
-          toc += "</ul>" * toc_level
-
-          return messages() +
-            HTMLLayout.new(
-            {'body' => @output.string, 'title' => title, 'toc' => toc,
-             'builder' => self,
-             'language' => language,
-             'stylesheets' => stylesheets,
-             'next' => @chapter.next_chapter,
-             'prev' => @chapter.prev_chapter},
-            layout_file).result
+          layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
         end
+      else
+        layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
       end
 
       # default XHTML header/footer
@@ -107,14 +84,10 @@ module ReVIEW
       @body = @output.string
       @language = @book.config['language']
       @stylesheets = @book.config["stylesheet"]
+      @next = @chapter.next_chapter
+      @prev = @chapter.prev_chapter
 
-      if @book.htmlversion == 5
-        htmlfilename = "layout-html5.html.erb"
-      else
-        htmlfilename = "layout-xhtml1.html.erb"
-      end
-      tmplfile = File.expand_path('./html/'+htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
-      tmpl = ReVIEW::Template.load(tmplfile)
+      tmpl = ReVIEW::Template.load(layout_file)
       tmpl.result(binding)
     end
 
