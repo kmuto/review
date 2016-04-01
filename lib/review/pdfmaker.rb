@@ -156,8 +156,8 @@ module ReVIEW
       copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
       copyStyToDir(Dir.pwd, @path, "tex")
 
+      template = get_template
       Dir.chdir(@path) do
-        template = get_template
         File.open("./book.tex", "wb"){|f| f.write(template)}
 
         call_hook("hook_beforetexcompile")
