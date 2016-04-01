@@ -11,7 +11,6 @@ REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE
 class PDFMakerCmdTest < Test::Unit::TestCase
   def setup
     @tmpdir1 = Dir.mktmpdir
-    @tmpdir2 = Dir.mktmpdir
 
     @old_rubylib = ENV['RUBYLIB']
     ENV['RUBYLIB'] = File.expand_path('../lib', File.dirname(__FILE__))
@@ -19,7 +18,6 @@ class PDFMakerCmdTest < Test::Unit::TestCase
 
   def teardown
     FileUtils.rm_rf @tmpdir1
-    FileUtils.rm_rf @tmpdir2
     ENV['RUBYLIB'] = @old_rubylib
   end
 
