@@ -103,7 +103,7 @@ module ReVIEW
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
-      @basedir = File.dirname(yamlfile)
+      @basedir = File::expand_path(File.dirname(yamlfile))
       generate_pdf(yamlfile)
     end
 
