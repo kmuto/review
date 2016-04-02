@@ -248,6 +248,7 @@ module EPUBMaker
           "verify_target_images" => nil,
           "force_include_images" => [],
           "cover_linear" => nil,
+          "externallink" => true,
         },
         "imagedir" => "images",
         "fontdir" => "fonts",

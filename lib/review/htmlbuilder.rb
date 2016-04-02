@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2016 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -1136,7 +1136,11 @@ QUOTE
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      if @book.config["epubmaker"].nil? || @book.config["epubmaker"]["externallink"]
+        %Q(<a href="#{url}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      else
+        label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
+      end
     end
 
     def flushright(lines)

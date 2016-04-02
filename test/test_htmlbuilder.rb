@@ -179,6 +179,20 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_inline_href
     actual = compile_inline("@<href>{http://github.com,Git\\,Hub}")
     assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, actual
+
+    @book.config["epubmaker"] = {}
+    @book.config["epubmaker"]["externallink"] = false
+    actual = compile_inline("@<href>{http://github.com&q=1,Git\\,Hub}")
+    assert_equal %Q|Git,Hub（http://github.com&amp;q=1）|, actual
+
+    actual = compile_inline("@<href>{http://github.com&q=1}")
+    assert_equal %Q|http://github.com&amp;q=1|, actual
+
+    @book.config["epubmaker"]["externallink"] = true
+    actual = compile_inline("@<href>{http://github.com&q=1,Git\\,Hub}")
+    assert_equal %Q|<a href="http://github.com&q=1" class="link">Git,Hub</a>|, actual
+    actual = compile_inline("@<href>{http://github.com&q=1}")
+    assert_equal %Q|<a href="http://github.com&q=1" class="link">http://github.com&amp;q=1</a>|, actual
   end
 
   def test_inline_raw

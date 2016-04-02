@@ -202,6 +202,8 @@ secnolevel: 2
 #  zip_addpath: null
 # EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
 #  cover_linear: null
+# @<href>タグでの外部リンクを禁止し、地の文にする(falseで禁止する)
+#  externallink: true
 #
 # epubmaker:階層を使うものはここまで
 
