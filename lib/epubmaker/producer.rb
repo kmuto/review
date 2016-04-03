@@ -231,6 +231,7 @@ module EPUBMaker
         "profile" => nil,
         "colophon" => nil,
         "colophon_order" => %w[aut csl trl dsr ill edt pbl prt pht],
+        "direction" => "ltr",
         "epubmaker" => {
           "flattoc" => nil,
           "flattocindent" => true,
