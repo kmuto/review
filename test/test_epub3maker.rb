@@ -69,7 +69,51 @@ EOT
     <item properties="nav" id="sample-toc.html" href="sample-toc.html" media-type="application/xhtml+xml"/>
     <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
   </manifest>
-  <spine>
+  <spine page-progression-direction="ltr">
+    <itemref idref="sample" linear="no"/>
+  </spine>
+  <guide>
+    <reference type="cover" title="Cover" href="sample.html"/>
+    <reference type="toc" title="Table of Contents" href="sample-toc.html"/>
+  </guide>
+</package>
+EOT
+    assert_equal expect, @output.string
+  end
+
+  def test_stage1_opf_fileas
+    @producer.params["title"] = {"name" => "これは書籍です", "file-as" => "コレハショセキデス"}
+    @producer.params["aut"] = [{"name" => "著者A", "file-as" => "チョシャA"}, {"name" => "著者B", "file-as" => "チョシャB"}]
+    @producer.params["pbl"] = [{"name" => "出版社", "file-as" => "シュッパンシャ"}]
+    @producer.opf(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title id="title">これは書籍です</dc:title>
+    <meta refines="#title" property="file-as">コレハショセキデス</meta>
+    <dc:language id="language">en</dc:language>
+    <dc:date id="date">2011-01-01</dc:date>
+    <meta property="dcterms:modified">2014-12-13T14:15:16Z</meta>
+    <dc:identifier id="BookId">http://example.jp/</dc:identifier>
+    <dc:creator id="aut-0">著者A</dc:creator>
+    <meta refines="#aut-0" property="role" scheme="marc:relators">aut</meta>
+    <meta refines="#aut-0" property="file-as">チョシャA</meta>
+    <dc:creator id="aut-1">著者B</dc:creator>
+    <meta refines="#aut-1" property="role" scheme="marc:relators">aut</meta>
+    <meta refines="#aut-1" property="file-as">チョシャB</meta>
+    <dc:contributor id="pbl-0">出版社</dc:contributor>
+    <meta refines="#pbl-0" property="role" scheme="marc:relators">pbl</meta>
+    <meta refines="#pbl-0" property="file-as">シュッパンシャ</meta>
+    <dc:publisher id="pub-pbl-0">出版社</dc:publisher>
+    <meta refines="#pub-pbl-0" property="role" scheme="marc:relators">pbl</meta>
+    <meta refines="#pub-pbl-0" property="file-as">シュッパンシャ</meta>
+  </metadata>
+  <manifest>
+    <item properties="nav" id="sample-toc.html" href="sample-toc.html" media-type="application/xhtml+xml"/>
+    <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine page-progression-direction="ltr">
     <itemref idref="sample" linear="no"/>
   </spine>
   <guide>
@@ -136,7 +180,7 @@ EOT
     <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
     <item id="ch01-html" href="ch01.html" media-type="application/xhtml+xml"/>
   </manifest>
-  <spine>
+  <spine page-progression-direction="ltr">
     <itemref idref="sample" linear="no"/>
     <itemref idref="ch01-html"/>
   </spine>
@@ -250,7 +294,7 @@ EOT
     <item id="sample-GIF" href="sample.GIF" media-type="image/gif"/>
     <item id="sample-css" href="sample.css" media-type="text/css"/>
   </manifest>
-  <spine>
+  <spine page-progression-direction="ltr">
     <itemref idref="sample" linear="no"/>
     <itemref idref="ch01-html"/>
     <itemref idref="ch02-html"/>

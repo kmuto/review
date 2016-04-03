@@ -8,13 +8,16 @@
 bookname: review-sample
 
 # 書名
+# 読みを入れる例 booktitle: {name: "Re:VIEW EPUBサンプル", file-as: "リビューイーパブサンプル"}
 booktitle: Re:VIEW EPUBサンプル
 
 # 著者名。「, 」で区切って複数指定できる
+# 読みを入れる例 aut: [{name: "青木峰郎", file-as: "アオキミネロウ"}, {name: "武藤健志", file-as: "ムトウケンシ"}, {name: "高橋征義", file-as: "タカハシマサヨシ"}, {name: "角征典", file-as: "カドマサノリ"}]
 aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
 
 # 以下はオプション
 # 以下はオプション(autと同じように配列書式で複数指定可能)。
+# 読みの指定はaut:の例を参照。
 # a-が付いているものはcreator側、
 # 付いていないものはcontributor側(二次協力者)に入る
 # a-adp, adp: 異なるメディア向けに作り直した者
@@ -202,6 +205,8 @@ secnolevel: 2
 #  zip_addpath: null
 # EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
 #  cover_linear: null
+# ページ送りの送り方向、page-progression-directionの値("ltr"|"rtl"|"default")
+#  direction: "ltr"
 # @<href>タグでの外部リンクを禁止し、地の文にする(falseで禁止する)
 #  externallink: true
 #

@@ -11,7 +11,7 @@
 require 'tmpdir'
 require 'fileutils'
 require 'yaml'
-require 'uuid'
+require 'securerandom'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'
@@ -215,7 +215,7 @@ module EPUBMaker
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
         "modified" => Time.now.strftime("%Y-%02m-%02dT%02H:%02M:%02SZ"),
-        "urnid" => "urn:uid:#{UUID.create}",
+        "urnid" => "urn:uid:#{SecureRandom.uuid}",
         "isbn" => nil,
         "toclevel" => 2,
         "stylesheet" => [],
@@ -231,6 +231,7 @@ module EPUBMaker
         "profile" => nil,
         "colophon" => nil,
         "colophon_order" => %w[aut csl trl dsr ill edt pbl prt pht],
+        "direction" => "ltr",
         "epubmaker" => {
           "flattoc" => nil,
           "flattocindent" => true,

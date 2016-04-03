@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv3.rb -- EPUB version 3 producer.
 #
-# Copyright (c) 2010-2015 Kenshi Muto
+# Copyright (c) 2010-2016 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -36,9 +36,23 @@ module EPUBMaker
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next if @producer.params[item].nil?
         if @producer.params[item].instance_of?(Array)
-          @producer.params[item].each_with_index {|v, i|
-            s << %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v.to_s)}</dc:#{item}>\n]
-          }
+          @producer.params[item].each_with_index do |v, i|
+            if v.instance_of?(Hash)
+              s << %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:#{item}>\n]
+              v.each_pair do |name, val|
+                next if name == "name"
+                s << %Q[    <meta refines="##{item}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n]
+              end
+            else
+              s << %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v.to_s)}</dc:#{item}>\n]
+            end
+          end
+        elsif @producer.params[item].instance_of?(Hash)
+          s << %Q[    <dc:#{item} id="#{item}">#{CGI.escapeHTML(@producer.params[item]["name"])}</dc:#{item}>\n]
+          @producer.params[item].each_pair do |name, val|
+            next if name == "name"
+            s << %Q[    <meta refines="##{item}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n]
+          end
         else
           s << %Q[    <dc:#{item} id="#{item}">#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
         end
