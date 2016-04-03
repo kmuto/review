@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -87,27 +87,29 @@ module ReVIEW
       end
 
       opts.parse!(args)
-      if args.size != 1
+      if args.size == 0
         puts opts.help
         exit 0
       end
 
-      return cmd_config, args[0]
+      return cmd_config, args
     end
 
     def execute(*args)
       @config = ReVIEW::Configure.values
-      cmd_config, yamlfile = parse_opts(args)
+      cmd_config, yamlfiles = parse_opts(args)
 
-      @config.merge!(YAML.load_file(yamlfile))
+      yamlfiles.each do |yamlfile|
+        @config.merge!(YAML.load_file(yamlfile))
+      end
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
-      @basedir = File.dirname(yamlfile)
-      generate_pdf(yamlfile)
+      @basedir = File.dirname(yamlfiles[0]) # FIXME
+      generate_pdf
     end
 
-    def generate_pdf(yamlfile)
+    def generate_pdf
       remove_old_file
       @path = build_path()
       Dir.mkdir(@path)
@@ -121,7 +123,7 @@ module ReVIEW
       book.parts.each do |part|
         if part.name.present?
           if part.file?
-            output_chaps(part.name, yamlfile)
+            output_chaps(part.name)
             @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
           else
             @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
@@ -130,7 +132,7 @@ module ReVIEW
 
         part.chapters.each do |chap|
           filename = File.basename(chap.path, ".*")
-          output_chaps(filename, yamlfile)
+          output_chaps(filename)
           @chaps_fnames["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
           @chaps_fnames["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
           @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
@@ -195,7 +197,7 @@ module ReVIEW
       end
     end
 
-    def output_chaps(filename, yamlfile)
+    def output_chaps(filename)
       $stderr.puts "compiling #{filename}.tex"
       begin
         @converter.convert(filename+".re", File.join(@path, filename+".tex"))

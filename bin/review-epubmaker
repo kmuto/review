@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# Copyright (c) 2010-2013 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -33,12 +33,23 @@ rescue OptionParser::ParseError => err
   exit 1
 end
 
-
-if ARGV.size < 1 || !File.exist?(ARGV[0])
+if ARGV.size < 1
   puts opts.help
   exit 1
 end
 
-yaml_file = ARGV[0]
-bookname = ARGV[1]
-rv.produce(yaml_file, bookname)
+yamlfiles = []
+bookname = nil
+
+ARGV.each_with_index do |arg, i|
+  if arg =~ /\.ya?ml\Z/i
+    yamlfiles.push(arg)
+  elsif ARGV.size == i - 1
+    bookname = arg
+  else
+    puts opts.help
+    exit 1
+  end
+end
+
+rv.produce(yamlfiles, bookname)
