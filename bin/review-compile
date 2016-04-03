@@ -66,7 +66,7 @@ def _main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} [--target=FMT]"
-  opts.on('--yaml=YAML', 'Read configurations from YAML file.') {|yaml| config["yaml"] = yaml}
+  opts.on('--yaml=YAML[,YAML,...]', 'Read configurations from YAML file.') {|yaml| config["yaml"] = yaml}
   opts.on('-c', '--check', 'Check manuscript') { check_only = true }
   opts.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
   opts.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }
@@ -138,14 +138,14 @@ def _main
 
   begin
     if config["yaml"]
-      config = config.merge(YAML.load_file(config["yaml"]))
+      config["yaml"].split(",").each do |yamlfile|
+        config.merge!(YAML.load_file(yamlfile))
+      end
     else
       if File.exist?(DEFAULT_CONFIG_FILENAME)
         config = config.merge(YAML.load_file(DEFAULT_CONFIG_FILENAME))
       end
     end
-
-
 
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])

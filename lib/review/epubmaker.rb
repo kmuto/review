@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -30,20 +30,23 @@ module ReVIEW
     puts s if @params["debug"].present?
   end
 
-  def load_yaml(yamlfile)
-    @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile)) # FIXME:設定がRe:VIEW側とepubmaker/producer.rb側の2つに分かれて面倒
+  def load_yaml(yamlfiles)
+    @params = ReVIEW::Configure.values
+    yamlfiles.each do |yamlfile|
+      @params.merge!(YAML.load_file(yamlfile))
+    end
     @producer = Producer.new(@params)
-    @producer.load(yamlfile)
+    @producer.load(yamlfiles)
     @params = @producer.params
   end
 
-  def produce(yamlfile, bookname=nil)
-    load_yaml(yamlfile)
+  def produce(yamlfiles, bookname=nil)
+    load_yaml(yamlfiles)
     I18n.setup(@params["language"])
     bookname = @params["bookname"] if bookname.nil?
     booktmpname = "#{bookname}-epub"
 
-    log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
+    log("Loaded yaml files (#{yamlfiles.join(",")}). I will produce #{bookname}.epub.")
 
     FileUtils.rm_f("#{bookname}.epub")
     FileUtils.rm_rf(booktmpname) if @params["debug"]
@@ -61,7 +64,7 @@ module ReVIEW
       copy_frontmatter(basetmpdir)
       call_hook("hook_afterfrontmatter", basetmpdir)
 
-      build_body(basetmpdir, yamlfile)
+      build_body(basetmpdir, yamlfiles)
       call_hook("hook_afterbody", basetmpdir)
 
       copy_backmatter(basetmpdir)
@@ -187,7 +190,7 @@ module ReVIEW
     exit 1
   end
 
-  def build_body(basetmpdir, yamlfile)
+  def build_body(basetmpdir, yamlfiles)
     @precount = 0
     @bodycount = 0
     @postcount = 0
@@ -197,7 +200,7 @@ module ReVIEW
     @tocdesc = Array.new
     # toccount = 2  ## not used
 
-    basedir = File.dirname(yamlfile)
+    basedir = File.dirname(yamlfiles[0]) # FIXME
     base_path = Pathname.new(basedir)
     book = ReVIEW::Book.load(basedir)
     book.config = @params
