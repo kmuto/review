@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -14,6 +14,7 @@ require 'epubmaker'
 require 'review/htmltoc'
 require 'review/converter'
 require 'review/htmlbuilder'
+require 'review/makerhelper'
 
 module ReVIEW
  class EPUBMaker
@@ -31,7 +32,7 @@ module ReVIEW
   end
 
   def load_yaml(yamlfile)
-    @params = ReVIEW::Configure.values.merge(YAML.load_file(yamlfile)) # FIXME:設定がRe:VIEW側とepubmaker/producer.rb側の2つに分かれて面倒
+    @params = ReVIEW::Configure.values.merge(ReVIEW::MakerHelper.recursive_load_yaml(yamlfile)) # FIXME:設定がRe:VIEW側とepubmaker/producer.rb側の2つに分かれて面倒
     @producer = Producer.new(@params)
     @producer.load(yamlfile)
     @params = @producer.params
