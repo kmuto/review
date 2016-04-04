@@ -81,6 +81,36 @@ EOT
     assert_equal expect, @output.string
   end
 
+  def test_stage1_opf_ebpaj
+    @producer.merge_params({"ebpaj_version" => "1.1.2"})
+    @producer.opf(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en" prefix="ebpaj: http://www.ebpaj.jp/">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title id="title">Sample Book</dc:title>
+    <dc:language id="language">en</dc:language>
+    <dc:date id="date">2011-01-01</dc:date>
+    <meta property="dcterms:modified">2014-12-13T14:15:16Z</meta>
+    <dc:identifier id="BookId">http://example.jp/</dc:identifier>
+    <meta property="ebpaj:guide-version">1.1.2</meta>
+  </metadata>
+  <manifest>
+    <item properties="nav" id="sample-toc.html" href="sample-toc.html" media-type="application/xhtml+xml"/>
+    <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine page-progression-direction="ltr">
+    <itemref idref="sample" linear="no"/>
+  </spine>
+  <guide>
+    <reference type="cover" title="Cover" href="sample.html"/>
+    <reference type="toc" title="Table of Contents" href="sample-toc.html"/>
+  </guide>
+</package>
+EOT
+    assert_equal expect, @output.string
+  end
+
   def test_stage1_opf_fileas
     @producer.params["title"] = {"name" => "これは書籍です", "file-as" => "コレハショセキデス"}
     @producer.params["aut"] = [{"name" => "著者A", "file-as" => "チョシャA"}, {"name" => "著者B", "file-as" => "チョシャB"}]

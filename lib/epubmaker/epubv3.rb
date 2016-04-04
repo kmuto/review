@@ -18,6 +18,11 @@ module EPUBMaker
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
       super
+
+      @prefixes = Hash.new
+      if @producer.params["ebpaj_version"]
+        @prefixes["ebpaj"] = "http://www.ebpaj.jp/"
+      end
     end
 
     # Return opf file content.
@@ -25,6 +30,12 @@ module EPUBMaker
       @opf_metainfo = opf_metainfo
       @opf_manifest = opf_manifest
       @opf_toc = opf_tocx
+      @package_attrs = ""
+
+      if !@prefixes.empty?
+        prefixes_str = @prefixes.map{|k,v| %Q|#{k}: #{v}| }.join(" ")
+        @package_attrs << " prefix=\"#{prefixes_str}\""
+      end
 
       tmplfile = File.expand_path('./opf/epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
       tmpl = ReVIEW::Template.load(tmplfile)
@@ -115,6 +126,11 @@ module EPUBMaker
             end
           end
         end
+      end
+
+      # ebpaj guide version
+      if @producer.params["ebpaj_version"]
+        s << %Q[    <meta property="ebpaj:guide-version">#{CGI.escapeHTML(@producer.params["ebpaj_version"])}</meta>\n]
       end
 
       s
