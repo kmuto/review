@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2015 Kenshi Muto
+# Copyright (c) 2010-2016 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -10,7 +10,7 @@
 
 require 'tmpdir'
 require 'fileutils'
-require 'yaml'
+require 'review/makerhelper'
 require 'securerandom'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
@@ -29,14 +29,14 @@ module EPUBMaker
 
     # Take YAML +file+ and return parameter hash.
     def Producer.load(file)
-      raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
-      return YAML.load_file(file)
+      raise "Can't open #{file}." if file.nil? || !File.exist?(file)
+      return ReVIEW::MakerHelper.recursive_load_yaml(file)
     end
 
     # Take YAML +file+ and update parameter hash.
     def load(file)
-      raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
-      merge_params(@params.merge(YAML.load_file(file)))
+      raise "Can't open #{file}." if file.nil? || !File.exist?(file)
+      merge_params(@params.merge(ReVIEW::MakerHelper.recursive_load_yaml(file)))
     end
 
     # Construct producer object.

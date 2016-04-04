@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2012-2014 Yuto HAYAMIZU, Kenshi Muto
+# Copyright (c) 2012-2016 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -9,6 +9,7 @@
 #
 require 'pathname'
 require 'fileutils'
+require 'yaml'
 
 module ReVIEW
   class MakerHelper
@@ -62,6 +63,32 @@ module ReVIEW
       end
 
       image_files
+    end
+
+    def self.recursive_load_yaml(yamlfile)
+      __recursive_load_yaml({}, yamlfile, {})[0]
+    end
+
+    class << self
+      private
+      def __recursive_load_yaml(yaml, yamlfile, loaded_yaml={})
+        _yaml = YAML.load_file(yamlfile)
+        yaml = _yaml.merge(yaml)
+        if yaml['inherit']
+          inheritfile = yaml['inherit']
+          
+          # Check loop
+          if loaded_yaml[inheritfile]
+            raise "Found cyclic YAML inheritance '#{inheritfile}' in #{yamlfile}."
+          else
+            loaded_yaml[inheritfile] = true
+          end
+          
+          yaml.delete('inherit')
+          yaml, loaded_yaml = __recursive_load_yaml(yaml, inheritfile, loaded_yaml)
+        end
+        return yaml, loaded_yaml
+      end
     end
   end
 end

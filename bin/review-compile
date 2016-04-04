@@ -2,7 +2,7 @@
 #
 # $Id: review-compile 4326 2010-01-12 14:10:17Z kmuto $
 #
-# Copyright (c) 2008-2014 Kenshi Muto, Masayoshi Takahashi, KADO Masanori, Minero Aoki
+# Copyright (c) 2008-2016 Kenshi Muto, Masayoshi Takahashi, KADO Masanori, Minero Aoki
 # Copyright (c) 1999-2007 Minero Aoki
 #
 # This program is free software.
@@ -138,14 +138,12 @@ def _main
 
   begin
     if config["yaml"]
-      config = config.merge(YAML.load_file(config["yaml"]))
+      config = config.merge(ReVIEW::MakerHelper.recursive_load_yaml(config["yaml"]))
     else
       if File.exist?(DEFAULT_CONFIG_FILENAME)
         config = config.merge(YAML.load_file(DEFAULT_CONFIG_FILENAME))
       end
     end
-
-
 
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])

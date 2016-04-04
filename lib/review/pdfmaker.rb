@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -99,7 +99,7 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       cmd_config, yamlfile = parse_opts(args)
 
-      @config.merge!(YAML.load_file(yamlfile))
+      @config.merge!(ReVIEW::MakerHelper.recursive_load_yaml(yamlfile))
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
