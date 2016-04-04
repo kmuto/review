@@ -152,6 +152,9 @@ secnolevel: 2
 # 各数字の意味は、順にリストの行数、リストの1行字数、テキストの行数、テキストの1行字数、1kバイト毎のページ数
 # page_metric: [40,80,40,80,2]
 
+# ページ送りの送り方向、page-progression-directionの値("ltr"|"rtl"|"default")
+# direction: "ltr"
+
 # 以下のパラメータを有効にするときには、
 # epubmaker:
 #    パラメータ: 値
@@ -205,8 +208,6 @@ secnolevel: 2
 #  zip_addpath: null
 # EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
 #  cover_linear: null
-# ページ送りの送り方向、page-progression-directionの値("ltr"|"rtl"|"default")
-#  direction: "ltr"
 #
 # epubmaker:階層を使うものはここまで
 
