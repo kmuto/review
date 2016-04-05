@@ -102,6 +102,14 @@ class I18nTest < Test::Unit::TestCase
           I18n.setup("ja")
           assert_equal "第B章", I18n.t("chapter", 2)
 
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pAW章")}
+          I18n.setup("ja")
+          assert_equal "第Ｂ章", I18n.t("chapter", 2)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%paW章")}
+          I18n.setup("ja")
+          assert_equal "第ｂ章", I18n.t("chapter", 2)
+
           File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pR章")}
           I18n.setup("ja")
           assert_equal "第I章", I18n.t("chapter", 1)
@@ -109,6 +117,38 @@ class I18nTest < Test::Unit::TestCase
           File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pr章")}
           I18n.setup("ja")
           assert_equal "第ii章", I18n.t("chapter", 2)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pRW章")}
+          I18n.setup("ja")
+          assert_equal "第Ⅻ章", I18n.t("chapter", 12)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pJ章")}
+          I18n.setup("ja")
+          assert_equal "第二十七章", I18n.t("chapter", 27)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pdW章")}
+          I18n.setup("ja")
+          assert_equal "第１章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pdW章")}
+          I18n.setup("ja")
+          assert_equal "第27章", I18n.t("chapter", 27)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pDW章")}
+          I18n.setup("ja")
+          assert_equal "第１章", I18n.t("chapter", 1)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pDW章")}
+          I18n.setup("ja")
+          assert_equal "第２７章", I18n.t("chapter", 27)
+
+          File.open(file, "w"){|f| f.write("locale: ja\npart: Part %pRW")}
+          I18n.setup("ja")
+          assert_equal "Part ０", I18n.t("part", 0)
+
+          File.open(file, "w"){|f| f.write("locale: ja\npart: 第%pJ部")}
+          I18n.setup("ja")
+          assert_equal "第一部", I18n.t("part", 1)
         end
       end
     end
