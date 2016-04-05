@@ -5,8 +5,10 @@ module ReVIEW
   class I18n
     ALPHA_U = %w[0 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]
     ALPHA_L = %w[0 a b c d e f g h i j k l m n o p q r s t u v w x y z]
+    ALPHA_J = %w[0 Ａ Ｂ Ｃ Ｄ Ｅ Ｆ Ｇ Ｈ Ｉ Ｊ Ｋ Ｌ Ｍ Ｎ Ｏ Ｐ Ｑ Ｒ Ｓ Ｔ Ｕ Ｖ Ｗ Ｘ Ｙ Ｚ]
     ROMAN_U = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
     ROMAN_L = %w[0 i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx xxi xxii xxiii xxiv xxv xxvi xxvii]
+    ROMAN_J = %w[0 Ｉ ＩＩ ＩＩＩ ＩＶ Ｖ ＶＩ ＶＩＩ ＶＩＩＩ ＩＸ Ｘ ＸＩ ＸＩＩ ＸＩＩＩ ＸＩＶ ＸＶ ＸＶＩ ＸＶＩＩ ＸＶＩＩＩ ＸＩＸ ＸＸ ＸＸＩ ＸＸＩＩ ＸＸＩＩＩ ＸＸＩＶ ＸＸＶ ＸＸＶＩ ＸＸＶＩＩ]
 
     def self.setup(locale="ja", ymlfile = "locale.yml")
       @i18n = ReVIEW::I18n.new(locale)
@@ -106,9 +108,15 @@ module ReVIEW
 
       frmt = @store[@locale][str].dup
       frmt.gsub!('%%', '##')
-      percents = frmt.scan(/%\w\w?/)
+      percents = frmt.scan(/%p\wJ?/)
       percents.each_with_index do |i, idx|
         case i
+        when "%pAJ"
+          frmt.sub!(i, ALPHA_J[args[idx]])
+          args.delete idx
+        when "%pRJ"
+          frmt.sub!(i, ROMAN_J[args[idx]])
+          args.delete idx
         when "%pA"
           frmt.sub!(i, ALPHA_U[args[idx]])
           args.delete idx

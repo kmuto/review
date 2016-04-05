@@ -109,6 +109,20 @@ class I18nTest < Test::Unit::TestCase
           File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pr章")}
           I18n.setup("ja")
           assert_equal "第ii章", I18n.t("chapter", 2)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pAJ章")}
+          I18n.setup("ja")
+          assert_equal "第Ａ章", I18n.t("chapter", 1)
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pAJ章")}
+          I18n.setup("ja")
+          assert_equal "第Ｂ章", I18n.t("chapter", 2)
+
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pRJ章")}
+          I18n.setup("ja")
+          assert_equal "第Ｉ章", I18n.t("chapter", 1)
+          File.open(file, "w"){|f| f.write("locale: ja\nchapter: 第%pRJ章")}
+          I18n.setup("ja")
+          assert_equal "第ＩＩ章", I18n.t("chapter", 2)
         end
       end
     end
