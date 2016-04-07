@@ -41,7 +41,8 @@ aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
 # a-nrt, nrt: 語り手
 # a-oth, oth: その他
 # a-pht, pht: 撮影責任者
-# a-prt, prt: 出版社
+# a-pbl, pbl: 出版社（発行所）
+# a-prt, prt: 印刷所
 # a-red, red: 項目の枠組起草者
 # a-rev, rev: 評論者
 # a-spn, spn: 援助者
