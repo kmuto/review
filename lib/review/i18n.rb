@@ -108,10 +108,17 @@ module ReVIEW
     end
 
     def t(str, args = nil)
-      args = [args] unless args.is_a? Array
-
       frmt = @store[@locale][str].dup
       frmt.gsub!('%%', '##')
+
+      if !args.is_a?(Array)
+        if args.nil? && frmt !~ /\%/
+          args = []
+        else
+          args = [args]
+        end
+      end
+
       percents = frmt.scan(/%\w{1,3}/)
       percents.each_with_index do |i, idx|
         case i

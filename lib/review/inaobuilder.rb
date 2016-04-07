@@ -202,7 +202,7 @@ module ReVIEW
 
     def listnum_body(lines, lang)
       lines.each_with_index do |line, i|
-        puts detab((i+1).to_s.rjust(2) + " " +line)
+        puts detab((i+1).to_s.rjust(2) + " " + line)
       end
       puts "◆/list◆"
     end
