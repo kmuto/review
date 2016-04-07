@@ -69,7 +69,7 @@ module EPUBMaker
 
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
-      @params = @params.deep_merge(params)
+      @params.deep_merge!(params)
       complement
 
       unless @params["epubversion"].nil?

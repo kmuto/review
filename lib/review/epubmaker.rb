@@ -33,6 +33,7 @@ module ReVIEW
     @producer = Producer.new(@params)
     @producer.load(yamlfile)
     @params = @producer.params
+    @params.maker = "pdfmaker"
   end
 
   def produce(yamlfile, bookname=nil)

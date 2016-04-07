@@ -58,11 +58,12 @@ module ReVIEW
     end
 
     def [](key)
+      maker = self.maker
+      if maker && self.key?(maker) && self.fetch(maker).key?(key)
+        return self.fetch(maker).fetch(key, nil)
+      end
       if self.key?(key)
         return self.fetch(key)
-      end
-      if @maker && self.key?(@maker)
-        return self.fetch(@maker).fetch(key, nil)
       end
     end
 
