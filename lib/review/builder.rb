@@ -31,6 +31,7 @@ module ReVIEW
 
     def initialize(strict = false, *args)
       @strict = strict
+      @output = nil
       builder_init(*args)
     end
 

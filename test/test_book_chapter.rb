@@ -200,7 +200,6 @@ E
 
 
   def test_column_index
-    book = Book::Base.new(nil)
     do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)
 = dummy1
 ===[column]{abc} aaaa
