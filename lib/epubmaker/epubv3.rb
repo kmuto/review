@@ -18,10 +18,10 @@ module EPUBMaker
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
       super
-      @prefix = Hash.new
-      if @producer.params["prefix"].present?
-        @producer.params["prefix"].each do |k, v|
-          @prefix[k] = v
+      @opf_prefix = Hash.new
+      if @producer.params["opf_prefix"].present?
+        @producer.params["opf_prefix"].each do |k, v|
+          @opf_prefix[k] = v
         end
       end
     end
@@ -33,8 +33,8 @@ module EPUBMaker
       @opf_toc = opf_tocx
       @package_attrs = ""
 
-      if !@prefix.empty?
-        prefixes_str = @prefix.map{|k,v| %Q|#{k}: #{v}| }.join(" ")
+      if !@opf_prefix.empty?
+        prefixes_str = @opf_prefix.map{|k,v| %Q|#{k}: #{v}| }.join(" ")
         @package_attrs << " prefix=\"#{prefixes_str}\""
       end
 

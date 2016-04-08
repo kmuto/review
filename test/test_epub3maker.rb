@@ -82,7 +82,7 @@ EOT
   end
 
   def test_stage1_opf_ebpaj
-    @producer.merge_params({"prefix"=>{"ebpaj"=>"http://www.ebpaj.jp/"},"opf_meta"=>{"ebpaj:guide-version" => "1.1.2"}})
+    @producer.merge_params({"opf_prefix"=>{"ebpaj"=>"http://www.ebpaj.jp/"},"opf_meta"=>{"ebpaj:guide-version" => "1.1.2"}})
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
