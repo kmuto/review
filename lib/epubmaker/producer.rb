@@ -10,12 +10,13 @@
 
 require 'tmpdir'
 require 'fileutils'
-require 'review/makerhelper'
+require 'review/yamlloader'
 require 'securerandom'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'
 require 'review/i18n'
+require 'review/extentions/hash'
 
 module EPUBMaker
   # EPUBMaker produces EPUB file.
@@ -30,13 +31,15 @@ module EPUBMaker
     # Take YAML +file+ and return parameter hash.
     def Producer.load(file)
       raise "Can't open #{file}." if file.nil? || !File.exist?(file)
-      return ReVIEW::MakerHelper.recursive_load_yaml(file)
+      loader = ReVIEW::YAMLLoader.new
+      loader.load_file(file)
     end
 
     # Take YAML +file+ and update parameter hash.
     def load(file)
       raise "Can't open #{file}." if file.nil? || !File.exist?(file)
-      merge_params(@params.merge(ReVIEW::MakerHelper.recursive_load_yaml(file)))
+      loader = ReVIEW::YAMLLoader.new
+      merge_params(@params.deep_merge(loader.load_file(file)))
     end
 
     # Construct producer object.

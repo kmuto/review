@@ -17,9 +17,6 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review'
-require 'review/compiler'
-require 'review/book'
-require 'review/i18n'
 require 'fileutils'
 require 'optparse'
 require 'yaml'
@@ -137,11 +134,12 @@ def _main
   end
 
   begin
+    loader = ReVIEW::YAMLLoader.new
     if config["yaml"]
-      config = config.merge(ReVIEW::MakerHelper.recursive_load_yaml(config["yaml"]))
+      config.deep_merge!(loader.load_file(config["yaml"]))
     else
       if File.exist?(DEFAULT_CONFIG_FILENAME)
-        config = config.merge(YAML.load_file(DEFAULT_CONFIG_FILENAME))
+        config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
       end
     end
 

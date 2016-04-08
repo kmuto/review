@@ -98,8 +98,8 @@ module ReVIEW
     def execute(*args)
       @config = ReVIEW::Configure.values
       cmd_config, yamlfile = parse_opts(args)
-
-      @config.merge!(ReVIEW::MakerHelper.recursive_load_yaml(yamlfile))
+      loader = YAMLLoader.new
+      @config.deep_merge!(loader.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])

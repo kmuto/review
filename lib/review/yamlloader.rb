@@ -20,12 +20,12 @@ module ReVIEW
         end
 
         inherit_file = File.expand_path(yaml['inherit'], File.dirname(yamlfile))
-
+        
         # Check loop
         if loaded_files[inherit_file]
-          raise "Found cyclic YAML inheritance '#{inherit_file}' in #{yamlfile}."
+          raise "Found circular YAML inheritance '#{inherit_file}' in #{yamlfile}."
         end
-
+        
         loaded_files[inherit_file] = true
         yaml.delete('inherit')
         current_file = inherit_file

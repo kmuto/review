@@ -32,6 +32,7 @@ EOB
 k0: 2
 k1:
   name: "test"
+  array: [{name: "N", val: "V"}]
 inherit: "test2.yml"
 EOB
       end
@@ -40,12 +41,14 @@ EOB
 k1:
   name: "test2"
   name2: "value2"
+  array: [{name: "shoudoverridden_name", val: "shouldoverridden_val"}]
 k2: "3"
 EOB
       end
       yaml = @loader.load_file(yaml_file)
-      assert_equal({"k0"=>2,
-                    "k1" => {"name"=>"test", "name2"=>"value2"},
+      assert_equal({"k0" => 2,
+                    "k1" => {"name"=>"test", "name2"=>"value2",
+                             "array" => [{"name" => "N", "val" => "V"}]},
                     "k2" => "3"},
                    yaml)
     end

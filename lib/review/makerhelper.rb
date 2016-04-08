@@ -64,31 +64,5 @@ module ReVIEW
 
       image_files
     end
-
-    def self.recursive_load_yaml(yamlfile)
-      __recursive_load_yaml({}, yamlfile, {})[0]
-    end
-
-    class << self
-      private
-      def __recursive_load_yaml(yaml, yamlfile, loaded_yaml={})
-        _yaml = YAML.load_file(yamlfile)
-        yaml = _yaml.merge(yaml)
-        if yaml['inherit']
-          inheritfile = yaml['inherit']
-          
-          # Check loop
-          if loaded_yaml[inheritfile]
-            raise "Found cyclic YAML inheritance '#{inheritfile}' in #{yamlfile}."
-          else
-            loaded_yaml[inheritfile] = true
-          end
-          
-          yaml.delete('inherit')
-          yaml, loaded_yaml = __recursive_load_yaml(yaml, inheritfile, loaded_yaml)
-        end
-        return yaml, loaded_yaml
-      end
-    end
   end
 end
