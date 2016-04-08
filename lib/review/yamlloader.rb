@@ -9,7 +9,6 @@ module ReVIEW
       current_file = yamlfile
       loaded_files = {}
       yaml = {}
-      reviewpath = Pathname.new("#{Pathname.new(__FILE__).realpath.dirname}/../..").realpath
 
       loop do
         current_yaml = YAML.load_file(current_file)
@@ -20,7 +19,7 @@ module ReVIEW
           return yaml
         end
 
-        inherit_file = File.expand_path(yaml['inherit'].sub(/\$REVIEW_PATH\//, "#{reviewpath}/"), File.dirname(yamlfile))
+        inherit_file = File.expand_path(yaml['inherit'], File.dirname(yamlfile))
         
         # Check loop
         if loaded_files[inherit_file]
