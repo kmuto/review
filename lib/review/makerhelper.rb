@@ -72,11 +72,11 @@ module ReVIEW
     class << self
       private
       def __recursive_load_yaml(yaml, yamlfile, loaded_yaml={})
+        reviewpath = Pathname.new("#{Pathname.new(__FILE__).realpath.dirname}/../..").realpath
         _yaml = YAML.load_file(yamlfile)
         yaml = _yaml.merge(yaml)
         if yaml['inherit']
-          inheritfile = yaml['inherit']
-          
+          inheritfile = yaml['inherit'].sub(/\$REVIEW_PATH\//, "#{reviewpath}/")
           # Check loop
           if loaded_yaml[inheritfile]
             raise "Found cyclic YAML inheritance '#{inheritfile}' in #{yamlfile}."
