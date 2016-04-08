@@ -11,10 +11,6 @@ require 'review'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
-require 'review/htmltoc'
-require 'review/converter'
-require 'review/htmlbuilder'
-require 'review/makerhelper'
 
 module ReVIEW
  class EPUBMaker
@@ -32,7 +28,8 @@ module ReVIEW
   end
 
   def load_yaml(yamlfile)
-    @params = ReVIEW::Configure.values.merge(ReVIEW::MakerHelper.recursive_load_yaml(yamlfile)) # FIXME:設定がRe:VIEW側とepubmaker/producer.rb側の2つに分かれて面倒
+    loader = YAMLLoader.new
+    @params = ReVIEW::Configure.values.deep_merge(loader.load_file(yamlfile))
     @producer = Producer.new(@params)
     @producer.load(yamlfile)
     @params = @producer.params
