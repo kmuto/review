@@ -229,9 +229,9 @@ module ReVIEW
     File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
       @body = ""
       @body << "<div class=\"part\">\n"
-      @body << "<h1 class=\"part-number\">#{ReVIEW::I18n.t("part", part.number)}</h1>\n"
+      @body << "<h1 class=\"part-number\">#{CGI.escapeHTML(ReVIEW::I18n.t("part", part.number))}</h1>\n"
       if part.name.strip.present?
-        @body << "<h2 class=\"part-title\">#{part.name.strip}</h2>\n"
+        @body << "<h2 class=\"part-title\">#{CGI.escapeHTML(part.name.strip)}</h2>\n"
       end
       @body << "</div>\n"
 
@@ -286,16 +286,6 @@ module ReVIEW
     htmlfile = "#{id}.#{@params["htmlext"]}"
     write_buildlogtxt(basetmpdir, htmlfile, filename)
     log("Create #{htmlfile} from #{filename}.")
-
-# TODO: It would be nice if we can modify level in PART, PREDEF, or POSTDEF.
-#        But we have to care about section number reference (@<hd>) also.
-#
-#    if !ispart.nil?
-#      level = @params["part_secnolevel"]
-#    else
-#      level = @params["pre_secnolevel"] if chap.on_PREDEF?
-#      level = @params["post_secnolevel"] if chap.on_APPENDIX?
-#    end
 
     if @params["params"].present?
       warn "'params:' in config.yml is obsoleted."
@@ -398,15 +388,16 @@ module ReVIEW
   end
 
   def build_titlepage(basetmpdir, htmlfile)
+    # TODO: should be created via epubcommon
     File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
       @body = ""
-      @body << "<div class=\"titlepage\">"
-      @body << "<h1 class=\"tp-title\">#{CGI.escapeHTML(@params["booktitle"])}</h1>"
+      @body << "<div class=\"titlepage\">\n"
+      @body << "<h1 class=\"tp-title\">#{CGI.escapeHTML(@params["booktitle"])}</h1>\n"
       if @params["aut"]
-        @body << "<h2 class=\"tp-author\">#{@params["aut"].join(", ")}</h2>"
+        @body << "<h2 class=\"tp-author\">#{CGI.escapeHTML(@params["aut"].join(ReVIEW::I18n.t("names_splitter")))}</h2>\n"
       end
       if @params["prt"]
-        @body << "<h3 class=\"tp-publisher\">#{@params["prt"].join(", ")}</h3>"
+        @body << "<h3 class=\"tp-publisher\">#{CGI.escapeHTML(@params["prt"].join(ReVIEW::I18n.t("names_splitter")))}</h3>\n"
       end
       @body << "</div>"
 
@@ -430,7 +421,7 @@ module ReVIEW
     end
 
     if @params["colophon"]
-      if @params["colophon"].instance_of?(String) # FIXME:このやり方はやめる？
+      if @params["colophon"].kind_of?(String) # FIXME:このやり方はやめる？
         FileUtils.cp(@params["colophon"], "#{basetmpdir}/colophon.#{@params["htmlext"]}")
       else
         File.open("#{basetmpdir}/colophon.#{@params["htmlext"]}", "w") {|f| @producer.colophon(f) }

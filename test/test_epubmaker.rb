@@ -77,6 +77,33 @@ EOT
     assert_equal expect, @output.string
   end
 
+  def test_stage1_opf_escape
+    @producer.params["title"] = "Sample<>Book"
+    @producer.opf(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title>Sample&lt;&gt;Book</dc:title>
+    <dc:language>en</dc:language>
+    <dc:date>2011-01-01</dc:date>
+    <dc:identifier id="BookId">http://example.jp/</dc:identifier>
+  </metadata>
+  <manifest>
+    <item id="ncx" href="sample.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="sample" linear="no"/>
+  </spine>
+  <guide>
+    <reference type="cover" title="Cover" href="sample.html"/>
+  </guide>
+</package>
+EOT
+    assert_equal expect, @output.string
+  end
+
   def test_stage1_ncx
     @producer.ncx(@output)
    expect = <<EOT
@@ -98,6 +125,37 @@ EOT
     <navPoint id="top" playOrder="1">
       <navLabel>
         <text>Sample Book</text>
+      </navLabel>
+      <content src="sample.html"/>
+    </navPoint>
+  </navMap>
+</ncx>
+EOT
+    assert_equal expect, @output.string
+  end
+
+  def test_stage1_ncx_escape
+    @producer.params["title"] = "Sample<>Book"
+    @producer.ncx(@output)
+   expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+  <head>
+    <meta name="dtb:depth" content="1"/>
+    <meta name="dtb:totalPageCount" content="0"/>
+    <meta name="dtb:maxPageNumber" content="0"/>
+    <meta name="dtb:uid" content="http://example.jp/"/>
+  </head>
+  <docTitle>
+    <text>Sample&lt;&gt;Book</text>
+  </docTitle>
+  <docAuthor>
+    <text></text>
+  </docAuthor>
+  <navMap>
+    <navPoint id="top" playOrder="1">
+      <navLabel>
+        <text>Sample&lt;&gt;Book</text>
       </navLabel>
       <content src="sample.html"/>
     </navPoint>
@@ -471,6 +529,28 @@ EOT
     assert_equal expect, @output.string
   end
 
+  def test_stage3_cover_escape
+    stage3
+    @producer.params["title"] = "Sample<>Book"
+    @producer.cover(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="Re:VIEW"/>
+  <title>Sample&lt;&gt;Book</title>
+</head>
+<body>
+<h1 class="cover-title">Sample&lt;&gt;Book</h1>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
+
   def test_stage3_cover_with_image
     stage3
     @producer.params["coverimage"] = "sample.png"
@@ -488,6 +568,31 @@ EOT
 <body>
   <div id="cover-image" class="cover-image">
     <img src="sample.png" alt="Sample Book" class="max"/>
+  </div>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
+
+  def test_stage3_cover_with_image_escape
+    stage3
+    @producer.params["title"] = "Sample<>Book"
+    @producer.params["coverimage"] = "sample.png"
+    @producer.cover(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="Re:VIEW"/>
+  <title>Sample&lt;&gt;Book</title>
+</head>
+<body>
+  <div id="cover-image" class="cover-image">
+    <img src="sample.png" alt="Sample&lt;&gt;Book" class="max"/>
   </div>
 </body>
 </html>
@@ -521,6 +626,43 @@ EOT
       <tr><th>Publisher</th><td>BLUEPRINT</td></tr>
       <tr><th>ISBN</th><td>978-4-79737-227-4</td></tr>
     </table>
+  </div>
+</body>
+</html>
+EOT
+    assert_equal expect, @output.string
+  end
+
+  def test_colophon_default_escape_and_multiple
+    @producer.params["title"] = "<&Sample Book>"
+    @producer.params["subtitle"] = "Sample<>Subtitle"
+    @producer.params["aut"] = ["Mr.Smith", "Mr.&Anderson"]
+    @producer.params["pbl"] = ["BLUEPRINT", "COPY<>EDIT"]
+    @producer.params["isbn"] = "9784797372274"
+    @producer.params["rights"] = ["COPYRIGHT 2016 <>", "& REVIEW"]
+    @producer.colophon(@output)
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta http-equiv="Content-Style-Type" content="text/css"/>
+  <meta name="generator" content="Re:VIEW"/>
+  <title>Colophon</title>
+</head>
+<body>
+  <div class="colophon">
+    <p class="title">&lt;&amp;Sample Book&gt;<br /><span class="subtitle">Sample&lt;&gt;Subtitle</span></p>
+    <div class="pubhistory">
+      <p>published by Jan.  1, 2011</p>
+    </div>
+    <table class="colophon">
+      <tr><th>Author</th><td>Mr.Smith, Mr.&amp;Anderson</td></tr>
+      <tr><th>Publisher</th><td>BLUEPRINT, COPY&lt;&gt;EDIT</td></tr>
+      <tr><th>ISBN</th><td>978-4-79737-227-4</td></tr>
+    </table>
+    <p class="copyright">COPYRIGHT 2016 &lt;&gt;<br />&amp; REVIEW</p>
   </div>
 </body>
 </html>

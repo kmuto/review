@@ -52,15 +52,13 @@ module EPUBMaker
       @params["epubversion"] = version unless version.nil?
       @res = ReVIEW::I18n
 
-      unless params.nil?
+      if params
         merge_params(params)
       end
     end
 
     def coverimage
-      if !params["coverimage"]
-        return nil
-      end
+      return nil unless params["coverimage"]
       @contents.each do |item|
         if item.media.start_with?('image') && item.file =~ /#{params["coverimage"]}\Z/ # /
           return item.file
@@ -71,7 +69,7 @@ module EPUBMaker
 
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
-      @params = @params.merge(params)
+      @params = @params.deep_merge(params)
       complement
 
       unless @params["epubversion"].nil?
@@ -214,7 +212,6 @@ module EPUBMaker
       @params["htmlext"] = "html" if @params["htmlext"].nil?
       defaults = {
         "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
-        "title" => @params["booktitle"],
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
         "modified" => Time.now.strftime("%Y-%02m-%02dT%02H:%02M:%02SZ"),
@@ -259,15 +256,8 @@ module EPUBMaker
         "font_ext" => %w(ttf woff otf),
       }
 
-      defaults.each_pair do |k, v|
-        if k == "epubmaker" && !@params[k].nil?
-          v.each_pair do |k2, v2|
-            @params[k][k2] = v2 if @params[k][k2].nil?
-          end
-        else
-          @params[k] = v if @params[k].nil?
-        end
-      end
+      @params = defaults.deep_merge(@params)
+      @params["title"] = @params["booktitle"] unless @params["title"]
 
       deprecated_parameters = {
         "ncxindent" => "epubmaker:ncxindent",
@@ -300,11 +290,12 @@ module EPUBMaker
       @params["htmlversion"] = 5 if @params["epubversion"] >= 3
 
       %w[bookname title].each do |k|
-        raise "Key #{k} must have a value. Abort." if @params[k].nil?
+        raise "Key #{k} must have a value. Abort." unless @params[k]
       end
       # array
       %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl stylesheet rights].each do |item|
-        @params[item] = [@params[item]] if !@params[item].nil? && @params[item].instance_of?(String)
+        next unless @params[item]
+        @params[item] = [@params[item]] if @params[item].kind_of?(String)
       end
       # optional
       # type, format, identifier, source, relation, coverpage, aut
