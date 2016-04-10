@@ -47,7 +47,7 @@ module EPUBMaker
     # +version+ takes EPUB version (default is 2).
     def initialize(params=nil, version=nil)
       @contents = []
-      @params = {}
+      @params = ReVIEW::Configure.new
       @epub = nil
       @params["epubversion"] = version unless version.nil?
       @res = ReVIEW::I18n
@@ -210,7 +210,7 @@ module EPUBMaker
     # Complement parameters.
     def complement
       @params["htmlext"] = "html" if @params["htmlext"].nil?
-      defaults = {
+      defaults = ReVIEW::Configure.new.merge({
         "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
@@ -254,7 +254,7 @@ module EPUBMaker
         "fontdir" => "fonts",
         "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
         "font_ext" => %w(ttf woff otf),
-      }
+      })
 
       @params = defaults.deep_merge(@params)
       @params["title"] = @params["booktitle"] unless @params["title"]

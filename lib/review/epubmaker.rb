@@ -389,15 +389,16 @@ module ReVIEW
 
   def build_titlepage(basetmpdir, htmlfile)
     # TODO: should be created via epubcommon
+    @title = CGI.escapeHTML(@params.name("booktitle"))
     File.open("#{basetmpdir}/#{htmlfile}", "w") do |f|
       @body = ""
       @body << "<div class=\"titlepage\">\n"
-      @body << "<h1 class=\"tp-title\">#{CGI.escapeHTML(@params["booktitle"])}</h1>\n"
+      @body << "<h1 class=\"tp-title\">#{CGI.escapeHTML(@params.name("booktitle"))}</h1>\n"
       if @params["aut"]
-        @body << "<h2 class=\"tp-author\">#{CGI.escapeHTML(@params["aut"].join(ReVIEW::I18n.t("names_splitter")))}</h2>\n"
+        @body << "<h2 class=\"tp-author\">#{CGI.escapeHTML(@params.names("aut").join(ReVIEW::I18n.t("names_splitter")))}</h2>\n"
       end
       if @params["prt"]
-        @body << "<h3 class=\"tp-publisher\">#{CGI.escapeHTML(@params["prt"].join(ReVIEW::I18n.t("names_splitter")))}</h3>\n"
+        @body << "<h3 class=\"tp-publisher\">#{CGI.escapeHTML(@params.names("prt").join(ReVIEW::I18n.t("names_splitter")))}</h3>\n"
       end
       @body << "</div>"
 
