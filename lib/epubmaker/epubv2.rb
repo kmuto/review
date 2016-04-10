@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubv2.rb -- EPUB version 2 producer.
 #
-# Copyright (c) 2010-2015 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -36,8 +36,8 @@ module EPUBMaker
     def opf_metainfo
       s = ""
       %w[title language date type format source description relation coverage subject rights].each do |item|
-        next if @producer.params[item].nil?
-        if @producer.params[item].instance_of?(Array)
+        next unless @producer.params[item]
+        if @producer.params[item].kind_of?(Array)
           s << @producer.params[item].map {|i| %Q[    <dc:#{item}>#{CGI.escapeHTML(i.to_s)}</dc:#{item}>\n]}.join
         else
           s << %Q[    <dc:#{item}>#{CGI.escapeHTML(@producer.params[item].to_s)}</dc:#{item}>\n]
@@ -53,7 +53,7 @@ module EPUBMaker
 
       # creator (should be array)
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
-        next if @producer.params[role].nil?
+        next unless @producer.params[role]
         @producer.params[role].each do |v|
           s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</dc:creator>\n]
         end
@@ -61,7 +61,7 @@ module EPUBMaker
 
       # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
-        next if @producer.params[role].nil?
+        next unless @producer.params[role]
         @producer.params[role].each do |v|
           s << %Q[    <dc:contributor opf:role="#{role}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
           if role == "prt"

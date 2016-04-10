@@ -46,10 +46,10 @@ module EPUBMaker
     def opf_metainfo
       s = ""
       %w[title language date type format source description relation coverage subject rights].each do |item|
-        next if @producer.params[item].nil?
-        if @producer.params[item].instance_of?(Array)
+        next unless @producer.params[item]
+        if @producer.params[item].kind_of?(Array)
           @producer.params[item].each_with_index do |v, i|
-            if v.instance_of?(Hash)
+            if v.kind_of?(Hash)
               s << %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:#{item}>\n]
               v.each_pair do |name, val|
                 next if name == "name"
@@ -59,7 +59,7 @@ module EPUBMaker
               s << %Q[    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v.to_s)}</dc:#{item}>\n]
             end
           end
-        elsif @producer.params[item].instance_of?(Hash)
+        elsif @producer.params[item].kind_of?(Hash)
           s << %Q[    <dc:#{item} id="#{item}">#{CGI.escapeHTML(@producer.params[item]["name"])}</dc:#{item}>\n]
           @producer.params[item].each_pair do |name, val|
             next if name == "name"
@@ -81,9 +81,9 @@ module EPUBMaker
 
       # creator (should be array)
       %w[a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl aut].each do |role|
-        next if @producer.params[role].nil?
+        next unless @producer.params[role]
         @producer.params[role].each_with_index do |v, i|
-          if v.instance_of?(Hash)
+          if v.kind_of?(Hash)
             s << %Q[    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:creator>\n]
             s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n]
             v.each_pair do |name, val|
@@ -99,9 +99,9 @@ module EPUBMaker
 
       # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pbd pbl pht prt red rev spn ths trc trl].each do |role|
-        next if @producer.params[role].nil?
+        next unless @producer.params[role]
         @producer.params[role].each_with_index do |v, i|
-          if v.instance_of?(Hash)
+          if v.kind_of?(Hash)
             s << %Q[    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:contributor>\n]
             s << %Q[    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
             v.each_pair do |name, val|
@@ -114,7 +114,7 @@ module EPUBMaker
           end
 
           if role == "prt" || role == "pbl"
-            if v.instance_of?(Hash)
+            if v.kind_of?(Hash)
               s << %Q[    <dc:publisher id="pub-#{role}-#{i}">#{CGI.escapeHTML(v["name"])}</dc:publisher>\n]
               s << %Q[    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n]
               v.each_pair do |name, val|
@@ -204,11 +204,11 @@ EOT
 
       @body = <<EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
-  <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>
+  <h1 class="toc-title">#{CGI.escapeHTML(@producer.res.v("toctitle"))}</h1>
 #{ncx_main}  </nav>
 EOT
 
-      @title = @producer.res.v("toctitle")
+      @title = CGI.escapeHTML(@producer.res.v("toctitle"))
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
       tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)

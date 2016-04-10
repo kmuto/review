@@ -64,7 +64,7 @@ module EPUBMaker
     <text>#{CGI.escapeHTML(@producer.params["title"])}</text>
   </docTitle>
   <docAuthor>
-    <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(join_with_separator(@producer.params["aut"], ", "))}</text>
+    <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(join_with_separator(@producer.params["aut"], ReVIEW::I18n.t("names_splitter")))}</text>
   </docAuthor>
 EOT
     end
@@ -86,7 +86,7 @@ EOT
         s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{@producer.res.v("toctitle")}</text>
+        <text>#{CGI.escapeHTML(@producer.res.v("toctitle"))}</text>
       </navLabel>
       <content src="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>
     </navPoint>
@@ -144,7 +144,7 @@ EOT
         EOT
       end
 
-      @title = @producer.params['title']
+      @title = CGI.escapeHTML(@producer.params['title'])
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
       if @producer.params["htmlversion"].to_i == 5
@@ -158,10 +158,10 @@ EOT
 
     # Return title (copying) content.
     def titlepage
-      @title = @producer.params["title"]
+      @title = CGI.escapeHTML(@producer.params["title"])
 
       @body = <<EOT
-  <h1 class="tp-title">#{CGI.escapeHTML(@title)}</h1>
+  <h1 class="tp-title">#{@title}</h1>
 EOT
       if @producer.params["aut"]
         @body << <<EOT
@@ -169,7 +169,7 @@ EOT
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params["aut"], ", "))}</h2>
+  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params["aut"], ReVIEW::I18n.t("names_splitter")))}</h2>
 EOT
       end
 
@@ -182,7 +182,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{CGI.escapeHTML(join_with_separator(publisher, ", "))}</h3>
+  <h3 class="tp-publisher">#{CGI.escapeHTML(join_with_separator(publisher, ReVIEW::I18n.t("names_splitter")))}</h3>
 EOT
       end
 
@@ -199,7 +199,7 @@ EOT
 
     # Return colophon content.
     def colophon
-      @title = @producer.res.v("colophontitle")
+      @title = CGI.escapeHTML(@producer.res.v("colophontitle"))
       @body = <<EOT
   <div class="colophon">
 EOT
@@ -240,7 +240,7 @@ EOT
       @body << %Q[    <table class="colophon">\n]
       @body << @producer.params["colophon_order"].map{ |role|
         if @producer.params[role]
-          %Q[      <tr><th>#{@producer.res.v(role)}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params[role], ", "))}</td></tr>\n]
+          %Q[      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params[role], ReVIEW::I18n.t("names_splitter")))}</td></tr>\n]
         else
           ""
         end
@@ -251,7 +251,7 @@ EOT
       end
       @body << %Q[    </table>\n]
       if !@producer.params["rights"].nil? && @producer.params["rights"].size > 0
-        @body << %Q[    <p class="copyright">#{join_with_separator(@producer.params["rights"], "<br />")}</p>]
+        @body << %Q[    <p class="copyright">#{join_with_separator(@producer.params["rights"].map {|m| CGI.escapeHTML(m)}, "<br />")}</p>\n]
       end
       @body << %Q[  </div>\n]
 
@@ -274,9 +274,9 @@ EOT
 
     # Return own toc content.
     def mytoc
-      @title = @producer.res.v("toctitle")
+      @title = CGI.escapeHTML(@producer.res.v("toctitle"))
 
-      @body = %Q[  <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>\n]
+      @body = %Q[  <h1 class="toc-title">#{CGI.escapeHTML(@producer.res.v("toctitle"))}</h1>\n]
       if @producer.params["epubmaker"]["flattoc"].nil?
         @body << hierarchy_ncx("ul")
       else
