@@ -43,8 +43,8 @@
 \fi
 
 \usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={<%= values["booktitle"] %>},%
-            pdfauthor={<%= values["aut"] %>}]{hyperref}
+            pdftitle={<%= values.name_of("booktitle") %>},%
+            pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
 
 <% if config["highlight"] && config["highlight"]["latex"] == "listings" %>
 <%   if config["language"] == "ja" %>
@@ -244,7 +244,7 @@
 \begin{center}%
   \mbox{} \vskip5zw
    \reviewtitlefont%
-    {\Huge <%= values["booktitle"] %> \par}%
+    {\Huge <%= values.name_of("booktitle") %> \par}%
     \vskip 15em%
     {\huge
       \lineskip .75em
@@ -252,7 +252,7 @@
         <%= authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= values["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", values["prt"])%>\par}%
+    {\large <%= values["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", values.names_of("prt").join(I18n.t("names_splitter")))%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
@@ -319,7 +319,7 @@
 
 \vspace*{\fill}
 
-{\noindent\reviewtitlefont\Large <%= values["booktitle"] %>} \\
+{\noindent\reviewtitlefont\Large <%= values.name_of("booktitle") %>} \\
 \rule[8pt]{14cm}{1pt} \\
 {\noindent
 <%= values["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent"} %>
@@ -330,7 +330,7 @@
 \end{tabular}
 　\\
 \rule[0pt]{14cm}{1pt} \\
-<%= values["rights"] %> \\
+<%= values.names_of("rights").join('\\' + '\\') %> \\
 <%   end %>
 <% end %>
 

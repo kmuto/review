@@ -244,7 +244,7 @@ module ReVIEW
 
     def make_colophon_role(role)
       if @config[role].present?
-        return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(@config[role], ReVIEW::I18n.t("names_splitter")))} \\\\\n"
+        return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(@config.names_of(role), ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       else
         ""
       end
@@ -261,15 +261,15 @@ module ReVIEW
     def make_authors
       authors = ""
       if @config["aut"].present?
-        author_names = join_with_separator(@config["aut"], ReVIEW::I18n.t("names_splitter"))
+        author_names = join_with_separator(@config.names_of("aut"), ReVIEW::I18n.t("names_splitter"))
         authors = ReVIEW::I18n.t("author_with_label", author_names)
       end
       if @config["csl"].present?
-        csl_names = join_with_separator(@config["csl"], ReVIEW::I18n.t("names_splitter"))
+        csl_names = join_with_separator(@config.names_of("csl"), ReVIEW::I18n.t("names_splitter"))
         authors += " \\\\\n"+ ReVIEW::I18n.t("supervisor_with_label", csl_names)
       end
       if @config["trl"].present?
-        trl_names = join_with_separator(@config["trl"], ReVIEW::I18n.t("names_splitter"))
+        trl_names = join_with_separator(@config.names_of("trl"), ReVIEW::I18n.t("names_splitter"))
         authors += " \\\\\n"+ ReVIEW::I18n.t("translator_with_label", trl_names)
       end
       authors

@@ -65,5 +65,31 @@ module ReVIEW
         return self.fetch(@maker).fetch(key, nil)
       end
     end
+
+    def name_of(key)
+      if self[key].kind_of?(Array)
+        self[key].join(",") # i18n?
+      elsif self[key].kind_of?(Hash)
+        self[key]["name"]
+      else
+        self[key]
+      end
+    end
+
+    def names_of(key)
+      if self[key].kind_of?(Array)
+        self[key].map do |a|
+          if a.kind_of?(Hash)
+            a["name"]
+          else
+            a
+          end
+        end
+      elsif self[key].kind_of?(Hash)
+        [self[key]["name"]]
+      else
+        [self[key]]
+      end
+    end
   end
 end
