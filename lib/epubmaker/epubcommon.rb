@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -135,16 +135,16 @@ EOT
         end
         @body = <<-EOT
   <div id="cover-image" class="cover-image">
-    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.params.name("title"))}" class="max"/>
+    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.params.name_of("title"))}" class="max"/>
   </div>
         EOT
       else
         @body = <<-EOT
-<h1 class="cover-title">#{CGI.escapeHTML(@producer.params.name("title"))}</h1>
+<h1 class="cover-title">#{CGI.escapeHTML(@producer.params.name_of("title"))}</h1>
         EOT
       end
 
-      @title = CGI.escapeHTML(@producer.params.name("title"))
+      @title = CGI.escapeHTML(@producer.params.name_of("title"))
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
       if @producer.params["htmlversion"].to_i == 5
@@ -158,7 +158,7 @@ EOT
 
     # Return title (copying) content.
     def titlepage
-      @title = CGI.escapeHTML(@producer.params.name("title"))
+      @title = CGI.escapeHTML(@producer.params.name_of("title"))
 
       @body = <<EOT
   <h1 class="tp-title">#{@title}</h1>
@@ -169,11 +169,11 @@ EOT
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params.names("aut"), ReVIEW::I18n.t("names_splitter")))}</h2>
+  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params.names_of("aut"), ReVIEW::I18n.t("names_splitter")))}</h2>
 EOT
       end
 
-      publisher = @producer.params.names("pbl") || @producer.params.names("prt") # XXX Backward Compatiblity
+      publisher = @producer.params.names_of("pbl") || @producer.params.names_of("prt") # XXX Backward Compatiblity
       if publisher
         @body << <<EOT
   <p>
@@ -206,11 +206,11 @@ EOT
 
       if @producer.params["subtitle"].nil?
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.params.name("title"))}</p>
+    <p class="title">#{CGI.escapeHTML(@producer.params.name_of("title"))}</p>
 EOT
       else
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.params.name("title"))}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.params.name("subtitle"))}</span></p>
+    <p class="title">#{CGI.escapeHTML(@producer.params.name_of("title"))}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.params.name_of("subtitle"))}</span></p>
 EOT
       end
 
@@ -240,7 +240,7 @@ EOT
       @body << %Q[    <table class="colophon">\n]
       @body << @producer.params["colophon_order"].map{ |role|
         if @producer.params[role]
-          %Q[      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params.names(role), ReVIEW::I18n.t("names_splitter")))}</td></tr>\n]
+          %Q[      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params.names_of(role), ReVIEW::I18n.t("names_splitter")))}</td></tr>\n]
         else
           ""
         end
@@ -251,7 +251,7 @@ EOT
       end
       @body << %Q[    </table>\n]
       if !@producer.params["rights"].nil? && @producer.params["rights"].size > 0
-        @body << %Q[    <p class="copyright">#{join_with_separator(@producer.params.names("rights").map {|m| CGI.escapeHTML(m)}, "<br />")}</p>\n]
+        @body << %Q[    <p class="copyright">#{join_with_separator(@producer.params.names_of("rights").map {|m| CGI.escapeHTML(m)}, "<br />")}</p>\n]
       end
       @body << %Q[  </div>\n]
 

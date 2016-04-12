@@ -66,7 +66,7 @@ module ReVIEW
       end
     end
 
-    def name(key)
+    def name_of(key)
       if self[key].kind_of?(Array)
         self[key].join(",") # i18n?
       elsif self[key].kind_of?(Hash)
@@ -76,7 +76,7 @@ module ReVIEW
       end
     end
 
-    def names(key)
+    def names_of(key)
       if self[key].kind_of?(Array)
         self[key].map do |a|
           if a.kind_of?(Hash)

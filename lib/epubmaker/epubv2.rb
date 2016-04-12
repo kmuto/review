@@ -38,9 +38,9 @@ module EPUBMaker
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next unless @producer.params[item]
         if @producer.params[item].kind_of?(Array)
-          s << @producer.params.names(item).map {|i| %Q[    <dc:#{item}>#{CGI.escapeHTML(i)}</dc:#{item}>\n]}.join
+          s << @producer.params.names_of(item).map {|i| %Q[    <dc:#{item}>#{CGI.escapeHTML(i)}</dc:#{item}>\n]}.join
         else
-          s << %Q[    <dc:#{item}>#{CGI.escapeHTML(@producer.params.name(item))}</dc:#{item}>\n]
+          s << %Q[    <dc:#{item}>#{CGI.escapeHTML(@producer.params.name_of(item))}</dc:#{item}>\n]
         end
       end
 
@@ -54,7 +54,7 @@ module EPUBMaker
       # creator (should be array)
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next unless @producer.params[role]
-        @producer.params.names(role).each do |v|
+        @producer.params.names_of(role).each do |v|
           s << %Q[    <dc:creator opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</dc:creator>\n]
         end
       end
@@ -62,7 +62,7 @@ module EPUBMaker
       # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next unless @producer.params[role]
-        @producer.params.names(role).each do |v|
+        @producer.params.names_of(role).each do |v|
           s << %Q[    <dc:contributor opf:role="#{role}">#{CGI.escapeHTML(v)}</dc:contributor>\n]
           if role == "prt"
             s << %Q[    <dc:publisher>#{v}</dc:publisher>\n]
