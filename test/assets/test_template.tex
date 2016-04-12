@@ -1,5 +1,5 @@
-\documentclass[oneside]{jsbook}
-\usepackage[deluxe]{otf}
+\documentclass[uplatex,oneside]{jsbook}
+%\usepackage[deluxe]{otf}
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{framed}
@@ -10,7 +10,7 @@
 \definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
 \definecolor{reviewred}{rgb}{0.7,0,0}
 \definecolor{reviewdarkred}{rgb}{0.3,0,0}
-\usepackage[utf8]{inputenc}
+%\usepackage[utf8]{inputenc}
 \usepackage{ascmac}
 \usepackage{float}
 \usepackage{alltt}
@@ -31,20 +31,12 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-%% Bookmarkの文字化け対策（日本語向け）
-\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode EUC-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode EUC-UCS2}}%
-\else
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-\fi
-
-\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={Re:VIEW Sample Book},%
             pdfauthor={}]{hyperref}
+
+% uplatexでのBookmarkの文字化け対策（日本語向け）
+\usepackage[dvipdfmx]{pxjahyper}
 
 
 
