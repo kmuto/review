@@ -163,9 +163,8 @@ module ReVIEW
         call_hook("hook_beforetexcompile")
 
         ## do compile
-        kanji = 'utf8'
-        texcommand = "platex"
-        texoptions = "-kanji=#{kanji}"
+        texcommand = "uplatex"
+        texoptions = ""
         dvicommand = "dvipdfmx"
         dvioptions = "-d 5"
 
@@ -278,7 +277,7 @@ module ReVIEW
     def get_template
       dclass = @config["texdocumentclass"] || []
       documentclass = dclass[0] || "jsbook"
-      documentclassoption = dclass[1] || "oneside"
+      documentclassoption = dclass[1] || "uplatex,oneside"
 
       okuduke = make_colophon
       authors = make_authors
