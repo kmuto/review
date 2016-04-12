@@ -204,7 +204,7 @@ review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマ
 
 PDF を作成するには、TeXLive2012 以上の環境が必要です。EPUB を作成するには、zip コマンドが必要です (MathML も使いたいときには、 [MathML ライブラリ](http://www.hinet.mydns.jp/?mathml.rb)も必要です)。
 
-いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、 [sample.yml](https://github.com/kmuto/review/blob/master/doc/sample.yml) としてこのドキュメントと同じディレクトリに収録しています。
+いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、 [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) としてこのドキュメントと同じディレクトリに収録しています。
 
 ```bash
 $ review-pdfmaker YAMLファイル  ←PDFの作成
