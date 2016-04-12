@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2016 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -1125,6 +1125,13 @@ QUOTE
       else
         %Q(<!-- #{escape_comment(escape_html(str))} -->)
       end
+    end
+
+    def inline_tcy(str)
+      # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
+      style = "tcy"
+      style = "upright" if str.size == 1 && str.match(/[[:ascii:]]/)
+      %Q[<span class="#{style}">#{escape_html(str)}</span>]
     end
 
     def inline_raw(str)
