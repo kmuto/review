@@ -1,3 +1,25 @@
+Mon Apr  4 14:42:51 2016  Kenshi Muto  <kmuto@debian.org>
+
+	* config.yml:
+	  support "inherit: YAMLfilename" parameter in config.yml to
+	  read other YAML file (such as common.yml.)
+
+Sun Apr 3 17:21:25 2016  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	* epubmaker:
+	  add direction in default setting.
+
+Sun Apr 3 11:04:53 2016  Kenshi Muto  <kmuto@debian.org>
+
+	* epubmaker:
+	  accept hash value for 'booktitle' and some other parameters,
+	  as same as 'aut:' (author value).
+	  This change aims to set "file-as" variable to book title.
+
+Sun Apr 3 11:03:47 2016  Masayoshi Takahashi  <takahashimm@gmail.com>
+
+	use SecureRandom.uuid instead of ruby-uuid
+
 Fri Mar 25 22:16:33 2016  Kenshi Muto  <kmuto@debian.org>
 
 	* bin/review-preproc:

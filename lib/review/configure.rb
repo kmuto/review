@@ -30,7 +30,7 @@ module ReVIEW
         "params" => "", # specify review2html parameters
         "toclevel" => 3, # level of toc
         "secnolevel" => 2, # level of section #
-        "epubversion" => 2,
+        "epubversion" => 3,
         "titlepage" => true, # Use title page
         "toc" => nil, # Use table of contents in body
         "colophon" => nil, # Use colophon
@@ -39,7 +39,7 @@ module ReVIEW
         "language" => 'ja', # XXX default language should be JA??
         "mathml" => nil, # for HTML
         "htmlext" => "html",
-        "htmlversion" => 4,
+        "htmlversion" => 5,
 
         "chapter_file" => 'CHAPS',
         "part_file" => 'PART',
@@ -61,11 +61,38 @@ module ReVIEW
     end
 
     def [](key)
+      maker = self.maker
+      if maker && self.key?(maker) && self.fetch(maker).key?(key)
+        return self.fetch(maker).fetch(key, nil)
+      end
       if self.key?(key)
         return self.fetch(key)
       end
-      if @maker && self.key?(@maker)
-        return self.fetch(@maker).fetch(key, nil)
+    end
+
+    def name_of(key)
+      if self[key].kind_of?(Array)
+        self[key].join(",") # i18n?
+      elsif self[key].kind_of?(Hash)
+        self[key]["name"]
+      else
+        self[key]
+      end
+    end
+
+    def names_of(key)
+      if self[key].kind_of?(Array)
+        self[key].map do |a|
+          if a.kind_of?(Hash)
+            a["name"]
+          else
+            a
+          end
+        end
+      elsif self[key].kind_of?(Hash)
+        [self[key]["name"]]
+      else
+        [self[key]]
       end
     end
   end

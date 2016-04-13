@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2012-2014 Yuto HAYAMIZU, Kenshi Muto
+# Copyright (c) 2012-2016 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -9,6 +9,7 @@
 #
 require 'pathname'
 require 'fileutils'
+require 'yaml'
 
 module ReVIEW
   class MakerHelper
