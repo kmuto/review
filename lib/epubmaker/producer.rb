@@ -69,7 +69,7 @@ module EPUBMaker
 
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
-      @params = @params.deep_merge(params)
+      @params.deep_merge!(params)
       complement
 
       unless @params["epubversion"].nil?
@@ -219,8 +219,8 @@ module EPUBMaker
         "isbn" => nil,
         "toclevel" => 2,
         "stylesheet" => [],
-        "epubversion" => 2,
-        "htmlversion" => 4,
+        "epubversion" => 3,
+        "htmlversion" => 5,
         "secnolevel" => 2,
         "pre_secnolevel" => 0,
         "post_secnolevel" => 1,
@@ -250,6 +250,7 @@ module EPUBMaker
           "force_include_images" => [],
           "cover_linear" => nil,
         },
+        "externallink" => true,
         "imagedir" => "images",
         "fontdir" => "fonts",
         "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
