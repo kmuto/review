@@ -72,11 +72,11 @@ module ReVIEW
 
     def check_version(version)
       if self["review_version"].blank?
-        raise ReVIEW::ConfigError, "config.yml has no review_version property."
+        raise ReVIEW::ConfigError, "configuration file has no review_version property."
       elsif self["review_version"].to_i != version.to_i ## major version
-        raise ReVIEW::ConfigError, "major version of config.yml is different."
+        raise ReVIEW::ConfigError, "major version of configuration file is different."
       elsif self["review_version"].to_f > version.to_f ## minor version
-        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than config.yml version '#{self["review_version"]}'."
+        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self["review_version"]}'."
       end
     end
 
