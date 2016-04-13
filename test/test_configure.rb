@@ -55,4 +55,33 @@ class ConfigureTest < Test::Unit::TestCase
     assert_equal true, @config["epubmaker"]["flattocindent"]
   end
 
+  def test_check_version_noversion
+    @config["review_version"] = nil
+    assert_raise ReVIEW::ConfigError do
+      @config.check_version("2.0.0")
+    end
+  end
+
+  def test_check_version
+    @config["review_version"] = "2.1"
+    assert_nothing_raised do
+      @config.check_version("2.1.0")
+    end
+    assert_nothing_raised do
+      @config.check_version("2.2.0")
+    end
+    assert_nothing_raised do
+      @config.check_version("2.2.5")
+    end
+    assert_raise ReVIEW::ConfigError do
+      @config.check_version("2.0.0")
+    end
+    assert_raise ReVIEW::ConfigError do
+      @config.check_version("3.0.0")
+    end
+    assert_raise ReVIEW::ConfigError do
+      @config.check_version("1.8.0")
+    end
+  end
+
 end

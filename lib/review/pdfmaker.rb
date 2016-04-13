@@ -105,6 +105,12 @@ module ReVIEW
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
       @basedir = File.dirname(yamlfile)
+
+      begin
+        @config.check_version(ReVIEW::VERSION)
+      rescue ReVIEW::ConfigError => e
+        warn e.message
+      end
       generate_pdf(yamlfile)
     end
 
