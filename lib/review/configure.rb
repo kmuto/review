@@ -52,6 +52,9 @@ module ReVIEW
         "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
+        "epubmaker" => {
+          "externallink" => true,
+        },
       ]
       conf.maker = nil
       conf

@@ -21,6 +21,7 @@ ja:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  external_link: "%s（%s）"
   label_marker: "●●　"
   aut: "著　者"
   csl: "監　修"
@@ -78,6 +79,7 @@ en:
   image_quote: '"%s"'
   caption_prefix: " "
   caption_prefix_idgxml: "　"
+  external_link: "%s (%s)"
   ruby_prefix: "("
   ruby_postfix: ")"
   label_marker: "●●　"
@@ -135,6 +137,7 @@ zh-TW:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  external_link: "%s (%s)"
   label_marker: "●●　"
   aut: "著作人"
   csl: "監　修"
