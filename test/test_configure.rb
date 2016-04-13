@@ -16,7 +16,8 @@ class ConfigureTest < Test::Unit::TestCase
                      "urnid" => "http://example.jp/",
                      "date" => "2011-01-01",
                      "language" => "ja",
-                     "epubmaker" => {"flattocindent" => true},
+                     "epubmaker" => {"flattocindent" => true,
+                                     "title" => "Sample Book(EPUB)"},
                    })
     @output = StringIO.new
     I18n.setup(@config["language"])
@@ -39,6 +40,13 @@ class ConfigureTest < Test::Unit::TestCase
     @config.maker = "epubmaker"
     assert_equal true, @config["flattocindent"]
     assert_equal true, @config["epubmaker"]["flattocindent"]
+  end
+
+  def test_configure_with_maker_override
+    @config.maker = "epubmaker"
+    assert_equal "Sample Book(EPUB)", @config["title"]
+    @config.maker = "pdfmaker"
+    assert_equal "Sample Book", @config["title"]
   end
 
   def test_configure_with_invalidmaker

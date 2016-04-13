@@ -97,6 +97,7 @@ module ReVIEW
 
     def execute(*args)
       @config = ReVIEW::Configure.values
+      @config.maker = "pdfmaker"
       cmd_config, yamlfile = parse_opts(args)
       loader = YAMLLoader.new
       @config.deep_merge!(loader.load_file(yamlfile))
