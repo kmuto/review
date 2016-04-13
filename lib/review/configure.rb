@@ -30,7 +30,7 @@ module ReVIEW
         "params" => "", # specify review2html parameters
         "toclevel" => 3, # level of toc
         "secnolevel" => 2, # level of section #
-        "epubversion" => 2,
+        "epubversion" => 3,
         "titlepage" => true, # Use title page
         "toc" => nil, # Use table of contents in body
         "colophon" => nil, # Use colophon
@@ -39,7 +39,7 @@ module ReVIEW
         "language" => 'ja', # XXX default language should be JA??
         "mathml" => nil, # for HTML
         "htmlext" => "html",
-        "htmlversion" => 4,
+        "htmlversion" => 5,
 
         "chapter_file" => 'CHAPS',
         "part_file" => 'PART',

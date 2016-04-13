@@ -25,11 +25,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_xmlns_ops_prefix_epub3
-    @book.config["epubversion"] = 3
     assert_equal "epub", @builder.xmlns_ops_prefix
   end
 
   def test_xmlns_ops_prefix_epub2
+    @book.config["epubversion"] = 2
     assert_equal "ops", @builder.xmlns_ops_prefix
   end
 
@@ -218,17 +218,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_tt
     actual = compile_inline("test @<tt>{inline test} test2")
-    assert_equal %Q|test <tt>inline test</tt> test2|, actual
+    assert_equal %Q|test <code class="tt">inline test</code> test2|, actual
   end
 
   def test_inline_tti
     actual = compile_inline("test @<tti>{inline test} test2")
-    assert_equal %Q|test <tt><i>inline test</i></tt> test2|, actual
+    assert_equal %Q|test <code class="tt"><i>inline test</i></code> test2|, actual
   end
 
   def test_inline_ttb
     actual = compile_inline("test @<ttb>{inline test} test2")
-    assert_equal %Q|test <tt><b>inline test</b></tt> test2|, actual
+    assert_equal %Q|test <code class="tt"><b>inline test</b></code> test2|, actual
   end
 
   def test_inline_hd_chap
@@ -285,12 +285,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_ruby
     actual = compile_inline("@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。")
-    assert_equal "<ruby><rb>粗雑</rb><rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby><rb>繊細</rb><rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", actual
+    assert_equal "<ruby>粗雑<rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby>繊細<rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。", actual
   end
 
   def test_inline_ruby_comma
     actual = compile_inline("@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}")
-    assert_equal "<ruby><rb>foo, bar, buz</rb><rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", actual
+    assert_equal "<ruby>foo, bar, buz<rp>（</rp><rt>フー・バー・バズ</rt><rp>）</rp></ruby>", actual
   end
 
   def test_inline_ref
@@ -1045,7 +1045,7 @@ EOS
     @chapter.instance_eval{@footnote_index=fn}
     actual = compile_block("//footnote[foo][bar\\a\\$buz]\n")
     expected =<<-'EOS'
-<div class="footnote" id="fn-foo"><p class="footnote">[<a href="#fnb-foo">*1</a>] bar\a\$buz</p></div>
+<div class="footnote" epub:type="footnote" id="fn-foo"><p class="footnote">[*1] bar\a\$buz</p></div>
 EOS
     assert_equal expected, actual
   end
@@ -1055,7 +1055,7 @@ EOS
     @chapter.instance_eval{@footnote_index=fn}
     actual = compile_block("//footnote[123 あ_;][bar\\a\\$buz]\n")
     expected =<<-'EOS'
-<div class="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[<a href="#fnb-id_123-_E3_81_82___3B">*1</a>] bar\a\$buz</p></div>
+<div class="footnote" epub:type="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[*1] bar\a\$buz</p></div>
 EOS
     assert_equal expected, actual
   end
