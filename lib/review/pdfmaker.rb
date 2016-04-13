@@ -244,6 +244,7 @@ module ReVIEW
 
     def make_colophon_role(role)
       if @config[role].present?
+        initialize_metachars(@config["texcommand"])
         return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(@config.names_of(role), ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       else
         ""

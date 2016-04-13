@@ -15,39 +15,71 @@ module ReVIEW
 
   module LaTeXUtils
 
-    METACHARS = {
-      '#' => '\#',
-      "$" => '\textdollar{}',
-      '%' => '\%',
-      '&' => '\&',
-      '{' => '\{',
-      '}' => '\}',
-      '_' => '\textunderscore{}',
-      '^' => '\textasciicircum{}',
-      '~' => '\textasciitilde{}',
-      '|' => '\textbar{}',
-      '<' => '\textless{}',
-      '>' => '\textgreater{}',
-      "\\" => '\reviewbackslash{}',
-      "-" => '{-}'
-    }
+    def initialize_metachars(texcommand)
+      @metachars = {
+        '#' => '\#',
+        "$" => '\textdollar{}',
+        '%' => '\%',
+        '&' => '\&',
+        '{' => '\{',
+        '}' => '\}',
+        '_' => '\textunderscore{}',
+        '^' => '\textasciicircum{}',
+        '~' => '\textasciitilde{}',
+        '|' => '\textbar{}',
+        '<' => '\textless{}',
+        '>' => '\textgreater{}',
+        "\\" => '\reviewbackslash{}',
+        "-" => '{-}'
+      }
 
-    METACHARS_RE = /[#{Regexp.escape(METACHARS.keys.join(''))}]/u
+      if File.basename(texcommand, ".*") == "platex"
+        @metachars.merge!({
+                           '⓪' => '\UTF{24EA}',
+                           '①' => '\UTF{2460}',
+                           '②' => '\UTF{2461}',
+                           '③' => '\UTF{2462}',
+                           '④' => '\UTF{2463}',
+                           '⑤' => '\UTF{2464}',
+                           '⑥' => '\UTF{2465}',
+                           '⑦' => '\UTF{2466}',
+                           '⑧' => '\UTF{2467}',
+                           '⑨' => '\UTF{2468}',
+                           '⑩' => '\UTF{2469}',
+                           '⑪' => '\UTF{246A}',
+                           '⑫' => '\UTF{246B}',
+                           '⑬' => '\UTF{246C}',
+                           '⑭' => '\UTF{246D}',
+                           '⑮' => '\UTF{246E}',
+                           '⑯' => '\UTF{246F}'
+                         })
 
-    METACHARS_INVERT = METACHARS.invert
+        kanalist = %w{｡ ｢ ｣ ､ ･ ｦ ｧ ｨ ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ ｱ ｲ ｳ ｴ 
+ｵ ｶ ｷ ｸ ｹ ｺ ｻ ｼ ｽ ｾ ｿ ﾀ ﾁ ﾂ ﾃ ﾄ ﾅ ﾆ ﾇ ﾈ ﾉ ﾊ ﾋ ﾌ ﾍ ﾎ ﾏ
+ ﾐ ﾑ ﾒ ﾓ ﾔ ﾕ ﾖ ﾗ ﾘ ﾙ ﾚ ﾛ ﾜ ﾝ ﾞ ﾟ}
+        kanalist.each do |char|
+          char_jisx0208 = NKF::nkf('-WwX',char)
+          @metachars[char] = "\\aj半角{#{char_jisx0208}}"
+        end
+      end
+
+      @metachars_re = /[#{Regexp.escape(@metachars.keys.join(''))}]/u
+
+      @metachars_invert = @metachars.invert
+    end
 
     def escape_latex(str)
-      str.gsub(METACHARS_RE) {|s|
-        METACHARS[s] or raise "unknown trans char: #{s}"
+      str.gsub(@metachars_re) {|s|
+        @metachars[s] or raise "unknown trans char: #{s}"
       }
     end
 
     alias_method :escape, :escape_latex
 
     def unescape_latex(str)
-      metachars_invert_re = Regexp.new(METACHARS_INVERT.keys.collect{|key| Regexp.escape(key)}.join('|'))
+      metachars_invert_re = Regexp.new(@metachars_invert.keys.collect{|key| Regexp.escape(key)}.join('|'))
       str.gsub(metachars_invert_re) {|s|
-        METACHARS_INVERT[s] or raise "unknown trans char: #{s}"
+        @metachars_invert[s] or raise "unknown trans char: #{s}"
       }
     end
 
