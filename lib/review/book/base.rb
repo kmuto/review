@@ -1,8 +1,6 @@
 #
-# $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
-#
 # Copyright (c) 2002-2008 Minero Aoki
-#               2009 Minero Aoki, Kenshi Muto
+#               2009-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -336,11 +334,17 @@ module ReVIEW
           return catalog.parts_with_chaps.map do |entry|
             if entry.is_a? Hash
               chaps = entry.values.first.map do |chap|
-                Chapter.new(self, (num += 1), chap, "#{@basedir}/#{chap}")
+                chap = Chapter.new(self, (num += 1), chap, "#{@basedir}/#{chap}")
+                chap
               end
               Part.new(self, (part += 1), chaps, read_PART.split("\n")[part - 1])
             else
               chap = Chapter.new(self, (num += 1), entry, "#{@basedir}/#{entry}")
+              if chap.number
+                num = chap.number
+              else
+                num -= 1
+              end
               Part.new(self, nil, [chap])
             end
           end

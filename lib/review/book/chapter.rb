@@ -1,8 +1,6 @@
 #
-# $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
-#
 # Copyright (c) 2002-2008 Minero Aoki
-#               2009 Minero Aoki, Kenshi Muto
+#               2009-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -35,6 +33,7 @@ module ReVIEW
         end
         if !@content && @path && File.exist?(@path)
           @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
+          @number = nil if check_header == "nonum"
         end
         @list_index = nil
         @table_index = nil
@@ -48,11 +47,31 @@ module ReVIEW
         @volume = nil
       end
 
+      def check_header
+        f = LineInput.new(Preprocessor::Strip.new(StringIO.new(@content)))
+        while f.next?
+          case f.peek
+          when /\A=+[\[\s\{]/
+            m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(f.gets)
+            return m[2] # tag
+          when %r</\A//[a-z]+/>
+            line = f.gets
+            if line.rstrip[-1,1] == "{"
+              f.until_match(%r<\A//\}>)
+            end
+          end
+          f.gets
+        end
+        nil
+      end
+
       def inspect
         "\#<#{self.class} #{@number} #{@path}>"
       end
 
       def format_number(heading = true)
+        return "" unless @number
+
         if on_PREDEF?
           return "#{@number}"
         end
