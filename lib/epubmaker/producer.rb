@@ -250,6 +250,7 @@ module EPUBMaker
           "force_include_images" => [],
           "cover_linear" => nil,
         },
+        "externallink" => true,
         "imagedir" => "images",
         "fontdir" => "fonts",
         "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),

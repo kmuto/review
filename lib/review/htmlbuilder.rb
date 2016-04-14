@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2016 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -692,6 +692,30 @@ module ReVIEW
       puts '</table>'
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if !@chapter.image(id).bound?
+        warn "image not bound: #{id}"
+        image_dummy id, caption, lines
+        return
+      end
+
+      puts %Q[<div id="#{normalize_id(id)}" class="imgtable image">]
+      begin
+        table_header id, caption unless caption.nil?
+      rescue KeyError
+        error "no such table: #{id}"
+      end
+
+      imgtable_image(id, caption, metric)
+
+      puts %Q[</div>]
+    end
+
+    def imgtable_image(id, caption, metric)
+      metrics = parse_metric("html", metric)
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+    end
+
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
@@ -1108,7 +1132,11 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      if @book.config["externallink"]
+        %Q(<a href="#{url}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      else
+        label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
+      end
     end
 
     def flushright(lines)

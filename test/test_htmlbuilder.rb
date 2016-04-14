@@ -179,6 +179,34 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   def test_inline_href
     actual = compile_inline("@<href>{http://github.com,Git\\,Hub}")
     assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, actual
+
+    @book.config["epubmaker"] ||= {}
+    @book.config["epubmaker"]["externallink"] = false
+    actual = compile_inline("@<href>{http://github.com&q=1,Git\\,Hub}")
+    assert_equal %Q|<a href="http://github.com&q=1" class="link">Git,Hub</a>|, actual
+
+    actual = compile_inline("@<href>{http://github.com&q=1}")
+    assert_equal %Q|<a href="http://github.com&q=1" class="link">http://github.com&amp;q=1</a>|, actual
+  end
+
+  def test_inline_href_epubmaker
+    @book.config.maker = "epubmaker"
+    actual = compile_inline("@<href>{http://github.com,Git\\,Hub}")
+    assert_equal %Q|<a href="http://github.com" class="link">Git,Hub</a>|, actual
+
+    @book.config["epubmaker"] ||= {}
+    @book.config["epubmaker"]["externallink"] = false
+    actual = compile_inline("@<href>{http://github.com&q=1,Git\\,Hub}")
+    assert_equal %Q|Git,Hub（http://github.com&amp;q=1）|, actual
+
+    actual = compile_inline("@<href>{http://github.com&q=1}")
+    assert_equal %Q|http://github.com&amp;q=1|, actual
+
+    @book.config["epubmaker"]["externallink"] = true
+    actual = compile_inline("@<href>{http://github.com&q=1,Git\\,Hub}")
+    assert_equal %Q|<a href="http://github.com&q=1" class="link">Git,Hub</a>|, actual
+    actual = compile_inline("@<href>{http://github.com&q=1}")
+    assert_equal %Q|<a href="http://github.com&q=1" class="link">http://github.com&amp;q=1</a>|, actual
   end
 
   def test_inline_raw
@@ -1089,5 +1117,23 @@ EOS
     builder.bind(comp, chap2, nil)
     hd = builder.inline_hd("part1|part1-1")
     assert_equal "「1.1 part1-1」", hd
+  end
+
+  def test_table
+    actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal %Q|<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|,
+                 actual
+  end
+
+  def test_imgtable
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1, 'sample img')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
+    expected = %Q|<div id="sampleimg" class="imgtable image">\n<p class="caption">表1.1: test for imgtable</p>\n<img src="images/chap1-sampleimg.png" alt="test for imgtable" />\n</div>\n|
+    assert_equal expected, actual
   end
 end

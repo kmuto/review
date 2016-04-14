@@ -52,6 +52,7 @@ module ReVIEW
         "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
+        "externallink" => true,
         "tableopt" => nil,      # for IDGXML
         "listinfo" => nil,      # for IDGXML
         "nolf" => true,         # for IDGXML

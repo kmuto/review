@@ -528,6 +528,42 @@ module ReVIEW
       blank
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if !@chapter.image(id).bound?
+        warn "image not bound: #{id}"
+        image_dummy id, caption, lines
+        return
+      end
+
+      begin
+        if caption.present?
+          @table_caption = true
+          puts '\begin{table}[h]'
+          puts macro('reviewimgtablecaption', compile_inline(caption))
+        end
+        puts macro('label', table_label(id))
+      rescue ReVIEW::KeyError
+        error "no such table: #{id}"
+      end
+      imgtable_image(id, caption, metric)
+
+      puts '\end{table}' if @table_caption
+      @table_caption = nil
+      blank
+    end
+
+    def imgtable_image(id, caption, metric)
+      metrics = parse_metric("latex", metric)
+      # image is always bound here
+      puts '\begin{reviewimage}'
+      if metrics.present?
+        puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
+      else
+        puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
+      end
+      puts '\end{reviewimage}'
+    end
+
     def quote(lines)
       latex_block 'quote', lines
     end

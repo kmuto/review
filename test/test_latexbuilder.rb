@@ -429,6 +429,31 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, actual
   end
 
+  def test_table
+    actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal "\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n",
+                 actual
+  end
+
+  def test_imgtable
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1, 'sample img')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
+
+    assert_equal "\\begin{table}[h]\n"+
+                 "\\reviewimgtablecaption{test for imgtable}\n"+
+                 "\\label{table:chap1:sampleimg}\n"+
+                 "\\begin{reviewimage}\n"+
+                 "\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n"+
+                 "\\end{reviewimage}\n"+
+                 "\\end{table}\n",
+                 actual
+  end
+
   def test_bib
     def @chapter.bibpaper(id)
       Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
