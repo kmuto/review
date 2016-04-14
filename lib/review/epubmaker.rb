@@ -306,7 +306,7 @@ module ReVIEW
   end
 
   def remove_hidden_title(basetmpdir, htmlfile)
-    File.open("#{basetmpdir}/#{htmlfile}", "r+")  do |f|
+    File.open("#{basetmpdir}/#{htmlfile}", "r+") do |f|
       body = f.read.gsub(/<h\d .*?hidden=['"]true['"].*?>.*?<\/h\d>\n/, '')
       f.rewind
       f.print body
