@@ -626,6 +626,19 @@ module ReVIEW
       print "<?dtp tablerow last?>"
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if @chapter.image(id).bound?
+        metrics = parse_metric("idgxml", metric)
+        puts "<table>"
+        table_header id, caption
+        puts %Q[<imgtable><Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}"#{metrics} /></imgtable>]
+        puts "</table>"
+      else
+        warn "image not bound: #{id}" if @strict
+        image_dummy id, caption, lines
+      end
+    end
+
     def comment(str)
       print %Q(<!-- [Comment] #{escape_html(str)} -->)
     end
