@@ -52,6 +52,12 @@ module ReVIEW
         "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
+        "tableopt" => nil,      # for IDGXML
+        "listinfo" => nil,      # for IDGXML
+        "nolf" => true,         # for IDGXML
+        "chapref" => nil,       # for IDGXML
+        "structuredxml" => nil, # for IDGXML
+        "footnotetext" => nil,  # for LaTeX
       ]
       conf.maker = nil
       conf

@@ -301,11 +301,7 @@ module ReVIEW
     end
 
     def read(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        puts %Q[<lead>#{split_paragraph(lines).join}</lead>]
-      else
-        puts %Q[<p aid:pstyle="lead">#{lines.join}</p>]
-      end
+      puts %Q[<lead>#{split_paragraph(lines).join}</lead>]
     end
 
     alias_method :lead, :read
@@ -420,12 +416,8 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "<quote>#{blocked_lines.join("")}</quote>"
-      else
-        puts "<quote>#{lines.join("\n")}</quote>"
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "<quote>#{blocked_lines.join("")}</quote>"
     end
 
     def inline_table(id)
@@ -890,11 +882,7 @@ module ReVIEW
     end
 
     def flushright(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        puts split_paragraph(lines).join.gsub("<p>", "<p align='right'>")
-      else
-        puts "<p align='right'>#{lines.join("\n")}</p>"
-      end
+      puts split_paragraph(lines).join.gsub("<p>", "<p align='right'>")
     end
 
     def centering(lines)
@@ -905,12 +893,8 @@ module ReVIEW
       print "<#{type}>"
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
       puts "<title aid:pstyle='#{style}'>#{compile_inline(caption)}</title>" unless caption.nil?
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "#{blocked_lines.join}</#{type}>"
-      else
-        puts "#{lines.join("\n")}</#{type}>"
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "#{blocked_lines.join}</#{type}>"
     end
 
     def note(lines, caption = nil)
