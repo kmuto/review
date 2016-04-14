@@ -101,6 +101,7 @@ module ReVIEW
     def nonum_begin(level, label, caption)
       blank unless @output.pos == 0
       puts macro(HEADLINE[level]+"*", compile_inline(caption))
+      puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
     end
 
     def nonum_end(level)
