@@ -141,6 +141,11 @@ def _main
 
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])
+    begin
+      config.check_version(ReVIEW::VERSION)
+    rescue ReVIEW::ConfigError => e
+      warn e.message
+    end
 
     if ARGV.blank?
       mode = :dir

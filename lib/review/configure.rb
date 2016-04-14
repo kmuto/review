@@ -68,6 +68,16 @@ module ReVIEW
       end
     end
 
+    def check_version(version)
+      if self["review_version"].blank?
+        raise ReVIEW::ConfigError, "configuration file has no review_version property."
+      elsif self["review_version"].to_i != version.to_i ## major version
+        raise ReVIEW::ConfigError, "major version of configuration file is different."
+      elsif self["review_version"].to_f > version.to_f ## minor version
+        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self["review_version"]}'."
+      end
+    end
+
     def name_of(key)
       if self[key].kind_of?(Array)
         self[key].join(",") # i18n?
