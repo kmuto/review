@@ -99,10 +99,6 @@ def _main
     config["footnotetext"] = true
   }
   opts.on('--draft', 'use draft mode(inline comment)') { config["draft"] = true }
-  opts.on('-a', '--all', 'Compile all chapters.') do
-    mode = :dir
-    basedir = nil
-  end
   opts.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
     mode = :dir
     basedir = path
@@ -145,6 +141,10 @@ def _main
 
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])
+
+    if ARGV.blank?
+      mode = :dir
+    end
 
     case mode
     when :files
