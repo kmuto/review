@@ -54,7 +54,7 @@ class LineInputTest < Test::Unit::TestCase
     li.ungets('xyz')
     assert_equal 0, li.lineno
     li.ungets('xyz')
-    assert_equal -1, li.lineno # XXX: OK?
+    assert_equal(-1, li.lineno) # XXX: OK?
   end
 
   def test_peek

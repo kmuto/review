@@ -240,7 +240,7 @@ $ review-epubmaker config.yml ## generate EPUB
 To generate PDF, you should install TeXLive 2012 or later.  To generate EPUB, you should install zip command.
 When you want to use MathML, you should install [MathML library](http://www.hinet.mydns.jp/?mathml.rb)
 
-`review-pdfmaker` and `review-epubmaker` need `config.yml`, configuration YAML files. There is a sample YAML file [sample.yml](https://github.com/kmuto/review/blob/master/doc/sample.yml) in the same directory of this document.
+`review-pdfmaker` and `review-epubmaker` need `config.yml`, configuration YAML files. There is a sample YAML file [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) in the same directory of this document.
 
 
 ## Copyright

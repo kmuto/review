@@ -4,6 +4,14 @@
 # 生成されます。
 # このファイルはUTF-8エンコーディングで記述してください。
 
+# ほかの設定ファイルの継承を指定できる。同じパラメータに異なる値がある場合は、
+# 呼び出し元の値が優先される。
+# A.yml、B.ymlのパラメータを継承する例。A.ymlとB.ymlに同じパラメータがある
+# 場合、B.ymlの値が優先される。さらに今このファイルに同じパラメータがあるなら、
+# その値がB.ymlよりも優先される。
+# 同様にA.yml、B.yml内でさらにinherit:パラメータを使うこともできる。
+# inherit: ["A.yml", "B.yml"]
+
 # ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
 bookname: review-sample
 
@@ -41,7 +49,8 @@ aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
 # a-nrt, nrt: 語り手
 # a-oth, oth: その他
 # a-pht, pht: 撮影責任者
-# a-prt, prt: 出版社
+# a-pbl, pbl: 出版社（発行所）
+# a-prt, prt: 印刷所
 # a-red, red: 項目の枠組起草者
 # a-rev, rev: 評論者
 # a-spn, spn: 援助者
@@ -59,17 +68,18 @@ aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
 # relation: 補助的リソース(配列で複数指定可)
 # coverage: 内容の範囲や領域(配列で複数指定可)
 
-
 # デバッグフラグ。nullでないときには一時ファイルをカレントディレクトリに作成し、削除もしない
 debug: null
 
-# htmlext: HTMLファイルの拡張子(省略した場合はhtml)
+# HTMLファイルの拡張子(省略した場合はhtml)
+# htmlext: xhtml
 #
 # CSSファイル(配列で複数指定可)
 stylesheet: ["sample.css"]
 
 # ePUBのバージョン (2か3)
 # epubversion: 2
+#
 # HTMLのバージョン (4か5。epubversionを3にしたときには5にする)
 # htmlversion: 4
 
@@ -77,7 +87,7 @@ stylesheet: ["sample.css"]
 toclevel: 3
 
 # 採番の設定。採番させたくない見出しには「==[nonum]」のようにnonum指定をする
-# 
+#
 # 本文でセクション番号を表示する見出しレベル
 secnolevel: 2
 
@@ -87,8 +97,10 @@ secnolevel: 2
 # 以下のsecnolevelはまだ未実装。
 # 前付でセクション番号を表示する見出しレベル(未実装)
 # pre_secnolevel: 0
+#
 # 後付(付録)でセクション番号を表示する見出しレベル(未実装)
 # post_secnolevel: 1
+#
 # 部番号を表示する見出しレベル(未実装)
 # part_secnolevel: 1
 
@@ -101,14 +113,19 @@ secnolevel: 2
 
 # 表紙にするHTMLファイル。ファイル名を指定すると表紙として入る
 # cover: null
+#
 # 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
 # coverimage: null
+#
 # 表紙の後に大扉ページを作成するか。省略した場合はnull (作成しない)
 # titlepage: null
+#
 # 自動生成される大扉ページを上書きするファイル。ファイル名を指定すると大扉として入る
 # titlefile: null
+#
 # 原書大扉ページにするHTMLファイル。ファイル名を指定すると原書大扉として入る
 # originaltitlefile: null
+#
 # 権利表記ページファイル。ファイル名を指定すると権利表記として入る
 # creditfile: null
 
@@ -146,14 +163,22 @@ secnolevel: 2
 
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
+
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)。
 # page_metric: A5
+#
 # あるいは、配列で指定することもできる
 # 各数字の意味は、順にリストの行数、リストの1行字数、テキストの行数、テキストの1行字数、1kバイト毎のページ数
 # page_metric: [40,80,40,80,2]
 
 # ページ送りの送り方向、page-progression-directionの値("ltr"|"rtl"|"default")
 # direction: "ltr"
+
+# EPUBのOPFへの固有の追加ルール
+# <package>要素に追加する名前空間
+# opf_prefix: {ebpaj: "http://www.ebpaj.jp/"}
+# 追加する<meta>要素のプロパティとその値
+# opf_meta: {"ebpaj:guide-version": "1.1.3"}
 
 # 以下のパラメータを有効にするときには、
 # epubmaker:
@@ -163,64 +188,86 @@ secnolevel: 2
 # という構成にする必要がある(インデントさせる)
 
 # epubmaker:
-# 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
-# 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
-# パスしない目次ができるが、そのようなときにはこれをtrueにする
-#  flattoc: null
-# 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
-#  flattocindent: true
-# NCX目次の見出しレベルごとの飾り(配列で設定)。EPUB3ではNCXは作られない
-#  ncxindent:
-#- 
-#- - 
-# フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
-# プログラムには実行権限が必要
-# ファイル変換処理の前に実行するプログラム。スタイルシートのコンパイルをしたいときなどに利用する。
-# 渡される引数1=作業用展開ディレクトリ
-#  hook_beforeprocess: null
-# 前付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
-# 渡される引数1=作業用展開ディレクトリ
-#  hook_afterfrontmatter: null
-# 本文の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
-# 渡される引数1=作業用展開ディレクトリ
-#  hook_afterbody: null
-# 後付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
-# 渡される引数1=作業用展開ディレクトリ
-#  hook_afterbackmatter: null
-# 画像およびフォントをコピーした後に実行するプログラム。別の画像やフォントを追加したいときなどに利用する。
-# 渡される引数1=作業用展開ディレクトリ
-#  hook_aftercopyimage: null
-# ePUB zipアーカイブ直前に実行するプログラム。メタ情報などを加工したいときなどに利用する。
-# 渡される引数1=ePUB準備ディレクトリ
-#  hook_prepack: null
-# 変換したHTMLファイルおよびCSSを解析して厳密に使用している画像ファイルだけを取り込むか。デフォルトはnull(imagesディレクトリすべてを取り込む)
-# なお、フォント、カバー、広告についてはこの設定によらずディレクトリ内のものがすべて取り込まれる
-#  verify_target_images: null
-#  verify_target_imagesがtrueの状態において、解析で発見されなくても強制的に取り込むファイルの相対パスの配列
-#  force_include_images: []
-# Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
-#  rename_for_legacy: null
-# ePUBアーカイブの非圧縮実行
-#  zip_stage1: "zip -0Xq"
-# ePUBアーカイブの圧縮実行
-#  zip_stage2: "zip -Xr9Dq"
-# ePUBアーカイブに追加するパス(デフォルトはmimetype、META-INF、OEBPS)
-#  zip_addpath: null
-# EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
-#  cover_linear: null
-#
-# epubmaker:階層を使うものはここまで
+  # 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
+  # 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
+  # パスしない目次ができるが、そのようなときにはこれをtrueにする
+  # flattoc: null
+  #
+  # 目次のインデントレベルをスペース文字で表現する(flattocがtrueのときのみ)
+  # flattocindent: true
+  #
+  # NCX目次の見出しレベルごとの飾り(配列で設定)。EPUB3ではNCXは作られない
+  # ncxindent:
+  #- 
+  #- - 
+  # フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
+  # プログラムには実行権限が必要
+  # ファイル変換処理の前に実行するプログラム。スタイルシートのコンパイルをしたいときなどに利用する。
+  # 渡される引数1=作業用展開ディレクトリ
+  # hook_beforeprocess: null
+  #
+  # 前付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+  # 渡される引数1=作業用展開ディレクトリ
+  # hook_afterfrontmatter: null
+  #
+  # 本文の変換後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+  # 渡される引数1=作業用展開ディレクトリ
+  # hook_afterbody: null
+  #
+  # 後付の作成後に実行するプログラム。作業用展開ディレクトリにある目次ファイル(toc-html.txt)を操作したいときなどに利用する。
+  # 渡される引数1=作業用展開ディレクトリ
+  # hook_afterbackmatter: null
+  #
+  # 画像およびフォントをコピーした後に実行するプログラム。別の画像やフォントを追加したいときなどに利用する。
+  # 渡される引数1=作業用展開ディレクトリ
+  # hook_aftercopyimage: null
+  #
+  # ePUB zipアーカイブ直前に実行するプログラム。メタ情報などを加工したいときなどに利用する。
+  # 渡される引数1=ePUB準備ディレクトリ
+  # hook_prepack: null
+  #
+  # 変換したHTMLファイルおよびCSSを解析して厳密に使用している画像ファイルだけを取り込むか。デフォルトはnull(imagesディレクトリすべてを取り込む)
+  # なお、フォント、カバー、広告についてはこの設定によらずディレクトリ内のものがすべて取り込まれる
+  # verify_target_images: null
+  #
+  # verify_target_imagesがtrueの状態において、解析で発見されなくても強制的に取り込むファイルの相対パスの配列
+  # force_include_images: []
+  #
+  # Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
+  # rename_for_legacy: null
+  #
+  # ePUBアーカイブの非圧縮実行
+  # zip_stage1: "zip -0Xq"
+  #
+  # ePUBアーカイブの圧縮実行
+  # zip_stage2: "zip -Xr9Dq"
+  #
+  # ePUBアーカイブに追加するパス(デフォルトはmimetype、META-INF、OEBPS)
+  # zip_addpath: null
+  #
+  # EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
+  # cover_linear: null
+  #
+  # @<href>タグでの外部リンクを禁止し、地の文にする(falseで禁止する)
+  #  externallink: true
+  #
+  # epubmaker:階層を使うものはここまで
 
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
 # texstyle: samplemacro
+#
 # LaTeX用のdocumentclassを指定する
 # texdocumentclass: ["jsarticle", "b5paper,oneside"]
+#
 # LaTeX用のコマンドを指定する(platex or lualatex)
 # texcommand: "platex"
+#
 # LaTeX用のオプションを指定する(default: "-kanji=#{kanji}")
 # texoptions: "-kanji=utf-8"
+#
 # LaTeX用のdvi変換コマンドを指定する(dvipdfmx)
 # dvicommand: "dvipdfmx"
+#
 # LaTeX用のdvi変換コマンドのオプションを指定する
 # dvioptions: "-d 5"
 
@@ -232,14 +279,17 @@ secnolevel: 2
 # という構成にする必要がある(インデントさせる)
 #
 # pdfmaker:
-# TeXコンパイル前に実行するプログラム。変換後のTeXソースを調整したいときに使用する。
-# 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
-#   hook_beforetexcompile: null
-# TeXコンパイル後に実行するプログラム。索引作業をして再度コンパイルしたいときなどに使用する。
-# 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
-#   hook_aftertexcompile: null
-# PDF(book.pdf)作成後に実行するプログラム。PDFに加工を施したいときに使用する。
-# 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
-#   hook_afterdvipdf: null
-#
-# pdfmaker:階層を使うものはここまで
+  #
+  # TeXコンパイル前に実行するプログラム。変換後のTeXソースを調整したいときに使用する。
+  # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
+  # hook_beforetexcompile: null
+  #
+  # TeXコンパイル後に実行するプログラム。索引作業をして再度コンパイルしたいときなどに使用する。
+  # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
+  # hook_aftertexcompile: null
+  #
+  # PDF(book.pdf)作成後に実行するプログラム。PDFに加工を施したいときに使用する。
+  # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
+  # hook_afterdvipdf: null
+  #
+  # pdfmaker:階層を使うものはここまで
