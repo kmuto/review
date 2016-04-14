@@ -720,6 +720,30 @@ QUOTE
       puts '</table>'
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if !@chapter.image(id).bound?
+        warn "image not bound: #{id}"
+        image_dummy id, caption, lines
+        return
+      end
+
+      puts %Q[<div id="#{normalize_id(id)}" class="imgtable image">]
+      begin
+        table_header id, caption unless caption.nil?
+      rescue KeyError
+        error "no such table: #{id}"
+      end
+
+      imgtable_image(id, caption, metric)
+
+      puts %Q[</div>]
+    end
+
+    def imgtable_image(id, caption, metric)
+      metrics = parse_metric("html", metric)
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+    end
+
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
