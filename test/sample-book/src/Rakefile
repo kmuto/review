@@ -14,7 +14,7 @@ def build(mode, chapter)
 end
 
 def build_all(mode)
-  sh "review-compile --all --target=#{mode} --footnotetext --stylesheet=style.css"
+  sh "review-compile --target=#{mode} --footnotetext --stylesheet=style.css"
 end
 
 task :default => :html_all
