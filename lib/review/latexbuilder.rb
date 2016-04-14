@@ -107,6 +107,16 @@ module ReVIEW
     def nonum_end(level)
     end
 
+    def nodisp_begin(level, label, caption)
+      blank unless @output.pos == 0
+      puts macro('clearpage') if @output.pos == 0
+      puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
+      # FIXME: headings
+    end
+
+    def nodisp_end(level)
+    end
+
     def column_begin(level, label, caption)
       blank
       puts "\\begin{reviewcolumn}\n"

@@ -210,6 +210,21 @@ module ReVIEW
     def nonum_end(level)
     end
 
+    def nodisp_begin(level, label, caption)
+      puts '' if level > 1
+      unless caption.empty?
+        if label.nil?
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          puts %Q[<h#{level} id="#{id}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+        else
+          puts %Q[<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+        end
+      end
+    end
+
+    def nodisp_end(level)
+    end
+
     def column_begin(level, label, caption)
       puts %Q[<div class="column">]
 

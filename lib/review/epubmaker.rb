@@ -297,10 +297,20 @@ module ReVIEW
     begin
       @converter.convert(filename, File.join(basetmpdir, htmlfile))
       write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
+      remove_hidden_title(basetmpdir, htmlfile)
     rescue => e
       @compile_errors = true
       warn "compile error in #{filename} (#{e.class})"
       warn e.message
+    end
+  end
+
+  def remove_hidden_title(basetmpdir, htmlfile)
+    File.open("#{basetmpdir}/#{htmlfile}", "r+")  do |f|
+      body = f.read.gsub(/<h\d .*?hidden=['"]true['"].*?>.*?<\/h\d>\n/, '')
+      f.rewind
+      f.print body
+      f.truncate(f.tell)
     end
   end
 
@@ -320,7 +330,6 @@ module ReVIEW
 
   def write_info_body(basetmpdir, id, filename, ispart=nil, chaptype=nil)
     headlines = []
-    # FIXME:nonumを修正する必要あり
     path = File.join(basetmpdir, filename)
     Document.parse_stream(File.new(path), ReVIEWHeaderListener.new(headlines))
     properties = detect_properties(path)
