@@ -52,7 +52,16 @@ module ReVIEW
     end
 
     def build_path
-      Dir.mktmpdir("#{@config["bookname"]}-pdf-", Dir.pwd)
+      if @config["debug"]
+        path = "#{@config["bookname"]}-pdf"
+        if File.exist?(path)
+          FileUtils.rm_rf(path, secure: true)
+        end
+        Dir.mkdir(path)
+        return path
+      else
+        return Dir.mktmpdir("#{@config["bookname"]}-pdf-")
+      end
     end
 
     def check_compile_status(ignore_errors)
