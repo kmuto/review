@@ -112,6 +112,7 @@ module ReVIEW
     def preproc(f)
       init_vars
       while line = f.gets
+        line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
         case line
         when /\A\#@\#/, /\A\#\#\#\#/
           @f.print line
@@ -403,7 +404,7 @@ module ReVIEW
     end
 
     def parse_file(fname)
-      File.open(fname) {|f|
+      File.open(fname, "r:UTF-8") {|f|
         init_ErrorUtils f
         return _parse_file(f)
       }
