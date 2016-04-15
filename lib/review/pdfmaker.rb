@@ -55,7 +55,7 @@ module ReVIEW
       if @config["debug"]
         path = "#{@config["bookname"]}-pdf"
         if File.exist?(path)
-          FileUtils.rm_rf(path, secure: true)
+          FileUtils.rm_rf(path, :secure => true)
         end
         Dir.mkdir(path)
         return path
