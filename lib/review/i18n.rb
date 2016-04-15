@@ -20,11 +20,6 @@ module ReVIEW
       lfile = nil
       if ymlfile
         lfile = File.expand_path(ymlfile, Dir.pwd)
-
-        # backward compatibility
-        if !File.exist?(lfile) && (ymlfile == "locale.yml")
-          lfile = File.expand_path("locale.yaml", Dir.pwd)
-        end
       end
 
       if lfile && File.file?(lfile)
