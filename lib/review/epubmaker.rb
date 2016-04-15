@@ -344,7 +344,7 @@ module ReVIEW
       if first.nil?
         @htmltoc.add_item(headline["level"], filename+"#"+headline["id"], headline["title"], {:chaptype => chaptype, :notoc => headline["notoc"]})
       else
-        @htmltoc.add_item(headline["level"], filename, headline["title"], {:force_include => true, :chaptype => chaptype+prop_str,  :notoc => headline["notoc"]})
+        @htmltoc.add_item(headline["level"], filename, headline["title"], {:force_include => true, :chaptype => chaptype+prop_str, :notoc => headline["notoc"]})
         first = nil
       end
     end
