@@ -296,10 +296,6 @@ module ReVIEW
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-        if @chapter.book.config["hdnumberingmode"]
-          caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
-          warn "--hdnumberingmode is deprecated. use --level option."
-        end
         @strategy.headline level, label, caption
       end
     end

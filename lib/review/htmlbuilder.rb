@@ -266,12 +266,8 @@ module ReVIEW
       unless caption.nil?
         puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
       end
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts blocked_lines.join("\n")
-      else
-        lines.each {|l| puts "<p>#{l}</p>" }
-      end
+      blocked_lines = split_paragraph(lines)
+      puts blocked_lines.join("\n")
       puts '</div>'
     end
 
@@ -399,12 +395,8 @@ module ReVIEW
     end
 
     def read(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>]
-      else
-        puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
-      end
+      blocked_lines = split_paragraph(lines)
+      puts %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>]
     end
 
     alias_method :lead, :read
@@ -543,42 +535,22 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
-      else
-        puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
     end
 
     def doorquote(lines, ref)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts %Q[<blockquote style="text-align:right;">]
-        puts "#{blocked_lines.join("\n")}"
-        puts %Q[<p>#{ref}より</p>]
-        puts %Q[</blockquote>]
-      else
-        puts <<-QUOTE
-<blockquote style="text-align:right;">
-  <pre>#{lines.join("\n")}
-
-#{ref}より</pre>
-</blockquote>
-QUOTE
-      end
+      blocked_lines = split_paragraph(lines)
+      puts %Q[<blockquote style="text-align:right;">]
+      puts "#{blocked_lines.join("\n")}"
+      puts %Q[<p>#{ref}より</p>]
+      puts %Q[</blockquote>]
     end
 
     def talk(lines)
       puts %Q[<div class="talk">]
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "#{blocked_lines.join("\n")}"
-      else
-        print '<pre>'
-        puts "#{lines.join("\n")}"
-        puts '</pre>'
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "#{blocked_lines.join("\n")}"
       puts '</div>'
     end
 
@@ -1168,15 +1140,7 @@ QUOTE
     end
 
     def flushright(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
-      else
-        puts %Q[<div style="text-align:right;">]
-        print %Q[<pre class="flushright">]
-        lines.each {|line| puts detab(line) }
-        puts '</pre>'
-        puts '</div>'
-      end
+      puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
     end
 
     def centering(lines)

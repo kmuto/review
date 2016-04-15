@@ -168,13 +168,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<quote><p>foobar</p><p>buz</p></quote>|, actual
   end
 
-  def test_quote_deprecated
-    @book.config["deprecated-blocklines"] = true
-    actual = compile_block("//quote{\nfoo\n\nbuz\n//}\n")
-    @book.config["deprecated-blocklines"] = nil
-    assert_equal %Q|<quote>foo\n\nbuz</quote>|, actual
-  end
-
   def test_note
     actual = compile_block("//note[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q|<note><title aid:pstyle='note-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></note>|, actual
@@ -188,13 +181,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_term
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q|<term><p>test1test1.5</p><p>test<i>2</i></p></term>|, actual
-  end
-
-  def test_term_deprecated
-    @book.config["deprecated-blocklines"] = true
-    actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    @book.config["deprecated-blocklines"] = nil
-    assert_equal %Q|<term>test1\ntest1.5\n\ntest<i>2</i></term>|, actual
   end
 
   def test_notice

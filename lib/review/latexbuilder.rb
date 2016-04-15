@@ -131,14 +131,8 @@ module ReVIEW
         puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
       end
 
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts blocked_lines.join("\n\n")
-      else
-        lines.each do |line|
-          puts line
-        end
-      end
+      blocked_lines = split_paragraph(lines)
+      puts blocked_lines.join("\n\n")
 
       puts "\\end{reviewminicolumn}\n"
     end
@@ -597,14 +591,8 @@ module ReVIEW
     def latex_block(type, lines)
       blank
       puts macro('begin', type)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts blocked_lines.join("\n\n")
-      else
-        lines.each do |line|
-          puts line
-        end
-      end
+      blocked_lines = split_paragraph(lines)
+      puts blocked_lines.join("\n\n")
       puts macro('end', type)
       blank
     end
