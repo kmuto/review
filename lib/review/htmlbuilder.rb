@@ -210,6 +210,22 @@ module ReVIEW
     def nonum_end(level)
     end
 
+    def notoc_begin(level, label, caption)
+      @nonum_counter += 1
+      puts '' if level > 1
+      unless caption.empty?
+        if label.nil?
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          puts %Q[<h#{level} id="#{id}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+        else
+          puts %Q[<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+        end
+      end
+    end
+
+    def notoc_end(level)
+    end
+
     def nodisp_begin(level, label, caption)
       puts '' if level > 1
       unless caption.empty?

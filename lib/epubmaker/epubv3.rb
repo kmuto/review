@@ -188,7 +188,7 @@ EOT
 
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
-        s << %Q[    <itemref idref="#{item.id}"/>\n] if item.notoc.nil?
+        s << %Q[    <itemref idref="#{item.id}"/>\n]
       end
       s << %Q[  </spine>\n]
 

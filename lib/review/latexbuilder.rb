@@ -107,6 +107,14 @@ module ReVIEW
     def nonum_end(level)
     end
 
+    def notoc_begin(level, label, caption)
+      blank unless @output.pos == 0
+      puts macro(HEADLINE[level]+"*", compile_inline(caption))
+    end
+
+    def notoc_end(level)
+    end
+
     def nodisp_begin(level, label, caption)
       blank unless @output.pos == 0
       puts macro('clearpage') if @output.pos == 0

@@ -33,7 +33,7 @@ module ReVIEW
         end
         if !@content && @path && File.exist?(@path)
           @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
-          @number = nil if ['nonum', 'nodisp'].include?(check_header)
+          @number = nil if ['nonum', 'nodisp', 'notoc'].include?(check_header)
         end
         @list_index = nil
         @table_index = nil

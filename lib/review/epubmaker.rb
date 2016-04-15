@@ -194,7 +194,6 @@ module ReVIEW
     @manifeststr = ""
     @ncxstr = ""
     @tocdesc = Array.new
-    # toccount = 2  ## not used
 
     basedir = File.dirname(yamlfile)
     base_path = Pathname.new(basedir)
@@ -307,7 +306,9 @@ module ReVIEW
 
   def remove_hidden_title(basetmpdir, htmlfile)
     File.open("#{basetmpdir}/#{htmlfile}", "r+") do |f|
-      body = f.read.gsub(/<h\d .*?hidden=['"]true['"].*?>.*?<\/h\d>\n/, '')
+      body = f.read.
+             gsub(/<h\d .*?hidden=['"]true['"].*?>.*?<\/h\d>\n/, '').
+             gsub(/(<h\d .*?)\s*notoc=['"]true['"]\s*(.*?>.*?<\/h\d>\n)/, '\1\2')
       f.rewind
       f.print body
       f.truncate(f.tell)
@@ -341,9 +342,9 @@ module ReVIEW
     headlines.each do |headline|
       headline["level"] = 0 if ispart.present? && headline["level"] == 1
       if first.nil?
-        @htmltoc.add_item(headline["level"], filename+"#"+headline["id"], headline["title"], {:chaptype => chaptype})
+        @htmltoc.add_item(headline["level"], filename+"#"+headline["id"], headline["title"], {:chaptype => chaptype, :notoc => headline["notoc"]})
       else
-        @htmltoc.add_item(headline["level"], filename, headline["title"], {:force_include => true, :chaptype => chaptype+prop_str})
+        @htmltoc.add_item(headline["level"], filename, headline["title"], {:force_include => true, :chaptype => chaptype+prop_str,  :notoc => headline["notoc"]})
         first = nil
       end
     end
@@ -360,6 +361,9 @@ module ReVIEW
       end
       if args[:properties].present?
         hash["properties"] = args[:properties].split(" ")
+      end
+      if args[:notoc].present?
+        hash["notoc"] = args[:notoc]
       end
       @producer.contents.push(Content.new(hash))
     end
@@ -467,6 +471,7 @@ module ReVIEW
         end
         @level = $1.to_i
         @id = attrs["id"] if attrs["id"].present?
+        @notoc = attrs["notoc"] if attrs["notoc"].present?
       elsif !@level.nil?
         if name == "img" && attrs["alt"].present?
           @content << attrs["alt"]
@@ -478,10 +483,11 @@ module ReVIEW
 
     def tag_end(name)
       if name =~ /\Ah\d+/
-        @headlines.push({"level" => @level, "id" => @id, "title" => @content}) if @id.present?
+        @headlines.push({"level" => @level, "id" => @id, "title" => @content, "notoc" => @notoc}) if @id.present?
         @content = ""
         @level = nil
         @id = nil
+        @notoc = nil
       end
     end
 
