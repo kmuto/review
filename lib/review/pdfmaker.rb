@@ -52,7 +52,16 @@ module ReVIEW
     end
 
     def build_path
-      "./#{@config["bookname"]}-pdf"
+      if @config["debug"]
+        path = "#{@config["bookname"]}-pdf"
+        if File.exist?(path)
+          FileUtils.rm_rf(path, :secure => true)
+        end
+        Dir.mkdir(path)
+        return path
+      else
+        return Dir.mktmpdir("#{@config["bookname"]}-pdf-")
+      end
     end
 
     def check_compile_status(ignore_errors)
@@ -105,93 +114,100 @@ module ReVIEW
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
       @basedir = File.dirname(yamlfile)
+
+      begin
+        @config.check_version(ReVIEW::VERSION)
+      rescue ReVIEW::ConfigError => e
+        warn e.message
+      end
       generate_pdf(yamlfile)
     end
 
     def generate_pdf(yamlfile)
       remove_old_file
       @path = build_path()
-      Dir.mkdir(@path)
+      begin
+        @chaps_fnames = Hash.new{|h, key| h[key] = ""}
+        @compile_errors = nil
 
-      @chaps_fnames = Hash.new{|h, key| h[key] = ""}
-      @compile_errors = nil
+        book = ReVIEW::Book.load(@basedir)
+        book.config = @config
+        @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
+        book.parts.each do |part|
+          if part.name.present?
+            if part.file?
+              output_chaps(part.name, yamlfile)
+              @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
+            else
+              @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
+            end
+          end
 
-      book = ReVIEW::Book.load(@basedir)
-      book.config = @config
-      @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
-      book.parts.each do |part|
-        if part.name.present?
-          if part.file?
-            output_chaps(part.name, yamlfile)
-            @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
-          else
-            @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
+          part.chapters.each do |chap|
+            filename = File.basename(chap.path, ".*")
+            output_chaps(filename, yamlfile)
+            @chaps_fnames["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
+            @chaps_fnames["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
+            @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
+            @chaps_fnames["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
           end
         end
 
-        part.chapters.each do |chap|
-          filename = File.basename(chap.path, ".*")
-          output_chaps(filename, yamlfile)
-          @chaps_fnames["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
-          @chaps_fnames["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
-          @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
-          @chaps_fnames["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
+        check_compile_status(@config["ignore-errors"])
+
+        @config["pre_str"] = @chaps_fnames["PREDEF"]
+        @config["chap_str"] = @chaps_fnames["CHAPS"]
+        @config["appendix_str"] = @chaps_fnames["APPENDIX"]
+        @config["post_str"] = @chaps_fnames["POSTDEF"]
+
+        @config["usepackage"] = ""
+        if @config["texstyle"]
+          @config["usepackage"] = "\\usepackage{#{@config['texstyle']}}"
         end
-      end
 
-      check_compile_status(@config["ignore-errors"])
+        copy_images("./images", File.join(@path, "images"))
+        copyStyToDir(File.join(Dir.pwd, "sty"), @path)
+        copyStyToDir(File.join(Dir.pwd, "sty"), @path, "fd")
+        copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
+        copyStyToDir(Dir.pwd, @path, "tex")
 
-      @config["pre_str"] = @chaps_fnames["PREDEF"]
-      @config["chap_str"] = @chaps_fnames["CHAPS"]
-      @config["appendix_str"] = @chaps_fnames["APPENDIX"]
-      @config["post_str"] = @chaps_fnames["POSTDEF"]
+        template = get_template
+        Dir.chdir(@path) do
+          File.open("./book.tex", "wb"){|f| f.write(template)}
 
-      @config["usepackage"] = ""
-      if @config["texstyle"]
-        @config["usepackage"] = "\\usepackage{#{@config['texstyle']}}"
-      end
+          call_hook("hook_beforetexcompile")
 
-      copy_images("./images", File.join(@path, "images"))
-      copyStyToDir(File.join(Dir.pwd, "sty"), @path)
-      copyStyToDir(File.join(Dir.pwd, "sty"), @path, "fd")
-      copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
-      copyStyToDir(Dir.pwd, @path, "tex")
+          ## do compile
+          texcommand = "uplatex"
+          texoptions = ""
+          dvicommand = "dvipdfmx"
+          dvioptions = "-d 5"
 
-      template = get_template
-      Dir.chdir(@path) do
-        File.open("./book.tex", "wb"){|f| f.write(template)}
+          if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
+            warn "command configuration is prohibited in safe mode. ignored."
+          else
+            texcommand = @config["texcommand"] if @config["texcommand"]
+            dvicommand = @config["dvicommand"] if @config["dvicommand"]
+            dvioptions = @config["dvioptions"] if @config["dvioptions"]
+            texoptions = @config["texoptions"] if @config["texoptions"]
+          end
+          3.times do
+            system_or_raise("#{texcommand} #{texoptions} book.tex")
+          end
+          call_hook("hook_aftertexcompile")
 
-        call_hook("hook_beforetexcompile")
-
-        ## do compile
-        texcommand = "uplatex"
-        texoptions = ""
-        dvicommand = "dvipdfmx"
-        dvioptions = "-d 5"
-
-        if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
-          warn "command configuration is prohibited in safe mode. ignored."
-        else
-          texcommand = @config["texcommand"] if @config["texcommand"]
-          dvicommand = @config["dvicommand"] if @config["dvicommand"]
-          dvioptions = @config["dvioptions"] if @config["dvioptions"]
-          texoptions = @config["texoptions"] if @config["texoptions"]
+          if File.exist?("book.dvi")
+            system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
+          end
         end
-        3.times do
-          system_or_raise("#{texcommand} #{texoptions} book.tex")
+        call_hook("hook_afterdvipdf")
+
+        FileUtils.cp(File.join(@path, "book.pdf"), pdf_filepath)
+
+      ensure
+        unless @config["debug"]
+          remove_entry_secure @path
         end
-        call_hook("hook_aftertexcompile")
-
-        if File.exist?("book.dvi")
-          system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
-        end
-      end
-      call_hook("hook_afterdvipdf")
-
-      FileUtils.cp(File.join(@path, "book.pdf"), pdf_filepath)
-
-      unless @config["debug"]
-        remove_entry_secure @path
       end
     end
 

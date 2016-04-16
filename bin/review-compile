@@ -45,20 +45,6 @@ def _main
   output_filename = nil
 
   config = ReVIEW::Configure.values
-  config.merge!({
-    "secnolevel" => 2, # for IDGXML and HTML
-    "tableopt" => nil, # for IDGXML
-    "nolf" => nil, # for IDGXML
-    "chapref" => nil, # for IDGXML
-    "structuredxml" => nil, # for IDGXML
-    "stylesheet" => [], # for HTML
-    "mathml" => nil, # for HTML
-    "language" => "ja", # for HTML
-    "deprecated-blocklines" => nil,
-    "footnotetext" => false,
-    "htmlext" => "html",
-    "htmlversion" => 4,
-  })
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
@@ -71,13 +57,7 @@ def _main
   opts.on('--structuredxml', 'Produce XML with structured sections. (idgxml)') { config["structuredxml"] = true }
   opts.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| config["tableopt"] = tbl }
   opts.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { config["listinfo"] = true }
-  opts.on('--chapref="before,middle,after"', 'Chapref decoration.') {|cdec| config["chapref"] = cdec }
-  opts.on('--subdirmode', 'Use chapter/id.ext path style to find images. (deprecated)') do
-    STDERR.puts "Warning: --subdirmode is deprecated. Images are automatically detected."
-  end
-  opts.on('--singledirmode', 'Use id.ext path style to find images. (deprecated)') do
-    STDERR.puts "Warning: --singledirmode is deprecated. Images are automatically detected."
-  end
+  opts.on('--chapref="before,middle,after"', 'Chapref decoration. (idgxml)') {|cdec| config["chapref"] = cdec }
   opts.on('--chapterlink', 'make chapref hyperlink') { config["chapterlink"] = true }
   opts.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| config["stylesheet"] = files.split(/\s*,\s*/) }
   opts.on('--mathml', 'Use MathML for TeX equation in HTML') do
@@ -91,18 +71,12 @@ def _main
     v = v.to_i
     config["epubversion"] = v if v == 2 || v == 3
   end
-  opts.on('--hdnumberingmode', 'Output numbering headlines. (deprecated)') { config["hdnumberingmode"] = true }
-  opts.on('--deprecated-blocklines', 'Disable paragrahs in block tags. Treat physical line as a paragraph. (deprecated)') { config["deprecated-blocklines"] = true }
   opts.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
   opts.on('--footnotetext',
             'Use footnotetext and footnotemark instead of footnote (latex)') {
     config["footnotetext"] = true
   }
   opts.on('--draft', 'use draft mode(inline comment)') { config["draft"] = true }
-  opts.on('-a', '--all', 'Compile all chapters.') do
-    mode = :dir
-    basedir = nil
-  end
   opts.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
     mode = :dir
     basedir = path
@@ -145,6 +119,15 @@ def _main
 
     config["builder"] = target
     ReVIEW::I18n.setup(config["language"])
+    begin
+      config.check_version(ReVIEW::VERSION)
+    rescue ReVIEW::ConfigError => e
+      warn e.message
+    end
+
+    if ARGV.blank?
+      mode = :dir
+    end
 
     case mode
     when :files
