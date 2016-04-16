@@ -59,7 +59,10 @@ module ReVIEW
         "chapref" => nil,       # for IDGXML
         "structuredxml" => nil, # for IDGXML
         "pt_to_mm_unit" => 0.3528, # for IDGXML (DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm)
-        "footnotetext" => nil # for LaTeX
+        "footnotetext" => nil, # for LaTeX
+        "texcommand" => "uplatex", # for LaTeX
+        "dvicommand" => "dvipdfmx", # for LaTeX
+        "dvioptions" => "-d 5", # for LaTeX
       ]
       conf.maker = nil
       conf
