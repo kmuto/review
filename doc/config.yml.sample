@@ -261,7 +261,7 @@ secnolevel: 2
 # texstyle: samplemacro
 #
 # LaTeX用のdocumentclassを指定する
-# texdocumentclass: ["jsbook", "uplatex,b5paper,oneside"]
+# texdocumentclass: ["jsbook", "uplatex,oneside"]
 #
 # LaTeX用のコマンドを指定する
 # texcommand: "uplatex"

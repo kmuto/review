@@ -178,11 +178,6 @@ module ReVIEW
           call_hook("hook_beforetexcompile")
 
           ## do compile
-          texcommand = "uplatex"
-          texoptions = ""
-          dvicommand = "dvipdfmx"
-          dvioptions = "-d 5"
-
           if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
             warn "command configuration is prohibited in safe mode. ignored."
           else
@@ -316,6 +311,8 @@ module ReVIEW
       if File.exist?(layout_file)
         template = layout_file
       end
+
+      compiler = File.basename(@config["texcommand"], ".*")
 
       erb = ERB.new(File.read(template))
       values = @config # must be 'values' for legacy files

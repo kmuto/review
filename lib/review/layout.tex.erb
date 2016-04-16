@@ -1,5 +1,9 @@
 \documentclass[<%= documentclassoption %>]{<%= documentclass %>}
+<% if compiler == "uplatex" %>
+\usepackage[deluxe,uplatex]{otf}
+<% else %>
 \usepackage[deluxe]{otf}
+<% end %>
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{framed}
@@ -31,7 +35,7 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-<% if File.basename(config["texcommand"], ".*") == "uplatex" %>
+<% if compiler == "uplatex" %>
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={<%= values.name_of("booktitle") %>},%
             pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
