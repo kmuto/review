@@ -33,7 +33,7 @@ module ReVIEW
         end
         if !@content && @path && File.exist?(@path)
           @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
-          @number = nil if ['nonum', 'nodisp', 'notoc'].include?(check_header)
+          @number = nil if ['nonum', 'nodisp', 'notoc'].include?(find_first_header_option)
         end
         @list_index = nil
         @table_index = nil
@@ -47,7 +47,7 @@ module ReVIEW
         @volume = nil
       end
 
-      def check_header
+      def find_first_header_option
         f = LineInput.new(Preprocessor::Strip.new(StringIO.new(@content)))
         while f.next?
           case f.peek
