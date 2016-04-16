@@ -15,6 +15,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       "secnolevel" => 2, # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,
       "stylesheet" => nil, # for EPUBBuilder
+      "image_scale2width" => false,
     })
     @book = Book::Base.new(nil)
     @book.config = @config
