@@ -123,6 +123,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @config["pt_to_mm_unit"] = 0.3514
     actual = compile_block("//table{\nA\n//}\n")
     assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>|, actual
+
+    @config["pt_to_mm_unit"] = "0.3514"
+    actual = compile_block("//table{\nA\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>|, actual
   end
 
   def test_inline_br

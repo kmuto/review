@@ -502,7 +502,7 @@ module ReVIEW
       tablewidth = nil
       col = 0
       if @book.config["tableopt"]
-        tablewidth = @book.config["tableopt"].split(",")[0].to_f / @book.config["pt_to_mm_unit"]
+        tablewidth = @book.config["tableopt"].split(",")[0].to_f / @book.config["pt_to_mm_unit"].to_f
       end
       puts "<table>"
       rows = []
@@ -529,7 +529,7 @@ module ReVIEW
           cellwidth = @tsize.split(/\s*,\s*/)
           totallength = 0
           cellwidth.size.times do |n|
-            cellwidth[n] = cellwidth[n].to_f / @book.config["pt_to_mm_unit"]
+            cellwidth[n] = cellwidth[n].to_f / @book.config["pt_to_mm_unit"].to_f
             totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
           end
