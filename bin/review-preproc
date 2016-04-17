@@ -19,6 +19,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/preprocessor'
 require 'review/unfold'
 require 'review/version'
+require 'review/extentions'
 require 'lineinput'
 require 'stringio'
 require 'fileutils'
