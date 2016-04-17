@@ -264,6 +264,10 @@ module ReVIEW
       compile_href(url, label)
     end
 
+    def inline_tcy(arg)
+      "#{arg}[rotate 90 degree]"
+    end
+
     def text(str)
       str
     end

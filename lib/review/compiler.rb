@@ -220,6 +220,7 @@ module ReVIEW
     definline :hidx
     definline :comment
     definline :include
+    definline :tcy
 
     private
 

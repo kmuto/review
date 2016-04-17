@@ -918,6 +918,13 @@ module ReVIEW
       end
     end
 
+    def inline_tcy(str)
+      # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
+      style = "tcy"
+      style = "upright" if str.size == 1 && str.match(/[[:ascii:]]/)
+      %Q[<span class="#{style}">#{escape_html(str)}</span>]
+    end
+
     def text(str)
       str
     end
