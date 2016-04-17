@@ -16,6 +16,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       "toclevel" => 2,
       "stylesheet" => nil, # for EPUBBuilder
       "image_scale2width" => false,
+      "texcommand" => "uplatex"
     })
     @book = Book::Base.new(nil)
     @book.config = @config
@@ -210,8 +211,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_jis_x_0201_kana
+    # uplatex can handle half-width kana natively
     actual = compile_inline("foo･ｶﾝｼﾞ､テスト")
-    assert_equal %Q|foo\\aj半角{・}\\aj半角{カ}\\aj半角{ン}\\aj半角{シ}\\aj半角{゛}\\aj半角{、}テスト|, actual
+    assert_equal %Q|foo･ｶﾝｼﾞ､テスト|, actual
+    # assert_equal %Q|foo\\aj半角{・}\\aj半角{カ}\\aj半角{ン}\\aj半角{シ}\\aj半角{゛}\\aj半角{、}テスト|, actual
   end
 
   def test_dlist

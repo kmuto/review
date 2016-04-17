@@ -261,13 +261,13 @@ secnolevel: 2
 # texstyle: samplemacro
 #
 # LaTeX用のdocumentclassを指定する
-# texdocumentclass: ["jsarticle", "b5paper,oneside"]
+# texdocumentclass: ["jsbook", "uplatex,oneside"]
 #
-# LaTeX用のコマンドを指定する(platex or lualatex)
-# texcommand: "platex"
+# LaTeX用のコマンドを指定する
+# texcommand: "uplatex"
 #
-# LaTeX用のオプションを指定する(default: "-kanji=#{kanji}")
-# texoptions: "-kanji=utf-8"
+# LaTeXのコマンドに渡すオプションを指定する
+# texoptions: null
 #
 # LaTeX用のdvi変換コマンドを指定する(dvipdfmx)
 # dvicommand: "dvipdfmx"

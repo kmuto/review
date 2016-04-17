@@ -178,12 +178,6 @@ module ReVIEW
           call_hook("hook_beforetexcompile")
 
           ## do compile
-          kanji = 'utf8'
-          texcommand = "platex"
-          texoptions = "-kanji=#{kanji}"
-          dvicommand = "dvipdfmx"
-          dvioptions = "-d 5"
-
           if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
             warn "command configuration is prohibited in safe mode. ignored."
           else
@@ -261,6 +255,7 @@ module ReVIEW
 
     def make_colophon_role(role)
       if @config[role].present?
+        initialize_metachars(@config["texcommand"])
         return "#{ReVIEW::I18n.t(role)} & #{escape_latex(join_with_separator(@config.names_of(role), ReVIEW::I18n.t("names_splitter")))} \\\\\n"
       else
         ""
@@ -295,7 +290,7 @@ module ReVIEW
     def get_template
       dclass = @config["texdocumentclass"] || []
       documentclass = dclass[0] || "jsbook"
-      documentclassoption = dclass[1] || "oneside"
+      documentclassoption = dclass[1] || "uplatex,oneside"
 
       okuduke = make_colophon
       authors = make_authors
@@ -316,6 +311,8 @@ module ReVIEW
       if File.exist?(layout_file)
         template = layout_file
       end
+
+      texcompiler = File.basename(@config["texcommand"], ".*")
 
       erb = ERB.new(File.read(template))
       values = @config # must be 'values' for legacy files

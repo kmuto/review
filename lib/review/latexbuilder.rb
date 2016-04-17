@@ -39,6 +39,7 @@ module ReVIEW
       @table_caption = nil
       @ol_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
+      initialize_metachars(@book.config["texcommand"])
     end
     private :builder_init_file
 

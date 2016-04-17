@@ -16,6 +16,7 @@ class PDFMakerTest < Test::Unit::TestCase
                      "urnid" => "http://example.jp/",
                      "date" => "2011-01-01",
                      "language" => "ja",
+                     "texcommand" => "uplatex",
                    })
     @maker.config = @config
     @output = StringIO.new
