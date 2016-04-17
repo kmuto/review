@@ -6,6 +6,10 @@ Re:VIEW の review-pdfmaker は、フリーソフトウェアの簡易 DTP シ�
 #### TeX Wiki - TeX入手法
 * https://texwiki.texjp.org/?TeX入手法
 
+## Re:VIEW バージョンによる変化についての注意
+* Re:VIEW 2.0 より、LaTeX コンパイラのデフォルトが pLaTeX から upLaTeX になりました。以下の「upLaTeX について」を参照してください。
+* Re:VIEW 2.0 より、image タグに scale オプションを使って倍率数値を定義していた場合の挙動が変わりました。以下の「scale オプションの挙動について」を参照してください。
+
 ## upLaTeX について
 
 2016年4月リリースの Re:VIEW 2.0 より、LaTeX のコンパイラのデフォルトが、「pLaTeX」から「upLaTeX」に切り替わりました。upLaTeX は pLaTeX の内部文字処理を Unicode 対応にしたもので、丸数字（①②…）のように pLaTeXでは otf パッケージが必要だった文字、あるいは韓国語や中国語との混植などを、直接扱うことができます。
@@ -44,4 +48,13 @@ dvioptions: "-d 5"
 <% else %>
 \usepackage[deluxe]{otf}
 <% end %>
+```
+
+## scale オプションの挙動について
+Re:VIEW 2.0 より、``//image`` タグの第3オプションに ``scale=倍率`` で数値のみで倍率を指定していたときの挙動が変わりました。以前は「画像ファイルに対する倍率」でしたが、「紙面横幅に対する倍率」となります（もともと数値以外の文字も scale の値に含めていた場合には、変化はありません）。
+
+旧来の「画像ファイルに対する倍率」に戻したいときには、config.yml にパラメータ ``image_scale2width: false`` を指定してください（デフォルトは true）。
+
+```yaml
+image_scale2width: false
 ```
