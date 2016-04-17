@@ -9,7 +9,7 @@ Now we use catalog.yml as catalog file.
 
 ## How to write catalog.yml
 
-In catalog.yaml, you can write `PREDEF`(frontmatter), `CHAPS`(bodymatter), `APPENDIX`(appendix) and `POSTDEF`(backmater). `CHAPS` is required.
+In catalog.yml, you can write `PREDEF`(frontmatter), `CHAPS`(bodymatter), `APPENDIX`(appendix) and `POSTDEF`(backmater). `CHAPS` is required.
 
 ```yaml
   PREDEF:
