@@ -312,7 +312,7 @@ module ReVIEW
         template = layout_file
       end
 
-      compiler = File.basename(@config["texcommand"], ".*")
+      texcompiler = File.basename(@config["texcommand"], ".*")
 
       erb = ERB.new(File.read(template))
       values = @config # must be 'values' for legacy files

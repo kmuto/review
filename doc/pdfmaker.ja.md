@@ -35,3 +35,13 @@ texdocumentclass: ["jsbook", "oneside"]
 dvicommand: dvipdfmx
 dvioptions: "-d 5"
 ```
+
+レイアウト erb ファイル（デフォルトは lib/review/layout.tex.erb）において、upLaTeX と pLaTeX の区別は内部変数 texcompiler で行えます。変数 texcompiler には、パラメータ texcommand の値からフォルダパスとファイル拡張子を除いたものが入っており、pLaTeX の場合は "platex"、upLaTeX の場合は "uplatex" となります。使用例は次のとおりです。
+
+```
+<% if texcompiler == "uplatex" %>
+\usepackage[deluxe,uplatex]{otf}
+<% else %>
+\usepackage[deluxe]{otf}
+<% end %>
+```
