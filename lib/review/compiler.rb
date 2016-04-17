@@ -134,6 +134,7 @@ module ReVIEW
     defblock :emlist, 0..2
     defblock :cmd, 0..1
     defblock :table, 0..2
+    defblock :imgtable, 0..2
     defblock :quote, 0
     defblock :image, 2..3, true
     defblock :source, 0..2
@@ -295,10 +296,6 @@ module ReVIEW
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-        if @chapter.book.config["hdnumberingmode"]
-          caption = @chapter.on_CHAPS? ? "#{@headline_indexs.join('.')} #{caption}" : caption
-          warn "--hdnumberingmode is deprecated. use --level option."
-        end
         @strategy.headline level, label, caption
       end
     end

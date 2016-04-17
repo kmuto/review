@@ -118,7 +118,7 @@ module ReVIEW
 
     class TableIndex < Index
       def TableIndex.item_type
-        'table'
+        '(table|imgtable)'
       end
     end
 
@@ -184,7 +184,7 @@ module ReVIEW
       end
 
       def ImageIndex.item_type
-        '(image|graph)'
+        '(image|graph|imgtable)'
       end
 
       attr_reader :image_finder
@@ -296,7 +296,7 @@ module ReVIEW
       end
 
       def IndepImageIndex.item_type
-        'indepimage'
+        '(indepimage|imgtable)'
       end
 
       def number(id)

@@ -301,11 +301,7 @@ module ReVIEW
     end
 
     def read(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        puts %Q[<lead>#{split_paragraph(lines).join}</lead>]
-      else
-        puts %Q[<p aid:pstyle="lead">#{lines.join}</p>]
-      end
+      puts %Q[<lead>#{split_paragraph(lines).join}</lead>]
     end
 
     alias_method :lead, :read
@@ -420,12 +416,8 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "<quote>#{blocked_lines.join("")}</quote>"
-      else
-        puts "<quote>#{lines.join("\n")}</quote>"
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "<quote>#{blocked_lines.join("")}</quote>"
     end
 
     def inline_table(id)
@@ -509,8 +501,8 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       tablewidth = nil
       col = 0
-      unless @book.config["tableopt"].nil?
-        tablewidth = @book.config["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
+      if @book.config["tableopt"]
+        tablewidth = @book.config["tableopt"].split(",")[0].to_f / @book.config["pt_to_mm_unit"].to_f
       end
       puts "<table>"
       rows = []
@@ -537,7 +529,7 @@ module ReVIEW
           cellwidth = @tsize.split(/\s*,\s*/)
           totallength = 0
           cellwidth.size.times do |n|
-            cellwidth[n] = cellwidth[n].to_f / 0.351 # mm -> pt
+            cellwidth[n] = cellwidth[n].to_f / @book.config["pt_to_mm_unit"].to_f
             totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
           end
@@ -571,7 +563,7 @@ module ReVIEW
           else
             i = 0
             rows.shift.split(/\t/).each_with_index do |cell, x|
-              print %Q[<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+              print %Q[<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.3f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
               i += 1
             end
           end
@@ -592,7 +584,7 @@ module ReVIEW
         rows.each_with_index do |row, y|
           i = 0
           row.split(/\t/).each_with_index do |cell, x|
-            print %Q[<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+            print %Q[<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.3f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
             i += 1
           end
         end
@@ -624,6 +616,19 @@ module ReVIEW
 
     def table_end
       print "<?dtp tablerow last?>"
+    end
+
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if @chapter.image(id).bound?
+        metrics = parse_metric("idgxml", metric)
+        puts "<table>"
+        table_header id, caption
+        puts %Q[<imgtable><Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}"#{metrics} /></imgtable>]
+        puts "</table>"
+      else
+        warn "image not bound: #{id}" if @strict
+        image_dummy id, caption, lines
+      end
     end
 
     def comment(str)
@@ -890,11 +895,7 @@ module ReVIEW
     end
 
     def flushright(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        puts split_paragraph(lines).join.gsub("<p>", "<p align='right'>")
-      else
-        puts "<p align='right'>#{lines.join("\n")}</p>"
-      end
+      puts split_paragraph(lines).join.gsub("<p>", "<p align='right'>")
     end
 
     def centering(lines)
@@ -905,12 +906,8 @@ module ReVIEW
       print "<#{type}>"
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
       puts "<title aid:pstyle='#{style}'>#{compile_inline(caption)}</title>" unless caption.nil?
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "#{blocked_lines.join}</#{type}>"
-      else
-        puts "#{lines.join("\n")}</#{type}>"
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "#{blocked_lines.join}</#{type}>"
     end
 
     def note(lines, caption = nil)

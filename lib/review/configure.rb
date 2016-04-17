@@ -53,6 +53,14 @@ module ReVIEW
         "image_scale2width" => true, # for LaTeX
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
+        "externallink" => true,
+        "tableopt" => nil,      # for IDGXML
+        "listinfo" => nil,      # for IDGXML
+        "nolf" => true,         # for IDGXML
+        "chapref" => nil,       # for IDGXML
+        "structuredxml" => nil, # for IDGXML
+        "pt_to_mm_unit" => 0.3528, # for IDGXML (DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm)
+        "footnotetext" => nil # for LaTeX
       ]
       conf.maker = nil
       conf
@@ -65,6 +73,16 @@ module ReVIEW
       end
       if self.key?(key)
         return self.fetch(key)
+      end
+    end
+
+    def check_version(version)
+      if self["review_version"].blank?
+        raise ReVIEW::ConfigError, "configuration file has no review_version property."
+      elsif self["review_version"].to_i != version.to_i ## major version
+        raise ReVIEW::ConfigError, "major version of configuration file is different."
+      elsif self["review_version"].to_f > version.to_f ## minor version
+        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self["review_version"]}'."
       end
     end
 

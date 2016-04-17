@@ -14,7 +14,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config.merge!({
       "secnolevel" => 2,
-      "nolf" => true,
       "tableopt" => "10"
     })
     @book = Book::Base.new(nil)
@@ -86,26 +85,48 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_in_table
     actual = compile_block("//table{\n@<b>{1}\t@<i>{2}\n------------\n@<b>{3}\t@<i>{4}<>&\n//}\n")
-    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>1</b></td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>2</i></td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>3</b></td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>4</i>&lt;&gt;&amp;</td></tbody></table>|, actual
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><b>1</b></td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><i>2</i></td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><b>3</b></td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><i>4</i>&lt;&gt;&amp;</td></tbody></table>|, actual
   end
 
   def test_inline_in_table_without_header
     actual = compile_block("//table{\n@<b>{1}\t@<i>{2}\n@<b>{3}\t@<i>{4}<>&\n//}\n")
-    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>1</b></td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>2</i></td><td xyh="1,2,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><b>3</b></td><td xyh="2,2,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.2450142450142"><i>4</i>&lt;&gt;&amp;</td></tbody></table>|, actual
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><b>1</b></td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><i>2</i></td><td xyh="1,2,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><b>3</b></td><td xyh="2,2,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"><i>4</i>&lt;&gt;&amp;</td></tbody></table>|, actual
   end
 
   def test_inline_in_table_without_cellwidth
     @config["tableopt"] = nil
     actual = compile_block("//table{\n@<b>{1}\t@<i>{2}\n------------\n@<b>{3}\t@<i>{4}<>&\n//}\n")
     assert_equal %Q|<table><tbody><tr type="header"><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, actual
-    @config["tableopt"] = 10
   end
 
   def test_inline_in_table_without_header_and_cellwidth
     @config["tableopt"] = nil
     actual = compile_block("//table{\n@<b>{1}\t@<i>{2}\n@<b>{3}\t@<i>{4}<>&\n//}\n")
     assert_equal %Q|<table><tbody><tr><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>|, actual
-    @config["tableopt"] = 10
+  end
+
+  def test_customize_cellwidth
+    actual = compile_block("//tsize[2,3,5]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="8.503">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">C</td></tbody></table>|, actual
+
+    actual = compile_block("//tsize[2,3]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="8.503">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">C</td></tbody></table>|, actual
+
+    actual = compile_block("//tsize[2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">C</td></tbody></table>|, actual
+  end
+
+  def test_customize_mmtopt
+    actual = compile_block("//table{\nA\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>|, actual
+
+    @config["pt_to_mm_unit"] = 0.3514
+    actual = compile_block("//table{\nA\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>|, actual
+
+    @config["pt_to_mm_unit"] = "0.3514"
+    actual = compile_block("//table{\nA\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>|, actual
   end
 
   def test_inline_br
@@ -168,13 +189,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<quote><p>foobar</p><p>buz</p></quote>|, actual
   end
 
-  def test_quote_deprecated
-    @book.config["deprecated-blocklines"] = true
-    actual = compile_block("//quote{\nfoo\n\nbuz\n//}\n")
-    @book.config["deprecated-blocklines"] = nil
-    assert_equal %Q|<quote>foo\n\nbuz</quote>|, actual
-  end
-
   def test_note
     actual = compile_block("//note[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q|<note><title aid:pstyle='note-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></note>|, actual
@@ -188,13 +202,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_term
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q|<term><p>test1test1.5</p><p>test<i>2</i></p></term>|, actual
-  end
-
-  def test_term_deprecated
-    @book.config["deprecated-blocklines"] = true
-    actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    @book.config["deprecated-blocklines"] = nil
-    assert_equal %Q|<term>test1\ntest1.5\n\ntest<i>2</i></term>|, actual
   end
 
   def test_notice
