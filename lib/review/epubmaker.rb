@@ -36,6 +36,19 @@ module ReVIEW
     @params.maker = "epubmaker"
   end
 
+  def build_path
+    if @params["debug"]
+      path = File.expand_path("#{@params["bookname"]}-epub", Dir.pwd)
+      if File.exist?(path)
+        FileUtils.rm_rf(path, :secure => true)
+      end
+      Dir.mkdir(path)
+      return path
+    else
+      return Dir.mktmpdir("#{@params["bookname"]}-epub-")
+    end
+  end
+
   def produce(yamlfile, bookname=nil)
     load_yaml(yamlfile)
     I18n.setup(@params["language"])
@@ -52,7 +65,7 @@ module ReVIEW
     FileUtils.rm_f("#{bookname}.epub")
     FileUtils.rm_rf(booktmpname) if @params["debug"]
 
-    basetmpdir = Dir.mktmpdir("#{bookname}-", Dir.pwd)
+    basetmpdir = build_path()
     begin
       log("Created first temporary directory as #{basetmpdir}.")
 
@@ -92,14 +105,16 @@ module ReVIEW
 
       epubtmpdir = nil
       if @params["debug"].present?
-        epubtmpdir = "#{Dir.pwd}/#{booktmpname}"
+        epubtmpdir = "#{basetmpdir}/#{booktmpname}"
         Dir.mkdir(epubtmpdir)
       end
       log("Call ePUB producer.")
       @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
       log("Finished.")
     ensure
-      FileUtils.remove_entry_secure basetmpdir if @params["debug"].nil?
+      unless @params["debug"]
+        FileUtils.remove_entry_secure basetmpdir
+      end
     end
   end
 
