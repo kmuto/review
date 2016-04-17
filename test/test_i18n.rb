@@ -18,6 +18,18 @@ class I18nTest < Test::Unit::TestCase
       end
     end
 
+    def test_load_locale_yaml
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) do
+          file = File.join(dir, "locale.yaml")
+          File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
+          assert_raise ReVIEW::ConfigError do
+            I18n.setup
+          end
+        end
+      end
+    end
+
     def test_load_foo_yaml
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
