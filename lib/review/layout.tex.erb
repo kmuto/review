@@ -1,5 +1,9 @@
 \documentclass[<%= documentclassoption %>]{<%= documentclass %>}
+<% if texcompiler == "uplatex" %>
+\usepackage[deluxe,uplatex]{otf}
+<% else %>
 \usepackage[deluxe]{otf}
+<% end %>
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{framed}
@@ -31,6 +35,13 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
+<% if texcompiler == "uplatex" %>
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+            pdftitle={<%= values.name_of("booktitle") %>},%
+            pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+% uplatexでのBookmarkの文字化け対策（日本語向け）
+\usepackage[dvipdfmx]{pxjahyper}
+<% else %>
 %% Bookmarkの文字化け対策（日本語向け）
 \ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
   \usepackage{atbegshi}%
@@ -43,8 +54,10 @@
 \fi
 
 \usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={<%= values.name_of("booktitle") %>},%
-            pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+             pdftitle={<%= values.name_of("booktitle") %>},%
+             pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")
+) %>}]{hyperref}
+<% end %>
 
 <% if config["highlight"] && config["highlight"]["latex"] == "listings" %>
 <%   if config["language"] == "ja" %>
