@@ -215,26 +215,7 @@ EOT
       end
 
       if @producer.params["date"] || @producer.params["history"]
-        @body << %Q[    <div class="pubhistory">\n]
-        if @producer.params["history"]
-          @producer.params["history"].each_with_index do |items, edit|
-            items.each_with_index do |item, rev|
-              editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}")
-              revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
-              if item =~ /\A\d+\-\d+\-\d+\Z/
-                @body << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n]
-              else
-                # custom date with string
-                item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
-                  @body << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
-                end
-              end
-            end
-          end
-        else
-          @body << %Q[      <p>#{ReVIEW::I18n.t("published_by2", date_to_s(@producer.params["date"]))}</p>\n]
-        end
-        @body << %Q[    </div>\n]
+        @body << colophon_history
       end
 
       @body << %Q[    <table class="colophon">\n]
@@ -264,6 +245,31 @@ EOT
       end
       tmpl = ReVIEW::Template.load(tmplfile)
       tmpl.result(binding)
+    end
+
+    def colophon_history
+      buf = ""
+      buf << %Q[    <div class="pubhistory">\n]
+      if @producer.params["history"]
+        @producer.params["history"].each_with_index do |items, edit|
+          items.each_with_index do |item, rev|
+            editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}")
+            revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
+            if item =~ /\A\d+\-\d+\-\d+\Z/
+              buf << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n]
+            else
+              # custom date with string
+              item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
+                buf << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
+              end
+            end
+          end
+        end
+      else
+        buf << %Q[      <p>#{ReVIEW::I18n.t("published_by2", date_to_s(@producer.params["date"]))}</p>\n]
+      end
+      buf << %Q[    </div>\n]
+      buf
     end
 
     def date_to_s(date)
