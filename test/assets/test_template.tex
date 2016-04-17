@@ -1,5 +1,5 @@
-\documentclass[oneside]{jsbook}
-\usepackage[deluxe]{otf}
+\documentclass[uplatex,oneside]{jsbook}
+\usepackage[deluxe,uplatex]{otf}
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{framed}
@@ -27,24 +27,14 @@
 \usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
 %\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
 
-
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-%% Bookmarkの文字化け対策（日本語向け）
-\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode EUC-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode EUC-UCS2}}%
-\else
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-\fi
-
-\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={Re:VIEW Sample Book},%
             pdfauthor={}]{hyperref}
+% uplatexでのBookmarkの文字化け対策（日本語向け）
+\usepackage[dvipdfmx]{pxjahyper}
 
 
 
@@ -94,6 +84,9 @@
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
 
+\newcommand{\reviewimgtablecaption}[1]{%
+  \caption{#1}\vspace{-3mm}}
+
 \newcommand{\reviewbackslash}[0]{%
   \textbackslash{}}
 
@@ -127,7 +120,6 @@
 
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large ■メモ: #1}\\}
-
 
 
 \newenvironment{reviewminicolumn}{%
@@ -184,17 +176,13 @@
 \makeatother
 
 
-
 \usepackage[T1]{fontenc}
 
 \begin{document}
 
 \reviewmainfont
 
-
-
 \begin{titlepage}
-  
 \thispagestyle{empty}
 \begin{center}%
   \mbox{} \vskip5zw
@@ -212,20 +200,14 @@
   \end{center}%
 \end{titlepage}
 
-
-
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
 
 %%% originaltitle
 
-
 %%% credit
 
-
-
 %% preface
-
 
 
 
@@ -239,19 +221,12 @@
 %% backmatter begins
 
 
-
-
-
 %%% profile
-
 
 %%% advfile
 
-
 %%% colophon
 
-
 %%% backcover
-
 
 \end{document}

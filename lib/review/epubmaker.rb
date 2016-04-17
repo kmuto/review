@@ -33,6 +33,7 @@ module ReVIEW
     @producer = Producer.new(@params)
     @producer.load(yamlfile)
     @params = @producer.params
+    @params.maker = "epubmaker"
   end
 
   def produce(yamlfile, bookname=nil)
@@ -41,6 +42,11 @@ module ReVIEW
     bookname = @params["bookname"] if bookname.nil?
     booktmpname = "#{bookname}-epub"
 
+    begin
+      @params.check_version(ReVIEW::VERSION)
+    rescue ReVIEW::ConfigError => e
+      warn e.message
+    end
     log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
     FileUtils.rm_f("#{bookname}.epub")

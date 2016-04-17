@@ -39,6 +39,7 @@ module ReVIEW
       @table_caption = nil
       @ol_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
+      initialize_metachars(@book.config["texcommand"])
     end
     private :builder_init_file
 
@@ -131,14 +132,8 @@ module ReVIEW
         puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
       end
 
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts blocked_lines.join("\n\n")
-      else
-        lines.each do |line|
-          puts line
-        end
-      end
+      blocked_lines = split_paragraph(lines)
+      puts blocked_lines.join("\n\n")
 
       puts "\\end{reviewminicolumn}\n"
     end
@@ -350,6 +345,13 @@ module ReVIEW
     def image_header(id, caption)
     end
 
+    def handle_metric(str)
+      if @book.config["image_scale2width"] && str =~ /\Ascale=([\d.]+)\Z/
+        return "width=#{$1}\\maxwidth"
+      end
+      str
+    end
+
     def result_metric(array)
       "#{array.join(',')}"
     end
@@ -534,6 +536,42 @@ module ReVIEW
       blank
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if !@chapter.image(id).bound?
+        warn "image not bound: #{id}"
+        image_dummy id, caption, lines
+        return
+      end
+
+      begin
+        if caption.present?
+          @table_caption = true
+          puts '\begin{table}[h]'
+          puts macro('reviewimgtablecaption', compile_inline(caption))
+        end
+        puts macro('label', table_label(id))
+      rescue ReVIEW::KeyError
+        error "no such table: #{id}"
+      end
+      imgtable_image(id, caption, metric)
+
+      puts '\end{table}' if @table_caption
+      @table_caption = nil
+      blank
+    end
+
+    def imgtable_image(id, caption, metric)
+      metrics = parse_metric("latex", metric)
+      # image is always bound here
+      puts '\begin{reviewimage}'
+      if metrics.present?
+        puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
+      else
+        puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
+      end
+      puts '\end{reviewimage}'
+    end
+
     def quote(lines)
       latex_block 'quote', lines
     end
@@ -561,14 +599,8 @@ module ReVIEW
     def latex_block(type, lines)
       blank
       puts macro('begin', type)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts blocked_lines.join("\n\n")
-      else
-        lines.each do |line|
-          puts line
-        end
-      end
+      blocked_lines = split_paragraph(lines)
+      puts blocked_lines.join("\n\n")
       puts macro('end', type)
       blank
     end

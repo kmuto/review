@@ -60,3 +60,7 @@ Performance/RedundantMerge:
 Style/ZeroLengthPredicate:
   Enabled: false
 
+##################### Metrics ##################################
+
+Metrics/ClassLength:
+  Max: 1500

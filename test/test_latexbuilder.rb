@@ -15,6 +15,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       "secnolevel" => 2, # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,
       "stylesheet" => nil, # for EPUBBuilder
+      "image_scale2width" => false,
+      "texcommand" => "uplatex"
     })
     @book = Book::Base.new(nil)
     @book.config = @config
@@ -209,8 +211,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_jis_x_0201_kana
+    # uplatex can handle half-width kana natively
     actual = compile_inline("foo･ｶﾝｼﾞ､テスト")
-    assert_equal %Q|foo\\aj半角{・}\\aj半角{カ}\\aj半角{ン}\\aj半角{シ}\\aj半角{゛}\\aj半角{、}テスト|, actual
+    assert_equal %Q|foo･ｶﾝｼﾞ､テスト|, actual
+    # assert_equal %Q|foo\\aj半角{・}\\aj半角{カ}\\aj半角{ン}\\aj半角{シ}\\aj半角{゛}\\aj半角{、}テスト|, actual
   end
 
   def test_dlist
@@ -361,6 +365,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, actual
   end
 
+  def test_image_with_metric_width
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    @config["image_scale2width"] = true
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, actual
+  end
+
   def test_image_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
@@ -370,6 +386,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, actual
+  end
+
+  def test_image_with_metric2_width
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    @config["image_scale2width"] = true
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=1.2\\maxwidth,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n|, actual
   end
 
   def test_indepimage
@@ -406,6 +434,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, actual
   end
 
+  def test_indepimage_with_metric_width
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    @config["image_scale2width"] = true
+    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, actual
+  end
+
   def test_indepimage_with_metric2
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1)
@@ -427,6 +467,31 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     # FIXME: indepimage's caption should not be with a counter.
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n|, actual
+  end
+
+  def test_table
+    actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal "\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n",
+                 actual
+  end
+
+  def test_imgtable
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1, 'sample img')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
+
+    assert_equal "\\begin{table}[h]\n"+
+                 "\\reviewimgtablecaption{test for imgtable}\n"+
+                 "\\label{table:chap1:sampleimg}\n"+
+                 "\\begin{reviewimage}\n"+
+                 "\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n"+
+                 "\\end{reviewimage}\n"+
+                 "\\end{table}\n",
+                 actual
   end
 
   def test_bib

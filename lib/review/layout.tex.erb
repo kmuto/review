@@ -1,5 +1,9 @@
 \documentclass[<%= documentclassoption %>]{<%= documentclass %>}
+<%- if texcompiler == "uplatex" -%>
+\usepackage[deluxe,uplatex]{otf}
+<%- else -%>
 \usepackage[deluxe]{otf}
+<%- end -%>
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{framed}
@@ -25,13 +29,21 @@
   \MakeFramed {\FrameRestore}}%
  {\endMakeFramed}
 
+<%- unless ["utbook", "tbook"].include?(values["texdocumentclass"][0])  -%>
 \usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
 %\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
-
+<%- end -%>
 
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
+<%- if texcompiler == "uplatex" -%>
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+            pdftitle={<%= values.name_of("booktitle") %>},%
+            pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+% uplatexでのBookmarkの文字化け対策（日本語向け）
+\usepackage[dvipdfmx]{pxjahyper}
+<%- else -%>
 %% Bookmarkの文字化け対策（日本語向け）
 \ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
   \usepackage{atbegshi}%
@@ -44,15 +56,22 @@
 \fi
 
 \usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={<%= values.name_of("booktitle") %>},%
-            pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+             pdftitle={<%= values.name_of("booktitle") %>},%
+             pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")
+) %>}]{hyperref}
+<%- end -%>
 
-<% if config["highlight"] && config["highlight"]["latex"] == "listings" %>
-<%   if config["language"] == "ja" %>
+<%- if ["utbook", "tbook"].include?(values["texdocumentclass"][0])  -%>
+\newcommand{\headfont}{\gtfamily\sffamily\bfseries}
+\usepackage{plext}
+<%- end -%>
+
+<%- if config["highlight"] && config["highlight"]["latex"] == "listings" -%>
+<%-   if config["language"] == "ja" -%>
 \usepackage{listings,jlisting}
-<%   else %>
+<%-   else -%>
 \usepackage{listings}
-<%   end %>
+<%-   end -%>
 \renewcommand{\lstlistingname}{<%= I18n.t("list")%>}
 \lstset{%
   breaklines=true,%
@@ -82,7 +101,7 @@
 
 \lstnewenvironment{reviewcmdlst}[1][]{%
   \lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
-<% end %>
+<%- end -%>
 
 \newenvironment{reviewimage}{%
   \begin{figure}[H]
@@ -130,6 +149,9 @@
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
 
+\newcommand{\reviewimgtablecaption}[1]{%
+  \caption{#1}\vspace{-3mm}}
+
 \newcommand{\reviewbackslash}[0]{%
   \textbackslash{}}
 
@@ -164,9 +186,9 @@
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large <%= I18n.t("memo_head")%>: #1}\\}
 
-<% if values["toctitle"].present? %>
+<%- if values["toctitle"].present? -%>
 \renewcommand{\contentsname}{<%= values["toctitle"]%>}
-<% end %>
+<%- end -%>
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
@@ -221,7 +243,9 @@
 }
 \makeatother
 
+<%- if values["usepackage"] -%>
 <%= values["usepackage"] %>
+<%- end -%>
 
 \usepackage[T1]{fontenc}
 
@@ -229,18 +253,31 @@
 
 \reviewmainfont
 
-<% if values["titlepage"] %>
-<% if custom_titlepage %>
+<%- if values["titlepage"] -%>
+<%-   if custom_titlepage -%>
 <%= custom_titlepage %>
-<% else %>
+<%-   else -%>
+<%-     unless ["utbook", "tbook"].include?(values["texdocumentclass"][0])  -%>
 \begin{titlepage}
-  <% if values["coverimage"] %>
+<%-       if values["coverimage"] -%>
   \begin{center}
     %%%\mbox{}\vskip5zw%
     \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{./images/<%= values["coverimage"] %>}
   \end{center}
   \clearpage
-  <% end %>
+<%-       end -%>
+<%-     else -%>
+% 縦書きの表紙
+\begin{titlepage}
+<%-       if values["coverimage"] -%>
+  \begin{center}
+    %%%\mbox{}\vskip5zw%
+    \includegraphics[width=\textheight,height=\textwidth,keepaspectratio,angle=90]{./images/<%= values["coverimage"] %>}
+  \end{center}
+  \clearpage
+<%-      end -%>
+<%-    end -%>
+<%-  end -%>
 \thispagestyle{empty}
 \begin{center}%
   \mbox{} \vskip5zw
@@ -257,30 +294,28 @@
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
-<% end %>
-<% end %>
+<%- end -%>
 
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
 
 %%% originaltitle
-<% if values["originaltitlefile"] %>
+<%- if values["originaltitlefile"] -%>
 <%= custom_originaltitlepage %>
-<% end %>
+<%- end -%>
 
 %%% credit
-<% if values["creditfile"] %>
+<%- if values["creditfile"] -%>
 <%= custom_creditpage %>
-<% end %>
-
+<%- end -%>
 
 %% preface
 <%= values["pre_str"] %>
 
-<% if values["toc"] %>
+<%- if values["toc"] -%>
 \setcounter{tocdepth}{<%= values["toclevel"] %>}
 \tableofcontents
-<% end %>
+<%- end -%>
 
 \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~#1}{}}
 \mainmatter
@@ -290,30 +325,29 @@
 <%= values["appendix_str"] %>
 
 %% backmatter begins
-<% if values["post_str"] or values["colophon"] %>
+<%- if values["post_str"] or values["colophon"] -%>
 \backmatter
-<% end %>
+<%- end -%>
 
-<% if values["post_str"] %>
+<%- if values["post_str"] -%>
 <%= values["post_str"] %>
-<% end %>
-
+<%- end -%>
 
 %%% profile
-<% if values["profile"] %>
+<%- if values["profile"] -%>
 <%= custom_profilepage %>
-<% end %>
+<%- end -%>
 
 %%% advfile
-<% if values["advfile"] %>
+<%- if values["advfile"] -%>
 <%= custom_advfilepage %>
-<% end %>
+<%- end -%>
 
 %%% colophon
-<% if values["colophon"] %>
-<%   if custom_colophonpage %>
+<%- if values["colophon"] -%>
+<%-   if custom_colophonpage -%>
 <%= custom_colophonpage %>
-<%   else %>
+<%-   else -%>
 %% okuduke
 \reviewcolophon
 \thispagestyle{empty}
@@ -332,12 +366,12 @@
 　\\
 \rule[0pt]{14cm}{1pt} \\
 <%= values.names_of("rights").join('\\' + '\\') %> \\
-<%   end %>
-<% end %>
+<%-   end -%>
+<%- end -%>
 
 %%% backcover
-<% if values["backcover"] %>
+<%- if values["backcover"] -%>
 <%= custom_backcoverpage %>
-<% end %>
+<%- end -%>
 
 \end{document}

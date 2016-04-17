@@ -16,6 +16,7 @@ class PDFMakerTest < Test::Unit::TestCase
                      "urnid" => "http://example.jp/",
                      "date" => "2011-01-01",
                      "language" => "ja",
+                     "texcommand" => "uplatex",
                    })
     @maker.config = @config
     @output = StringIO.new
@@ -43,8 +44,14 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
-  def test_buildpath
-    assert_equal(@maker.build_path, "./sample-pdf")
+  def test_buildpath_debug
+    @maker.config["debug"] = true
+    path = @maker.build_path
+    begin
+      assert_equal(path, "sample-pdf")
+    ensure
+      FileUtils.remove_entry_secure path
+    end
   end
 
   def test_parse_opts_help

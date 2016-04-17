@@ -4,6 +4,10 @@
 # 生成されます。
 # このファイルはUTF-8エンコーディングで記述してください。
 
+# この設定ファイルでサポートするRe:VIEWのバージョン番号。
+# major versionが違うときにはエラーを出す。
+review_version: 2.0
+
 # ほかの設定ファイルの継承を指定できる。同じパラメータに異なる値がある場合は、
 # 呼び出し元の値が優先される。
 # A.yml、B.ymlのパラメータを継承する例。A.ymlとB.ymlに同じパラメータがある
@@ -248,19 +252,22 @@ secnolevel: 2
   # EPUBで表紙をコンテンツに含めるか。デフォルトでは作成されない。yesにするとiBooks等でも最初に表紙が表示されるようになる
   # cover_linear: null
   #
+  # @<href>タグでの外部リンクを禁止し、地の文にする(falseで禁止する)
+  #  externallink: true
+  #
   # epubmaker:階層を使うものはここまで
 
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
 # texstyle: samplemacro
 #
 # LaTeX用のdocumentclassを指定する
-# texdocumentclass: ["jsarticle", "b5paper,oneside"]
+# texdocumentclass: ["jsbook", "uplatex,oneside"]
 #
-# LaTeX用のコマンドを指定する(platex or lualatex)
-# texcommand: "platex"
+# LaTeX用のコマンドを指定する
+# texcommand: "uplatex"
 #
-# LaTeX用のオプションを指定する(default: "-kanji=#{kanji}")
-# texoptions: "-kanji=utf-8"
+# LaTeXのコマンドに渡すオプションを指定する
+# texoptions: null
 #
 # LaTeX用のdvi変換コマンドを指定する(dvipdfmx)
 # dvicommand: "dvipdfmx"
@@ -289,4 +296,8 @@ secnolevel: 2
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
   # hook_afterdvipdf: null
   #
+  # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換します。
+  # image_scale2width: true
+  #
   # pdfmaker:階層を使うものはここまで
+

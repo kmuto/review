@@ -266,12 +266,8 @@ module ReVIEW
       unless caption.nil?
         puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
       end
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts blocked_lines.join("\n")
-      else
-        lines.each {|l| puts "<p>#{l}</p>" }
-      end
+      blocked_lines = split_paragraph(lines)
+      puts blocked_lines.join("\n")
       puts '</div>'
     end
 
@@ -399,12 +395,8 @@ module ReVIEW
     end
 
     def read(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>]
-      else
-        puts %Q[<p class="lead">\n#{lines.join("\n")}\n</p>]
-      end
+      blocked_lines = split_paragraph(lines)
+      puts %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>]
     end
 
     alias_method :lead, :read
@@ -543,42 +535,22 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
-      else
-        puts "<blockquote><pre>#{lines.join("\n")}</pre></blockquote>"
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
     end
 
     def doorquote(lines, ref)
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts %Q[<blockquote style="text-align:right;">]
-        puts "#{blocked_lines.join("\n")}"
-        puts %Q[<p>#{ref}より</p>]
-        puts %Q[</blockquote>]
-      else
-        puts <<-QUOTE
-<blockquote style="text-align:right;">
-  <pre>#{lines.join("\n")}
-
-#{ref}より</pre>
-</blockquote>
-QUOTE
-      end
+      blocked_lines = split_paragraph(lines)
+      puts %Q[<blockquote style="text-align:right;">]
+      puts "#{blocked_lines.join("\n")}"
+      puts %Q[<p>#{ref}より</p>]
+      puts %Q[</blockquote>]
     end
 
     def talk(lines)
       puts %Q[<div class="talk">]
-      if @book.config["deprecated-blocklines"].nil?
-        blocked_lines = split_paragraph(lines)
-        puts "#{blocked_lines.join("\n")}"
-      else
-        print '<pre>'
-        puts "#{lines.join("\n")}"
-        puts '</pre>'
-      end
+      blocked_lines = split_paragraph(lines)
+      puts "#{blocked_lines.join("\n")}"
       puts '</div>'
     end
 
@@ -718,6 +690,30 @@ QUOTE
 
     def table_end
       puts '</table>'
+    end
+
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if !@chapter.image(id).bound?
+        warn "image not bound: #{id}"
+        image_dummy id, caption, lines
+        return
+      end
+
+      puts %Q[<div id="#{normalize_id(id)}" class="imgtable image">]
+      begin
+        table_header id, caption unless caption.nil?
+      rescue KeyError
+        error "no such table: #{id}"
+      end
+
+      imgtable_image(id, caption, metric)
+
+      puts %Q[</div>]
+    end
+
+    def imgtable_image(id, caption, metric)
+      metrics = parse_metric("html", metric)
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
     end
 
     def comment(lines, comment = nil)
@@ -920,6 +916,13 @@ QUOTE
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
       end
+    end
+
+    def inline_tcy(str)
+      # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
+      style = "tcy"
+      style = "upright" if str.size == 1 && str.match(/[[:ascii:]]/)
+      %Q[<span class="#{style}">#{escape_html(str)}</span>]
     end
 
     def text(str)
@@ -1143,19 +1146,15 @@ QUOTE
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      if @book.config["externallink"]
+        %Q(<a href="#{url}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      else
+        label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
+      end
     end
 
     def flushright(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
-      else
-        puts %Q[<div style="text-align:right;">]
-        print %Q[<pre class="flushright">]
-        lines.each {|line| puts detab(line) }
-        puts '</pre>'
-        puts '</div>'
-      end
+      puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
     end
 
     def centering(lines)

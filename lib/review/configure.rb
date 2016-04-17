@@ -30,7 +30,7 @@ module ReVIEW
         "params" => "", # specify review2html parameters
         "toclevel" => 3, # level of toc
         "secnolevel" => 2, # level of section #
-        "epubversion" => 2,
+        "epubversion" => 3,
         "titlepage" => true, # Use title page
         "toc" => nil, # Use table of contents in body
         "colophon" => nil, # Use colophon
@@ -39,7 +39,7 @@ module ReVIEW
         "language" => 'ja', # XXX default language should be JA??
         "mathml" => nil, # for HTML
         "htmlext" => "html",
-        "htmlversion" => 4,
+        "htmlversion" => 5,
 
         "chapter_file" => 'CHAPS',
         "part_file" => 'PART',
@@ -50,19 +50,43 @@ module ReVIEW
         "ext" => '.re',
         "image_dir" => 'images',
         "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
+        "image_scale2width" => true, # for LaTeX
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
+        "externallink" => true,
+        "tableopt" => nil,      # for IDGXML
+        "listinfo" => nil,      # for IDGXML
+        "nolf" => true,         # for IDGXML
+        "chapref" => nil,       # for IDGXML
+        "structuredxml" => nil, # for IDGXML
+        "pt_to_mm_unit" => 0.3528, # for IDGXML (DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm)
+        "footnotetext" => nil, # for LaTeX
+        "texcommand" => "uplatex", # for LaTeX
+        "texdocumentclass" => ["jsbook", "uplatex,oneside"], # for LaTeX
+        "dvicommand" => "dvipdfmx", # for LaTeX
+        "dvioptions" => "-d 5", # for LaTeX
       ]
       conf.maker = nil
       conf
     end
 
     def [](key)
+      maker = self.maker
+      if maker && self.key?(maker) && self.fetch(maker).key?(key)
+        return self.fetch(maker).fetch(key, nil)
+      end
       if self.key?(key)
         return self.fetch(key)
       end
-      if @maker && self.key?(@maker)
-        return self.fetch(@maker).fetch(key, nil)
+    end
+
+    def check_version(version)
+      if self["review_version"].blank?
+        raise ReVIEW::ConfigError, "configuration file has no review_version property."
+      elsif self["review_version"].to_i != version.to_i ## major version
+        raise ReVIEW::ConfigError, "major version of configuration file is different."
+      elsif self["review_version"].to_f > version.to_f ## minor version
+        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self["review_version"]}'."
       end
     end
 
