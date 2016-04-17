@@ -22,15 +22,9 @@ module ReVIEW
     include HTMLUtils
 
     [:ref].each {|e| Compiler.definline(e) }
-    Compiler.defblock(:memo, 0..1)
-    Compiler.defblock(:tip, 0..1)
-    Compiler.defblock(:info, 0..1)
     Compiler.defblock(:planning, 0..1)
     Compiler.defblock(:best, 0..1)
-    Compiler.defblock(:important, 0..1)
     Compiler.defblock(:security, 0..1)
-    Compiler.defblock(:caution, 0..1)
-    Compiler.defblock(:notice, 0..1)
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
 
@@ -305,6 +299,10 @@ module ReVIEW
 
     def notice(lines, caption = nil)
       captionblock("notice", lines, caption)
+    end
+
+    def warning(lines, caption = nil)
+      captionblock("warning", lines, caption)
     end
 
     def point(lines, caption = nil)

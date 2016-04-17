@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2014 Minero Aoki, Kenshi Muto
+#               2008-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -24,15 +24,9 @@ module ReVIEW
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 0..1)
-    Compiler.defblock(:memo, 0..1)
-    Compiler.defblock(:tip, 0..1)
-    Compiler.defblock(:info, 0..1)
     Compiler.defblock(:planning, 0..1)
     Compiler.defblock(:best, 0..1)
-    Compiler.defblock(:important, 0..1)
     Compiler.defblock(:security, 0..1)
-    Compiler.defblock(:caution, 0..1)
-    Compiler.defblock(:notice, 0..1)
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
     Compiler.defblock(:reference, 0)
@@ -944,6 +938,10 @@ module ReVIEW
 
     def caution(lines, caption = nil)
       captionblock("caution", lines, caption)
+    end
+
+    def warning(lines, caption = nil)
+      captionblock("warning", lines, caption)
     end
 
     def term(lines)
