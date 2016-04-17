@@ -63,8 +63,8 @@ module ReVIEW
 
     def result
       layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
-      unless File.exist?(layout_file) # backward compatibility
-        layout_file = File.join(@book.basedir, "layouts", "layout.erb")
+      if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
+        raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
       end
       if File.exist?(layout_file)
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0

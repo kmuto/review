@@ -46,7 +46,7 @@ module ReVIEW
         "reject_file" => 'REJECT',
         "predef_file" => 'PREDEF',
         "postdef_file" => 'POSTDEF',
-        "page_metric" => ReVIEW::Book::PageMetric.a5,
+        "page_metric" => ReVIEW::Book::PageMetric::A5,
         "ext" => '.re',
         "image_dir" => 'images',
         "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),

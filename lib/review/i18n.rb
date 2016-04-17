@@ -22,8 +22,8 @@ module ReVIEW
         lfile = File.expand_path(ymlfile, Dir.pwd)
 
         # backward compatibility
-        if !File.exist?(lfile) && (ymlfile == "locale.yml")
-          lfile = File.expand_path("locale.yaml", Dir.pwd)
+        if !File.exist?(lfile) && (ymlfile == "locale.yml") && File.exist?(File.expand_path("locale.yaml", Dir.pwd))
+          raise ReVIEW::ConfigError, "locale.yaml is obsoleted.  Please use locale.yml."
         end
       end
 

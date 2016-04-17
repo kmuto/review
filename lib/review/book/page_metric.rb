@@ -24,16 +24,6 @@ module ReVIEW
       A5 = PageMetric.new(46, 80, 30, 74, 1)
       B5 = PageMetric.new(46, 80, 30, 74, 2)
 
-      # backward compatible
-      def PageMetric.a5
-        ReVIEW::Book::PageMetric::A5
-      end
-
-      # backward compatible
-      def PageMetric.b5
-        ReVIEW::Book::PageMetric::B5
-      end
-
       attr_reader :list
       attr_reader :text
       attr_reader :page_per_kbyte

@@ -23,8 +23,9 @@ class I18nTest < Test::Unit::TestCase
         Dir.chdir(dir) do
           file = File.join(dir, "locale.yaml")
           File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
-          I18n.setup
-          assert_equal "bar", I18n.t("foo")
+          assert_raise ReVIEW::ConfigError do
+            I18n.setup
+          end
         end
       end
     end
