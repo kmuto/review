@@ -58,6 +58,7 @@ module ReVIEW
       @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
+      @nonum_counter = 0
     end
     private :builder_init_file
 
@@ -194,10 +195,12 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
+      @nonum_counter += 1
       puts '' if level > 1
       unless caption.empty?
         if label.nil?
-          puts %Q[<h#{level}>#{compile_inline(caption)}</h#{level}>]
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          puts %Q[<h#{level} id="#{id}">#{compile_inline(caption)}</h#{level}>]
         else
           puts %Q[<h#{level} id="#{normalize_id(label)}">#{compile_inline(caption)}</h#{level}>]
         end
@@ -205,6 +208,38 @@ module ReVIEW
     end
 
     def nonum_end(level)
+    end
+
+    def notoc_begin(level, label, caption)
+      @nonum_counter += 1
+      puts '' if level > 1
+      unless caption.empty?
+        if label.nil?
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          puts %Q[<h#{level} id="#{id}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+        else
+          puts %Q[<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+        end
+      end
+    end
+
+    def notoc_end(level)
+    end
+
+    def nodisp_begin(level, label, caption)
+      @nonum_counter += 1
+      puts '' if level > 1
+      unless caption.empty?
+        if label.nil?
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          puts %Q[<a id="#{id}" /><h#{level} id="#{id}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+        else
+          puts %Q[<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+        end
+      end
+    end
+
+    def nodisp_end(level)
     end
 
     def column_begin(level, label, caption)
