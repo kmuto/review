@@ -287,6 +287,36 @@ module ReVIEW
       authors
     end
 
+    def make_history_list
+      buf = []
+      if @config["history"]
+        @config["history"].each_with_index do |items, edit|
+          items.each_with_index do |item, rev|
+            editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}")
+            revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
+            if item =~ /\A\d+\-\d+\-\d+\Z/
+              buf << ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])
+            else
+              # custom date with string
+              item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
+                buf << ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])
+              end
+            end
+          end
+        end
+      elsif @config["date"]
+        buf << ReVIEW::I18n.t("published_by2",
+                              date_to_s(@config["date"]))
+      end
+      buf
+    end
+
+    def date_to_s(date)
+      require 'date'
+      d = Date.parse(date)
+      d.strftime(ReVIEW::I18n.t("date_format"))
+    end
+
     def get_template
       dclass = @config["texdocumentclass"] || []
       documentclass = dclass[0] || "jsbook"
@@ -305,6 +335,12 @@ module ReVIEW
         custom_colophonpage = make_custom_page(@config["colophon"])
       end
       custom_backcoverpage = make_custom_page(@config["backcover"])
+
+      if @config["pubhistory"]
+        warn "pubhistory is oboleted. use history."
+      else
+        @config["pubhistory"] = make_history_list.join("\n")
+      end
 
       template = File.expand_path('layout.tex.erb', File.dirname(__FILE__))
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")

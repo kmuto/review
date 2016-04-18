@@ -177,4 +177,65 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
+  def test_colophon_history
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja"})
+    history = @maker.make_history_list
+    expect = ["2011年1月1日　発行"]
+    assert_equal expect, history
+  end
+
+  def test_colophon_history_2
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja",
+                    "history" => [[
+                                    "2011-08-03 v1.0.0版発行",
+                                    "2012-02-15 v1.1.0版発行",
+                                  ]] })
+    history = @maker.make_history_list
+    expect = ["2011年8月3日　v1.0.0版発行",
+              "2012年2月15日　v1.1.0版発行"]
+    assert_equal expect, history
+  end
+
+  def test_colophon_history_date
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja",
+                    "history" => [[
+                                    "2011-08-03",
+                                    "2012-02-15",
+                                  ]] })
+    history = @maker.make_history_list
+    expect = ["2011年8月3日　初版第1刷　発行",
+              "2012年2月15日　初版第2刷　発行"]
+    assert_equal expect, history
+  end
+
+  def test_colophon_history_date2
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja",
+                    "history" => [[
+                                    "2011-08-03",
+                                    "2012-02-15",
+                                  ],[
+                                    "2012-10-01",
+                                  ],[
+                                    "2013-03-01",
+                                  ]] })
+    history = @maker.make_history_list
+    expect = ["2011年8月3日　初版第1刷　発行",
+              "2012年2月15日　初版第2刷　発行",
+              "2012年10月1日　第2版第1刷　発行",
+              "2013年3月1日　第3版第1刷　発行"]
+    assert_equal expect, history
+  end
+
 end
