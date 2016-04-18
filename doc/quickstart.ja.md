@@ -12,7 +12,7 @@ Re:VIEW は GNU Lesser General Public License Version 2.1 に基づいて配布�
 
 Re:VIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem、Git、Subversion のいずれかを使ってダウンロード・展開します。
 
-なお、Re:VIEW フォーマット自体は文字で表現されたタグが付いている以外は単なるテキストファイルなので、エディタ、OS についてはまったく制限はありません。
+なお、Re:VIEW フォーマット自体は文字で表現されたタグが付いている以外は単なるテキストファイルなので、エディタ、OS については UTF-8 文字エンコーディングさえ使用できれば制限はありません。
 
 ### RubyGems を使う場合
 
@@ -70,7 +70,7 @@ $ svn up
 
 # Re:VIEW テキストの作成と変換
 
-セットアップを終えたら、Re:VIEW フォーマットのテキストを作り、変換できるようになります。次に Re:VIEW フォーマットテキストの簡単な例を示します。これを sample.re といった名前で保存します (拡張子も自由ですが、.re 拡張子を推奨します)。
+セットアップを終えたら、Re:VIEW フォーマットのテキストを作り、変換できるようになります。次に Re:VIEW フォーマットテキストの簡単な例を示します。これを sample.re といった名前で保存します。
 
 
 ```review
@@ -97,10 +97,10 @@ $ svn up
  2. Git
  3. Subversion
 
-ホームページは@<tt>{https://github.com/kmuto/review/wiki/}です。
+ホームページは@<tt>{https://reviewml.org/}です。
 ```
 
-テキストファイルの文字エンコーディングには、UTF-8 を使うことをお勧めします。Re:VIEW は日本語文字エンコーディングとして UTF-8、EUC-JP、Shift_JIS、JIS を扱うことができ、入力ファイルについては自動判別、出力ファイルについても選択可能 (デフォルトは UTF-8) ですが、入力・出力のいずれにおいても、使用可能な文字についての制限が少ない UTF-8 が最適です。
+テキストファイルの文字エンコーディングには、UTF-8 を使用してください。
 
 次に、章構成ファイルの CHAPS ファイルを同じディレクトリに用意します。このファイルには、Re:VIEW フォーマットファイルの名前を格納します。
 
@@ -202,9 +202,9 @@ $ review-index --level 掘り下げる見出しレベル数 -a
 
 review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマンドで EPUB ファイルの作成ができます。
 
-PDF を作成するには、TeXLive2012 以上の環境が必要です。EPUB を作成するには、zip コマンドが必要です (MathML も使いたいときには、 [MathML ライブラリ](http://www.hinet.mydns.jp/?mathml.rb)も必要です)。
+PDF を作成するには、TeXLive2012 以上の環境が必要です。EPUB を作成するには、rubyzip gem あるいは zip コマンドが必要です（MathML も使いたいときには、 [MathML ライブラリ](http://www.hinet.mydns.jp/?mathml.rb)も必要です）。
 
-いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、 [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) としてこのドキュメントと同じディレクトリに収録しています。
+いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、 [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) としてこのドキュメントと同じディレクトリに収録しています。通常、`config.yml` という名前を使います。
 
 ```bash
 $ review-pdfmaker YAMLファイル  ←PDFの作成
@@ -213,10 +213,11 @@ $ review-epubmaker YAMLファイル ←EPUBの作成
 
 ## クレジット
 
-Re:VIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2014年3月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
+Re:VIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2016年4月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
 
 バグ・パッチの報告、開発者用メーリングリストなどについての情報は、
 
+* http://reviewml.org/
 * https://github.com/kmuto/review/wiki
 
 を参照してください。
