@@ -63,6 +63,7 @@ module ReVIEW
       @sec_counter = SecCounter.new(5, @chapter)
       @column = 0
       @noindent = nil
+      @ol_num = nil
       @rootelement = "doc"
       @secttags = nil
       @tsize = nil
