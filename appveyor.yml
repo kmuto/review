@@ -1,6 +1,6 @@
 ---
 install:
-  - SET PATH=C:\Ruby%ruby_version%\bin;%PATH%
+  - SET PATH=C:\Ruby22-x64\bin;%PATH%
   - ruby --version
   - gem --version
 build_script:
