@@ -16,6 +16,7 @@ module ReVIEW
     end
 
     def builder_init_file
+      @blank_seen = nil
       @ul_indent = 0
       @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
     end

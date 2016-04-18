@@ -53,6 +53,7 @@ module ReVIEW
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
+      @body_ext = nil
     end
     private :builder_init_file
 
