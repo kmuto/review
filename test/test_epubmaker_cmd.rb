@@ -29,7 +29,7 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
       builddir = @tmpdir1 + "/" + config['bookname'] + '-epub'
       assert ! File.exist?(builddir)
 
-      ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
+      ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name']) + RbConfig::CONFIG["EXEEXT"]
       Dir.chdir(@tmpdir1) do
         system("#{ruby_cmd} -S #{REVIEW_EPUBMAKER} config.yml 1>/dev/null 2>/dev/null")
       end
