@@ -8,6 +8,8 @@ Re:VIEW は GNU Lesser General Public License Version 2.1 に基づいて配布�
 
 このドキュメントでは、Re:VIEW のセットアップから変換の例までを簡単に説明します。
 
+このドキュメントは、Re:VIEW 2.0 に基づいています。
+
 ## セットアップ
 
 Re:VIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem、Git、Subversion のいずれかを使ってダウンロード・展開します。
