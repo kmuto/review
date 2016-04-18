@@ -24,7 +24,7 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
   end
 
   def test_epubmaker_cmd
-    if RUBY_VERSION !~ /^1.8/
+    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
       config = prepare_samplebook(@tmpdir1)
       builddir = @tmpdir1 + "/" + config['bookname'] + '-epub'
       assert ! File.exist?(builddir)
