@@ -1136,4 +1136,39 @@ EOS
     expected = %Q|<div id="sampleimg" class="imgtable image">\n<p class="caption">表1.1: test for imgtable</p>\n<img src="images/chap1-sampleimg.png" alt="test for imgtable" />\n</div>\n|
     assert_equal expected, actual
   end
+
+  def test_major_blocks
+    actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
+    expected = %Q(<div class="note">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="note">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
+    expected = %Q(<div class="memo">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="memo">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
+    expected = %Q(<div class="info">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="info">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
+    expected = %Q(<div class="important">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="important">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
+    expected = %Q(<div class="caution">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="caution">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
+    expected = %Q(<div class="notice">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="notice">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
+    expected = %Q(<div class="warning">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="warning">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
+    expected = %Q(<div class="tip">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="tip">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    assert_equal expected, actual
+  end
+
 end

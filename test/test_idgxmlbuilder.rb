@@ -189,29 +189,44 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<quote><p>foobar</p><p>buz</p></quote>|, actual
   end
 
-  def test_note
-    actual = compile_block("//note[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<note><title aid:pstyle='note-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></note>|, actual
-  end
+  def test_major_blocks
+    actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
+    expected = %Q(<note><p>A</p><p>B</p></note><note><title aid:pstyle='note-title'>caption</title><p>A</p></note>)
+    assert_equal expected, actual
 
-  def test_memo
-    actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<memo><title aid:pstyle='memo-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></memo>|, actual
+    actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
+    expected = %Q(<memo><p>A</p><p>B</p></memo><memo><title aid:pstyle='memo-title'>caption</title><p>A</p></memo>)
+    assert_equal expected, actual
+
+    actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
+    expected = %Q(<info><p>A</p><p>B</p></info><info><title aid:pstyle='info-title'>caption</title><p>A</p></info>)
+    assert_equal expected, actual
+
+    actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
+    expected = %Q(<important><p>A</p><p>B</p></important><important><title aid:pstyle='important-title'>caption</title><p>A</p></important>)
+    assert_equal expected, actual
+
+    actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
+    expected = %Q(<caution><p>A</p><p>B</p></caution><caution><title aid:pstyle='caution-title'>caption</title><p>A</p></caution>)
+    assert_equal expected, actual
+
+    # notice uses special tag notice-t if it includes caption
+    actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
+    expected = %Q(<notice><p>A</p><p>B</p></notice><notice-t><title aid:pstyle='notice-title'>caption</title><p>A</p></notice-t>)
+    assert_equal expected, actual
+
+    actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
+    expected = %Q(<warning><p>A</p><p>B</p></warning><warning><title aid:pstyle='warning-title'>caption</title><p>A</p></warning>)
+    assert_equal expected, actual
+
+    actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
+    expected = %Q(<tip><p>A</p><p>B</p></tip><tip><title aid:pstyle='tip-title'>caption</title><p>A</p></tip>)
+    assert_equal expected, actual
   end
 
   def test_term
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q|<term><p>test1test1.5</p><p>test<i>2</i></p></term>|, actual
-  end
-
-  def test_notice
-    actual = compile_block("//notice[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<notice-t><title aid:pstyle='notice-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></notice-t>|, actual
-  end
-
-  def test_notice_without_caption
-    actual = compile_block("//notice{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<notice><p>test1test1.5</p><p>test<i>2</i></p></notice>|, actual
   end
 
   def test_point
