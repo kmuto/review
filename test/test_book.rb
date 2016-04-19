@@ -508,7 +508,7 @@ EOC
     end
 
     mktmpbookdir 'preface.re' => '12345' do |dir, book, files|
-      assert_raises Errno::ENOENT do # XXX: OK?
+      assert_raises(Errno::ENOENT, Errno::EINVAL) do # XXX: OK?
         book.volume
       end
 

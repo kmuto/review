@@ -1,0 +1,9 @@
+---
+install:
+  - SET PATH=C:\Ruby22-x64\bin;%PATH%
+  - ruby --version
+  - gem --version
+build_script:
+  - bundle install
+  - bundle exec rake test --trace --verbose
+  - bundle exec rubocop
