@@ -197,6 +197,7 @@ module ReVIEW
     definline :href
     definline :recipe
     definline :column
+    definline :tcy
 
     definline :abbr
     definline :acronym
@@ -227,6 +228,7 @@ module ReVIEW
     definline :hidx
     definline :comment
     definline :include
+    definline :tcy
 
     private
 

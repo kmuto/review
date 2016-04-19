@@ -870,6 +870,10 @@ module ReVIEW
       end
     end
 
+    def inline_tcy(str)
+      macro('rensuji', escape(str))
+    end
+
     def bibpaper_header(id, caption)
       puts "[#{@chapter.bibpaper(id).number}] #{compile_inline(caption)}"
       puts macro('label', bib_label(id))

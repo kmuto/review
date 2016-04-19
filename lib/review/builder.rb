@@ -309,6 +309,10 @@ module ReVIEW
       chapter.column(id).caption
     end
 
+    def inline_tcy(arg)
+      "#{arg}[rotate 90 degree]"
+    end
+
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }

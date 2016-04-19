@@ -350,7 +350,7 @@ module ReVIEW
 
       texcompiler = File.basename(@config["texcommand"], ".*")
 
-      erb = ERB.new(File.read(template))
+      erb = ERB.new(File.read(template), nil, '-')
       values = @config # must be 'values' for legacy files
       erb.result(binding)
     end
