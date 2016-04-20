@@ -28,6 +28,7 @@ module ReVIEW
 
     def initialize
       @basedir = nil
+      @input_files = Hash.new{|h, key| h[key] = ""}
     end
 
     def system_or_raise(*args)
@@ -127,7 +128,6 @@ module ReVIEW
       remove_old_file
       @path = build_path()
       begin
-        @input_files = Hash.new{|h, key| h[key] = ""}
         @compile_errors = nil
 
         book = ReVIEW::Book.load(@basedir)
@@ -337,9 +337,9 @@ module ReVIEW
         @config["pubhistory"] = make_history_list.join("\n")
       end
       if @documentclass == "ubook" || @documentclass == "utbook"
-        @coverimageoption = "width=\textheight,height=\textwidth,keepaspectratio,angle=90"
+        @coverimageoption = "width=\\textheight,height=\\textwidth,keepaspectratio,angle=90"
       else
-        @coverimageoption = "width=\textheight,height=\textwidth,keepaspectratio"
+        @coverimageoption = "width=\\textheight,height=\\textwidth,keepaspectratio"
       end
 
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
