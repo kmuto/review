@@ -339,7 +339,7 @@ module ReVIEW
       if @documentclass == "ubook" || @documentclass == "utbook"
         @coverimageoption = "width=\\textheight,height=\\textwidth,keepaspectratio,angle=90"
       else
-        @coverimageoption = "width=\\textheight,height=\\textwidth,keepaspectratio"
+        @coverimageoption = "width=\\textwidth,height=\\textheight,keepaspectratio"
       end
 
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
