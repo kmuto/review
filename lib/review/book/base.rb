@@ -367,13 +367,11 @@ module ReVIEW
 
       def mkpart_from_namelistfile(path)
         chaps = []
-        File.open(path, 'r:BOM|utf-8') do |f|
-          f.read.split.each_with_index do |name, idx|
-            if path =~ /PREDEF/
-              chaps << mkchap(name)
-            else
-              chaps << mkchap(name, idx + 1)
-            end
+        File.read(path, :mode => 'r:BOM|utf-8').split.each_with_index do |name, idx|
+          if path =~ /PREDEF/
+            chaps << mkchap(name)
+          else
+            chaps << mkchap(name, idx + 1)
           end
         end
         mkpart(chaps)

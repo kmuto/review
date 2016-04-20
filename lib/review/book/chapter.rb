@@ -32,7 +32,7 @@ module ReVIEW
           @content = nil
         end
         if !@content && @path && File.exist?(@path)
-          @content = File.open(@path, 'r:BOM|utf-8').read
+          @content = File.read(@path, :mode => 'r:BOM|utf-8')
           @number = nil if ['nonum', 'nodisp', 'notoc'].include?(find_first_header_option)
         end
         @list_index = nil

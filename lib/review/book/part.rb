@@ -26,7 +26,7 @@ module ReVIEW
         if io
           @content = io.read
         elsif @path && File.exist?(@path)
-          @content = File.read(@path, 'r:BOM|utf-8')
+          @content = File.read(@path, :mode => 'r:BOM|utf-8')
         else
           @content = nil
         end
