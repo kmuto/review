@@ -149,10 +149,6 @@ class PDFMakerTest < Test::Unit::TestCase
   end
 
   def test_gettemplate_with_backmatter
-    if RUBY_VERSION =~ /^1.8/
-      $stderr.puts "skip test_gettemplate_with_backmatter (for travis error)"
-      return
-    end
     @config.merge!({
       "backcover"=>"backcover.html",
       "profile"=>"profile.html",
