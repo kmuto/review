@@ -2,7 +2,7 @@
 # $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
 #
 # Copyright (c) 2002-2008 Minero Aoki
-#               2009-2014 Minero Aoki, Kenshi Muto
+#               2009-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -26,7 +26,7 @@ module ReVIEW
         if io
           @content = io.read
         elsif @path && File.exist?(@path)
-          @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
+          @content = File.read(@path, 'r:BOM|utf-8')
         else
           @content = nil
         end

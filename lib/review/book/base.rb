@@ -367,12 +367,13 @@ module ReVIEW
 
       def mkpart_from_namelistfile(path)
         chaps = []
-        File.read(path).split.each_with_index do |name, idx|
-          name.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
-          if path =~ /PREDEF/
-            chaps << mkchap(name)
-          else
-            chaps << mkchap(name, idx + 1)
+        File.open(path, 'r:BOM|utf-8') do |f|
+          f.read.split.each_with_index do |name, idx|
+            if path =~ /PREDEF/
+              chaps << mkchap(name)
+            else
+              chaps << mkchap(name, idx + 1)
+            end
           end
         end
         mkpart(chaps)
@@ -404,9 +405,8 @@ module ReVIEW
 
       def read_FILE(filename)
         res = ""
-        File.open("#{@basedir}/#{filename}") do |f|
+        File.open("#{@basedir}/#{filename}", 'r:BOM|utf-8') do |f|
           while line = f.gets
-            line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
             if /\A#/ =~ line
               next
             end

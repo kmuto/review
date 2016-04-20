@@ -32,7 +32,7 @@ module ReVIEW
           @content = nil
         end
         if !@content && @path && File.exist?(@path)
-          @content = File.read(@path).sub(/\A\xEF\xBB\xBF/u, '')
+          @content = File.open(@path, 'r:BOM|utf-8').read
           @number = nil if ['nonum', 'nodisp', 'notoc'].include?(find_first_header_option)
         end
         @list_index = nil
