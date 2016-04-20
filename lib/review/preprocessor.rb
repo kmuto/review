@@ -403,7 +403,7 @@ module ReVIEW
     end
 
     def parse_file(fname)
-      File.open(fname) {|f|
+      File.open(fname, 'r:BOM|utf-8') {|f|
         init_ErrorUtils f
         return _parse_file(f)
       }

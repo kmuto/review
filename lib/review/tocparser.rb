@@ -1,8 +1,6 @@
 #
-# $Id: tocparser.rb 4268 2009-05-27 04:17:08Z kmuto $
-#
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2009 Minero Aoki, Kenshi Muto
+#               2008-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -18,7 +16,7 @@ module ReVIEW
 
   class TOCParser
     def TOCParser.parse(chap)
-      f = StringIO.new(chap.content)
+      f = StringIO.new(chap.content, 'r:BOM|utf-8')
       stream = Preprocessor::Strip.new(f)
       new.parse(stream, chap).map do |root|
         root.number = chap.number
@@ -39,7 +37,6 @@ module ReVIEW
       node_stack = []
       filename = chap.path
       while line = f.gets
-        line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
         case line
         when /\A\#@/
           ;
