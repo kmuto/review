@@ -342,7 +342,7 @@ module ReVIEW
         @config["pubhistory"] = make_history_list.join("\n")
       end
 
-      template = File.expand_path('layout.tex.erb', File.dirname(__FILE__))
+      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
       if File.exist?(layout_file)
         template = layout_file
