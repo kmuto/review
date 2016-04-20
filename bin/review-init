@@ -83,11 +83,6 @@ end
 
 def generate_layout(dir)
   FileUtils.mkdir_p dir + '/layouts'
-  if @epub_version.to_i == 2
-    FileUtils.cp @review_dir + "/templates/html/layout-xhtml1.html.erb", dir + '/layouts/layout.html.erb'
-  else
-    FileUtils.cp @review_dir + "/templates/html/layout-html5.html.erb", dir + '/layouts/layout.html.erb'
-  end
 end
 
 def generate_catalog_file(dir)
@@ -115,11 +110,18 @@ def generate_cover_image(dir)
 end
 
 def generate_config(dir)
+  today = Time.now.strftime("%Y-%m-%d")
+  content = File.read(@review_dir + "/doc/config.yml.sample")
+  content.gsub!(/^#\s*coverimage:.*$/, 'coverimage: cover.jpg')
+  content.gsub!(/^#\s*date:.*$/, "date: #{today}")
+  content.gsub!(/^#\s*history:.*$/, %Q|history: [["#{today}"]]|)
+  content.gsub!(/^#\s*texstyle:.*$/, "texstyle: reviewmacro")
+  content.gsub!(/^(#\s*)?stylesheet:.*$/, %Q|stylesheet: ["style.css"]|)
   if @epub_version.to_i == 2
-    FileUtils.cp @review_dir + "/test/sample-book/src/config-epub2.yml", File.join(dir, "config.yml")
-  else
-    FileUtils.cp @review_dir + "/test/sample-book/src/config.yml", dir
+    content.gsub!(/^#.*epubversion:.*$/,'epubversion: 2')
+    content.gsub!(/^#.*htmlversion:.*$/,'htmlversion: 4')
   end
+  File.open(File.join(dir, "config.yml"), "w"){|f| f.write(content) }
 end
 
 def generate_style(dir)
