@@ -9,7 +9,7 @@ CONFIG_FILE = "config.yml"
 def build(mode, chapter)
   sh "review-compile --target=#{mode} --footnotetext --stylesheet=style.css #{chapter} > tmp"
   mode_ext = {"html" => "html", "latex" => "tex",
-              "idgxml" => "xml", "inao" => "inao"}
+              "idgxml" => "xml"}
   FileUtils.mv "tmp", chapter.gsub(/re\z/, mode_ext[mode])
 end
 
