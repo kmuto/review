@@ -1,6 +1,8 @@
 require 'erb'
 module ReVIEW
   class Template
+    include ERB::Util
+
     TEMPLATE_DIR = File.join(File.dirname(__FILE__), "../../templates")
 
     def self.load(filename, mode = 1)
