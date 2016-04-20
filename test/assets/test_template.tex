@@ -74,8 +74,8 @@
 
 \newenvironment{reviewcolumn}{%
      \begin{framed}
-   }{%
-      \end{framed}
+  }{%
+     \end{framed}
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
@@ -105,18 +105,12 @@
 \newcommand{\reviewboxcaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
-\newcommand{\reviewimageref}[2]{%
-  図 #1}
-\newcommand{\reviewtableref}[2]{%
-  表 #1}
-\newcommand{\reviewlistref}[1]{%
-  リスト #1}
-\newcommand{\reviewbibref}[2]{%
-  #1}
-\newcommand{\reviewcolumnref}[2]{%
-  コラム #1}
-\newcommand{\reviewsecref}[2]{%
-  #1}
+\newcommand{\reviewimageref}[2]{図 #1}
+\newcommand{\reviewtableref}[2]{表 #1}
+\newcommand{\reviewlistref}[1]{リスト #1}
+\newcommand{\reviewbibref}[2]{#1}
+\newcommand{\reviewcolumnref}[2]{コラム #1}
+\newcommand{\reviewsecref}[2]{#1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large ■メモ: #1}\\}
@@ -126,18 +120,10 @@
   \vspace{1.5zw}\begin{screen}}{%
   \end{screen}\vspace{2zw}}
 
-\newcommand{\reviewkw}[1]{%
-  \textbf{\textgt{#1}}}
-
-\newcommand{\reviewami}[1]{%
-  \mask{#1}{A}}
-
-\newcommand{\reviewem}[1]{%
-  \textbf{#1}}
-
-\newcommand{\reviewstrong}[1]{%
-  \textbf{#1}}
-
+\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\newcommand{\reviewami}[1]{\mask{#1}{A}}
+\newcommand{\reviewem}[1]{\textbf{#1}}
+\newcommand{\reviewstrong}[1]{\textbf{#1}}
 \newcommand{\reviewunderline}{\Underline}
 
 %% @<del> is ignored in LaTeX with default style
@@ -149,19 +135,11 @@
 %%%% for jumoline.sty:
 %%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
 
-\newcommand{\reviewth}[1]{%
-  \textgt{#1}}
-
-\newcommand{\reviewtitlefont}[0]{%
-  \usefont{T1}{phv}{b}{n}\gtfamily}
-
-\newcommand{\reviewmainfont}[0]{%
- }
-
-\newcommand{\reviewcolophon}[0]{%
-  \clearpage}
-\newcommand{\reviewappendix}[0]{%
-  \appendix}
+\newcommand{\reviewth}[1]{\textgt{#1}}
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
 
 \makeatletter
 %% maxwidth is the original width if it is less than linewidth
@@ -219,6 +197,8 @@
 
 
 %% backmatter begins
+\backmatter
+
 
 
 %%% profile
