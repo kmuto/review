@@ -127,7 +127,7 @@ module ReVIEW
       remove_old_file
       @path = build_path()
       begin
-        @chaps_fnames = Hash.new{|h, key| h[key] = ""}
+        @input_files = Hash.new{|h, key| h[key] = ""}
         @compile_errors = nil
 
         book = ReVIEW::Book.load(@basedir)
@@ -137,28 +137,23 @@ module ReVIEW
           if part.name.present?
             if part.file?
               output_chaps(part.name, yamlfile)
-              @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
+              @input_files["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
             else
-              @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
+              @input_files["CHAPS"] << %Q|\\part{#{part.name}}\n|
             end
           end
 
           part.chapters.each do |chap|
             filename = File.basename(chap.path, ".*")
             output_chaps(filename, yamlfile)
-            @chaps_fnames["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
-            @chaps_fnames["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
-            @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
-            @chaps_fnames["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
+            @input_files["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
+            @input_files["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
+            @input_files["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
+            @input_files["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
           end
         end
 
         check_compile_status(@config["ignore-errors"])
-
-        @config["pre_str"] = @chaps_fnames["PREDEF"]
-        @config["chap_str"] = @chaps_fnames["CHAPS"]
-        @config["appendix_str"] = @chaps_fnames["APPENDIX"]
-        @config["post_str"] = @chaps_fnames["POSTDEF"]
 
         @config["usepackage"] = ""
         if @config["texstyle"]
@@ -319,8 +314,8 @@ module ReVIEW
 
     def get_template
       dclass = @config["texdocumentclass"] || []
-      documentclass = dclass[0] || "jsbook"
-      documentclassoption = dclass[1] || "uplatex,oneside"
+      @documentclass = dclass[0] || "jsbook"
+      @documentclassoption = dclass[1] || "uplatex,oneside"
 
       okuduke = make_colophon
       authors = make_authors
@@ -340,6 +335,11 @@ module ReVIEW
         warn "pubhistory is oboleted. use history."
       else
         @config["pubhistory"] = make_history_list.join("\n")
+      end
+      if @documentclass == "ubook" || @documentclass == "utbook"
+        @coverimageoption = "width=\textheight,height=\textwidth,keepaspectratio,angle=90"
+      else
+        @coverimageoption = "width=\textheight,height=\textwidth,keepaspectratio"
       end
 
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
