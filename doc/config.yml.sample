@@ -17,15 +17,17 @@ review_version: 2.0
 # inherit: ["A.yml", "B.yml"]
 
 # ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
-bookname: review-sample
+bookname: book
+# 記述言語。省略した場合はja
+language: ja
 
 # 書名
 # 読みを入れる例 booktitle: {name: "Re:VIEW EPUBサンプル", file-as: "リビューイーパブサンプル"}
-booktitle: Re:VIEW EPUBサンプル
+booktitle: Re:VIEWサンプル書籍
 
 # 著者名。「, 」で区切って複数指定できる
 # 読みを入れる例 aut: [{name: "青木峰郎", file-as: "アオキミネロウ"}, {name: "武藤健志", file-as: "ムトウケンシ"}, {name: "高橋征義", file-as: "タカハシマサヨシ"}, {name: "角征典", file-as: "カドマサノリ"}]
-aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
+aut: ["青木峰郎", "武藤健志", "高橋征義", "角征典"]
 
 # 以下はオプション
 # 以下はオプション(autと同じように配列書式で複数指定可能)。
@@ -62,8 +64,15 @@ aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
 # a-trc, trc: 筆記・タイプ作業者
 # a-trl, trl: 翻訳者
 
-# rights: 権利表記(配列で複数指定可)
-# date: 刊行日(省略した場合は実行時の日付)
+# 刊行日(省略した場合は実行時の日付)
+# date: 2016-04-20
+# 発行年月。YYYY-MM-DD形式による配列指定。省略した場合はdateを使用する
+# 複数指定する場合は次のように記述する
+# [["初版第1刷の日付", "初版第2刷の日付"], ["第2版第1刷の日付"]]
+# 日付の後ろを空白文字で区切り、任意の文字列を置くことも可能。
+# history: [["2016-04-20 v1.0.0版発行"]]
+# 権利表記(配列で複数指定可)
+# rights: (C) 2016 Re:VIEW Developers
 # description: 説明
 # subject: 短い説明用タグ(配列で複数指定可)
 # type: 書籍のカテゴリーなど(配列で複数指定可)
@@ -76,7 +85,7 @@ aut: ["Minero Aoki", "Kenshi Muto", "Masayoshi Takahashi", "Masanori Kado"]
 debug: null
 
 # HTMLファイルの拡張子(省略した場合はhtml)
-# htmlext: xhtml
+# htmlext: html
 #
 # CSSファイル(配列で複数指定可)
 stylesheet: ["sample.css"]
@@ -134,7 +143,7 @@ secnolevel: 2
 # creditfile: null
 
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
-# colophon: true
+# colophon: null
 
 # 裏表紙ファイル (画像はcoversまたはimagesに配置する)。ファイル名を指定すると裏表紙として入る
 # backcover: null
@@ -191,7 +200,10 @@ secnolevel: 2
 #   ...
 # という構成にする必要がある(インデントさせる)
 
-# epubmaker:
+epubmaker:
+  # HTMLファイルの拡張子
+  htmlext: xhtml
+  #
   # 目次を要素の階層表現にしない。省略した場合(null)は階層化する。
   # 特に部扉が入るなどの理由で、構成によっては階層化目次でepubcheckに
   # パスしない目次ができるが、そのようなときにはこれをtrueにする
@@ -282,7 +294,7 @@ secnolevel: 2
 #   ...
 # という構成にする必要がある(インデントさせる)
 #
-# pdfmaker:
+pdfmaker:
   #
   # TeXコンパイル前に実行するプログラム。変換後のTeXソースを調整したいときに使用する。
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
@@ -299,5 +311,7 @@ secnolevel: 2
   # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換します。
   # image_scale2width: true
   #
+  # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
+  colophon: true
   # pdfmaker:階層を使うものはここまで
 
