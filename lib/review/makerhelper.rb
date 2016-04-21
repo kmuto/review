@@ -12,11 +12,12 @@ require 'fileutils'
 require 'yaml'
 
 module ReVIEW
-  class MakerHelper
+  module MakerHelper
     # Return review/bin directory
-    def self.bindir
+    def bindir
       Pathname.new("#{Pathname.new(__FILE__).realpath.dirname}/../../bin").realpath
     end
+    module_function :bindir
 
     # Copy image files under from_dir to to_dir recursively
     # ==== Args
@@ -34,7 +35,7 @@ module ReVIEW
     # Image files are copied recursively, and each '.eps' file is converted into '.eps.png'
     #
 
-    def self.copy_images_to_dir(from_dir, to_dir, options = {})
+    def copy_images_to_dir(from_dir, to_dir, options = {})
       image_files = []
 
       Dir.open(from_dir) do |dir|
@@ -64,5 +65,7 @@ module ReVIEW
 
       image_files
     end
+    module_function :copy_images_to_dir
+
   end
 end
