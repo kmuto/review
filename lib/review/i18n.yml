@@ -9,7 +9,7 @@ ja:
   chapter: 第%d章
   chapter_postfix: "　"
   chapter_quote: "「%s」"
-  appendix: 付録%s
+  appendix: 付録%pA
   numberless_image: "図:"
   memo_head: ■メモ
   format_number: "%s.%d"
