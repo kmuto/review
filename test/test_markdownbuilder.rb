@@ -15,7 +15,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
       "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
       "stylesheet" => nil, # for HTMLBuilder
     }
-    @book = Book::Base.new(nil)
+    @book = Book::Base.new(".")
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)

@@ -1,9 +1,9 @@
-\documentclass[<%= documentclassoption %>]{<%= documentclass %>}
-<% if texcompiler == "uplatex" %>
+\documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
+<%- if texcompiler == "uplatex" -%>
 \usepackage[deluxe,uplatex]{otf}
-<% else %>
+<%- else -%>
 \usepackage[deluxe]{otf}
-<% end %>
+<%- end -%>
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{framed}
@@ -28,20 +28,21 @@
   \MakeFramed {\FrameRestore}}%
  {\endMakeFramed}
 
+<%- unless ["utbook", "tbook"].include?(@documentclass)  -%>
 \usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
 %\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
-
+<%- end -%>
 
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-<% if texcompiler == "uplatex" %>
+<%- if texcompiler == "uplatex" -%>
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={<%= values.name_of("booktitle") %>},%
-            pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+            pdftitle={<%= @config.name_of("booktitle") %>},%
+            pdfauthor={<%= @config.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
 % uplatexでのBookmarkの文字化け対策（日本語向け）
 \usepackage[dvipdfmx]{pxjahyper}
-<% else %>
+<%- else -%>
 %% Bookmarkの文字化け対策（日本語向け）
 \ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
   \usepackage{atbegshi}%
@@ -54,17 +55,21 @@
 \fi
 
 \usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-             pdftitle={<%= values.name_of("booktitle") %>},%
-             pdfauthor={<%= values.names_of("aut").join(I18n.t("names_splitter")
-) %>}]{hyperref}
-<% end %>
+     pdftitle={<%= @config.name_of("booktitle") %>},%
+     pdfauthor={<%= @config.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+<%- end -%>
 
-<% if config["highlight"] && config["highlight"]["latex"] == "listings" %>
-<%   if config["language"] == "ja" %>
+<%- if ["utbook", "tbook"].include?(@documentclass)  -%>
+\newcommand{\headfont}{\gtfamily\sffamily\bfseries}
+\usepackage{plext}
+<%- end -%>
+
+<%- if config["highlight"] && config["highlight"]["latex"] == "listings" -%>
+<%-   if config["language"] == "ja" -%>
 \usepackage{listings,jlisting}
-<%   else %>
+<%-   else -%>
 \usepackage{listings}
-<%   end %>
+<%-   end -%>
 \renewcommand{\lstlistingname}{<%= I18n.t("list")%>}
 \lstset{%
   breaklines=true,%
@@ -80,21 +85,13 @@
   stringstyle=\color{reviewred},%
   keywordstyle=\bfseries\color{reviewdarkred},%
 }
-\lstnewenvironment{reviewemlistlst}[1][]{%
-  \lstset{#1}}{}
 
-\lstnewenvironment{reviewemlistnumlst}[1][]{%
-  \lstset{numbers=left, #1}}{}
-
-\lstnewenvironment{reviewlistlst}[1][]{%
-  \lstset{#1}}{}
-
-\lstnewenvironment{reviewlistnumlst}[1][]{%
-  \lstset{numbers=left, #1}}{}
-
-\lstnewenvironment{reviewcmdlst}[1][]{%
-  \lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
-<% end %>
+\lstnewenvironment{reviewemlistlst}[1][]{\lstset{#1}}{}
+\lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+\lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
+\lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+\lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
+<%- end -%>
 
 \newenvironment{reviewimage}{%
   \begin{figure}[H]
@@ -132,8 +129,8 @@
 
 \newenvironment{reviewcolumn}{%
      \begin{framed}
-   }{%
-      \end{framed}
+  }{%
+     \end{framed}
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
@@ -163,42 +160,28 @@
 \newcommand{\reviewboxcaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
-\newcommand{\reviewimageref}[2]{%
-  <%= I18n.t("image")%> #1}
-\newcommand{\reviewtableref}[2]{%
-  <%= I18n.t("table")%> #1}
-\newcommand{\reviewlistref}[1]{%
-  <%= I18n.t("list")%> #1}
-\newcommand{\reviewbibref}[2]{%
-  #1}
-\newcommand{\reviewcolumnref}[2]{%
-  <%= I18n.t("columnname")%> #1}
-\newcommand{\reviewsecref}[2]{%
-  #1}
+\newcommand{\reviewimageref}[2]{<%= I18n.t("image")%> #1}
+\newcommand{\reviewtableref}[2]{<%= I18n.t("table")%> #1}
+\newcommand{\reviewlistref}[1]{<%= I18n.t("list")%> #1}
+\newcommand{\reviewbibref}[2]{#1}
+\newcommand{\reviewcolumnref}[2]{<%= I18n.t("columnname")%> #1}
+\newcommand{\reviewsecref}[2]{#1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large <%= I18n.t("memo_head")%>: #1}\\}
 
-<% if values["toctitle"].present? %>
-\renewcommand{\contentsname}{<%= values["toctitle"]%>}
-<% end %>
+<%- if @config["toctitle"].present? -%>
+\renewcommand{\contentsname}{<%= @config["toctitle"]%>}
+<%- end -%>
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
   \end{screen}\vspace{2zw}}
 
-\newcommand{\reviewkw}[1]{%
-  \textbf{\textgt{#1}}}
-
-\newcommand{\reviewami}[1]{%
-  \mask{#1}{A}}
-
-\newcommand{\reviewem}[1]{%
-  \textbf{#1}}
-
-\newcommand{\reviewstrong}[1]{%
-  \textbf{#1}}
-
+\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\newcommand{\reviewami}[1]{\mask{#1}{A}}
+\newcommand{\reviewem}[1]{\textbf{#1}}
+\newcommand{\reviewstrong}[1]{\textbf{#1}}
 \newcommand{\reviewunderline}{\Underline}
 
 %% @<del> is ignored in LaTeX with default style
@@ -210,19 +193,11 @@
 %%%% for jumoline.sty:
 %%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
 
-\newcommand{\reviewth}[1]{%
-  \textgt{#1}}
-
-\newcommand{\reviewtitlefont}[0]{%
-  \usefont{T1}{phv}{b}{n}\gtfamily}
-
-\newcommand{\reviewmainfont}[0]{%
- }
-
-\newcommand{\reviewcolophon}[0]{%
-  \clearpage}
-\newcommand{\reviewappendix}[0]{%
-  \appendix}
+\newcommand{\reviewth}[1]{\textgt{#1}}
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
 
 \makeatletter
 %% maxwidth is the original width if it is less than linewidth
@@ -236,7 +211,9 @@
 }
 \makeatother
 
-<%= values["usepackage"] %>
+<%- if @config["usepackage"] -%>
+<%= @config["usepackage"] %>
+<%- end -%>
 
 \usepackage[T1]{fontenc}
 
@@ -244,23 +221,22 @@
 
 \reviewmainfont
 
-<% if values["titlepage"] %>
-<% if custom_titlepage %>
+<%- if @config["titlepage"] -%>
+<%-   if custom_titlepage -%>
 <%= custom_titlepage %>
-<% else %>
+<%-   else -%>
 \begin{titlepage}
-  <% if values["coverimage"] %>
+<%-     if @config["coverimage"] -%>
   \begin{center}
-    %%%\mbox{}\vskip5zw%
-    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{./images/<%= values["coverimage"] %>}
+    \includegraphics[<%= @coverimageoption%>]{./images/<%= @config["coverimage"] %>}
   \end{center}
   \clearpage
-  <% end %>
+<%-     end -%>
 \thispagestyle{empty}
 \begin{center}%
   \mbox{} \vskip5zw
    \reviewtitlefont%
-    {\Huge <%= values.name_of("booktitle") %> \par}%
+    {\Huge <%= @config.name_of("booktitle") %> \par}%
     \vskip 15em%
     {\huge
       \lineskip .75em
@@ -268,77 +244,75 @@
         <%= authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= values["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", values.names_of("prt").join(I18n.t("names_splitter")))%>\par}%
+    {\large <%= @config["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", @config.names_of("prt").join(I18n.t("names_splitter")))%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
-<% end %>
-<% end %>
+<%-   end -%>
+<%- end -%>
 
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
 
 %%% originaltitle
-<% if values["originaltitlefile"] %>
+<%- if @config["originaltitlefile"] -%>
 <%= custom_originaltitlepage %>
-<% end %>
+<%- end -%>
 
 %%% credit
-<% if values["creditfile"] %>
+<%- if @config["creditfile"] -%>
 <%= custom_creditpage %>
-<% end %>
-
+<%- end -%>
 
 %% preface
-<%= values["pre_str"] %>
+<%= @input_files["PREDEF"] %>
 
-<% if values["toc"] %>
-\setcounter{tocdepth}{<%= values["toclevel"] %>}
+<%- if @config["toc"] -%>
+\setcounter{tocdepth}{<%= @config["toclevel"] %>}
 \tableofcontents
-<% end %>
+<%- end -%>
 
 \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~#1}{}}
 \mainmatter
-<%= values["chap_str"] %>
+<%= @input_files["CHAPS"] %>
 \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~#1}{}}
 \reviewappendix
-<%= values["appendix_str"] %>
+<%= @input_files["APPENDIX"] %>
 
 %% backmatter begins
-<% if values["post_str"] or values["colophon"] %>
+<%- if @input_files["POSTDEF"] or @config["colophon"] -%>
 \backmatter
-<% end %>
+<%- end -%>
 
-<% if values["post_str"] %>
-<%= values["post_str"] %>
-<% end %>
-
+<%- if @input_files["POSTDEF"] -%>
+<%= @input_files["POSTDEF"] %>
+<%- end -%>
 
 %%% profile
-<% if values["profile"] %>
+<%- if @config["profile"] -%>
 <%= custom_profilepage %>
-<% end %>
+<%- end -%>
 
 %%% advfile
-<% if values["advfile"] %>
+<%- if @config["advfile"] -%>
 <%= custom_advfilepage %>
-<% end %>
+<%- end -%>
 
 %%% colophon
-<% if values["colophon"] %>
-<%   if custom_colophonpage %>
+<%- if @config["colophon"] -%>
+<%-   if custom_colophonpage -%>
 <%= custom_colophonpage %>
-<%   else %>
+<%-   else -%>
 %% okuduke
 \reviewcolophon
 \thispagestyle{empty}
 
 \vspace*{\fill}
 
-{\noindent\reviewtitlefont\Large <%= values.name_of("booktitle") %>} \\
+{\noindent\reviewtitlefont\Large <%= @config.name_of("booktitle") %>} \\
 \rule[8pt]{14cm}{1pt} \\
 {\noindent
-<%= values["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent"} %>
+<%= @config["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>
 }
 
 \begin{tabular}{ll}
@@ -346,13 +320,13 @@
 \end{tabular}
 　\\
 \rule[0pt]{14cm}{1pt} \\
-<%= values.names_of("rights").join('\\' + '\\') %> \\
-<%   end %>
-<% end %>
+<%= @config.names_of("rights").join('\\' + '\\') %> \\
+<%-   end -%>
+<%- end -%>
 
 %%% backcover
-<% if values["backcover"] %>
+<%- if @config["backcover"] -%>
 <%= custom_backcoverpage %>
-<% end %>
+<%- end -%>
 
 \end{document}

@@ -28,6 +28,7 @@ module ReVIEW
 
     def initialize
       @basedir = nil
+      @input_files = Hash.new{|h, key| h[key] = ""}
     end
 
     def system_or_raise(*args)
@@ -127,7 +128,6 @@ module ReVIEW
       remove_old_file
       @path = build_path()
       begin
-        @chaps_fnames = Hash.new{|h, key| h[key] = ""}
         @compile_errors = nil
 
         book = ReVIEW::Book.load(@basedir)
@@ -137,28 +137,23 @@ module ReVIEW
           if part.name.present?
             if part.file?
               output_chaps(part.name, yamlfile)
-              @chaps_fnames["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
+              @input_files["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
             else
-              @chaps_fnames["CHAPS"] << %Q|\\part{#{part.name}}\n|
+              @input_files["CHAPS"] << %Q|\\part{#{part.name}}\n|
             end
           end
 
           part.chapters.each do |chap|
             filename = File.basename(chap.path, ".*")
             output_chaps(filename, yamlfile)
-            @chaps_fnames["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
-            @chaps_fnames["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
-            @chaps_fnames["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
-            @chaps_fnames["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
+            @input_files["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
+            @input_files["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
+            @input_files["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
+            @input_files["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
           end
         end
 
         check_compile_status(@config["ignore-errors"])
-
-        @config["pre_str"] = @chaps_fnames["PREDEF"]
-        @config["chap_str"] = @chaps_fnames["CHAPS"]
-        @config["appendix_str"] = @chaps_fnames["APPENDIX"]
-        @config["post_str"] = @chaps_fnames["POSTDEF"]
 
         @config["usepackage"] = ""
         if @config["texstyle"]
@@ -287,10 +282,40 @@ module ReVIEW
       authors
     end
 
+    def make_history_list
+      buf = []
+      if @config["history"]
+        @config["history"].each_with_index do |items, edit|
+          items.each_with_index do |item, rev|
+            editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}")
+            revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
+            if item =~ /\A\d+\-\d+\-\d+\Z/
+              buf << ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])
+            else
+              # custom date with string
+              item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
+                buf << ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])
+              end
+            end
+          end
+        end
+      elsif @config["date"]
+        buf << ReVIEW::I18n.t("published_by2",
+                              date_to_s(@config["date"]))
+      end
+      buf
+    end
+
+    def date_to_s(date)
+      require 'date'
+      d = Date.parse(date)
+      d.strftime(ReVIEW::I18n.t("date_format"))
+    end
+
     def get_template
       dclass = @config["texdocumentclass"] || []
-      documentclass = dclass[0] || "jsbook"
-      documentclassoption = dclass[1] || "uplatex,oneside"
+      @documentclass = dclass[0] || "jsbook"
+      @documentclassoption = dclass[1] || "uplatex,oneside"
 
       okuduke = make_colophon
       authors = make_authors
@@ -306,7 +331,18 @@ module ReVIEW
       end
       custom_backcoverpage = make_custom_page(@config["backcover"])
 
-      template = File.expand_path('layout.tex.erb', File.dirname(__FILE__))
+      if @config["pubhistory"]
+        warn "pubhistory is oboleted. use history."
+      else
+        @config["pubhistory"] = make_history_list.join("\n")
+      end
+      if @documentclass == "ubook" || @documentclass == "utbook"
+        @coverimageoption = "width=\\textheight,height=\\textwidth,keepaspectratio,angle=90"
+      else
+        @coverimageoption = "width=\\textwidth,height=\\textheight,keepaspectratio"
+      end
+
+      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
       if File.exist?(layout_file)
         template = layout_file
@@ -314,8 +350,7 @@ module ReVIEW
 
       texcompiler = File.basename(@config["texcommand"], ".*")
 
-      erb = ERB.new(File.read(template))
-      values = @config # must be 'values' for legacy files
+      erb = ReVIEW::Template.load(template, '-')
       erb.result(binding)
     end
 

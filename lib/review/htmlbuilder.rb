@@ -11,7 +11,7 @@
 
 require 'review/builder'
 require 'review/htmlutils'
-require 'review/htmllayout'
+require 'review/template'
 require 'review/textutils'
 
 module ReVIEW
@@ -22,15 +22,9 @@ module ReVIEW
     include HTMLUtils
 
     [:ref].each {|e| Compiler.definline(e) }
-    Compiler.defblock(:memo, 0..1)
-    Compiler.defblock(:tip, 0..1)
-    Compiler.defblock(:info, 0..1)
     Compiler.defblock(:planning, 0..1)
     Compiler.defblock(:best, 0..1)
-    Compiler.defblock(:important, 0..1)
     Compiler.defblock(:security, 0..1)
-    Compiler.defblock(:caution, 0..1)
-    Compiler.defblock(:notice, 0..1)
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
 
@@ -59,10 +53,17 @@ module ReVIEW
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
+      @body_ext = nil
     end
     private :builder_init_file
 
     def result
+      if @book.htmlversion == 5
+        htmlfilename = "./html/layout-html5.html.erb"
+      else
+        htmlfilename = "./html/layout-xhtml1.html.erb"
+      end
+
       layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
       if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
         raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
@@ -70,39 +71,10 @@ module ReVIEW
       if File.exist?(layout_file)
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
-        else
-          title = strip_html(compile_inline(@chapter.title))
-          language = @book.config['language']
-          stylesheets = @book.config["stylesheet"]
-
-          toc = ""
-          toc_level = 0
-          @chapter.headline_index.items.each do |i|
-            caption = "<li>#{strip_html(compile_inline(i.caption))}</li>\n"
-            if toc_level == i.number.size
-              # do nothing
-            elsif toc_level < i.number.size
-              toc += "<ul>\n" * (i.number.size - toc_level)
-              toc_level = i.number.size
-            elsif toc_level > i.number.size
-              toc += "</ul>\n" * (toc_level - i.number.size)
-              toc_level = i.number.size
-              toc += "<ul>\n" * (toc_level - 1)
-            end
-            toc += caption
-          end
-          toc += "</ul>" * toc_level
-
-          return messages() +
-            HTMLLayout.new(
-            {'body' => @output.string, 'title' => title, 'toc' => toc,
-             'builder' => self,
-             'language' => language,
-             'stylesheets' => stylesheets,
-             'next' => @chapter.next_chapter,
-             'prev' => @chapter.prev_chapter},
-            layout_file).result
+          layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
         end
+      else
+        layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
       end
 
       # default XHTML header/footer
@@ -112,14 +84,10 @@ module ReVIEW
       @body = @output.string
       @language = @book.config['language']
       @stylesheets = @book.config["stylesheet"]
+      @next = @chapter.next_chapter
+      @prev = @chapter.prev_chapter
 
-      if @book.htmlversion == 5
-        htmlfilename = "layout-html5.html.erb"
-      else
-        htmlfilename = "layout-xhtml1.html.erb"
-      end
-      tmplfile = File.expand_path('./html/'+htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
-      tmpl = ReVIEW::Template.load(tmplfile)
+      tmpl = ReVIEW::Template.load(layout_file)
       tmpl.result(binding)
     end
 
@@ -340,6 +308,10 @@ module ReVIEW
 
     def notice(lines, caption = nil)
       captionblock("notice", lines, caption)
+    end
+
+    def warning(lines, caption = nil)
+      captionblock("warning", lines, caption)
     end
 
     def point(lines, caption = nil)
@@ -1156,6 +1128,13 @@ module ReVIEW
       else
         %Q(<!-- #{escape_comment(escape_html(str))} -->)
       end
+    end
+
+    def inline_tcy(str)
+      # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
+      style = "tcy"
+      style = "upright" if str.size == 1 && str.match(/[[:ascii:]]/)
+      %Q[<span class="#{style}">#{escape_html(str)}</span>]
     end
 
     def inline_raw(str)

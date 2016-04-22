@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-# Copyright (c) 2009-2010 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -152,6 +152,13 @@ module ReVIEW
     defblock :flushright, 0
     defblock :centering, 0
     defblock :note, 0..1
+    defblock :memo, 0..1
+    defblock :info, 0..1
+    defblock :important, 0..1
+    defblock :caution, 0..1
+    defblock :notice, 0..1
+    defblock :warning, 0..1
+    defblock :tip, 0..1
     defblock :box, 0..1
     defblock :comment, 0..1, true
 
@@ -190,6 +197,7 @@ module ReVIEW
     definline :href
     definline :recipe
     definline :column
+    definline :tcy
 
     definline :abbr
     definline :acronym
@@ -220,6 +228,7 @@ module ReVIEW
     definline :hidx
     definline :comment
     definline :include
+    definline :tcy
 
     private
 

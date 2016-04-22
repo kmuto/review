@@ -1,7 +1,5 @@
 \documentclass[uplatex,oneside]{jsbook}
-
 \usepackage[deluxe,uplatex]{otf}
-
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage{framed}
@@ -29,17 +27,14 @@
 \usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
 %\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
 
-
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
-
 
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={Re:VIEW Sample Book},%
             pdfauthor={}]{hyperref}
 % uplatexでのBookmarkの文字化け対策（日本語向け）
 \usepackage[dvipdfmx]{pxjahyper}
-
 
 
 
@@ -79,8 +74,8 @@
 
 \newenvironment{reviewcolumn}{%
      \begin{framed}
-   }{%
-      \end{framed}
+  }{%
+     \end{framed}
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
@@ -110,40 +105,25 @@
 \newcommand{\reviewboxcaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
-\newcommand{\reviewimageref}[2]{%
-  図 #1}
-\newcommand{\reviewtableref}[2]{%
-  表 #1}
-\newcommand{\reviewlistref}[1]{%
-  リスト #1}
-\newcommand{\reviewbibref}[2]{%
-  #1}
-\newcommand{\reviewcolumnref}[2]{%
-  コラム #1}
-\newcommand{\reviewsecref}[2]{%
-  #1}
+\newcommand{\reviewimageref}[2]{図 #1}
+\newcommand{\reviewtableref}[2]{表 #1}
+\newcommand{\reviewlistref}[1]{リスト #1}
+\newcommand{\reviewbibref}[2]{#1}
+\newcommand{\reviewcolumnref}[2]{コラム #1}
+\newcommand{\reviewsecref}[2]{#1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large ■メモ: #1}\\}
-
 
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
   \end{screen}\vspace{2zw}}
 
-\newcommand{\reviewkw}[1]{%
-  \textbf{\textgt{#1}}}
-
-\newcommand{\reviewami}[1]{%
-  \mask{#1}{A}}
-
-\newcommand{\reviewem}[1]{%
-  \textbf{#1}}
-
-\newcommand{\reviewstrong}[1]{%
-  \textbf{#1}}
-
+\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\newcommand{\reviewami}[1]{\mask{#1}{A}}
+\newcommand{\reviewem}[1]{\textbf{#1}}
+\newcommand{\reviewstrong}[1]{\textbf{#1}}
 \newcommand{\reviewunderline}{\Underline}
 
 %% @<del> is ignored in LaTeX with default style
@@ -155,19 +135,11 @@
 %%%% for jumoline.sty:
 %%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
 
-\newcommand{\reviewth}[1]{%
-  \textgt{#1}}
-
-\newcommand{\reviewtitlefont}[0]{%
-  \usefont{T1}{phv}{b}{n}\gtfamily}
-
-\newcommand{\reviewmainfont}[0]{%
- }
-
-\newcommand{\reviewcolophon}[0]{%
-  \clearpage}
-\newcommand{\reviewappendix}[0]{%
-  \appendix}
+\newcommand{\reviewth}[1]{\textgt{#1}}
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
 
 \makeatletter
 %% maxwidth is the original width if it is less than linewidth
@@ -182,17 +154,13 @@
 \makeatother
 
 
-
 \usepackage[T1]{fontenc}
 
 \begin{document}
 
 \reviewmainfont
 
-
-
 \begin{titlepage}
-  
 \thispagestyle{empty}
 \begin{center}%
   \mbox{} \vskip5zw
@@ -210,20 +178,14 @@
   \end{center}%
 \end{titlepage}
 
-
-
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
 
 %%% originaltitle
 
-
 %%% credit
 
-
-
 %% preface
-
 
 
 
@@ -235,21 +197,16 @@
 
 
 %% backmatter begins
-
-
+\backmatter
 
 
 
 %%% profile
 
-
 %%% advfile
-
 
 %%% colophon
 
-
 %%% backcover
-
 
 \end{document}
