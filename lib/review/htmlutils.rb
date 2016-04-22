@@ -24,6 +24,7 @@ module ReVIEW
     end
 
     alias_method :escape, :escape_html
+    alias_method :h, :escape_html
 
     def unescape_html(str)
       # FIXME better code

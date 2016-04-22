@@ -40,6 +40,9 @@ module ReVIEW
         "mathml" => nil, # for HTML
         "htmlext" => "html",
         "htmlversion" => 5,
+        "imagedir" => "images",
+        "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
+        "fontdir" => "fonts",
 
         "chapter_file" => 'CHAPS',
         "part_file" => 'PART',

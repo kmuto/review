@@ -194,11 +194,11 @@ class I18nTest < Test::Unit::TestCase
   def _setup_htmlbuilder
     I18n.setup "en"
     @builder = HTMLBuilder.new()
-    @config = {
+    @config = ReVIEW::Configure[
       "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
       "stylesheet" => nil, # for HTMLBuilder
       "ext" => ".re"
-    }
+    ]
     @book = Book::Base.new(".")
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
