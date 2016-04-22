@@ -12,13 +12,13 @@ Re:VIEW は GNU Lesser General Public License Version 2.1 に基づいて配布�
 
 ## セットアップ
 
-Re:VIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem、Git、Subversion のいずれかを使ってダウンロード・展開します。
+Re:VIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem あるいは Git のいずれかを使ってダウンロード・展開します。
 
 なお、Re:VIEW フォーマット自体は文字で表現されたタグが付いている以外は単なるテキストファイルなので、エディタ、OS については UTF-8 文字エンコーディングさえ使用できれば制限はありません。
 
 ### RubyGems を使う場合
 
-機能セットがまとまった区切りごとに、Re:VIEW の開発チームが Re:VIEW の gem を更新しています。
+機能セットがまとまった区切りごとに、定期的に Re:VIEW の開発チームが Re:VIEW の gem を更新しています。
 
 次のように Re:VIEW の gem をインストールします。
 
@@ -52,28 +52,31 @@ review というディレクトリに展開されるので、review/bin にパ�
 $ git pull
 ```
 
-### Subversionを使う場合
+## Re:VIEW ドキュメントの作成
 
-Git の最新コピーは、別のバージョン管理ツールの Subversion 向けにも提供しています (古い環境では Subversion のクライアントしか入っていないことがあります)。
-
-初めて取得するときには、次のようにします (コピーを作っています)。
-
-```bash
-$ svn co https://kmuto.jp/svn/review/trunk review
-```
-
-review というディレクトリに展開されるので、review/bin にパスを通すようにしておいてください。
-
-最新の開発に追従するには次のようにします。
+### 雛型の作成
+review-init コマンドを使って、雛型となる作業フォルダを作成できます。
 
 ```
-$ svn up
+$ review-init ドキュメント名
 ```
 
-# Re:VIEW テキストの作成と変換
+これで指定のドキュメント名のフォルダが用意され、中に次のようなファイルが置かれます。
 
-セットアップを終えたら、Re:VIEW フォーマットのテキストを作り、変換できるようになります。次に Re:VIEW フォーマットテキストの簡単な例を示します。これを sample.re といった名前で保存します。
+ * ドキュメント名を冠した「.re」拡張子を持つファイル（Re:VIEW フォーマットテキストファイル）
+ * config.yml : 設定ファイル
+ * catalog.yml : カタログファイル（目次構成）
+ * Rakefile : rake コマンドのルールファイル
+ * images : 画像の配置フォルダ
+ * layouts : レイアウトファイルの配置フォルダ
+ * style.css : サンプルスタイルシート
+ * sty : スタイルファイル配置フォルダ（TeX 用）
 
+review-init コマンドによらず、独自に作業フォルダを作成してもかまいません。
+
+## Re:VIEW テキストの作成と変換
+
+デフォルトの re 拡張子のファイルは、「`=`」とあるだけのほぼ空っぽのファイルです。次に Re:VIEW フォーマットで記述を追加した簡単な例を示します。
 
 ```review
 = はじめてのRe:VIEW
@@ -104,78 +107,69 @@ $ svn up
 
 テキストファイルの文字エンコーディングには、UTF-8 を使用してください。
 
-次に、章構成ファイルの CHAPS ファイルを同じディレクトリに用意します。このファイルには、Re:VIEW フォーマットファイルの名前を格納します。
+### PDF 化と EPUB 化
 
-* sample.re
+review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマンドで EPUB ファイルの作成ができます。
 
-CHAPS ファイルの1行目に書いたものが第1章、2行目に書いたものが第2章、……と構成されます (CHAPS に似たものとして、前付けを列挙する PREDEF ファイル、後付けを列挙する POSTDEF ファイルがあります。これらを「カタログファイル」と呼びます)。
+PDF を作成するには、TeXLive2012 以上の環境が必要です。EPUB を作成するには、rubyzip gem あるいは zip コマンドが必要です（MathML も使いたいときには、 [MathML ライブラリ](http://www.hinet.mydns.jp/?mathml.rb)も必要です）。
 
-sample.re から目的の形式に変換するには、review-compile コマンドを使います。
+いずれのコマンドも、必要な設定情報を記した YAML 形式ファイルを引数に指定して実行します。review-init コマンドで作成した環境には、デフォルトで config.yml として用意されているので、これを利用します。
 
 ```bash
-$ review-compile --target text sample.re > sample.txt   ←テキストにする
-$ review-compile --target html sample.re > sample.html  ←HTMLにする
-$ review-compile --target latex sample.re > sample.tex  ←LaTeXにする
-$ review-compile --target idgxml sample.re > sample.xml ←XMLにする
+$ review-pdfmaker config.yml  ←PDFの作成
+$ review-epubmaker config.yml ←EPUBの作成
 ```
 
-上記では各ファイル個別に変換することを想定して、標準出力をリダイレクトする書式を掲載していますが、-a オプションを付ければ、CHAPS、PREDEF、POSTDEF に従ってすべてのファイルを変換できます。
+rake コマンドを利用できるなら、次のように実行することもできます。
 
-```
-$ review-compile --target html -a ←すべてのファイルをHTMLにする
-```
-
-sample.re を HTML に変換すると、次のようになります。
-
-```html
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-  <meta name="generator" content="Re:VIEW" />
-  <title>はじめてのRe:VIEW</title>
-</head>
-<body>
-<h1><a id="h1" />第1章　はじめてのRe:VIEW</h1>
-<div class="lead">
-<p>「Hello, Re:VIEW.」</p>
-</div>
-
-<h2><a id="h1-1" />1.1　Re:VIEWとは</h2>
-<p><b>Re:VIEW</b>は、EWBやRDあるいはWikiに似た簡易フォーマットで記述したテキストファイルを、目的に応じて各種の形式に変換するツールセットです。</p>
-<p>平易な文法ながらも、コンピュータ関係のドキュメント作成のための多くの機能を備えており、次のような形式に変換できます。</p>
-<ul>
-<li>テキスト（指示タグ付き）</li>
-<li>LaTeX</li>
-<li>HTML</li>
-<li>XML</li>
-</ul>
-<p>現在入手手段としては次の3つがあります。</p>
-<ol>
-<li>Ruby gem</li>
-<li>Git</li>
-<li>Subversion</li>
-</ol>
-<p>ホームページは<tt>https://github.com/kmuto/review/wiki/</tt>です。</p>
-</body>
-</html>
+```bash
+$ rake pdf  ←PDFの作成
+$ rake epub ←EPUBの作成
 ```
 
+config.yml のサンプルについては以下を参照してください。
+
+* [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample)
+
+### 章を増やす、カスタマイズする
+作成した PDF あるいは EPUB を見ると、先に作成した RE:VIEW フォーマットテキストファイルが「第1章」となっていることがわかります。
+
+章を増やすには、同様に .re 拡張子の Re:VIEW フォーマットテキストファイルを用意し、catalog.yml にそれを登録します。
+
+```
+PREDEF:
+
+CHAPS:
+  - 1章のファイル
+  - 2章のファイル
+   ……
+
+APPENDIX:
+
+POSTDEF:
+```
+
+catalog.yml の PREDEF は前付、CHAPS は章、APPENDIX は付録、POSTDEF は後付です。詳細は [catalog.ja.md](https://github.com/kmuto/review/blob/master/doc/catalog.ja.md) を参照してください。
+
+### 情報
 Re:VIEW フォーマットについての詳細は、 [format.ja.md](https://github.com/kmuto/review/blob/master/doc/format.ja.md) を参照してください。
 
-review-compile を含め、ほとんどのコマンドは `--help` オプションを付けるとオプションについてのヘルプが表示されます。`review-compile` には多数のオプションがあるので確認してください。
+Re:VIEW の使用実例については、https://github.com/reviewml/review-samples にもまとめています。
 
-なお、`--target` で毎回指定するのは面倒なので、`review-compile` に対するシンボリックリンクを作成しておくとよいでしょう。「review2...」のコマンド名で呼び出せるようになります。
+## ファイル単位の変換
+通常の用途では review-pdfmaker や review-epubmaker で事足りるはずですが、それ以外の形式に変換したり、PDF や EPUB の変換にあたってどのような変換が行われているのかを確認したりしたいときには、review-compile コマンドを使用します。
+
+たとえば sample.re ファイルを変換するには次のようになります。
 
 ```bash
-$ cd Re:VIEWのインストールされたパス/bin
-$ ln -s review-compile review2text
-$ ln -s review-compile review2html
-$ ln -s review-compile review2latex
-$ ln -s review-compile review2idgxml
+$ review-compile --target text sample.re > sample.txt    ←テキストにする
+$ review-compile --target html sample.re > sample.html   ←HTMLにする
+$ review-compile --target latex sample.re > sample.tex   ←LaTeXにする
+$ review-compile --target idgxml sample.re > sample.xml  ←XMLにする
+$ review-compile --target markdown sample.re > sample.md ←Markdownにする
 ```
+
+review-compile を含め、ほとんどのコマンドは `--help` オプションを付けるとオプションについてのヘルプが表示されます。
 
 ## プリプロセッサ、ボリューム表示
 
@@ -198,19 +192,6 @@ $ review-vol
 
 ```bash
 $ review-index --level 掘り下げる見出しレベル数 -a
-```
-
-## PDF 化と EPUB 化
-
-review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマンドで EPUB ファイルの作成ができます。
-
-PDF を作成するには、TeXLive2012 以上の環境が必要です。EPUB を作成するには、rubyzip gem あるいは zip コマンドが必要です（MathML も使いたいときには、 [MathML ライブラリ](http://www.hinet.mydns.jp/?mathml.rb)も必要です）。
-
-いずれのコマンドも、必要な設定情報を記した YAML ファイルを引数に指定して実行します。YAML ファイルのサンプルは、 [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) としてこのドキュメントと同じディレクトリに収録しています。通常、`config.yml` という名前を使います。
-
-```bash
-$ review-pdfmaker YAMLファイル  ←PDFの作成
-$ review-epubmaker YAMLファイル ←EPUBの作成
 ```
 
 ## クレジット
