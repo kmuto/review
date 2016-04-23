@@ -47,6 +47,7 @@ module ReVIEW
         @config = ReVIEW::Configure.values
         @catalog = nil
         @read_part = nil
+        @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
       end
 
       def bib_file
@@ -402,6 +403,10 @@ module ReVIEW
       end
 
       def read_FILE(filename)
+        if !@warn_old_files[filename]
+          @warn_old_files[filename] = true
+          warn "!!! #{filename} is obsoleted. please use catalog.yml."
+        end
         res = ""
         File.open("#{@basedir}/#{filename}", 'r:BOM|utf-8') do |f|
           while line = f.gets
