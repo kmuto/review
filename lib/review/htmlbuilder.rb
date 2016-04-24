@@ -13,6 +13,7 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/template'
 require 'review/textutils'
+require 'review/webtocprinter'
 
 module ReVIEW
 
@@ -54,17 +55,25 @@ module ReVIEW
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
       @body_ext = nil
+      @toc = nil
     end
     private :builder_init_file
 
     def result
-      if @book.htmlversion == 5
-        htmlfilename = "./html/layout-html5.html.erb"
+      if @book.config.maker == "webmaker"
+        htmldir = "web/html"
+        localfilename = "layout-web.html.erb"
       else
-        htmlfilename = "./html/layout-xhtml1.html.erb"
+        htmldir = "html"
+        localfilename = "layout.html.erb"
+      end
+      if @book.htmlversion == 5
+        htmlfilename = File.join(htmldir, "layout-html5.html.erb")
+      else
+        htmlfilename = File.join(htmldir, "layout-xhtml1.html.erb")
       end
 
-      layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
+      layout_file = File.join(@book.basedir, "layouts", localfilename)
       if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
         raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
       end
@@ -86,6 +95,12 @@ module ReVIEW
       @stylesheets = @book.config["stylesheet"]
       @next = @chapter.next_chapter
       @prev = @chapter.prev_chapter
+      @next_title = @next ? compile_inline(@next.title) : ""
+      @prev_title = @prev ? compile_inline(@prev.title) : ""
+
+      if @book.config.maker == "webmaker"
+        @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
+      end
 
       tmpl = ReVIEW::Template.load(layout_file)
       tmpl.result(binding)
