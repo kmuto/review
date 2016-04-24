@@ -85,7 +85,7 @@ module ReVIEW
 
     def check_version(version)
       if self["review_version"].blank?
-        raise ReVIEW::ConfigError, "configuration file has no review_version property."
+        # do nothing
       elsif self["review_version"].to_i != version.to_i ## major version
         raise ReVIEW::ConfigError, "major version of configuration file is different."
       elsif self["review_version"].to_f > version.to_f ## minor version
