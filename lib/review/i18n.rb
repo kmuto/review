@@ -27,10 +27,6 @@ module ReVIEW
       end
     end
 
-    def self.i18n(*args)
-      raise NotImplementedError, "I18n.i18n is obsoleted. Please use I18n.setup(locale, [ymlfile])"
-    end
-
     def self.t(str, args = nil)
       @i18n.t(str, args)
     end
