@@ -174,7 +174,7 @@ EOT
 EOT
       end
 
-      publisher = @producer.params.names_of("pbl") || @producer.params.names_of("prt") # XXX Backward Compatiblity
+      publisher = @producer.params.names_of("pbl")
       if publisher
         @body << <<EOT
   <p>
