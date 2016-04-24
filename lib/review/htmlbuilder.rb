@@ -1162,7 +1162,7 @@ module ReVIEW
 
     def compile_href(url, label)
       if @book.config["externallink"]
-        %Q(<a href="#{url}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+        %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
       else
         label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
       end
