@@ -16,6 +16,7 @@ require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'
 require 'review/i18n'
+require 'review/configure'
 require 'review/extentions/hash'
 
 module EPUBMaker

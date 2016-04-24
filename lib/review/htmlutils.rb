@@ -8,6 +8,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
 
+require 'cgi/util'
 module ReVIEW
 
   module HTMLUtils
