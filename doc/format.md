@@ -2,7 +2,10 @@
 
 The document is a brief guide for Re:VIEW markup syntax.
 
-Re:VIEW is based on EWB of ASCII, influenced RD and other Wiki system's syntax.
+Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
+
+This document explains about the format of Re:VIEW 2.0.
+
 
 ## Paragraph
 
@@ -22,6 +25,7 @@ Two empty lines or more are same as one empty line.
 ## Chapter, Section, Subsection (headings)
 
 Chapters, sections, subsections, subsubsections use `=`, `==`, `===`, `====`, `=====`.
+You should add one or more spaces after `=`.
 
 Usage:
 
@@ -38,6 +42,8 @@ Usage:
 ```
 
 Headings should not have any spaces before title; if line head has space, it is as paragraph.
+
+You should add emply lines between Paragraphs and Headings.
 
 ## Column
 
@@ -75,6 +81,12 @@ Compiler-compiler is ...
 blah, blah, blah (this is paragraphs outside of the column)
 ```
 
+There are some more options of headings.
+
+* `[nonum]` : no numbering, but add it into TOC (Table of Contents).
+* `[nodisp]` : not display in document, only in TOC.
+* `[notoc]` :  no numbering, not in TOC.
+
 ## Itemize
 
 Itemize (ul in HTML) use ` *` (one space char and asterisk).
@@ -93,6 +105,8 @@ Usage:
 
 In itemize, you must write one more space character at line head.
 When you use `*` without spaces in line head, it's just paragraph.
+
+You should add emply lines between Paragraphs and Itemize (same as Ordered and Non-Orderd).
 
 ## Ordered itemize
 
@@ -179,7 +193,7 @@ puts "hello world!"
 Usage:
 
 ```review
-//emlist[][ruby]{
+//emlist[][c]{
 printf("hello");
 //}
 ```
@@ -235,12 +249,13 @@ Usage:
 ## Shell session
 
 When you want to show command line operation, you can use `//cmd{ ... //}`.
+You can use inline commands in this command.
 
 Usage:
 
 ```
 //cmd{
-$ ls /
+$ @<b>{ls /}
 //}
 ```
 

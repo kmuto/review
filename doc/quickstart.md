@@ -245,8 +245,9 @@ When you want to use MathML, you should install [MathML library](http://www.hine
 
 ## Copyright
 
-The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (2015/01).
+The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (2016/04).
 
 If you want to report bugs and patches, or to get more information, see:
 
+* http://reviewml.org/
 * https://github.com/kmuto/review/wiki
