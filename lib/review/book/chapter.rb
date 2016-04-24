@@ -8,6 +8,9 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 require 'review/book/compilable'
+require 'review/lineinput'
+require 'review/preprocessor'
+
 module ReVIEW
   module Book
     class Chapter

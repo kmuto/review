@@ -11,6 +11,7 @@
 
 require 'epubmaker/producer'
 require 'review/i18n'
+require 'review/template'
 require 'cgi'
 require 'shellwords'
 begin
