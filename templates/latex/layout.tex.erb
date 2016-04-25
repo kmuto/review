@@ -1,5 +1,5 @@
 \documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
-<%- if texcompiler == "uplatex" -%>
+<%- if @texcompiler == "uplatex" -%>
 \usepackage[deluxe,uplatex]{otf}
 <%- else -%>
 \usepackage[deluxe]{otf}
@@ -36,7 +36,7 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-<%- if texcompiler == "uplatex" -%>
+<%- if @texcompiler == "uplatex" -%>
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
             pdftitle={<%= @config.name_of("booktitle") %>},%
             pdfauthor={<%= @config.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
@@ -222,8 +222,8 @@
 \reviewmainfont
 
 <%- if @config["titlepage"] -%>
-<%-   if custom_titlepage -%>
-<%= custom_titlepage %>
+<%-   if @custom_titlepage -%>
+<%= @custom_titlepage %>
 <%-   else -%>
 \begin{titlepage}
 <%-     if @config["coverimage"] -%>
@@ -241,7 +241,7 @@
     {\huge
       \lineskip .75em
       \begin{tabular}[t]{c}%
-        <%= authors %>
+        <%= @authors %>
       \end{tabular}\par}%
     \vfill
     {\large <%= @config["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", @config.names_of("prt").join(I18n.t("names_splitter")))%>\par}%
@@ -256,12 +256,12 @@
 
 %%% originaltitle
 <%- if @config["originaltitlefile"] -%>
-<%= custom_originaltitlepage %>
+<%= @custom_originaltitlepage %>
 <%- end -%>
 
 %%% credit
 <%- if @config["creditfile"] -%>
-<%= custom_creditpage %>
+<%= @custom_creditpage %>
 <%- end -%>
 
 %% preface
@@ -290,18 +290,18 @@
 
 %%% profile
 <%- if @config["profile"] -%>
-<%= custom_profilepage %>
+<%= @custom_profilepage %>
 <%- end -%>
 
 %%% advfile
 <%- if @config["advfile"] -%>
-<%= custom_advfilepage %>
+<%= @custom_advfilepage %>
 <%- end -%>
 
 %%% colophon
 <%- if @config["colophon"] -%>
-<%-   if custom_colophonpage -%>
-<%= custom_colophonpage %>
+<%-   if @custom_colophonpage -%>
+<%= @custom_colophonpage %>
 <%-   else -%>
 %% okuduke
 \reviewcolophon
@@ -316,7 +316,7 @@
 }
 
 \begin{tabular}{ll}
-<%= okuduke %>
+<%= @okuduke %>
 \end{tabular}
 　\\
 \rule[0pt]{14cm}{1pt} \\
@@ -326,7 +326,7 @@
 
 %%% backcover
 <%- if @config["backcover"] -%>
-<%= custom_backcoverpage %>
+<%= @custom_backcoverpage %>
 <%- end -%>
 
 \end{document}
