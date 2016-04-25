@@ -84,6 +84,10 @@ module ReVIEW
     end
 
     def check_version(version)
+      unless self.key?("review_version")
+        raise ReVIEW::ConfigError, "configuration file has no review_version property."
+      end
+
       if self["review_version"].blank?
         # do nothing
       elsif self["review_version"].to_i != version.to_i ## major version
