@@ -317,19 +317,19 @@ module ReVIEW
       @documentclass = dclass[0] || "jsbook"
       @documentclassoption = dclass[1] || "uplatex,oneside"
 
-      okuduke = make_colophon
-      authors = make_authors
+      @okuduke = make_colophon
+      @authors = make_authors
 
-      custom_titlepage = make_custom_page(@config["cover"]) || make_custom_page(@config["coverfile"])
-      custom_originaltitlepage = make_custom_page(@config["originaltitlefile"])
-      custom_creditpage = make_custom_page(@config["creditfile"])
+      @custom_titlepage = make_custom_page(@config["cover"]) || make_custom_page(@config["coverfile"])
+      @custom_originaltitlepage = make_custom_page(@config["originaltitlefile"])
+      @custom_creditpage = make_custom_page(@config["creditfile"])
 
-      custom_profilepage = make_custom_page(@config["profile"])
-      custom_advfilepage = make_custom_page(@config["advfile"])
+      @custom_profilepage = make_custom_page(@config["profile"])
+      @custom_advfilepage = make_custom_page(@config["advfile"])
       if @config["colophon"] && @config["colophon"].kind_of?(String)
-        custom_colophonpage = make_custom_page(@config["colophon"])
+        @custom_colophonpage = make_custom_page(@config["colophon"])
       end
-      custom_backcoverpage = make_custom_page(@config["backcover"])
+      @custom_backcoverpage = make_custom_page(@config["backcover"])
 
       if @config["pubhistory"]
         warn "pubhistory is oboleted. use history."
@@ -348,7 +348,7 @@ module ReVIEW
         template = layout_file
       end
 
-      texcompiler = File.basename(@config["texcommand"], ".*")
+      @texcompiler = File.basename(@config["texcommand"], ".*")
 
       erb = ReVIEW::Template.load(template, '-')
       erb.result(binding)

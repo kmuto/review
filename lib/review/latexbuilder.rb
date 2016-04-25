@@ -304,7 +304,6 @@ module ReVIEW
     end
 
     def common_code_block(id, lines, command, caption, lang)
-      buf = ""
       if caption
         if command =~ /emlist/ || command =~ /cmd/
           puts macro(command + 'caption', "#{compile_inline(caption)}")
