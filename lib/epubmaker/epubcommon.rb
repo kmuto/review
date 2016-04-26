@@ -420,7 +420,7 @@ EOT
       Dir.chdir(tmpdir) do |d|
         Zip::OutputStream.open(epubfile) do |epub|
           root_pathname = Pathname.new(tmpdir)
-          relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
+          # relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
           epub.put_next_entry('mimetype', nil, nil, Zip::Entry::STORED)
           epub << "application/epub+zip"
 

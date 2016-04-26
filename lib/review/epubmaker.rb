@@ -16,6 +16,7 @@ require 'review/latexbuilder'
 require 'review/yamlloader'
 require 'review/version'
 require 'review/htmltoc'
+require 'review/htmlbuilder'
 
 require 'review/yamlloader'
 require 'rexml/document'
