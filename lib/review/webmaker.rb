@@ -10,7 +10,6 @@ require 'yaml'
 require 'fileutils'
 require 'erb'
 
-require 'review'
 require 'review/i18n'
 require 'review/converter'
 require 'erb'
