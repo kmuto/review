@@ -11,7 +11,6 @@
 # For details of LGPL, see the file "COPYING".
 #
 
-require 'review/tocprinter'
 require 'review/htmlutils'
 
 module ReVIEW
