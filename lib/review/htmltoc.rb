@@ -1,4 +1,3 @@
-require 'review'
 module ReVIEW
   class HTMLToc
     def initialize(basedir)
