@@ -9,7 +9,6 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'epubmaker/producer'
 require 'review/i18n'
 require 'review/template'
 require 'cgi'
