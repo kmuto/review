@@ -26,6 +26,7 @@ module EPUBMaker
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
       @producer = producer
+      @body_ext = nil
     end
 
     # Return mimetype content.
