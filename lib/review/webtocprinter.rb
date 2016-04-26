@@ -1,4 +1,3 @@
-require 'review'
 require 'review/tocprinter'
 
 module ReVIEW
