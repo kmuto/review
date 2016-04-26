@@ -154,8 +154,9 @@ module ReVIEW
           args.delete idx
         end
       end
+      args_matched = (frmt.count("%") == args.size)
       frmt.gsub!('##', '%%')
-      frmt % args
+      args_matched ? (frmt % args) : frmt
     rescue
       str
     end
