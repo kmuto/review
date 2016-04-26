@@ -71,16 +71,17 @@ module ReVIEW
       @texinlineequation = 0
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
-      if @book.config["nolf"].present?
-        IDGXMLBuilder.class_eval do
-          def puts(arg)
-            print arg
-          end
-        end
-      end
       @secttags = true unless @book.config["structuredxml"].nil?
     end
     private :builder_init_file
+
+    def puts(arg)
+      if @book.config["nolf"].present?
+        print arg
+      else
+        super
+      end
+    end
 
     def result
       s = ""
