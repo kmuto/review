@@ -24,7 +24,7 @@ end
                  "ch01.re" => "= test\n\ntest.\n",
                  "review-ext.rb" => review_ext) do |dir, book, files|
       builder = ReVIEW::HTMLBuilder.new(false)
-      c = ReVIEW::Compiler.new(builder)
+      ReVIEW::Compiler.new(builder)
       assert_equal "test", builder.instance_eval{@builder_init_test}
     end
   end

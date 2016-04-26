@@ -67,7 +67,6 @@ class PDFMakerTest < Test::Unit::TestCase
   end
 
   def test_parse_opts_ignore_errors
-    io = StringIO.new
     conf, yml = @maker.parse_opts(["--ignore-errors", "hoge.yml"])
     assert_equal conf["ignore-errors"], true
     assert_equal yml, "hoge.yml"
