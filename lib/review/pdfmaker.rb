@@ -12,10 +12,13 @@ require 'yaml'
 require 'fileutils'
 require 'erb'
 
-require 'review'
 require 'review/i18n'
+require 'review/book'
+require 'review/configure'
 require 'review/converter'
 require 'review/latexbuilder'
+require 'review/yamlloader'
+require 'review/version'
 
 
 module ReVIEW
@@ -109,7 +112,7 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = "pdfmaker"
       cmd_config, yamlfile = parse_opts(args)
-      loader = YAMLLoader.new
+      loader = ReVIEW::YAMLLoader.new
       @config.deep_merge!(loader.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
