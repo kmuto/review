@@ -72,10 +72,12 @@ module ReVIEW
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
       if @book.config["nolf"].present?
-        IDGXMLBuilder.class_eval do
-          def puts(arg)
+        self.class.class_eval do
+          def print_args(arg)
             print arg
           end
+          alias_method :puts_orig, :puts
+          alias_method :puts, :print_args
         end
       end
       @secttags = true unless @book.config["structuredxml"].nil?
