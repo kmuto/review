@@ -25,7 +25,6 @@ module EPUBMaker
   class EPUBCommon
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
-      @body_ext = ''
       @producer = producer
       @body_ext = nil
     end
