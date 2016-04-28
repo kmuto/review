@@ -12,6 +12,7 @@
 #
 
 require 'review/htmlutils'
+require 'review/tocparser'
 
 module ReVIEW
 

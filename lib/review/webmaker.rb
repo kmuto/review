@@ -12,6 +12,12 @@ require 'erb'
 
 require 'review/i18n'
 require 'review/converter'
+require 'review/configure'
+require 'review/book'
+require 'review/htmlbuilder'
+require 'review/template'
+require 'review/tocprinter'
+require 'review/version'
 require 'erb'
 
 module ReVIEW
