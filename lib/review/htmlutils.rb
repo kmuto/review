@@ -43,11 +43,15 @@ module ReVIEW
     end
 
     def highlight?
-      @book.config["pygments"].present? ||
-        @book.config["highlight"] && @book.config["highlight"]["html"] == "pygments"
+      @book.config["highlight"] &&
+        @book.config["highlight"]["html"] == "pygments"
     end
 
     def highlight(ops)
+      if @book.config["pygments"].present?
+        raise ReVIEW::ConfigError, "'pygments:' in config.yml is obsoleted."
+      end
+
       body = ops[:body] || ''
       if @book.config["highlight"] && @book.config["highlight"]["lang"]
         lexer = @book.config["highlight"]["lang"] # default setting
