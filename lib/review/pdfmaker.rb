@@ -19,6 +19,8 @@ require 'review/converter'
 require 'review/latexbuilder'
 require 'review/yamlloader'
 require 'review/version'
+require 'review/makerhelper'
+require 'review/template'
 
 
 module ReVIEW
