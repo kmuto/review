@@ -110,9 +110,6 @@ toclevel: 3
 # 本文でセクション番号を表示する見出しレベル
 secnolevel: 2
 
-# 付録の連番のスタイル。null(アラビア数字1〜。デフォルト)、alpha(英字A〜)、roman(ローマ数字I〜)
-# appendix_format: null
-
 # 以下のsecnolevelはまだ未実装。
 # 前付でセクション番号を表示する見出しレベル(未実装)
 # pre_secnolevel: 0
