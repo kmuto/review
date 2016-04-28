@@ -172,6 +172,16 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
+  def test_gettemplate_disable_otf
+    @config["otf"] = false
+    Dir.mktmpdir do |dir|
+      @maker.basedir = Dir.pwd
+      tmpl = @maker.get_template
+      matched = (tmpl =~ /usepackage[^{]+\{otf\}/)
+      assert_equal(nil, matched)
+    end
+  end
+
   def test_colophon_history
     @config["aut"] = ["Mr.Smith"]
     @config["pbl"] = ["BLUEPRINT"]

@@ -1,8 +1,10 @@
 \documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
-<%- if @texcompiler == "uplatex" -%>
+<%- if @config["otf"] -%>
+<%-   if @texcompiler == "uplatex" -%>
 \usepackage[deluxe,uplatex]{otf}
-<%- else -%>
+<%-   else -%>
 \usepackage[deluxe]{otf}
+<%-   end -%>
 <%- end -%>
 \usepackage[dvipdfmx]{color}
 \usepackage[dvipdfmx]{graphicx}
