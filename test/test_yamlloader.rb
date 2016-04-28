@@ -1,5 +1,7 @@
 require 'test_helper'
 require 'review/yamlloader'
+require 'review/extentions'
+require 'tmpdir'
 
 class YAMLLoaderTest < Test::Unit::TestCase
   def setup
