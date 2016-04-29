@@ -58,63 +58,40 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
-  def test_headline_level1_postdef_roman
-    @chapter.book.config["appendix_format"] = "roman"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hI"></a><span class="secno">付録I　</span>this is test.</h1>\n|, actual
-  end
-
-  def test_headline_level2_postdef_roman
-    @chapter.book.config["appendix_format"] = "roman"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
-  end
-
-  def test_headline_level1_postdef_alpha
-    @chapter.book.config["appendix_format"] = "alpha"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
-  end
-
-  def test_headline_level2_postdef_alpha
-    @chapter.book.config["appendix_format"] = "alpha"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
-  end
-
-  def test_headline_level1_postdef_alpha_i18n
+  def test_headline_postdef_roman
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
-        @chapter.book.config["appendix_format"] = "alpha" # config is strong
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pR")}
+        I18n.setup("ja")
         @chapter.instance_eval do
           def on_APPENDIX?
             true
           end
         end
 
-        file = File.join(dir, "locale.yml") # i18n is weak
-        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pr")}
+        actual = compile_block("={test} this is test.\n")
+        assert_equal %Q|<h1 id="test"><a id="hI"></a><span class="secno">付録I　</span>this is test.</h1>\n|, actual
+
+        actual = compile_block("=={test} this is test.\n")
+        assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
+
+      end
+    end
+  end
+
+  def test_headline_postdef_alpha
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pA")}
         I18n.setup("ja")
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
         actual = compile_block("={test} this is test.\n")
         assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
 
@@ -275,35 +252,49 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_hd_chap_postdef_roman
-    @chapter.book.config["appendix_format"] = "roman"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pR")}
+        I18n.setup("ja")
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
+        def @chapter.headline_index
+          items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+          Book::HeadlineIndex.new(items, self)
+        end
+
+        actual = compile_inline("test @<hd>{test} test2")
+        assert_equal %Q|test 「I.1 te_st」 test2|, actual
       end
     end
-    def @chapter.headline_index
-      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
-      Book::HeadlineIndex.new(items, self)
-    end
-
-    actual = compile_inline("test @<hd>{test} test2")
-    assert_equal %Q|test 「I.1 te_st」 test2|, actual
   end
 
   def test_inline_hd_chap_postdef_alpha
-    @chapter.book.config["appendix_format"] = "alpha"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pA")}
+        I18n.setup("ja")
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
+        def @chapter.headline_index
+          items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+          Book::HeadlineIndex.new(items, self)
+        end
+
+        actual = compile_inline("test @<hd>{test} test2")
+        assert_equal %Q|test 「A.1 te_st」 test2|, actual
       end
     end
-    def @chapter.headline_index
-      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
-      Book::HeadlineIndex.new(items, self)
-    end
-
-    actual = compile_inline("test @<hd>{test} test2")
-    assert_equal %Q|test 「A.1 te_st」 test2|, actual
   end
 
   def test_inline_uchar

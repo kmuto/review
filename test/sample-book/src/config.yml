@@ -88,9 +88,6 @@ secnolevel: 3
 # ePUB3においてはこの設定によらず必ず作成される
 # mytoc: true
 
-# 付録の連番のスタイル。null(アラビア数字1〜。デフォルト)、alpha(英字A〜)、roman(ローマ数字I〜)
-# appendix_format: null
-
 # 表紙にするHTMLファイル。ファイル名を指定すると表紙として入る
 # cover: _cover.html
 # 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)

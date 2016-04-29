@@ -81,24 +81,13 @@ module ReVIEW
 
         if on_APPENDIX?
           return "#{@number}" if @number < 1 || @number > 27
-
-          i18n_appendix = I18n.get("appendix")
-          fmt = i18n_appendix.scan(/%p\w/).first || "%s"
-
-          # Backward compatibility
           if @book.config["appendix_format"]
-            type = @book.config["appendix_format"].downcase.strip
-            case type
-            when "roman"
-              fmt = "%pR"
-            when "alphabet", "alpha"
-              fmt = "%pA"
-            else
-              fmt = "%s"
-            end
-            I18n.update({"appendix" => i18n_appendix.gsub(/%\w\w?/, fmt)})
+            raise ReVIEW::ConfigError,
+            "'appendix_format:' in config.yml is obsoleted."
           end
 
+          i18n_appendix = I18n.get("appendix")
+          fmt = i18n_appendix.scan(/%\w{1,3}/).first || "%s"
           I18n.update({"appendix_without_heading" => fmt})
 
           if heading
