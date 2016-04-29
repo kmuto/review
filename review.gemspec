@@ -20,7 +20,6 @@ Gem::Specification.new do |gem|
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.extra_rdoc_files = [
     "ChangeLog",
-    "README.rdoc"
   ]
   gem.require_paths = ["lib"]
 
