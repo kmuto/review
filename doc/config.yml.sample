@@ -171,11 +171,10 @@ secnolevel: 2
 # fontdir内から取り込まれる対象となるファイル拡張子。省略した場合は以下
 # font_ext: ["ttf", "woff", "otf"]
 
-# (deprecated)review-compileに渡すパラメータ(epubmaker, pdfmakerでは無視される)
-# params: --stylesheet=sample.css
-
-# Pygmentsカラーリングを利用する (pygments外部gemが必要)
-# pygments: true
+# ソースコードハイライトを利用する (pygmentsには外部gemが必要)
+# highlight:
+#   html: "pygments"
+#   latex: "listings"
 
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
@@ -268,7 +267,7 @@ epubmaker:
   # cover_linear: null
   #
   # @<href>タグでの外部リンクを禁止し、地の文にする(falseで禁止する)
-  #  externallink: true
+  # externallink: true
   #
   # epubmaker:階層を使うものはここまで
 
