@@ -34,6 +34,12 @@ Ruby gem の bin ディレクトリにパスを通すようにしておいてく
 $ gem update review
 ```
 
+Gemfile を使っている場合は、以下の行を Gemfile に追加して、`bundle`コマンドを実行します。
+
+```Gemfile
+gem 'review'
+```
+
 ### Gitを使う場合
 
 Re:VIEW は GitHub で開発されており、バージョン管理ツールの Git を使って最新の Re:VIEW コードを入手できます。Git は分岐が容易なので、独自のカスタマイズを施すのにも向いています。
@@ -74,7 +80,7 @@ $ review-init ドキュメント名
 
 review-init コマンドによらず、独自に作業フォルダを作成してもかまいません。
 
-## Re:VIEW テキストの作成と変換
+### Re:VIEW テキストの作成と変換
 
 デフォルトの re 拡張子のファイルは、「`=`」とあるだけのほぼ空っぽのファイルです。次に Re:VIEW フォーマットで記述を追加した簡単な例を示します。
 
@@ -100,7 +106,7 @@ review-init コマンドによらず、独自に作業フォルダを作成し�
 
  1. Ruby gem
  2. Git
- 3. Subversion
+ 3. Download from GitHub
 
 ホームページは@<tt>{https://reviewml.org/}です。
 ```
