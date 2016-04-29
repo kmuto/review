@@ -212,7 +212,6 @@ module EPUBMaker
     def complement
       @params["htmlext"] = "html" if @params["htmlext"].nil?
       defaults = ReVIEW::Configure.new.merge({
-        "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
         "modified" => Time.now.strftime("%Y-%02m-%02dT%02H:%02M:%02SZ"),
@@ -290,6 +289,9 @@ module EPUBMaker
       end
 
       @params["htmlversion"] = 5 if @params["epubversion"] >= 3
+
+      @params.maker = "epubmaker"
+      @params["cover"] = "#{@params["bookname"]}.#{@params["htmlext"]}" unless @params["cover"]
 
       %w[bookname title].each do |k|
         raise "Key #{k} must have a value. Abort." unless @params[k]
