@@ -2,50 +2,49 @@
 
 ## 新機能
 * デフォルトで `./config.yml` を読み込むようにしました ([#477], [#479])
-* webmakerを追加しました ([#498])
 * config.yml: `review_version` を追加しました([#276], [#539], [#545])
    * review_versionをnilにすると警告が表示されません ([#592])
 * 実験的に縦書き機能をサポートしました ([#563])
 * ヘッダ部分に`[notoc]` と `[nodisp]` を使えるようにしました ([#506], [#555])
-* LATEXBuilder: `image_scale2width` オプションを追加しました ([#543])
-* 電子協フォーマットをサポートしました ([#251], [#429])
 * `@<column>` と `@<hd>` で他の章にあるコラムを参照可能にしました ([#333], [#476])
-* platex から uplatex に移行しました ([#541])
-* `direction` をデフォルトの設定に追加しました ([#508])
-* 書籍タイトルの `pronounciation` を追加しました ([#507])
-* review-preproc: 拡張可能にました ([#494])
 * `//imgtable` コマンドを追加しました ([#499])
-* config.yml で epubmaker/externallink: false を設定すると、`@<href>` のハイパーリンクを無効にできるようにしました ([#509], [#544])
 * 設定ファイルのショートカットキーを使えるようにしました ([#540])
     * たとえば、epubmaker使用時に `@config["epubmaker"]["foo"]` の代わりに `@config["foo"]` が使えます
-* `epubversion` と `htmlversion` を更新しました ([#542])
 * `inherit` を使って、複数の設定ファイルを読み込み可能にしました ([#511], [#528])
-* OPFにカスタムプレフィックスと `<meta>` 要素を追加しました ([#513])
 * i18nのフォーマットを追加しました ([#520])
-* PDFMaker: 設定ファイルで `history` をサポートしました ([#566])
 * `rake` でテストとrubocopを実行するようにしました ([#587])
+* webmakerを追加しました ([#498])
+* LATEXBuilder: `image_scale2width` オプションを追加しました ([#543])
+* PDFMaker: platex から uplatex に移行しました ([#541])
+* EPUBMaker: 電子協ガイドフォーマットをサポートしました ([#251], [#429])
+* EPUBMaker: `direction` をデフォルトの設定に追加しました ([#508])
+* EPUBMaker: 書籍タイトルや著者の「読み」を追加しました ([#507])
+* review-preproc: 拡張可能にました ([#494])
+* HTMLBuilder: config.yml で epubmaker/externallink: false を設定すると、`@<href>` のハイパーリンクを無効にできるようにしました ([#509], [#544])
+* EPUBMaker: OPFにカスタムプレフィックスと `<meta>` 要素を追加しました ([#513])
+* PDFMaker: 設定ファイルで `history` をサポートしました ([#566])
 
-## 破壊的変更
-* 'prt' の後方互換性を廃止しました  ([#593])
+## 非互換の変更
+* デフォルトの`epubversion` と `htmlversion` を更新しました ([#542])
 * 'param' の後方互換性を廃止しました ([#594])
-* config:yml: 'pygments:' を廃止しました ([#604])
-* inaobuilder を廃止しました (アップストリームで修正Markdownを使用することになったため) ([#573])
+* config.ymlの'pygments:' を廃止しました ([#604])
 * その他、後方互換性を廃止しました ([#560])
     * layout.erb -> layout.html.erb
     * locale.yaml -> locale.yml
     * PageMetric.a5 -> PageMetric::A5
     * locale.yaml や layout.erb を使っているとエラーになります
-    * `prt` は `発行所` ではなく `印刷所` ([#562])
-    * `発行所` は `pbl`.
+    * `prt` は `発行所` ではなく `印刷所` になります. `発行所` は `pbl` です.([#562, #593])
 * `appendix_format` を廃止しました ([#609])
-* review-compile: `-a/--all` オプションを廃止しました ([#481])
+* inaobuilder を廃止しました (アップストリームで修正Markdownを使用することになったため) ([#573])
 * 古い epubmaker を削除しました
+* review-compile: `-a/--all` オプションを廃止しました ([#481])
 
 ## バグ修正
 * HTMLのエスケープ処理漏れに対応しました ([#589], [#591])
 * review-epubmaker: すべての画像をコピーするように修正しました ([#224])
 * ``[nonum]`` に関連するバグを修正しました ([#301], [#436], [#506], [#550], [#554], [#555])
 * IDGXMLBuilder: テーブルセルの幅における pt と mm の計算を修正しました ([#558])
+* HTMLBuilder: `//image[scale=XXX]` で `width` の代わりに `class` を使うようにして、epubcheckのテストを通るようにしました ([#482], [#372])
 
 ## リファクタリング
 * EPUBmaker/PDFmakerで名前付きパラメータへを対応しました ([#534])
@@ -74,20 +73,17 @@
 * サンプルファイル config.yml の名前を config.yml.* に変更しました ([#538])
 * `Hash#deep_merge` を追加しました ([#523])
 * LATEXBuilder: `\Underline` の代わりに `\reviewunderline` を使うようにしました ([#408])
-* HTMLBuilder: `//image[scale=XXX]` で `width` の代わりに `class` を使うようにしました ([#482], [#372])
 * Configureクラスで 'name' の値を取得できるように `name_of` と `names_of` メソッドを追加しました ([#534])
 * EPUBMaker: colophon_order の場所を変更しました ([#460])
-* TOCParser: ([67014a65411e3a3e5e2c57c57e01bee1ad18efc6])
 * TOCPrinter: IDGTOCPrinter を削除しました ([#486])
 * Book#catalog=(catalog) と Catalog.new(obj) を追加しました ([93691d0e2601eeb5715714b4fb92840bb3b3ff8b])
-* Chapter, Part: レイジーロードを使わないようにしました ([#491])
-* prefix -> opf_prefix に変更しました ([2bbedaa2be03692cba5c4985b561ee2553bf1521])
+* Chapter, Part: 遅延読み込みしないようにしました ([#491])
 
 ## ドキュメント
 * README: rdoc -> md ([#610])
+* format.md, quickstart.md を更新しました
+* 縦書きとPDFMakerについて説明を追加しました
 * 英語版のドキュメントを修正しました ([#588])
-* 縦書きについて説明を追加しました
-* quickstart.ja を更新しました
 
 ## コードコントリビュータ
 * [@arikui1911](https://github.com/arikui1911)
@@ -171,7 +167,6 @@
 [#609]: https://github.com/kmuto/review/issues/609
 [#610]: https://github.com/kmuto/review/issues/610
 [93691d0e2601eeb5715714b4fb92840bb3b3ff8b]: https://github.com/kmuto/review/commit/93691d0e2601eeb5715714b4fb92840bb3b3ff8b
-[2bbedaa2be03692cba5c4985b561ee2553bf1521]: https://github.com/kmuto/review/commit/2bbedaa2be03692cba5c4985b561ee2553bf1521
 [67014a65411e3a3e5e2c57c57e01bee1ad18efc6]: https://github.com/kmuto/review/commit/67014a65411e3a3e5e2c57c57e01bee1ad18efc6
 
 # Version 1.7.2の主な変更点

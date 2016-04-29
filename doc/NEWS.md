@@ -2,50 +2,49 @@
 
 ## New Features
 * Load `./config.yml` if exists ([#477], [#479])
-* Add webmaker ([#498])
 * config.yml: Add `review_version` ([#276], [#539], [#545])
    * Allow review_version to be nil, which means that I don't care about the version ([#592])
 * Add experimental vertical orientation writing support ([#563])
 * Support `[notoc]` and `[nodisp]` in header ([#506], [#555])
-* LATEXBuilder: add option `image_scale2width` ([#543])
-* Support ebpaj format. ([#251], [#429])
 * Enable `@<column>` and `@<hd>` to refer other's column. ([#333], [#476])
-* Migrate platex to uplatex ([#541])
-* Add `direction` in default setting ([#508])
-* Allow `pronounciation` of booktitle ([#507])
-* review-preproc: allow monkeypatch in review-preproc ([#494])
 * Add command `//imgtable` ([#499])
-* Disable hyperlink with `@<href>` with epubmaker/externallink: false in config.yml ([#509], [#544])
 * Allow to use shortcut key of config ([#540])
     * enable to use `@config["foo"]` instead of `@config["epubmaker"]["foo"]` when using epubmaker
-* Update `epubversion` and `htmlversion` ([#542])
 * Accept multiple YAML configurations using inherit parameter. ([#511], [#528])
-* Add custom prefix and `<meta>` element in OPF ([#513])
 * Add formats to i18n ([#520])
-* PDFMaker: support `history` in config ([#566])
 * Make `rake` run test and rubocop. ([#587])
+* Add webmaker ([#498])
+* LATEXBuilder: add option `image_scale2width` ([#543])
+* PDFMaker: Migrate platex to uplatex ([#541])
+* EPUBMaker: Support ebpaj format. ([#251], [#429])
+* EPUBMaker: Add `direction` in default setting ([#508])
+* EPUBMaker: Allow `pronounciation` of booktitle and author ([#507])
+* review-preproc: allow monkeypatch in review-preproc ([#494])
+* HTMLBuilder: Disable hyperlink with `@<href>` with epubmaker/externallink: false in config.yml ([#509], [#544])
+* EPUBMaker: Add custom prefix and `<meta>` element in OPF ([#513])
+* PDFMaker: support `history` in config ([#566])
 
 ## Breaking Changes
-* Delete backward compatibility of 'prt'.  ([#593])
+* Update `epubversion` and `htmlversion` ([#542])
 * Delete backward compatibility of 'param'. ([#594])
-* config:yml: 'pygments:' is obsoleted. ([#604])
-* Remove obsolete inaobuilder. (upstream changed their mind to use modified Markdown) ([#573])
+* config.yml: 'pygments:' is obsoleted. ([#604])
 * Remove backward compatibility ([#560])
     * layout.erb -> layout.html.erb
     * locale.yaml -> locale.yml
     * PageMetric.a5 -> PageMetric::A5
     * raise error when using locale.yaml and layout.erb
-    * `prt` is printer(`印刷所`), not publisher(`発行所`)  ([#562])
-    * `発行所` is `pbl`.
+    * `prt` is printer(`印刷所`), not publisher(`発行所`).  `発行所` is `pbl`.  ([#562, #593])
 * Obsolete `appendix_format` ([#609])
-* review-compile: Remove `-a/--all` option ([#481])
+* Remove obsolete inaobuilder. (upstream changed their mind to use modified Markdown) ([#573])
 * Remove obsolete legacy epubmaker
+* review-compile: Remove `-a/--all` option ([#481])
 
 ## Bug Fixes
 * Escape html correctly. ([#589], [#591])
 * review-epubmaker: fix error of not copying all images. ([#224])
 * Fix several bugs around `[nonum]`. ([#301], [#436], [#506], [#550], [#554], [#555])
 * IDGXMLBuilder: fix wrong calcuration between pt and mm for table cell width on IDGXML. ([#558])
+* HTMLBuilder: use `class` instead of `width` for `//image[scale=XXX]`  ([#482], [#372]). It fixes on epubcheck test.
 
 ## Refactorings
 * Support named parameters in EPUBmaker/PDFmaker ([#534])
@@ -74,20 +73,17 @@
 * sample config.yml should be config.yml.* ([#538])
 * Add `Hash#deep_merge` ([#523])
 * LATEXBuilder: use `\reviewunderline` instead of `\Underline`  ([#408])
-* HTMLBuilder: use `class` instead of `width` for `//image[scale=XXX]`  ([#482], [#372])
 * Add `name_of` and `names_of` method into Configure class to take 'name' attribute value. ([#534])
 * EPUBMaker: reflected colophon_order. ([#460])
-* TOCParser: ([67014a65411e3a3e5e2c57c57e01bee1ad18efc6])
 * TOCPrinter: remove IDGTOCPrinter. ([#486])
 * Add new methods: Book#catalog=(catalog) and Catalog.new(obj) ([93691d0e2601eeb5715714b4fb92840bb3b3ff8b])
 * Chapter and Part: do not use lazy loading. ([#491])
-* change prefix -> opf_prefix. ([2bbedaa2be03692cba5c4985b561ee2553bf1521])
 
 ## Docs
 * README: rdoc -> md ([#610])
+* Update format.md, quickstart.md
+* Add note about writing vertical document and PDFMaker
 * Fix document in EN ([#588])
-* Add note about writing vertical document
-* Update quickstart.ja
 
 ## Code contributors
 * [@arikui1911](https://github.com/arikui1911)
@@ -171,7 +167,6 @@
 [#609]: https://github.com/kmuto/review/issues/609
 [#610]: https://github.com/kmuto/review/issues/610
 [93691d0e2601eeb5715714b4fb92840bb3b3ff8b]: https://github.com/kmuto/review/commit/93691d0e2601eeb5715714b4fb92840bb3b3ff8b
-[2bbedaa2be03692cba5c4985b561ee2553bf1521]: https://github.com/kmuto/review/commit/2bbedaa2be03692cba5c4985b561ee2553bf1521
 [67014a65411e3a3e5e2c57c57e01bee1ad18efc6]: https://github.com/kmuto/review/commit/67014a65411e3a3e5e2c57c57e01bee1ad18efc6
 
 # Version 1.7.2
