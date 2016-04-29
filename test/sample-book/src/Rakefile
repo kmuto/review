@@ -5,6 +5,7 @@ BOOK = "book"
 BOOK_PDF = BOOK+".pdf"
 BOOK_EPUB = BOOK+".epub"
 CONFIG_FILE = "config.yml"
+WEBROOT = "webroot"
 
 def build(mode, chapter)
   sh "review-compile --target=#{mode} --footnotetext --stylesheet=style.css #{chapter} > tmp"
@@ -39,6 +40,9 @@ task :all => [:pdf, :epub]
 desc 'generate PDF file'
 task :pdf => BOOK_PDF
 
+desc 'generate stagic HTML file for web'
+task :web => WEBROOT
+
 desc 'generate EPUB file'
 task :epub => BOOK_EPUB
 
@@ -54,4 +58,9 @@ file BOOK_EPUB => SRC do
   sh "review-epubmaker #{CONFIG_FILE}"
 end
 
-CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK+"-pdf", BOOK+"-epub"])
+file WEBROOT => SRC do
+  FileUtils.rm_rf [WEBROOT]
+  sh "review-webmaker #{CONFIG_FILE}"
+end
+
+CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK+"-pdf", BOOK+"-epub", WEBROOT])
