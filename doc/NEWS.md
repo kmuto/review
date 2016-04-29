@@ -103,6 +103,7 @@
 [#429]: https://github.com/kmuto/review/issues/429
 [#436]: https://github.com/kmuto/review/issues/436
 [#460]: https://github.com/kmuto/review/issues/460
+[#476]: https://github.com/kmuto/review/issues/476
 [#477]: https://github.com/kmuto/review/issues/477
 [#479]: https://github.com/kmuto/review/issues/479
 [#481]: https://github.com/kmuto/review/issues/481
