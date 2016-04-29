@@ -68,5 +68,5 @@ pdfmaker:
 webmaker:
   stylesheet: ["style.css", "style-web.css"]
 
-debug: false
+debug: true
 
