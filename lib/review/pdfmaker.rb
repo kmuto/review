@@ -11,6 +11,7 @@ require 'optparse'
 require 'yaml'
 require 'fileutils'
 require 'erb'
+require 'tmpdir'
 
 require 'review/i18n'
 require 'review/book'

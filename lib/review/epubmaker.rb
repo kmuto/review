@@ -8,6 +8,8 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
+require 'tmpdir'
+
 require 'review/i18n'
 require 'review/book'
 require 'review/configure'
