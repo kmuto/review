@@ -1,4 +1,4 @@
-\documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
+\documentclass[dvipdfmx,<%= @documentclassoption %>]{<%= @documentclass %>}
 <%- if @texcompiler == "uplatex" -%>
 \usepackage[deluxe,uplatex]{otf}
 <%- else -%>
