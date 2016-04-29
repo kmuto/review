@@ -1,10 +1,15 @@
 \documentclass[dvipdfmx,<%= @documentclassoption %>]{<%= @documentclass %>}
+% %% fixes to LaTeX2e
+% \usepackage{fix-cm}[2006/09/13 v1.1m]
+% \usepackage{fixltx2e}[2006/09/13 v1.1m]
+
 <%- if @texcompiler == "uplatex" -%>
 \usepackage[deluxe,uplatex]{otf}
 <%- else -%>
 \usepackage[deluxe]{otf}
 <%- end -%>
 \usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+% \usepackage{lmodern}
 \usepackage[dvipdfmx]{graphicx}
 \usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
 \usepackage{framed}
