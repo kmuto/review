@@ -1,3 +1,179 @@
+# Version 2.0.0の主な変更点
+
+## 新機能
+* デフォルトで `./config.yml` を読み込むようにしました ([#477], [#479])
+* webmakerを追加しました ([#498])
+* config.yml: `review_version` を追加しました([#276], [#539], [#545])
+   * review_versionをnilにすると警告が表示されません ([#592])
+* 実験的に縦書き機能をサポートしました ([#563])
+* ヘッダ部分に`[notoc]` と `[nodisp]` を使えるようにしました ([#506], [#555])
+* LATEXBuilder: `image_scale2width` オプションを追加しました ([#543])
+* 電子協フォーマットをサポートしました ([#251], [#429])
+* `@<column>` と `@<hd>` で他の章にあるコラムを参照可能にしました ([#333], [#476])
+* platex から uplatex に移行しました ([#541])
+* `direction` をデフォルトの設定に追加しました ([#508])
+* 書籍タイトルの `pronounciation` を追加しました ([#507])
+* review-preproc: 拡張可能にました ([#494])
+* `//imgtable` コマンドを追加しました ([#499])
+* config.yml で epubmaker/externallink: false を設定すると、`@<href>` のハイパーリンクを無効にできるようにしました ([#509], [#544])
+* 設定ファイルのショートカットキーを使えるようにしました ([#540])
+    * たとえば、epubmaker使用時に `@config["epubmaker"]["foo"]` の代わりに `@config["foo"]` が使えます
+* `epubversion` と `htmlversion` を更新しました ([#542])
+* `inherit` を使って、複数の設定ファイルを読み込み可能にしました ([#511], [#528])
+* OPFにカスタムプレフィックスと `<meta>` 要素を追加しました ([#513])
+* i18nのフォーマットを追加しました ([#520])
+* PDFMaker: 設定ファイルで `history` をサポートしました ([#566])
+* `rake` でテストとrubocopを実行するようにしました ([#587])
+
+## 破壊的変更
+* 'prt' の後方互換性を廃止しました  ([#593])
+* 'param' の後方互換性を廃止しました ([#594])
+* config:yml: 'pygments:' を廃止しました ([#604])
+* inaobuilder を廃止しました (アップストリームで修正Markdownを使用することになったため) ([#573])
+* その他、後方互換性を廃止しました ([#560])
+    * layout.erb -> layout.html.erb
+    * locale.yaml -> locale.yml
+    * PageMetric.a5 -> PageMetric::A5
+    * locale.yaml や layout.erb を使っているとエラーになります
+    * `prt` は `発行所` ではなく `印刷所` ([#562])
+    * `発行所` は `pbl`.
+* `appendix_format` を廃止しました ([#609])
+* review-compile: `-a/--all` オプションを廃止しました ([#481])
+* 古い epubmaker を削除しました
+
+## バグ修正
+* HTMLのエスケープ処理漏れに対応しました ([#589], [#591])
+* review-epubmaker: すべての画像をコピーするように修正しました ([#224])
+* ``[nonum]`` に関連するバグを修正しました ([#301], [#436], [#506], [#550], [#554], [#555])
+* IDGXMLBuilder: テーブルセルの幅における pt と mm の計算を修正しました ([#558])
+
+## リファクタリング
+* EPUBmaker/PDFmakerで名前付きパラメータへを対応しました ([#534])
+* `ReVIEW::YAMLLoader` を追加しました ([#518])
+* いくつかのグローバル変数を削除しました ([#240])
+* テストのwarningを無効にしました ([#597])
+* いくつかのwarningに対応しました (circular require, unused variable, redefining methods, too many args) ([#599], [#601])
+* MakerHelper: class -> module ([#582])
+* review-init: config.yml を doc/config.yml.sample から生成するようにしました ([#580])
+* ReVIEW::Template にテンプレートエンジンを統合しました ([#576])
+  * HTMLBuilder: HTMLLayout を削除しました
+  * LATEXBuilder: テンプレートでインスタンス変数を使うようにしました ([#598])
+  * LATEXBuilder: move lib/review/layout.tex.erb to templates/latex/ ([#572])
+* config.yml.sample を更新しました ([#579])
+* テストから1.8と1.9.3のコードを削除しました(Travis向け) ([#577])
+* LaTeX のテンプレートを修正しました ([#575])
+* ファイルを開くときに BOM|utf-8 フラグを使用するようにしました ([#574])
+* review-preproc: default_external を UTF-8 に設定しました ([#486])
+* デバッグ時の pdf と epub の build_path を修正しました ([#564], [#556])
+* EPUBMakerをリファクタリングしました ([#533])
+* ruby-uuidの代わりにSecureRandom.uuidを使うようにしました ([#497])
+* epubmaker, pdfmaker: system() の代わりに ReVIEW::Converter を使うようにしました ([#493])
+* zipコマンドの代わりにRubyのZipライブラリを使うようにしました ([#487])
+* review-index: TOCParser と TOCPrinter を洗練させました ([#486])
+* 廃止済みのパラメータを削除して、デフォルト値を変更しました ([#547])
+* サンプルファイル config.yml の名前を config.yml.* に変更しました ([#538])
+* `Hash#deep_merge` を追加しました ([#523])
+* LATEXBuilder: `\Underline` の代わりに `\reviewunderline` を使うようにしました ([#408])
+* HTMLBuilder: `//image[scale=XXX]` で `width` の代わりに `class` を使うようにしました ([#482], [#372])
+* Configureクラスで 'name' の値を取得できるように `name_of` と `names_of` メソッドを追加しました ([#534])
+* EPUBMaker: colophon_order の場所を変更しました ([#460])
+* TOCParser: ([67014a65411e3a3e5e2c57c57e01bee1ad18efc6])
+* TOCPrinter: IDGTOCPrinter を削除しました ([#486])
+* Book#catalog=(catalog) と Catalog.new(obj) を追加しました ([93691d0e2601eeb5715714b4fb92840bb3b3ff8b])
+* Chapter, Part: レイジーロードを使わないようにしました ([#491])
+* prefix -> opf_prefix に変更しました ([2bbedaa2be03692cba5c4985b561ee2553bf1521])
+
+## ドキュメント
+* README: rdoc -> md ([#610])
+* 英語版のドキュメントを修正しました ([#588])
+* 縦書きについて説明を追加しました
+* quickstart.ja を更新しました
+
+## コードコントリビュータ
+* [@arikui1911](https://github.com/arikui1911)
+
+[#224]: https://github.com/kmuto/review/issues/224
+[#240]: https://github.com/kmuto/review/issues/240
+[#251]: https://github.com/kmuto/review/issues/251
+[#276]: https://github.com/kmuto/review/issues/276
+[#301]: https://github.com/kmuto/review/issues/301
+[#333]: https://github.com/kmuto/review/issues/333
+[#372]: https://github.com/kmuto/review/issues/372
+[#408]: https://github.com/kmuto/review/issues/408
+[#429]: https://github.com/kmuto/review/issues/429
+[#436]: https://github.com/kmuto/review/issues/436
+[#460]: https://github.com/kmuto/review/issues/460
+[#477]: https://github.com/kmuto/review/issues/477
+[#479]: https://github.com/kmuto/review/issues/479
+[#481]: https://github.com/kmuto/review/issues/481
+[#482]: https://github.com/kmuto/review/issues/482
+[#486]: https://github.com/kmuto/review/issues/486
+[#487]: https://github.com/kmuto/review/issues/487
+[#491]: https://github.com/kmuto/review/issues/491
+[#493]: https://github.com/kmuto/review/issues/493
+[#494]: https://github.com/kmuto/review/issues/494
+[#497]: https://github.com/kmuto/review/issues/497
+[#498]: https://github.com/kmuto/review/issues/498
+[#499]: https://github.com/kmuto/review/issues/499
+[#506]: https://github.com/kmuto/review/issues/506
+[#507]: https://github.com/kmuto/review/issues/507
+[#508]: https://github.com/kmuto/review/issues/508
+[#509]: https://github.com/kmuto/review/issues/509
+[#511]: https://github.com/kmuto/review/issues/511
+[#513]: https://github.com/kmuto/review/issues/513
+[#518]: https://github.com/kmuto/review/issues/518
+[#520]: https://github.com/kmuto/review/issues/520
+[#523]: https://github.com/kmuto/review/issues/523
+[#528]: https://github.com/kmuto/review/issues/528
+[#533]: https://github.com/kmuto/review/issues/533
+[#534]: https://github.com/kmuto/review/issues/534
+[#538]: https://github.com/kmuto/review/issues/538
+[#539]: https://github.com/kmuto/review/issues/539
+[#540]: https://github.com/kmuto/review/issues/540
+[#541]: https://github.com/kmuto/review/issues/541
+[#542]: https://github.com/kmuto/review/issues/542
+[#543]: https://github.com/kmuto/review/issues/543
+[#544]: https://github.com/kmuto/review/issues/544
+[#545]: https://github.com/kmuto/review/issues/545
+[#547]: https://github.com/kmuto/review/issues/547
+[#550]: https://github.com/kmuto/review/issues/550
+[#554]: https://github.com/kmuto/review/issues/554
+[#555]: https://github.com/kmuto/review/issues/555
+[#556]: https://github.com/kmuto/review/issues/556
+[#557]: https://github.com/kmuto/review/issues/557
+[#558]: https://github.com/kmuto/review/issues/558
+[#560]: https://github.com/kmuto/review/issues/560
+[#562]: https://github.com/kmuto/review/issues/562
+[#563]: https://github.com/kmuto/review/issues/563
+[#564]: https://github.com/kmuto/review/issues/564
+[#566]: https://github.com/kmuto/review/issues/566
+[#572]: https://github.com/kmuto/review/issues/572
+[#573]: https://github.com/kmuto/review/issues/573
+[#574]: https://github.com/kmuto/review/issues/574
+[#575]: https://github.com/kmuto/review/issues/575
+[#576]: https://github.com/kmuto/review/issues/576
+[#577]: https://github.com/kmuto/review/issues/577
+[#579]: https://github.com/kmuto/review/issues/579
+[#580]: https://github.com/kmuto/review/issues/580
+[#582]: https://github.com/kmuto/review/issues/582
+[#587]: https://github.com/kmuto/review/issues/587
+[#588]: https://github.com/kmuto/review/issues/588
+[#589]: https://github.com/kmuto/review/issues/589
+[#591]: https://github.com/kmuto/review/issues/591
+[#592]: https://github.com/kmuto/review/issues/592
+[#593]: https://github.com/kmuto/review/issues/593
+[#594]: https://github.com/kmuto/review/issues/594
+[#597]: https://github.com/kmuto/review/issues/597
+[#598]: https://github.com/kmuto/review/issues/598
+[#599]: https://github.com/kmuto/review/issues/599
+[#601]: https://github.com/kmuto/review/issues/601
+[#604]: https://github.com/kmuto/review/issues/604
+[#609]: https://github.com/kmuto/review/issues/609
+[#610]: https://github.com/kmuto/review/issues/610
+[93691d0e2601eeb5715714b4fb92840bb3b3ff8b]: https://github.com/kmuto/review/commit/93691d0e2601eeb5715714b4fb92840bb3b3ff8b
+[2bbedaa2be03692cba5c4985b561ee2553bf1521]: https://github.com/kmuto/review/commit/2bbedaa2be03692cba5c4985b561ee2553bf1521
+[67014a65411e3a3e5e2c57c57e01bee1ad18efc6]: https://github.com/kmuto/review/commit/67014a65411e3a3e5e2c57c57e01bee1ad18efc6
+
 # Version 1.7.2の主な変更点
 
 ## バグ修正
