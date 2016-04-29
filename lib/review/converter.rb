@@ -11,6 +11,7 @@ module ReVIEW
 
     def initialize(book, builder)
       @book = book
+      @book.config["builder"] = builder.target_name
       @compiler = ReVIEW::Compiler.new(builder)
     end
 
