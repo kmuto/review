@@ -2,6 +2,7 @@ AllCops:
   Exclude:
     - lib/lineinput.rb
     - lib/uuid.rb
+  DisplayCopNames: true
 
 inherit_from: .rubocop_todo.yml
 
@@ -64,3 +65,26 @@ Style/ZeroLengthPredicate:
 
 Metrics/ClassLength:
   Max: 1500
+
+Metrics/LineLength:
+  Max: 256
+  Exclude:
+    - "test/**/*"
+
+### should be < 50
+Metrics/MethodLength:
+  Max: 100
+  Exclude:
+    - "bin/review-*"
+    - "test/**/*"
+
+### should be < 20
+Metrics/CyclomaticComplexity:
+  Max: 32
+
+### should be < 60
+Metrics/AbcSize:
+  Max: 120
+  Exclude:
+    - "bin/review-*"
+    - "test/**/*"
