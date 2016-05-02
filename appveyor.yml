@@ -1,9 +1,16 @@
 ---
 install:
-  - SET PATH=C:\Ruby22-x64\bin;%PATH%
+  - SET PATH=C:\Ruby%ruby_version%\bin;%PATH%
   - ruby --version
   - gem --version
 build_script:
   - bundle install
   - bundle exec rake test --trace --verbose
   - bundle exec rubocop
+
+environment:
+  matrix:
+    - ruby_version: "22"
+    - ruby_version: "22-x64"
+    - ruby_version: "23"
+    - ruby_version: "23-x64"
