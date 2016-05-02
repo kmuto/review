@@ -503,6 +503,14 @@ module ReVIEW
       [str.to_i(16)].pack("U")
     end
 
+    def inline_comment(str)
+      if @book.config["draft"]
+        %Q[◆→DTP連絡:#{str}←◆]
+      else
+        %Q[◆→DTP連絡:#{str}←◆]
+      end
+    end
+
     def inline_m(str)
       %Q[◆→TeX式ここから←◆#{str}◆→TeX式ここまで←◆]
     end
