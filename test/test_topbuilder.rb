@@ -134,6 +134,11 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test ① test2|, actual
   end
 
+  def test_inline_comment
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test  test2|, actual
+  end
+
   def test_inline_in_table
     actual = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
     assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, actual
