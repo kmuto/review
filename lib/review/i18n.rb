@@ -119,40 +119,46 @@ module ReVIEW
         end
       end
 
-      percents = frmt.scan(/%\w{1,3}/)
+      percents = frmt.scan(/%[A-Za-z]{1,3}/)
+      remove_args = []
       percents.each_with_index do |i, idx|
         case i
         when "%pA"
           frmt.sub!(i, ALPHA_U[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pa"
           frmt.sub!(i, ALPHA_L[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pAW"
           frmt.sub!(i, ALPHA_UW[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%paW"
           frmt.sub!(i, ALPHA_LW[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pR"
           frmt.sub!(i, ROMAN_U[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pr"
           frmt.sub!(i, ROMAN_L[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pRW"
           frmt.sub!(i, ROMAN_UW[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pJ"
           frmt.sub!(i, JAPAN[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pdW"
           frmt.sub!(i, ARABIC_LW[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pDW"
           frmt.sub!(i, ARABIC_UW[args[idx]])
-          args.delete idx
+          remove_args << idx
+        else
+          # noop
         end
+      end
+      remove_args.reverse_each do |idx|
+        args.delete_at idx
       end
       args_matched = (frmt.count("%") == args.size)
       frmt.gsub!('##', '%%')
