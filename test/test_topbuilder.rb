@@ -136,7 +136,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_inline_comment
     actual = compile_inline("test @<comment>{コメント} test2")
-    assert_equal %Q|test ◆→DTP連絡:コメント←◆ test2|, actual
+    assert_equal %Q|test  test2|, actual
   end
 
   def test_inline_in_table

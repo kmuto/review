@@ -507,7 +507,7 @@ module ReVIEW
       if @book.config["draft"]
         %Q[◆→DTP連絡:#{str}←◆]
       else
-        %Q[◆→DTP連絡:#{str}←◆]
+        ""
       end
     end
 
