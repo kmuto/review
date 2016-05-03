@@ -348,6 +348,17 @@ module ReVIEW
         @coverimageoption = "width=\\textwidth,height=\\textheight,keepaspectratio"
       end
 
+      @locale_latex = Hash.new
+      part_tuple = I18n.get("part").split(/\%[A-Za-z]{1,3}/, 2)
+      chapter_tuple = I18n.get("chapter").split(/\%[A-Za-z]{1,3}/, 2)
+      appendix_tuple = I18n.get("appendix").split(/\%[A-Za-z]{1,3}/, 2)
+      @locale_latex["prepartname"] = part_tuple[0]
+      @locale_latex["postpartname"] = part_tuple[1]
+      @locale_latex["prechaptername"] = chapter_tuple[0]
+      @locale_latex["postchaptername"] = chapter_tuple[1]
+      @locale_latex["preappendixname"] = appendix_tuple[0]
+      @locale_latex["postappendixname"] = appendix_tuple[1]
+
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
       if File.exist?(layout_file)

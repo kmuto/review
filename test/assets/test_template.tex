@@ -115,6 +115,7 @@
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large ■メモ: #1}\\}
 
+\renewcommand{\contentsname}{目次}
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
@@ -140,6 +141,37 @@
 \newcommand{\reviewmainfont}[0]{}
 \newcommand{\reviewcolophon}[0]{\clearpage}
 \newcommand{\reviewappendix}[0]{\appendix}
+
+\newcommand{\reviewprepartname}{第}
+\newcommand{\reviewpostpartname}{部}
+\newcommand{\reviewprechaptername}{第}
+\newcommand{\reviewpostchaptername}{章}
+\newcommand{\reviewfigurename}{図}
+\newcommand{\reviewtablename}{表}
+\newcommand{\reviewappendixname}{付録}
+
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
+
 
 \makeatletter
 %% maxwidth is the original width if it is less than linewidth
