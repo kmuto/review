@@ -171,9 +171,9 @@
   {\large <%= I18n.t("memo_head")%>: #1}\\}
 
 <%- if @config["toctitle"].present? -%>
-\renewcommand{\contentsname}{<%= @config["toctitle"]%>}
+\renewcommand{\contentsname}{<%= escape_latex(@config["toctitle"]) %>}
 <%- elsif I18n.t("toctitle") -%>
-\renewcommand{\contentsname}{<%= I18n.t("toctitle")%>}
+\renewcommand{\contentsname}{<%= escape_latex(I18n.t("toctitle")) %>}
 <%- end -%>
 
 \newenvironment{reviewminicolumn}{%
@@ -201,13 +201,13 @@
 \newcommand{\reviewcolophon}[0]{\clearpage}
 \newcommand{\reviewappendix}[0]{\appendix}
 
-\newcommand{\reviewprepartname}{<%= @locale_latex["prepartname"] %>}
-\newcommand{\reviewpostpartname}{<%= @locale_latex["postpartname"] %>}
-\newcommand{\reviewprechaptername}{<%= @locale_latex["prechaptername"] %>}
-\newcommand{\reviewpostchaptername}{<%= @locale_latex["postchaptername"] %>}
-\newcommand{\reviewfigurename}{<%= I18n.t("image")%>}
-\newcommand{\reviewtablename}{<%= I18n.t("table")%>}
-\newcommand{\reviewappendixname}{<%= @locale_latex["preappendixname"] %>}
+\newcommand{\reviewprepartname}{<%= escape_latex(@locale_latex["prepartname"]) %>}
+\newcommand{\reviewpostpartname}{<%= escape_latex(@locale_latex["postpartname"]) %>}
+\newcommand{\reviewprechaptername}{<%= escape_latex(@locale_latex["prechaptername"]) %>}
+\newcommand{\reviewpostchaptername}{<%= escape_latex(@locale_latex["postchaptername"]) %>}
+\newcommand{\reviewfigurename}{<%= escape_latex(I18n.t("image")) %>}
+\newcommand{\reviewtablename}{<%= escape_latex(I18n.t("table")) %>}
+\newcommand{\reviewappendixname}{<%= escape_latex(@locale_latex["preappendixname"]) %>}
 
 \ifdefined\prepartname
   \renewcommand{\prepartname}{\reviewprepartname}
