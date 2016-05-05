@@ -392,7 +392,7 @@ module ReVIEW
 
     def quotedlist(lines, css_class, caption)
       print %Q[<list type='#{css_class}'>]
-      puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" unless caption.nil?
+      puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" if caption.present?
       print %Q[<pre>]
       no = 1
       lines.each do |line|
