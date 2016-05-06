@@ -19,6 +19,7 @@ class PDFMakerTest < Test::Unit::TestCase
                      "texcommand" => "uplatex",
                    })
     @maker.config = @config
+    @maker.initialize_metachars(@config["texcommand"])
     @output = StringIO.new
     I18n.setup(@config["language"])
   end
