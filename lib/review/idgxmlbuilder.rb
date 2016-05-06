@@ -811,7 +811,7 @@ module ReVIEW
       @column += 1
       a_id = %Q[id="column-#{@column}"]
       print "<#{type}column #{a_id}>"
-      puts %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title>]
+      puts %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title><?dtp level="9" section="#{escape_html(compile_inline(caption))}"?>]
     end
 
     def common_column_end(type)
