@@ -412,7 +412,7 @@ inside column
 ===[/column]
 EOS
     expected =<<-EOS.chomp
-<column id="column-1"><title aid:pstyle="column-title">prev column</title><p>inside prev column</p></column><column id="column-2"><title aid:pstyle="column-title">test</title><p>inside column</p></column>
+<column id="column-1"><title aid:pstyle="column-title">prev column</title><?dtp level="9" section="prev column"?><p>inside prev column</p></column><column id="column-2"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column>
 EOS
     assert_equal expected, column_helper(review)
   end
@@ -426,7 +426,7 @@ inside column
 === next level
 EOS
     expected =<<-EOS.chomp
-<column id="column-1"><title aid:pstyle="column-title">test</title><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?>
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?>
 EOS
 
     assert_equal expected, column_helper(review)
