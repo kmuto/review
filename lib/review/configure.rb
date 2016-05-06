@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+require 'securerandom'
+
 module ReVIEW
   class Configure < Hash
 
@@ -23,7 +25,7 @@ module ReVIEW
         "date" => nil, # publishing date
         "rights" => nil, # Copyright messages
         "description" => nil, # Description
-        "urnid" => nil, # Identifier (nil makes random uuid)
+        "urnid" => "urn:uid:#{SecureRandom.uuid}", # Identifier
         "stylesheet" => "stylesheet.css", # stylesheet file
         "coverfile" => nil, # content file of body of cover page
         "mytoc" => nil, # whether make own table of contents or not
