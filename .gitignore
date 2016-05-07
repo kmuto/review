@@ -34,3 +34,8 @@ Gemfile.lock
 
 # IntelliJ
 .idea
+
+# Editor
+#*#
+*~
+#.bak
