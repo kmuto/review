@@ -1,7 +1,13 @@
-\documentclass[uplatex,oneside]{jsbook}
+\documentclass[dvipdfmx,uplatex,oneside]{jsbook}
+% %% fixes to LaTeX2e
+% \usepackage{fix-cm}[2006/09/13 v1.1m]
+% \usepackage{fixltx2e}[2006/09/13 v1.1m]
+
 \usepackage[deluxe,uplatex]{otf}
-\usepackage[dvipdfmx]{color}
+\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+% \usepackage{lmodern}
 \usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
 \usepackage{framed}
 \usepackage{wrapfig}
 \definecolor{shadecolor}{gray}{0.9}
@@ -30,10 +36,10 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
+%% Bookmarkの文字化け対策（日本語向け）
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={Re:VIEW Sample Book},%
-            pdfauthor={}]{hyperref}
-% uplatexでのBookmarkの文字化け対策（日本語向け）
+     pdftitle={Re:VIEW Sample Book},%
+     pdfauthor={}]{hyperref}
 \usepackage[dvipdfmx]{pxjahyper}
 
 
@@ -185,8 +191,6 @@
 }
 \makeatother
 
-
-\usepackage[T1]{fontenc}
 
 \begin{document}
 

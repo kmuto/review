@@ -1,11 +1,17 @@
-\documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
+\documentclass[dvipdfmx,<%= @documentclassoption %>]{<%= @documentclass %>}
+% %% fixes to LaTeX2e
+% \usepackage{fix-cm}[2006/09/13 v1.1m]
+% \usepackage{fixltx2e}[2006/09/13 v1.1m]
+
 <%- if @texcompiler == "uplatex" -%>
 \usepackage[deluxe,uplatex]{otf}
 <%- else -%>
 \usepackage[deluxe]{otf}
 <%- end -%>
-\usepackage[dvipdfmx]{color}
+\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+% \usepackage{lmodern}
 \usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
 \usepackage{framed}
 \usepackage{wrapfig}
 \definecolor{shadecolor}{gray}{0.9}
@@ -36,27 +42,18 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-<%- if @texcompiler == "uplatex" -%>
-\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={<%= @config.name_of("booktitle") %>},%
-            pdfauthor={<%= @config.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
-% uplatexでのBookmarkの文字化け対策（日本語向け）
-\usepackage[dvipdfmx]{pxjahyper}
-<%- else -%>
 %% Bookmarkの文字化け対策（日本語向け）
-\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode EUC-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode EUC-UCS2}}%
-\else
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-\fi
-
-\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
      pdftitle={<%= @config.name_of("booktitle") %>},%
      pdfauthor={<%= @config.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+<%- if @texcompiler == "uplatex" -%>
+\usepackage[dvipdfmx]{pxjahyper}
+<%- else -%>
+\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
+  \AtBeginShipoutFirst{\special{pdf:tounicode EUC-UCS2}}%
+\else
+  \AtBeginShipoutFirst{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
+\fi
 <%- end -%>
 
 <%- if ["utbook", "tbook"].include?(@documentclass)  -%>
@@ -247,8 +244,6 @@
 <%- if @config["usepackage"] -%>
 <%= @config["usepackage"] %>
 <%- end -%>
-
-\usepackage[T1]{fontenc}
 
 \begin{document}
 
