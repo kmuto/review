@@ -14,7 +14,5 @@ branches:
 
 environment:
   matrix:
-    - ruby_version: "22"
-    - ruby_version: "22-x64"
     - ruby_version: "23"
     - ruby_version: "23-x64"
