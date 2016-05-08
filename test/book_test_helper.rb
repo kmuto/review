@@ -10,14 +10,17 @@ include ReVIEW
 module BookTestHelper
   def mktmpbookdir(files = {})
     created_files = {}
-    Dir.mktmpdir do |dir|
-      files.each_pair do |basename, content|
-        path = File.join(dir, basename)
-        File.open(path, 'w') {|o| o.print content }
-        created_files[basename] = path
+    Dir.mktmpdir do |tmpdir|
+      Dir.chdir(tmpdir) do
+        dir = "."
+        files.each_pair do |basename, content|
+          path = File.join(dir, basename)
+          File.open(path, 'w') {|o| o.print content }
+          created_files[basename] = path
+        end
+        book = Book::Base.load(dir)
+        yield(dir, book, created_files)
       end
-      book = Book::Base.load(dir)
-      yield(dir, book, created_files)
     end
   end
 
