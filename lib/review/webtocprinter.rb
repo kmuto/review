@@ -22,7 +22,13 @@ module ReVIEW
 
     def print_part(part)
       if part.number
-        @out.puts "<li>#{h(part.title)}\n<ul>\n"
+        if part.file?
+          ext = part.book.config["htmlext"] || "html"
+          path = part.path.sub(/\.re/, "."+ext)
+          @out.puts "<li><a href=\"#{path}\">#{part.number} #{h(part.title)}</a>\n<ul>\n"
+        else
+          @out.puts "<li>#{part.number} #{h(part.name)}\n<ul>\n"
+        end
       end
       part.each_chapter do |chap|
         print_chapter(chap)
