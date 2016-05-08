@@ -8,6 +8,10 @@ build_script:
   - bundle exec rake test --trace --verbose
   - bundle exec rubocop
 
+branches:
+  only:
+    - master
+
 environment:
   matrix:
     - ruby_version: "22"
