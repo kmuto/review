@@ -1,4 +1,5 @@
 require 'review/tocprinter'
+require 'review/i18n'
 
 module ReVIEW
   class WEBTOCPrinter < TOCPrinter
@@ -25,9 +26,9 @@ module ReVIEW
         if part.file?
           ext = part.book.config["htmlext"] || "html"
           path = part.path.sub(/\.re/, "."+ext)
-          @out.puts "<li><a href=\"#{path}\">#{part.number} #{h(part.title)}</a>\n<ul>\n"
+          @out.puts "<li><a href=\"#{path}\">#{h(I18n.t("part_short", part.number) + " " + part.title)}</a>\n<ul>\n"
         else
-          @out.puts "<li>#{part.number} #{h(part.name)}\n<ul>\n"
+          @out.puts "<li>#{h(I18n.t("part_short", part.number) + " " + part.title)}\n<ul>\n"
         end
       end
       part.each_chapter do |chap|
@@ -43,7 +44,7 @@ module ReVIEW
       ext = chap.book.config["htmlext"] || "html"
       path = chap.path.sub(/\.re/, "."+ext)
       if chap_node.number && chap.on_CHAPS?
-        label = "#{chap.number} #{chap.title}"
+        label = "#{I18n.t("chapter_short", chap.number)} #{chap.title}"
       else
         label = chap.title
       end

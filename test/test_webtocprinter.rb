@@ -6,6 +6,10 @@ class WEBTOCPrinterTest < Test::Unit::TestCase
   include ReVIEW
   include BookTestHelper
 
+  def setup
+    I18n.setup
+  end
+
   def test_webtocprinter_null
     dummy_book = ReVIEW::Book::Base.load
     chap = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
@@ -54,12 +58,12 @@ EOB
       expect = <<-EOB
 <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
-<li>1 part1
+<li>I part1
 <ul>
 <li><a href="./ch1.html">1 ch. 1</a></li>
 </ul>
 </li>
-<li>2 part2
+<li>II part2
 <ul>
 <li><a href="./ch2.html">2 ch. 2</a></li>
 </ul>
@@ -87,12 +91,12 @@ EOB
       expect = <<-EOB
 <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
-<li><a href="p1.html">1 This is PART1</a>
+<li><a href="p1.html">I This is PART1</a>
 <ul>
 <li><a href="./ch1.html">1 ch. 1</a></li>
 </ul>
 </li>
-<li><a href="p2.html">2 This is PART2</a>
+<li><a href="p2.html">II This is PART2</a>
 <ul>
 <li><a href="./ch2.html">2 ch. 2</a></li>
 </ul>
@@ -137,12 +141,12 @@ EOB
 <li><a href="index.html">TOP</a></li>
 <li><a href="./pre1.html">PRE1</a></li>
 <li><a href="./pre2.html">PRE2</a></li>
-<li><a href="part1.html">1 PART1</a>
+<li><a href="part1.html">I PART1</a>
 <ul>
 <li><a href="./ch1.html">1 ch. 1</a></li>
 </ul>
 </li>
-<li><a href="part2.html">2 PART2</a>
+<li><a href="part2.html">II PART2</a>
 <ul>
 <li><a href="./ch2.html">2 ch. 2</a></li>
 </ul>

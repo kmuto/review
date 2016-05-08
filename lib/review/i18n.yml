@@ -6,7 +6,9 @@ ja:
   columnname: "コラム"
   column_head: "■コラム"
   part: 第%d部
+  part_short: "%pR"
   chapter: 第%d章
+  chapter_short: "%d"
   chapter_postfix: "　"
   chapter_quote: "「%s」"
   appendix: 付録%pA
@@ -66,7 +68,9 @@ en:
   columnname: "Column"
   column_head: "Column"
   part: "Part %s"
+  part_short: "%pR"
   chapter: Chapter %d
+  chapter_short: "%d"
   chapter_postfix: ". "
   chapter_quote: '"%s"'
   appendix: Appendix %s
@@ -123,7 +127,9 @@ zh-TW:
   table: 表
   list: List
   part: 第%d部份
+  part_short: "%pR"
   chapter: 第%d章
+  chapter_short: "%d"
   chapter_postfix: "　"
   chapter_quote: "「%s」"
   appendix: 附錄%s
