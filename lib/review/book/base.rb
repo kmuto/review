@@ -40,6 +40,10 @@ module ReVIEW
         @basedir_seen[dir] = true
       end
 
+      def self.clear_rubyenv
+        @basedir_seen = {}
+      end
+
       def initialize(basedir)
         @basedir = basedir
         @parts = nil
