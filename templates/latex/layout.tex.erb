@@ -44,8 +44,8 @@
 
 %% Bookmarkの文字化け対策（日本語向け）
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-     pdftitle={<%= @config.name_of("booktitle") %>},%
-     pdfauthor={<%= @config.names_of("aut").join(I18n.t("names_splitter")) %>}]{hyperref}
+     pdftitle={<%= escape_latex(@config.name_of("booktitle")) %>},%
+     pdfauthor={<%= escape_latex(@config.names_of("aut").join(I18n.t("names_splitter"))) %>}]{hyperref}
 <%- if @texcompiler == "uplatex" -%>
 \usepackage[dvipdfmx]{pxjahyper}
 <%- else -%>
@@ -67,7 +67,7 @@
 <%-   else -%>
 \usepackage{listings}
 <%-   end -%>
-\renewcommand{\lstlistingname}{<%= I18n.t("list")%>}
+\renewcommand{\lstlistingname}{<%= escape_latex(I18n.t("list")) %>}
 \lstset{%
   breaklines=true,%
   breakautoindent=false,%
@@ -131,7 +131,7 @@
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
-{\noindent\large <%= I18n.t("column_head")%>: #2}}
+{\noindent\large <%= escape_latex(I18n.t("column_head"))%>: #2}}
 
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
@@ -157,15 +157,15 @@
 \newcommand{\reviewboxcaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
-\newcommand{\reviewimageref}[2]{<%= I18n.t("image")%> #1}
-\newcommand{\reviewtableref}[2]{<%= I18n.t("table")%> #1}
-\newcommand{\reviewlistref}[1]{<%= I18n.t("list")%> #1}
+\newcommand{\reviewimageref}[2]{<%= escape_latex(I18n.t("image"))%> #1}
+\newcommand{\reviewtableref}[2]{<%= escape_latex(I18n.t("table"))%> #1}
+\newcommand{\reviewlistref}[1]{<%= escape_latex(I18n.t("list"))%> #1}
 \newcommand{\reviewbibref}[2]{#1}
-\newcommand{\reviewcolumnref}[2]{<%= I18n.t("columnname")%> #1}
+\newcommand{\reviewcolumnref}[2]{<%= escape_latex(I18n.t("columnname"))%> #1}
 \newcommand{\reviewsecref}[2]{#1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
-  {\large <%= I18n.t("memo_head")%>: #1}\\}
+  {\large <%= escape_latex(I18n.t("memo_head"))%>: #1}\\}
 
 <%- if @config["toctitle"].present? -%>
 \renewcommand{\contentsname}{<%= escape_latex(@config["toctitle"]) %>}
@@ -264,7 +264,7 @@
 \begin{center}%
   \mbox{} \vskip5zw
    \reviewtitlefont%
-    {\Huge <%= @config.name_of("booktitle") %> \par}%
+    {\Huge <%= escape_latex(@config.name_of("booktitle")) %> \par}%
     \vskip 15em%
     {\huge
       \lineskip .75em
@@ -272,7 +272,7 @@
         <%= @authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= @config["date"] %> <%= I18n.t("edition")%>\hspace{2zw}<%= I18n.t("published_by", @config.names_of("prt").join(I18n.t("names_splitter")))%>\par}%
+    {\large <%= escape_latex(@config["date"].to_s) %> <%= escape_latex(I18n.t("edition")) %>\hspace{2zw}<%= escape_latex(I18n.t("published_by", @config.names_of("prt").join(I18n.t("names_splitter"))))%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
@@ -337,7 +337,7 @@
 
 \vspace*{\fill}
 
-{\noindent\reviewtitlefont\Large <%= @config.name_of("booktitle") %>} \\
+{\noindent\reviewtitlefont\Large <%= escape_latex(@config.name_of("booktitle")) %>} \\
 \rule[8pt]{14cm}{1pt} \\
 {\noindent
 <%= @config["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>
@@ -348,7 +348,7 @@
 \end{tabular}
 　\\
 \rule[0pt]{14cm}{1pt} \\
-<%= @config.names_of("rights").join('\\' + '\\') %> \\
+<%= @config.names_of("rights").map{|s| escape_latex(s)}.join('\\' + '\\') %> \\
 <%-   end -%>
 <%- end -%>
 
