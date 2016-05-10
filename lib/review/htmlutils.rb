@@ -69,11 +69,10 @@ module ReVIEW
       begin
         require 'pygments'
         begin
-          Pygments.highlight(
-                   unescape_html(body),
-                   :options => options,
-                   :formatter => format,
-                   :lexer => lexer)
+          Pygments.highlight(unescape_html(body),
+                             :options => options,
+                             :formatter => format,
+                             :lexer => lexer)
         rescue MentosError
           body
         end
