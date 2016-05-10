@@ -46,15 +46,7 @@
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
      pdftitle={<%= escape_latex(@config.name_of("booktitle")) %>},%
      pdfauthor={<%= escape_latex(@config.names_of("aut").join(I18n.t("names_splitter"))) %>}]{hyperref}
-<%- if @texcompiler == "uplatex" -%>
 \usepackage[dvipdfmx]{pxjahyper}
-<%- else -%>
-\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
-  \AtBeginShipoutFirst{\special{pdf:tounicode EUC-UCS2}}%
-\else
-  \AtBeginShipoutFirst{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-\fi
-<%- end -%>
 
 <%- if ["utbook", "tbook"].include?(@documentclass)  -%>
 \newcommand{\headfont}{\gtfamily\sffamily\bfseries}

@@ -932,8 +932,7 @@ module ReVIEW
       if @book.config["mathml"]
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
-        parser = MathML::LaTeX::Parser.new(
-          :symbol => MathML::Symbol::CharacterReference)
+        parser = MathML::LaTeX::Parser.new(:symbol => MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
