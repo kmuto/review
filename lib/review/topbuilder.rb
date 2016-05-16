@@ -515,6 +515,16 @@ module ReVIEW
       %Q[◆→TeX式ここから←◆#{str}◆→TeX式ここまで←◆]
     end
 
+    def inline_hd_chap(chap, id)
+      if chap.number
+        n = chap.headline_index.number(id)
+        if @book.config["secnolevel"] >= n.split('.').size
+          return I18n.t("chapter_quote", "#{n}　#{compile_inline(chap.headline(id).caption)}")
+        end
+      end
+      I18n.t("chapter_quote", compile_inline(chap.headline(id).caption))
+    end
+
     def noindent
       puts "◆→DTP連絡:次の1行インデントなし←◆"
     end
