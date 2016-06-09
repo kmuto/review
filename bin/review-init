@@ -61,6 +61,7 @@ def main
     generate_config(dir)
     generate_locale(dir) if @locale
     generate_rakefile(dir)
+    generate_gemfile(dir)
   end
 end
 
@@ -140,6 +141,17 @@ end
 
 def generate_locale(dir)
   FileUtils.cp @review_dir + '/lib/review/i18n.yml', dir + '/locale.yml'
+end
+
+def generate_gemfile(dir)
+  File.open(dir + "/Gemfile", "w") do |file|
+    file.write <<-EOS
+source 'https://rubygems.org'
+
+gem 'rake'
+gem 'review', '#{ReVIEW::VERSION}'
+EOS
+  end
 end
 
 if File.basename($0) == File.basename(__FILE__)
