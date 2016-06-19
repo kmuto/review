@@ -340,7 +340,9 @@
 \end{tabular}
 　\\
 \rule[0pt]{14cm}{1pt} \\
+<%-     if @config["rights"] -%>
 <%= @config.names_of("rights").map{|s| escape_latex(s)}.join('\\' + '\\') %> \\
+<%-     end -%>
 <%-   end -%>
 <%- end -%>
 
