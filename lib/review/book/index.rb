@@ -79,9 +79,10 @@ module ReVIEW
         @items.each(&block)
       end
 
-      def has_key?(id)
-        return @index.has_key?(id)
+      def key?(id)
+        return @index.key?(id)
       end
+      alias_method :has_key?, :key?
     end
 
 

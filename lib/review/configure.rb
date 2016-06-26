@@ -54,7 +54,7 @@ module ReVIEW
         "page_metric" => ReVIEW::Book::PageMetric::A5,
         "ext" => '.re',
         "image_dir" => 'images',
-        "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
+        "image_types" => %w(.ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg),
         "image_scale2width" => true, # for LaTeX
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
