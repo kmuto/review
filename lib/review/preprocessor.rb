@@ -107,7 +107,7 @@ module ReVIEW
 
     private
 
-    TYPES = %w( file range )
+    TYPES = %w(file range)
 
     def preproc(f)
       init_vars
@@ -161,7 +161,7 @@ module ReVIEW
       end
     end
 
-    KNOWN_DIRECTIVES = %w( require provide warn ok )
+    KNOWN_DIRECTIVES = %w(require provide warn ok)
 
     def known_directive?(op)
       KNOWN_DIRECTIVES.index(op)

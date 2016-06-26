@@ -28,6 +28,16 @@ class IndexTest < Test::Unit::TestCase
     assert_equal 'bar\\a\\$buz', item.content
   end
 
+  def test_footnote_index_key?
+    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar]'])
+    assert_equal true, fn.key?('foo')
+
+    ## for compatibility
+    # rubocop:disable Style/PreferredHashMethods
+    assert_equal true, fn.has_key?('foo')
+    # rubocop:enable Style/PreferredHashMethods
+  end
+
   def test_HeadelineIndex
     src = <<-EOB
 = chap1

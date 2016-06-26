@@ -198,11 +198,6 @@ Style/CommentIndentation:
 Style/ConstantName:
   Enabled: false
 
-# Offense count: 4
-# Cop supports --auto-correct.
-Style/DeprecatedHashMethods:
-  Enabled: false
-
 # Offense count: 105
 Style/Documentation:
   Enabled: false
