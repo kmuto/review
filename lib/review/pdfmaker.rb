@@ -183,11 +183,17 @@ module ReVIEW
             warn "command configuration is prohibited in safe mode. ignored."
           else
             texcommand = @config["texcommand"] if @config["texcommand"]
+            makeindexcommand = @config["makeindexcommand"] if @config["makeindexcommand"]
             dvicommand = @config["dvicommand"] if @config["dvicommand"]
-            dvioptions = @config["dvioptions"] if @config["dvioptions"]
             texoptions = @config["texoptions"] if @config["texoptions"]
+            makeindexoptions = @config["makeindexoptions"] if @config["makeindexoptions"]
+            dvioptions = @config["dvioptions"] if @config["dvioptions"]
           end
-          3.times do
+          system_or_raise("#{texcommand} #{texoptions} book.tex")
+          if File.exist?("book.idx")
+            system_or_raise("#{makeindexcommand} #{makeindexoptions} book.idx")
+          end
+          2.times do
             system_or_raise("#{texcommand} #{texoptions} book.tex")
           end
           call_hook("hook_aftertexcompile")
@@ -399,4 +405,3 @@ module ReVIEW
     end
   end
 end
-

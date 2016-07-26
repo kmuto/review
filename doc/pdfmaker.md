@@ -27,6 +27,17 @@ dvicommand: dvipdfmx
 dvioptions: "-d 5"
 ```
 
+## How to print the index
+
+If you specify `makeindexcommand` option in config.yml, the index will be printed.
+Specify a command such as "mendex" to this option.
+You can specify the command options by `makeindexoptions` option.
+
+```yaml
+makeindexcommand: mendex
+makeindexoptions: "-c -g -U"
+```
+
 ## How to use old pLaTeX
 
 You also use pLaTeX with Re:VIEW 2.0.

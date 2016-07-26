@@ -1,3 +1,7 @@
+# Version 2.1.0
+
+* Add parameters ``makeindexcommand`` and ``makeindexoptions`` in config.yml.
+
 # Version 2.0.0
 
 ## New Features
@@ -535,4 +539,3 @@ To support language parameter for syntax highlighting, if you use review-ext.rb 
 * add headline level 5 and 6 (paragraph, subparagraph)
 * escape all dash
 * add ``begin{alltt}..\end{alltt}`` into ``\reviewemlist``, ``\reviewlist`` and ``\reviewcmd``
-

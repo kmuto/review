@@ -237,6 +237,11 @@
 <%= @config["usepackage"] %>
 <%- end -%>
 
+<%- if @config["makeindexcommand"] -%>
+\usepackage{makeidx}
+\makeindex
+<%- end -%>
+
 \begin{document}
 
 \reviewmainfont
@@ -306,6 +311,12 @@
 
 <%- if @input_files["POSTDEF"] -%>
 <%= @input_files["POSTDEF"] %>
+<%- end -%>
+
+<%- if @config["makeindexcommand"] -%>
+\cleardoublepage
+\phantomsection
+\printindex
 <%- end -%>
 
 %%% profile
