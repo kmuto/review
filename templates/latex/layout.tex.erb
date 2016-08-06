@@ -264,7 +264,7 @@
         <%= @authors %>
       \end{tabular}\par}%
     \vfill
-    {\large <%= escape_latex(@config["date"].to_s) %> <%= escape_latex(I18n.t("edition")) %>\hspace{2zw}<%= escape_latex(I18n.t("published_by", @config.names_of("prt").join(I18n.t("names_splitter"))))%>\par}%
+    {\large <%= escape_latex(@config["date"].to_s) %> <%= escape_latex(I18n.t("edition")) %>\hspace{2zw}<%= escape_latex(I18n.t("published_by", @config.names_of("pbl").join(I18n.t("names_splitter"))))%>\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
