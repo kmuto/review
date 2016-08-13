@@ -444,9 +444,11 @@ module ReVIEW
 
     def list_body(id, lines, lang)
       id ||= ''
-      print %Q[<pre class="list">]
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      class_names = ["list"]
       lexer = lang || File.extname(id).gsub(/\./, '')
+      class_names.push("language-#{lexer}") unless lexer.blank?
+      print %Q[<pre class="#{class_names.join(" ")}">]
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
@@ -491,7 +493,9 @@ module ReVIEW
         puts highlight(:body => body, :lexer => lexer, :format => 'html',
                        :options => {:linenos => 'inline', :nowrap => false})
       else
-        print '<pre class="list">'
+        class_names = ["list"]
+        class_names.push("language-#{lang}") unless lang.blank?
+        print %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           puts detab((i+1).to_s.rjust(2) + ": " + line)
         end
@@ -504,7 +508,9 @@ module ReVIEW
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
-      print %Q[<pre class="emlist">]
+      class_names = ["emlist"]
+      class_names.push("language-#{lang}") unless lang.blank?
+      print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
@@ -524,7 +530,9 @@ module ReVIEW
         puts highlight(:body => body, :lexer => lexer, :format => 'html',
                        :options => {:linenos => 'inline', :nowrap => false})
       else
-        print '<pre class="emlist">'
+        class_names = ["emlist"]
+        class_names.push("language-#{lang}") unless lang.blank?
+        print %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           puts detab((i+1).to_s.rjust(2) + ": " + line)
         end
