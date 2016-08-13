@@ -67,6 +67,8 @@ pdfmaker:
 
 webmaker:
   stylesheet: ["style.css", "style-web.css"]
+  analytics:
+    # google: UA-XXXXX-X
 
 debug: true
 
