@@ -61,6 +61,12 @@ Performance/RedundantMerge:
 Style/ZeroLengthPredicate:
   Enabled: false
 
+Style/NumericPredicate:
+  Enabled: false
+
+Style/TernaryParentheses:
+  Enabled: false
+
 ##################### Metrics ##################################
 
 Metrics/ClassLength:

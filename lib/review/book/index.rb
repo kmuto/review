@@ -239,28 +239,6 @@ module ReVIEW
       end
     end
 
-    class FormatRef
-      def initialize(locale, index)
-        @locale = locale
-        @index = index
-      end
-
-      def title(id)
-        sprintf(@locale["#{@index.item_type}_caption_format".to_sym],
-          @index.title(id))
-      end
-
-      def number(id)
-        sprintf(@locale["#{@index.item_type}_number_format".to_sym],
-          @index.number(id))
-      end
-
-      def method_missing(mid, *args, &block)
-        super unless @index.respond_to?(mid)
-        @index.__send__(mid, *args, &block)
-      end
-    end
-
     class BibpaperIndex < Index
       Item = Struct.new(:id, :number, :caption)
 
