@@ -536,7 +536,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     assert_equal %Q|<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n| +
-                 %Q|<pre class=\"list\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
+                 %Q|<pre class=\"list language-ruby\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
                  %Q|  (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">\|</span>i<span style=\"color: #666666\">\|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n| +
                  %Q|  <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n| +
                  %Q|<span style=\"color: #008000; font-weight: bold\">end</span>\n| +
@@ -561,6 +561,14 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n</pre>\n</div>\n", actual
   end
 
+  def test_list_ext
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist.rb",1)
+    end
+    actual = compile_block("//list[samplelist.rb][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list language-rb">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
+  end
+
   def test_listnum
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
@@ -579,7 +587,7 @@ EOS
     expected =<<-EOS
 <div class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
-<pre class="list"> 1: def foo(a1, a2=:test)
+<pre class="list language-ruby"> 1: def foo(a1, a2=:test)
  2:   (1..3).times{|i| a.include?(:foo)}
  3:   return true
  4: end
@@ -641,7 +649,7 @@ EOS
     @book.config["highlight"] = {}
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//emlist[][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
-    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span>\n</pre>\n</div>\n", actual
+    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist language-sql\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span>\n</pre>\n</div>\n", actual
   end
 
   def test_emlist_caption
@@ -660,6 +668,20 @@ EOS
     expected =<<-EOS
 <div class="emlistnum-code">
 <pre class="emlist"> 1: lineA
+ 2: lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlistnum_lang
+    @book.config["highlight"] = false
+    actual = compile_block("//emlistnum[cap][text]{\nlineA\nlineB\n//}\n")
+    expected =<<-EOS
+<div class="emlistnum-code">
+<p class="caption">cap</p>
+<pre class="emlist language-text"> 1: lineA
  2: lineB
 </pre>
 </div>
