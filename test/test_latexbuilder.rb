@@ -207,7 +207,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_idx
     actual = compile_inline("@<idx>{__TEST%$}, @<hidx>{__TEST%$}")
-    assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$}, \\index{__TEST%$}|, actual
+    assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}, \\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}|, actual
   end
 
   def test_jis_x_0201_kana

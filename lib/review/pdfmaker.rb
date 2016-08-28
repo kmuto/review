@@ -181,15 +181,45 @@ module ReVIEW
           ## do compile
           if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
             warn "command configuration is prohibited in safe mode. ignored."
+            # revert to default
+            texcommand = ReVIEW::Configure.values["texcommand"]
+            dvicommand = ReVIEW::Configure.values["dvicommand"]
+            dvioptions = ReVIEW::Configure.values["dvioptions"]
+            texoptions = ReVIEW::Configure.values["texoptions"]
+            makeindex_command = REVIEW::Configure.values["pdfmaker"]["makeindex_command"]
+            makeindex_options = REVIEW::Configure.values["pdfmaker"]["makeindex_options"]
+            makeindex_sty = REVIEW::Configure.values["pdfmaker"]["makeindex_sty"]
+            makeindex_dic = REVIEW::Configure.values["pdfmaker"]["makeindex_dic"]
           else
             texcommand = @config["texcommand"] if @config["texcommand"]
             dvicommand = @config["dvicommand"] if @config["dvicommand"]
             dvioptions = @config["dvioptions"] if @config["dvioptions"]
             texoptions = @config["texoptions"] if @config["texoptions"]
+            makeindex_command = @config["pdfmaker"]["makeindex_command"]
+            makeindex_options = @config["pdfmaker"]["makeindex_options"]
+            makeindex_sty = @config["pdfmaker"]["makeindex_sty"]
+            makeindex_dic = @config["pdfmaker"]["makeindex_dic"]
           end
-          3.times do
+
+          # too mendex specific...
+          if makeindex_sty.present?
+            makeindex_sty = File.absolute_path(makeindex_sty, @basedir)
+            makeindex_options += " -s #{makeindex_sty}" if File.exist?(makeindex_sty)
+          end
+          if makeindex_dic.present?
+            makeindex_dic = File.absolute_path(makeindex_dic, @basedir)
+            makeindex_options += " -d #{makeindex_dic}" if File.exist?(makeindex_dic)
+          end
+
+          2.times do
             system_or_raise("#{texcommand} #{texoptions} book.tex")
           end
+
+          if File.exist?("book.idx")
+            system_or_raise("#{makeindex_command} #{makeindex_options} book")
+          end
+
+          system_or_raise("#{texcommand} #{texoptions} book.tex")
           call_hook("hook_aftertexcompile")
 
           if File.exist?("book.dvi")

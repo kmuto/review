@@ -236,6 +236,10 @@
 <%- if @config["usepackage"] -%>
 <%= @config["usepackage"] %>
 <%- end -%>
+<%- if @config["makeindex"] -%>
+\usepackage{makeidx}
+\makeindex
+<%- end -%>
 
 \begin{document}
 
@@ -306,6 +310,9 @@
 
 <%- if @input_files["POSTDEF"] -%>
 <%= @input_files["POSTDEF"] %>
+<%- end -%>
+<%- if @config["makeindex"] -%>
+\printindex
 <%- end -%>
 
 %%% profile

@@ -32,6 +32,7 @@ module ReVIEW
         "params" => "", # specify review2html parameters
         "toclevel" => 3, # level of toc
         "secnolevel" => 2, # level of section #
+        "makeindex" => nil, # Make index page
         "epubversion" => 3,
         "titlepage" => true, # Use title page
         "toc" => nil, # Use table of contents in body
@@ -65,11 +66,20 @@ module ReVIEW
         "chapref" => nil,       # for IDGXML
         "structuredxml" => nil, # for IDGXML
         "pt_to_mm_unit" => 0.3528, # for IDGXML (DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm)
+
         "footnotetext" => nil, # for LaTeX
         "texcommand" => "uplatex", # for LaTeX
         "texdocumentclass" => ["jsbook", "uplatex,oneside"], # for LaTeX
         "dvicommand" => "dvipdfmx", # for LaTeX
         "dvioptions" => "-d 5", # for LaTeX
+
+        "pdfmaker" => {
+          "makeindex_command" => "mendex", # works only when makeindex is true
+          "makeindex_options" => "-f -r -I utf8",
+          "makeindex_sty" => nil, # only mendex
+          "makeindex_dic" => nil, # only mendex
+          "makeindex_mecab" => true, # only mendex
+        },
       ]
       conf.maker = nil
       conf
