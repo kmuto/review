@@ -215,9 +215,13 @@ module ReVIEW
             system_or_raise("#{texcommand} #{texoptions} book.tex")
           end
 
-          if File.exist?("book.idx")
+          call_hook("hook_beforemakeindex")
+
+          if @config["makeindex"] && File.exist?("book.idx")
             system_or_raise("#{makeindex_command} #{makeindex_options} book")
           end
+
+          call_hook("hook_aftermakeindex")
 
           system_or_raise("#{texcommand} #{texoptions} book.tex")
           call_hook("hook_aftertexcompile")
