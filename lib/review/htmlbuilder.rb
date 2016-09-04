@@ -630,7 +630,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      puts %Q[<div class="image">]
+      puts %Q[<div id="#{normalize_id(id)}" class="image">]
       puts %Q[<pre class="dummyimage">]
       lines.each do |line|
         puts detab(line)
@@ -769,7 +769,7 @@ module ReVIEW
     def indepimage(id, caption="", metric=nil)
       metrics = parse_metric("html", metric)
       caption = "" if caption.nil?
-      puts %Q[<div class="image">]
+      puts %Q[<div id="#{normalize_id(id)}" class="image">]
       begin
         puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       rescue
