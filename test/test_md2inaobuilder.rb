@@ -61,4 +61,15 @@ BBB
     actual = compile_block("//comment{\nHello, world!\n//}\n")
     assert_equal "<span class=\"red\">\nHello, world!\n</span>\n", actual
   end
+
+  def test_ruby_mono
+    actual = compile_block("@<ruby>{謳,うた}い文句")
+    assert_equal "　<span class='monoruby'>謳(うた)</span>い文句\n\n", actual
+  end
+
+  def test_ruby_group
+    actual = compile_block("@<ruby>{欠伸,あくび}が出る")
+    assert_equal "　<span class='groupruby'>欠伸(あくび)</span>が出る\n\n", actual
+  end
+
 end

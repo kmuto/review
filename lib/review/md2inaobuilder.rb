@@ -52,6 +52,15 @@ module ReVIEW
       puts str
       puts '</span>'
     end
+
+    def compile_ruby(base, ruby)
+      if base.length == 1
+        %Q[<span class='monoruby'>#{escape_html(base)}(#{escape_html(ruby)})</span>]
+      else
+        %Q[<span class='groupruby'>#{escape_html(base)}(#{escape_html(ruby)})</span>]
+      end
+    end
+
   end
 
 end # module ReVIEW
