@@ -41,7 +41,7 @@ ARGF.each {|line|
       puts "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
     end
   elsif block == "table"
-    next if line =~ /\A\#\@/
+    next if line.start_with?('#@')
     if line !~ /\A\-\-\-\-\-/
       # table
       colcount = line.split("\t").size
