@@ -30,10 +30,11 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
-    attr_accessor :config, :basedir
+    attr_accessor :config, :basedir, :basehookdir
 
     def initialize
       @basedir = nil
+      @basehookdir = nil
       @input_files = Hash.new{|h, key| h[key] = ""}
     end
 
@@ -120,7 +121,8 @@ module ReVIEW
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
-      @basedir = File.absolute_path(File.dirname(yamlfile))
+      @basedir = File.dirname(yamlfile)
+      @basehookdir = File.absolute_path(File.dirname(yamlfile))
 
       begin
         @config.check_version(ReVIEW::VERSION)
@@ -389,7 +391,7 @@ module ReVIEW
 
     def call_hook(hookname)
       if @config["pdfmaker"].instance_of?(Hash) && @config["pdfmaker"][hookname]
-        hook = File.absolute_path(@config["pdfmaker"][hookname], @basedir)
+        hook = File.absolute_path(@config["pdfmaker"][hookname], @basehookdir)
         if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
           warn "hook configuration is prohibited in safe mode. ignored."
         else
