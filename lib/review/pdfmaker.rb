@@ -228,7 +228,7 @@ module ReVIEW
         ReVIEW::MakerHelper.copy_images_to_dir(from, to)
         Dir.chdir(to) do
           images = Dir.glob("**/*").find_all{|f|
-            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
+            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/
           }
           break if images.empty?
           system("extractbb", *images)
@@ -395,7 +395,7 @@ module ReVIEW
         if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
           warn "hook configuration is prohibited in safe mode. ignored."
         else
-          system_or_raise("#{hook} #{Dir.pwd} #{@basedir}")
+          system_or_raise("#{hook} #{Dir.pwd} #{@basehookdir}")
         end
       end
     end
