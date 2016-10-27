@@ -97,3 +97,12 @@ Metrics/AbcSize:
   Exclude:
     - "bin/review-*"
     - "test/**/*"
+
+### shoud be < 25
+Metrics/BlockLength:
+  CountComments: false  # count full line comments?
+  Max: 50
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'test/**/*.rb'
