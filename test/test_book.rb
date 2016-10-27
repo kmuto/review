@@ -154,7 +154,7 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
-  # backword compatible
+  # backward compatible
   def test_setParameter
     book = Book::Base.new(File.dirname(__FILE__))
     book.config = :test
