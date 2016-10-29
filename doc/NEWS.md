@@ -38,8 +38,8 @@
 ## Docs
 
 * add customize_epub.md
-* config.yml: add `csl` in sample
 * add preproc(.ja).md ([#632])
+* config.yml: add `csl` in sample
 * config.yml: add simplified sample ([#626])
 
 ## Others

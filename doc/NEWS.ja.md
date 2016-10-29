@@ -37,8 +37,8 @@
 ## ドキュメント
 
 * 「EPUBローカルルールへの対応方法」のドキュメントを英訳しました
-* config.yml: `csl`の例を追加しました
 * 「review-preprocユーザガイド(preproc(.ja).md)」を追加しました ([#632])
+* config.yml: `csl`の例を追加しました
 * config.yml: シンプルなサンプルファイル(config.yml.sample-simple)を追加しました ([#626])
 
 ## その他
