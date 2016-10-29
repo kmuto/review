@@ -1,3 +1,61 @@
+# Version 2.1.0
+
+## New Features
+
+* review-init: generate Gemfile ([#650])
+* HTMLBuilder: add language specified class in list ([#666])
+* HTMLBuilder: set id to <div> of indepimage as same as image
+* MD2INAOBuilder: support new builder MD2INAOBuilder ([#671])
+* MARKDOWNBuilder, MD2INAOBuilder: support ruby ([#671])
+* TEXTBuilder: support `@<hd>` ([#648])
+* TOPBuilder: support `@<comment>{}` ([#625], [#627])
+
+## Breaking Changes
+
+## Bug Fixes
+
+* review-validate: fix parsing blocks and comments in tables, and messages
+* LATEXBuilder: fix when rights is null in config.yml ([#653])
+* LATEXBuilder: escaping values from config.yml and locale.yml([#642])
+* PDFMaker: support AI, EPS, and TIFF on pdfmaker correctly ([#675])
+* PDFMaker: fix hooks; add @basehookdir and use it to get fullpath ([#662])
+* EPUBMaker: fix missing default dc:identifier value ([#636])
+* EPUBMaker: ext. of cover file should be "xhtml" in EPUB ([#618])
+* WEBMaker: fix broken link ([#645])
+* WEBTOCPrinter: fix when Part has no "*.re" file ([#641])
+* I18n: fix `%pJ` in format_number_header ([#628])
+
+## Enhancements
+
+* LATEXBuilder: use pxjahyper package in pLaTeX ([#640])
+* LATEXBuilder: Enhanced implementation of `layout.tex.erb` ([#617])
+* LATEXBuilder: fix to use keywords in locale.yml ([#629])
+* IDGXMLBuilder: add instruction to column headline for toc ([#634])
+* IDGXMLBuilder: check caption by using present? instead of nil? ([#633])
+* Rakefile: add task `preproc` ([#630])
+* ReVIEW::Location: add test ([#638])
+
+## Docs
+
+* add customize_epub.md
+* config.yml: add `csl` in sample
+* add preproc(.ja).md ([#632])
+* config.yml: add simplified sample ([#626])
+
+## Others
+
+* license of template fils are MIT license([#663])
+* rubocop: suppress warnings of rubocop
+
+## Contributors
+
+* [@kazken3](https://github.com/kazken3)
+* [@vvakame](https://github.com/vvakame)
+* [@masarakki](https://github.com/masarakki)
+* [@munepi](https://github.com/munepi)
+* [@znz](https://github.com/znz)
+
+
 # Version 2.0.0
 
 ## New Features
