@@ -22,7 +22,7 @@
 * EPUBMaker: dc:identifierが空になってしまうバグを修正しました ([#636])
 * EPUBMaker: coverファイルの拡張子がxhtmlになってしまうバグを修正しました ([#618])
 * WEBMaker: リンクを修正しました ([#645])
-* WEBTOCPrinter: 部がファイルでない場合のリンクを修正しました ([#641])
+* WEBMaker: 部がファイルでない場合のリンクを修正しました ([#639], [#641])
 * I18n: format_number_headerので`%pJ`の扱いを修正しました ([#628])
 
 ## 機能強化
@@ -30,8 +30,8 @@
 * LATEXBuilder: pLaTeXでもpxjahyper packageを使うようにしました([#640])
 * LATEXBuilder: `layout.tex.erb`を改良しました([#617])
 * LATEXBuilder: locale.ymlで指定されたキーワードを使うようにしました ([#629])
-* IDGXMLBuilder: add instruction to column headline for toc ([#634])
-* IDGXMLBuilder: check caption by using present? instead of nil? ([#633])
+* IDGXMLBuilder: コラムの埋め込み目次情報のXMLインストラクションを修正しました ([#634])
+* IDGXMLBuilder: //emlistで空のcaptionができるバグを修正しました ([#633])
 * Rakefile: `preproc`タスクを追加しました ([#630])
 
 ## ドキュメント
@@ -54,6 +54,31 @@
 * [@munepi](https://github.com/munepi)
 * [@znz](https://github.com/znz)
 
+[#675]: https://github.com/kmuto/review/issues/
+[#671]: https://github.com/kmuto/review/issues/
+[#666]: https://github.com/kmuto/review/issues/
+[#663]: https://github.com/kmuto/review/issues/
+[#662]: https://github.com/kmuto/review/issues/
+[#653]: https://github.com/kmuto/review/issues/
+[#650]: https://github.com/kmuto/review/issues/
+[#648]: https://github.com/kmuto/review/issues/
+[#645]: https://github.com/kmuto/review/issues/
+[#642]: https://github.com/kmuto/review/issues/
+[#641]: https://github.com/kmuto/review/issues/
+[#640]: https://github.com/kmuto/review/issues/
+[#638]: https://github.com/kmuto/review/issues/
+[#636]: https://github.com/kmuto/review/issues/
+[#634]: https://github.com/kmuto/review/issues/
+[#633]: https://github.com/kmuto/review/issues/
+[#632]: https://github.com/kmuto/review/issues/
+[#630]: https://github.com/kmuto/review/issues/
+[#629]: https://github.com/kmuto/review/issues/
+[#628]: https://github.com/kmuto/review/issues/
+[#627]: https://github.com/kmuto/review/issues/
+[#626]: https://github.com/kmuto/review/issues/
+[#625]: https://github.com/kmuto/review/issues/
+[#618]: https://github.com/kmuto/review/issues/
+[#617]: https://github.com/kmuto/review/issues/
 
 # Version 2.0.0の主な変更点
 

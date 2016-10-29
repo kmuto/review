@@ -22,7 +22,7 @@
 * EPUBMaker: fix missing default dc:identifier value ([#636])
 * EPUBMaker: ext. of cover file should be "xhtml" in EPUB ([#618])
 * WEBMaker: fix broken link ([#645])
-* WEBTOCPrinter: fix when Part has no "*.re" file ([#641])
+* WEBMaker: fix when Part has no "*.re" file ([#641])
 * I18n: fix `%pJ` in format_number_header ([#628])
 
 ## Enhancements
@@ -31,7 +31,7 @@
 * LATEXBuilder: Enhanced implementation of `layout.tex.erb` ([#617])
 * LATEXBuilder: fix to use keywords in locale.yml ([#629])
 * IDGXMLBuilder: add instruction to column headline for toc ([#634])
-* IDGXMLBuilder: check caption by using present? instead of nil? ([#633])
+* IDGXMLBuilder: fix to avoid empty caption in //emlist ([#633])
 * Rakefile: add task `preproc` ([#630])
 * ReVIEW::Location: add test ([#638])
 
@@ -54,6 +54,32 @@
 * [@masarakki](https://github.com/masarakki)
 * [@munepi](https://github.com/munepi)
 * [@znz](https://github.com/znz)
+
+[#675]: https://github.com/kmuto/review/issues/
+[#671]: https://github.com/kmuto/review/issues/
+[#666]: https://github.com/kmuto/review/issues/
+[#663]: https://github.com/kmuto/review/issues/
+[#662]: https://github.com/kmuto/review/issues/
+[#653]: https://github.com/kmuto/review/issues/
+[#650]: https://github.com/kmuto/review/issues/
+[#648]: https://github.com/kmuto/review/issues/
+[#645]: https://github.com/kmuto/review/issues/
+[#642]: https://github.com/kmuto/review/issues/
+[#641]: https://github.com/kmuto/review/issues/
+[#640]: https://github.com/kmuto/review/issues/
+[#638]: https://github.com/kmuto/review/issues/
+[#636]: https://github.com/kmuto/review/issues/
+[#634]: https://github.com/kmuto/review/issues/
+[#633]: https://github.com/kmuto/review/issues/
+[#632]: https://github.com/kmuto/review/issues/
+[#630]: https://github.com/kmuto/review/issues/
+[#629]: https://github.com/kmuto/review/issues/
+[#628]: https://github.com/kmuto/review/issues/
+[#627]: https://github.com/kmuto/review/issues/
+[#626]: https://github.com/kmuto/review/issues/
+[#625]: https://github.com/kmuto/review/issues/
+[#618]: https://github.com/kmuto/review/issues/
+[#617]: https://github.com/kmuto/review/issues/
 
 
 # Version 2.0.0
