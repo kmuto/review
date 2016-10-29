@@ -27,6 +27,15 @@ dvicommand: dvipdfmx
 dvioptions: "-d 5"
 ```
 
+## 索引を出力するには
+
+config.yml で makeindexcommand オプションを指定すると、索引が出力されるようになります。このオプションには "mendex" などの索引作成コマンドを指定してください。コマンドオプションは makeindexoptions オプションで指定できます。
+
+```yaml
+makeindexcommand: mendex
+makeindexoptions: "-c -g -U"
+```
+
 ## 旧来の pLaTeX を使用するには
 
 既存のドキュメントについて、利用しているマクロやパッケージが upLaTeX でうまく動かない、あるいはこれまでと異なる紙面ができてしまう場合は、pLaTeX に戻したいと思うかもしれません。

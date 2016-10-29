@@ -1,3 +1,7 @@
+# Version 2.1.0の主な変更点
+
+* config.ymlの``makeindexcommand``と``makeindexoptions``をサポートしました。
+
 # Version 2.0.0の主な変更点
 
 ## 新機能

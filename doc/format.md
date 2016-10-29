@@ -731,6 +731,8 @@ Note: `//raw` and `@<raw>` may break structured document easily.
 @<icon>{samplephoto}:: inline image
 @<m>{a + \alpha}:: TeX inline equation
 @<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
+@<idx>{text}:: print the text and register it to the index
+@<hidx>{text}:: register the text to the index without printing it
 ```
 
 ## Commands for Authors (pre-processor commands)
@@ -850,4 +852,3 @@ Sample layout file(layout.html.erb):
   </body>
 </html>
 ```
-
