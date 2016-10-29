@@ -1,3 +1,60 @@
+# Version 2.1.0 の主な変更点
+
+## 新機能
+
+* review-init: Gemfileを生成するようにしました([#650])
+* HTMLBuilder: リスト内で言語別のclassを生成するようにしました([#666])
+* HTMLBuilder: image同様indepimageでも<div>要素にid属性を追加しました
+* MD2INAOBuilder: 新builderとしてMD2INAOBuilderを追加しました ([#671])
+* MARKDOWNBuilder, MD2INAOBuilder: ルビに対応しました ([#671])
+* TEXTBuilder: `@<hd>`に対応しました([#648])
+* TOPBuilder: `@<comment>{}`に対応しました ([#625], [#627])
+
+## 非互換の変更
+
+## バグ修正
+
+* review-validate: ブロックや表内でのコメントの挙動と、メッセージを修正しました
+* LATEXBuilder: config.ymlで`rights`が空の場合に対応しました ([#653])
+* LATEXBuilder: config.ymlとlocale.ymlの値のエスケープを修正しました ([#642])
+* PDFMaker: AI, EPS, TIFFの画像に対応しました ([#675])
+* PDFMaker: フックからフルパスを取得できるよう @basehookdir を追加しました ([#662])
+* EPUBMaker: dc:identifierが空になってしまうバグを修正しました ([#636])
+* EPUBMaker: coverファイルの拡張子がxhtmlになってしまうバグを修正しました ([#618])
+* WEBMaker: リンクを修正しました ([#645])
+* WEBTOCPrinter: 部がファイルでない場合のリンクを修正しました ([#641])
+* I18n: format_number_headerので`%pJ`の扱いを修正しました ([#628])
+
+## 機能強化
+
+* LATEXBuilder: pLaTeXでもpxjahyper packageを使うようにしました([#640])
+* LATEXBuilder: `layout.tex.erb`を改良しました([#617])
+* LATEXBuilder: locale.ymlで指定されたキーワードを使うようにしました ([#629])
+* IDGXMLBuilder: add instruction to column headline for toc ([#634])
+* IDGXMLBuilder: check caption by using present? instead of nil? ([#633])
+* Rakefile: `preproc`タスクを追加しました ([#630])
+
+## ドキュメント
+
+* 「EPUBローカルルールへの対応方法」のドキュメントを英訳しました
+* config.yml: `csl`の例を追加しました
+* 「review-preprocユーザガイド(preproc(.ja).md)」を追加しました ([#632])
+* config.yml: シンプルなサンプルファイル(config.yml.sample-simple)を追加しました ([#626])
+
+## その他
+
+* templates/以下のテンプレートファイルのライセンスを他の文書内に取り込みやすくするため、MIT licenseにしました([#663])
+* rubocopの新しい警告を抑制しました
+
+## コントリビューターのみなさん
+
+* [@kazken3](https://github.com/kazken3)
+* [@vvakame](https://github.com/vvakame)
+* [@masarakki](https://github.com/masarakki)
+* [@munepi](https://github.com/munepi)
+* [@znz](https://github.com/znz)
+
+
 # Version 2.0.0の主な変更点
 
 ## 新機能
