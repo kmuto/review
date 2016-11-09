@@ -1,0 +1,77 @@
+# simple sample of config.yml
+review_version: 2.0
+
+debug: true
+
+## inherited configuratons
+
+# inherit: ["config-default.yml"]
+
+
+## Book Metadata
+
+bookname: book
+language: ja
+booktitle: The Re:VIEW Sample Book
+aut: ["Masayoshi Takahashi"]
+# cov: ["Masayoshi Takahashi"]
+# ill: ["Masayoshi Takahashi"]
+# trl: null
+# edt: null
+pbl: "Re:VIEW Publishing inc."
+prt: "Re:VIEW Printing inc."
+date: 2016-05-03
+history: [["2012-01-30"],["2016-04-20","2016-05-03"]]
+rights: (C) 2016 Re:VIEW Commiters, some rights reserved.
+description: sample config.yml file for Re:VIEW book
+urnid: urn:uid:http://reviewml.org/review-sample-book
+# isbn: null
+
+## Book Structure
+
+toclevel: 3
+secnolevel: 2
+toc: true
+direction: "ltr"
+
+## Extra Pages
+
+cover: null
+coverimage: sample.jpg
+# titlepage: null
+# titlefile: null
+# originaltitlefile: null
+# creditfile: null
+colophon: true
+# backcover: null
+# profile: null
+# profiletitle: "About Authors"
+# advfile: null
+
+## Syntax Highlighting
+
+highlight:
+  html: "pygments"
+  latex: "listings"
+
+## for HTML
+
+htmlext: html
+stylesheet: ["style.css"]
+
+## for EPUB
+
+epubmaker:
+  htmlext: xhtml
+  cover_linear: true
+  externallink: true
+
+## for LaTeX
+
+texstyle: reviewmacro
+texdocumentclass: ["jsbook", "uplatex,oneside"]
+
+## for PDFMaker
+
+pdfmaker:
+  colophon: true

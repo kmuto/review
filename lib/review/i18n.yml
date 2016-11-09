@@ -6,10 +6,12 @@ ja:
   columnname: "コラム"
   column_head: "■コラム"
   part: 第%d部
+  part_short: "%pR"
   chapter: 第%d章
+  chapter_short: "%d"
   chapter_postfix: "　"
   chapter_quote: "「%s」"
-  appendix: 付録%s
+  appendix: 付録%pA
   numberless_image: "図:"
   memo_head: ■メモ
   format_number: "%s.%d"
@@ -21,6 +23,7 @@ ja:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  external_link: "%s（%s）"
   label_marker: "●●　"
   aut: "著　者"
   csl: "監　修"
@@ -30,8 +33,8 @@ ja:
   edt: "編　集"
   pht: "撮　影"
   trl: "翻　訳"
-  ## XXX Backward Compatibility: `prt` should be "印刷所"
-  prt: "発行所"
+  ## XXX Breaking Change: now `prt` is "印刷所", not "発行所"
+  prt: "印刷所"
   pbl: "発行所"
   contact: "連絡先"
   author_with_label: "%s　著"
@@ -65,7 +68,9 @@ en:
   columnname: "Column"
   column_head: "Column"
   part: "Part %s"
+  part_short: "%pR"
   chapter: Chapter %d
+  chapter_short: "%d"
   chapter_postfix: ". "
   chapter_quote: '"%s"'
   appendix: Appendix %s
@@ -78,6 +83,7 @@ en:
   image_quote: '"%s"'
   caption_prefix: " "
   caption_prefix_idgxml: "　"
+  external_link: "%s (%s)"
   ruby_prefix: "("
   ruby_postfix: ")"
   label_marker: "●●　"
@@ -121,7 +127,9 @@ zh-TW:
   table: 表
   list: List
   part: 第%d部份
+  part_short: "%pR"
   chapter: 第%d章
+  chapter_short: "%d"
   chapter_postfix: "　"
   chapter_quote: "「%s」"
   appendix: 附錄%s
@@ -135,6 +143,7 @@ zh-TW:
   caption_prefix_idgxml: "　"
   ruby_prefix: "（"
   ruby_postfix: "）"
+  external_link: "%s (%s)"
   label_marker: "●●　"
   aut: "著作人"
   csl: "監　修"

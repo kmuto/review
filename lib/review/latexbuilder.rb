@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010  Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2016  Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -25,7 +25,6 @@ module ReVIEW
       Compiler.definline(e)
     }
 
-    Compiler.defblock(:memo, 0..1)
     Compiler.defsingle(:latextsize, 1)
 
     def extname
@@ -39,6 +38,7 @@ module ReVIEW
       @table_caption = nil
       @ol_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
+      initialize_metachars(@book.config["texcommand"])
     end
     private :builder_init_file
 
@@ -87,10 +87,29 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
-      "\n" + macro(HEADLINE[level]+"*", caption) + "\n"
+      "\n" + macro(HEADLINE[level]+"*", caption) + "\n" +
+        macro('addcontentsline', 'toc', HEADLINE[level], caption)
     end
 
     def nonum_end(level)
+    end
+
+    def notoc_begin(level, label, caption)
+      "\n" + 
+      macro(HEADLINE[level]+"*", caption)
+    end
+
+    def notoc_end(level)
+    end
+
+    def nodisp_begin(level, label, caption)
+      buf  = "\n"
+      buf << macro('clearpage') if @output.pos == 0
+      buf << macro('addcontentsline', 'toc', HEADLINE[level], caption)
+      # FIXME: headings
+    end
+
+    def nodisp_end(level)
     end
 
     def column_begin(level, label, caption)
@@ -115,8 +134,7 @@ module ReVIEW
 
     def column_end(level)
       buf = ""
-      buf << "\\end{reviewcolumn}\n"
-      blank
+      buf << "\\end{reviewcolumn}\n\n"
       buf
     end
 
@@ -127,11 +145,7 @@ module ReVIEW
         buf << "\\reviewminicolumntitle{#{caption}}"
       end
 
-      if @book.config["deprecated-blocklines"].nil?
-        buf << lines.join("")
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      buf << lines.join("")
 
       buf << "\\end{reviewminicolumn}\n"
       buf
@@ -292,7 +306,6 @@ module ReVIEW
     end
 
     def common_code_block(id, lines, command, caption, lang)
-      buf = ""
       if caption
         if command =~ /emlist/ || command =~ /cmd/
           buf << macro(command + 'caption', "#{caption}") + "\n"
@@ -363,6 +376,13 @@ module ReVIEW
 
 
     def image_header(id, caption)
+    end
+
+    def handle_metric(str)
+      if @book.config["image_scale2width"] && str =~ /\Ascale=([\d.]+)\Z/
+        return "width=#{$1}\\maxwidth"
+      end
+      str
     end
 
     def result_metric(array)
@@ -570,6 +590,44 @@ module ReVIEW
       buf
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if !@chapter.image(id).bound?
+        warn "image not bound: #{id}"
+        return image_dummy(id, caption, lines)
+      end
+
+      buf = ""
+
+      begin
+        if caption.present?
+          @table_caption = true
+          buf << '\begin{table}[h]' + "\n"
+          buf << macro('reviewimgtablecaption', caption) + "\n"
+        end
+        buf << macro('label', table_label(id)) + "\n"
+      rescue ReVIEW::KeyError
+        error "no such table: #{id}"
+      end
+      buf << imgtable_image(id, caption, metric)
+
+      buf << '\end{table}' + "\n" if @table_caption
+      @table_caption = nil
+    end
+
+    def imgtable_image(id, caption, metric)
+      metrics = parse_metric("latex", metric)
+      # image is always bound here
+      buf = ""
+      buf << '\begin{reviewimage}' + "\n"
+      if metrics.present?
+        buf << "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}" + "\n"
+      else
+        buf << "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}" + "\n"
+      end
+      buf << '\end{reviewimage}' + "\n"
+      buf
+    end
+
     def quote(lines)
       latex_block 'quote', lines
     end
@@ -598,11 +656,7 @@ module ReVIEW
     def latex_block(type, lines)
       buf = "\n"
       buf << macro('begin', type)
-      if @book.config["deprecated-blocklines"].nil?
-        buf << lines.join("")
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      buf << lines.join("")
       buf << macro('end', type) << "\n"
       buf
     end
@@ -898,6 +952,10 @@ module ReVIEW
       end
       buf << "\n"
       buf
+    end
+
+    def inline_tcy(str)
+      macro('rensuji', str)
     end
 
     def bibpaper_header(id, caption)

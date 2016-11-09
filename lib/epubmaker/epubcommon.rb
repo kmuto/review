@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2014 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -9,8 +9,8 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'epubmaker/producer'
 require 'review/i18n'
+require 'review/template'
 require 'cgi'
 require 'shellwords'
 begin
@@ -25,7 +25,9 @@ module EPUBMaker
   class EPUBCommon
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
+      @body_ext = ''
       @producer = producer
+      @body_ext = nil
     end
 
     # Return mimetype content.
@@ -64,7 +66,7 @@ module EPUBMaker
     <text>#{CGI.escapeHTML(@producer.params["title"])}</text>
   </docTitle>
   <docAuthor>
-    <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(join_with_separator(@producer.params["aut"], ", "))}</text>
+    <text>#{@producer.params["aut"].nil? ? "" : CGI.escapeHTML(join_with_separator(@producer.params["aut"], ReVIEW::I18n.t("names_splitter")))}</text>
   </docAuthor>
 EOT
     end
@@ -86,7 +88,7 @@ EOT
         s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{@producer.res.v("toctitle")}</text>
+        <text>#{CGI.escapeHTML(@producer.res.v("toctitle"))}</text>
       </navLabel>
       <content src="#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}"/>
     </navPoint>
@@ -135,16 +137,16 @@ EOT
         end
         @body = <<-EOT
   <div id="cover-image" class="cover-image">
-    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.params["title"])}" class="max"/>
+    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.params.name_of("title"))}" class="max"/>
   </div>
         EOT
       else
         @body = <<-EOT
-<h1 class="cover-title">#{CGI.escapeHTML(@producer.params["title"])}</h1>
+<h1 class="cover-title">#{CGI.escapeHTML(@producer.params.name_of("title"))}</h1>
         EOT
       end
 
-      @title = @producer.params['title']
+      @title = CGI.escapeHTML(@producer.params.name_of("title"))
       @language = @producer.params['language']
       @stylesheets = @producer.params["stylesheet"]
       if @producer.params["htmlversion"].to_i == 5
@@ -158,10 +160,10 @@ EOT
 
     # Return title (copying) content.
     def titlepage
-      @title = @producer.params["title"]
+      @title = CGI.escapeHTML(@producer.params.name_of("title"))
 
       @body = <<EOT
-  <h1 class="tp-title">#{CGI.escapeHTML(@title)}</h1>
+  <h1 class="tp-title">#{@title}</h1>
 EOT
       if @producer.params["aut"]
         @body << <<EOT
@@ -169,11 +171,11 @@ EOT
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params["aut"], ", "))}</h2>
+  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params.names_of("aut"), ReVIEW::I18n.t("names_splitter")))}</h2>
 EOT
       end
 
-      publisher = @producer.params["pbl"] || @producer.params["prt"] # XXX Backward Compatiblity
+      publisher = @producer.params.names_of("pbl")
       if publisher
         @body << <<EOT
   <p>
@@ -182,7 +184,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{CGI.escapeHTML(join_with_separator(publisher, ", "))}</h3>
+  <h3 class="tp-publisher">#{CGI.escapeHTML(join_with_separator(publisher, ReVIEW::I18n.t("names_splitter")))}</h3>
 EOT
       end
 
@@ -199,48 +201,29 @@ EOT
 
     # Return colophon content.
     def colophon
-      @title = @producer.res.v("colophontitle")
+      @title = CGI.escapeHTML(@producer.res.v("colophontitle"))
       @body = <<EOT
   <div class="colophon">
 EOT
 
       if @producer.params["subtitle"].nil?
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.params["title"])}</p>
+    <p class="title">#{CGI.escapeHTML(@producer.params.name_of("title"))}</p>
 EOT
       else
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.params["title"])}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.params["subtitle"])}</span></p>
+    <p class="title">#{CGI.escapeHTML(@producer.params.name_of("title"))}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.params.name_of("subtitle"))}</span></p>
 EOT
       end
 
       if @producer.params["date"] || @producer.params["history"]
-        @body << %Q[    <div class="pubhistory">\n]
-        if @producer.params["history"]
-          @producer.params["history"].each_with_index do |items, edit|
-            items.each_with_index do |item, rev|
-              editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}")
-              revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
-              if item =~ /\A\d+\-\d+\-\d+\Z/
-                @body << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n]
-              else
-                # custom date with string
-                item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
-                  @body << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
-                end
-              end
-            end
-          end
-        else
-          @body << %Q[      <p>#{ReVIEW::I18n.t("published_by2", date_to_s(@producer.params["date"]))}</p>\n]
-        end
-        @body << %Q[    </div>\n]
+        @body << colophon_history
       end
 
       @body << %Q[    <table class="colophon">\n]
       @body << @producer.params["colophon_order"].map{ |role|
         if @producer.params[role]
-          %Q[      <tr><th>#{@producer.res.v(role)}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params[role], ", "))}</td></tr>\n]
+          %Q[      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params.names_of(role), ReVIEW::I18n.t("names_splitter")))}</td></tr>\n]
         else
           ""
         end
@@ -251,7 +234,7 @@ EOT
       end
       @body << %Q[    </table>\n]
       if !@producer.params["rights"].nil? && @producer.params["rights"].size > 0
-        @body << %Q[    <p class="copyright">#{join_with_separator(@producer.params["rights"], "<br />")}</p>]
+        @body << %Q[    <p class="copyright">#{join_with_separator(@producer.params.names_of("rights").map {|m| CGI.escapeHTML(m)}, "<br />")}</p>\n]
       end
       @body << %Q[  </div>\n]
 
@@ -266,6 +249,31 @@ EOT
       tmpl.result(binding)
     end
 
+    def colophon_history
+      buf = ""
+      buf << %Q[    <div class="pubhistory">\n]
+      if @producer.params["history"]
+        @producer.params["history"].each_with_index do |items, edit|
+          items.each_with_index do |item, rev|
+            editstr = (edit == 0) ? ReVIEW::I18n.t("first_edition") : ReVIEW::I18n.t("nth_edition","#{edit+1}")
+            revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
+            if item =~ /\A\d+\-\d+\-\d+\Z/
+              buf << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n]
+            else
+              # custom date with string
+              item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
+                buf << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
+              end
+            end
+          end
+        end
+      else
+        buf << %Q[      <p>#{ReVIEW::I18n.t("published_by2", date_to_s(@producer.params["date"]))}</p>\n]
+      end
+      buf << %Q[    </div>\n]
+      buf
+    end
+
     def date_to_s(date)
       require 'date'
       d = Date.parse(date)
@@ -274,9 +282,9 @@ EOT
 
     # Return own toc content.
     def mytoc
-      @title = @producer.res.v("toctitle")
+      @title = CGI.escapeHTML(@producer.res.v("toctitle"))
 
-      @body = %Q[  <h1 class="toc-title">#{@producer.res.v("toctitle")}</h1>\n]
+      @body = %Q[  <h1 class="toc-title">#{CGI.escapeHTML(@producer.res.v("toctitle"))}</h1>\n]
       if @producer.params["epubmaker"]["flattoc"].nil?
         @body << hierarchy_ncx("ul")
       else
@@ -414,7 +422,7 @@ EOT
       Dir.chdir(tmpdir) do |d|
         Zip::OutputStream.open(epubfile) do |epub|
           root_pathname = Pathname.new(tmpdir)
-          relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
+          # relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
           epub.put_next_entry('mimetype', nil, nil, Zip::Entry::STORED)
           epub << "application/epub+zip"
 

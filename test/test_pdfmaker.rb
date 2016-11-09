@@ -16,8 +16,10 @@ class PDFMakerTest < Test::Unit::TestCase
                      "urnid" => "http://example.jp/",
                      "date" => "2011-01-01",
                      "language" => "ja",
+                     "texcommand" => "uplatex",
                    })
     @maker.config = @config
+    @maker.initialize_metachars(@config["texcommand"])
     @output = StringIO.new
     I18n.setup(@config["language"])
   end
@@ -45,8 +47,14 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
-  def test_buildpath
-    assert_equal(@maker.build_path, "./sample-pdf")
+  def test_buildpath_debug
+    @maker.config["debug"] = true
+    path = @maker.build_path
+    begin
+      assert_equal(path, "sample-pdf")
+    ensure
+      FileUtils.remove_entry_secure path
+    end
   end
 
   def test_parse_opts_help
@@ -62,7 +70,6 @@ class PDFMakerTest < Test::Unit::TestCase
   end
 
   def test_parse_opts_ignore_errors
-    io = StringIO.new
     conf, yml = @maker.parse_opts(["--ignore-errors", "hoge.yml"])
     assert_equal conf["ignore-errors"], true
     assert_equal yml, "hoge.yml"
@@ -106,11 +113,12 @@ class PDFMakerTest < Test::Unit::TestCase
       "ill"=>["イラスト七郎","イラスト八郎"],
       "cov"=>["表紙九郎"],
       "edt"=>["編集十郎"],
-      "prt"=>"テスト出版",
+      "pbl"=>"テスト出版",
+      "prt"=>"テスト印刷",
     })
     Dir.mktmpdir do |dir|
       okuduke = @maker.make_colophon
-      assert_equal("著　者 & テスト太郎、テスト次郎 \\\\\n監　修 & 監修三郎 \\\\\n翻　訳 & 翻訳四郎、翻訳五郎 \\\\\nデザイン & デザイン六郎 \\\\\nイラスト & イラスト七郎、イラスト八郎 \\\\\n表　紙 & 表紙九郎 \\\\\n編　集 & 編集十郎 \\\\\n発行所 & テスト出版 \\\\\n",
+      assert_equal("著　者 & テスト太郎、テスト次郎 \\\\\n監　修 & 監修三郎 \\\\\n翻　訳 & 翻訳四郎、翻訳五郎 \\\\\nデザイン & デザイン六郎 \\\\\nイラスト & イラスト七郎、イラスト八郎 \\\\\n表　紙 & 表紙九郎 \\\\\n編　集 & 編集十郎 \\\\\n発行所 & テスト出版 \\\\\n印刷所 & テスト印刷 \\\\\n",
                    okuduke)
     end
   end
@@ -143,10 +151,6 @@ class PDFMakerTest < Test::Unit::TestCase
   end
 
   def test_gettemplate_with_backmatter
-    if RUBY_VERSION =~ /^1.8/
-      $stderr.puts "skip test_gettemplate_with_backmatter (for travis error)"
-      return
-    end
     @config.merge!({
       "backcover"=>"backcover.html",
       "profile"=>"profile.html",
@@ -169,6 +173,67 @@ class PDFMakerTest < Test::Unit::TestCase
         assert_equal(expect, tmpl)
       end
     end
+  end
+
+  def test_colophon_history
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja"})
+    history = @maker.make_history_list
+    expect = ["2011年1月1日　発行"]
+    assert_equal expect, history
+  end
+
+  def test_colophon_history_2
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja",
+                    "history" => [[
+                                    "2011-08-03 v1.0.0版発行",
+                                    "2012-02-15 v1.1.0版発行",
+                                  ]] })
+    history = @maker.make_history_list
+    expect = ["2011年8月3日　v1.0.0版発行",
+              "2012年2月15日　v1.1.0版発行"]
+    assert_equal expect, history
+  end
+
+  def test_colophon_history_date
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja",
+                    "history" => [[
+                                    "2011-08-03",
+                                    "2012-02-15",
+                                  ]] })
+    history = @maker.make_history_list
+    expect = ["2011年8月3日　初版第1刷　発行",
+              "2012年2月15日　初版第2刷　発行"]
+    assert_equal expect, history
+  end
+
+  def test_colophon_history_date2
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja",
+                    "history" => [[
+                                    "2011-08-03",
+                                    "2012-02-15",
+                                  ],[
+                                    "2012-10-01",
+                                  ],[
+                                    "2013-03-01",
+                                  ]] })
+    history = @maker.make_history_list
+    expect = ["2011年8月3日　初版第1刷　発行",
+              "2012年2月15日　初版第2刷　発行",
+              "2012年10月1日　第2版第1刷　発行",
+              "2013年3月1日　第3版第1刷　発行"]
+    assert_equal expect, history
   end
 
 end

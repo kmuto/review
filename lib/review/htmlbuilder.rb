@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2016 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -11,8 +11,9 @@
 
 require 'review/builder'
 require 'review/htmlutils'
-require 'review/htmllayout'
+require 'review/template'
 require 'review/textutils'
+require 'review/webtocprinter'
 
 module ReVIEW
 
@@ -22,15 +23,9 @@ module ReVIEW
     include HTMLUtils
 
     [:ref].each {|e| Compiler.definline(e) }
-    Compiler.defblock(:memo, 0..1)
-    Compiler.defblock(:tip, 0..1)
-    Compiler.defblock(:info, 0..1)
     Compiler.defblock(:planning, 0..1)
     Compiler.defblock(:best, 0..1)
-    Compiler.defblock(:important, 0..1)
     Compiler.defblock(:security, 0..1)
-    Compiler.defblock(:caution, 0..1)
-    Compiler.defblock(:notice, 0..1)
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
 
@@ -48,53 +43,40 @@ module ReVIEW
     def builder_init_file
       @warns = []
       @errors = []
-      @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
+      @chapter.book.image_types = %w(.png .jpg .jpeg .gif .svg)
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
+      @nonum_counter = 0
+      @body_ext = nil
+      @toc = nil
     end
     private :builder_init_file
 
     def result
-      layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
-      unless File.exist?(layout_file) # backward compatibility
-        layout_file = File.join(@book.basedir, "layouts", "layout.erb")
+      if @book.config.maker == "webmaker"
+        htmldir = "web/html"
+        localfilename = "layout-web.html.erb"
+      else
+        htmldir = "html"
+        localfilename = "layout.html.erb"
+      end
+      if @book.htmlversion == 5
+        htmlfilename = File.join(htmldir, "layout-html5.html.erb")
+      else
+        htmlfilename = File.join(htmldir, "layout-xhtml1.html.erb")
+      end
+
+      layout_file = File.join(@book.basedir, "layouts", localfilename)
+      if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
+        raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
       end
       if File.exist?(layout_file)
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
-        else
-          title = strip_html(@chapter.title)
-          language = @book.config['language']
-          stylesheets = @book.config["stylesheet"]
-
-          toc = ""
-          toc_level = 0
-          @chapter.headline_index.items.each do |i|
-            caption = "<li>#{strip_html(i.caption)}</li>\n"
-            if toc_level == i.number.size
-              # do nothing
-            elsif toc_level < i.number.size
-              toc += "<ul>\n" * (i.number.size - toc_level)
-              toc_level = i.number.size
-            elsif toc_level > i.number.size
-              toc += "</ul>\n" * (toc_level - i.number.size)
-              toc_level = i.number.size
-              toc += "<ul>\n" * (toc_level - 1)
-            end
-            toc += caption
-          end
-          toc += "</ul>" * toc_level
-
-          return messages() +
-            HTMLLayout.new(
-            {'body' => @output.string, 'title' => title, 'toc' => toc,
-             'builder' => self,
-             'language' => language,
-             'stylesheets' => stylesheets,
-             'next' => @chapter.next_chapter,
-             'prev' => @chapter.prev_chapter},
-            layout_file).result
+          layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
         end
+      else
+        layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
       end
 
       # default XHTML header/footer
@@ -104,14 +86,16 @@ module ReVIEW
       @body = @output.string
       @language = @book.config['language']
       @stylesheets = @book.config["stylesheet"]
+      @next = @chapter.next_chapter
+      @prev = @chapter.prev_chapter
+      @next_title = @next ? compile_inline(@next.title) : ""
+      @prev_title = @prev ? compile_inline(@prev.title) : ""
 
-      if @book.htmlversion == 5
-        htmlfilename = "layout-html5.html.erb"
-      else
-        htmlfilename = "layout-xhtml1.html.erb"
+      if @book.config.maker == "webmaker"
+        @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
       end
-      tmplfile = File.expand_path('./html/'+htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
-      tmpl = ReVIEW::Template.load(tmplfile)
+
+      tmpl = ReVIEW::Template.load(layout_file)
       tmpl.result(binding)
     end
 
@@ -188,11 +172,13 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
+      @nonum_counter += 1
       buf = ""
       buf << "\n" if level > 1
       unless caption.empty?
         if label.nil?
-          buf << %Q[<h#{level}>#{caption}</h#{level}>\n]
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          buf << %Q[<h#{level} id="#{id}">#{caption}</h#{level}>\n]
         else
           buf << %Q[<h#{level} id="#{normalize_id(label)}">#{caption}</h#{level}>\n]
         end
@@ -201,6 +187,38 @@ module ReVIEW
     end
 
     def nonum_end(level)
+    end
+
+    def notoc_begin(level, label, caption)
+      @nonum_counter += 1
+      puts '' if level > 1
+      unless caption.empty?
+        if label.nil?
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          puts %Q[<h#{level} id="#{id}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+        else
+          puts %Q[<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+        end
+      end
+    end
+
+    def notoc_end(level)
+    end
+
+    def nodisp_begin(level, label, caption)
+      @nonum_counter += 1
+      puts '' if level > 1
+      unless caption.empty?
+        if label.nil?
+          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+          puts %Q[<a id="#{id}" /><h#{level} id="#{id}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+        else
+          puts %Q[<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+        end
+      end
+    end
+
+    def nodisp_end(level)
     end
 
     def column_begin(level, label, caption)
@@ -265,11 +283,7 @@ module ReVIEW
       unless caption.nil?
         buf << %Q[<p class="caption">#{caption}</p>\n]
       end
-      if @book.config["deprecated-blocklines"].nil?
-        buf << lines.join("")
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      buf << lines.join("")
       buf << "</div>\n"
       buf
     end
@@ -308,6 +322,10 @@ module ReVIEW
 
     def notice(lines, caption = nil)
       captionblock("notice", lines, caption)
+    end
+
+    def warning(lines, caption = nil)
+      captionblock("warning", lines, caption)
     end
 
     def point(lines, caption = nil)
@@ -401,11 +419,7 @@ module ReVIEW
     end
 
     def read(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        %Q[<div class="lead">\n#{lines.join("")}\n</div>\n]
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      %Q[<div class="lead">\n#{lines.join("")}\n</div>\n]
     end
 
     alias_method :lead, :read
@@ -432,9 +446,11 @@ module ReVIEW
 
     def list_body(id, lines, lang)
       id ||= ''
-      buf = %Q[<pre class="list">]
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      class_names = ["list"]
       lexer = lang || File.extname(id).gsub(/\./, '')
+      class_names.push("language-#{lexer}") unless lexer.blank?
+      buf = %Q[<pre class="#{class_names.join(" ")}">]
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       buf << highlight(:body => body, :lexer => lexer, :format => 'html')
       buf << "</pre>\n"
       buf
@@ -484,7 +500,9 @@ module ReVIEW
         buf << highlight(:body => body, :lexer => lexer, :format => 'html',
                          :options => {:linenos => 'inline', :nowrap => false})
       else
-        buf << '<pre class="list">'
+        class_names = ["list"]
+        class_names.push("language-#{lang}") unless lang.blank?
+        buf << %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
         end
@@ -498,7 +516,9 @@ module ReVIEW
       if caption.present?
         buf << %Q(<p class="caption">#{caption}</p>\n)
       end
-      buf << %Q[<pre class="emlist">]
+      class_names = ["emlist"]
+      class_names.push("language-#{lang}") unless lang.blank?
+      buf << %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       buf << highlight(:body => body, :lexer => lexer, :format => 'html')
@@ -518,7 +538,9 @@ module ReVIEW
         buf << highlight(:body => body, :lexer => lexer, :format => 'html',
                          :options => {:linenos => 'inline', :nowrap => false})
       else
-        buf << '<pre class="emlist">'
+        class_names = ["emlist"]
+        class_names.push("language-#{lang}") unless lang.blank?
+        buf << %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           buf << detab((i+1).to_s.rjust(2) + ": " + line) << "\n"
         end
@@ -553,34 +575,22 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        "<blockquote>#{lines.join("")}</blockquote>\n"
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      "<blockquote>#{lines.join("")}</blockquote>\n"
     end
 
     def doorquote(lines, ref)
       buf = ""
-      if @book.config["deprecated-blocklines"].nil?
-        buf << %Q[<blockquote style="text-align:right;">\n]
-        buf << "#{lines.join("")}\n"
-        buf << %Q[<p>#{ref}より</p>\n]
-        buf << %Q[</blockquote>\n]
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      buf << %Q[<blockquote style="text-align:right;">\n]
+      buf << "#{lines.join("")}\n"
+      buf << %Q[<p>#{ref}より</p>\n]
+      buf << %Q[</blockquote>\n]
       buf
     end
 
     def talk(lines)
       buf = ""
       buf << %Q[<div class="talk">\n]
-      if @book.config["deprecated-blocklines"].nil?
-        buf << "#{lines.join("\n")}\n"
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      buf << "#{lines.join("\n")}\n"
       buf << "</div>\n"
       buf
     end
@@ -634,8 +644,8 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      buf = %Q[<div class="image">\n]
-      buf << %Q[<pre class="dummyimage">\n]
+      buf = %Q[<div id="#{normalize_id(id)}" class="image">]
+      buf << %Q[<pre class="dummyimage">]
       lines.each do |line|
         buf << detab(line) << "\n"
       end
@@ -729,6 +739,30 @@ module ReVIEW
       "</table>\n"
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if !@chapter.image(id).bound?
+        warn "image not bound: #{id}"
+        image_dummy id, caption, lines
+        return
+      end
+
+      puts %Q[<div id="#{normalize_id(id)}" class="imgtable image">]
+      begin
+        table_header id, caption unless caption.nil?
+      rescue KeyError
+        error "no such table: #{id}"
+      end
+
+      imgtable_image(id, caption, metric)
+
+      puts %Q[</div>]
+    end
+
+    def imgtable_image(id, caption, metric)
+      metrics = parse_metric("html", metric)
+      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+    end
+
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
@@ -752,7 +786,7 @@ module ReVIEW
     def indepimage(id, caption="", metric=nil)
       metrics = parse_metric("html", metric)
       caption = "" if caption.nil?
-      buf = %Q[<div class="image">\n]
+      buf = %Q[<div id="#{normalize_id(id)}" class="image">]
       begin
         buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}"#{metrics} />\n]
       rescue
@@ -925,8 +959,7 @@ module ReVIEW
       if @book.config["mathml"]
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
-        parser = MathML::LaTeX::Parser.new(
-          :symbol => MathML::Symbol::CharacterReference)
+        parser = MathML::LaTeX::Parser.new(:symbol => MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
       else
         %Q[<span class="equation">#{str}</span>]
@@ -1139,6 +1172,13 @@ module ReVIEW
       end
     end
 
+    def inline_tcy(str)
+      # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
+      style = "tcy"
+      style = "upright" if str.size == 1 && str.match(/[[:ascii:]]/)
+      %Q[<span class="#{style}">#{escape_html(str)}</span>]
+    end
+
     def inline_raw(str)
       super(str)
     end
@@ -1148,16 +1188,16 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? url : label}</a>)
+      if @book.config["externallink"]
+        %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      else
+        label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
+      end
     end
 
     def flushright(lines)
       result = ""
-      if @book.config["deprecated-blocklines"].nil?
-        result << lines.join("").gsub("<p>", "<p class=\"flushright\">")
-      else
-        error "deprecated-blocklines is obsoleted."
-      end
+      result << lines.join("").gsub("<p>", "<p class=\"flushright\">")
       result
     end
 

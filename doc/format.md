@@ -2,7 +2,10 @@
 
 The document is a brief guide for Re:VIEW markup syntax.
 
-Re:VIEW is based on EWB of ASCII, influenced RD and other Wiki system's syntax.
+Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
+
+This document explains about the format of Re:VIEW 2.0.
+
 
 ## Paragraph
 
@@ -22,6 +25,7 @@ Two empty lines or more are same as one empty line.
 ## Chapter, Section, Subsection (headings)
 
 Chapters, sections, subsections, subsubsections use `=`, `==`, `===`, `====`, `=====`.
+You should add one or more spaces after `=`.
 
 Usage:
 
@@ -39,9 +43,11 @@ Usage:
 
 Headings should not have any spaces before title; if line head has space, it is as paragraph.
 
+You should add emply lines between Paragraphs and Headings.
+
 ## Column
 
-`[column]` in heading are column's caption.
+`[column]` in a heading are column's caption.
 
 Usage:
 
@@ -75,9 +81,15 @@ Compiler-compiler is ...
 blah, blah, blah (this is paragraphs outside of the column)
 ```
 
+There are some more options of headings.
+
+* `[nonum]` : no numbering, but add it into TOC (Table of Contents).
+* `[nodisp]` : not display in document, only in TOC.
+* `[notoc]` :  no numbering, not in TOC.
+
 ## Itemize
 
-Itemize (ul in HTML) use ` *` (one space char and asterisk).
+Itemize (ul in HTML) uses ` *` (one space char and asterisk).
 
 Nested itemize is like ` **`, ` ***`.
 
@@ -94,9 +106,11 @@ Usage:
 In itemize, you must write one more space character at line head.
 When you use `*` without spaces in line head, it's just paragraph.
 
-## Ordered itemize
+You should add emply lines between Paragraphs and Itemize (same as Ordered and Non-Orderd).
 
-Ordered itemize (ol in HTML)  use ` 1. ...`, ` 2. ...`, ` 3. ...`.
+## Ordered Itemize
+
+Ordered itemize (ol in HTML)  uses ` 1. ...`, ` 2. ...`, ` 3. ...`.
 They aren't nested.
 
 Usage:
@@ -142,7 +156,44 @@ After dt line, space-indented lines are descriptions(dd in HTML).
 
 You can use inline markup in texts of lists.
 
-## Code list
+## Block Commands and Inline Commands
+
+With the exception of headings and lists, Re:VIEW supports consistent syntax.
+
+Block commands are used for multiple lines to add some actions (ex. decoration).
+
+The syntax of block commands is below:
+
+```
+//command[option1][option2]...{
+(content lines, sometimes separated by empty lines)
+  ...
+//}
+```
+
+If there is no options, the begining line is just `//command{`.  When you want to use a character `]`, you must use escaping `\]`.
+
+Some block commands has no content.
+
+```
+//command[option1][option2]...
+```
+
+Inline commands are used in block,  paragraphes, headings, block contents and block options.
+
+```
+@<command>{content}
+```
+
+When you want to use a character `}` in inline content, you must use escaping `\}`.
+
+There are some limitations in blocks and inlines.
+
+* Block commands do not support nestins.  You cannot write blocks in another block.
+* You cannot write headings and itemize in block contents.
+* Inline commands also do not support nestins.  You cannot write inlines in another inline.
+
+## Code List
 
 Code list like source codes is `//list`. If you don't need numbers, you can use ``em`` prefix (as embedded). If you need line numbers, you can use ``num`` postfix.  So you can use four types of lists.
 
@@ -179,7 +230,7 @@ puts "hello world!"
 Usage:
 
 ```review
-//emlist[][ruby]{
+//emlist[][c]{
 printf("hello");
 //}
 ```
@@ -192,14 +243,16 @@ puts "hello world!"
 //}
 ```
 
+The Language option is used for highlightings.
 
 You can use inline markup in blocks.
 
 When you refer a list like `see list X`, you can use an ID in `//list`
 such as `@<list>{main}`.
 
+When you refer a list in the other chapter, you can use an ID with chapter ID, such like `@<list>{advanced|main}`, to refer a list `main` in `advanced.re`.
 
-### Quoting source code
+### Quoting Source Code
 
 `//source` is for quoting source code. filename is mandatory.
 
@@ -222,7 +275,7 @@ Usage:
 When you ..., see @<list>{hello}.
 ```
 
-## Inline source code
+## Inline Source Code
 
 You can use `@<code>{...}` in inline context.
 
@@ -232,15 +285,16 @@ Usage:
 @<code>{p = obj.ref_cnt}
 ```
 
-## Shell session
+## Shell Session
 
 When you want to show command line operation, you can use `//cmd{ ... //}`.
+You can use inline commands in this command.
 
 Usage:
 
 ```
 //cmd{
-$ ls /
+$ @<b>{ls /}
 //}
 ```
 
@@ -267,6 +321,8 @@ V1 --> V6 --|
 //}
 ```
 
+The third option is used to define the scale of images.  `scale=X` is scaling for page width (`scale=0.5` makes image width to be half of page width).
+
 When you want to refer images such as "see figure 1.", you can use
 inline reference markup like `@<img>{unixhistory}`.
 
@@ -290,6 +346,10 @@ The order of finding image is as follows.  The first matched one is used.
 * ``<chapid>`` is basename of *.re file.  If the filename is `ch01.re`, chapid is `ch01`.
 * ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
+
+### Inline Images
+
+When you want to use images in paragraph, you can use the inline command `@<icon>{ID}`.  The order of finding images are same as `//image`.
 
 ## Images without caption counter
 
@@ -351,7 +411,21 @@ When you want to write "see table X", you can write `@<table>{envvars}`.
 
 You can use inline markup in the tables.
 
-## Quoting text
+### Complex Table
+
+If you want to use complex tables, you can use `imgtable` block command with an image of the table.  `imgtable` supports numbering and `@<table>`.
+
+Usage:
+
+```
+//imgtable[complexmatrix][very complex table]{
+to use image "complexmatrix".
+The rule of finding images is same as image command.
+//}
+```
+
+
+## Quoting Text
 
 You can use `//quote{ 〜 //}` as quotations.
 
@@ -365,6 +439,22 @@ Seeing is believing.
 
 You can use inline markup in quotations.
 
+## Short column
+
+Some block commands are used for short column.
+
+* `//note[caption]{ 〜 //}`
+* `//memo[caption]{ 〜 //}`
+* `//tip[caption]{ 〜 //}`
+* `//info[caption]{ 〜 //}`
+* `//warning[caption]{ 〜 //}`
+* `//important[caption]{ 〜 //}`
+* `//caution[caption]{ 〜 //}`
+* `//notice[caption]{ 〜 //}`
+
+`[caption]` is optional.
+
+The content is like paragraph; separated by empty lines.
 
 ## Footnotes
 
@@ -383,7 +473,7 @@ is in footnotes.
 
 Note that In LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in columns and tables.
 
-### --footnotetext option
+### `--footnotetext` option
 
 When you want to use `footnotetext` option, you can add `--footnotetext` with `params` in config.yml.
 With this option, you can use footnote in tables and short notes.
@@ -429,7 +519,7 @@ Usage:
 … is the well-known project.(@<bib>{lins})
 ```
 
-## Lead sentences
+## Lead Sentences
 
 lead sentences are `//lead{ ... //}`.
 You can write as `//read{ ... //}`.
@@ -443,7 +533,7 @@ and I show the way how to write a program in Linux.
 //}
 ```
 
-## TeX equations
+## TeX Equations
 
 You can use `//texequation{ ... //}` to insert mathematical equations of LaTeX.
 
@@ -460,196 +550,19 @@ Usage:
 `//noindent` is a tag for spacing.
 
 
-* `//noindent` : ingore indentation immediately following line. (in HTML, use noindent class)
+* `//noindent` : ingore indentation immediately following line. (in HTML, add `noindent` class)
 
 
 `//linebreak` and `//pagebreak` will be obsoleted.
 
-## Comments
-
-If you want to write some comments that do not output in the document, you can use comment notation `#@#`.
-
-Usage:
-
-```
-#@# Must one empty line
-```
-
-If you want to write some warnings, use `#@warn(...)`.
-
-Usage:
-
-```
-#@warn(TBD)
-```
-
-When you want to write comments in the output document, use `//comment` and `@<comment>` with the option `--draft` of review-compile command.
-
-Usage:
-
-```
-@<comment>{TODO}
-```
-
-## Raw data block
-
-When you want to write non-Re:VIEW line, use `//raw`.
-
-Usage:
-
-```
-//raw[|html|<div class="special">\nthis is a special line.\n</div>]
-```
-
-In above line, `html` is a builder name that handle raw data.
-You can use `html`, `latex`, `idgxml` and `top` as builder name.
-You can specify multiple builder names with separator `,`.
-`\n` is translated into newline(U+000A).
-
-Output:
-
-(In HTML:)
-
-```
-<div class="special">
-this is a special line.
-</div>
-```
-
-(In other formats, it is just ignored.)
-
-Note: `//raw` and `@<raw>` may break structured document easily.
-
-## Other syntax
-
-In Re:VIEW, you can add your customized blocks.  So you can define
-special block for some books.
-
-* `//prototype` : function prototype. It's used in the book `Futu no Linux programming`.
-* `//type` : type definition. It's used in the book `Futu no Haskell programming`.
-
-You can define customized block in the file `review-ext.rb`.
-
-Usage:
-
-```ruby
-# review-ext.rb
-ReVIEW::Compiler.defblock :foo, 0..1
-class ReVIEW::HTMLBuilder
-  def foo(lines, caption = nil)
-    puts lines.join(",")
-  end
-end
-```
-
-You can add the syntax as below:
-
-```
-//foo{
-A
-B
-C
-//}
-```
-
-```
-# Result
-A,B,C
-```
-
-
-## Syntax in paragraph (Inline Markups)
-
-```
-@<list>{program}:: `List 1.5`
-@<img>{unixhistory}:: `Figure 1.3`
-@<table>{ascii}:: `Table 1.2`
-@<fn>{site}:: footnote number
-@<kw>{Credential, credential}:: keyword.
-@<chap>{advanced}:: chapter number like `Chapter 17`
-@<title>{advanced}:: title of the chapter
-@<chapref>{advanced}:: a chapter number and chapter title like `Chapter 17. advanced topic`
-@<bou>{appropriate}:: bou-ten.
-@<ruby>{Matsumoto, Matz}:: ruby
-@<ami>{point}:: ami-kake (shaded text)
-@<b>{Please}:: bold
-@<i>{Please}:: italic
-@<strong>{Please}:: strong(emphasis)
-@<em>{Please}:: another emphasis
-@<tt>{foo($bar)}:: teletype (monospaced font)
-@<tti>{FooClass}:: teletype (monospaced font) and italic
-@<ttb>{BarClass}:: teletype (monospaced font) and bold
-@<u>{AB}:: underline
-@<br>{}::  linebreak in paragraph
-@<m>{a + \alpha}:: TeX inline equation
-@<icon>{samplephoto}:: inline image
-@<uchar>{2460}:: Unicode code point
-@<href>{http://www.google.com/, google}:: hyper link(URL)
-@<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
-```
-
-## Tags for Authors (pre-processor commands)
-
-These tags are used in the output document. In contrast,
-tags as below are not used in the output document,  used
-by the author.
-
-```
-#@#:: Comments. All texts in this line are ignored.
-#@warn(...):: Warning messages. The messages are showed when pre-process.
-#@require, #@provide:: Define dependency with keywords.
-#@mapfile(filename) ... #@end:: Insert all content of files.
-#@maprange(filename, range name) ... #@end:: Insert some area in content of files.
-#@mapoutput(command) ... #@end:: Execute command and insert their output.
-```
-
-## HTML/LaTeX layout
-
-`layouts/layout.html.erb` and `layouts/layout.tex.erb` are used as layout file.
-You can use ERb tags in the layout files.
-
-
-Sample layout file(layout.html.erb):
-
-```html
-<html>
-  <head>
-    <title><%= title %></title>
-  </head>
-  <body>
-    <%= body %>
-    <hr/>
-  </body>
-</html>
-```
-
-## Part title (in TOC)
-
-In version 1.2 or before, you can define the parts in PART file.
-PART file correspond with chapters in CHAPS file.
-
-Usage:
-
-```
-CHAPS:
-  intro.re
-
-  start.re
-
-  end.re
-```
-
-```
-PART:
-  (empty line)
-  start section
-  last section
-```
-
-In version 1.3 or after, you can use catalog.yml file.
-For more information of catalog.yml, see Re:VIEW catalog file guide(catalog.md).
 
 ## Referring headings
+
+There are 3 inline commands to refer a chapter.  These references use Chapter ID. The Chapter ID is filename of chapter without extentions.  For example, Chapter ID of `advanced.re` is `advance`.
+
+* `@<chap>{ChapterID}` : chapter number (ex. `Chapter 17`).
+* `@<title>{ChapterID}` : chapter title
+* `@<chapref>{ChapterID}` : chapter number and chapter title (ex. `Chapter 17. other topics`).
 
 `@<hd>` generate referred section title and section number.
 You can use deeper section with separator `|`.
@@ -666,7 +579,7 @@ If section title is unique, `|` is not needed.
 @<hd>{first section}
 ```
 
-If you want to refer another chapter (file), you should add the ID of chapter.
+If you want to refer another chapter (file), you should add the chapter ID.
 
 Usage:
 
@@ -720,11 +633,127 @@ Usage:
 //label[point1]
 ```
 
+## Comments
+
+If you want to write some comments that do not output in the document, you can use comment notation `#@#`.
+
+Usage:
+
+```
+#@# Must one empty line
+```
+
+If you want to write some warnings, use `#@warn(...)`.
+
+Usage:
+
+```
+#@warn(TBD)
+```
+
+When you want to write comments in the output document, use `//comment` and `@<comment>` with the option `--draft` of review-compile command.
+
+Usage:
+
+```
+@<comment>{TODO}
+```
+
+## Raw Data Block
+
+When you want to write non-Re:VIEW line, use `//raw`.
+
+Usage:
+
+```
+//raw[|html|<div class="special">\nthis is a special line.\n</div>]
+```
+
+In above line, `html` is a builder name that handle raw data.
+You can use `html`, `latex`, `idgxml` and `top` as builder name.
+You can specify multiple builder names with separator `,`.
+`\n` is translated into newline(U+000A).
+
+Output:
+
+(In HTML:)
+
+```
+<div class="special">
+this is a special line.
+</div>
+```
+
+(In other formats, it is just ignored.)
+
+Note: `//raw` and `@<raw>` may break structured document easily.
+
+## Inline Commands
+
+### Styles
+
+```
+@<kw>{Credential, credential}:: keyword.
+@<bou>{appropriate}:: bou-ten.
+@<ami>{point}:: ami-kake (shaded text)
+@<u>{AB}:: underline
+@<b>{Please}:: bold
+@<i>{Please}:: italic
+@<strong>{Please}:: strong(emphasis)
+@<em>{Please}:: another emphasis
+@<tt>{foo($bar)}:: teletype (monospaced font)
+@<tti>{FooClass}:: teletype (monospaced font) and italic
+@<ttb>{BarClass}:: teletype (monospaced font) and bold
+@<code>{a.foo(bar)}:: teletype (monospaced font) for fragments of code
+@<tcy>{}:: short horizontal text in vertical text
+```
+
+### References
+
+```
+@<chap>{advanced}:: chapter number like `Chapter 17`
+@<title>{advanced}:: title of the chapter
+@<chapref>{advanced}:: a chapter number and chapter title like `Chapter 17. advanced topic`
+@<list>{program}:: `List 1.5`
+@<img>{unixhistory}:: `Figure 1.3`
+@<table>{ascii}:: `Table 1.2`
+@<hd>{advanced|Other Topics}:: `7-3. Other Topics`
+@<column>{another-column}:: reference of column.
+```
+
+### Other inline commands
+
+```
+@<ruby>{Matsumoto, Matz}:: ruby markups
+@<br>{}::  linebreak in paragraph
+@<uchar>{2460}:: Unicode code point
+@<href>{http://www.google.com/, google}:: hyper link(URL)
+@<icon>{samplephoto}:: inline image
+@<m>{a + \alpha}:: TeX inline equation
+@<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
+```
+
+## Commands for Authors (pre-processor commands)
+
+These commands are used in the output document. In contrast,
+commands as below are not used in the output document,  used
+by the author.
+
+```
+#@#:: Comments. All texts in this line are ignored.
+#@warn(...):: Warning messages. The messages are showed when pre-process.
+#@require, #@provide:: Define dependency with keywords.
+#@mapfile(filename) ... #@end:: Insert all content of files.
+#@maprange(filename, range name) ... #@end:: Insert some area in content of files.
+#@mapoutput(command) ... #@end:: Execute command and insert their output.
+```
+
+You should use these commands with preprocessor command `review-preproc`.
+
 ## Internationalization (i18n)
 
 Re:VIEW support I18N of some text like `Chapter`, `Figure`, and `Table`.
 Current default language is Japanese.
-
 
 You add the file locale.yml in the project directory.
 
@@ -745,11 +774,80 @@ image: Fig.
 table: Tbl.
 ```
 
-### Re:VIEW custom format
+### Re:VIEW Custom Format
 
-In locale.yml, you can use these Re:VIEW custom format.
+In `locale.yml`, you can use these Re:VIEW custom format.
 
-* ``%pA``: Alphabet (A, B, C, ...)
-* ``%pa``: alphabet (a, b, c, ...)
-* ``%pR``: Roman Number (I, II, III, ...)
-* ``%pr``: roman number (i, ii, iii, ...)
+* `%pA` : Alphabet (A, B, C, ...)
+* `%pa` : alphabet (a, b, c, ...)
+* `%pAW` : Alphabet (Large Width) Ａ, Ｂ, Ｃ, ...
+* `%paW` : alphabet (Large Width) ａ, ｂ, ｃ, ...
+* `%pR` : Roman Number (I, II, III, ...)
+* `%pr` : roman number (i, ii, iii, ...)
+* `%pRW` : Roman Number (Large Width) Ⅰ, Ⅱ, Ⅲ, ...
+* `%pJ` : Chainese Number 一, 二, 三, ...
+* `%pdW' : Arabic Number (Large Width for 0..9) １, ２, ...,９, 10, ...
+* `%pDW' : Arabic Number (Large Width) １, ２, ... １０, ...
+
+Usage:
+
+```
+locale: en
+  part: Part. %pRW
+  appendix: Appendix. %pA
+```
+
+## Other Syntax
+
+In Re:VIEW, you can add your customized blocks and inlines.
+
+You can define customized commands in the file `review-ext.rb`.
+
+Usage:
+
+```ruby
+# review-ext.rb
+ReVIEW::Compiler.defblock :foo, 0..1
+class ReVIEW::HTMLBuilder
+  def foo(lines, caption = nil)
+    puts lines.join(",")
+  end
+end
+```
+
+You can add the syntax as below:
+
+```
+//foo{
+A
+B
+C
+//}
+```
+
+```
+# Result
+A,B,C
+```
+
+
+## HTML/LaTeX Layout
+
+`layouts/layout.html.erb` and `layouts/layout.tex.erb` are used as layout file.
+You can use ERb tags in the layout files.
+
+
+Sample layout file(layout.html.erb):
+
+```html
+<html>
+  <head>
+    <title><%= @config["booktitle"] %></title>
+  </head>
+  <body>
+    <%= @body %>
+    <hr/>
+  </body>
+</html>
+```
+

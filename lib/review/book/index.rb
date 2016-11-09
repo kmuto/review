@@ -79,9 +79,10 @@ module ReVIEW
         @items.each(&block)
       end
 
-      def has_key?(id)
-        return @index.has_key?(id)
+      def key?(id)
+        return @index.key?(id)
       end
+      alias_method :has_key?, :key?
     end
 
 
@@ -122,7 +123,7 @@ module ReVIEW
 
     class TableIndex < Index
       def TableIndex.item_type
-        'table'
+        '(table|imgtable)'
       end
     end
 
@@ -188,7 +189,7 @@ module ReVIEW
       end
 
       def ImageIndex.item_type
-        '(image|graph)'
+        '(image|graph|imgtable)'
       end
 
       attr_reader :image_finder
@@ -242,28 +243,6 @@ module ReVIEW
       end
     end
 
-    class FormatRef
-      def initialize(locale, index)
-        @locale = locale
-        @index = index
-      end
-
-      def title(id)
-        sprintf(@locale["#{@index.item_type}_caption_format".to_sym],
-          @index.title(id))
-      end
-
-      def number(id)
-        sprintf(@locale["#{@index.item_type}_number_format".to_sym],
-          @index.number(id))
-      end
-
-      def method_missing(mid, *args, &block)
-        super unless @index.respond_to?(mid)
-        @index.__send__(mid, *args, &block)
-      end
-    end
-
     class BibpaperIndex < Index
       Item = Struct.new(:id, :number, :caption)
 
@@ -300,7 +279,7 @@ module ReVIEW
       end
 
       def IndepImageIndex.item_type
-        'indepimage'
+        '(indepimage|imgtable)'
       end
 
       def number(id)

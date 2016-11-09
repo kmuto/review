@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2015 Kenshi Muto
+# Copyright (c) 2010-2016 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -10,12 +10,13 @@
 
 require 'tmpdir'
 require 'fileutils'
-require 'yaml'
-require 'uuid'
+require 'review/yamlloader'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'
 require 'review/i18n'
+require 'review/configure'
+require 'review/extentions/hash'
 
 module EPUBMaker
   # EPUBMaker produces EPUB file.
@@ -29,14 +30,16 @@ module EPUBMaker
 
     # Take YAML +file+ and return parameter hash.
     def Producer.load(file)
-      raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
-      return YAML.load_file(file)
+      raise "Can't open #{file}." if file.nil? || !File.exist?(file)
+      loader = ReVIEW::YAMLLoader.new
+      loader.load_file(file)
     end
 
     # Take YAML +file+ and update parameter hash.
     def load(file)
-      raise "Can't open #{yamlfile}." if file.nil? || !File.exist?(file)
-      merge_params(@params.merge(YAML.load_file(file)))
+      raise "Can't open #{file}." if file.nil? || !File.exist?(file)
+      loader = ReVIEW::YAMLLoader.new
+      merge_params(@params.deep_merge(loader.load_file(file)))
     end
 
     # Construct producer object.
@@ -44,20 +47,18 @@ module EPUBMaker
     # +version+ takes EPUB version (default is 2).
     def initialize(params=nil, version=nil)
       @contents = []
-      @params = {}
+      @params = ReVIEW::Configure.new
       @epub = nil
       @params["epubversion"] = version unless version.nil?
       @res = ReVIEW::I18n
 
-      unless params.nil?
+      if params
         merge_params(params)
       end
     end
 
     def coverimage
-      if !params["coverimage"]
-        return nil
-      end
+      return nil unless params["coverimage"]
       @contents.each do |item|
         if item.media.start_with?('image') && item.file =~ /#{params["coverimage"]}\Z/ # /
           return item.file
@@ -68,7 +69,7 @@ module EPUBMaker
 
     # Update parameters by merging from new parameter hash +params+.
     def merge_params(params)
-      @params = @params.merge(params)
+      @params.deep_merge!(params)
       complement
 
       unless @params["epubversion"].nil?
@@ -209,18 +210,15 @@ module EPUBMaker
     # Complement parameters.
     def complement
       @params["htmlext"] = "html" if @params["htmlext"].nil?
-      defaults = {
-        "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
-        "title" => @params["booktitle"],
+      defaults = ReVIEW::Configure.new.merge({
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
         "modified" => Time.now.strftime("%Y-%02m-%02dT%02H:%02M:%02SZ"),
-        "urnid" => "urn:uid:#{UUID.create}",
         "isbn" => nil,
         "toclevel" => 2,
         "stylesheet" => [],
-        "epubversion" => 2,
-        "htmlversion" => 4,
+        "epubversion" => 3,
+        "htmlversion" => 5,
         "secnolevel" => 2,
         "pre_secnolevel" => 0,
         "post_secnolevel" => 1,
@@ -231,6 +229,7 @@ module EPUBMaker
         "profile" => nil,
         "colophon" => nil,
         "colophon_order" => %w[aut csl trl dsr ill edt pbl prt pht],
+        "direction" => "ltr",
         "epubmaker" => {
           "flattoc" => nil,
           "flattocindent" => true,
@@ -249,21 +248,15 @@ module EPUBMaker
           "force_include_images" => [],
           "cover_linear" => nil,
         },
+        "externallink" => true,
         "imagedir" => "images",
         "fontdir" => "fonts",
         "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
         "font_ext" => %w(ttf woff otf),
-      }
+      })
 
-      defaults.each_pair do |k, v|
-        if k == "epubmaker" && !@params[k].nil?
-          v.each_pair do |k2, v2|
-            @params[k][k2] = v2 if @params[k][k2].nil?
-          end
-        else
-          @params[k] = v if @params[k].nil?
-        end
-      end
+      @params = defaults.deep_merge(@params)
+      @params["title"] = @params["booktitle"] unless @params["title"]
 
       deprecated_parameters = {
         "ncxindent" => "epubmaker:ncxindent",
@@ -295,12 +288,21 @@ module EPUBMaker
 
       @params["htmlversion"] = 5 if @params["epubversion"] >= 3
 
+      @params.maker = "epubmaker"
+      @params["cover"] = "#{@params["bookname"]}.#{@params["htmlext"]}" unless @params["cover"]
+
       %w[bookname title].each do |k|
-        raise "Key #{k} must have a value. Abort." if @params[k].nil?
+        raise "Key #{k} must have a value. Abort." unless @params[k]
       end
       # array
-      %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl stylesheet rights].each do |item|
-        @params[item] = [@params[item]] if !@params[item].nil? && @params[item].instance_of?(String)
+      %w[subject aut
+         a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt
+         a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl
+         adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt
+         ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl
+         stylesheet rights].each do |item|
+        next unless @params[item]
+        @params[item] = [@params[item]] if @params[item].kind_of?(String)
       end
       # optional
       # type, format, identifier, source, relation, coverpage, aut

@@ -1,0 +1,18 @@
+---
+install:
+  - SET PATH=C:\Ruby%ruby_version%\bin;%PATH%
+  - ruby --version
+  - gem --version
+build_script:
+  - bundle install
+  - bundle exec rake test --trace --verbose
+  - bundle exec rubocop
+
+branches:
+  only:
+    - master
+
+environment:
+  matrix:
+    - ruby_version: "23"
+    - ruby_version: "23-x64"

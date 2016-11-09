@@ -1,8 +1,6 @@
 #
-# $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
-#
 # Copyright (c) 2002-2008 Minero Aoki
-#               2009 Minero Aoki, Kenshi Muto
+#               2009-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -40,6 +38,10 @@ module ReVIEW
           end
         end
         @basedir_seen[dir] = true
+      end
+
+      def self.clear_rubyenv
+        @basedir_seen = {}
       end
 
       def initialize(basedir)
@@ -180,19 +182,9 @@ module ReVIEW
         @config ||= Configure.values
       end
 
-      # backward compatible
-      def param=(param)
-        @config = param
-      end
-
       def load_config(filename)
         new_conf = YAML.load_file(filename)
         @config.merge!(new_conf)
-      end
-
-      # backward compatible
-      def param
-        @config
       end
 
       def catalog
@@ -200,7 +192,7 @@ module ReVIEW
 
         catalogfile_path = "#{basedir}/#{config["catalogfile"]}"
         if File.file? catalogfile_path
-          @catalog = Catalog.new(File.open(catalogfile_path))
+          @catalog = File.open(catalogfile_path){|f| Catalog.new(f) }
         end
 
         @catalog
@@ -336,11 +328,17 @@ module ReVIEW
           return catalog.parts_with_chaps.map do |entry|
             if entry.is_a? Hash
               chaps = entry.values.first.map do |chap|
-                Chapter.new(self, (num += 1), chap, "#{@basedir}/#{chap}")
+                chap = Chapter.new(self, (num += 1), chap, "#{@basedir}/#{chap}")
+                chap
               end
               Part.new(self, (part += 1), chaps, read_PART.split("\n")[part - 1])
             else
               chap = Chapter.new(self, (num += 1), entry, "#{@basedir}/#{entry}")
+              if chap.number
+                num = chap.number
+              else
+                num -= 1
+              end
               Part.new(self, nil, [chap])
             end
           end
@@ -363,8 +361,7 @@ module ReVIEW
 
       def mkpart_from_namelistfile(path)
         chaps = []
-        File.read(path).split.each_with_index do |name, idx|
-          name.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
+        File.read(path, :mode => 'r:BOM|utf-8').split.each_with_index do |name, idx|
           if path =~ /PREDEF/
             chaps << mkchap(name)
           else
@@ -400,9 +397,8 @@ module ReVIEW
 
       def read_FILE(filename)
         res = ""
-        File.open("#{@basedir}/#{filename}") do |f|
+        File.open("#{@basedir}/#{filename}", 'r:BOM|utf-8') do |f|
           while line = f.gets
-            line.sub!(/\A\xEF\xBB\xBF/u, '') # remove BOM
             if /\A#/ =~ line
               next
             end

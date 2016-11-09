@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2014 Minero Aoki, Kenshi Muto
+#               2008-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -29,10 +29,7 @@ module ReVIEW
     Compiler.defblock(:info, 0..1)
     Compiler.defblock(:planning, 0..1)
     Compiler.defblock(:best, 0..1)
-    Compiler.defblock(:important, 0..1)
     Compiler.defblock(:security, 0..1)
-    Compiler.defblock(:caution, 0..1)
-    Compiler.defblock(:notice, 0..1)
     Compiler.defblock(:point, 0..1)
     Compiler.defblock(:shoot, 0..1)
     Compiler.defblock(:reference, 0)
@@ -61,6 +58,7 @@ module ReVIEW
       @sec_counter = SecCounter.new(5, @chapter)
       @column = 0
       @noindent = nil
+      @ol_num = nil
       @rootelement = "doc"
       @secttags = nil
       @tsize = nil
@@ -77,6 +75,14 @@ module ReVIEW
       @secttags = true unless @book.config["structuredxml"].nil?
     end
     private :builder_init_file
+
+    def puts(arg)
+      if @book.config["nolf"].present?
+        print arg
+      else
+        super
+      end
+    end
 
     def result
       s = ""
@@ -291,12 +297,7 @@ module ReVIEW
     end
 
     def read(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        %Q[<lead>#{lines.join}</lead>] + @lf
-      else
-        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join()
-        %Q[<p aid:pstyle="lead">#{str}</p>] + @lf
-      end
+      %Q[<lead>#{lines.join}</lead>] + @lf
     end
 
     alias_method :lead, :read
@@ -401,7 +402,7 @@ module ReVIEW
     def quotedlist(lines, css_class, caption)
       buf = ""
       buf << %Q[<list type='#{css_class}'>]
-      buf << "<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>" + @lf unless caption.nil?
+      buf << "<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>" + @lf if caption.present?
       buf << %Q[<pre>]
       no = 1
       lines.each do |line|
@@ -422,12 +423,7 @@ module ReVIEW
     private :quotedlist
 
     def quote(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        "<quote>#{lines.join("")}</quote>" + @lf
-      else
-        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join("\n")
-        "<quote>#{str}</quote>" + @lf
-      end
+      "<quote>#{lines.join("")}</quote>" + @lf
     end
 
     def inline_table(id)
@@ -518,8 +514,8 @@ module ReVIEW
       buf = ""
       tablewidth = nil
       col = 0
-      unless @book.config["tableopt"].nil?
-        tablewidth = @book.config["tableopt"].split(",")[0].to_f / 0.351 # mm -> pt
+      if @book.config["tableopt"]
+        tablewidth = @book.config["tableopt"].split(",")[0].to_f / @book.config["pt_to_mm_unit"].to_f
       end
       buf << "<table>"
       rows = []
@@ -547,7 +543,7 @@ module ReVIEW
           cellwidth = @tsize.split(/\s*,\s*/)
           totallength = 0
           cellwidth.size.times do |n|
-            cellwidth[n] = cellwidth[n].to_f / 0.351 # mm -> pt
+            cellwidth[n] = cellwidth[n].to_f / @book.config["pt_to_mm_unit"].to_f
             totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
           end
@@ -581,7 +577,7 @@ module ReVIEW
           else
             i = 0
             rows.shift.split(/\t/).each_with_index do |cell, x|
-              buf << %Q[<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+              buf << %Q[<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.3f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
               i += 1
             end
           end
@@ -604,7 +600,7 @@ module ReVIEW
         rows.each_with_index do |row, y|
           i = 0
           row.split(/\t/).each_with_index do |cell, x|
-            buf << %Q[<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.13f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
+            buf << %Q[<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf("%.3f", cellwidth[i])}">#{cell.sub("DUMMYCELLSPLITTER", "")}</td>]
             i += 1
           end
         end
@@ -639,6 +635,19 @@ module ReVIEW
 
     def table_end
       "<?dtp tablerow last?>"
+    end
+
+    def imgtable(lines, id, caption = nil, metric = nil)
+      if @chapter.image(id).bound?
+        metrics = parse_metric("idgxml", metric)
+        puts "<table>"
+        table_header id, caption
+        puts %Q[<imgtable><Image href="file://#{@chapter.image(id).path.sub(/\A.\//, "")}"#{metrics} /></imgtable>]
+        puts "</table>"
+      else
+        warn "image not bound: #{id}" if @strict
+        image_dummy id, caption, lines
+      end
     end
 
     def comment(str)
@@ -829,7 +838,7 @@ module ReVIEW
       @column += 1
       a_id = %Q[id="column-#{@column}"]
       buf << "<#{type}column #{a_id}>"
-      buf << %Q[<title aid:pstyle="#{type}column-title">#{caption}</title>] << @lf
+      buf << %Q[<title aid:pstyle="#{type}column-title">#{caption}</title><?dtp level="9" section="#{escape_html(caption)}"?>] << @lf
       buf
     end
 
@@ -910,12 +919,7 @@ module ReVIEW
     end
 
     def flushright(lines)
-      if @book.config["deprecated-blocklines"].nil?
-        lines.join("").gsub("<p>", "<p align='right'>") + @lf
-      else
-        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join("\n")
-        "<p align='right'>#{str}</p>" + @lf
-      end
+      lines.join("").gsub("<p>", "<p align='right'>") + @lf
     end
 
     def centering(lines)
@@ -927,12 +931,7 @@ module ReVIEW
       buf << "<#{type}>"
       style = specialstyle.nil? ? "#{type}-title" : specialstyle
       buf << "<title aid:pstyle='#{style}'>#{caption}</title>" + @lf unless caption.nil?
-      if @book.config["deprecated-blocklines"].nil?
-        buf << "#{lines.join}</#{type}>" << @lf
-      else
-        str = lines.map{|l| l.sub(/^<p>/,"").sub(/<\/p>$/,"")}.join("\n")
-        buf << "#{str}</#{type}>" << @lf
-      end
+      buf << "#{lines.join}</#{type}>" << @lf
       buf
     end
 
@@ -970,6 +969,10 @@ module ReVIEW
 
     def caution(lines, caption = nil)
       captionblock("caution", lines, caption)
+    end
+
+    def warning(lines, caption = nil)
+      captionblock("warning", lines, caption)
     end
 
     def term(lines)

@@ -4,6 +4,7 @@ require 'test_helper'
 require 'review/htmltoc'
 
 class HTMLTocTest < Test::Unit::TestCase
+  include ReVIEW
 
   def setup
   end

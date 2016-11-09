@@ -38,13 +38,15 @@ class MakerHelperTest < Test::Unit::TestCase
   end
 
   def test_copy_images_to_dir_convert
-    touch_file("#{@tmpdir1}/foo.eps")
+    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
+      touch_file("#{@tmpdir1}/foo.eps")
 
-    image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2,
+      image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2,
                                                  :convert => {:eps => :png})
 
-    assert File.exist?("#{@tmpdir2}/foo.eps.png"), "EPS to PNG conversion failed"
-    assert image_files.include?("#{@tmpdir1}/foo.eps.png")
+      assert File.exist?("#{@tmpdir2}/foo.eps.png"), "EPS to PNG conversion failed"
+      assert image_files.include?("#{@tmpdir1}/foo.eps.png")
+    end
   end
 
   def test_copy_images_to_dir_with_exts

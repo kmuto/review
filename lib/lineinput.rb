@@ -34,7 +34,7 @@ class LineInput
       @lineno += 1
       return @buf.pop
     end
-    return nil if @eof_p   # to avoid ARGF blocking.
+    return nil if @eof_p # to avoid ARGF blocking.
     line = @input.gets
     @eof_p = true unless line
     @lineno += 1
@@ -73,7 +73,7 @@ class LineInput
     buf
   end
 
-  alias_method :span, :getlines_while   # from Haskell
+  alias_method :span, :getlines_while # from Haskell
 
   def until_match(re)
     while line = gets()
@@ -94,11 +94,11 @@ class LineInput
     buf
   end
 
-  alias_method :break, :getlines_until   # from Haskell
+  alias_method :break, :getlines_until # from Haskell
 
   def until_terminator(re)
     while line = gets()
-      return if re =~ line   # discard terminal line
+      return if re =~ line # discard terminal line
       yield line
     end
     nil

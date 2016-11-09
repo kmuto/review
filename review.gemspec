@@ -13,13 +13,13 @@ Gem::Specification.new do |gem|
   gem.summary     = "Re:VIEW peg: a easy-to-use digital publishing system (PEG version)"
   gem.description = "Re:VIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.  This gem is experimental version with PEG grammar"
   gem.required_rubygems_version = Gem::Requirement.new(">= 0") if gem.respond_to? :required_rubygems_version=
+  gem.date = "2016-11-10"
 
   gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.extra_rdoc_files = [
     "ChangeLog",
-    "README.rdoc"
   ]
   gem.require_paths = ["lib"]
 

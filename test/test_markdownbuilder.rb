@@ -15,7 +15,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
       "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
       "stylesheet" => nil, # for HTMLBuilder
     }
-    @book = Book::Base.new(nil)
+    @book = Book::Base.new(".")
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
@@ -139,4 +139,10 @@ BBB
     actual = compile_block("//table{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
     assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", actual
   end
+
+  def test_ruby
+    actual = compile_block("@<ruby>{謳,うた}い文句")
+    assert_equal "<ruby><rb>謳</rb><rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句\n\n", actual
+  end
+
 end

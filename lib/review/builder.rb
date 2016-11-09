@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2002-2014 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2016 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -20,7 +20,7 @@ module ReVIEW
   class Builder
     include TextUtils
 
-    CAPTION_TITLES = %w(note memo tip info planning best important security caution term link notice point shoot reference practice expert)
+    CAPTION_TITLES = %w(note memo tip info warning important caution notice)
 
     attr_accessor :output
     attr_accessor :ast
@@ -34,6 +34,7 @@ module ReVIEW
 
     def initialize(strict = false, *args)
       @strict = strict
+      @output = nil
       builder_init(*args)
     end
 
@@ -324,6 +325,10 @@ module ReVIEW
       chapter.column(id).caption
     end
 
+    def inline_tcy(arg)
+      "#{arg}[rotate 90 degree]"
+    end
+
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
@@ -429,8 +434,9 @@ module ReVIEW
       raise NotImplementedError
     end
 
+    ### XXX
     def inline_include(file_name)
-      File.open(file_name).read
+      File.read(file_name)
     end
 
     def include(file_name)

@@ -5,19 +5,22 @@
 
 require 'review/builder'
 require 'review/textutils'
+require 'review/htmlutils'
 
 module ReVIEW
 
   class MARKDOWNBuilder < Builder
     include TextUtils
+    include HTMLUtils
 
     def extname
       '.md'
     end
 
     def builder_init_file
+      @blank_seen = nil
       @ul_indent = 0
-      @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
+      @chapter.book.image_types = %w(.png .jpg .jpeg .gif .svg)
     end
     private :builder_init_file
 
@@ -350,6 +353,15 @@ module ReVIEW
     def nofunc_text(str)
       str
     end
+
+    def compile_ruby(base, ruby)
+      if @book.htmlversion == 5
+        %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      else
+        %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      end
+    end
+
   end
 
 end # module ReVIEW

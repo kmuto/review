@@ -11,7 +11,8 @@
 # For details of LGPL, see the file "COPYING".
 #
 
-require 'review'
+require 'review/htmlutils'
+require 'review/tocparser'
 
 module ReVIEW
 

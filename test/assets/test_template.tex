@@ -1,7 +1,13 @@
-\documentclass[oneside]{jsbook}
-\usepackage[deluxe]{otf}
-\usepackage[dvipdfmx]{color}
+\documentclass[dvipdfmx,uplatex,oneside]{jsbook}
+% %% fixes to LaTeX2e
+% \usepackage{fix-cm}[2006/09/13 v1.1m]
+% \usepackage{fixltx2e}[2006/09/13 v1.1m]
+
+\usepackage[deluxe,uplatex]{otf}
+\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+% \usepackage{lmodern}
 \usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
 \usepackage{framed}
 \usepackage{wrapfig}
 \definecolor{shadecolor}{gray}{0.9}
@@ -27,24 +33,14 @@
 \usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
 %\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
 
-
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
 %% Bookmarkの文字化け対策（日本語向け）
-\ifnum 46273=\euc"B4C1 % 46273 == 0xB4C1 == 漢(EUC-JP)
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode EUC-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode EUC-UCS2}}%
-\else
-  \usepackage{atbegshi}%
-  \AtBeginShipoutFirst{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-  %%\AtBeginDvi{\special{pdf:tounicode 90ms-RKSJ-UCS2}}%
-\fi
-
-\usepackage[dvipdfm,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={Re:VIEW Sample Book},%
-            pdfauthor={}]{hyperref}
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+     pdftitle={Re:VIEW Sample Book},%
+     pdfauthor={}]{hyperref}
+\usepackage[dvipdfmx]{pxjahyper}
 
 
 
@@ -84,8 +80,8 @@
 
 \newenvironment{reviewcolumn}{%
      \begin{framed}
-   }{%
-      \end{framed}
+  }{%
+     \end{framed}
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
@@ -93,6 +89,9 @@
 
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
+
+\newcommand{\reviewimgtablecaption}[1]{%
+  \caption{#1}\vspace{-3mm}}
 
 \newcommand{\reviewbackslash}[0]{%
   \textbackslash{}}
@@ -112,40 +111,26 @@
 \newcommand{\reviewboxcaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
-\newcommand{\reviewimageref}[2]{%
-  図 #1}
-\newcommand{\reviewtableref}[2]{%
-  表 #1}
-\newcommand{\reviewlistref}[1]{%
-  リスト #1}
-\newcommand{\reviewbibref}[2]{%
-  #1}
-\newcommand{\reviewcolumnref}[2]{%
-  コラム #1}
-\newcommand{\reviewsecref}[2]{%
-  #1}
+\newcommand{\reviewimageref}[2]{図 #1}
+\newcommand{\reviewtableref}[2]{表 #1}
+\newcommand{\reviewlistref}[1]{リスト #1}
+\newcommand{\reviewbibref}[2]{#1}
+\newcommand{\reviewcolumnref}[2]{コラム #1}
+\newcommand{\reviewsecref}[2]{#1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large ■メモ: #1}\\}
 
-
+\renewcommand{\contentsname}{目次}
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
   \end{screen}\vspace{2zw}}
 
-\newcommand{\reviewkw}[1]{%
-  \textbf{\textgt{#1}}}
-
-\newcommand{\reviewami}[1]{%
-  \mask{#1}{A}}
-
-\newcommand{\reviewem}[1]{%
-  \textbf{#1}}
-
-\newcommand{\reviewstrong}[1]{%
-  \textbf{#1}}
-
+\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\newcommand{\reviewami}[1]{\mask{#1}{A}}
+\newcommand{\reviewem}[1]{\textbf{#1}}
+\newcommand{\reviewstrong}[1]{\textbf{#1}}
 \newcommand{\reviewunderline}{\Underline}
 
 %% @<del> is ignored in LaTeX with default style
@@ -157,19 +142,42 @@
 %%%% for jumoline.sty:
 %%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
 
-\newcommand{\reviewth}[1]{%
-  \textgt{#1}}
+\newcommand{\reviewth}[1]{\textgt{#1}}
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
 
-\newcommand{\reviewtitlefont}[0]{%
-  \usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewprepartname}{第}
+\newcommand{\reviewpostpartname}{部}
+\newcommand{\reviewprechaptername}{第}
+\newcommand{\reviewpostchaptername}{章}
+\newcommand{\reviewfigurename}{図}
+\newcommand{\reviewtablename}{表}
+\newcommand{\reviewappendixname}{付録}
 
-\newcommand{\reviewmainfont}[0]{%
- }
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
 
-\newcommand{\reviewcolophon}[0]{%
-  \clearpage}
-\newcommand{\reviewappendix}[0]{%
-  \appendix}
 
 \makeatletter
 %% maxwidth is the original width if it is less than linewidth
@@ -184,17 +192,11 @@
 \makeatother
 
 
-
-\usepackage[T1]{fontenc}
-
 \begin{document}
 
 \reviewmainfont
 
-
-
 \begin{titlepage}
-  
 \thispagestyle{empty}
 \begin{center}%
   \mbox{} \vskip5zw
@@ -207,25 +209,19 @@
         
       \end{tabular}\par}%
     \vfill
-    {\large 2011-01-01 版\hspace{2zw} 発行\par}%
+    {\large 2011{-}01{-}01 版\hspace{2zw} 発行\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}
-
-
 
 \renewcommand{\chaptermark}[1]{{}}
 \frontmatter
 
 %%% originaltitle
 
-
 %%% credit
 
-
-
 %% preface
-
 
 
 
@@ -237,21 +233,16 @@
 
 
 %% backmatter begins
-
-
+\backmatter
 
 
 
 %%% profile
 
-
 %%% advfile
-
 
 %%% colophon
 
-
 %%% backcover
-
 
 \end{document}

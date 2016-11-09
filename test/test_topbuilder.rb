@@ -134,6 +134,17 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|test ① test2|, actual
   end
 
+  def test_inline_comment
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test  test2|, actual
+  end
+
+  def test_inline_comment_for_draft
+    @config["draft"] = true
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test ◆→DTP連絡:コメント←◆ test2|, actual
+  end
+
   def test_inline_in_table
     actual = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
     assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, actual
@@ -178,6 +189,40 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     assert_equal %Q|◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n|, actual
+  end
+
+  def test_major_blocks
+    actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
+    expected = %Q(◆→開始:ノート←◆\nA\nB\n◆→終了:ノート←◆\n\n◆→開始:ノート←◆\n■caption\nA\n◆→終了:ノート←◆\n\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
+    expected = %Q(◆→開始:メモ←◆\nA\nB\n◆→終了:メモ←◆\n\n◆→開始:メモ←◆\n■caption\nA\n◆→終了:メモ←◆\n\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
+    expected = %Q(◆→開始:情報←◆\nA\nB\n◆→終了:情報←◆\n\n◆→開始:情報←◆\n■caption\nA\n◆→終了:情報←◆\n\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
+    expected = %Q(◆→開始:重要←◆\nA\nB\n◆→終了:重要←◆\n\n◆→開始:重要←◆\n■caption\nA\n◆→終了:重要←◆\n\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
+    expected = %Q(◆→開始:警告←◆\nA\nB\n◆→終了:警告←◆\n\n◆→開始:警告←◆\n■caption\nA\n◆→終了:警告←◆\n\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
+    expected = %Q(◆→開始:注意←◆\nA\nB\n◆→終了:注意←◆\n\n◆→開始:注意←◆\n■caption\nA\n◆→終了:注意←◆\n\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
+    expected = %Q(◆→開始:危険←◆\nA\nB\n◆→終了:危険←◆\n\n◆→開始:危険←◆\n■caption\nA\n◆→終了:危険←◆\n\n)
+    assert_equal expected, actual
+
+    actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
+    expected = %Q(◆→開始:TIP←◆\nA\nB\n◆→終了:TIP←◆\n\n◆→開始:TIP←◆\n■caption\nA\n◆→終了:TIP←◆\n\n)
+    assert_equal expected, actual
   end
 
   def test_image

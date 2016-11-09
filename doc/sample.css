@@ -129,3 +129,21 @@ p.flushright {
 .width-080per { width:  80%; }
 .width-090per { width:  90%; }
 .width-100per { width: 100%; }
+
+.tcy {
+  -webkit-text-combine:         horizontal;
+  -webkit-text-combine-upright: all;
+  text-combine-upright:         all;
+  -epub-text-combine:           horizontal;
+}
+
+upright-1 {
+  -webkit-text-combine:         horizontal;
+  -webkit-text-combine-upright: all;
+  text-combine-upright:         all;
+  -epub-text-combine:           horizontal;
+}
+.upright {
+  -webkit-text-orientation: upright;
+  -epub-text-orientation:   upright;
+}

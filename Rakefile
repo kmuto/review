@@ -11,7 +11,16 @@ require 'rubygems'
 require 'rake/testtask'
 require 'rake/clean'
 
-task :default => [:test]
+task :default => [:test, :rubocop]
+
+task :rubocop do
+  begin
+    require 'rubocop/rake_task'
+    RuboCop::RakeTask.new
+  rescue LoadError
+    warn "rubocop not found"
+  end
+end
 
 task :kpeg do
   FileUtils.rm_f "lib/review/compiler.rb"
@@ -22,6 +31,7 @@ Rake::TestTask.new("test") do |t|
   t.libs << "test"
   t.test_files = Dir.glob("test/**/test_*.rb")
   t.verbose = true
+  t.warning = false
 end
 
 begin

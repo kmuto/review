@@ -7,6 +7,12 @@ module ReVIEW
     ALPHA_L = %w[0 a b c d e f g h i j k l m n o p q r s t u v w x y z]
     ROMAN_U = %w[0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI XXII XXIII XXIV XXV XXVI XXVII]
     ROMAN_L = %w[0 i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx xxi xxii xxiii xxiv xxv xxvi xxvii]
+    ALPHA_UW = %w[０ Ａ Ｂ Ｃ Ｄ Ｅ Ｆ Ｇ Ｈ Ｉ Ｊ Ｋ Ｌ Ｍ Ｎ Ｏ Ｐ Ｑ Ｒ Ｓ Ｔ Ｕ Ｖ Ｗ Ｘ Ｙ Ｚ]
+    ALPHA_LW = %w[０ ａ ｂ ｃ ｄ ｅ ｆ ｇ ｈ ｉ ｊ ｋ ｌ ｍ ｎ ｏ ｐ ｑ ｒ ｓ ｔ ｕ ｖ ｗ ｘ ｙ ｚ]
+    ROMAN_UW = %w[０ Ⅰ Ⅱ Ⅲ Ⅳ Ｖ Ⅵ Ⅶ Ⅷ Ⅸ Ｘ Ⅺ Ⅻ]
+    ARABIC_UW = %w[〇 １ ２ ３ ４ ５ ６ ７ ８ ９ １０ １１ １２ １３ １４ １５ １６ １７ １８ １９ ２０ ２１ ２２ ２３ ２４ ２５ ２６ ２７]
+    ARABIC_LW = %w[〇 １ ２ ３ ４ ５ ６ ７ ８ ９ 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27]
+    JAPAN = %w[〇 一 二 三 四 五 六 七 八 九 十 十一 十二 十三 十四 十五 十六 十七 十八 十九 二十 二十一 二十二 二十三 二十四 二十五 二十六 二十七]
 
     def self.setup(locale="ja", ymlfile = "locale.yml")
       @i18n = ReVIEW::I18n.new(locale)
@@ -16,8 +22,8 @@ module ReVIEW
         lfile = File.expand_path(ymlfile, Dir.pwd)
 
         # backward compatibility
-        if !File.exist?(lfile) && (ymlfile == "locale.yml")
-          lfile = File.expand_path("locale.yaml", Dir.pwd)
+        if !File.exist?(lfile) && (ymlfile == "locale.yml") && File.exist?(File.expand_path("locale.yaml", Dir.pwd))
+          raise ReVIEW::ConfigError, "locale.yaml is obsoleted.  Please use locale.yml."
         end
       end
 
@@ -102,29 +108,61 @@ module ReVIEW
     end
 
     def t(str, args = nil)
-      args = [args] unless args.is_a? Array
-
       frmt = @store[@locale][str].dup
       frmt.gsub!('%%', '##')
-      percents = frmt.scan(/%\w\w?/)
+
+      if !args.is_a?(Array)
+        if args.nil? && frmt !~ /\%/
+          args = []
+        else
+          args = [args]
+        end
+      end
+
+      percents = frmt.scan(/%[A-Za-z]{1,3}/)
+      remove_args = []
       percents.each_with_index do |i, idx|
         case i
         when "%pA"
           frmt.sub!(i, ALPHA_U[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pa"
           frmt.sub!(i, ALPHA_L[args[idx]])
-          args.delete idx
+          remove_args << idx
+        when "%pAW"
+          frmt.sub!(i, ALPHA_UW[args[idx]])
+          remove_args << idx
+        when "%paW"
+          frmt.sub!(i, ALPHA_LW[args[idx]])
+          remove_args << idx
         when "%pR"
           frmt.sub!(i, ROMAN_U[args[idx]])
-          args.delete idx
+          remove_args << idx
         when "%pr"
           frmt.sub!(i, ROMAN_L[args[idx]])
-          args.delete idx
+          remove_args << idx
+        when "%pRW"
+          frmt.sub!(i, ROMAN_UW[args[idx]])
+          remove_args << idx
+        when "%pJ"
+          frmt.sub!(i, JAPAN[args[idx]])
+          remove_args << idx
+        when "%pdW"
+          frmt.sub!(i, ARABIC_LW[args[idx]])
+          remove_args << idx
+        when "%pDW"
+          frmt.sub!(i, ARABIC_UW[args[idx]])
+          remove_args << idx
+        else
+          # noop
         end
       end
+      remove_args.reverse_each do |idx|
+        args.delete_at idx
+      end
+      args_matched = (frmt.count("%") == args.size)
       frmt.gsub!('##', '%%')
-      frmt % args
+      args_matched ? (frmt % args) : frmt
     rescue
       str
     end
