@@ -9,48 +9,54 @@ module ReVIEW
 
   class MD2INAOBuilder < MARKDOWNBuilder
     def paragraph(lines)
-      puts "　" + lines.join
-      puts "\n"
+      ## XXX fix; do not use fullwidth space
+      buf = "　" + lines.join << "\n"
+      blank_reset
+      buf << "\n"
+      buf
     end
 
     def list_header(id, caption, lang)
       lang ||= ""
-      puts "```#{lang}"
-      print %Q[●リスト#{@chapter.list(id).number}::#{compile_inline(caption)}\n\n]
+      buf = "```#{lang}\n"
+      buf << %Q[●リスト#{@chapter.list(id).number}::#{compile_inline(caption)}\n\n]
+      buf
     end
 
     def cmd(lines)
       # WEB+DB では使っていないらしいけど
-      puts "!!! cmd"
+      buf = "!!! cmd\n"
       lines.each do |line|
-        puts detab(line)
+        buf << detab(line) + "\n"
       end
-      puts ""
+      buf << "\n"
+      buf
     end
 
     def dl_begin
-      puts '<dl>'
+      "<dl>\n"
     end
 
     def dt(line)
-      puts "<dt>#{line}</dt>"
+      "<dt>#{line}</dt>\n"
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join}</dd>"
+      "<dd>#{lines.join}</dd>\n"
     end
 
     def dl_end
-      puts '</dl>'
+      "</dl>\n"
     end
 
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
       str = lines.join("\n")
-      puts '<span class="red">'
-      puts str
-      puts '</span>'
+      buf = '<span class="red">' + "\n"
+      buf << str + "\n"
+      buf << '</span>' + "\n"
+      buf
     end
 
     def compile_ruby(base, ruby)

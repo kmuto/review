@@ -190,32 +190,36 @@ module ReVIEW
     end
 
     def notoc_begin(level, label, caption)
+      buf = ""
       @nonum_counter += 1
-      puts '' if level > 1
+      buf << "\n" if level > 1
       unless caption.empty?
         if label.nil?
           id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
-          puts %Q[<h#{level} id="#{id}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+          buf << %Q[<h#{level} id="#{id}" notoc="true">#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>]
+          buf << %Q[<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>]
         end
       end
+      buf
     end
 
     def notoc_end(level)
     end
 
     def nodisp_begin(level, label, caption)
+      buf = ""
       @nonum_counter += 1
-      puts '' if level > 1
+      buf << "\n" if level > 1
       unless caption.empty?
         if label.nil?
           id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
-          puts %Q[<a id="#{id}" /><h#{level} id="#{id}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+          buf << %Q[<a id="#{id}" /><h#{level} id="#{id}" hidden="true">#{compile_inline(caption)}</h#{level}>]
         else
-          puts %Q[<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>]
+          buf << %Q[<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>]
         end
       end
+      buf
     end
 
     def nodisp_end(level)
@@ -740,27 +744,28 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
+      buf = ""
       if !@chapter.image(id).bound?
         warn "image not bound: #{id}"
-        image_dummy id, caption, lines
-        return
+        return image_dummy(id, caption, lines)
       end
 
-      puts %Q[<div id="#{normalize_id(id)}" class="imgtable image">]
+      buf << %Q[<div id="#{normalize_id(id)}" class="imgtable image">\n]
       begin
-        table_header id, caption unless caption.nil?
+        buf << table_header(id, caption) unless caption.nil?
       rescue KeyError
         error "no such table: #{id}"
       end
 
-      imgtable_image(id, caption, metric)
+      buf << imgtable_image(id, caption, metric)
 
-      puts %Q[</div>]
+      buf << %Q[</div>\n]
+      buf
     end
 
     def imgtable_image(id, caption, metric)
       metrics = parse_metric("html", metric)
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+      %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />\n]
     end
 
     def comment(lines, comment = nil)
@@ -786,7 +791,7 @@ module ReVIEW
     def indepimage(id, caption="", metric=nil)
       metrics = parse_metric("html", metric)
       caption = "" if caption.nil?
-      buf = %Q[<div id="#{normalize_id(id)}" class="image">]
+      buf = %Q[<div id="#{normalize_id(id)}" class="image">] + "\n"
       begin
         buf << %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{caption}"#{metrics} />\n]
       rescue
@@ -1189,9 +1194,9 @@ module ReVIEW
 
     def compile_href(url, label)
       if @book.config["externallink"]
-        %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+        %Q(<a href="#{url}" class="link">#{label.nil? ? url : label}</a>)
       else
-        label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
+        label.nil? ? url : I18n.t('external_link', [label, url])
       end
     end
 

@@ -18,9 +18,10 @@ class CompilerTest < Test::Unit::TestCase
       "subdirmode" => nil,
       "stylesheet" => nil, # for HTMLBuilder
     }
-    ReVIEW.book.param = @param
+    @book = Book::Base.new(nil)
+    @book.config = @param
     @compiler = ReVIEW::Compiler.new(@builder)
-    @chapter = Book::Chapter.new(Book::Base.new(nil), 1, '-', nil, StringIO.new)
+    @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
 

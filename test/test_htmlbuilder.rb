@@ -55,7 +55,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
+    assert_equal %Q|<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_postdef_roman
@@ -71,20 +71,9 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         end
 
         actual = compile_block("=={test} this is test.\n")
-        assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
+        assert_equal %Q|<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
       end
     end
-  end
-
-  def test_headline_level2_postdef_roman
-    @chapter.book.config["appendix_format"] = "roman"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_postdef_alpha
@@ -656,7 +645,7 @@ EOS
     @book.config["highlight"] = {}
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//emlist[][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
-    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span></pre>\n</div>\n", actual
+    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist language-sql\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span></pre>\n</div>\n", actual
   end
 
   def test_emlist_caption
@@ -1185,12 +1174,12 @@ EOS
 
   def test_inline_tti_nest
     actual = compile_inline("test @<tt>{aa@<i>{inline test}bb} test2")
-    assert_equal %Q|test <tt>aa<i>inline test</i>bb</tt> test2|, actual
+    assert_equal %Q|test <code class="tt">aa<i>inline test</i>bb</code> test2|, actual
   end
 
   def test_inline_ttib_nest
     actual = compile_inline("test @<tt>{aa@<i>{inline @<b>{te}st}bb} test2")
-    assert_equal %Q|test <tt>aa<i>inline <b>te</b>st</i>bb</tt> test2|, actual
+    assert_equal %Q|test <code class="tt">aa<i>inline <b>te</b>st</i>bb</code> test2|, actual
   end
 
 

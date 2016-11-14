@@ -108,8 +108,8 @@ module ReVIEW
       b = ReVIEW::TEXTBuilder.new
       dummy_book = ReVIEW::Book::Base.load
       dummy_chapter = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
-      dummy_loc = Location.new("", StringIO.new)
       c = ReVIEW::Compiler.new(b)
+      dummy_loc = Location.new("", c)
       b.bind(c, dummy_chapter, dummy_loc)
       c.setup_parser(line)
       c.parse("Paragraph")

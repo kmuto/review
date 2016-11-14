@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 require 'test_helper'
-require 'review/compiler'
 require 'review/book'
+require 'review/compiler'
 require 'review/markdownbuilder'
 require 'review/i18n'
 
@@ -10,6 +10,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
   include ReVIEW
 
   def setup
+    ReVIEW::I18n.setup
     @builder = MARKDOWNBuilder.new()
     @config = {
       "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
@@ -140,9 +141,9 @@ BBB
     assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", actual
   end
 
-  def test_ruby
-    actual = compile_block("@<ruby>{謳,うた}い文句")
-    assert_equal "<ruby><rb>謳</rb><rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句\n\n", actual
+  def test_inline_ruby
+    actual = compile_inline("@<ruby>{謳,うた}い文句")
+    assert_equal "<ruby><rb>謳</rb><rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句", actual
   end
 
 end

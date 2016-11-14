@@ -134,7 +134,7 @@ module ReVIEW
 
     def column_end(level)
       buf = ""
-      buf << "\\end{reviewcolumn}\n\n"
+      buf << "\\end{reviewcolumn}\n"
       buf
     end
 
@@ -142,9 +142,12 @@ module ReVIEW
       buf = ""
       buf << "\\begin{reviewminicolumn}\n"
       unless caption.nil?
-        buf << "\\reviewminicolumntitle{#{caption}}"
+        buf << "\\reviewminicolumntitle{#{caption}}\n"
       end
 
+      if lines[0] =~ /\A\n/
+        lines[0].sub!(/\A\n/, "")
+      end
       buf << lines.join("")
 
       buf << "\\end{reviewminicolumn}\n"
@@ -306,6 +309,7 @@ module ReVIEW
     end
 
     def common_code_block(id, lines, command, caption, lang)
+      buf = ""
       if caption
         if command =~ /emlist/ || command =~ /cmd/
           buf << macro(command + 'caption', "#{caption}") + "\n"
@@ -479,8 +483,10 @@ module ReVIEW
     alias_method :numberlessimage, :indepimage
 
     def node_table(node)
-      id = node.args[0].to_raw
-      caption = node.args[1].to_doc
+      id_node = node.args[0]
+      id = id_node ? id_node.to_raw : ""
+      caption_node = node.args[1]
+      caption = caption_node ? caption_node.to_doc : ""
       lines = []
       node.content.each do |line|
         lines << line.to_doc
@@ -530,7 +536,9 @@ module ReVIEW
         buf << '\begin{table}[h]' << "\n"
         buf << macro('reviewtablecaption', caption) << "\n"
       end
-      buf << macro('label', table_label(id)) << "\n"
+      if id.present?
+        buf << macro('label', table_label(id)) << "\n"
+      end
       buf
     end
 
@@ -586,7 +594,6 @@ module ReVIEW
         buf << '\end{table}' << "\n"
       end
       @table_caption = nil
-      buf << "\n"
       buf
     end
 
@@ -612,6 +619,7 @@ module ReVIEW
 
       buf << '\end{table}' + "\n" if @table_caption
       @table_caption = nil
+      buf
     end
 
     def imgtable_image(id, caption, metric)

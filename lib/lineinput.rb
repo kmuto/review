@@ -48,6 +48,16 @@ class LineInput
     line
   end
 
+  def peek
+    line = gets()
+    ungets line if line
+    line
+  end
+
+  def next?
+    peek() ? true : false
+  end
+
   def each
     while line = gets()
       yield line

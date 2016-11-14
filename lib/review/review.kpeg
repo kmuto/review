@@ -220,6 +220,7 @@ require 'review/node'
     defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
     defcodeblock :texequation, 0, false
     defcodeblock :table, 0..2, false, [:raw, :doc]
+    defcodeblock :imgtable, 0..2, false, [:raw, :doc]
     defcodeblock :image, 2..3, true, [:raw,:doc,:raw]
     defcodeblock :box, 0..1, false, [:doc]
 
@@ -229,6 +230,14 @@ require 'review/node'
     defblock :flushright, 0
     defblock :centering, 0
     defblock :note, 0..1
+    defblock :memo, 0..1
+    defblock :info, 0..1
+    defblock :important, 0..1
+    defblock :caution, 0..1
+    defblock :notice, 0..1
+    defblock :warning, 0..1
+    defblock :tip, 0..1
+    defblock :box, 0..1
     defblock :comment, 0..1, true
 
     defsingle :footnote, 2, [:raw, :doc]
@@ -263,6 +272,7 @@ require 'review/node'
     definline :hd
     definline :recipe
     definline :column
+    definline :tcy
 
     definline :abbr
     definline :acronym
@@ -293,6 +303,7 @@ require 'review/node'
     definline :hidx
     definline :comment
     definline :include
+    definline :tcy
 
     defcomplexinline :kw
     defcomplexinline :ruby
@@ -565,9 +576,9 @@ ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist 
 # There are 3 types of Block Element: raw Block, Code Block, and Normal Block
 BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
                  ~raw(self, b, position, r1)
-               | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents?:contents "//}" Space* EOL
+               | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents:contents "//}" Space* EOL
                   ~code_block_element(self, position, symbol, args, contents)
-               | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents?:contents "//}" Space* EOL
+               | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents:contents "//}" Space* EOL
                   ~block_element(self, position, symbol, args, contents)
                | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL ~block_element(self, position, symbol, args, nil)
                )
@@ -597,7 +608,7 @@ BracketArgInline = ( InlineElement:c { c }
 BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
 
 ## Standard BlockElement has nested blocks. Texts in content of block are parsed as Paragraph.
-BlockElementContents = BlockElementContent+:c { c }
+BlockElementContents = BlockElementContent*:c { c }
 
 ### Headline is prohibited.
 ### Note: do not allow "//}" at front of Paragraph.

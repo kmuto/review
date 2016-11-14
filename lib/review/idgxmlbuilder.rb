@@ -1081,6 +1081,7 @@ module ReVIEW
 
     def tsize(str)
       @tsize = str
+      nil
     end
 
     def dtp(str)
