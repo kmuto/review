@@ -998,9 +998,9 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", escape_html(chapter.column(id).caption))
+        I18n.t("column", compile_inline(chapter.column(id).caption))
       end
     end
 
