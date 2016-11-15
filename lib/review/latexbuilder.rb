@@ -900,7 +900,9 @@ module ReVIEW
 
     def node_inline_column(node)
       id = node[0].to_raw
-      macro('reviewcolumnref', "#{@chapter.column(id).caption}", column_label(id))
+      macro('reviewcolumnref',
+            I18n.t("chapter_quote", compile_inline(@chapter.column(id).caption)),
+            column_label(id))
     end
 
     def inline_raw(str)

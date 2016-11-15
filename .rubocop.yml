@@ -12,6 +12,9 @@ Lint/BlockAlignment:
 Lint/EndAlignment:
   Enabled: AlignWith
 
+Lint/EmptyWhen:
+  Enabled: false
+
 Performance/ReverseEach:
   Enabled: true
 
@@ -72,6 +75,15 @@ Style/TernaryParentheses:
   Enabled: false
 
 Style/VariableNumber:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+MultilineMethodCallBraceLayout:
+  Enabled: false
+
+Style/SafeNavigation:
   Enabled: false
 
 ##################### Metrics ##################################
