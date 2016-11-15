@@ -12,6 +12,9 @@ Lint/BlockAlignment:
 Lint/EndAlignment:
   Enabled: AlignWith
 
+Lint/EmptyWhen:
+  Enabled: false
+
 Performance/ReverseEach:
   Enabled: true
 
