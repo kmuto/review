@@ -73,6 +73,15 @@ Style/TernaryParentheses:
 Style/VariableNumber:
   Enabled: false
 
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+MultilineMethodCallBraceLayout:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: false
+
 ##################### Metrics ##################################
 
 Metrics/ClassLength:
