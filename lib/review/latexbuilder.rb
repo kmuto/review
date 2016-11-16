@@ -103,7 +103,7 @@ module ReVIEW
     end
 
     def nodisp_begin(level, label, caption)
-      buf  = "\n"
+      buf = "\n"
       buf << macro('clearpage') if @output.pos == 0
       buf << macro('addcontentsline', 'toc', HEADLINE[level], caption)
       # FIXME: headings
@@ -145,7 +145,7 @@ module ReVIEW
         buf << "\\reviewminicolumntitle{#{caption}}\n"
       end
 
-      if lines[0] =~ /\A\n/
+      if lines[0].start_with?("\n")
         lines[0].sub!(/\A\n/, "")
       end
       buf << lines.join("")
