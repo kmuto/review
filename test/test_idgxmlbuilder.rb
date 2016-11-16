@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 require 'test_helper'
-require 'review/compiler'
 require 'review/book'
+require 'review/compiler'
 require 'review/idgxmlbuilder'
 require 'review/i18n'
 
