@@ -603,7 +603,6 @@ require 'review/node'
     defblock :notice, 0..1
     defblock :warning, 0..1
     defblock :tip, 0..1
-    defblock :box, 0..1
     defblock :comment, 0..1, true
 
     defsingle :footnote, 2, [:raw, :doc]
