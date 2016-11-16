@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 require 'test_helper'
-require 'review/compiler'
 require 'review/book'
+require 'review/compiler'
 require 'review/md2inaobuilder'
 require 'review/i18n'
 
@@ -10,6 +10,7 @@ class MD2INAOBuilderTest < Test::Unit::TestCase
   include ReVIEW
 
   def setup
+    ReVIEW::I18n.setup
     @builder = MD2INAOBuilder.new()
     @config = {
       "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
@@ -25,7 +26,7 @@ class MD2INAOBuilderTest < Test::Unit::TestCase
   end
 
   def test_paragraph
-    actual = compile_block("Hello, world!")
+    actual = compile_block("Hello, world!\n")
     assert_equal "　Hello, world!\n\n", actual
   end
 
@@ -59,16 +60,16 @@ BBB
 
   def test_comment
     actual = compile_block("//comment{\nHello, world!\n//}\n")
-    assert_equal "<span class=\"red\">\nHello, world!\n</span>\n", actual
+    assert_equal "<span class=\"red\">\n　Hello, world!\n\n\n</span>\n", actual
   end
 
   def test_ruby_mono
-    actual = compile_block("@<ruby>{謳,うた}い文句")
+    actual = compile_block("@<ruby>{謳,うた}い文句\n")
     assert_equal "　<span class='monoruby'>謳(うた)</span>い文句\n\n", actual
   end
 
   def test_ruby_group
-    actual = compile_block("@<ruby>{欠伸,あくび}が出る")
+    actual = compile_block("@<ruby>{欠伸,あくび}が出る\n")
     assert_equal "　<span class='groupruby'>欠伸(あくび)</span>が出る\n\n", actual
   end
 

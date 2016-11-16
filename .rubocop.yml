@@ -2,6 +2,7 @@ AllCops:
   Exclude:
     - lib/lineinput.rb
     - lib/uuid.rb
+    - lib/review/compiler.rb
   DisplayCopNames: true
 
 inherit_from: .rubocop_todo.yml
@@ -48,6 +49,10 @@ Style/OpMethod:
 # Use snake_case for variable names.
 Style/VariableName:
   Enabled: true
+
+# Configuration parameters: CountComments.
+Metrics/ClassLength:
+  Max: 4500
 
 Style/ConditionalAssignment:
   Enabled: false

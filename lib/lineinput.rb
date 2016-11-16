@@ -58,36 +58,6 @@ class LineInput
     peek() ? true : false
   end
 
-  def skip_blank_lines
-    n = 0
-    while line = gets()
-      unless line.strip.empty?
-        ungets line
-        return n
-      end
-      n += 1
-    end
-    n
-  end
-
-  def gets_if(re)
-    line = gets()
-    if not line or not (re =~ line)
-      ungets line
-      return nil
-    end
-    line
-  end
-
-  def gets_unless(re)
-    line = gets()
-    if not line or re =~ line
-      ungets line
-      return nil
-    end
-    line
-  end
-
   def each
     while line = gets()
       yield line
@@ -142,14 +112,6 @@ class LineInput
       yield line
     end
     nil
-  end
-
-  def getblock(term_re)
-    buf = []
-    until_terminator(term_re) do |line|
-      buf.push line
-    end
-    buf
   end
 
 end

@@ -1,51 +1,405 @@
-# encoding: utf-8
-#
-# Copyright (c) 2002-2007 Minero Aoki
-# Copyright (c) 2009-2016 Minero Aoki, Kenshi Muto
-#
-# This program is free software.
-# You can distribute or modify this program under the terms of
-# the GNU LGPL, Lesser General Public License version 2.1.
-#
+# coding: UTF-8
+class ReVIEW::Compiler
+  # :stopdoc:
 
-require 'review/extentions'
-require 'review/preprocessor'
-require 'review/exception'
-require 'strscan'
-
-module ReVIEW
-
-  class Location
-    def initialize(filename, f)
-      @filename = filename
-      @f = f
+    # This is distinct from setup_parser so that a standalone parser
+    # can redefine #initialize and still have access to the proper
+    # parser setup code.
+    def initialize(str, debug=false)
+      setup_parser(str, debug)
     end
 
-    attr_reader :filename
 
-    def lineno
-      @f.lineno
+
+    # Prepares for parsing +str+.  If you define a custom initialize you must
+    # call this method before #parse
+    def setup_parser(str, debug=false)
+      set_string str, 0
+      @memoizations = Hash.new { |h,k| h[k] = {} }
+      @result = nil
+      @failed_rule = nil
+      @failing_rule_offset = -1
+
+      setup_foreign_grammar
     end
 
-    def string
-      begin
-        "#{@filename}:#{@f.lineno}"
-      rescue
-        "#{@filename}:nil"
+    attr_reader :string
+    attr_reader :failing_rule_offset
+    attr_accessor :result, :pos
+
+    def current_column(target=pos)
+      if c = string.rindex("\n", target-1)
+        return target - c - 1
+      end
+
+      target + 1
+    end
+
+    def current_line(target=pos)
+      if @sizes_memo.respond_to?(:bsearch)
+        offset = @sizes_memo.bsearch{|line, cur_offset| cur_offset >= target}
+        if offset
+          return offset[0]
+        end
+      else
+        @sizes_memo.each do |line, cur_offset|
+          if cur_offset >= target
+            return cur_offset
+          end
+        end
+      end
+
+      -1
+    end
+
+    def lines
+      @lines_memo
+    end
+
+
+
+    def get_text(start)
+      @string[start..@pos-1]
+    end
+
+    # Sets the string and current parsing position for the parser.
+    def set_string string, pos
+      @string = string.freeze
+      @pos = pos
+      @sizes_memo = []
+      if string
+        @string_size = string.size
+        @lines_memo = string.lines
+        cur_offset = cur_line = 0
+        @lines_memo.each do |line|
+          cur_line += 1
+          cur_offset += line.size
+          @sizes_memo << [cur_line, cur_offset]
+        end
+      else
+        @string_size = 0
+        @lines_memo = []
       end
     end
 
-    alias_method :to_s, :string
-  end
-
-
-  class Compiler
-
-    def initialize(strategy)
-      @strategy = strategy
+    def show_pos
+      width = 10
+      if @pos < width
+        "#{@pos} (\"#{@string[0,@pos]}\" @ \"#{@string[@pos,width]}\")"
+      else
+        "#{@pos} (\"... #{@string[@pos - width, width]}\" @ \"#{@string[@pos,width]}\")"
+      end
     end
 
-    attr_reader :strategy
+    def failure_info
+      l = current_line @failing_rule_offset
+      c = current_column @failing_rule_offset
+
+      if @failed_rule.kind_of? Symbol
+        info = self.class::Rules[@failed_rule]
+        "line #{l}, column #{c}: failed rule '#{info.name}' = '#{info.rendered}'"
+      else
+        "line #{l}, column #{c}: failed rule '#{@failed_rule}'"
+      end
+    end
+
+    def failure_caret
+      l = current_line @failing_rule_offset
+      c = current_column @failing_rule_offset
+
+      line = lines[l-1]
+      "#{line}\n#{' ' * (c - 1)}^"
+    end
+
+    def failure_character
+      l = current_line @failing_rule_offset
+      c = current_column @failing_rule_offset
+      lines[l-1][c-1, 1]
+    end
+
+    def failure_oneline
+      l = current_line @failing_rule_offset
+      c = current_column @failing_rule_offset
+
+      char = lines[l-1][c-1, 1]
+
+      if @failed_rule.kind_of? Symbol
+        info = self.class::Rules[@failed_rule]
+        "@#{l}:#{c} failed rule '#{info.name}', got '#{char}'"
+      else
+        "@#{l}:#{c} failed rule '#{@failed_rule}', got '#{char}'"
+      end
+    end
+
+    class ParseError < RuntimeError
+    end
+
+    def raise_error
+      raise ParseError, failure_oneline
+    end
+
+    def show_error(io=STDOUT)
+      error_pos = @failing_rule_offset
+      line_no = current_line(error_pos)
+      col_no = current_column(error_pos)
+
+      io.puts "On line #{line_no}, column #{col_no}:"
+
+      if @failed_rule.kind_of? Symbol
+        info = self.class::Rules[@failed_rule]
+        io.puts "Failed to match '#{info.rendered}' (rule '#{info.name}')"
+      else
+        io.puts "Failed to match rule '#{@failed_rule}'"
+      end
+
+      io.puts "Got: #{string[error_pos,1].inspect}"
+      line = lines[line_no-1]
+      io.puts "=> #{line}"
+      io.print(" " * (col_no + 3))
+      io.puts "^"
+    end
+
+    def set_failed_rule(name)
+      if @pos > @failing_rule_offset
+        @failed_rule = name
+        @failing_rule_offset = @pos
+      end
+    end
+
+    attr_reader :failed_rule
+
+    def match_string(str)
+      len = str.size
+      if @string[pos,len] == str
+        @pos += len
+        return str
+      end
+
+      return nil
+    end
+
+    def scan(reg)
+      if m = reg.match(@string[@pos..-1])
+        width = m.end(0)
+        @pos += width
+        return true
+      end
+
+      return nil
+    end
+
+    if "".respond_to? :ord
+      def get_byte
+        if @pos >= @string_size
+          return nil
+        end
+
+        s = @string[@pos].ord
+        @pos += 1
+        s
+      end
+    else
+      def get_byte
+        if @pos >= @string_size
+          return nil
+        end
+
+        s = @string[@pos]
+        @pos += 1
+        s
+      end
+    end
+
+    def parse(rule=nil)
+      # We invoke the rules indirectly via apply
+      # instead of by just calling them as methods because
+      # if the rules use left recursion, apply needs to
+      # manage that.
+
+      if !rule
+        apply(:_root)
+      else
+        method = rule.gsub("-","_hyphen_")
+        apply :"_#{method}"
+      end
+    end
+
+    class MemoEntry
+      def initialize(ans, pos)
+        @ans = ans
+        @pos = pos
+        @result = nil
+        @set = false
+        @left_rec = false
+      end
+
+      attr_reader :ans, :pos, :result, :set
+      attr_accessor :left_rec
+
+      def move!(ans, pos, result)
+        @ans = ans
+        @pos = pos
+        @result = result
+        @set = true
+        @left_rec = false
+      end
+    end
+
+    def external_invoke(other, rule, *args)
+      old_pos = @pos
+      old_string = @string
+
+      set_string other.string, other.pos
+
+      begin
+        if val = __send__(rule, *args)
+          other.pos = @pos
+          other.result = @result
+        else
+          other.set_failed_rule "#{self.class}##{rule}"
+        end
+        val
+      ensure
+        set_string old_string, old_pos
+      end
+    end
+
+    def apply_with_args(rule, *args)
+      memo_key = [rule, args]
+      if m = @memoizations[memo_key][@pos]
+        @pos = m.pos
+        if !m.set
+          m.left_rec = true
+          return nil
+        end
+
+        @result = m.result
+
+        return m.ans
+      else
+        m = MemoEntry.new(nil, @pos)
+        @memoizations[memo_key][@pos] = m
+        start_pos = @pos
+
+        ans = __send__ rule, *args
+
+        lr = m.left_rec
+
+        m.move! ans, @pos, @result
+
+        # Don't bother trying to grow the left recursion
+        # if it's failing straight away (thus there is no seed)
+        if ans and lr
+          return grow_lr(rule, args, start_pos, m)
+        else
+          return ans
+        end
+
+        return ans
+      end
+    end
+
+    def apply(rule)
+      if m = @memoizations[rule][@pos]
+        @pos = m.pos
+        if !m.set
+          m.left_rec = true
+          return nil
+        end
+
+        @result = m.result
+
+        return m.ans
+      else
+        m = MemoEntry.new(nil, @pos)
+        @memoizations[rule][@pos] = m
+        start_pos = @pos
+
+        ans = __send__ rule
+
+        lr = m.left_rec
+
+        m.move! ans, @pos, @result
+
+        # Don't bother trying to grow the left recursion
+        # if it's failing straight away (thus there is no seed)
+        if ans and lr
+          return grow_lr(rule, nil, start_pos, m)
+        else
+          return ans
+        end
+
+        return ans
+      end
+    end
+
+    def grow_lr(rule, args, start_pos, m)
+      while true
+        @pos = start_pos
+        @result = m.result
+
+        if args
+          ans = __send__ rule, *args
+        else
+          ans = __send__ rule
+        end
+        return nil unless ans
+
+        break if @pos <= m.pos
+
+        m.move! ans, @pos, @result
+      end
+
+      @result = m.result
+      @pos = m.pos
+      return m.ans
+    end
+
+    class RuleInfo
+      def initialize(name, rendered)
+        @name = name
+        @rendered = rendered
+      end
+
+      attr_reader :name, :rendered
+    end
+
+    def self.rule_info(name, rendered)
+      RuleInfo.new(name, rendered)
+    end
+
+
+  # :startdoc:
+
+
+  class Error; end
+  class Position
+    attr_accessor :pos, :line, :col
+    def initialize(compiler)
+      @pos = compiler.pos
+      @line = compiler.current_line
+      @col = compiler.current_column
+    end
+  end
+
+# rubocop:disable all
+require 'review/location'
+require 'review/extentions'
+require 'review/preprocessor'
+require 'review/exception'
+require 'review/node'
+  require 'lineinput'
+  # require 'review/compiler/literals_1_9'
+  # require 'review/compiler/literals_1_8'
+
+  ## redifine Compiler.new
+  def initialize(strategy)
+    @strategy = strategy
+    @current_column = nil
+    @chapter = nil
+  end
+
+  attr_accessor :strategy
 
     def compile(chap)
       @chapter = chap
@@ -53,11 +407,72 @@ module ReVIEW
       @strategy.result
     end
 
+    def do_compile
+      @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, self)
+      setup_parser(@chapter.content)
+      parse()
+      convert_ast
+    end
+
+    def convert_ast
+      ast = @strategy.ast
+      convert_column(ast)
+      if $DEBUG
+        File.open("review-dump.json","w") do |f|
+          f.write(ast.to_json)
+        end
+      end
+      @strategy.output << ast.to_doc
+    end
+
+    def flush_column(new_content)
+      if @current_column
+        new_content << @current_column
+        @current_column = nil
+      end
+    end
+
+    def convert_column(ast)
+      @column_stack = []
+      content = ast.content
+      new_content = []
+      @current_content = new_content
+      content.each do |elem|
+        if elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc == "column"
+          flush_column(new_content)
+          @current_content = []
+          @current_column = ReVIEW::ColumnNode.new(elem.compiler, elem.position, elem.level,
+                                                  elem.label, elem.content, @current_content)
+          next
+        elsif elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc =~ %r|^/|
+          cmd_name = elem.cmd.to_doc[1..-1]
+          if cmd_name != "column"
+            raise ReVIEW::CompileError, "#{cmd_name} is not opened."
+          end
+          flush_column(new_content)
+          @current_content = new_content
+          next
+        elsif elem.kind_of?(ReVIEW::HeadlineNode) && @current_column && elem.level <= @current_column.level
+          flush_column(new_content)
+          @current_content = new_content
+        end
+        @current_content << elem
+      end
+      flush_column(new_content)
+      ast.content = new_content
+      ast
+    end
+
+    def compile_text(text)
+      @strategy.nofunc_text(text)
+    end
+
     class SyntaxElement
-      def initialize(name, type, argc, &block)
+      def initialize(name, type, argc, esc, &block)
         @name = name
         @type = type
         @argc_spec = argc
+        @esc_patterns = esc
         @checker = block
       end
 
@@ -65,7 +480,7 @@ module ReVIEW
 
       def check_args(args)
         unless @argc_spec === args.size
-          raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
+          raise ReVIEW::CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
         end
         @checker.call(*args) if @checker
       end
@@ -79,27 +494,49 @@ module ReVIEW
         end
       end
 
+      def parse_args(args)
+        if @esc_patterns
+          args.map.with_index do |pattern, i|
+            if @esc_patterns[i]
+              args[i].__send__("to_#{@esc_patterns[i]}")
+            else
+              args[i].to_doc
+            end
+          end
+        else
+          args.map(&:to_doc)
+        end
+      end
+
       def block_required?
-        @type == :block
+        @type == :block or @type == :code_block
       end
 
       def block_allowed?
-        @type == :block or @type == :optional
+        @type == :block or @type == :code_block or @type == :optional or @type == :optional_code_block
+      end
+
+      def code_block?
+        @type == :code_block or @type == :optional_code_block
       end
     end
 
     SYNTAX = {}
 
-    def Compiler.defblock(name, argc, optional = false, &block)
-      defsyntax name, (optional ? :optional : :block), argc, &block
+    def self.defblock(name, argc, optional = false, esc = nil, &block)
+      defsyntax(name, (optional ? :optional : :block), argc, esc, &block)
     end
 
-    def Compiler.defsingle(name, argc, &block)
-      defsyntax name, :line, argc, &block
+    def self.defcodeblock(name, argc, optional = false, esc = nil, &block)
+      defsyntax(name, (optional ? :optional_code_block : :code_block), argc, esc, &block)
     end
 
-    def Compiler.defsyntax(name, type, argc, &block)
-      SYNTAX[name] = SyntaxElement.new(name, type, argc, &block)
+    def self.defsingle(name, argc, esc = nil, &block)
+      defsyntax name, :line, argc, esc, &block
+    end
+
+    def self.defsyntax(name, type, argc, esc = nil, &block)
+      SYNTAX[name] = SyntaxElement.new(name, type, argc, esc, &block)
     end
 
     def syntax_defined?(name)
@@ -119,32 +556,39 @@ module ReVIEW
     end
 
     INLINE = {}
+    COMPLEX_INLINE = {}
 
-    def Compiler.definline(name)
+    def self.definline(name)
       INLINE[name] = InlineSyntaxElement.new(name)
     end
 
+    def self.defcomplexinline(name)
+      COMPLEX_INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
     def inline_defined?(name)
-      INLINE.key?(name.to_sym)
+      INLINE.key?(name.to_sym) || COMPLEX_INLINE.key?(name.to_sym)
     end
 
     defblock :read, 0
     defblock :lead, 0
-    defblock :list, 2..3
-    defblock :emlist, 0..2
-    defblock :cmd, 0..1
-    defblock :table, 0..2
-    defblock :imgtable, 0..2
     defblock :quote, 0
-    defblock :image, 2..3, true
-    defblock :source, 0..2
-    defblock :listnum, 2..3
-    defblock :emlistnum, 0..2
-    defblock :bibpaper, 2..3, true
-    defblock :doorquote, 1
+    defblock :bibpaper, 2..3, true, [:raw, :doc, :doc]
+    defblock :doorquote, 1, false, [:doc]
     defblock :talk, 0
-    defblock :texequation, 0
-    defblock :graph, 1..3
+    defblock :graph, 1..3, false, [:raw, :raw, :doc]
+
+    defcodeblock :emlist, 0..2, false, [:doc, :raw]
+    defcodeblock :cmd, 0..1, false, [:doc]
+    defcodeblock :source, 0..2, false, [:doc, :raw]
+    defcodeblock :list, 2..4, false, [:raw, :doc, :raw, :raw]
+    defcodeblock :listnum, 2..3, false, [:raw, :doc, :raw]
+    defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
+    defcodeblock :texequation, 0, false
+    defcodeblock :table, 0..2, false, [:raw, :doc]
+    defcodeblock :imgtable, 0..2, false, [:raw, :doc]
+    defcodeblock :image, 2..3, true, [:raw,:doc,:raw]
+    defcodeblock :box, 0..1, false, [:doc]
 
     defblock :address, 0
     defblock :blockquote, 0
@@ -159,22 +603,21 @@ module ReVIEW
     defblock :notice, 0..1
     defblock :warning, 0..1
     defblock :tip, 0..1
-    defblock :box, 0..1
     defblock :comment, 0..1, true
 
-    defsingle :footnote, 2
+    defsingle :footnote, 2, [:raw, :doc]
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
-    defsingle :indepimage, 1..3
-    defsingle :numberlessimage, 1..3
+    defsingle :indepimage, 1..3, [:raw, :doc, :raw]
+    defsingle :numberlessimage, 1..3, [:raw, :doc, :raw]
     defsingle :hr, 0
     defsingle :parasep, 0
-    defsingle :label, 1
-    defsingle :raw, 1
-    defsingle :tsize, 1
-    defsingle :include, 1
-    defsingle :olnum, 1
+    defsingle :label, 1, [:raw]
+    defsingle :raw, 1, [:raw]
+    defsingle :tsize, 1, [:raw]
+    defsingle :include, 1, [:raw]
+    defsingle :olnum, 1, [:raw]
 
     definline :chapref
     definline :chap
@@ -185,8 +628,6 @@ module ReVIEW
     definline :list
     definline :table
     definline :fn
-    definline :kw
-    definline :ruby
     definline :bou
     definline :ami
     definline :b
@@ -194,7 +635,6 @@ module ReVIEW
     definline :code
     definline :bib
     definline :hd
-    definline :href
     definline :recipe
     definline :column
     definline :tcy
@@ -230,278 +670,134 @@ module ReVIEW
     definline :include
     definline :tcy
 
-    private
+    defcomplexinline :kw
+    defcomplexinline :ruby
+    defcomplexinline :href
 
-    def do_compile
-      f = LineInput.new(Preprocessor::Strip.new(StringIO.new(@chapter.content)))
-      @strategy.bind self, @chapter, Location.new(@chapter.basename, f)
-      tagged_section_init
-      while f.next?
-        case f.peek
-        when /\A\#@/
-          f.gets # Nothing to do
-        when /\A=+[\[\s\{]/
-          compile_headline f.gets
-        when %r<\A\s+\*>
-          compile_ulist f
-        when %r<\A\s+\d+\.>
-          compile_olist f
-        when %r<\A\s*:\s>
-          compile_dlist f
-        when %r<\A//\}>
-          f.gets
-          error 'block end seen but not opened'
-        when %r<\A//[a-z]+>
-          name, args, lines = read_command(f)
-          syntax = syntax_descriptor(name)
-          unless syntax
-            error "unknown command: //#{name}"
-            compile_unknown_command args, lines
-            next
-          end
-          compile_command syntax, args, lines
-        when %r<\A//>
-          line = f.gets
-          warn "`//' seen but is not valid command: #{line.strip.inspect}"
-          if block_open?(line)
-            warn "skipping block..."
-            read_block(f)
-          end
-        else
-          if f.peek.strip.empty?
-            f.gets
-            next
-          end
-          compile_paragraph f
-        end
-      end
-      close_all_tagged_section
-    end
-
-    def compile_headline(line)
-      @headline_indexs ||= [@chapter.number.to_i - 1]
-      m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
-      level = m[1].size
-      tag = m[2]
-      label = m[3]
-      caption = m[4].strip
-      index = level - 1
-      if tag
-        if tag !~ /\A\//
-          close_current_tagged_section(level)
-          open_tagged_section(tag, level, label, caption)
-        else
-          open_tag = tag[1..-1]
-          prev_tag_info = @tagged_section.pop
-          unless prev_tag_info.first == open_tag
-            raise CompileError, "#{open_tag} is not opened."
-          end
-          close_tagged_section(*prev_tag_info)
-        end
-      else
-        if @headline_indexs.size > (index + 1)
-          @headline_indexs = @headline_indexs[0..index]
-        end
-        @headline_indexs[index] = 0 if @headline_indexs[index].nil?
-        @headline_indexs[index] += 1
-        close_current_tagged_section(level)
-        @strategy.headline level, label, caption
-      end
-    end
-
-    def close_current_tagged_section(level)
-      while @tagged_section.last and @tagged_section.last[1] >= level
-        close_tagged_section(* @tagged_section.pop)
-      end
-    end
-
-    def headline(level, label, caption)
-      @strategy.headline level, label, caption
-    end
-
-    def tagged_section_init
-      @tagged_section = []
-    end
-
-    def open_tagged_section(tag, level, label, caption)
-      mid = "#{tag}_begin"
-      unless @strategy.respond_to?(mid)
-        error "strategy does not support tagged section: #{tag}"
-        headline level, label, caption
-        return
-      end
-      @tagged_section.push [tag, level]
-      @strategy.__send__ mid, level, label, caption
-    end
-
-    def close_tagged_section(tag, level)
-      mid = "#{tag}_end"
-      if @strategy.respond_to?(mid)
-        @strategy.__send__ mid, level
-      else
-        error "strategy does not support block op: #{mid}"
-      end
-    end
-
-    def close_all_tagged_section
-      until @tagged_section.empty?
-        close_tagged_section(* @tagged_section.pop)
-      end
-    end
-
-    def compile_ulist(f)
-      level = 0
-      f.while_match(/\A\s+\*|\A\#@/) do |line|
-        next if line =~ /\A\#@/
-
-        buf = [text(line.sub(/\*+/, '').strip)]
-        f.while_match(/\A\s+(?!\*)\S/) do |cont|
-          buf.push text(cont.strip)
-        end
-
-        line =~ /\A\s+(\*+)/
-        current_level = $1.size
-        if level == current_level
-          @strategy.ul_item_end
-          # body
-          @strategy.ul_item_begin buf
-        elsif level < current_level # down
-          level_diff = current_level - level
-          level = current_level
-          (1..(level_diff - 1)).to_a.reverse_each do |i|
-            @strategy.ul_begin {i}
-            @strategy.ul_item_begin []
-          end
-          @strategy.ul_begin {level}
-          @strategy.ul_item_begin buf
-        elsif level > current_level # up
-          level_diff = level - current_level
-          level = current_level
-          (1..level_diff).to_a.reverse_each do |i|
-            @strategy.ul_item_end
-            @strategy.ul_end {level + i}
-          end
-          @strategy.ul_item_end
-          # body
-          @strategy.ul_item_begin buf
-        end
-      end
-
-      (1..level).to_a.reverse_each do |i|
-        @strategy.ul_item_end
-        @strategy.ul_end {i}
-      end
-    end
-
-    def compile_olist(f)
-      @strategy.ol_begin
-      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
-        next if line =~ /\A\#@/
-
-        num = line.match(/(\d+)\./)[1]
-        buf = [text(line.sub(/\d+\./, '').strip)]
-        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-          buf.push text(cont.strip)
-        end
-        @strategy.ol_item buf, num
-      end
-      @strategy.ol_end
-    end
-
-    def compile_dlist(f)
-      @strategy.dl_begin
-      while /\A\s*:/ =~ f.peek
-        @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
-        @strategy.dd f.break(/\A(\S|\s*:)/).map {|line| text(line.strip) }
-        f.skip_blank_lines
-        f.skip_comment_lines
-      end
-      @strategy.dl_end
-    end
-
-    def compile_paragraph(f)
-      buf = []
-      f.until_match(%r<\A//|\A\#@>) do |line|
-        break if line.strip.empty?
-        buf.push text(line.sub(/^(\t+)\s*/) {|m| "<!ESCAPETAB!>" * m.size}.strip.gsub(/<!ESCAPETAB!>/, "\t"))
-      end
-      @strategy.paragraph buf
-    end
-
-    def read_command(f)
-      line = f.gets
-      name = line.slice(/[a-z]+/).to_sym
-      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
-      lines = block_open?(line) ? read_block(f) : nil
-      return name, args, lines
-    end
-
-    def block_open?(line)
-      line.rstrip[-1,1] == '{'
-    end
-
-    def read_block(f)
-      head = f.lineno
-      buf = []
-      f.until_match(%r<\A//\}>) do |line|
-        unless line =~ /\A\#@/
-          buf.push text(line.rstrip)
-        end
-      end
-      unless %r<\A//\}> =~ f.peek
-        error "unexpected EOF (block begins at: #{head})"
-        return buf
-      end
-      f.gets # discard terminator
+    def compile_column(level, label, caption, content)
+      buf = ""
+      buf << @strategy.__send__("column_begin", level, label, caption)
+      buf << content.to_doc
+      buf << @strategy.__send__("column_end", level)
       buf
     end
 
-    def parse_args(str, name=nil)
-      return [] if str.empty?
-      scanner = StringScanner.new(str)
-      words = []
-      while word = scanner.scan(/(\[\]|\[.*?[^\\]\])/)
-        w2 = word[1..-2].gsub(/\\(.)/){
-          ch = $1
-          (ch == "]" or ch == "\\") ? ch : "\\" + ch
-        }
-        words << w2
-      end
-      if !scanner.eos?
-        error "argument syntax error: #{scanner.rest} in #{str.inspect}"
-        return []
-      end
-      return words
-    end
-
-    def compile_command(syntax, args, lines)
-      unless @strategy.respond_to?(syntax.name)
-        error "strategy does not support command: //#{syntax.name}"
+    def compile_command(name, args, lines, node)
+      syntax = syntax_descriptor(name)
+      if !syntax || (!@strategy.respond_to?(syntax.name) && !@strategy.respond_to?("node_#{syntax.name}"))
+        error "strategy does not support command: //#{name}"
         compile_unknown_command args, lines
         return
       end
       begin
         syntax.check_args args
-      rescue CompileError => err
+      rescue ReVIEW::CompileError => err
         error err.message
         args = ['(NoArgument)'] * syntax.min_argc
       end
       if syntax.block_allowed?
-        compile_block syntax, args, lines
+        compile_block(syntax, args, lines, node)
       else
         if lines
           error "block is not allowed for command //#{syntax.name}; ignore"
         end
-        compile_single syntax, args
+        compile_single(syntax, args, node)
       end
     end
 
-    def compile_unknown_command(args, lines)
-      @strategy.unknown_command args, lines
+    def compile_headline(level, tag, label, caption)
+      buf = ""
+      @headline_indexs ||= [0] ## XXX
+      caption ||= ""
+      caption.strip!
+      index = level - 1
+      if @headline_indexs.size > (index + 1)
+        @headline_indexs = @headline_indexs[0..index]
+      end
+      @headline_indexs[index] = 0 if @headline_indexs[index].nil?
+      @headline_indexs[index] += 1
+      buf << @strategy.headline(level, label, caption)
+      buf
     end
 
-    def compile_block(syntax, args, lines)
-      @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+    def comment(text)
+      @strategy.comment(text)
+    end
+
+    def compile_ulist(content)
+      buf0 = ""
+      level = 0
+      content.each do |element|
+        current_level = element.level
+        buf = element.to_doc
+        if level == current_level
+          buf0 << @strategy.ul_item_end
+          # body
+          buf0 << @strategy.ul_item_begin([buf])
+        elsif level < current_level # down
+          level_diff = current_level - level
+          level = current_level
+          (1..(level_diff - 1)).to_a.reverse_each do |i|
+            buf0 << @strategy.ul_begin{i}
+            buf0 << @strategy.ul_item_begin([])
+          end
+          buf0 << @strategy.ul_begin{level}
+          buf0 << @strategy.ul_item_begin([buf])
+        elsif level > current_level # up
+          level_diff = level - current_level
+          level = current_level
+          (1..level_diff).to_a.reverse_each do |i|
+            buf0 << @strategy.ul_item_end
+            buf0 << @strategy.ul_end{level + i}
+          end
+          buf0 << @strategy.ul_item_end
+          # body
+          buf0 <<@strategy.ul_item_begin([buf])
+        end
+      end
+
+      (1..level).to_a.reverse_each do |i|
+        buf0 << @strategy.ul_item_end
+        buf0 << @strategy.ul_end{i}
+      end
+      buf0
+    end
+
+    def compile_olist(content)
+      buf0 = ""
+      buf0 << @strategy.ol_begin
+      content.each do |element|
+        ## XXX 1st arg should be String, not Array
+        buf0 << @strategy.ol_item(element.to_doc.split(/\n/), element.num)
+      end
+      buf0 << @strategy.ol_end
+      buf0
+    end
+
+    def compile_dlist(content)
+      buf = ""
+      buf << @strategy.dl_begin
+      content.each do |element|
+        buf << @strategy.dt(element.text.to_doc)
+        buf << @strategy.dd(element.content.map{|s| s.to_doc})
+      end
+      buf << @strategy.dl_end
+      buf
+    end
+
+
+    def compile_unknown_command(args, lines)
+      @strategy.unknown_command(args, lines)
+    end
+
+    def compile_block(syntax, args, lines, node)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, node)
+      else
+        args_conv = syntax.parse_args(args)
+        @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args_conv)
+      end
     end
 
     def default_block(syntax)
@@ -511,39 +807,47 @@ module ReVIEW
       []
     end
 
-    def compile_single(syntax, args)
-      @strategy.__send__(syntax.name, *args)
+    def compile_single(syntax, args, node)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, node)
+      else
+        args_conv = syntax.parse_args(args)
+        @strategy.__send__(syntax.name, *args_conv)
+      end
     end
 
-    def text(str)
-      return '' if str.empty?
-      words = str.split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
-      words.each do |w|
-        error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
-      end
-      result = @strategy.nofunc_text(words.shift)
-      until words.empty?
-        result << compile_inline(words.shift.gsub(/\\\}/, '}'))
-        result << @strategy.nofunc_text(words.shift)
-      end
-      result
-    rescue => err
-      error err.message
-    end
-    public :text # called from strategy
 
-    def compile_inline(str)
-      op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
+    def compile_inline(op, args)
       unless inline_defined?(op)
-        raise CompileError, "no such inline op: #{op}"
+        raise ReVIEW::CompileError, "no such inline op: #{op}"
+      end
+      if @strategy.respond_to?("node_inline_#{op}")
+        return @strategy.__send__("node_inline_#{op}", args)
       end
       unless @strategy.respond_to?("inline_#{op}")
         raise "strategy does not support inline op: @<#{op}>"
       end
-      @strategy.__send__("inline_#{op}", arg)
-    rescue => err
-      error err.message
-      @strategy.nofunc_text(str)
+      if !args
+        @strategy.__send__("inline_#{op}", "")
+      else
+        @strategy.__send__("inline_#{op}", *(args.map(&:to_doc)))
+      end
+#    rescue => err
+#      error err.message
+    end
+
+    def compile_paragraph(buf)
+      @strategy.paragraph buf
+    end
+
+    def compile_raw(builders, content)
+      c = @strategy.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      if !builders || builders.include?(c)
+        content.gsub("\\n", "\n")
+      else
+        ""
+      end
     end
 
     def warn(msg)
@@ -554,6 +858,4306 @@ module ReVIEW
       @strategy.error msg
     end
 
+    def check_indent(s)
+      s.size >= @list_stack.last.size
+    end
+
+    def check_nested_indent(s)
+      s.size >= @list_stack.last.size + 2
+    end
+
+    def check_inline_element_symbol(name)
+      INLINE.key?(name.to_sym)
+    end
+
+    def check_complex_inline_element_symbol(name)
+      COMPLEX_INLINE.key?(name.to_sym)
+    end
+
+    def position
+      Position.new(self)
+    end
+
+
+
+
+  # :stopdoc:
+
+  module ::ReVIEW
+    class Node; end
+    class BlockElementNode < Node
+      def initialize(compiler, position, name, args, content)
+        @compiler = compiler
+        @position = position
+        @name = name
+        @args = args
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :name
+      attr_reader :args
+      attr_reader :content
+    end
+    class BraceNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class BracketArgNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class CodeBlockElementNode < Node
+      def initialize(compiler, position, name, args, content)
+        @compiler = compiler
+        @position = position
+        @name = name
+        @args = args
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :name
+      attr_reader :args
+      attr_reader :content
+    end
+    class ColumnNode < Node
+      def initialize(compiler, position, level, label, caption, content)
+        @compiler = compiler
+        @position = position
+        @level = level
+        @label = label
+        @caption = caption
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :level
+      attr_reader :label
+      attr_reader :caption
+      attr_reader :content
+    end
+    class ComplexInlineElementNode < Node
+      def initialize(compiler, position, symbol, content)
+        @compiler = compiler
+        @position = position
+        @symbol = symbol
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :symbol
+      attr_reader :content
+    end
+    class ComplexInlineElementContentNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class DlistNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class DlistElementNode < Node
+      def initialize(compiler, position, text, content)
+        @compiler = compiler
+        @position = position
+        @text = text
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :text
+      attr_reader :content
+    end
+    class DocumentNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class HeadlineNode < Node
+      def initialize(compiler, position, level, cmd, label, content)
+        @compiler = compiler
+        @position = position
+        @level = level
+        @cmd = cmd
+        @label = label
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :level
+      attr_reader :cmd
+      attr_reader :label
+      attr_reader :content
+    end
+    class InlineElementNode < Node
+      def initialize(compiler, position, symbol, content)
+        @compiler = compiler
+        @position = position
+        @symbol = symbol
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :symbol
+      attr_reader :content
+    end
+    class InlineElementContentNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class NewLineNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class OlistNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class OlistElementNode < Node
+      def initialize(compiler, position, num, content)
+        @compiler = compiler
+        @position = position
+        @num = num
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :num
+      attr_reader :content
+    end
+    class ParagraphNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class RawNode < Node
+      def initialize(compiler, builder, position, content)
+        @compiler = compiler
+        @builder = builder
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :builder
+      attr_reader :position
+      attr_reader :content
+    end
+    class SinglelineCommentNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class SinglelineContentNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class TextNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class UlistNode < Node
+      def initialize(compiler, position, content)
+        @compiler = compiler
+        @position = position
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :content
+    end
+    class UlistElementNode < Node
+      def initialize(compiler, position, level, content)
+        @compiler = compiler
+        @position = position
+        @level = level
+        @content = content
+      end
+      attr_reader :compiler
+      attr_reader :position
+      attr_reader :level
+      attr_reader :content
+    end
+  end
+  module ::ReVIEWConstruction
+    def block_element(compiler, position, name, args, content)
+      ::ReVIEW::BlockElementNode.new(compiler, position, name, args, content)
+    end
+    def brace(compiler, position, content)
+      ::ReVIEW::BraceNode.new(compiler, position, content)
+    end
+    def bracket_arg(compiler, position, content)
+      ::ReVIEW::BracketArgNode.new(compiler, position, content)
+    end
+    def code_block_element(compiler, position, name, args, content)
+      ::ReVIEW::CodeBlockElementNode.new(compiler, position, name, args, content)
+    end
+    def column(compiler, position, level, label, caption, content)
+      ::ReVIEW::ColumnNode.new(compiler, position, level, label, caption, content)
+    end
+    def complex_inline_element(compiler, position, symbol, content)
+      ::ReVIEW::ComplexInlineElementNode.new(compiler, position, symbol, content)
+    end
+    def complex_inline_element_content(compiler, position, content)
+      ::ReVIEW::ComplexInlineElementContentNode.new(compiler, position, content)
+    end
+    def dlist(compiler, position, content)
+      ::ReVIEW::DlistNode.new(compiler, position, content)
+    end
+    def dlist_element(compiler, position, text, content)
+      ::ReVIEW::DlistElementNode.new(compiler, position, text, content)
+    end
+    def document(compiler, position, content)
+      ::ReVIEW::DocumentNode.new(compiler, position, content)
+    end
+    def headline(compiler, position, level, cmd, label, content)
+      ::ReVIEW::HeadlineNode.new(compiler, position, level, cmd, label, content)
+    end
+    def inline_element(compiler, position, symbol, content)
+      ::ReVIEW::InlineElementNode.new(compiler, position, symbol, content)
+    end
+    def inline_element_content(compiler, position, content)
+      ::ReVIEW::InlineElementContentNode.new(compiler, position, content)
+    end
+    def newline(compiler, position, content)
+      ::ReVIEW::NewLineNode.new(compiler, position, content)
+    end
+    def olist(compiler, position, content)
+      ::ReVIEW::OlistNode.new(compiler, position, content)
+    end
+    def olist_element(compiler, position, num, content)
+      ::ReVIEW::OlistElementNode.new(compiler, position, num, content)
+    end
+    def paragraph(compiler, position, content)
+      ::ReVIEW::ParagraphNode.new(compiler, position, content)
+    end
+    def raw(compiler, builder, position, content)
+      ::ReVIEW::RawNode.new(compiler, builder, position, content)
+    end
+    def singleline_comment(compiler, position, content)
+      ::ReVIEW::SinglelineCommentNode.new(compiler, position, content)
+    end
+    def singleline_content(compiler, position, content)
+      ::ReVIEW::SinglelineContentNode.new(compiler, position, content)
+    end
+    def text(compiler, position, content)
+      ::ReVIEW::TextNode.new(compiler, position, content)
+    end
+    def ulist(compiler, position, content)
+      ::ReVIEW::UlistNode.new(compiler, position, content)
+    end
+    def ulist_element(compiler, position, level, content)
+      ::ReVIEW::UlistElementNode.new(compiler, position, level, content)
+    end
+  end
+  include ::ReVIEWConstruction
+  def setup_foreign_grammar; end
+
+  # root = Start
+  def _root
+    _tmp = apply(:_Start)
+    set_failed_rule :_root unless _tmp
+    return _tmp
   end
 
-end # module ReVIEW
+  # Start = &. { @list_stack = Array.new } Document:c { @strategy.ast = c }
+  def _Start
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = get_byte
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack = Array.new ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Document)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @strategy.ast = c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Start unless _tmp
+    return _tmp
+  end
+
+  # Document = BOM? Block*:c {document(self, position, c)}
+  def _Document
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = apply(:_BOM)
+      unless _tmp
+        _tmp = true
+        self.pos = _save1
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+        _tmp = apply(:_Block)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; document(self, position, c); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Document unless _tmp
+    return _tmp
+  end
+
+  # Block = BlankLine*:c { c } (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }
+  def _Block
+
+    _save = self.pos
+    while true # sequence
+      _ary = []
+      while true
+        _tmp = apply(:_BlankLine)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+
+      _save2 = self.pos
+      while true # choice
+        _tmp = apply(:_SinglelineComment)
+        c = @result
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_Headline)
+        c = @result
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_BlockElement)
+        c = @result
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_Ulist)
+        c = @result
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_Olist)
+        c = @result
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_Dlist)
+        c = @result
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_Paragraph)
+        c = @result
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Block unless _tmp
+    return _tmp
+  end
+
+  # BlankLine = Newline
+  def _BlankLine
+    _tmp = apply(:_Newline)
+    set_failed_rule :_BlankLine unless _tmp
+    return _tmp
+  end
+
+  # SinglelineComment = "#@" < NonNewline+ > EOL {singleline_comment(self, position, text)}
+  def _SinglelineComment
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("\#@")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _text_start = self.pos
+      _save1 = self.pos
+      _tmp = apply(:_NonNewline)
+      if _tmp
+        while true
+          _tmp = apply(:_NonNewline)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_EOL)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; singleline_comment(self, position, text); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_SinglelineComment unless _tmp
+    return _tmp
+  end
+
+  # Headline = HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, position, level, cmd, label, caption)}
+  def _Headline
+
+    _save = self.pos
+    while true # sequence
+      _tmp = apply(:_HeadlinePrefix)
+      level = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save1 = self.pos
+      _tmp = apply(:_BracketArg)
+      @result = nil unless _tmp
+      unless _tmp
+        _tmp = true
+        self.pos = _save1
+      end
+      cmd = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_BraceArg)
+      @result = nil unless _tmp
+      unless _tmp
+        _tmp = true
+        self.pos = _save2
+      end
+      label = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save4 = self.pos
+      _tmp = apply(:_SinglelineContent)
+      @result = nil unless _tmp
+      unless _tmp
+        _tmp = true
+        self.pos = _save4
+      end
+      caption = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_EOL)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; headline(self, position, level, cmd, label, caption); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Headline unless _tmp
+    return _tmp
+  end
+
+  # HeadlinePrefix = < /={1,5}/ > { text.length }
+  def _HeadlinePrefix
+
+    _save = self.pos
+    while true # sequence
+      _text_start = self.pos
+      _tmp = scan(/\A(?-mix:={1,5})/)
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text.length ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_HeadlinePrefix unless _tmp
+    return _tmp
+  end
+
+  # Paragraph = ParagraphLine+:c {paragraph(self, position, c.flatten)}
+  def _Paragraph
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_ParagraphLine)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_ParagraphLine)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; paragraph(self, position, c.flatten); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Paragraph unless _tmp
+    return _tmp
+  end
+
+  # ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+  def _ParagraphLine
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = apply(:_Headline)
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_SinglelineComment)
+      _tmp = _tmp ? nil : true
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = apply(:_BlockElement)
+      _tmp = _tmp ? nil : true
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save4 = self.pos
+      _tmp = apply(:_Ulist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save4
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save5 = self.pos
+      _tmp = apply(:_Olist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save5
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = apply(:_Dlist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ParagraphLine unless _tmp
+    return _tmp
+  end
+
+  # BlockElement = ("//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL {raw(self, b, position, r1)} | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents:contents "//}" Space* EOL {code_block_element(self, position, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents:contents "//}" Space* EOL {block_element(self, position, symbol, args, contents)} | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, position, symbol, args, nil)})
+  def _BlockElement
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = match_string("//raw[")
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _save2 = self.pos
+        _tmp = apply(:_RawBlockBuilderSelect)
+        @result = nil unless _tmp
+        unless _tmp
+          _tmp = true
+          self.pos = _save2
+        end
+        b = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _ary = []
+        while true
+          _tmp = apply(:_RawBlockElementArg)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+        r1 = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _tmp = match_string("]")
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _tmp = apply(:_EOL)
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin; raw(self, b, position, r1); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save5 = self.pos
+      while true # sequence
+        _save6 = self.pos
+        _tmp = match_string("//raw")
+        _tmp = _tmp ? nil : true
+        self.pos = _save6
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("//")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = apply(:_ElementName)
+        symbol = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _save7 = self.pos
+        _tmp = begin;  syntax = syntax_descriptor(symbol); syntax && syntax.code_block? ; end
+        self.pos = _save7
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _ary = []
+        while true
+          _tmp = apply(:_BracketArg)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+        args = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("{")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = apply(:_CodeBlockElementContents)
+        contents = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("//}")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = apply(:_EOL)
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin; code_block_element(self, position, symbol, args, contents); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save11 = self.pos
+      while true # sequence
+        _save12 = self.pos
+        _tmp = match_string("//raw")
+        _tmp = _tmp ? nil : true
+        self.pos = _save12
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = match_string("//")
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = apply(:_ElementName)
+        symbol = @result
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _ary = []
+        while true
+          _tmp = apply(:_BracketArg)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+        args = @result
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = match_string("{")
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = apply(:_BlockElementContents)
+        contents = @result
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = match_string("//}")
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        _tmp = apply(:_EOL)
+        unless _tmp
+          self.pos = _save11
+          break
+        end
+        @result = begin; block_element(self, position, symbol, args, contents); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save11
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save16 = self.pos
+      while true # sequence
+        _save17 = self.pos
+        _tmp = match_string("//raw")
+        _tmp = _tmp ? nil : true
+        self.pos = _save17
+        unless _tmp
+          self.pos = _save16
+          break
+        end
+        _tmp = match_string("//")
+        unless _tmp
+          self.pos = _save16
+          break
+        end
+        _tmp = apply(:_ElementName)
+        symbol = @result
+        unless _tmp
+          self.pos = _save16
+          break
+        end
+        _ary = []
+        while true
+          _tmp = apply(:_BracketArg)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+        args = @result
+        unless _tmp
+          self.pos = _save16
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save16
+          break
+        end
+        _tmp = apply(:_EOL)
+        unless _tmp
+          self.pos = _save16
+          break
+        end
+        @result = begin; block_element(self, position, symbol, args, nil); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save16
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_BlockElement unless _tmp
+    return _tmp
+  end
+
+  # RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
+  def _RawBlockBuilderSelect
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("|")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_RawBlockBuilderSelectSub)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("|")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_RawBlockBuilderSelect unless _tmp
+    return _tmp
+  end
+
+  # RawBlockBuilderSelectSub = (< AlphanumericAscii+ >:c1 Space* "," Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })
+  def _RawBlockBuilderSelectSub
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _text_start = self.pos
+        _save2 = self.pos
+        _tmp = apply(:_AlphanumericAscii)
+        if _tmp
+          while true
+            _tmp = apply(:_AlphanumericAscii)
+            break unless _tmp
+          end
+          _tmp = true
+        else
+          self.pos = _save2
+        end
+        if _tmp
+          text = get_text(_text_start)
+        end
+        c1 = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _tmp = match_string(",")
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        _tmp = apply(:_RawBlockBuilderSelectSub)
+        c2 = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  [text] + c2 ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save5 = self.pos
+      while true # sequence
+        _text_start = self.pos
+        _save6 = self.pos
+        _tmp = apply(:_AlphanumericAscii)
+        if _tmp
+          while true
+            _tmp = apply(:_AlphanumericAscii)
+            break unless _tmp
+          end
+          _tmp = true
+        else
+          self.pos = _save6
+        end
+        if _tmp
+          text = get_text(_text_start)
+        end
+        c1 = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin;  [text] ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_RawBlockBuilderSelectSub unless _tmp
+    return _tmp
+  end
+
+  # RawBlockElementArg = !"]" ("\\]" { "]" } | "\\n" { "\n" } | < NonNewline > { text })
+  def _RawBlockElementArg
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("]")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+
+      _save2 = self.pos
+      while true # choice
+
+        _save3 = self.pos
+        while true # sequence
+          _tmp = match_string("\\]")
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          @result = begin;  "]" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save4 = self.pos
+        while true # sequence
+          _tmp = match_string("\\n")
+          unless _tmp
+            self.pos = _save4
+            break
+          end
+          @result = begin;  "\n" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save4
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save5 = self.pos
+        while true # sequence
+          _text_start = self.pos
+          _tmp = apply(:_NonNewline)
+          if _tmp
+            text = get_text(_text_start)
+          end
+          unless _tmp
+            self.pos = _save5
+            break
+          end
+          @result = begin;  text ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save5
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_RawBlockElementArg unless _tmp
+    return _tmp
+  end
+
+  # BracketArg = "[" BracketArgInline*:content "]" {bracket_arg(self, position, content)}
+  def _BracketArg
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("[")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+        _tmp = apply(:_BracketArgInline)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      content = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("]")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; bracket_arg(self, position, content); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BracketArg unless _tmp
+    return _tmp
+  end
+
+  # BracketArgInline = (InlineElement:c { c } | "\\]" {text(self, position, "]")} | "\\\\" {text(self, position, "\\")} | < /[^\r\n\]]/ > {text(self, position, text)})
+  def _BracketArgInline
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_InlineElement)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = match_string("\\]")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin; text(self, position, "]"); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _tmp = match_string("\\\\")
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin; text(self, position, "\\"); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _text_start = self.pos
+        _tmp = scan(/\A(?-mix:[^\r\n\]])/)
+        if _tmp
+          text = get_text(_text_start)
+        end
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin; text(self, position, text); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_BracketArgInline unless _tmp
+    return _tmp
+  end
+
+  # BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
+  def _BraceArg
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("{")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _text_start = self.pos
+      _tmp = scan(/\A(?-mix:([^\r\n}\\]|\\[^\r\n])*)/)
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("}")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BraceArg unless _tmp
+    return _tmp
+  end
+
+  # BlockElementContents = BlockElementContent*:c { c }
+  def _BlockElementContents
+
+    _save = self.pos
+    while true # sequence
+      _ary = []
+      while true
+        _tmp = apply(:_BlockElementContent)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BlockElementContents unless _tmp
+    return _tmp
+  end
+
+  # BlockElementContent = (SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Dlist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })
+  def _BlockElementContent
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_SinglelineComment)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = apply(:_BlockElement)
+        c = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_Ulist)
+      c = @result
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_Dlist)
+      c = @result
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_Olist)
+      c = @result
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _tmp = apply(:_BlankLine)
+        c = @result
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _tmp = apply(:_BlockElementParagraph)
+        c = @result
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_BlockElementContent unless _tmp
+    return _tmp
+  end
+
+  # BlockElementParagraph = BlockElementParagraphLine+:c {paragraph(self, position, c.flatten)}
+  def _BlockElementParagraph
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_BlockElementParagraphLine)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_BlockElementParagraphLine)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; paragraph(self, position, c.flatten); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BlockElementParagraph unless _tmp
+    return _tmp
+  end
+
+  # BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+  def _BlockElementParagraphLine
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("//}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_BlankLine)
+      _tmp = _tmp ? nil : true
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = apply(:_SinglelineComment)
+      _tmp = _tmp ? nil : true
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save4 = self.pos
+      _tmp = apply(:_BlockElement)
+      _tmp = _tmp ? nil : true
+      self.pos = _save4
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save5 = self.pos
+      _tmp = apply(:_Ulist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save5
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = apply(:_Olist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save7 = self.pos
+      _tmp = apply(:_Dlist)
+      _tmp = _tmp ? nil : true
+      self.pos = _save7
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_BlockElementParagraphLine unless _tmp
+    return _tmp
+  end
+
+  # CodeBlockElementContents = CodeBlockElementContent+:c { c }
+  def _CodeBlockElementContents
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_CodeBlockElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_CodeBlockElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_CodeBlockElementContents unless _tmp
+    return _tmp
+  end
+
+  # CodeBlockElementContent = (SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, position, "\n") } | !"//}" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, position, "\n")] })
+  def _CodeBlockElementContent
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_SinglelineComment)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = apply(:_BlankLine)
+        c = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  ::ReVIEW::TextNode.new(self, position, "\n") ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _save4 = self.pos
+        _tmp = match_string("//}")
+        _tmp = _tmp ? nil : true
+        self.pos = _save4
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        _tmp = apply(:_SinglelineContent)
+        c = @result
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin;  [c, ::ReVIEW::TextNode.new(self, position, "\n")] ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_CodeBlockElementContent unless _tmp
+    return _tmp
+  end
+
+  # Bullet = "*"
+  def _Bullet
+    _tmp = match_string("*")
+    set_failed_rule :_Bullet unless _tmp
+    return _tmp
+  end
+
+  # Enumerator = < /[0-9]+/ > { num = text } "." { num.to_i }
+  def _Enumerator
+
+    _save = self.pos
+    while true # sequence
+      _text_start = self.pos
+      _tmp = scan(/\A(?-mix:[0-9]+)/)
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  num = text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string(".")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  num.to_i ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Enumerator unless _tmp
+    return _tmp
+  end
+
+  # Ulist = Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item { if b.size > 1 then item.level = b.size end } (UlistItem | UlistItemMore | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, position, items.unshift(item))}
+  def _Ulist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _ary = []
+      _tmp = apply(:_Bullet)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Bullet)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save2
+      end
+      b = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save3
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  if b.size > 1 then item.level = b.size end ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save5 = self.pos
+        while true # choice
+          _tmp = apply(:_UlistItem)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_UlistItemMore)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save5
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; ulist(self, position, items.unshift(item)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Ulist unless _tmp
+    return _tmp
+  end
+
+  # Olist = Indent+:s Enumerator:e Space+ { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, position, items.unshift(item))}
+  def _Olist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Enumerator)
+      e = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_OlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.num = e ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save4 = self.pos
+        while true # choice
+          _tmp = apply(:_OlistItem)
+          break if _tmp
+          self.pos = _save4
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save4
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save5 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save5
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; olist(self, position, items.unshift(item)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Olist unless _tmp
+    return _tmp
+  end
+
+  # UlistItemBlock = ListItemFirstLine:c ListItemLine*:d {ulist_element(self, position, @list_stack.size, d.unshift(c))}
+  def _UlistItemBlock
+
+    _save = self.pos
+    while true # sequence
+      _tmp = apply(:_ListItemFirstLine)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+        _tmp = apply(:_ListItemLine)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      d = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; ulist_element(self, position, @list_stack.size, d.unshift(c)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistItemBlock unless _tmp
+    return _tmp
+  end
+
+  # OlistItemBlock = ListItemFirstLine:c ListItemLine*:d {olist_element(self, position, 0, d.unshift(c))}
+  def _OlistItemBlock
+
+    _save = self.pos
+    while true # sequence
+      _tmp = apply(:_ListItemFirstLine)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+        _tmp = apply(:_ListItemLine)
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      d = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; olist_element(self, position, 0, d.unshift(c)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_OlistItemBlock unless _tmp
+    return _tmp
+  end
+
+  # ListItemFirstLine = SinglelineContent:c Newline { c }
+  def _ListItemFirstLine
+
+    _save = self.pos
+    while true # sequence
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ListItemFirstLine unless _tmp
+    return _tmp
+  end
+
+  # ListItemLine = Indent+:s !Bullet !Enumerator !Space SinglelineContent:c &{ check_indent(s) } Newline { c }
+  def _ListItemLine
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Bullet)
+      _tmp = _tmp ? nil : true
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = apply(:_Enumerator)
+      _tmp = _tmp ? nil : true
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save4 = self.pos
+      _tmp = apply(:_Space)
+      _tmp = _tmp ? nil : true
+      self.pos = _save4
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save5 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save5
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ListItemLine unless _tmp
+    return _tmp
+  end
+
+  # UlistItemMore = Indent+:s Bullet Bullet+:b Space+ &{ check_indent(s) } UlistItemBlock:item { item.level = b.size+1; item }
+  def _UlistItemMore
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Bullet)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _ary = []
+      _tmp = apply(:_Bullet)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Bullet)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save2
+      end
+      b = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save3
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save4 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save4
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.level = b.size+1; item ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistItemMore unless _tmp
+    return _tmp
+  end
+
+  # UlistItem = Indent+:s Bullet Space+ &{ check_indent(s) } UlistItemBlock:item { item }
+  def _UlistItem
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Bullet)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_UlistItem unless _tmp
+    return _tmp
+  end
+
+  # OlistItem = Indent+:s Enumerator:e Space+ &{ check_indent(s) } OlistItemBlock:item { item.num = e; item }
+  def _OlistItem
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Enumerator)
+      e = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_OlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.num = e; item ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_OlistItem unless _tmp
+    return _tmp
+  end
+
+  # NestedList = (NestedUlist | NestedOlist)
+  def _NestedList
+
+    _save = self.pos
+    while true # choice
+      _tmp = apply(:_NestedUlist)
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_NestedOlist)
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_NestedList unless _tmp
+    return _tmp
+  end
+
+  # NestedUlist = Indent+:s Bullet Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item (UlistItem | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, position, items.unshift(item))}
+  def _NestedUlist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Bullet)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_nested_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_UlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save5 = self.pos
+        while true # choice
+          _tmp = apply(:_UlistItem)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save5
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; ulist(self, position, items.unshift(item)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_NestedUlist unless _tmp
+    return _tmp
+  end
+
+  # NestedOlist = Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, position, items.unshift(item))}
+  def _NestedOlist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Indent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Indent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Enumerator)
+      e = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _tmp = begin;  check_nested_indent(s) ; end
+      self.pos = _save3
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  @list_stack.push(s) ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_OlistItemBlock)
+      item = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  item.num = e ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _ary = []
+      while true
+
+        _save5 = self.pos
+        while true # choice
+          _tmp = apply(:_OlistItem)
+          break if _tmp
+          self.pos = _save5
+          _tmp = apply(:_NestedList)
+          break if _tmp
+          self.pos = _save5
+          break
+        end # end choice
+
+        _ary << @result if _tmp
+        break unless _tmp
+      end
+      _tmp = true
+      @result = _ary
+      items = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save6 = self.pos
+      _tmp = begin;  s == @list_stack.pop ; end
+      self.pos = _save6
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; olist(self, position, items.unshift(item)); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_NestedOlist unless _tmp
+    return _tmp
+  end
+
+  # Dlist = (DlistElement | SinglelineComment)+:content {dlist(self, position, content)}
+  def _Dlist
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+
+      _save2 = self.pos
+      while true # choice
+        _tmp = apply(:_DlistElement)
+        break if _tmp
+        self.pos = _save2
+        _tmp = apply(:_SinglelineComment)
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      if _tmp
+        _ary << @result
+        while true
+
+          _save3 = self.pos
+          while true # choice
+            _tmp = apply(:_DlistElement)
+            break if _tmp
+            self.pos = _save3
+            _tmp = apply(:_SinglelineComment)
+            break if _tmp
+            self.pos = _save3
+            break
+          end # end choice
+
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      content = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; dlist(self, position, content); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Dlist unless _tmp
+    return _tmp
+  end
+
+  # DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, position, text, content)}
+  def _DlistElement
+
+    _save = self.pos
+    while true # sequence
+      while true
+        _tmp = apply(:_Indent)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string(":")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = apply(:_Space)
+      if _tmp
+        while true
+          _tmp = apply(:_Space)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save2
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_SinglelineContent)
+      text = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_Newline)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save3 = self.pos
+      _ary = []
+      _tmp = apply(:_DlistElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_DlistElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save3
+      end
+      content = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; dlist_element(self, position, text, content); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_DlistElement unless _tmp
+    return _tmp
+  end
+
+  # DlistElementContent = (SinglelineComment:c { c } | Space+ SinglelineContent:c Newline { c })
+  def _DlistElementContent
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_SinglelineComment)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _save3 = self.pos
+        _tmp = apply(:_Space)
+        if _tmp
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+        else
+          self.pos = _save3
+        end
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = apply(:_SinglelineContent)
+        c = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = apply(:_Newline)
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_DlistElementContent unless _tmp
+    return _tmp
+  end
+
+  # SinglelineContent = Inline+:c {singleline_content(self, position, c)}
+  def _SinglelineContent
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_Inline)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_Inline)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; singleline_content(self, position, c); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_SinglelineContent unless _tmp
+    return _tmp
+  end
+
+  # Inline = (InlineElement | NonInlineElement)
+  def _Inline
+
+    _save = self.pos
+    while true # choice
+      _tmp = apply(:_InlineElement)
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_NonInlineElement)
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_Inline unless _tmp
+    return _tmp
+  end
+
+  # NonInlineElement = !InlineElement < NonNewline > {text(self, position, text)}
+  def _NonInlineElement
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = apply(:_InlineElement)
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _text_start = self.pos
+      _tmp = apply(:_NonNewline)
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; text(self, position, text); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_NonInlineElement unless _tmp
+    return _tmp
+  end
+
+  # InlineElement = (RawInlineElement:c { c } | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" {inline_element(self, position, symbol,contents)} | !RawInlineElement "@<" ComplexInlineElementSymbol:symbol ">" "{" ComplexInlineElementContents?:contents "}" {complex_inline_element(self, position, symbol,contents)})
+  def _InlineElement
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_RawInlineElement)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _save3 = self.pos
+        _tmp = apply(:_RawInlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save3
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = match_string("@<")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = apply(:_InlineElementSymbol)
+        symbol = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = match_string(">")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = match_string("{")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _save4 = self.pos
+        _tmp = apply(:_InlineElementContents)
+        @result = nil unless _tmp
+        unless _tmp
+          _tmp = true
+          self.pos = _save4
+        end
+        contents = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = match_string("}")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin; inline_element(self, position, symbol,contents); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save5 = self.pos
+      while true # sequence
+        _save6 = self.pos
+        _tmp = apply(:_RawInlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save6
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("@<")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = apply(:_ComplexInlineElementSymbol)
+        symbol = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string(">")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("{")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _save7 = self.pos
+        _tmp = apply(:_ComplexInlineElementContents)
+        @result = nil unless _tmp
+        unless _tmp
+          _tmp = true
+          self.pos = _save7
+        end
+        contents = @result
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _tmp = match_string("}")
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin; complex_inline_element(self, position, symbol,contents); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_InlineElement unless _tmp
+    return _tmp
+  end
+
+  # RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" {raw(self, builders, position, c)}
+  def _RawInlineElement
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("@<raw>{")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save1 = self.pos
+      _tmp = apply(:_RawBlockBuilderSelect)
+      @result = nil unless _tmp
+      unless _tmp
+        _tmp = true
+        self.pos = _save1
+      end
+      builders = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _ary = []
+      _tmp = apply(:_RawInlineElementContent)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_RawInlineElementContent)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save2
+      end
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("}")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; raw(self, builders, position, c); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_RawInlineElement unless _tmp
+    return _tmp
+  end
+
+  # RawInlineElementContent = ("\\}" { "}" } | < /[^\r\n\}]/ > { text })
+  def _RawInlineElementContent
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = match_string("\\}")
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  "}" ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _text_start = self.pos
+        _tmp = scan(/\A(?-mix:[^\r\n\}])/)
+        if _tmp
+          text = get_text(_text_start)
+        end
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin;  text ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_RawInlineElementContent unless _tmp
+    return _tmp
+  end
+
+  # InlineElementSymbol = < AlphanumericAscii+ >:s &{ check_inline_element_symbol(text) } { text }
+  def _InlineElementSymbol
+
+    _save = self.pos
+    while true # sequence
+      _text_start = self.pos
+      _save1 = self.pos
+      _tmp = apply(:_AlphanumericAscii)
+      if _tmp
+        while true
+          _tmp = apply(:_AlphanumericAscii)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      if _tmp
+        text = get_text(_text_start)
+      end
+      s = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = begin;  check_inline_element_symbol(text) ; end
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementSymbol unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContents = !"}" InlineElementContentsSub:c { c }
+  def _InlineElementContents
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_InlineElementContentsSub)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementContents unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContentsSub = !"}" Space* InlineElementContent:c1 Space* { [c1] }
+  def _InlineElementContentsSub
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_InlineElementContent)
+      c1 = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      while true
+        _tmp = apply(:_Space)
+        break unless _tmp
+      end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  [c1] ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementContentsSub unless _tmp
+    return _tmp
+  end
+
+  # ComplexInlineElementSymbol = < AlphanumericAscii+ > &{ check_complex_inline_element_symbol(text) } { text }
+  def _ComplexInlineElementSymbol
+
+    _save = self.pos
+    while true # sequence
+      _text_start = self.pos
+      _save1 = self.pos
+      _tmp = apply(:_AlphanumericAscii)
+      if _tmp
+        while true
+          _tmp = apply(:_AlphanumericAscii)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save2 = self.pos
+      _tmp = begin;  check_complex_inline_element_symbol(text) ; end
+      self.pos = _save2
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ComplexInlineElementSymbol unless _tmp
+    return _tmp
+  end
+
+  # ComplexInlineElementContents = !"}" ComplexInlineElementContentsSub:c { c }
+  def _ComplexInlineElementContents
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = apply(:_ComplexInlineElementContentsSub)
+      c = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  c ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ComplexInlineElementContents unless _tmp
+    return _tmp
+  end
+
+  # ComplexInlineElementContentsSub = !"}" (Space* InlineElementContent:c1 Space* "," ComplexInlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })
+  def _ComplexInlineElementContentsSub
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _tmp = match_string("}")
+      _tmp = _tmp ? nil : true
+      self.pos = _save1
+      unless _tmp
+        self.pos = _save
+        break
+      end
+
+      _save2 = self.pos
+      while true # choice
+
+        _save3 = self.pos
+        while true # sequence
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          _tmp = apply(:_InlineElementContent)
+          c1 = @result
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          _tmp = match_string(",")
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          _tmp = apply(:_ComplexInlineElementContentsSub)
+          c2 = @result
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          @result = begin;   [c1]+c2 ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save6 = self.pos
+        while true # sequence
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save6
+            break
+          end
+          _tmp = apply(:_InlineElementContent)
+          c1 = @result
+          unless _tmp
+            self.pos = _save6
+            break
+          end
+          while true
+            _tmp = apply(:_Space)
+            break unless _tmp
+          end
+          _tmp = true
+          unless _tmp
+            self.pos = _save6
+            break
+          end
+          @result = begin;  [c1] ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save6
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ComplexInlineElementContentsSub unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContent = InlineElementContentSub+:d { d }
+  def _InlineElementContent
+
+    _save = self.pos
+    while true # sequence
+      _save1 = self.pos
+      _ary = []
+      _tmp = apply(:_InlineElementContentSub)
+      if _tmp
+        _ary << @result
+        while true
+          _tmp = apply(:_InlineElementContentSub)
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      d = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  d ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_InlineElementContent unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContentSub = (InlineElement:c { c } | !InlineElement QuotedInlineText:content {inline_element_content(self, position, content)} | !InlineElement InlineElementContentText+:content {inline_element_content(self, position, content)})
+  def _InlineElementContentSub
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = apply(:_InlineElement)
+        c = @result
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin;  c ; end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _save3 = self.pos
+        _tmp = apply(:_InlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save3
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        _tmp = apply(:_QuotedInlineText)
+        content = @result
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin; inline_element_content(self, position, content); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _save5 = self.pos
+        _tmp = apply(:_InlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save5
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        _save6 = self.pos
+        _ary = []
+        _tmp = apply(:_InlineElementContentText)
+        if _tmp
+          _ary << @result
+          while true
+            _tmp = apply(:_InlineElementContentText)
+            _ary << @result if _tmp
+            break unless _tmp
+          end
+          _tmp = true
+          @result = _ary
+        else
+          self.pos = _save6
+        end
+        content = @result
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin; inline_element_content(self, position, content); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_InlineElementContentSub unless _tmp
+    return _tmp
+  end
+
+  # QuotedInlineText = "\"" ("\\\"" { "\"" } | "\\\\" { "\\" } | < /[^"\r\n\\]/ > { text })+:str "\"" {text(self, position, str.join(""))}
+  def _QuotedInlineText
+
+    _save = self.pos
+    while true # sequence
+      _tmp = match_string("\"")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _save1 = self.pos
+      _ary = []
+
+      _save2 = self.pos
+      while true # choice
+
+        _save3 = self.pos
+        while true # sequence
+          _tmp = match_string("\\\"")
+          unless _tmp
+            self.pos = _save3
+            break
+          end
+          @result = begin;  "\"" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save3
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save4 = self.pos
+        while true # sequence
+          _tmp = match_string("\\\\")
+          unless _tmp
+            self.pos = _save4
+            break
+          end
+          @result = begin;  "\\" ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save4
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+
+        _save5 = self.pos
+        while true # sequence
+          _text_start = self.pos
+          _tmp = scan(/\A(?-mix:[^"\r\n\\])/)
+          if _tmp
+            text = get_text(_text_start)
+          end
+          unless _tmp
+            self.pos = _save5
+            break
+          end
+          @result = begin;  text ; end
+          _tmp = true
+          unless _tmp
+            self.pos = _save5
+          end
+          break
+        end # end sequence
+
+        break if _tmp
+        self.pos = _save2
+        break
+      end # end choice
+
+      if _tmp
+        _ary << @result
+        while true
+
+          _save6 = self.pos
+          while true # choice
+
+            _save7 = self.pos
+            while true # sequence
+              _tmp = match_string("\\\"")
+              unless _tmp
+                self.pos = _save7
+                break
+              end
+              @result = begin;  "\"" ; end
+              _tmp = true
+              unless _tmp
+                self.pos = _save7
+              end
+              break
+            end # end sequence
+
+            break if _tmp
+            self.pos = _save6
+
+            _save8 = self.pos
+            while true # sequence
+              _tmp = match_string("\\\\")
+              unless _tmp
+                self.pos = _save8
+                break
+              end
+              @result = begin;  "\\" ; end
+              _tmp = true
+              unless _tmp
+                self.pos = _save8
+              end
+              break
+            end # end sequence
+
+            break if _tmp
+            self.pos = _save6
+
+            _save9 = self.pos
+            while true # sequence
+              _text_start = self.pos
+              _tmp = scan(/\A(?-mix:[^"\r\n\\])/)
+              if _tmp
+                text = get_text(_text_start)
+              end
+              unless _tmp
+                self.pos = _save9
+                break
+              end
+              @result = begin;  text ; end
+              _tmp = true
+              unless _tmp
+                self.pos = _save9
+              end
+              break
+            end # end sequence
+
+            break if _tmp
+            self.pos = _save6
+            break
+          end # end choice
+
+          _ary << @result if _tmp
+          break unless _tmp
+        end
+        _tmp = true
+        @result = _ary
+      else
+        self.pos = _save1
+      end
+      str = @result
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      _tmp = match_string("\"")
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; text(self, position, str.join("")); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_QuotedInlineText unless _tmp
+    return _tmp
+  end
+
+  # InlineElementContentText = ("\\}" {text(self, position, "}")} | "\\," {text(self, position, ",")} | "\\\\" {text(self, position, "\\" )} | "\\" {text(self, position, "\\" )} | !InlineElement < /[^\r\n\\},]/ > {text(self, position, text)})
+  def _InlineElementContentText
+
+    _save = self.pos
+    while true # choice
+
+      _save1 = self.pos
+      while true # sequence
+        _tmp = match_string("\\}")
+        unless _tmp
+          self.pos = _save1
+          break
+        end
+        @result = begin; text(self, position, "}"); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save1
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save2 = self.pos
+      while true # sequence
+        _tmp = match_string("\\,")
+        unless _tmp
+          self.pos = _save2
+          break
+        end
+        @result = begin; text(self, position, ","); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save2
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save3 = self.pos
+      while true # sequence
+        _tmp = match_string("\\\\")
+        unless _tmp
+          self.pos = _save3
+          break
+        end
+        @result = begin; text(self, position, "\\" ); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save3
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save4 = self.pos
+      while true # sequence
+        _tmp = match_string("\\")
+        unless _tmp
+          self.pos = _save4
+          break
+        end
+        @result = begin; text(self, position, "\\" ); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save4
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+
+      _save5 = self.pos
+      while true # sequence
+        _save6 = self.pos
+        _tmp = apply(:_InlineElement)
+        _tmp = _tmp ? nil : true
+        self.pos = _save6
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        _text_start = self.pos
+        _tmp = scan(/\A(?-mix:[^\r\n\\},])/)
+        if _tmp
+          text = get_text(_text_start)
+        end
+        unless _tmp
+          self.pos = _save5
+          break
+        end
+        @result = begin; text(self, position, text); end
+        _tmp = true
+        unless _tmp
+          self.pos = _save5
+        end
+        break
+      end # end sequence
+
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_InlineElementContentText unless _tmp
+    return _tmp
+  end
+
+  # NonNewline = /[^\r\n]/
+  def _NonNewline
+    _tmp = scan(/\A(?-mix:[^\r\n])/)
+    set_failed_rule :_NonNewline unless _tmp
+    return _tmp
+  end
+
+  # Space = /[ \t]/
+  def _Space
+    _tmp = scan(/\A(?-mix:[ \t])/)
+    set_failed_rule :_Space unless _tmp
+    return _tmp
+  end
+
+  # Indent = " "
+  def _Indent
+    _tmp = match_string(" ")
+    set_failed_rule :_Indent unless _tmp
+    return _tmp
+  end
+
+  # EOL = (Newline | EOF)
+  def _EOL
+
+    _save = self.pos
+    while true # choice
+      _tmp = apply(:_Newline)
+      break if _tmp
+      self.pos = _save
+      _tmp = apply(:_EOF)
+      break if _tmp
+      self.pos = _save
+      break
+    end # end choice
+
+    set_failed_rule :_EOL unless _tmp
+    return _tmp
+  end
+
+  # EOF = !.
+  def _EOF
+    _save = self.pos
+    _tmp = get_byte
+    _tmp = _tmp ? nil : true
+    self.pos = _save
+    set_failed_rule :_EOF unless _tmp
+    return _tmp
+  end
+
+  # ElementName = < LowerAlphabetAscii+ > { text }
+  def _ElementName
+
+    _save = self.pos
+    while true # sequence
+      _text_start = self.pos
+      _save1 = self.pos
+      _tmp = apply(:_LowerAlphabetAscii)
+      if _tmp
+        while true
+          _tmp = apply(:_LowerAlphabetAscii)
+          break unless _tmp
+        end
+        _tmp = true
+      else
+        self.pos = _save1
+      end
+      if _tmp
+        text = get_text(_text_start)
+      end
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin;  text ; end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_ElementName unless _tmp
+    return _tmp
+  end
+
+  # AlphanumericAscii = /[A-Za-z0-9]/
+  def _AlphanumericAscii
+    _tmp = scan(/\A(?-mix:[A-Za-z0-9])/)
+    set_failed_rule :_AlphanumericAscii unless _tmp
+    return _tmp
+  end
+
+  # LowerAlphabetAscii = /[a-z]/
+  def _LowerAlphabetAscii
+    _tmp = scan(/\A(?-mix:[a-z])/)
+    set_failed_rule :_LowerAlphabetAscii unless _tmp
+    return _tmp
+  end
+
+  # Digit = /[0-9]/
+  def _Digit
+    _tmp = scan(/\A(?-mix:[0-9])/)
+    set_failed_rule :_Digit unless _tmp
+    return _tmp
+  end
+
+  # BOM = "uFEFF"
+  def _BOM
+    _tmp = match_string("uFEFF")
+    set_failed_rule :_BOM unless _tmp
+    return _tmp
+  end
+
+  # Newline = /\n|\r\n?|\p{Zl}|\p{Zp}/ {newline(self, position, "\n")}
+  def _Newline
+
+    _save = self.pos
+    while true # sequence
+      _tmp = scan(/\A(?-mix:\n|\r\n?|\p{Zl}|\p{Zp})/)
+      unless _tmp
+        self.pos = _save
+        break
+      end
+      @result = begin; newline(self, position, "\n"); end
+      _tmp = true
+      unless _tmp
+        self.pos = _save
+      end
+      break
+    end # end sequence
+
+    set_failed_rule :_Newline unless _tmp
+    return _tmp
+  end
+
+  Rules = {}
+  Rules[:_root] = rule_info("root", "Start")
+  Rules[:_Start] = rule_info("Start", "&. { @list_stack = Array.new } Document:c { @strategy.ast = c }")
+  Rules[:_Document] = rule_info("Document", "BOM? Block*:c {document(self, position, c)}")
+  Rules[:_Block] = rule_info("Block", "BlankLine*:c { c } (SinglelineComment:c | Headline:c | BlockElement:c | Ulist:c | Olist:c | Dlist:c | Paragraph:c) { c }")
+  Rules[:_BlankLine] = rule_info("BlankLine", "Newline")
+  Rules[:_SinglelineComment] = rule_info("SinglelineComment", "\"\#@\" < NonNewline+ > EOL {singleline_comment(self, position, text)}")
+  Rules[:_Headline] = rule_info("Headline", "HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space* SinglelineContent?:caption EOL {headline(self, position, level, cmd, label, caption)}")
+  Rules[:_HeadlinePrefix] = rule_info("HeadlinePrefix", "< /={1,5}/ > { text.length }")
+  Rules[:_Paragraph] = rule_info("Paragraph", "ParagraphLine+:c {paragraph(self, position, c.flatten)}")
+  Rules[:_ParagraphLine] = rule_info("ParagraphLine", "!Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
+  Rules[:_BlockElement] = rule_info("BlockElement", "(\"//raw[\" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 \"]\" Space* EOL {raw(self, b, position, r1)} | !\"//raw\" \"//\" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args \"{\" Space* Newline CodeBlockElementContents:contents \"//}\" Space* EOL {code_block_element(self, position, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args \"{\" Space* Newline BlockElementContents:contents \"//}\" Space* EOL {block_element(self, position, symbol, args, contents)} | !\"//raw\" \"//\" ElementName:symbol BracketArg*:args Space* EOL {block_element(self, position, symbol, args, nil)})")
+  Rules[:_RawBlockBuilderSelect] = rule_info("RawBlockBuilderSelect", "\"|\" Space* RawBlockBuilderSelectSub:c Space* \"|\" { c }")
+  Rules[:_RawBlockBuilderSelectSub] = rule_info("RawBlockBuilderSelectSub", "(< AlphanumericAscii+ >:c1 Space* \",\" Space* RawBlockBuilderSelectSub:c2 { [text] + c2 } | < AlphanumericAscii+ >:c1 { [text] })")
+  Rules[:_RawBlockElementArg] = rule_info("RawBlockElementArg", "!\"]\" (\"\\\\]\" { \"]\" } | \"\\\\n\" { \"\\n\" } | < NonNewline > { text })")
+  Rules[:_BracketArg] = rule_info("BracketArg", "\"[\" BracketArgInline*:content \"]\" {bracket_arg(self, position, content)}")
+  Rules[:_BracketArgInline] = rule_info("BracketArgInline", "(InlineElement:c { c } | \"\\\\]\" {text(self, position, \"]\")} | \"\\\\\\\\\" {text(self, position, \"\\\\\")} | < /[^\\r\\n\\]]/ > {text(self, position, text)})")
+  Rules[:_BraceArg] = rule_info("BraceArg", "\"{\" < /([^\\r\\n}\\\\]|\\\\[^\\r\\n])*/ > \"}\" { text }")
+  Rules[:_BlockElementContents] = rule_info("BlockElementContents", "BlockElementContent*:c { c }")
+  Rules[:_BlockElementContent] = rule_info("BlockElementContent", "(SinglelineComment:c { c } | BlockElement:c { c } | Ulist:c | Dlist:c | Olist:c | BlankLine:c { c } | BlockElementParagraph:c { c })")
+  Rules[:_BlockElementParagraph] = rule_info("BlockElementParagraph", "BlockElementParagraphLine+:c {paragraph(self, position, c.flatten)}")
+  Rules[:_BlockElementParagraphLine] = rule_info("BlockElementParagraphLine", "!\"//}\" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }")
+  Rules[:_CodeBlockElementContents] = rule_info("CodeBlockElementContents", "CodeBlockElementContent+:c { c }")
+  Rules[:_CodeBlockElementContent] = rule_info("CodeBlockElementContent", "(SinglelineComment:c { c } | BlankLine:c { ::ReVIEW::TextNode.new(self, position, \"\\n\") } | !\"//}\" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, position, \"\\n\")] })")
+  Rules[:_Bullet] = rule_info("Bullet", "\"*\"")
+  Rules[:_Enumerator] = rule_info("Enumerator", "< /[0-9]+/ > { num = text } \".\" { num.to_i }")
+  Rules[:_Ulist] = rule_info("Ulist", "Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item { if b.size > 1 then item.level = b.size end } (UlistItem | UlistItemMore | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, position, items.unshift(item))}")
+  Rules[:_Olist] = rule_info("Olist", "Indent+:s Enumerator:e Space+ { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, position, items.unshift(item))}")
+  Rules[:_UlistItemBlock] = rule_info("UlistItemBlock", "ListItemFirstLine:c ListItemLine*:d {ulist_element(self, position, @list_stack.size, d.unshift(c))}")
+  Rules[:_OlistItemBlock] = rule_info("OlistItemBlock", "ListItemFirstLine:c ListItemLine*:d {olist_element(self, position, 0, d.unshift(c))}")
+  Rules[:_ListItemFirstLine] = rule_info("ListItemFirstLine", "SinglelineContent:c Newline { c }")
+  Rules[:_ListItemLine] = rule_info("ListItemLine", "Indent+:s !Bullet !Enumerator !Space SinglelineContent:c &{ check_indent(s) } Newline { c }")
+  Rules[:_UlistItemMore] = rule_info("UlistItemMore", "Indent+:s Bullet Bullet+:b Space+ &{ check_indent(s) } UlistItemBlock:item { item.level = b.size+1; item }")
+  Rules[:_UlistItem] = rule_info("UlistItem", "Indent+:s Bullet Space+ &{ check_indent(s) } UlistItemBlock:item { item }")
+  Rules[:_OlistItem] = rule_info("OlistItem", "Indent+:s Enumerator:e Space+ &{ check_indent(s) } OlistItemBlock:item { item.num = e; item }")
+  Rules[:_NestedList] = rule_info("NestedList", "(NestedUlist | NestedOlist)")
+  Rules[:_NestedUlist] = rule_info("NestedUlist", "Indent+:s Bullet Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item (UlistItem | NestedList)*:items &{ s == @list_stack.pop } {ulist(self, position, items.unshift(item))}")
+  Rules[:_NestedOlist] = rule_info("NestedOlist", "Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item { item.num = e } (OlistItem | NestedList)*:items &{ s == @list_stack.pop } {olist(self, position, items.unshift(item))}")
+  Rules[:_Dlist] = rule_info("Dlist", "(DlistElement | SinglelineComment)+:content {dlist(self, position, content)}")
+  Rules[:_DlistElement] = rule_info("DlistElement", "Indent* \":\" Space+ SinglelineContent:text Newline DlistElementContent+:content {dlist_element(self, position, text, content)}")
+  Rules[:_DlistElementContent] = rule_info("DlistElementContent", "(SinglelineComment:c { c } | Space+ SinglelineContent:c Newline { c })")
+  Rules[:_SinglelineContent] = rule_info("SinglelineContent", "Inline+:c {singleline_content(self, position, c)}")
+  Rules[:_Inline] = rule_info("Inline", "(InlineElement | NonInlineElement)")
+  Rules[:_NonInlineElement] = rule_info("NonInlineElement", "!InlineElement < NonNewline > {text(self, position, text)}")
+  Rules[:_InlineElement] = rule_info("InlineElement", "(RawInlineElement:c { c } | !RawInlineElement \"@<\" InlineElementSymbol:symbol \">\" \"{\" InlineElementContents?:contents \"}\" {inline_element(self, position, symbol,contents)} | !RawInlineElement \"@<\" ComplexInlineElementSymbol:symbol \">\" \"{\" ComplexInlineElementContents?:contents \"}\" {complex_inline_element(self, position, symbol,contents)})")
+  Rules[:_RawInlineElement] = rule_info("RawInlineElement", "\"@<raw>{\" RawBlockBuilderSelect?:builders RawInlineElementContent+:c \"}\" {raw(self, builders, position, c)}")
+  Rules[:_RawInlineElementContent] = rule_info("RawInlineElementContent", "(\"\\\\}\" { \"}\" } | < /[^\\r\\n\\}]/ > { text })")
+  Rules[:_InlineElementSymbol] = rule_info("InlineElementSymbol", "< AlphanumericAscii+ >:s &{ check_inline_element_symbol(text) } { text }")
+  Rules[:_InlineElementContents] = rule_info("InlineElementContents", "!\"}\" InlineElementContentsSub:c { c }")
+  Rules[:_InlineElementContentsSub] = rule_info("InlineElementContentsSub", "!\"}\" Space* InlineElementContent:c1 Space* { [c1] }")
+  Rules[:_ComplexInlineElementSymbol] = rule_info("ComplexInlineElementSymbol", "< AlphanumericAscii+ > &{ check_complex_inline_element_symbol(text) } { text }")
+  Rules[:_ComplexInlineElementContents] = rule_info("ComplexInlineElementContents", "!\"}\" ComplexInlineElementContentsSub:c { c }")
+  Rules[:_ComplexInlineElementContentsSub] = rule_info("ComplexInlineElementContentsSub", "!\"}\" (Space* InlineElementContent:c1 Space* \",\" ComplexInlineElementContentsSub:c2 {  [c1]+c2 } | Space* InlineElementContent:c1 Space* { [c1] })")
+  Rules[:_InlineElementContent] = rule_info("InlineElementContent", "InlineElementContentSub+:d { d }")
+  Rules[:_InlineElementContentSub] = rule_info("InlineElementContentSub", "(InlineElement:c { c } | !InlineElement QuotedInlineText:content {inline_element_content(self, position, content)} | !InlineElement InlineElementContentText+:content {inline_element_content(self, position, content)})")
+  Rules[:_QuotedInlineText] = rule_info("QuotedInlineText", "\"\\\"\" (\"\\\\\\\"\" { \"\\\"\" } | \"\\\\\\\\\" { \"\\\\\" } | < /[^\"\\r\\n\\\\]/ > { text })+:str \"\\\"\" {text(self, position, str.join(\"\"))}")
+  Rules[:_InlineElementContentText] = rule_info("InlineElementContentText", "(\"\\\\}\" {text(self, position, \"}\")} | \"\\\\,\" {text(self, position, \",\")} | \"\\\\\\\\\" {text(self, position, \"\\\\\" )} | \"\\\\\" {text(self, position, \"\\\\\" )} | !InlineElement < /[^\\r\\n\\\\},]/ > {text(self, position, text)})")
+  Rules[:_NonNewline] = rule_info("NonNewline", "/[^\\r\\n]/")
+  Rules[:_Space] = rule_info("Space", "/[ \\t]/")
+  Rules[:_Indent] = rule_info("Indent", "\" \"")
+  Rules[:_EOL] = rule_info("EOL", "(Newline | EOF)")
+  Rules[:_EOF] = rule_info("EOF", "!.")
+  Rules[:_ElementName] = rule_info("ElementName", "< LowerAlphabetAscii+ > { text }")
+  Rules[:_AlphanumericAscii] = rule_info("AlphanumericAscii", "/[A-Za-z0-9]/")
+  Rules[:_LowerAlphabetAscii] = rule_info("LowerAlphabetAscii", "/[a-z]/")
+  Rules[:_Digit] = rule_info("Digit", "/[0-9]/")
+  Rules[:_BOM] = rule_info("BOM", "\"uFEFF\"")
+  Rules[:_Newline] = rule_info("Newline", "/\\n|\\r\\n?|\\p{Zl}|\\p{Zp}/ {newline(self, position, \"\\n\")}")
+  # :startdoc:
+end

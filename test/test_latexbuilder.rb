@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'test_helper'
-require 'review/compiler'
 require 'review/book'
+require 'review/compiler'
 require 'review/latexbuilder'
 require 'review/i18n'
 
@@ -288,7 +288,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_list
     actual = compile_block("//list[id1][cap1]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|\\reviewlistcaption{リスト1.1: cap1}\n\\begin{reviewlist}\nfoo\nbar\n\nbuz\n\\end{reviewlist}\n|, actual
+    assert_equal %Q|\n\\reviewlistcaption{リスト1.1: cap1}\n\\begin{reviewlist}\nfoo\nbar\n\nbuz\n\\end{reviewlist}\n|, actual
   end
 
   def test_list_lst
@@ -308,7 +308,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_listnum
     actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
-    assert_equal %Q|\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n|, actual
+    assert_equal %Q|\n\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n|, actual
   end
 
   def test_listnum_lst
@@ -340,7 +340,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q|\\noindent\nfoo\nbar\n\nfoo2\nbar2\n|, actual
+    assert_equal %Q|\\noindent\nfoobar\n\nfoo2bar2\n|, actual
   end
 
   def test_image
@@ -408,6 +408,17 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, actual
+  end
+
+  def test_indepimage_esc
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg",1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block("//indepimage[sean_2_10][sample photo][]\n")
     assert_equal %Q|\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n|, actual
   end
 
@@ -544,7 +555,6 @@ EOS
 \\addcontentsline{toc}{subsection}{prev column}
 
 inside prev column
-
 \\end{reviewcolumn}
 
 \\begin{reviewcolumn}
@@ -553,7 +563,6 @@ inside prev column
 \\addcontentsline{toc}{subsection}{test}
 
 inside column
-
 \\end{reviewcolumn}
 EOS
     @config["toclevel"] = 3
@@ -575,9 +584,7 @@ EOS
 \\reviewcolumnhead{}{test}
 
 inside column
-
 \\end{reviewcolumn}
-
 \\subsection*{next level}
 \\label{sec:1-0-1}
 EOS
@@ -663,7 +670,6 @@ EOS
 \\begin{itemize}
 \\item AA
 \\end{itemize}
-
 \\end{itemize}
 EOS
     actual = compile_block(src)
@@ -686,13 +692,11 @@ EOS
 \\begin{itemize}
 \\item AA
 \\end{itemize}
-
 \\item BBB
 
 \\begin{itemize}
 \\item BB
 \\end{itemize}
-
 \\end{itemize}
 EOS
     actual = compile_block(src)

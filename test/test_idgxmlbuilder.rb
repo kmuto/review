@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 require 'test_helper'
-require 'review/compiler'
 require 'review/book'
+require 'review/compiler'
 require 'review/idgxmlbuilder'
 require 'review/i18n'
 
@@ -187,6 +187,18 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|<quote><p>foobar</p><p>buz</p></quote>|, actual
+  end
+
+  ## XXX block content should be escaped.
+  def test_note
+    actual = compile_block("//note[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<note><title aid:pstyle='note-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></note>|, actual
+  end
+
+  ## XXX block content should be escaped.
+  def test_memo
+    actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<memo><title aid:pstyle='memo-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></memo>|, actual
   end
 
   def test_major_blocks
@@ -631,5 +643,4 @@ EOS
     expected = %Q(|idgxml <>!\"\n& )
     assert_equal expected.chomp, actual
   end
-
 end

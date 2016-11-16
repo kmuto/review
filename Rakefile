@@ -1,3 +1,5 @@
+require 'fileutils'
+
 begin
   require 'bundler'
   Bundler::GemHelper.install_tasks
@@ -18,6 +20,11 @@ task :rubocop do
   rescue LoadError
     warn "rubocop not found"
   end
+end
+
+task :kpeg do
+  FileUtils.rm_f "lib/review/compiler.rb"
+  sh "kpeg -s lib/review/review.kpeg -o lib/review/compiler.rb"
 end
 
 Rake::TestTask.new("test") do |t|

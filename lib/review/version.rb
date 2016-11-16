@@ -1,3 +1,3 @@
 module ReVIEW
-  VERSION = "2.1.0"
+  VERSION = "0.3.0"
 end

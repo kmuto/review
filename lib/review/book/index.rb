@@ -92,10 +92,14 @@ module ReVIEW
       end
 
       def number(id)
-        chapter = @index.fetch(id)
-        chapter.format_number
+        chapter = @index.fetch(id, nil)
+        if chapter
+          return chapter.format_number
+        else
+          return "#{I18n.t("part", chapter.number)}"
+        end
       rescue # part
-        "#{I18n.t("part", chapter.number)}"
+        raise "invalid number error: id:#{id}, capter:#{chapter}"
       end
 
       def title(id)

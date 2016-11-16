@@ -1,6 +1,43 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
 require 'test/unit'
 
+  def compile_document(str, force_to_s=true)
+    @compiler.setup_parser(str)
+    @compiler.parse("Document")
+    if force_to_s
+      @compiler.result.to_doc
+    else
+      @compiler.result
+    end
+  end
+
+  def compile_inline(str, force_to_s=true)
+    @compiler.setup_parser(str)
+    @compiler.parse("Paragraph")
+    if force_to_s
+##      @compiler.result.map(&:to_doc).join
+      @compiler.result.to_doc
+    else
+      @compiler.result
+    end
+  end
+
+  def compile_blockelem(str, force_to_s=true)
+    @compiler.setup_parser(str)
+    @compiler.parse("BlockElement")
+    if force_to_s
+      @compiler.result.to_doc
+    else
+      @compiler.result
+    end
+  end
+
+  def compile_headline(str)
+    @compiler.setup_parser(str)
+    @compiler.parse("Headline")
+    @compiler.result.to_doc
+  end
+
 def touch_file(path)
   File.open(path, "w").close
   path
@@ -14,10 +51,6 @@ def prepare_samplebook(srcdir)
   samplebook_dir = File.expand_path("sample-book/src/", File.dirname(__FILE__))
   FileUtils.cp_r(Dir.glob(samplebook_dir + "/*"), srcdir)
   YAML.load(File.open(srcdir + "/config.yml"))
-end
-
-def compile_inline(text)
-  @builder.compile_inline(text)
 end
 
 def compile_block(text)

@@ -1,0 +1,756 @@
+%% name = ReVIEW::Compiler
+
+%% header {
+# coding: UTF-8
+
+}
+
+%% {
+  class Error; end
+  class Position
+    attr_accessor :pos, :line, :col
+    def initialize(compiler)
+      @pos = compiler.pos
+      @line = compiler.current_line
+      @col = compiler.current_column
+    end
+  end
+
+# rubocop:disable all
+require 'review/location'
+require 'review/extentions'
+require 'review/preprocessor'
+require 'review/exception'
+require 'review/node'
+  require 'lineinput'
+  # require 'review/compiler/literals_1_9'
+  # require 'review/compiler/literals_1_8'
+
+  ## redifine Compiler.new
+  def initialize(strategy)
+    @strategy = strategy
+    @current_column = nil
+    @chapter = nil
+  end
+
+  attr_accessor :strategy
+
+    def compile(chap)
+      @chapter = chap
+      do_compile
+      @strategy.result
+    end
+
+    def do_compile
+      @strategy.bind self, @chapter, ReVIEW::Location.new(@chapter.basename, self)
+      setup_parser(@chapter.content)
+      parse()
+      convert_ast
+    end
+
+    def convert_ast
+      ast = @strategy.ast
+      convert_column(ast)
+      if $DEBUG
+        File.open("review-dump.json","w") do |f|
+          f.write(ast.to_json)
+        end
+      end
+      @strategy.output << ast.to_doc
+    end
+
+    def flush_column(new_content)
+      if @current_column
+        new_content << @current_column
+        @current_column = nil
+      end
+    end
+
+    def convert_column(ast)
+      @column_stack = []
+      content = ast.content
+      new_content = []
+      @current_content = new_content
+      content.each do |elem|
+        if elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc == "column"
+          flush_column(new_content)
+          @current_content = []
+          @current_column = ReVIEW::ColumnNode.new(elem.compiler, elem.position, elem.level,
+                                                  elem.label, elem.content, @current_content)
+          next
+        elsif elem.kind_of?(ReVIEW::HeadlineNode) && elem.cmd && elem.cmd.to_doc =~ %r|^/|
+          cmd_name = elem.cmd.to_doc[1..-1]
+          if cmd_name != "column"
+            raise ReVIEW::CompileError, "#{cmd_name} is not opened."
+          end
+          flush_column(new_content)
+          @current_content = new_content
+          next
+        elsif elem.kind_of?(ReVIEW::HeadlineNode) && @current_column && elem.level <= @current_column.level
+          flush_column(new_content)
+          @current_content = new_content
+        end
+        @current_content << elem
+      end
+      flush_column(new_content)
+      ast.content = new_content
+      ast
+    end
+
+    def compile_text(text)
+      @strategy.nofunc_text(text)
+    end
+
+    class SyntaxElement
+      def initialize(name, type, argc, esc, &block)
+        @name = name
+        @type = type
+        @argc_spec = argc
+        @esc_patterns = esc
+        @checker = block
+      end
+
+      attr_reader :name
+
+      def check_args(args)
+        unless @argc_spec === args.size
+          raise ReVIEW::CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
+        end
+        @checker.call(*args) if @checker
+      end
+
+      def min_argc
+        case @argc_spec
+        when Range then @argc_spec.begin
+        when Integer then @argc_spec
+        else
+          raise TypeError, "argc_spec is not Range/Integer: #{inspect()}"
+        end
+      end
+
+      def parse_args(args)
+        if @esc_patterns
+          args.map.with_index do |pattern, i|
+            if @esc_patterns[i]
+              args[i].__send__("to_#{@esc_patterns[i]}")
+            else
+              args[i].to_doc
+            end
+          end
+        else
+          args.map(&:to_doc)
+        end
+      end
+
+      def block_required?
+        @type == :block or @type == :code_block
+      end
+
+      def block_allowed?
+        @type == :block or @type == :code_block or @type == :optional or @type == :optional_code_block
+      end
+
+      def code_block?
+        @type == :code_block or @type == :optional_code_block
+      end
+    end
+
+    SYNTAX = {}
+
+    def self.defblock(name, argc, optional = false, esc = nil, &block)
+      defsyntax(name, (optional ? :optional : :block), argc, esc, &block)
+    end
+
+    def self.defcodeblock(name, argc, optional = false, esc = nil, &block)
+      defsyntax(name, (optional ? :optional_code_block : :code_block), argc, esc, &block)
+    end
+
+    def self.defsingle(name, argc, esc = nil, &block)
+      defsyntax name, :line, argc, esc, &block
+    end
+
+    def self.defsyntax(name, type, argc, esc = nil, &block)
+      SYNTAX[name] = SyntaxElement.new(name, type, argc, esc, &block)
+    end
+
+    def syntax_defined?(name)
+      SYNTAX.key?(name.to_sym)
+    end
+
+    def syntax_descriptor(name)
+      SYNTAX[name.to_sym]
+    end
+
+    class InlineSyntaxElement
+      def initialize(name)
+        @name = name
+      end
+
+      attr_reader :name
+    end
+
+    INLINE = {}
+    COMPLEX_INLINE = {}
+
+    def self.definline(name)
+      INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
+    def self.defcomplexinline(name)
+      COMPLEX_INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
+    def inline_defined?(name)
+      INLINE.key?(name.to_sym) || COMPLEX_INLINE.key?(name.to_sym)
+    end
+
+    defblock :read, 0
+    defblock :lead, 0
+    defblock :quote, 0
+    defblock :bibpaper, 2..3, true, [:raw, :doc, :doc]
+    defblock :doorquote, 1, false, [:doc]
+    defblock :talk, 0
+    defblock :graph, 1..3, false, [:raw, :raw, :doc]
+
+    defcodeblock :emlist, 0..2, false, [:doc, :raw]
+    defcodeblock :cmd, 0..1, false, [:doc]
+    defcodeblock :source, 0..2, false, [:doc, :raw]
+    defcodeblock :list, 2..4, false, [:raw, :doc, :raw, :raw]
+    defcodeblock :listnum, 2..3, false, [:raw, :doc, :raw]
+    defcodeblock :emlistnum, 0..2, false, [:doc, :raw]
+    defcodeblock :texequation, 0, false
+    defcodeblock :table, 0..2, false, [:raw, :doc]
+    defcodeblock :imgtable, 0..2, false, [:raw, :doc]
+    defcodeblock :image, 2..3, true, [:raw,:doc,:raw]
+    defcodeblock :box, 0..1, false, [:doc]
+
+    defblock :address, 0
+    defblock :blockquote, 0
+    defblock :bpo, 0
+    defblock :flushright, 0
+    defblock :centering, 0
+    defblock :note, 0..1
+    defblock :memo, 0..1
+    defblock :info, 0..1
+    defblock :important, 0..1
+    defblock :caution, 0..1
+    defblock :notice, 0..1
+    defblock :warning, 0..1
+    defblock :tip, 0..1
+    defblock :comment, 0..1, true
+
+    defsingle :footnote, 2, [:raw, :doc]
+    defsingle :noindent, 0
+    defsingle :linebreak, 0
+    defsingle :pagebreak, 0
+    defsingle :indepimage, 1..3, [:raw, :doc, :raw]
+    defsingle :numberlessimage, 1..3, [:raw, :doc, :raw]
+    defsingle :hr, 0
+    defsingle :parasep, 0
+    defsingle :label, 1, [:raw]
+    defsingle :raw, 1, [:raw]
+    defsingle :tsize, 1, [:raw]
+    defsingle :include, 1, [:raw]
+    defsingle :olnum, 1, [:raw]
+
+    definline :chapref
+    definline :chap
+    definline :title
+    definline :img
+    definline :imgref
+    definline :icon
+    definline :list
+    definline :table
+    definline :fn
+    definline :bou
+    definline :ami
+    definline :b
+    definline :dtp
+    definline :code
+    definline :bib
+    definline :hd
+    definline :recipe
+    definline :column
+    definline :tcy
+
+    definline :abbr
+    definline :acronym
+    definline :cite
+    definline :dfn
+    definline :em
+    definline :kbd
+    definline :q
+    definline :samp
+    definline :strong
+    definline :var
+    definline :big
+    definline :small
+    definline :del
+    definline :ins
+    definline :sup
+    definline :sub
+    definline :tt
+    definline :i
+    definline :tti
+    definline :ttb
+    definline :u
+    definline :raw
+    definline :br
+    definline :m
+    definline :uchar
+    definline :idx
+    definline :hidx
+    definline :comment
+    definline :include
+    definline :tcy
+
+    defcomplexinline :kw
+    defcomplexinline :ruby
+    defcomplexinline :href
+
+    def compile_column(level, label, caption, content)
+      buf = ""
+      buf << @strategy.__send__("column_begin", level, label, caption)
+      buf << content.to_doc
+      buf << @strategy.__send__("column_end", level)
+      buf
+    end
+
+    def compile_command(name, args, lines, node)
+      syntax = syntax_descriptor(name)
+      if !syntax || (!@strategy.respond_to?(syntax.name) && !@strategy.respond_to?("node_#{syntax.name}"))
+        error "strategy does not support command: //#{name}"
+        compile_unknown_command args, lines
+        return
+      end
+      begin
+        syntax.check_args args
+      rescue ReVIEW::CompileError => err
+        error err.message
+        args = ['(NoArgument)'] * syntax.min_argc
+      end
+      if syntax.block_allowed?
+        compile_block(syntax, args, lines, node)
+      else
+        if lines
+          error "block is not allowed for command //#{syntax.name}; ignore"
+        end
+        compile_single(syntax, args, node)
+      end
+    end
+
+    def compile_headline(level, tag, label, caption)
+      buf = ""
+      @headline_indexs ||= [0] ## XXX
+      caption ||= ""
+      caption.strip!
+      index = level - 1
+      if @headline_indexs.size > (index + 1)
+        @headline_indexs = @headline_indexs[0..index]
+      end
+      @headline_indexs[index] = 0 if @headline_indexs[index].nil?
+      @headline_indexs[index] += 1
+      buf << @strategy.headline(level, label, caption)
+      buf
+    end
+
+    def comment(text)
+      @strategy.comment(text)
+    end
+
+    def compile_ulist(content)
+      buf0 = ""
+      level = 0
+      content.each do |element|
+        current_level = element.level
+        buf = element.to_doc
+        if level == current_level
+          buf0 << @strategy.ul_item_end
+          # body
+          buf0 << @strategy.ul_item_begin([buf])
+        elsif level < current_level # down
+          level_diff = current_level - level
+          level = current_level
+          (1..(level_diff - 1)).to_a.reverse_each do |i|
+            buf0 << @strategy.ul_begin{i}
+            buf0 << @strategy.ul_item_begin([])
+          end
+          buf0 << @strategy.ul_begin{level}
+          buf0 << @strategy.ul_item_begin([buf])
+        elsif level > current_level # up
+          level_diff = level - current_level
+          level = current_level
+          (1..level_diff).to_a.reverse_each do |i|
+            buf0 << @strategy.ul_item_end
+            buf0 << @strategy.ul_end{level + i}
+          end
+          buf0 << @strategy.ul_item_end
+          # body
+          buf0 <<@strategy.ul_item_begin([buf])
+        end
+      end
+
+      (1..level).to_a.reverse_each do |i|
+        buf0 << @strategy.ul_item_end
+        buf0 << @strategy.ul_end{i}
+      end
+      buf0
+    end
+
+    def compile_olist(content)
+      buf0 = ""
+      buf0 << @strategy.ol_begin
+      content.each do |element|
+        ## XXX 1st arg should be String, not Array
+        buf0 << @strategy.ol_item(element.to_doc.split(/\n/), element.num)
+      end
+      buf0 << @strategy.ol_end
+      buf0
+    end
+
+    def compile_dlist(content)
+      buf = ""
+      buf << @strategy.dl_begin
+      content.each do |element|
+        buf << @strategy.dt(element.text.to_doc)
+        buf << @strategy.dd(element.content.map{|s| s.to_doc})
+      end
+      buf << @strategy.dl_end
+      buf
+    end
+
+
+    def compile_unknown_command(args, lines)
+      @strategy.unknown_command(args, lines)
+    end
+
+    def compile_block(syntax, args, lines, node)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, node)
+      else
+        args_conv = syntax.parse_args(args)
+        @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args_conv)
+      end
+    end
+
+    def default_block(syntax)
+      if syntax.block_required?
+        error "block is required for //#{syntax.name}; use empty block"
+      end
+      []
+    end
+
+    def compile_single(syntax, args, node)
+      node_name = "node_#{syntax.name}".to_sym
+      if @strategy.respond_to?(node_name)
+        @strategy.__send__(node_name, node)
+      else
+        args_conv = syntax.parse_args(args)
+        @strategy.__send__(syntax.name, *args_conv)
+      end
+    end
+
+
+    def compile_inline(op, args)
+      unless inline_defined?(op)
+        raise ReVIEW::CompileError, "no such inline op: #{op}"
+      end
+      if @strategy.respond_to?("node_inline_#{op}")
+        return @strategy.__send__("node_inline_#{op}", args)
+      end
+      unless @strategy.respond_to?("inline_#{op}")
+        raise "strategy does not support inline op: @<#{op}>"
+      end
+      if !args
+        @strategy.__send__("inline_#{op}", "")
+      else
+        @strategy.__send__("inline_#{op}", *(args.map(&:to_doc)))
+      end
+#    rescue => err
+#      error err.message
+    end
+
+    def compile_paragraph(buf)
+      @strategy.paragraph buf
+    end
+
+    def compile_raw(builders, content)
+      c = @strategy.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      if !builders || builders.include?(c)
+        content.gsub("\\n", "\n")
+      else
+        ""
+      end
+    end
+
+    def warn(msg)
+      @strategy.warn msg
+    end
+
+    def error(msg)
+      @strategy.error msg
+    end
+
+    def check_indent(s)
+      s.size >= @list_stack.last.size
+    end
+
+    def check_nested_indent(s)
+      s.size >= @list_stack.last.size + 2
+    end
+
+    def check_inline_element_symbol(name)
+      INLINE.key?(name.to_sym)
+    end
+
+    def check_complex_inline_element_symbol(name)
+      COMPLEX_INLINE.key?(name.to_sym)
+    end
+
+    def position
+      Position.new(self)
+    end
+
+
+}
+
+%% ast-location = ::ReVIEW
+%% headline = ast HeadlineNode(compiler, position, level, cmd, label, content)
+%% paragraph = ast ParagraphNode(compiler, position, content)
+%% block_element = ast BlockElementNode(compiler, position, name, args, content)
+%% code_block_element = ast CodeBlockElementNode(compiler, position, name, args, content)
+%% inline_element = ast InlineElementNode(compiler, position, symbol, content)
+%% inline_element_content = ast InlineElementContentNode(compiler, position, content)
+%% complex_inline_element = ast ComplexInlineElementNode(compiler, position, symbol, content)
+%% complex_inline_element_content = ast ComplexInlineElementContentNode(compiler, position, content)
+%% text = ast TextNode(compiler, position, content)
+%% raw = ast RawNode(compiler, builder, position, content)
+%% brace = ast BraceNode(compiler, position, content)
+%% singleline_content = ast SinglelineContentNode(compiler, position, content)
+%% singleline_comment = ast SinglelineCommentNode(compiler, position, content)
+%% ulist = ast UlistNode(compiler, position, content)
+%% ulist_element = ast UlistElementNode(compiler, position, level, content)
+%% olist = ast OlistNode(compiler, position, content)
+%% olist_element = ast OlistElementNode(compiler, position, num, content)
+%% dlist = ast DlistNode(compiler, position, content)
+%% dlist_element = ast DlistElementNode(compiler, position, text, content)
+%% bracket_arg = ast BracketArgNode(compiler, position, content)
+%% document = ast DocumentNode(compiler, position, content)
+%% column = ast ColumnNode(compiler, position, level, label, caption, content)
+%% newline = ast NewLineNode(compiler, position, content)
+
+# %% dummy
+
+root = Start
+
+Start = &. { @list_stack = Array.new } Document:c { @strategy.ast = c }
+
+## a Document is a set of Blocks
+Document = BOM? Block*:c ~document(self, position, c)
+
+## ignore leading blank lines
+Block = BlankLine*:c { c }
+        ( SinglelineComment:c
+        | Headline:c
+        | BlockElement:c
+        | Ulist:c
+        | Olist:c
+        | Dlist:c
+        | Paragraph:c
+        ) { c }
+
+BlankLine = Newline
+
+SinglelineComment = ("#@" < NonNewline+ > EOL) ~singleline_comment(self, position, text)
+
+Headline =  HeadlinePrefix:level BracketArg?:cmd BraceArg?:label Space*  SinglelineContent?:caption EOL  ~headline(self, position, level, cmd, label, caption)
+
+HeadlinePrefix = < /={1,5}/ > { text.length }
+
+Paragraph = ParagraphLine+:c  ~paragraph(self, position, c.flatten)
+
+ParagraphLine = !Headline !SinglelineComment !BlockElement !Ulist !Olist !Dlist  SinglelineContent:c Newline { c }
+
+# There are 3 types of Block Element: raw Block, Code Block, and Normal Block
+BlockElement = ( "//raw[" RawBlockBuilderSelect?:b RawBlockElementArg*:r1 "]" Space* EOL
+                 ~raw(self, b, position, r1)
+               | !"//raw" "//" ElementName:symbol &{ syntax = syntax_descriptor(symbol); syntax && syntax.code_block? } BracketArg*:args "{" Space* Newline CodeBlockElementContents:contents "//}" Space* EOL
+                  ~code_block_element(self, position, symbol, args, contents)
+               | !"//raw" "//" ElementName:symbol BracketArg*:args "{" Space* Newline BlockElementContents:contents "//}" Space* EOL
+                  ~block_element(self, position, symbol, args, contents)
+               | !"//raw" "//" ElementName:symbol BracketArg*:args Space* EOL ~block_element(self, position, symbol, args, nil)
+               )
+
+RawBlockBuilderSelect = "|" Space* RawBlockBuilderSelectSub:c Space* "|" { c }
+
+RawBlockBuilderSelectSub = ( < AlphanumericAscii+ >:c1 Space* "," Space* RawBlockBuilderSelectSub:c2
+                             { [text] + c2 }
+                           | < AlphanumericAscii+ >:c1
+                             { [text] }
+                           )
+
+RawBlockElementArg = !"]" ( "\\]" { "]" }
+                          | "\\n" { "\n" }
+                          | < NonNewline >  { text }
+                          )
+
+BracketArg = "["  BracketArgInline*:content  "]" ~bracket_arg(self, position, content)
+
+## XXX '\' (excpet '\]' and '\\' ) => '\' is ???
+BracketArgInline = ( InlineElement:c { c }
+                   |  "\\]" ~text(self, position, "]")
+                   | "\\\\" ~text(self, position, "\\")
+                   | < /[^\r\n\]]/ >  ~text(self, position, text)
+                   )
+
+BraceArg = "{" < /([^\r\n}\\]|\\[^\r\n])*/ > "}" { text }
+
+## Standard BlockElement has nested blocks. Texts in content of block are parsed as Paragraph.
+BlockElementContents = BlockElementContent*:c { c }
+
+### Headline is prohibited.
+### Note: do not allow "//}" at front of Paragraph.
+BlockElementContent = ( SinglelineComment:c { c }
+                      | BlockElement:c { c }
+                      | Ulist:c
+                      | Dlist:c
+                      | Olist:c
+                      | BlankLine:c { c }
+                      | BlockElementParagraph:c { c }
+                      )
+
+## it's like Paragraph, but it's in a block, so do not allow '//}\n'
+BlockElementParagraph = BlockElementParagraphLine+:c  ~paragraph(self, position, c.flatten)
+BlockElementParagraphLine = !"//}" !BlankLine !SinglelineComment !BlockElement !Ulist !Olist !Dlist SinglelineContent:c Newline { c }
+
+## In CodeBlockElementContents, newline should no be ingored. So we use TextNode instead of NewLineNode.
+CodeBlockElementContents = CodeBlockElementContent+:c { c }
+CodeBlockElementContent = ( SinglelineComment:c { c }
+                          | BlankLine:c { ::ReVIEW::TextNode.new(self, position, "\n") }
+                          | !"//}" SinglelineContent:c Newline { [c, ::ReVIEW::TextNode.new(self, position, "\n")] }
+                          )
+
+## Ulist and Olist
+
+Bullet = "*"
+Enumerator = < /[0-9]+/ > { num = text } "." { num.to_i }
+
+Ulist = Indent+:s Bullet+:b Space+ { @list_stack.push(s) } UlistItemBlock:item
+        { if b.size > 1 then item.level = b.size end }
+        (UlistItem | UlistItemMore | NestedList)*:items &{ s == @list_stack.pop }
+        ~ulist(self, position, items.unshift(item))
+
+Olist = Indent+:s Enumerator:e Space+ { @list_stack.push(s) } OlistItemBlock:item
+        { item.num = e }
+        (OlistItem | NestedList)*:items &{ s == @list_stack.pop }
+        ~olist(self, position, items.unshift(item))
+
+UlistItemBlock = ListItemFirstLine:c ListItemLine*:d ~ulist_element(self, position, @list_stack.size, d.unshift(c))
+OlistItemBlock = ListItemFirstLine:c ListItemLine*:d ~olist_element(self, position, 0, d.unshift(c))
+
+ListItemFirstLine = SinglelineContent:c Newline { c }
+ListItemLine = Indent+:s !Bullet !Enumerator !Space SinglelineContent:c &{ check_indent(s) } Newline { c }
+
+UlistItemMore = Indent+:s Bullet Bullet+:b Space+ &{ check_indent(s) } UlistItemBlock:item { item.level = b.size+1; item }
+
+UlistItem = Indent+:s Bullet      Space+ &{ check_indent(s) } UlistItemBlock:item { item }
+OlistItem = Indent+:s Enumerator:e Space+ &{ check_indent(s) } OlistItemBlock:item { item.num = e; item }
+
+## NestedList is markdown-like indented syntax.
+## You can write nested Ulist and Olist with this syntax.
+
+NestedList = (NestedUlist | NestedOlist)
+
+NestedUlist = Indent+:s Bullet     Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } UlistItemBlock:item
+        (UlistItem | NestedList)*:items &{ s == @list_stack.pop }
+        ~ulist(self, position, items.unshift(item))
+NestedOlist = Indent+:s Enumerator:e Space+ &{ check_nested_indent(s) } { @list_stack.push(s) } OlistItemBlock:item
+        { item.num = e }
+        (OlistItem | NestedList)*:items &{ s == @list_stack.pop }
+        ~olist(self, position, items.unshift(item))
+
+# Dlist
+Dlist = (DlistElement | SinglelineComment)+:content ~dlist(self, position, content)
+
+DlistElement = Indent* ":" Space+ SinglelineContent:text Newline DlistElementContent+:content ~dlist_element(self, position, text, content)
+
+DlistElementContent = (SinglelineComment:c { c }
+                      |Space+ SinglelineContent:c Newline { c }
+                      )
+
+SinglelineContent = Inline+:c ~singleline_content(self, position, c)
+
+
+# Inline Element and Non Inline Element
+
+Inline = ( InlineElement | NonInlineElement)
+
+NonInlineElement = !InlineElement < NonNewline > ~text(self, position, text)
+
+InlineElement =  ( RawInlineElement:c { c }
+                 | !RawInlineElement "@<" InlineElementSymbol:symbol ">" "{" InlineElementContents?:contents "}" ~inline_element(self, position, symbol,contents)
+                 | !RawInlineElement "@<" ComplexInlineElementSymbol:symbol ">" "{" ComplexInlineElementContents?:contents "}" ~complex_inline_element(self, position, symbol,contents)
+                 )
+
+RawInlineElement = "@<raw>{" RawBlockBuilderSelect?:builders RawInlineElementContent+:c "}" ~raw(self, builders, position, c)
+
+RawInlineElementContent = ( "\\}" { "}" }
+                          | < /[^\r\n\}]/ >  { text }
+                          )
+
+InlineElementSymbol = < AlphanumericAscii+ >:s &{ check_inline_element_symbol(text) } { text }
+
+InlineElementContents = !"}" InlineElementContentsSub:c { c }
+
+InlineElementContentsSub = !"}" Space* InlineElementContent:c1 Space* { [c1] }
+
+ComplexInlineElementSymbol = < AlphanumericAscii+ > &{ check_complex_inline_element_symbol(text) } { text }
+
+ComplexInlineElementContents = !"}" ComplexInlineElementContentsSub:c { c }
+
+ComplexInlineElementContentsSub = !"}" ( Space* InlineElementContent:c1 Space* "," ComplexInlineElementContentsSub:c2 {  [c1]+c2 }
+                                | Space* InlineElementContent:c1 Space* { [c1] }
+                                )
+
+
+InlineElementContent = InlineElementContentSub+:d { d }
+
+InlineElementContentSub = ( InlineElement:c { c }
+                          | !InlineElement QuotedInlineText:content ~inline_element_content(self, position, content)
+                          | !InlineElement InlineElementContentText+:content ~inline_element_content(self, position, content)
+                          )
+
+## Quoted Inline Text is "..."
+## In Quoted Inline Text, "\\" is "\", "\'" is "'", other characters are kept as is.
+QuotedInlineText =  "\""
+                            ( "\\\"" { "\"" }
+                            | "\\\\" { "\\" }
+                            | < /[^"\r\n\\]/ > { text }
+                            )+:str "\"" ~text(self, position, str.join(""))
+
+## XXX '\' (excpet '\}' and '\,' and '\\' ) => '\' is OK?
+InlineElementContentText =  ( "\\}" ~text(self, position, "}")
+                            | "\\," ~text(self, position, ",")
+                            | "\\\\" ~text(self, position, "\\" )
+                            | "\\" ~text(self, position, "\\" )
+                            | !InlineElement < /[^\r\n\\},]/> ~text(self, position, text)
+                            )
+
+NonNewline = /[^\r\n]/
+
+Space = /[ \t]/
+
+Indent = " "
+
+EOL = (Newline|EOF)
+
+EOF = !.
+
+ElementName = < LowerAlphabetAscii+ > { text }
+
+AlphanumericAscii = /[A-Za-z0-9]/
+LowerAlphabetAscii = /[a-z]/
+Digit             = /[0-9]/
+BOM               = "\uFEFF"
+Newline           = /\n|\r\n?|\p{Zl}|\p{Zp}/ ~newline(self, position, "\n")

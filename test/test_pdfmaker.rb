@@ -34,6 +34,8 @@ class PDFMakerTest < Test::Unit::TestCase
         assert !File.exist?(pdf_file)
       end
     end
+  ensure
+    $stderr = STDERR
   end
 
   def test_check_book_none

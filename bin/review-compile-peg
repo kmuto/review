@@ -107,7 +107,7 @@ def _main
     exit 1
   end
 
-  begin
+## begin
     loader = ReVIEW::YAMLLoader.new
     if config["yaml"]
       config.deep_merge!(loader.load_file(config["yaml"]))
@@ -166,11 +166,11 @@ def _main
     else
       raise "must not happen: #{mode}"
     end
-  rescue ReVIEW::ApplicationError => err
-    raise if $DEBUG
-    error err.message
-    exit 1
-  end
+#  rescue ReVIEW::ApplicationError => err
+#    raise if $DEBUG
+#    error err.message
+#    exit 1
+#  end
 end
 
 def error(msg)

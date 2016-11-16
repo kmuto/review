@@ -55,7 +55,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       end
     end
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
+    assert_equal %Q|<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_postdef_roman
@@ -70,12 +70,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
           end
         end
 
-        actual = compile_block("={test} this is test.\n")
-        assert_equal %Q|<h1 id="test"><a id="hI"></a><span class="secno">付録I　</span>this is test.</h1>\n|, actual
-
         actual = compile_block("=={test} this is test.\n")
-        assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
-
+        assert_equal %Q|<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
       end
     end
   end
@@ -96,7 +92,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
 
         actual = compile_block("=={test} this is test.\n")
-        assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
+        assert_equal %Q|<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
       end
     end
   end
@@ -119,18 +115,18 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level2
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
+    assert_equal %Q|<h2 id="test"><a id="h1-1"></a><span class="secno">1.1　</span>this is test.</h2>\n|, actual
   end
 
   def test_headline_level3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, actual
+    assert_equal %Q|<h3 id="test"><a id="h1-0-1"></a>this is test.</h3>\n|, actual
   end
 
   def test_headline_level3_with_secno
     @book.config["secnolevel"] = 3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q|\n<h3 id="test"><a id="h1-0-1"></a><span class="secno">1.0.1　</span>this is test.</h3>\n|, actual
+    assert_equal %Q|<h3 id="test"><a id="h1-0-1"></a><span class="secno">1.0.1　</span>this is test.</h3>\n|, actual
   end
 
   def test_label
@@ -357,7 +353,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, actual
+    assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p>\n</blockquote>\n|, actual
   end
 
   def test_memo
@@ -518,7 +514,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;</pre>\n</div>\n|, actual
   end
 
   def test_list_pygments_lang
@@ -539,7 +535,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
                  %Q|<pre class=\"list language-ruby\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
                  %Q|  (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">\|</span>i<span style=\"color: #666666\">\|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n| +
                  %Q|  <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n| +
-                 %Q|<span style=\"color: #008000; font-weight: bold\">end</span>\n| +
+                 %Q|<span style=\"color: #008000; font-weight: bold\">end</span>| +
                  %Q|</pre>\n| +
                  %Q|</div>\n|, actual
   end
@@ -558,7 +554,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n</pre>\n</div>\n", actual
+    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend</pre>\n</div>\n", actual
   end
 
   def test_list_ext
@@ -595,7 +591,7 @@ EOS
 </div>
 EOS
 
-    assert_equal expected, actual
+    assert_equal expected.chomp, actual
   end
 
   def test_listnum_pygments_lang
@@ -612,7 +608,7 @@ EOS
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
+    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div></div>", actual
   end
 
   def test_listnum_pygments_lang_without_lang
@@ -630,7 +626,7 @@ EOS
     @book.config["highlight"]["lang"] = "ruby"
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
+    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div></div>", actual
   end
 
 
@@ -649,7 +645,7 @@ EOS
     @book.config["highlight"] = {}
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//emlist[][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
-    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist language-sql\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span>\n</pre>\n</div>\n", actual
+    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist language-sql\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span></pre>\n</div>\n", actual
   end
 
   def test_emlist_caption
@@ -709,7 +705,7 @@ EOS
     @book.config["highlight"] = {}
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal "<div class=\"cmd-code\">\n<pre class=\"cmd\"><span style=\"color: #888888\">lineA</span>\n<span style=\"color: #888888\">lineB</span>\n</pre>\n</div>\n", actual
+    assert_equal "<div class=\"cmd-code\">\n<pre class=\"cmd\"><span style=\"color: #888888\">lineA</span>\n<span style=\"color: #888888\">lineB</span></pre>\n</div>\n", actual
   end
 
   def test_cmd_caption
@@ -748,7 +744,7 @@ EOS
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, actual
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p>\n</div>\n|, actual
   end
 
   def test_bibpaper_normalized
@@ -757,7 +753,7 @@ EOS
     end
 
     actual = compile_block("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n|, actual
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-id_sample_3Dbib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p>\n</div>\n|, actual
   end
 
   def test_bibpaper_with_anchor
@@ -766,7 +762,7 @@ EOS
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
-    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p></div>\n|, actual
+    assert_equal %Q|<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <a href=\"http://example.jp\" class=\"link\">http://example.jp</a>\n<p>ab</p>\n</div>\n|, actual
   end
 
   def column_helper(review)
@@ -814,7 +810,6 @@ EOS
 <h3><a id="column-1"></a>test</h3>
 <p>inside column</p>
 </div>
-
 <h3><a id="h1-0-1"></a>next level</h3>
 EOS
 
@@ -850,7 +845,6 @@ EOS
 <h3 id="foo"><a id="column-1"></a>test</h3>
 <p>inside column</p>
 </div>
-
 <h3><a id="h1-0-1"></a>next level</h3>
 <p>this is コラム「test」.</p>
 EOS
@@ -1017,6 +1011,70 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_ul_in_note
+    src =<<-EOS
+//note{
+
+aaaa
+bbb
+
+ * A
+ * B
+//}
+EOS
+
+    expected =<<-EOS
+<div class=\"note\">
+<p>aaaabbb</p>
+<ul>
+<li>A</li>
+<li>B</li>
+</ul>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_ul_in_note_and_emlist
+    src =<<-EOS
+//note{
+
+aaaa
+bbb
+
+//emlist{
+abc
+ddd
+ * A
+ * B
+//}
+
+ * A
+ * B
+//}
+EOS
+
+    expected =<<-EOS
+<div class=\"note\">
+<p>aaaabbb</p>
+<div class="emlist-code">
+<pre class="emlist">abc
+ddd
+ * A
+ * B
+</pre>
+</div>
+<ul>
+<li>A</li>
+<li>B</li>
+</ul>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
   def test_ol
     src =<<-EOS
   3. AAA
@@ -1107,6 +1165,24 @@ EOS
     assert_equal expected, actual
   end
 
+
+  ## inline nesting tests
+  def test_href_nest
+    actual = compile_inline("@<href>{http://github.com,@<b>{G}itHub}")
+    assert_equal %Q|<a href="http://github.com" class="link"><b>G</b>itHub</a>|, actual
+  end
+
+  def test_inline_tti_nest
+    actual = compile_inline("test @<tt>{aa@<i>{inline test}bb} test2")
+    assert_equal %Q|test <code class="tt">aa<i>inline test</i>bb</code> test2|, actual
+  end
+
+  def test_inline_ttib_nest
+    actual = compile_inline("test @<tt>{aa@<i>{inline @<b>{te}st}bb} test2")
+    assert_equal %Q|test <code class="tt">aa<i>inline <b>te</b>st</i>bb</code> test2|, actual
+  end
+
+
   def test_inline_hd
     book = ReVIEW::Book::Base.load
     book.catalog = ReVIEW::Catalog.new({"CHAPS"=>%w(ch1.re ch2.re)})
@@ -1118,7 +1194,9 @@ EOS
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
-    hd = builder.inline_hd("ch1|test1-1")
+    comp.setup_parser("@<hd>{ch1|test1-1}")
+    comp.parse("Paragraph")
+    hd = comp.result.to_doc
     assert_equal "「1.1 test1-1」", hd
   end
 
@@ -1134,7 +1212,9 @@ EOS
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
-    hd = builder.inline_hd("part1|part1-1")
+    comp.setup_parser("@<hd>{part1|part1-1}")
+    comp.parse("Paragraph")
+    hd = comp.result.to_doc
     assert_equal "「1.1 part1-1」", hd
   end
 

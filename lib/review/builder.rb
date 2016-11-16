@@ -22,6 +22,9 @@ module ReVIEW
 
     CAPTION_TITLES = %w(note memo tip info warning important caution notice)
 
+    attr_accessor :output
+    attr_accessor :ast
+
     def pre_paragraph
       nil
     end
@@ -43,6 +46,7 @@ module ReVIEW
       @compiler = compiler
       @chapter = chapter
       @location = location
+      @ast = nil
       @output = StringIO.new
       @book = @chapter.book if @chapter.present?
       @tabwidth = nil
@@ -64,11 +68,11 @@ module ReVIEW
     alias_method :raw_result, :result
 
     def print(*s)
-      @output.print(*s)
+      raise NotImplementedError, "XXX: `print` method is obsoleted. Do not use it."
     end
 
     def puts(*s)
-      @output.puts(*s)
+      raise NotImplementedError, "XXX: `puts` method is obsoleted. Do not use it."
     end
 
     def target_name
@@ -83,27 +87,33 @@ module ReVIEW
     end
     private :headline_prefix
 
-    def list(lines, id, caption, lang = nil)
+    def list(lines, id, caption = nil, lang = nil)
+      buf = ""
       begin
-        list_header id, caption, lang
+        buf << list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
+      buf << list_body(id, lines, lang)
+      buf
     end
 
-    def listnum(lines, id, caption, lang = nil)
+    def listnum(lines, id, caption = nil, lang = nil)
+      buf = ""
       begin
-        list_header id, caption, lang
+        buf << list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
+      buf << listnum_body(lines, lang)
+      buf
     end
 
-    def source(lines, caption, lang = nil)
-      source_header caption
-      source_body lines, lang
+    def source(lines, caption = nil)
+      buf = ""
+      buf << source_header(caption)
+      buf << source_body(lines, lang)
+      buf
     end
 
     def image(lines, id, caption, metric = nil)
@@ -116,6 +126,7 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
+      buf = ""
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -130,26 +141,27 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption unless caption.nil?
+        buf << table_header(id, caption) unless caption.nil?
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
-      table_begin rows.first.size
+      return buf if rows.empty?
+      buf << table_begin(rows.first.size)
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(s) }
+          buf << tr(rows.shift.map {|s| th(s) })
         end
         rows.each do |cols|
-          tr cols.map {|s| td(s) }
+          buf << tr(cols.map {|s| td(s) })
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(h)] + cs.map {|s| td(s) }
+          buf << tr([th(h)] + cs.map {|s| td(s) })
         end
       end
-      table_end
+      buf << table_end
+      buf
     end
 
     def adjust_n_cols(rows)
@@ -178,12 +190,12 @@ module ReVIEW
     #  footnote_end
     #end
 
-    def compile_inline(s)
-      @compiler.text(s)
-    end
+#    def compile_inline(s)
+#      @compiler.text(s)
+#    end
 
     def inline_chapref(id)
-      compile_inline @book.chapter_index.display_string(id)
+      @book.chapter_index.display_string(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
@@ -197,7 +209,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      compile_inline @book.chapter_index.title(id)
+      @book.chapter_index.title(id)
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
@@ -217,8 +229,14 @@ module ReVIEW
       nofunc_text("[UnknownImage:#{id}]")
     end
 
-    def inline_imgref(id)
-      img = inline_img(id)
+    def node_inline_img(node)
+      id = node[0].to_raw
+      inline_img(id)
+    end
+
+    def node_inline_imgref(node)
+      id = node[0].to_raw
+      img = node_inline_img(node)
 
       if @chapter.image(id).caption
         "#{img}#{I18n.t('image_quote', @chapter.image(id).caption)}"
@@ -245,22 +263,17 @@ module ReVIEW
       text(str)
     end
 
-    def inline_ruby(arg)
-      base, *ruby = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/)
-      base = base.gsub(/\\,/, ",") if base
-      ruby = ruby.join(",").gsub(/\\,/, ",") if ruby
+    def inline_ruby(base, ruby)
       compile_ruby(base, ruby)
     end
 
-    def inline_kw(arg)
-      word, alt = *arg.split(',', 2)
+    def inline_kw(word, alt = nil)
       compile_kw(word, alt)
     end
 
-    def inline_href(arg)
-      url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
-      url = url.gsub(/\\,/, ",").strip
-      label = label.gsub(/\\,/, ",").strip if label
+    def inline_href(url, label = nil)
+      url = url.strip
+      label = label.strip if label
       compile_href(url, label)
     end
 
@@ -269,15 +282,18 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
-      bibpaper_header id, caption
+      buf = ""
+      buf << bibpaper_header(id, caption)
       unless lines.empty?
-        puts ""
-        bibpaper_bibpaper id, caption, lines
+        buf << "\n"
+        buf << bibpaper_bibpaper(id, caption, lines)
       end
-      puts ""
+      buf << "\n"
+      buf
     end
 
-    def inline_hd(id)
+    def node_inline_hd(nodelist)
+      id = nodelist[0].to_raw
       m = /\A([^|]+)\|(.+)/.match(id)
       if m && m[1]
         chapter = @book.contents.detect{|chap| chap.id == m[1]}
@@ -318,12 +334,12 @@ module ReVIEW
         builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
         c = target_name
         if builders.include?(c)
-          print matched[2].gsub("\\n", "\n")
+          matched[2].gsub("\\n", "\n")
         else
           ""
         end
       else
-        print str.gsub("\\n", "\n")
+        str.gsub("\\n", "\n")
       end
     end
 
@@ -332,7 +348,7 @@ module ReVIEW
     end
 
     def error(msg)
-      raise ApplicationError, "#{@location}: error: #{msg}"
+      raise ApplicationError, "error: #{msg} at #{@compiler.show_pos} \n  (#{@compiler.failure_oneline})"
     end
 
     def handle_metric(str)
@@ -418,8 +434,9 @@ module ReVIEW
       raise NotImplementedError
     end
 
+    ### XXX
     def inline_include(file_name)
-      compile_inline File.read(file_name)
+      File.read(file_name)
     end
 
     def include(file_name)
@@ -433,6 +450,7 @@ module ReVIEW
     end
 
     def ul_item_end
+      ""
     end
 
     def inline_raw(args)

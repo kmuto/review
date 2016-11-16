@@ -77,7 +77,7 @@ module ReVIEW
           body
         end
       rescue LoadError
-          body
+        body
       end
     end
 

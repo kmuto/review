@@ -44,16 +44,6 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal '', b.result
   end
 
-  def test_print_and_puts
-    b = Builder.new
-    assert_raises(NoMethodError) do # XXX: OK?
-      b.print ""
-    end
-    assert_raises(NoMethodError) do # XXX: OK?
-      b.puts ""
-    end
-  end
-
   def test_not_implemented_methods
     ex = NoMethodError # XXX: OK?
     [
@@ -68,26 +58,6 @@ class BuidlerTest < Test::Unit::TestCase
       b = Builder.new
       assert_raises(ex) { b.__send__(m) }
     end
-  end
-
-  def test_compile_inline
-    text = "abc"
-    assert_equal [:text, text], @b.compile_inline(text)
-  end
-
-  def test_inline_ruby
-    def @b.compile_ruby(base,ruby)
-      [base,ruby]
-    end
-    str = @b.inline_ruby("foo,bar")
-    assert_equal str, ["foo","bar"]
-    str = @b.inline_ruby("foo\\,\\,,\\,bar,buz")
-    assert_equal str, ["foo,,",",bar,buz"]
-  end
-
-  def test_compile_inline_backslash
-    text = "abc\\d\\#a"
-    assert_equal [:text, text], @b.compile_inline(text)
   end
 
   class XBuilder < Builder
