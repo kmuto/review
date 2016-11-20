@@ -320,14 +320,14 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_source
     actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|\\begin{reviewlist}\n\\reviewlistcaption{foo/bar/test.rb}\nfoo\nbar\n\nbuz\n\\end{reviewlist}\n\n|, actual
+    assert_equal %Q|\\reviewsourcecaption{foo/bar/test.rb}\n\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n|, actual
   end
 
   def test_source_lst
     @book.config["highlight"] = {}
     @book.config["highlight"]["latex"] = "listings"
     actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q|\\begin{reviewlistlst}[title={foo/bar/test.rb},language={}]\nfoo\nbar\n\nbuz\n\\end{reviewlistlst}\n|, actual
+    assert_equal %Q|\\begin{reviewsourcelst}[title={foo/bar/test.rb},language={}]\nfoo\nbar\n\nbuz\n\\end{reviewsourcelst}\n|, actual
   end
 
   def test_quote
