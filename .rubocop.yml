@@ -12,6 +12,9 @@ Lint/BlockAlignment:
 Lint/EndAlignment:
   Enabled: AlignWith
 
+Lint/EmptyWhen:
+  Enabled: false
+
 Performance/ReverseEach:
   Enabled: true
 
@@ -67,6 +70,18 @@ Style/NumericPredicate:
 Style/TernaryParentheses:
   Enabled: false
 
+Style/VariableNumber:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+MultilineMethodCallBraceLayout:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: false
+
 ##################### Metrics ##################################
 
 Metrics/ClassLength:
@@ -94,3 +109,12 @@ Metrics/AbcSize:
   Exclude:
     - "bin/review-*"
     - "test/**/*"
+
+### shoud be < 25
+Metrics/BlockLength:
+  CountComments: false  # count full line comments?
+  Max: 50
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'test/**/*.rb'

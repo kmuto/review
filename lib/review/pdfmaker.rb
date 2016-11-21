@@ -30,10 +30,11 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
-    attr_accessor :config, :basedir
+    attr_accessor :config, :basedir, :basehookdir
 
     def initialize
       @basedir = nil
+      @basehookdir = nil
       @input_files = Hash.new{|h, key| h[key] = ""}
     end
 
@@ -120,7 +121,8 @@ module ReVIEW
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
-      @basedir = File.absolute_path(File.dirname(yamlfile))
+      @basedir = File.dirname(yamlfile)
+      @basehookdir = File.absolute_path(File.dirname(yamlfile))
 
       begin
         @config.check_version(ReVIEW::VERSION)
@@ -260,7 +262,7 @@ module ReVIEW
         ReVIEW::MakerHelper.copy_images_to_dir(from, to)
         Dir.chdir(to) do
           images = Dir.glob("**/*").find_all{|f|
-            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
+            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/
           }
           break if images.empty?
           system("extractbb", *images)
@@ -423,11 +425,11 @@ module ReVIEW
 
     def call_hook(hookname)
       if @config["pdfmaker"].instance_of?(Hash) && @config["pdfmaker"][hookname]
-        hook = File.absolute_path(@config["pdfmaker"][hookname], @basedir)
+        hook = File.absolute_path(@config["pdfmaker"][hookname], @basehookdir)
         if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
           warn "hook configuration is prohibited in safe mode. ignored."
         else
-          system_or_raise("#{hook} #{Dir.pwd} #{@basedir}")
+          system_or_raise("#{hook} #{Dir.pwd} #{@basehookdir}")
         end
       end
     end
