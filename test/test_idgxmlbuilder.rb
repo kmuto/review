@@ -451,6 +451,34 @@ EOS
     end
   end
 
+  def test_column_ref
+    review =<<-EOS
+===[column]{foo} test
+
+inside column
+
+=== next level
+
+this is @<column>{foo}.
+EOS
+    expected =<<-EOS.chomp
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?><p>this is コラム「test」.</p>
+EOS
+
+    assert_equal expected, column_helper(review)
+  end
+
+  def test_column_in_aother_chapter_ref
+    def @chapter.column_index
+      items = [Book::ColumnIndex::Item.new("chap1|column", 1, "column_cap")]
+      Book::ColumnIndex.new(items)
+    end
+
+    actual = compile_inline("test @<column>{chap1|column} test2")
+    expected = "test コラム「column_cap」 test2"
+    assert_equal expected, actual
+  end
+
   def test_ul
     src =<<-EOS
   * AAA
