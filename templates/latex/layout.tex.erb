@@ -79,6 +79,8 @@
 \lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
 \lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
 \lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+\lstnewenvironment{reviewsourcelst}[1][]{\lstset{#1}}{}
+\lstnewenvironment{reviewsourcenumlst}[1][]{\lstset{numbers=left, #1}}{}
 \lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
 <%- end -%>
 
@@ -99,6 +101,10 @@
   \end{alltt}\end{shaded}}
 
 \newenvironment{reviewlist}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewsource}{%
   \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
   \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
 
@@ -138,6 +144,9 @@
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
 \newcommand{\reviewemlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewsourcecaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
 \newcommand{\reviewcmdcaption}[1]{%
