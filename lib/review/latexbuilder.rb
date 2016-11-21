@@ -46,7 +46,7 @@ module ReVIEW
           begin
             require 'MeCab'
             require 'nkf'
-            @index_mecab = MeCab::Tagger.new("-Oyomi")
+            @index_mecab = MeCab::Tagger.new(@book.config["pdfmaker"]["makeindex_mecab_opts"])
           rescue LoadError
           end
         end
