@@ -9,6 +9,7 @@
 #
 
 require 'cgi/util'
+require 'rouge'
 module ReVIEW
 
   module HTMLUtils
@@ -44,14 +45,25 @@ module ReVIEW
 
     def highlight?
       @book.config["highlight"] &&
-        @book.config["highlight"]["html"] == "pygments"
+        @book.config["highlight"]["html"]
     end
 
     def highlight(ops)
       if @book.config["pygments"].present?
         raise ReVIEW::ConfigError, "'pygments:' in config.yml is obsoleted."
       end
+      return ops[:body].to_s if !highlight?
 
+      if @book.config["highlight"]["html"] == "pygments"
+        highlight_pygments(ops)
+      elsif @book.config["highlight"]["html"] == "rouge"
+        highlight_rouge(ops)
+      else
+        raise ReVIEW::ConfigError, "unknown highlight method #{@book.config["highlight"]["html"]} in config.yml."
+      end
+    end
+
+    def highlight_pygments(ops)
       body = ops[:body] || ''
       if @book.config["highlight"] && @book.config["highlight"]["lang"]
         lexer = @book.config["highlight"]["lang"] # default setting
@@ -64,7 +76,6 @@ module ReVIEW
       if ops[:options] && ops[:options].kind_of?(Hash)
         options.merge!(ops[:options])
       end
-      return body if !highlight?
 
       begin
         require 'pygments'
@@ -79,6 +90,30 @@ module ReVIEW
       rescue LoadError
           body
       end
+    end
+
+    def highlight_rouge(ops)
+      body = ops[:body] || ''
+      if ops[:lexer].present?
+        lexer = ops[:lexer]
+      elsif @book.config["highlight"] && @book.config["highlight"]["lang"]
+        lexer = @book.config["highlight"]["lang"] # default setting
+      else
+        lexer = 'text'
+      end
+      format = ops[:format] || ''
+
+      lexer = Rouge::Lexer.find(lexer)
+      raise "unknown lexer #{lexer}" unless lexer
+
+      #formatter = Rouge::Formatters::HTML.new()
+      #formatter = Rouge::Formatters::HTMLLegacy.new(:css_class => "highlight #{lexer.tag}")
+      #formatter = Rouge::Formatters::HTMLPygments.new(Rouge::Formatters::HTML.new, "highlight #{lexer.tag}")
+      formatter = Rouge::Formatters::HTMLInline.new(Rouge::Themes::Colorful.new)
+      raise "unknown formatter #{formatter}" unless formatter
+
+      text = unescape_html(body)
+      formatter.format(lexer.lex(text))
     end
 
     def normalize_id(id)

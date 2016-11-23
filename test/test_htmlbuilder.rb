@@ -618,6 +618,49 @@ end
     assert_equal expected, actual
   end
 
+  def test_list_rouge
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
+  end
+
+  def test_list_rouge_lang
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    expected = "<div class=\"caption-code\">\n" +
+               "<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n" +
+               "<pre class=\"list language-ruby\"><span style=\"color: #080;font-weight: bold\">def</span> <span style=\"color: #06B;font-weight: bold\">foo</span><span style=\"color: #bbbbbb;background-color: #000\">(</span><span style=\"color: #bbbbbb;background-color: #000\">a1</span><span style=\"color: #bbbbbb;background-color: #000\">,</span> <span style=\"color: #bbbbbb;background-color: #000\">a2</span><span style=\"color: #333\">=</span><span style=\"color: #A60\">:test</span><span style=\"color: #bbbbbb;background-color: #000\">)</span>\n" +
+               "  <span style=\"color: #bbbbbb;background-color: #000\">(</span><span style=\"color: #00D;font-weight: bold\">1</span><span style=\"color: #bbbbbb;background-color: #000\">.</span><span style=\"color: #06B;font-weight: bold\">.</span><span style=\"color: #00D;font-weight: bold\">3</span><span style=\"color: #bbbbbb;background-color: #000\">).</span><span style=\"color: #06B;font-weight: bold\">times</span><span style=\"color: #bbbbbb;background-color: #000\">{</span><span style=\"color: #333\">|</span><span style=\"color: #bbbbbb;background-color: #000\">i</span><span style=\"color: #333\">|</span> <span style=\"color: #bbbbbb;background-color: #000\">a</span><span style=\"color: #bbbbbb;background-color: #000\">.</span><span style=\"color: #06B;font-weight: bold\">include?</span><span style=\"color: #bbbbbb;background-color: #000\">(</span><span style=\"color: #A60\">:foo</span><span style=\"color: #bbbbbb;background-color: #000\">)}</span>\n" +
+               "  <span style=\"color: #080;font-weight: bold\">return</span> <span style=\"color: #038\">true</span>\n" +
+               "<span style=\"color: #080;font-weight: bold\">end</span>\n" +
+               "\n" +
+               "</pre>\n" +
+               "</div>\n"
+
+    assert_equal expected, actual
+  end
+
+  def test_list_rouge_nulllang
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n", actual
+  end
+
   def test_list_ext
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist.rb",1)
