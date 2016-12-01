@@ -13,6 +13,7 @@ require 'review/builder'
 require 'review/htmlutils'
 require 'review/template'
 require 'review/textutils'
+require 'review/webtocprinter'
 
 module ReVIEW
 
@@ -49,22 +50,30 @@ module ReVIEW
     def builder_init_file
       @warns = []
       @errors = []
-      @chapter.book.image_types = %w( .png .jpg .jpeg .gif .svg )
+      @chapter.book.image_types = %w(.png .jpg .jpeg .gif .svg)
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
       @body_ext = nil
+      @toc = nil
     end
     private :builder_init_file
 
     def result
-      if @book.htmlversion == 5
-        htmlfilename = "./html/layout-html5.html.erb"
+      if @book.config.maker == "webmaker"
+        htmldir = "web/html"
+        localfilename = "layout-web.html.erb"
       else
-        htmlfilename = "./html/layout-xhtml1.html.erb"
+        htmldir = "html"
+        localfilename = "layout.html.erb"
+      end
+      if @book.htmlversion == 5
+        htmlfilename = File.join(htmldir, "layout-html5.html.erb")
+      else
+        htmlfilename = File.join(htmldir, "layout-xhtml1.html.erb")
       end
 
-      layout_file = File.join(@book.basedir, "layouts", "layout.html.erb")
+      layout_file = File.join(@book.basedir, "layouts", localfilename)
       if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
         raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
       end
@@ -86,6 +95,12 @@ module ReVIEW
       @stylesheets = @book.config["stylesheet"]
       @next = @chapter.next_chapter
       @prev = @chapter.prev_chapter
+      @next_title = @next ? compile_inline(@next.title) : ""
+      @prev_title = @prev ? compile_inline(@prev.title) : ""
+
+      if @book.config.maker == "webmaker"
+        @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
+      end
 
       tmpl = ReVIEW::Template.load(layout_file)
       tmpl.result(binding)
@@ -429,9 +444,11 @@ module ReVIEW
 
     def list_body(id, lines, lang)
       id ||= ''
-      print %Q[<pre class="list">]
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      class_names = ["list"]
       lexer = lang || File.extname(id).gsub(/\./, '')
+      class_names.push("language-#{lexer}") unless lexer.blank?
+      print %Q[<pre class="#{class_names.join(" ")}">]
+      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
       puts '</pre>'
     end
@@ -476,7 +493,9 @@ module ReVIEW
         puts highlight(:body => body, :lexer => lexer, :format => 'html',
                        :options => {:linenos => 'inline', :nowrap => false})
       else
-        print '<pre class="list">'
+        class_names = ["list"]
+        class_names.push("language-#{lang}") unless lang.blank?
+        print %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           puts detab((i+1).to_s.rjust(2) + ": " + line)
         end
@@ -489,7 +508,9 @@ module ReVIEW
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
-      print %Q[<pre class="emlist">]
+      class_names = ["emlist"]
+      class_names.push("language-#{lang}") unless lang.blank?
+      print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
@@ -509,7 +530,9 @@ module ReVIEW
         puts highlight(:body => body, :lexer => lexer, :format => 'html',
                        :options => {:linenos => 'inline', :nowrap => false})
       else
-        print '<pre class="emlist">'
+        class_names = ["emlist"]
+        class_names.push("language-#{lang}") unless lang.blank?
+        print %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           puts detab((i+1).to_s.rjust(2) + ": " + line)
         end
@@ -607,7 +630,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      puts %Q[<div class="image">]
+      puts %Q[<div id="#{normalize_id(id)}" class="image">]
       puts %Q[<pre class="dummyimage">]
       lines.each do |line|
         puts detab(line)
@@ -746,7 +769,7 @@ module ReVIEW
     def indepimage(id, caption="", metric=nil)
       metrics = parse_metric("html", metric)
       caption = "" if caption.nil?
-      puts %Q[<div class="image">]
+      puts %Q[<div id="#{normalize_id(id)}" class="image">]
       begin
         puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       rescue
@@ -917,8 +940,7 @@ module ReVIEW
       if @book.config["mathml"]
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
-        parser = MathML::LaTeX::Parser.new(
-          :symbol => MathML::Symbol::CharacterReference)
+        parser = MathML::LaTeX::Parser.new(:symbol => MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
@@ -976,9 +998,9 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", escape_html(chapter.column(id).caption))
+        I18n.t("column", compile_inline(chapter.column(id).caption))
       end
     end
 
@@ -1147,7 +1169,7 @@ module ReVIEW
 
     def compile_href(url, label)
       if @book.config["externallink"]
-        %Q(<a href="#{url}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+        %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
       else
         label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
       end

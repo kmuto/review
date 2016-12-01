@@ -8,6 +8,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
 
+require 'cgi/util'
 module ReVIEW
 
   module HTMLUtils
@@ -24,6 +25,7 @@ module ReVIEW
     end
 
     alias_method :escape, :escape_html
+    alias_method :h, :escape_html
 
     def unescape_html(str)
       # FIXME better code
@@ -41,11 +43,15 @@ module ReVIEW
     end
 
     def highlight?
-      @book.config["pygments"].present? ||
-        @book.config["highlight"] && @book.config["highlight"]["html"] == "pygments"
+      @book.config["highlight"] &&
+        @book.config["highlight"]["html"] == "pygments"
     end
 
     def highlight(ops)
+      if @book.config["pygments"].present?
+        raise ReVIEW::ConfigError, "'pygments:' in config.yml is obsoleted."
+      end
+
       body = ops[:body] || ''
       if @book.config["highlight"] && @book.config["highlight"]["lang"]
         lexer = @book.config["highlight"]["lang"] # default setting
@@ -63,11 +69,10 @@ module ReVIEW
       begin
         require 'pygments'
         begin
-          Pygments.highlight(
-                   unescape_html(body),
-                   :options => options,
-                   :formatter => format,
-                   :lexer => lexer)
+          Pygments.highlight(unescape_html(body),
+                             :options => options,
+                             :formatter => format,
+                             :lexer => lexer)
         rescue MentosError
           body
         end

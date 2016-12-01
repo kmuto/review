@@ -58,63 +58,40 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
   end
 
-  def test_headline_level1_postdef_roman
-    @chapter.book.config["appendix_format"] = "roman"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hI"></a><span class="secno">付録I　</span>this is test.</h1>\n|, actual
-  end
-
-  def test_headline_level2_postdef_roman
-    @chapter.book.config["appendix_format"] = "roman"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
-  end
-
-  def test_headline_level1_postdef_alpha
-    @chapter.book.config["appendix_format"] = "alpha"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("={test} this is test.\n")
-    assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
-  end
-
-  def test_headline_level2_postdef_alpha
-    @chapter.book.config["appendix_format"] = "alpha"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
-      end
-    end
-    actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q|\n<h2 id="test"><a id="hA-1"></a><span class="secno">A.1　</span>this is test.</h2>\n|, actual
-  end
-
-  def test_headline_level1_postdef_alpha_i18n
+  def test_headline_postdef_roman
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
-        @chapter.book.config["appendix_format"] = "alpha" # config is strong
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pR")}
+        I18n.setup("ja")
         @chapter.instance_eval do
           def on_APPENDIX?
             true
           end
         end
 
-        file = File.join(dir, "locale.yml") # i18n is weak
-        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pr")}
+        actual = compile_block("={test} this is test.\n")
+        assert_equal %Q|<h1 id="test"><a id="hI"></a><span class="secno">付録I　</span>this is test.</h1>\n|, actual
+
+        actual = compile_block("=={test} this is test.\n")
+        assert_equal %Q|\n<h2 id="test"><a id="hI-1"></a><span class="secno">I.1　</span>this is test.</h2>\n|, actual
+
+      end
+    end
+  end
+
+  def test_headline_postdef_alpha
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pA")}
         I18n.setup("ja")
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
         actual = compile_block("={test} this is test.\n")
         assert_equal %Q|<h1 id="test"><a id="hA"></a><span class="secno">付録A　</span>this is test.</h1>\n|, actual
 
@@ -183,10 +160,10 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @book.config["epubmaker"] ||= {}
     @book.config["epubmaker"]["externallink"] = false
     actual = compile_inline("@<href>{http://github.com&q=1,Git\\,Hub}")
-    assert_equal %Q|<a href="http://github.com&q=1" class="link">Git,Hub</a>|, actual
+    assert_equal %Q|<a href="http://github.com&amp;q=1" class="link">Git,Hub</a>|, actual
 
     actual = compile_inline("@<href>{http://github.com&q=1}")
-    assert_equal %Q|<a href="http://github.com&q=1" class="link">http://github.com&amp;q=1</a>|, actual
+    assert_equal %Q|<a href="http://github.com&amp;q=1" class="link">http://github.com&amp;q=1</a>|, actual
   end
 
   def test_inline_href_epubmaker
@@ -204,9 +181,9 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
     @book.config["epubmaker"]["externallink"] = true
     actual = compile_inline("@<href>{http://github.com&q=1,Git\\,Hub}")
-    assert_equal %Q|<a href="http://github.com&q=1" class="link">Git,Hub</a>|, actual
+    assert_equal %Q|<a href="http://github.com&amp;q=1" class="link">Git,Hub</a>|, actual
     actual = compile_inline("@<href>{http://github.com&q=1}")
-    assert_equal %Q|<a href="http://github.com&q=1" class="link">http://github.com&amp;q=1</a>|, actual
+    assert_equal %Q|<a href="http://github.com&amp;q=1" class="link">http://github.com&amp;q=1</a>|, actual
   end
 
   def test_inline_raw
@@ -275,35 +252,49 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_hd_chap_postdef_roman
-    @chapter.book.config["appendix_format"] = "roman"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pR")}
+        I18n.setup("ja")
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
+        def @chapter.headline_index
+          items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+          Book::HeadlineIndex.new(items, self)
+        end
+
+        actual = compile_inline("test @<hd>{test} test2")
+        assert_equal %Q|test 「I.1 te_st」 test2|, actual
       end
     end
-    def @chapter.headline_index
-      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
-      Book::HeadlineIndex.new(items, self)
-    end
-
-    actual = compile_inline("test @<hd>{test} test2")
-    assert_equal %Q|test 「I.1 te_st」 test2|, actual
   end
 
   def test_inline_hd_chap_postdef_alpha
-    @chapter.book.config["appendix_format"] = "alpha"
-    @chapter.instance_eval do
-      def on_APPENDIX?
-        true
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+        File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pA")}
+        I18n.setup("ja")
+        @chapter.instance_eval do
+          def on_APPENDIX?
+            true
+          end
+        end
+
+        def @chapter.headline_index
+          items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
+          Book::HeadlineIndex.new(items, self)
+        end
+
+        actual = compile_inline("test @<hd>{test} test2")
+        assert_equal %Q|test 「A.1 te_st」 test2|, actual
       end
     end
-    def @chapter.headline_index
-      items = [Book::HeadlineIndex::Item.new("test", [1], "te_st")]
-      Book::HeadlineIndex.new(items, self)
-    end
-
-    actual = compile_inline("test @<hd>{test} test2")
-    assert_equal %Q|test 「A.1 te_st」 test2|, actual
   end
 
   def test_inline_uchar
@@ -442,7 +433,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption
@@ -453,7 +444,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric
@@ -464,7 +455,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric2
@@ -475,7 +466,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -486,7 +477,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />\n</div>\n|, actual
   end
 
   def test_dlist
@@ -523,7 +514,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       $stderr.puts "skip test_list_pygments_lang (cannot find pygments.rb)"
       return true
     end
-    @book.config["pygments"] = true
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
     assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
@@ -539,11 +531,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       $stderr.puts "skip test_list_pygments_lang (cannot find pygments.rb)"
       return true
     end
-    @book.config["pygments"] = true
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     assert_equal %Q|<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n| +
-                 %Q|<pre class=\"list\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
+                 %Q|<pre class=\"list language-ruby\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
                  %Q|  (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">\|</span>i<span style=\"color: #666666\">\|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n| +
                  %Q|  <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n| +
                  %Q|<span style=\"color: #008000; font-weight: bold\">end</span>\n| +
@@ -561,10 +554,19 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       $stderr.puts "skip test_list_pygments_nulllang (cannot find pygments.rb)"
       return true
     end
-    @book.config["pygments"] = true
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n</pre>\n</div>\n", actual
+  end
+
+  def test_list_ext
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist.rb",1)
+    end
+    actual = compile_block("//list[samplelist.rb][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list language-rb">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
   end
 
   def test_listnum
@@ -585,7 +587,7 @@ EOS
     expected =<<-EOS
 <div class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
-<pre class="list"> 1: def foo(a1, a2=:test)
+<pre class="list language-ruby"> 1: def foo(a1, a2=:test)
  2:   (1..3).times{|i| a.include?(:foo)}
  3:   return true
  4: end
@@ -606,7 +608,8 @@ EOS
       $stderr.puts "skip test_listnum_pygments_lang (cannot find pygments.rb)"
       return true
     end
-    @book.config["pygments"] = true
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
@@ -643,9 +646,10 @@ EOS
       $stderr.puts "skip test_emlist_pygments_lang (cannot find pygments.rb)"
       return true
     end
-    @book.config["pygments"] = true
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//emlist[][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
-    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span>\n</pre>\n</div>\n", actual
+    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist language-sql\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span>\n</pre>\n</div>\n", actual
   end
 
   def test_emlist_caption
@@ -671,6 +675,20 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_emlistnum_lang
+    @book.config["highlight"] = false
+    actual = compile_block("//emlistnum[cap][text]{\nlineA\nlineB\n//}\n")
+    expected =<<-EOS
+<div class="emlistnum-code">
+<p class="caption">cap</p>
+<pre class="emlist language-text"> 1: lineA
+ 2: lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_emlist_with_4tab
     @config["tabwidth"] = 4
     actual = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
@@ -688,7 +706,8 @@ EOS
     rescue LoadError
       return true
     end
-    @book.config["pygments"] = true
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
     assert_equal "<div class=\"cmd-code\">\n<pre class=\"cmd\"><span style=\"color: #888888\">lineA</span>\n<span style=\"color: #888888\">lineB</span>\n</pre>\n</div>\n", actual
   end

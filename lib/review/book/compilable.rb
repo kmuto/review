@@ -109,9 +109,9 @@ module ReVIEW
       end
 
       def image(id)
-        return image_index()[id] if image_index().has_key?(id)
-        return icon_index()[id] if icon_index().has_key?(id)
-        return numberless_image_index()[id] if numberless_image_index().has_key?(id)
+        return image_index()[id] if image_index().key?(id)
+        return icon_index()[id] if icon_index().key?(id)
+        return numberless_image_index()[id] if numberless_image_index().key?(id)
         indepimage_index()[id]
       end
 

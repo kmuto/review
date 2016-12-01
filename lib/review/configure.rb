@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+require 'securerandom'
+
 module ReVIEW
   class Configure < Hash
 
@@ -23,7 +25,7 @@ module ReVIEW
         "date" => nil, # publishing date
         "rights" => nil, # Copyright messages
         "description" => nil, # Description
-        "urnid" => nil, # Identifier (nil makes random uuid)
+        "urnid" => "urn:uid:#{SecureRandom.uuid}", # Identifier
         "stylesheet" => "stylesheet.css", # stylesheet file
         "coverfile" => nil, # content file of body of cover page
         "mytoc" => nil, # whether make own table of contents or not
@@ -40,6 +42,9 @@ module ReVIEW
         "mathml" => nil, # for HTML
         "htmlext" => "html",
         "htmlversion" => 5,
+        "imagedir" => "images",
+        "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
+        "fontdir" => "fonts",
 
         "chapter_file" => 'CHAPS',
         "part_file" => 'PART',
@@ -49,7 +54,7 @@ module ReVIEW
         "page_metric" => ReVIEW::Book::PageMetric::A5,
         "ext" => '.re',
         "image_dir" => 'images',
-        "image_types" => %w( .ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg ),
+        "image_types" => %w(.ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg),
         "image_scale2width" => true, # for LaTeX
         "bib_file" => "bib.re",
         "colophon_order" => %w(aut csl trl dsr ill cov edt pbl contact prt),
@@ -81,8 +86,12 @@ module ReVIEW
     end
 
     def check_version(version)
-      if self["review_version"].blank?
+      unless self.key?("review_version")
         raise ReVIEW::ConfigError, "configuration file has no review_version property."
+      end
+
+      if self["review_version"].blank?
+        # do nothing
       elsif self["review_version"].to_i != version.to_i ## major version
         raise ReVIEW::ConfigError, "major version of configuration file is different."
       elsif self["review_version"].to_f > version.to_f ## minor version

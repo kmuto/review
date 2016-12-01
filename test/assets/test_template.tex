@@ -1,7 +1,13 @@
-\documentclass[uplatex,oneside]{jsbook}
+\documentclass[dvipdfmx,uplatex,oneside]{jsbook}
+% %% fixes to LaTeX2e
+% \usepackage{fix-cm}[2006/09/13 v1.1m]
+% \usepackage{fixltx2e}[2006/09/13 v1.1m]
+
 \usepackage[deluxe,uplatex]{otf}
-\usepackage[dvipdfmx]{color}
+\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+% \usepackage{lmodern}
 \usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
 \usepackage{framed}
 \usepackage{wrapfig}
 \definecolor{shadecolor}{gray}{0.9}
@@ -30,10 +36,10 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
+%% Bookmarkの文字化け対策（日本語向け）
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-            pdftitle={Re:VIEW Sample Book},%
-            pdfauthor={}]{hyperref}
-% uplatexでのBookmarkの文字化け対策（日本語向け）
+     pdftitle={Re:VIEW Sample Book},%
+     pdfauthor={}]{hyperref}
 \usepackage[dvipdfmx]{pxjahyper}
 
 
@@ -115,6 +121,7 @@
 \newcommand{\reviewminicolumntitle}[1]{%
   {\large ■メモ: #1}\\}
 
+\renewcommand{\contentsname}{目次}
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
@@ -141,6 +148,37 @@
 \newcommand{\reviewcolophon}[0]{\clearpage}
 \newcommand{\reviewappendix}[0]{\appendix}
 
+\newcommand{\reviewprepartname}{第}
+\newcommand{\reviewpostpartname}{部}
+\newcommand{\reviewprechaptername}{第}
+\newcommand{\reviewpostchaptername}{章}
+\newcommand{\reviewfigurename}{図}
+\newcommand{\reviewtablename}{表}
+\newcommand{\reviewappendixname}{付録}
+
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
+
+
 \makeatletter
 %% maxwidth is the original width if it is less than linewidth
 %% otherwise use linewidth (to make sure the graphics do not exceed the margin)
@@ -153,8 +191,6 @@
 }
 \makeatother
 
-
-\usepackage[T1]{fontenc}
 
 \begin{document}
 
@@ -173,7 +209,7 @@
         
       \end{tabular}\par}%
     \vfill
-    {\large 2011-01-01 版\hspace{2zw} 発行\par}%
+    {\large 2011{-}01{-}01 版\hspace{2zw} 発行\par}%
 \vskip4zw\mbox{}
   \end{center}%
 \end{titlepage}

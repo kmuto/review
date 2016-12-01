@@ -154,19 +154,17 @@ class BookTest < Test::Unit::TestCase
     end
   end
 
-  # backword compatible
+  # backward compatible
   def test_setParameter
     book = Book::Base.new(File.dirname(__FILE__))
-    book.param = :test
-    assert_equal :test, book.param # old way
-    assert_equal :test, book.config # new way
+    book.config = :test
+    assert_equal :test, book.config
   end
 
   def test_setConfig
     book = Book::Base.new(File.dirname(__FILE__))
     book.config = :test
-    assert_equal :test, book.param # old way
-    assert_equal :test, book.config # new way
+    assert_equal :test, book.config
   end
 
   def test_parse_chapters
@@ -508,9 +506,6 @@ EOC
     end
 
     mktmpbookdir 'preface.re' => '12345' do |dir, book, files|
-      assert_raises(Errno::ENOENT, Errno::EINVAL) do # XXX: OK?
-        book.volume
-      end
 
       Dir.chdir(dir) do
         book2 = Book::Base.new('.')

@@ -9,11 +9,13 @@ Re:VIEW is free software under the terms of the GNU Lesser General Public Licens
 
 This article describes how to setup Re:VIEW and use it.
 
+The supported version of the article is Re:VIEW 2.0.
+
 ## Set up Re:VIEW
 
-Re:VIEW is a software in Ruby and worked in Linux/Unix, Mac OS X, and Cygwin. You can install Re:VIEW with RubyGems, Git or Subversion.
+Re:VIEW is a software in Ruby and worked in Linux/Unix, Mac OS X, and Windows. You can install Re:VIEW with RubyGems or Git.
 
-Note that Re:VIEW format is tagged text file, so you can write it on any editors and OSes.
+Note that Re:VIEW format is plain texts with simple markups in UTF-8, so you can write it on any editors and OSes.
 
 ### using RubyGmes
 
@@ -55,23 +57,9 @@ You can update the sources as follows:
 $ git pull
 ```
 
-### using Subversion
+## Writing Re:VIEW Document
 
-For non git users and environments, Re:VIEW is also distributed with Subversion.
-
-```bash
-$ svn co https://kmuto.jp/svn/review/trunk review
-```
-
-You can use Re:VIEW to add `review/bin` directory to `$PATH` variable.
-
-You can update the sources as follows:
-
-```bash
-$ svn up
-```
-
-# writing Re:VIEW documents and converting them
+### Generating template fiels
 
 After setup, you can use `review-init` command to generate Re:VIEW project directory.
 
@@ -84,32 +72,22 @@ $ ls hello
 Rakefile     catalog.yml  config.yml   hello.re     images/      layouts/     sty/         style.css
 ```
 
-In `hello` directory, many files are generated. `*.re` files are Re:VIEW format file.
-If you make `hello` project, a file `hello.re` is generated.
+In `hello` directory, many files are generated.
 
-`catalog.yml` file is a catalog of Re:VIEW format files.
+* `*.re` : Re:VIEW format file.
+* config.yml : configuration file
+* catalog.yml : catalog file (for TOC)
+* Rakefile : rule file for `rake` command
+* images : folder for images
+* layouts : forlder for layout files
+* style.css : sample stylesheet
+* sty : style files for LaTeX
 
-```bash
-$ cat catalog.yml
-PREDEF:
 
-CHAPS:
-  - hello.re
-
-APPENDIX:
-
-POSTDEF:
-```
-
-The first item in CHAPS is the first chapter, and the second item (if you add) is the second chapter. PREDEF is for front matter, APPENDIX is for appendix, and POSTDEF is for back matter.
-
-If you create new `*.re` files as new chapters, you should add the name of files into `catalog.yml`.
-
-Now you can edit `hello.re`. A simple example of Re:VIEW format text is as follows.
-
+### writing Re:VIEW documents and converting them
 
 ```review
-= my first Re:VIEW
+= My First Re:VIEW
 
 //lead{
 "Hello, Re:VIEW."
@@ -130,80 +108,78 @@ You can install Re:VIEW with:
 
  1. RubyGems
  2. Git
- 3. Subversion
+ 3. Download from GitHub
 
-For more information, see @<tt>{https://github.com/kmuto/review/wiki/}.
+The web site of Re:VIEW is @<tt>{https://reviewml.org/}.
 ```
 
 You should use UTF-8 as encodings in text files.
 
-To convert hello.re, you can use `review-compile` command.
+### generating PDF and EPUB
+
+You can generate a PDF file with `review-pdfmaker` command.  Also you can generate an EPUB file with `review-epubmaker` command.
+
+To generate PDF, you should install TeXLive 2012 or later.  To generate EPUB, you should install zip command.
+When you want to use MathML, you should install [MathML library](http://www.hinet.mydns.jp/?mathml.rb)
+
+`review-pdfmaker` and `review-epubmaker` need `config.yml`, configuration YAML files.  `review-init` command generates `config.yml` in default.
 
 ```bash
-$ review-compile --target html hello.re > hello.html  ## generating HTML
-$ review-compile --target latex hello.re > hello.tex  ## generating LaTeX
-$ review-compile --target idgxml hello.re > hello.xml ## generating XML for InDesing
+$ review-pdfmaker config.yml  ## generate PDF
+$ review-epubmaker config.yml ## generate EPUB
 ```
 
-You can convert all `*.re` files in `catalog.yml` with `-a` option.
+You also can generate them with Rake.
 
+```bash
+$ rake pdf  ## generate PDF
+$ rake epub ## generate EPUB
 ```
-$ review-compile --target html -a  ## convert all files into HTML
+
+
+There is a sample YAML file [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) in the same directory of this document.
+
+### add chapters and modify them
+
+`catalog.yml` file is a catalog of Re:VIEW format files.
+
+If you create new `*.re` files as new chapters, you should add the name of files into `catalog.yml`.
+
+```bash
+$ cat catalog.yml
+PREDEF:
+
+CHAPS:
+  - first-chapter.re
+  - second-chapter.re
+
+APPENDIX:
+
+POSTDEF:
 ```
 
-You can get HTML file as follows:
+The first item in CHAPS is the first chapter, and the second item (if you add) is the second chapter. PREDEF is for front matter, APPENDIX is for appendix, and POSTDEF is for back matter.  You can see in detail with [catalog.md](https://github.com/kmuto/review/blob/master/doc/catalog.ja.md).
 
-```html
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <meta name="generator" content="Re:VIEW" />
-  <title>my first Re:VIEW</title>
-</head>
-<body>
-<h1><a id="h1"></a>第1章　my first Re:VIEW</h1>
-<div class="lead">
-<p>&quot;Hello, Re:VIEW.&quot;</p>
-</div>
 
-<h2><a id="h1-1"></a>1.1　What's Re:VIEW</h2>
-<p><b>Re:VIEW</b> is a converter from simple markup documents into various formats.</p>
-<p>You can generate documents as follows:</p>
-<ul>
-<li>text with tagging</li>
-<li>LaTeX</li>
-<li>HTML</li>
-<li>XML</li>
-</ul>
-<p>You can install Re:VIEW with:</p>
-<ol>
-<li>RubyGems</li>
-<li>Git</li>
-<li>Subversion</li>
-</ol>
-<p>For more information, see <tt>https://github.com/kmuto/review/wiki/</tt>.</p>
-
-</body>
-</html>
-```
+### more information
 
 For more information about Re:VIEW format, see [format.md](https://github.com/kmuto/review/blob/master/doc/format.md).
 
-review-compile and other commands in Re:VIEW has `--help` option to output help.  `review-compile` has many options, so you may see them.
+## convert file by file
 
-If you don't want to type `--target` every time, you can use symbolic links to `review-compile`. You can use new commands `review2html` and so on.
+You can convert a *.re file with `review-compile` command.
+
+When you want to convert sample.re, you can do as belows:
 
 ```bash
-$ cd path/to/review/bin
-$ ln -s review-compile review2text
-$ ln -s review-compile review2html
-$ ln -s review-compile review2latex
-$ ln -s review-compile review2idgxml
+$ review-compile --target text sample.re > sample.txt    ## for text
+$ review-compile --target html sample.re > sample.html   ## for HTML
+$ review-compile --target latex sample.re > sample.tex   ## for LaTeX
+$ review-compile --target idgxml sample.re > sample.xml  ## for XML
+$ review-compile --target markdown sample.re > sample.md ## for Markdown
 ```
+
+`review-compile` and other commands in Re:VIEW has `--help` option to output help.  `review-compile` has many options, so you may see them.
 
 ## preprocessor and other commands
 
@@ -228,25 +204,11 @@ You can also use `review-index` command to generate header list.
 $ review-index --level <heading level> -a
 ```
 
-## generating PDF and EPUB
-
-You can generate PDF and EPUB as:
-
-```bash
-$ review-pdfmaker config.yml  ## generate PDF
-$ review-epubmaker config.yml ## generate EPUB
-```
-
-To generate PDF, you should install TeXLive 2012 or later.  To generate EPUB, you should install zip command.
-When you want to use MathML, you should install [MathML library](http://www.hinet.mydns.jp/?mathml.rb)
-
-`review-pdfmaker` and `review-epubmaker` need `config.yml`, configuration YAML files. There is a sample YAML file [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) in the same directory of this document.
-
-
 ## Copyright
 
-The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (2015/01).
+The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (2016/04).
 
 If you want to report bugs and patches, or to get more information, see:
 
+* http://reviewml.org/
 * https://github.com/kmuto/review/wiki

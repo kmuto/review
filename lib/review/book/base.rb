@@ -40,6 +40,10 @@ module ReVIEW
         @basedir_seen[dir] = true
       end
 
+      def self.clear_rubyenv
+        @basedir_seen = {}
+      end
+
       def initialize(basedir)
         @basedir = basedir
         @parts = nil
@@ -179,19 +183,9 @@ module ReVIEW
         @config ||= Configure.values
       end
 
-      # backward compatible
-      def param=(param)
-        @config = param
-      end
-
       def load_config(filename)
         new_conf = YAML.load_file(filename)
         @config.merge!(new_conf)
-      end
-
-      # backward compatible
-      def param
-        @config
       end
 
       def catalog

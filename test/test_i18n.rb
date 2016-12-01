@@ -153,6 +153,34 @@ class I18nTest < Test::Unit::TestCase
     end
   end
 
+  def test_custom_format_numbers
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+
+        File.open(file, "w"){|f| f.write %Q|locale: ja\nformat_number_header: "%s-%pA:"| }
+        I18n.setup("ja")
+        assert_equal "1-B:", I18n.t("format_number_header", [1, 2])
+
+        File.open(file, "w"){|f| f.write %Q|locale: ja\nformat_number_header: "%s.%pa:"| }
+        I18n.setup("ja")
+        assert_equal "2.c:", I18n.t("format_number_header", [2, 3])
+
+        File.open(file, "w"){|f| f.write %Q|locale: ja\nformat_number_header: "%pA,%pAW:"| }
+        I18n.setup("ja")
+        assert_equal "C,Ｄ:", I18n.t("format_number_header", [3, 4])
+
+        File.open(file, "w"){|f| f.write %Q|locale: ja\nformat_number_header: "%pJ・%pJ:"| }
+        I18n.setup("ja")
+        assert_equal "十二・二十六:", I18n.t("format_number_header", [12, 26])
+
+        File.open(file, "w"){|f| f.write %Q|locale: ja\nformat_number_header: "%pdW―%pdW:"| }
+        I18n.setup("ja")
+        assert_equal "３―12:", I18n.t("format_number_header", [3, 12])
+      end
+    end
+  end
+
   def test_ja
     I18n.setup("ja")
     assert_equal "図", I18n.t("image")
@@ -194,11 +222,11 @@ class I18nTest < Test::Unit::TestCase
   def _setup_htmlbuilder
     I18n.setup "en"
     @builder = HTMLBuilder.new()
-    @config = {
+    @config = ReVIEW::Configure[
       "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
       "stylesheet" => nil, # for HTMLBuilder
       "ext" => ".re"
-    }
+    ]
     @book = Book::Base.new(".")
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)

@@ -71,16 +71,17 @@ module ReVIEW
       @texinlineequation = 0
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
-      if @book.config["nolf"].present?
-        IDGXMLBuilder.class_eval do
-          def puts(arg)
-            print arg
-          end
-        end
-      end
       @secttags = true unless @book.config["structuredxml"].nil?
     end
     private :builder_init_file
+
+    def puts(arg)
+      if @book.config["nolf"].present?
+        print arg
+      else
+        super
+      end
+    end
 
     def result
       s = ""
@@ -309,9 +310,9 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<link href="#{column_label(id)}">#{escape_html(chapter.column(id).caption)}</link>)
+        %Q(<link href="#{column_label(id)}">#{compile_inline(chapter.column(id).caption)}</link>)
       else
-        escape_html(chapter.column(id).caption)
+        compile_inline(chapter.column(id).caption)
       end
     end
 
@@ -391,7 +392,7 @@ module ReVIEW
 
     def quotedlist(lines, css_class, caption)
       print %Q[<list type='#{css_class}'>]
-      puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" unless caption.nil?
+      puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" if caption.present?
       print %Q[<pre>]
       no = 1
       lines.each do |line|
@@ -810,7 +811,7 @@ module ReVIEW
       @column += 1
       a_id = %Q[id="column-#{@column}"]
       print "<#{type}column #{a_id}>"
-      puts %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title>]
+      puts %Q[<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title><?dtp level="9" section="#{escape_html(compile_inline(caption))}"?>]
     end
 
     def common_column_end(type)

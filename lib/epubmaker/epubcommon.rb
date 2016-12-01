@@ -9,8 +9,8 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'epubmaker/producer'
 require 'review/i18n'
+require 'review/template'
 require 'cgi'
 require 'shellwords'
 begin
@@ -25,7 +25,9 @@ module EPUBMaker
   class EPUBCommon
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
+      @body_ext = ''
       @producer = producer
+      @body_ext = nil
     end
 
     # Return mimetype content.
@@ -173,7 +175,7 @@ EOT
 EOT
       end
 
-      publisher = @producer.params.names_of("pbl") || @producer.params.names_of("prt") # XXX Backward Compatiblity
+      publisher = @producer.params.names_of("pbl")
       if publisher
         @body << <<EOT
   <p>
@@ -420,7 +422,7 @@ EOT
       Dir.chdir(tmpdir) do |d|
         Zip::OutputStream.open(epubfile) do |epub|
           root_pathname = Pathname.new(tmpdir)
-          relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
+          # relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
           epub.put_next_entry('mimetype', nil, nil, Zip::Entry::STORED)
           epub << "application/epub+zip"
 

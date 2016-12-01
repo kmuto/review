@@ -1,5 +1,7 @@
 require 'test_helper'
 require 'review/yamlloader'
+require 'review/extentions'
+require 'tmpdir'
 
 class YAMLLoaderTest < Test::Unit::TestCase
   def setup
@@ -85,10 +87,11 @@ k3: "C"
 EOB
       end
       yaml = @loader.load_file(yaml_file)
-      assert_equal({"k0" => 2,
-                    "k1" => {"name1"=>"value1-1", "name2"=>"value2-2", "name3"=>"value3-3"},
-                    "k2" => "B",
-                    "k3" => "C",
+      assert_equal({
+                     "k0" => 2,
+                     "k1" => {"name1"=>"value1-1", "name2"=>"value2-2", "name3"=>"value3-3"},
+                     "k2" => "B",
+                     "k3" => "C",
                    },
                    yaml)
     end
@@ -177,9 +180,7 @@ EOB
                              "name4"=>"N4",
                              "name5"=>"N3",
                              "name6"=>"N2",
-                             "name7"=>"N1",
-                            },
-                   },
+                             "name7"=>"N1"}},
                    yaml)
     end
   end

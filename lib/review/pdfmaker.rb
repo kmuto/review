@@ -11,11 +11,17 @@ require 'optparse'
 require 'yaml'
 require 'fileutils'
 require 'erb'
+require 'tmpdir'
 
-require 'review'
 require 'review/i18n'
+require 'review/book'
+require 'review/configure'
 require 'review/converter'
 require 'review/latexbuilder'
+require 'review/yamlloader'
+require 'review/version'
+require 'review/makerhelper'
+require 'review/template'
 
 
 module ReVIEW
@@ -24,10 +30,11 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
-    attr_accessor :config, :basedir
+    attr_accessor :config, :basedir, :basehookdir
 
     def initialize
       @basedir = nil
+      @basehookdir = nil
       @input_files = Hash.new{|h, key| h[key] = ""}
     end
 
@@ -109,12 +116,13 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = "pdfmaker"
       cmd_config, yamlfile = parse_opts(args)
-      loader = YAMLLoader.new
+      loader = ReVIEW::YAMLLoader.new
       @config.deep_merge!(loader.load_file(yamlfile))
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
       @basedir = File.dirname(yamlfile)
+      @basehookdir = File.absolute_path(File.dirname(yamlfile))
 
       begin
         @config.check_version(ReVIEW::VERSION)
@@ -220,7 +228,7 @@ module ReVIEW
         ReVIEW::MakerHelper.copy_images_to_dir(from, to)
         Dir.chdir(to) do
           images = Dir.glob("**/*").find_all{|f|
-            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
+            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/
           }
           break if images.empty?
           system("extractbb", *images)
@@ -268,15 +276,15 @@ module ReVIEW
     def make_authors
       authors = ""
       if @config["aut"].present?
-        author_names = join_with_separator(@config.names_of("aut"), ReVIEW::I18n.t("names_splitter"))
+        author_names = join_with_separator(@config.names_of("aut").map{|s| escape_latex(s)}, ReVIEW::I18n.t("names_splitter"))
         authors = ReVIEW::I18n.t("author_with_label", author_names)
       end
       if @config["csl"].present?
-        csl_names = join_with_separator(@config.names_of("csl"), ReVIEW::I18n.t("names_splitter"))
+        csl_names = join_with_separator(@config.names_of("csl").map{|s| escape_latex(s)}, ReVIEW::I18n.t("names_splitter"))
         authors += " \\\\\n"+ ReVIEW::I18n.t("supervisor_with_label", csl_names)
       end
       if @config["trl"].present?
-        trl_names = join_with_separator(@config.names_of("trl"), ReVIEW::I18n.t("names_splitter"))
+        trl_names = join_with_separator(@config.names_of("trl").map{|s| escape_latex(s)}, ReVIEW::I18n.t("names_splitter"))
         authors += " \\\\\n"+ ReVIEW::I18n.t("translator_with_label", trl_names)
       end
       authors
@@ -317,19 +325,19 @@ module ReVIEW
       @documentclass = dclass[0] || "jsbook"
       @documentclassoption = dclass[1] || "uplatex,oneside"
 
-      okuduke = make_colophon
-      authors = make_authors
+      @okuduke = make_colophon
+      @authors = make_authors
 
-      custom_titlepage = make_custom_page(@config["cover"]) || make_custom_page(@config["coverfile"])
-      custom_originaltitlepage = make_custom_page(@config["originaltitlefile"])
-      custom_creditpage = make_custom_page(@config["creditfile"])
+      @custom_titlepage = make_custom_page(@config["cover"]) || make_custom_page(@config["coverfile"])
+      @custom_originaltitlepage = make_custom_page(@config["originaltitlefile"])
+      @custom_creditpage = make_custom_page(@config["creditfile"])
 
-      custom_profilepage = make_custom_page(@config["profile"])
-      custom_advfilepage = make_custom_page(@config["advfile"])
+      @custom_profilepage = make_custom_page(@config["profile"])
+      @custom_advfilepage = make_custom_page(@config["advfile"])
       if @config["colophon"] && @config["colophon"].kind_of?(String)
-        custom_colophonpage = make_custom_page(@config["colophon"])
+        @custom_colophonpage = make_custom_page(@config["colophon"])
       end
-      custom_backcoverpage = make_custom_page(@config["backcover"])
+      @custom_backcoverpage = make_custom_page(@config["backcover"])
 
       if @config["pubhistory"]
         warn "pubhistory is oboleted. use history."
@@ -342,13 +350,24 @@ module ReVIEW
         @coverimageoption = "width=\\textwidth,height=\\textheight,keepaspectratio"
       end
 
+      @locale_latex = Hash.new
+      part_tuple = I18n.get("part").split(/\%[A-Za-z]{1,3}/, 2)
+      chapter_tuple = I18n.get("chapter").split(/\%[A-Za-z]{1,3}/, 2)
+      appendix_tuple = I18n.get("appendix").split(/\%[A-Za-z]{1,3}/, 2)
+      @locale_latex["prepartname"] = part_tuple[0]
+      @locale_latex["postpartname"] = part_tuple[1]
+      @locale_latex["prechaptername"] = chapter_tuple[0]
+      @locale_latex["postchaptername"] = chapter_tuple[1]
+      @locale_latex["preappendixname"] = appendix_tuple[0]
+      @locale_latex["postappendixname"] = appendix_tuple[1]
+
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       layout_file = File.join(@basedir, "layouts", "layout.tex.erb")
       if File.exist?(layout_file)
         template = layout_file
       end
 
-      texcompiler = File.basename(@config["texcommand"], ".*")
+      @texcompiler = File.basename(@config["texcommand"], ".*")
 
       erb = ReVIEW::Template.load(template, '-')
       erb.result(binding)
@@ -372,11 +391,11 @@ module ReVIEW
 
     def call_hook(hookname)
       if @config["pdfmaker"].instance_of?(Hash) && @config["pdfmaker"][hookname]
-        hook = File.absolute_path(@config["pdfmaker"][hookname], @basedir)
+        hook = File.absolute_path(@config["pdfmaker"][hookname], @basehookdir)
         if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
           warn "hook configuration is prohibited in safe mode. ignored."
         else
-          system_or_raise("#{hook} #{Dir.pwd} #{@basedir}")
+          system_or_raise("#{hook} #{Dir.pwd} #{@basehookdir}")
         end
       end
     end

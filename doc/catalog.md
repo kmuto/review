@@ -40,13 +40,9 @@ You can add parts in body to use `CHAPS` in a hierarchy. You can use both title 
 
 (For old version user: there is no `PART`. You write them in `CHAPS`.)
 
-## About version 1.3 or earlier
+## About earlier version
 
-You can not use `APPENDIX`. Use `POSTDEF`.
+In version 1.x, Re:VIEW use 4 files PREDEF, CHAPS, POSTDEF, PART as catalog files.
 
-## About version 1.2 or earlier
-
-Before version 1.2 or earlier, Re:VIEW use 4 files PREDEF, CHAPS, POSTDEF, PART as catalog files.
-So you must use these files instead of catalog.yml when you use these versions of Re:VIEW.
-
-Current Re:VIEW supports both catalog.yml and old catalog files. When there are both files, catalog.yml is used.
+You can convert there files with `review-catalog-converter`.
+When using it, you should compare with these files and the generated file `catalog.yml`.

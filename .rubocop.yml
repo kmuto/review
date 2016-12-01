@@ -2,6 +2,7 @@ AllCops:
   Exclude:
     - lib/lineinput.rb
     - lib/uuid.rb
+  DisplayCopNames: true
 
 inherit_from: .rubocop_todo.yml
 
@@ -10,6 +11,9 @@ Lint/BlockAlignment:
 
 Lint/EndAlignment:
   Enabled: AlignWith
+
+Lint/EmptyWhen:
+  Enabled: false
 
 Performance/ReverseEach:
   Enabled: true
@@ -60,7 +64,57 @@ Performance/RedundantMerge:
 Style/ZeroLengthPredicate:
   Enabled: false
 
+Style/NumericPredicate:
+  Enabled: false
+
+Style/TernaryParentheses:
+  Enabled: false
+
+Style/VariableNumber:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+MultilineMethodCallBraceLayout:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: false
+
 ##################### Metrics ##################################
 
 Metrics/ClassLength:
   Max: 1500
+
+Metrics/LineLength:
+  Max: 256
+  Exclude:
+    - "test/**/*"
+
+### should be < 50
+Metrics/MethodLength:
+  Max: 100
+  Exclude:
+    - "bin/review-*"
+    - "test/**/*"
+
+### should be < 20
+Metrics/CyclomaticComplexity:
+  Max: 32
+
+### should be < 60
+Metrics/AbcSize:
+  Max: 120
+  Exclude:
+    - "bin/review-*"
+    - "test/**/*"
+
+### shoud be < 25
+Metrics/BlockLength:
+  CountComments: false  # count full line comments?
+  Max: 50
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'test/**/*.rb'

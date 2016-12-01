@@ -34,7 +34,7 @@ module ReVIEW
 #     }
 
     def emlist(lines, caption = nil)
-      firstline = f.lineno
+      # firstline = f.lineno
       puts
       puts caption
       puts '//lst1'

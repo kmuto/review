@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Copyright (c) 2010-2014 Kenshi Muto
+# Copyright (c) 2010-2016 Kenshi Muto
 #
 # This program is free software
 # You can distribute or modify this program under the terms of
@@ -16,20 +16,20 @@ ln = 0
 
 ARGF.each {|line|
   ln += 1
-  if line =~ /\A\/\/([a-z]+).+\{/
+  if line =~ /\A\/\/([a-z]+)\{\s*\Z/ || line =~ /\A\/\/([a-z]+)\[.+?\{\s*\Z/
     # block
     _block = $1
     puts "#{ln}: block #{_block} started, but previous block #{block} didn't close yet." unless block.nil?
     block = _block
   elsif line =~ /\A\/\/\}/
-    puts "#{ln}: block seen ended, but not opened." if block.nil?
+    puts "#{ln}: block ended, but not opened." if block.nil?
     block = nil
     maxcolcount = 0
     colcount = 0
   elsif line =~ /\A(\d+\.)\s+/
     # number
     unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
-      puts "#{ln}: found $1 without the head space. Is it correct?"
+      puts "#{ln}: found '#{$1}' without the head space. Is it correct?"
     end
   elsif line =~ /\A\*\s+/
     # itemize
@@ -41,6 +41,7 @@ ARGF.each {|line|
       puts "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
     end
   elsif block == "table"
+    next if line.start_with?('#@')
     if line !~ /\A\-\-\-\-\-/
       # table
       colcount = line.split("\t").size

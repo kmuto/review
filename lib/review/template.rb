@@ -1,4 +1,5 @@
 require 'erb'
+require 'review/extentions'
 module ReVIEW
   class Template
     include ERB::Util

@@ -11,11 +11,11 @@
 require 'tmpdir'
 require 'fileutils'
 require 'review/yamlloader'
-require 'securerandom'
 require 'epubmaker/content'
 require 'epubmaker/epubv2'
 require 'epubmaker/epubv3'
 require 'review/i18n'
+require 'review/configure'
 require 'review/extentions/hash'
 
 module EPUBMaker
@@ -211,11 +211,9 @@ module EPUBMaker
     def complement
       @params["htmlext"] = "html" if @params["htmlext"].nil?
       defaults = ReVIEW::Configure.new.merge({
-        "cover" => "#{@params["bookname"]}.#{@params["htmlext"]}",
         "language" => "ja",
         "date" => Time.now.strftime("%Y-%m-%d"),
         "modified" => Time.now.strftime("%Y-%02m-%02dT%02H:%02M:%02SZ"),
-        "urnid" => "urn:uid:#{SecureRandom.uuid}",
         "isbn" => nil,
         "toclevel" => 2,
         "stylesheet" => [],
@@ -290,11 +288,19 @@ module EPUBMaker
 
       @params["htmlversion"] = 5 if @params["epubversion"] >= 3
 
+      @params.maker = "epubmaker"
+      @params["cover"] = "#{@params["bookname"]}.#{@params["htmlext"]}" unless @params["cover"]
+
       %w[bookname title].each do |k|
         raise "Key #{k} must have a value. Abort." unless @params[k]
       end
       # array
-      %w[subject aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl stylesheet rights].each do |item|
+      %w[subject aut
+         a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt
+         a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl
+         adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt
+         ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl
+         stylesheet rights].each do |item|
         next unless @params[item]
         @params[item] = [@params[item]] if @params[item].kind_of?(String)
       end

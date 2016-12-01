@@ -292,6 +292,12 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></box>|, actual
   end
 
+  def test_box_non_listinfo
+    @config["listinfo"] = nil
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption>test1\ntest1.5\n\ntest<i>2</i>\n</box>|, actual
+  end
+
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|<p align='right'>foobar</p><p align='right'>buz</p>|, actual
@@ -412,7 +418,7 @@ inside column
 ===[/column]
 EOS
     expected =<<-EOS.chomp
-<column id="column-1"><title aid:pstyle="column-title">prev column</title><p>inside prev column</p></column><column id="column-2"><title aid:pstyle="column-title">test</title><p>inside column</p></column>
+<column id="column-1"><title aid:pstyle="column-title">prev column</title><?dtp level="9" section="prev column"?><p>inside prev column</p></column><column id="column-2"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column>
 EOS
     assert_equal expected, column_helper(review)
   end
@@ -426,7 +432,7 @@ inside column
 === next level
 EOS
     expected =<<-EOS.chomp
-<column id="column-1"><title aid:pstyle="column-title">test</title><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?>
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?>
 EOS
 
     assert_equal expected, column_helper(review)

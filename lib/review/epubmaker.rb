@@ -7,7 +7,20 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-require 'review'
+
+require 'tmpdir'
+
+require 'review/i18n'
+require 'review/book'
+require 'review/configure'
+require 'review/converter'
+require 'review/latexbuilder'
+require 'review/yamlloader'
+require 'review/version'
+require 'review/htmltoc'
+require 'review/htmlbuilder'
+
+require 'review/yamlloader'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
@@ -28,7 +41,7 @@ module ReVIEW
   end
 
   def load_yaml(yamlfile)
-    loader = YAMLLoader.new
+    loader = ReVIEW::YAMLLoader.new
     @params = ReVIEW::Configure.values.deep_merge(loader.load_file(yamlfile))
     @producer = Producer.new(@params)
     @producer.load(yamlfile)

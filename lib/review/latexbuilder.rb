@@ -304,7 +304,6 @@ module ReVIEW
     end
 
     def common_code_block(id, lines, command, caption, lang)
-      buf = ""
       if caption
         if command =~ /emlist/ || command =~ /cmd/
           puts macro(command + 'caption', "#{compile_inline(caption)}")
@@ -822,7 +821,9 @@ module ReVIEW
     end
 
     def inline_column_chap(chapter, id)
-      macro('reviewcolumnref', "#{chapter.column(id).caption}", column_label(id))
+      macro('reviewcolumnref',
+        I18n.t("chapter_quote", compile_inline(chapter.column(id).caption)),
+        column_label(id))
     end
 
     def inline_raw(str)
