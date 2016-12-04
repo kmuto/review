@@ -305,7 +305,7 @@ module ReVIEW
 
     def common_code_block(id, lines, command, caption, lang)
       if caption
-        if command =~ /emlist/ || command =~ /cmd/
+        if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
           puts macro(command + 'caption', "#{compile_inline(caption)}")
         else
           begin
@@ -346,15 +346,11 @@ module ReVIEW
 
     def source(lines, caption, lang = nil)
       if highlight_listings?
-        common_code_block_lst(nil, lines, 'reviewlistlst', 'title', caption, lang)
+        common_code_block_lst(nil, lines, 'reviewsourcelst', 'title', caption, lang)
       else
-        puts '\begin{reviewlist}'
-        puts macro('reviewlistcaption', compile_inline(caption))
-        lines.each do |line|
-          puts detab(line)
+        common_code_block(nil, lines, 'reviewsource', caption, lang) do |line, idx|
+          detab(line) + "\n"
         end
-        puts '\end{reviewlist}'
-        puts ""
       end
     end
 

@@ -310,9 +310,9 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<link href="#{column_label(id)}">#{compile_inline(chapter.column(id).caption)}</link>)
+        %Q(<link href="#{column_label(id)}">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</link>)
       else
-        compile_inline(chapter.column(id).caption)
+        I18n.t("column", compile_inline(chapter.column(id).caption))
       end
     end
 
