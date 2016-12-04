@@ -399,7 +399,9 @@ module ReVIEW
       def read_FILE(filename)
         if !@warn_old_files[filename]
           @warn_old_files[filename] = true
-          warn "!!! #{filename} is obsoleted. please use catalog.yml."
+          if !caller().any?{|item| item =~ %r|/review/test/test_|}
+            warn "!!! #{filename} is obsoleted. please use catalog.yml."
+          end
         end
         res = ""
         File.open("#{@basedir}/#{filename}", 'r:BOM|utf-8') do |f|
