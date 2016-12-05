@@ -132,6 +132,59 @@ module ReVIEW
       generate_pdf(yamlfile)
     end
 
+    def make_input_files(book, yamlfile)
+      input_files = Hash.new{|h, key| h[key] = ""}
+      book.parts.each do |part|
+        if part.name.present?
+          if part.file?
+            output_chaps(part.name, yamlfile)
+            input_files["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
+          else
+            input_files["CHAPS"] << %Q|\\part{#{part.name}}\n|
+          end
+        end
+
+        part.chapters.each do |chap|
+          filename = File.basename(chap.path, ".*")
+          output_chaps(filename, yamlfile)
+          input_files["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
+          input_files["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
+          input_files["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
+          input_files["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
+        end
+      end
+
+      input_files
+    end
+
+    def build_pdf
+      template = get_template
+      Dir.chdir(@path) do
+        File.open("./book.tex", "wb"){|f| f.write(template)}
+
+        call_hook("hook_beforetexcompile")
+
+        ## do compile
+        if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
+          warn "command configuration is prohibited in safe mode. ignored."
+        else
+          texcommand = @config["texcommand"] if @config["texcommand"]
+          dvicommand = @config["dvicommand"] if @config["dvicommand"]
+          dvioptions = @config["dvioptions"] if @config["dvioptions"]
+          texoptions = @config["texoptions"] if @config["texoptions"]
+        end
+        3.times do
+          system_or_raise("#{texcommand} #{texoptions} book.tex")
+        end
+        call_hook("hook_aftertexcompile")
+
+        if File.exist?("book.dvi")
+          system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
+        end
+      end
+      call_hook("hook_afterdvipdf")
+    end
+
     def generate_pdf(yamlfile)
       remove_old_file
       @path = build_path()
@@ -141,25 +194,8 @@ module ReVIEW
         book = ReVIEW::Book.load(@basedir)
         book.config = @config
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
-        book.parts.each do |part|
-          if part.name.present?
-            if part.file?
-              output_chaps(part.name, yamlfile)
-              @input_files["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
-            else
-              @input_files["CHAPS"] << %Q|\\part{#{part.name}}\n|
-            end
-          end
 
-          part.chapters.each do |chap|
-            filename = File.basename(chap.path, ".*")
-            output_chaps(filename, yamlfile)
-            @input_files["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
-            @input_files["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
-            @input_files["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
-            @input_files["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
-          end
-        end
+        @input_files = make_input_files(book, yamlfile)
 
         check_compile_status(@config["ignore-errors"])
 
@@ -174,31 +210,7 @@ module ReVIEW
         copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
         copyStyToDir(Dir.pwd, @path, "tex")
 
-        template = get_template
-        Dir.chdir(@path) do
-          File.open("./book.tex", "wb"){|f| f.write(template)}
-
-          call_hook("hook_beforetexcompile")
-
-          ## do compile
-          if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
-            warn "command configuration is prohibited in safe mode. ignored."
-          else
-            texcommand = @config["texcommand"] if @config["texcommand"]
-            dvicommand = @config["dvicommand"] if @config["dvicommand"]
-            dvioptions = @config["dvioptions"] if @config["dvioptions"]
-            texoptions = @config["texoptions"] if @config["texoptions"]
-          end
-          3.times do
-            system_or_raise("#{texcommand} #{texoptions} book.tex")
-          end
-          call_hook("hook_aftertexcompile")
-
-          if File.exist?("book.dvi")
-            system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
-          end
-        end
-        call_hook("hook_afterdvipdf")
+        build_pdf
 
         FileUtils.cp(File.join(@path, "book.pdf"), pdf_filepath)
 
