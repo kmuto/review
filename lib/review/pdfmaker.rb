@@ -189,7 +189,9 @@ module ReVIEW
             makeindexoptions = @config["makeindexoptions"] if @config["makeindexoptions"]
             dvioptions = @config["dvioptions"] if @config["dvioptions"]
           end
-          system_or_raise("#{texcommand} #{texoptions} book.tex")
+          2.times do
+            system_or_raise("#{texcommand} #{texoptions} book.tex")
+          end
           if File.exist?("book.idx")
             system_or_raise("#{makeindexcommand} #{makeindexoptions} book.idx")
           end
