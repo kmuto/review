@@ -269,6 +269,22 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></codelist>|, actual
   end
 
+  def test_listnum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre></codelist>|, actual
+  end
+
+  def test_listnum_linenum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'>100: </span>test1\n<span type='lineno'>101: </span>test1.5\n<span type='lineno'>102: </span>\n<span type='lineno'>103: </span>test<i>2</i>\n</pre></codelist>|, actual
+  end
+
   def test_list_listinfo
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
