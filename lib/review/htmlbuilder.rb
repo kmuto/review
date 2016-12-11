@@ -59,7 +59,7 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def result
+    def layout_file
       if @book.config.maker == "webmaker"
         htmldir = "web/html"
         localfilename = "layout-web.html.erb"
@@ -85,7 +85,9 @@ module ReVIEW
       else
         layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
       end
+    end
 
+    def result
       # default XHTML header/footer
       @error_messages = error_messages
       @warning_messages = warning_messages
