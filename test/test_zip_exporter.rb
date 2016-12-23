@@ -63,6 +63,10 @@ class ZipExporterTest < Test::Unit::TestCase
 
   def test_export_zipcmd
     params = {"epubmaker"=>{}}
+    if Gem.win_platform?
+      params["epubmaker"]["zip_stage1"] = "zip.exe -0Xq"
+      params["epubmaker"]["zip_stage2"] = "zip.exe -Xr9Dq"
+    end
     epubfile = File.join(@tmpdir, "test.epub")
     exporter = ZipExporter.new(@epubdir, params)
     exporter.export_zip_extcmd(epubfile)
