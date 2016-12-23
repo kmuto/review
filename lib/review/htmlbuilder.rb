@@ -449,6 +449,7 @@ module ReVIEW
       class_names = ["list"]
       lexer = lang || File.extname(id).gsub(/\./, '')
       class_names.push("language-#{lexer}") unless lexer.blank?
+      class_names.push("highlight") if highlight?
       print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
@@ -492,11 +493,11 @@ module ReVIEW
       if highlight?
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
-        puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                       :options => {:linenos => 'inline', :nowrap => false})
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true)
       else
         class_names = ["list"]
         class_names.push("language-#{lang}") unless lang.blank?
+        class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           puts detab((i+1).to_s.rjust(2) + ": " + line)
@@ -512,6 +513,7 @@ module ReVIEW
       end
       class_names = ["emlist"]
       class_names.push("language-#{lang}") unless lang.blank?
+      class_names.push("highlight") if highlight?
       print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
@@ -529,11 +531,11 @@ module ReVIEW
       if highlight?
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
-        puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                       :options => {:linenos => 'inline', :nowrap => false})
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true)
       else
         class_names = ["emlist"]
         class_names.push("language-#{lang}") unless lang.blank?
+        class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
         lines.each_with_index do |line, i|
           puts detab((i+1).to_s.rjust(2) + ": " + line)

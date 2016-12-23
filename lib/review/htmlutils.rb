@@ -73,6 +73,10 @@ module ReVIEW
       lexer = ops[:lexer] if ops[:lexer].present?
       format = ops[:format] || ''
       options = {:nowrap => true, :noclasses => true}
+      if ops[:linenum]
+        options[:nowrap] = false
+        options[:linenos] = 'inline'
+      end
       if ops[:options] && ops[:options].kind_of?(Hash)
         options.merge!(ops[:options])
       end
@@ -108,6 +112,9 @@ module ReVIEW
 
       #formatter = Rouge::Formatters::HTML.new()
       formatter = Rouge::Formatters::HTML.new(:css_class => 'highlight')
+      if ops[:linenum]
+        formatter = Rouge::Formatters::HTMLTable.new(formatter, :code_class => 'highlight rouge-code')
+      end
       #formatter = Rouge::Formatters::HTMLLegacy.new(:css_class => "highlight #{lexer.tag}")
       #formatter = Rouge::Formatters::HTMLPygments.new(Rouge::Formatters::HTML.new, "highlight #{lexer.tag}")
       #formatter = Rouge::Formatters::HTMLInline.new(Rouge::Themes::Colorful.new)
