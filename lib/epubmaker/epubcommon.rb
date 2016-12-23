@@ -259,11 +259,14 @@ EOT
             revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
             if item =~ /\A\d+\-\d+\-\d+\Z/
               buf << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n]
-            else
+            elsif item =~ /\A(\d+\-\d+\-\d+)[\s　](.+)/
               # custom date with string
               item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
                 buf << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
               end
+            else
+              # free format
+              buf << %Q[      <p>#{item}</p>\n]
             end
           end
         end

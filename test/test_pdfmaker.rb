@@ -234,4 +234,22 @@ class PDFMakerTest < Test::Unit::TestCase
     assert_equal expect, history
   end
 
+  def test_colophon_history_freeformat
+    @config["aut"] = ["Mr.Smith"]
+    @config["pbl"] = ["BLUEPRINT"]
+    @config["pht"] = ["Mrs.Smith"]
+    @config.merge!({"language" => "ja",
+                    "history" => [[
+                                    "2011年8月3日 ver 1.1.0発行",
+                                  ],[
+                                    "2011年10月12日 ver 1.2.0発行",
+                                  ],[
+                                    "2012年1月31日 ver 1.2.1発行",
+                                  ]] })
+    history = @maker.make_history_list
+    expect = ["2011年8月3日 ver 1.1.0発行",
+              "2011年10月12日 ver 1.2.0発行",
+              "2012年1月31日 ver 1.2.1発行"]
+    assert_equal expect, history
+  end
 end

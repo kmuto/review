@@ -311,11 +311,14 @@ module ReVIEW
             revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
             if item =~ /\A\d+\-\d+\-\d+\Z/
               buf << ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])
-            else
+            elsif item =~ /\A(\d+\-\d+\-\d+)[\s　](.+)/
               # custom date with string
               item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
                 buf << ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])
               end
+            else
+              # free format
+              buf << item
             end
           end
         end
