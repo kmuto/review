@@ -662,6 +662,57 @@ EOT
     assert_equal expect, @output.string
   end
 
+  def test_colophon_history
+    @producer.params["aut"] = ["Mr.Smith"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
+    @producer.params["pht"] = ["Mrs.Smith"]
+    @producer.merge_params({"language" => "ja"})
+    @producer.params["history"] = [[
+                                    "2011-08-03",
+                                    "2012-02-15",
+                                  ],[
+                                    "2012-10-01",
+                                  ],[
+                                    "2013-03-01",
+                                   ]]
+    epub = @producer.instance_eval{@epub}
+    result = epub.colophon_history
+    expect = <<-EOT
+    <div class=\"pubhistory\">
+      <p>2011年8月3日　初版第1刷　発行</p>
+      <p>2012年2月15日　初版第2刷　発行</p>
+      <p>2012年10月1日　第2版第1刷　発行</p>
+      <p>2013年3月1日　第3版第1刷　発行</p>
+    </div>
+    EOT
+    assert_equal expect, result
+  end
+
+  def test_colophon_history_freeformat
+    @producer.params["aut"] = ["Mr.Smith"]
+    @producer.params["pbl"] = ["BLUEPRINT"]
+    @producer.params["pht"] = ["Mrs.Smith"]
+    @producer.merge_params({"language" => "ja"})
+    @producer.params["history"] = [[
+                                    "2011年8月3日 ver 1.1.0発行",
+                                  ],[
+                                    "2011年10月12日 ver 1.2.0発行",
+                                  ],[
+                                    "2012年1月31日 ver 1.2.1発行",
+                                  ]]
+
+    epub = @producer.instance_eval{@epub}
+    result = epub.colophon_history
+    expect = <<-EOT
+    <div class=\"pubhistory\">
+      <p>2011年8月3日 ver 1.1.0発行</p>
+      <p>2011年10月12日 ver 1.2.0発行</p>
+      <p>2012年1月31日 ver 1.2.1発行</p>
+    </div>
+    EOT
+    assert_equal expect, result
+  end
+
   def test_colophon_pht
     @producer.params["aut"] = ["Mr.Smith"]
     @producer.params["pbl"] = ["BLUEPRINT"]
