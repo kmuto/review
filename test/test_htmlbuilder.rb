@@ -330,6 +330,18 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", actual
   end
 
+  def test_inline_img
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<img>{sampleimg}\n"
+    expected = %Q|<p><span class="imgref">図1.1</span></p>\n|
+    assert_equal expected, actual
+  end
+
   def test_inline_imgref
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
@@ -338,7 +350,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block "@<imgref>{sampleimg}\n"
-    expected = "<p>図1.1「sample photo」</p>\n"
+    expected = %Q|<p><span class="imgref">図1.1</span>「sample photo」</p>\n|
     assert_equal expected, actual
   end
 
@@ -350,7 +362,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block "@<imgref>{sampleimg}\n"
-    expected = "<p>図1.1</p>\n"
+    expected = %Q|<p><span class="imgref">図1.1</span></p>\n|
     assert_equal expected, actual
   end
 
@@ -502,6 +514,14 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
+  end
+
+  def test_inline_list
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    actual = compile_block("@<list>{sampletest}\n")
+    assert_equal %Q|<p><span class="listref">リスト1.1</span></p>\n|, actual
   end
 
   def test_list_pygments
@@ -1142,6 +1162,14 @@ EOS
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q|<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|,
                  actual
+  end
+
+  def test_inline_table
+    def @chapter.table(id)
+      Book::TableIndex::Item.new("sampletable",1)
+    end
+    actual = compile_block("@<table>{sampletest}\n")
+    assert_equal %Q|<p><span class="tableref">表1.1</span></p>\n|, actual
   end
 
   def test_imgtable
