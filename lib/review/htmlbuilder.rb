@@ -1009,9 +1009,9 @@ module ReVIEW
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?
-        "#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}"
+        %Q(<span class="listref">#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}</span>)
       else
-        "#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}"
+        %Q(<span class="listref">#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}</span>)
       end
     rescue KeyError
       error "unknown list: #{id}"
@@ -1027,9 +1027,9 @@ module ReVIEW
         str = "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
       end
       if @book.config["chapterlink"]
-        %Q(<a href="./#{chapter.id}#{extname}##{id}">#{str}</a>)
+        %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
       else
-        str
+        %Q(<span class="tableref">#{str}</span>)
       end
     rescue KeyError
       error "unknown table: #{id}"
@@ -1045,9 +1045,9 @@ module ReVIEW
         str = "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
       end
       if @book.config["chapterlink"]
-        %Q(<a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a>)
+        %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
       else
-        str
+        %Q(<span class="imgref">#{str}</span>)
       end
     rescue KeyError
       error "unknown image: #{id}"
