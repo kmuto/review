@@ -10,6 +10,7 @@
 #
 
 require 'epubmaker/epubcommon'
+require 'epubmaker/zip_exporter'
 
 module EPUBMaker
 
@@ -225,7 +226,8 @@ EOT
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}", "w") {|f| @producer.ncx(f, @producer.params["epubmaker"]["ncxindent"]) }
 
       @producer.call_hook(@producer.params["epubmaker"]["hook_prepack"], tmpdir)
-      export_zip(tmpdir, epubfile)
+      expoter = EPUBMaker::ZipExporter.new(tmpdir, @producer.params)
+      expoter.export_zip(epubfile)
     end
 
     private
