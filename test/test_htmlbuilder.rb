@@ -524,6 +524,22 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<p><span class="listref">リスト1.1</span></p>\n|, actual
   end
 
+  def test_inline_list_href
+    book = ReVIEW::Book::Base.load
+    book.config["chapterlink"] = true
+    book.catalog = ReVIEW::Catalog.new({"CHAPS"=>%w(ch1.re ch2.re)})
+    io1 = StringIO.new("//list[sampletest]{\nfoo\n//}\n")
+    io2 = StringIO.new("= BAR\n")
+    chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
+    chap2 = ReVIEW::Book::Chapter.new(book, 2, 'ch2', 'ch2.re', io2)
+    book.parts = [ReVIEW::Book::Part.new(self, nil, [chap1, chap2])]
+    builder = ReVIEW::HTMLBuilder.new
+    comp = ReVIEW::Compiler.new(builder)
+    builder.bind(comp, chap2, nil)
+    actual = builder.inline_list("ch1|sampletest")
+    assert_equal %Q|<span class="listref"><a href="./ch1.html#sampletest">リスト1.1</a></span>|, actual
+  end
+
   def test_list_pygments
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)

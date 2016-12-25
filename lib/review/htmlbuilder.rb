@@ -1008,10 +1008,16 @@ module ReVIEW
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
+      str = nil
       if get_chap(chapter).nil?
-        %Q(<span class="listref">#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}</span>)
+        str = "#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}"
       else
-        %Q(<span class="listref">#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}</span>)
+        str = "#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}"
+      end
+      if @book.config["chapterlink"]
+        %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
+      else
+        %Q(<span class="listref">#{str}</span>)
       end
     rescue KeyError
       error "unknown list: #{id}"
