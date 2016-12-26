@@ -6,4 +6,5 @@ $LOAD_PATH.unshift(lib_dir)
 
 require 'test/unit'
 
-exit Test::Unit::AutoRunner.run(true, test_dir)
+argv = ["--max-diff-target-string-size=10000"]
+exit Test::Unit::AutoRunner.run(true, test_dir, argv)
