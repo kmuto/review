@@ -6,7 +6,6 @@ rescue LoadError
 end
 
 require 'rubygems'
-require 'rake/testtask'
 require 'rake/clean'
 
 task :default => [:test, :rubocop]
@@ -20,11 +19,8 @@ task :rubocop do
   end
 end
 
-Rake::TestTask.new("test") do |t|
-  t.libs << "test"
-  t.test_files = Dir.glob("test/**/test_*.rb")
-  t.verbose = true
-  t.warning = false
+task :test do
+  ruby("test/run_test.rb")
 end
 
 begin
