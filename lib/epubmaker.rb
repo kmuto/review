@@ -10,13 +10,13 @@
 #
 # == Quick usage
 #  require 'epubmaker'
-#  epub = EPUBMaker::Producer.new
-#  params = epub.load("config.yml")
-#  epub.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
-#  epub.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
+#  producer = EPUBMaker::Producer.new
+#  params = producer.load("config.yml")
+#  producer.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
+#  producer.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
 #   ...
-#  epub.import_imageinfo("images")
-#  epub.produce
+#  producer.import_imageinfo("images")
+#  producer.produce
 
 require 'epubmaker/producer'
 require 'epubmaker/content'
