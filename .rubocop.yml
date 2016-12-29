@@ -85,6 +85,9 @@ Style/SafeNavigation:
 Style/EmptyMethod:
   Enabled: false
 
+Style/HashSyntax:
+  Enabled: false
+
 ##################### Metrics ##################################
 
 Metrics/ClassLength:

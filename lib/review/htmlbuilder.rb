@@ -54,6 +54,7 @@ module ReVIEW
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
+      @first_line_num = nil
       @body_ext = nil
       @toc = nil
     end
@@ -493,14 +494,17 @@ module ReVIEW
       if highlight?
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
-        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true)
+        first_line_number = get_line_num
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
+                      :options => {:linenostart => first_line_number})
       else
         class_names = ["list"]
         class_names.push("language-#{lang}") unless lang.blank?
         class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
+        first_line_num = get_line_num
         lines.each_with_index do |line, i|
-          puts detab((i+1).to_s.rjust(2) + ": " + line)
+          puts detab((i+first_line_num).to_s.rjust(2) + ": " + line)
         end
         puts '</pre>'
       end
@@ -531,14 +535,17 @@ module ReVIEW
       if highlight?
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
-        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true)
+        first_line_number = get_line_num
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
+                      :options => {:linenostart => first_line_number})
       else
         class_names = ["emlist"]
         class_names.push("language-#{lang}") unless lang.blank?
         class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
+        first_line_num = get_line_num
         lines.each_with_index do |line, i|
-          puts detab((i+1).to_s.rjust(2) + ": " + line)
+          puts detab((i+first_line_num).to_s.rjust(2) + ": " + line)
         end
         puts '</pre>'
       end
