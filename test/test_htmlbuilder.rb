@@ -729,10 +729,10 @@ EOS
     expected = <<-EOB
 <div class=\"code\">
 <p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
-<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">100</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)
-<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">101</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}
-<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">102</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>
-<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">103</span> <span style=\"color: #008000; font-weight: bold\">end</span>
+<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span></span><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">100 </span><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)
+<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">101 </span>  (<span style=\"color: #666666\">1..3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}
+<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">102 </span>  <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>
+<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">103 </span><span style=\"color: #008000; font-weight: bold\">end</span>
 </pre></div>
 </div>
 EOB
