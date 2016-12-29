@@ -83,6 +83,21 @@ module ReVIEW
     end
     private :headline_prefix
 
+    ## for //firstlinenum[num]
+    def firstlinenum(num)
+      @first_line_num = num.to_i
+    end
+
+    def get_line_num
+      if !@first_line_num
+        return 1
+      end
+      line_num = @first_line_num
+      @first_line_num = nil
+
+      line_num
+    end
+
     def list(lines, id, caption, lang = nil)
       begin
         list_header id, caption, lang
