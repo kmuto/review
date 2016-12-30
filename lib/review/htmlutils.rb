@@ -110,14 +110,10 @@ module ReVIEW
       lexer = Rouge::Lexer.find(lexer)
       raise "unknown lexer #{lexer}" unless lexer
 
-      #formatter = Rouge::Formatters::HTML.new()
       formatter = Rouge::Formatters::HTML.new(:css_class => 'highlight')
       if ops[:linenum]
         formatter = Rouge::Formatters::HTMLTable.new(formatter, :table_class => 'highlight rouge-table')
       end
-      #formatter = Rouge::Formatters::HTMLLegacy.new(:css_class => "highlight #{lexer.tag}")
-      #formatter = Rouge::Formatters::HTMLPygments.new(Rouge::Formatters::HTML.new, "highlight #{lexer.tag}")
-      #formatter = Rouge::Formatters::HTMLInline.new(Rouge::Themes::Colorful.new)
       raise "unknown formatter #{formatter}" unless formatter
 
       text = unescape_html(body)

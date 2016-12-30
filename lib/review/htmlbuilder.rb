@@ -496,7 +496,7 @@ module ReVIEW
         lexer = lang
         first_line_number = get_line_num
         puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
-                      :options => {:linenostart => first_line_number})
+                       :options => {:linenostart => first_line_number})
       else
         class_names = ["list"]
         class_names.push("language-#{lang}") unless lang.blank?
@@ -537,7 +537,7 @@ module ReVIEW
         lexer = lang
         first_line_number = get_line_num
         puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
-                      :options => {:linenostart => first_line_number})
+                       :options => {:linenostart => first_line_number})
       else
         class_names = ["emlist"]
         class_names.push("language-#{lang}") unless lang.blank?
