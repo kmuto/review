@@ -221,6 +221,20 @@ puts "hello world!"
 
 他章のリストを参照するには、後述の「章ID」を指定し、たとえば `@<list>{advanced|main}`（`advanced.re` ファイルの章にあるリスト `main` を参照する）と記述します。
 
+### 行番号の指定
+
+行番号を指定した番号から始めるには、`//firstline`を使います。
+
+例:
+
+```review
+//firstlinenum[100]
+//listnum[hello][ハローワールド][ruby]{
+puts "hello world!"
+//}
+```
+
+
 ### ソースコード専用の引用
 
 ソースコードを引用するには次のように記述します。
