@@ -107,12 +107,19 @@ module ReVIEW
       end
       format = ops[:format] || ''
 
+      first_line_num = 1 ## default
+      if ops[:options] && ops[:options][:linenostart]
+        first_line_num = ops[:options][:linenostart]
+      end
+
       lexer = Rouge::Lexer.find(lexer)
       raise "unknown lexer #{lexer}" unless lexer
 
       formatter = Rouge::Formatters::HTML.new(:css_class => 'highlight')
       if ops[:linenum]
-        formatter = Rouge::Formatters::HTMLTable.new(formatter, :table_class => 'highlight rouge-table')
+        formatter = Rouge::Formatters::HTMLTable.new(formatter,
+                                                     :table_class => 'highlight rouge-table',
+                                                     :start_line => first_line_num)
       end
       raise "unknown formatter #{formatter}" unless formatter
 

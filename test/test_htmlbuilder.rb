@@ -822,6 +822,33 @@ EOB
     assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<table class=\"highlight rouge-table\"><tbody><tr><td class=\"rouge-gutter gl\"><pre class=\"lineno\">1\n2\n3\n4\n5\n</pre></td><td class=\"rouge-code\"><pre><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n  <span class=\"k\">return</span> <span class=\"kp\">true</span>\n<span class=\"k\">end</span>\n\n</pre></td></tr></tbody></table>\n</div>\n", actual
   end
 
+  def test_listnum_rouge_lang_linenum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    expected = <<-EOB
+<div class="code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<table class="highlight rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">100
+101
+102
+103
+104
+</pre></td><td class="rouge-code"><pre><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="ss">:test</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="nf">.</span><span class="mi">3</span><span class="p">).</span><span class="nf">times</span><span class="p">{</span><span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="n">a</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)}</span>
+  <span class="k">return</span> <span class="kp">true</span>
+<span class="k">end</span>
+
+</pre></td></tr></tbody></table>
+</div>
+EOB
+
+    assert_equal expected, actual
+  end
 
   def test_emlist
     actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
