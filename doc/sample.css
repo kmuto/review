@@ -319,6 +319,8 @@ p.flushright {
 .highlight {
   background-color: #f8f8f8;
 }
+.rouge-table { border-spacing: 0 }
+.rouge-gutter { text-align: right }
 
 /**
  * from EBPAJ EPUB 3 File Creation Guide sample style
