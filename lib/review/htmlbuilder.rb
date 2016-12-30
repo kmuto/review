@@ -450,6 +450,7 @@ module ReVIEW
       class_names = ["list"]
       lexer = lang || File.extname(id).gsub(/\./, '')
       class_names.push("language-#{lexer}") unless lexer.blank?
+      class_names.push("highlight") if highlight?
       print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
@@ -494,11 +495,12 @@ module ReVIEW
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
         first_line_number = get_line_num
-        puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                       :options => {:linenos => 'inline', :nowrap => false, :linenostart => first_line_number})
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
+                       :options => {:linenostart => first_line_number})
       else
         class_names = ["list"]
         class_names.push("language-#{lang}") unless lang.blank?
+        class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
         first_line_num = get_line_num
         lines.each_with_index do |line, i|
@@ -515,6 +517,7 @@ module ReVIEW
       end
       class_names = ["emlist"]
       class_names.push("language-#{lang}") unless lang.blank?
+      class_names.push("highlight") if highlight?
       print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
@@ -533,11 +536,12 @@ module ReVIEW
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
         first_line_number = get_line_num
-        puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                       :options => {:linenos => 'inline', :nowrap => false, :linenostart => first_line_number})
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
+                       :options => {:linenostart => first_line_number})
       else
         class_names = ["emlist"]
         class_names.push("language-#{lang}") unless lang.blank?
+        class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
         first_line_num = get_line_num
         lines.each_with_index do |line, i|
