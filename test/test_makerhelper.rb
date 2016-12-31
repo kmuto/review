@@ -38,7 +38,7 @@ class MakerHelperTest < Test::Unit::TestCase
   end
 
   def test_copy_images_to_dir_convert
-    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM && system("convert -version")
+    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM && system("convert -version > /dev/null")
       touch_file("#{@tmpdir1}/foo.eps")
 
       image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2,
