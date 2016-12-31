@@ -114,6 +114,15 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
     actual = compile_block("//tsize[2]\n//table{\nA\tB\tC\n//}\n")
     assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">C</td></tbody></table>|, actual
+
+    actual = compile_block("//tsize[|idgxml|2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">C</td></tbody></table>|, actual
+
+    actual = compile_block("//tsize[|idgxml,html|2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">C</td></tbody></table>|, actual
+
+    actual = compile_block("//tsize[|html|2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q|<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">C</td></tbody></table>|, actual
   end
 
   def test_customize_mmtopt
