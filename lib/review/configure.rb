@@ -32,7 +32,6 @@ module ReVIEW
         "params" => "", # specify review2html parameters
         "toclevel" => 3, # level of toc
         "secnolevel" => 2, # level of section #
-        "makeindex" => nil, # Make index page
         "epubversion" => 3,
         "titlepage" => true, # Use title page
         "toc" => nil, # Use table of contents in body
@@ -74,6 +73,7 @@ module ReVIEW
         "dvioptions" => "-d 5", # for LaTeX
 
         "pdfmaker" => {
+          "makeindex" => nil, # Make index page
           "makeindex_command" => "mendex", # works only when makeindex is true
           "makeindex_options" => "-f -r -I utf8",
           "makeindex_sty" => nil,
