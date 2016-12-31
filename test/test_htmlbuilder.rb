@@ -619,6 +619,12 @@ end
   end
 
   def test_list_rouge
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_list_rouge (cannot find Rouge)"
+      return true
+    end
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
@@ -630,6 +636,12 @@ end
   end
 
   def test_list_rouge_lang
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_list_rouge_lang (cannot find Rouge)"
+      return true
+    end
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
@@ -651,6 +663,12 @@ end
   end
 
   def test_list_rouge_nulllang
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_list_rouge_nulllang (cannot find Rouge)"
+      return true
+    end
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
@@ -812,6 +830,12 @@ EOB
   end
 
   def test_listnum_rouge_lang
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_listnum_rouge_lang (cannot find Rouge)"
+      return true
+    end
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
@@ -823,6 +847,12 @@ EOB
   end
 
   def test_listnum_rouge_lang_linenum
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_listnum_rouge_lang_linenum (cannot find Rouge)"
+      return true
+    end
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
     end
