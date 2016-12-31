@@ -76,9 +76,10 @@ module ReVIEW
         "pdfmaker" => {
           "makeindex_command" => "mendex", # works only when makeindex is true
           "makeindex_options" => "-f -r -I utf8",
-          "makeindex_sty" => nil, # only mendex
-          "makeindex_dic" => nil, # only mendex
-          "makeindex_mecab" => true, # only mendex
+          "makeindex_sty" => nil,
+          "makeindex_dic" => nil,
+          "makeindex_mecab" => true,
+          "makeindex_mecab_opts" => "-Oyomi",
         },
       ]
       conf.maker = nil
