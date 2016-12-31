@@ -10,6 +10,7 @@
 #
 
 require 'epubmaker/epubcommon'
+require 'epubmaker/zip_exporter'
 
 module EPUBMaker
 
@@ -225,31 +226,8 @@ EOT
       File.open("#{tmpdir}/OEBPS/#{@producer.params["bookname"]}-toc.#{@producer.params["htmlext"]}", "w") {|f| @producer.ncx(f, @producer.params["epubmaker"]["ncxindent"]) }
 
       @producer.call_hook(@producer.params["epubmaker"]["hook_prepack"], tmpdir)
-      export_zip(tmpdir, epubfile)
+      expoter = EPUBMaker::ZipExporter.new(tmpdir, @producer.params)
+      expoter.export_zip(epubfile)
     end
-
-    private
-
-    # Return cover pointer for opf file
-    def cover_in_opf
-      s = ""
-
-      if @producer.params["coverimage"]
-        @producer.contents.each do |item|
-          if item.media.start_with?('image') && item.file =~ /#{@producer.params["coverimage"]}\Z/
-              s << <<EOT
-            <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>
-EOT
-            break
-          end
-        end
-      end
-
-      s << <<EOT
-    <item id="#{@producer.params["bookname"]}" href="#{@producer.params["cover"]}" media-type="application/xhtml+xml"/>
-EOT
-      s
-    end
-
   end
 end

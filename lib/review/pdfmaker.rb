@@ -30,10 +30,11 @@ module ReVIEW
     include FileUtils
     include ReVIEW::LaTeXUtils
 
-    attr_accessor :config, :basedir
+    attr_accessor :config, :basedir, :basehookdir
 
     def initialize
       @basedir = nil
+      @basehookdir = nil
       @input_files = Hash.new{|h, key| h[key] = ""}
     end
 
@@ -120,7 +121,8 @@ module ReVIEW
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       I18n.setup(@config["language"])
-      @basedir = File.absolute_path(File.dirname(yamlfile))
+      @basedir = File.dirname(yamlfile)
+      @basehookdir = File.absolute_path(File.dirname(yamlfile))
 
       begin
         @config.check_version(ReVIEW::VERSION)
@@ -128,6 +130,87 @@ module ReVIEW
         warn e.message
       end
       generate_pdf(yamlfile)
+    end
+
+    def make_input_files(book, yamlfile)
+      input_files = Hash.new{|h, key| h[key] = ""}
+      book.parts.each do |part|
+        if part.name.present?
+          if part.file?
+            output_chaps(part.name, yamlfile)
+            input_files["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
+          else
+            input_files["CHAPS"] << %Q|\\part{#{part.name}}\n|
+          end
+        end
+
+        part.chapters.each do |chap|
+          filename = File.basename(chap.path, ".*")
+          output_chaps(filename, yamlfile)
+          input_files["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
+          input_files["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
+          input_files["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
+          input_files["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
+        end
+      end
+
+      input_files
+    end
+
+    def build_pdf
+      template = get_template
+      Dir.chdir(@path) do
+        File.open("./book.tex", "wb"){|f| f.write(template)}
+
+        call_hook("hook_beforetexcompile")
+
+        ## do compile
+        if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
+          warn "command configuration is prohibited in safe mode. ignored."
+          texcommand = ReVIEW::Configure.values["texcommand"]
+          dvicommand = ReVIEW::Configure.values["dvicommand"]
+          dvioptions = ReVIEW::Configure.values["dvioptions"]
+          texoptions = ReVIEW::Configure.values["texoptions"]
+          makeindex_command = ReVIEW::Configure.values["pdfmaker"]["makeindex_command"]
+          makeindex_options = ReVIEW::Configure.values["pdfmaker"]["makeindex_options"]
+          makeindex_sty = ReVIEW::Configure.values["pdfmaker"]["makeindex_sty"]
+          makeindex_dic = ReVIEW::Configure.values["pdfmaker"]["makeindex_dic"]
+        else
+          texcommand = @config["texcommand"] if @config["texcommand"]
+          dvicommand = @config["dvicommand"] if @config["dvicommand"]
+          dvioptions = @config["dvioptions"] if @config["dvioptions"]
+          texoptions = @config["texoptions"] if @config["texoptions"]
+          makeindex_command = @config["pdfmaker"]["makeindex_command"]
+          makeindex_options = @config["pdfmaker"]["makeindex_options"]
+          makeindex_sty = @config["pdfmaker"]["makeindex_sty"]
+          makeindex_dic = @config["pdfmaker"]["makeindex_dic"]
+        end
+
+        if makeindex_sty.present?
+          makeindex_sty = File.absolute_path(makeindex_sty, @basedir)
+          makeindex_options += " -s #{makeindex_sty}" if File.exist?(makeindex_sty)
+        end
+        if makeindex_dic.present?
+          makeindex_dic = File.absolute_path(makeindex_dic, @basedir)
+          makeindex_options += " -d #{makeindex_dic}" if File.exist?(makeindex_dic)
+        end
+        
+        2.times do
+          system_or_raise("#{texcommand} #{texoptions} book.tex")
+        end
+
+        call_hook("hook_beforemakeindex")
+        system_or_raise("#{makeindex_command} #{makeindex_options} book") if @config["pdfmaker"]["makeindex"] && File.exist?("book.idx")
+        call_hook("hook_aftermakeindex")
+
+        system_or_raise("#{texcommand} #{texoptions} book.tex")
+        call_hook("hook_aftertexcompile")
+
+        if File.exist?("book.dvi")
+          system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
+          call_hook("hook_afterdvipdf")
+        end
+      end
     end
 
     def generate_pdf(yamlfile)
@@ -139,25 +222,8 @@ module ReVIEW
         book = ReVIEW::Book.load(@basedir)
         book.config = @config
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
-        book.parts.each do |part|
-          if part.name.present?
-            if part.file?
-              output_chaps(part.name, yamlfile)
-              @input_files["CHAPS"] << %Q|\\input{#{part.name}.tex}\n|
-            else
-              @input_files["CHAPS"] << %Q|\\part{#{part.name}}\n|
-            end
-          end
 
-          part.chapters.each do |chap|
-            filename = File.basename(chap.path, ".*")
-            output_chaps(filename, yamlfile)
-            @input_files["PREDEF"] << "\\input{#{filename}.tex}\n" if chap.on_PREDEF?
-            @input_files["CHAPS"] << "\\input{#{filename}.tex}\n" if chap.on_CHAPS?
-            @input_files["APPENDIX"] << "\\input{#{filename}.tex}\n" if chap.on_APPENDIX?
-            @input_files["POSTDEF"] << "\\input{#{filename}.tex}\n" if chap.on_POSTDEF?
-          end
-        end
+        @input_files = make_input_files(book, yamlfile)
 
         check_compile_status(@config["ignore-errors"])
 
@@ -172,65 +238,7 @@ module ReVIEW
         copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
         copyStyToDir(Dir.pwd, @path, "tex")
 
-        template = get_template
-        Dir.chdir(@path) do
-          File.open("./book.tex", "wb"){|f| f.write(template)}
-
-          call_hook("hook_beforetexcompile")
-
-          ## do compile
-          if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
-            warn "command configuration is prohibited in safe mode. ignored."
-            # revert to default
-            texcommand = ReVIEW::Configure.values["texcommand"]
-            dvicommand = ReVIEW::Configure.values["dvicommand"]
-            dvioptions = ReVIEW::Configure.values["dvioptions"]
-            texoptions = ReVIEW::Configure.values["texoptions"]
-            makeindex_command = REVIEW::Configure.values["pdfmaker"]["makeindex_command"]
-            makeindex_options = REVIEW::Configure.values["pdfmaker"]["makeindex_options"]
-            makeindex_sty = REVIEW::Configure.values["pdfmaker"]["makeindex_sty"]
-            makeindex_dic = REVIEW::Configure.values["pdfmaker"]["makeindex_dic"]
-          else
-            texcommand = @config["texcommand"] if @config["texcommand"]
-            dvicommand = @config["dvicommand"] if @config["dvicommand"]
-            dvioptions = @config["dvioptions"] if @config["dvioptions"]
-            texoptions = @config["texoptions"] if @config["texoptions"]
-            makeindex_command = @config["pdfmaker"]["makeindex_command"]
-            makeindex_options = @config["pdfmaker"]["makeindex_options"]
-            makeindex_sty = @config["pdfmaker"]["makeindex_sty"]
-            makeindex_dic = @config["pdfmaker"]["makeindex_dic"]
-          end
-
-          # too mendex specific...
-          if makeindex_sty.present?
-            makeindex_sty = File.absolute_path(makeindex_sty, @basedir)
-            makeindex_options += " -s #{makeindex_sty}" if File.exist?(makeindex_sty)
-          end
-          if makeindex_dic.present?
-            makeindex_dic = File.absolute_path(makeindex_dic, @basedir)
-            makeindex_options += " -d #{makeindex_dic}" if File.exist?(makeindex_dic)
-          end
-
-          2.times do
-            system_or_raise("#{texcommand} #{texoptions} book.tex")
-          end
-
-          call_hook("hook_beforemakeindex")
-
-          if @config["makeindex"] && File.exist?("book.idx")
-            system_or_raise("#{makeindex_command} #{makeindex_options} book")
-          end
-
-          call_hook("hook_aftermakeindex")
-
-          system_or_raise("#{texcommand} #{texoptions} book.tex")
-          call_hook("hook_aftertexcompile")
-
-          if File.exist?("book.dvi")
-            system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
-          end
-        end
-        call_hook("hook_afterdvipdf")
+        build_pdf
 
         FileUtils.cp(File.join(@path, "book.pdf"), pdf_filepath)
 
@@ -260,7 +268,7 @@ module ReVIEW
         ReVIEW::MakerHelper.copy_images_to_dir(from, to)
         Dir.chdir(to) do
           images = Dir.glob("**/*").find_all{|f|
-            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf)\z/
+            File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/
           }
           break if images.empty?
           system("extractbb", *images)
@@ -331,11 +339,14 @@ module ReVIEW
             revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
             if item =~ /\A\d+\-\d+\-\d+\Z/
               buf << ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])
-            else
+            elsif item =~ /\A(\d+\-\d+\-\d+)[\s　](.+)/
               # custom date with string
               item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
                 buf << ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])
               end
+            else
+              # free format
+              buf << item
             end
           end
         end
@@ -423,11 +434,11 @@ module ReVIEW
 
     def call_hook(hookname)
       if @config["pdfmaker"].instance_of?(Hash) && @config["pdfmaker"][hookname]
-        hook = File.absolute_path(@config["pdfmaker"][hookname], @basedir)
+        hook = File.absolute_path(@config["pdfmaker"][hookname], @basehookdir)
         if ENV["REVIEW_SAFE_MODE"].to_i & 1 > 0
           warn "hook configuration is prohibited in safe mode. ignored."
         else
-          system_or_raise("#{hook} #{Dir.pwd} #{@basedir}")
+          system_or_raise("#{hook} #{Dir.pwd} #{@basehookdir}")
         end
       end
     end

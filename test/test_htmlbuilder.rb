@@ -330,6 +330,18 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal "<span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>", actual
   end
 
+  def test_inline_img
+    def @chapter.image(id)
+      item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    actual = compile_block "@<img>{sampleimg}\n"
+    expected = %Q|<p><span class="imgref">図1.1</span></p>\n|
+    assert_equal expected, actual
+  end
+
   def test_inline_imgref
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg", 1, 'sample photo')
@@ -338,7 +350,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block "@<imgref>{sampleimg}\n"
-    expected = "<p>図1.1「sample photo」</p>\n"
+    expected = %Q|<p><span class="imgref">図1.1</span>「sample photo」</p>\n|
     assert_equal expected, actual
   end
 
@@ -350,7 +362,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block "@<imgref>{sampleimg}\n"
-    expected = "<p>図1.1</p>\n"
+    expected = %Q|<p><span class="imgref">図1.1</span></p>\n|
     assert_equal expected, actual
   end
 
@@ -433,7 +445,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption
@@ -444,7 +456,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric
@@ -455,7 +467,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_with_metric2
@@ -466,7 +478,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n|, actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -477,7 +489,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
-    assert_equal %Q|<div class="image">\n<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />\n</div>\n|, actual
+    assert_equal %Q|<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />\n</div>\n|, actual
   end
 
   def test_dlist
@@ -504,6 +516,30 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
   end
 
+  def test_inline_list
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    actual = compile_block("@<list>{sampletest}\n")
+    assert_equal %Q|<p><span class="listref">リスト1.1</span></p>\n|, actual
+  end
+
+  def test_inline_list_href
+    book = ReVIEW::Book::Base.load
+    book.config["chapterlink"] = true
+    book.catalog = ReVIEW::Catalog.new({"CHAPS"=>%w(ch1.re ch2.re)})
+    io1 = StringIO.new("//list[sampletest]{\nfoo\n//}\n")
+    io2 = StringIO.new("= BAR\n")
+    chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
+    chap2 = ReVIEW::Book::Chapter.new(book, 2, 'ch2', 'ch2.re', io2)
+    book.parts = [ReVIEW::Book::Part.new(self, nil, [chap1, chap2])]
+    builder = ReVIEW::HTMLBuilder.new
+    comp = ReVIEW::Compiler.new(builder)
+    builder.bind(comp, chap2, nil)
+    actual = builder.inline_list("ch1|sampletest")
+    assert_equal %Q|<span class="listref"><a href="./ch1.html#sampletest">リスト1.1</a></span>|, actual
+  end
+
   def test_list_pygments
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
@@ -518,7 +554,17 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
+    expected = <<-EOS
+<div class="caption-code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<pre class="list highlight">test1
+test1.5
+
+test&lt;i&gt;2&lt;/i&gt;
+</pre>
+</div>
+    EOS
+    assert_equal expected, actual
   end
 
   def test_list_pygments_lang
@@ -535,9 +581,10 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal %Q|<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n| +
-                 %Q|<pre class=\"list language-ruby\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
-                 %Q|  (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">\|</span>i<span style=\"color: #666666\">\|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n| +
+    assert_equal %Q|<div class=\"caption-code\">\n| +
+                 %Q|<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n| +
+                 %Q|<pre class=\"list language-ruby highlight\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
+                 %Q|  (<span style=\"color: #666666\">1..3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">\|</span>i<span style=\"color: #666666\">\|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n| +
                  %Q|  <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n| +
                  %Q|<span style=\"color: #008000; font-weight: bold\">end</span>\n| +
                  %Q|</pre>\n| +
@@ -558,7 +605,78 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n</pre>\n</div>\n", actual
+    expected = <<-EOS
+<div class=\"caption-code\">
+<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<pre class=\"list highlight\">def foo(a1, a2=:test)
+  (1..3).times{|i| a.include?(:foo)}
+  return true
+end
+</pre>
+</div>
+    EOS
+    assert_equal expected, actual
+  end
+
+  def test_list_rouge
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_list_rouge (cannot find Rouge)"
+      return true
+    end
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+
+    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
+  end
+
+  def test_list_rouge_lang
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_list_rouge_lang (cannot find Rouge)"
+      return true
+    end
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    expected = "<div class=\"caption-code\">\n" +
+	           "<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n" +
+	           "<pre class=\"list language-ruby highlight\"><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n" +
+	           "  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n" +
+	           "  <span class=\"k\">return</span> <span class=\"kp\">true</span>\n" +
+	           "<span class=\"k\">end</span>\n" +
+	           "\n" +
+	           "</pre>\n" +
+	           "</div>\n"
+
+    assert_equal expected, actual
+  end
+
+  def test_list_rouge_nulllang
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_list_rouge_nulllang (cannot find Rouge)"
+      return true
+    end
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list highlight\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n", actual
   end
 
   def test_list_ext
@@ -598,6 +716,36 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_listnum_linenum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+
+    @book.config["highlight"] = false
+    actual = compile_block(<<-EOS)
+//firstlinenum[100]
+//listnum[samplelist][this is @<b>{test}<&>_][ruby]{
+def foo(a1, a2=:test)
+  (1..3).times{|i| a.include?(:foo)}
+  return true
+end
+//}
+EOS
+
+    expected =<<-EOS
+<div class="code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<pre class="list language-ruby">100: def foo(a1, a2=:test)
+101:   (1..3).times{|i| a.include?(:foo)}
+102:   return true
+103: end
+</pre>
+</div>
+EOS
+
+    assert_equal expected, actual
+  end
+
   def test_listnum_pygments_lang
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
@@ -612,7 +760,45 @@ EOS
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
+    expected = <<-EOS
+<div class="code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span><span style="background-color: #f0f0f0; padding: 0 5px 0 5px">1 </span><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">foo</span>(a1, a2<span style="color: #666666">=</span><span style="color: #19177C">:test</span>)
+<span style="background-color: #f0f0f0; padding: 0 5px 0 5px">2 </span>  (<span style="color: #666666">1..3</span>)<span style="color: #666666">.</span>times{<span style="color: #666666">|</span>i<span style="color: #666666">|</span> a<span style="color: #666666">.</span>include?(<span style="color: #19177C">:foo</span>)}
+<span style="background-color: #f0f0f0; padding: 0 5px 0 5px">3 </span>  <span style="color: #008000; font-weight: bold">return</span> <span style="color: #008000">true</span>
+<span style="background-color: #f0f0f0; padding: 0 5px 0 5px">4 </span><span style="color: #008000; font-weight: bold">end</span>
+</pre></div>
+</div>
+    EOS
+    assert_equal expected, actual
+  end
+
+  def test_listnum_pygments_lang_linenum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    begin
+      require 'pygments'
+    rescue LoadError
+      $stderr.puts "skip test_listnum_pygments_lang (cannot find pygments.rb)"
+      return true
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "pygments"
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    expected = <<-EOB
+<div class=\"code\">
+<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span></span><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">100 </span><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)
+<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">101 </span>  (<span style=\"color: #666666\">1..3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}
+<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">102 </span>  <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>
+<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">103 </span><span style=\"color: #008000; font-weight: bold\">end</span>
+</pre></div>
+</div>
+EOB
+
+    assert_equal expected, actual
   end
 
   def test_listnum_pygments_lang_without_lang
@@ -630,9 +816,69 @@ EOS
     @book.config["highlight"]["lang"] = "ruby"
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">1</span> <span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">2</span>   (<span style=\"color: #666666\">1.</span>.<span style=\"color: #666666\">3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">3</span>   <span style=\"color: #008000; font-weight: bold\">return</span> <span style=\"color: #008000\">true</span>\n<span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">4</span> <span style=\"color: #008000; font-weight: bold\">end</span>\n</pre></div>\n</div>\n", actual
+    expected = <<-EOS
+<div class="code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span><span style="background-color: #f0f0f0; padding: 0 5px 0 5px">1 </span><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">foo</span>(a1, a2<span style="color: #666666">=</span><span style="color: #19177C">:test</span>)
+<span style="background-color: #f0f0f0; padding: 0 5px 0 5px">2 </span>  (<span style="color: #666666">1..3</span>)<span style="color: #666666">.</span>times{<span style="color: #666666">|</span>i<span style="color: #666666">|</span> a<span style="color: #666666">.</span>include?(<span style="color: #19177C">:foo</span>)}
+<span style="background-color: #f0f0f0; padding: 0 5px 0 5px">3 </span>  <span style="color: #008000; font-weight: bold">return</span> <span style="color: #008000">true</span>
+<span style="background-color: #f0f0f0; padding: 0 5px 0 5px">4 </span><span style="color: #008000; font-weight: bold">end</span>
+</pre></div>
+</div>
+    EOS
+    assert_equal expected, actual
   end
 
+  def test_listnum_rouge_lang
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_listnum_rouge_lang (cannot find Rouge)"
+      return true
+    end
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<table class=\"highlight rouge-table\"><tbody><tr><td class=\"rouge-gutter gl\"><pre class=\"lineno\">1\n2\n3\n4\n5\n</pre></td><td class=\"rouge-code\"><pre><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n  <span class=\"k\">return</span> <span class=\"kp\">true</span>\n<span class=\"k\">end</span>\n\n</pre></td></tr></tbody></table>\n</div>\n", actual
+  end
+
+  def test_listnum_rouge_lang_linenum
+    begin
+      require 'rouge'
+    rescue LoadError
+      $stderr.puts "skip test_listnum_rouge_lang_linenum (cannot find Rouge)"
+      return true
+    end
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["html"] = "rouge"
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
+
+    expected = <<-EOB
+<div class="code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<table class="highlight rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">100
+101
+102
+103
+104
+</pre></td><td class="rouge-code"><pre><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="o">=</span><span class="ss">:test</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="nf">.</span><span class="mi">3</span><span class="p">).</span><span class="nf">times</span><span class="p">{</span><span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="n">a</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)}</span>
+  <span class="k">return</span> <span class="kp">true</span>
+<span class="k">end</span>
+
+</pre></td></tr></tbody></table>
+</div>
+EOB
+
+    assert_equal expected, actual
+  end
 
   def test_emlist
     actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
@@ -649,7 +895,13 @@ EOS
     @book.config["highlight"] = {}
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//emlist[][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
-    assert_equal "<div class=\"emlist-code\">\n<pre class=\"emlist language-sql\"><span style=\"color: #008000; font-weight: bold\">SELECT</span> <span style=\"color: #008000; font-weight: bold\">COUNT</span>(<span style=\"color: #666666\">*</span>) <span style=\"color: #008000; font-weight: bold\">FROM</span> tests <span style=\"color: #008000; font-weight: bold\">WHERE</span> tests.<span style=\"color: #008000; font-weight: bold\">no</span> <span style=\"color: #666666\">&gt;</span> <span style=\"color: #666666\">10</span> <span style=\"color: #008000; font-weight: bold\">AND</span> test.name <span style=\"color: #008000; font-weight: bold\">LIKE</span> <span style=\"color: #BA2121\">&#39;ABC%&#39;</span>\n</pre>\n</div>\n", actual
+    expected = <<-EOS
+<div class="emlist-code">
+<pre class="emlist language-sql highlight"><span style="color: #008000; font-weight: bold">SELECT</span> <span style="color: #008000; font-weight: bold">COUNT</span>(<span style="color: #666666">*</span>) <span style="color: #008000; font-weight: bold">FROM</span> tests <span style="color: #008000; font-weight: bold">WHERE</span> tests.<span style="color: #008000; font-weight: bold">no</span> <span style="color: #666666">&gt;</span> <span style="color: #666666">10</span> <span style="color: #008000; font-weight: bold">AND</span> test.name <span style="color: #008000; font-weight: bold">LIKE</span> <span style="color: #BA2121">&#39;ABC%&#39;</span>
+</pre>
+</div>
+    EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_caption
@@ -683,6 +935,20 @@ EOS
 <p class="caption">cap</p>
 <pre class="emlist language-text"> 1: lineA
  2: lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlistnum_lang_linenum
+    @book.config["highlight"] = false
+    actual = compile_block("//firstlinenum[1000]\n//emlistnum[cap][text]{\nlineA\nlineB\n//}\n")
+    expected =<<-EOS
+<div class="emlistnum-code">
+<p class="caption">cap</p>
+<pre class="emlist language-text">1000: lineA
+1001: lineB
 </pre>
 </div>
 EOS
@@ -1142,6 +1408,14 @@ EOS
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q|<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|,
                  actual
+  end
+
+  def test_inline_table
+    def @chapter.table(id)
+      Book::TableIndex::Item.new("sampletable",1)
+    end
+    actual = compile_block("@<table>{sampletest}\n")
+    assert_equal %Q|<p><span class="tableref">表1.1</span></p>\n|, actual
   end
 
   def test_imgtable

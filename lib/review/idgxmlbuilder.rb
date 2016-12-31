@@ -64,6 +64,7 @@ module ReVIEW
       @column = 0
       @noindent = nil
       @ol_num = nil
+      @first_line_num = nil
       @rootelement = "doc"
       @secttags = nil
       @tsize = nil
@@ -310,9 +311,9 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<link href="#{column_label(id)}">#{escape_html(chapter.column(id).caption)}</link>)
+        %Q(<link href="#{column_label(id)}">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</link>)
       else
-        escape_html(chapter.column(id).caption)
+        I18n.t("column", compile_inline(chapter.column(id).caption))
       end
     end
 
@@ -362,8 +363,9 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, lang = nil)
       _lines = []
+      first_line_num = get_line_num
       lines.each_with_index do |line, i|
-        _lines << detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
+        _lines << detab("<span type='lineno'>" + (i + first_line_num).to_s.rjust(2) + ": </span>" + line)
       end
       quotedlist _lines, 'emlistnum', caption
     end
@@ -371,6 +373,7 @@ module ReVIEW
     def listnum_body(lines, lang)
       print %Q(<pre>)
       no = 1
+      first_line_num = get_line_num
       lines.each_with_index do |line, i|
         unless @book.config["listinfo"].nil?
           print "<listinfo line=\"#{no}\""
@@ -378,7 +381,7 @@ module ReVIEW
           print " end=\"#{no}\"" if no == lines.size
           print ">"
         end
-        print detab("<span type='lineno'>" + (i + 1).to_s.rjust(2) + ": </span>" + line)
+        print detab("<span type='lineno'>" + (i + first_line_num).to_s.rjust(2) + ": </span>" + line)
         print "\n"
         print "</listinfo>" unless @book.config["listinfo"].nil?
         no += 1

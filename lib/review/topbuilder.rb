@@ -129,10 +129,6 @@ module ReVIEW
       $stderr.puts "#{@location.filename}:#{@location.lineno}: error: #{msg}"
     end
 
-    def messages
-      error_messages() + warning_messages()
-    end
-
     def headline(level, label, caption)
       prefix = ""
       blank

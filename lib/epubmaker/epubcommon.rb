@@ -12,12 +12,6 @@
 require 'review/i18n'
 require 'review/template'
 require 'cgi'
-require 'shellwords'
-begin
-  require 'zip'
-rescue LoadError
-  ## I cannot find rubyzip library, so I use external zip command.
-end
 
 module EPUBMaker
 
@@ -259,11 +253,14 @@ EOT
             revstr = ReVIEW::I18n.t("nth_impression", "#{rev+1}")
             if item =~ /\A\d+\-\d+\-\d+\Z/
               buf << %Q[      <p>#{ReVIEW::I18n.t("published_by1", [date_to_s(item), editstr+revstr])}</p>\n]
-            else
+            elsif item =~ /\A(\d+\-\d+\-\d+)[\s　](.+)/
               # custom date with string
               item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
                 buf << %Q[      <p>#{ReVIEW::I18n.t("published_by3", [date_to_s(m[1]), m[2]])}</p>\n]
               end
+            else
+              # free format
+              buf << %Q[      <p>#{item}</p>\n]
             end
           end
         end
@@ -402,45 +399,6 @@ EOT
         raise "#{fname} doesn't exist. Abort." unless File.exist?(fname)
         FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
         FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
-      end
-    end
-
-    def export_zip(tmpdir, epubfile)
-      if defined?(Zip)
-        export_zip_rubyzip(tmpdir, epubfile)
-      else
-        export_zip_extcmd(tmpdir, epubfile)
-      end
-    end
-
-    def export_zip_extcmd(tmpdir, epubfile)
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage1"]} #{epubfile.shellescape} mimetype` }
-      Dir.chdir(tmpdir) {|d| `#{@producer.params["epubmaker"]["zip_stage2"]} #{epubfile.shellescape} META-INF OEBPS #{@producer.params["epubmaker"]["zip_addpath"]}` }
-    end
-
-    def export_zip_rubyzip(tmpdir, epubfile)
-      Dir.chdir(tmpdir) do |d|
-        Zip::OutputStream.open(epubfile) do |epub|
-          root_pathname = Pathname.new(tmpdir)
-          # relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
-          epub.put_next_entry('mimetype', nil, nil, Zip::Entry::STORED)
-          epub << "application/epub+zip"
-
-          export_zip_rubyzip_addpath(epub, File.join(tmpdir,'META-INF'), root_pathname)
-          export_zip_rubyzip_addpath(epub, File.join(tmpdir,'OEBPS'), root_pathname)
-          if @producer.params["zip_addpath"].present?
-            export_zip_rubyzip_addpath(epub, File.join(tmpdir,@producer.params["zip_addpath"]), root_pathname)
-          end
-        end
-      end
-    end
-
-    def export_zip_rubyzip_addpath(epub, dirname, rootdir)
-      Dir[File.join(dirname,'**','**')].each do |path|
-        next if File.directory?(path)
-        relpath = Pathname.new(path).relative_path_from(rootdir)
-        epub.put_next_entry(relpath)
-        epub << File.binread(path)
       end
     end
 

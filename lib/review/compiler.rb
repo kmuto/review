@@ -175,6 +175,7 @@ module ReVIEW
     defsingle :tsize, 1
     defsingle :include, 1
     defsingle :olnum, 1
+    defsingle :firstlinenum, 1
 
     definline :chapref
     definline :chap

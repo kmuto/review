@@ -252,6 +252,20 @@ such as `@<list>{main}`.
 
 When you refer a list in the other chapter, you can use an ID with chapter ID, such like `@<list>{advanced|main}`, to refer a list `main` in `advanced.re`.
 
+### define line number of first line in code block
+
+If you want to start with specified number as line number, you can use `firstlinenum` command.
+
+Usage:
+
+```review
+//firstlinenum[100]
+//listnum[hello][helloworld][ruby]{
+puts "hello world!"
+//}
+```
+
+
 ### Quoting Source Code
 
 `//source` is for quoting source code. filename is mandatory.

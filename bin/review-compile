@@ -53,7 +53,6 @@ def _main
   opts.on('-c', '--check', 'Check manuscript') { check_only = true }
   opts.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
   opts.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }
-  opts.on('--nolfinxml', 'Do not insert LF in XML. (idgxml)') { config["nolf"] = true }
   opts.on('--structuredxml', 'Produce XML with structured sections. (idgxml)') { config["structuredxml"] = true }
   opts.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| config["tableopt"] = tbl }
   opts.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { config["listinfo"] = true }

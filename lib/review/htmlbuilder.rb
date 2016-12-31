@@ -54,12 +54,13 @@ module ReVIEW
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
+      @first_line_num = nil
       @body_ext = nil
       @toc = nil
     end
     private :builder_init_file
 
-    def result
+    def layout_file
       if @book.config.maker == "webmaker"
         htmldir = "web/html"
         localfilename = "layout-web.html.erb"
@@ -85,7 +86,9 @@ module ReVIEW
       else
         layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
       end
+    end
 
+    def result
       # default XHTML header/footer
       @error_messages = error_messages
       @warning_messages = warning_messages
@@ -447,6 +450,7 @@ module ReVIEW
       class_names = ["list"]
       lexer = lang || File.extname(id).gsub(/\./, '')
       class_names.push("language-#{lexer}") unless lexer.blank?
+      class_names.push("highlight") if highlight?
       print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       puts highlight(:body => body, :lexer => lexer, :format => 'html')
@@ -490,14 +494,17 @@ module ReVIEW
       if highlight?
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
-        puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                       :options => {:linenos => 'inline', :nowrap => false})
+        first_line_number = get_line_num
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
+                       :options => {:linenostart => first_line_number})
       else
         class_names = ["list"]
         class_names.push("language-#{lang}") unless lang.blank?
+        class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
+        first_line_num = get_line_num
         lines.each_with_index do |line, i|
-          puts detab((i+1).to_s.rjust(2) + ": " + line)
+          puts detab((i+first_line_num).to_s.rjust(2) + ": " + line)
         end
         puts '</pre>'
       end
@@ -510,6 +517,7 @@ module ReVIEW
       end
       class_names = ["emlist"]
       class_names.push("language-#{lang}") unless lang.blank?
+      class_names.push("highlight") if highlight?
       print %Q[<pre class="#{class_names.join(" ")}">]
       body = lines.inject(''){|i, j| i + detab(j) + "\n"}
       lexer = lang
@@ -527,14 +535,17 @@ module ReVIEW
       if highlight?
         body = lines.inject(''){|i, j| i + detab(j) + "\n"}
         lexer = lang
-        puts highlight(:body => body, :lexer => lexer, :format => 'html',
-                       :options => {:linenos => 'inline', :nowrap => false})
+        first_line_number = get_line_num
+        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
+                       :options => {:linenostart => first_line_number})
       else
         class_names = ["emlist"]
         class_names.push("language-#{lang}") unless lang.blank?
+        class_names.push("highlight") if highlight?
         print %Q[<pre class="#{class_names.join(" ")}">]
+        first_line_num = get_line_num
         lines.each_with_index do |line, i|
-          puts detab((i+1).to_s.rjust(2) + ": " + line)
+          puts detab((i+first_line_num).to_s.rjust(2) + ": " + line)
         end
         puts '</pre>'
       end
@@ -630,7 +641,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      puts %Q[<div class="image">]
+      puts %Q[<div id="#{normalize_id(id)}" class="image">]
       puts %Q[<pre class="dummyimage">]
       lines.each do |line|
         puts detab(line)
@@ -769,7 +780,7 @@ module ReVIEW
     def indepimage(id, caption="", metric=nil)
       metrics = parse_metric("html", metric)
       caption = "" if caption.nil?
-      puts %Q[<div class="image">]
+      puts %Q[<div id="#{normalize_id(id)}" class="image">]
       begin
         puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       rescue
@@ -998,18 +1009,24 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", escape_html(chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", escape_html(chapter.column(id).caption))
+        I18n.t("column", compile_inline(chapter.column(id).caption))
       end
     end
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
+      str = nil
       if get_chap(chapter).nil?
-        "#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}"
+        str = "#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}"
       else
-        "#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}"
+        str = "#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}"
+      end
+      if @book.config["chapterlink"]
+        %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
+      else
+        %Q(<span class="listref">#{str}</span>)
       end
     rescue KeyError
       error "unknown list: #{id}"
@@ -1025,9 +1042,9 @@ module ReVIEW
         str = "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
       end
       if @book.config["chapterlink"]
-        %Q(<a href="./#{chapter.id}#{extname}##{id}">#{str}</a>)
+        %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
       else
-        str
+        %Q(<span class="tableref">#{str}</span>)
       end
     rescue KeyError
       error "unknown table: #{id}"
@@ -1043,9 +1060,9 @@ module ReVIEW
         str = "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
       end
       if @book.config["chapterlink"]
-        %Q(<a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a>)
+        %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
       else
-        str
+        %Q(<span class="imgref">#{str}</span>)
       end
     rescue KeyError
       error "unknown image: #{id}"

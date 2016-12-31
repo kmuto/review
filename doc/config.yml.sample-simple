@@ -51,7 +51,7 @@ colophon: true
 ## Syntax Highlighting
 
 highlight:
-  html: "pygments"
+  html: "rouge"
   latex: "listings"
 
 ## for HTML

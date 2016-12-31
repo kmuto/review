@@ -311,11 +311,35 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n|, actual
   end
 
+  def test_listnum_linenum
+    actual = compile_block("//firstlinenum[100]\n//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    assert_equal %Q|\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n100: class Foo\n101:   def foo\n102:     bar\n103: \n104:     buz\n105:   end\n106: end\n\\end{reviewlist}\n|, actual
+  end
+
   def test_listnum_lst
     @book.config["highlight"] = {}
     @book.config["highlight"]["latex"] = "listings"
     actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
     assert_equal %Q|\\begin{reviewlistnumlst}[caption={ruby},language={}]\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n\\end{reviewlistnumlst}\n|, actual
+  end
+
+  def test_listnum_lst_linenum
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    actual = compile_block("//firstlinenum[100]\n//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    assert_equal %Q|\\begin{reviewlistnumlst}[caption={ruby},language={},firstnumber=100]\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n\\end{reviewlistnumlst}\n|, actual
+  end
+
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\\reviewsourcecaption{foo/bar/test.rb}\n\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n|, actual
+  end
+
+  def test_source_lst
+    @book.config["highlight"] = {}
+    @book.config["highlight"]["latex"] = "listings"
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q|\\begin{reviewsourcelst}[title={foo/bar/test.rb},language={}]\nfoo\nbar\n\nbuz\n\\end{reviewsourcelst}\n|, actual
   end
 
   def test_quote

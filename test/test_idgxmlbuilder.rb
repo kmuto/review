@@ -269,6 +269,22 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></codelist>|, actual
   end
 
+  def test_listnum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre></codelist>|, actual
+  end
+
+  def test_listnum_linenum
+    def @chapter.list(id)
+      Book::ListIndex::Item.new("samplelist",1)
+    end
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'>100: </span>test1\n<span type='lineno'>101: </span>test1.5\n<span type='lineno'>102: </span>\n<span type='lineno'>103: </span>test<i>2</i>\n</pre></codelist>|, actual
+  end
+
   def test_list_listinfo
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)
@@ -290,6 +306,12 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     @config["listinfo"] = nil
     assert_equal %Q|<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></box>|, actual
+  end
+
+  def test_box_non_listinfo
+    @config["listinfo"] = nil
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q|<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption>test1\ntest1.5\n\ntest<i>2</i>\n</box>|, actual
   end
 
   def test_flushright
@@ -443,6 +465,34 @@ EOS
     assert_raise(ReVIEW::CompileError) do
       column_helper(review)
     end
+  end
+
+  def test_column_ref
+    review =<<-EOS
+===[column]{foo} test
+
+inside column
+
+=== next level
+
+this is @<column>{foo}.
+EOS
+    expected =<<-EOS.chomp
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?><p>this is コラム「test」.</p>
+EOS
+
+    assert_equal expected, column_helper(review)
+  end
+
+  def test_column_in_aother_chapter_ref
+    def @chapter.column_index
+      items = [Book::ColumnIndex::Item.new("chap1|column", 1, "column_cap")]
+      Book::ColumnIndex.new(items)
+    end
+
+    actual = compile_inline("test @<column>{chap1|column} test2")
+    expected = "test コラム「column_cap」 test2"
+    assert_equal expected, actual
   end
 
   def test_ul

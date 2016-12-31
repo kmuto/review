@@ -1,3 +1,85 @@
+# Version 2.1.0 の主な変更点
+
+## 新機能
+
+* review-init: Gemfileを生成するようにしました([#650])
+* HTMLBuilder: リスト内で言語別のclassを生成するようにしました([#666])
+* HTMLBuilder: image同様indepimageでも<div>要素にid属性を追加しました
+* MD2INAOBuilder: 新builderとしてMD2INAOBuilderを追加しました ([#671])
+* MARKDOWNBuilder, MD2INAOBuilder: ルビに対応しました ([#671])
+* TEXTBuilder: `@<hd>`に対応しました([#648])
+* TOPBuilder: `@<comment>{}`に対応しました ([#625], [#627])
+
+## 非互換の変更
+
+## バグ修正
+
+* review-validate: ブロックや表内でのコメントの挙動と、メッセージを修正しました
+* LATEXBuilder: config.ymlで`rights`が空の場合に対応しました ([#653])
+* LATEXBuilder: config.ymlとlocale.ymlの値のエスケープを修正しました ([#642])
+* PDFMaker: AI, EPS, TIFFの画像に対応しました ([#675])
+* PDFMaker: フックからフルパスを取得できるよう @basehookdir を追加しました ([#662])
+* EPUBMaker: dc:identifierが空になってしまうバグを修正しました ([#636])
+* EPUBMaker: coverファイルの拡張子がxhtmlになってしまうバグを修正しました ([#618])
+* WEBMaker: リンクを修正しました ([#645])
+* WEBMaker: 部がファイルでない場合のリンクを修正しました ([#639], [#641])
+* I18n: format_number_headerので`%pJ`の扱いを修正しました ([#628])
+
+## 機能強化
+
+* LATEXBuilder: pLaTeXでもpxjahyper packageを使うようにしました([#640])
+* LATEXBuilder: `layout.tex.erb`を改良しました([#617])
+* LATEXBuilder: locale.ymlで指定されたキーワードを使うようにしました ([#629])
+* IDGXMLBuilder: コラムの埋め込み目次情報のXMLインストラクションを修正しました ([#634])
+* IDGXMLBuilder: //emlistで空のcaptionができるバグを修正しました ([#633])
+* Rakefile: `preproc`タスクを追加しました ([#630])
+
+## ドキュメント
+
+* 「EPUBローカルルールへの対応方法」のドキュメントを英訳しました
+* 「review-preprocユーザガイド(preproc(.ja).md)」を追加しました ([#632])
+* config.yml: `csl`の例を追加しました
+* config.yml: シンプルなサンプルファイル(config.yml.sample-simple)を追加しました ([#626])
+
+## その他
+
+* templates/以下のテンプレートファイルのライセンスを他の文書内に取り込みやすくするため、MIT licenseにしました([#663])
+* rubocopの新しい警告を抑制しました
+
+## コントリビューターのみなさん
+
+* [@kazken3](https://github.com/kazken3)
+* [@vvakame](https://github.com/vvakame)
+* [@masarakki](https://github.com/masarakki)
+* [@munepi](https://github.com/munepi)
+* [@znz](https://github.com/znz)
+
+[#675]: https://github.com/kmuto/review/issues/
+[#671]: https://github.com/kmuto/review/issues/
+[#666]: https://github.com/kmuto/review/issues/
+[#663]: https://github.com/kmuto/review/issues/
+[#662]: https://github.com/kmuto/review/issues/
+[#653]: https://github.com/kmuto/review/issues/
+[#650]: https://github.com/kmuto/review/issues/
+[#648]: https://github.com/kmuto/review/issues/
+[#645]: https://github.com/kmuto/review/issues/
+[#642]: https://github.com/kmuto/review/issues/
+[#641]: https://github.com/kmuto/review/issues/
+[#640]: https://github.com/kmuto/review/issues/
+[#638]: https://github.com/kmuto/review/issues/
+[#636]: https://github.com/kmuto/review/issues/
+[#634]: https://github.com/kmuto/review/issues/
+[#633]: https://github.com/kmuto/review/issues/
+[#632]: https://github.com/kmuto/review/issues/
+[#630]: https://github.com/kmuto/review/issues/
+[#629]: https://github.com/kmuto/review/issues/
+[#628]: https://github.com/kmuto/review/issues/
+[#627]: https://github.com/kmuto/review/issues/
+[#626]: https://github.com/kmuto/review/issues/
+[#625]: https://github.com/kmuto/review/issues/
+[#618]: https://github.com/kmuto/review/issues/
+[#617]: https://github.com/kmuto/review/issues/
+
 # Version 2.0.0の主な変更点
 
 ## 新機能

@@ -5,11 +5,13 @@
 
 require 'review/builder'
 require 'review/textutils'
+require 'review/htmlutils'
 
 module ReVIEW
 
   class MARKDOWNBuilder < Builder
     include TextUtils
+    include HTMLUtils
 
     def extname
       '.md'
@@ -290,6 +292,15 @@ module ReVIEW
     def nofunc_text(str)
       str
     end
+
+    def compile_ruby(base, ruby)
+      if @book.htmlversion == 5
+        %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      else
+        %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+      end
+    end
+
   end
 
 end # module ReVIEW
