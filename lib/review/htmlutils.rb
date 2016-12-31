@@ -9,7 +9,6 @@
 #
 
 require 'cgi/util'
-require 'rouge'
 module ReVIEW
 
   module HTMLUtils
@@ -112,6 +111,7 @@ module ReVIEW
         first_line_num = ops[:options][:linenostart]
       end
 
+      require 'rouge'
       lexer = Rouge::Lexer.find(lexer)
       raise "unknown lexer #{lexer}" unless lexer
 
