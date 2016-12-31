@@ -73,17 +73,23 @@ class ZipExporterTest < Test::Unit::TestCase
     exporter.export_zip_extcmd(epubfile)
     assert_true(File.exist?(epubfile))
 
-    File.open(epubfile) do |f|
-      ::Zip::InputStream.open(f) do |fzip|
-        ## get first entry
-        entry = fzip.get_next_entry
-        assert_equal "mimetype", entry.name
-        assert_equal "application/epub+zip", fzip.read
+    if defined?(Zip)
+      File.open(epubfile) do |f|
+        ::Zip::InputStream.open(f) do |fzip|
+          ## get first entry
+          entry = fzip.get_next_entry
+          assert_equal "mimetype", entry.name
+          assert_equal "application/epub+zip", fzip.read
+        end
       end
     end
   end
 
   def test_export_rubyzip
+    if !defined?(Zip)
+      ## skip test
+      return
+    end
     params = {"epubmaker"=>{}}
     epubfile = File.join(@tmpdir, "test.epub")
     exporter = ZipExporter.new(@epubdir, params)
