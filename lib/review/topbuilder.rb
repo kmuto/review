@@ -712,11 +712,6 @@ module ReVIEW
       ""
     end
 
-    def tsize(id)
-      # FIXME
-      ""
-    end
-
     def dtp(str)
       # FIXME
     end

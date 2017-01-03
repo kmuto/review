@@ -46,6 +46,7 @@ module ReVIEW
       @output = StringIO.new
       @book = @chapter.book if @chapter.present?
       @tabwidth = nil
+      @tsize = nil
       if @book && @book.config && @book.config["tabwidth"]
         @tabwidth = @book.config["tabwidth"]
       end
@@ -448,6 +449,18 @@ module ReVIEW
     end
 
     def ul_item_end
+    end
+
+    def tsize(str)
+      if matched = str.match(/\A\|(.*?)\|(.*)/)
+        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
+        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+        if builders.include?(c)
+          @tsize = matched[2]
+        end
+      else
+        @tsize = str
+      end
     end
 
     def inline_raw(args)

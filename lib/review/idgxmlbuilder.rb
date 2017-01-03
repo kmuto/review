@@ -1048,10 +1048,6 @@ module ReVIEW
       print "<label id='#{id}' />"
     end
 
-    def tsize(str)
-      @tsize = str
-    end
-
     def dtp(str)
       print %Q(<?dtp #{str} ?>)
     end

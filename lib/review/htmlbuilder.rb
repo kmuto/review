@@ -278,10 +278,6 @@ module ReVIEW
       puts '</div>'
     end
 
-    def tsize(str)
-      # null
-    end
-
     def captionblock(type, lines, caption)
       puts %Q[<div class="#{type}">]
       unless caption.nil?
