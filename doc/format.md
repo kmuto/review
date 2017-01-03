@@ -425,6 +425,19 @@ When you want to write "see table X", you can write `@<table>{envvars}`.
 
 You can use inline markup in the tables.
 
+### Column width of table
+When using LaTeX or IDGXML builder, you can specify each column width of the table with `//tsize` block command.
+
+```
+//tsize[|builder|width-of-column1,width-of-column2,...]
+```
+
+* The collumn width is specified in mm.
+* For IDGXML, if only 1st of the three columns is specified, the remaining 2nd and 3rd columns will be the width of the remainder of the live area width equally divided. It is not possible to specify that only the 1st and 3rd columns are specified.
+* For LaTeX, you have to specify all column widths.
+* For LaTeX, you can also directly specify the column parameter of LaTeX table macro like `//tsize[|latex||p{20mm}cr|]`.
+* In other builders such as HTML, this command is simply ignored.
+
 ### Complex Table
 
 If you want to use complex tables, you can use `imgtable` block command with an image of the table.  `imgtable` supports numbering and `@<table>`.
