@@ -60,7 +60,7 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def layout_file
+    def layoutfile
       if @book.config.maker == "webmaker"
         htmldir = "web/html"
         localfilename = "layout-web.html.erb"
@@ -86,6 +86,7 @@ module ReVIEW
       else
         layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
       end
+      layout_file
     end
 
     def result
@@ -105,7 +106,7 @@ module ReVIEW
         @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
       end
 
-      tmpl = ReVIEW::Template.load(layout_file)
+      tmpl = ReVIEW::Template.load(layoutfile)
       tmpl.result(binding)
     end
 
