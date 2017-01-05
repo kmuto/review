@@ -685,4 +685,25 @@ EOS
     assert_equal expected.chomp, actual
   end
 
+  def test_comment
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q||, actual
+  end
+
+  def test_comment_for_draft
+    @config["draft"] = true
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q|<msg>コメント</msg>|, actual
+  end
+
+  def test_inline_comment
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test  test2|, actual
+  end
+
+  def test_inline_comment_for_draft
+    @config["draft"] = true
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test <msg>コメント</msg> test2|, actual
+  end
 end

@@ -759,10 +759,7 @@ module ReVIEW
       lines.unshift comment unless comment.blank?
       if @book.config["draft"]
         str = lines.join("<br />")
-        puts %Q(<div class="draft-comment">#{str}</div>)
-      else
-        str = lines.join("\n")
-        puts %Q(<!-- #{escape_comment(str)} -->)
+        puts %Q(<div class="draft-comment">#{escape_html(str)}</div>)
       end
     end
 
@@ -1162,7 +1159,7 @@ module ReVIEW
       if @book.config["draft"]
         %Q(<span class="draft-comment">#{escape_html(str)}</span>)
       else
-        %Q(<!-- #{escape_comment(escape_html(str))} -->)
+        ""
       end
     end
 

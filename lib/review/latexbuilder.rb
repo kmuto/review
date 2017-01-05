@@ -648,7 +648,7 @@ module ReVIEW
       lines ||= []
       lines.unshift comment unless comment.blank?
       if @book.config["draft"]
-        str = lines.join("")
+        str = lines.join('\par ')
         puts macro('pdfcomment', escape(str))
       end
     end

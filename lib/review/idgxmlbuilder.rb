@@ -630,8 +630,21 @@ module ReVIEW
       end
     end
 
-    def comment(str)
-      print %Q(<!-- [Comment] #{escape_html(str)} -->)
+    def comment(lines, comment = nil)
+      if @book.config["draft"]
+        lines ||= []
+        lines.unshift comment unless comment.blank?
+        str = lines.join("\n")
+        print "<msg>#{escape_html(str)}</msg>"
+      end
+    end
+
+    def inline_comment(str)
+      if @book.config["draft"]
+        %Q(<msg>#{escape_html(str)}</msg>)
+      else
+        ''
+      end
     end
 
     def footnote(id, str)

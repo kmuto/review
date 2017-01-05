@@ -142,7 +142,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_inline_comment_for_draft
     @config["draft"] = true
     actual = compile_inline("test @<comment>{コメント} test2")
-    assert_equal %Q|test ◆→DTP連絡:コメント←◆ test2|, actual
+    assert_equal %Q|test ◆→コメント←◆ test2|, actual
   end
 
   def test_inline_in_table
@@ -168,6 +168,17 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q|◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n|, actual
+  end
+
+  def test_comment
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q||, actual
+  end
+
+  def test_comment_for_draft
+    @config["draft"] = true
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q|◆→コメント←◆\n|, actual
   end
 
   def test_list

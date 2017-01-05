@@ -381,10 +381,12 @@ module ReVIEW
     end
 
     def comment(lines, comment = nil)
-      lines ||= []
-      lines.unshift comment unless comment.blank?
-      str = lines.join("")
-      puts "◆→DTP連絡:#{str}←◆"
+      if @book.config["draft"]
+        lines ||= []
+        lines.unshift comment unless comment.blank?
+        str = lines.join("")
+        puts "◆→#{str}←◆"
+      end
     end
 
     def footnote(id, str)
@@ -501,7 +503,7 @@ module ReVIEW
 
     def inline_comment(str)
       if @book.config["draft"]
-        %Q[◆→DTP連絡:#{str}←◆]
+        "◆→#{str}←◆"
       else
         ""
       end
