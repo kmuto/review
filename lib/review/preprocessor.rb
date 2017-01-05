@@ -24,7 +24,7 @@ module ReVIEW
     end
 
     def warn(msg)
-      $stderr.puts "#{location()}: warning: #{msg}"
+      @logger.warn "#{location()}: #{msg}"
     end
 
     def error(msg)
@@ -93,6 +93,7 @@ module ReVIEW
     def initialize(repo, param)
       @repository = repo
       @config = param
+      @logger = ReVIEW.logger
     end
 
     def process(inf, outf)
@@ -368,6 +369,7 @@ module ReVIEW
     def initialize(param)
       @repository = {}
       @config = param
+      @logger = ReVIEW.logger
     end
 
     def fetch_file(file)
@@ -477,7 +479,7 @@ module ReVIEW
       if curr.size > 1
         curr.delete 'WHOLE'
         curr.each do |range, lines|
-          $stderr.puts "#{filename()}: unclosed range: #{range} (begin @#{lines.first.number})"
+          @logger.warn "#{filename()}: unclosed range: #{range} (begin @#{lines.first.number})"
         end
         raise ApplicationError, "ERROR"
       end

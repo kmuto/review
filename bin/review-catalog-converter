@@ -16,8 +16,10 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/version'
 require 'review/extentions'
+require 'review/logger'
 
 def main
+  @logger = ReVIEW.logger
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} dirname"
@@ -29,7 +31,7 @@ def main
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -42,10 +44,10 @@ def main
       print "The catalog.yml already exists. Do you want to overwrite it? [y/n]"
       case gets
       when /^[yY]/
-        puts "Start writing..."
+        @logger.info "Start writing..."
         break
       when /^[nN]/, /^$/
-        puts "bye."
+        @logger.info "bye."
         exit
       end
     end

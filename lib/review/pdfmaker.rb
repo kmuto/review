@@ -35,6 +35,7 @@ module ReVIEW
     def initialize
       @basedir = nil
       @basehookdir = nil
+      @logger = ReVIEW.logger
       @input_files = Hash.new{|h, key| h[key] = ""}
     end
 
@@ -43,12 +44,12 @@ module ReVIEW
     end
 
     def error(msg)
-      $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
+      @logger.error "#{File.basename($0, '.*')}: #{msg}"
       exit 1
     end
 
     def warn(msg)
-      $stderr.puts "#{File.basename($0, '.*')}: warning: #{msg}"
+      @logger.warn "#{File.basename($0, '.*')}: #{msg}"
     end
 
     def pdf_filepath

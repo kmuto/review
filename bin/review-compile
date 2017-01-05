@@ -34,6 +34,7 @@ rescue Errno::EPIPE
 end
 
 def _main
+  @logger = ReVIEW.logger
   mode = :files
   basedir = nil
   if /\Areview2/ =~ File.basename($0)
@@ -101,8 +102,8 @@ def _main
       end
     end
   rescue OptionParser::ParseError => err
-    error err.message
-    $stderr.puts opts.help
+    @logger.error(err.message)
+    stderr.puts opts.help
     exit 1
   end
 
@@ -121,7 +122,7 @@ def _main
     begin
       config.check_version(ReVIEW::VERSION)
     rescue ReVIEW::ConfigError => e
-      warn e.message
+      @logger.warn e.message
     end
 
     if ARGV.blank?
@@ -131,7 +132,7 @@ def _main
     case mode
     when :files
       if ARGV.empty?
-        error 'no input'
+        @logger.error('no input')
         exit 1
       end
 
@@ -167,13 +168,9 @@ def _main
     end
   rescue ReVIEW::ApplicationError => err
     raise if $DEBUG
-    error err.message
+    @logger.error(err.message)
     exit 1
   end
-end
-
-def error(msg)
-  $stderr.puts "#{File.basename($0, '.*')}: error: #{msg}"
 end
 
 def load_strategy_class(target, strict)

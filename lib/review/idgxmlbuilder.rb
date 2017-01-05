@@ -96,24 +96,6 @@ module ReVIEW
       @output.string + s + "</#{@rootelement}>\n"
     end
 
-    def warn(msg)
-      if @no_error
-        @warns.push [@location.filename, @location.lineno, msg]
-        puts "----WARNING: #{escape_html(msg)}----"
-      else
-        $stderr.puts "#{@location}: warning: #{msg}"
-      end
-    end
-
-    def error(msg)
-      if @no_error
-        @errors.push [@location.filename, @location.lineno, msg]
-        puts "----ERROR: #{escape_html(msg)}----"
-      else
-        $stderr.puts "#{@location}: error: #{msg}"
-      end
-    end
-
     def headline(level, label, caption)
       case level
       when 1

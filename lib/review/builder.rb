@@ -33,6 +33,7 @@ module ReVIEW
     def initialize(strict = false, *args)
       @strict = strict
       @output = nil
+      @logger = ReVIEW.logger
       builder_init(*args)
     end
 
@@ -363,7 +364,7 @@ module ReVIEW
     end
 
     def warn(msg)
-      $stderr.puts "#{@location}: warning: #{msg}"
+      @logger.warn "#{@location}: #{msg}"
     end
 
     def error(msg)

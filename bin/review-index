@@ -21,7 +21,9 @@ require 'review/tocprinter'
 require 'review/version'
 require 'optparse'
 
+
 def main
+  @logger = ReVIEW.logger
   Signal.trap(:INT) { exit 1 }
   if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
     Signal.trap(:PIPE, 'IGNORE')
@@ -74,7 +76,7 @@ def _main
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -101,7 +103,7 @@ def _main
 end
 
 def error_exit(msg)
-  $stderr.puts "#{File.basename($0)}: #{msg}"
+  @logger.error "#{File.basename($0)}: #{msg}"
   exit 1
 end
 

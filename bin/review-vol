@@ -21,6 +21,7 @@ require 'optparse'
 include ReVIEW::TextUtils
 
 def main
+  @logger = ReVIEW.logger
   @config = ReVIEW::Configure.values
 
   part_sensitive = false
@@ -44,7 +45,7 @@ def main
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -76,7 +77,7 @@ def main
   print_volume book.volume #puts "Total #{book.volume}"
 rescue ReVIEW::ApplicationError, Errno::ENOENT => err
   raise if $DEBUG
-  $stderr.puts "#{File.basename($0)}: #{err.message}"
+  @logger.error "#{File.basename($0)}: #{err.message}"
   exit 1
 end
 

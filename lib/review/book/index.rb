@@ -13,6 +13,7 @@ require 'review/extentions'
 require 'review/exception'
 require 'review/book/image_finder'
 require 'review/i18n'
+require 'review/logger'
 
 module ReVIEW
   module Book
@@ -25,7 +26,7 @@ module ReVIEW
             items.push item_class().new(id, seq)
             seq += 1
             if id == ""
-              warn "warning: no ID of #{item_type()} in #{line}"
+              ReVIEW.logger.warn "warning: no ID of #{item_type()} in #{line}"
             end
           end
         end
@@ -47,8 +48,9 @@ module ReVIEW
       def initialize(items)
         @items = items
         @index = {}
+        @logger = ReVIEW.logger
         items.each do |i|
-          warn "warning: duplicate ID: #{i.id} (#{i})" unless @index[i.id].nil?
+          @logger.warn "warning: duplicate ID: #{i.id} (#{i})" unless @index[i.id].nil?
           @index[i.id] = i
         end
         @image_finder = nil
@@ -158,7 +160,7 @@ module ReVIEW
               seq += 1
             end
             if elements[1] == ""
-              warn "warning: no ID of #{item_type()} in #{line}"
+              ReVIEW.logger.warn "warning: no ID of #{item_type()} in #{line}"
             end
           end
         end
@@ -340,7 +342,7 @@ module ReVIEW
         @chap = chap
         @index = {}
         items.each do |i|
-          warn "warning: duplicate ID: #{i.id}" unless @index[i.id].nil?
+          @logger.warn "warning: duplicate ID: #{i.id}" unless @index[i.id].nil?
           @index[i.id] = i
         end
       end

@@ -20,7 +20,7 @@ module ReVIEW
       attr_reader :basedir
 
       def self.load_default
-        warn 'Book::Base.load_default() is obsoleted. Use Book::Base.load().'
+        ReVIEW.logger.warn 'Book::Base.load_default() is obsoleted. Use Book::Base.load().'
         load()
       end
 
@@ -35,7 +35,7 @@ module ReVIEW
         return if @basedir_seen.key?(dir)
         if File.file?("#{dir}/review-ext.rb")
           if ENV["REVIEW_SAFE_MODE"].to_i & 2 > 0
-            warn "review-ext.rb is prohibited in safe mode. ignored."
+            ReVIEW.logger.warn "review-ext.rb is prohibited in safe mode. ignored."
           else
             Kernel.load File.expand_path("#{dir}/review-ext.rb")
           end
