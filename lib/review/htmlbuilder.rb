@@ -424,7 +424,7 @@ module ReVIEW
     alias_method :lead, :read
 
     def list(lines, id, caption, lang = nil)
-      puts %Q[<div class="caption-code">]
+      puts %Q[<div id="#{normalize_id(id)}" class="caption-code">]
       begin
         list_header id, caption, lang
       rescue KeyError
@@ -477,7 +477,7 @@ module ReVIEW
     end
 
     def listnum(lines, id, caption, lang = nil)
-      puts %Q[<div class="code">]
+      puts %Q[<div id="#{normalize_id(id)}" class="code">]
       begin
         list_header id, caption, lang
       rescue KeyError
