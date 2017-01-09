@@ -354,10 +354,6 @@ module ReVIEW
       puts '<ul>'
     end
 
-    def ul_item(lines)
-      puts "<li>#{lines.join}</li>"
-    end
-
     def ul_item_begin(lines)
       print "<li>#{lines.join}"
     end

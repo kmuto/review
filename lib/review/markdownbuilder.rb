@@ -74,10 +74,6 @@ module ReVIEW
       @ul_indent += 1
     end
 
-    def ul_item(lines)
-      puts "  " * (@ul_indent - 1) + "* " + "#{lines.join}"
-    end
-
     def ul_item_begin(lines)
       puts "  " * (@ul_indent - 1) + "* " + "#{lines.join}"
     end
