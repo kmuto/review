@@ -88,6 +88,9 @@ Style/EmptyMethod:
 Style/HashSyntax:
   Enabled: false
 
+Style/RescueModifier:
+  Enabled: false
+
 ##################### Metrics ##################################
 
 Metrics/ClassLength:
