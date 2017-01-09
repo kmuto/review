@@ -39,9 +39,15 @@ module ReVIEW
       @ol_num = nil
       @first_line_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
+      setup_index
+      initialize_metachars(@book.config["texcommand"])
+    end
+    private :builder_init_file
+
+    def setup_index
       @index_db = {}
       @index_mecab = nil
-      if @book.config["makeindex"]
+      if @book.config["pdfmaker"]["makeindex"]
         @index_db = load_idxdb(@book.config["pdfmaker"]["makeindex_dic"]) if @book.config["pdfmaker"]["makeindex_dic"]
         if @book.config["pdfmaker"]["makeindex_mecab"]
           begin
@@ -52,9 +58,7 @@ module ReVIEW
           end
         end
       end
-      initialize_metachars(@book.config["texcommand"])
     end
-    private :builder_init_file
 
     def load_idxdb(file)
       table = {}

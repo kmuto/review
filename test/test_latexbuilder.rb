@@ -210,6 +210,19 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}, \\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}|, actual
   end
 
+  def test_inline_idx_yomi
+    begin
+      require 'MeCab'
+    rescue LoadError
+      $stderr.puts "skip test_inline_idx_yomi (cannot find MeCab)"
+      return true
+    end
+    @book.config["pdfmaker"]["makeindex"] = true
+    @builder.setup_index
+    actual = compile_inline("@<hidx>{漢字}@<hidx>{項目@1<<>>項目@2}")
+    assert_equal %Q|\\index{かんじ@漢字}\\index{こうもく"@1@項目"@1!こうもく"@2@項目"@2}|, actual
+  end
+
   def test_jis_x_0201_kana
     # uplatex can handle half-width kana natively
     actual = compile_inline("foo･ｶﾝｼﾞ､テスト")
