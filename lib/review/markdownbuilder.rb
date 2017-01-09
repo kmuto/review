@@ -301,6 +301,22 @@ module ReVIEW
       end
     end
 
+    def comment(lines, comment = nil)
+      if @book.config["draft"]
+        lines ||= []
+        lines.unshift comment unless comment.blank?
+        str = lines.join("<br />")
+        puts %Q(<div class="red">#{escape_html(str)}</div>)
+      end
+    end
+
+    def inline_comment(str)
+      if @book.config["draft"]
+        %Q(<span class="red">#{escape_html(str)}</span>)
+      else
+        ''
+      end
+    end
   end
 
 end # module ReVIEW

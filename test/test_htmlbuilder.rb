@@ -513,7 +513,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new("samplelist",1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
+    assert_equal %Q|<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
   end
 
   def test_inline_list
@@ -555,7 +555,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
     expected = <<-EOS
-<div class="caption-code">
+<div id="samplelist" class="caption-code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <pre class="list highlight">test1
 test1.5
@@ -581,7 +581,7 @@ test&lt;i&gt;2&lt;/i&gt;
     @book.config["highlight"]["html"] = "pygments"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal %Q|<div class=\"caption-code\">\n| +
+    assert_equal %Q|<div id="samplelist" class=\"caption-code\">\n| +
                  %Q|<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n| +
                  %Q|<pre class=\"list language-ruby highlight\"><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)\n| +
                  %Q|  (<span style=\"color: #666666\">1..3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">\|</span>i<span style=\"color: #666666\">\|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}\n| +
@@ -606,7 +606,7 @@ test&lt;i&gt;2&lt;/i&gt;
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     expected = <<-EOS
-<div class=\"caption-code\">
+<div id="samplelist" class=\"caption-code\">
 <p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <pre class=\"list highlight\">def foo(a1, a2=:test)
   (1..3).times{|i| a.include?(:foo)}
@@ -632,7 +632,7 @@ end
     @book.config["highlight"]["html"] = "rouge"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
+    assert_equal %Q|<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n|, actual
   end
 
   def test_list_rouge_lang
@@ -649,7 +649,7 @@ end
     @book.config["highlight"]["html"] = "rouge"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    expected = "<div class=\"caption-code\">\n" +
+    expected = "<div id=\"samplelist\" class=\"caption-code\">\n" +
 	           "<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n" +
 	           "<pre class=\"list language-ruby highlight\"><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n" +
 	           "  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n" +
@@ -676,7 +676,7 @@ end
     @book.config["highlight"]["html"] = "rouge"
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list highlight\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n", actual
+    assert_equal "<div id=\"samplelist\" class=\"caption-code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class=\"list highlight\">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n", actual
   end
 
   def test_list_ext
@@ -684,7 +684,7 @@ end
       Book::ListIndex::Item.new("samplelist.rb",1)
     end
     actual = compile_block("//list[samplelist.rb][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|<div class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list language-rb">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
+    assert_equal %Q|<div id="samplelist.rb" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list language-rb">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n|, actual
   end
 
   def test_listnum
@@ -703,7 +703,7 @@ end
 EOS
 
     expected =<<-EOS
-<div class="code">
+<div id="samplelist" class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <pre class="list language-ruby"> 1: def foo(a1, a2=:test)
  2:   (1..3).times{|i| a.include?(:foo)}
@@ -733,7 +733,7 @@ end
 EOS
 
     expected =<<-EOS
-<div class="code">
+<div id="samplelist" class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <pre class="list language-ruby">100: def foo(a1, a2=:test)
 101:   (1..3).times{|i| a.include?(:foo)}
@@ -761,7 +761,7 @@ EOS
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     expected = <<-EOS
-<div class="code">
+<div id="samplelist" class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span><span style="background-color: #f0f0f0; padding: 0 5px 0 5px">1 </span><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">foo</span>(a1, a2<span style="color: #666666">=</span><span style="color: #19177C">:test</span>)
 <span style="background-color: #f0f0f0; padding: 0 5px 0 5px">2 </span>  (<span style="color: #666666">1..3</span>)<span style="color: #666666">.</span>times{<span style="color: #666666">|</span>i<span style="color: #666666">|</span> a<span style="color: #666666">.</span>include?(<span style="color: #19177C">:foo</span>)}
@@ -788,7 +788,7 @@ EOS
     actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     expected = <<-EOB
-<div class=\"code\">
+<div id=\"samplelist\" class=\"code\">
 <p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <div class=\"highlight\" style=\"background: #f8f8f8\"><pre style=\"line-height: 125%\"><span></span><span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">100 </span><span style=\"color: #008000; font-weight: bold\">def</span> <span style=\"color: #0000FF\">foo</span>(a1, a2<span style=\"color: #666666\">=</span><span style=\"color: #19177C\">:test</span>)
 <span style=\"background-color: #f0f0f0; padding: 0 5px 0 5px\">101 </span>  (<span style=\"color: #666666\">1..3</span>)<span style=\"color: #666666\">.</span>times{<span style=\"color: #666666\">|</span>i<span style=\"color: #666666\">|</span> a<span style=\"color: #666666\">.</span>include?(<span style=\"color: #19177C\">:foo</span>)}
@@ -817,7 +817,7 @@ EOB
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     expected = <<-EOS
-<div class="code">
+<div id="samplelist" class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span><span style="background-color: #f0f0f0; padding: 0 5px 0 5px">1 </span><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">foo</span>(a1, a2<span style="color: #666666">=</span><span style="color: #19177C">:test</span>)
 <span style="background-color: #f0f0f0; padding: 0 5px 0 5px">2 </span>  (<span style="color: #666666">1..3</span>)<span style="color: #666666">.</span>times{<span style="color: #666666">|</span>i<span style="color: #666666">|</span> a<span style="color: #666666">.</span>include?(<span style="color: #19177C">:foo</span>)}
@@ -843,7 +843,7 @@ EOB
     @book.config["highlight"]["html"] = "rouge"
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal "<div class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<table class=\"highlight rouge-table\"><tbody><tr><td class=\"rouge-gutter gl\"><pre class=\"lineno\">1\n2\n3\n4\n5\n</pre></td><td class=\"rouge-code\"><pre><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n  <span class=\"k\">return</span> <span class=\"kp\">true</span>\n<span class=\"k\">end</span>\n\n</pre></td></tr></tbody></table>\n</div>\n", actual
+    assert_equal "<div id=\"samplelist\" class=\"code\">\n<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<table class=\"highlight rouge-table\"><tbody><tr><td class=\"rouge-gutter gl\"><pre class=\"lineno\">1\n2\n3\n4\n5\n</pre></td><td class=\"rouge-code\"><pre><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n  <span class=\"k\">return</span> <span class=\"kp\">true</span>\n<span class=\"k\">end</span>\n\n</pre></td></tr></tbody></table>\n</div>\n", actual
   end
 
   def test_listnum_rouge_lang_linenum
@@ -861,7 +861,7 @@ EOB
     actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     expected = <<-EOB
-<div class="code">
+<div id="samplelist" class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <table class="highlight rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">100
 101
@@ -1464,4 +1464,25 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_comment
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q||, actual
+  end
+
+  def test_comment_for_draft
+    @config["draft"] = true
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q|<div class="draft-comment">コメント</div>\n|, actual
+  end
+
+  def test_inline_comment
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test  test2|, actual
+  end
+
+  def test_inline_comment_for_draft
+    @config["draft"] = true
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test <span class="draft-comment">コメント</span> test2|, actual
+  end
 end

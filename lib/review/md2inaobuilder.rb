@@ -44,15 +44,6 @@ module ReVIEW
       puts '</dl>'
     end
 
-    def comment(lines, comment = nil)
-      lines ||= []
-      lines.unshift comment unless comment.blank?
-      str = lines.join("\n")
-      puts '<span class="red">'
-      puts str
-      puts '</span>'
-    end
-
     def compile_ruby(base, ruby)
       if base.length == 1
         %Q[<span class='monoruby'>#{escape_html(base)}(#{escape_html(ruby)})</span>]
