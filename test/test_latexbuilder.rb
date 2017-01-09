@@ -499,6 +499,23 @@ class LATEXBuidlerTest < Test::Unit::TestCase
                  actual
   end
 
+  def test_customize_cellwidth
+    actual = compile_block("//tsize[2,3,5]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(\\begin{reviewtable}{|p{2mm}|p{3mm}|p{5mm}|}\n\\hline\n\\reviewth{A} & B & C \\\\  \\hline\n\\end{reviewtable}\n), actual
+
+    actual = compile_block("//tsize[|latex,html|2,3,5]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(\\begin{reviewtable}{|p{2mm}|p{3mm}|p{5mm}|}\n\\hline\n\\reviewth{A} & B & C \\\\  \\hline\n\\end{reviewtable}\n), actual
+
+    actual = compile_block("//tsize[|html|2,3,5]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(\\begin{reviewtable}{|l|l|l|}\n\\hline\n\\reviewth{A} & B & C \\\\  \\hline\n\\end{reviewtable}\n), actual
+
+    actual = compile_block("//tsize[|latex|2,3,5]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(\\begin{reviewtable}{|p{2mm}|p{3mm}|p{5mm}|}\n\\hline\n\\reviewth{A} & B & C \\\\  \\hline\n\\end{reviewtable}\n), actual
+
+    actual = compile_block("//tsize[|latex||p{5mm}|cr|]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(\\begin{reviewtable}{|p{5mm}|cr|}\n\\hline\n\\reviewth{A} & B & C \\\\  \\hline\n\\end{reviewtable}\n), actual
+  end
+
   def test_imgtable
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1, 'sample img')
@@ -873,4 +890,25 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_comment
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q||, actual
+  end
+
+  def test_comment_for_draft
+    @config["draft"] = true
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q|\\pdfcomment{コメント}\n|, actual
+  end
+
+  def test_inline_comment
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test  test2|, actual
+  end
+
+  def test_inline_comment_for_draft
+    @config["draft"] = true
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test \\pdfcomment{コメント} test2|, actual
+  end
 end

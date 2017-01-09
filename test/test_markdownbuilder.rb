@@ -46,6 +46,17 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_inline_comment
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test  test2|, actual
+  end
+
+  def test_inline_comment_for_draft
+    @config["draft"] = true
+    actual = compile_inline("test @<comment>{コメント} test2")
+    assert_equal %Q|test <span class="red">コメント</span> test2|, actual
+  end
+
   def test_ul_nest1
     src =<<-EOS
   * AAA
@@ -62,7 +73,6 @@ EOS
     assert_equal "```shell-session\nlineA\nlineB\n```\n", actual
   end
 
-
   def test_dlist
     actual = compile_block(": foo\n  foo.\n  bar.\n")
     assert_equal %Q|<dl>\n<dt>foo</dt>\n<dd>foo.bar.</dd>\n</dl>\n|, actual
@@ -77,6 +87,17 @@ EOS
     source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
     actual = compile_block(source)
     assert_equal %Q|<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n|, actual
+  end
+
+  def test_comment
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q||, actual
+  end
+
+  def test_comment_for_draft
+    @config["draft"] = true
+    actual = compile_block("//comment[コメント]")
+    assert_equal %Q|<div class="red">コメント</div>\n|, actual
   end
 
   def test_list

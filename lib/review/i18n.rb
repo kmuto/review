@@ -160,7 +160,7 @@ module ReVIEW
       remove_args.reverse_each do |idx|
         args.delete_at idx
       end
-      args_matched = (frmt.count("%") == args.size)
+      args_matched = (frmt.count("%") <= args.size)
       frmt.gsub!('##', '%%')
       args_matched ? (frmt % args) : frmt
     rescue

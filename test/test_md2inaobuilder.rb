@@ -57,11 +57,6 @@ BBB
     EOS
   end
 
-  def test_comment
-    actual = compile_block("//comment{\nHello, world!\n//}\n")
-    assert_equal "<span class=\"red\">\nHello, world!\n</span>\n", actual
-  end
-
   def test_ruby_mono
     actual = compile_block("@<ruby>{謳,うた}い文句")
     assert_equal "　<span class='monoruby'>謳(うた)</span>い文句\n\n", actual

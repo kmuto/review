@@ -181,6 +181,23 @@ class I18nTest < Test::Unit::TestCase
     end
   end
 
+  def test_format_with_mismatched_number_of_arguments
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file = File.join(dir, "locale.yml")
+
+        File.open(file, "w"){|f| f.write %Q|locale: ja\nformat_number_header: "%2$d"| }
+        I18n.setup("ja")
+        assert_equal "10", I18n.t("format_number_header", [1, 10])
+
+        File.open(file, "w"){|f| f.write %Q|locale: ja\nformat_number_header: "%2$d-%1$d"| }
+        I18n.setup("ja")
+        # ERROR: returns raw format
+        assert_equal "%2$d-%1$d", I18n.t("format_number_header", [1])
+      end
+    end
+  end
+
   def test_ja
     I18n.setup("ja")
     assert_equal "図", I18n.t("image")

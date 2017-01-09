@@ -60,7 +60,7 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def layout_file
+    def layoutfile
       if @book.config.maker == "webmaker"
         htmldir = "web/html"
         localfilename = "layout-web.html.erb"
@@ -86,6 +86,7 @@ module ReVIEW
       else
         layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
       end
+      layout_file
     end
 
     def result
@@ -105,7 +106,7 @@ module ReVIEW
         @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
       end
 
-      tmpl = ReVIEW::Template.load(layout_file)
+      tmpl = ReVIEW::Template.load(layoutfile)
       tmpl.result(binding)
     end
 
@@ -278,10 +279,6 @@ module ReVIEW
       puts '</div>'
     end
 
-    def tsize(str)
-      # null
-    end
-
     def captionblock(type, lines, caption)
       puts %Q[<div class="#{type}">]
       unless caption.nil?
@@ -427,7 +424,7 @@ module ReVIEW
     alias_method :lead, :read
 
     def list(lines, id, caption, lang = nil)
-      puts %Q[<div class="caption-code">]
+      puts %Q[<div id="#{normalize_id(id)}" class="caption-code">]
       begin
         list_header id, caption, lang
       rescue KeyError
@@ -480,7 +477,7 @@ module ReVIEW
     end
 
     def listnum(lines, id, caption, lang = nil)
-      puts %Q[<div class="code">]
+      puts %Q[<div id="#{normalize_id(id)}" class="code">]
       begin
         list_header id, caption, lang
       rescue KeyError
@@ -762,10 +759,7 @@ module ReVIEW
       lines.unshift comment unless comment.blank?
       if @book.config["draft"]
         str = lines.join("<br />")
-        puts %Q(<div class="draft-comment">#{str}</div>)
-      else
-        str = lines.join("\n")
-        puts %Q(<!-- #{escape_comment(str)} -->)
+        puts %Q(<div class="draft-comment">#{escape_html(str)}</div>)
       end
     end
 
@@ -1165,7 +1159,7 @@ module ReVIEW
       if @book.config["draft"]
         %Q(<span class="draft-comment">#{escape_html(str)}</span>)
       else
-        %Q(<!-- #{escape_comment(escape_html(str))} -->)
+        ""
       end
     end
 

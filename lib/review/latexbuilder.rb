@@ -539,8 +539,12 @@ module ReVIEW
       if @latex_tsize
         puts macro('begin', 'reviewtable', @latex_tsize)
       elsif @tsize
-        cellwidth = @tsize.split(/\s*,\s*/)
-        puts macro('begin', 'reviewtable', '|'+cellwidth.collect{|i| "p{#{i}mm}"}.join('|')+'|')
+        if @tsize =~ /\A[\d., ]+\Z/
+          cellwidth = @tsize.split(/\s*,\s*/)
+          puts macro('begin', 'reviewtable', '|'+cellwidth.collect{|i| "p{#{i}mm}"}.join('|')+'|')
+        else
+          puts macro('begin', 'reviewtable', @tsize)
+        end
       else
         puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
       end
@@ -666,7 +670,7 @@ module ReVIEW
       lines ||= []
       lines.unshift comment unless comment.blank?
       if @book.config["draft"]
-        str = lines.join("")
+        str = lines.join('\par ')
         puts macro('pdfcomment', escape(str))
       end
     end
@@ -959,10 +963,6 @@ module ReVIEW
       else
         macro("ref", url)
       end
-    end
-
-    def tsize(str)
-      @tsize = str
     end
 
     def latextsize(str)
