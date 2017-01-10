@@ -65,11 +65,22 @@ module ReVIEW
         "chapref" => nil,       # for IDGXML
         "structuredxml" => nil, # for IDGXML
         "pt_to_mm_unit" => 0.3528, # for IDGXML (DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm)
+
         "footnotetext" => nil, # for LaTeX
         "texcommand" => "uplatex", # for LaTeX
         "texdocumentclass" => ["jsbook", "uplatex,oneside"], # for LaTeX
         "dvicommand" => "dvipdfmx", # for LaTeX
         "dvioptions" => "-d 5", # for LaTeX
+
+        "pdfmaker" => {
+          "makeindex" => nil, # Make index page
+          "makeindex_command" => "mendex", # works only when makeindex is true
+          "makeindex_options" => "-f -r -I utf8",
+          "makeindex_sty" => nil,
+          "makeindex_dic" => nil,
+          "makeindex_mecab" => true,
+          "makeindex_mecab_opts" => "-Oyomi",
+        },
       ]
       conf.maker = nil
       conf

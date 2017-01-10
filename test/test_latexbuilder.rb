@@ -207,7 +207,25 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_idx
     actual = compile_inline("@<idx>{__TEST%$}, @<hidx>{__TEST%$}")
-    assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$}, \\index{__TEST%$}|, actual
+    assert_equal %Q|\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}, \\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}|, actual
+  end
+
+  def test_inline_idx_yomi
+    begin
+      require 'MeCab'
+      require 'nkf'
+    rescue LoadError
+      $stderr.puts "skip test_inline_idx_yomi (cannot find MeCab)"
+      return true
+    end
+    tmpdir = Dir.mktmpdir
+    File.write("#{tmpdir}/sample.dic", "強運\tはーどらっく\n")
+    @book.config["pdfmaker"]["makeindex"] = true
+    @book.config["pdfmaker"]["makeindex_dic"] = "#{tmpdir}/sample.dic"
+    @builder.setup_index
+    actual = compile_inline("@<hidx>{漢字}@<hidx>{強運}@<hidx>{項目@1<<>>項目@2}")
+    FileUtils.remove_entry_secure(tmpdir)
+    assert_equal %Q|\\index{かんじ@漢字}\\index{はーどらっく@強運}\\index{こうもく"@1@項目"@1!こうもく"@2@項目"@2}|, actual
   end
 
   def test_jis_x_0201_kana

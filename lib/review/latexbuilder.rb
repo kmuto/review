@@ -39,9 +39,35 @@ module ReVIEW
       @ol_num = nil
       @first_line_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
+      setup_index
       initialize_metachars(@book.config["texcommand"])
     end
     private :builder_init_file
+
+    def setup_index
+      @index_db = {}
+      @index_mecab = nil
+      if @book.config["pdfmaker"]["makeindex"]
+        @index_db = load_idxdb(@book.config["pdfmaker"]["makeindex_dic"]) if @book.config["pdfmaker"]["makeindex_dic"]
+        if @book.config["pdfmaker"]["makeindex_mecab"]
+          begin
+            require 'MeCab'
+            require 'nkf'
+            @index_mecab = MeCab::Tagger.new(@book.config["pdfmaker"]["makeindex_mecab_opts"])
+          rescue LoadError
+          end
+        end
+      end
+    end
+
+    def load_idxdb(file)
+      table = {}
+      File.foreach(file) do |line|
+        key, value = *line.strip.split(/\t+/, 2)
+        table[key] = value
+      end
+      table
+    end
 
     def blank
       @blank_needed = true
@@ -900,21 +926,27 @@ module ReVIEW
     end
 
     def index(str)
-      str.sub!(/\(\)/, '')
-      decl = ''
-      if /@\z/ =~ str
-        str.chop!
-        decl = '|IndexDecl'
-      end
-      unless /[^ -~]/ =~ str
-        if /\^/ =~ str
-          macro('index', escape_index(str.gsub(/\^/, '')) + '@' + escape_index(text(str)) + decl)
+      sa = str.split('<<>>')
+
+      sa.map! do |item|
+        if @index_db[item]
+          item = escape_index(escape_latex(@index_db[item])) + "@" + escape_index(escape_latex(item))
         else
-          '\index{' + escape_index(text(str)) + decl + '}'
+          if item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
+            _item = escape_index(escape_latex(item))
+            if _item != item
+              "#{escape_index(item)}@#{_item}"
+            else
+              _item
+            end
+          else
+            yomi = NKF.nkf("-w --hiragana", @index_mecab.parse(item).force_encoding("UTF-8").chomp)
+            escape_index(escape_latex(yomi)) + "@" + escape_index(escape_latex(item))
+          end
         end
-      else
-        '\index{' + escape_index(@index_db[str]) + '@' + escape_index(text(str)) + '}'
       end
+
+      "\\index{#{sa.join('!')}}"
     end
 
     def compile_kw(word, alt)

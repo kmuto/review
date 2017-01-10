@@ -167,22 +167,50 @@ module ReVIEW
         ## do compile
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "command configuration is prohibited in safe mode. ignored."
+          texcommand = ReVIEW::Configure.values["texcommand"]
+          dvicommand = ReVIEW::Configure.values["dvicommand"]
+          dvioptions = ReVIEW::Configure.values["dvioptions"]
+          texoptions = ReVIEW::Configure.values["texoptions"]
+          makeindex_command = ReVIEW::Configure.values["pdfmaker"]["makeindex_command"]
+          makeindex_options = ReVIEW::Configure.values["pdfmaker"]["makeindex_options"]
+          makeindex_sty = ReVIEW::Configure.values["pdfmaker"]["makeindex_sty"]
+          makeindex_dic = ReVIEW::Configure.values["pdfmaker"]["makeindex_dic"]
         else
           texcommand = @config["texcommand"] if @config["texcommand"]
           dvicommand = @config["dvicommand"] if @config["dvicommand"]
           dvioptions = @config["dvioptions"] if @config["dvioptions"]
           texoptions = @config["texoptions"] if @config["texoptions"]
+          makeindex_command = @config["pdfmaker"]["makeindex_command"]
+          makeindex_options = @config["pdfmaker"]["makeindex_options"]
+          makeindex_sty = @config["pdfmaker"]["makeindex_sty"]
+          makeindex_dic = @config["pdfmaker"]["makeindex_dic"]
         end
-        3.times do
+
+        if makeindex_sty.present?
+          makeindex_sty = File.absolute_path(makeindex_sty, @basedir)
+          makeindex_options += " -s #{makeindex_sty}" if File.exist?(makeindex_sty)
+        end
+        if makeindex_dic.present?
+          makeindex_dic = File.absolute_path(makeindex_dic, @basedir)
+          makeindex_options += " -d #{makeindex_dic}" if File.exist?(makeindex_dic)
+        end
+        
+        2.times do
           system_or_raise("#{texcommand} #{texoptions} book.tex")
         end
+
+        call_hook("hook_beforemakeindex")
+        system_or_raise("#{makeindex_command} #{makeindex_options} book") if @config["pdfmaker"]["makeindex"] && File.exist?("book.idx")
+        call_hook("hook_aftermakeindex")
+
+        system_or_raise("#{texcommand} #{texoptions} book.tex")
         call_hook("hook_aftertexcompile")
 
         if File.exist?("book.dvi")
           system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
+          call_hook("hook_afterdvipdf")
         end
       end
-      call_hook("hook_afterdvipdf")
     end
 
     def generate_pdf(yamlfile)
