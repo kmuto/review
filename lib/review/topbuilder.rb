@@ -52,6 +52,7 @@ module ReVIEW
       @subsubsection = 0
       @subsubsubsection = 0
       @blank_seen = true
+      @sec_counter = SecCounter.new(5, @chapter)
 
       @titles = {
         "emlist" => "インラインリスト",
@@ -130,42 +131,8 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
-      prefix = ""
-      blank
-      case level
-      when 1
-        if @chapter.number.to_s =~ /\A\d+\Z/
-          prefix = "第#{@chapter.number}章　"
-        elsif @chapter.number.present?
-          prefix = "#{@chapter.number}　"
-        end
-        @section = 0
-        @subsection = 0
-        @subsubsection = 0
-        @subsubsubsection = 0
-      when 2
-        @section += 1
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}　" : ""
-        @subsection = 0
-        @subsubsection = 0
-        @subsubsubsection = 0
-      when 3
-        @subsection += 1
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}　" : ""
-        @subsubsection = 0
-        @subsubsubsection = 0
-      when 4
-        @subsubsection += 1
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}　" : ""
-        @subsubsubsection = 0
-      when 5
-        @subsubsubsection += 1
-        prefix = @chapter.number.present? ? "#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}　" : ""
-      else
-        raise "caption level too deep or unsupported: #{level}"
-      end
-      prefix = "" if (level.to_i > @book.config["secnolevel"])
-      puts "■H#{level}■#{prefix}#{compile_inline(caption)}"
+      prefix, anchor = headline_prefix(level)
+      puts %Q[■H#{level}■#{prefix}#{compile_inline(caption)}]
     end
 
     def ul_begin
