@@ -164,6 +164,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal "abc $\\alpha^n = inf < 2$ ghi", actual
   end
 
+  def test_inline_m2
+    ## target text: @<m>{X = \{ {x_1\},{x_2\}, \cdots ,{x_n\} \\\}}
+    actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
+    assert_equal ' $X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$ ', actual
+  end
+
   def test_inline_tt
     actual = compile_inline("test @<tt>{inline test} test2")
     assert_equal %Q|test \\texttt{inline test} test2|, actual
