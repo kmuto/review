@@ -167,6 +167,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_inline_m2
     ## target text: @<m>{X = \{ {x_1\},{x_2\}, \cdots ,{x_n\} \\\}}
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
+    ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
     assert_equal ' $X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$ ', actual
   end
 
