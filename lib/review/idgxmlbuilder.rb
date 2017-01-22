@@ -213,10 +213,6 @@ module ReVIEW
       puts "<ul#{level == 1 ? nil : level}>"
     end
 
-    def ul_item(lines)
-      puts %Q(<li aid:pstyle="ul-item">#{lines.join.chomp}</li>)
-    end
-
     def ul_item_begin(lines)
       print %Q(<li aid:pstyle="ul-item">#{lines.join.chomp})
     end
