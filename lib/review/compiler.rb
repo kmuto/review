@@ -524,7 +524,7 @@ module ReVIEW
       end
       result = @strategy.nofunc_text(words.shift)
       until words.empty?
-        result << compile_inline(words.shift.gsub(/\\\}/, '}'))
+        result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
         result << @strategy.nofunc_text(words.shift)
       end
       result
