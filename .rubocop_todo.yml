@@ -21,13 +21,6 @@ Lint/AssignmentInCondition:
     - 'lib/review/tocparser.rb'
     - 'lib/review/unfold.rb'
 
-# Offense count: 5
-Lint/HandleExceptions:
-  Exclude:
-    - 'Rakefile'
-    - 'lib/epubmaker/zip_exporter.rb'
-    - 'lib/review/latexbuilder.rb'
-
 # Offense count: 2
 Lint/LiteralInCondition:
   Exclude:
