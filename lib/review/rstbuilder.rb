@@ -116,7 +116,8 @@ module ReVIEW
 
       puts "#{caption}"
       puts p * caption.size * 2
-      blank    end
+      blank
+    end
 
     def ul_begin
       blank
@@ -245,7 +246,7 @@ module ReVIEW
 
     def listnum_body(lines, lang)
       lines.each_with_index do |line, i|
-        puts (i + 1).to_s.rjust(2) + ": #{line}"
+        puts(i + 1).to_s.rjust(2) + ": #{line}"
       end
       blank
     end
@@ -377,11 +378,13 @@ module ReVIEW
     end
 
     def inline_hint(str)
-      " :hint:`#{str}` "  # TODO: hint is not default directive
+      # TODO: hint is not default directive
+      " :hint:`#{str}` "
     end
 
     def inline_maru(str)
-      " :maru:`#{str}` "  # TODO: maru is not default directive
+      # TODO: maru is not default directive
+      " :maru:`#{str}` "
     end
 
     def inline_idx(str)
@@ -393,7 +396,8 @@ module ReVIEW
     end
 
     def inline_ami(str)
-      " :ami:`#{str}` "  # TODO: ami is not default directive
+      # TODO: ami is not default directive
+      " :ami:`#{str}` "
     end
 
     def inline_i(str)
@@ -424,11 +428,13 @@ module ReVIEW
     end
 
     def inline_bou(str)
-      " :bou:`#{str}` "  # TODO: bou is not default directive
+      # TODO: bou is not default directive
+      " :bou:`#{str}` "
     end
 
     def inline_keytop(str)
-      " :keytop:`#{str}` "  # TODO: keytop is not default directive
+      # TODO: keytop is not default directive
+      " :keytop:`#{str}` "
     end
 
     def inline_balloon(str)
@@ -466,7 +472,7 @@ module ReVIEW
     def nonum_end(level)
     end
 
-   def common_column_begin(type, caption)
+    def common_column_begin(type, caption)
       blank
       puts ".. column:: #{compile_inline(caption)}"
       blank
@@ -628,7 +634,7 @@ module ReVIEW
 
     alias_method :box, :insn
 
-    def indepimage(id, caption="", metric=nil)
+    def indepimage(id, caption = "", metric = nil)
       chapter, id = extract_chapter_id(id)
       puts ".. _#{id}:"
       blank
@@ -686,7 +692,8 @@ module ReVIEW
     end
 
     def inline_ttibold(str)
-      " **#{str}** "  # TODO
+      # TODO
+      " **#{str}** "
     end
 
     def inline_labelref(idref)
@@ -710,7 +717,8 @@ module ReVIEW
     end
 
     def bib_label(id)
-      " :cite:`#{id}` "  # using sphinxcontrib-bibtex
+      # using sphinxcontrib-bibtex
+      " :cite:`#{id}` "
     end
     private :bib_label
 
