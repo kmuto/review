@@ -274,9 +274,14 @@ module ReVIEW
 
     def image_image(id, caption, metric)
       chapter, id = extract_chapter_id(id)
+      if metric
+        scale = metric.split("=")[1].to_f * 100
+      end
+
       puts ".. _#{id}:"
       blank
       puts ".. figure:: images/#{chapter.name}/#{id}.#{image_ext}"
+      puts "   :scale:#{scale}%" if scale
       blank
       puts "   #{caption}"
       blank
@@ -374,16 +379,21 @@ module ReVIEW
     end
 
     def inline_raw(str)
-      %Q[#{super(str).gsub("\\n", "\n")}]
+      matched = str.match(/\|(.*?)\|(.*)/)
+      if matched
+        matched[2].gsub("\\n", "\n")
+      else
+        str.gsub("\\n", "\n")
+      end
     end
 
     def inline_hint(str)
-      # TODO: hint is not default directive
+      # TODO: hint is not default role
       " :hint:`#{str}` "
     end
 
     def inline_maru(str)
-      # TODO: maru is not default directive
+      # TODO: maru is not default role
       " :maru:`#{str}` "
     end
 
@@ -396,7 +406,7 @@ module ReVIEW
     end
 
     def inline_ami(str)
-      # TODO: ami is not default directive
+      # TODO: ami is not default role
       " :ami:`#{str}` "
     end
 
@@ -428,12 +438,12 @@ module ReVIEW
     end
 
     def inline_bou(str)
-      # TODO: bou is not default directive
+      # TODO: bou is not default role
       " :bou:`#{str}` "
     end
 
     def inline_keytop(str)
-      # TODO: keytop is not default directive
+      # TODO: keytop is not default role
       " :keytop:`#{str}` "
     end
 
@@ -447,7 +457,7 @@ module ReVIEW
 
     def inline_comment(str)
       if @book.config["draft"]
-        "◆→#{str}←◆"
+        "#{str}"
       else
         ""
       end
