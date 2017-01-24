@@ -97,21 +97,25 @@ module ReVIEW
     def headline(level, label, caption)
       blank
       if label
-        puts '.. ' + label
+        puts ".. _#{label}:"
         blank
       end
       p = "="
       case level
       when 1 then
+        unless label
+          puts ".. _#{@chapter.name}:"
+          blank
+        end
         puts "=" * caption.size * 2
       when 2 then
-        p = '='
+        p = "="
       when 3 then
-        p = '-'
+        p = "-"
       when 4 then
-        p = '`'
+        p = "`"
       when 5 then
-        p = '~'
+        p = "~"
       end
 
       puts "#{caption}"
@@ -274,9 +278,14 @@ module ReVIEW
 
     def image_image(id, caption, metric)
       chapter, id = extract_chapter_id(id)
+      if metric
+        scale = metric.split("=")[1].to_f * 100
+      end
+
       puts ".. _#{id}:"
       blank
       puts ".. figure:: images/#{chapter.name}/#{id}.#{image_ext}"
+      puts "   :scale:#{scale}%" if scale
       blank
       puts "   #{caption}"
       blank
@@ -374,16 +383,21 @@ module ReVIEW
     end
 
     def inline_raw(str)
-      %Q[#{super(str).gsub("\\n", "\n")}]
+      matched = str.match(/\|(.*?)\|(.*)/)
+      if matched
+        matched[2].gsub("\\n", "\n")
+      else
+        str.gsub("\\n", "\n")
+      end
     end
 
     def inline_hint(str)
-      # TODO: hint is not default directive
+      # TODO: hint is not default role
       " :hint:`#{str}` "
     end
 
     def inline_maru(str)
-      # TODO: maru is not default directive
+      # TODO: maru is not default role
       " :maru:`#{str}` "
     end
 
@@ -396,7 +410,7 @@ module ReVIEW
     end
 
     def inline_ami(str)
-      # TODO: ami is not default directive
+      # TODO: ami is not default role
       " :ami:`#{str}` "
     end
 
@@ -428,12 +442,12 @@ module ReVIEW
     end
 
     def inline_bou(str)
-      # TODO: bou is not default directive
+      # TODO: bou is not default role
       " :bou:`#{str}` "
     end
 
     def inline_keytop(str)
-      # TODO: keytop is not default directive
+      # TODO: keytop is not default role
       " :keytop:`#{str}` "
     end
 
@@ -447,7 +461,7 @@ module ReVIEW
 
     def inline_comment(str)
       if @book.config["draft"]
-        "◆→#{str}←◆"
+        "#{str}"
       else
         ""
       end
@@ -458,7 +472,7 @@ module ReVIEW
     end
 
     def inline_hd_chap(chap, id)
-      " :ref:`#{id}<chap>` "
+      " :ref:`#{id}` "
     end
 
     def noindent
@@ -467,6 +481,7 @@ module ReVIEW
 
     def nonum_begin(level, label, caption)
       puts ".. rubric: #{compile_inline(caption)}"
+      blank
     end
 
     def nonum_end(level)
@@ -717,18 +732,15 @@ module ReVIEW
     end
 
     def bib_label(id)
-      # using sphinxcontrib-bibtex
-      " :cite:`#{id}` "
+      " [#{id}]_ "
     end
     private :bib_label
 
     def bibpaper_header(id, caption)
-      puts ".. [##{id}] #{compile_inline(caption)}"
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      print split_paragraph(lines).join("")
-      puts ""
+      puts ".. [#{id}] #{compile_inline(caption)} #{split_paragraph(lines).join("")}"
     end
 
     def inline_warn(str)
