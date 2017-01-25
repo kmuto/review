@@ -890,5 +890,4 @@ Style/WhileUntilModifier:
 # Configuration parameters: SupportedStyles, WordRegex.
 # SupportedStyles: percent, brackets
 Style/WordArray:
-  EnforcedStyle: percent
   MinSize: 10
