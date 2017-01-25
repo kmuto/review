@@ -130,6 +130,11 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 28
 
+# Offense count: 62
+# Cop supports --auto-correct.
+Performance/RegexpMatch:
+  Enabled: false
+
 # Offense count: 4
 # Cop supports --auto-correct.
 Security/YAMLLoad:
