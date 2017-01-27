@@ -758,6 +758,8 @@ Note: `//raw` and `@<raw>` may break structured document easily.
 @<icon>{samplephoto}:: inline image
 @<m>{a + \alpha}:: TeX inline equation
 @<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
+@<idx>{string}:: output a string and register it as an index. See makeindex.md.
+@<hidx>{string}:: register a string as an index. A leveled index is expressed like `parent<<>>child`
 ```
 
 ## Commands for Authors (pre-processor commands)
