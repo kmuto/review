@@ -322,7 +322,7 @@ module ReVIEW
           err = stderr.readlines
         end
       }
-      if err and not err.empty?
+      if err and !err.empty?
         $stderr.puts "[unexpected stderr message]"
         err.each do |line|
           $stderr.print line

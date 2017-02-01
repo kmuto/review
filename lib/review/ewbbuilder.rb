@@ -91,7 +91,7 @@ module ReVIEW
     end
 
     def image_header(file, caption)
-      if /\.png\z/ =~ file and not FileTest.exist?('images/' + file)
+      if /\.png\z/ =~ file and !FileTest.exist?('images/' + file)
         warn "image file not exist: #{file}"
       end
       id = file.sub(/\.\w+\z/, '')

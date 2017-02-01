@@ -11,7 +11,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def setup
     @builder = LATEXBuilder.new()
     @config = ReVIEW::Configure.values
-    @config.merge!( {
+    @config.merge!({
       "secnolevel" => 2, # for IDGXMLBuilder, EPUBBuilder
       "toclevel" => 2,
       "stylesheet" => nil, # for EPUBBuilder

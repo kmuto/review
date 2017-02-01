@@ -85,8 +85,8 @@ class PDFMakerTest < Test::Unit::TestCase
 
   def test_make_authors
     @config.merge!({"aut"=>["テスト太郎","テスト次郎"],
-            "csl"=>["監修三郎"],
-            "trl"=>["翻訳四郎","翻訳五郎",]})
+                    "csl"=>["監修三郎"],
+                    "trl"=>["翻訳四郎","翻訳五郎",]})
     Dir.mktmpdir do |dir|
       authors = @maker.make_authors
       assert_equal("テスト太郎、テスト次郎　著 \\\\\n監修三郎　監修 \\\\\n翻訳四郎、翻訳五郎　訳",

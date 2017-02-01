@@ -650,14 +650,14 @@ end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][ruby]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     expected = "<div id=\"samplelist\" class=\"caption-code\">\n" +
-	           "<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n" +
-	           "<pre class=\"list language-ruby highlight\"><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n" +
-	           "  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n" +
-	           "  <span class=\"k\">return</span> <span class=\"kp\">true</span>\n" +
-	           "<span class=\"k\">end</span>\n" +
-	           "\n" +
-	           "</pre>\n" +
-	           "</div>\n"
+             "<p class=\"caption\">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n" +
+             "<pre class=\"list language-ruby highlight\"><span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">a1</span><span class=\"p\">,</span> <span class=\"n\">a2</span><span class=\"o\">=</span><span class=\"ss\">:test</span><span class=\"p\">)</span>\n" +
+             "  <span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">.</span><span class=\"nf\">.</span><span class=\"mi\">3</span><span class=\"p\">).</span><span class=\"nf\">times</span><span class=\"p\">{</span><span class=\"o\">|</span><span class=\"n\">i</span><span class=\"o\">|</span> <span class=\"n\">a</span><span class=\"p\">.</span><span class=\"nf\">include?</span><span class=\"p\">(</span><span class=\"ss\">:foo</span><span class=\"p\">)}</span>\n" +
+             "  <span class=\"k\">return</span> <span class=\"kp\">true</span>\n" +
+             "<span class=\"k\">end</span>\n" +
+             "\n" +
+             "</pre>\n" +
+             "</div>\n"
 
     assert_equal expected, actual
   end

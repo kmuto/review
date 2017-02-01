@@ -7,13 +7,21 @@ class TextUtilsTest < Test::Unit::TestCase
   def setup
     @tu_nil = Object.new
     @tu_nil.extend ReVIEW::TextUtils
-    def @tu_nil.pre_paragraph;nil;end
-    def @tu_nil.post_paragraph;nil;end
+    def @tu_nil.pre_paragraph
+      nil
+    end
+    def @tu_nil.post_paragraph
+      nil
+    end
 
     @tu_p = Object.new
     @tu_p.extend ReVIEW::TextUtils
-    def @tu_p.pre_paragraph;'<p>';end
-    def @tu_p.post_paragraph;'</p>';end
+    def @tu_p.pre_paragraph
+      '<p>'
+    end
+    def @tu_p.post_paragraph
+      '</p>'
+    end
   end
 
   def test_detab

@@ -163,7 +163,7 @@ module ReVIEW
         end
         @section += 1
         print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
-      
+
         @subsection = 0
         @subsubsection = 0
         @subsubsubsection = 0
@@ -531,7 +531,7 @@ module ReVIEW
           if cellwidth.size < col
             cw = (tablewidth - totallength) / (col - cellwidth.size)
             warn "auto cell sizing exceeds limit for table: #{id}" if cw <= 0
-            for i in cellwidth.size..(col - 1)
+            (cellwidth.size..(col - 1)).each do |i|
               cellwidth[i] = cw
             end
           end
@@ -1096,14 +1096,13 @@ module ReVIEW
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless @book.config["chapref"].nil?
+      if @book.config["chapref"]
         _chs = @book.config["chapref"].split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
           chs = _chs
         end
-      else
       end
       s = "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
       if @book.config["chapterlink"]

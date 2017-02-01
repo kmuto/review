@@ -194,7 +194,7 @@ module ReVIEW
           makeindex_dic = File.absolute_path(makeindex_dic, @basedir)
           makeindex_options += " -d #{makeindex_dic}" if File.exist?(makeindex_dic)
         end
-        
+
         2.times do
           system_or_raise("#{texcommand} #{texoptions} book.tex")
         end

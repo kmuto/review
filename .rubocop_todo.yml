@@ -122,9 +122,7 @@ Style/AccessorMethodName:
 # SupportedColonStyles: key, separator, table
 # SupportedLastArgumentHashStyles: always_inspect, always_ignore, ignore_implicit, ignore_explicit
 Style/AlignHash:
-  Exclude:
-    - 'test/test_extentions_hash.rb'
-    - 'test/test_pdfmaker.rb'
+  Enabled: true
 
 # Offense count: 40
 # Cop supports --auto-correct.
@@ -298,8 +296,7 @@ Style/EmptyLinesAroundClassBody:
 # Offense count: 3
 # Cop supports --auto-correct.
 Style/EmptyLinesAroundMethodBody:
-  Exclude:
-    - 'lib/review/topbuilder.rb'
+  Enabled: true
 
 # Offense count: 96
 # Cop supports --auto-correct.
@@ -328,8 +325,7 @@ Style/ExtraSpacing:
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: for, each
 Style/For:
-  Exclude:
-    - 'lib/review/idgxmlbuilder.rb'
+  Enabled: true
 
 # Offense count: 36
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -402,8 +398,7 @@ Style/IndentationWidth:
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/InfiniteLoop:
-  Exclude:
-    - 'bin/review-catalog-converter'
+  Enabled: false
 
 # Offense count: 28
 # Cop supports --auto-correct.
@@ -465,9 +460,7 @@ Style/Next:
 # Offense count: 7
 # Cop supports --auto-correct.
 Style/Not:
-  Exclude:
-    - 'lib/review/ewbbuilder.rb'
-    - 'lib/review/preprocessor.rb'
+  Enabled: true
 
 # Offense count: 2
 # Cop supports --auto-correct.
@@ -496,11 +489,7 @@ Style/PerlBackrefs:
 # Offense count: 9
 # Cop supports --auto-correct.
 Style/RedundantBegin:
-  Exclude:
-    - 'lib/review/compiler.rb'
-    - 'lib/review/htmlbuilder.rb'
-    - 'lib/review/idgxmlbuilder.rb'
-    - 'lib/review/topbuilder.rb'
+  Enabled: false
 
 # Offense count: 56
 # Cop supports --auto-correct.
@@ -534,8 +523,7 @@ Style/Semicolon:
 # Cop supports --auto-correct.
 # Configuration parameters: AllowIfMethodIsEmpty.
 Style/SingleLineMethods:
-  Exclude:
-    - 'test/test_textutils.rb'
+  Enabled: true
 
 # Offense count: 368
 # Cop supports --auto-correct.
@@ -545,15 +533,12 @@ Style/SpaceAfterComma:
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/SpaceAfterNot:
-  Exclude:
-    - 'test/test_epubmaker_cmd.rb'
-    - 'test/test_pdfmaker_cmd.rb'
+  Enabled: true
 
 # Offense count: 16
 # Cop supports --auto-correct.
 Style/SpaceAfterSemicolon:
-  Exclude:
-    - 'test/test_textutils.rb'
+  Enabled: true
 
 # Offense count: 78
 # Cop supports --auto-correct.
@@ -578,8 +563,7 @@ Style/SpaceBeforeBlockBraces:
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/SpaceBeforeComma:
-  Exclude:
-    - 'lib/review/latexbuilder.rb'
+  Enabled: true
 
 # Offense count: 774
 # Cop supports --auto-correct.
@@ -600,14 +584,12 @@ Style/SpaceInsideHashLiteralBraces:
 # Offense count: 2
 # Cop supports --auto-correct.
 Style/SpaceInsideParens:
-  Exclude:
-    - 'test/test_latexbuilder.rb'
+  Enabled: true
 
 # Offense count: 2
 # Cop supports --auto-correct.
 Style/SpaceInsideRangeLiteral:
-  Exclude:
-    - 'lib/review/sec_counter.rb'
+  Enabled: true
 
 # Offense count: 30
 # Cop supports --auto-correct.
@@ -640,8 +622,7 @@ Style/SymbolProc:
 # Offense count: 16
 # Cop supports --auto-correct.
 Style/Tab:
-  Exclude:
-    - 'test/test_htmlbuilder.rb'
+  Enabled: true
 
 # Offense count: 32
 # Cop supports --auto-correct.
@@ -660,10 +641,7 @@ Style/TrailingCommaInLiteral:
 # Offense count: 7
 # Cop supports --auto-correct.
 Style/TrailingWhitespace:
-  Exclude:
-    - 'lib/review/idgxmlbuilder.rb'
-    - 'lib/review/pdfmaker.rb'
-    - 'test/test_converter.rb'
+  Enabled: true
 
 # Offense count: 7
 # Cop supports --auto-correct.
@@ -676,9 +654,7 @@ Style/TrivialAccessors:
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/UnlessElse:
-  Exclude:
-    - 'lib/review/idgxmlbuilder.rb'
-    - 'lib/review/topbuilder.rb'
+  Enabled: true
 
 # Offense count: 770
 # Cop supports --auto-correct.
