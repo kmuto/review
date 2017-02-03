@@ -199,7 +199,6 @@ module ReVIEW
       else
         %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), @chapter.list(id).number])}]
       end
-
     end
 
     def list_header(id, caption, lang)
@@ -719,14 +718,13 @@ module ReVIEW
 
     def inline_chapref(id)
       chs = ["", "「", "」"]
-      unless @book.config["chapref"].nil?
+      if @book.config["chapref"]
         _chs = @book.config["chapref"].split(",")
         if _chs.size != 3
           error "--chapsplitter must have exactly 3 parameters with comma."
         else
           chs = _chs
         end
-      else
       end
       "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
     rescue KeyError

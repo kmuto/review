@@ -349,9 +349,9 @@ module ReVIEW
       lines.each_with_index do |line, idx|
         body.concat(yield(line, idx))
       end
-      puts macro('begin' ,command)
+      puts macro('begin',command)
       print body
-      puts macro('end' ,command)
+      puts macro('end',command)
       blank
     end
 

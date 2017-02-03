@@ -31,7 +31,8 @@ Performance/RangeInclude:
 
 # Use alias_method instead of alias.
 Style/Alias:
-  Enabled: false
+  EnforcedStyle: prefer_alias_method
+  Enabled: true
 
 # Do not introduce global variables.
 Style/GlobalVars:
@@ -65,16 +66,19 @@ Style/ZeroLengthPredicate:
   Enabled: false
 
 Style/NumericPredicate:
-  Enabled: false
+  EnforcedStyle: comparison
+  Enabled: true
 
 Style/TernaryParentheses:
   Enabled: false
 
 Style/VariableNumber:
-  Enabled: false
+  EnforcedStyle: normalcase
+  Enabled: true
 
 Style/FrozenStringLiteralComment:
-  Enabled: false
+  EnforcedStyle: never
+  Enabled: true
 
 MultilineMethodCallBraceLayout:
   Enabled: false
@@ -83,13 +87,30 @@ Style/SafeNavigation:
   Enabled: false
 
 Style/EmptyMethod:
-  Enabled: false
+  EnforcedStyle: expanded
+  Enabled: true
 
 Style/HashSyntax:
   Enabled: false
 
 Style/RescueModifier:
   Enabled: false
+
+Style/AccessModifierIndentation:
+  EnforcedStyle: indent
+  Enabled: true
+
+Style/ClassAndModuleChildren:
+  EnforcedStyle: nested
+  Enabled: true
+
+Style/SpaceAroundBlockParameters:
+  EnforcedStyleInsidePipes: no_space
+  Enabled: true
+
+Style/SpaceInsideStringInterpolation:
+  EnforcedStyle: no_space
+  Enabled: true
 
 ##################### Metrics ##################################
 

@@ -28,7 +28,7 @@ module ReVIEW
         @counter[n] += 1
       end
       if @counter.size > n
-        (n+1 .. @counter.size).each do |i|
+        (n+1..@counter.size).each do |i|
           @counter[i] = 0
         end
       end

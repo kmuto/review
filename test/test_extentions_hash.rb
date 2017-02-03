@@ -20,7 +20,7 @@ class TestExtentionsHash < Test::Unit::TestCase
                   :c => {:ca => 1}},
                  {:a => {:aa => 1, :ab => 2},
                   :b => {:ba => 3, :bb => 4}}.deep_merge({:b => {:ba => 5, :bc => 6},
-                                                  :c => {:ca => 1}}))
+                                                          :c => {:ca => 1}}))
   end
   def test_deep_merge_with_array
     assert_equal({:a => "string", :b => ["BA"],

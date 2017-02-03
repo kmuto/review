@@ -17,5 +17,5 @@ class ConverterTest < Test::Unit::TestCase
       assert_equal "latex", @book.config["builder"]
     end
   end
-  
+
 end
