@@ -18,14 +18,7 @@ Lint/AssignmentInCondition:
 Lint/DefEndAlignment:
   Enabled: true
 
-# Offense count: 10
-Lint/HandleExceptions:
-  Exclude:
-    - 'Rakefile'
-    - 'lib/epubmaker/zip_exporter.rb'
-    - 'lib/review/latexbuilder.rb'
-
-# Offense count: 4
+# Offense count: 2
 Lint/LiteralInCondition:
   Exclude:
     - 'bin/review-catalog-converter'

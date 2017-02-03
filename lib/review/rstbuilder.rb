@@ -13,6 +13,13 @@ require 'review/textutils'
 
 module ReVIEW
 
+  #
+  # RSTBuilder is a builder for reStructuredText (http://docutils.sourceforge.net/rst.html).
+  # reStructuredText is used in Sphinx (http://www.sphinx-doc.org/).
+  #
+  # If you want to use `ruby`, `del` and `column`, you sould use sphinxcontrib-textstyle
+  # package (https://pypi.python.org/pypi/sphinxcontrib-textstyle).
+  #
   class RSTBuilder < Builder
 
     include TextUtils

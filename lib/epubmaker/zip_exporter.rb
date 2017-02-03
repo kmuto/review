@@ -13,6 +13,7 @@ begin
   require 'zip'
 rescue LoadError
   ## I cannot find rubyzip library, so I use external zip command.
+  warn "rubyzip not found, so use external zip command"
 end
 
 module EPUBMaker

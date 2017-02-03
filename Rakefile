@@ -3,6 +3,7 @@ begin
   Bundler::GemHelper.install_tasks
 rescue LoadError
   # ignore if bundler does not exist
+  warn "Bundler not found"
 end
 
 require 'rubygems'
@@ -10,6 +11,7 @@ require 'rake/clean'
 
 task :default => [:test, :rubocop]
 
+desc "Check with rubocop"
 task :rubocop do
   begin
     require 'rubocop/rake_task'
@@ -33,6 +35,7 @@ begin
     t.verbose = true
   end
 rescue LoadError
+  warn "rcov not found"
 end
 
 begin
@@ -45,4 +48,5 @@ begin
     rdoc.rdoc_files.include('lib/**/*.rb')
   end
 rescue LoadError
+  warn "rdoc not found"
 end
