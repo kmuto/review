@@ -270,6 +270,10 @@
   \mbox{} \vskip5zw
    \reviewtitlefont%
     {\Huge <%= escape_latex(@config.name_of("booktitle")) %> \par}%
+<%- if @config["subtitle"] -%>
+    \vskip 1em%
+    {\Large <%= escape_latex(@config.name_of("subtitle")) %> \par}%
+<%- end -%>
     \vskip 15em%
     {\huge
       \lineskip .75em
@@ -346,6 +350,9 @@
 \vspace*{\fill}
 
 {\noindent\reviewtitlefont\Large <%= escape_latex(@config.name_of("booktitle")) %>} \\
+<%- if @config["subtitle"] -%>
+{\noindent\reviewtitlefont\large <%= escape_latex(@config.name_of("subtitle")) %>} \\
+<%- end -%>
 \rule[8pt]{14cm}{1pt} \\
 {\noindent
 <%= @config["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>
