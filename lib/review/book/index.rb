@@ -58,7 +58,7 @@ module ReVIEW
         @index.fetch(id)
       rescue
         if @index.keys.map{|i| i.split(/\|/).last }.flatten. # unfold all ids
-           reduce(Hash.new(0)){|h, i| h[i] += 1; h}. # number of occurrences
+           each_with_object(Hash.new(0)){|i, h| h[i] += 1}. # number of occurrences
            select{|k, v| k == id && v > 1 }.present? # detect duplicated
           raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
         end

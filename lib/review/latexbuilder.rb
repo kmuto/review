@@ -934,11 +934,11 @@ module ReVIEW
           item = escape_index(escape_latex(@index_db[item])) + "@" + escape_index(escape_latex(item))
         else
           if item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
-            _item = escape_index(escape_latex(item))
-            if _item != item
-              "#{escape_index(item)}@#{_item}"
+            esc_item = escape_index(escape_latex(item))
+            if esc_item != item
+              "#{escape_index(item)}@#{esc_item}"
             else
-              _item
+              esc_item
             end
           else
             yomi = NKF.nkf("-w --hiragana", @index_mecab.parse(item).force_encoding("UTF-8").chomp)

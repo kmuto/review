@@ -39,9 +39,9 @@ module ReVIEW
       while line = f.gets
         case line
         when /\A\#@/
-          ;
+          # do nothing
         when /\A\s*\z/
-          ;
+          # do nothing
         when /\A(={2,})[\[\s\{]/
           lev = $1.size
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
@@ -81,7 +81,7 @@ module ReVIEW
           error! filename, beg, 'unterminated list' unless line
 
         when %r<\A//\w>
-          ;
+          # do nothing
         else
           #if node_stack.empty?
           #  error! filename, f.lineno, 'text found before section label'

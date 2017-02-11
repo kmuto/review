@@ -144,6 +144,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     actual = compile_inline("test @<b>{inline<&;\\ test} test2")
     assert_equal %Q|test \\textbf{inline\\textless{}\\&;\\reviewbackslash{} test} test2|, actual
   end
+
   def test_inline_em
     actual = compile_inline("abc@<em>{def}")
     assert_equal %Q|abc\\reviewem{def}|, actual

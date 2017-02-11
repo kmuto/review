@@ -18,9 +18,9 @@ ARGF.each {|line|
   ln += 1
   if line =~ /\A\/\/([a-z]+)\{\s*\Z/ || line =~ /\A\/\/([a-z]+)\[.+?\{\s*\Z/
     # block
-    _block = $1
-    puts "#{ln}: block #{_block} started, but previous block #{block} didn't close yet." unless block.nil?
-    block = _block
+    new_block = $1
+    puts "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet." unless block.nil?
+    block = new_block
   elsif line =~ /\A\/\/\}/
     puts "#{ln}: block ended, but not opened." if block.nil?
     block = nil

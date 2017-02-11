@@ -25,6 +25,7 @@ module ReVIEW
     def pre_paragraph
       nil
     end
+
     def post_paragraph
       nil
     end

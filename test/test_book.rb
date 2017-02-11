@@ -506,7 +506,6 @@ EOC
     end
 
     mktmpbookdir 'preface.re' => '12345' do |dir, book, files|
-
       Dir.chdir(dir) do
         book2 = Book::Base.new('.')
         assert book2.volume

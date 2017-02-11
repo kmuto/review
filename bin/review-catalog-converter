@@ -38,7 +38,7 @@ def main
 
   # confirmation
   if File.exist?("#{dir}/catalog.yml")
-    while true
+    loop do
       print "The catalog.yml already exists. Do you want to overwrite it? [y/n]"
       case gets
       when /^[yY]/
@@ -68,7 +68,7 @@ def main
     # postdef
     if File.exist?("#{dir}/POSTDEF")
       postdef = File.open("#{dir}/POSTDEF").read
-      while true
+      loop do
         print "Do you want to convert POSTDEF into APPENDIX? [y/n]"
         case gets
         when /^[yY]/

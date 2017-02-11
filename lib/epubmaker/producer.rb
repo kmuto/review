@@ -170,16 +170,16 @@ module EPUBMaker
       current = Dir.pwd
       basedir = current if basedir.nil?
 
-      _tmpdir = tmpdir.nil? ? Dir.mktmpdir : tmpdir
+      new_tmpdir = tmpdir.nil? ? Dir.mktmpdir : tmpdir
       epubfile = "#{current}/#{epubfile}" if epubfile !~ /\A\// # /
 
       # FIXME: error check
       File.unlink(epubfile) if File.exist?(epubfile)
 
       begin
-        @epub.produce(epubfile, basedir, _tmpdir)
+        @epub.produce(epubfile, basedir, new_tmpdir)
       ensure
-        FileUtils.rm_r(_tmpdir) if tmpdir.nil?
+        FileUtils.rm_r(new_tmpdir) if tmpdir.nil?
       end
     end
 
