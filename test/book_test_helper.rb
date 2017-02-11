@@ -25,14 +25,13 @@ module BookTestHelper
   end
 
   def get_instance_variables(obj)
-    obj.instance_variables.inject({}) do |memo, name|
+    obj.instance_variables.each_with_object({}) do |name, memo|
       value = obj.instance_variable_get(name)
       if value.instance_variables.empty?
         memo[name] = value
       else
         memo[name] = get_instance_variables(value)
       end
-      memo
     end
   end
 end

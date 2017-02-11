@@ -27,11 +27,11 @@ module ReVIEW
       puts
     end
 
-#     Compiler.defsyntax(:emlist, :block, 0..1) {|args|
-#       if args[0] and not args[0] == 'noescape'
-#         raise SyntaxError, "unknown //emlist option: #{args[0]}"
-#       end
-#     }
+    # Compiler.defsyntax(:emlist, :block, 0..1) {|args|
+    #   if args[0] and not args[0] == 'noescape'
+    #     raise SyntaxError, "unknown //emlist option: #{args[0]}"
+    #   end
+    # }
 
     def emlist(lines, caption = nil)
       # firstline = f.lineno
@@ -49,11 +49,11 @@ module ReVIEW
       puts
     end
 
-#     Compiler.defsyntax(:cmd, :block, 0..1) {|args|
-#       if args[0] and not args[0] == 'noescape'
-#         raise SyntaxError, "unknown //cmd option: #{args[0]}"
-#       end
-#     }
+    # Compiler.defsyntax(:cmd, :block, 0..1) {|args|
+    #   if args[0] and not args[0] == 'noescape'
+    #     raise SyntaxError, "unknown //cmd option: #{args[0]}"
+    #   end
+    # }
 
     def cmd(lines, caption = nil)
       puts
@@ -73,11 +73,11 @@ module ReVIEW
       puts
     end
 
-#     Compiler.defsyntax(:list, :block, 0..1) {|args|
-#       if args[0] and not args[0] == 'noescape'
-#         raise SyntaxError, "unknown //list option: #{args[0]}"
-#       end
-#     }
+    # Compiler.defsyntax(:list, :block, 0..1) {|args|
+    #   if args[0] and not args[0] == 'noescape'
+    #     raise SyntaxError, "unknown //list option: #{args[0]}"
+    #   end
+    # }
 
     def list(lines, id, caption)
       puts

@@ -760,13 +760,6 @@ EOT
     assert_equal nil, @producer.isbn_hyphen
   end
 
-#  def test_duplicate_id
-#    stage3
-#    assert_raise(Error) do
-#      @producer.contents << Content.new({"file" => "ch02.html#S1", "title" => "CH02.1", "level" => 2})
-#    end
-#  end
-
   def test_title
     @producer.params["aut"] = ["Mr.Smith"]
     @producer.params["pbl"] = ["BLUEPRINT"]

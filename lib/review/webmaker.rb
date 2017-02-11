@@ -120,7 +120,6 @@ module ReVIEW
         part.chapters.each do |chap|
           build_chap(chap, base_path, basetmpdir, false)
         end
-
       end
     end
 

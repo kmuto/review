@@ -252,7 +252,6 @@ module ReVIEW
       part.chapters.each do |chap|
         build_chap(chap, base_path, basetmpdir, false)
       end
-
     end
     check_compile_status()
   end

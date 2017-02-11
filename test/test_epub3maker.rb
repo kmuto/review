@@ -615,13 +615,6 @@ EOT
   end
 
 
-#  def test_duplicate_id
-#    stage3
-#    assert_raise(Error) do
-#      @producer.contents << Content.new({"file" => "ch02.html#S1", "title" => "CH02.1", "level" => 2})
-#    end
-#  end
-
   def test_detect_mathml
     Dir.mktmpdir do |dir|
       epubmaker = ReVIEW::EPUBMaker.new

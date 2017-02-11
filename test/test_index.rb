@@ -13,6 +13,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal 'foo', item.id
     assert_equal 'bar', item.content
   end
+
   def test_footnote_index_with_escape
     fn = Book::FootnoteIndex.parse(['//footnote[foo][bar[\]buz]'])
     items = fn.to_a
@@ -20,6 +21,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal 'foo', item.id
     assert_equal 'bar[]buz', item.content
   end
+
   def test_footnote_index_with_escape2
     fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
     items = fn.to_a

@@ -134,7 +134,7 @@ def each_paragraph(f)
     when /\A\#@ok\((.*)\)/
       @review_utils_word_ok = $1
     when /\A\#@/
-      ;
+      # do nothing
     when %r[\A//caption\{(.*?)//\}]
       yield [$1], f.filename, f.lineno
     when %r<\A//\w.*\{\s*\z>

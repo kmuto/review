@@ -32,6 +32,7 @@ module ReVIEW
     def pre_paragraph
       '<p>'
     end
+
     def post_paragraph
       '</p>'
     end
@@ -245,7 +246,7 @@ module ReVIEW
           puts %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{compile_inline(caption)}</h#{level}>]
         end
       end
-#      headline(level, label, caption)
+      # headline(level, label, caption)
     end
 
     def column_end(level)

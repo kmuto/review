@@ -20,8 +20,7 @@ Lint/DefEndAlignment:
 
 # Offense count: 2
 Lint/LiteralInCondition:
-  Exclude:
-    - 'bin/review-catalog-converter'
+  Enabled: true
 
 # Offense count: 168
 Lint/NestedMethodDefinition:
@@ -30,17 +29,12 @@ Lint/NestedMethodDefinition:
 
 # Offense count: 7
 Lint/ParenthesesAsGroupedExpression:
-  Exclude:
-    - 'lib/review/markdownbuilder.rb'
-    - 'lib/review/topbuilder.rb'
+  Enabled: false
 
 # Offense count: 14
 Lint/UnderscorePrefixedVariableName:
   Exclude:
-    - 'bin/review-validate'
-    - 'lib/epubmaker/producer.rb'
     - 'lib/review/idgxmlbuilder.rb'
-    - 'lib/review/latexbuilder.rb'
     - 'lib/review/topbuilder.rb'
 
 # Offense count: 170
@@ -199,11 +193,7 @@ Style/CommentAnnotation:
 # Offense count: 12
 # Cop supports --auto-correct.
 Style/CommentIndentation:
-  Exclude:
-    - 'lib/review/ewbbuilder.rb'
-    - 'lib/review/htmlbuilder.rb'
-    - 'test/test_epub3maker.rb'
-    - 'test/test_epubmaker.rb'
+  Enabled: true
 
 # Offense count: 183
 Style/Documentation:
@@ -214,39 +204,26 @@ Style/Documentation:
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: leading, trailing
 Style/DotPosition:
-  Exclude:
-    - 'lib/review/book/index.rb'
-    - 'lib/review/epubmaker.rb'
-    - 'test/test_extentions_hash.rb'
+  EnforcedStyle: trailing
+  Enabled: true
 
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/EachWithObject:
-  Enabled: false
+  Enabled: true
 
 # Offense count: 10
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: empty, nil, both
 Style/EmptyElse:
-  Exclude:
-    - 'lib/epubmaker/producer.rb'
-    - 'lib/review/i18n.rb'
-    - 'lib/review/idgxmlbuilder.rb'
-    - 'lib/review/pdfmaker.rb'
-    - 'lib/review/topbuilder.rb'
+  Enabled: false
 
 # Offense count: 28
 # Cop supports --auto-correct.
 # Configuration parameters: AllowAdjacentOneLineDefs.
 Style/EmptyLineBetweenDefs:
-  Exclude:
-    - 'lib/review/builder.rb'
-    - 'lib/review/htmlbuilder.rb'
-    - 'test/test_extentions_hash.rb'
-    - 'test/test_index.rb'
-    - 'test/test_latexbuilder.rb'
-    - 'test/test_textutils.rb'
+  Enabled: true
 
 # Offense count: 72
 # Cop supports --auto-correct.
@@ -258,11 +235,7 @@ Style/EmptyLines:
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: empty_lines, no_empty_lines
 Style/EmptyLinesAroundBlockBody:
-  Exclude:
-    - 'lib/review/epubmaker.rb'
-    - 'lib/review/webmaker.rb'
-    - 'test/test_book.rb'
-    - 'test/test_htmlbuilder.rb'
+  Enabled: true
 
 # Offense count: 123
 # Cop supports --auto-correct.
@@ -464,11 +437,7 @@ Style/RegexpLiteral:
 # Cop supports --auto-correct.
 # Configuration parameters: AllowAsExpressionSeparator.
 Style/Semicolon:
-  Exclude:
-    - 'bin/review-check'
-    - 'bin/review-vol'
-    - 'lib/review/book/index.rb'
-    - 'lib/review/tocparser.rb'
+  Enabled: true
 
 # Offense count: 8
 # Cop supports --auto-correct.
@@ -599,8 +568,7 @@ Style/TrailingWhitespace:
 # Configuration parameters: ExactNameMatch, AllowPredicates, AllowDSLWriters, IgnoreClassMethods, Whitelist.
 # Whitelist: to_ary, to_a, to_c, to_enum, to_h, to_hash, to_i, to_int, to_io, to_open, to_path, to_proc, to_r, to_regexp, to_str, to_s, to_sym
 Style/TrivialAccessors:
-  Exclude:
-    - 'lib/review/book/base.rb'
+  Enabled: true
 
 # Offense count: 4
 # Cop supports --auto-correct.

@@ -58,7 +58,8 @@ def main
   if part_sensitive
     sep = ""
     book.each_part do |part|
-      print sep; sep = "\n"
+      print sep
+      sep = "\n"
       puts "Part #{part.number} #{part.name}" if part.number
       part.each_chapter do |chap|
         print_chapter_volume chap

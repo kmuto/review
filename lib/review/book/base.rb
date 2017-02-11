@@ -15,6 +15,9 @@ module ReVIEW
     class Base
 
       attr_writer :config
+      attr_writer :parts
+      attr_writer :catalog
+      attr_reader :basedir
 
       def self.load_default
         warn 'Book::Base.load_default() is obsoleted. Use Book::Base.load().'
@@ -98,10 +101,6 @@ module ReVIEW
 
       def parts
         @parts ||= read_parts()
-      end
-
-      def parts=(parts)
-        @parts = parts
       end
 
       def parts_in_file
@@ -197,10 +196,6 @@ module ReVIEW
         end
 
         @catalog
-      end
-
-      def catalog=(catalog)
-        @catalog = catalog
       end
 
       def read_CHAPS
@@ -299,10 +294,6 @@ module ReVIEW
         end
       end
 
-      def basedir
-        @basedir
-      end
-
       private
 
       def read_parts
@@ -345,9 +336,9 @@ module ReVIEW
           end
         end
 
-        chap = read_CHAPS()\
-               .strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/)\
-               .map {|part_chunk|
+        chap = read_CHAPS().
+               strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/).
+               map {|part_chunk|
           chaps = part_chunk.split.map {|chapid|
             Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
           }

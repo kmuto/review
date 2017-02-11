@@ -154,7 +154,7 @@ module ReVIEW
           frmt.sub!(i, ARABIC_UW[args[idx]])
           remove_args << idx
         else
-          # noop
+          # do nothing
         end
       end
       remove_args.reverse_each do |idx|

@@ -10,6 +10,7 @@ class TextUtilsTest < Test::Unit::TestCase
     def @tu_nil.pre_paragraph
       nil
     end
+
     def @tu_nil.post_paragraph
       nil
     end
@@ -19,6 +20,7 @@ class TextUtilsTest < Test::Unit::TestCase
     def @tu_p.pre_paragraph
       '<p>'
     end
+
     def @tu_p.post_paragraph
       '</p>'
     end
