@@ -58,7 +58,7 @@ module ReVIEW
                       ｵ ｶ ｷ ｸ ｹ ｺ ｻ ｼ ｽ ｾ ｿ ﾀ ﾁ ﾂ ﾃ ﾄ ﾅ ﾆ ﾇ ﾈ ﾉ ﾊ ﾋ ﾌ ﾍ ﾎ ﾏ
                       ﾐ ﾑ ﾒ ﾓ ﾔ ﾕ ﾖ ﾗ ﾘ ﾙ ﾚ ﾛ ﾜ ﾝ ﾞ ﾟ}
         kanalist.each do |char|
-          char_jisx0208 = NKF::nkf('-WwX',char)
+          char_jisx0208 = NKF.nkf('-WwX',char)
           @metachars[char] = "\\aj半角{#{char_jisx0208}}"
         end
       end

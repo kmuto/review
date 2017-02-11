@@ -106,7 +106,7 @@ EOT
 
   def test_stage1_ncx
     @producer.ncx(@output)
-   expect = <<EOT
+    expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
@@ -137,7 +137,7 @@ EOT
   def test_stage1_ncx_escape
     @producer.params["title"] = "Sample<>Book"
     @producer.ncx(@output)
-   expect = <<EOT
+    expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
@@ -212,7 +212,7 @@ EOT
   def test_stage2_ncx
     stage2
     @producer.ncx(@output)
-   expect = <<EOT
+    expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
@@ -340,7 +340,7 @@ EOT
   def test_stage3_ncx
     stage3
     @producer.ncx(@output)
-   expect = <<EOT
+    expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
