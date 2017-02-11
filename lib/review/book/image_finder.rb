@@ -22,7 +22,7 @@ module ReVIEW
       end
 
       def get_entries
-        Dir.glob(File.join(@basedir, "**/*.*"))
+        Dir.glob(File.join(@basedir, "**{,/*/**}/*.*")).uniq
       end
 
       def add_entry(path)

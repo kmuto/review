@@ -79,4 +79,22 @@ class ImageFinderTest < Test::Unit::TestCase
       FileUtils.remove_entry_secure dir
     end
   end
+
+  def test_find_path_dir_symlink
+    dir = Dir.mktmpdir
+    begin
+      path_src = dir+"/src"
+      path_dst = dir+"/ch01"
+      FileUtils.mkdir_p(path_src)
+      FileUtils.symlink(path_src, path_dst)
+      path_srcimg = path_src+"/foo.jpg"
+      path_dstimg = path_dst+"/foo.jpg"
+      FileUtils.touch(path_srcimg)
+
+      finder = ReVIEW::Book::ImageFinder.new(dir, "ch01", "builder", [".jpg"])
+      assert_equal(path_dstimg, finder.find_path("foo"))
+    ensure
+      FileUtils.remove_entry_secure dir
+    end
+  end
 end
