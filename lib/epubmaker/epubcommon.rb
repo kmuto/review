@@ -1,7 +1,7 @@
 # encoding: utf-8
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -138,6 +138,11 @@ EOT
         @body = <<-EOT
 <h1 class="cover-title">#{CGI.escapeHTML(@producer.params.name_of("title"))}</h1>
         EOT
+        if @producer.params["subtitle"]
+          @body << <<-EOT
+<h2 class="cover-subtitle">#{CGI.escapeHTML(@producer.params.name_of("subtitle"))}</h2>
+          EOT
+        end
       end
 
       @title = CGI.escapeHTML(@producer.params.name_of("title"))
@@ -153,12 +158,21 @@ EOT
     end
 
     # Return title (copying) content.
+    # NOTE: this method is not used yet.
+    #       see lib/review/epubmaker.rb#build_titlepage
     def titlepage
       @title = CGI.escapeHTML(@producer.params.name_of("title"))
 
       @body = <<EOT
   <h1 class="tp-title">#{@title}</h1>
 EOT
+
+      if @producer.params["subtitle"]
+        @body << <<EOT
+  <h2 class="tp-subtitle">#{CGI.escapeHTML(@producer.params.name_of("subtitle"))}</h2>
+EOT
+      end
+
       if @producer.params["aut"]
         @body << <<EOT
   <p>
