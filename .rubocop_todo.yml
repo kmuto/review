@@ -186,12 +186,6 @@ Style/ClassCheck:
 Style/ClassMethods:
   Enabled: false
 
-# Offense count: 2
-# Cop supports --auto-correct.
-Style/ColonMethodCall:
-  Exclude:
-    - 'lib/review/latexutils.rb'
-
 # Offense count: 10
 # Cop supports --auto-correct.
 # Configuration parameters: Keywords.
@@ -228,9 +222,7 @@ Style/DotPosition:
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/EachWithObject:
-  Exclude:
-    - 'lib/review/book/index.rb'
-    - 'test/book_test_helper.rb'
+  Enabled: false
 
 # Offense count: 10
 # Cop supports --auto-correct.
@@ -261,13 +253,6 @@ Style/EmptyLineBetweenDefs:
 Style/EmptyLines:
   Enabled: false
 
-# Offense count: 4
-# Cop supports --auto-correct.
-Style/EmptyLinesAroundAccessModifier:
-  Exclude:
-    - 'lib/review/book/chapter.rb'
-    - 'test/test_catalog.rb'
-
 # Offense count: 8
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -286,11 +271,6 @@ Style/EmptyLinesAroundBlockBody:
 Style/EmptyLinesAroundClassBody:
   Enabled: false
 
-# Offense count: 3
-# Cop supports --auto-correct.
-Style/EmptyLinesAroundMethodBody:
-  Enabled: true
-
 # Offense count: 96
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -307,18 +287,6 @@ Style/EmptyLiteral:
     - 'lib/review/htmltoc.rb'
     - 'lib/review/pdfmaker.rb'
     - 'lib/review/webmaker.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: AllowForAlignment, ForceEqualSignAlignment.
-Style/ExtraSpacing:
-  Enabled: true
-
-# Offense count: 2
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: for, each
-Style/For:
-  Enabled: true
 
 # Offense count: 36
 # Configuration parameters: EnforcedStyle, SupportedStyles.
@@ -366,16 +334,6 @@ Style/IndentArray:
 # SupportedStyles: special_inside_parentheses, consistent, align_braces
 Style/IndentHash:
   Enabled: false
-
-# Offense count: 17
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: normal, rails
-Style/IndentationConsistency:
-  Exclude:
-    - 'lib/review/webmaker.rb'
-    - 'test/test_epub3maker.rb'
-    - 'test/test_epubmaker.rb'
 
 # Offense count: 15
 # Cop supports --auto-correct.

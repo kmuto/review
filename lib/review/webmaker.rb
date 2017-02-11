@@ -233,7 +233,7 @@ module ReVIEW
       File.open("#{basetmpdir}/index.html", "w") do |f|
         if @config["coverimage"]
           file = File.join("images", @config["coverimage"])
-        @body = <<-EOT
+          @body = <<-EOT
   <div id="cover-image" class="cover-image">
     <img src="#{file}" class="max"/>
   </div>

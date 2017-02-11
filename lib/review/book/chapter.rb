@@ -121,6 +121,7 @@ module ReVIEW
       end
 
       private
+
       def on_FILE?(contents)
         contents.lines.map(&:strip).include?("#{id()}#{@book.ext()}")
       end

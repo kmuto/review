@@ -92,6 +92,7 @@ ch02.re
 
 
   private
+
   def yaml
     StringIO.new <<-EOS
 

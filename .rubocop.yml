@@ -112,6 +112,24 @@ Style/SpaceInsideStringInterpolation:
   EnforcedStyle: no_space
   Enabled: true
 
+Style/ColonMethodCall:
+  Enabled: true
+
+Style/EmptyLinesAroundAccessModifier:
+  Enabled: true
+
+Style/EmptyLinesAroundMethodBody:
+  Enabled: true
+
+Style/ExtraSpacing:
+  Enabled: true
+
+Style/For:
+  Enabled: true
+
+Style/IndentationConsistency:
+  Enabled: true
+
 ##################### Metrics ##################################
 
 Metrics/ClassLength:
