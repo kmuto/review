@@ -440,6 +440,9 @@ module ReVIEW
       @body = ""
       @body << "<div class=\"titlepage\">\n"
       @body << "<h1 class=\"tp-title\">#{CGI.escapeHTML(@params.name_of("booktitle"))}</h1>\n"
+      if @params["subtitle"]
+        @body << "<h2 class=\"tp-subtitle\">#{CGI.escapeHTML(@params.name_of("subtitle"))}</h2>\n"
+      end
       if @params["aut"]
         @body << "<h2 class=\"tp-author\">#{CGI.escapeHTML(@params.names_of("aut").join(ReVIEW::I18n.t("names_splitter")))}</h2>\n"
       end
