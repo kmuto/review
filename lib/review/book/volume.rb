@@ -58,8 +58,8 @@ module ReVIEW
 
       def +(other)
         Volume.new(@bytes + other.bytes,
-          @chars + other.chars,
-          @lines + other.lines)
+                   @chars + other.chars,
+                   @lines + other.lines)
       end
 
     end

@@ -13,9 +13,9 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @builder = IDGXMLBuilder.new()
     @config = ReVIEW::Configure.values
     @config.merge!({
-      "secnolevel" => 2,
-      "tableopt" => "10"
-    })
+                     "secnolevel" => 2,
+                     "tableopt" => "10"
+                   })
     @book = Book::Base.new(nil)
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)

@@ -367,7 +367,7 @@ module ReVIEW
       params.each do |param|
         if param =~ /\A.+?::/
           if param =~ /\A#{type}::/
-              param.sub!(/\A#{type}::/, '')
+            param.sub!(/\A#{type}::/, '')
           else
             next
           end

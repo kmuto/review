@@ -54,15 +54,13 @@ module ReVIEW
             return "#{@chapter.format_number}#{I18n.t("chapter_postfix")}"
           end
         end
-      else
-        if secnolevel >= level
-          prefix = @chapter.format_number(false)
-          0.upto(level - 2) do |i|
-            prefix << ".#{@counter[i]}"
-          end
-          prefix << I18n.t("chapter_postfix")
-          return prefix
+      elsif secnolevel >= level
+        prefix = @chapter.format_number(false)
+        0.upto(level - 2) do |i|
+          prefix << ".#{@counter[i]}"
         end
+        prefix << I18n.t("chapter_postfix")
+        return prefix
       end
     end
   end

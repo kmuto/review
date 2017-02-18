@@ -87,7 +87,7 @@ module ReVIEW
     end
 
     def parse_opts(args)
-      cmd_config = Hash.new
+      cmd_config = {}
       opts = OptionParser.new
 
       opts.banner = "Usage: review-pdfmaker configfile"
@@ -393,7 +393,7 @@ module ReVIEW
         @coverimageoption = "width=\\textwidth,height=\\textheight,keepaspectratio"
       end
 
-      @locale_latex = Hash.new
+      @locale_latex = {}
       part_tuple = I18n.get("part").split(/\%[A-Za-z]{1,3}/, 2)
       chapter_tuple = I18n.get("chapter").split(/\%[A-Za-z]{1,3}/, 2)
       appendix_tuple = I18n.get("appendix").split(/\%[A-Za-z]{1,3}/, 2)

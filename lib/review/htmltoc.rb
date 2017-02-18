@@ -28,7 +28,7 @@ module ReVIEW
     end
 
     def decode_args(args_str)
-      args = Hash.new
+      args = {}
       args_str.split(/,\s*/).each do |pair|
         key, val = pair.split("=")
         args[key.to_sym] = val
