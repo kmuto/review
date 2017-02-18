@@ -45,6 +45,8 @@ module ReVIEW
       @no_error = no_error
       @noindent = nil
       @ol_num = nil
+      @error_messages = nil
+      @warning_messages = nil
     end
     private :builder_init
 
@@ -92,8 +94,6 @@ module ReVIEW
 
     def result
       # default XHTML header/footer
-      @error_messages = error_messages
-      @warning_messages = warning_messages
       @title = strip_html(compile_inline(@chapter.title))
       @body = @output.string
       @language = @book.config['language']
@@ -135,30 +135,6 @@ module ReVIEW
       else
         $stderr.puts "#{@location}: error: #{msg}"
       end
-    end
-
-    def messages
-      error_messages() + warning_messages()
-    end
-
-    def error_messages
-      return '' if @errors.empty?
-      "<h2>Syntax Errors</h2>\n" +
-      "<ul>\n" +
-        @errors.map {|file, line, msg|
-        "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
-        }.join('') +
-      "</ul>\n"
-    end
-
-    def warning_messages
-      return '' if @warns.empty?
-      "<h2>Warnings</h2>\n" +
-      "<ul>\n" +
-      @warns.map {|file, line, msg|
-        "<li>#{escape_html(file)}:#{line}: #{escape_html(msg)}</li>\n"
-      }.join('') +
-      "</ul>\n"
     end
 
     def headline(level, label, caption)
