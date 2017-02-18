@@ -344,6 +344,20 @@ module ReVIEW
       end
     end
 
+    def embed(lines, arg = nil)
+      if arg
+        builders = arg.gsub(/^\s*\|/, "").gsub(/\|\s*$/, "").gsub(/\s/, "").split(/,/)
+        c = target_name
+        if builders.include?(c)
+          print lines.join()
+        else
+          ""
+        end
+      else
+        print lines.join()
+      end
+    end
+
     def warn(msg)
       $stderr.puts "#{@location}: warning: #{msg}"
     end
@@ -475,6 +489,19 @@ module ReVIEW
         end
       else
         args.gsub("\\n", "\n")
+      end
+    end
+
+    def inline_embed(args)
+      if matched = args.match(/\|(.*?)\|(.*)/)
+        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
+        if builders.include?(target_name)
+          matched[2]
+        else
+          ""
+        end
+      else
+        args
       end
     end
 

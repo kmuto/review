@@ -161,6 +161,7 @@ module ReVIEW
     defblock :tip, 0..1
     defblock :box, 0..1
     defblock :comment, 0..1, true
+    defblock :embed, 0..1
 
     defsingle :footnote, 2
     defsingle :noindent, 0
@@ -230,11 +231,12 @@ module ReVIEW
     definline :comment
     definline :include
     definline :tcy
+    definline :embed
 
     private
 
     def do_compile
-      f = LineInput.new(Preprocessor::Strip.new(StringIO.new(@chapter.content)))
+      f = LineInput.new(StringIO.new(@chapter.content))
       @strategy.bind self, @chapter, Location.new(@chapter.basename, f)
       tagged_section_init
       while f.next?
@@ -266,7 +268,7 @@ module ReVIEW
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
           if block_open?(line)
             warn "skipping block..."
-            read_block(f)
+            read_block(f, false)
           end
         else
           if f.peek.strip.empty?
@@ -432,8 +434,9 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
+      ignore_inline = (name == :embed)
       args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
-      lines = block_open?(line) ? read_block(f) : nil
+      lines = block_open?(line) ? read_block(f, ignore_inline) : nil
       return name, args, lines
     end
 
@@ -441,12 +444,16 @@ module ReVIEW
       line.rstrip[-1,1] == '{'
     end
 
-    def read_block(f)
+    def read_block(f, ignore_inline)
       head = f.lineno
       buf = []
       f.until_match(%r<\A//\}>) do |line|
-        unless line =~ /\A\#@/
-          buf.push text(line.rstrip)
+        if ignore_inline
+          buf.push line
+        else
+          unless line =~ /\A\#@/
+            buf.push text(line.rstrip)
+          end
         end
       end
       unless %r<\A//\}> =~ f.peek

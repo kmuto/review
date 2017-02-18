@@ -1322,6 +1322,58 @@ EOS
     assert_equal "nor\nmal", compile_inline("@<raw>{|html|nor\\nmal}")
   end
 
+  def test_inline_embed0
+    assert_equal "normal", compile_inline("@<embed>{normal}")
+  end
+
+  def test_inline_embed1
+    assert_equal "body", compile_inline("@<embed>{|html|body}")
+  end
+
+  def test_inline_embed3
+    assert_equal "", compile_inline("@<embed>{|idgxml, latex|body}")
+  end
+
+  def test_inline_embed5
+    assert_equal 'nor\\nmal', compile_inline("@<embed>{|html|nor\\nmal}")
+  end
+
+  def test_inline_embed_math1
+    assert_equal '\[ \frac{\partial f}{\partial x} =x^2+xy \]', compile_inline('@<embed>{\[ \frac{\partial f\}{\partial x\} =x^2+xy \]}')
+  end
+
+  def test_inline_embed_math1a
+    assert_equal '\[ \frac{\partial f}{\partial x} =x^2+xy \]', compile_inline('@<embed>{\\[ \\frac{\\partial f\}{\\partial x\} =x^2+xy \\]}')
+  end
+
+  def test_inline_embed_math1b
+    assert_equal '\[ \frac{\partial f}{\partial x} =x^2+xy \]', compile_inline('@<embed>{\\\\[ \\\\frac{\\\\partial f\}{\\\\partial x\} =x^2+xy \\\\]}')
+  end
+
+  def test_inline_embed_math1c
+    assert_equal '\\[ \\frac{}{} \\]',
+                 compile_inline('@<embed>{\[ \\frac{\}{\} \\]}')
+  end
+
+  def test_inline_embed_n1
+    assert_equal '\\n', compile_inline('@<embed>{\\n}')
+  end
+  def test_inline_embed_n2
+    assert_equal '\\n', compile_inline('@<embed>{\\\\n}')
+  end
+  def test_inline_embed_brace_right0
+    assert_equal '}', compile_inline('@<embed>{\\}}')
+  end
+  def test_inline_embed_brace_right1
+    assert_equal '\\}', compile_inline('@<embed>{\\\\}}')
+  end
+  def test_inline_embed_brace_right2
+    assert_equal '\\}', compile_inline('@<embed>{\\\\\\}}')
+  end
+  def test_inline_embed_brace_right3
+    assert_equal '\\\\}', compile_inline('@<embed>{\\\\\\\\}}')
+  end
+
   def test_block_raw0
     actual = compile_block("//raw[<>!\"\\n& ]\n")
     expected = %Q(<>!\"\n& )
@@ -1349,6 +1401,48 @@ EOS
   def test_block_raw4
     actual = compile_block("//raw[|html <>!\"\\n& ]\n")
     expected = %Q(|html <>!\"\n& )
+    assert_equal expected, actual
+  end
+
+  def test_embed0
+    lines = '//embed{' + "\n" +
+            ' <>!\\"\\\\n& ' + "\n" +
+            '//}' + "\n"
+    actual = compile_block(lines)
+    expected = ' <>!\\"\\\\n& ' + "\n"
+    assert_equal expected, actual
+  end
+
+  def test_embed1
+    actual = compile_block("//embed[|html|]{\n" +
+                           "<>!\\\"\\\\n& \n" +
+                           "//}\n")
+    expected = %Q(<>!\\\"\\\\n& \n)
+    assert_equal expected, actual
+  end
+
+  def test_embed2
+    actual = compile_block("//embed[html, latex]{\n" +
+                           "<>!\\\"\\\\n& \n" +
+                           "//}\n")
+    expected = %Q(<>!\\\"\\\\n& \n)
+    assert_equal expected, actual
+  end
+
+  def test_embed2a
+    actual = compile_block("//embed[|html, latex|]{\n" +
+                           "<>!\\\"\\\\n& \n" +
+                           "//}\n")
+    expected = %Q(<>!\\\"\\\\n& \n)
+    assert_equal expected, actual
+  end
+
+  def test_embed2b
+    actual = compile_block("//embed[html, latex]{\n" +
+                           '#@# comments are not ignored in //embed block' + "\n" +
+                           "<>!\\\"\\\\n& \n" +
+                           "//}\n")
+    expected = '#@# comments are not ignored in //embed block' + "\n" + %Q(<>!\\\"\\\\n& \n)
     assert_equal expected, actual
   end
 
