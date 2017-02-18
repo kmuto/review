@@ -1358,18 +1358,23 @@ EOS
   def test_inline_embed_n1
     assert_equal '\\n', compile_inline('@<embed>{\\n}')
   end
+
   def test_inline_embed_n2
     assert_equal '\\n', compile_inline('@<embed>{\\\\n}')
   end
+
   def test_inline_embed_brace_right0
     assert_equal '}', compile_inline('@<embed>{\\}}')
   end
+
   def test_inline_embed_brace_right1
     assert_equal '\\}', compile_inline('@<embed>{\\\\}}')
   end
+
   def test_inline_embed_brace_right2
     assert_equal '\\}', compile_inline('@<embed>{\\\\\\}}')
   end
+
   def test_inline_embed_brace_right3
     assert_equal '\\\\}', compile_inline('@<embed>{\\\\\\\\}}')
   end
