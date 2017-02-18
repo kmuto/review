@@ -104,16 +104,16 @@ class PDFMakerTest < Test::Unit::TestCase
 
   def test_make_okuduke
     @config.merge!({
-      "aut"=>["テスト太郎","テスト次郎"],
-      "csl"=>["監修三郎"],
-      "trl"=>["翻訳四郎","翻訳五郎"],
-      "dsr"=>["デザイン六郎"],
-      "ill"=>["イラスト七郎","イラスト八郎"],
-      "cov"=>["表紙九郎"],
-      "edt"=>["編集十郎"],
-      "pbl"=>"テスト出版",
-      "prt"=>"テスト印刷",
-    })
+                     "aut"=>["テスト太郎","テスト次郎"],
+                     "csl"=>["監修三郎"],
+                     "trl"=>["翻訳四郎","翻訳五郎"],
+                     "dsr"=>["デザイン六郎"],
+                     "ill"=>["イラスト七郎","イラスト八郎"],
+                     "cov"=>["表紙九郎"],
+                     "edt"=>["編集十郎"],
+                     "pbl"=>"テスト出版",
+                     "prt"=>"テスト印刷",
+                   })
     Dir.mktmpdir do |dir|
       okuduke = @maker.make_colophon
       assert_equal("著　者 & テスト太郎、テスト次郎 \\\\\n監　修 & 監修三郎 \\\\\n翻　訳 & 翻訳四郎、翻訳五郎 \\\\\nデザイン & デザイン六郎 \\\\\nイラスト & イラスト七郎、イラスト八郎 \\\\\n表　紙 & 表紙九郎 \\\\\n編　集 & 編集十郎 \\\\\n発行所 & テスト出版 \\\\\n印刷所 & テスト印刷 \\\\\n",
@@ -124,13 +124,13 @@ class PDFMakerTest < Test::Unit::TestCase
 
   def test_make_okuduke_dojin
     @config.merge!({
-      "aut"=>["テスト太郎","テスト次郎"],
-      "csl"=>["監修三郎"],
-      "ill"=>["イラスト七郎","イラスト八郎"],
-      "pbl"=>"テスト出版",
-      "prt"=>"テスト印刷",
-      "contact"=>"tarou@example.jp",
-    })
+                     "aut"=>["テスト太郎","テスト次郎"],
+                     "csl"=>["監修三郎"],
+                     "ill"=>["イラスト七郎","イラスト八郎"],
+                     "pbl"=>"テスト出版",
+                     "prt"=>"テスト印刷",
+                     "contact"=>"tarou@example.jp",
+                   })
     Dir.mktmpdir do |dir|
       I18n.update({"prt" => "印刷所"},"ja")
       okuduke = @maker.make_colophon
@@ -150,10 +150,10 @@ class PDFMakerTest < Test::Unit::TestCase
 
   def test_gettemplate_with_backmatter
     @config.merge!({
-      "backcover"=>"backcover.html",
-      "profile"=>"profile.html",
-      "advfile"=>"advfile.html",
-    })
+                     "backcover"=>"backcover.html",
+                     "profile"=>"profile.html",
+                     "advfile"=>"advfile.html",
+                   })
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         profile = "\\thispagestyle{empty}\\chapter*{Profile}\nsome profile\n"
@@ -189,9 +189,9 @@ class PDFMakerTest < Test::Unit::TestCase
     @config["pht"] = ["Mrs.Smith"]
     @config.merge!({"language" => "ja",
                     "history" => [[
-                                    "2011-08-03 v1.0.0版発行",
-                                    "2012-02-15 v1.1.0版発行",
-                                  ]] })
+                      "2011-08-03 v1.0.0版発行",
+                      "2012-02-15 v1.1.0版発行",
+                    ]] })
     history = @maker.make_history_list
     expect = ["2011年8月3日　v1.0.0版発行",
               "2012年2月15日　v1.1.0版発行"]
@@ -204,9 +204,9 @@ class PDFMakerTest < Test::Unit::TestCase
     @config["pht"] = ["Mrs.Smith"]
     @config.merge!({"language" => "ja",
                     "history" => [[
-                                    "2011-08-03",
-                                    "2012-02-15",
-                                  ]] })
+                      "2011-08-03",
+                      "2012-02-15",
+                    ]] })
     history = @maker.make_history_list
     expect = ["2011年8月3日　初版第1刷　発行",
               "2012年2月15日　初版第2刷　発行"]
@@ -219,13 +219,13 @@ class PDFMakerTest < Test::Unit::TestCase
     @config["pht"] = ["Mrs.Smith"]
     @config.merge!({"language" => "ja",
                     "history" => [[
-                                    "2011-08-03",
-                                    "2012-02-15",
-                                  ],[
-                                    "2012-10-01",
-                                  ],[
-                                    "2013-03-01",
-                                  ]] })
+                      "2011-08-03",
+                      "2012-02-15",
+                    ],[
+                      "2012-10-01",
+                    ],[
+                      "2013-03-01",
+                    ]] })
     history = @maker.make_history_list
     expect = ["2011年8月3日　初版第1刷　発行",
               "2012年2月15日　初版第2刷　発行",
@@ -240,12 +240,12 @@ class PDFMakerTest < Test::Unit::TestCase
     @config["pht"] = ["Mrs.Smith"]
     @config.merge!({"language" => "ja",
                     "history" => [[
-                                    "2011年8月3日 ver 1.1.0発行",
-                                  ],[
-                                    "2011年10月12日 ver 1.2.0発行",
-                                  ],[
-                                    "2012年1月31日 ver 1.2.1発行",
-                                  ]] })
+                      "2011年8月3日 ver 1.1.0発行",
+                    ],[
+                      "2011年10月12日 ver 1.2.0発行",
+                    ],[
+                      "2012年1月31日 ver 1.2.1発行",
+                    ]] })
     history = @maker.make_history_list
     expect = ["2011年8月3日 ver 1.1.0発行",
               "2011年10月12日 ver 1.2.0発行",

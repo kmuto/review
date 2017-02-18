@@ -35,7 +35,7 @@ module ReVIEW
     end
 
     def parse_opts(args)
-      cmd_config = Hash.new
+      cmd_config = {}
       opts = OptionParser.new
 
       opts.banner = "Usage: review-webmaker configfile"

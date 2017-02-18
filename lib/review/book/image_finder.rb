@@ -46,23 +46,23 @@ module ReVIEW
 
       def target_list(id)
         [
-         # 1. <basedir>/<builder>/<chapid>/<id>.<ext>
-         "#{@basedir}/#{@builder}/#{@chapid}/#{id}",
+          # 1. <basedir>/<builder>/<chapid>/<id>.<ext>
+          "#{@basedir}/#{@builder}/#{@chapid}/#{id}",
 
-         # 2. <basedir>/<builder>/<chapid>-<id>.<ext>
-         "#{@basedir}/#{@builder}/#{@chapid}-#{id}",
+          # 2. <basedir>/<builder>/<chapid>-<id>.<ext>
+          "#{@basedir}/#{@builder}/#{@chapid}-#{id}",
 
-         # 3. <basedir>/<builder>/<id>.<ext>
-         "#{@basedir}/#{@builder}/#{id}",
+          # 3. <basedir>/<builder>/<id>.<ext>
+          "#{@basedir}/#{@builder}/#{id}",
 
-         # 4. <basedir>/<chapid>/<id>.<ext>
-         "#{@basedir}/#{@chapid}/#{id}",
+          # 4. <basedir>/<chapid>/<id>.<ext>
+          "#{@basedir}/#{@chapid}/#{id}",
 
-         # 5. <basedir>/<chapid>-<id>.<ext>
-         "#{@basedir}/#{@chapid}-#{id}",
+          # 5. <basedir>/<chapid>-<id>.<ext>
+          "#{@basedir}/#{@chapid}-#{id}",
 
-         # 6. <basedir>/<id>.<ext>
-         "#{@basedir}/#{id}"
+          # 6. <basedir>/<id>.<ext>
+          "#{@basedir}/#{id}"
         ]
       end
 

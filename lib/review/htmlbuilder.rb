@@ -146,7 +146,7 @@ module ReVIEW
       "<h2>Syntax Errors</h2>\n" +
       "<ul>\n" +
         @errors.map {|file, line, msg|
-        "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
+          "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
         }.join('') +
       "</ul>\n"
     end

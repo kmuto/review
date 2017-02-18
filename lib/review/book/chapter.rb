@@ -83,7 +83,7 @@ module ReVIEW
           return "#{@number}" if @number < 1 || @number > 27
           if @book.config["appendix_format"]
             raise ReVIEW::ConfigError,
-            "'appendix_format:' in config.yml is obsoleted."
+                  "'appendix_format:' in config.yml is obsoleted."
           end
 
           i18n_appendix = I18n.get("appendix")

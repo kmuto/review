@@ -10,14 +10,14 @@ class EPUB3MakerTest < Test::Unit::TestCase
   def setup
     @producer = Producer.new
     @producer.merge_params({
-                            "bookname" => "sample",
-                            "title" => "Sample Book",
-                            "epubversion" => 3,
-                            "urnid" => "http://example.jp/",
-                            "date" => "2011-01-01",
-                            "language" => "en",
-                            "modified" => "2014-12-13T14:15:16Z"
-                          })
+                             "bookname" => "sample",
+                             "title" => "Sample Book",
+                             "epubversion" => 3,
+                             "urnid" => "http://example.jp/",
+                             "date" => "2011-01-01",
+                             "language" => "en",
+                             "modified" => "2014-12-13T14:15:16Z"
+                           })
     @output = StringIO.new
   end
 
@@ -273,26 +273,26 @@ EOT
   def test_stage3_add_various_items
     stage3
     expect = [
-              Content.new("ch01.html", "ch01-html", "application/xhtml+xml", "CH01<>&\"", 1),
-              Content.new("ch02.html", "ch02-html", "application/xhtml+xml", "CH02", 1),
-              Content.new("ch02.html#S1", "ch02-html#S1","html#s1","CH02.1", 2),
-              Content.new("ch02.html#S1.1", "ch02-html#S1-1", "1", "CH02.1.1", 3),
-              Content.new("ch02.html#S1.1.1", "ch02-html#S1-1-1","1", "CH02.1.1.1", 4),
-              Content.new("ch02.html#S1.1.1.1", "ch02-html#S1-1-1-1", "1","CH02.1.1.1.1", 5),
-              Content.new("ch02.html#S1.1.2", "ch02-html#S1-1-2", "2", "CH02.1.1.2", 4),
-              Content.new("ch02.html#S2", "ch02-html#S2", "html#s2", "CH02.2", 2),
-              Content.new("ch02.html#S2.1", "ch02-html#S2-1", "1", "CH02.2.1", 3),
-              Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1, nil, ["mathml"]),
-              Content.new("ch03.html#S1", "ch03-html#S1", "html#s1", "CH03.1", 2),
-              Content.new("ch03.html#S1.1", "ch03-html#S1-1", "1", "CH03.1.1", 3),
-              Content.new("ch04.html", "ch04-html", "application/xhtml+xml", "CH04", 1),
-              Content.new("sample.png", "sample-png", "image/png"),
-              Content.new("sample.jpg", "sample-jpg", "image/jpeg"),
-              Content.new("sample.JPEG", "sample-JPEG", "image/jpeg"),
-              Content.new("sample.SvG", "sample-SvG", "image/svg+xml"),
-              Content.new("sample.GIF", "sample-GIF", "image/gif"),
-              Content.new("sample.css", "sample-css", "text/css")
-             ]
+      Content.new("ch01.html", "ch01-html", "application/xhtml+xml", "CH01<>&\"", 1),
+      Content.new("ch02.html", "ch02-html", "application/xhtml+xml", "CH02", 1),
+      Content.new("ch02.html#S1", "ch02-html#S1","html#s1","CH02.1", 2),
+      Content.new("ch02.html#S1.1", "ch02-html#S1-1", "1", "CH02.1.1", 3),
+      Content.new("ch02.html#S1.1.1", "ch02-html#S1-1-1","1", "CH02.1.1.1", 4),
+      Content.new("ch02.html#S1.1.1.1", "ch02-html#S1-1-1-1", "1","CH02.1.1.1.1", 5),
+      Content.new("ch02.html#S1.1.2", "ch02-html#S1-1-2", "2", "CH02.1.1.2", 4),
+      Content.new("ch02.html#S2", "ch02-html#S2", "html#s2", "CH02.2", 2),
+      Content.new("ch02.html#S2.1", "ch02-html#S2-1", "1", "CH02.2.1", 3),
+      Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1, nil, ["mathml"]),
+      Content.new("ch03.html#S1", "ch03-html#S1", "html#s1", "CH03.1", 2),
+      Content.new("ch03.html#S1.1", "ch03-html#S1-1", "1", "CH03.1.1", 3),
+      Content.new("ch04.html", "ch04-html", "application/xhtml+xml", "CH04", 1),
+      Content.new("sample.png", "sample-png", "image/png"),
+      Content.new("sample.jpg", "sample-jpg", "image/jpeg"),
+      Content.new("sample.JPEG", "sample-JPEG", "image/jpeg"),
+      Content.new("sample.SvG", "sample-SvG", "image/svg+xml"),
+      Content.new("sample.GIF", "sample-GIF", "image/gif"),
+      Content.new("sample.css", "sample-css", "text/css")
+    ]
 
     assert_equal expect, @producer.contents
   end
@@ -557,9 +557,9 @@ EOT
     @producer.params["pht"] = ["Mrs.Smith"]
     @producer.merge_params({"language" => "ja",
                             "history" => [[
-                                            "2011-08-03 v1.0.0版発行",
-                                            "2012-02-15 v1.1.0版発行",
-                                          ]] })
+                              "2011-08-03 v1.0.0版発行",
+                              "2012-02-15 v1.1.0版発行",
+                            ]] })
     history = @producer.instance_eval{ @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
@@ -576,9 +576,9 @@ EOT
     @producer.params["pht"] = ["Mrs.Smith"]
     @producer.merge_params({"language" => "ja",
                             "history" => [[
-                                            "2011-08-03",
-                                            "2012-02-15",
-                                          ]] })
+                              "2011-08-03",
+                              "2012-02-15",
+                            ]] })
     history = @producer.instance_eval{ @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
@@ -595,13 +595,13 @@ EOT
     @producer.params["pht"] = ["Mrs.Smith"]
     @producer.merge_params({"language" => "ja",
                             "history" => [[
-                                            "2011-08-03",
-                                            "2012-02-15",
-                                          ],[
-                                            "2012-10-01",
-                                          ],[
-                                            "2013-03-01",
-                                          ]] })
+                              "2011-08-03",
+                              "2012-02-15",
+                            ],[
+                              "2012-10-01",
+                            ],[
+                              "2013-03-01",
+                            ]] })
     history = @producer.instance_eval{ @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
