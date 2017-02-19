@@ -2,8 +2,7 @@ language: ruby
 sudo: false
 
 before_install:
-  - gem update --system
-  - gem update bundler
+  - gem install bundler -v 1.14.3
 
 rvm:
   - 2.0
@@ -13,15 +12,6 @@ rvm:
   - 2.4.0
 ##  - ruby-head
 
-addons:
-  apt_packages:
-    - libgmp3-dev
-
 branches:
   only:
     - master
-
-script:
-  - bundle exec rake test
-  - bundle exec rubocop
-
