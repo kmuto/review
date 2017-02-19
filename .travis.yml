@@ -13,15 +13,6 @@ rvm:
   - 2.4.0
 ##  - ruby-head
 
-addons:
-  apt_packages:
-    - libgmp3-dev
-
 branches:
   only:
     - master
-
-script:
-  - bundle exec rake test
-  - bundle exec rubocop
-
