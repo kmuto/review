@@ -93,7 +93,7 @@ module ReVIEW
         s += "</sect>" if @section > 0
         s += "</chapter>" if @chapter.number > 0
       end
-      messages() + @output.string + s + "</#{@rootelement}>\n"
+      @output.string + s + "</#{@rootelement}>\n"
     end
 
     def warn(msg)
@@ -112,30 +112,6 @@ module ReVIEW
       else
         $stderr.puts "#{@location}: error: #{msg}"
       end
-    end
-
-    def messages
-      error_messages() + warning_messages()
-    end
-
-    def error_messages
-      return '' if @errors.empty?
-      "<h2>Syntax Errors</h2>\n" +
-      "<ul>\n" +
-      @errors.map {|file, line, msg|
-        "<li>#{escape_html(file)}:#{line}: #{escape_html(msg.to_s)}</li>\n"
-      }.join('') +
-      "</ul>\n"
-    end
-
-    def warning_messages
-      return '' if @warns.empty?
-      "<h2>Warnings</h2>\n" +
-      "<ul>\n" +
-      @warns.map {|file, line, msg|
-        "<li>#{escape_html(file)}:#{line}: #{escape_html(msg)}</li>\n"
-      }.join('') +
-      "</ul>\n"
     end
 
     def headline(level, label, caption)
