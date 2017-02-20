@@ -13,9 +13,9 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @builder = TOPBuilder.new()
     @config = ReVIEW::Configure.values
     @config.merge!({
-      "secnolevel" => 2,
-      "language" => "ja",
-    })
+                     "secnolevel" => 2,
+                     "language" => "ja",
+                   })
     @book = Book::Base.new(nil)
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)

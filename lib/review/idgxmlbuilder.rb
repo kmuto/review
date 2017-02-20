@@ -564,7 +564,7 @@ module ReVIEW
 
     def table_header(id, caption)
       if get_chap.nil?
-      puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
+        puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
       else
         puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
       end
@@ -746,7 +746,7 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<ref idref='#{escape_html(idref)}'>「#{I18n.t("label_marker")}#{escape_html(idref)}」</ref>] # FIXME:節名とタイトルも込みで要出力
+      %Q[<ref idref='#{escape_html(idref)}'>「#{I18n.t("label_marker")}#{escape_html(idref)}」</ref>] # FIXME: 節名とタイトルも込みで要出力
     end
 
     alias_method :inline_ref, :inline_labelref
@@ -773,7 +773,7 @@ module ReVIEW
     end
 
     def linebreak
-      # FIXME:pが閉じちゃってるので一度戻らないといけないが、難しい…。
+      # FIXME: pが閉じちゃってるので一度戻らないといけないが、難しい…。
       puts "<br />"
     end
 
@@ -1139,7 +1139,7 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-        print split_paragraph(lines).join("")
+      print split_paragraph(lines).join("")
     end
 
     def inline_bib(id)

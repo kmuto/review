@@ -72,7 +72,7 @@ def _main
   end
   opts.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
   opts.on('--footnotetext',
-            'Use footnotetext and footnotemark instead of footnote (latex)') {
+          'Use footnotetext and footnotemark instead of footnote (latex)') {
     config["footnotetext"] = true
   }
   opts.on('--draft', 'use draft mode(inline comment)') { config["draft"] = true }

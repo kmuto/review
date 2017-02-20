@@ -15,11 +15,32 @@ Lint/EndAlignment:
 Lint/EmptyWhen:
   Enabled: false
 
-Performance/ReverseEach:
-  Enabled: true
+Lint/NestedMethodDefinition:
+  Exclude:
+    - 'test/*'
 
-# Unnecessary spacing detected.
-Style/ExtraSpacing:
+Lint/AssignmentInCondition:
+  Enabled: false
+
+Lint/ParenthesesAsGroupedExpression:
+  Enabled: false
+
+Lint/UnderscorePrefixedVariableName:
+  Enabled: false
+
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+Lint/UnusedMethodArgument:
+  Enabled: false
+
+Lint/UselessAssignment:
+  Enabled: false
+
+Performance/RegexpMatch:
+  Enabled: false
+
+Performance/ReverseEach:
   Enabled: true
 
 # Use tr instead of gsub.
@@ -29,9 +50,41 @@ Performance/StringReplacement:
 Performance/RangeInclude:
   Enabled: false
 
+Style/AccessorMethodName:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
 # Use alias_method instead of alias.
 Style/Alias:
   EnforcedStyle: prefer_alias_method
+  Enabled: true
+
+Style/AndOr:
+  Enabled: false
+
+Style/BarePercentLiterals:
+  EnforcedStyle: percent_q
+  Enabled: true
+
+Style/BlockDelimiters:
+  Enabled: false
+
+Style/BracesAroundHashParameters:
+  Enabled: false
+
+Style/CaseEquality:
+  Enabled: false
+
+Style/ClassCheck:
+  Enabled: false
+
+Style/ClassMethods:
+  Enabled: false
+
+# Unnecessary spacing detected.
+Style/ExtraSpacing:
   Enabled: true
 
 # Do not introduce global variables.
@@ -51,6 +104,38 @@ Style/VariableName:
   Enabled: true
 
 Style/ConditionalAssignment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/DotPosition:
+  EnforcedStyle: trailing
+  Enabled: true
+
+Style/EmptyElse:
+  Enabled: false
+
+Style/EmptyLines:
+  Enabled: false
+
+Style/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Style/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Style/FormatString:
+  EnforcedStyle: sprintf
+  Enabled: true
+
+Style/GuardClause:
+  Enabled: false
+
+Style/IfInsideElse:
+  Enabled: false
+
+Style/IfUnlessModifier:
   Enabled: false
 
 Style/MutableConstant:
@@ -127,10 +212,144 @@ Style/ExtraSpacing:
 Style/For:
   Enabled: true
 
+Style/IndentHash:
+  Enabled: true
+
+Style/IndentationWidth:
+  Enabled: true
+
 Style/IndentationConsistency:
   Enabled: true
 
-##################### Metrics ##################################
+Style/InfiniteLoop:
+  Enabled: false
+
+Style/LeadingCommentSpace:
+  Enabled: false
+
+Style/LineEndConcatenation:
+  Enabled: false
+
+Style/MethodCallWithoutArgsParentheses:
+  Enabled: false
+
+Style/MethodName:
+  Enabled: false
+
+Style/MultilineBlockChain:
+  Enabled: false
+
+Style/MultilineOperationIndentation:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
+Style/Next:
+  Enabled: false
+
+Style/Not:
+  Enabled: true
+
+Style/NumericLiterals:
+  MinDigits: 6
+
+Style/PercentLiteralDelimiters:
+  Enabled: false
+
+Style/PercentQLiterals:
+  EnforcedStyle: upper_case_q
+  Enabled: true
+
+Style/PerlBackrefs:
+  Enabled: false
+
+Style/RedundantBegin:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+Style/RedundantSelf:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/Semicolon:
+  Enabled: true
+
+Style/SingleLineMethods:
+  Enabled: true
+
+Style/SpaceAfterComma:
+  Enabled: false
+
+Style/SpaceAfterNot:
+  Enabled: true
+
+Style/SpaceAfterSemicolon:
+  Enabled: true
+
+Style/SpaceAroundEqualsInParameterDefault:
+  Enabled: false
+
+Style/SpaceAroundOperators:
+  Enabled: false
+
+Style/SpaceBeforeBlockBraces:
+  Enabled: false
+
+Style/SpaceBeforeComma:
+  Enabled: true
+
+Style/SpaceInsideBlockBraces:
+  Enabled: false
+
+Style/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+Style/SpecialGlobalVars:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/StringLiteralsInInterpolation:
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
+
+Style/TrailingBlankLines:
+  Enabled: false
+
+Style/TrailingCommaInLiteral:
+  Enabled: false
+
+Style/WordArray:
+  MinSize: 10
+
+Style/UnneededPercentQ:
+  Enabled: false
+
+Style/WhileUntilModifier:
+  Enabled: false
+
+
+#### Metrics
+
+Metrics/BlockNesting:
+  Max: 4
+
+Metrics/ModuleLength:
+  Max: 129
+
+Metrics/ParameterLists:
+  Max: 8
+
+Metrics/PerceivedComplexity:
+  Max: 28
 
 Metrics/ClassLength:
   Max: 1500
@@ -166,3 +385,11 @@ Metrics/BlockLength:
     - 'Rakefile'
     - '**/*.rake'
     - 'test/**/*.rb'
+
+#### Security
+
+# we use Date object in config.yml so should use YAML.load :-/
+Security/YAMLLoad:
+  Exclude:
+    - 'lib/review/catalog.rb'
+    - 'test/test_helper.rb'

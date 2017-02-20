@@ -28,7 +28,7 @@ module ReVIEW
     alias_method :h, :escape_html
 
     def unescape_html(str)
-      # FIXME better code
+      # FIXME: better code
       str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
     end
 
@@ -91,7 +91,7 @@ module ReVIEW
           body
         end
       rescue LoadError
-          body
+        body
       end
     end
 

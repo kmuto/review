@@ -70,13 +70,13 @@ module ReVIEW
       if node.chapter?
         vol = node.volume
         @out.printf "%3s %3dKB %6dC %5dL  %s (%s)\n",
-               chapnumstr(node.number),
-               vol.kbytes, vol.chars, vol.lines,
-               node.label, node.chapter_id
+                    chapnumstr(node.number),
+                    vol.kbytes, vol.chars, vol.lines,
+                    node.label, node.chapter_id
       else ## for section node
         @out.printf "%17s %5dL  %s\n",
-               '', node.estimated_lines,
-               "  #{'   ' * (node.level - 1)}#{number} #{node.label}"
+                    '', node.estimated_lines,
+                    "  #{'   ' * (node.level - 1)}#{number} #{node.label}"
       end
     end
 

@@ -19,7 +19,7 @@ module EPUBMaker
     # Construct object with parameter hash +params+ and message resource hash +res+.
     def initialize(producer)
       super
-      @opf_prefix = Hash.new
+      @opf_prefix = {}
       if @producer.params["opf_prefix"].present?
         @producer.params["opf_prefix"].each do |k, v|
           @opf_prefix[k] = v
