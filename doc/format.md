@@ -688,7 +688,9 @@ Usage:
 
 ## Raw Data Block
 
-When you want to write non-Re:VIEW line, use `//raw`.
+When you want to write non-Re:VIEW line, use `//raw` or `//embed`.
+
+### `//raw` block
 
 Usage:
 
@@ -714,6 +716,39 @@ this is a special line.
 (In other formats, it is just ignored.)
 
 Note: `//raw` and `@<raw>` may break structured document easily.
+
+### `//embed` block
+
+Usage:
+
+```
+//embed{
+<div class="special">
+this is a special line.
+</div>
+//}
+
+//embed[html,markdown]{
+<div class="special">
+this is a special line.
+</div>
+//}
+```
+
+In above line, `html` and `markdown` is a builder name that handle raw data.
+
+Output:
+
+(In HTML:)
+
+```
+<div class="special">
+this is a special line.
+</div>
+```
+
+(In other formats, it is just ignored.)
+
 
 ## Inline Commands
 
