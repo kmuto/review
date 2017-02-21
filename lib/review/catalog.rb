@@ -35,12 +35,12 @@ module ReVIEW
         if entry.is_a? Hash
           entry.keys
         end
-      }.flatten.reject{|entry| entry.nil?}.join("\n")
+      }.flatten.compact.join("\n")
     end
 
     def parts_with_chaps
       return "" unless @yaml["CHAPS"]
-      @yaml["CHAPS"].flatten.reject{|entry| entry.nil?}
+      @yaml["CHAPS"].flatten.compact
     end
 
     def appendix
