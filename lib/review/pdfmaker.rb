@@ -232,7 +232,7 @@ module ReVIEW
           @config["usepackage"] = "\\usepackage{#{@config['texstyle']}}"
         end
 
-        copy_images("./images", File.join(@path, "images"))
+        copy_images(@config["imagedir"], File.join(@path, "images"))
         copyStyToDir(File.join(Dir.pwd, "sty"), @path)
         copyStyToDir(File.join(Dir.pwd, "sty"), @path, "fd")
         copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
