@@ -93,10 +93,10 @@ module ReVIEW
       build_body(@path, yamlfile)
       copy_backmatter(@path)
 
-      copy_images(@config["imagedir"], "#{@path}/images")
+      copy_images(@config["imagedir"], "#{@path}/#{@config["imagedir"]}")
 
-      copy_resources("covers", "#{@path}/images")
-      copy_resources("adv", "#{@path}/images")
+      copy_resources("covers", "#{@path}/#{@config["imagedir"]}")
+      copy_resources("adv", "#{@path}/#{@config["imagedir"]}")
       copy_resources(@config["fontdir"], "#{@path}/fonts", @config["font_ext"])
     end
 
@@ -231,7 +231,7 @@ module ReVIEW
     def build_indexpage(basetmpdir)
       File.open("#{basetmpdir}/index.html", "w") do |f|
         if @config["coverimage"]
-          file = File.join("images", @config["coverimage"])
+          file = File.join(@config["imagedir"], @config["coverimage"])
           @body = <<-EOT
   <div id="cover-image" class="cover-image">
     <img src="#{file}" class="max"/>

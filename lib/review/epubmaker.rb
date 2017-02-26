@@ -104,16 +104,16 @@ module ReVIEW
           verify_target_images(basetmpdir)
           copy_images(@params["imagedir"], basetmpdir)
         else
-          copy_images(@params["imagedir"], "#{basetmpdir}/images")
+          copy_images(@params["imagedir"], "#{basetmpdir}/#{@params["imagedir"]}")
         end
 
-        copy_resources("covers", "#{basetmpdir}/images")
-        copy_resources("adv", "#{basetmpdir}/images")
+        copy_resources("covers", "#{basetmpdir}/#{@params["imagedir"]}")
+        copy_resources("adv", "#{basetmpdir}/#{@params["imagedir"]}")
         copy_resources(@params["fontdir"], "#{basetmpdir}/fonts", @params["font_ext"])
 
         call_hook("hook_aftercopyimage", basetmpdir)
 
-        @producer.import_imageinfo("#{basetmpdir}/images", basetmpdir)
+        @producer.import_imageinfo("#{basetmpdir}/#{@params["imagedir"]}", basetmpdir)
         @producer.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
         epubtmpdir = nil

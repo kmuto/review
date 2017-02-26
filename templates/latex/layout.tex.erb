@@ -261,7 +261,7 @@
 \begin{titlepage}
 <%-     if @config["coverimage"] -%>
   \begin{center}
-    \includegraphics[<%= @coverimageoption%>]{./images/<%= @config["coverimage"] %>}
+    \includegraphics[<%= @coverimageoption%>]{./<%= @config["imagedir"] %>/<%= @config["coverimage"] %>}
   \end{center}
   \clearpage
 <%-     end -%>

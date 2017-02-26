@@ -2,7 +2,7 @@
 # $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
 #
 # Copyright (c) 2002-2008 Minero Aoki
-#               2009 Minero Aoki, Kenshi Muto
+#               2009-2017 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -118,20 +118,20 @@ module ReVIEW
       def numberless_image_index
         @numberless_image_index ||=
           NumberlessImageIndex.parse(lines(), id(),
-                                     "#{book.basedir}/#{@book.image_dir}",
+                                     "#{book.basedir}/#{@book.config['imagedir']}",
                                      @book.image_types, @book.config['builder'])
       end
 
       def image_index
         @image_index ||= ImageIndex.parse(lines(), id(),
-                                          "#{book.basedir}/#{@book.image_dir}",
+                                          "#{book.basedir}/#{@book.config['imagedir']}",
                                           @book.image_types, @book.config['builder'])
         @image_index
       end
 
       def icon_index
         @icon_index ||= IconIndex.parse(lines(), id(),
-                                        "#{book.basedir}/#{@book.image_dir}",
+                                        "#{book.basedir}/#{@book.config['imagedir']}",
                                         @book.image_types, @book.config['builder'])
         @icon_index
       end
@@ -139,7 +139,7 @@ module ReVIEW
       def indepimage_index
         @indepimage_index ||=
           IndepImageIndex.parse(lines(), id(),
-                                "#{book.basedir}/#{@book.image_dir}",
+                                "#{book.basedir}/#{@book.config['imagedir']}",
                                 @book.image_types, @book.config['builder'])
       end
 
