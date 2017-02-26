@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -232,7 +232,7 @@ module ReVIEW
           @config["usepackage"] = "\\usepackage{#{@config['texstyle']}}"
         end
 
-        copy_images(@config["imagedir"], File.join(@path, "images"))
+        copy_images(@config["imagedir"], File.join(@path, @config["imagedir"]))
         copyStyToDir(File.join(Dir.pwd, "sty"), @path)
         copyStyToDir(File.join(Dir.pwd, "sty"), @path, "fd")
         copyStyToDir(File.join(Dir.pwd, "sty"), @path, "cls")
