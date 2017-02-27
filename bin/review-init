@@ -112,7 +112,7 @@ end
 
 def generate_config(dir)
   today = Time.now.strftime("%Y-%m-%d")
-  content = File.read(@review_dir + "/doc/config.yml.sample")
+  content = File.read(@review_dir + "/doc/config.yml.sample", {:encoding => 'utf-8'})
   content.gsub!(/^#\s*coverimage:.*$/, 'coverimage: cover.jpg')
   content.gsub!(/^#\s*date:.*$/, "date: #{today}")
   content.gsub!(/^#\s*history:.*$/, %Q|history: [["#{today}"]]|)
