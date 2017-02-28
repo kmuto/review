@@ -27,7 +27,9 @@
 \usepackage{amsmath}
 
 %% if you use @<u>{} (underline), use jumoline.sty
-%%\usepackage{jumoline}
+\IfFileExists{jumoline.sty}{
+\usepackage{jumoline}
+}
 
 \newenvironment{shadedb}{%
   \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
