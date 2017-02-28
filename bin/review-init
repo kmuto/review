@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2013-2014 Masanori Kado
+# Copyright (c) 2013-2017 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -132,7 +132,10 @@ end
 def generate_texmacro(dir)
   texmacrodir = dir + '/sty'
   FileUtils.mkdir_p texmacrodir
-  FileUtils.cp @review_dir + "/test/sample-book/src/sty/reviewmacro.sty", texmacrodir
+  FileUtils.cp [
+    @review_dir + "/test/sample-book/src/sty/reviewmacro.sty",
+    @review_dir + "/test/sample-book/src/sty/jumoline.sty"
+  ], texmacrodir
 end
 
 def generate_rakefile(dir)

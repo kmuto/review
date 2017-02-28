@@ -93,6 +93,8 @@ For further information, see [doc/quickstart.md](https://github.com/kmuto/review
 
 LGPL. See [COPYING](https://github.com/kmuto/review/blob/master/COPYING) file.
 
+* jumoline.sty (test/sample-book/src/vendor/jumoline): The LaTeX Project Public License. See [LPPL](https://github.com/kmuto/review/blob/master/test/sample-book/src/vendor/jumoline/lppl.txt) file.
+
 ## Copyright
 
-Copyright (c) 2006-2016 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
+Copyright (c) 2006-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
