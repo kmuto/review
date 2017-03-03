@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Copyright (c) 2002-2006 Minero Aoki
-#               2008-2016 Minero Aoki, Kenshi Muto
+#               2008-2017 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -195,9 +195,9 @@ module ReVIEW
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?
-        %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [@chapter.list(id).number])}]
+        %Q[#{I18n.t("list")}#{I18n.t("format_number_without_chapter", [chapter.list(id).number])}]
       else
-        %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), @chapter.list(id).number])}]
+        %Q[#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}]
       end
     end
 
@@ -479,6 +479,26 @@ module ReVIEW
       %Q[◆→TeX式ここから←◆#{str}◆→TeX式ここまで←◆]
     end
 
+    def bibpaper(lines, id, caption)
+      bibpaper_header id, caption
+      unless lines.empty?
+        bibpaper_bibpaper id, caption, lines
+      end
+    end
+
+    def bibpaper_header(id, caption)
+      print "[#{@chapter.bibpaper(id).number}]"
+      puts " #{compile_inline(caption)}"
+    end
+
+    def bibpaper_bibpaper(id, caption, lines)
+      print split_paragraph(lines).join("")
+    end
+
+    def inline_bib(id)
+      %Q([#{@chapter.bibpaper(id).number}])
+    end
+
     def inline_hd_chap(chap, id)
       if chap.number
         n = chap.headline_index.number(id)
@@ -498,6 +518,20 @@ module ReVIEW
     end
 
     def nonum_end(level)
+    end
+
+    def notoc_begin(level, label, caption)
+      puts "■H#{level}■#{compile_inline(caption)}◆→DTP連絡:目次に掲載しない←◆"
+    end
+
+    def notoc_end(level)
+    end
+
+    def nodisp_begin(level, label, caption)
+      # return empty
+    end
+
+    def nodisp_end(level)
     end
 
     def common_column_begin(type, caption)

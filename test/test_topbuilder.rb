@@ -202,6 +202,14 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n|, actual
   end
 
+  def test_bib
+    def @chapter.bibpaper(id)
+      Book::BibpaperIndex::Item.new("samplebib",1,"sample bib")
+    end
+
+    assert_equal %Q|[1]|, compile_inline("@<bib>{samplebib}")
+  end
+
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = %Q(◆→開始:ノート←◆\nA\nB\n◆→終了:ノート←◆\n\n◆→開始:ノート←◆\n■caption\nA\n◆→終了:ノート←◆\n\n)
