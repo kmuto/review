@@ -1,3 +1,111 @@
+# Version 2.2.0
+
+## 新機能
+
+* PDFMaker: 索引`@<idx>`, `@<hidx>`をサポートしました ([#261],[#660],[#669],[#740])
+* RSTBuilder を追加しました ([#733],[#738])
+* 直接埋め込み用の `//embed{...//}` と `@<embed>{...}` を追加しました ([#730],[#751],[#757],[#758])
+* HTMLBuilder, IDGXMLBuilder, LATEXBuilder:  `//listnum` と `//emlistnum` で使える `//firstlinenum` コマンドを追加しました([#685],[#688])
+* review-compile: `--nolfinxml` は不要になりました ([#683],[#708])
+* HTMLBuilder: 参照用インライン (`@<img>`, `@<table>`, `@<list>`) を `<span>`で囲うようにしました. class属性は 'imgref', 'tableref', 'listref'です. ([#696],[#697])
+* HTMLBuilder: コードハイライト用ライブラリとしてRougeをサポートするようにしました ([#684],[#710],[#711])
+
+## 非互換の変更
+
+* LATEXBuilder: `//source`の生成するマクロを修正しました ([#681])
+* インライン内でのエスケープのルールのバグを修正しました ([#731])
+    * `\}` -> '}'
+    * `\\` -> `\`
+    * `\\\}` -> `\}`
+    * `x\}` -> `x}` (when `x` != `\`)
+    * `\\x` -> `\x` (when `x` != `}`)
+
+## バグ修正
+
+* draftモードでのコメント機能を整理しました ([#360],[#717])
+* i18n機能の引数の数が想定と異なっている場合の挙動を修正しました ([#667],[#723])
+* support builder option for `//tsize` and `//latextsize` ([#716],[#719],[#720])
+* html, idgxml, markdownでのul_item() メソッドを削除しました. ([#726],[#727])
+* PDFMaker: 設定ファイルのimagedirの値を反映するようにしました ([#756],[#759])
+* HTMLBuilder, LATEXBuilder, IDGXMLBuilder: コラム内での引数のインラインを処理するようにしました
+* review-init: エンコーディングを正しく指定するようにしました. ([#761])
+* EPUBMaker, PDFMaker: PDFとEPUBのsubtitleを修正しました ([#742],[#745],[#747])
+
+## 機能強化
+
+* LATEXBuilder: jumoline.styを有効にしました
+* IDGXMLBuilder, HTMLBuilder: エラーや警告が生成された文書内に出力されないようにしました ([#706],[#753])
+* image_finder.rb: シンボリックリンクのディレクトリにも対応するようにしました ([#743])
+* TOPBuilder: 見出しの処理を修正しました ([#729])
+* 設定ファイルでのhistoryの日付をフリーフォーマットでも対応するようにしました ([#693])
+* HTMLBuilder: リストのid属性を出力するようにしました ([#724])
+* rubyzipがない場合、zipのテストをスキップするようにしました ([#713],[#714])
+* convertコマンドがない場合のテストを修正しました ([#712],[#718])
+
+## ドキュメント
+
+* 索引用のドキュメント makeindex.(ja.)md を追加しました
+
+## その他
+
+## コントリビューターのみなさん
+
+* [@kuroda](https://github.com/kuroda)
+* [@olleolleolle](https://github.com/olleolleolle)
+* [@shirou](https://github.com/shirou)
+* [@m-shibata](https://github.com/m-shibata)
+* [@kenkiku1021](https://github.com/kenkiku1021)
+
+[#261]: https://github.com/kmuto/review/issues/261
+[#360]: https://github.com/kmuto/review/issues/360
+[#660]: https://github.com/kmuto/review/issues/660
+[#667]: https://github.com/kmuto/review/issues/667
+[#669]: https://github.com/kmuto/review/issues/669
+[#681]: https://github.com/kmuto/review/issues/681
+[#682]: https://github.com/kmuto/review/issues/682
+[#683]: https://github.com/kmuto/review/issues/683
+[#684]: https://github.com/kmuto/review/issues/684
+[#685]: https://github.com/kmuto/review/issues/685
+[#686]: https://github.com/kmuto/review/issues/686
+[#688]: https://github.com/kmuto/review/issues/688
+[#693]: https://github.com/kmuto/review/issues/693
+[#696]: https://github.com/kmuto/review/issues/696
+[#697]: https://github.com/kmuto/review/issues/697
+[#706]: https://github.com/kmuto/review/issues/706
+[#708]: https://github.com/kmuto/review/issues/708
+[#710]: https://github.com/kmuto/review/issues/710
+[#711]: https://github.com/kmuto/review/issues/711
+[#712]: https://github.com/kmuto/review/issues/712
+[#713]: https://github.com/kmuto/review/issues/713
+[#714]: https://github.com/kmuto/review/issues/714
+[#716]: https://github.com/kmuto/review/issues/716
+[#717]: https://github.com/kmuto/review/issues/717
+[#718]: https://github.com/kmuto/review/issues/718
+[#719]: https://github.com/kmuto/review/issues/719
+[#720]: https://github.com/kmuto/review/issues/720
+[#723]: https://github.com/kmuto/review/issues/723
+[#724]: https://github.com/kmuto/review/issues/724
+[#726]: https://github.com/kmuto/review/issues/726
+[#727]: https://github.com/kmuto/review/issues/727
+[#729]: https://github.com/kmuto/review/issues/729
+[#730]: https://github.com/kmuto/review/issues/730
+[#731]: https://github.com/kmuto/review/issues/731
+[#733]: https://github.com/kmuto/review/issues/733
+[#738]: https://github.com/kmuto/review/issues/738
+[#740]: https://github.com/kmuto/review/issues/740
+[#742]: https://github.com/kmuto/review/issues/742
+[#743]: https://github.com/kmuto/review/issues/743
+[#745]: https://github.com/kmuto/review/issues/745
+[#747]: https://github.com/kmuto/review/issues/747
+[#751]: https://github.com/kmuto/review/issues/751
+[#753]: https://github.com/kmuto/review/issues/753
+[#756]: https://github.com/kmuto/review/issues/756
+[#757]: https://github.com/kmuto/review/issues/757
+[#758]: https://github.com/kmuto/review/issues/758
+[#759]: https://github.com/kmuto/review/issues/759
+[#761]: https://github.com/kmuto/review/issues/761
+
+
 # Version 2.1.0 の主な変更点
 
 ## 新機能
