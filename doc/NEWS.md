@@ -1,3 +1,62 @@
+# Version 2.2.0
+
+## New Features
+
+* PDFMaker: support index `@<idx>`, `@<hidx>` ([#261],[#660],[#669],[#740])
+* add RSTBuilder ([#733],[#738])
+* add `//embed{...//}` and `@<embed>{...}` ([#730],[#751],[#757],[#758])
+* HTMLBuilder, IDGXMLBuilder, LATEXBuilder: suppot `//firstlinenum` for `//listnum` and `//emlistnum` ([#685],[#688])
+* review-compile: `--nolfinxml` is deprecated ([#683],[#708])
+* HTMLBuilder: Enclose references (`@<img>`, `@<table>`, and `@<list>`) with `<span>`. Class names are 'imgref', 'tableref', and 'listref'. ([#696],[#697])
+* HTMLBuilder: support Rouge ([#684],[#710],[#711])
+
+## Breaking Changes
+
+* LATEXBuilder: fix //source ([#681])
+* suppress output on checking convert command ([#712],[#718])
+* without rubyzip, skip zip test ([#713],[#714])
+* fix a bug of loading layouts/layout.html.erb ([#721])
+* fix escaping in inline ([#731])
+    * `\}` -> '}'
+    * `\\` -> `\`
+    * `\\\}` -> `\}`
+    * `x\}` -> `x}` (when `x` != `\`)
+    * `\\x` -> `\x` (when `x` != `}`)
+* HTMLBuilder, LATEXBuilder, IDGXMLBuilder: use compile_inline in column tag
+
+## Bug Fixes
+
+* support comment for draft mode ([#360],[#717])
+* i18n accepts mismatched number of arguments ([#667],[#723])
+* support builder option for `//tsize` and `//latextsize` ([#716],[#719],[#720])
+* remove ul_item() of html, idgxml, and markdown. ([#726],[#727])
+* PDFMaker: reflect imagedir config ([#756],[#759])
+
+## Enhancements
+
+* LATEXBuilder: enable jumoline.sty by default
+* review-init: Specify source file encoding on generating config. ([#761])
+* IDGXMLBuilder, HTMLBuilder: removes errors and warnings in published document ([#753])
+* remove ul_item() of html, idgxml, and markdown. ([#726])
+* image_finder.rb: support symlinked directory ([#743])
+* PDFMaker: refactor method generate_pdf ([#682],[#686])
+* TOPBuilder: refactor headline ([#729])
+* EPUBMaker, PDFMaker: support subtitle for PDF and EPUB ([#742],[#745],[#747])
+* HTMLBuilder: remove error/warning messages in HTML ([#706])
+* allow free format in history of config.yml ([#693])
+* HTMLBuilder: put list's id into the attribute of div.caption-code ([#724])
+
+## Docs
+
+* add makeindex.(ja.)md
+
+## Others
+
+## Contributors
+
+* kuroda, olleolleolle, shirou, m-shibata, kenkiku1021
+
+
 # Version 2.1.0
 
 ## New Features
