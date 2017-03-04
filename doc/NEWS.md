@@ -48,6 +48,8 @@
 
 ## Others
 
+* fix `.rubocop.yml` and suppress warnings
+
 ## Contributors
 
 * [@kuroda](https://github.com/kuroda)

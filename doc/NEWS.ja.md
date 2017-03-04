@@ -48,6 +48,8 @@
 
 ## その他
 
+* rubocopの設定を見直して警告の抑制をしました
+
 ## コントリビューターのみなさん
 
 * [@kuroda](https://github.com/kuroda)
