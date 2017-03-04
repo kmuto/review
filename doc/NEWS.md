@@ -14,11 +14,9 @@
 
 * LATEXBuilder: fix //source ([#681])
 * fix escaping in inline ([#731])
-    * `\}` -> '}'
+    * `\}` -> `}`
     * `\\` -> `\`
-    * `\\\}` -> `\}`
-    * `x\}` -> `x}` (when `x` != `\`)
-    * `\\x` -> `\x` (when `x` != `}`)
+    * `\x` -> `\x` (when `x` != `\` and `x` != `}`)
 
 ## Bug Fixes
 
