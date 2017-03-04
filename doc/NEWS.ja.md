@@ -30,6 +30,7 @@
 * HTMLBuilder, LATEXBuilder, IDGXMLBuilder: コラム内での引数のインラインを処理するようにしました
 * review-init: エンコーディングを正しく指定するようにしました. ([#761])
 * EPUBMaker, PDFMaker: PDFとEPUBのsubtitleを修正しました ([#742],[#745],[#747])
+* TOPBuilder: `@<list>`のリンク切れを修正しました ([#763])
 
 ## 機能強化
 
@@ -41,6 +42,9 @@
 * HTMLBuilder: リストのid属性を出力するようにしました ([#724])
 * rubyzipがない場合、zipのテストをスキップするようにしました ([#713],[#714])
 * convertコマンドがない場合のテストを修正しました ([#712],[#718])
+* TOPBuilder: `@<bib>` と `//bibpaper` に対応しました ([#763])
+* TOPBuilder: `[notoc]` と `[nodisp]` に対応しました ([#763])
+
 
 ## ドキュメント
 
@@ -106,6 +110,7 @@
 [#758]: https://github.com/kmuto/review/issues/758
 [#759]: https://github.com/kmuto/review/issues/759
 [#761]: https://github.com/kmuto/review/issues/761
+[#763]: https://github.com/kmuto/review/issues/763
 
 
 # Version 2.1.0 の主な変更点

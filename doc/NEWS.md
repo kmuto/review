@@ -30,6 +30,7 @@
 * HTMLBuilder, LATEXBuilder, IDGXMLBuilder: use compile_inline in column tag
 * review-init: Specify source file encoding on generating config. ([#761])
 * EPUBMaker, PDFMaker: support subtitle for PDF and EPUB ([#742],[#745],[#747])
+* TOPBuilder: fix `@<list>` ([#763])
 
 ## Enhancements
 
@@ -41,6 +42,8 @@
 * HTMLBuilder: put list's id into the attribute of div.caption-code ([#724])
 * without rubyzip, skip zip test ([#713],[#714])
 * suppress output on checking convert command ([#712],[#718])
+* TOPBuilder: support `@<bib>` and `//bibpaper` ([#763])
+* TOPBuilder: support `[notoc]` and `[nodisp]` ([#763])
 
 ## Docs
 
@@ -106,6 +109,7 @@
 [#758]: https://github.com/kmuto/review/issues/758
 [#759]: https://github.com/kmuto/review/issues/759
 [#761]: https://github.com/kmuto/review/issues/761
+[#763]: https://github.com/kmuto/review/issues/763
 
 
 # Version 2.1.0
