@@ -1,3 +1,115 @@
+# Version 2.2.0
+
+## New Features
+
+* PDFMaker: support index `@<idx>`, `@<hidx>` ([#261],[#660],[#669],[#740])
+* add RSTBuilder ([#733],[#738])
+* add `//embed{...//}` and `@<embed>{...}` ([#730],[#751],[#757],[#758])
+* HTMLBuilder, IDGXMLBuilder, LATEXBuilder: suppot `//firstlinenum` for `//listnum` and `//emlistnum` ([#685],[#688])
+* review-compile: `--nolfinxml` is deprecated ([#683],[#708])
+* HTMLBuilder: Enclose references (`@<img>`, `@<table>`, and `@<list>`) with `<span>`. Class names are 'imgref', 'tableref', and 'listref'. ([#696],[#697])
+* HTMLBuilder: support Rouge ([#684],[#710],[#711])
+
+## Breaking Changes
+
+* LATEXBuilder: fix //source ([#681])
+* fix escaping in inline ([#731])
+    * `\}` -> `}`
+    * `\\` -> `\`
+    * `\x` -> `\x` (when `x` != `\` and `x` != `}`)
+
+## Bug Fixes
+
+* support comment for draft mode ([#360],[#717])
+* i18n accepts mismatched number of arguments ([#667],[#723])
+* support builder option for `//tsize` and `//latextsize` ([#716],[#719],[#720])
+* remove ul_item() of html, idgxml, and markdown. ([#726],[#727])
+* PDFMaker: reflect imagedir config ([#756],[#759])
+* HTMLBuilder, LATEXBuilder, IDGXMLBuilder: use compile_inline in column tag
+* review-init: Specify source file encoding on generating config. ([#761])
+* EPUBMaker, PDFMaker: support subtitle for PDF and EPUB ([#742],[#745],[#747])
+* TOPBuilder: fix `@<list>` ([#763])
+
+## Enhancements
+
+* LATEXBuilder: enable jumoline.sty by default
+* IDGXMLBuilder, HTMLBuilder: removes errors and warnings in published document ([#753])
+* image_finder.rb: support symlinked directory ([#743])
+* TOPBuilder: refactor headline ([#729])
+* allow free format in history of config.yml ([#693])
+* HTMLBuilder: put list's id into the attribute of div.caption-code ([#724])
+* without rubyzip, skip zip test ([#713],[#714])
+* suppress output on checking convert command ([#712],[#718])
+* TOPBuilder: support `@<bib>` and `//bibpaper` ([#763])
+* TOPBuilder: support `[notoc]` and `[nodisp]` ([#763])
+
+## Docs
+
+* add makeindex.(ja.)md
+
+## Others
+
+* fix `.rubocop.yml` and suppress warnings
+
+## Contributors
+
+* [@kuroda](https://github.com/kuroda)
+* [@olleolleolle](https://github.com/olleolleolle)
+* [@shirou](https://github.com/shirou)
+* [@m-shibata](https://github.com/m-shibata)
+* [@kenkiku1021](https://github.com/kenkiku1021)
+
+[#261]: https://github.com/kmuto/review/issues/261
+[#360]: https://github.com/kmuto/review/issues/360
+[#660]: https://github.com/kmuto/review/issues/660
+[#667]: https://github.com/kmuto/review/issues/667
+[#669]: https://github.com/kmuto/review/issues/669
+[#681]: https://github.com/kmuto/review/issues/681
+[#682]: https://github.com/kmuto/review/issues/682
+[#683]: https://github.com/kmuto/review/issues/683
+[#684]: https://github.com/kmuto/review/issues/684
+[#685]: https://github.com/kmuto/review/issues/685
+[#686]: https://github.com/kmuto/review/issues/686
+[#688]: https://github.com/kmuto/review/issues/688
+[#693]: https://github.com/kmuto/review/issues/693
+[#696]: https://github.com/kmuto/review/issues/696
+[#697]: https://github.com/kmuto/review/issues/697
+[#706]: https://github.com/kmuto/review/issues/706
+[#708]: https://github.com/kmuto/review/issues/708
+[#710]: https://github.com/kmuto/review/issues/710
+[#711]: https://github.com/kmuto/review/issues/711
+[#712]: https://github.com/kmuto/review/issues/712
+[#713]: https://github.com/kmuto/review/issues/713
+[#714]: https://github.com/kmuto/review/issues/714
+[#716]: https://github.com/kmuto/review/issues/716
+[#717]: https://github.com/kmuto/review/issues/717
+[#718]: https://github.com/kmuto/review/issues/718
+[#719]: https://github.com/kmuto/review/issues/719
+[#720]: https://github.com/kmuto/review/issues/720
+[#723]: https://github.com/kmuto/review/issues/723
+[#724]: https://github.com/kmuto/review/issues/724
+[#726]: https://github.com/kmuto/review/issues/726
+[#727]: https://github.com/kmuto/review/issues/727
+[#729]: https://github.com/kmuto/review/issues/729
+[#730]: https://github.com/kmuto/review/issues/730
+[#731]: https://github.com/kmuto/review/issues/731
+[#733]: https://github.com/kmuto/review/issues/733
+[#738]: https://github.com/kmuto/review/issues/738
+[#740]: https://github.com/kmuto/review/issues/740
+[#742]: https://github.com/kmuto/review/issues/742
+[#743]: https://github.com/kmuto/review/issues/743
+[#745]: https://github.com/kmuto/review/issues/745
+[#747]: https://github.com/kmuto/review/issues/747
+[#751]: https://github.com/kmuto/review/issues/751
+[#753]: https://github.com/kmuto/review/issues/753
+[#756]: https://github.com/kmuto/review/issues/756
+[#757]: https://github.com/kmuto/review/issues/757
+[#758]: https://github.com/kmuto/review/issues/758
+[#759]: https://github.com/kmuto/review/issues/759
+[#761]: https://github.com/kmuto/review/issues/761
+[#763]: https://github.com/kmuto/review/issues/763
+
+
 # Version 2.1.0
 
 ## New Features
