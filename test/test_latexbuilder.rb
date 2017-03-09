@@ -937,4 +937,89 @@ EOS
     actual = compile_inline("test @<comment>{コメント} test2")
     assert_equal %Q|test \\pdfcomment{コメント} test2|, actual
   end
+
+  def test_appendix_list
+    @chapter.instance_eval do
+      def on_APPENDIX?
+        true
+      end
+    end
+    src =<<-EOS
+@<list>{foo}
+//list[foo][FOO]{
+//}
+EOS
+    expected =<<-EOS
+
+\\reviewlistref{A.1}
+
+\\reviewlistcaption{リストA.1: FOO}
+\\begin{reviewlist}
+\\end{reviewlist}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_appendix_table
+    @chapter.instance_eval do
+      def on_APPENDIX?
+        true
+      end
+    end
+    src =<<-EOS
+@<table>{foo}
+//table[foo][FOO]{
+A	B
+//}
+EOS
+    expected =<<-EOS
+
+\\reviewtableref{A.1}{table:chap1:foo}
+
+\\begin{table}[h]
+\\reviewtablecaption{FOO}
+\\label{table:chap1:foo}
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{A} & B \\\\  \\hline
+\\end{reviewtable}
+\\end{table}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_appendix_image
+    @chapter.instance_eval do
+      def on_APPENDIX?
+        true
+      end
+    end
+
+    def @chapter.image(id)
+      item = Book::NumberlessImageIndex::Item.new("sampleimg", 1)
+      item.instance_eval{@path="./images/chap1-sampleimg.png"}
+      item
+    end
+
+    src =<<-EOS
+@<img>{sampleimg}
+//image[sampleimg][FOO]{
+//}
+EOS
+    expected =<<-EOS
+
+\\reviewimageref{A.1}{image:chap1:sampleimg}
+
+\\begin{reviewimage}
+\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\caption{FOO}
+\\label{image:chap1:sampleimg}
+\\end{reviewimage}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
 end
