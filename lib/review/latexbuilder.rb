@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2016  Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2017 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -339,7 +339,11 @@ module ReVIEW
           puts macro(command + 'caption', "#{compile_inline(caption)}")
         else
           begin
-            puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [@chapter.number, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
+            if get_chap.nil?
+              puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
+            else
+              puts macro('reviewlistcaption', "#{I18n.t("list")}#{I18n.t("format_number_header", [get_chap, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}")
+            end
           rescue KeyError
             error "no such list: #{id}"
           end
@@ -739,17 +743,29 @@ module ReVIEW
     # FIXME: use TeX native label/ref.
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewlistref', "#{chapter.number}.#{chapter.list(id).number}")
+      if get_chap(chapter).nil?
+        macro('reviewlistref', I18n.t("format_number_without_header", [chapter.list(id).number]))
+      else
+        macro('reviewlistref', I18n.t("format_number", [get_chap(chapter), chapter.list(id).number]))
+      end
     end
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewtableref', "#{chapter.number}.#{chapter.table(id).number}", table_label(id, chapter))
+      if get_chap(chapter).nil?
+        macro('reviewtableref', I18n.t("format_number_without_header", [chapter.table(id).number]), table_label(id, chapter))
+      else
+        macro('reviewtableref', I18n.t("format_number", [get_chap(chapter), chapter.table(id).number]), table_label(id, chapter))
+      end
     end
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      macro('reviewimageref', "#{chapter.number}.#{chapter.image(id).number}", image_label(id, chapter))
+      if get_chap(chapter).nil?
+        macro('reviewimageref', I18n.t("format_number_without_header", [chapter.image(id).number]), image_label(id, chapter))
+      else
+        macro('reviewimageref', I18n.t("format_number", [get_chap(chapter), chapter.image(id).number]), image_label(id, chapter))
+      end
     end
 
     def footnote(id, content)
