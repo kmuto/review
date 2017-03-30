@@ -137,27 +137,27 @@ secnolevel: 2
 # 表紙の後に大扉ページを作成するか。省略した場合はnull (作成しない)
 # titlepage: null
 #
-# 自動生成される大扉ページを上書きするファイル。ファイル名を指定すると大扉として入る
+# 自動生成される大扉ページを上書きするファイル。ファイル名を指定すると大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # titlefile: null
 #
-# 原書大扉ページにするHTMLファイル。ファイル名を指定すると原書大扉として入る
+# 原書大扉ページにするHTMLファイル。ファイル名を指定すると原書大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # originaltitlefile: null
 #
-# 権利表記ページファイル。ファイル名を指定すると権利表記として入る
+# 権利表記ページファイル。ファイル名を指定すると権利表記として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # creditfile: null
 
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
 # colophon: null
 
-# 裏表紙ファイル (画像はcoversまたはimagesに配置する)。ファイル名を指定すると裏表紙として入る
+# 裏表紙データファイル (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # backcover: null
 
-# プロフィールページファイル。ファイル名を指定すると著者紹介として入る
+# プロフィールページファイル  (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)。ファイル名を指定すると著者紹介として入る
 # profile: null
 # プロフィールページの目次上の見出し
 # profiletitle: 著者紹介
 
-# 広告ファイル。ファイル名を指定すると広告として入る
+# 広告ファイル。ファイル名を指定すると広告として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # advfile: null
 
 # 取り込む画像が格納されているディレクトリ。省略した場合は以下
