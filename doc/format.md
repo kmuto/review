@@ -340,6 +340,8 @@ The third option is used to define the scale of images.  `scale=X` is scaling fo
 When you want to refer images such as "see figure 1.", you can use
 inline reference markup like `@<img>{unixhistory}`.
 
+When you refer a images in the other chapter, you can use similar way to list reference, which use an ID with chapter ID, such like `@<img>{advanced|unixhistory}`, to refer a image `unixhistory` in `advanced.re`.
+
 When you want to use images in paragraph or other inline context, you can use `@<icon>`.
 
 ### Finding image pathes
