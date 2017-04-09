@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
@@ -162,7 +163,6 @@ module ReVIEW
       "`#{str}`"
     end
 
-
     def image_image(id, caption, metric)
       blank
       puts "![#{compile_inline(caption)}](#{@chapter.image(id).path.sub(/\A\.\//, "")})"
@@ -212,7 +212,7 @@ module ReVIEW
           sepidx ||= idx
           next
         end
-        rows.push line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') }
+        rows.push(line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
 
@@ -225,16 +225,16 @@ module ReVIEW
       return if rows.empty?
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(s) }
+          tr(rows.shift.map {|s| th(s) })
         end
         table_border rows.first.size
         rows.each do |cols|
-          tr cols.map {|s| td(s) }
+          tr(cols.map {|s| td(s) })
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(h)] + cs.map {|s| td(s) }
+          tr([th(h)] + cs.map {|s| td(s) })
         end
       end
       table_end

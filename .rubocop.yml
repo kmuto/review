@@ -321,6 +321,9 @@ Style/StringLiteralsInInterpolation:
 Style/SymbolProc:
   Enabled: false
 
+Style/SymbolArray:
+  Enabled: false
+
 Style/TrailingBlankLines:
   Enabled: false
 
@@ -336,6 +339,8 @@ Style/UnneededPercentQ:
 Style/WhileUntilModifier:
   Enabled: false
 
+Style/IndentHeredoc:
+  Enabled: false
 
 #### Metrics
 

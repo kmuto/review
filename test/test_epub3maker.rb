@@ -614,7 +614,6 @@ EOT
     assert_equal expect, history
   end
 
-
   def test_detect_mathml
     Dir.mktmpdir do |dir|
       epubmaker = ReVIEW::EPUBMaker.new
@@ -641,7 +640,6 @@ EOT
       assert_equal ["mathml"], epubmaker.detect_properties(path)
     end
   end
-
 
   def test_detect_mathml_ns
     Dir.mktmpdir do |dir|

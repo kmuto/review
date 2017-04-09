@@ -1,6 +1,6 @@
 # encoding: utf-8
-#
-# Copyright (c) 2010-2016 Kenshi Muto and Masayoshi Takahashi
+
+# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of

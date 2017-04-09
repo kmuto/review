@@ -1,7 +1,7 @@
 # encoding: utf-8
-#
+
 # Copyright (c) 2002-2007 Minero Aoki
-# Copyright (c) 2009-2016 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -415,7 +415,7 @@ module ReVIEW
       @strategy.dl_begin
       while /\A\s*:/ =~ f.peek
         @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
-        @strategy.dd f.break(/\A(\S|\s*:)/).map {|line| text(line.strip) }
+        @strategy.dd(f.break(/\A(\S|\s*:)/).map {|line| text(line.strip) })
         f.skip_blank_lines
         f.skip_comment_lines
       end

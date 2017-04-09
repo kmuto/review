@@ -146,7 +146,6 @@ class IndexTest < Test::Unit::TestCase
     assert_equal "1.1.1", index.number('target')
   end
 
-
   def test_HeadelineIndex7
     src = <<-EOB
 = chap1

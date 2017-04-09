@@ -1,7 +1,7 @@
 # encoding: utf-8
-#
+
 # Copyright (c) 2002-2006 Minero Aoki
-#               2008-2016 Minero Aoki, Kenshi Muto
+#               2008-2017 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of

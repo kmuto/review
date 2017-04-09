@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
 # Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi

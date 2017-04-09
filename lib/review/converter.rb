@@ -1,5 +1,5 @@
 # encoding: utf-8
-#
+
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.

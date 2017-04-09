@@ -1,5 +1,5 @@
 # encoding: utf-8
-#
+
 # Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
@@ -241,7 +241,6 @@ module ReVIEW
         build_pdf
 
         FileUtils.cp(File.join(@path, "book.pdf"), pdf_filepath)
-
       ensure
         unless @config["debug"]
           remove_entry_secure @path

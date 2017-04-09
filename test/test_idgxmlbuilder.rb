@@ -46,7 +46,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<title id="test" aid:pstyle="h3">this is test.</title><?dtp level="3" section="this is test."?>|, actual
   end
 
-
   def test_headline_level3_with_secno
     @config["secnolevel"] = 3
     actual = compile_block("==={test} this is test.\n")
@@ -658,7 +657,6 @@ EOS
     expected = "<p><span type='image'>図1.1</span></p>"
     assert_equal expected, actual
   end
-
 
   def test_block_raw0
     actual = compile_block("//raw[<>!\"\\n& ]\n")

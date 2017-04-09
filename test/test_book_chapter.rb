@@ -39,7 +39,7 @@ class ChapterTest < Test::Unit::TestCase
   def test_open
     ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal :io, ch.open
-    assert_equal [:io], ch.open {|io| [io] }
+    assert_equal [:io], (ch.open {|io| [io] })
   end
 
   def test_size
@@ -189,7 +189,6 @@ E
 E
   end
 
-
   def test_headline_index_nullsection
     do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, :propagate => false)
 == abc
@@ -197,7 +196,6 @@ E
 == def
 E
   end
-
 
   def test_column_index
     do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)

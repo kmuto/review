@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2002-2008 Minero Aoki
-#               2009-2016 Minero Aoki, Kenshi Muto
+#               2009-2017 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -390,7 +390,7 @@ module ReVIEW
       def read_FILE(filename)
         if !@warn_old_files[filename]
           @warn_old_files[filename] = true
-          if !caller().any?{|item| item =~ %r|/review/test/test_|}
+          if !caller().any? {|item| item =~ %r|/review/test/test_|}
             warn "!!! #{filename} is obsoleted. please use catalog.yml."
           end
         end
