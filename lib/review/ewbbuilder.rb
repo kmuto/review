@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 # $Id: ewbbuilder.rb 2195 2005-11-13 21:52:18Z aamine $
 
 require 'review/builder'
@@ -112,7 +113,7 @@ module ReVIEW
       buf = []
       while line = f.gets
         break if %r[\A//\}] === line
-        buf.push line.strip.split(/\t+/).map {|s| s == '.' ? '' : s }
+        buf.push(line.strip.split(/\t+/).map {|s| s == '.' ? '' : s })
       end
       table_type = 'tabm'
       output.puts "//#{table_type}[" + spec + ']{'

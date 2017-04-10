@@ -365,7 +365,6 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal expected, actual
   end
 
-
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, actual

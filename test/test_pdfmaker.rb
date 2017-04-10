@@ -121,7 +121,6 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
-
   def test_make_okuduke_dojin
     @config.merge!({
                      "aut"=>["テスト太郎","テスト次郎"],

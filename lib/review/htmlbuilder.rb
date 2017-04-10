@@ -1,7 +1,7 @@
 # encoding: utf-8
-#
+
 # Copyright (c) 2002-2007 Minero Aoki
-#               2008-2016 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#               2008-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -642,7 +642,7 @@ module ReVIEW
           sepidx ||= idx
           next
         end
-        rows.push line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') }
+        rows.push(line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
 
@@ -660,15 +660,15 @@ module ReVIEW
       return if rows.empty?
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(s) }
+          tr (rows.shift.map {|s| th(s) })
         end
         rows.each do |cols|
-          tr cols.map {|s| td(s) }
+          tr (cols.map {|s| td(s) })
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(h)] + cs.map {|s| td(s) }
+          tr ([th(h)] + cs.map {|s| td(s) })
         end
       end
       table_end

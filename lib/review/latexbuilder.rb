@@ -1,5 +1,5 @@
 # encoding: utf-8
-#
+
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
 #               2010-2017 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
@@ -399,7 +399,6 @@ module ReVIEW
       end
     end
 
-
     def image_header(id, caption)
     end
 
@@ -508,7 +507,7 @@ module ReVIEW
           sepidx ||= idx
           next
         end
-        rows.push line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') }
+        rows.push(line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
 
@@ -521,15 +520,15 @@ module ReVIEW
       table_begin rows.first.size
       if sepidx
         sepidx.times do
-          tr rows.shift.map {|s| th(s) }
+          tr(rows.shift.map {|s| th(s) })
         end
         rows.each do |cols|
-          tr cols.map {|s| td(s) }
+          tr(cols.map {|s| td(s) })
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr [th(h)] + cs.map {|s| td(s) }
+          tr([th(h)] + cs.map {|s| td(s) })
         end
       end
       table_end
@@ -738,7 +737,6 @@ module ReVIEW
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
-
 
     # FIXME: use TeX native label/ref.
     def inline_list(id)

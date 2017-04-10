@@ -1,7 +1,8 @@
 # encoding: utf-8
+
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2016 Kenshi Muto
+# Copyright (c) 2010-2017 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of

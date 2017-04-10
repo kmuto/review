@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 require 'book_test_helper'
 
 class BookTest < Test::Unit::TestCase
@@ -34,7 +35,7 @@ class BookTest < Test::Unit::TestCase
           o.puts "#{test_const} = #{num}"
         end
         Book.update_rubyenv(dir)
-        assert_equal num, Object.class_eval { const_get(test_const) }
+        assert_equal num, (Object.class_eval { const_get(test_const) })
       end
     ensure
       Object.class_eval { remove_const(test_const) }

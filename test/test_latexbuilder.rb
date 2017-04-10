@@ -53,7 +53,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\\subsection*{this is test.}\n\\label{sec:1-0-1}\n|, actual
   end
 
-
   def test_headline_level3_with_secno
     @config["secnolevel"] = 3
     actual = compile_block("==={test} this is test.\n")
@@ -289,7 +288,6 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//emlist[]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
     assert_equal %Q|\n\\vspace{-1.5em}\\begin{reviewemlistlst}[title={\\relax},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n|, actual
   end
-
 
   def test_emlist_caption
     actual = compile_block("//emlist[cap1]{\nfoo\nbar\n\nbuz\n//}\n")

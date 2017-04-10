@@ -1,5 +1,5 @@
 # encoding: utf-8
-#
+
 # Copyright (c) 2002-2006 Minero Aoki
 #               2008-2017 Minero Aoki, Kenshi Muto
 #
