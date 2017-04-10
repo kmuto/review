@@ -83,6 +83,9 @@ Style/ClassCheck:
 Style/ClassMethods:
   Enabled: false
 
+Style/EndOfLine:
+  Enabled: false
+
 # Unnecessary spacing detected.
 Style/ExtraSpacing:
   Enabled: true
