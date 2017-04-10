@@ -390,7 +390,7 @@ module ReVIEW
       def read_FILE(filename)
         if !@warn_old_files[filename]
           @warn_old_files[filename] = true
-          if !caller().any? {|item| item =~ %r|/review/test/test_|}
+          if caller().none? {|item| item =~ %r|/review/test/test_|}
             warn "!!! #{filename} is obsoleted. please use catalog.yml."
           end
         end
