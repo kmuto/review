@@ -136,7 +136,7 @@ module ReVIEW
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
+        if /\A[\=\-(\{\-\})]{12}/ =~ line
           # just ignore
           #error "too many table separator" if sepidx
           sepidx ||= idx
