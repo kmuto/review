@@ -34,7 +34,7 @@ module ReVIEW
         "secnolevel" => 2, # level of section #
         "epubversion" => 3,
         "titlepage" => true, # Use title page
-        "toc" => nil, # Use table of contents in body
+        "toc" => true, # Use table of contents in body
         "colophon" => nil, # Use colophon
         "debug" => nil, # debug flag
         "catalogfile" => 'catalog.yml',
