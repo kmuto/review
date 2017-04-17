@@ -14,6 +14,8 @@ require 'review/htmlutils'
 require 'review/template'
 require 'review/textutils'
 require 'review/webtocprinter'
+require 'digest'
+require 'tmpdir'
 
 module ReVIEW
 
@@ -572,6 +574,14 @@ module ReVIEW
         require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
+      elsif @book.config["imgmath"]
+        puts %Q[<div class="equation">]
+        math_str = "\\begin{equation*}\n" + unescape_html(lines.join("\n")) + "\n\\end{equation*}\n"
+        key = Digest::SHA256.hexdigest(math_str)
+        img_path = "./images/_gen_#{key}.png"
+        make_math_image(math_str, img_path)
+        puts %Q[<img src="#{img_path}" />]
+        puts '</div>'
       else
         print '<pre>'
         puts "#{lines.join("\n")}"
@@ -920,6 +930,12 @@ module ReVIEW
         require 'math_ml/symbol/character_reference'
         parser = MathML::LaTeX::Parser.new(:symbol => MathML::Symbol::CharacterReference)
         %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
+      elsif @book.config["imgmath"]
+        math_str = "$" + str + "$"
+        key = Digest::SHA256.hexdigest(str)
+        img_path = "./images/_gen_#{key}.png"
+        make_math_image(math_str, img_path)
+        %Q[<span class="equation"><img src="#{img_path}" /></span>]
       else
         %Q[<span class="equation">#{escape_html(str)}</span>]
       end
@@ -1174,6 +1190,32 @@ module ReVIEW
     def olnum(num)
       @ol_num = num.to_i
     end
+
+    def make_math_image(str, path, fontsize=12)
+      fontsize2 = (fontsize*1.2).round.to_i
+      texsrc = <<-EOB
+\\documentclass[12pt]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{amsmath}
+\\usepackage{amsthm}
+\\usepackage{amssymb}
+\\usepackage{amsfonts}
+\\usepackage{anyfontsize}
+\\usepackage{bm}
+\\pagestyle{empty}
+
+\\begin{document}
+\\fontsize{#{fontsize}}{#{fontsize2}}\\selectfont #{str}
+\\end{document}
+      EOB
+      Dir.mktmpdir do |tmpdir|
+        tex_path = File.join(tmpdir, "tmpmath.tex")
+        dvi_path = File.join(tmpdir, "tmpmath.dvi")
+        File.write(tex_path, texsrc)
+        system("latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{path} #{dvi_path}")
+      end
+    end
+
   end
 
 end # module ReVIEW
