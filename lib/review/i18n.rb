@@ -20,20 +20,11 @@ module ReVIEW
       lfile = nil
       if ymlfile
         lfile = File.expand_path(ymlfile, Dir.pwd)
-
-        # backward compatibility
-        if !File.exist?(lfile) && (ymlfile == "locale.yml") && File.exist?(File.expand_path("locale.yaml", Dir.pwd))
-          raise ReVIEW::ConfigError, "locale.yaml is obsoleted.  Please use locale.yml."
-        end
       end
 
       if lfile && File.file?(lfile)
         @i18n.update_localefile(lfile)
       end
-    end
-
-    def self.i18n(*args)
-      raise NotImplementedError, "I18n.i18n is obsoleted. Please use I18n.setup(locale, [ymlfile])"
     end
 
     def self.t(str, args = nil)

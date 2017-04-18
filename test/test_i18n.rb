@@ -17,18 +17,6 @@ class I18nTest < Test::Unit::TestCase
     end
   end
 
-  def test_load_locale_yaml
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        file = File.join(dir, "locale.yaml")
-        File.open(file, "w"){|f| f.write("locale: ja\nfoo: \"bar\"\n")}
-        assert_raise ReVIEW::ConfigError do
-          I18n.setup
-        end
-      end
-    end
-  end
-
   def test_load_foo_yaml
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
@@ -273,16 +261,6 @@ class I18nTest < Test::Unit::TestCase
     assert_equal "付録A", i18n.t("appendix", 1)
     assert_equal "付録B", i18n.t("appendix", 2)
     assert_equal "付録C", i18n.t("appendix", 3)
-  end
-
-  def test_i18n_error
-    I18n.setup
-    assert_raises NotImplementedError do
-      I18n.i18n("ja")
-    end
-    assert_raises NotImplementedError do
-      I18n.i18n("ja",{})
-    end
   end
 
   def teardown
