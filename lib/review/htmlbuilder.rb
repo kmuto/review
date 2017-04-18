@@ -78,9 +78,6 @@ module ReVIEW
       end
 
       layout_file = File.join(@book.basedir, "layouts", localfilename)
-      if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
-        raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
-      end
       if File.exist?(layout_file)
         if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
           warn "user's layout is prohibited in safe mode. ignored."
