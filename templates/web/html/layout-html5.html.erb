@@ -7,7 +7,7 @@
 <%   @stylesheets.each do |style| %>
   <link rel="stylesheet" type="text/css" href="<%=h style %>" />
 <%   end %>
-<% end%>
+<% end %>
 <% if @next.present? %><link rel="next" title="<%= h(@next_title)%>" href="<%= h(@next.id.to_s+"."+@book.config['htmlext']) %>"><% end %>
 <% if @prev.present? %><link rel="prev" title="<%= h(@prev_title)%>" href="<%= h(@prev.id.to_s+"."+@book.config['htmlext']) %>"><% end %>
   <meta name="generator" content="Re:VIEW" />
@@ -51,6 +51,17 @@
   <%   @javascripts.each do |script| %>
   <script src="<%=h script %>"></script>
   <%   end %>
-  <% end%>
+  <% end %>
+  <% if @analytics["google"].present? %>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '<%= @analytics["google"] %>', 'auto');
+    ga('send', 'pageview');
+  </script>
+  <% end %>
 </body>
 </html>

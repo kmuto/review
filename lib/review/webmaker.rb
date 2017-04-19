@@ -74,6 +74,8 @@ module ReVIEW
       # YAML configs will be overridden by command line options.
       @config.merge!(cmd_config)
       @config["htmlext"] = "html"
+      @analytics = @config["webmaker"]["analytics"] unless @config["webmaker"].nil?
+      @analytics ||= {}
       I18n.setup(@config["language"])
       generate_html_files(yamlfile)
     end
