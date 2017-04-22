@@ -401,7 +401,7 @@ Before using these tools, you should installed them.
 The markup of table is `//table[ID][caption]{ ... //}`
 You can separate header and content with `------------`.
 
-The columns are splitted by TAB character. When the first character in the column is `.`, the character is removed.  If you want to write `.` at the first, you should write `..`.
+The columns are splitted by TAB character. Write `.` to blank cells.  When the first character in the cell is `.`, the character is removed.  If you want to write `.` at the first, you should write `..`.
 
 When you want to use an empty column, you write `.`.
 
