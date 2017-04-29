@@ -143,7 +143,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
                  actual
   end
 
-
   def test_inline_br
     actual = compile_inline("@<br>{}")
     assert_equal %Q|\n|, actual
