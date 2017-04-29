@@ -8,6 +8,8 @@
 <%- else -%>
 \usepackage[deluxe]{otf}
 <%- end -%>
+\usepackage{caption}
+\usepackage{suffix}
 \usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
 % \usepackage{lmodern}
 \usepackage[dvipdfmx]{graphicx}
@@ -135,6 +137,9 @@
 
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
+
+\WithSuffix\newcommand\reviewtablecaption*[1]{%
+  \caption*{#1}}
 
 \newcommand{\reviewimgtablecaption}[1]{%
   \caption{#1}\vspace{-3mm}}

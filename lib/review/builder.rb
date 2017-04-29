@@ -183,6 +183,10 @@ module ReVIEW
     end
     private :adjust_n_cols
 
+    def emtable(lines, caption = nil)
+      table(lines, nil, caption)
+    end
+
     #def footnote(id, str)
     #  @footnotes.push [id, str]
     #end

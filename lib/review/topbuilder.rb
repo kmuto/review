@@ -315,13 +315,55 @@ module ReVIEW
       blank
     end
 
-    def table_header(id, caption)
+    def table(lines, id = nil, caption = nil)
       blank
       puts "◆→開始:#{@titles["table"]}←◆"
-      if get_chap.nil?
-        puts "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+
+      rows = []
+      sepidx = nil
+      lines.each_with_index do |line, idx|
+        if /\A[\=\-]{12}/ =~ line
+          # just ignore
+          #error "too many table separator" if sepidx
+          sepidx ||= idx
+          next
+        end
+        rows.push(line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') })
+      end
+      rows = adjust_n_cols(rows)
+
+      begin
+        table_header id, caption unless caption.nil?
+      rescue KeyError
+        error "no such table: #{id}"
+      end
+      return if rows.empty?
+      table_begin rows.first.size
+      if sepidx
+        sepidx.times do
+          tr(rows.shift.map {|s| th(s) })
+        end
+        rows.each do |cols|
+          tr(cols.map {|s| td(s) })
+        end
       else
-        puts "#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+        rows.each do |cols|
+          h, *cs = *cols
+          tr([th(h)] + cs.map {|s| td(s) })
+        end
+      end
+      table_end
+    end
+
+    def table_header(id, caption)
+      if id.nil?
+        puts compile_inline(caption)
+      else
+        if get_chap.nil?
+          puts "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+        else
+          puts "#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}"
+        end
       end
       blank
     end
