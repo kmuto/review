@@ -47,7 +47,7 @@ Re:VIEW は GitHub で開発されており、バージョン管理ツールの 
 初めて取得するときには、次のようにします (コピーを作っています)。
 
 ```bash
-$ git clone git://github.com/kmuto/review.git
+$ git clone https://github.com/kmuto/review.git
 ```
 
 review というディレクトリに展開されるので、review/bin にパスを通すようにしておいてください。

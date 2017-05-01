@@ -46,7 +46,7 @@ $ gem install review
 You can get latest Re:VIEW sources from GitHub.
 
 ```bash
-$ git clone git://github.com/kmuto/review.git
+$ git clone https://github.com/kmuto/review.git
 ```
 
 You can use Re:VIEW to add `review/bin` directory to `$PATH` variable.
