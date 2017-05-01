@@ -5,7 +5,7 @@ Maintainer: Kenshi Muto <kmuto@debian.org>
 Build-Depends: debhelper (>= 7.0.50~), quilt (>= 0.46-7~)
 Standards-Version: 3.9.1
 Homepage: http://github.com/kmuto/review
-Vcs-Git: git://github.com/kmuto/review.git
+Vcs-Git: https://github.com/kmuto/review.git
 
 Package: review
 Architecture: all
