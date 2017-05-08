@@ -55,7 +55,13 @@ module ReVIEW
           end
         end
       elsif secnolevel >= level
-        prefix = @chapter.format_number(false)
+        prefix = ''
+        if @chapter.is_a? ReVIEW::Book::Part
+          prefix = I18n.t('part_short', @chapter.number)
+        else
+          prefix = @chapter.format_number(false)
+        end
+
         0.upto(level - 2) do |i|
           prefix << ".#{@counter[i]}"
         end

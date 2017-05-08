@@ -394,7 +394,11 @@ module ReVIEW
 
     def get_chap(chapter = @chapter)
       if @book.config["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
-        return chapter.format_number(nil)
+        if chapter.is_a? ReVIEW::Book::Part
+          return I18n.t('part_short', chapter.number)
+        else
+          return chapter.format_number(nil)
+        end
       end
       return nil
     end
