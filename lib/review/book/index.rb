@@ -151,8 +151,12 @@ module ReVIEW
           # ex. ["//image", "id", "", "caption"]
           elements = line.split(/\[(.*?)\]/)
           if elements[1].present?
-            items.push item_class().new(elements[1], seq, elements[3])
-            seq += 1
+            if line =~ %r{^//imgtable}
+              items.push item_class().new(elements[1], 0, elements[3])
+            else ## %r<^//(image|graph)>
+              items.push item_class().new(elements[1], seq, elements[3])
+              seq += 1
+            end
             if elements[1] == ""
               warn "warning: no ID of #{item_type()} in #{line}"
             end
