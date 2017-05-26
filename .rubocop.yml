@@ -144,6 +144,9 @@ Style/IfUnlessModifier:
 Style/MutableConstant:
   Enabled: false
 
+Style/MultipleComparison:
+  Enabled: false
+
 Style/UnneededInterpolation:
   Enabled: false
 
@@ -343,6 +346,9 @@ Style/WhileUntilModifier:
   Enabled: false
 
 Style/IndentHeredoc:
+  Enabled: false
+
+Style/YodaCondition:
   Enabled: false
 
 #### Metrics
