@@ -6,6 +6,8 @@ AllCops:
 
 inherit_from: .rubocop_todo.yml
 
+#### Lint
+
 Lint/BlockAlignment:
   Enabled: true
 
@@ -37,6 +39,8 @@ Lint/UnusedMethodArgument:
 Lint/UselessAssignment:
   Enabled: false
 
+#### Performance
+
 Performance/RegexpMatch:
   Enabled: false
 
@@ -49,6 +53,8 @@ Performance/StringReplacement:
 
 Performance/RangeInclude:
   Enabled: false
+
+#### Style
 
 Style/AccessorMethodName:
   Enabled: false
@@ -83,13 +89,6 @@ Style/ClassCheck:
 Style/ClassMethods:
   Enabled: false
 
-Layout/EndOfLine:
-  Enabled: false
-
-# Unnecessary spacing detected.
-Layout/ExtraSpacing:
-  Enabled: true
-
 # Do not introduce global variables.
 Style/GlobalVars:
   Enabled: true
@@ -112,20 +111,7 @@ Style/ConditionalAssignment:
 Style/Documentation:
   Enabled: false
 
-Layout/DotPosition:
-  EnforcedStyle: trailing
-  Enabled: true
-
 Style/EmptyElse:
-  Enabled: false
-
-Layout/EmptyLines:
-  Enabled: false
-
-Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-
-Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
 Style/FormatString:
@@ -187,50 +173,17 @@ Style/HashSyntax:
 Style/RescueModifier:
   Enabled: false
 
-Layout/AccessModifierIndentation:
-  EnforcedStyle: indent
-  Enabled: true
-
 Style/ClassAndModuleChildren:
   EnforcedStyle: nested
-  Enabled: true
-
-Layout/SpaceAroundBlockParameters:
-  EnforcedStyleInsidePipes: no_space
-  Enabled: true
-
-Layout/SpaceInsideStringInterpolation:
-  EnforcedStyle: no_space
   Enabled: true
 
 Style/ColonMethodCall:
   Enabled: true
 
-Layout/EmptyLinesAroundAccessModifier:
-  Enabled: true
-
-Layout/EmptyLinesAroundMethodBody:
-  Enabled: true
-
-Layout/ExtraSpacing:
-  Enabled: true
-
 Style/For:
   Enabled: true
 
-Layout/IndentHash:
-  Enabled: true
-
-Layout/IndentationWidth:
-  Enabled: true
-
-Layout/IndentationConsistency:
-  Enabled: true
-
 Style/InfiniteLoop:
-  Enabled: false
-
-Layout/LeadingCommentSpace:
   Enabled: false
 
 Style/LineEndConcatenation:
@@ -243,9 +196,6 @@ Style/MethodName:
   Enabled: false
 
 Style/MultilineBlockChain:
-  Enabled: false
-
-Layout/MultilineOperationIndentation:
   Enabled: false
 
 Style/NegatedIf:
@@ -288,6 +238,89 @@ Style/Semicolon:
 Style/SingleLineMethods:
   Enabled: true
 
+Style/SpecialGlobalVars:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/StringLiteralsInInterpolation:
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+Style/TrailingCommaInLiteral:
+  Enabled: false
+
+Style/WordArray:
+  MinSize: 10
+
+Style/UnneededPercentQ:
+  Enabled: false
+
+Style/WhileUntilModifier:
+  Enabled: false
+
+Style/YodaCondition:
+  Enabled: false
+
+#### Layout
+
+Layout/AccessModifierIndentation:
+  EnforcedStyle: indent
+  Enabled: true
+
+Layout/DotPosition:
+  EnforcedStyle: trailing
+  Enabled: true
+
+Layout/EmptyLines:
+  Enabled: false
+
+Layout/EmptyLinesAroundAccessModifier:
+  Enabled: true
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: true
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Layout/EndOfLine:
+  Enabled: false
+
+Layout/ExtraSpacing:
+  Enabled: true
+
+Layout/IndentationConsistency:
+  Enabled: true
+
+Layout/IndentationWidth:
+  Enabled: true
+
+Layout/IndentHash:
+  Enabled: true
+
+Layout/IndentHeredoc:
+  Enabled: false
+
+Layout/LeadingCommentSpace:
+  Enabled: false
+
+Layout/MultilineOperationIndentation:
+  Enabled: false
+
+Layout/SpaceAroundBlockParameters:
+  EnforcedStyleInsidePipes: no_space
+  Enabled: true
+
 Layout/SpaceAfterComma:
   Enabled: false
 
@@ -315,41 +348,13 @@ Layout/SpaceInsideBlockBraces:
 Layout/SpaceInsideHashLiteralBraces:
   Enabled: false
 
-Style/SpecialGlobalVars:
-  Enabled: false
-
-Style/StringLiterals:
-  Enabled: false
-
-Style/StringLiteralsInInterpolation:
-  Enabled: false
-
-Style/SymbolProc:
-  Enabled: false
-
-Style/SymbolArray:
-  Enabled: false
+Layout/SpaceInsideStringInterpolation:
+  EnforcedStyle: no_space
+  Enabled: true
 
 Layout/TrailingBlankLines:
   Enabled: false
 
-Style/TrailingCommaInLiteral:
-  Enabled: false
-
-Style/WordArray:
-  MinSize: 10
-
-Style/UnneededPercentQ:
-  Enabled: false
-
-Style/WhileUntilModifier:
-  Enabled: false
-
-Layout/IndentHeredoc:
-  Enabled: false
-
-Style/YodaCondition:
-  Enabled: false
 
 #### Metrics
 
