@@ -83,11 +83,11 @@ Style/ClassCheck:
 Style/ClassMethods:
   Enabled: false
 
-Style/EndOfLine:
+Layout/EndOfLine:
   Enabled: false
 
 # Unnecessary spacing detected.
-Style/ExtraSpacing:
+Layout/ExtraSpacing:
   Enabled: true
 
 # Do not introduce global variables.
@@ -112,20 +112,20 @@ Style/ConditionalAssignment:
 Style/Documentation:
   Enabled: false
 
-Style/DotPosition:
+Layout/DotPosition:
   EnforcedStyle: trailing
   Enabled: true
 
 Style/EmptyElse:
   Enabled: false
 
-Style/EmptyLines:
+Layout/EmptyLines:
   Enabled: false
 
-Style/EmptyLinesAroundClassBody:
+Layout/EmptyLinesAroundClassBody:
   Enabled: false
 
-Style/EmptyLinesAroundModuleBody:
+Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
 Style/FormatString:
@@ -187,7 +187,7 @@ Style/HashSyntax:
 Style/RescueModifier:
   Enabled: false
 
-Style/AccessModifierIndentation:
+Layout/AccessModifierIndentation:
   EnforcedStyle: indent
   Enabled: true
 
@@ -195,42 +195,42 @@ Style/ClassAndModuleChildren:
   EnforcedStyle: nested
   Enabled: true
 
-Style/SpaceAroundBlockParameters:
+Layout/SpaceAroundBlockParameters:
   EnforcedStyleInsidePipes: no_space
   Enabled: true
 
-Style/SpaceInsideStringInterpolation:
+Layout/SpaceInsideStringInterpolation:
   EnforcedStyle: no_space
   Enabled: true
 
 Style/ColonMethodCall:
   Enabled: true
 
-Style/EmptyLinesAroundAccessModifier:
+Layout/EmptyLinesAroundAccessModifier:
   Enabled: true
 
-Style/EmptyLinesAroundMethodBody:
+Layout/EmptyLinesAroundMethodBody:
   Enabled: true
 
-Style/ExtraSpacing:
+Layout/ExtraSpacing:
   Enabled: true
 
 Style/For:
   Enabled: true
 
-Style/IndentHash:
+Layout/IndentHash:
   Enabled: true
 
-Style/IndentationWidth:
+Layout/IndentationWidth:
   Enabled: true
 
-Style/IndentationConsistency:
+Layout/IndentationConsistency:
   Enabled: true
 
 Style/InfiniteLoop:
   Enabled: false
 
-Style/LeadingCommentSpace:
+Layout/LeadingCommentSpace:
   Enabled: false
 
 Style/LineEndConcatenation:
@@ -245,7 +245,7 @@ Style/MethodName:
 Style/MultilineBlockChain:
   Enabled: false
 
-Style/MultilineOperationIndentation:
+Layout/MultilineOperationIndentation:
   Enabled: false
 
 Style/NegatedIf:
@@ -288,31 +288,31 @@ Style/Semicolon:
 Style/SingleLineMethods:
   Enabled: true
 
-Style/SpaceAfterComma:
+Layout/SpaceAfterComma:
   Enabled: false
 
-Style/SpaceAfterNot:
+Layout/SpaceAfterNot:
   Enabled: true
 
-Style/SpaceAfterSemicolon:
+Layout/SpaceAfterSemicolon:
   Enabled: true
 
-Style/SpaceAroundEqualsInParameterDefault:
+Layout/SpaceAroundEqualsInParameterDefault:
   Enabled: false
 
-Style/SpaceAroundOperators:
+Layout/SpaceAroundOperators:
   Enabled: false
 
-Style/SpaceBeforeBlockBraces:
+Layout/SpaceBeforeBlockBraces:
   Enabled: false
 
-Style/SpaceBeforeComma:
+Layout/SpaceBeforeComma:
   Enabled: true
 
-Style/SpaceInsideBlockBraces:
+Layout/SpaceInsideBlockBraces:
   Enabled: false
 
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   Enabled: false
 
 Style/SpecialGlobalVars:
@@ -330,7 +330,7 @@ Style/SymbolProc:
 Style/SymbolArray:
   Enabled: false
 
-Style/TrailingBlankLines:
+Layout/TrailingBlankLines:
   Enabled: false
 
 Style/TrailingCommaInLiteral:
@@ -345,7 +345,7 @@ Style/UnneededPercentQ:
 Style/WhileUntilModifier:
   Enabled: false
 
-Style/IndentHeredoc:
+Layout/IndentHeredoc:
   Enabled: false
 
 Style/YodaCondition:
