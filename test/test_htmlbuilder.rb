@@ -365,6 +365,65 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal expected, actual
   end
 
+  def test_inline_imgref3
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        file1 = File.join(dir, "images", "img1.png")
+        filet1 = File.join(dir, "images", "tbl1.png")
+        file2 = File.join(dir, "images", "img2.png")
+        re1 = File.join(dir, "sample1.re")
+        cat = File.join(dir, "catalog.yml")
+        FileUtils.mkdir_p(File.join(dir,"images"))
+        File.open(file1, "w"){|f| f.write("")}
+        File.open(filet1, "w"){|f| f.write("")}
+        File.open(file2, "w"){|f| f.write("")}
+        File.open(cat, "w"){|f| f.write("CHAPS:\n  - sample1.re\n")}
+        File.open(re1,"w"){|f| f.write(<<EOF)}
+= test
+
+tbl1 is @<table>{tbl1}.
+
+img2 is @<img>{img2}.
+
+//image[img1][image 1]{
+//}
+
+//imgtable[tbl1][table 1]{
+//}
+
+//image[img2][image 2]{
+//}
+EOF
+        content = File.read(re1)
+        actual = compile_block(content)
+
+        expected =<<-EOS
+<h1><a id="h1"></a><span class="secno">第1章　</span>test</h1>
+<p>tbl1 is <span class="tableref">表1.1</span>.</p>
+<p>img2 is <span class="imgref">図1.2</span>.</p>
+<div id="img1" class="image">
+<img src="images/img1.png" alt="image 1" />
+<p class="caption">
+図1.1: image 1
+</p>
+</div>
+<div id="tbl1" class="imgtable image">
+<p class="caption">表1.1: table 1</p>
+<img src="images/tbl1.png" alt="table 1" />
+</div>
+<div id="img2" class="image">
+<img src="images/img2.png" alt="image 2" />
+<p class="caption">
+図1.2: image 2
+</p>
+</div>
+EOS
+
+        assert_equal expected, actual
+      end
+    end
+  end
+
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n|, actual
