@@ -6,6 +6,8 @@ AllCops:
 
 inherit_from: .rubocop_todo.yml
 
+#### Lint
+
 Lint/BlockAlignment:
   Enabled: true
 
@@ -37,6 +39,8 @@ Lint/UnusedMethodArgument:
 Lint/UselessAssignment:
   Enabled: false
 
+#### Performance
+
 Performance/RegexpMatch:
   Enabled: false
 
@@ -49,6 +53,8 @@ Performance/StringReplacement:
 
 Performance/RangeInclude:
   Enabled: false
+
+#### Style
 
 Style/AccessorMethodName:
   Enabled: false
@@ -83,13 +89,6 @@ Style/ClassCheck:
 Style/ClassMethods:
   Enabled: false
 
-Style/EndOfLine:
-  Enabled: false
-
-# Unnecessary spacing detected.
-Style/ExtraSpacing:
-  Enabled: true
-
 # Do not introduce global variables.
 Style/GlobalVars:
   Enabled: true
@@ -112,20 +111,7 @@ Style/ConditionalAssignment:
 Style/Documentation:
   Enabled: false
 
-Style/DotPosition:
-  EnforcedStyle: trailing
-  Enabled: true
-
 Style/EmptyElse:
-  Enabled: false
-
-Style/EmptyLines:
-  Enabled: false
-
-Style/EmptyLinesAroundClassBody:
-  Enabled: false
-
-Style/EmptyLinesAroundModuleBody:
   Enabled: false
 
 Style/FormatString:
@@ -187,50 +173,17 @@ Style/HashSyntax:
 Style/RescueModifier:
   Enabled: false
 
-Style/AccessModifierIndentation:
-  EnforcedStyle: indent
-  Enabled: true
-
 Style/ClassAndModuleChildren:
   EnforcedStyle: nested
-  Enabled: true
-
-Style/SpaceAroundBlockParameters:
-  EnforcedStyleInsidePipes: no_space
-  Enabled: true
-
-Style/SpaceInsideStringInterpolation:
-  EnforcedStyle: no_space
   Enabled: true
 
 Style/ColonMethodCall:
   Enabled: true
 
-Style/EmptyLinesAroundAccessModifier:
-  Enabled: true
-
-Style/EmptyLinesAroundMethodBody:
-  Enabled: true
-
-Style/ExtraSpacing:
-  Enabled: true
-
 Style/For:
   Enabled: true
 
-Style/IndentHash:
-  Enabled: true
-
-Style/IndentationWidth:
-  Enabled: true
-
-Style/IndentationConsistency:
-  Enabled: true
-
 Style/InfiniteLoop:
-  Enabled: false
-
-Style/LeadingCommentSpace:
   Enabled: false
 
 Style/LineEndConcatenation:
@@ -243,9 +196,6 @@ Style/MethodName:
   Enabled: false
 
 Style/MultilineBlockChain:
-  Enabled: false
-
-Style/MultilineOperationIndentation:
   Enabled: false
 
 Style/NegatedIf:
@@ -288,33 +238,6 @@ Style/Semicolon:
 Style/SingleLineMethods:
   Enabled: true
 
-Style/SpaceAfterComma:
-  Enabled: false
-
-Style/SpaceAfterNot:
-  Enabled: true
-
-Style/SpaceAfterSemicolon:
-  Enabled: true
-
-Style/SpaceAroundEqualsInParameterDefault:
-  Enabled: false
-
-Style/SpaceAroundOperators:
-  Enabled: false
-
-Style/SpaceBeforeBlockBraces:
-  Enabled: false
-
-Style/SpaceBeforeComma:
-  Enabled: true
-
-Style/SpaceInsideBlockBraces:
-  Enabled: false
-
-Style/SpaceInsideHashLiteralBraces:
-  Enabled: false
-
 Style/SpecialGlobalVars:
   Enabled: false
 
@@ -330,9 +253,6 @@ Style/SymbolProc:
 Style/SymbolArray:
   Enabled: false
 
-Style/TrailingBlankLines:
-  Enabled: false
-
 Style/TrailingCommaInLiteral:
   Enabled: false
 
@@ -345,11 +265,96 @@ Style/UnneededPercentQ:
 Style/WhileUntilModifier:
   Enabled: false
 
-Style/IndentHeredoc:
-  Enabled: false
-
 Style/YodaCondition:
   Enabled: false
+
+#### Layout
+
+Layout/AccessModifierIndentation:
+  EnforcedStyle: indent
+  Enabled: true
+
+Layout/DotPosition:
+  EnforcedStyle: trailing
+  Enabled: true
+
+Layout/EmptyLines:
+  Enabled: false
+
+Layout/EmptyLinesAroundAccessModifier:
+  Enabled: true
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: true
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Layout/EndOfLine:
+  Enabled: false
+
+Layout/ExtraSpacing:
+  Enabled: true
+
+Layout/IndentationConsistency:
+  Enabled: true
+
+Layout/IndentationWidth:
+  Enabled: true
+
+Layout/IndentHash:
+  Enabled: true
+
+Layout/IndentHeredoc:
+  Enabled: false
+
+Layout/LeadingCommentSpace:
+  Enabled: false
+
+Layout/MultilineOperationIndentation:
+  Enabled: false
+
+Layout/SpaceAroundBlockParameters:
+  EnforcedStyleInsidePipes: no_space
+  Enabled: true
+
+Layout/SpaceAfterComma:
+  Enabled: false
+
+Layout/SpaceAfterNot:
+  Enabled: true
+
+Layout/SpaceAfterSemicolon:
+  Enabled: true
+
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: false
+
+Layout/SpaceAroundOperators:
+  Enabled: false
+
+Layout/SpaceBeforeBlockBraces:
+  Enabled: false
+
+Layout/SpaceBeforeComma:
+  Enabled: true
+
+Layout/SpaceInsideBlockBraces:
+  Enabled: false
+
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+Layout/SpaceInsideStringInterpolation:
+  EnforcedStyle: no_space
+  Enabled: true
+
+Layout/TrailingBlankLines:
+  Enabled: false
+
 
 #### Metrics
 
