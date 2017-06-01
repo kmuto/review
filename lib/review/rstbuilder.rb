@@ -317,8 +317,10 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      blank
-      puts ".. _#{id}:"
+      unless id.nil?
+        blank
+        puts ".. _#{id}:"
+      end
       blank
       puts ".. list-table:: #{compile_inline(caption)}"
       puts "   :header-rows: 1"
@@ -350,6 +352,10 @@ module ReVIEW
 
     def table_end
       blank
+    end
+
+    def emtable(lines, caption = nil)
+      table(lines, nil, caption)
     end
 
     def comment(lines, comment = nil)

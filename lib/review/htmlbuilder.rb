@@ -676,10 +676,14 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      if get_chap.nil?
-        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
+      if id.nil?
+        puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
       else
-        puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
+        if get_chap.nil?
+          puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
+        else
+          puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
+        end
       end
     end
 
@@ -725,6 +729,10 @@ module ReVIEW
     def imgtable_image(id, caption, metric)
       metrics = parse_metric("html", metric)
       puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+    end
+
+    def emtable(lines, caption = nil)
+      table(lines, nil, caption)
     end
 
     def comment(lines, comment = nil)

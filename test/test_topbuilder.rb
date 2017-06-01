@@ -147,7 +147,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_inline_in_table
     actual = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
-    assert_equal %Q|★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, actual
+    assert_equal %Q|◆→開始:表←◆\n★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n|, actual
   end
 
   def test_paragraph
@@ -208,6 +208,26 @@ class TOPBuidlerTest < Test::Unit::TestCase
     end
 
     assert_equal %Q|[1]|, compile_inline("@<bib>{samplebib}")
+  end
+
+  def test_table
+    actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal %Q|◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n|,
+                 actual
+  end
+
+  def test_inline_table
+    def @chapter.table(id)
+      Book::TableIndex::Item.new("sampletable",1)
+    end
+    actual = compile_block("@<table>{sampletest}\n")
+    assert_equal %Q|表1.1\n|, actual
+  end
+
+  def test_emtable
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal %Q|◆→開始:表←◆\nfoo\n\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n|,
+                 actual
   end
 
   def test_major_blocks

@@ -150,6 +150,11 @@ class RSTBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|   * - ★1☆\n     - ▲2☆\n   * - ★3☆\n     - ▲4☆<>&\n\n|, actual
   end
 
+  def test_emtable
+    actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
+    assert_equal %Q|.. list-table:: foo\n   :header-rows: 1\n\n   * - A\n\n   * - A\n\n|, actual
+  end
+
   def test_paragraph
     actual = compile_block("foo\nbar\n")
     assert_equal %Q|foobar\n\n|, actual

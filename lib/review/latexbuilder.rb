@@ -536,12 +536,20 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      if caption.present?
-        @table_caption = true
-        puts '\begin{table}[h]'
-        puts macro('reviewtablecaption', compile_inline(caption))
+      if id.nil?
+        if caption.present?
+          @table_caption = true
+          puts '\begin{table}[h]'
+          puts macro('reviewtablecaption*', compile_inline(caption))
+        end
+      else
+        if caption.present?
+          @table_caption = true
+          puts '\begin{table}[h]'
+          puts macro('reviewtablecaption', compile_inline(caption))
+        end
+        puts macro('label', table_label(id))
       end
-      puts macro('label', table_label(id))
     end
 
     def table_begin(ncols)
@@ -596,6 +604,10 @@ module ReVIEW
       end
       @table_caption = nil
       blank
+    end
+
+    def emtable(lines, caption = nil)
+      table(lines, nil, caption)
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)

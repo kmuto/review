@@ -563,10 +563,14 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      if get_chap.nil?
-        puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
+      if id.nil?
+        puts %Q[<caption>#{compile_inline(caption)}</caption>]
       else
-        puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
+        if get_chap.nil?
+          puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
+        else
+          puts %Q[<caption>#{I18n.t("table")}#{I18n.t("format_number", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix_idgxml")}#{compile_inline(caption)}</caption>]
+        end
       end
     end
 
@@ -587,6 +591,10 @@ module ReVIEW
 
     def table_end
       print "<?dtp tablerow last?>"
+    end
+
+    def emtable(lines, caption = nil)
+      table(lines, nil, caption)
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)

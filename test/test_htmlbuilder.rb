@@ -1574,6 +1574,12 @@ EOS
     assert_equal %Q|<p><span class="tableref">表1.1</span></p>\n|, actual
   end
 
+  def test_emtable
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal %Q|<div class="table">\n<p class="caption">foo</p>\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n|,
+                 actual
+  end
+
   def test_imgtable
     def @chapter.image(id)
       item = Book::ImageIndex::Item.new("sampleimg",1, 'sample img')
