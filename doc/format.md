@@ -427,6 +427,22 @@ When you want to write "see table X", you can write `@<table>{envvars}`.
 
 You can use inline markup in the tables.
 
+`//table` without arguments creates a table without numbering and captioning.
+
+```
+//table{
+...
+//}
+```
+
+To create a table without numbering but with captioning, use `//emtable`.
+
+```
+//emtable[caption]{
+...
+//}
+```
+
 ### Column width of table
 When using LaTeX or IDGXML builder, you can specify each column width of the table with `//tsize` block command.
 
@@ -456,7 +472,7 @@ The rule of finding images is same as image command.
 
 ## Quoting Text
 
-You can use `//quote{ 〜 //}` as quotations.
+You can use `//quote{ ... //}` as quotations.
 
 Usage:
 
@@ -472,14 +488,14 @@ You can use inline markup in quotations.
 
 Some block commands are used for short column.
 
-* `//note[caption]{ 〜 //}`
-* `//memo[caption]{ 〜 //}`
-* `//tip[caption]{ 〜 //}`
-* `//info[caption]{ 〜 //}`
-* `//warning[caption]{ 〜 //}`
-* `//important[caption]{ 〜 //}`
-* `//caution[caption]{ 〜 //}`
-* `//notice[caption]{ 〜 //}`
+* `//note[caption]{ ... //}`
+* `//memo[caption]{ ... //}`
+* `//tip[caption]{ ... //}`
+* `//info[caption]{ ... //}`
+* `//warning[caption]{ ... //}`
+* `//important[caption]{ ... //}`
+* `//caution[caption]{ ... //}`
+* `//notice[caption]{ ... //}`
 
 `[caption]` is optional.
 
