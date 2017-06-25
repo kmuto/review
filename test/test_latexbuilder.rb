@@ -40,7 +40,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_with_inlinetag
     actual = compile_block("={test} this @<b>{is} test.<&\"_>\n")
-    assert_equal %Q|\\chapter{this \\textbf{is} test.\\textless{}\\&\"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n|, actual
+    assert_equal %Q|\\chapter{this \\reviewbold{is} test.\\textless{}\\&\"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n|, actual
   end
 
   def test_headline_level2
@@ -136,12 +136,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_b
     actual = compile_inline("abc@<b>{def}")
-    assert_equal %Q|abc\\textbf{def}|, actual
+    assert_equal %Q|abc\\reviewbold{def}|, actual
   end
 
   def test_inline_b_and_escape
     actual = compile_inline("test @<b>{inline<&;\\ test} test2")
-    assert_equal %Q|test \\textbf{inline\\textless{}\\&;\\reviewbackslash{} test} test2|, actual
+    assert_equal %Q|test \\reviewbold{inline\\textless{}\\&;\\reviewbackslash{} test} test2|, actual
   end
 
   def test_inline_em
@@ -373,7 +373,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_memo
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest\\textit{2}\n\\end{reviewminicolumn}\n|, actual
+    assert_equal %Q|\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest\\textit{2}\n\\end{reviewminicolumn}\n|, actual
   end
 
   def test_flushright
@@ -579,7 +579,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q|[1] sample bib \\textbf{bold}\n\\label{bib:samplebib}\n\nab\n\n|, actual
+    assert_equal %Q|[1] sample bib \\reviewbold{bold}\n\\label{bib:samplebib}\n\nab\n\n|, actual
   end
 
   def test_bibpaper_without_body

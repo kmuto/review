@@ -831,7 +831,7 @@ module ReVIEW
 
     # bold
     def inline_b(str)
-      macro('textbf', escape(str))
+      macro('reviewbold', escape(str))
     end
 
     # line break
