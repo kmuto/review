@@ -188,6 +188,11 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|<replace idref="texinline-1"><pre>\\sin</pre></replace> <replace idref="texinline-2"><pre>\\frac{1}{2}</pre></replace>|, actual
   end
 
+  def test_dlist_beforeulol
+    actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
+    assert_equal %Q|<dl><dt>foo</dt><dd>foo.</dd></dl><p>para</p><dl><dt>foo</dt><dd>foo.</dd></dl><ol><li aid:pstyle="ol-item" olnum="1" num="1">bar</li></ol><dl><dt>foo</dt><dd>foo.</dd></dl><ul><li aid:pstyle="ul-item">bar</li></ul>|, actual
+  end
+
   def test_paragraph
     actual = compile_block("foo\nbar\n")
     assert_equal %Q|<p>foobar</p>|, actual

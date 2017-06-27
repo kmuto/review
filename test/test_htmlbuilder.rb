@@ -565,6 +565,11 @@ EOS
     assert_equal %Q|<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n|, actual
   end
 
+  def test_dlist_beforeulol
+    actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
+    assert_equal %Q|<dl>\n<dt>foo</dt>\n<dd>foo.</dd>\n</dl>\n<p>para</p>\n<dl>\n<dt>foo</dt>\n<dd>foo.</dd>\n</dl>\n<ol>\n<li>bar</li>\n</ol>\n<dl>\n<dt>foo</dt>\n<dd>foo.</dd>\n</dl>\n<ul>\n<li>bar</li>\n</ul>\n|, actual
+  end
+
   def test_list
     def @chapter.list(id)
       Book::ListIndex::Item.new("samplelist",1)

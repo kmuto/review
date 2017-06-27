@@ -252,6 +252,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q|\n\\begin{description}\n\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\\nfoo.bar.\n\\end{description}\n|, actual
   end
 
+  def test_dlist_beforeulol
+    actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
+    assert_equal %Q|\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\n\\end{description}\n\npara\n\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\n\\end{description}\n\n\\begin{enumerate}\n\\item bar\n\\end{enumerate}\n\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\n\\end{description}\n\n\\begin{itemize}\n\\item bar\n\\end{itemize}\n|, actual
+  end
+
   def test_cmd
     actual = compile_block("//cmd{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q|\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n|, actual
