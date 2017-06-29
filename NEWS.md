@@ -10,20 +10,20 @@
 
 * LATEXBuilder: fix chpation numbering in appendix ([#766])
 * fix counting of `//imgtable` ([#782])
-* fix handling of numbered/itemized list in dlist. ([#795])
+* fix handling of numbered/itemized list in dlist. ([#794])([#795])
 
 ## Enhancements
 
-* add comments in doc/config.yml.sample ([#765])([#767])
+* add comments of backcover in doc/config.yml.sample ([#765])([#767])
 * use actual part counters for heading, list, image, and table in part ([#779])
 * LATEXBuilder: define the acceptable image formats for LaTeX Builder ([#785])
 
 ## Docs
 
-* add '//embed' into NEWS.ja.md
+* add `//embed` into NEWS.ja.md
 * move `doc/NEWS.*` to top level directory ([#780])
 * add how to refer images in other sections ([#770]) ([#771])
-* fix description of table markup ([#776])
+* fix description of `//table` markup ([#776])
 * Use https: instead of git: ([#778])
 * archive ChangeLog; use git log instead of ChangeLog ([#784]) ([#788])
 
