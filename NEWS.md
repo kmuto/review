@@ -3,7 +3,7 @@
 ## New Features
 
 * add `//emtable`, embedded table ([#777]) ([#787])
-* EPUBMaker: add new option `imgmath` ([#773])
+* EPUBMaker: add new option `imgmath` ([#773]) ([#774])
 * HTMLBuilder: generate images for math notations ([#774])
 
 ## Bug Fixes
