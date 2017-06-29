@@ -1,3 +1,63 @@
+# Version 2.3.0
+
+## 新機能
+
+* 連番がつかない表 `//emtable` を追加しました ([#777]) ([#787])
+* EPUBMaker: 数式を画像にするオプション `imgmath` を追加しました ([#773]) ([#774])
+* HTMLBuilder: 数式を画像にできるようにしました ([#774])
+
+## バグ修正
+
+* LATEXBuilder: appendix内でのキャプションの章番号を修正しました ([#766])
+* `//imgtable`を使った際、表の連番カウントがずれる問題を修正しました ([#782])
+* 用語リストの直後に箇条書きを使った場合の不具合を修正しました ([#794])([#795])
+
+## 機能強化
+
+* `doc/config.yml.sample`のbackcoverの説明を修正しました ([#765])([#767])
+* 部(part)ファイル内で見出しや図表リストへの参照の接頭辞を修正しました ([#779])
+* LATEXBuilder: LaTeX内で使用できる画像フォーマットの設定を修正しました ([#785])
+
+## ドキュメント
+
+* `//embed` の説明を NEWS.ja.md にも追加しました
+* `doc/NEWS.*`をトップレベルに移動しました ([#780])
+* 他の章の図表の参照方法を追記しました ([#770]) ([#771])
+* `//table`記法の説明を修正しました ([#776])
+* gitレポジトリのURLに https: ではなく git: を使うよう修正しました ([#778])
+* ChangeLogをアーカイブしました。今後はgit logをお使いください ([#784]) ([#788])
+
+## その他
+
+* `.rubocop.yml` の警告を抑制しました
+
+## コントリビューターのみなさん
+
+* [@karino2](https://github.com/karino2)
+* [@imamurayusuke](https://github.com/imamurayusuke)
+* [@znz](https://github.com/znz)
+* [@hanachin](https://github.com/hanachin)
+
+[#765]: https://github.com/kmuto/review/issues/765
+[#766]: https://github.com/kmuto/review/issues/766
+[#767]: https://github.com/kmuto/review/issues/767
+[#770]: https://github.com/kmuto/review/issues/770
+[#771]: https://github.com/kmuto/review/issues/771
+[#773]: https://github.com/kmuto/review/issues/773
+[#774]: https://github.com/kmuto/review/issues/774
+[#776]: https://github.com/kmuto/review/issues/776
+[#777]: https://github.com/kmuto/review/issues/777
+[#778]: https://github.com/kmuto/review/issues/778
+[#779]: https://github.com/kmuto/review/issues/779
+[#780]: https://github.com/kmuto/review/issues/780
+[#782]: https://github.com/kmuto/review/issues/782
+[#784]: https://github.com/kmuto/review/issues/784
+[#785]: https://github.com/kmuto/review/issues/785
+[#787]: https://github.com/kmuto/review/issues/787
+[#788]: https://github.com/kmuto/review/issues/788
+[#795]: https://github.com/kmuto/review/issues/795
+
+
 # Version 2.2.0
 
 ## 新機能

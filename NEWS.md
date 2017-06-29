@@ -1,3 +1,63 @@
+# Version 2.3.0
+
+## New Features
+
+* add `//emtable`, embedded table ([#777]) ([#787])
+* EPUBMaker: add new option `imgmath` ([#773]) ([#774])
+* HTMLBuilder: generate images for math notations ([#774])
+
+## Bug Fixes
+
+* LATEXBuilder: fix chpation numbering in appendix ([#766])
+* fix counting of `//imgtable` ([#782])
+* fix handling of numbered/itemized list in dlist. ([#794])([#795])
+
+## Enhancements
+
+* add comments of backcover in doc/config.yml.sample ([#765])([#767])
+* use actual part counters for heading, list, image, and table in part ([#779])
+* LATEXBuilder: define the acceptable image formats for LaTeX Builder ([#785])
+
+## Docs
+
+* add `//embed` into NEWS.ja.md
+* move `doc/NEWS.*` to top level directory ([#780])
+* add how to refer images in other sections ([#770]) ([#771])
+* fix description of `//table` markup ([#776])
+* Use https: instead of git: ([#778])
+* archive ChangeLog; use git log instead of ChangeLog ([#784]) ([#788])
+
+## Others
+
+* fix `.rubocop.yml` and suppress warnings
+
+## Contributors
+
+* [@karino2](https://github.com/karino2)
+* [@imamurayusuke](https://github.com/imamurayusuke)
+* [@znz](https://github.com/znz)
+* [@hanachin](https://github.com/hanachin)
+
+[#765]: https://github.com/kmuto/review/issues/765
+[#766]: https://github.com/kmuto/review/issues/766
+[#767]: https://github.com/kmuto/review/issues/767
+[#770]: https://github.com/kmuto/review/issues/770
+[#771]: https://github.com/kmuto/review/issues/771
+[#773]: https://github.com/kmuto/review/issues/773
+[#774]: https://github.com/kmuto/review/issues/774
+[#776]: https://github.com/kmuto/review/issues/776
+[#777]: https://github.com/kmuto/review/issues/777
+[#778]: https://github.com/kmuto/review/issues/778
+[#779]: https://github.com/kmuto/review/issues/779
+[#780]: https://github.com/kmuto/review/issues/780
+[#782]: https://github.com/kmuto/review/issues/782
+[#784]: https://github.com/kmuto/review/issues/784
+[#785]: https://github.com/kmuto/review/issues/785
+[#787]: https://github.com/kmuto/review/issues/787
+[#788]: https://github.com/kmuto/review/issues/788
+[#795]: https://github.com/kmuto/review/issues/795
+
+
 # Version 2.2.0
 
 ## New Features
