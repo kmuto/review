@@ -55,7 +55,7 @@ $ review-init hello
 $ cd hello
 $ (... add and edit *.re file, config.yml and catalog.yml ...)
 $ rake epub  ## generating EPUB
-$ rake pdf   ## generating PDF
+$ rake pdf   ## generating PDF(Requirement TeX)
 ```
 
 For further information, see [doc/quickstart.md](https://github.com/kmuto/review/blob/readme-md/doc/quickstart.md)
