@@ -12,10 +12,10 @@ module ReVIEW
   end
 
   def self.logger
-    @@logger ||= ReVIEW::Logger.new()
+    @logger ||= ReVIEW::Logger.new()
   end
 
   def self.logger=(logger)
-    @@logger = logger
+    @logger = logger
   end
 end
