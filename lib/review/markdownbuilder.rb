@@ -180,7 +180,7 @@ module ReVIEW
       nofunc_text("[UnknownImage:#{id}]")
     end
 
-    def indepimage(id, caption="", metric=nil)
+    def indepimage(_lines, id, caption="", metric=nil)
       blank
       puts "![#{compile_inline(caption)}](#{@chapter.image(id).path.sub(/\A\.\//, "")})"
       blank

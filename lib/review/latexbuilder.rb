@@ -481,7 +481,7 @@ module ReVIEW
     end
     private :column_label
 
-    def indepimage(id, caption=nil, metric=nil)
+    def indepimage(_lines, id, caption=nil, metric=nil)
       metrics = parse_metric("latex", metric)
       puts '\begin{reviewimage}'
       if metrics.present?

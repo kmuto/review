@@ -729,7 +729,7 @@ module ReVIEW
 
     alias_method :box, :insn
 
-    def indepimage(id, caption=nil, metric=nil)
+    def indepimage(_lines, id, caption=nil, metric=nil)
       blank
       begin
         puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")} #{metric.join(" ")}←◆"

@@ -1004,7 +1004,7 @@ module ReVIEW
       syntaxblock("box", lines, caption)
     end
 
-    def indepimage(id, caption=nil, metric=nil)
+    def indepimage(_lines, id, caption=nil, metric=nil)
       metrics = parse_metric("idgxml", metric)
       puts "<img>"
       begin
