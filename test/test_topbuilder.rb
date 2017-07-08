@@ -288,7 +288,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\nfoo\n//}\n")
-    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n|, actual
+    assert_equal %Q|◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png scale=1.2←◆\n◆→終了:図←◆\n\n|, actual
   end
 
   def test_texequation

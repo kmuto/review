@@ -280,7 +280,17 @@ module ReVIEW
       end
     end
 
+    def handle_metric(str)
+      str
+    end
+
+    def result_metric(array)
+      array.join(',')
+    end
+
     def image(lines, id, caption, metric=nil)
+      metrics = parse_metric('top', metric)
+      metrics = " #{metrics}" if metrics.present?
       blank
       puts "◆→開始:#{@titles["image"]}←◆"
       if get_chap.nil?
@@ -290,7 +300,7 @@ module ReVIEW
       end
       blank
       if @chapter.image(id).bound?
-        puts "◆→#{@chapter.image(id).path}←◆"
+        puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
         lines.each do |line|
           puts line
@@ -730,9 +740,11 @@ module ReVIEW
     alias_method :box, :insn
 
     def indepimage(_lines, id, caption=nil, metric=nil)
+      metrics = parse_metric('top', metric)
+      metrics = " #{metrics}" if metrics.present?
       blank
       begin
-        puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")} #{metric.join(" ")}←◆"
+        puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")}#{metrics}←◆"
       rescue
         warn "no such image: #{id}"
         puts "◆→画像 #{id}←◆"
