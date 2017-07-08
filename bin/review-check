@@ -35,6 +35,8 @@ def main
   @book = ReVIEW::Book::Base.load
   @book.config = @config
 
+  @logger = ReVIEW.logger
+
   modes = nil
   files = ARGV unless ARGV.empty?
   opts = OptionParser.new
@@ -57,12 +59,12 @@ def main
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
-    $stderr.puts opts.help
+    @logger.error(err.message)
+    puts opts.help
     exit 1
   end
   unless files
-    $stderr.puts "no input"
+    @logger.error("no input")
     exit 1
   end
   modes ||= [:text]

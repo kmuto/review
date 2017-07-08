@@ -15,6 +15,8 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/epubmaker'
 require 'review/version'
 
+@logger = ReVIEW.logger
+
 rv = ReVIEW::EPUBMaker.new
 
 opts = OptionParser.new
@@ -28,7 +30,7 @@ end
 begin
   opts.parse!
 rescue OptionParser::ParseError => err
-  $stderr.puts err.message
+  @logger.error err.message
   $stderr.puts opts.help
   exit 1
 end

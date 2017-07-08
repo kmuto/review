@@ -122,14 +122,6 @@ module ReVIEW
       @output.string
     end
 
-    def warn(msg)
-      $stderr.puts "#{@location.filename}:#{@location.lineno}: warning: #{msg}"
-    end
-
-    def error(msg)
-      $stderr.puts "#{@location.filename}:#{@location.lineno}: error: #{msg}"
-    end
-
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
       puts %Q[■H#{level}■#{prefix}#{compile_inline(caption)}]

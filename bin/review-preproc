@@ -20,6 +20,7 @@ require 'review/preprocessor'
 require 'review/unfold'
 require 'review/version'
 require 'review/extentions'
+require 'review/logger'
 require 'lineinput'
 require 'stringio'
 require 'fileutils'
@@ -36,9 +37,10 @@ rescue Errno::EPIPE
 end
 
 def main
+  @logger = ReVIEW.logger
   if File.file?("review-preproc-ext.rb")
     if ENV["REVIEW_SAFE_MODE"].to_i & 2 > 0
-      warn "review-preproc-ext.rb is prohibited in safe mode. ignored."
+      @logger.warn "review-preproc-ext.rb is prohibited in safe mode. ignored."
     else
       Kernel.load File.expand_path("review-preproc-ext.rb")
     end
@@ -73,7 +75,7 @@ def main
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -119,7 +121,7 @@ def main
   end
 rescue ReVIEW::Error => err
   raise if $DEBUG
-  $stderr.puts err.message
+  @logger.error err.message
   exit 1
 end
 

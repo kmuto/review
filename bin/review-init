@@ -15,9 +15,11 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/version'
+require 'review'
+
 
 def main
+  @logger = ReVIEW.logger
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} [option] dirname"
@@ -37,7 +39,7 @@ def main
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -67,7 +69,7 @@ end
 
 def generate_dir(dir)
   if File.exist?(dir) && !@force
-    puts "#{dir} already exists."
+    @logger.error "#{dir} already exists."
     exit
   end
   FileUtils.mkdir_p dir

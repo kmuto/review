@@ -28,6 +28,7 @@ module ReVIEW
 
     def initialize
       @basedir = nil
+      @logger = ReVIEW.logger
     end
 
     def self.execute(*args)
@@ -161,14 +162,14 @@ module ReVIEW
       htmlfile = "#{id}.#{@config["htmlext"]}"
 
       if @config["params"].present?
-        warn "'params:' in config.yml is obsoleted."
+        @logger.warn "'params:' in config.yml is obsoleted."
       end
 
       begin
         @converter.convert(filename, File.join(basetmpdir, htmlfile))
       rescue => e
-        warn "compile error in #{filename} (#{e.class})"
-        warn e.message
+        @logger.warn "compile error in #{filename} (#{e.class})"
+        @logger.warn e.message
       end
     end
 
