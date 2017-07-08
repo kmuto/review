@@ -762,7 +762,7 @@ module ReVIEW
       end
     end
 
-    def indepimage(id, caption="", metric=nil)
+    def indepimage(_lines, id, caption="", metric=nil)
       metrics = parse_metric("html", metric)
       caption = "" if caption.nil?
       puts %Q[<div id="#{normalize_id(id)}" class="image">]

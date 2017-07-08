@@ -146,6 +146,8 @@ module ReVIEW
     defblock :talk, 0
     defblock :texequation, 0
     defblock :graph, 1..3
+    defblock :indepimage, 1..3, true
+    defblock :numberlessimage, 1..3, true
 
     defblock :address, 0
     defblock :blockquote, 0
@@ -168,8 +170,6 @@ module ReVIEW
     defsingle :noindent, 0
     defsingle :linebreak, 0
     defsingle :pagebreak, 0
-    defsingle :indepimage, 1..3
-    defsingle :numberlessimage, 1..3
     defsingle :hr, 0
     defsingle :parasep, 0
     defsingle :label, 1

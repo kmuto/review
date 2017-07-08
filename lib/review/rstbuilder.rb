@@ -662,7 +662,7 @@ module ReVIEW
 
     alias_method :box, :insn
 
-    def indepimage(id, caption = "", metric = nil)
+    def indepimage(_lines, id, caption = "", metric = nil)
       chapter, id = extract_chapter_id(id)
       puts ".. _#{id}:"
       blank
