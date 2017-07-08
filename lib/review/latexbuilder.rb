@@ -431,9 +431,10 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
+      warn "image not bound: #{id}"
       puts '\begin{reviewdummyimage}'
       path = @chapter.image(id).path
-      puts "--[[path = #{path} (#{existence(id)})]]--"
+      puts "--[[path = #{id} (#{existence(id)})]]--"
       lines.each do |line|
         puts detab(line.rstrip)
       end
@@ -483,17 +484,33 @@ module ReVIEW
 
     def indepimage(_lines, id, caption=nil, metric=nil)
       metrics = parse_metric("latex", metric)
-      puts '\begin{reviewimage}'
-      if metrics.present?
-        puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
+
+      if @chapter.image(id).path
+        puts '\begin{reviewimage}'
+        if metrics.present?
+          puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
+        else
+          puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
+        end
       else
-        puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
+        warn "image not bound: #{id}"
+        puts '\begin{reviewdummyimage}'
+        puts "--[[path = #{id} (#{existence(id)})]]--"
+        _lines.each do |line|
+          puts detab(line.rstrip)
+        end
       end
+
       if caption.present?
         puts macro('reviewindepimagecaption',
                    %Q[#{I18n.t("numberless_image")}#{I18n.t("caption_prefix")}#{compile_inline(caption)}])
       end
-      puts '\end{reviewimage}'
+
+      if @chapter.image(id).path
+        puts '\end{reviewimage}'
+      else
+        puts '\end{reviewdummyimage}'
+      end
     end
 
     alias_method :numberlessimage, :indepimage
@@ -923,7 +940,12 @@ module ReVIEW
     end
 
     def inline_icon(id)
-      macro('includegraphics', @chapter.image(id).path)
+      if @chapter.image(id).path
+        macro('includegraphics', @chapter.image(id).path)
+      else
+        warn "image not bound: #{id}"
+        "\\verb|--[[path = #{id} (#{existence(id)})]]--|"
+      end
     end
 
     def inline_uchar(str)

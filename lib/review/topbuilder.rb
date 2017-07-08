@@ -302,6 +302,7 @@ module ReVIEW
       if @chapter.image(id).bound?
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
+        warn "image not bound: #{id}"
         lines.each do |line|
           puts line
         end
@@ -490,7 +491,7 @@ module ReVIEW
       begin
         return "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")}←◆"
       rescue
-        warn "no such icon image: #{id}"
+        warn "image not bound: #{id}"
         return "◆→画像 #{id}←◆"
       end
     end
@@ -746,7 +747,7 @@ module ReVIEW
       begin
         puts "◆→画像 #{@chapter.image(id).path.sub(/\A\.\//, "")}#{metrics}←◆"
       rescue
-        warn "no such image: #{id}"
+        warn "image not bound: #{id}"
         puts "◆→画像 #{id}←◆"
       end
       puts "図　#{compile_inline(caption)}" if caption.present?

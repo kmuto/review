@@ -603,6 +603,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
+      warn "image not bound: #{id}"
       puts %Q[<div id="#{normalize_id(id)}" class="image">]
       puts %Q[<pre class="dummyimage">]
       lines.each do |line|
@@ -611,7 +612,6 @@ module ReVIEW
       puts %Q[</pre>]
       image_header id, caption
       puts %Q[</div>]
-      warn "no such image: #{id}"
     end
 
     def image_header(id, caption)
@@ -751,7 +751,14 @@ module ReVIEW
       begin
         puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
       rescue
-        puts %Q[<pre>missing image: #{id}</pre>]
+        warn "image not bound: #{id}"
+        if _lines
+          puts %Q[<pre class="dummyimage">]
+          _lines.each do |line|
+            puts detab(line)
+          end
+          puts %Q[</pre>]
+        end
       end
 
       unless caption.empty?
@@ -1126,6 +1133,7 @@ module ReVIEW
       begin
         %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="[#{id}]" />]
       rescue
+        warn "image not bound: #{id}"
         %Q[<pre>missing image: #{id}</pre>]
       end
     end
