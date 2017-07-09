@@ -431,7 +431,7 @@ module ReVIEW
       print %Q[</pre>]
       image_header id, caption
       puts "</img>"
-      warn "no such image: #{id}"
+      warn "image not bound: #{id}"
     end
 
     def image_header(id, caption)
@@ -722,7 +722,7 @@ module ReVIEW
       begin
         %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}" type="inline" />]
       rescue
-        warn "no such icon image: #{id}"
+        warn "image not bound: #{id}"
         ""
       end
     end
@@ -1010,7 +1010,7 @@ module ReVIEW
       begin
         puts %Q[<Image href="file://#{@chapter.image(id).path.sub(/\A\.\//, "")}"#{metrics} />]
       rescue
-        warn %Q[no such image: #{id}]
+        warn %Q[image not bound: #{id}]
       end
       puts %Q[<caption>#{compile_inline(caption)}</caption>] if caption.present?
       puts "</img>"
