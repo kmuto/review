@@ -314,7 +314,10 @@ pdfmaker:
   # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換します。
   # image_scale2width: true
   #
+  # PDFのハイパーリンク箇所の色表示の無効化。デフォルトは色表示(null)。trueにすると色で示されなくなる
+  # hidelinks: null
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
   colophon: true
+  # 目次を作成するか。falseまたはnullを指定すると目次は生成されない。
+  toc: true
   # pdfmaker:階層を使うものはここまで
-

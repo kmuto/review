@@ -47,7 +47,8 @@
 \setlength{\footskip}{30pt}
 
 %% Bookmarkの文字化け対策（日本語向け）
-\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+<%- hidelinks = @config["hidelinks"] ? ",hidelinks," : "" -%>
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,<%= hidelinks%>%
      pdftitle={<%= escape_latex(@config.name_of("booktitle")) %>},%
      pdfauthor={<%= escape_latex(@config.names_of("aut").join(I18n.t("names_splitter"))) %>}]{hyperref}
 \usepackage[dvipdfmx]{pxjahyper}
