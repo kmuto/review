@@ -6,7 +6,9 @@
 
 Re:VIEW is an easy-to-use digital publishing system for paper books and ebooks.
 
-## Supported Format
+## Supported Formats
+
+![supported formats](./doc/images/review-generate.png)
 
 Output formats Re:VIEW supports are:
 
