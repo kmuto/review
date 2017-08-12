@@ -40,6 +40,7 @@ class MakerHelperTest < Test::Unit::TestCase
   def test_copy_images_to_dir_convert
     if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM && (`convert -version` rescue nil)
       FileUtils.cp File.join(assets_dir, "black.eps"), File.join(@tmpdir1, "foo.eps")
+      assert File.exist?("#{@tmpdir1}/foo.eps"), "EPS to PNG conversion failed (pre stage)"
 
       image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2,
                                                    :convert => {:eps => :png})
