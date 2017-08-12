@@ -157,11 +157,11 @@ Style/FrozenStringLiteralComment:
   EnforcedStyle: never
   Enabled: true
 
-MultilineMethodCallBraceLayout:
-  Enabled: false
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: true
 
 Style/SafeNavigation:
-  Enabled: false
+  Enabled: true
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
