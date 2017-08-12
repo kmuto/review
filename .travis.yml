@@ -1,5 +1,6 @@
 language: ruby
 sudo: false
+dist: precise
 
 before_install:
   - gem update --system
