@@ -60,7 +60,7 @@ $ rake epub  ## generating EPUB
 $ rake pdf   ## generating PDF(Requirement TeX)
 ```
 
-For further information, see [doc/quickstart.md](https://github.com/kmuto/review/blob/readme-md/doc/quickstart.md)
+For further information, see [doc/quickstart.md](https://github.com/kmuto/review/blob/master/doc/quickstart.md)
 
 ## Resources
 
