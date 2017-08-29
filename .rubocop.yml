@@ -184,7 +184,7 @@ Style/For:
   Enabled: true
 
 Style/InfiniteLoop:
-  Enabled: false
+  Enabled: true
 
 Style/LineEndConcatenation:
   Enabled: false
@@ -220,7 +220,14 @@ Style/PercentQLiterals:
 Style/PerlBackrefs:
   Enabled: false
 
+Style/RaiseArgs:
+  EnforcedStyle: exploded
+  Enabled: true
+
 Style/RedundantBegin:
+  Enabled: false
+
+Style/RedundantParentheses:
   Enabled: false
 
 Style/RedundantReturn:
