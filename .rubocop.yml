@@ -161,7 +161,7 @@ Layout/MultilineMethodCallBraceLayout:
   Enabled: true
 
 Style/SafeNavigation:
-  Enabled: true
+  Enabled: false
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
