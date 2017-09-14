@@ -257,15 +257,15 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def column_label(id)
-      num = @chapter.column(id).number
+    def column_label(id, chapter = @chapter)
+      num = chapter.column(id).number
       "column-#{num}"
     end
     private :column_label
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<link href="#{column_label(id)}">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</link>)
+        %Q(<link href="#{column_label(id, chapter)}">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</link>)
       else
         I18n.t("column", compile_inline(chapter.column(id).caption))
       end
