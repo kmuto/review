@@ -981,15 +981,15 @@ module ReVIEW
       end
     end
 
-    def column_label(id)
-      num = @chapter.column(id).number
+    def column_label(id, chapter = @chapter)
+      num = chapter.column(id).number
       "column-#{num}"
     end
     private :column_label
 
     def inline_column_chap(chapter, id)
       if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id)}" class="columnref">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</a>)
+        %Q(<a href="\##{column_label(id, chapter)}" class="columnref">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</a>)
       else
         I18n.t("column", compile_inline(chapter.column(id).caption))
       end

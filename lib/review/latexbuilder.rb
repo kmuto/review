@@ -475,9 +475,9 @@ module ReVIEW
     end
     private :bib_label
 
-    def column_label(id)
-      filename = @chapter.id
-      num = @chapter.column(id).number
+    def column_label(id, chapter = @chapter)
+      filename = chapter.id
+      num = chapter.column(id).number
       "column:#{filename}:#{num}"
     end
     private :column_label
@@ -908,7 +908,7 @@ module ReVIEW
     def inline_column_chap(chapter, id)
       macro('reviewcolumnref',
             I18n.t("chapter_quote", compile_inline(chapter.column(id).caption)),
-            column_label(id))
+            column_label(id, chapter))
     end
 
     def inline_raw(str)
