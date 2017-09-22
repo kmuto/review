@@ -101,7 +101,7 @@ Style/SelfAssignment:
   Enabled: true
 
 # When defining the == operator, name its argument other.
-Naming/BinaryOperatorParameter:
+Style/BinaryOperatorParameterName:
   Enabled: true
 
 # Use snake_case for variable names.
