@@ -253,6 +253,7 @@ module EPUBMaker
                                                "imagedir" => "images",
                                                "fontdir" => "fonts",
                                                "image_ext" => %w(png gif jpg jpeg svg ttf woff otf),
+                                               "image_maxpixels" => 4_000_000,
                                                "font_ext" => %w(ttf woff otf),
                                              })
 

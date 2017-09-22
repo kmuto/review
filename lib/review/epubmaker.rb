@@ -116,6 +116,8 @@ module ReVIEW
         @producer.import_imageinfo("#{basetmpdir}/#{@params["imagedir"]}", basetmpdir)
         @producer.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
+        check_image_size(basetmpdir)
+
         epubtmpdir = nil
         if @params["debug"].present?
           epubtmpdir = "#{basetmpdir}/#{booktmpname}"
@@ -165,7 +167,7 @@ module ReVIEW
           end
         end
       end
-      @params["epubmaker"]["force_include_images"] = @params["epubmaker"]["force_include_images"].sort.uniq
+      @params["epubmaker"]["force_include_images"] = @params["epubmaker"]["force_include_images"].compact.sort.uniq
     end
 
     def copy_images(resdir, destdir, allow_exts=nil)
@@ -488,6 +490,26 @@ module ReVIEW
     def write_buildlogtxt(basetmpdir, htmlfile, reviewfile)
       File.open("#{basetmpdir}/#{@buildlogtxt}", "a") do |f|
         f.puts "#{htmlfile},#{reviewfile}"
+      end
+    end
+
+    def check_image_size(basetmpdir)
+      begin
+        require "image_size"
+      rescue LoadError
+        return nil
+      end
+      require "find"
+      extre = Regexp.new("\\.(" + @params["image_ext"].delete_if {|t| %w(ttf woff otf).include?(t) }.join("|") + ")", Regexp::IGNORECASE)
+      Find.find(basetmpdir) do |fname|
+        if fname.match(extre)
+          img = ImageSize.path(fname)
+          if img.width * img.height > @params["image_maxpixels"]
+            h = Math.sqrt(img.height * @params["image_maxpixels"] / img.width)
+            w = @params["image_maxpixels"] / h
+            warn "#{fname.sub("#{basetmpdir}/", '')}: #{img.width}x#{img.height} exceeds a limit. suggeted value is #{w.to_i}x#{h.to_i}"
+          end
+        end
       end
     end
 
