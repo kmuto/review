@@ -27,6 +27,9 @@ Lint/AssignmentInCondition:
 Lint/ParenthesesAsGroupedExpression:
   Enabled: false
 
+Lint/RescueWithoutErrorClass:
+  Enabled: false
+
 Lint/UnderscorePrefixedVariableName:
   Enabled: false
 
@@ -98,7 +101,7 @@ Style/SelfAssignment:
   Enabled: true
 
 # When defining the == operator, name its argument other.
-Style/OpMethod:
+Naming/BinaryOperatorParameter:
   Enabled: true
 
 # Use snake_case for variable names.
@@ -109,6 +112,9 @@ Style/ConditionalAssignment:
   Enabled: false
 
 Style/Documentation:
+  Enabled: false
+
+Style/Encoding:
   Enabled: false
 
 Style/EmptyElse:
@@ -411,6 +417,11 @@ Metrics/BlockLength:
     - 'Rakefile'
     - '**/*.rake'
     - 'test/**/*.rb'
+
+## Naming
+
+Naming/HeredocDelimiterNaming:
+  Enabled: false
 
 #### Security
 
