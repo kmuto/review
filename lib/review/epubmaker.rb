@@ -34,6 +34,16 @@ module ReVIEW
       @producer = nil
       @htmltoc = nil
       @buildlogtxt = "build-log.txt"
+      @logger = ReVIEW.logger
+    end
+
+    def error(msg)
+     @logger.error "#{File.basename($0, '.*')}: #{msg}"
+      exit 1
+    end
+
+    def warn(msg)
+      @logger.warn "#{File.basename($0, '.*')}: #{msg}"
     end
 
     def log(s)
