@@ -22,7 +22,7 @@ module ReVIEW
         "ill" => nil, # Illustrator
         "pht" => nil, # Photographer
         "trl" => nil, # Translator
-        "date" => nil, # publishing date
+        "date" => Time.now.strftime('%Y-%m-%d'), # publishing date
         "rights" => nil, # Copyright messages
         "description" => nil, # Description
         "urnid" => "urn:uid:#{SecureRandom.uuid}", # Identifier
