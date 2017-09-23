@@ -676,13 +676,18 @@ EOT
       return true
     end
     epubmaker = ReVIEW::EPUBMaker.new
+    epubmaker.instance_eval do
+      def warn(msg)
+        $stderr.puts msg
+      end
+    end
     out, err = capture_output do
       epubmaker.check_image_size(assets_dir, 5500, %w[png gif jpg jpeg svg ttf woff otf])
     end
-    assert_equal err, 'large.gif: 250x150 exceeds a limit. suggeted value is 95x57
+    assert_equal 'large.gif: 250x150 exceeds a limit. suggeted value is 95x57
 large.jpg: 250x150 exceeds a limit. suggeted value is 95x57
 large.png: 250x150 exceeds a limit. suggeted value is 95x57
 large.svg: 250x150 exceeds a limit. suggeted value is 95x57
-'
+', err
   end
 end
