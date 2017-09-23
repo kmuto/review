@@ -38,7 +38,7 @@ module ReVIEW
     end
 
     def error(msg)
-     @logger.error "#{File.basename($0, '.*')}: #{msg}"
+      @logger.error "#{File.basename($0, '.*')}: #{msg}"
       exit 1
     end
 
