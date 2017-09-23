@@ -667,4 +667,22 @@ EOT
       assert_equal ["mathml"], epubmaker.detect_properties(path)
     end
   end
+
+  def test_image_size
+    begin
+      require 'image_size'
+    rescue LoadError
+      $stderr.puts "skip test_image_size (cannot find image_size.rb)"
+      return true
+    end
+    epubmaker = ReVIEW::EPUBMaker.new
+    out, err = capture_output do
+      epubmaker.check_image_size(assets_dir, 5500, %w[png gif jpg jpeg svg ttf woff otf])
+    end
+    assert_equal err, 'large.gif: 250x150 exceeds a limit. suggeted value is 95x57
+large.jpg: 250x150 exceeds a limit. suggeted value is 95x57
+large.png: 250x150 exceeds a limit. suggeted value is 95x57
+large.svg: 250x150 exceeds a limit. suggeted value is 95x57
+'
+  end
 end

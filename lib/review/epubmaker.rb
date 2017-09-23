@@ -116,7 +116,7 @@ module ReVIEW
         @producer.import_imageinfo("#{basetmpdir}/#{@params["imagedir"]}", basetmpdir)
         @producer.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params["font_ext"])
 
-        check_image_size(basetmpdir)
+        check_image_size(basetmpdir, @params["image_maxpixels"], @params["image_ext"])
 
         epubtmpdir = nil
         if @params["debug"].present?
@@ -493,20 +493,22 @@ module ReVIEW
       end
     end
 
-    def check_image_size(basetmpdir)
+    def check_image_size(basetmpdir, maxpixels, allow_exts=nil)
       begin
         require "image_size"
       rescue LoadError
         return nil
       end
       require "find"
-      extre = Regexp.new("\\.(" + @params["image_ext"].delete_if {|t| %w(ttf woff otf).include?(t) }.join("|") + ")", Regexp::IGNORECASE)
+      allow_exts ||= @params["image_ext"]
+
+      extre = Regexp.new("\\.(" + allow_exts.delete_if {|t| %w(ttf woff otf).include?(t) }.join("|") + ")", Regexp::IGNORECASE)
       Find.find(basetmpdir) do |fname|
         if fname.match(extre)
           img = ImageSize.path(fname)
-          if img.width * img.height > @params["image_maxpixels"]
-            h = Math.sqrt(img.height * @params["image_maxpixels"] / img.width)
-            w = @params["image_maxpixels"] / h
+          if img.width && img.width * img.height > maxpixels
+            h = Math.sqrt(img.height * maxpixels / img.width)
+            w = maxpixels / h
             warn "#{fname.sub("#{basetmpdir}/", '')}: #{img.width}x#{img.height} exceeds a limit. suggeted value is #{w.to_i}x#{h.to_i}"
           end
         end
