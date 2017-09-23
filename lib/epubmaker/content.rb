@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # = content.rb -- Content object for EPUBMaker.
 #
 # Copyright (c) 2010-2017 Kenshi Muto
@@ -11,7 +9,6 @@
 #
 
 module EPUBMaker
-
   # EPUBMaker::Content represents a content data for EPUBMaker.
   # EPUBMaker#contents takes an array of Content.
   class Content
@@ -38,16 +35,16 @@ module EPUBMaker
     # Construct Content object by passing a sequence of parameters or hash.
     # Keys of +hash+ relate with each parameters.
     # +file+ (or +hash+["file"]) is required. Others are optional.
-    def initialize(fileorhash, id=nil, media=nil, title=nil, level=nil, notoc=nil, properties=nil, chaptype=nil)
+    def initialize(fileorhash, id = nil, media = nil, title = nil, level = nil, notoc = nil, properties = nil, chaptype = nil)
       if fileorhash.instance_of?(Hash)
-        @id = fileorhash["id"]
-        @file = fileorhash["file"]
-        @media = fileorhash["media"]
-        @title = fileorhash["title"]
-        @level = fileorhash["level"]
-        @notoc = fileorhash["notoc"]
-        @properties = fileorhash["properties"] || []
-        @chaptype = fileorhash["chaptype"]
+        @id = fileorhash['id']
+        @file = fileorhash['file']
+        @media = fileorhash['media']
+        @title = fileorhash['title']
+        @level = fileorhash['level']
+        @notoc = fileorhash['notoc']
+        @properties = fileorhash['properties'] || []
+        @chaptype = fileorhash['chaptype']
       else
         @file = fileorhash
         @id = id
@@ -62,9 +59,7 @@ module EPUBMaker
     end
 
     def ==(other)
-      if self.class != other.class
-        return false
-      end
+      return false unless self.class == other.class
       [self.id, self.file, self.media, self.title, self.level, self.notoc, self.chaptype, self.properties] ==
         [other.id, other.file, other.media, other.title, other.level, other.notoc, other.chaptype, other.properties]
     end
@@ -73,22 +68,20 @@ module EPUBMaker
 
     # Complement other parameters by using file parameter.
     def complement
-      @id = @file.gsub(/[\\\/\. ]/, '-') if @id.nil?
+      @id = @file.gsub(%r{[\\/\. ]}, '-') if @id.nil?
       @id = "rv-#{@id}" if @id =~ /\A[^a-z]/i
       @media = @file.sub(/.+\./, '').downcase if !@file.nil? && @media.nil?
 
-      @media = "application/xhtml+xml" if @media == "xhtml" || @media == "xml" || @media == "html"
-      @media = "text/css" if @media == "css"
-      @media = "image/jpeg" if @media == "jpg" || @media == "jpeg" || @media == "image/jpg"
-      @media = "image/png" if @media == "png"
-      @media = "image/gif" if @media == "gif"
-      @media = "image/svg+xml" if @media == "svg" || @media == "image/svg"
-      @media = "application/vnd.ms-opentype" if @media == "ttf" || @media == "otf"
-      @media = "application/font-woff" if @media == "woff"
+      @media = 'application/xhtml+xml' if @media == 'xhtml' || @media == 'xml' || @media == 'html'
+      @media = 'text/css' if @media == 'css'
+      @media = 'image/jpeg' if @media == 'jpg' || @media == 'jpeg' || @media == 'image/jpg'
+      @media = 'image/png' if @media == 'png'
+      @media = 'image/gif' if @media == 'gif'
+      @media = 'image/svg+xml' if @media == 'svg' || @media == 'image/svg'
+      @media = 'application/vnd.ms-opentype' if @media == 'ttf' || @media == 'otf'
+      @media = 'application/font-woff' if @media == 'woff'
 
-      if @id.nil? || @file.nil? || @media.nil?
-        raise "Type error: #{id}, #{file}, #{media}, #{title}, #{notoc}"
-      end
+      raise "Type error: #{id}, #{file}, #{media}, #{title}, #{notoc}" if @id.nil? || @file.nil? || @media.nil?
     end
   end
 end

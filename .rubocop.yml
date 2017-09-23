@@ -15,37 +15,37 @@ Lint/EndAlignment:
   Enabled: AlignWith
 
 Lint/EmptyWhen:
-  Enabled: false
+  Enabled: true
 
 Lint/NestedMethodDefinition:
   Exclude:
     - 'test/*'
 
 Lint/AssignmentInCondition:
-  Enabled: false
+  Enabled: true
 
 Lint/ParenthesesAsGroupedExpression:
-  Enabled: false
+  Enabled: true
 
-Lint/RescueWithoutErrorClass:
-  Enabled: false
+#Lint/RescueWithoutErrorClass:
+#  Enabled: true
 
 Lint/UnderscorePrefixedVariableName:
-  Enabled: false
+  Enabled: true
 
 Lint/UnusedBlockArgument:
-  Enabled: false
+  Enabled: true
 
 Lint/UnusedMethodArgument:
-  Enabled: false
+  Enabled: true
 
 Lint/UselessAssignment:
-  Enabled: false
+  Enabled: true
 
 #### Performance
 
 Performance/RegexpMatch:
-  Enabled: false
+  Enabled: true
 
 Performance/ReverseEach:
   Enabled: true
@@ -55,12 +55,12 @@ Performance/StringReplacement:
   Enabled: false
 
 Performance/RangeInclude:
-  Enabled: false
+  Enabled: true
 
 #### Style
 
 Style/AccessorMethodName:
-  Enabled: false
+  Enabled: true
 
 Style/AsciiComments:
   Enabled: false
@@ -78,19 +78,19 @@ Style/BarePercentLiterals:
   Enabled: true
 
 Style/BlockDelimiters:
-  Enabled: false
+  Enabled: true
 
 Style/BracesAroundHashParameters:
-  Enabled: false
+  Enabled: true
 
 Style/CaseEquality:
-  Enabled: false
+  Enabled: true
 
 Style/ClassCheck:
-  Enabled: false
+  Enabled: true
 
 Style/ClassMethods:
-  Enabled: false
+  Enabled: true
 
 # Do not introduce global variables.
 Style/GlobalVars:
@@ -101,8 +101,8 @@ Style/SelfAssignment:
   Enabled: true
 
 # When defining the == operator, name its argument other.
-Style/BinaryOperatorParameterName:
-  Enabled: true
+#Style/BinaryOperatorParameterName:
+#  Enabled: true
 
 # Use snake_case for variable names.
 Style/VariableName:
@@ -115,35 +115,35 @@ Style/Documentation:
   Enabled: false
 
 Style/Encoding:
-  Enabled: false
+  Enabled: true
 
 Style/EmptyElse:
-  Enabled: false
+  Enabled: true
 
 Style/FormatString:
   EnforcedStyle: sprintf
   Enabled: true
 
 Style/GuardClause:
-  Enabled: false
+  Enabled: true
 
 Style/IfInsideElse:
-  Enabled: false
+  Enabled: true
 
 Style/IfUnlessModifier:
-  Enabled: false
+  Enabled: true
 
 Style/MutableConstant:
-  Enabled: false
+  Enabled: true
 
-Style/MultipleComparison:
-  Enabled: false
+#Style/MultipleComparison:
+#  Enabled: true
 
 Style/UnneededInterpolation:
-  Enabled: false
+  Enabled: true
 
 Performance/RedundantMerge:
-  Enabled: false
+  Enabled: true
 
 Style/ZeroLengthPredicate:
   Enabled: false
@@ -153,7 +153,7 @@ Style/NumericPredicate:
   Enabled: true
 
 Style/TernaryParentheses:
-  Enabled: false
+  Enabled: truee
 
 Style/VariableNumber:
   EnforcedStyle: normalcase
@@ -163,21 +163,21 @@ Style/FrozenStringLiteralComment:
   EnforcedStyle: never
   Enabled: true
 
-Layout/MultilineMethodCallBraceLayout:
+Style/MultilineMethodCallBraceLayout:
   Enabled: true
 
 Style/SafeNavigation:
-  Enabled: false
+  Enabled: true
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
   Enabled: true
 
 Style/HashSyntax:
-  Enabled: false
+  Enabled: true
 
 Style/RescueModifier:
-  Enabled: false
+  Enabled: true
 
 Style/ClassAndModuleChildren:
   EnforcedStyle: nested
@@ -196,19 +196,19 @@ Style/LineEndConcatenation:
   Enabled: false
 
 Style/MethodCallWithoutArgsParentheses:
-  Enabled: false
+  Enabled: true
 
 Style/MethodName:
-  Enabled: false
+  Enabled: true
 
 Style/MultilineBlockChain:
-  Enabled: false
+  Enabled: true
 
 Style/NegatedIf:
-  Enabled: false
+  Enabled: true
 
 Style/Next:
-  Enabled: false
+  Enabled: true
 
 Style/Not:
   Enabled: true
@@ -217,33 +217,33 @@ Style/NumericLiterals:
   MinDigits: 6
 
 Style/PercentLiteralDelimiters:
-  Enabled: false
+  Enabled: true
 
 Style/PercentQLiterals:
   EnforcedStyle: upper_case_q
   Enabled: true
 
 Style/PerlBackrefs:
-  Enabled: false
+  Enabled: true
 
 Style/RaiseArgs:
   EnforcedStyle: exploded
   Enabled: true
 
 Style/RedundantBegin:
-  Enabled: false
+  Enabled: true
 
 Style/RedundantParentheses:
-  Enabled: false
+  Enabled: true
 
 Style/RedundantReturn:
-  Enabled: false
+  Enabled: true
 
 Style/RedundantSelf:
   Enabled: false
 
 Style/RegexpLiteral:
-  Enabled: false
+  Enabled: true
 
 Style/Semicolon:
   Enabled: true
@@ -252,22 +252,22 @@ Style/SingleLineMethods:
   Enabled: true
 
 Style/SpecialGlobalVars:
-  Enabled: false
+  Enabled: true
 
 Style/StringLiterals:
-  Enabled: false
+  Enabled: true
 
 Style/StringLiteralsInInterpolation:
-  Enabled: false
+  Enabled: true
 
 Style/SymbolProc:
-  Enabled: false
+  Enabled: true
 
 Style/SymbolArray:
-  Enabled: false
+  Enabled: true
 
 Style/TrailingCommaInLiteral:
-  Enabled: false
+  Enabled: true
 
 Style/WordArray:
   MinSize: 10
@@ -276,97 +276,95 @@ Style/UnneededPercentQ:
   Enabled: false
 
 Style/WhileUntilModifier:
-  Enabled: false
+  Enabled: true
 
-Style/YodaCondition:
-  Enabled: false
+#Style/YodaCondition:
+#  Enabled: true
 
-#### Layout
-
-Layout/AccessModifierIndentation:
+Style/AccessModifierIndentation:
   EnforcedStyle: indent
   Enabled: true
 
-Layout/DotPosition:
+Style/DotPosition:
   EnforcedStyle: trailing
   Enabled: true
 
-Layout/EmptyLines:
-  Enabled: false
-
-Layout/EmptyLinesAroundAccessModifier:
+Style/EmptyLines:
   Enabled: true
 
-Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-
-Layout/EmptyLinesAroundMethodBody:
+Style/EmptyLinesAroundAccessModifier:
   Enabled: true
 
-Layout/EmptyLinesAroundModuleBody:
-  Enabled: false
-
-Layout/EndOfLine:
-  Enabled: false
-
-Layout/ExtraSpacing:
+Style/EmptyLinesAroundClassBody:
   Enabled: true
 
-Layout/IndentationConsistency:
+Style/EmptyLinesAroundMethodBody:
   Enabled: true
 
-Layout/IndentationWidth:
+Style/EmptyLinesAroundModuleBody:
   Enabled: true
 
-Layout/IndentHash:
+Style/EndOfLine:
   Enabled: true
 
-Layout/IndentHeredoc:
+Style/ExtraSpacing:
+  Enabled: true
+
+Style/IndentationConsistency:
+  Enabled: true
+
+Style/IndentationWidth:
+  Enabled: true
+
+Style/IndentHash:
+  Enabled: true
+
+Style/IndentHeredoc:
   Enabled: false
 
-Layout/LeadingCommentSpace:
-  Enabled: false
+Style/LeadingCommentSpace:
+  Enabled: true
 
-Layout/MultilineOperationIndentation:
-  Enabled: false
+Style/MultilineOperationIndentation:
+  Enabled: true
 
-Layout/SpaceAroundBlockParameters:
+Style/SpaceAroundBlockParameters:
   EnforcedStyleInsidePipes: no_space
   Enabled: true
 
-Layout/SpaceAfterComma:
-  Enabled: false
-
-Layout/SpaceAfterNot:
+Style/SpaceAfterComma:
   Enabled: true
 
-Layout/SpaceAfterSemicolon:
+Style/SpaceAfterNot:
   Enabled: true
 
-Layout/SpaceAroundEqualsInParameterDefault:
-  Enabled: false
-
-Layout/SpaceAroundOperators:
-  Enabled: false
-
-Layout/SpaceBeforeBlockBraces:
-  Enabled: false
-
-Layout/SpaceBeforeComma:
+Style/SpaceAfterSemicolon:
   Enabled: true
 
-Layout/SpaceInsideBlockBraces:
-  Enabled: false
+Style/SpaceAroundEqualsInParameterDefault:
+  Enabled: true
 
-Layout/SpaceInsideHashLiteralBraces:
-  Enabled: false
+Style/SpaceAroundOperators:
+  Enabled: true
 
-Layout/SpaceInsideStringInterpolation:
+Style/SpaceBeforeBlockBraces:
+  Enabled: true
+
+Style/SpaceBeforeComma:
+  Enabled: true
+
+Style/SpaceInsideBlockBraces:
+  Enabled: true
+
+Style/SpaceInsideHashLiteralBraces:
+  Enabled: true
+
+Style/SpaceInsideStringInterpolation:
   EnforcedStyle: no_space
   Enabled: true
 
-Layout/TrailingBlankLines:
-  Enabled: false
+Style/TrailingBlankLines:
+  Enabled: true
 
 
 #### Metrics
@@ -420,8 +418,8 @@ Metrics/BlockLength:
 
 ## Naming
 
-Naming/HeredocDelimiterNaming:
-  Enabled: false
+#Naming/HeredocDelimiterNaming:
+#  Enabled: false
 
 #### Security
 
