@@ -676,6 +676,11 @@ EOT
       return true
     end
     epubmaker = ReVIEW::EPUBMaker.new
+    epubmaker.instance_eval do
+      def warn(msg)
+        $stderr.puts msg
+      end
+    end
     out, err = capture_output do
       epubmaker.check_image_size(assets_dir, 5500, %w[png gif jpg jpeg svg ttf woff otf])
     end
