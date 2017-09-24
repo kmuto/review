@@ -107,7 +107,7 @@ module EPUBMaker
             s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
           end
 
-          if role == 'prt' || role == 'pbl'
+          if %w[prt pbl].include?(role)
             if v.is_a?(Hash)
               s << %Q(    <dc:publisher id="pub-#{role}-#{i}">#{CGI.escapeHTML(v['name'])}</dc:publisher>\n)
               s << %Q(    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)

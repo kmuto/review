@@ -121,10 +121,9 @@ module ReVIEW
     end
 
     def flush_blank
-      if @blank_needed
-        @output.puts
-        @blank_needed = false
-      end
+      return unless @blank_needed
+      @output.puts
+      @blank_needed = false
     end
   end
 end # module ReVIEW

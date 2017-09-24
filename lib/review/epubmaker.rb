@@ -81,7 +81,7 @@ module ReVIEW
       end
       log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
-      FileUtils.rm_f('#{bookname}.epub')
+      FileUtils.rm_f("#{bookname}.epub")
       FileUtils.rm_rf(booktmpname) if @params['debug']
 
       basetmpdir = build_path

@@ -322,9 +322,7 @@ module EPUBMaker
 
       if @params['flag_legacy_pubhistory'].nil? && @params['pubhistory']
         @params['history'] = [[]]
-        @params['pubhistory'].split("\n").each do |date|
-          @params['history'][0].push(date.sub(/(\d+)年(\d+)月(\d+)日/, '\1-\2-\3'))
-        end
+        @params['pubhistory'].split("\n").each { |date| @params['history'][0].push(date.sub(/(\d+)年(\d+)月(\d+)日/, '\1-\2-\3')) }
         @params['flag_legacy_pubhistory'] = true
         warn 'Parameter \'pubhistory\' is obsolete. Please use \'history\' array.'
       end

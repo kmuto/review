@@ -27,8 +27,8 @@ Lint/AssignmentInCondition:
 Lint/ParenthesesAsGroupedExpression:
   Enabled: true
 
-#Lint/RescueWithoutErrorClass:
-#  Enabled: true
+Lint/RescueWithoutErrorClass:
+  Enabled: false
 
 Lint/UnderscorePrefixedVariableName:
   Enabled: true
@@ -58,9 +58,6 @@ Performance/RangeInclude:
   Enabled: true
 
 #### Style
-
-Style/AccessorMethodName:
-  Enabled: true
 
 Style/AsciiComments:
   Enabled: false
@@ -105,9 +102,6 @@ Style/SelfAssignment:
 #  Enabled: true
 
 # Use snake_case for variable names.
-Style/VariableName:
-  Enabled: true
-
 Style/ConditionalAssignment:
   Enabled: false
 
@@ -155,15 +149,8 @@ Style/NumericPredicate:
 Style/TernaryParentheses:
   Enabled: truee
 
-Style/VariableNumber:
-  EnforcedStyle: normalcase
-  Enabled: true
-
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
-  Enabled: true
-
-Style/MultilineMethodCallBraceLayout:
   Enabled: true
 
 Style/SafeNavigation:
@@ -198,9 +185,6 @@ Style/LineEndConcatenation:
 Style/MethodCallWithoutArgsParentheses:
   Enabled: true
 
-Style/MethodName:
-  Enabled: true
-
 Style/MultilineBlockChain:
   Enabled: true
 
@@ -224,7 +208,7 @@ Style/PercentQLiterals:
   Enabled: true
 
 Style/PerlBackrefs:
-  Enabled: true
+  Enabled: false
 
 Style/RaiseArgs:
   EnforcedStyle: exploded
@@ -281,91 +265,95 @@ Style/WhileUntilModifier:
 #Style/YodaCondition:
 #  Enabled: true
 
-Style/AccessModifierIndentation:
+### Layout
+
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: true
+
+Layout/AccessModifierIndentation:
   EnforcedStyle: indent
   Enabled: true
 
-Style/DotPosition:
+Layout/DotPosition:
   EnforcedStyle: trailing
   Enabled: true
 
-Style/EmptyLines:
+Layout/EmptyLines:
   Enabled: true
 
-Style/EmptyLinesAroundAccessModifier:
+Layout/EmptyLinesAroundAccessModifier:
   Enabled: true
 
-Style/EmptyLinesAroundClassBody:
+Layout/EmptyLinesAroundClassBody:
   Enabled: true
 
-Style/EmptyLinesAroundMethodBody:
+Layout/EmptyLinesAroundMethodBody:
   Enabled: true
 
-Style/EmptyLinesAroundModuleBody:
+Layout/EmptyLinesAroundModuleBody:
   Enabled: true
 
-Style/EndOfLine:
+Layout/EndOfLine:
   Enabled: true
 
-Style/ExtraSpacing:
+Layout/ExtraSpacing:
   Enabled: true
 
-Style/IndentationConsistency:
+Layout/IndentationConsistency:
   Enabled: true
 
-Style/IndentationWidth:
+Layout/IndentationWidth:
   Enabled: true
 
-Style/IndentHash:
+Layout/IndentHash:
   Enabled: true
 
-Style/IndentHeredoc:
+Layout/IndentHeredoc:
   Enabled: false
 
-Style/LeadingCommentSpace:
+Layout/LeadingCommentSpace:
   Enabled: true
 
-Style/MultilineOperationIndentation:
+Layout/MultilineOperationIndentation:
   Enabled: true
 
-Style/SpaceAroundBlockParameters:
+Layout/SpaceAroundBlockParameters:
   EnforcedStyleInsidePipes: no_space
   Enabled: true
 
-Style/SpaceAfterComma:
+Layout/SpaceAfterComma:
   Enabled: true
 
-Style/SpaceAfterNot:
+Layout/SpaceAfterNot:
   Enabled: true
 
-Style/SpaceAfterSemicolon:
+Layout/SpaceAfterSemicolon:
   Enabled: true
 
-Style/SpaceAroundEqualsInParameterDefault:
+Layout/SpaceAroundEqualsInParameterDefault:
   Enabled: true
 
-Style/SpaceAroundOperators:
+Layout/SpaceAroundOperators:
   Enabled: true
 
-Style/SpaceBeforeBlockBraces:
+Layout/SpaceBeforeBlockBraces:
   Enabled: true
 
-Style/SpaceBeforeComma:
+Layout/SpaceBeforeComma:
   Enabled: true
 
-Style/SpaceInsideBlockBraces:
+Layout/SpaceInsideBlockBraces:
   Enabled: true
 
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   Enabled: true
 
-Style/SpaceInsideStringInterpolation:
+Layout/SpaceInsideStringInterpolation:
   EnforcedStyle: no_space
   Enabled: true
 
-Style/TrailingBlankLines:
+Layout/TrailingBlankLines:
   Enabled: true
-
 
 #### Metrics
 
@@ -418,8 +406,21 @@ Metrics/BlockLength:
 
 ## Naming
 
-#Naming/HeredocDelimiterNaming:
-#  Enabled: false
+Naming/AccessorMethodName:
+  Enabled: true
+
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
+Naming/MethodName:
+  Enabled: true
+
+Naming/VariableName:
+  Enabled: true
+
+Naming/VariableNumber:
+  EnforcedStyle: normalcase
+  Enabled: true
 
 #### Security
 
