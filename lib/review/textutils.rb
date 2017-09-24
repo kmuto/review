@@ -6,11 +6,11 @@ module ReVIEW
     def detab(str, ts = 8)
       add = 0
       len = nil
-      str.gsub(/\t/) {
+      str.gsub(/\t/) do
         len = ts - ($`.size + add) % ts
         add += len - 1
         ' ' * len
-      }
+      end
     end
 
     def split_paragraph(lines)
@@ -18,7 +18,7 @@ module ReVIEW
       post = post_paragraph
 
       blocked_lines = [[]]
-      lines.each {|element|
+      lines.each do |element|
         if element == ""
           if blocked_lines.last != []
             blocked_lines << []
@@ -26,7 +26,7 @@ module ReVIEW
         else
           blocked_lines.last << element
         end
-      }
+      end
 
       if !pre.nil? and !post.nil?
         blocked_lines.map!{|i| [pre] + i + [post] }

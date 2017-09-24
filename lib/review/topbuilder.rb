@@ -17,9 +17,9 @@ module ReVIEW
 
     include TextUtils
 
-    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon, :strong].each {|e|
+    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon, :strong].each do |e|
       Compiler.definline(e)
-    }
+    end
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 1)

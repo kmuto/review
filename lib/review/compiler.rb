@@ -470,10 +470,10 @@ module ReVIEW
       scanner = StringScanner.new(str)
       words = []
       while word = scanner.scan(/(\[\]|\[.*?[^\\]\])/)
-        w2 = word[1..-2].gsub(/\\(.)/){
+        w2 = word[1..-2].gsub(/\\(.)/) do
           ch = $1
           (ch == "]" or ch == "\\") ? ch : "\\" + ch
-        }
+        end
         words << w2
       end
       if !scanner.eos?

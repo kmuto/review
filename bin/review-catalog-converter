@@ -121,9 +121,9 @@ def parse_parts(parts_str, chaps_str)
 
   parts = parts_str.split("\n")
   chaps = chaps_str.split("\n\n")
-  "CHAPS:\n" + parts.zip(chaps).map{|k, vs|
+  "CHAPS:\n" + parts.zip(chaps).map do |k, vs|
     "  - #{k}:\n" + vs.split("\n").map{|i| "    - #{i}\n"}.join
-  }.join + "\n"
+  end.join + "\n"
 end
 
 if File.basename($0) == File.basename(__FILE__)

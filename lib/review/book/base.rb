@@ -104,9 +104,9 @@ module ReVIEW
       end
 
       def parts_in_file
-        parts.find_all{|part|
+        parts.find_all do |part|
           part if part.present? and part.file?
-        }
+        end
       end
 
       def part(n)
@@ -273,9 +273,9 @@ module ReVIEW
       def appendix
         if catalog
           names = catalog.appendix.split("\n")
-          chaps = names.each_with_index.map {|n, idx|
+          chaps = names.each_with_index.map do |n, idx|
             mkchap_ifexist(n, idx)
-          }.compact
+          end.compact
           return mkpart(chaps)
         end
 
@@ -338,16 +338,16 @@ module ReVIEW
 
         chap = read_CHAPS().
                strip.lines.map {|line| line.strip }.join("\n").split(/\n{2,}/).
-               map {|part_chunk|
-          chaps = part_chunk.split.map {|chapid|
+               map do |part_chunk|
+          chaps = part_chunk.split.map do |chapid|
             Chapter.new(self, (num += 1), chapid, "#{@basedir}/#{chapid}")
-          }
+          end
           if part_exist? && read_PART.split("\n").size > part
             Part.new(self, (part += 1), chaps, read_PART.split("\n")[part-1])
           else
             Part.new(self, nil, chaps)
           end
-        }
+        end
         return chap
       end
 

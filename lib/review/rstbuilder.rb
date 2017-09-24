@@ -24,9 +24,9 @@ module ReVIEW
 
     include TextUtils
 
-    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon, :strong].each {|e|
+    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon, :strong].each do |e|
       Compiler.definline(e)
-    }
+    end
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 1)
@@ -324,14 +324,14 @@ module ReVIEW
 
     def tr(rows)
       first = true
-      rows.each{|row|
+      rows.each do |row|
         if first
           puts "   * - #{row}"
           first = false
         else
           puts "     - #{row}"
         end
-      }
+      end
     end
 
     def th(str)

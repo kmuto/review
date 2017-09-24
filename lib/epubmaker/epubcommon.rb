@@ -230,13 +230,13 @@ EOT
       end
 
       @body << %Q[    <table class="colophon">\n]
-      @body << @producer.params["colophon_order"].map{ |role|
+      @body << @producer.params["colophon_order"].map do |role|
         if @producer.params[role]
           %Q[      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params.names_of(role), ReVIEW::I18n.t("names_splitter")))}</td></tr>\n]
         else
           ""
         end
-      }.join("")
+      end.join("")
 
       if @producer.isbn_hyphen
         @body << %Q[      <tr><th>ISBN</th><td>#{@producer.isbn_hyphen}</td></tr>\n]
