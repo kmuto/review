@@ -1,7 +1,5 @@
-#
-# $Id: latexindex.rb 2204 2006-03-18 06:10:26Z aamine $
-#
-# Copyright (c) 2002-2006 Minero Aoki
+# Copyright (c) 2017 Minero Aoki, Kenshi Muto
+#               2002-2006 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -10,9 +8,7 @@
 #
 
 module ReVIEW
-
   class LaTeXIndex
-
     def load(path)
       table = {}
       File.foreach(path) do |line|
@@ -29,7 +25,5 @@ module ReVIEW
     def [](key)
       @table.fetch(key)
     end
-
   end
-
 end

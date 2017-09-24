@@ -1,8 +1,5 @@
-#
-# $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
-#
-# Copyright (c) 2002-2008 Minero Aoki
-#               2009 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+#               2002-2008 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -22,7 +19,7 @@ require 'review/book/index'
 module ReVIEW
   @default_book = nil
 
-  def ReVIEW.book
+  def self.book
     @default_book ||= Book::Base.load
   end
 

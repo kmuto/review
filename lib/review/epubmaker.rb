@@ -489,12 +489,11 @@ module ReVIEW
       Find.find(basetmpdir) do |fname|
         next unless fname.match(extre)
         img = ImageSize.path(fname)
-        if img.width && img.width * img.height > maxpixels
-          h = Math.sqrt(img.height * maxpixels / img.width)
-          w = maxpixels / h
-          fname.sub!("#{basetmpdir}/", '')
-          warn "#{fname}: #{img.width}x#{img.height} exceeds a limit. suggeted value is #{w.to_i}x#{h.to_i}"
-        end
+        next if img.width.nil? || img.width * img.height <= maxpixels
+        h = Math.sqrt(img.height * maxpixels / img.width)
+        w = maxpixels / h
+        fname.sub!("#{basetmpdir}/", '')
+        warn "#{fname}: #{img.width}x#{img.height} exceeds a limit. suggeted value is #{w.to_i}x#{h.to_i}"
       end
 
       true

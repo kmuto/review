@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) 2012-2017 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.
@@ -53,7 +51,7 @@ module ReVIEW
               image_files << "#{from_dir}/#{fname}.#{conv_type}"
             end
 
-            exts = options[:exts] || %w(png gif jpg jpeg svg pdf eps ai tif)
+            exts = options[:exts] || %w[png gif jpg jpeg svg pdf eps ai tif]
             exts_str = exts.join('|')
             if !is_converted && fname =~ /\.(#{exts_str})$/i
               FileUtils.cp "#{from_dir}/#{fname}", to_dir
@@ -66,6 +64,5 @@ module ReVIEW
       image_files
     end
     module_function :copy_images_to_dir
-
   end
 end

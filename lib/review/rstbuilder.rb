@@ -1,7 +1,5 @@
-# encoding: utf-8
-
-# Copyright (c) 2002-2006 Minero Aoki
-#               2008-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+#               2002-2006 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -12,7 +10,6 @@ require 'review/builder'
 require 'review/textutils'
 
 module ReVIEW
-
   #
   # RSTBuilder is a builder for reStructuredText (http://docutils.sourceforge.net/rst.html).
   # reStructuredText is used in Sphinx (http://www.sphinx-doc.org/).
@@ -21,12 +18,9 @@ module ReVIEW
   # package (https://pypi.python.org/pypi/sphinxcontrib-textstyle).
   #
   class RSTBuilder < Builder
-
     include TextUtils
 
-    [:ttbold, :hint, :maru, :keytop, :labelref, :ref, :pageref, :balloon, :strong].each {|e|
-      Compiler.definline(e)
-    }
+    %i[ttbold hint maru keytop labelref ref pageref balloon strong].each { |e| Compiler.definline(e) }
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 1)
@@ -50,7 +44,7 @@ module ReVIEW
     end
 
     def image_ext
-      "png"
+      'png'
     end
 
     def extname
@@ -99,25 +93,25 @@ module ReVIEW
         puts ".. _#{label}:"
         blank
       end
-      p = "="
+      p = '='
       case level
       when 1 then
         unless label
           puts ".. _#{@chapter.name}:"
           blank
         end
-        puts "=" * caption.size * 2
+        puts '=' * caption.size * 2
       when 2 then
-        p = "="
+        p = '='
       when 3 then
-        p = "-"
+        p = '-'
       when 4 then
-        p = "`"
+        p = '`'
       when 5 then
-        p = "~"
+        p = '~'
       end
 
-      puts "#{caption}"
+      puts caption
       puts p * caption.size * 2
       blank
     end
@@ -128,7 +122,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts "  " * (@ul_indent - 1) + "* #{lines.join}"
+      puts '  ' * (@ul_indent - 1) + "* #{lines.join}"
     end
 
     def ul_end
@@ -141,8 +135,8 @@ module ReVIEW
       @ol_indent += 1
     end
 
-    def ol_item(lines, num)
-      puts "  " * (@ol_indent - 1) + "#. #{lines.join}"
+    def ol_item(lines, _num)
+      puts '  ' * (@ol_indent - 1) + "#. #{lines.join}"
     end
 
     def ol_end
@@ -154,56 +148,50 @@ module ReVIEW
     end
 
     def dt(line)
-      puts "#{line}"
+      puts line
     end
 
     def dd(lines)
-      split_paragraph(lines).each do |paragraph|
-        puts "  #{paragraph.gsub(/\n/, '')}"
-      end
+      split_paragraph(lines).each { |paragraph| puts "  #{paragraph.gsub(/\n/, '')}" }
     end
 
     def dl_end
     end
 
     def paragraph(lines)
-      pre = ""
-      if @in_role == true
-        pre = "   "
-      end
+      pre = ''
+      pre = '   ' if @in_role == true
       puts pre + lines.join
       puts "\n"
     end
 
     def read(lines)
-      puts split_paragraph(lines).map{|line| "  #{line}"}.join("")
+      puts split_paragraph(lines).map { |line| "  #{line}" }.join
       blank
     end
 
     alias_method :lead, :read
 
     def hr
-      puts "----"
+      puts '----'
     end
 
     def inline_list(id)
       " :numref:`#{id}` "
     end
 
-    def list_header(id, caption, lang)
+    def list_header(id, _caption, _lang)
       puts ".. _#{id}:"
       blank
     end
 
-    def list_body(id, lines, lang)
-      lines.each do |line|
-        puts '-' + detab(line)
-      end
+    def list_body(_id, lines, _lang)
+      lines.each { |line| puts '-' + detab(line) }
     end
 
-    def base_block(type, lines, caption = nil)
+    def base_block(_type, lines, caption = nil)
       blank
-      puts "#{compile_inline(caption)}" unless caption.nil?
+      puts compile_inline(caption) unless caption.nil?
       puts lines.join("\n")
       blank
     end
@@ -212,7 +200,7 @@ module ReVIEW
       puts ".. #{type}::"
       blank
       puts "   #{compile_inline(caption)}" unless caption.nil?
-      puts "   " + split_paragraph(lines).join("\n")
+      puts '   ' + split_paragraph(lines).join("\n")
       blank
     end
 
@@ -222,12 +210,10 @@ module ReVIEW
         puts caption
         print "\n"
       end
-      lang ||= "none"
+      lang ||= 'none'
       puts ".. code-block:: #{lang}"
       blank
-      lines.each do |line|
-        puts "   " + detab(line)
-      end
+      lines.each { |line| puts '   ' + detab(line) }
       blank
     end
 
@@ -237,33 +223,27 @@ module ReVIEW
         puts caption
         print "\n"
       end
-      lang ||= "none"
+      lang ||= 'none'
       puts ".. code-block:: #{lang}"
-      puts "   :linenos:"
+      puts '   :linenos:'
       blank
-      lines.each do |line|
-        puts "   " + detab(line)
-      end
+      lines.each { |line| puts '   ' + detab(line) }
       blank
     end
 
-    def listnum_body(lines, lang)
-      lines.each_with_index do |line, i|
-        puts(i + 1).to_s.rjust(2) + ": #{line}"
-      end
+    def listnum_body(lines, _lang)
+      lines.each_with_index { |line, i| puts(i + 1).to_s.rjust(2) + ": #{line}" }
       blank
     end
 
-    def cmd(lines, caption = nil)
-      puts ".. code-block:: bash"
-      lines.each do |line|
-        puts "   " + detab(line)
-      end
+    def cmd(lines, _caption = nil)
+      puts '.. code-block:: bash'
+      lines.each { |line| puts '   ' + detab(line) }
     end
 
     def quote(lines)
       blank
-      puts lines.map{|line| "  #{line}"}.join("")
+      puts lines.map { |line| "  #{line}" }.join
       blank
     end
 
@@ -277,9 +257,7 @@ module ReVIEW
 
     def image_image(id, caption, metric)
       chapter, id = extract_chapter_id(id)
-      if metric
-        scale = metric.split("=")[1].to_f * 100
-      end
+      scale = metric.split('=')[1].to_f * 100 if metric
 
       puts ".. _#{id}:"
       blank
@@ -302,9 +280,9 @@ module ReVIEW
     end
 
     def texequation(lines)
-      puts ".. math::"
+      puts '.. math::'
       blank
-      puts lines.map{|line| "   #{line}"}.join("")
+      puts lines.map { |line| "   #{line}" }.join
       blank
     end
 
@@ -315,7 +293,7 @@ module ReVIEW
       end
       blank
       puts ".. list-table:: #{compile_inline(caption)}"
-      puts "   :header-rows: 1"
+      puts '   :header-rows: 1'
       blank
     end
 
@@ -324,14 +302,14 @@ module ReVIEW
 
     def tr(rows)
       first = true
-      rows.each{|row|
+      rows.each do |row|
         if first
           puts "   * - #{row}"
           first = false
         else
           puts "     - #{row}"
         end
-      }
+      end
     end
 
     def th(str)
@@ -350,17 +328,17 @@ module ReVIEW
       table(lines, nil, caption)
     end
 
-    def comment(lines, comment = nil)
-      puts lines.map{|line| "  .. #{line}"}.join("")
+    def comment(lines, _comment = nil)
+      puts lines.map { |line| "  .. #{line}" }.join
     end
 
     def footnote(id, str)
-      puts ".. [##{id.sub(" ", "_")}] #{compile_inline(str)}"
+      puts ".. [##{id.sub(' ', '_')}] #{compile_inline(str)}"
       blank
     end
 
     def inline_fn(id)
-      " [##{id.sub(" ", "_")}]_ "
+      " [##{id.sub(' ', '_')}]_ "
     end
 
     def compile_ruby(base, ruby)
@@ -380,19 +358,19 @@ module ReVIEW
     end
 
     def inline_sup(str)
-      " :superscript:`str` "
+      " :superscript:`#{str}` "
     end
 
     def inline_sub(str)
-      " :subscript:`str` "
+      " :subscript:`#{str}` "
     end
 
     def inline_raw(str)
       matched = str.match(/\|(.*?)\|(.*)/)
       if matched
-        matched[2].gsub("\\n", "\n")
+        matched[2].gsub('\\n', "\n")
       else
-        str.gsub("\\n", "\n")
+        str.gsub('\\n', "\n")
       end
     end
 
@@ -420,11 +398,11 @@ module ReVIEW
     end
 
     def inline_i(str)
-      " *#{str.gsub(/\*/, '\*')}* "
+      " *#{str.gsub('*', '\*')}* "
     end
 
     def inline_b(str)
-      " **#{str.gsub(/\*/, '\*')}** "
+      " **#{str.gsub('*', '\*')}** "
     end
 
     alias_method :inline_strong, :inline_b
@@ -439,7 +417,7 @@ module ReVIEW
     alias_method :inline_ttbold, :inline_ttb
 
     def inline_u(str)
-      " :subscript:`str` "
+      " :subscript:`#{str}` "
     end
 
     def inline_icon(id)
@@ -461,14 +439,14 @@ module ReVIEW
     end
 
     def inline_uchar(str)
-      [str.to_i(16)].pack("U")
+      [str.to_i(16)].pack('U')
     end
 
     def inline_comment(str)
-      if @book.config["draft"]
-        "#{str}"
+      if @book.config['draft']
+        str
       else
-        ""
+        ''
       end
     end
 
@@ -476,7 +454,7 @@ module ReVIEW
       " :math:`#{str}` "
     end
 
-    def inline_hd_chap(chap, id)
+    def inline_hd_chap(_chap, id)
       " :ref:`#{id}` "
     end
 
@@ -484,7 +462,7 @@ module ReVIEW
       # TODO
     end
 
-    def nonum_begin(level, label, caption)
+    def nonum_begin(_level, _label, caption)
       puts ".. rubric: #{compile_inline(caption)}"
       blank
     end
@@ -492,169 +470,169 @@ module ReVIEW
     def nonum_end(level)
     end
 
-    def common_column_begin(type, caption)
+    def common_column_begin(_type, caption)
       blank
       puts ".. column:: #{compile_inline(caption)}"
       blank
       @in_role = true
     end
 
-    def common_column_end(type)
+    def common_column_end(_type)
       @in_role = false
       blank
     end
 
-    def column_begin(level, label, caption)
-      common_column_begin("column", caption)
+    def column_begin(_level, _label, caption)
+      common_column_begin('column', caption)
     end
 
-    def column_end(level)
-      common_column_end("column")
+    def column_end(_level)
+      common_column_end('column')
     end
 
-    def xcolumn_begin(level, label, caption)
-      common_column_begin("xcolumn", caption)
+    def xcolumn_begin(_level, _label, caption)
+      common_column_begin('xcolumn', caption)
     end
 
-    def xcolumn_end(level)
-      common_column_end("xcolumn")
+    def xcolumn_end(_level)
+      common_column_end('xcolumn')
     end
 
-    def world_begin(level, label, caption)
-      common_column_begin("world", caption)
+    def world_begin(_level, _label, caption)
+      common_column_begin('world', caption)
     end
 
-    def world_end(level)
-      common_column_end("world")
+    def world_end(_level)
+      common_column_end('world')
     end
 
-    def hood_begin(level, label, caption)
-      common_column_begin("hood", caption)
+    def hood_begin(_level, _label, caption)
+      common_column_begin('hood', caption)
     end
 
-    def hood_end(level)
-      common_column_end("hood")
+    def hood_end(_level)
+      common_column_end('hood')
     end
 
-    def edition_begin(level, label, caption)
-      common_column_begin("edition", caption)
+    def edition_begin(_level, _label, caption)
+      common_column_begin('edition', caption)
     end
 
-    def edition_end(level)
-      common_column_end("edition")
+    def edition_end(_level)
+      common_column_end('edition')
     end
 
-    def insideout_begin(level, label, caption)
-      common_column_begin("insideout", caption)
+    def insideout_begin(_level, _label, caption)
+      common_column_begin('insideout', caption)
     end
 
-    def insideout_end(level)
-      common_column_end("insideout")
+    def insideout_end(_level)
+      common_column_end('insideout')
     end
 
-    def ref_begin(level, label, caption)
-      common_column_begin("ref", caption)
+    def ref_begin(_level, _label, caption)
+      common_column_begin('ref', caption)
     end
 
-    def ref_end(level)
-      common_column_end("ref")
+    def ref_end(_level)
+      common_column_end('ref')
     end
 
-    def sup_begin(level, label, caption)
-      common_column_begin("sup", caption)
+    def sup_begin(_level, _label, caption)
+      common_column_begin('sup', caption)
     end
 
-    def sup_end(level)
-      common_column_end("sup")
+    def sup_end(_level)
+      common_column_end('sup')
     end
 
     def flushright(lines)
-      base_parablock "flushright", lines, nil
+      base_parablock 'flushright', lines, nil
     end
 
     def centering(lines)
-      base_parablock "centering", lines, nil
+      base_parablock 'centering', lines, nil
     end
 
     def note(lines, caption = nil)
-      base_parablock "note", lines, caption
+      base_parablock 'note', lines, caption
     end
 
     def memo(lines, caption = nil)
-      base_parablock "memo", lines, caption
+      base_parablock 'memo', lines, caption
     end
 
     def tip(lines, caption = nil)
-      base_parablock "tip", lines, caption
+      base_parablock 'tip', lines, caption
     end
 
     def info(lines, caption = nil)
-      base_parablock "info", lines, caption
+      base_parablock 'info', lines, caption
     end
 
     def planning(lines, caption = nil)
-      base_parablock "planning", lines, caption
+      base_parablock 'planning', lines, caption
     end
 
     def best(lines, caption = nil)
-      base_parablock "best", lines, caption
+      base_parablock 'best', lines, caption
     end
 
     def important(lines, caption = nil)
-      base_parablock "important", lines, caption
+      base_parablock 'important', lines, caption
     end
 
     def security(lines, caption = nil)
-      base_parablock "security", lines, caption
+      base_parablock 'security', lines, caption
     end
 
     def caution(lines, caption = nil)
-      base_parablock "caution", lines, caption
+      base_parablock 'caution', lines, caption
     end
 
     def term(lines)
-      base_parablock "term", lines, nil
+      base_parablock 'term', lines, nil
     end
 
     def link(lines, caption = nil)
-      base_parablock "link", lines, caption
+      base_parablock 'link', lines, caption
     end
 
     def notice(lines, caption = nil)
-      base_parablock "notice", lines, caption
+      base_parablock 'notice', lines, caption
     end
 
     def point(lines, caption = nil)
-      base_parablock "point", lines, caption
+      base_parablock 'point', lines, caption
     end
 
     def shoot(lines, caption = nil)
-      base_parablock "shoot", lines, caption
+      base_parablock 'shoot', lines, caption
     end
 
     def reference(lines)
-      base_parablock "reference", lines, nil
+      base_parablock 'reference', lines, nil
     end
 
     def practice(lines)
-      base_parablock "practice", lines, nil
+      base_parablock 'practice', lines, nil
     end
 
     def expert(lines)
-      base_parablock "expert", lines, nil
+      base_parablock 'expert', lines, nil
     end
 
     def insn(lines, caption = nil)
-      base_block "insn", lines, caption
+      base_block 'insn', lines, caption
     end
 
     def warning(lines, caption = nil)
-      base_parablock "warning", lines, caption
+      base_parablock 'warning', lines, caption
     end
 
     alias_method :box, :insn
 
-    def indepimage(_lines, id, caption = "", metric = nil)
+    def indepimage(_lines, id, caption = '', _metric = nil)
       chapter, id = extract_chapter_id(id)
       puts ".. _#{id}:"
       blank
@@ -676,23 +654,23 @@ module ReVIEW
     end
 
     def bpo(lines)
-      base_block "bpo", lines, nil
+      base_block 'bpo', lines, nil
     end
 
-    def inline_dtp(str)
-      ""
+    def inline_dtp(_str)
+      ''
     end
 
     def inline_del(str)
-      " :del:`str` "
+      " :del:`#{str}` "
     end
 
     def inline_code(str)
       " :code:`#{str}` "
     end
 
-    def inline_br(str)
-      %Q(\n)
+    def inline_br(_str)
+      "\n"
     end
 
     def text(str)
@@ -707,8 +685,8 @@ module ReVIEW
       " :numref:`#{id}` "
     end
 
-    def source(lines, caption = nil, lang = nil)
-      base_block "source", lines, caption
+    def source(lines, caption = nil, _lang = nil)
+      base_block 'source', lines, caption
     end
 
     def inline_ttibold(str)
@@ -725,7 +703,7 @@ module ReVIEW
       " :ref:`#{idref}` "
     end
 
-    def circle_begin(level, label, caption)
+    def circle_begin(_level, _label, caption)
       puts "・\t#{caption}"
     end
 
@@ -745,7 +723,7 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(id, caption, lines)
-      puts ".. [#{id}] #{compile_inline(caption)} #{split_paragraph(lines).join("")}"
+      puts ".. [#{id}] #{compile_inline(caption)} #{split_paragraph(lines).join}"
     end
 
     def inline_warn(str)
@@ -755,7 +733,5 @@ module ReVIEW
     def inline_bib(id)
       " [#{id}]_ "
     end
-
   end
-
 end # module ReVIEW

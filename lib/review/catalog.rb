@@ -12,45 +12,41 @@ module ReVIEW
     end
 
     def predef
-      return "" unless @yaml["PREDEF"]
-      @yaml["PREDEF"].join("\n")
+      return '' unless @yaml['PREDEF']
+      @yaml['PREDEF'].join("\n")
     end
 
     def chaps
-      return "" unless @yaml["CHAPS"]
+      return '' unless @yaml['CHAPS']
 
-      @yaml["CHAPS"].map {|entry|
-        if entry.is_a? String
+      @yaml['CHAPS'].map do |entry|
+        if entry.is_a?(String)
           entry
-        elsif entry.is_a? Hash
+        elsif entry.is_a?(Hash)
           entry.values # chaps in a part
         end
-      }.flatten.join("\n")
+      end.flatten.join("\n")
     end
 
     def parts
-      return "" unless @yaml["CHAPS"]
+      return '' unless @yaml['CHAPS']
 
-      @yaml["CHAPS"].map {|entry|
-        if entry.is_a? Hash
-          entry.keys
-        end
-      }.flatten.compact.join("\n")
+      @yaml['CHAPS'].map { |entry| entry.keys if entry.is_a?(Hash) }.flatten.compact.join("\n")
     end
 
     def parts_with_chaps
-      return "" unless @yaml["CHAPS"]
-      @yaml["CHAPS"].flatten.compact
+      return '' unless @yaml['CHAPS']
+      @yaml['CHAPS'].flatten.compact
     end
 
     def appendix
-      return "" unless @yaml["APPENDIX"]
-      @yaml["APPENDIX"].join("\n")
+      return '' unless @yaml['APPENDIX']
+      @yaml['APPENDIX'].join("\n")
     end
 
     def postdef
-      return "" unless @yaml["POSTDEF"]
-      @yaml["POSTDEF"].join("\n")
+      return '' unless @yaml['POSTDEF']
+      @yaml['POSTDEF'].join("\n")
     end
   end
 end

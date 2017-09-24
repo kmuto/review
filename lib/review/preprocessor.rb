@@ -63,12 +63,9 @@ module ReVIEW
       end
 
       def gets
-        while line = @f.gets
-          if /\A\#@/ =~ line
-            return "\#@\#\n"
-          else
-            return line
-          end
+        @f.each_line do |line|
+          return "\#@\#\n" if /\A\#@/ =~ line
+          return line
         end
         nil
       end
@@ -102,7 +99,7 @@ module ReVIEW
 
     def preproc(f)
       init_vars
-      while line = f.gets
+      f.each_line do |line|
         case line
         when /\A\#@\#/, /\A\#\#\#\#/
           @f.print line
@@ -129,7 +126,7 @@ module ReVIEW
           direc = parse_directive(line, 2, 'unindent')
           path = expand(direc.args[0])
           ent = @repository.fetch_range(path, direc.args[1]) or
-                  error "unknown range: #{path}: #{direc.args[1]}"
+            error "unknown range: #{path}: #{direc.args[1]}"
           ent = (direc['unindent'] ? unindent(ent, direc['unindent']) : ent)
           replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
@@ -138,8 +135,7 @@ module ReVIEW
 
         when /\A\#@/
           op = line.slice(/@(\w+)/, 1)
-          #error "unkown directive: #{line.strip}" unless known_directive?(op)
-          warn "unkown directive: #{line.strip}" unless known_directive?(op)
+          warn "unknown directive: #{line.strip}" unless known_directive?(op)
           @f.print line
 
         when /\A\s*\z/ # empty line
@@ -171,19 +167,19 @@ module ReVIEW
 
     def skip_list(f)
       begline = f.lineno
-      while line = f.gets
+      f.each_line do |line|
         case line
-        when %r[\A\#@end]
+        when /\A\#@end/
           @f.print line
-          return
-        when %r[\A//\}]
+          return nil
+        when %r{\A//\}}
           warn '//} seen in list'
           @f.print line
-          return
-        when %r[\A\#@\w]
+          return nil
+        when /\A\#@\w/
           warn "#{line.slice(/\A\#@\w+/)} seen in list"
           @f.print line
-        when %r[\A\#@]
+        when /\A\#@/
           @f.print line
         end
       end
@@ -216,7 +212,7 @@ module ReVIEW
 
     def parse_directive(line, argc, *optdecl)
       m = /\A\#@(\w+)\((.*?)\)(?:\[(.*?)\])?\z/.match(line.strip) or
-              error "wrong directive: #{line.strip}"
+        error "wrong directive: #{line.strip}"
       op = m[1]
       args = m[2].split(/,\s*/)
       opts = parse_optargs(m[3])
@@ -266,10 +262,10 @@ module ReVIEW
     end
 
     def expand(str)
-      str.gsub(/\$\w+/) {|name|
+      str.gsub(/\$\w+/) do |name|
         s = @vartable[name.sub('$', '')]
         s ? expand(s) : name
-      }
+      end
     end
 
     def unindent(chunk, n)
@@ -278,7 +274,7 @@ module ReVIEW
       chunk.map { |line| line.edit { |s| s.sub(re, '') } }
     end
 
-    INF_INDENT = 9999.freeze
+    INF_INDENT = 9999
 
     def minimum_indent(chunk)
       n = chunk.map { |line| line.empty? ? INF_INDENT : line.num_indent }.min
@@ -286,7 +282,7 @@ module ReVIEW
     end
 
     def evaluate(path, chunk)
-      outputs = get_output("ruby #{path}", false).split(/\n/).map { |s| s.strip }
+      outputs = get_output("ruby #{path}", false).split(/\n/).map(&:strip)
       chunk.map do |line|
         if /\# \$\d+/ =~ line.string
           # map result into source.
@@ -301,7 +297,7 @@ module ReVIEW
 
     def get_output(cmd, use_stderr)
       out = err = nil
-      Open3.popen3(cmd) do |stdin, stdout, stderr|
+      Open3.popen3(cmd) do |_stdin, stdout, stderr|
         out = stdout.readlines
         if use_stderr
           out.concat stderr.readlines
@@ -341,7 +337,6 @@ module ReVIEW
       @string.slice(/\A\s*/).size
     end
   end
-
 
   class Repository
     include TextUtils
@@ -413,12 +408,12 @@ module ReVIEW
             (repo[type] ||= {})[spec] = curr[key] = []
           when 'end'
             curr.delete("#{type}/#{spec}") or
-                    error "end before begin: #{type}/#{spec}"
+              error "end before begin: #{type}/#{spec}"
           else
             raise 'must not happen'
           end
 
-        when %r<(?:\A\#@|\#@@)([a-z]+)/(\w+)\{>
+        when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\{}
           type = check_type($1)
           spec = check_spec($2)
           key = "#{type}/#{spec}"
@@ -426,17 +421,17 @@ module ReVIEW
           (repo[type] ||= {})[spec] = curr[key] = []
           opened.push [type, spec]
 
-        when %r<(?:\A\#@|\#@@)([a-z]+)/(\w+)\}>
+        when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\}}
           type = check_type($1)
           spec = check_spec($2)
           curr.delete("#{type}/#{spec}") or
-              error "end before begin: #{type}/#{spec}"
+            error "end before begin: #{type}/#{spec}"
           opened.delete "#{type}/#{spec}"
 
-        when %r<(?:\A\#@|\#@@)\}>
+        when /(?:\A\#@|\#@@)\}/
           type, spec = opened.last
           curr.delete("#{type}/#{spec}") or
-              error "closed before open: #{type}/#{spec}"
+            error "closed before open: #{type}/#{spec}"
           opened.pop
 
         when /(?:\A\#@|\#@@)yacchack/
@@ -455,7 +450,7 @@ module ReVIEW
       end
       if curr.size > 1
         curr.delete 'WHOLE'
-        curr.each { |range, lines| @logger.warn "#{filename()}: unclosed range: #{range} (begin @#{lines.first.number})" }
+        curr.each { |range, lines| @logger.warn "#{filename}: unclosed range: #{range} (begin @#{lines.first.number})" }
         raise ApplicationError, 'ERROR'
       end
 
@@ -472,16 +467,12 @@ module ReVIEW
     end
 
     def check_type(type)
-      unless Preprocessor::TYPES.index(type)
-        error "wrong type: #{type.inspect}"
-      end
+      error "wrong type: #{type.inspect}" unless Preprocessor::TYPES.index(type)
       type
     end
 
     def check_spec(spec)
-      unless /\A\w+\z/ =~ spec
-        error "wrong spec: #{spec.inspect}"
-      end
+      error "wrong spec: #{spec.inspect}" unless /\A\w+\z/ =~ spec
       spec
     end
   end

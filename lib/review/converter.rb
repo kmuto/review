@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
@@ -11,7 +9,7 @@ module ReVIEW
 
     def initialize(book, builder)
       @book = book
-      @book.config["builder"] = builder.target_name
+      @book.config['builder'] = builder.target_name
       @compiler = ReVIEW::Compiler.new(builder)
     end
 
@@ -19,10 +17,7 @@ module ReVIEW
       chap_name = File.basename(file, '.*')
       chap = @book.chapter(chap_name)
       result = @compiler.compile(chap)
-      File.open(output_path, 'w') do |f|
-        f.puts result
-      end
+      File.open(output_path, 'w') { |f| f.puts result }
     end
   end
 end
-
