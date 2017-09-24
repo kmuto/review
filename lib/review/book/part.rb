@@ -21,20 +21,14 @@ module ReVIEW
         @chapters = chapters
         @name = name ? File.basename(name, '.re') : nil
         @path = name
-        @content =
-          if io
-            io.read
-          elsif @path && File.exist?(@path)
-            File.read(@path, mode: 'r:BOM|utf-8')
-          else
-            nil
-          end
-        @title = 
-          if file?
-            nil
-          else
-            name
-          end
+        @content = nil
+        if io
+          @content = io.read
+        elsif @path && File.exist?(@path)
+          @content = File.read(@path, mode: 'r:BOM|utf-8')
+        end
+        @title = name
+        @title = nil if file?
         @volume = nil
       end
 
@@ -47,7 +41,7 @@ module ReVIEW
       end
 
       def volume
-        vol = Volume.sum(@chapters.map { |chap| chap.volume })
+        vol = Volume.sum(@chapters.map(&:volume))
         vol.page_per_kbyte = @book.page_metric.page_per_kbyte
         vol
       end
@@ -58,7 +52,7 @@ module ReVIEW
 
       def format_number(heading = true)
         if heading
-          "#{I18n.t('part', @number)}"
+          I18n.t('part', @number)
         else
           @number.to_s
         end

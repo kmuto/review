@@ -1,8 +1,5 @@
-#
-# $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
-#
-# Copyright (c) 2002-2008 Minero Aoki
-#               2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+#               2002-2008 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -10,6 +7,7 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 require 'review/textutils'
+
 module ReVIEW
   module Book
     module Compilable
@@ -42,7 +40,7 @@ module ReVIEW
         return @title if @title
 
         @title = ''
-        return @title if !content
+        return @title unless content
         content.each_line do |line|
           if line =~ /\A=+/
             @title = line.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
@@ -57,16 +55,16 @@ module ReVIEW
       end
 
       def volume
-        if !@volume
-          @volume = Volume.count_file(path())
+        unless @volume
+          @volume = Volume.count_file(path)
           @volume.page_per_kbyte = @book.page_metric.page_per_kbyte
         end
         @volume
       end
 
       # deprecated; use content()
-      def open(&block)
-        return (block_given?() ? yield(@io) : @io) if @io
+      def open(&_block)
+        return (block_given? ? yield(@io) : @io) if @io
         StringIO.new(content)
       end
 
@@ -78,59 +76,59 @@ module ReVIEW
 
       def lines
         # FIXME: we cannot duplicate Enumerator on ruby 1.9 HEAD
-        (@lines ||= content().lines.to_a).dup
+        (@lines ||= content.lines.to_a).dup
       end
 
       def list(id)
-        list_index()[id]
+        list_index[id]
       end
 
       def list_index
-        @list_index ||= ListIndex.parse(lines())
+        @list_index ||= ListIndex.parse(lines)
         @list_index
       end
 
       def table(id)
-        table_index()[id]
+        table_index[id]
       end
 
       def table_index
-        @table_index ||= TableIndex.parse(lines())
+        @table_index ||= TableIndex.parse(lines)
         @table_index
       end
 
       def footnote(id)
-        footnote_index()[id]
+        footnote_index[id]
       end
 
       def footnote_index
-        @footnote_index ||= FootnoteIndex.parse(lines())
+        @footnote_index ||= FootnoteIndex.parse(lines)
         @footnote_index
       end
 
       def image(id)
-        return image_index()[id] if image_index().key?(id)
-        return icon_index()[id] if icon_index().key?(id)
-        return numberless_image_index()[id] if numberless_image_index().key?(id)
-        indepimage_index()[id]
+        return image_index[id] if image_index.key?(id)
+        return icon_index[id] if icon_index.key?(id)
+        return numberless_image_index[id] if numberless_image_index.key?(id)
+        indepimage_index[id]
       end
 
       def numberless_image_index
         @numberless_image_index ||=
-          NumberlessImageIndex.parse(lines(), id(),
+          NumberlessImageIndex.parse(lines, id,
                                      "#{book.basedir}/#{@book.config['imagedir']}",
                                      @book.image_types, @book.config['builder'])
       end
 
       def image_index
-        @image_index ||= ImageIndex.parse(lines(), id(),
+        @image_index ||= ImageIndex.parse(lines, id,
                                           "#{book.basedir}/#{@book.config['imagedir']}",
                                           @book.image_types, @book.config['builder'])
         @image_index
       end
 
       def icon_index
-        @icon_index ||= IconIndex.parse(lines(), id(),
+        @icon_index ||= IconIndex.parse(lines, id,
                                         "#{book.basedir}/#{@book.config['imagedir']}",
                                         @book.image_types, @book.config['builder'])
         @icon_index
@@ -138,13 +136,13 @@ module ReVIEW
 
       def indepimage_index
         @indepimage_index ||=
-          IndepImageIndex.parse(lines(), id(),
+          IndepImageIndex.parse(lines, id,
                                 "#{book.basedir}/#{@book.config['imagedir']}",
                                 @book.image_types, @book.config['builder'])
       end
 
       def bibpaper(id)
-        bibpaper_index()[id]
+        bibpaper_index[id]
       end
 
       def bibpaper_index
@@ -154,19 +152,19 @@ module ReVIEW
       end
 
       def headline(caption)
-        headline_index()[caption]
+        headline_index[caption]
       end
 
       def headline_index
-        @headline_index ||= HeadlineIndex.parse(lines(), self)
+        @headline_index ||= HeadlineIndex.parse(lines, self)
       end
 
       def column(id)
-        column_index()[id]
+        column_index[id]
       end
 
       def column_index
-        @column_index ||= ColumnIndex.parse(lines())
+        @column_index ||= ColumnIndex.parse(lines)
       end
 
       def next_chapter
@@ -179,4 +177,3 @@ module ReVIEW
     end
   end
 end
-
