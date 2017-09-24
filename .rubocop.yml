@@ -22,7 +22,7 @@ Lint/NestedMethodDefinition:
     - 'test/*'
 
 Lint/AssignmentInCondition:
-  Enabled: true
+  Enabled: false
 
 Lint/ParenthesesAsGroupedExpression:
   Enabled: true

@@ -285,9 +285,9 @@ module ReVIEW
       chaptype = 'body'
       if ispart
         chaptype = 'part'
-      elsif chap.on_PREDEF?
+      elsif chap.on_predef?
         chaptype = 'pre'
-      elsif chap.on_APPENDIX?
+      elsif chap.on_appendix?
         chaptype = 'post'
       end
 
@@ -301,10 +301,10 @@ module ReVIEW
       id = filename.sub(/\.re\Z/, '')
 
       if @params['epubmaker']['rename_for_legacy'] && ispart.nil?
-        if chap.on_PREDEF?
+        if chap.on_predef?
           @precount += 1
           id = sprintf('pre%02d', @precount)
-        elsif chap.on_APPENDIX?
+        elsif chap.on_appendix?
           @postcount += 1
           id = sprintf('post%02d', @postcount)
         else

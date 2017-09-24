@@ -949,7 +949,7 @@ EOS
 
   def test_appendix_list
     @chapter.instance_eval do
-      def on_APPENDIX?
+      def on_appendix?
         true
       end
     end
@@ -972,7 +972,7 @@ EOS
 
   def test_appendix_table
     @chapter.instance_eval do
-      def on_APPENDIX?
+      def on_appendix?
         true
       end
     end
@@ -1001,7 +1001,7 @@ EOS
 
   def test_appendix_image
     @chapter.instance_eval do
-      def on_APPENDIX?
+      def on_appendix?
         true
       end
     end

@@ -138,10 +138,10 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
-  def test_gettemplate
+  def test_template_content
     Dir.mktmpdir do |dir|
       @maker.basedir = Dir.pwd
-      tmpl = @maker.get_template
+      tmpl = @maker.template_content
       expect = File.read(File.join(assets_dir,"test_template.tex"))
       assert_equal(expect, tmpl)
     end
@@ -165,7 +165,7 @@ class PDFMakerTest < Test::Unit::TestCase
         expect = File.read(File.join(assets_dir,"test_template_backmatter.tex"))
 
         @maker.basedir = Dir.pwd
-        tmpl = @maker.get_template
+        tmpl = @maker.template_content
         tmpl.gsub!(/\A.*%% backmatter begins\n/m,"")
         assert_equal(expect, tmpl)
       end

@@ -267,7 +267,7 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, lang = nil)
       blank
-      first_line_num = get_line_num
+      first_line_num = line_num
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistnumlst', 'title', caption, lang, first_line_num: first_line_num)
       else
@@ -286,7 +286,7 @@ module ReVIEW
 
     ## override Builder#listnum
     def listnum(lines, id, caption, lang = nil)
-      first_line_num = get_line_num
+      first_line_num = line_num
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang, first_line_num: first_line_num)
       else

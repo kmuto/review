@@ -40,7 +40,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_postdef
     @chapter.instance_eval do
-      def on_APPENDIX?
+      def on_appendix?
         true
       end
     end
@@ -50,7 +50,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level2_postdef
     @chapter.instance_eval do
-      def on_APPENDIX?
+      def on_appendix?
         true
       end
     end
@@ -65,7 +65,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pR")}
         I18n.setup("ja")
         @chapter.instance_eval do
-          def on_APPENDIX?
+          def on_appendix?
             true
           end
         end
@@ -86,7 +86,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pA")}
         I18n.setup("ja")
         @chapter.instance_eval do
-          def on_APPENDIX?
+          def on_appendix?
             true
           end
         end
@@ -257,7 +257,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pR")}
         I18n.setup("ja")
         @chapter.instance_eval do
-          def on_APPENDIX?
+          def on_appendix?
             true
           end
         end
@@ -280,7 +280,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
         File.open(file, "w"){|f| f.write("locale: ja\nappendix: 付録%pA")}
         I18n.setup("ja")
         @chapter.instance_eval do
-          def on_APPENDIX?
+          def on_appendix?
             true
           end
         end

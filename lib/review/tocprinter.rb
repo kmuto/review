@@ -97,7 +97,7 @@ module ReVIEW
       chap_node = TOCParser.chapter_node(chap)
       ext = chap.book.config['htmlext'] || 'html'
       path = chap.path.sub(/\.re/, '.' + ext)
-      label = if chap_node.number && chap.on_CHAPS?
+      label = if chap_node.number && chap.on_chaps?
                 "#{chap.number} #{chap.title}"
               else
                 chap.title
