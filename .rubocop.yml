@@ -266,9 +266,6 @@ Style/WhileUntilModifier:
 #  Enabled: true
 
 ### Layout
-Layout/EndOfLine:
-  EnforcedStyle: lf
-
 Layout/MultilineMethodCallBraceLayout:
   Enabled: true
 
@@ -296,7 +293,7 @@ Layout/EmptyLinesAroundModuleBody:
   Enabled: true
 
 Layout/EndOfLine:
-  Enabled: true
+  Enabled: lf
 
 Layout/ExtraSpacing:
   Enabled: true
