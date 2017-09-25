@@ -266,6 +266,8 @@ Style/WhileUntilModifier:
 #  Enabled: true
 
 ### Layout
+Layout/EndOfLine:
+  Enabled: false
 
 Layout/MultilineMethodCallBraceLayout:
   Enabled: true
