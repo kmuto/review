@@ -97,11 +97,6 @@ Style/GlobalVars:
 Style/SelfAssignment:
   Enabled: true
 
-# When defining the == operator, name its argument other.
-#Style/BinaryOperatorParameterName:
-#  Enabled: true
-
-# Use snake_case for variable names.
 Style/ConditionalAssignment:
   Enabled: false
 
@@ -409,12 +404,17 @@ Metrics/BlockLength:
 Naming/AccessorMethodName:
   Enabled: true
 
+# When defining the == operator, name its argument other.
+#Style/BinaryOperatorParameterName:
+#  Enabled: true
+
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
 Naming/MethodName:
   Enabled: true
 
+# Use snake_case for variable names.
 Naming/VariableName:
   Enabled: true
 
