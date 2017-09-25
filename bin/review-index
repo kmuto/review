@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 #
-#
-# Copyright (c) 1999-2007 Minero Aoki
-#               2008-2014 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+#               1999-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -20,7 +19,6 @@ require 'review/tocparser'
 require 'review/tocprinter'
 require 'review/version'
 require 'optparse'
-
 
 def main
   @logger = ReVIEW.logger
@@ -42,37 +40,31 @@ def _main
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('-a', '--all', 'print all chapters.') {
-    source = book
-  }
-  opts.on('-p', '--part N', 'list only part N.') {|n|
+  opts.on('-a', '--all', 'print all chapters.') { source = book }
+  opts.on('-p', '--part N', 'list only part N.') do |n|
     source = book.part(Integer(n)) or
-        error_exit "part #{n} does not exist in this book"
-  }
-  opts.on('-c', '--chapter C', 'list only chapter C.') {|c|
+      error_exit "part #{n} does not exist in this book"
+  end
+  opts.on('-c', '--chapter C', 'list only chapter C.') do |c|
     begin
       source = ReVIEW::Book::Part.new(nil, 1, [book.chapter(c)])
     rescue
       error_exit "chapter #{c} does not exist in this book"
     end
-  }
-  opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') {|n|
+  end
+  opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') do |n|
     upper = Integer(n)
-    unless (0..4).include?(upper) # 0 is hidden option
-      $stderr.puts "-l/--level option accepts only 1..4"
+    unless (0..4).cover?(upper) # 0 is hidden option
+      $stderr.puts '-l/--level option accepts only 1..4'
       exit 1
     end
-  }
-  opts.on('--text', 'output in plain text (default)') {
-    printer_class = ReVIEW::TextTOCPrinter
-  }
-  opts.on('--html', 'output in HTML (deprecated)') {
-    printer_class = ReVIEW::HTMLTOCPrinter
-  }
-  opts.on('--help', 'print this message and quit.') {
+  end
+  opts.on('--text', 'output in plain text (default)') { printer_class = ReVIEW::TextTOCPrinter }
+  opts.on('--html', 'output in HTML (deprecated)') { printer_class = ReVIEW::HTMLTOCPrinter }
+  opts.on('--help', 'print this message and quit.') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
@@ -81,9 +73,7 @@ def _main
     exit 1
   end
   if source
-    unless ARGV.empty?
-      error_exit '-a/-s option and file arguments are exclusive'
-    end
+    error_exit '-a/-s option and file arguments are exclusive' unless ARGV.empty?
   else
     puts opts.help
     exit 0
@@ -91,7 +81,7 @@ def _main
 
   begin
     printer = printer_class.new(upper, param)
-    if source.kind_of?(ReVIEW::Book::Part)
+    if source.is_a?(ReVIEW::Book::Part)
       printer.print_part source
     else
       printer.print_book source
@@ -103,7 +93,7 @@ def _main
 end
 
 def error_exit(msg)
-  @logger.error "#{File.basename($0)}: #{msg}"
+  @logger.error "#{File.basename($PROGRAM_NAME)}: #{msg}"
   exit 1
 end
 

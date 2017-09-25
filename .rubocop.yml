@@ -215,7 +215,7 @@ Style/RaiseArgs:
   Enabled: true
 
 Style/RedundantBegin:
-  Enabled: true
+  Enabled: false
 
 Style/RedundantParentheses:
   Enabled: true

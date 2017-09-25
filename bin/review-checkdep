@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 #
-# $Id: review-checkdep 3748 2007-12-24 07:06:06Z aamine $
-#
-# Copyright (c) 1999-2007 Minero Aoki
+# Copyright (c) 2007-2017 Minero Aoki, Kenshi Muto
+#               1999-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -15,42 +14,38 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-PREDEF_FILE = 'PREDEF'
+PREDEF_FILE = 'PREDEF'.freeze
 
 def main
-  @provided = parse_predefined()
+  @provided = parse_predefined
   @unprovided = {}
   ARGF.each do |line|
     case line
     when /\A\#@require\((.*)\)/
       kw = $1
       unless @provided.key?(kw)
-        puts "#{location()}: not provided: #{kw}"
-        @unprovided[kw] = location()
+        puts "#{location}: not provided: #{kw}"
+        @unprovided[kw] = location
       end
     when /\A\#@provide\((.*)\)/
       provide $1
     else
-      line.scan(/@<kw>\{(.*?)[,\}]/) do
-        provide $1
-      end
+      line.scan(/@<kw>\{(.*?)[,\}]/) { provide $1 }
     end
   end
 end
 
 def provide(kw)
-  @provided[kw] ||= location()
+  @provided[kw] ||= location
   if @unprovided[kw]
     reqpos = @unprovided.delete(kw)
-    puts "#{location()}: provided now: #{kw} (#{reqpos})"
+    puts "#{location}: provided now: #{kw} (#{reqpos})"
   end
 end
 
 def parse_predefined
   result = {}
-  File.foreach(PREDEF_FILE) do |line|
-    result[line.strip] = '(predefined)'
-  end
+  File.foreach(PREDEF_FILE) { |line| result[line.strip] = '(predefined)' }
   result
 rescue Errno::ENOENT
   return {}

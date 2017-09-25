@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 #
-# $Id: review-compile 4326 2010-01-12 14:10:17Z kmuto $
-#
 # Copyright (c) 2008-2017 Kenshi Muto, Masayoshi Takahashi, KADO Masanori, Minero Aoki
 # Copyright (c) 1999-2007 Minero Aoki
 #
@@ -21,7 +19,7 @@ require 'fileutils'
 require 'optparse'
 require 'yaml'
 
-DEFAULT_CONFIG_FILENAME = "config.yml"
+DEFAULT_CONFIG_FILENAME = 'config.yml'.freeze
 
 def main
   Signal.trap(:INT) { exit 1 }
@@ -37,8 +35,8 @@ def _main
   @logger = ReVIEW.logger
   mode = :files
   basedir = nil
-  if /\Areview2/ =~ File.basename($0)
-    target = File.basename($0, '.rb').sub(/review2/, '')
+  if /\Areview2/ =~ File.basename($PROGRAM_NAME)
+    target = File.basename($PROGRAM_NAME, '.rb').sub('review2', '')
   else
     target = nil
   end
@@ -49,85 +47,74 @@ def _main
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.banner = "Usage: #{File.basename($0)} [--target=FMT]"
-  opts.on('--yaml=YAML', 'Read configurations from YAML file.') {|yaml| config["yaml"] = yaml}
+  opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [--target=FMT]"
+  opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| config['yaml'] = yaml }
   opts.on('-c', '--check', 'Check manuscript') { check_only = true }
-  opts.on('--level=LVL', 'Section level to append number.') {|lvl| config["secnolevel"] = lvl.to_i }
-  opts.on('--toclevel=LVL', 'Section level to append number.') {|lvl| config["toclevel"] = lvl.to_i }
-  opts.on('--structuredxml', 'Produce XML with structured sections. (idgxml)') { config["structuredxml"] = true }
-  opts.on('--table=WIDTH', 'Default table width. (idgxml)') {|tbl| config["tableopt"] = tbl }
-  opts.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { config["listinfo"] = true }
-  opts.on('--chapref="before,middle,after"', 'Chapref decoration. (idgxml)') {|cdec| config["chapref"] = cdec }
-  opts.on('--chapterlink', 'make chapref hyperlink') { config["chapterlink"] = true }
-  opts.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') {|files| config["stylesheet"] = files.split(/\s*,\s*/) }
-  opts.on('--mathml', 'Use MathML for TeX equation in HTML') do
-    config["mathml"] = true
-  end
+  opts.on('--level=LVL', 'Section level to append number.') { |lvl| config['secnolevel'] = lvl.to_i }
+  opts.on('--toclevel=LVL', 'Section level to append number.') { |lvl| config['toclevel'] = lvl.to_i }
+  opts.on('--structuredxml', 'Produce XML with structured sections. (idgxml)') { config['structuredxml'] = true }
+  opts.on('--table=WIDTH', 'Default table width. (idgxml)') { |tbl| config['tableopt'] = tbl }
+  opts.on('--listinfo', 'Append listinfo tag to lists to indicate begin/end. (idgxml)') { config['listinfo'] = true }
+  opts.on('--chapref="before,middle,after"', 'Chapref decoration. (idgxml)') { |cdec| config['chapref'] = cdec }
+  opts.on('--chapterlink', 'make chapref hyperlink') { config['chapterlink'] = true }
+  opts.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') { |files| config['stylesheet'] = files.split(/\s*,\s*/) }
+  opts.on('--mathml', 'Use MathML for TeX equation in HTML') { config['mathml'] = true }
   opts.on('--htmlversion=VERSION', 'HTML version.') do |v|
     v = v.to_i
-    config["htmlversion"] = v if v == 4 || v == 5
+    config['htmlversion'] = v if [4, 5].include?(v)
   end
   opts.on('--epubversion=VERSION', 'EPUB version.') do |v|
     v = v.to_i
-    config["epubversion"] = v if v == 2 || v == 3
+    config['epubversion'] = v if [2, 3].include?(v)
   end
-  opts.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
+  opts.on('--target=FMT', 'Target format.') { |fmt| target = fmt } unless target
   opts.on('--footnotetext',
-          'Use footnotetext and footnotemark instead of footnote (latex)') {
-    config["footnotetext"] = true
-  }
-  opts.on('--draft', 'use draft mode(inline comment)') { config["draft"] = true }
+          'Use footnotetext and footnotemark instead of footnote (latex)') { config['footnotetext'] = true }
+  opts.on('--draft', 'use draft mode(inline comment)') { config['draft'] = true }
   opts.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
     mode = :dir
     basedir = path
   end
-  opts.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') do |filename|
-    output_filename = filename
-  end
-  opts.on('--tabwidth=WIDTH', 'tab width') {|width| config["tabwidth"] = width.to_i }
-  opts.on('--catalogfile=FILENAME', 'Set catalog file') do |catalogfile|
-    config["catalogfile"] = catalogfile
-  end
+  opts.on('--output-file=FILENAME', 'Write all results into file instead of stdout.') { |filename| output_filename = filename }
+  opts.on('--tabwidth=WIDTH', 'tab width') { |width| config['tabwidth'] = width.to_i }
+  opts.on('--catalogfile=FILENAME', 'Set catalog file') { |catalogfile| config['catalogfile'] = catalogfile }
   opts.on('--help', 'Prints this message and quit.') do
     puts opts.help
     exit 0
   end
   begin
     opts.parse!
+
     unless target
       if check_only
         target = 'html'
       else
-        raise OptionParser::ParseError, "no target given"
+        raise OptionParser::ParseError, 'no target given'
       end
     end
   rescue OptionParser::ParseError => err
     @logger.error(err.message)
-    stderr.puts opts.help
+    $stderr.puts opts.help
     exit 1
   end
 
   begin
     loader = ReVIEW::YAMLLoader.new
-    if config["yaml"]
-      config.deep_merge!(loader.load_file(config["yaml"]))
-    else
-      if File.exist?(DEFAULT_CONFIG_FILENAME)
-        config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
-      end
+    if config['yaml']
+      config.deep_merge!(loader.load_file(config['yaml']))
+    elsif File.exist?(DEFAULT_CONFIG_FILENAME)
+      config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
     end
 
-    config["builder"] = target
-    ReVIEW::I18n.setup(config["language"])
+    config['builder'] = target
+    ReVIEW::I18n.setup(config['language'])
     begin
       config.check_version(ReVIEW::VERSION)
     rescue ReVIEW::ConfigError => e
       @logger.warn e.message
     end
 
-    if ARGV.blank?
-      mode = :dir
-    end
+    mode = :dir if ARGV.blank?
 
     case mode
     when :files
@@ -179,9 +166,7 @@ def load_strategy_class(target, strict)
 end
 
 def write(path, str)
-  File.open(path, 'w') {|f|
-    f.puts str
-  }
+  File.open(path, 'w') { |f| f.puts str }
 end
 
 main
