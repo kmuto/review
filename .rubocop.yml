@@ -59,9 +59,6 @@ Performance/RangeInclude:
 
 #### Style
 
-Style/AccessorMethodName:
-  Enabled: false
-
 Style/AsciiComments:
   Enabled: false
 
@@ -98,14 +95,6 @@ Style/GlobalVars:
 
 # Use self-assignment shorthand +=.
 Style/SelfAssignment:
-  Enabled: true
-
-# When defining the == operator, name its argument other.
-Style/BinaryOperatorParameterName:
-  Enabled: true
-
-# Use snake_case for variable names.
-Style/VariableName:
   Enabled: true
 
 Style/ConditionalAssignment:
@@ -155,10 +144,6 @@ Style/NumericPredicate:
 Style/TernaryParentheses:
   Enabled: false
 
-Style/VariableNumber:
-  EnforcedStyle: normalcase
-  Enabled: true
-
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
   Enabled: true
@@ -196,9 +181,6 @@ Style/LineEndConcatenation:
   Enabled: false
 
 Style/MethodCallWithoutArgsParentheses:
-  Enabled: false
-
-Style/MethodName:
   Enabled: false
 
 Style/MultilineBlockChain:
@@ -420,8 +402,26 @@ Metrics/BlockLength:
 
 ## Naming
 
+Naming/AccessorMethodName:
+  Enabled: false
+
+# When defining the == operator, name its argument other.
+Naming/BinaryOperatorParameterName:
+  Enabled: true
+
 Naming/HeredocDelimiterNaming:
   Enabled: false
+
+Naming/MethodName:
+  Enabled: false
+
+# Use snake_case for variable names.
+Naming/VariableName:
+  Enabled: true
+
+Naming/VariableNumber:
+  EnforcedStyle: normalcase
+  Enabled: true
 
 #### Security
 
