@@ -276,7 +276,7 @@ EOT
     expect = [
       Content.new('ch01.html', 'ch01-html', 'application/xhtml+xml', %Q(CH01<>&"), 1),
       Content.new('ch02.html', 'ch02-html', 'application/xhtml+xml', 'CH02', 1),
-      Content.new('ch02.html#S1', 'ch02-html#S1','html#s1', 'CH02.1', 2),
+      Content.new('ch02.html#S1', 'ch02-html#S1', 'html#s1', 'CH02.1', 2),
       Content.new('ch02.html#S1.1', 'ch02-html#S1-1', '1', 'CH02.1.1', 3),
       Content.new('ch02.html#S1.1.1', 'ch02-html#S1-1-1', '1', 'CH02.1.1.1', 4),
       Content.new('ch02.html#S1.1.1.1', 'ch02-html#S1-1-1-1', '1', 'CH02.1.1.1.1', 5),
@@ -625,7 +625,7 @@ EOT
 </head>
 <body>
   <div>
-   <p><span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span></p>
+   <p><span class="equation"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span></p>
   </div>
 </body>
 </html>
@@ -650,7 +650,7 @@ EOT
 </head>
 <body>
   <div>
-   <p><span class=\"equation\"><m:math xmlns:m='http://www.w3.org/1998/Math/MathML' display='inline'><m:mfrac><m:mrow><m:mo stretchy='false'>-</m:mo><m:mi>b</m:mi><m:mo stretchy='false'>&#xb1;</m:mo><m:msqrt><m:mrow><m:msup><m:mi>b</m:mi><m:mn>2</m:mn></m:msup><m:mo stretchy='false'>-</m:mo><m:mn>4</m:mn><m:mi>a</m:mi><m:mi>c</m:mi></m:mrow></m:msqrt></m:mrow><m:mrow><m:mn>2</m:mn><m:mi>a</m:mi></m:mrow></m:mfrac></m:math></span></p>
+   <p><span class="equation"><m:math xmlns:m='http://www.w3.org/1998/Math/MathML' display='inline'><m:mfrac><m:mrow><m:mo stretchy='false'>-</m:mo><m:mi>b</m:mi><m:mo stretchy='false'>&#xb1;</m:mo><m:msqrt><m:mrow><m:msup><m:mi>b</m:mi><m:mn>2</m:mn></m:msup><m:mo stretchy='false'>-</m:mo><m:mn>4</m:mn><m:mi>a</m:mi><m:mi>c</m:mi></m:mrow></m:msqrt></m:mrow><m:mrow><m:mn>2</m:mn><m:mi>a</m:mi></m:mrow></m:mfrac></m:math></span></p>
   </div>
 </body>
 </html>

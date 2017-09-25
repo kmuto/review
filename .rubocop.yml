@@ -78,10 +78,10 @@ Style/BlockDelimiters:
   Enabled: true
 
 Style/BracesAroundHashParameters:
-  Enabled: true
+  Enabled: false
 
 Style/CaseEquality:
-  Enabled: true
+  Enabled: false
 
 Style/ClassCheck:
   Enabled: true
@@ -119,16 +119,16 @@ Style/FormatString:
   Enabled: true
 
 Style/GuardClause:
-  Enabled: true
+  Enabled: false
 
 Style/IfInsideElse:
-  Enabled: true
+  Enabled: false
 
 Style/IfUnlessModifier:
   Enabled: true
 
 Style/MutableConstant:
-  Enabled: true
+  Enabled: false
 
 #Style/MultipleComparison:
 #  Enabled: true
@@ -147,7 +147,7 @@ Style/NumericPredicate:
   Enabled: true
 
 Style/TernaryParentheses:
-  Enabled: truee
+  Enabled: false
 
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
@@ -164,7 +164,7 @@ Style/HashSyntax:
   Enabled: true
 
 Style/RescueModifier:
-  Enabled: true
+  Enabled: false
 
 Style/ClassAndModuleChildren:
   EnforcedStyle: nested
@@ -315,7 +315,7 @@ Layout/LeadingCommentSpace:
   Enabled: true
 
 Layout/MultilineOperationIndentation:
-  Enabled: true
+  Enabled: false
 
 Layout/SpaceAroundBlockParameters:
   EnforcedStyleInsidePipes: no_space
@@ -382,6 +382,7 @@ Metrics/MethodLength:
   Max: 100
   Exclude:
     - "bin/review-*"
+    - "bin/review2*"
     - "test/**/*"
 
 ### should be < 20

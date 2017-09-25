@@ -108,7 +108,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_with_inlinetag
-    actual = compile_block("={test} this @<b>{is} test.<&\">\n")
+    actual = compile_block(%Q(={test} this @<b>{is} test.<&">\n))
     assert_equal %Q(<h1 id="test"><a id="h1"></a><span class="secno">第1章　</span>this <b>is</b> test.&lt;&amp;&quot;&gt;</h1>\n), actual
   end
 
@@ -530,7 +530,7 @@ EOS
       item
     end
 
-    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
+    actual = compile_block(%Q(//indepimage[sampleimg][sample photo][scale=1.2, html::class="sample",latex::ignore=params]\n))
     assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n), actual
   end
 
@@ -1055,7 +1055,7 @@ EOS
     @book.config['highlight'] = {}
     @book.config['highlight']['html'] = 'pygments'
     actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal "<div class=\"cmd-code\">\n<pre class=\"cmd\"><span style=\"color: #888888\">lineA</span>\n<span style=\"color: #888888\">lineB</span>\n</pre>\n</div>\n", actual
+    assert_equal %Q(<div class="cmd-code">\n<pre class="cmd"><span style="color: #888888">lineA</span>\n<span style="color: #888888">lineB</span>\n</pre>\n</div>\n), actual
   end
 
   def test_cmd_caption
@@ -1094,7 +1094,7 @@ EOS
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q(<div class=\"bibpaper\">\n<a id=\"bib-samplebib\">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n), actual
+    assert_equal %Q(<div class="bibpaper">\n<a id="bib-samplebib">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n), actual
   end
 
   def test_bibpaper_normalized
@@ -1492,43 +1492,43 @@ EOS
 
   def test_embed0
     lines = '//embed{' + "\n" +
-            ' <>!\\"\\\\n& ' + "\n" +
+            %Q( <>!"\\\\n& ) + "\n" +
             '//}' + "\n"
     actual = compile_block(lines)
-    expected = ' <>!\\"\\\\n& ' + "\n"
+    expected = %Q( <>!"\\\\n& ) + "\n"
     assert_equal expected, actual
   end
 
   def test_embed1
     actual = compile_block("//embed[|html|]{\n" +
-                           "<>!\\\"\\\\n& \n" +
+                           %Q(<>!"\\\\n& \n) +
                            "//}\n")
-    expected = %Q(<>!\\\"\\\\n& \n)
+    expected = %Q(<>!"\\\\n& \n)
     assert_equal expected, actual
   end
 
   def test_embed2
     actual = compile_block("//embed[html, latex]{\n" +
-                           %Q(<>!\\"\\\\n& \n) +
+                           %Q(<>!"\\\\n& \n) +
                            "//}\n")
-    expected = %Q(<>!\\"\\\\n& \n)
+    expected = %Q(<>!"\\\\n& \n)
     assert_equal expected, actual
   end
 
   def test_embed2a
     actual = compile_block("//embed[|html, latex|]{\n" +
-                           %Q(<>!\\"\\\\n& \n) +
+                           %Q(<>!"\\\\n& \n) +
                            "//}\n")
-    expected = %Q(<>!\\"\\\\n& \n)
+    expected = %Q(<>!"\\\\n& \n)
     assert_equal expected, actual
   end
 
   def test_embed2b
     actual = compile_block("//embed[html, latex]{\n" +
                            '#@# comments are not ignored in //embed block' + "\n" +
-                           %Q(<>!\\"\\\\n& \n) +
+                           %Q(<>!"\\\\n& \n) +
                            "//}\n")
-    expected = '#@# comments are not ignored in //embed block' + "\n" + %Q(<>!\\"\\\\n& \n)
+    expected = '#@# comments are not ignored in //embed block' + "\n" + %Q(<>!"\\\\n& \n)
     assert_equal expected, actual
   end
 

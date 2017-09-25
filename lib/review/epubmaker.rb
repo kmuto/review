@@ -318,9 +318,9 @@ module ReVIEW
       log("Create #{htmlfile} from #{filename}.")
 
       if @params['params'].present?
-        warn '\'params:\' in config.yml is obsoleted.'
+        warn %Q('params:' in config.yml is obsoleted.)
         if @params['params'] =~ /stylesheet=/
-          warn 'stylesheets should be defined in \'stylesheet:\', not in \'params:\''
+          warn %Q(stylesheets should be defined in 'stylesheet:', not in 'params:')
         end
       end
       begin

@@ -120,7 +120,7 @@ EOT
 
     # Return cover content.
     def cover(type = nil)
-      @body_ext = type.nil? ? '' : " epub:type=\"#{type}\""
+      @body_ext = type.nil? ? '' : %Q( epub:type="#{type}")
 
       if @producer.params['coverimage']
         file = @producer.coverimage
@@ -363,7 +363,7 @@ EOT
         e2.add_text(REXML::Text.new(item.title, true))
       end
 
-      warn 'found level jumping in table of contents. consider to use \'epubmaker:flattoc: true\' for strict ePUB validator.' unless find_jump.nil?
+      warn %Q(found level jumping in table of contents. consider to use 'epubmaker:flattoc: true' for strict ePUB validator.) unless find_jump.nil?
 
       doc.to_s.gsub('<li/>', '').gsub('</li>', "</li>\n").gsub("<#{type} ", "\n" + '\&') # ugly
     end

@@ -174,11 +174,11 @@ module ReVIEW
     end
 
     def choice_single_begin
-      puts '<choice type=\'single\'>'
+      puts %Q(<choice type='single'>)
     end
 
     def choice_multi_begin
-      puts '<choice type=\'multi\'>'
+      puts %Q(<choice type='multi'>)
     end
 
     def choice_single_end
@@ -312,7 +312,7 @@ module ReVIEW
       lines2 = []
       first_line_num = line_num
       lines.each_with_index do |line, i|
-        lines2 << detab('<span type=\'lineno\'>' + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
+        lines2 << detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
       end
       quotedlist lines2, 'emlistnum', caption
     end
@@ -328,7 +328,7 @@ module ReVIEW
           print %Q( end="#{no}") if no == lines.size
           print '>'
         end
-        print detab('<span type=\'lineno\'>' + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
+        print detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
         print "\n"
         print '</listinfo>' if @book.config['listinfo']
         no += 1
@@ -854,11 +854,11 @@ module ReVIEW
     end
 
     def flushright(lines)
-      puts split_paragraph(lines).join.gsub('<p>', '<p align=\'right\'>')
+      puts split_paragraph(lines).join.gsub('<p>', %Q(<p align='right'>))
     end
 
     def centering(lines)
-      puts split_paragraph(lines).join.gsub('<p>', '<p align=\'center\'>')
+      puts split_paragraph(lines).join.gsub('<p>', %Q(<p align='center'>))
     end
 
     def captionblock(type, lines, caption, specialstyle = nil)

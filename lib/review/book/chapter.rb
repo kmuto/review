@@ -76,7 +76,7 @@ module ReVIEW
 
         if on_appendix?
           return @number.to_s if @number < 1 || @number > 27
-          raise ReVIEW::ConfigError, '\'appendix_format:\ in config.yml is obsoleted.' if @book.config['appendix_format']
+          raise ReVIEW::ConfigError, %Q('appendix_format:' in config.yml is obsoleted.) if @book.config['appendix_format']
 
           i18n_appendix = I18n.get('appendix')
           fmt = i18n_appendix.scan(/%\w{1,3}/).first || '%s'

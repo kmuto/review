@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 require 'test_helper'
 require 'review/htmlutils'
 
@@ -46,5 +45,4 @@ class HTMLUtilsTest < Test::Unit::TestCase
     assert_equal 'id__E3_81_82', normalize_id('あ')
     assert_equal 'id_-___3B', normalize_id(' _;')
   end
-
 end

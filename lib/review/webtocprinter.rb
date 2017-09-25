@@ -14,7 +14,7 @@ module ReVIEW
 
     def print_book(book)
       @out.puts '<ul class="book-toc">'
-      @out.puts "<li><a href=\"index.html\">TOP</a></li>\n"
+      @out.puts %Q(<li><a href="index.html">TOP</a></li>\n)
       book.each_part do |part|
         print_part(part)
       end

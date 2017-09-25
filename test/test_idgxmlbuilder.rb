@@ -50,7 +50,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
   def test_label
     actual = compile_block("//label[label_test]\n")
-    assert_equal '<label id=\'label_test\' />', actual
+    assert_equal %Q(<label id='label_test' />), actual
   end
 
   def test_inline_ref
@@ -419,7 +419,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\", latex::ignore=params, idgxml::ostyle=\"object\"]\n")
+    actual = compile_block(%Q(//indepimage[sampleimg][sample photo][scale=1.2, html::class="sample", latex::ignore=params, idgxml::ostyle="object"]\n))
     assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" scale="1.2" ostyle="object" /><caption>sample photo</caption></img>), actual
   end
 
@@ -465,7 +465,7 @@ inside column
 === next level
 EOS
     expected = <<-EOS.chomp
-<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle=\"h3\">next level</title><?dtp level="3" section="next level"?>
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?>
 EOS
 
     assert_equal expected, column_helper(review)

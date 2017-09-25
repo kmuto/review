@@ -81,7 +81,7 @@ module ReVIEW
       end
       if File.exist?(layout_file)
         if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
-          warn 'user\'s layout is prohibited in safe mode. ignored.'
+          warn %Q(user's layout is prohibited in safe mode. ignored.)
           layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
         end
       else

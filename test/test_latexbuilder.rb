@@ -38,8 +38,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_with_inlinetag
-    actual = compile_block("={test} this @<b>{is} test.<&\"_>\n")
-    assert_equal %Q(\\chapter{this \\textbf{is} test.\\textless{}\\&\"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n), actual
+    actual = compile_block(%Q(={test} this @<b>{is} test.<&"_>\n))
+    assert_equal %Q(\\chapter{this \\textbf{is} test.\\textless{}\\&"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n), actual
   end
 
   def test_headline_level2
@@ -505,7 +505,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       item
     end
 
-    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2, html::class=\"sample\",latex::ignore=params]\n")
+    actual = compile_block(%Q(//indepimage[sampleimg][sample photo][scale=1.2, html::class="sample",latex::ignore=params]\n))
     assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
   end
 

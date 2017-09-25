@@ -302,7 +302,7 @@ module EPUBMaker
         @params['cover'] = "#{@params['bookname']}-cover.#{@params['htmlext']}"
         @epub.legacy_cover_and_title_file(@params['coverfile'], @params['cover'])
         @params['flag_legacy_coverfile'] = true
-        warn 'Parameter \'coverfile\' is obsolete. Please use \'cover\' and make complete html file with header and footer.'
+        warn %Q(Parameter 'coverfile' is obsolete. Please use 'cover' and make complete html file with header and footer.)
       end
 
       if @params['flag_legacy_titlepagefile'].nil? && !@params['titlepagefile'].nil? && File.exist?(@params['titlepagefile'])
@@ -310,21 +310,21 @@ module EPUBMaker
         @params['titlepage'] = true
         @epub.legacy_cover_and_title_file(@params['titlepagefile'], @params['titlefile'])
         @params['flag_legacy_titlepagefile'] = true
-        warn 'Parameter \'titlepagefile\' is obsolete. Please use \'titlefile\' and make complete html file with header and footer.'
+        warn %Q(Parameter 'titlepagefile' is obsolete. Please use 'titlefile' and make complete html file with header and footer.)
       end
 
       if @params['flag_legacy_backcoverfile'].nil? && !@params['backcoverfile'].nil? && File.exist?(@params['backcoverfile'])
         @params['backcover'] = "#{@params['bookname']}-backcover.#{@params['htmlext']}"
         @epub.legacy_cover_and_title_file(@params['backcoverfile'], @params['backcover'])
         @params['flag_legacy_backcoverfile'] = true
-        warn 'Parameter \'backcoverfile\' is obsolete. Please use \'backcover\' and make complete html file with header and footer.'
+        warn %Q(Parameter 'backcoverfile' is obsolete. Please use 'backcover' and make complete html file with header and footer.)
       end
 
       if @params['flag_legacy_pubhistory'].nil? && @params['pubhistory']
         @params['history'] = [[]]
         @params['pubhistory'].split("\n").each { |date| @params['history'][0].push(date.sub(/(\d+)年(\d+)月(\d+)日/, '\1-\2-\3')) }
         @params['flag_legacy_pubhistory'] = true
-        warn 'Parameter \'pubhistory\' is obsolete. Please use \'history\' array.'
+        warn %Q(Parameter 'pubhistory' is obsolete. Please use 'history' array.)
       end
 
       true

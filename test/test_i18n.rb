@@ -9,7 +9,7 @@ class I18nTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nfoo: \"bar\"\n") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nfoo: "bar"\n)) }
         I18n.setup
         assert_equal 'bar', I18n.t('foo')
       end
@@ -20,7 +20,7 @@ class I18nTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yaml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nfoo: \"bar\"\n") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nfoo: "bar"\n)) }
         assert_raise ReVIEW::ConfigError do
           I18n.setup
         end
@@ -32,7 +32,7 @@ class I18nTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'foo.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nfoo: \"bar\"\n") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nfoo: "bar"\n)) }
         I18n.setup('ja', 'foo.yml')
         assert_equal 'bar', I18n.t('foo')
       end
@@ -43,7 +43,7 @@ class I18nTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'foo.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nfoo: \"bar\"\n") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nfoo: "bar"\n)) }
         i18n = ReVIEW::I18n.new('ja')
         i18n.update_localefile(File.join(Dir.pwd, 'foo.yml'))
         assert_equal 'bar', i18n.t('foo')
@@ -55,7 +55,7 @@ class I18nTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'foo.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nfoo: \"bar\"\n") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nfoo: "bar"\n)) }
         I18n.setup('ja', 'foo.yml')
         assert_equal 'bar', I18n.t('foo')
       end
@@ -66,7 +66,7 @@ class I18nTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write("ja:\n  foo: \"bar\"\nen:\n  foo: \"buz\"\n") }
+        File.open(file, 'w') { |f| f.write(%Q(ja:\n  foo: "bar"\nen:\n  foo: "buz"\n)) }
         I18n.setup
         assert_equal 'bar', I18n.t('foo')
         assert_equal '図', I18n.t('image')
@@ -81,7 +81,7 @@ class I18nTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write("local: ja\nfoo: \"bar\"\n") }
+        File.open(file, 'w') { |f| f.write(%Q(local: ja\nfoo: "bar"\n)) }
         assert_raises(ReVIEW::KeyError) do
           I18n.setup
         end

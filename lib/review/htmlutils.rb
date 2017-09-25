@@ -47,7 +47,7 @@ module ReVIEW
 
     def highlight(ops)
       if @book.config['pygments'].present?
-        raise ReVIEW::ConfigError, '\'pygments:\' in config.yml is obsoleted.'
+        raise ReVIEW::ConfigError, %Q('pygments:' in config.yml is obsoleted.)
       end
       return ops[:body].to_s unless highlight?
 

@@ -152,7 +152,7 @@ module ReVIEW
       htmlfile = "#{id}.#{@config['htmlext']}"
 
       if @config['params'].present?
-        @logger.warn '\'params:\' in config.yml is obsoleted.'
+        @logger.warn %Q('params:' in config.yml is obsoleted.)
       end
 
       begin
@@ -238,7 +238,7 @@ module ReVIEW
         @body << %Q(<div class="titlepage">)
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config['booktitle'])}</h1>)
         @body << %Q(<h2 class="tp-author">#{join_with_separator(@config['aut'], ReVIEW::I18n.t('names_splitter'))}</h2>) if @config['aut']
-        @body << %Q(<h3 class=\'tp-publisher\'>#{join_with_separator(@config['prt'], ReVIEW::I18n.t('names_splitter'))}</h3>) if @config['prt']
+        @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config['prt'], ReVIEW::I18n.t('names_splitter'))}</h3>) if @config['prt']
         @body << '</div>'
 
         @language = @config['language']
