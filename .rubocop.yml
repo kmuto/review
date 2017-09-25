@@ -293,7 +293,7 @@ Layout/EmptyLinesAroundModuleBody:
   Enabled: true
 
 Layout/EndOfLine:
-  Enabled: lf
+  Enabled: false
 
 Layout/ExtraSpacing:
   Enabled: true
