@@ -104,14 +104,14 @@ end
 def generate_config(dir)
   today = Time.now.strftime('%Y-%m-%d')
   content = File.read(@review_dir + '/doc/config.yml.sample', encoding: 'utf-8')
-  content.gsub!(/\A#\s*coverimage:.*\Z/, 'coverimage: cover.jpg')
-  content.gsub!(/\A#\s*date:.*\Z/, "date: #{today}")
-  content.gsub!(/\A#\s*history:.*\Z/, %Q(history: [["#{today}"]]))
-  content.gsub!(/\A#\s*texstyle:.*\Z/, 'texstyle: reviewmacro')
-  content.gsub!(/\A(#\s*)?stylesheet:.*\Z/, %Q(stylesheet: ["style.css"]))
+  content.gsub!(/^#\s*coverimage:.*$/, 'coverimage: cover.jpg')
+  content.gsub!(/^#\s*date:.*$/, "date: #{today}")
+  content.gsub!(/^#\s*history:.*$/, %Q(history: [["#{today}"]]))
+  content.gsub!(/^#\s*texstyle:.*$/, 'texstyle: reviewmacro')
+  content.gsub!(/^(#\s*)?stylesheet:.*$/, %Q(stylesheet: ["style.css"]))
   if @epub_version.to_i == 2
-    content.gsub!(/\A#.*epubversion:.*\Z/, 'epubversion: 2')
-    content.gsub!(/\A#.*htmlversion:.*\Z/, 'htmlversion: 4')
+    content.gsub!(/^#.*epubversion:.*$/, 'epubversion: 2')
+    content.gsub!(/^#.*htmlversion:.*$/, 'htmlversion: 4')
   end
   File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write(content) }
 end
