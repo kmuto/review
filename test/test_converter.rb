@@ -9,13 +9,12 @@ class ConverterTest < Test::Unit::TestCase
   end
 
   def test_converter_builder
-    mktmpbookdir('config.yml'=>"bookname: book\n") do |dir, book, files|
+    mktmpbookdir('config.yml' => "bookname: book\n") do |dir, _book, _files|
       @book = Book::Base.new(dir)
-      config_file = File.join(dir,"config.yml")
+      config_file = File.join(dir, 'config.yml')
       @book.load_config(config_file)
       @converter = ReVIEW::Converter.new(@book, ReVIEW::LATEXBuilder.new)
-      assert_equal "latex", @book.config["builder"]
+      assert_equal 'latex', @book.config['builder']
     end
   end
-
 end

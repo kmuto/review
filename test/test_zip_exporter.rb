@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'epubmaker'
 require 'epubmaker/zip_exporter'
@@ -13,7 +11,7 @@ class ZipExporterTest < Test::Unit::TestCase
     @epubdir = "#{@tmpdir}/epubdir"
     FileUtils.mkdir_p("#{@epubdir}/META-INF")
     FileUtils.mkdir_p("#{@epubdir}/OEBPS")
-    File.write("#{@epubdir}/mimetype", "application/epub+zip")
+    File.write("#{@epubdir}/mimetype", 'application/epub+zip')
 
     container_xml = <<-EOB
     <?xml version="1.0" encoding="UTF-8"?>
@@ -67,8 +65,8 @@ class ZipExporterTest < Test::Unit::TestCase
       return
     end
 
-    params = {"epubmaker"=>{}}
-    epubfile = File.join(@tmpdir, "test.epub")
+    params = { 'epubmaker' => {} }
+    epubfile = File.join(@tmpdir, 'test.epub')
     exporter = ZipExporter.new(@epubdir, params)
     exporter.export_zip_extcmd(epubfile)
     assert_true(File.exist?(epubfile))
@@ -78,20 +76,17 @@ class ZipExporterTest < Test::Unit::TestCase
         ::Zip::InputStream.open(f) do |fzip|
           ## get first entry
           entry = fzip.get_next_entry
-          assert_equal "mimetype", entry.name
-          assert_equal "application/epub+zip", fzip.read
+          assert_equal 'mimetype', entry.name
+          assert_equal 'application/epub+zip', fzip.read
         end
       end
     end
   end
 
   def test_export_rubyzip
-    if !defined?(Zip)
-      ## skip test
-      return
-    end
-    params = {"epubmaker"=>{}}
-    epubfile = File.join(@tmpdir, "test.epub")
+    return unless defined?(Zip) ## skip test
+    params = { 'epubmaker' => {} }
+    epubfile = File.join(@tmpdir, 'test.epub')
     exporter = ZipExporter.new(@epubdir, params)
     exporter.export_zip_rubyzip(epubfile)
     assert_true(File.exist?(epubfile))
@@ -100,8 +95,8 @@ class ZipExporterTest < Test::Unit::TestCase
       ::Zip::InputStream.open(f) do |fzip|
         ## get first entry
         entry = fzip.get_next_entry
-        assert_equal "mimetype", entry.name
-        assert_equal "application/epub+zip", fzip.read
+        assert_equal 'mimetype', entry.name
+        assert_equal 'application/epub+zip', fzip.read
       end
     end
   end
@@ -109,5 +104,4 @@ class ZipExporterTest < Test::Unit::TestCase
   def teardown
     FileUtils.remove_entry_secure(@tmpdir)
   end
-
 end

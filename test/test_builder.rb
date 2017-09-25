@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'review/builder'
 
@@ -47,46 +45,38 @@ class BuidlerTest < Test::Unit::TestCase
   def test_print_and_puts
     b = Builder.new
     assert_raises(NoMethodError) do # XXX: OK?
-      b.print ""
+      b.print ''
     end
     assert_raises(NoMethodError) do # XXX: OK?
-      b.puts ""
+      b.puts ''
     end
   end
 
   def test_not_implemented_methods
     ex = NoMethodError # XXX: OK?
-    [
-      :list_header, :list_body, :listnum_body,
-      :source_header, :source_body,
-      :image_image, :image_dummy,
-      :table_header, :table_begin, :tr, :th, :table_end,
-      :compile_ruby, :compile_kw, :compile_href,
-      :bibpaper_header, :bibpaper_bibpaper,
-      :inline_hd_chap,
-    ].each do |m|
+    %i[list_header list_body listnum_body source_header source_body image_image image_dummy table_header table_begin tr th table_end compile_ruby compile_kw compile_href bibpaper_header bibpaper_bibpaper inline_hd_chap].each do |m|
       b = Builder.new
       assert_raises(ex) { b.__send__(m) }
     end
   end
 
   def test_compile_inline
-    text = "abc"
+    text = 'abc'
     assert_equal [:text, text], @b.compile_inline(text)
   end
 
   def test_inline_ruby
-    def @b.compile_ruby(base,ruby)
-      [base,ruby]
+    def @b.compile_ruby(base, ruby)
+      [base, ruby]
     end
-    str = @b.inline_ruby("foo,bar")
-    assert_equal str, ["foo","bar"]
-    str = @b.inline_ruby("foo\\,\\,,\\,bar,buz")
-    assert_equal str, ["foo,,",",bar,buz"]
+    str = @b.inline_ruby('foo,bar')
+    assert_equal str, ['foo', 'bar']
+    str = @b.inline_ruby('foo\\,\\,,\\,bar,buz')
+    assert_equal str, ['foo,,', ',bar,buz']
   end
 
   def test_compile_inline_backslash
-    text = "abc\\d\\#a"
+    text = 'abc\\d\\#a'
     assert_equal [:text, text], @b.compile_inline(text)
   end
 
@@ -107,4 +97,3 @@ class BuidlerTest < Test::Unit::TestCase
     end
   end
 end
-

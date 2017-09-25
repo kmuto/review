@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 require 'book_test_helper'
 class ChapterTest < Test::Unit::TestCase
   include BookTestHelper
@@ -8,7 +7,7 @@ class ChapterTest < Test::Unit::TestCase
     assert_equal :book, ch.book
     assert_equal :number, ch.number
     assert_equal '/foo/bar', ch.path
-    assert_equal "#<ReVIEW::Book::Chapter number /foo/bar>", ch.inspect
+    assert_equal '#<ReVIEW::Book::Chapter number /foo/bar>', ch.inspect
   end
 
   def test_dirname_and_basename
@@ -39,7 +38,7 @@ class ChapterTest < Test::Unit::TestCase
   def test_open
     ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal :io, ch.open
-    assert_equal [:io], (ch.open {|io| [io] })
+    assert_equal [:io], (ch.open { |io| [io] })
   end
 
   def test_size
@@ -64,22 +63,22 @@ class ChapterTest < Test::Unit::TestCase
   end
 
   def test_lines
-    lines = ["1\n", "2\n", "3"]
+    lines = ["1\n", "2\n", '3']
     tf = Tempfile.new('chapter_test')
-    tf.print lines.join('')
+    tf.print lines.join
     tf.close
 
     book = Book::Base.new(nil)
     ch = Book::Chapter.new(book, nil, nil, tf.path)
     assert_equal lines, ch.lines
 
-    lines = ["1\n", "2\n", "3"]
+    lines = ["1\n", "2\n", '3']
     tf1 = Tempfile.new('chapter_test1')
-    tf1.print lines.join('')
+    tf1.print lines.join
     tf1.close
     tf2 = Tempfile.new('chapter_test2')
-    tf2.puts lines.join('')
-    tf2.puts lines.join('')
+    tf2.puts lines.join
+    tf2.puts lines.join
     tf2.close
 
     ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2.path)
@@ -107,14 +106,14 @@ class ChapterTest < Test::Unit::TestCase
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?
   end
 
-  def test_on_CHAPS?
+  def test_on_chaps?
     mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re",
                  'chapter1.re' => '12345', 'preface.re' => 'abcde' do |dir, book, files|
       ch1 = Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
       pre = Book::Chapter.new(book, nil, 'preface', files['preface.re'])
 
-      assert ch1.on_CHAPS?
-      assert !pre.on_CHAPS?
+      assert ch1.on_chaps?
+      assert !pre.on_chaps?
 
       ch2_path = File.join(dir, 'chapter2.er')
       File.open(ch2_path, 'w') {}
@@ -124,8 +123,8 @@ class ChapterTest < Test::Unit::TestCase
       File.open(ch3_path, 'w') {}
       ch3 = Book::Chapter.new(book, 3, 'chapter3', ch3_path)
 
-      assert ch2.on_CHAPS?
-      assert !ch3.on_CHAPS?
+      assert ch2.on_chaps?
+      assert !ch3.on_chaps?
     end
   end
 
@@ -166,7 +165,7 @@ E
   end
 
   def test_bibpaper
-    do_test_index(<<E, Book::BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib.re')
+    do_test_index(<<E, Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib.re')
 //bibpaper
 //bibpaper [abc][text...]
 //bibpaper [def][text...]
@@ -175,12 +174,12 @@ E
 //list [others]
 E
     assert_raises FileNotFound do
-      do_test_index('', Book::BibpaperIndex, :bibpaper_index, :bibpaper, :filename => 'bib')
+      do_test_index('', Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib')
     end
   end
 
   def test_headline_index
-    do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, :propagate => false)
+    do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, propagate: false)
 ==
 == abc
 == def
@@ -190,7 +189,7 @@ E
   end
 
   def test_headline_index_nullsection
-    do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, :propagate => false)
+    do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, propagate: false)
 == abc
 ==== dummy
 == def
@@ -198,7 +197,7 @@ E
   end
 
   def test_column_index
-    do_test_index(<<E, Book::ColumnIndex, :column_index, :column, :propagate => false)
+    do_test_index(<<E, Book::ColumnIndex, :column_index, :column, propagate: false)
 = dummy1
 ===[column]{abc} aaaa
 = dummy2
@@ -216,7 +215,7 @@ E
 //list [others]
 E
 
-    do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
+    do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, propagate: false)
 //numberlessimage
 //numberlessimage [abc]
 //numberlessimage [def]
@@ -232,7 +231,7 @@ E
 //list [others]
 E
 
-    do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, :propagate => false)
+    do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, propagate: false)
 //image
 //numberlessimage [abc]
 //image [def]
@@ -241,7 +240,7 @@ E
 E
   end
 
-  def do_test_index(content, klass, list_method, ref_method, opts = {})
+  def do_test_index(content, _klass, _list_method, ref_method, opts = {})
     Dir.mktmpdir do |dir|
       path = File.join(dir, opts[:filename] || 'chapter.re')
 

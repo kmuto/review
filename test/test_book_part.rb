@@ -18,9 +18,7 @@ class PartTest < Test::Unit::TestCase
     part = Book::Part.new(nil, nil, [1, 2, 3])
 
     tmp = []
-    part.each_chapter do |ch|
-      tmp << ch
-    end
+    part.each_chapter { |ch| tmp << ch }
     assert_equal [1, 2, 3], tmp
   end
 
@@ -35,12 +33,12 @@ class PartTest < Test::Unit::TestCase
     chs = []
     tfs = [] ## prevent from removing Tempfile
     Tempfile.open('part_test') do |o|
-      o.print "12345"
+      o.print '12345'
       chs << Book::Chapter.new(book, nil, nil, o.path)
       tfs << o
     end
     Tempfile.open('part_test') do |o|
-      o.print "67890"
+      o.print '67890'
       chs << Book::Chapter.new(book, nil, nil, o.path)
       tfs << o
     end

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'tmpdir'
 require 'fileutils'
@@ -24,7 +22,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd
     if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
       config = prepare_samplebook(@tmpdir1)
-      builddir = @tmpdir1 + "/" + config['bookname'] + '-pdf'
+      builddir = @tmpdir1 + '/' + config['bookname'] + '-pdf'
       assert !File.exist?(builddir)
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
