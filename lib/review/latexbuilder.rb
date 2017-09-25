@@ -21,9 +21,9 @@ module ReVIEW
     include LaTeXUtils
     include TextUtils
 
-    [:dtp, :hd_chap].each {|e|
+    [:dtp, :hd_chap].each do |e|
       Compiler.definline(e)
-    }
+    end
 
     Compiler.defsingle(:latextsize, 1)
 

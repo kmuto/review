@@ -52,26 +52,26 @@ def main
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.banner = "Usage: #{File.basename($0)} [-c|-d|-s|--replace] [<file>...]"
-  opts.on('-c', '--check', 'Check if preprocess is needed.') {
+  opts.on('-c', '--check', 'Check if preprocess is needed.') do
     mode = :check
-  }
-  opts.on('-d', '--diff', 'Show diff from current file.') {
+  end
+  opts.on('-d', '--diff', 'Show diff from current file.') do
     mode = :diff
-  }
-  opts.on('--replace', 'Replace file by preprocessed one.') {
+  end
+  opts.on('--replace', 'Replace file by preprocessed one.') do
     mode = :replace
-  }
-  opts.on('-s', '--strip', 'Strip preprocessor tags.') {
+  end
+  opts.on('-s', '--strip', 'Strip preprocessor tags.') do
     mode = :strip
-  }
-  opts.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') {
+  end
+  opts.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') do
     mode = :final
-  }
+  end
   opts.on('--tabwidth=WIDTH', "Replace tabs with space characters. (0: don't replace)") {|width| param["tabwidth"] = width.to_i }
-  opts.on('--help', 'Print this message and quit.') {
+  opts.on('--help', 'Print this message and quit.') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
@@ -86,9 +86,9 @@ def main
     current_file = path
     case mode
     when :output
-      File.open(path) {|f|
+      File.open(path) do |f|
         pp.process f, $stdout
-      }
+      end
     when :replace
       File.write "#{path}.pptmp", preproc(pp, path)
       File.rename "#{path}.pptmp", path
@@ -105,16 +105,16 @@ def main
         FileUtils.rm_f tmp
       end
     when :strip
-      File.open(path) {|f|
+      File.open(path) do |f|
         ReVIEW::Preprocessor::Strip.new(f).each do |line|
           puts line
         end
-      }
+      end
     when :final
       u = ReVIEW::Unfold.new
-      File.open(path) {|f|
+      File.open(path) do |f|
         u.unfold ReVIEW::Preprocessor::Strip.new(f), $stdout
-      }
+      end
     else
       raise "must not happen: #{mode}"
     end
@@ -127,16 +127,16 @@ end
 
 def preproc(pp, path)
   buf = StringIO.new
-  File.open(path) {|f|
+  File.open(path) do |f|
     pp.process f, buf
-  }
+  end
   buf.string
 end
 
 def File.write(path, str)
-  File.open(path, 'w') {|f|
+  File.open(path, 'w') do |f|
     f.write str
-  }
+  end
 end
 
 sigmain

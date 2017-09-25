@@ -69,18 +69,18 @@ module ReVIEW
     end
 
     def escape_latex(str)
-      str.gsub(@metachars_re) {|s|
+      str.gsub(@metachars_re) do |s|
         @metachars[s] or raise "unknown trans char: #{s}"
-      }
+      end
     end
 
     alias_method :escape, :escape_latex
 
     def unescape_latex(str)
       metachars_invert_re = Regexp.new(@metachars_invert.keys.collect{|key| Regexp.escape(key)}.join('|'))
-      str.gsub(metachars_invert_re) {|s|
+      str.gsub(metachars_invert_re) do |s|
         @metachars_invert[s] or raise "unknown trans char: #{s}"
-      }
+      end
     end
 
     alias_method :unescape, :unescape_latex

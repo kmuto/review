@@ -75,7 +75,7 @@ Style/BarePercentLiterals:
   Enabled: true
 
 Style/BlockDelimiters:
-  Enabled: false
+  Enabled: true
 
 Style/BracesAroundHashParameters:
   Enabled: false

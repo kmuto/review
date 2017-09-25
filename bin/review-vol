@@ -32,16 +32,16 @@ def main
   opts.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
     yamlfile = yaml
   end
-  opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
+  opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') do
     part_sensitive = true
-  }
-  opts.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
+  end
+  opts.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
     basedir = path
-  }
-  opts.on('--help', 'Print this message and quit') {
+  end
+  opts.on('--help', 'Print this message and quit') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err

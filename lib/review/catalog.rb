@@ -19,23 +19,23 @@ module ReVIEW
     def chaps
       return "" unless @yaml["CHAPS"]
 
-      @yaml["CHAPS"].map {|entry|
+      @yaml["CHAPS"].map do |entry|
         if entry.is_a? String
           entry
         elsif entry.is_a? Hash
           entry.values # chaps in a part
         end
-      }.flatten.join("\n")
+      end.flatten.join("\n")
     end
 
     def parts
       return "" unless @yaml["CHAPS"]
 
-      @yaml["CHAPS"].map {|entry|
+      @yaml["CHAPS"].map do |entry|
         if entry.is_a? Hash
           entry.keys
         end
-      }.flatten.compact.join("\n")
+      end.flatten.compact.join("\n")
     end
 
     def parts_with_chaps

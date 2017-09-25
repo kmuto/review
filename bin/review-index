@@ -42,37 +42,37 @@ def _main
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('-a', '--all', 'print all chapters.') {
+  opts.on('-a', '--all', 'print all chapters.') do
     source = book
-  }
-  opts.on('-p', '--part N', 'list only part N.') {|n|
+  end
+  opts.on('-p', '--part N', 'list only part N.') do |n|
     source = book.part(Integer(n)) or
         error_exit "part #{n} does not exist in this book"
-  }
-  opts.on('-c', '--chapter C', 'list only chapter C.') {|c|
+  end
+  opts.on('-c', '--chapter C', 'list only chapter C.') do |c|
     begin
       source = ReVIEW::Book::Part.new(nil, 1, [book.chapter(c)])
     rescue
       error_exit "chapter #{c} does not exist in this book"
     end
-  }
-  opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') {|n|
+  end
+  opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') do |n|
     upper = Integer(n)
     unless (0..4).include?(upper) # 0 is hidden option
       $stderr.puts "-l/--level option accepts only 1..4"
       exit 1
     end
-  }
-  opts.on('--text', 'output in plain text (default)') {
+  end
+  opts.on('--text', 'output in plain text (default)') do
     printer_class = ReVIEW::TextTOCPrinter
-  }
-  opts.on('--html', 'output in HTML (deprecated)') {
+  end
+  opts.on('--html', 'output in HTML (deprecated)') do
     printer_class = ReVIEW::HTMLTOCPrinter
-  }
-  opts.on('--help', 'print this message and quit.') {
+  end
+  opts.on('--help', 'print this message and quit.') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err

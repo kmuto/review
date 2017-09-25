@@ -41,21 +41,21 @@ def main
   files = ARGV unless ARGV.empty?
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('-a', '--all-chapters', 'Check all chapters.') {
+  opts.on('-a', '--all-chapters', 'Check all chapters.') do
     files = @book.chapters.map {|ent| ent.path }
-  }
-  opts.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
+  end
+  opts.on('-s', '--section N', 'Check section N. (deprecated)') do |n|
     ents = @book.parts[Integer(n) - 1] or
         raise ReVIEW::ApplicationError, "section #{n} not exist"
     files = ents.map {|ent| ent.path }
-  }
-  opts.on('--text', 'Check text.') {
+  end
+  opts.on('--text', 'Check text.') do
     (modes ||= []).push :text
-  }
-  opts.on('--help', 'print this message and quit.') {
+  end
+  opts.on('--help', 'print this message and quit.') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
@@ -82,7 +82,7 @@ end
 def check_text(files)
   re, neg = words_re("#{@book.basedir}/#{@book.reject_file}")
   files.each do |path|
-    File.open(path) {|f|
+    File.open(path) do |f|
       each_paragraph(f) do |para, lineno|
         s = para.join('')
         if m = re.match(s)
@@ -93,7 +93,7 @@ def check_text(files)
           print out
         end
       end
-    }
+    end
   end
 end
 

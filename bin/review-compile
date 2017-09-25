@@ -73,9 +73,9 @@ def _main
   end
   opts.on('--target=FMT', 'Target format.') {|fmt| target = fmt } unless target
   opts.on('--footnotetext',
-          'Use footnotetext and footnotemark instead of footnote (latex)') {
+          'Use footnotetext and footnotemark instead of footnote (latex)') do
     config["footnotetext"] = true
-  }
+  end
   opts.on('--draft', 'use draft mode(inline comment)') { config["draft"] = true }
   opts.on('--directory=DIR', 'Compile all chapters in DIR.') do |path|
     mode = :dir
@@ -179,9 +179,9 @@ def load_strategy_class(target, strict)
 end
 
 def write(path, str)
-  File.open(path, 'w') {|f|
+  File.open(path, 'w') do |f|
     f.puts str
-  }
+  end
 end
 
 main

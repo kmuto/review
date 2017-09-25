@@ -278,10 +278,10 @@ module ReVIEW
     end
 
     def expand(str)
-      str.gsub(/\$\w+/) {|name|
+      str.gsub(/\$\w+/) do |name|
         s = @vartable[name.sub('$', '')]
         s ? expand(s) : name
-      }
+      end
     end
 
     def unindent(chunk, n)
@@ -299,30 +299,30 @@ module ReVIEW
 
     def evaluate(path, chunk)
       outputs = get_output("ruby #{path}", false).split(/\n/).map {|s| s.strip }
-      chunk.map {|line|
+      chunk.map do |line|
         if /\# \$\d+/ =~ line.string
           # map result into source.
-          line.edit {|s|
+          line.edit do |s|
             s.sub(/\$(\d+)/) { outputs[$1.to_i - 1] }
-          }
+          end
         else
           line
         end
-      }
+      end
     end
 
     require 'open3'
 
     def get_output(cmd, use_stderr)
       out = err = nil
-      Open3.popen3(cmd) {|stdin, stdout, stderr|
+      Open3.popen3(cmd) do |stdin, stdout, stderr|
         out = stdout.readlines
         if use_stderr
           out.concat stderr.readlines
         else
           err = stderr.readlines
         end
-      }
+      end
       if err and !err.empty?
         $stderr.puts "[unexpected stderr message]"
         err.each do |line|
@@ -405,10 +405,10 @@ module ReVIEW
     end
 
     def parse_file(fname)
-      File.open(fname, 'r:BOM|utf-8') {|f|
+      File.open(fname, 'r:BOM|utf-8') do |f|
         init_ErrorUtils f
         return _parse_file(f)
-      }
+      end
     end
 
     def _parse_file(f)
