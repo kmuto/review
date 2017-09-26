@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
@@ -9,7 +7,6 @@
 #
 
 module ReVIEW
-
   # Secion Counter class
   #
   class SecCounter
@@ -24,21 +21,13 @@ module ReVIEW
 
     def inc(level)
       n = level - 2
-      if n >= 0
-        @counter[n] += 1
-      end
-      if @counter.size > n
-        (n+1..@counter.size).each do |i|
-          @counter[i] = 0
-        end
-      end
+      @counter[n] += 1 if n >= 0
+      (n + 1..@counter.size).each { |i| @counter[i] = 0 } if @counter.size > n
     end
 
     def anchor(level)
-      str = "#{@chapter.format_number(false)}"
-      0.upto(level-2) do |i|
-        str << "-#{@counter[i]}"
-      end
+      str = @chapter.format_number(false)
+      0.upto(level - 2) { |i| str << "-#{@counter[i]}" }
       str
     end
 
@@ -46,27 +35,22 @@ module ReVIEW
       return nil if @chapter.number.blank?
 
       if level == 1
-        if secnolevel >= 1
-          if @chapter.is_a? ReVIEW::Book::Part
-            num = @chapter.number
-            return "#{I18n.t('part', num)}#{I18n.t("chapter_postfix")}"
-          else
-            return "#{@chapter.format_number}#{I18n.t("chapter_postfix")}"
-          end
+        return nil unless secnolevel >= 1
+        if @chapter.is_a?(ReVIEW::Book::Part)
+          num = @chapter.number
+          "#{I18n.t('part', num)}#{I18n.t('chapter_postfix')}"
+        else
+          "#{@chapter.format_number}#{I18n.t('chapter_postfix')}"
         end
       elsif secnolevel >= level
-        prefix = ''
-        if @chapter.is_a? ReVIEW::Book::Part
-          prefix = I18n.t('part_short', @chapter.number)
-        else
-          prefix = @chapter.format_number(false)
-        end
-
-        0.upto(level - 2) do |i|
-          prefix << ".#{@counter[i]}"
-        end
-        prefix << I18n.t("chapter_postfix")
-        return prefix
+        prefix = if @chapter.is_a?(ReVIEW::Book::Part)
+                   I18n.t('part_short', @chapter.number)
+                 else
+                   @chapter.format_number(false)
+                 end
+        0.upto(level - 2) { |i| prefix << ".#{@counter[i]}" }
+        prefix << I18n.t('chapter_postfix')
+        prefix
       end
     end
   end

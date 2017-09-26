@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) 2002-2017 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
@@ -16,11 +14,10 @@ require 'stringio'
 require 'cgi'
 
 module ReVIEW
-
   class Builder
     include TextUtils
 
-    CAPTION_TITLES = %w(note memo tip info warning important caution notice)
+    CAPTION_TITLES = %w[note memo tip info warning important caution notice].freeze
 
     def pre_paragraph
       nil
@@ -49,9 +46,7 @@ module ReVIEW
       @book = @chapter.book if @chapter.present?
       @tabwidth = nil
       @tsize = nil
-      if @book && @book.config && @book.config["tabwidth"]
-        @tabwidth = @book.config["tabwidth"]
-      end
+      @tabwidth = @book.config['tabwidth'] if @book && @book.config && @book.config['tabwidth']
       builder_init_file
     end
 
@@ -81,7 +76,7 @@ module ReVIEW
     def headline_prefix(level)
       @sec_counter.inc(level)
       anchor = @sec_counter.anchor(level)
-      prefix = @sec_counter.prefix(level, @book.config["secnolevel"])
+      prefix = @sec_counter.prefix(level, @book.config['secnolevel'])
       [prefix, anchor]
     end
     private :headline_prefix
@@ -91,14 +86,12 @@ module ReVIEW
       @first_line_num = num.to_i
     end
 
-    def get_line_num
-      if !@first_line_num
-        return 1
-      end
-      line_num = @first_line_num
+    def line_num
+      return 1 unless @first_line_num
+      line_n = @first_line_num
       @first_line_num = nil
 
-      line_num
+      line_n
     end
 
     def list(lines, id, caption, lang = nil)
@@ -139,47 +132,37 @@ module ReVIEW
       lines.each_with_index do |line, idx|
         if /\A[\=\-]{12}/ =~ line
           # just ignore
-          #error "too many table separator" if sepidx
+          # error "too many table separator" if sepidx
           sepidx ||= idx
           next
         end
-        rows.push(line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') })
+        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption unless caption.nil?
+        table_header id, caption if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
       return if rows.empty?
       table_begin rows.first.size
       if sepidx
-        sepidx.times do
-          tr(rows.shift.map {|s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map {|s| td(s) })
-        end
+        sepidx.times { tr(rows.shift.map { |s| th(s) }) }
+        rows.each { |cols| tr(cols.map { |s| td(s) }) }
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr([th(h)] + cs.map {|s| td(s) })
+          tr([th(h)] + cs.map { |s| td(s) })
         end
       end
       table_end
     end
 
     def adjust_n_cols(rows)
-      rows.each do |cols|
-        while cols.last and cols.last.strip.empty?
-          cols.pop
-        end
-      end
-      n_maxcols = rows.map {|cols| cols.size }.max
-      rows.each do |cols|
-        cols.concat [''] * (n_maxcols - cols.size)
-      end
+      rows.each { |cols| cols.pop while cols.last and cols.last.strip.empty? }
+      n_maxcols = rows.map(&:size).max
+      rows.each { |cols| cols.concat [''] * (n_maxcols - cols.size) }
       rows
     end
     private :adjust_n_cols
@@ -188,17 +171,17 @@ module ReVIEW
       table(lines, nil, caption)
     end
 
-    #def footnote(id, str)
-    #  @footnotes.push [id, str]
-    #end
+    # def footnote(id, str)
+    #   @footnotes.push [id, str]
+    # end
     #
-    #def flush_footnote
-    #  footnote_begin
-    #  @footnotes.each do |id, str|
-    #    footnote_item(id, str)
-    #  end
-    #  footnote_end
-    #end
+    # def flush_footnote
+    #   footnote_begin
+    #   @footnotes.each do |id, str|
+    #     footnote_item(id, str)
+    #   end
+    #   footnote_end
+    # end
 
     def compile_inline(s)
       @compiler.text(s)
@@ -226,14 +209,14 @@ module ReVIEW
     end
 
     def inline_list(id)
-      "#{I18n.t("list")}#{@chapter.list(id).number}"
+      "#{I18n.t('list')}#{@chapter.list(id).number}"
     rescue KeyError
       error "unknown list: #{id}"
       nofunc_text("[UnknownList:#{id}]")
     end
 
     def inline_img(id)
-      "#{I18n.t("image")}#{@chapter.image(id).number}"
+      "#{I18n.t('image')}#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
@@ -250,7 +233,7 @@ module ReVIEW
     end
 
     def inline_table(id)
-      "#{I18n.t("table")}#{@chapter.table(id).number}"
+      "#{I18n.t('table')}#{@chapter.table(id).number}"
     rescue KeyError
       error "unknown table: #{id}"
       nofunc_text("[UnknownTable:#{id}]")
@@ -269,8 +252,8 @@ module ReVIEW
 
     def inline_ruby(arg)
       base, *ruby = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/)
-      base = base.gsub(/\\,/, ",") if base
-      ruby = ruby.join(",").gsub(/\\,/, ",") if ruby
+      base = base.gsub(/\\,/, ',') if base
+      ruby = ruby.join(',').gsub(/\\,/, ',') if ruby
       compile_ruby(base, ruby)
     end
 
@@ -281,8 +264,8 @@ module ReVIEW
 
     def inline_href(arg)
       url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
-      url = url.gsub(/\\,/, ",").strip
-      label = label.gsub(/\\,/, ",").strip if label
+      url = url.gsub(/\\,/, ',').strip
+      label = label.gsub(/\\,/, ',').strip if label
       compile_href(url, label)
     end
 
@@ -293,17 +276,15 @@ module ReVIEW
     def bibpaper(lines, id, caption)
       bibpaper_header id, caption
       unless lines.empty?
-        puts ""
+        puts
         bibpaper_bibpaper id, caption, lines
       end
-      puts ""
+      puts
     end
 
     def inline_hd(id)
       m = /\A([^|]+)\|(.+)/.match(id)
-      if m && m[1]
-        chapter = @book.contents.detect{|chap| chap.id == m[1]}
-      end
+      chapter = @book.contents.detect { |chap| chap.id == m[1] } if m && m[1]
       if chapter
         inline_hd_chap(chapter, m[2])
       else
@@ -316,7 +297,7 @@ module ReVIEW
 
     def inline_column(id)
       m = /\A([^|]+)\|(.+)/.match(id)
-      chapter = @book.chapters.detect{|chap| chap.id == m[1]} if m && m[1]
+      chapter = @book.chapters.detect { |chap| chap.id == m[1] } if m && m[1]
       if chapter
         inline_column_chap(chapter, m[2])
       else
@@ -337,29 +318,21 @@ module ReVIEW
 
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
-        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
+        builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
         c = target_name
-        if builders.include?(c)
-          print matched[2].gsub("\\n", "\n")
-        else
-          ""
-        end
+        print matched[2].gsub('\\n', "\n") if builders.include?(c)
       else
-        print str.gsub("\\n", "\n")
+        print str.gsub('\\n', "\n")
       end
     end
 
     def embed(lines, arg = nil)
       if arg
-        builders = arg.gsub(/^\s*\|/, "").gsub(/\|\s*$/, "").gsub(/\s/, "").split(/,/)
+        builders = arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
         c = target_name
-        if builders.include?(c)
-          print lines.join()
-        else
-          ""
-        end
+        print lines.join if builders.include?(c)
       else
-        print lines.join()
+        print lines.join
       end
     end
 
@@ -380,53 +353,44 @@ module ReVIEW
     end
 
     def parse_metric(type, metric)
-      return "" if metric.blank?
+      return '' if metric.blank?
       params = metric.split(/,\s*/)
       results = []
       params.each do |param|
         if param =~ /\A.+?::/
-          if param =~ /\A#{type}::/
-            param.sub!(/\A#{type}::/, '')
-          else
-            next
-          end
+          next unless param =~ /\A#{type}::/
+          param.sub!(/\A#{type}::/, '')
         end
         param2 = handle_metric(param)
         results.push(param2)
       end
-      return result_metric(results)
+      result_metric(results)
     end
 
     def get_chap(chapter = @chapter)
-      if @book.config["secnolevel"] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
-        if chapter.is_a? ReVIEW::Book::Part
-          return I18n.t('part_short', chapter.number)
-        else
-          return chapter.format_number(nil)
-        end
+      if @book.config['secnolevel'] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
+        return I18n.t('part_short', chapter.number) if chapter.is_a?(ReVIEW::Book::Part)
+        return chapter.format_number(nil)
       end
-      return nil
+      nil
     end
 
     def extract_chapter_id(chap_ref)
       m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
-      if m
-        return [@book.contents.detect{|chap| chap.id == m[1]}, m[2]]
-      else
-        return [@chapter, chap_ref]
-      end
+      return [@book.contents.detect { |chap| chap.id == m[1] }, m[2]] if m
+      [@chapter, chap_ref]
     end
 
-    def captionblock(type, lines, caption, specialstyle = nil)
+    def captionblock(_type, _lines, _caption, _specialstyle = nil)
       raise NotImplementedError
     end
 
     CAPTION_TITLES.each do |name|
-      class_eval %Q{
+      class_eval %Q(
         def #{name}(lines, caption = nil)
           captionblock("#{name}", lines, caption)
         end
-      }
+      )
     end
 
     def graph(lines, id, command, caption = nil)
@@ -438,20 +402,20 @@ module ReVIEW
 
       line = self.unescape(lines.join("\n"))
       cmds = {
-        :graphviz => "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
-        :gnuplot => "echo 'set terminal " +
-        "#{(image_ext == "eps") ? "postscript eps" : image_ext}\n" +
-        " set output \"#{file_path}\"\n#{line}' | gnuplot",
-        :blockdiag => "echo '#{line}' "+
+        graphviz: "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
+        gnuplot: %Q(echo 'set terminal ) +
+        "#{image_ext == 'eps' ? 'postscript eps' : image_ext}\n" +
+        %Q(" set output "#{file_path}"\n#{line}' | gnuplot),
+        blockdiag: "echo '#{line}' " +
         "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin",
-        :aafigure => "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}",
+        aafigure: "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}"
       }
       cmd = cmds[command.to_sym]
       warn cmd
       system cmd
       @chapter.image_index.image_finder.add_entry(file_path)
 
-      image(lines, id, caption ||= "")
+      image(lines, id, caption)
     end
 
     def image_ext
@@ -463,9 +427,7 @@ module ReVIEW
     end
 
     def include(file_name)
-      File.foreach(file_name) do |line|
-        paragraph([line])
-      end
+      File.foreach(file_name) { |line| paragraph([line]) }
     end
 
     def ul_item_begin(lines)
@@ -477,11 +439,9 @@ module ReVIEW
 
     def tsize(str)
       if matched = str.match(/\A\|(.*?)\|(.*)/)
-        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
-        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
-        if builders.include?(c)
-          @tsize = matched[2]
-        end
+        builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
+        c = self.class.to_s.gsub('ReVIEW::', '').gsub('Builder', '').downcase
+        @tsize = matched[2] if builders.include?(c)
       else
         @tsize = str
       end
@@ -489,25 +449,25 @@ module ReVIEW
 
     def inline_raw(args)
       if matched = args.match(/\|(.*?)\|(.*)/)
-        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
-        c = self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+        builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
+        c = self.class.to_s.gsub('ReVIEW::', '').gsub('Builder', '').downcase
         if builders.include?(c)
-          matched[2].gsub("\\n", "\n")
+          matched[2].gsub('\\n', "\n")
         else
-          ""
+          ''
         end
       else
-        args.gsub("\\n", "\n")
+        args.gsub('\\n', "\n")
       end
     end
 
     def inline_embed(args)
       if matched = args.match(/\|(.*?)\|(.*)/)
-        builders = matched[1].split(/,/).map{|i| i.gsub(/\s/, '') }
+        builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
         if builders.include?(target_name)
           matched[2]
         else
-          ""
+          ''
         end
       else
         args
@@ -525,5 +485,4 @@ module ReVIEW
       end
     end
   end
-
 end # module ReVIEW

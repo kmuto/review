@@ -1,7 +1,5 @@
-#
-# $Id: volume.rb 3883 2008-02-10 11:48:23Z aamine $
-#
-# Copyright (c) 2002-2007 Minero Aoki
+# Copyright (c) 2007-2017 Minero Aoki, Kenshi Muto
+#               2002-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -11,11 +9,10 @@
 module ReVIEW
   module Book
     class Volume
-
-      def Volume.count_file(path)
+      def self.count_file(path)
         b = c = l = 0
         File.foreach(path) do |line|
-          next if %r<\A\#@> =~ line
+          next if /\A\#@/ =~ line
           text = line.gsub(/\s+/, '')
           b += text.bytesize
           c += text.charsize
@@ -24,11 +21,11 @@ module ReVIEW
         new(b, c, l)
       end
 
-      def Volume.sum(vols)
-        vols.inject(new()) {|sum, i| sum + i }
+      def self.sum(vols)
+        vols.inject(new) { |sum, i| sum + i }
       end
 
-      def Volume.dummy
+      def self.dummy
         new(-1, -1, -1)
       end
 
@@ -49,11 +46,11 @@ module ReVIEW
       end
 
       def page
-        (kbytes.to_f/@page_per_kbyte).ceil
+        (kbytes.to_f / @page_per_kbyte).ceil
       end
 
       def to_s
-        "#{kbytes()}KB #{@chars}C #{@lines}L #{page()}P"
+        "#{kbytes}KB #{@chars}C #{@lines}L #{page}P"
       end
 
       def +(other)
@@ -61,7 +58,6 @@ module ReVIEW
                    @chars + other.chars,
                    @lines + other.lines)
       end
-
     end
   end
 end

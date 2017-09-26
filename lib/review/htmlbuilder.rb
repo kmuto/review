@@ -1,8 +1,6 @@
-# encoding: utf-8
-
-# Copyright (c) 2002-2007 Minero Aoki
-#               2008-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
+#               2002-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -18,13 +16,11 @@ require 'digest'
 require 'tmpdir'
 
 module ReVIEW
-
   class HTMLBuilder < Builder
-
     include TextUtils
     include HTMLUtils
 
-    [:ref].each {|e| Compiler.definline(e) }
+    [:ref].each { |e| Compiler.definline(e) }
     Compiler.defblock(:planning, 0..1)
     Compiler.defblock(:best, 0..1)
     Compiler.defblock(:security, 0..1)
@@ -40,7 +36,7 @@ module ReVIEW
     end
 
     def extname
-      ".#{@book.config["htmlext"]}"
+      ".#{@book.config['htmlext']}"
     end
 
     def builder_init(no_error = false)
@@ -55,7 +51,7 @@ module ReVIEW
     def builder_init_file
       @warns = []
       @errors = []
-      @chapter.book.image_types = %w(.png .jpg .jpeg .gif .svg)
+      @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
@@ -66,26 +62,26 @@ module ReVIEW
     private :builder_init_file
 
     def layoutfile
-      if @book.config.maker == "webmaker"
-        htmldir = "web/html"
-        localfilename = "layout-web.html.erb"
+      if @book.config.maker == 'webmaker'
+        htmldir = 'web/html'
+        localfilename = 'layout-web.html.erb'
       else
-        htmldir = "html"
-        localfilename = "layout.html.erb"
+        htmldir = 'html'
+        localfilename = 'layout.html.erb'
       end
       if @book.htmlversion == 5
-        htmlfilename = File.join(htmldir, "layout-html5.html.erb")
+        htmlfilename = File.join(htmldir, 'layout-html5.html.erb')
       else
-        htmlfilename = File.join(htmldir, "layout-xhtml1.html.erb")
+        htmlfilename = File.join(htmldir, 'layout-xhtml1.html.erb')
       end
 
-      layout_file = File.join(@book.basedir, "layouts", localfilename)
-      if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, "layouts", "layout.erb"))
-        raise ReVIEW::ConfigError, "layout.erb is obsoleted. Please use layout.html.erb."
+      layout_file = File.join(@book.basedir, 'layouts', localfilename)
+      if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, 'layouts', 'layout.erb'))
+        raise ReVIEW::ConfigError, 'layout.erb is obsoleted. Please use layout.html.erb.'
       end
       if File.exist?(layout_file)
-        if ENV["REVIEW_SAFE_MODE"].to_i & 4 > 0
-          warn "user's layout is prohibited in safe mode. ignored."
+        if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
+          warn %Q(user's layout is prohibited in safe mode. ignored.)
           layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
         end
       else
@@ -99,59 +95,50 @@ module ReVIEW
       @title = strip_html(compile_inline(@chapter.title))
       @body = @output.string
       @language = @book.config['language']
-      @stylesheets = @book.config["stylesheet"]
+      @stylesheets = @book.config['stylesheet']
       @next = @chapter.next_chapter
       @prev = @chapter.prev_chapter
-      @next_title = @next ? compile_inline(@next.title) : ""
-      @prev_title = @prev ? compile_inline(@prev.title) : ""
+      @next_title = @next ? compile_inline(@next.title) : ''
+      @prev_title = @prev ? compile_inline(@prev.title) : ''
 
-      if @book.config.maker == "webmaker"
-        @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
-      end
+      @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book) if @book.config.maker == 'webmaker'
 
-      tmpl = ReVIEW::Template.load(layoutfile)
-      tmpl.result(binding)
+      ReVIEW::Template.load(layoutfile).result(binding)
     end
 
     def xmlns_ops_prefix
-      if @book.config["epubversion"].to_i == 3
-        "epub"
+      if @book.config['epubversion'].to_i == 3
+        'epub'
       else
-        "ops"
+        'ops'
       end
     end
 
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
-      unless prefix.nil?
-        prefix = %Q[<span class="secno">#{prefix}</span>]
-      end
+      prefix = %Q(<span class="secno">#{prefix}</span>) if prefix
       puts '' if level > 1
-      a_id = ""
-      unless anchor.nil?
-        a_id = %Q[<a id="h#{anchor}"></a>]
-      end
+      a_id = ''
+      a_id = %Q(<a id="h#{anchor}"></a>) if anchor
+
       if caption.empty?
-        puts a_id unless label.nil?
+        puts a_id if label
+      elsif label
+        puts %Q(<h#{level} id="#{normalize_id(label)}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>)
       else
-        if label.nil?
-          puts %Q[<h#{level}>#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
-        else
-          puts %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>]
-        end
+        puts %Q(<h#{level}>#{a_id}#{prefix}#{compile_inline(caption)}</h#{level}>)
       end
     end
 
     def nonum_begin(level, label, caption)
       @nonum_counter += 1
-      puts '' if level > 1
-      unless caption.empty?
-        if label.nil?
-          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
-          puts %Q[<h#{level} id="#{id}">#{compile_inline(caption)}</h#{level}>]
-        else
-          puts %Q[<h#{level} id="#{normalize_id(label)}">#{compile_inline(caption)}</h#{level}>]
-        end
+      puts if level > 1
+      return unless caption.present?
+      if label
+        puts %Q(<h#{level} id="#{normalize_id(label)}">#{compile_inline(caption)}</h#{level}>)
+      else
+        id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+        puts %Q(<h#{level} id="#{id}">#{compile_inline(caption)}</h#{level}>)
       end
     end
 
@@ -160,14 +147,13 @@ module ReVIEW
 
     def notoc_begin(level, label, caption)
       @nonum_counter += 1
-      puts '' if level > 1
-      unless caption.empty?
-        if label.nil?
-          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
-          puts %Q[<h#{level} id="#{id}" notoc="true">#{compile_inline(caption)}</h#{level}>]
-        else
-          puts %Q[<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>]
-        end
+      puts if level > 1
+      return unless caption.present?
+      if label
+        puts %Q(<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>)
+      else
+        id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+        puts %Q(<h#{level} id="#{id}" notoc="true">#{compile_inline(caption)}</h#{level}>)
       end
     end
 
@@ -177,13 +163,12 @@ module ReVIEW
     def nodisp_begin(level, label, caption)
       @nonum_counter += 1
       puts '' if level > 1
-      unless caption.empty?
-        if label.nil?
-          id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
-          puts %Q[<a id="#{id}" /><h#{level} id="#{id}" hidden="true">#{compile_inline(caption)}</h#{level}>]
-        else
-          puts %Q[<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>]
-        end
+      return unless caption.present?
+      if label
+        puts %Q(<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>)
+      else
+        id = normalize_id("#{@chapter.name}_nonum#{@nonum_counter}")
+        puts %Q(<a id="#{id}" /><h#{level} id="#{id}" hidden="true">#{compile_inline(caption)}</h#{level}>)
       end
     end
 
@@ -191,124 +176,119 @@ module ReVIEW
     end
 
     def column_begin(level, label, caption)
-      puts %Q[<div class="column">]
+      puts %Q(<div class="column">)
 
       @column += 1
-      puts '' if level > 1
-      a_id = %Q[<a id="column-#{@column}"></a>]
+      puts if level > 1
+      a_id = %Q(<a id="column-#{@column}"></a>)
 
       if caption.empty?
-        puts a_id unless label.nil?
+        puts a_id if label
+      elsif label
+        puts %Q(<h#{level} id="#{normalize_id(label)}">#{a_id}#{compile_inline(caption)}</h#{level}>)
       else
-        if label.nil?
-          puts %Q[<h#{level}>#{a_id}#{compile_inline(caption)}</h#{level}>]
-        else
-          puts %Q[<h#{level} id="#{normalize_id(label)}">#{a_id}#{compile_inline(caption)}</h#{level}>]
-        end
+        puts %Q(<h#{level}>#{a_id}#{compile_inline(caption)}</h#{level}>)
       end
-      # headline(level, label, caption)
     end
 
-    def column_end(level)
+    def column_end(_level)
       puts '</div>'
     end
 
     def xcolumn_begin(level, label, caption)
-      puts %Q[<div class="xcolumn">]
+      puts %Q(<div class="xcolumn">)
       headline(level, label, caption)
     end
 
-    def xcolumn_end(level)
+    def xcolumn_end(_level)
       puts '</div>'
     end
 
     def ref_begin(level, label, caption)
-      print %Q[<div class="reference">]
+      print %Q(<div class="reference">)
       headline(level, label, caption)
     end
 
-    def ref_end(level)
+    def ref_end(_level)
       puts '</div>'
     end
 
     def sup_begin(level, label, caption)
-      print %Q[<div class="supplement">]
+      print %Q(<div class="supplement">)
       headline(level, label, caption)
     end
 
-    def sup_end(level)
+    def sup_end(_level)
       puts '</div>'
     end
 
     def captionblock(type, lines, caption)
-      puts %Q[<div class="#{type}">]
-      unless caption.nil?
-        puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
-      end
+      puts %Q(<div class="#{type}">)
+      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n")
       puts '</div>'
     end
 
     def memo(lines, caption = nil)
-      captionblock("memo", lines, caption)
+      captionblock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
-      captionblock("tip", lines, caption)
+      captionblock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
-      captionblock("info", lines, caption)
+      captionblock('info', lines, caption)
     end
 
     def planning(lines, caption = nil)
-      captionblock("planning", lines, caption)
+      captionblock('planning', lines, caption)
     end
 
     def best(lines, caption = nil)
-      captionblock("best", lines, caption)
+      captionblock('best', lines, caption)
     end
 
     def important(lines, caption = nil)
-      captionblock("important", lines, caption)
+      captionblock('important', lines, caption)
     end
 
     def security(lines, caption = nil)
-      captionblock("security", lines, caption)
+      captionblock('security', lines, caption)
     end
 
     def caution(lines, caption = nil)
-      captionblock("caution", lines, caption)
+      captionblock('caution', lines, caption)
     end
 
     def notice(lines, caption = nil)
-      captionblock("notice", lines, caption)
+      captionblock('notice', lines, caption)
     end
 
     def warning(lines, caption = nil)
-      captionblock("warning", lines, caption)
+      captionblock('warning', lines, caption)
     end
 
     def point(lines, caption = nil)
-      captionblock("point", lines, caption)
+      captionblock('point', lines, caption)
     end
 
     def shoot(lines, caption = nil)
-      captionblock("shoot", lines, caption)
+      captionblock('shoot', lines, caption)
     end
 
     def box(lines, caption = nil)
-      puts %Q[<div class="syntax">]
-      puts %Q[<p class="caption">#{compile_inline(caption)}</p>] unless caption.nil?
-      print %Q[<pre class="syntax">]
-      lines.each {|line| puts detab(line) }
+      puts %Q(<div class="syntax">)
+      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      print %Q(<pre class="syntax">)
+      lines.each { |line| puts detab(line) }
       puts '</pre>'
       puts '</div>'
     end
 
     def note(lines, caption = nil)
-      captionblock("note", lines, caption)
+      captionblock('note', lines, caption)
     end
 
     def ul_begin
@@ -320,7 +300,7 @@ module ReVIEW
     end
 
     def ul_item_end
-      puts "</li>"
+      puts '</li>'
     end
 
     def ul_end
@@ -329,14 +309,14 @@ module ReVIEW
 
     def ol_begin
       if @ol_num
-        puts "<ol start=\"#{@ol_num}\">" ## it's OK in HTML5, but not OK in XHTML1.1
+        puts %Q(<ol start="#{@ol_num}">) # it's OK in HTML5, but not OK in XHTML1.1
         @ol_num = nil
       else
         puts '<ol>'
       end
     end
 
-    def ol_item(lines, num)
+    def ol_item(lines, _num)
       puts "<li>#{lines.join}</li>"
     end
 
@@ -361,11 +341,11 @@ module ReVIEW
     end
 
     def paragraph(lines)
-      if @noindent.nil?
-        puts "<p>#{lines.join}</p>"
-      else
-        puts %Q[<p class="noindent">#{lines.join}</p>]
+      if @noindent
+        puts %Q(<p class="noindent">#{lines.join}</p>)
         @noindent = nil
+      else
+        puts "<p>#{lines.join}</p>"
       end
     end
 
@@ -375,13 +355,13 @@ module ReVIEW
 
     def read(lines)
       blocked_lines = split_paragraph(lines)
-      puts %Q[<div class="lead">\n#{blocked_lines.join("\n")}\n</div>]
+      puts %Q(<div class="lead">\n#{blocked_lines.join("\n")}\n</div>)
     end
 
     alias_method :lead, :read
 
     def list(lines, id, caption, lang = nil)
-      puts %Q[<div id="#{normalize_id(id)}" class="caption-code">]
+      puts %Q(<div id="#{normalize_id(id)}" class="caption-code">)
       begin
         list_header id, caption, lang
       rescue KeyError
@@ -391,50 +371,48 @@ module ReVIEW
       puts '</div>'
     end
 
-    def list_header(id, caption, lang)
-      if get_chap.nil?
-        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header_without_chapter", [@chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
+    def list_header(id, caption, _lang)
+      if get_chap
+        puts %Q(<p class="caption">#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
       else
-        puts %Q[<p class="caption">#{I18n.t("list")}#{I18n.t("format_number_header", [get_chap, @chapter.list(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
+        puts %Q(<p class="caption">#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
       end
     end
 
     def list_body(id, lines, lang)
       id ||= ''
-      class_names = ["list"]
-      lexer = lang || File.extname(id).gsub(/\./, '')
+      class_names = ['list']
+      lexer = lang || File.extname(id).gsub('.', '')
       class_names.push("language-#{lexer}") unless lexer.blank?
-      class_names.push("highlight") if highlight?
-      print %Q[<pre class="#{class_names.join(" ")}">]
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      puts highlight(:body => body, :lexer => lexer, :format => 'html')
+      class_names.push('highlight') if highlight?
+      print %Q(<pre class="#{class_names.join(' ')}">)
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
     end
 
     def source(lines, caption = nil, lang = nil)
-      puts %Q[<div class="source-code">]
+      puts %Q(<div class="source-code">)
       source_header caption
       source_body caption, lines, lang
       puts '</div>'
     end
 
     def source_header(caption)
-      if caption.present?
-        puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
-      end
+      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
     end
 
     def source_body(id, lines, lang)
       id ||= ''
-      print %Q[<pre class="source">]
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
-      lexer = lang || File.extname(id).gsub(/\./, '')
-      puts highlight(:body => body, :lexer => lexer, :format => 'html')
+      print %Q(<pre class="source">)
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      lexer = lang || File.extname(id).gsub('.', '')
+      puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
     end
 
     def listnum(lines, id, caption, lang = nil)
-      puts %Q[<div id="#{normalize_id(id)}" class="code">]
+      puts %Q(<div id="#{normalize_id(id)}" class="code">)
       begin
         list_header id, caption, lang
       rescue KeyError
@@ -446,61 +424,53 @@ module ReVIEW
 
     def listnum_body(lines, lang)
       if highlight?
-        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
         lexer = lang
-        first_line_number = get_line_num
-        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
-                       :options => {:linenostart => first_line_number})
+        first_line_number = line_num
+        puts highlight(body: body, lexer: lexer, format: 'html', linenum: true,
+                       options: { linenostart: first_line_number })
       else
-        class_names = ["list"]
+        class_names = ['list']
         class_names.push("language-#{lang}") unless lang.blank?
-        class_names.push("highlight") if highlight?
-        print %Q[<pre class="#{class_names.join(" ")}">]
-        first_line_num = get_line_num
-        lines.each_with_index do |line, i|
-          puts detab((i+first_line_num).to_s.rjust(2) + ": " + line)
-        end
+        class_names.push('highlight') if highlight?
+        print %Q(<pre class="#{class_names.join(' ')}">)
+        first_line_num = line_num
+        lines.each_with_index { |line, i| puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line) }
         puts '</pre>'
       end
     end
 
     def emlist(lines, caption = nil, lang = nil)
-      puts %Q[<div class="emlist-code">]
-      if caption.present?
-        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
-      end
-      class_names = ["emlist"]
+      puts %Q(<div class="emlist-code">)
+      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      class_names = ['emlist']
       class_names.push("language-#{lang}") unless lang.blank?
-      class_names.push("highlight") if highlight?
-      print %Q[<pre class="#{class_names.join(" ")}">]
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      class_names.push('highlight') if highlight?
+      print %Q(<pre class="#{class_names.join(' ')}">)
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = lang
-      puts highlight(:body => body, :lexer => lexer, :format => 'html')
+      puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
       puts '</div>'
     end
 
     def emlistnum(lines, caption = nil, lang = nil)
-      puts %Q[<div class="emlistnum-code">]
-      if caption.present?
-        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
-      end
+      puts %Q(<div class="emlistnum-code">)
+      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
 
       if highlight?
-        body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
         lexer = lang
-        first_line_number = get_line_num
-        puts highlight(:body => body, :lexer => lexer, :format => 'html', :linenum => true,
-                       :options => {:linenostart => first_line_number})
+        first_line_number = line_num
+        puts highlight(body: body, lexer: lexer, format: 'html', linenum: true,
+                       options: { linenostart: first_line_number })
       else
-        class_names = ["emlist"]
+        class_names = ['emlist']
         class_names.push("language-#{lang}") unless lang.blank?
-        class_names.push("highlight") if highlight?
-        print %Q[<pre class="#{class_names.join(" ")}">]
-        first_line_num = get_line_num
-        lines.each_with_index do |line, i|
-          puts detab((i+first_line_num).to_s.rjust(2) + ": " + line)
-        end
+        class_names.push('highlight') if highlight?
+        print %Q(<pre class="#{class_names.join(' ')}">)
+        first_line_num = line_num
+        lines.each_with_index { |line, i| puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line) }
         puts '</pre>'
       end
 
@@ -508,77 +478,71 @@ module ReVIEW
     end
 
     def cmd(lines, caption = nil)
-      puts %Q[<div class="cmd-code">]
-      if caption.present?
-        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
-      end
-      print %Q[<pre class="cmd">]
-      body = lines.inject(''){|i, j| i + detab(j) + "\n"}
+      puts %Q(<div class="cmd-code">)
+      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      print %Q(<pre class="cmd">)
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = 'shell-session'
-      puts highlight(:body => body, :lexer => lexer, :format => 'html')
+      puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
       puts '</div>'
     end
 
     def quotedlist(lines, css_class)
-      print %Q[<blockquote><pre class="#{css_class}">]
-      lines.each do |line|
-        puts detab(line)
-      end
+      print %Q(<blockquote><pre class="#{css_class}">)
+      lines.each { |line| puts detab(line) }
       puts '</pre></blockquote>'
     end
     private :quotedlist
 
     def quote(lines)
       blocked_lines = split_paragraph(lines)
-      puts "<blockquote>#{blocked_lines.join("\n")}</blockquote>"
+      puts %Q(<blockquote>#{blocked_lines.join("\n")}</blockquote>)
     end
 
     def doorquote(lines, ref)
       blocked_lines = split_paragraph(lines)
-      puts %Q[<blockquote style="text-align:right;">]
-      puts "#{blocked_lines.join("\n")}"
-      puts %Q[<p>#{ref}より</p>]
-      puts %Q[</blockquote>]
+      puts %Q(<blockquote style="text-align:right;">)
+      puts blocked_lines.join("\n")
+      puts %Q(<p>#{ref}より</p>)
+      puts '</blockquote>'
     end
 
     def talk(lines)
-      puts %Q[<div class="talk">]
+      puts %Q(<div class="talk">)
       blocked_lines = split_paragraph(lines)
-      puts "#{blocked_lines.join("\n")}"
+      puts blocked_lines.join("\n")
       puts '</div>'
     end
 
     def texequation(lines)
-      puts %Q[<div class="equation">]
-      if @book.config["mathml"]
+      puts %Q(<div class="equation">)
+      if @book.config['mathml']
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
-        p = MathML::LaTeX::Parser.new(:symbol=>MathML::Symbol::CharacterReference)
+        p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
-      elsif @book.config["imgmath"]
-        puts %Q[<div class="equation">]
+      elsif @book.config['imgmath']
+        puts %Q(<div class="equation">)
         math_str = "\\begin{equation*}\n" + unescape_html(lines.join("\n")) + "\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         img_path = "./images/_gen_#{key}.png"
         make_math_image(math_str, img_path)
-        puts %Q[<img src="#{img_path}" />]
+        puts %Q(<img src="#{img_path}" />)
         puts '</div>'
       else
         print '<pre>'
-        puts "#{lines.join("\n")}"
+        puts lines.join("\n")
         puts '</pre>'
       end
       puts '</div>'
     end
 
     def handle_metric(str)
-      if str =~ /\Ascale=([\d.]+)\Z/
-        return {'class' => sprintf("width-%03dper", ($1.to_f * 100).round)}
-      else
-        k, v = str.split('=', 2)
-        return {k => v.sub(/\A["']/, '').sub(/["']\Z/, '')}
-      end
+      return { 'class' => sprintf('width-%03dper', ($1.to_f * 100).round) } if str =~ /\Ascale=([\d.]+)\Z/
+
+      k, v = str.split('=', 2)
+      { k => v.sub(/\A["']/, '').sub(/["']\Z/, '') }
     end
 
     def result_metric(array)
@@ -591,37 +555,35 @@ module ReVIEW
           attrs[k] = [item[k]]
         end
       end
-      " "+attrs.map{|k, v| %Q|#{k}="#{v.join(' ')}"| }.join(' ')
+      ' ' + attrs.map { |k, v| %Q(#{k}="#{v.join(' ')}") }.join(' ')
     end
 
     def image_image(id, caption, metric)
-      metrics = parse_metric("html", metric)
-      puts %Q[<div id="#{normalize_id(id)}" class="image">]
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+      metrics = parse_metric('html', metric)
+      puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />)
       image_header id, caption
-      puts %Q[</div>]
+      puts '</div>'
     end
 
     def image_dummy(id, caption, lines)
       warn "image not bound: #{id}"
-      puts %Q[<div id="#{normalize_id(id)}" class="image">]
-      puts %Q[<pre class="dummyimage">]
-      lines.each do |line|
-        puts detab(line)
-      end
-      puts %Q[</pre>]
+      puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      puts %Q(<pre class="dummyimage">)
+      lines.each { |line| puts detab(line) }
+      puts '</pre>'
       image_header id, caption
-      puts %Q[</div>]
+      puts '</div>'
     end
 
     def image_header(id, caption)
-      puts %Q[<p class="caption">]
-      if get_chap.nil?
-        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header_without_chapter", [@chapter.image(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}]
+      puts %Q(<p class="caption">)
+      if get_chap
+        puts %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, @chapter.image(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)})
       else
-        puts %Q[#{I18n.t("image")}#{I18n.t("format_number_header", [get_chap, @chapter.image(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}]
+        puts %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)})
       end
-      puts %Q[</p>]
+      puts '</p>'
     end
 
     def table(lines, id = nil, caption = nil)
@@ -630,56 +592,50 @@ module ReVIEW
       lines.each_with_index do |line, idx|
         if /\A[\=\-]{12}/ =~ line
           # just ignore
-          #error "too many table separator" if sepidx
+          # error "too many table separator" if sepidx
           sepidx ||= idx
           next
         end
-        rows.push(line.strip.split(/\t+/).map {|s| s.sub(/\A\./, '') })
+        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
 
       if id
-        puts %Q[<div id="#{normalize_id(id)}" class="table">]
+        puts %Q(<div id="#{normalize_id(id)}" class="table">)
       else
-        puts %Q[<div class="table">]
+        puts %Q(<div class="table">)
       end
       begin
-        table_header id, caption unless caption.nil?
+        table_header id, caption if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
       table_begin rows.first.size
       return if rows.empty?
       if sepidx
-        sepidx.times do
-          tr (rows.shift.map {|s| th(s) })
-        end
-        rows.each do |cols|
-          tr (cols.map {|s| td(s) })
-        end
+        sepidx.times { tr(rows.shift.map { |s| th(s) }) }
+        rows.each { |cols| tr(cols.map { |s| td(s) }) }
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr ([th(h)] + cs.map {|s| td(s) })
+          tr([th(h)] + cs.map { |s| td(s) })
         end
       end
       table_end
-      puts %Q[</div>]
+      puts '</div>'
     end
 
     def table_header(id, caption)
       if id.nil?
-        puts %Q[<p class="caption">#{compile_inline(caption)}</p>]
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      elsif get_chap
+        puts %Q(<p class="caption">#{I18n.t('table')}#{I18n.t('format_number_header', [get_chap, @chapter.table(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
       else
-        if get_chap.nil?
-          puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header_without_chapter", [@chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
-        else
-          puts %Q[<p class="caption">#{I18n.t("table")}#{I18n.t("format_number_header", [get_chap, @chapter.table(id).number])}#{I18n.t("caption_prefix")}#{compile_inline(caption)}</p>]
-        end
+        puts %Q(<p class="caption">#{I18n.t('table')}#{I18n.t('format_number_header_without_chapter', [@chapter.table(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
       end
     end
 
-    def table_begin(ncols)
+    def table_begin(_ncols)
       puts '<table>'
     end
 
@@ -700,27 +656,27 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
-      if !@chapter.image(id).bound?
+      unless @chapter.image(id).bound?
         warn "image not bound: #{id}"
         image_dummy id, caption, lines
         return
       end
 
-      puts %Q[<div id="#{normalize_id(id)}" class="imgtable image">]
+      puts %Q(<div id="#{normalize_id(id)}" class="imgtable image">)
       begin
-        table_header id, caption unless caption.nil?
+        table_header id, caption if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
 
       imgtable_image(id, caption, metric)
 
-      puts %Q[</div>]
+      puts '</div>'
     end
 
     def imgtable_image(id, caption, metric)
-      metrics = parse_metric("html", metric)
-      puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+      metrics = parse_metric('html', metric)
+      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />)
     end
 
     def emtable(lines, caption = nil)
@@ -730,49 +686,46 @@ module ReVIEW
     def comment(lines, comment = nil)
       lines ||= []
       lines.unshift comment unless comment.blank?
-      if @book.config["draft"]
-        str = lines.join("<br />")
-        puts %Q(<div class="draft-comment">#{escape_html(str)}</div>)
-      end
+      return unless @book.config['draft']
+      str = lines.join('<br />')
+      puts %Q(<div class="draft-comment">#{escape_html(str)}</div>)
     end
 
     def footnote(id, str)
-      if @book.config["epubversion"].to_i == 3
+      if @book.config['epubversion'].to_i == 3
         puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
       else
         puts %Q(<div class="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[<a href="#fnb-#{normalize_id(id)}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
       end
     end
 
-    def indepimage(_lines, id, caption="", metric=nil)
-      metrics = parse_metric("html", metric)
-      caption = "" if caption.nil?
-      puts %Q[<div id="#{normalize_id(id)}" class="image">]
+    def indepimage(lines, id, caption = '', metric = nil)
+      metrics = parse_metric('html', metric)
+      caption = '' unless caption.present?
+      puts %Q(<div id="#{normalize_id(id)}" class="image">)
       begin
-        puts %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />]
+        puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />)
       rescue
         warn "image not bound: #{id}"
-        if _lines
-          puts %Q[<pre class="dummyimage">]
-          _lines.each do |line|
-            puts detab(line)
-          end
-          puts %Q[</pre>]
+        if lines
+          puts %Q(<pre class="dummyimage">)
+          lines.each { |line| puts detab(line) }
+          puts '</pre>'
         end
       end
 
-      unless caption.empty?
-        puts %Q[<p class="caption">]
-        puts %Q[#{I18n.t("numberless_image")}#{I18n.t("caption_prefix")}#{compile_inline(caption)}]
-        puts %Q[</p>]
+      if caption.present?
+        puts %Q(<p class="caption">)
+        puts %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})
+        puts '</p>'
       end
-      puts %Q[</div>]
+      puts '</div>'
     end
 
     alias_method :numberlessimage, :indepimage
 
     def hr
-      puts "<hr />"
+      puts '<hr />'
     end
 
     def label(id)
@@ -780,7 +733,7 @@ module ReVIEW
     end
 
     def linebreak
-      puts "<br />"
+      puts '<br />'
     end
 
     def pagebreak
@@ -788,11 +741,9 @@ module ReVIEW
     end
 
     def bpo(lines)
-      puts "<bpo>"
-      lines.each do |line|
-        puts detab(line)
-      end
-      puts "</bpo>"
+      puts '<bpo>'
+      lines.each { |line| puts detab(line) }
+      puts '</bpo>'
     end
 
     def noindent
@@ -800,14 +751,14 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q[<a target='#{escape_html(idref)}'>「#{I18n.t("label_marker")}#{escape_html(idref)}」</a>]
+      %Q(<a target='#{escape_html(idref)}'>「#{I18n.t('label_marker')}#{escape_html(idref)}」</a>)
     end
 
     alias_method :inline_ref, :inline_labelref
 
     def inline_chapref(id)
       title = super
-      if @book.config["chapterlink"]
+      if @book.config['chapterlink']
         %Q(<a href="./#{id}#{extname}">#{title}</a>)
       else
         title
@@ -818,7 +769,7 @@ module ReVIEW
     end
 
     def inline_chap(id)
-      if @book.config["chapterlink"]
+      if @book.config['chapterlink']
         %Q(<a href="./#{id}#{extname}">#{@book.chapter_index.number(id)}</a>)
       else
         @book.chapter_index.number(id)
@@ -830,7 +781,7 @@ module ReVIEW
 
     def inline_title(id)
       title = super
-      if @book.config["chapterlink"]
+      if @book.config['chapterlink']
         %Q(<a href="./#{id}#{extname}">#{title}</a>)
       else
         title
@@ -841,7 +792,7 @@ module ReVIEW
     end
 
     def inline_fn(id)
-      if @book.config["epubversion"].to_i == 3
+      if @book.config['epubversion'].to_i == 3
         %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
       else
         %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref">*#{@chapter.footnote(id).number}</a>)
@@ -850,14 +801,14 @@ module ReVIEW
 
     def compile_ruby(base, ruby)
       if @book.htmlversion == 5
-        %Q[<ruby>#{escape_html(base)}<rp>#{I18n.t("ruby_prefix")}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+        %Q(<ruby>#{escape_html(base)}<rp>#{I18n.t('ruby_prefix')}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       else
-        %Q[<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t("ruby_prefix")}</rp><rt>#{ruby}</rt><rp>#{I18n.t("ruby_postfix")}</rp></ruby>]
+        %Q(<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t('ruby_prefix')}</rp><rt>#{ruby}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       end
     end
 
     def compile_kw(word, alt)
-      %Q[<b class="kw">] +
+      %Q(<b class="kw">) +
         if alt
         then escape_html(word + " (#{alt.strip})")
         else escape_html(word)
@@ -917,24 +868,24 @@ module ReVIEW
       %Q(<!-- IDX:#{escape_comment(escape_html(str))} -->)
     end
 
-    def inline_br(str)
-      %Q(<br />)
+    def inline_br(_str)
+      '<br />'
     end
 
     def inline_m(str)
-      if @book.config["mathml"]
+      if @book.config['mathml']
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
-        parser = MathML::LaTeX::Parser.new(:symbol => MathML::Symbol::CharacterReference)
-        %Q[<span class="equation">#{parser.parse(str, nil)}</span>]
-      elsif @book.config["imgmath"]
-        math_str = "$" + str + "$"
+        parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
+        %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
+      elsif @book.config['imgmath']
+        math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
         img_path = "./images/_gen_#{key}.png"
         make_math_image(math_str, img_path)
-        %Q[<span class="equation"><img src="#{img_path}" /></span>]
+        %Q(<span class="equation"><img src="#{img_path}" /></span>)
       else
-        %Q[<span class="equation">#{escape_html(str)}</span>]
+        %Q(<span class="equation">#{escape_html(str)}</span>)
       end
     end
 
@@ -943,23 +894,21 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
-      puts %Q[<div class="bibpaper">]
+      puts %Q(<div class="bibpaper">)
       bibpaper_header id, caption
-      unless lines.empty?
-        bibpaper_bibpaper id, caption, lines
-      end
-      puts "</div>"
+      bibpaper_bibpaper id, caption, lines unless lines.empty?
+      puts '</div>'
     end
 
     def bibpaper_header(id, caption)
       print %Q(<a id="bib-#{normalize_id(id)}">)
       print "[#{@chapter.bibpaper(id).number}]"
-      print %Q(</a>)
+      print '</a>'
       puts " #{compile_inline(caption)}"
     end
 
-    def bibpaper_bibpaper(id, caption, lines)
-      print split_paragraph(lines).join("")
+    def bibpaper_bibpaper(_id, _caption, lines)
+      print split_paragraph(lines).join
     end
 
     def inline_bib(id)
@@ -968,13 +917,13 @@ module ReVIEW
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
-      if chap.number and @book.config["secnolevel"] >= n.split('.').size
-        str = I18n.t("chapter_quote", "#{n} #{compile_inline(chap.headline(id).caption)}")
+      if chap.number and @book.config['secnolevel'] >= n.split('.').size
+        str = I18n.t('chapter_quote', "#{n} #{compile_inline(chap.headline(id).caption)}")
       else
-        str = I18n.t("chapter_quote", compile_inline(chap.headline(id).caption))
+        str = I18n.t('chapter_quote', compile_inline(chap.headline(id).caption))
       end
-      if @book.config["chapterlink"]
-        anchor = "h"+n.gsub(/\./, "-")
+      if @book.config['chapterlink']
+        anchor = 'h' + n.gsub('.', '-')
         %Q(<a href="#{chap.id}#{extname}##{anchor}">#{str}</a>)
       else
         str
@@ -988,22 +937,22 @@ module ReVIEW
     private :column_label
 
     def inline_column_chap(chapter, id)
-      if @book.config["chapterlink"]
-        %Q(<a href="\##{column_label(id, chapter)}" class="columnref">#{I18n.t("column", compile_inline(chapter.column(id).caption))}</a>)
+      if @book.config['chapterlink']
+        %Q(<a href="\##{column_label(id, chapter)}" class="columnref">#{I18n.t('column', compile_inline(chapter.column(id).caption))}</a>)
       else
-        I18n.t("column", compile_inline(chapter.column(id).caption))
+        I18n.t('column', compile_inline(chapter.column(id).caption))
       end
     end
 
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
-      str = nil
-      if get_chap(chapter).nil?
-        str = "#{I18n.t("list")}#{I18n.t("format_number_without_header", [chapter.list(id).number])}"
-      else
-        str = "#{I18n.t("list")}#{I18n.t("format_number", [get_chap(chapter), chapter.list(id).number])}"
-      end
-      if @book.config["chapterlink"]
+      str =
+        if get_chap(chapter)
+          "#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])}"
+        else
+          "#{I18n.t('list')}#{I18n.t('format_number_without_header', [chapter.list(id).number])}"
+        end
+      if @book.config['chapterlink']
         %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
       else
         %Q(<span class="listref">#{str}</span>)
@@ -1015,13 +964,13 @@ module ReVIEW
 
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
-      str = nil
-      if get_chap(chapter).nil?
-        str = "#{I18n.t("table")}#{I18n.t("format_number_without_chapter", [chapter.table(id).number])}"
-      else
-        str = "#{I18n.t("table")}#{I18n.t("format_number", [get_chap(chapter), chapter.table(id).number])}"
-      end
-      if @book.config["chapterlink"]
+      str =
+        if get_chap(chapter)
+          "#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(id).number])}"
+        else
+          "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(id).number])}"
+        end
+      if @book.config['chapterlink']
         %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
       else
         %Q(<span class="tableref">#{str}</span>)
@@ -1033,13 +982,13 @@ module ReVIEW
 
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
-      str = nil
-      if get_chap(chapter).nil?
-        str = "#{I18n.t("image")}#{I18n.t("format_number_without_chapter", [chapter.image(id).number])}"
-      else
-        str = "#{I18n.t("image")}#{I18n.t("format_number", [get_chap(chapter), chapter.image(id).number])}"
-      end
-      if @book.config["chapterlink"]
+      str =
+        if get_chap(chapter)
+          "#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(id).number])}"
+        else
+          "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(id).number])}"
+        end
+      if @book.config['chapterlink']
         %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
       else
         %Q(<span class="imgref">#{str}</span>)
@@ -1054,55 +1003,55 @@ module ReVIEW
     end
 
     def inline_abbr(str)
-      inline_asis(str, "abbr")
+      inline_asis(str, 'abbr')
     end
 
     def inline_acronym(str)
-      inline_asis(str, "acronym")
+      inline_asis(str, 'acronym')
     end
 
     def inline_cite(str)
-      inline_asis(str, "cite")
+      inline_asis(str, 'cite')
     end
 
     def inline_dfn(str)
-      inline_asis(str, "dfn")
+      inline_asis(str, 'dfn')
     end
 
     def inline_em(str)
-      inline_asis(str, "em")
+      inline_asis(str, 'em')
     end
 
     def inline_kbd(str)
-      inline_asis(str, "kbd")
+      inline_asis(str, 'kbd')
     end
 
     def inline_samp(str)
-      inline_asis(str, "samp")
+      inline_asis(str, 'samp')
     end
 
     def inline_strong(str)
-      inline_asis(str, "strong")
+      inline_asis(str, 'strong')
     end
 
     def inline_var(str)
-      inline_asis(str, "var")
+      inline_asis(str, 'var')
     end
 
     def inline_big(str)
-      inline_asis(str, "big")
+      inline_asis(str, 'big')
     end
 
     def inline_small(str)
-      inline_asis(str, "small")
+      inline_asis(str, 'small')
     end
 
     def inline_sub(str)
-      inline_asis(str, "sub")
+      inline_asis(str, 'sub')
     end
 
     def inline_sup(str)
-      inline_asis(str, "sup")
+      inline_asis(str, 'sup')
     end
 
     def inline_tt(str)
@@ -1114,11 +1063,11 @@ module ReVIEW
     end
 
     def inline_del(str)
-      inline_asis(str, "del")
+      inline_asis(str, 'del')
     end
 
     def inline_ins(str)
-      inline_asis(str, "ins")
+      inline_asis(str, 'ins')
     end
 
     def inline_u(str)
@@ -1131,10 +1080,10 @@ module ReVIEW
 
     def inline_icon(id)
       begin
-        %Q[<img src="#{@chapter.image(id).path.sub(/\A\.\//, "")}" alt="[#{id}]" />]
+        %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
       rescue
         warn "image not bound: #{id}"
-        %Q[<pre>missing image: #{id}</pre>]
+        %Q(<pre>missing image: #{id}</pre>)
       end
     end
 
@@ -1143,18 +1092,18 @@ module ReVIEW
     end
 
     def inline_comment(str)
-      if @book.config["draft"]
+      if @book.config['draft']
         %Q(<span class="draft-comment">#{escape_html(str)}</span>)
       else
-        ""
+        ''
       end
     end
 
     def inline_tcy(str)
       # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
-      style = "tcy"
-      style = "upright" if str.size == 1 && str.match(/[[:ascii:]]/)
-      %Q[<span class="#{style}">#{escape_html(str)}</span>]
+      style = 'tcy'
+      style = 'upright' if str.size == 1 && str.match(/[[:ascii:]]/)
+      %Q(<span class="#{style}">#{escape_html(str)}</span>)
     end
 
     def inline_raw(str)
@@ -1166,7 +1115,7 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      if @book.config["externallink"]
+      if @book.config['externallink']
         %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
       else
         label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
@@ -1174,23 +1123,23 @@ module ReVIEW
     end
 
     def flushright(lines)
-      puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"flushright\">")
+      puts split_paragraph(lines).join("\n").gsub('<p>', %Q(<p class="flushright">))
     end
 
     def centering(lines)
-      puts split_paragraph(lines).join("\n").gsub("<p>", "<p class=\"center\">")
+      puts split_paragraph(lines).join("\n").gsub('<p>', %Q(<p class="center">))
     end
 
     def image_ext
-      "png"
+      'png'
     end
 
     def olnum(num)
       @ol_num = num.to_i
     end
 
-    def make_math_image(str, path, fontsize=12)
-      fontsize2 = (fontsize*1.2).round.to_i
+    def make_math_image(str, path, fontsize = 12)
+      fontsize2 = (fontsize * 1.2).round.to_i
       texsrc = <<-EOB
 \\documentclass[12pt]{article}
 \\usepackage[utf8]{inputenc}
@@ -1207,13 +1156,11 @@ module ReVIEW
 \\end{document}
       EOB
       Dir.mktmpdir do |tmpdir|
-        tex_path = File.join(tmpdir, "tmpmath.tex")
-        dvi_path = File.join(tmpdir, "tmpmath.dvi")
+        tex_path = File.join(tmpdir, 'tmpmath.tex')
+        dvi_path = File.join(tmpdir, 'tmpmath.dvi')
         File.write(tex_path, texsrc)
         system("latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{path} #{dvi_path}")
       end
     end
-
   end
-
 end # module ReVIEW

@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-
 #
 # review: Wrapper command to call subcommand
 #
@@ -35,12 +34,9 @@ command = "review-#{ARGV.shift}"
 bindir = Pathname.new(__FILE__).realpath.dirname
 command_path = File.join(bindir, command)
 
-if !File.exist?(command_path)
+unless File.exist?(command_path)
   print "cannot find command: #{command}\n\n"
   usage
 end
 
 exec(command_path, *ARGV)
-
-
-

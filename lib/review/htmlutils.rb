@@ -1,7 +1,6 @@
 #
-# $Id: htmlutils.rb 2227 2006-05-13 00:09:08Z aamine $
-#
-# Copyright (c) 2002-2006 Minero Aoki
+# Copyright (c) 2006-2017 Minero Aoki, Kenshi Muto
+#               2002-2006 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -10,18 +9,17 @@
 
 require 'cgi/util'
 module ReVIEW
-
   module HTMLUtils
     ESC = {
       '&' => '&amp;',
       '<' => '&lt;',
       '>' => '&gt;',
       '"' => '&quot;'
-    }
+    } # .freeze
 
     def escape_html(str)
       t = ESC
-      str.gsub(/[&"<>]/) {|c| t[c] }
+      str.gsub(/[&"<>]/) { |c| t[c] }
     end
 
     alias_method :escape, :escape_html
@@ -35,7 +33,7 @@ module ReVIEW
     alias_method :unescape, :unescape_html
 
     def strip_html(str)
-      str.gsub(/<\/?[^>]*>/, "")
+      str.gsub(%r{</?[^>]*>}, '')
     end
 
     def escape_comment(str)
@@ -43,40 +41,40 @@ module ReVIEW
     end
 
     def highlight?
-      @book.config["highlight"] &&
-        @book.config["highlight"]["html"]
+      @book.config['highlight'] &&
+        @book.config['highlight']['html']
     end
 
     def highlight(ops)
-      if @book.config["pygments"].present?
-        raise ReVIEW::ConfigError, "'pygments:' in config.yml is obsoleted."
+      if @book.config['pygments'].present?
+        raise ReVIEW::ConfigError, %Q('pygments:' in config.yml is obsoleted.)
       end
-      return ops[:body].to_s if !highlight?
+      return ops[:body].to_s unless highlight?
 
-      if @book.config["highlight"]["html"] == "pygments"
+      if @book.config['highlight']['html'] == 'pygments'
         highlight_pygments(ops)
-      elsif @book.config["highlight"]["html"] == "rouge"
+      elsif @book.config['highlight']['html'] == 'rouge'
         highlight_rouge(ops)
       else
-        raise ReVIEW::ConfigError, "unknown highlight method #{@book.config["highlight"]["html"]} in config.yml."
+        raise ReVIEW::ConfigError, "unknown highlight method #{@book.config['highlight']['html']} in config.yml."
       end
     end
 
     def highlight_pygments(ops)
       body = ops[:body] || ''
-      if @book.config["highlight"] && @book.config["highlight"]["lang"]
-        lexer = @book.config["highlight"]["lang"] # default setting
+      if @book.config['highlight'] && @book.config['highlight']['lang']
+        lexer = @book.config['highlight']['lang'] # default setting
       else
         lexer = 'text'
       end
       lexer = ops[:lexer] if ops[:lexer].present?
       format = ops[:format] || ''
-      options = {:nowrap => true, :noclasses => true}
+      options = { nowrap: true, noclasses: true }
       if ops[:linenum]
         options[:nowrap] = false
         options[:linenos] = 'inline'
       end
-      if ops[:options] && ops[:options].kind_of?(Hash)
+      if ops[:options] && ops[:options].is_a?(Hash)
         options.merge!(ops[:options])
       end
 
@@ -84,9 +82,9 @@ module ReVIEW
         require 'pygments'
         begin
           Pygments.highlight(unescape_html(body),
-                             :options => options,
-                             :formatter => format,
-                             :lexer => lexer)
+                             options: options,
+                             formatter: format,
+                             lexer: lexer)
         rescue MentosError
           body
         end
@@ -99,12 +97,12 @@ module ReVIEW
       body = ops[:body] || ''
       if ops[:lexer].present?
         lexer = ops[:lexer]
-      elsif @book.config["highlight"] && @book.config["highlight"]["lang"]
-        lexer = @book.config["highlight"]["lang"] # default setting
+      elsif @book.config['highlight'] && @book.config['highlight']['lang']
+        lexer = @book.config['highlight']['lang'] # default setting
       else
         lexer = 'text'
       end
-      format = ops[:format] || ''
+      # format = ops[:format] || ''
 
       first_line_num = 1 ## default
       if ops[:options] && ops[:options][:linenostart]
@@ -115,11 +113,11 @@ module ReVIEW
       lexer = Rouge::Lexer.find(lexer)
       raise "unknown lexer #{lexer}" unless lexer
 
-      formatter = Rouge::Formatters::HTML.new(:css_class => 'highlight')
+      formatter = Rouge::Formatters::HTML.new(css_class: 'highlight')
       if ops[:linenum]
         formatter = Rouge::Formatters::HTMLTable.new(formatter,
-                                                     :table_class => 'highlight rouge-table',
-                                                     :start_line => first_line_num)
+                                                     table_class: 'highlight rouge-table',
+                                                     start_line: first_line_num)
       end
       raise "unknown formatter #{formatter}" unless formatter
 
@@ -129,13 +127,12 @@ module ReVIEW
 
     def normalize_id(id)
       if id =~ /\A[a-z][a-z0-9_.-]*\Z/i
-        return id
+        id
       elsif id =~ /\A[0-9_.-][a-z0-9_.-]*\Z/i
-        return "id_#{id}" # dummy prefix
+        "id_#{id}" # dummy prefix
       else
-        return "id_#{CGI.escape(id.gsub("_", "__")).gsub("%", "_").gsub("+", "-")}" # escape all
+        "id_#{CGI.escape(id.gsub('_', '__')).gsub('%', '_').gsub('+', '-')}" # escape all
       end
     end
   end
-
 end # module ReVIEW

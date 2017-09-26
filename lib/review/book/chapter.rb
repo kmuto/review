@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2002-2008 Minero Aoki
-#               2009-2016 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+#               2002-2008 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -35,8 +35,8 @@ module ReVIEW
           @content = nil
         end
         if !@content && @path && File.exist?(@path)
-          @content = File.read(@path, :mode => 'r:BOM|utf-8')
-          @number = nil if ['nonum', 'nodisp', 'notoc'].include?(find_first_header_option)
+          @content = File.read(@path, mode: 'r:BOM|utf-8')
+          @number = nil if %w[nonum nodisp notoc].include?(find_first_header_option)
         end
         @list_index = nil
         @table_index = nil
@@ -57,11 +57,9 @@ module ReVIEW
           when /\A=+[\[\s\{]/
             m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(f.gets)
             return m[2] # tag
-          when %r</\A//[a-z]+/>
+          when %r{/\A//[a-z]+/}
             line = f.gets
-            if line.rstrip[-1,1] == "{"
-              f.until_match(%r<\A//\}>)
-            end
+            f.until_match(%r{\A//\}}) if line.rstrip[-1, 1] == '{'
           end
           f.gets
         end
@@ -69,62 +67,60 @@ module ReVIEW
       end
 
       def inspect
-        "\#<#{self.class} #{@number} #{@path}>"
+        "#<#{self.class} #{@number} #{@path}>"
       end
 
       def format_number(heading = true)
-        return "" unless @number
+        return '' unless @number
+        return @number.to_s if on_predef?
 
-        if on_PREDEF?
-          return "#{@number}"
-        end
+        if on_appendix?
+          return @number.to_s if @number < 1 || @number > 27
+          raise ReVIEW::ConfigError, %Q('appendix_format:' in config.yml is obsoleted.) if @book.config['appendix_format']
 
-        if on_APPENDIX?
-          return "#{@number}" if @number < 1 || @number > 27
-          if @book.config["appendix_format"]
-            raise ReVIEW::ConfigError,
-                  "'appendix_format:' in config.yml is obsoleted."
-          end
+          i18n_appendix = I18n.get('appendix')
+          fmt = i18n_appendix.scan(/%\w{1,3}/).first || '%s'
+          I18n.update('appendix_without_heading' => fmt)
 
-          i18n_appendix = I18n.get("appendix")
-          fmt = i18n_appendix.scan(/%\w{1,3}/).first || "%s"
-          I18n.update({"appendix_without_heading" => fmt})
-
-          if heading
-            return I18n.t("appendix", @number)
-          else
-            return I18n.t("appendix_without_heading", @number)
-          end
+          return I18n.t('appendix', @number) if heading
+          return I18n.t('appendix_without_heading', @number)
         end
 
         if heading
-          "#{I18n.t("chapter", @number)}"
+          I18n.t('chapter', @number)
         else
-          "#{@number}"
+          @number.to_s
         end
       end
 
-      def on_CHAPS?
-        on_FILE?(@book.read_CHAPS)
+      def on_chaps?
+        on_file?(@book.read_chaps)
       end
 
-      def on_PREDEF?
-        on_FILE?(@book.read_PREDEF)
+      def on_predef?
+        on_file?(@book.read_predef)
       end
 
-      def on_APPENDIX?
-        on_FILE?(@book.read_APPENDIX)
+      def on_appendix?
+        on_file?(@book.read_appendix)
       end
 
-      def on_POSTDEF?
-        on_FILE?(@book.read_POSTDEF)
+      def on_postdef?
+        on_file?(@book.read_postdef)
       end
 
       private
 
-      def on_FILE?(contents)
-        contents.lines.map(&:strip).include?("#{id()}#{@book.ext()}")
+      def on_file?(contents)
+        contents.lines.map(&:strip).include?("#{id}#{@book.ext}")
       end
+
+      # backward compatibility
+      alias_method :on_CHAPS?, :on_chaps?
+      alias_method :on_PREDEF?, :on_predef?
+      alias_method :on_APPENDIX?, :on_appendix?
+      alias_method :on_POSTDEF?, :on_postdef?
+      alias_method :on_FILE?, :on_file?
     end
   end
 end

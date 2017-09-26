@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
-# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2014 Masanori Kado
+# Copyright (c) 2014-2017 Masanori Kado, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -22,7 +21,7 @@ def main
   @logger = ReVIEW.logger
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.banner = "Usage: #{File.basename($0)} dirname"
+  opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} dirname"
   opts.on('-h', '--help', 'print this message and quit.') do
     puts opts.help
     exit 0
@@ -41,19 +40,19 @@ def main
   # confirmation
   if File.exist?("#{dir}/catalog.yml")
     loop do
-      print "The catalog.yml already exists. Do you want to overwrite it? [y/n]"
+      print 'The catalog.yml already exists. Do you want to overwrite it? [y/n]'
       case gets
-      when /^[yY]/
-        @logger.info "Start writing..."
+      when /\A[yY]/
+        @logger.info 'Start writing...'
         break
-      when /^[nN]/, /^$/
-        @logger.info "bye."
+      when /\A[nN]/, /\A\Z/
+        @logger.info 'bye.'
         exit
       end
     end
   end
 
-  File.open("#{dir}/catalog.yml", "w") do |catalog|
+  File.open("#{dir}/catalog.yml", 'w') do |catalog|
     # predef
     if File.exist?("#{dir}/PREDEF")
       catalog << parse_predef(File.open("#{dir}/PREDEF").read)
@@ -71,12 +70,12 @@ def main
     if File.exist?("#{dir}/POSTDEF")
       postdef = File.open("#{dir}/POSTDEF").read
       loop do
-        print "Do you want to convert POSTDEF into APPENDIX? [y/n]"
+        print 'Do you want to convert POSTDEF into APPENDIX? [y/n]'
         case gets
-        when /^[yY]/
+        when /\A[yY]/
           catalog << parse_postdef(postdef, true)
           break
-        when /^[nN]/, /^$/
+        when /\A[nN]/, /\A\Z/
           catalog << parse_postdef(postdef)
           break
         end
@@ -87,9 +86,9 @@ def main
   puts File.open("#{dir}/catalog.yml").read
 end
 
-def _parse(str, header)
+def parse_internal(str, header)
   if str.present?
-    header + str.split("\n").map{|i| "  - #{i}\n" }.join
+    header + str.split("\n").map { |i| "  - #{i}\n" }.join
   else
     header
   end
@@ -97,12 +96,12 @@ end
 
 def parse_predef(str)
   header = "PREDEF:\n"
-  _parse(str, header) + "\n"
+  parse_internal(str, header) + "\n"
 end
 
 def parse_chaps(str)
   header = "CHAPS:\n"
-  _parse(str, header) + "\n"
+  parse_internal(str, header) + "\n"
 end
 
 def parse_postdef(str, to_appendix = false)
@@ -111,21 +110,15 @@ def parse_postdef(str, to_appendix = false)
   else
     header = "POSTDEF:\n"
   end
-  _parse(str, header) + "\n"
+  parse_internal(str, header) + "\n"
 end
 
 def parse_parts(parts_str, chaps_str)
-  if parts_str.blank? or chaps_str.blank?
-    return "CHAPS:\n\n"
-  end
+  return "CHAPS:\n\n" if parts_str.blank? or chaps_str.blank?
 
   parts = parts_str.split("\n")
   chaps = chaps_str.split("\n\n")
-  "CHAPS:\n" + parts.zip(chaps).map{|k, vs|
-    "  - #{k}:\n" + vs.split("\n").map{|i| "    - #{i}\n"}.join
-  }.join + "\n"
+  "CHAPS:\n" + parts.zip(chaps).map { |k, vs| "  - #{k}:\n" + vs.split("\n").map { |i| "    - #{i}\n" }.join }.join + "\n"
 end
 
-if File.basename($0) == File.basename(__FILE__)
-  main()
-end
+main if File.basename($PROGRAM_NAME) == File.basename(__FILE__)

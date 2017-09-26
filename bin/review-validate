@@ -23,31 +23,25 @@ ln = 0
 
 ARGF.each do |line|
   ln += 1
-  if line =~ /\A\/\/([a-z]+)\{\s*\Z/ || line =~ /\A\/\/([a-z]+)\[.+?\{\s*\Z/
+  if line =~ %r{\A//([a-z]+)\{\s*\Z} || line =~ %r{\A//([a-z]+)\[.+?\{\s*\Z}
     # block
     new_block = $1
-    @logger.warn "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet." unless block.nil?
+    @logger.warn "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet." if block
     block = new_block
-  elsif line =~ /\A\/\/\}/
+  elsif line =~ %r{\A//\}}
     @logger.warn "#{ln}: block ended, but not opened." if block.nil?
     block = nil
     maxcolcount = 0
     colcount = 0
   elsif line =~ /\A(\d+\.)\s+/
     # number
-    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
-      @logger.warn "#{ln}: found '#{$1}' without the head space. Is it correct?"
-    end
+    @logger.warn "#{ln}: found '#{$1}' without the head space. Is it correct?" unless %w[list emlist listnum emlistnum cmd image table].include?(block)
   elsif line =~ /\A\*\s+/
     # itemize
-    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
-      @logger.warn "#{ln}: found '*' without the head space. Is it correct?"
-    end
+    @logger.warn "#{ln}: found '*' without the head space. Is it correct?" unless %w[list emlist listnum emlistnum cmd image table].include?(block)
   elsif line =~ /\A\s+(\d+\.)\s+/ && line =~ /\A\s+\*\s+/
-    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
-      @logger.warn "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
-    end
-  elsif block == "table"
+    @logger.warn "#{ln}: found itemized list or numbered list in #{block}. Is it correct?" unless Tw[list emlist listnum emlistnum cmd image table].include?(block)
+  elsif block == 'table'
     next if line.start_with?('#@')
     if line !~ /\A\-\-\-\-\-/
       # table

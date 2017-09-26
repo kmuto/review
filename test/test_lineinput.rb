@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'lineinput'
 require 'tempfile'
@@ -17,7 +15,7 @@ class LineInputTest < Test::Unit::TestCase
   def test_gets
     content = "abc\ndef\r\nghi\rjkl"
     do_test_gets(StringIO.new(content))
-    Tempfile.open("lineinput_test") do |io|
+    Tempfile.open('lineinput_test') do |io|
       io.print content
       io.rewind
       do_test_gets(io)
@@ -106,7 +104,7 @@ class LineInputTest < Test::Unit::TestCase
     li = LineInput.new(io)
 
     data = ''
-    li.each {|l| data << l }
+    li.each { |l| data << l }
     assert_equal content, data
   end
 
@@ -116,7 +114,7 @@ class LineInputTest < Test::Unit::TestCase
 
     li.while_match(/^[ad]/) {}
     assert_equal 2, li.lineno
-    assert_equal "ghi", li.gets
+    assert_equal 'ghi', li.gets
   end
 
   def test_getlines_while
@@ -126,7 +124,7 @@ class LineInputTest < Test::Unit::TestCase
     buf = li.getlines_while(/^[ad]/)
     assert_equal ["abc\n", "def\n"], buf
     assert_equal 2, li.lineno
-    assert_equal "ghi", li.gets
+    assert_equal 'ghi', li.gets
   end
 
   def test_until_match
@@ -153,17 +151,17 @@ class LineInputTest < Test::Unit::TestCase
     li = LineInput.new(io)
 
     data = ''
-    li.until_terminator(%r<\A//\}>) {|l| data << l }
+    li.until_terminator(%r<\A//\}>) { |l| data << l }
     assert_equal "abc\n", data
     assert_equal 2, li.lineno
 
     data = ''
-    li.until_terminator(%r<\A//\}>) {|l| data << l }
+    li.until_terminator(%r<\A//\}>) { |l| data << l }
     assert_equal "def\nghi\n", data
     assert_equal 5, li.lineno
 
     data = ''
-    li.until_terminator(%r<\A//\}>) {|l| data << l }
+    li.until_terminator(%r<\A//\}>) { |l| data << l }
     assert_equal "jkl\nmno", data
     assert_equal 8, li.lineno
   end
@@ -177,4 +175,3 @@ class LineInputTest < Test::Unit::TestCase
     assert_equal 3, li.lineno
   end
 end
-

@@ -1,7 +1,7 @@
 # epubbuilder.rb
 #   just for compatibility
 #
-# Copyright (c) 2010 Kenshi Muto
+# Copyright (c) 2010-2017 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -11,8 +11,6 @@
 require 'review/htmlbuilder'
 
 module ReVIEW
-
   class EPUBBuilder < HTMLBuilder
   end
-
 end # module ReVIEW

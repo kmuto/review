@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # = epubmaker.rb -- EPUB production set.
 #
 # Copyright (c) 2010-2017 Kenshi Muto

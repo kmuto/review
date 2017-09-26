@@ -1,6 +1,6 @@
 #
-# Copyright (c) 2002-2007 Minero Aoki
-#               2008-2016 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+#               2002-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -13,9 +13,8 @@ require 'review/book'
 require 'review/textbuilder'
 
 module ReVIEW
-
   class TOCParser
-    def TOCParser.parse(chap)
+    def self.parse(chap)
       f = StringIO.new(chap.content, 'r:BOM|utf-8')
       stream = Preprocessor::Strip.new(f)
       new.parse(stream, chap).map do |root|
@@ -24,24 +23,24 @@ module ReVIEW
       end
     end
 
-    def TOCParser.chapter_node(chap)
-      toc = TOCParser.parse(chap)
-      unless toc.size == 1
-        $stderr.puts "warning: chapter #{toc.join} contains more than 1 chapter"
-      end
+    def self.chapter_node(chap)
+      toc = self.parse(chap)
+      $stderr.puts "warning: chapter #{toc.join} contains more than 1 chapter" unless toc.size == 1
       toc.first
     end
 
     def parse(f, chap)
-      roots = [] ## list of chapters
+      roots = [] # list of chapters
       node_stack = []
       filename = chap.path
       while line = f.gets
         case line
         when /\A\#@/
           # do nothing
+          next
         when /\A\s*\z/
           # do nothing
+          next
         when /\A(={2,})[\[\s\{]/
           lev = $1.size
           error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
@@ -52,11 +51,9 @@ module ReVIEW
             node_stack.push dummy_chapter
             roots.push dummy_chapter
           end
-          next if label =~ /\A\[\// # ex) "[/column]"
-          sec = Section.new(lev, label.gsub(/\A\{.*?\}\s?/, ""))
-          until node_stack.last.level < sec.level
-            node_stack.pop
-          end
+          next if label =~ %r{\A\[/} # ex) "[/column]"
+          sec = Section.new(lev, label.gsub(/\A\{.*?\}\s?/, ''))
+          node_stack.pop until node_stack.last.level < sec.level
           node_stack.last.add_child sec
           node_stack.push sec
 
@@ -67,25 +64,24 @@ module ReVIEW
           node_stack.push new_chapter
           roots.push new_chapter
 
-        when %r<\A//\w+(?:\[.*?\])*\{\s*\z>
-          if node_stack.empty?
-            error! filename, f.lineno, 'list found before section label'
-          end
+        when %r{\A//\w+(?:\[.*?\])*\{\s*\z}
+          error! filename, f.lineno, 'list found before section label' if node_stack.empty?
           node_stack.last.add_child(list = List.new)
           beg = f.lineno
           list.add line
           while line = f.gets
-            break if %r<\A//\}> =~ line
+            break if %r{\A//\}} =~ line
             list.add line
           end
           error! filename, beg, 'unterminated list' unless line
 
-        when %r<\A//\w>
+        when %r{\A//\w}
           # do nothing
+          next
         else
-          #if node_stack.empty?
-          #  error! filename, f.lineno, 'text found before section label'
-          #end
+          # if node_stack.empty?
+          #   error! filename, f.lineno, 'text found before section label'
+          # end
           next if node_stack.empty?
           node_stack.last.add_child(par = Paragraph.new(chap))
           par.add line
@@ -108,7 +104,7 @@ module ReVIEW
       b = ReVIEW::TEXTBuilder.new
       dummy_book = ReVIEW::Book::Base.load
       dummy_chapter = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
-      dummy_loc = Location.new("", StringIO.new)
+      dummy_loc = Location.new('', StringIO.new)
       b.bind(ReVIEW::Compiler.new(b), dummy_chapter, dummy_loc)
       b.compile_inline(line)
     end
@@ -117,9 +113,7 @@ module ReVIEW
       raise "#{filename}:#{lineno}: #{msg}"
     end
 
-
     class Node
-
       def initialize(children = [])
         @children = children
       end
@@ -146,9 +140,7 @@ module ReVIEW
       end
 
       def each_section(&block)
-        @children.each do |n|
-          n.yield_section(&block)
-        end
+        @children.each { |n| n.yield_section(&block) }
       end
 
       def each_section_with_index
@@ -161,22 +153,17 @@ module ReVIEW
 
       def section_size
         cnt = 0
-        @children.each do |n|
-          n.yield_section { cnt += 1 }
-        end
+        @children.each { |n| n.yield_section { cnt += 1 } }
         cnt
       end
-
     end
 
-
     class Section < Node
-
       def initialize(level, label, path = nil)
         super()
         @level = level
         @label = label
-        @filename = (path ? real_filename(path) : nil)
+        @filename = path ? real_filename(path) : nil
       end
 
       def real_filename(path)
@@ -192,7 +179,7 @@ module ReVIEW
       attr_reader :label
 
       def estimated_lines
-        @children.inject(0) {|sum, n| sum + n.estimated_lines }
+        @children.inject(0) { |sum, n| sum + n.estimated_lines }
       end
 
       def yield_section
@@ -200,14 +187,11 @@ module ReVIEW
       end
 
       def inspect
-        "\#<#{self.class} level=#{@level} #{@label}>"
+        "#<#{self.class} level=#{@level} #{@label}>"
       end
-
     end
 
-
     class Chapter < Section
-
       def initialize(label, chap)
         super 1, label, chap.path
         @chapter = chap
@@ -229,26 +213,23 @@ module ReVIEW
       def volume
         return @volume if @volume
         @volume = @chapter.volume
-        @volume.lines = estimated_lines()
+        @volume.lines = estimated_lines
         @volume
       end
 
       def inspect
-        "\#<#{self.class} #{@filename}>"
+        "#<#{self.class} #{@filename}>"
       end
-
     end
 
-
     class Paragraph < Node
-
       def initialize(chap)
         @bytes = 0
         @page_metric = chap.book.page_metric
       end
 
       def inspect
-        "\#<#{self.class}>"
+        "#<#{self.class}>"
       end
 
       def add(line)
@@ -261,21 +242,18 @@ module ReVIEW
 
       def yield_section
       end
-
     end
 
-
     class List < Node
-
       def initialize
         @lines = 0
       end
 
       def inspect
-        "\#<#{self.class}>"
+        "#<#{self.class}>"
       end
 
-      def add(line)
+      def add(_line)
         @lines += 1
       end
 
@@ -285,9 +263,6 @@ module ReVIEW
 
       def yield_section
       end
-
     end
-
   end
 end
-

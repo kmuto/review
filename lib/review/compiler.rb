@@ -1,7 +1,5 @@
-# encoding: utf-8
-
-# Copyright (c) 2002-2007 Minero Aoki
 # Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -14,7 +12,6 @@ require 'review/exception'
 require 'strscan'
 
 module ReVIEW
-
   class Location
     def initialize(filename, f)
       @filename = filename
@@ -38,9 +35,7 @@ module ReVIEW
     alias_method :to_s, :string
   end
 
-
   class Compiler
-
     def initialize(strategy)
       @strategy = strategy
     end
@@ -64,9 +59,7 @@ module ReVIEW
       attr_reader :name
 
       def check_args(args)
-        unless @argc_spec === args.size
-          raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
-        end
+        raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})" unless @argc_spec === args.size
         @checker.call(*args) if @checker
       end
 
@@ -75,7 +68,7 @@ module ReVIEW
         when Range then @argc_spec.begin
         when Integer then @argc_spec
         else
-          raise TypeError, "argc_spec is not Range/Integer: #{inspect()}"
+          raise TypeError, "argc_spec is not Range/Integer: #{inspect}"
         end
       end
 
@@ -90,16 +83,20 @@ module ReVIEW
 
     SYNTAX = {}
 
-    def Compiler.defblock(name, argc, optional = false, &block)
+    def self.defblock(name, argc, optional = false, &block)
       defsyntax name, (optional ? :optional : :block), argc, &block
     end
 
-    def Compiler.defsingle(name, argc, &block)
+    def self.defsingle(name, argc, &block)
       defsyntax name, :line, argc, &block
     end
 
-    def Compiler.defsyntax(name, type, argc, &block)
+    def self.defsyntax(name, type, argc, &block)
       SYNTAX[name] = SyntaxElement.new(name, type, argc, &block)
+    end
+
+    def self.definline(name)
+      INLINE[name] = InlineSyntaxElement.new(name)
     end
 
     def syntax_defined?(name)
@@ -119,10 +116,6 @@ module ReVIEW
     end
 
     INLINE = {}
-
-    def Compiler.definline(name)
-      INLINE[name] = InlineSyntaxElement.new(name)
-    end
 
     def inline_defined?(name)
       INLINE.key?(name.to_sym)
@@ -246,16 +239,16 @@ module ReVIEW
           f.gets # Nothing to do
         when /\A=+[\[\s\{]/
           compile_headline f.gets
-        when %r<\A\s+\*>
+        when /\A\s+\*/
           compile_ulist f
-        when %r<\A\s+\d+\.>
+        when /\A\s+\d+\./
           compile_olist f
-        when %r<\A\s*:\s>
+        when /\A\s*:\s/
           compile_dlist f
-        when %r<\A//\}>
+        when %r{\A//\}}
           f.gets
           error 'block end seen but not opened'
-        when %r<\A//[a-z]+>
+        when %r{\A//[a-z]+}
           name, args, lines = read_command(f)
           syntax = syntax_descriptor(name)
           unless syntax
@@ -264,11 +257,11 @@ module ReVIEW
             next
           end
           compile_command syntax, args, lines
-        when %r<\A//>
+        when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
           if block_open?(line)
-            warn "skipping block..."
+            warn 'skipping block...'
             read_block(f, false)
           end
         else
@@ -291,21 +284,17 @@ module ReVIEW
       caption = m[4].strip
       index = level - 1
       if tag
-        if tag !~ /\A\//
+        if tag !~ %r{\A/}
           close_current_tagged_section(level)
           open_tagged_section(tag, level, label, caption)
         else
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
-          unless prev_tag_info.first == open_tag
-            raise CompileError, "#{open_tag} is not opened."
-          end
+          raise CompileError, "#{open_tag} is not opened." unless prev_tag_info.first == open_tag
           close_tagged_section(*prev_tag_info)
         end
       else
-        if @headline_indexs.size > (index + 1)
-          @headline_indexs = @headline_indexs[0..index]
-        end
+        @headline_indexs = @headline_indexs[0..index] if @headline_indexs.size > (index + 1)
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
@@ -348,9 +337,7 @@ module ReVIEW
     end
 
     def close_all_tagged_section
-      until @tagged_section.empty?
-        close_tagged_section(* @tagged_section.pop)
-      end
+      close_tagged_section(* @tagged_section.pop) until @tagged_section.empty?
     end
 
     def compile_ulist(f)
@@ -359,9 +346,7 @@ module ReVIEW
         next if line =~ /\A\#@/
 
         buf = [text(line.sub(/\*+/, '').strip)]
-        f.while_match(/\A\s+(?!\*)\S/) do |cont|
-          buf.push text(cont.strip)
-        end
+        f.while_match(/\A\s+(?!\*)\S/) { |cont| buf.push text(cont.strip) }
 
         line =~ /\A\s+(\*+)/
         current_level = $1.size
@@ -373,17 +358,17 @@ module ReVIEW
           level_diff = current_level - level
           level = current_level
           (1..(level_diff - 1)).to_a.reverse_each do |i|
-            @strategy.ul_begin {i}
+            @strategy.ul_begin { i }
             @strategy.ul_item_begin []
           end
-          @strategy.ul_begin {level}
+          @strategy.ul_begin { level }
           @strategy.ul_item_begin buf
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
           (1..level_diff).to_a.reverse_each do |i|
             @strategy.ul_item_end
-            @strategy.ul_end {level + i}
+            @strategy.ul_end { level + i }
           end
           @strategy.ul_item_end
           # body
@@ -393,7 +378,7 @@ module ReVIEW
 
       (1..level).to_a.reverse_each do |i|
         @strategy.ul_item_end
-        @strategy.ul_end {i}
+        @strategy.ul_end { i }
       end
     end
 
@@ -404,9 +389,7 @@ module ReVIEW
 
         num = line.match(/(\d+)\./)[1]
         buf = [text(line.sub(/\d+\./, '').strip)]
-        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-          buf.push text(cont.strip)
-        end
+        f.while_match(/\A\s+(?!\d+\.)\S/) { |cont| buf.push text(cont.strip) }
         @strategy.ol_item buf, num
       end
       @strategy.ol_end
@@ -416,7 +399,7 @@ module ReVIEW
       @strategy.dl_begin
       while /\A\s*:/ =~ f.peek
         @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
-        @strategy.dd(f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map {|line| text(line.strip) })
+        @strategy.dd(f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) })
         f.skip_blank_lines
         f.skip_comment_lines
       end
@@ -425,9 +408,9 @@ module ReVIEW
 
     def compile_paragraph(f)
       buf = []
-      f.until_match(%r<\A//|\A\#@>) do |line|
+      f.until_match(%r{\A//|\A\#@}) do |line|
         break if line.strip.empty?
-        buf.push text(line.sub(/^(\t+)\s*/) {|m| "<!ESCAPETAB!>" * m.size}.strip.gsub(/<!ESCAPETAB!>/, "\t"))
+        buf.push text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t"))
       end
       @strategy.paragraph buf
     end
@@ -436,28 +419,27 @@ module ReVIEW
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
       ignore_inline = (name == :embed)
-      args = parse_args(line.sub(%r<\A//[a-z]+>, '').rstrip.chomp('{'), name)
+      args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
-      return name, args, lines
+
+      [name, args, lines]
     end
 
     def block_open?(line)
-      line.rstrip[-1,1] == '{'
+      line.rstrip[-1, 1] == '{'
     end
 
     def read_block(f, ignore_inline)
       head = f.lineno
       buf = []
-      f.until_match(%r<\A//\}>) do |line|
+      f.until_match(%r{\A//\}}) do |line|
         if ignore_inline
           buf.push line
-        else
-          unless line =~ /\A\#@/
-            buf.push text(line.rstrip)
-          end
+        elsif line !~ /\A\#@/
+          buf.push text(line.rstrip)
         end
       end
-      unless %r<\A//\}> =~ f.peek
+      unless %r{\A//\}} =~ f.peek
         error "unexpected EOF (block begins at: #{head})"
         return buf
       end
@@ -465,22 +447,22 @@ module ReVIEW
       buf
     end
 
-    def parse_args(str, name=nil)
+    def parse_args(str, _name = nil)
       return [] if str.empty?
       scanner = StringScanner.new(str)
       words = []
       while word = scanner.scan(/(\[\]|\[.*?[^\\]\])/)
-        w2 = word[1..-2].gsub(/\\(.)/){
+        w2 = word[1..-2].gsub(/\\(.)/) do
           ch = $1
-          (ch == "]" or ch == "\\") ? ch : "\\" + ch
-        }
+          (ch == ']' or ch == '\\') ? ch : '\\' + ch
+        end
         words << w2
       end
-      if !scanner.eos?
+      unless scanner.eos?
         error "argument syntax error: #{scanner.rest} in #{str.inspect}"
         return []
       end
-      return words
+      words
     end
 
     def compile_command(syntax, args, lines)
@@ -498,9 +480,7 @@ module ReVIEW
       if syntax.block_allowed?
         compile_block syntax, args, lines
       else
-        if lines
-          error "block is not allowed for command //#{syntax.name}; ignore"
-        end
+        error "block is not allowed for command //#{syntax.name}; ignore" if lines
         compile_single syntax, args
       end
     end
@@ -514,9 +494,7 @@ module ReVIEW
     end
 
     def default_block(syntax)
-      if syntax.block_required?
-        error "block is required for //#{syntax.name}; use empty block"
-      end
+      error "block is required for //#{syntax.name}; use empty block" if syntax.block_required?
       []
     end
 
@@ -527,9 +505,7 @@ module ReVIEW
     def text(str)
       return '' if str.empty?
       words = str.split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
-      words.each do |w|
-        error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
-      end
+      words.each { |w| error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w) }
       result = @strategy.nofunc_text(words.shift)
       until words.empty?
         result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
@@ -543,12 +519,8 @@ module ReVIEW
 
     def compile_inline(str)
       op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
-      unless inline_defined?(op)
-        raise CompileError, "no such inline op: #{op}"
-      end
-      unless @strategy.respond_to?("inline_#{op}")
-        raise "strategy does not support inline op: @<#{op}>"
-      end
+      raise CompileError, "no such inline op: #{op}" unless inline_defined?(op)
+      raise "strategy does not support inline op: @<#{op}>" unless @strategy.respond_to?("inline_#{op}")
       @strategy.__send__("inline_#{op}", arg)
     rescue => err
       error err.message
@@ -562,7 +534,5 @@ module ReVIEW
     def error(msg)
       @strategy.error msg
     end
-
   end
-
 end # module ReVIEW

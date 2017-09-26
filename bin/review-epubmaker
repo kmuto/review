@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby
-# encoding: utf-8
-
 # Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
@@ -21,7 +19,7 @@ rv = ReVIEW::EPUBMaker.new
 
 opts = OptionParser.new
 opts.version = ReVIEW::VERSION
-opts.banner = "Usage: #{File.basename($0)} [options] YAML_filename [export_filename]"
+opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [options] YAML_filename [export_filename]"
 opts.on('--help', 'Prints this message and quit.') do
   puts opts.help
   exit 0
@@ -34,7 +32,6 @@ rescue OptionParser::ParseError => err
   $stderr.puts opts.help
   exit 1
 end
-
 
 if ARGV.size < 1 || !File.exist?(ARGV[0])
   puts opts.help

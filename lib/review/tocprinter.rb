@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-#
-# $Id: tocprinter.rb 4309 2009-07-19 04:15:02Z aamine $
-#
-# Copyright (c) 2002-2007 Minero Aoki
-#               2008-2009 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+#               2002-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -15,10 +11,8 @@ require 'review/htmlutils'
 require 'review/tocparser'
 
 module ReVIEW
-
   class TOCPrinter
-
-    def TOCPrinter.default_upper_level
+    def self.default_upper_level
       99 # no one use 99 level nest
     end
 
@@ -29,15 +23,11 @@ module ReVIEW
     end
 
     def print_book(book)
-      book.each_part do |part|
-        print_part(part)
-      end
+      book.each_part { |part| print_part(part) }
     end
 
     def print_part(part)
-      part.each_chapter do |chap|
-        print_chapter(chap)
-      end
+      part.each_chapter { |chap| print_chapter(chap) }
     end
 
     def print_chapter(chap)
@@ -51,16 +41,14 @@ module ReVIEW
     end
   end
 
-
   class TextTOCPrinter < TOCPrinter
-
     private
 
     def print_children(node)
       return unless print?(node.level + 1)
       node.each_section_with_index do |section, idx|
         unless section.blank?
-          print_node idx+1, section
+          print_node idx + 1, section
           print_children section
         end
       end
@@ -85,42 +73,35 @@ module ReVIEW
     end
 
     def volume_columns(level, volstr)
-      cols = ["", "", "", nil]
+      cols = ['', '', '', nil]
       cols[level - 1] = volstr
       cols[0, 3] # does not display volume of level-4 section
     end
-
   end
 
-
   class HTMLTOCPrinter < TOCPrinter
-
     include HTMLUtils
 
     def print_book(book)
       @out.puts '<ul class="book-toc">'
-      book.each_part do |part|
-        print_part(part)
-      end
+      book.each_part { |part| print_part(part) }
       @out.puts '</ul>'
     end
 
     def print_part(part)
-      if part.number
-        @out.puts li(part.title)
-      end
+      @out.puts li(part.title) if part.number
       super
     end
 
     def print_chapter(chap)
       chap_node = TOCParser.chapter_node(chap)
-      ext = chap.book.config["htmlext"] || "html"
-      path = chap.path.sub(/\.re/, "."+ext)
-      if chap_node.number && chap.on_CHAPS?
-        label = "#{chap.number} #{chap.title}"
-      else
-        label = chap.title
-      end
+      ext = chap.book.config['htmlext'] || 'html'
+      path = chap.path.sub(/\.re/, '.' + ext)
+      label = if chap_node.number && chap.on_chaps?
+                "#{chap.number} #{chap.title}"
+              else
+                chap.title
+              end
       @out.puts li(a_name(path, escape_html(label)))
       return unless print?(2)
       if print?(3)
@@ -133,14 +114,12 @@ module ReVIEW
     private
 
     def chap_sections_to_s(chap)
-      return "" if chap.section_size < 1
+      return '' if chap.section_size < 1
       res = []
-      res << "<ol>"
-      chap.each_section do |sec|
-        res << li(escape_html(sec.label))
-      end
-      res << "</ol>"
-      return res.join("\n")
+      res << '<ol>'
+      chap.each_section { |sec| res << li(escape_html(sec.label)) }
+      res << '</ol>'
+      res.join("\n")
     end
 
     def chapter_to_s(chap)
@@ -148,15 +127,12 @@ module ReVIEW
       chap.each_section do |sec|
         res << li(escape_html(sec.label))
         next unless print?(4)
-        if sec.section_size > 0
-          res << "<ul>"
-          sec.each_section do |node|
-            res << li(escape_html(node.label))
-          end
-          res << "</ul>"
-        end
+        next unless sec.section_size > 0
+        res << '<ul>'
+        sec.each_section { |node| res << li(escape_html(node.label)) }
+        res << '</ul>'
       end
-      return res.join("\n")
+      res.join("\n")
     end
 
     def li(content)
@@ -166,7 +142,5 @@ module ReVIEW
     def a_name(name, label)
       %Q(<a name="#{name}">#{label}</a>)
     end
-
   end
-
 end
