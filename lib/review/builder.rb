@@ -316,6 +316,10 @@ module ReVIEW
       "#{arg}[rotate 90 degree]"
     end
 
+    def inline_balloon(arg)
+      "← #{arg}"
+    end
+
     def raw(str)
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }

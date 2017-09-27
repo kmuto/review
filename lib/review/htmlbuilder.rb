@@ -1106,6 +1106,10 @@ module ReVIEW
       %Q(<span class="#{style}">#{escape_html(str)}</span>)
     end
 
+    def inline_balloon(str)
+      %Q(<span class="balloonarrow">←</span><span class="balloon">#{escape_html(str)}</span>)
+    end
+
     def inline_raw(str)
       super(str)
     end
