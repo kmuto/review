@@ -299,7 +299,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_balloon
     actual = compile_inline('test @<balloon>{①}')
-    assert_equal %Q(test <span class="balloonarrow">←</span><span class="balloon">①</span>), actual
+    assert_equal %Q(test <span class="balloon">①</span>), actual
   end
 
   def test_inline_ruby

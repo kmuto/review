@@ -904,7 +904,7 @@ module ReVIEW
     end
 
     def inline_balloon(str)
-      '←' + escape(str)
+      macro('reviewballoon', escape(str))
     end
 
     def bibpaper_header(id, caption)

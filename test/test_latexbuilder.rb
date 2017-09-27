@@ -213,7 +213,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_balloon
     actual = compile_inline('test @<balloon>{①}')
-    assert_equal 'test ←①', actual
+    assert_equal 'test \\reviewballoon{①}', actual
   end
 
   def test_inline_idx
