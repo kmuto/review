@@ -1,0 +1,12 @@
+PREDEF:
+ - pre01.re
+
+CHAPS:
+ - 部扉見出し:
+   - ch01.re
+ - part2.re:
+   - ch02.re
+
+APPENDIX:
+
+POSTDEF:
