@@ -16,7 +16,7 @@ main(int argc, char **argv)
 
 図（@<img>{fractal}）、表（@<table>{tbl1}）も同様に章番号なしです。
 
-//image[fractal][フラクタル]{
+//image[fractal][フラクタル][latex::width=80mm]{
 //}
 
 //table[tbl1][前付表]{

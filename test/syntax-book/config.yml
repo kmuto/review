@@ -31,3 +31,5 @@ texstyle: reviewmacro
 pdfmaker:
   toc: true
   colophon: true
+  makeindex: true
+  makeindex_dic: syntax.dic
