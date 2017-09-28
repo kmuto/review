@@ -1,7 +1,7 @@
 require 'fileutils'
 require 'rake/clean'
 
-BOOK = 'book'
+BOOK = 'syntax-book'
 BOOK_PDF = BOOK + '.pdf'
 BOOK_EPUB = BOOK + '.epub'
 CONFIG_FILE = 'config.yml'
