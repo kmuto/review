@@ -51,7 +51,7 @@ puts 'Hello'
 
 #@# //source{
 #@# //}
-#@# FIXME:キャプションなしはLaTeXだとエラーになることがわかった
+#@# FIXME:キャプションなしはLaTeXだとエラーになることがわかった。Re:VIEW側修正予定
 
 実行例を示すとき用にはcmdを用意しています。いずれにせよ、商業書籍レベルでは必要なので用意しているものの、原稿レベルで書き手が使うコードブロックはほどほどの数に留めておいたほうがいいのではないかと思います。TeX版の紙面ではデフォルトは黒アミ。印刷によってはベタ黒塗りはちょっと怖いかもなので、あまり長々したものには使わないほうがいいですね。
 
@@ -64,7 +64,7 @@ $ @<b>{ls /}
 
 @<fn>{madebygimp}
 本当はimageのキャプションにfootnoteを付けたいのですが、TeXではエラーになりますね。厳しい……。
-#@# FIXME:TeXのキャプションfootnote
+#@# FIXME:TeXのキャプションfootnote問題
 
 #@# //image[ball][ボール@<fn>{madebygimp}]{
 //image[ball][ボール]{
@@ -291,7 +291,7 @@ a_{m1} & \cdots & a_{mn}
 本文での……キーワード@<kw>{キーワード, keyword}@<fn>{kw}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}
 
 傍点@<embed>{@}<bou>{bou傍点}、ルビ@<embed>{@}<ruby>{愕然, がくぜん}、縦中横@<embed>{@}<tcy>{90}、はTeXでは現状、別パッケージが必要です。
-#@# FIXME:文字スタイル
+#@# FIXME:TEXでの文字スタイル。外部パッケージが必要
 #@# 傍点@<bou>{bou傍点}、
 #@# ルビ@<ruby>{愕然, がくぜん}、
 #@# 縦中横@<tcy>{90}、
@@ -321,12 +321,12 @@ a_{m1} & \cdots & a_{mn}
 
 
 ==={crossref} 参照
-#@# FIXME:任意ラベルを使うと、EPUBのtocのURLがおかしくなる。
+#@# FIXME:任意ラベルを使うと、EPUBチェックエラーになることがある？
 
  * 章番号：@<chap>{ch01}、@<chap>{appA}、@<chap>{part2}、@<chap>{bib}
  * 章題：@<title>{ch01}、@<title>{part2}、@<title>{appA}、@<title>{bib}
  * 章番号+題：@<chapref>{ch02}、@<chapref>{part2}、@<chapref>{appA}、@<chapref>{bib}
-#@# FIXME:TeXで、部が実際のページではIIなのに参照では2になっているのはおかしい
+#@# FIXME:TeXで、部が実際のページではIIなのに参照では2になっているのはおかしい→i18n.ymlがおかしいせいか
 
 節や項への参照はhdを使います。
 
@@ -338,9 +338,9 @@ a_{m1} & \cdots & a_{mn}
 
 なお、この「.」区切りなどのフォーマットは@<tt>{i18n.yml}あるいは@<tt>{locale.yml}でカスタマイズされ得る（format_number、format_number_header、format_number_without_chapter、format_number_header_without_chapter）ので、スタイルで固定化するのは避けるべきです。
 
-labelで定義したラベルへの参照の例です。EPUBだと@<href>{#inlineop} TeXだと@<href>{inlineop} 。互換性がないのは気味が悪いですね。
-#@# FIXME:EPUB側にTeXのほうを寄せる？
-#@# TeXではpagerefのほうがほしい、ということがありそう
+labelで定義したラベルへの参照の例です。EPUBだと@<href>{#inlineop} TeXだと@<embed>{@}<href>{inlineop} 。互換性がないのは気味が悪いですね。
+#@# FIXME:EPUB側にTeXのほうを寄せるようにRe:VIEWコードを直す
+#@# FIXME:TeXではpagerefがほしい、ということがありそう。EPUBとの整合性を検討
 
 === 参考文献
 参考文献@<tt>{bib.re}ファイルへの文献参照は、@<bib>{lins}とします。
