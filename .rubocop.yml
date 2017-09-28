@@ -2,6 +2,7 @@ AllCops:
   Exclude:
     - lib/lineinput.rb
     - lib/uuid.rb
+    - test/syntax-book/*
   DisplayCopNames: true
 
 inherit_from: .rubocop_todo.yml
