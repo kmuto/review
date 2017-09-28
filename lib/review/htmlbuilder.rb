@@ -950,7 +950,7 @@ module ReVIEW
         if get_chap(chapter)
           "#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])}"
         else
-          "#{I18n.t('list')}#{I18n.t('format_number_without_header', [chapter.list(id).number])}"
+          "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(id).number])}"
         end
       if @book.config['chapterlink']
         %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)

@@ -11,12 +11,12 @@
 <% if @next.present? %><link rel="next" title="<%= h(@next_title)%>" href="<%= h(@next.id.to_s+"."+@book.config['htmlext']) %>"><% end %>
 <% if @prev.present? %><link rel="prev" title="<%= h(@prev_title)%>" href="<%= h(@prev.id.to_s+"."+@book.config['htmlext']) %>"><% end %>
   <meta name="generator" content="Re:VIEW" />
-  <title><%=h @title %> | <%=h @book.config["booktitle"]%></title>
+  <title><%=h @title %> | <%=h @book.config.name_of("booktitle")%></title>
 </head>
 <body<%= @body_ext %>>
   <div class="book">
     <nav class="side-content">
-      <h1><%=h @book.config["booktitle"] %></h1>
+      <h1><%=h @book.config.name_of("booktitle") %></h1>
       <%= @toc %>
       <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
     </nav>

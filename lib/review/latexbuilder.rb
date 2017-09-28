@@ -713,7 +713,7 @@ module ReVIEW
     def inline_list(id)
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?
-        macro('reviewlistref', I18n.t('format_number_without_header', [chapter.list(id).number]))
+        macro('reviewlistref', I18n.t('format_number_without_chapter', [chapter.list(id).number]))
       else
         macro('reviewlistref', I18n.t('format_number', [get_chap(chapter), chapter.list(id).number]))
       end
@@ -722,7 +722,7 @@ module ReVIEW
     def inline_table(id)
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?
-        macro('reviewtableref', I18n.t('format_number_without_header', [chapter.table(id).number]), table_label(id, chapter))
+        macro('reviewtableref', I18n.t('format_number_without_chapter', [chapter.table(id).number]), table_label(id, chapter))
       else
         macro('reviewtableref', I18n.t('format_number', [get_chap(chapter), chapter.table(id).number]), table_label(id, chapter))
       end
@@ -731,7 +731,7 @@ module ReVIEW
     def inline_img(id)
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?
-        macro('reviewimageref', I18n.t('format_number_without_header', [chapter.image(id).number]), image_label(id, chapter))
+        macro('reviewimageref', I18n.t('format_number_without_chapter', [chapter.image(id).number]), image_label(id, chapter))
       else
         macro('reviewimageref', I18n.t('format_number', [get_chap(chapter), chapter.image(id).number]), image_label(id, chapter))
       end
