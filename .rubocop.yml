@@ -89,6 +89,9 @@ Style/ClassCheck:
 Style/ClassMethods:
   Enabled: true
 
+Style/CommentedKeyword:
+  Enabled: false
+
 # Do not introduce global variables.
 Style/GlobalVars:
   Enabled: true
@@ -232,6 +235,9 @@ Style/SingleLineMethods:
 
 Style/SpecialGlobalVars:
   Enabled: true
+
+Style/StderrPuts:
+  Enabled: false
 
 Style/StringLiterals:
   Enabled: true
