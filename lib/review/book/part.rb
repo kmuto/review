@@ -19,13 +19,14 @@ module ReVIEW
         @book = book
         @number = number
         @chapters = chapters
-        @name = name ? File.basename(name, '.re') : nil
+        @name = name
         @path = name
         @content = nil
         if io
           @content = io.read
         elsif @path && File.exist?(@path)
           @content = File.read(@path, mode: 'r:BOM|utf-8')
+          @name = File.basename(@name, '.re')
         end
         @title = name
         @title = nil if file?
