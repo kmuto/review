@@ -96,7 +96,7 @@ module ReVIEW
       6 => 'subparagraph'
     }.freeze
 
-    def headline(level, _label, caption)
+    def headline(level, label, caption)
       _, anchor = headline_prefix(level)
       headline_name = HEADLINE[level]
       headline_name = 'part' if @chapter.is_a? ReVIEW::Book::Part
@@ -112,6 +112,7 @@ module ReVIEW
         puts macro('label', chapter_label)
       else
         puts macro('label', sec_label(anchor))
+        puts macro('label', label) if label
       end
     rescue
       error "unknown level: #{level}"
@@ -707,6 +708,10 @@ module ReVIEW
     rescue KeyError
       error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
+    end
+
+    def inline_pageref(id)
+      "\\pageref{#{id}}"
     end
 
     # FIXME: use TeX native label/ref.

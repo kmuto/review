@@ -756,6 +756,11 @@ module ReVIEW
 
     alias_method :inline_ref, :inline_labelref
 
+    def inline_pageref(id)
+      warn "pageref op is unsupported on this builder: #{id}"
+      "[link:#{escape_html(id)}]"
+    end
+
     def inline_chapref(id)
       title = super
       if @book.config['chapterlink']

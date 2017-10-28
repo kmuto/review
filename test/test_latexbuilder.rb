@@ -44,18 +44,18 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level2
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q(\\section{this is test.}\n\\label{sec:1-1}\n), actual
+    assert_equal %Q(\\section{this is test.}\n\\label{sec:1-1}\n\\label{test}\n), actual
   end
 
   def test_headline_level3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q(\\subsection*{this is test.}\n\\label{sec:1-0-1}\n), actual
+    assert_equal %Q(\\subsection*{this is test.}\n\\label{sec:1-0-1}\n\\label{test}\n), actual
   end
 
   def test_headline_level3_with_secno
     @config['secnolevel'] = 3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q(\\subsection{this is test.}\n\\label{sec:1-0-1}\n), actual
+    assert_equal %Q(\\subsection{this is test.}\n\\label{sec:1-0-1}\n\\label{test}\n), actual
   end
 
   def test_label
@@ -199,6 +199,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @config['secnolevel'] = 3
     actual = compile_inline('test @<hd>{chap1|test} test2')
     assert_equal 'test 「1.1.1 te\\textunderscore{}st」 test2', actual
+  end
+
+  def test_inline_pageref
+    actual = compile_inline('test p.@<pageref>{p1}')
+    assert_equal 'test p.\pageref{p1}', actual
   end
 
   def test_inline_ruby_comma
