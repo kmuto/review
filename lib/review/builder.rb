@@ -18,6 +18,7 @@ module ReVIEW
     include TextUtils
 
     CAPTION_TITLES = %w[note memo tip info warning important caution notice].freeze
+    attr_accessor :structure
 
     def pre_paragraph
       nil
@@ -47,6 +48,7 @@ module ReVIEW
       @tabwidth = nil
       @tsize = nil
       @tabwidth = @book.config['tabwidth'] if @book && @book.config && @book.config['tabwidth']
+      @structure = ['_ROOT_']
       builder_init_file
     end
 
@@ -95,38 +97,47 @@ module ReVIEW
     end
 
     def list(lines, id, caption, lang = nil)
+      @structure.push('list')
       begin
         list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end
       list_body id, lines, lang
+      @structure.pop
     end
 
     def listnum(lines, id, caption, lang = nil)
+      @structure.push('listnum')
       begin
         list_header id, caption, lang
       rescue KeyError
         error "no such list: #{id}"
       end
       listnum_body lines, lang
+      @structure.pop
     end
 
     def source(lines, caption, lang = nil)
+      @structure.push('source')
       source_header caption
       source_body lines, lang
+      @structure.pop
     end
 
     def image(lines, id, caption, metric = nil)
+      @structure.push('image')
       if @chapter.image(id).bound?
         image_image id, caption, metric
       else
         warn "image not bound: #{id}" if @strict
         image_dummy id, caption, lines
       end
+      @structure.pop
     end
 
     def table(lines, id = nil, caption = nil)
+      @structure.push('table')
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -157,6 +168,7 @@ module ReVIEW
         end
       end
       table_end
+      @structure.pop
     end
 
     def adjust_n_cols(rows)
@@ -274,12 +286,14 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
+      @structure.push('bibpaper')
       bibpaper_header id, caption
       unless lines.empty?
         puts
         bibpaper_bibpaper id, caption, lines
       end
       puts
+      @structure.pop
     end
 
     def inline_hd(id)
@@ -327,6 +341,7 @@ module ReVIEW
     end
 
     def embed(lines, arg = nil)
+      @structure.push('embed')
       if arg
         builders = arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
         c = target_name
@@ -334,6 +349,7 @@ module ReVIEW
       else
         print lines.join
       end
+      @structure.pop
     end
 
     def warn(msg)
@@ -394,6 +410,7 @@ module ReVIEW
     end
 
     def graph(lines, id, command, caption = nil)
+      @structure.push('graph')
       c = target_name
       dir = File.join(@book.basedir, @book.image_dir, c)
       Dir.mkdir(dir) unless File.exist?(dir)
@@ -416,6 +433,7 @@ module ReVIEW
       @chapter.image_index.image_finder.add_entry(file_path)
 
       image(lines, id, caption)
+      @structure.pop
     end
 
     def image_ext
@@ -431,10 +449,12 @@ module ReVIEW
     end
 
     def ul_item_begin(lines)
+      @structure.push('ul')
       ul_item(lines)
     end
 
     def ul_item_end
+      @structure.pop
     end
 
     def tsize(str)

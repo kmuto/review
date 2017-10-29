@@ -34,6 +34,7 @@ module ReVIEW
       @ol_num = nil
       @first_line_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
+      @foottext = {}
       setup_index
       initialize_metachars(@book.config['texcommand'])
     end
@@ -97,6 +98,7 @@ module ReVIEW
     }.freeze
 
     def headline(level, _label, caption)
+      @structure.push('headline')
       _, anchor = headline_prefix(level)
       headline_name = HEADLINE[level]
       headline_name = 'part' if @chapter.is_a? ReVIEW::Book::Part
@@ -115,36 +117,45 @@ module ReVIEW
       end
     rescue
       error "unknown level: #{level}"
+    ensure
+      @structure.pop
     end
 
     def nonum_begin(level, _label, caption)
+      @structure.push('nonum')
       blank unless @output.pos == 0
       puts macro(HEADLINE[level] + '*', compile_inline(caption))
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
     end
 
-    def nonum_end(level)
+    def nonum_end(_level)
+      @structure.pop
     end
 
     def notoc_begin(level, _label, caption)
+      @structure.push('notoc')
       blank unless @output.pos == 0
       puts macro(HEADLINE[level] + '*', compile_inline(caption))
     end
 
-    def notoc_end(level)
+    def notoc_end(_level)
+      @structure.pop
     end
 
     def nodisp_begin(level, _label, caption)
+      @structure.push('nodisp')
       blank unless @output.pos == 0
       puts macro('clearpage') if @output.pos == 0
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
       # FIXME: headings
     end
 
-    def nodisp_end(level)
+    def nodisp_end(_level)
+      @structure.pop
     end
 
     def column_begin(level, label, caption)
+      @structure.push('column')
       blank
       puts "\\begin{reviewcolumn}\n"
       if label
@@ -159,6 +170,7 @@ module ReVIEW
     def column_end(_level)
       puts "\\end{reviewcolumn}\n"
       blank
+      @structure.pop
     end
 
     def captionblock(_type, lines, caption)
@@ -172,15 +184,18 @@ module ReVIEW
     end
 
     def box(lines, caption = nil)
+      @structure.push('box')
       blank
       puts macro('reviewboxcaption', compile_inline(caption)) if caption
       puts '\begin{reviewbox}'
       lines.each { |line| puts detab(line) }
       puts '\end{reviewbox}'
       blank
+      @structure.pop
     end
 
     def ul_begin
+      @structure.push('ul')
       blank
       puts '\begin{itemize}'
     end
@@ -194,9 +209,11 @@ module ReVIEW
     def ul_end
       puts '\end{itemize}'
       blank
+      @structure.pop
     end
 
     def ol_begin
+      @structure.push('ol')
       blank
       puts '\begin{enumerate}'
       return true unless @ol_num
@@ -213,9 +230,11 @@ module ReVIEW
     def ol_end
       puts '\end{enumerate}'
       blank
+      @structure.pop
     end
 
     def dl_begin
+      @structure.push('dl')
       blank
       puts '\begin{description}'
     end
@@ -233,6 +252,7 @@ module ReVIEW
     def dl_end
       puts '\end{description}'
       blank
+      @structure.pop
     end
 
     def paragraph(lines)
@@ -246,7 +266,9 @@ module ReVIEW
     end
 
     def read(lines)
+      @structure.push('lead')
       latex_block 'quotation', lines
+      @structure.pop
     end
 
     alias_method :lead, :read
@@ -257,15 +279,18 @@ module ReVIEW
     private :highlight_listings?
 
     def emlist(lines, caption = nil, lang = nil)
+      @structure.push('emlist')
       blank
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistlst', 'title', caption, lang)
       else
         common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, _idx| detab(line) + "\n" }
       end
+      @structure.pop
     end
 
     def emlistnum(lines, caption = nil, lang = nil)
+      @structure.push('emlistnum')
       blank
       first_line_num = line_num
       if highlight_listings?
@@ -273,38 +298,46 @@ module ReVIEW
       else
         common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
       end
+      @structure.pop
     end
 
     ## override Builder#list
     def list(lines, id, caption, lang = nil)
+      @structure.push('list')
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistlst', 'caption', caption, lang)
       else
         common_code_block(id, lines, 'reviewlist', caption, lang) { |line, _idx| detab(line) + "\n" }
       end
+      @structure.pop
     end
 
     ## override Builder#listnum
     def listnum(lines, id, caption, lang = nil)
+      @structure.push('listnum')
       first_line_num = line_num
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang, first_line_num: first_line_num)
       else
         common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
       end
+      @structure.pop
     end
 
     def cmd(lines, caption = nil, lang = nil)
+      @structure.push('cmd')
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewcmdlst', 'title', caption, lang)
       else
         blank
         common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, _idx| detab(line) + "\n" }
       end
+      @structure.pop
     end
 
     def common_code_block(id, lines, command, caption, _lang)
       if caption
+        @structure.push('caption')
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
           puts macro(command + 'caption', compile_inline(caption))
         else
@@ -318,6 +351,7 @@ module ReVIEW
             error "no such list: #{id}"
           end
         end
+        @structure.pop
       end
       body = ''
       lines.each_with_index { |line, idx| body.concat(yield(line, idx)) }
@@ -354,11 +388,13 @@ module ReVIEW
     end
 
     def source(lines, caption, lang = nil)
+      @structure.push('source')
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewsourcelst', 'title', caption, lang)
       else
         common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, _idx| detab(line) + "\n" }
       end
+      @structure.pop
     end
 
     def image_header(id, caption)
@@ -384,7 +420,11 @@ module ReVIEW
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
-      puts macro('caption', compile_inline(caption)) if caption.present?
+      if caption.present?
+        @structure.push('caption')
+        puts macro('caption', compile_inline(caption))
+        @structure.pop
+      end
       puts macro('label', image_label(id))
       puts '\end{reviewimage}'
     end
@@ -396,7 +436,11 @@ module ReVIEW
       puts "--[[path = #{id} (#{existence(id)})]]--"
       lines.each { |line| puts detab(line.rstrip) }
       puts macro('label', image_label(id))
-      puts compile_inline(caption)
+      if caption.present?
+        @structure.push('caption')
+        puts macro('caption', compile_inline(caption))
+        @structure.pop
+      end
       puts '\end{reviewdummyimage}'
     end
 
@@ -440,6 +484,7 @@ module ReVIEW
     private :column_label
 
     def indepimage(lines, id, caption = nil, metric = nil)
+      @structure.push('indepimage')
       metrics = parse_metric('latex', metric)
 
       if @chapter.image(id).path
@@ -456,18 +501,24 @@ module ReVIEW
         lines.each { |line| puts detab(line.rstrip) }
       end
 
-      puts macro('reviewindepimagecaption', %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})) if caption.present?
+      if caption.present?
+        @structure.push('caption')
+        puts macro('reviewindepimagecaption', %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}))
+        @structure.pop
+      end
 
       if @chapter.image(id).path
         puts '\end{reviewimage}'
       else
         puts '\end{reviewdummyimage}'
       end
+      @structure.pop
     end
 
     alias_method :numberlessimage, :indepimage
 
     def table(lines, id = nil, caption = nil)
+      @structure.push('tableblock')
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -486,7 +537,11 @@ module ReVIEW
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
+      if rows.empty?
+        @structure.pop
+        return
+      end
+      @structure.push('table')
       table_begin rows.first.size
       if sepidx
         sepidx.times { tr(rows.shift.map { |s| th(s) }) }
@@ -498,9 +553,12 @@ module ReVIEW
         end
       end
       table_end
+      @structure.pop
+      @structure.pop
     end
 
     def table_header(id, caption)
+      @structure.push('caption')
       if id.nil?
         if caption.present?
           @table_caption = true
@@ -515,6 +573,7 @@ module ReVIEW
         end
         puts macro('label', table_label(id))
       end
+      @structure.pop
     end
 
     def table_begin(ncols)
@@ -550,7 +609,7 @@ module ReVIEW
 
     def td(s)
       ## use shortstack for @<br>
-      if /\\\\/ =~ s
+      if /\\\\/i =~ s
         macro('shortstack[l]', s)
       else
         s
@@ -610,25 +669,33 @@ module ReVIEW
     end
 
     def quote(lines)
+      @structure.push('quote')
       latex_block 'quote', lines
+      @structure.pop
     end
 
     def center(lines)
+      @structure.push('center')
       latex_block 'center', lines
+      @structure.pop
     end
 
     alias_method :centering, :center
 
     def flushright(lines)
+      @structure.push('flushright')
       latex_block 'flushright', lines
+      @structure.pop
     end
 
     def texequation(lines)
+      @structure.push('texequation')
       blank
       puts macro('begin', 'equation*')
       lines.each { |line| puts unescape_latex(line) }
       puts macro('end', 'equation*')
       blank
+      @structure.pop
     end
 
     def latex_block(type, lines)
@@ -738,14 +805,22 @@ module ReVIEW
     end
 
     def footnote(id, content)
-      puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip)) if @book.config['footnotetext']
+      @structure.push('footnote')
+      puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip)) if @book.config['footnotetext'] || @structure.include?('caption') || @foottext[id]
+      @structure.pop
     end
 
     def inline_fn(id)
-      if @book.config['footnotetext']
-        macro("footnotemark[#{@chapter.footnote(id).number}]", '')
+      if @book.config['footnotetext'] || @structure.include?('caption') || @structure.include?('table')
+        @foottext[id] = @chapter.footnote(id).number
+        s = ''
+        s += macro('protect') if @structure.include?('caption')
+        s + macro("footnotemark[#{@chapter.footnote(id).number}]")
       else
-        macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
+        @structure.push('footnote')
+        s = macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
+        @structure.pop
+        s
       end
     end
 
