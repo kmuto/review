@@ -274,6 +274,16 @@ class I18nTest < Test::Unit::TestCase
     assert_equal '付録C', i18n.t('appendix', 3)
   end
 
+  def test_ja_part
+    i18n = I18n.new('ja')
+    assert_equal '第III部', i18n.t('part', 3)
+    assert_equal 'III', i18n.t('part_short', 3)
+    i18n.update({ 'part' => '第%pRW部' }, 'ja')
+    i18n.update({ 'part_short' => '%pRW' }, 'ja')
+    assert_equal '第Ⅲ部', i18n.t('part', 3)
+    assert_equal 'Ⅲ', i18n.t('part_short', 3)
+  end
+
   def test_i18n_error
     I18n.setup
     assert_raises NotImplementedError do
