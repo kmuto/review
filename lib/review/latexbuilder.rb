@@ -353,7 +353,7 @@ module ReVIEW
       args
     end
 
-    def source(lines, caption, lang = nil)
+    def source(lines, caption = nil, lang = nil)
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewsourcelst', 'title', caption, lang)
       else
