@@ -757,8 +757,7 @@ module ReVIEW
     alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(id)
-      warn "pageref op is unsupported on this builder: #{id}"
-      "[link:#{escape_html(id)}]"
+      error "pageref op is unsupported on this builder: #{id}"
     end
 
     def inline_chapref(id)
