@@ -13,7 +13,7 @@ module ReVIEW
   class TOPBuilder < Builder
     include TextUtils
 
-    %i[ttbold hint maru keytop labelref ref pageref balloon strong].each { |e| Compiler.definline(e) }
+    %i[ttbold hint maru keytop labelref ref balloon strong].each { |e| Compiler.definline(e) }
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 1)

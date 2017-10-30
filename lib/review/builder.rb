@@ -312,6 +312,10 @@ module ReVIEW
       chapter.column(id).caption
     end
 
+    def inline_pageref(id)
+      "[link:#{id}]"
+    end
+
     def inline_tcy(arg)
       "#{arg}[rotate 90 degree]"
     end
