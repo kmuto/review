@@ -29,8 +29,8 @@ module EPUBMaker
     # Chapter type (pre/post/part/nil(body))
     attr_accessor :chaptype
 
-    def to_s
-      "Content id=#{@id}, file=#{@file}, media=#{@media}, title=#{@title}, level=#{@level}, notoc=#{@notoc}, properties=#{@properties}, chaptype=#{@chaptype}"
+    def inspect
+      "<Content id=#{@id}, file=#{@file}, media=#{@media}, title=#{@title}, level=#{@level}, notoc=#{@notoc}, properties=#{@properties}, chaptype=#{@chaptype}>"
     end
 
     # :call-seq:
