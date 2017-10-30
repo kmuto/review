@@ -20,7 +20,7 @@ module ReVIEW
   class RSTBuilder < Builder
     include TextUtils
 
-    %i[ttbold hint maru keytop labelref ref pageref].each { |e| Compiler.definline(e) }
+    %i[ttbold hint maru keytop labelref ref].each { |e| Compiler.definline(e) }
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 1)

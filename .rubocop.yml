@@ -2,6 +2,7 @@ AllCops:
   Exclude:
     - lib/lineinput.rb
     - lib/uuid.rb
+    - test/syntax-book/*
   DisplayCopNames: true
 
 inherit_from: .rubocop_todo.yml
@@ -88,6 +89,9 @@ Style/ClassCheck:
 
 Style/ClassMethods:
   Enabled: true
+
+Style/CommentedKeyword:
+  Enabled: false
 
 # Do not introduce global variables.
 Style/GlobalVars:
@@ -232,6 +236,9 @@ Style/SingleLineMethods:
 
 Style/SpecialGlobalVars:
   Enabled: true
+
+Style/StderrPuts:
+  Enabled: false
 
 Style/StringLiterals:
   Enabled: true

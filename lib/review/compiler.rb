@@ -226,6 +226,7 @@ module ReVIEW
     definline :comment
     definline :include
     definline :embed
+    definline :pageref
 
     private
 
