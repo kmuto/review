@@ -312,7 +312,7 @@
 <%= @input_files["PREDEF"] %>
 
 <%- if @config["toc"] -%>
-\setcounter{tocdepth}{<%= @config["toclevel"] %>}
+\setcounter{tocdepth}{<%= @config["toclevel"] - 1 %>}
 \tableofcontents
 <%- end -%>
 
