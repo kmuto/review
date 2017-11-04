@@ -503,9 +503,17 @@ module ReVIEW
       @strategy.__send__(syntax.name, *args)
     end
 
+    def replace_fence(str)
+      str.gsub(/@<(m)>([$|#+_%!?])(.+?)\2/) do
+        op = $1
+        arg = $3.gsub('}', '\\}')
+        "@<#{op}>{#{arg}}"
+      end
+    end
+
     def text(str)
       return '' if str.empty?
-      words = str.split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
+      words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
       words.each { |w| error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w) }
       result = @strategy.nofunc_text(words.shift)
       until words.empty?
