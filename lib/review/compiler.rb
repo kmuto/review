@@ -504,9 +504,9 @@ module ReVIEW
     end
 
     def replace_fence(str)
-      str.gsub(/@<(m)>([$|#+_%!?])(.+?)\2/) do
+      str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
         op = $1
-        arg = $3.gsub('}', '\\}')
+        arg = $3.gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) {|m| '\\\\' * m.size }
         "@<#{op}>{#{arg}}"
       end
     end
