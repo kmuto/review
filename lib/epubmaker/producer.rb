@@ -211,7 +211,7 @@ module EPUBMaker
         'pre_secnolevel' => 0,
         'post_secnolevel' => 1,
         'part_secnolevel' => 1,
-        'titlepage' => nil,
+        'titlepage' => true,
         'titlefile' => nil,
         'originaltitlefile' => nil,
         'profile' => nil,
