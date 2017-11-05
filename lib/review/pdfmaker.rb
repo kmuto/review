@@ -344,7 +344,8 @@ module ReVIEW
       @okuduke = make_colophon
       @authors = make_authors
 
-      @custom_titlepage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_coverpage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_titlepage = make_custom_page(@config['titlefile'])
       @custom_originaltitlepage = make_custom_page(@config['originaltitlefile'])
       @custom_creditpage = make_custom_page(@config['creditfile'])
 
