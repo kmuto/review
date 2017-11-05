@@ -14,7 +14,8 @@ class EPUB3MakerTest < Test::Unit::TestCase
       'urnid' => 'http://example.jp/',
       'date' => '2011-01-01',
       'language' => 'en',
-      'modified' => '2014-12-13T14:15:16Z'
+      'modified' => '2014-12-13T14:15:16Z',
+      'titlepage' => nil
     )
     @output = StringIO.new
   end

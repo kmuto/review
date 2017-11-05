@@ -12,7 +12,8 @@ class EPUBMakerTest < Test::Unit::TestCase
       'epubversion' => 2,
       'urnid' => 'http://example.jp/',
       'date' => '2011-01-01',
-      'language' => 'en'
+      'language' => 'en',
+      'titlepage' => nil
     )
     @output = StringIO.new
   end
