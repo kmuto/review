@@ -521,6 +521,8 @@ module ReVIEW
         result << @strategy.nofunc_text(words.shift)
       end
       result
+    rescue => err
+      error err.message
     end
     public :text # called from strategy
 
