@@ -34,6 +34,7 @@ module ReVIEW
       @ol_num = nil
       @first_line_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
+      @foottext = {}
       setup_index
       initialize_metachars(@book.config['texcommand'])
     end
@@ -106,7 +107,9 @@ module ReVIEW
                  ''
                end
       blank unless @output.pos == 0
+      @doc_status[:caption] = true
       puts macro(headline_name + prefix, compile_inline(caption))
+      @doc_status[:caption] = nil
       puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline(caption)}}" if prefix == '*' && level <= @book.config['toclevel'].to_i
       if level == 1
         puts macro('label', chapter_label)
@@ -120,7 +123,9 @@ module ReVIEW
 
     def nonum_begin(level, _label, caption)
       blank unless @output.pos == 0
+      @doc_status[:caption] = true
       puts macro(HEADLINE[level] + '*', compile_inline(caption))
+      @doc_status[:caption] = nil
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
     end
 
@@ -129,7 +134,9 @@ module ReVIEW
 
     def notoc_begin(level, _label, caption)
       blank unless @output.pos == 0
+      @doc_status[:caption] = true
       puts macro(HEADLINE[level] + '*', compile_inline(caption))
+      @doc_status[:caption] = nil
     end
 
     def notoc_end(level)
@@ -147,25 +154,31 @@ module ReVIEW
 
     def column_begin(level, label, caption)
       blank
+      @doc_status[:column] = true
       puts "\\begin{reviewcolumn}\n"
       if label
         puts "\\hypertarget{#{column_label(label)}}{}"
       else
         puts "\\hypertarget{#{column_label(caption)}}{}"
       end
+      @doc_status[:caption] = true
       puts macro('reviewcolumnhead', nil, compile_inline(caption))
+      @doc_status[:caption] = nil
       puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}" if level <= @book.config['toclevel'].to_i
     end
 
     def column_end(_level)
       puts "\\end{reviewcolumn}\n"
       blank
+      @doc_status[:column] = nil
     end
 
     def captionblock(_type, lines, caption)
       puts "\\begin{reviewminicolumn}\n"
+      @doc_status[:caption] = true
       puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n" if caption
 
+      @doc_status[:caption] = nil
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n\n")
 
@@ -305,6 +318,7 @@ module ReVIEW
     end
 
     def common_code_block(id, lines, command, caption, _lang)
+      @doc_status[:caption] = true
       if caption
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
           puts macro(command + 'caption', compile_inline(caption))
@@ -320,6 +334,7 @@ module ReVIEW
           end
         end
       end
+      @doc_status[:caption] = nil
       body = ''
       lines.each_with_index { |line, idx| body.concat(yield(line, idx)) }
       puts macro('begin', command)
@@ -385,7 +400,9 @@ module ReVIEW
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
+      @doc_status[:caption] = true
       puts macro('caption', compile_inline(caption)) if caption.present?
+      @doc_status[:caption] = nil
       puts macro('label', image_label(id))
       puts '\end{reviewimage}'
     end
@@ -505,14 +522,18 @@ module ReVIEW
       if id.nil?
         if caption.present?
           @table_caption = true
+          @doc_status[:caption] = true
           puts '\begin{table}[h]'
           puts macro('reviewtablecaption*', compile_inline(caption))
+          @doc_status[:caption] = nil
         end
       else
         if caption.present?
           @table_caption = true
+          @doc_status[:caption] = true
           puts '\begin{table}[h]'
           puts macro('reviewtablecaption', compile_inline(caption))
+          @doc_status[:caption] = nil
         end
         puts macro('label', table_label(id))
       end
@@ -542,7 +563,7 @@ module ReVIEW
 
     def th(s)
       ## use shortstack for @<br>
-      if /\\\\/i =~ s
+      if /\\\\/ =~ s
         macro('reviewth', macro('shortstack[l]', s))
       else
         macro('reviewth', s)
@@ -584,8 +605,10 @@ module ReVIEW
       begin
         if caption.present?
           @table_caption = true
+          @doc_status[:caption] = true
           puts '\begin{table}[h]'
           puts macro('reviewimgtablecaption', compile_inline(caption))
+          @doc_status[:caption] = nil
         end
         puts macro('label', table_label(id))
       rescue ReVIEW::KeyError
@@ -743,12 +766,19 @@ module ReVIEW
     end
 
     def footnote(id, content)
-      puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip)) if @book.config['footnotetext']
+      if @book.config['footnotetext']
+        puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
+      elsif @foottext[id]
+        puts macro('footnotetext', compile_inline(content.strip))
+      end
     end
 
     def inline_fn(id)
       if @book.config['footnotetext']
         macro("footnotemark[#{@chapter.footnote(id).number}]", '')
+      elsif @doc_status[:caption] || @doc_status[:table] || @doc_status[:column]
+        @foottext[id] = @chapter.footnote(id).number
+        macro('protect\\footnotemark')
       else
         macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
       end
