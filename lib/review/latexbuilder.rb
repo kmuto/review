@@ -414,7 +414,9 @@ module ReVIEW
       puts "--[[path = #{id} (#{existence(id)})]]--"
       lines.each { |line| puts detab(line.rstrip) }
       puts macro('label', image_label(id))
-      puts compile_inline(caption)
+      @doc_status[:caption] = true
+      puts macro('caption', compile_inline(caption)) if caption.present?
+      @doc_status[:caption] = nil
       puts '\end{reviewdummyimage}'
     end
 
@@ -474,7 +476,9 @@ module ReVIEW
         lines.each { |line| puts detab(line.rstrip) }
       end
 
+      @doc_status[:caption] = true
       puts macro('reviewindepimagecaption', %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})) if caption.present?
+      @doc_status[:caption] = nil
 
       if @chapter.image(id).path
         puts '\end{reviewimage}'
