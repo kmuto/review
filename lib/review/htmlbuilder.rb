@@ -526,7 +526,9 @@ module ReVIEW
         puts %Q(<div class="equation">)
         math_str = "\\begin{equation*}\n" + unescape_html(lines.join("\n")) + "\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
-        img_path = "./images/_gen_#{key}.png"
+        math_dir = "./#{@book.config['imagedir']}/_review_math"
+        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
+        img_path = "./#{math_dir}/_gen_#{key}.png"
         make_math_image(math_str, img_path)
         puts %Q(<img src="#{img_path}" />)
         puts '</div>'
@@ -885,7 +887,9 @@ module ReVIEW
       elsif @book.config['imgmath']
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
-        img_path = "./images/_gen_#{key}.png"
+        math_dir = "./#{@book.config['imagedir']}/_review_math"
+        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
+        img_path = "./#{math_dir}/_gen_#{key}.png"
         make_math_image(math_str, img_path)
         %Q(<span class="equation"><img src="#{img_path}" /></span>)
       else
