@@ -261,17 +261,21 @@
 
 \reviewmainfont
 
+<%- if @config["cover"] -%>
+<%= @custom_coverpage %>
+<%- elsif @config["coverimage"] -%>
+\begin{titlepage}
+  \begin{center}
+    \includegraphics[<%= @coverimageoption%>]{./<%= @config["imagedir"] %>/<%= @config["coverimage"] %>}
+  \end{center}
+\end{titlepage}
+  \clearpage
+<%- end -%>
 <%- if @config["titlepage"] -%>
 <%-   if @custom_titlepage -%>
 <%= @custom_titlepage %>
 <%-   else -%>
 \begin{titlepage}
-<%-     if @config["coverimage"] -%>
-  \begin{center}
-    \includegraphics[<%= @coverimageoption%>]{./<%= @config["imagedir"] %>/<%= @config["coverimage"] %>}
-  \end{center}
-  \clearpage
-<%-     end -%>
 \thispagestyle{empty}
 \begin{center}%
   \mbox{} \vskip5zw
