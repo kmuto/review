@@ -782,7 +782,7 @@ module ReVIEW
         macro("footnotemark[#{@chapter.footnote(id).number}]", '')
       elsif @doc_status[:caption] || @doc_status[:table] || @doc_status[:column]
         @foottext[id] = @chapter.footnote(id).number
-        macro('protect\\footnotemark')
+        macro('protect\\footnotemark', '')
       else
         macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
       end
