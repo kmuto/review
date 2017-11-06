@@ -773,7 +773,7 @@ module ReVIEW
       if @book.config['footnotetext']
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       elsif @foottext[id]
-        puts macro('footnotetext', compile_inline(content.strip))
+        puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       end
     end
 
