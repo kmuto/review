@@ -83,6 +83,8 @@ module ReVIEW
 
       FileUtils.rm_f("#{bookname}.epub")
       FileUtils.rm_rf(booktmpname) if @params['debug']
+      math_dir = "./#{@params['imagedir']}/_review_math"
+      FileUtils.rm_rf(math_dir) if @params['imgmath'] && Dir.exist?(math_dir)
 
       basetmpdir = build_path
       begin
