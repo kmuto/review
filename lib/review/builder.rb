@@ -27,10 +27,13 @@ module ReVIEW
       nil
     end
 
+    attr_accessor :doc_status
+
     def initialize(strict = false, *args)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
+      @doc_status = {}
       builder_init(*args)
     end
 
