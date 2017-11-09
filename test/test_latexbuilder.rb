@@ -676,7 +676,7 @@ inside column
 
 ===[/column_dummy]
 EOS
-    assert_raise(ReVIEW::CompileError) do
+    assert_raise(ReVIEW::ApplicationError) do
       column_helper(review)
     end
   end

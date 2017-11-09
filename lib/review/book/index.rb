@@ -281,7 +281,7 @@ module ReVIEW
         inside_column = false
         inside_block = nil
         src.each do |line|
-          if line =~ %r{\A//[a-z]+}
+          if line =~ %r{\A//[a-z]+.*\{\Z}
             inside_block = true
             next
           elsif line =~ %r{\A//\}}
@@ -293,6 +293,7 @@ module ReVIEW
 
           m = HEADLINE_PATTERN.match(line)
           next if m.nil? || m[1].size > 10 # Ignore too deep index
+          next if m[4].strip.empty? # no title
           index = m[1].size - 2
 
           # column
