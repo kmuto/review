@@ -1583,6 +1583,17 @@ EOS
     assert_equal '「1.1 part1-1」', hd
   end
 
+  def test_inline_hd_with_block
+    io1 = StringIO.new("= test1\n=={foo} foo\n//emlist{\n======\nbar\n======\n}\n//}\n=={bar} bar")
+    chap1 = Book::Chapter.new(@book, 1, '-', nil, io1)
+    location = Location.new(nil, nil)
+    @builder.bind(@compiler, chap1, location)
+    hd = @builder.inline_hd('foo')
+    assert_equal '「1.1 foo」', hd
+    hd = @builder.inline_hd('bar')
+    assert_equal '「1.2 bar」', hd
+  end
+
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n),

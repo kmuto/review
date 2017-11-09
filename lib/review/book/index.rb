@@ -279,7 +279,18 @@ module ReVIEW
         indexs = []
         headlines = []
         inside_column = false
+        inside_block = nil
         src.each do |line|
+          if line =~ %r{\A//[a-z]+}
+            inside_block = true
+            next
+          elsif line =~ %r{\A//\}}
+            inside_block = nil
+            next
+          elsif inside_block
+            next
+          end
+
           m = HEADLINE_PATTERN.match(line)
           next if m.nil? || m[1].size > 10 # Ignore too deep index
           index = m[1].size - 2
@@ -288,8 +299,7 @@ module ReVIEW
           if m[2] == 'column'
             inside_column = true
             next
-          end
-          if m[2] == '/column'
+          elsif m[2] == '/column'
             inside_column = false
             next
           end
