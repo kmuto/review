@@ -286,15 +286,17 @@ module ReVIEW
       index = level - 1
       if tag
         if tag !~ %r{\A/}
+          warn 'headline is empty.' if caption.empty?
           close_current_tagged_section(level)
           open_tagged_section(tag, level, label, caption)
         else
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
-          raise CompileError, "#{open_tag} is not opened." unless prev_tag_info.first == open_tag
+          error "#{open_tag} is not opened." if prev_tag_info.nil? || prev_tag_info.first != open_tag
           close_tagged_section(*prev_tag_info)
         end
       else
+        warn 'headline is empty.' if caption.empty?
         @headline_indexs = @headline_indexs[0..index] if @headline_indexs.size > (index + 1)
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
