@@ -45,46 +45,46 @@ module ReVIEW
     end
 
     def log(s)
-      puts s if @params['debug'].present?
+      puts s if @config['debug'].present?
     end
 
     def load_yaml(yamlfile)
       loader = ReVIEW::YAMLLoader.new
-      @params = ReVIEW::Configure.values.deep_merge(loader.load_file(yamlfile))
-      @producer = Producer.new(@params)
+      @config = ReVIEW::Configure.values.deep_merge(loader.load_file(yamlfile))
+      @producer = Producer.new(@config)
       @producer.load(yamlfile)
-      @params = @producer.params
-      @params.maker = 'epubmaker'
+      @config = @producer.config
+      @config.maker = 'epubmaker'
     end
 
     def build_path
-      if @params['debug']
-        path = File.expand_path("#{@params['bookname']}-epub", Dir.pwd)
+      if @config['debug']
+        path = File.expand_path("#{@config['bookname']}-epub", Dir.pwd)
         FileUtils.rm_rf(path, secure: true) if File.exist?(path)
         Dir.mkdir(path)
         path
       else
-        Dir.mktmpdir("#{@params['bookname']}-epub-")
+        Dir.mktmpdir("#{@config['bookname']}-epub-")
       end
     end
 
     def produce(yamlfile, bookname = nil)
       load_yaml(yamlfile)
-      I18n.setup(@params['language'])
-      bookname = @params['bookname'] if bookname.nil?
+      I18n.setup(@config['language'])
+      bookname = @config['bookname'] if bookname.nil?
       booktmpname = "#{bookname}-epub"
 
       begin
-        @params.check_version(ReVIEW::VERSION)
+        @config.check_version(ReVIEW::VERSION)
       rescue ReVIEW::ConfigError => e
         warn e.message
       end
       log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
       FileUtils.rm_f("#{bookname}.epub")
-      FileUtils.rm_rf(booktmpname) if @params['debug']
-      math_dir = "./#{@params['imagedir']}/_review_math"
-      FileUtils.rm_rf(math_dir) if @params['imgmath'] && Dir.exist?(math_dir)
+      FileUtils.rm_rf(booktmpname) if @config['debug']
+      math_dir = "./#{@config['imagedir']}/_review_math"
+      FileUtils.rm_rf(math_dir) if @config['imgmath'] && Dir.exist?(math_dir)
 
       basetmpdir = build_path
       begin
@@ -108,26 +108,26 @@ module ReVIEW
         ## push contents in basetmpdir into @producer
         push_contents(basetmpdir)
 
-        if @params['epubmaker']['verify_target_images'].present?
+        if @config['epubmaker']['verify_target_images'].present?
           verify_target_images(basetmpdir)
-          copy_images(@params['imagedir'], basetmpdir)
+          copy_images(@config['imagedir'], basetmpdir)
         else
-          copy_images(@params['imagedir'], "#{basetmpdir}/#{@params['imagedir']}")
+          copy_images(@config['imagedir'], "#{basetmpdir}/#{@config['imagedir']}")
         end
 
-        copy_resources('covers', "#{basetmpdir}/#{@params['imagedir']}")
-        copy_resources('adv', "#{basetmpdir}/#{@params['imagedir']}")
-        copy_resources(@params['fontdir'], "#{basetmpdir}/fonts", @params['font_ext'])
+        copy_resources('covers', "#{basetmpdir}/#{@config['imagedir']}")
+        copy_resources('adv', "#{basetmpdir}/#{@config['imagedir']}")
+        copy_resources(@config['fontdir'], "#{basetmpdir}/fonts", @config['font_ext'])
 
         call_hook('hook_aftercopyimage', basetmpdir)
 
-        @producer.import_imageinfo("#{basetmpdir}/#{@params['imagedir']}", basetmpdir)
-        @producer.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @params['font_ext'])
+        @producer.import_imageinfo("#{basetmpdir}/#{@config['imagedir']}", basetmpdir)
+        @producer.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @config['font_ext'])
 
-        check_image_size(basetmpdir, @params['image_maxpixels'], @params['image_ext'])
+        check_image_size(basetmpdir, @config['image_maxpixels'], @config['image_ext'])
 
         epubtmpdir = nil
-        if @params['debug'].present?
+        if @config['debug'].present?
           epubtmpdir = "#{basetmpdir}/#{booktmpname}"
           Dir.mkdir(epubtmpdir)
         end
@@ -135,12 +135,12 @@ module ReVIEW
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
         log('Finished.')
       ensure
-        FileUtils.remove_entry_secure basetmpdir unless @params['debug']
+        FileUtils.remove_entry_secure basetmpdir unless @config['debug']
       end
     end
 
     def call_hook(hook_name, *params)
-      filename = @params['epubmaker'][hook_name]
+      filename = @config['epubmaker'][hook_name]
       log("Call #{hook_name}. (#{filename})")
       if filename.present? && File.exist?(filename) && FileTest.executable?(filename)
         if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
@@ -156,27 +156,27 @@ module ReVIEW
         if content.media == 'application/xhtml+xml'
           File.open("#{basetmpdir}/#{content.file}") do |f|
             Document.new(File.new(f)).each_element('//img') do |e|
-              @params['epubmaker']['force_include_images'].push(e.attributes['src'])
+              @config['epubmaker']['force_include_images'].push(e.attributes['src'])
               content.properties.push('svg') if e.attributes['src'] =~ /svg\Z/i
             end
           end
         elsif content.media == 'text/css'
           File.open("#{basetmpdir}/#{content.file}") do |f|
             f.each_line do |l|
-              l.scan(/url\((.+?)\)/) { |_m| @params['epubmaker']['force_include_images'].push($1.strip) }
+              l.scan(/url\((.+?)\)/) { |_m| @config['epubmaker']['force_include_images'].push($1.strip) }
             end
           end
         end
       end
-      @params['epubmaker']['force_include_images'] = @params['epubmaker']['force_include_images'].compact.sort.uniq
+      @config['epubmaker']['force_include_images'] = @config['epubmaker']['force_include_images'].compact.sort.uniq
     end
 
     def copy_images(resdir, destdir, allow_exts = nil)
       return nil unless File.exist?(resdir)
-      allow_exts = @params['image_ext'] if allow_exts.nil?
+      allow_exts = @config['image_ext'] if allow_exts.nil?
       FileUtils.mkdir_p(destdir)
-      if @params['epubmaker']['verify_target_images'].present?
-        @params['epubmaker']['force_include_images'].each do |file|
+      if @config['epubmaker']['verify_target_images'].present?
+        @config['epubmaker']['force_include_images'].each do |file|
           unless File.exist?(file)
             warn "#{file} is not found, skip." if file !~ /\Ahttp[s]?:/
             next
@@ -193,7 +193,7 @@ module ReVIEW
 
     def copy_resources(resdir, destdir, allow_exts = nil)
       return nil unless File.exist?(resdir)
-      allow_exts = @params['image_ext'] if allow_exts.nil?
+      allow_exts = @config['image_ext'] if allow_exts.nil?
       FileUtils.mkdir_p(destdir)
       recursive_copy_files(resdir, destdir, allow_exts)
     end
@@ -232,7 +232,7 @@ module ReVIEW
       basedir = File.dirname(yamlfile)
       base_path = Pathname.new(basedir)
       book = ReVIEW::Book.load(basedir)
-      book.config = @params
+      book.config = @config
       @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
       @compile_errors = nil
       book.parts.each do |part|
@@ -240,7 +240,7 @@ module ReVIEW
           if part.file?
             build_chap(part, base_path, basetmpdir, true)
           else
-            htmlfile = "part_#{part.number}.#{@params['htmlext']}"
+            htmlfile = "part_#{part.number}.#{@config['htmlext']}"
             build_part(part, basetmpdir, htmlfile)
             title = ReVIEW::I18n.t('part', part.number)
             title += ReVIEW::I18n.t('chapter_postfix') + part.name.strip if part.name.strip.present?
@@ -267,8 +267,8 @@ module ReVIEW
         end
         @body << %Q(</div>\n)
 
-        @language = @producer.params['language']
-        @stylesheets = @producer.params['stylesheet']
+        @language = @producer.config['language']
+        @stylesheets = @producer.config['stylesheet']
         tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
         tmpl = ReVIEW::Template.load(tmplfile)
         f.write tmpl.result(binding)
@@ -276,7 +276,7 @@ module ReVIEW
     end
 
     def template_name
-      if @producer.params['htmlversion'].to_i == 5
+      if @producer.config['htmlversion'].to_i == 5
         './html/layout-html5.html.erb'
       else
         './html/layout-xhtml1.html.erb'
@@ -302,7 +302,7 @@ module ReVIEW
 
       id = filename.sub(/\.re\Z/, '')
 
-      if @params['epubmaker']['rename_for_legacy'] && ispart.nil?
+      if @config['epubmaker']['rename_for_legacy'] && ispart.nil?
         if chap.on_predef?
           @precount += 1
           id = sprintf('pre%02d', @precount)
@@ -315,13 +315,13 @@ module ReVIEW
         end
       end
 
-      htmlfile = "#{id}.#{@params['htmlext']}"
+      htmlfile = "#{id}.#{@config['htmlext']}"
       write_buildlogtxt(basetmpdir, htmlfile, filename)
       log("Create #{htmlfile} from #{filename}.")
 
-      if @params['params'].present?
+      if @config['params'].present?
         warn %Q('params:' in config.yml is obsoleted.)
-        if @params['params'] =~ /stylesheet=/
+        if @config['params'] =~ /stylesheet=/
           warn %Q(stylesheets should be defined in 'stylesheet:', not in 'params:')
         end
       end
@@ -382,7 +382,7 @@ module ReVIEW
 
     def push_contents(_basetmpdir)
       @htmltoc.each_item do |level, file, title, args|
-        next if level.to_i > @params['toclevel'] && args[:force_include].nil?
+        next if level.to_i > @config['toclevel'] && args[:force_include].nil?
         log("Push #{file} to ePUB contents.")
 
         hash = { 'file' => file, 'level' => level.to_i, 'title' => title, 'chaptype' => args[:chaptype] }
@@ -394,33 +394,33 @@ module ReVIEW
     end
 
     def copy_stylesheet(basetmpdir)
-      return if @params['stylesheet'].empty?
-      @params['stylesheet'].each do |sfile|
+      return if @config['stylesheet'].empty?
+      @config['stylesheet'].each do |sfile|
         FileUtils.cp(sfile, basetmpdir)
         @producer.contents.push(Content.new('file' => sfile))
       end
     end
 
     def copy_frontmatter(basetmpdir)
-      FileUtils.cp(@params['cover'], "#{basetmpdir}/#{File.basename(@params['cover'])}") if @params['cover'].present? && File.exist?(@params['cover'])
+      FileUtils.cp(@config['cover'], "#{basetmpdir}/#{File.basename(@config['cover'])}") if @config['cover'].present? && File.exist?(@config['cover'])
 
-      if @params['titlepage']
-        if @params['titlefile'].nil?
-          build_titlepage(basetmpdir, "titlepage.#{@params['htmlext']}")
+      if @config['titlepage']
+        if @config['titlefile'].nil?
+          build_titlepage(basetmpdir, "titlepage.#{@config['htmlext']}")
         else
-          FileUtils.cp(@params['titlefile'], "#{basetmpdir}/titlepage.#{@params['htmlext']}")
+          FileUtils.cp(@config['titlefile'], "#{basetmpdir}/titlepage.#{@config['htmlext']}")
         end
-        @htmltoc.add_item(1, "titlepage.#{@params['htmlext']}", @producer.res.v('titlepagetitle'), chaptype: 'pre')
+        @htmltoc.add_item(1, "titlepage.#{@config['htmlext']}", @producer.res.v('titlepagetitle'), chaptype: 'pre')
       end
 
-      if @params['originaltitlefile'].present? && File.exist?(@params['originaltitlefile'])
-        FileUtils.cp(@params['originaltitlefile'], "#{basetmpdir}/#{File.basename(@params['originaltitlefile'])}")
-        @htmltoc.add_item(1, File.basename(@params['originaltitlefile']), @producer.res.v('originaltitle'), chaptype: 'pre')
+      if @config['originaltitlefile'].present? && File.exist?(@config['originaltitlefile'])
+        FileUtils.cp(@config['originaltitlefile'], "#{basetmpdir}/#{File.basename(@config['originaltitlefile'])}")
+        @htmltoc.add_item(1, File.basename(@config['originaltitlefile']), @producer.res.v('originaltitle'), chaptype: 'pre')
       end
 
-      if @params['creditfile'].present? && File.exist?(@params['creditfile'])
-        FileUtils.cp(@params['creditfile'], "#{basetmpdir}/#{File.basename(@params['creditfile'])}")
-        @htmltoc.add_item(1, File.basename(@params['creditfile']), @producer.res.v('credittitle'), chaptype: 'pre')
+      if @config['creditfile'].present? && File.exist?(@config['creditfile'])
+        FileUtils.cp(@config['creditfile'], "#{basetmpdir}/#{File.basename(@config['creditfile'])}")
+        @htmltoc.add_item(1, File.basename(@config['creditfile']), @producer.res.v('credittitle'), chaptype: 'pre')
       end
 
       true
@@ -428,18 +428,18 @@ module ReVIEW
 
     def build_titlepage(basetmpdir, htmlfile)
       # TODO: should be created via epubcommon
-      @title = CGI.escapeHTML(@params.name_of('booktitle'))
+      @title = CGI.escapeHTML(@config.name_of('booktitle'))
       File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
         @body = ''
         @body << %Q(<div class="titlepage">\n)
-        @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@params.name_of('booktitle'))}</h1>\n)
-        @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@params.name_of('subtitle'))}</h2>\n) if @params['subtitle']
-        @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@params.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n) if @params['aut']
-        @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@params.names_of('prt').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n) if @params['prt']
+        @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>\n)
+        @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@config.name_of('subtitle'))}</h2>\n) if @config['subtitle']
+        @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n) if @config['aut']
+        @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('prt').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n) if @config['prt']
         @body << '</div>'
 
-        @language = @producer.params['language']
-        @stylesheets = @producer.params['stylesheet']
+        @language = @producer.config['language']
+        @stylesheets = @producer.config['stylesheet']
         tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
         tmpl = ReVIEW::Template.load(tmplfile)
         f.write tmpl.result(binding)
@@ -447,28 +447,28 @@ module ReVIEW
     end
 
     def copy_backmatter(basetmpdir)
-      if @params['profile']
-        FileUtils.cp(@params['profile'], "#{basetmpdir}/#{File.basename(@params['profile'])}")
-        @htmltoc.add_item(1, File.basename(@params['profile']), @producer.res.v('profiletitle'), chaptype: 'post')
+      if @config['profile']
+        FileUtils.cp(@config['profile'], "#{basetmpdir}/#{File.basename(@config['profile'])}")
+        @htmltoc.add_item(1, File.basename(@config['profile']), @producer.res.v('profiletitle'), chaptype: 'post')
       end
 
-      if @params['advfile']
-        FileUtils.cp(@params['advfile'], "#{basetmpdir}/#{File.basename(@params['advfile'])}")
-        @htmltoc.add_item(1, File.basename(@params['advfile']), @producer.res.v('advtitle'), chaptype: 'post')
+      if @config['advfile']
+        FileUtils.cp(@config['advfile'], "#{basetmpdir}/#{File.basename(@config['advfile'])}")
+        @htmltoc.add_item(1, File.basename(@config['advfile']), @producer.res.v('advtitle'), chaptype: 'post')
       end
 
-      if @params['colophon']
-        if @params['colophon'].is_a?(String) # FIXME: should let obsolete this style?
-          FileUtils.cp(@params['colophon'], "#{basetmpdir}/colophon.#{@params['htmlext']}")
+      if @config['colophon']
+        if @config['colophon'].is_a?(String) # FIXME: should let obsolete this style?
+          FileUtils.cp(@config['colophon'], "#{basetmpdir}/colophon.#{@config['htmlext']}")
         else
-          File.open("#{basetmpdir}/colophon.#{@params['htmlext']}", 'w') { |f| @producer.colophon(f) }
+          File.open("#{basetmpdir}/colophon.#{@config['htmlext']}", 'w') { |f| @producer.colophon(f) }
         end
-        @htmltoc.add_item(1, "colophon.#{@params['htmlext']}", @producer.res.v('colophontitle'), chaptype: 'post')
+        @htmltoc.add_item(1, "colophon.#{@config['htmlext']}", @producer.res.v('colophontitle'), chaptype: 'post')
       end
 
-      if @params['backcover']
-        FileUtils.cp(@params['backcover'], "#{basetmpdir}/#{File.basename(@params['backcover'])}")
-        @htmltoc.add_item(1, File.basename(@params['backcover']), @producer.res.v('backcovertitle'), chaptype: 'post')
+      if @config['backcover']
+        FileUtils.cp(@config['backcover'], "#{basetmpdir}/#{File.basename(@config['backcover'])}")
+        @htmltoc.add_item(1, File.basename(@config['backcover']), @producer.res.v('backcovertitle'), chaptype: 'post')
       end
 
       true
@@ -485,7 +485,7 @@ module ReVIEW
         return nil
       end
       require 'find'
-      allow_exts ||= @params['image_ext']
+      allow_exts ||= @config['image_ext']
 
       extre = Regexp.new('\\.(' + allow_exts.delete_if { |t| %w[ttf woff otf].include?(t) }.join('|') + ')', Regexp::IGNORECASE)
       Find.find(basetmpdir) do |fname|
