@@ -15,7 +15,7 @@ require 'cgi'
 module EPUBMaker
   # EPUBCommon is the common class for EPUB producer.
   class EPUBCommon
-    # Construct object with parameter hash +params+ and message resource hash +res+.
+    # Construct object with parameter hash +config+ and message resource hash +res+.
     def initialize(producer)
       @body_ext = ''
       @producer = producer
@@ -28,37 +28,37 @@ module EPUBMaker
     end
 
     def opf_path
-      "OEBPS/#{@producer.params['bookname']}.opf"
+      "OEBPS/#{@producer.config['bookname']}.opf"
     end
 
     def opf_coverimage
       s = ''
-      if @producer.params['coverimage']
+      if @producer.config['coverimage']
         file = nil
         @producer.contents.each do |item|
-          next if !item.media.start_with?('image') || item.file !~ /#{@producer.params["coverimage"]}\Z/
+          next if !item.media.start_with?('image') || item.file !~ /#{@producer.config["coverimage"]}\Z/
 
           s << %Q(    <meta name="cover" content="#{item.id}"/>\n)
           file = item.file
           break
         end
-        raise "coverimage #{@producer.params['coverimage']} not found. Abort." if file.nil?
+        raise "coverimage #{@producer.config['coverimage']} not found. Abort." if file.nil?
       end
       s
     end
 
     def ncx_isbn
-      uid = @producer.params['isbn'] || @producer.params['urnid']
+      uid = @producer.config['isbn'] || @producer.config['urnid']
       %Q(    <meta name="dtb:uid" content="#{uid}"/>\n)
     end
 
     def ncx_doctitle
       <<EOT
   <docTitle>
-    <text>#{CGI.escapeHTML(@producer.params['title'])}</text>
+    <text>#{CGI.escapeHTML(@producer.config['title'])}</text>
   </docTitle>
   <docAuthor>
-    <text>#{@producer.params['aut'].nil? ? '' : CGI.escapeHTML(join_with_separator(@producer.params['aut'], ReVIEW::I18n.t('names_splitter')))}</text>
+    <text>#{@producer.config['aut'].nil? ? '' : CGI.escapeHTML(join_with_separator(@producer.config['aut'], ReVIEW::I18n.t('names_splitter')))}</text>
   </docAuthor>
 EOT
     end
@@ -68,21 +68,21 @@ EOT
   <navMap>
     <navPoint id="top" playOrder="1">
       <navLabel>
-        <text>#{CGI.escapeHTML(@producer.params['title'])}</text>
+        <text>#{CGI.escapeHTML(@producer.config['title'])}</text>
       </navLabel>
-      <content src="#{@producer.params['cover']}"/>
+      <content src="#{@producer.config['cover']}"/>
     </navPoint>
 EOT
 
       nav_count = 2
 
-      unless @producer.params['mytoc'].nil?
+      unless @producer.config['mytoc'].nil?
         s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
       <navLabel>
         <text>#{CGI.escapeHTML(@producer.res.v('toctitle'))}</text>
       </navLabel>
-      <content src="#{@producer.params['bookname']}-toc.#{@producer.params['htmlext']}"/>
+      <content src="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}"/>
     </navPoint>
 EOT
         nav_count += 1
@@ -122,29 +122,29 @@ EOT
     def cover(type = nil)
       @body_ext = type.nil? ? '' : %Q( epub:type="#{type}")
 
-      if @producer.params['coverimage']
+      if @producer.config['coverimage']
         file = @producer.coverimage
-        raise "coverimage #{@producer.params['coverimage']} not found. Abort." unless file
+        raise "coverimage #{@producer.config['coverimage']} not found. Abort." unless file
         @body = <<-EOT
   <div id="cover-image" class="cover-image">
-    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.params.name_of('title'))}" class="max"/>
+    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.config.name_of('title'))}" class="max"/>
   </div>
         EOT
       else
         @body = <<-EOT
-<h1 class="cover-title">#{CGI.escapeHTML(@producer.params.name_of('title'))}</h1>
+<h1 class="cover-title">#{CGI.escapeHTML(@producer.config.name_of('title'))}</h1>
         EOT
-        if @producer.params['subtitle']
+        if @producer.config['subtitle']
           @body << <<-EOT
-<h2 class="cover-subtitle">#{CGI.escapeHTML(@producer.params.name_of('subtitle'))}</h2>
+<h2 class="cover-subtitle">#{CGI.escapeHTML(@producer.config.name_of('subtitle'))}</h2>
           EOT
         end
       end
 
-      @title = CGI.escapeHTML(@producer.params.name_of('title'))
-      @language = @producer.params['language']
-      @stylesheets = @producer.params['stylesheet']
-      tmplfile = if @producer.params['htmlversion'].to_i == 5
+      @title = CGI.escapeHTML(@producer.config.name_of('title'))
+      @language = @producer.config['language']
+      @stylesheets = @producer.config['stylesheet']
+      tmplfile = if @producer.config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -157,29 +157,29 @@ EOT
     # NOTE: this method is not used yet.
     #       see lib/review/epubmaker.rb#build_titlepage
     def titlepage
-      @title = CGI.escapeHTML(@producer.params.name_of('title'))
+      @title = CGI.escapeHTML(@producer.config.name_of('title'))
 
       @body = <<EOT
   <h1 class="tp-title">#{@title}</h1>
 EOT
 
-      if @producer.params['subtitle']
+      if @producer.config['subtitle']
         @body << <<EOT
-  <h2 class="tp-subtitle">#{CGI.escapeHTML(@producer.params.name_of('subtitle'))}</h2>
+  <h2 class="tp-subtitle">#{CGI.escapeHTML(@producer.config.name_of('subtitle'))}</h2>
 EOT
       end
 
-      if @producer.params['aut']
+      if @producer.config['aut']
         @body << <<EOT
   <p>
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.params.names_of('aut'), ReVIEW::I18n.t('names_splitter')))}</h2>
+  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.config.names_of('aut'), ReVIEW::I18n.t('names_splitter')))}</h2>
 EOT
       end
 
-      publisher = @producer.params.names_of('pbl')
+      publisher = @producer.config.names_of('pbl')
       if publisher
         @body << <<EOT
   <p>
@@ -192,9 +192,9 @@ EOT
 EOT
       end
 
-      @language = @producer.params['language']
-      @stylesheets = @producer.params['stylesheet']
-      tmplfile = if @producer.params['htmlversion'].to_i == 5
+      @language = @producer.config['language']
+      @stylesheets = @producer.config['stylesheet']
+      tmplfile = if @producer.config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -210,22 +210,22 @@ EOT
   <div class="colophon">
 EOT
 
-      if @producer.params['subtitle'].nil?
+      if @producer.config['subtitle'].nil?
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.params.name_of('title'))}</p>
+    <p class="title">#{CGI.escapeHTML(@producer.config.name_of('title'))}</p>
 EOT
       else
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.params.name_of('title'))}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.params.name_of('subtitle'))}</span></p>
+    <p class="title">#{CGI.escapeHTML(@producer.config.name_of('title'))}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.config.name_of('subtitle'))}</span></p>
 EOT
       end
 
-      @body << colophon_history if @producer.params['date'] || @producer.params['history']
+      @body << colophon_history if @producer.config['date'] || @producer.config['history']
 
       @body << %Q(    <table class="colophon">\n)
-      @body << @producer.params['colophon_order'].map do |role|
-        if @producer.params[role]
-          %Q(      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.params.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
+      @body << @producer.config['colophon_order'].map do |role|
+        if @producer.config[role]
+          %Q(      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
         else
           ''
         end
@@ -233,12 +233,12 @@ EOT
 
       @body << %Q(      <tr><th>ISBN</th><td>#{@producer.isbn_hyphen}</td></tr>\n) if @producer.isbn_hyphen
       @body << %Q(    </table>\n)
-      @body << %Q(    <p class="copyright">#{join_with_separator(@producer.params.names_of('rights').map { |m| CGI.escapeHTML(m) }, '<br />')}</p>\n) if @producer.params['rights'] && !@producer.params['rights'].empty?
+      @body << %Q(    <p class="copyright">#{join_with_separator(@producer.config.names_of('rights').map { |m| CGI.escapeHTML(m) }, '<br />')}</p>\n) if @producer.config['rights'] && !@producer.config['rights'].empty?
       @body << %Q(  </div>\n)
 
-      @language = @producer.params['language']
-      @stylesheets = @producer.params['stylesheet']
-      tmplfile = if @producer.params['htmlversion'].to_i == 5
+      @language = @producer.config['language']
+      @stylesheets = @producer.config['stylesheet']
+      tmplfile = if @producer.config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -250,8 +250,8 @@ EOT
     def colophon_history
       buf = ''
       buf << %Q(    <div class="pubhistory">\n)
-      if @producer.params['history']
-        @producer.params['history'].each_with_index do |items, edit|
+      if @producer.config['history']
+        @producer.config['history'].each_with_index do |items, edit|
           items.each_with_index do |item, rev|
             editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
             revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
@@ -269,7 +269,7 @@ EOT
           end
         end
       else
-        buf << %Q(      <p>#{ReVIEW::I18n.t('published_by2', date_to_s(@producer.params['date']))}</p>\n)
+        buf << %Q(      <p>#{ReVIEW::I18n.t('published_by2', date_to_s(@producer.config['date']))}</p>\n)
       end
       buf << %Q(    </div>\n)
       buf
@@ -286,15 +286,15 @@ EOT
       @title = CGI.escapeHTML(@producer.res.v('toctitle'))
 
       @body = %Q(  <h1 class="toc-title">#{CGI.escapeHTML(@producer.res.v('toctitle'))}</h1>\n)
-      if @producer.params['epubmaker']['flattoc'].nil?
+      if @producer.config['epubmaker']['flattoc'].nil?
         @body << hierarchy_ncx('ul')
       else
-        @body << flat_ncx('ul', @producer.params['epubmaker']['flattocindent'])
+        @body << flat_ncx('ul', @producer.config['epubmaker']['flattocindent'])
       end
 
-      @language = @producer.params['language']
-      @stylesheets = @producer.params['stylesheet']
-      tmplfile = if @producer.params['htmlversion'].to_i == 5
+      @language = @producer.config['language']
+      @stylesheets = @producer.config['stylesheet']
+      tmplfile = if @producer.config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -308,7 +308,7 @@ EOT
       level = 1
       find_jump = nil
       has_part = nil
-      toclevel = @producer.params['toclevel'].to_i
+      toclevel = @producer.config['toclevel'].to_i
 
       # check part existance
       @producer.contents.each do |item|
@@ -371,7 +371,7 @@ EOT
     def flat_ncx(type, indent = nil)
       s = %Q(<#{type} class="toc-h1">\n)
       @producer.contents.each do |item|
-        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.params['toclevel'].to_i
+        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.config['toclevel'].to_i
         is = indent == true ? '　' * item.level : ''
         s << %Q(<li><a href="#{item.file}">#{is}#{CGI.escapeHTML(item.title)}</a></li>\n)
       end
@@ -389,10 +389,10 @@ EOT
       FileUtils.mkdir_p("#{tmpdir}/OEBPS")
       File.open(File.join(tmpdir, opf_path), 'w') { |f| @producer.opf(f) }
 
-      if File.exist?("#{basedir}/#{@producer.params['cover']}")
-        FileUtils.cp("#{basedir}/#{@producer.params['cover']}", "#{tmpdir}/OEBPS")
+      if File.exist?("#{basedir}/#{@producer.config['cover']}")
+        FileUtils.cp("#{basedir}/#{@producer.config['cover']}", "#{tmpdir}/OEBPS")
       else
-        File.open("#{tmpdir}/OEBPS/#{@producer.params['cover']}", 'w') { |f| @producer.cover(f) }
+        File.open("#{tmpdir}/OEBPS/#{@producer.config['cover']}", 'w') { |f| @producer.cover(f) }
       end
 
       @producer.contents.each do |item|
@@ -405,7 +405,7 @@ EOT
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)
-      @title = @producer.params['booktitle']
+      @title = @producer.config['booktitle']
       s = ''
       File.open(loadfile) do |f|
         f.each_line do |l|

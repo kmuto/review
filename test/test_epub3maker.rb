@@ -7,7 +7,7 @@ class EPUB3MakerTest < Test::Unit::TestCase
 
   def setup
     @producer = Producer.new
-    @producer.merge_params(
+    @producer.merge_config(
       'bookname' => 'sample',
       'title' => 'Sample Book',
       'epubversion' => 3,
@@ -25,12 +25,12 @@ class EPUB3MakerTest < Test::Unit::TestCase
   end
 
   def test_resource_en
-    @producer.merge_params('language' => 'en')
+    @producer.merge_config('language' => 'en')
     assert_equal 'Table of Contents', @producer.res.v('toctitle')
   end
 
   def test_resource_ja
-    @producer.merge_params('language' => 'ja')
+    @producer.merge_config('language' => 'ja')
     assert_equal '目次', @producer.res.v('toctitle')
   end
 
@@ -81,7 +81,7 @@ EOT
   end
 
   def test_stage1_opf_ebpaj
-    @producer.merge_params(
+    @producer.merge_config(
       'opf_prefix' => { 'ebpaj' => 'http://www.ebpaj.jp/' },
       'opf_meta' => { 'ebpaj:guide-version' => '1.1.2' }
     )
@@ -114,9 +114,9 @@ EOT
   end
 
   def test_stage1_opf_fileas
-    @producer.params['title'] = { 'name' => 'これは書籍です', 'file-as' => 'コレハショセキデス' }
-    @producer.params['aut'] = [{ 'name' => '著者A', 'file-as' => 'チョシャA' }, { 'name' => '著者B', 'file-as' => 'チョシャB' }]
-    @producer.params['pbl'] = [{ 'name' => '出版社', 'file-as' => 'シュッパンシャ' }]
+    @producer.config['title'] = { 'name' => 'これは書籍です', 'file-as' => 'コレハショセキデス' }
+    @producer.config['aut'] = [{ 'name' => '著者A', 'file-as' => 'チョシャA' }, { 'name' => '著者B', 'file-as' => 'チョシャB' }]
+    @producer.config['pbl'] = [{ 'name' => '出版社', 'file-as' => 'シュッパンシャ' }]
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -405,7 +405,7 @@ EOT
   end
 
   def test_stage3_flat
-    @producer.merge_params('epubmaker' => { 'flattoc' => true, 'flattocindent' => false })
+    @producer.merge_config('epubmaker' => { 'flattoc' => true, 'flattocindent' => false })
     stage3
     @producer.mytoc(@output)
     expect = <<EOT
@@ -456,7 +456,7 @@ EOT
 
   def test_stage3_cover_with_image
     stage3
-    @producer.params['coverimage'] = 'sample.png'
+    @producer.config['coverimage'] = 'sample.png'
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -478,8 +478,8 @@ EOT
   end
 
   def test_colophon_default
-    @producer.params['aut'] = ['Mr.Smith']
-    @producer.params['pbl'] = ['BLUEPRINT']
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -508,9 +508,9 @@ EOT
   end
 
   def test_colophon_pht
-    @producer.params['aut'] = ['Mr.Smith']
-    @producer.params['pbl'] = ['BLUEPRINT']
-    @producer.params['pht'] = ['Mrs.Smith']
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -540,10 +540,10 @@ EOT
   end
 
   def test_colophon_history
-    @producer.params['aut'] = ['Mr.Smith']
-    @producer.params['pbl'] = ['BLUEPRINT']
-    @producer.params['pht'] = ['Mrs.Smith']
-    @producer.merge_params('language' => 'ja')
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config('language' => 'ja')
     history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
@@ -554,10 +554,10 @@ EOT
   end
 
   def test_colophon_history_2
-    @producer.params['aut'] = ['Mr.Smith']
-    @producer.params['pbl'] = ['BLUEPRINT']
-    @producer.params['pht'] = ['Mrs.Smith']
-    @producer.merge_params(
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config(
       'language' => 'ja',
       'history' => [['2011-08-03 v1.0.0版発行', '2012-02-15 v1.1.0版発行']]
     )
@@ -572,10 +572,10 @@ EOT
   end
 
   def test_colophon_history_date
-    @producer.params['aut'] = ['Mr.Smith']
-    @producer.params['pbl'] = ['BLUEPRINT']
-    @producer.params['pht'] = ['Mrs.Smith']
-    @producer.merge_params(
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config(
       'language' => 'ja',
       'history' => [['2011-08-03', '2012-02-15']]
     )
@@ -590,10 +590,10 @@ EOT
   end
 
   def test_colophon_history_date2
-    @producer.params['aut'] = ['Mr.Smith']
-    @producer.params['pbl'] = ['BLUEPRINT']
-    @producer.params['pht'] = ['Mrs.Smith']
-    @producer.merge_params(
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config(
       'language' => 'ja',
       'history' => [['2011-08-03', '2012-02-15'],
                     ['2012-10-01'],
