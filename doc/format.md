@@ -535,10 +535,9 @@ is in footnotes.
 
 Note that In LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in columns and tables.
 
-### `--footnotetext` option
+### `footnotetext` option
 
-When you want to use `footnotetext` option, you can add `--footnotetext` with `params` in config.yml.
-With this option, you can use footnote in tables and short notes.
+By adding `footnotetext:true` in config.yml, you can use footnote in tables and short notes.
 
 Note that there are some constraints that (because of normal footnote )
 
