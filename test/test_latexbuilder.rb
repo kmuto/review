@@ -953,6 +953,11 @@ EOS
     assert_equal 'test \\pdfcomment{コメント} test2', actual
   end
 
+  def test_inline_fence
+    actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
+    assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
+  end
+
   def test_appendix_list
     @chapter.instance_eval do
       def on_appendix?

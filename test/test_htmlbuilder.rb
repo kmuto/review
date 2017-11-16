@@ -1681,4 +1681,9 @@ EOS
     actual = compile_inline('test @<comment>{コメント} test2')
     assert_equal %Q(test <span class="draft-comment">コメント</span> test2), actual
   end
+
+  def test_inline_fence
+    actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
+    assert_equal 'test <code class="inline-code tt">@&lt;code&gt;{$サンプル$}</code>', actual
+  end
 end
