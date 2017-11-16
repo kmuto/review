@@ -508,7 +508,7 @@ module ReVIEW
     def replace_fence(str)
       str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
         op = $1
-        arg = $3.gsub('@', '!!!atmark!!!').gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) { |m| '\\\\' * m.size }
+        arg = $3.gsub('@', "\x01").gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) { |m| '\\\\' * m.size }
         "@<#{op}>{#{arg}}"
       end
     end
@@ -522,7 +522,7 @@ module ReVIEW
         result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
         result << @strategy.nofunc_text(words.shift)
       end
-      result.gsub('!!!atmark!!!', '@')
+      result.gsub("\x01", '@')
     rescue => err
       error err.message
     end
