@@ -77,6 +77,7 @@
 [#856]: https://github.com/kmuto/review/issues/856
 [#862]: https://github.com/kmuto/review/pull/862
 [#867]: https://github.com/kmuto/review/issues/867
+[#872]: https://github.com/kmuto/review/issues/872
 [#876]: https://github.com/kmuto/review/issues/876
 
 # Version 2.3.0
