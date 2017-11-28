@@ -1,3 +1,84 @@
+# Version 2.4.0
+
+## 新機能
+
+* エラーや警告の出力に Ruby 標準の Logger クラスを使うようにしました ([#705])
+* EPUBMaker: 電子書籍ストアで拒絶されることの多い、大きなピクセル数の画像ファイルに対して警告を出すようにしました ([#819])
+* LATEXBuilder: ページ参照のための `@<pageref>` 命令を追加しました ([#836])
+* インライン命令で `{}` で引数を囲む代わりに `| |` あるいは `$ $` で囲むことにより、`}` のエスケープが不要になる、フェンス記法を導入しました ([#876])
+
+## バグ修正
+
+* 見出しが空、あるいはコードブロック内等で誤認識される挙動を修正しました ([#121])
+* TOPBuilder: `//image` で metric パラメータが無視されるのを修正しました。`//indepimage` で metric パラメータがないとエラーになるのを修正しました ([#805])
+* 他章のコラム参照が動作していなかったのを修正しました ([#817])
+* config.yml で `date` の値が空のときに実行時の日付が正しく入るようにしました ([#824])
+* 前付・後付の図・表・リストのキャプションの見出しの前置文字列の定義の誤りを修正しました ([#830])
+* WebMaker の書籍見出しに名前付きパラメータを与えたときの挙動を修正しました ([#831])
+* フォントファイルが不足した一部の環境において、欧文が Type3 形式になってしまう問題を避けるため、lmodern スタイルファイルを読み込むようにしました ([#843])
+* config.yml で `/` を含む見出しがおかしくなる問題を修正しました ([#852])
+* PDFMaker において toclevel の値が正しい効果を表すように修正しました ([#846])
+
+## 機能強化
+
+* `//indepimage` で ``{ 〜 //}`` によるブロック表記を許容するようになりました ([#802])
+* `//indepimage` で画像ファイルが見つからないときに警告を出すようにしました ([#803])
+* LATEXBuilder: `//source` はキャプション引数を許容するようになりました ([#834])
+
+## 非互換の変更
+
+* LATEXBuilder: 部番号のデフォルト表記をローマ数字にしました ([#837])
+* EPUBMaker: 目次を冒頭ではなく前付の後に置くようにしました ([#840])
+* `imgmath` 有効時に数式画像ファイルを書き出すフォルダを、`images` 直下ではなく `images/_review_math`  としました ([#856])
+* EPUBMaker: 大扉の有無を示す titlepage のデフォルトは null (無) から、PDFMaker と同様に true (有) になりました ([#862])
+* EPUBMaker: テンプレートファイルの `params` を `config` に置き換えました ([#867])
+
+## ドキュメント
+
+* `rake pdf` には LaTeX 環境が必要なことを追記しました ([#800])
+* README.md 内のリンクミスを修正しました ([#815])
+* Re:VIEW の各命令の登場パターンを網羅するテストドキュメントを用意しました ([#833])
+* config.yml の titlepage パラメータのコメントを修正しました ([#847])
+* footnotetext の説明を修正しました ([#872])
+
+## その他
+
+* rubocop 0.50.0 の指摘に基づき、コーディングルールを統一しました ([#823])
+* 利用者がいないため、EWBBuilder を撤去しました ([#828])
+
+## コントリビューターのみなさん
+* [@ryota-murakami](https://github.com/ryota-murakami)
+* [@nasum](https://github.com/nasum)
+* [@kokuyouwind](https://github.com/kokuyouwind)
+
+[#121] https://github.com/kmuto/review/issues/121
+[#705] https://github.com/kmuto/review/issues/705
+[#800] https://github.com/kmuto/review/pull/800
+[#802] https://github.com/kmuto/review/issues/802
+[#803] https://github.com/kmuto/review/issues/803
+[#805] https://github.com/kmuto/review/pull/805
+[#815] https://github.com/kmuto/review/pull/815
+[#817] https://github.com/kmuto/review/pull/817
+[#819] https://github.com/kmuto/review/issues/819
+[#823] https://github.com/kmuto/review/issues/823
+[#824] https://github.com/kmuto/review/issues/824
+[#828] https://github.com/kmuto/review/pull/828
+[#830] https://github.com/kmuto/review/pull/830
+[#831] https://github.com/kmuto/review/pull/831
+[#833] https://github.com/kmuto/review/pull/833
+[#834] https://github.com/kmuto/review/issues/834
+[#836] https://github.com/kmuto/review/issues/836
+[#840] https://github.com/kmuto/review/pull/840
+[#843] https://github.com/kmuto/review/issues/843
+[#837] https://github.com/kmuto/review/issues/837
+[#846] https://github.com/kmuto/review/issues/846
+[#847] https://github.com/kmuto/review/pull/847
+[#852] https://github.com/kmuto/review/issues/852
+[#856] https://github.com/kmuto/review/issues/856
+[#862] https://github.com/kmuto/review/pull/862
+[#867] https://github.com/kmuto/review/issues/867
+[#876] https://github.com/kmuto/review/issues/876
+
 # Version 2.3.0
 
 ## 新機能
