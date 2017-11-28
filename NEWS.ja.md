@@ -21,7 +21,7 @@
 
 ## 機能強化
 
-* `//indepimage` で ``{ 〜 //}`` によるブロック表記を許容するようになりました ([#802])
+* `//indepimage` で `{ 〜 //}` によるブロック表記を許容するようになりました ([#802])
 * `//indepimage` で画像ファイルが見つからないときに警告を出すようにしました ([#803])
 * LATEXBuilder: `//source` はキャプション引数を許容するようになりました ([#834])
 
@@ -51,33 +51,33 @@
 * [@nasum](https://github.com/nasum)
 * [@kokuyouwind](https://github.com/kokuyouwind)
 
-[#121] https://github.com/kmuto/review/issues/121
-[#705] https://github.com/kmuto/review/issues/705
-[#800] https://github.com/kmuto/review/pull/800
-[#802] https://github.com/kmuto/review/issues/802
-[#803] https://github.com/kmuto/review/issues/803
-[#805] https://github.com/kmuto/review/pull/805
-[#815] https://github.com/kmuto/review/pull/815
-[#817] https://github.com/kmuto/review/pull/817
-[#819] https://github.com/kmuto/review/issues/819
-[#823] https://github.com/kmuto/review/issues/823
-[#824] https://github.com/kmuto/review/issues/824
-[#828] https://github.com/kmuto/review/pull/828
-[#830] https://github.com/kmuto/review/pull/830
-[#831] https://github.com/kmuto/review/pull/831
-[#833] https://github.com/kmuto/review/pull/833
-[#834] https://github.com/kmuto/review/issues/834
-[#836] https://github.com/kmuto/review/issues/836
-[#840] https://github.com/kmuto/review/pull/840
-[#843] https://github.com/kmuto/review/issues/843
-[#837] https://github.com/kmuto/review/issues/837
-[#846] https://github.com/kmuto/review/issues/846
-[#847] https://github.com/kmuto/review/pull/847
-[#852] https://github.com/kmuto/review/issues/852
-[#856] https://github.com/kmuto/review/issues/856
-[#862] https://github.com/kmuto/review/pull/862
-[#867] https://github.com/kmuto/review/issues/867
-[#876] https://github.com/kmuto/review/issues/876
+[#121]: https://github.com/kmuto/review/issues/121
+[#705]: https://github.com/kmuto/review/issues/705
+[#800]: https://github.com/kmuto/review/pull/800
+[#802]: https://github.com/kmuto/review/issues/802
+[#803]: https://github.com/kmuto/review/issues/803
+[#805]: https://github.com/kmuto/review/pull/805
+[#815]: https://github.com/kmuto/review/pull/815
+[#817]: https://github.com/kmuto/review/pull/817
+[#819]: https://github.com/kmuto/review/issues/819
+[#823]: https://github.com/kmuto/review/issues/823
+[#824]: https://github.com/kmuto/review/issues/824
+[#828]: https://github.com/kmuto/review/pull/828
+[#830]: https://github.com/kmuto/review/pull/830
+[#831]: https://github.com/kmuto/review/pull/831
+[#833]: https://github.com/kmuto/review/pull/833
+[#834]: https://github.com/kmuto/review/issues/834
+[#836]: https://github.com/kmuto/review/issues/836
+[#840]: https://github.com/kmuto/review/pull/840
+[#843]: https://github.com/kmuto/review/issues/843
+[#837]: https://github.com/kmuto/review/issues/837
+[#846]: https://github.com/kmuto/review/issues/846
+[#847]: https://github.com/kmuto/review/pull/847
+[#852]: https://github.com/kmuto/review/issues/852
+[#856]: https://github.com/kmuto/review/issues/856
+[#862]: https://github.com/kmuto/review/pull/862
+[#867]: https://github.com/kmuto/review/issues/867
+[#876]: https://github.com/kmuto/review/issues/876
 
 # Version 2.3.0
 
