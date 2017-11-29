@@ -51,8 +51,8 @@ module ReVIEW
     end
 
     def noindent
-      warn "markdown not support //noindent"
-      puts "<!-- noindent -->"
+      warn 'markdown not support //noindent'
+      puts '<!-- noindent -->'
     end
 
     def list_header(id, caption, lang)
