@@ -50,6 +50,11 @@ module ReVIEW
       puts "\n"
     end
 
+    def noindent
+      warn "markdown not support //noindent"
+      puts "<!-- noindent -->"
+    end
+
     def list_header(id, caption, lang)
       if get_chap.nil?
         print %Q(リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n\n)
@@ -127,6 +132,14 @@ module ReVIEW
       blank
     end
 
+    def captionblock(type, lines, caption, _specialstyle = nil)
+      puts %Q(<div class="#{type}">)
+      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      blocked_lines = split_paragraph(lines)
+      puts blocked_lines.join("\n")
+      puts '</div>'
+    end
+
     def hr
       puts '----'
     end
@@ -156,8 +169,20 @@ module ReVIEW
       "`#{str}`"
     end
 
+    def inline_sub(str)
+      "<sub>#{str}</sub>"
+    end
+
+    def inline_sup(str)
+      "<sup>#{str}</sup>"
+    end
+
     def inline_tt(str)
       "`#{str}`"
+    end
+
+    def inline_u(str)
+      "<u>#{str}</u>"
     end
 
     def image_image(id, caption, _metric)
@@ -175,6 +200,10 @@ module ReVIEW
     rescue KeyError
       error "unknown image: #{id}"
       nofunc_text("[UnknownImage:#{id}]")
+    end
+
+    def inline_dtp(str)
+      "<!-- DTP:#{str} -->"
     end
 
     def indepimage(_lines, id, caption = '', _metric = nil)
@@ -294,6 +323,16 @@ module ReVIEW
       end
     end
 
+    def compile_kw(word, alt)
+      %Q(<b class="kw">) +
+        if alt
+          escape_html(word + " (#{alt.strip})")
+        else
+          escape_html(word)
+        end +
+        "</b><!-- IDX:#{escape_comment(escape_html(word))} -->"
+    end
+
     def comment(lines, comment = nil)
       return unless @book.config['draft']
       lines ||= []
@@ -302,12 +341,27 @@ module ReVIEW
       puts %Q(<div class="red">#{escape_html(str)}</div>)
     end
 
+    def inline_icon(id)
+      begin
+        "![](#{@chapter.image(id).path.sub(%r{\A\./}, '')})"
+      rescue
+        warn "image not bound: #{id}"
+        %Q(<pre>missing image: #{id}</pre>)
+      end
+    end
+
     def inline_comment(str)
       if @book.config['draft']
         %Q(<span class="red">#{escape_html(str)}</span>)
       else
         ''
       end
+    end
+
+    def flushright(lines)
+      puts %Q(<div class="flushright">)
+      puts lines.join
+      puts %Q(</div>)
     end
   end
 end # module ReVIEW
