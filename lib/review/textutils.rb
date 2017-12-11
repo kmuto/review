@@ -15,6 +15,7 @@ module ReVIEW
     def split_paragraph(lines)
       pre = pre_paragraph
       post = post_paragraph
+      lines.pop while lines[lines.size - 1] && lines[lines.size - 1].strip.empty?
 
       blocked_lines = [[]]
       lines.each do |element|
