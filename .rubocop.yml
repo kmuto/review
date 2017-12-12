@@ -262,7 +262,7 @@ Style/UnneededPercentQ:
   Enabled: false
 
 Style/WhileUntilModifier:
-  Enabled: true
+  Enabled: false
 
 #Style/YodaCondition:
 #  Enabled: true
