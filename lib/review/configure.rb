@@ -38,6 +38,7 @@ module ReVIEW
         'catalogfile' => 'catalog.yml',
         'language' => 'ja', # XXX default language should be JA??
         'mathml' => nil, # for HTML
+        'imgmath' => nil, # for HTML
         'htmlext' => 'html',
         'htmlversion' => 5,
         'imagedir' => 'images',

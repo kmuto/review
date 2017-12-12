@@ -345,6 +345,7 @@ module ReVIEW
     end
 
     def error(msg)
+      raise ApplicationError, msg if msg =~ /:\d+: error: /
       raise ApplicationError, "#{@location}: error: #{msg}"
     end
 

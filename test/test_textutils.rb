@@ -61,6 +61,8 @@ class TextUtilsTest < Test::Unit::TestCase
     assert_equal ['<p>abc</p>', '<p>def</p>'], ret
     ret = @tu_p.split_paragraph(['abc', '', '', 'def', 'ghi'])
     assert_equal ['<p>abc</p>', '<p>defghi</p>'], ret
+    ret = @tu_p.split_paragraph(['abc', '', '', 'def', 'ghi', '', ''])
+    assert_equal ['<p>abc</p>', '<p>defghi</p>'], ret
   end
 
   def test_split_paragraph_nil

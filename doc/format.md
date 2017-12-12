@@ -115,7 +115,6 @@ They aren't nested.
 
 Usage:
 
-
 ```
 1. 1st condition
 2. 2nd condition
@@ -185,13 +184,31 @@ Inline commands are used in block,  paragraphes, headings, block contents and bl
 @<command>{content}
 ```
 
-When you want to use a character `}` in inline content, you must use escaping `\}`.
+When you want to use a character `}` in inline content, you must use escaping `\}`. If the content ends with `\`, it must be written `\\`. (ex. `@<tt>{\\}`)
 
 There are some limitations in blocks and inlines.
 
 * Block commands do not support nestins.  You cannot write blocks in another block.
 * You cannot write headings and itemize in block contents.
 * Inline commands also do not support nestins.  You cannot write inlines in another inline.
+
+### Fence notation for inline commands
+You may be tired of escaping when you use a large number of inline commands including `{` and `\`. By surrounding the contents with `$ $` or `| |` instead of `{ }`, you can write without escaping.
+
+```
+@<command>$content$
+@<command>|content|
+```
+
+Example:
+
+```review
+@<m>$\Delta = \frac{\partial^2}{\partial x_1^2}+\frac{\partial^2}{\partial x_2^2} + \cdots + \frac{\partial^2}{\partial x_n^2}$
+@<tt>|if (exp) then { ... } else { ... }|
+@<b>|\|
+```
+
+Since this notation is substitute, please avoid abuse.
 
 ## Code List
 
@@ -518,10 +535,9 @@ is in footnotes.
 
 Note that In LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in columns and tables.
 
-### `--footnotetext` option
+### `footnotetext` option
 
-When you want to use `footnotetext` option, you can add `--footnotetext` with `params` in config.yml.
-With this option, you can use footnote in tables and short notes.
+By adding `footnotetext:true` in config.yml, you can use footnote in tables and short notes.
 
 Note that there are some constraints that (because of normal footnote )
 

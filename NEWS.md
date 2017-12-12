@@ -1,3 +1,86 @@
+# Version 2.4.0
+
+## New Features
+
+* use built-in Logger class for warns and errors ([#705])
+* EPUBMaker: warn of large images because of rejecting ebook stores ([#819])
+* LATEXBuilder: add new inline command `@<pageref>` ([#836])
+* support inline notaion `| |` and `$ $` instead of `{}` to surpress escaping `}` ([#876])
+
+## Breaking Changes
+
+* LATEXBuilder: use Roman numerals as part numbers ([#837])
+* EPUBMaker: TOC should be after frontmatter ([#840])
+* `imgmath` uses folder `images/_review_math`, not `images` directly ([#856])
+* EPUBMaker: default value of titlepage is `true`, not `null` ([#862])
+* EPUBMaker: `params` in template files should be `config` ([#867])
+* EWBBuilder is removed because nobody maintained it ([#828])
+
+## Bug Fixes
+
+* fix misrecognition of HeadlineIndex ([#121])
+* TOPBuilder: fix metric parameter in `//image` and `//indepimage` ([#805])
+* fix refering columns in other chapters ([#817])
+* use execution date when `date` in config.yml is empty ([#824])
+* fix I18N messages of `listref`, `imgref`, and `tableref` in frontmatters and backmatters ([#830])
+* WebMaker: fix booktitle using Hash ([#831])
+* LATEXBuilder: use lmodern package to avoid to use Type3 font in Western languages ([#843])
+* fix broken title using `/` in config.yml ([#852])
+* PDFMaker: fix toclevel ([#846])
+
+## Enhancements
+
+* allow block `{ 〜 //}` in `//indepimage`. ([#802])
+* warn when images are not found in `//indepimage`([#803])
+* LATEXBuilder: allow caption in `//source` ([#834])
+
+## Docs
+
+* add that installing LaTeX environments is needed to use `rake pdf` ([#800])
+* fix links in README.md ([#815])
+* add sample document to test commands of Re:VIEW ([#833])
+* fix comment of `titlepage` in config.yml ([#847])
+* fix description of `footnotetext` ([#872])
+
+## Others
+
+* fix coding rules to surpress rubocop v0.50.0 ([#823])
+
+## Contributors
+
+* [@ryota-murakami](https://github.com/ryota-murakami)
+* [@nasum](https://github.com/nasum)
+* [@kokuyouwind](https://github.com/kokuyouwind)
+
+[#121]: https://github.com/kmuto/review/issues/121
+[#705]: https://github.com/kmuto/review/issues/705
+[#800]: https://github.com/kmuto/review/pull/800
+[#802]: https://github.com/kmuto/review/issues/802
+[#803]: https://github.com/kmuto/review/issues/803
+[#805]: https://github.com/kmuto/review/pull/805
+[#815]: https://github.com/kmuto/review/pull/815
+[#817]: https://github.com/kmuto/review/pull/817
+[#819]: https://github.com/kmuto/review/issues/819
+[#823]: https://github.com/kmuto/review/issues/823
+[#824]: https://github.com/kmuto/review/issues/824
+[#828]: https://github.com/kmuto/review/pull/828
+[#830]: https://github.com/kmuto/review/pull/830
+[#831]: https://github.com/kmuto/review/pull/831
+[#833]: https://github.com/kmuto/review/pull/833
+[#834]: https://github.com/kmuto/review/issues/834
+[#836]: https://github.com/kmuto/review/issues/836
+[#840]: https://github.com/kmuto/review/pull/840
+[#843]: https://github.com/kmuto/review/issues/843
+[#837]: https://github.com/kmuto/review/issues/837
+[#846]: https://github.com/kmuto/review/issues/846
+[#847]: https://github.com/kmuto/review/pull/847
+[#852]: https://github.com/kmuto/review/issues/852
+[#856]: https://github.com/kmuto/review/issues/856
+[#862]: https://github.com/kmuto/review/pull/862
+[#867]: https://github.com/kmuto/review/issues/867
+[#872]: https://github.com/kmuto/review/issues/872
+[#876]: https://github.com/kmuto/review/issues/876
+
 # Version 2.3.0
 
 ## New Features

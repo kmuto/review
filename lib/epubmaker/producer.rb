@@ -23,7 +23,7 @@ module EPUBMaker
     # Array of content objects.
     attr_accessor :contents
     # Parameter hash.
-    attr_accessor :params
+    attr_accessor :config
     # Message resource object.
     attr_reader :res
 
@@ -38,48 +38,48 @@ module EPUBMaker
     def load(file)
       raise "Can't open #{file}." if file.nil? || !File.exist?(file)
       loader = ReVIEW::YAMLLoader.new
-      merge_params(@params.deep_merge(loader.load_file(file)))
+      merge_config(@config.deep_merge(loader.load_file(file)))
     end
 
     # Construct producer object.
-    # +params+ takes initial parameter hash. This parameters can be overriden by EPUBMaker#load or EPUBMaker#merge_params.
+    # +config+ takes initial parameter hash. This parameters can be overriden by EPUBMaker#load or EPUBMaker#merge_config.
     # +version+ takes EPUB version (default is 2).
-    def initialize(params = nil, version = nil)
+    def initialize(config = nil, version = nil)
       @contents = []
-      @params = ReVIEW::Configure.new
+      @config = ReVIEW::Configure.new
       @epub = nil
-      @params['epubversion'] = version unless version.nil?
+      @config['epubversion'] = version unless version.nil?
       @res = ReVIEW::I18n
 
-      merge_params(params) if params
+      merge_config(config) if config
     end
 
     def coverimage
-      return nil unless params['coverimage']
+      return nil unless config['coverimage']
       @contents.each do |item|
-        if item.media.start_with?('image') && item.file =~ /#{params['coverimage']}\Z/
+        if item.media.start_with?('image') && item.file =~ /#{config['coverimage']}\Z/
           return item.file
         end
       end
       nil
     end
 
-    # Update parameters by merging from new parameter hash +params+.
-    def merge_params(params)
-      @params.deep_merge!(params)
+    # Update parameters by merging from new parameter hash +config+.
+    def merge_config(config)
+      @config.deep_merge!(config)
       complement
 
-      unless @params['epubversion'].nil?
-        case @params['epubversion'].to_i
+      unless @config['epubversion'].nil?
+        case @config['epubversion'].to_i
         when 2
           @epub = EPUBMaker::EPUBv2.new(self)
         when 3
           @epub = EPUBMaker::EPUBv3.new(self)
         else
-          raise "Invalid EPUB version (#{@params['epubversion']}.)"
+          raise "Invalid EPUB version (#{@config['epubversion']}.)"
         end
       end
-      ReVIEW::I18n.locale = params['language'] if params['language']
+      ReVIEW::I18n.locale = config['language'] if config['language']
       support_legacy_maker
     end
 
@@ -109,10 +109,10 @@ module EPUBMaker
     end
 
     # Write cover file to IO object +wobj+.
-    # If Producer#params["coverimage"] is defined, it will be used for
+    # If Producer#config["coverimage"] is defined, it will be used for
     # the cover image.
     def cover(wobj)
-      type = @params['epubversion'] >= 3 ? 'cover' : nil
+      type = @config['epubversion'] >= 3 ? 'cover' : nil
       s = @epub.cover(type)
       wobj.puts s if !s.nil? && !wobj.nil?
     end
@@ -139,7 +139,7 @@ module EPUBMaker
     # +base+ defines a string to remove from path name.
     def import_imageinfo(path, base = nil, allow_exts = nil)
       return nil unless File.exist?(path)
-      allow_exts = @params['image_ext'] if allow_exts.nil?
+      allow_exts = @config['image_ext'] if allow_exts.nil?
       Dir.foreach(path) do |f|
         next if f.start_with?('.')
         if f =~ /\.(#{allow_exts.join('|')})\Z/i
@@ -186,7 +186,7 @@ module EPUBMaker
     end
 
     def isbn_hyphen
-      str = @params['isbn'].to_s
+      str = @config['isbn'].to_s
 
       return "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}" if str =~ /\A\d{10}\Z/
       return "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}" if str =~ /\A\d{13}\Z/
@@ -197,7 +197,7 @@ module EPUBMaker
 
     # Complement parameters.
     def complement
-      @params['htmlext'] = 'html' if @params['htmlext'].nil?
+      @config['htmlext'] = 'html' if @config['htmlext'].nil?
       defaults = ReVIEW::Configure.new.merge(
         'language' => 'ja',
         'date' => Time.now.strftime('%Y-%m-%d'),
@@ -211,7 +211,7 @@ module EPUBMaker
         'pre_secnolevel' => 0,
         'post_secnolevel' => 1,
         'part_secnolevel' => 1,
-        'titlepage' => nil,
+        'titlepage' => true,
         'titlefile' => nil,
         'originaltitlefile' => nil,
         'profile' => nil,
@@ -244,8 +244,8 @@ module EPUBMaker
         'font_ext' => %w[ttf woff otf]
       )
 
-      @params = defaults.deep_merge(@params)
-      @params['title'] = @params['booktitle'] unless @params['title']
+      @config = defaults.deep_merge(@config)
+      @config['title'] = @config['booktitle'] unless @config['title']
 
       deprecated_parameters = {
         'ncxindent' => 'epubmaker:ncxindent',
@@ -267,20 +267,20 @@ module EPUBMaker
       }
 
       deprecated_parameters.each_pair do |k, v|
-        next if @params[k].nil?
+        next if @config[k].nil?
         sa = v.split(':', 2)
         warn "Parameter #{k} is deprecated. Use:\n#{sa[0]}:\n  #{sa[1]}: ...\n\n"
-        @params[sa[0]][sa[1]] = @params[k]
-        @params.delete(k)
+        @config[sa[0]][sa[1]] = @config[k]
+        @config.delete(k)
       end
 
-      @params['htmlversion'] = 5 if @params['epubversion'] >= 3
+      @config['htmlversion'] = 5 if @config['epubversion'] >= 3
 
-      @params.maker = 'epubmaker'
-      @params['cover'] = "#{@params['bookname']}.#{@params['htmlext']}" unless @params['cover']
+      @config.maker = 'epubmaker'
+      @config['cover'] = "#{@config['bookname']}.#{@config['htmlext']}" unless @config['cover']
 
       %w[bookname title].each do |k|
-        raise "Key #{k} must have a value. Abort." unless @params[k]
+        raise "Key #{k} must have a value. Abort." unless @config[k]
       end
       # array
       %w[subject aut
@@ -289,8 +289,8 @@ module EPUBMaker
          adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt
          ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl
          stylesheet rights].each do |item|
-        next unless @params[item]
-        @params[item] = [@params[item]] if @params[item].is_a?(String)
+        next unless @config[item]
+        @config[item] = [@config[item]] if @config[item].is_a?(String)
       end
       # optional
       # type, format, identifier, source, relation, coverpage, aut
@@ -298,32 +298,32 @@ module EPUBMaker
 
     def support_legacy_maker
       # legacy review-epubmaker support
-      if @params['flag_legacy_coverfile'].nil? && !@params['coverfile'].nil? && File.exist?(@params['coverfile'])
-        @params['cover'] = "#{@params['bookname']}-cover.#{@params['htmlext']}"
-        @epub.legacy_cover_and_title_file(@params['coverfile'], @params['cover'])
-        @params['flag_legacy_coverfile'] = true
+      if @config['flag_legacy_coverfile'].nil? && !@config['coverfile'].nil? && File.exist?(@config['coverfile'])
+        @config['cover'] = "#{@config['bookname']}-cover.#{@config['htmlext']}"
+        @epub.legacy_cover_and_title_file(@config['coverfile'], @config['cover'])
+        @config['flag_legacy_coverfile'] = true
         warn %Q(Parameter 'coverfile' is obsolete. Please use 'cover' and make complete html file with header and footer.)
       end
 
-      if @params['flag_legacy_titlepagefile'].nil? && !@params['titlepagefile'].nil? && File.exist?(@params['titlepagefile'])
-        @params['titlefile'] = "#{@params['bookname']}-title.#{@params['htmlext']}"
-        @params['titlepage'] = true
-        @epub.legacy_cover_and_title_file(@params['titlepagefile'], @params['titlefile'])
-        @params['flag_legacy_titlepagefile'] = true
+      if @config['flag_legacy_titlepagefile'].nil? && !@config['titlepagefile'].nil? && File.exist?(@config['titlepagefile'])
+        @config['titlefile'] = "#{@config['bookname']}-title.#{@config['htmlext']}"
+        @config['titlepage'] = true
+        @epub.legacy_cover_and_title_file(@config['titlepagefile'], @config['titlefile'])
+        @config['flag_legacy_titlepagefile'] = true
         warn %Q(Parameter 'titlepagefile' is obsolete. Please use 'titlefile' and make complete html file with header and footer.)
       end
 
-      if @params['flag_legacy_backcoverfile'].nil? && !@params['backcoverfile'].nil? && File.exist?(@params['backcoverfile'])
-        @params['backcover'] = "#{@params['bookname']}-backcover.#{@params['htmlext']}"
-        @epub.legacy_cover_and_title_file(@params['backcoverfile'], @params['backcover'])
-        @params['flag_legacy_backcoverfile'] = true
+      if @config['flag_legacy_backcoverfile'].nil? && !@config['backcoverfile'].nil? && File.exist?(@config['backcoverfile'])
+        @config['backcover'] = "#{@config['bookname']}-backcover.#{@config['htmlext']}"
+        @epub.legacy_cover_and_title_file(@config['backcoverfile'], @config['backcover'])
+        @config['flag_legacy_backcoverfile'] = true
         warn %Q(Parameter 'backcoverfile' is obsolete. Please use 'backcover' and make complete html file with header and footer.)
       end
 
-      if @params['flag_legacy_pubhistory'].nil? && @params['pubhistory']
-        @params['history'] = [[]]
-        @params['pubhistory'].split("\n").each { |date| @params['history'][0].push(date.sub(/(\d+)年(\d+)月(\d+)日/, '\1-\2-\3')) }
-        @params['flag_legacy_pubhistory'] = true
+      if @config['flag_legacy_pubhistory'].nil? && @config['pubhistory']
+        @config['history'] = [[]]
+        @config['pubhistory'].split("\n").each { |date| @config['history'][0].push(date.sub(/(\d+)年(\d+)月(\d+)日/, '\1-\2-\3')) }
+        @config['flag_legacy_pubhistory'] = true
         warn %Q(Parameter 'pubhistory' is obsolete. Please use 'history' array.)
       end
 

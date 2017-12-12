@@ -286,15 +286,17 @@ module ReVIEW
       index = level - 1
       if tag
         if tag !~ %r{\A/}
+          warn 'headline is empty.' if caption.empty?
           close_current_tagged_section(level)
           open_tagged_section(tag, level, label, caption)
         else
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
-          raise CompileError, "#{open_tag} is not opened." unless prev_tag_info.first == open_tag
+          error "#{open_tag} is not opened." if prev_tag_info.nil? || prev_tag_info.first != open_tag
           close_tagged_section(*prev_tag_info)
         end
       else
+        warn 'headline is empty.' if caption.empty?
         @headline_indexs = @headline_indexs[0..index] if @headline_indexs.size > (index + 1)
         @headline_indexs[index] = 0 if @headline_indexs[index].nil?
         @headline_indexs[index] += 1
@@ -503,16 +505,24 @@ module ReVIEW
       @strategy.__send__(syntax.name, *args)
     end
 
+    def replace_fence(str)
+      str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
+        op = $1
+        arg = $3.gsub('@', "\x01").gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) { |m| '\\\\' * m.size }
+        "@<#{op}>{#{arg}}"
+      end
+    end
+
     def text(str)
       return '' if str.empty?
-      words = str.split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
+      words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
       words.each { |w| error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w) }
       result = @strategy.nofunc_text(words.shift)
       until words.empty?
         result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
         result << @strategy.nofunc_text(words.shift)
       end
-      result
+      result.gsub("\x01", '@')
     rescue => err
       error err.message
     end

@@ -15,7 +15,7 @@ require 'epubmaker/zip_exporter'
 module EPUBMaker
   # EPUBv2 is EPUB version 2 producer.
   class EPUBv2 < EPUBCommon
-    # Construct object with parameter hash +params+ and message resource hash +res+.
+    # Construct object with parameter hash +config+ and message resource hash +res+.
     def initialize(producer)
       super
     end
@@ -35,33 +35,33 @@ module EPUBMaker
     def opf_metainfo
       s = ''
       %w[title language date type format source description relation coverage subject rights].each do |item|
-        next unless @producer.params[item]
-        if @producer.params[item].is_a?(Array)
-          s << @producer.params.names_of(item).map { |i| %Q(    <dc:#{item}>#{CGI.escapeHTML(i)}</dc:#{item}>\n) }.join
+        next unless @producer.config[item]
+        if @producer.config[item].is_a?(Array)
+          s << @producer.config.names_of(item).map { |i| %Q(    <dc:#{item}>#{CGI.escapeHTML(i)}</dc:#{item}>\n) }.join
         else
-          s << %Q(    <dc:#{item}>#{CGI.escapeHTML(@producer.params.name_of(item))}</dc:#{item}>\n)
+          s << %Q(    <dc:#{item}>#{CGI.escapeHTML(@producer.config.name_of(item))}</dc:#{item}>\n)
         end
       end
 
       # ID
-      if @producer.params['isbn'].nil?
-        s << %Q(    <dc:identifier id="BookId">#{@producer.params['urnid']}</dc:identifier>\n)
+      if @producer.config['isbn'].nil?
+        s << %Q(    <dc:identifier id="BookId">#{@producer.config['urnid']}</dc:identifier>\n)
       else
-        s << %Q(    <dc:identifier id="BookId" opf:scheme="ISBN">#{@producer.params['isbn']}</dc:identifier>\n)
+        s << %Q(    <dc:identifier id="BookId" opf:scheme="ISBN">#{@producer.config['isbn']}</dc:identifier>\n)
       end
 
       # creator (should be array)
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
-        next unless @producer.params[role]
-        @producer.params.names_of(role).each do |v|
+        next unless @producer.config[role]
+        @producer.config.names_of(role).each do |v|
           s << %Q(    <dc:creator opf:role="#{role.sub('a-', '')}">#{CGI.escapeHTML(v)}</dc:creator>\n)
         end
       end
 
       # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
-        next unless @producer.params[role]
-        @producer.params.names_of(role).each do |v|
+        next unless @producer.config[role]
+        @producer.config.names_of(role).each do |v|
           s << %Q(    <dc:contributor opf:role="#{role}">#{CGI.escapeHTML(v)}</dc:contributor>\n)
           s << %Q(    <dc:publisher>#{v}</dc:publisher>\n) if role == 'prt'
         end
@@ -74,11 +74,11 @@ module EPUBMaker
       s = ''
       s << <<EOT
   <manifest>
-    <item id="ncx" href="#{@producer.params['bookname']}.ncx" media-type="application/x-dtbncx+xml"/>
-    <item id="#{@producer.params['bookname']}" href="#{@producer.params['cover']}" media-type="application/xhtml+xml"/>
+    <item id="ncx" href="#{@producer.config['bookname']}.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="#{@producer.config['bookname']}" href="#{@producer.config['cover']}" media-type="application/xhtml+xml"/>
 EOT
 
-      s << %Q(    <item id="toc" href="#{@producer.params['bookname']}-toc.#{@producer.params['htmlext']}" media-type="application/xhtml+xml"/>\n) if @producer.params['toc'] && @producer.params['mytoc']
+      s << %Q(    <item id="toc" href="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}" media-type="application/xhtml+xml"/>\n) if @producer.config['toc'] && @producer.config['mytoc']
 
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
@@ -89,7 +89,7 @@ EOT
     end
 
     def opf_tocx
-      cover_linear = if @producer.params['epubmaker']['cover_linear'] && @producer.params['epubmaker']['cover_linear'] != 'no'
+      cover_linear = if @producer.config['epubmaker']['cover_linear'] && @producer.config['epubmaker']['cover_linear'] != 'no'
                        'yes'
                      else
                        'no'
@@ -97,8 +97,8 @@ EOT
 
       s = ''
       s << %Q(  <spine toc="ncx">\n)
-      s << %Q(    <itemref idref="#{@producer.params['bookname']}" linear="#{cover_linear}"/>\n)
-      s << %Q(    <itemref idref="toc" />\n) unless @producer.params['mytoc'].nil?
+      s << %Q(    <itemref idref="#{@producer.config['bookname']}" linear="#{cover_linear}"/>\n)
+      s << %Q(    <itemref idref="toc" />\n) unless @producer.config['mytoc'].nil?
 
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
@@ -124,11 +124,11 @@ EOT
     def produce(epubfile, basedir, tmpdir)
       produce_write_common(basedir, tmpdir)
 
-      File.open("#{tmpdir}/OEBPS/#{@producer.params['bookname']}.ncx", 'w') { |f| @producer.ncx(f, @producer.params['epubmaker']['ncxindent']) }
-      File.open("#{tmpdir}/OEBPS/#{@producer.params['bookname']}-toc.#{@producer.params['htmlext']}", 'w') { |f| @producer.mytoc(f) } if @producer.params['mytoc']
+      File.open("#{tmpdir}/OEBPS/#{@producer.config['bookname']}.ncx", 'w') { |f| @producer.ncx(f, @producer.config['epubmaker']['ncxindent']) }
+      File.open("#{tmpdir}/OEBPS/#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}", 'w') { |f| @producer.mytoc(f) } if @producer.config['mytoc']
 
-      @producer.call_hook(@producer.params['epubmaker']['hook_prepack'], tmpdir)
-      expoter = EPUBMaker::ZipExporter.new(tmpdir, @producer.params)
+      @producer.call_hook(@producer.config['epubmaker']['hook_prepack'], tmpdir)
+      expoter = EPUBMaker::ZipExporter.new(tmpdir, @producer.config)
       expoter.export_zip(epubfile)
     end
   end

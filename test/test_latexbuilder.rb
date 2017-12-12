@@ -676,7 +676,7 @@ inside column
 
 ===[/column_dummy]
 EOS
-    assert_raise(ReVIEW::CompileError) do
+    assert_raise(ReVIEW::ApplicationError) do
       column_helper(review)
     end
   end
@@ -951,6 +951,11 @@ EOS
     @config['draft'] = true
     actual = compile_inline('test @<comment>{コメント} test2')
     assert_equal 'test \\pdfcomment{コメント} test2', actual
+  end
+
+  def test_inline_fence
+    actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
+    assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
   end
 
   def test_appendix_list
