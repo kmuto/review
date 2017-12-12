@@ -34,9 +34,7 @@ module ReVIEW
 
     def trim_lines(lines)
       new_lines = lines.dup
-      while new_lines[-1] && new_lines[-1].strip.empty?
-        new_lines.pop
-      end
+      new_lines.pop while new_lines[-1] && new_lines[-1].strip.empty?
       new_lines
     end
   end
