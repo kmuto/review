@@ -15,10 +15,10 @@ module ReVIEW
     def split_paragraph(lines)
       pre = pre_paragraph
       post = post_paragraph
-      lines.pop while lines[lines.size - 1] && lines[lines.size - 1].strip.empty?
+      trimmed_lines = trim_lines(lines)
 
       blocked_lines = [[]]
-      lines.each do |element|
+      trimmed_lines.each do |element|
         if element.empty?
           blocked_lines << [] if blocked_lines.last != []
         else
@@ -28,6 +28,16 @@ module ReVIEW
 
       blocked_lines.map! { |i| [pre] + i + [post] } if pre && post
       blocked_lines.map(&:join)
+    end
+
+    private
+
+    def trim_lines(lines)
+      new_lines = lines.dup
+      while new_lines[-1] && new_lines[-1].strip.empty?
+        new_lines.pop
+      end
+      new_lines
     end
   end
 end
