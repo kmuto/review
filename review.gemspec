@@ -17,8 +17,7 @@ Gem::Specification.new do |gem|
   gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   gem.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
-  gem.extra_rdoc_files = [
-  ]
+  gem.extra_rdoc_files = []
   gem.require_paths = ['lib']
 
   gem.add_dependency('image_size')

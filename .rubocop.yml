@@ -28,8 +28,8 @@ Lint/AssignmentInCondition:
 Lint/ParenthesesAsGroupedExpression:
   Enabled: true
 
-Lint/RescueWithoutErrorClass:
-  Enabled: false
+#Lint/RescueWithoutErrorClass:
+#  Enabled: false
 
 Lint/UnderscorePrefixedVariableName:
   Enabled: true
@@ -113,9 +113,15 @@ Style/Encoding:
 Style/EmptyElse:
   Enabled: true
 
+Style/EvalWithLocation:
+  Enabled: false
+
 Style/FormatString:
   EnforcedStyle: sprintf
   Enabled: true
+
+Style/FormatStringToken:
+  Enabled: false
 
 Style/GuardClause:
   Enabled: false
@@ -184,6 +190,9 @@ Style/LineEndConcatenation:
 Style/MethodCallWithoutArgsParentheses:
   Enabled: true
 
+Style/MixinUsage:
+  Enabled: false
+
 Style/MultilineBlockChain:
   Enabled: true
 
@@ -227,6 +236,9 @@ Style/RedundantSelf:
 
 Style/RegexpLiteral:
   Enabled: true
+
+Style/RescueStandardError:
+  Enabled: false
 
 Style/Semicolon:
   Enabled: true
@@ -338,7 +350,7 @@ Layout/SpaceAroundOperators:
   Enabled: true
 
 Layout/SpaceBeforeBlockBraces:
-  Enabled: true
+  Enabled: false
 
 Layout/SpaceBeforeComma:
   Enabled: true
@@ -347,6 +359,9 @@ Layout/SpaceInsideBlockBraces:
   Enabled: true
 
 Layout/SpaceInsideHashLiteralBraces:
+  Enabled: true
+
+Layout/SpaceInsideArrayLiteralBrackets:
   Enabled: true
 
 Layout/SpaceInsideStringInterpolation:
