@@ -124,7 +124,7 @@ Style/IfInsideElse:
   Enabled: false
 
 Style/IfUnlessModifier:
-  Enabled: true
+  Enabled: false
 
 Style/MutableConstant:
   Enabled: false
