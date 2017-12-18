@@ -428,11 +428,7 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline File.read(file_name)
-    end
-
-    def include(file_name)
-      File.foreach(file_name) { |line| paragraph([line]) }
+      compile_inline File.read(file_name, mode: 'rt:BOM:utf-8').chomp
     end
 
     def ul_item_begin(lines)
