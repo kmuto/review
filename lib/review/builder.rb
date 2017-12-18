@@ -428,7 +428,7 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline File.read(file_name, mode: 'rt:BOM:utf-8').chomp
+      compile_inline File.read(file_name, mode: 'rt:BOM|utf-8').chomp
     end
 
     def ul_item_begin(lines)
