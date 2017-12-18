@@ -88,9 +88,11 @@ module ReVIEW
 
       def number(id)
         chapter = @index.fetch(id)
-        chapter.format_number
-      rescue # part
-        I18n.t('part', chapter.number)
+        begin
+          chapter.format_number
+        rescue # part
+          I18n.t('part', chapter.number)
+        end
       end
 
       def title(id)
