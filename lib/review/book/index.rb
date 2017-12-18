@@ -100,7 +100,11 @@ module ReVIEW
       end
 
       def display_string(id)
-        "#{number(id)}#{I18n.t('chapter_quote', title(id))}"
+        if number(id)
+          I18n.t('chapter_quote', [number(id), title(id)])
+        else
+          I18n.t('chapter_quote_without_number', title(id))
+        end
       end
     end
 

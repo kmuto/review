@@ -521,9 +521,9 @@ module ReVIEW
     def inline_hd_chap(chap, id)
       if chap.number
         n = chap.headline_index.number(id)
-        return I18n.t('chapter_quote', "#{n}　#{compile_inline(chap.headline(id).caption)}") if @book.config['secnolevel'] >= n.split('.').size
+        return I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)]) if @book.config['secnolevel'] >= n.split('.').size
       end
-      I18n.t('chapter_quote', compile_inline(chap.headline(id).caption))
+      I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
     end
 
     def noindent

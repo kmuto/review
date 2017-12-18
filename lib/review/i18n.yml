@@ -10,7 +10,10 @@ ja:
   chapter: 第%d章
   chapter_short: "%d"
   chapter_postfix: "　"
-  chapter_quote: "「%s」"
+  chapter_quote: "%s「%s」"
+  chapter_quote_without_number: "「%s」"
+  hd_quote: "「%s %s」"
+  hd_quote_without_number: "「%s」"
   appendix: 付録%pA
   numberless_image: "図:"
   memo_head: ■メモ
@@ -72,7 +75,10 @@ en:
   chapter: Chapter %d
   chapter_short: "%d"
   chapter_postfix: ". "
-  chapter_quote: '"%s"'
+  chapter_quote: '%s "%s"'
+  chapter_quote_without_number: '"%s"'
+  hd_quote: '"%s %s"'
+  hd_quote_without_number: '"%s"'
   appendix: Appendix %s
   numberless_image: "Figure:"
   memo_head: Note
@@ -131,7 +137,10 @@ zh-TW:
   chapter: 第%d章
   chapter_short: "%d"
   chapter_postfix: "　"
-  chapter_quote: "「%s」"
+  chapter_quote: "%s「%s」"
+  chapter_quote_without_number: "「%s」"
+  hd_quote: "「%s %s」"
+  hd_quote_without_number: "「%s」"
   appendix: 附錄%s
   numberless_image: "圖:"
   format_number: "%s.%d"

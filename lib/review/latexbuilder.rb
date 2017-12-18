@@ -836,9 +836,9 @@ module ReVIEW
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       if chap.number and @book.config['secnolevel'] >= n.split('.').size
-        str = I18n.t('chapter_quote', "#{chap.headline_index.number(id)} #{compile_inline(chap.headline(id).caption)}")
+        str = I18n.t('hd_quote', [chap.headline_index.number(id), compile_inline(chap.headline(id).caption)])
       else
-        str = I18n.t('chapter_quote', compile_inline(chap.headline(id).caption))
+        str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
       end
       if @book.config['chapterlink']
         anchor = n.gsub(/\./, '-')
@@ -850,7 +850,7 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       macro('reviewcolumnref',
-            I18n.t('chapter_quote', compile_inline(chapter.column(id).caption)),
+            I18n.t('hd_quote_without_number', compile_inline(chapter.column(id).caption)),
             column_label(id, chapter))
     end
 
