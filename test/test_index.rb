@@ -177,4 +177,35 @@ class IndexTest < Test::Unit::TestCase
     index = Book::HeadlineIndex.parse(src, chap)
     assert_equal '1.1.1', index.number('sec1-1')
   end
+
+  def test_headeline_index9
+    src = <<-EOB
+= chap1
+== sec1
+=== sec1-1
+===[column] column1
+===[/column]
+==== sec1-1-1
+=== sec1-2
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil)
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [1, 1, 1], index['sec1-1-1'].number
+  end
+
+  def test_headeline_index10
+    src = <<-EOB
+= chap1
+== sec1
+=== sec1-1
+====[column] column1
+==== sec1-1-1
+=== sec1-2
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil)
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [1, 1, 1], index['sec1-1-1'].number
+  end
 end
