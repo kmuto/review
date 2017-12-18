@@ -132,6 +132,9 @@ zh-TW:
   image: 圖
   table: 表
   list: List
+  column: "Column %s"
+  columnname: "Column"
+  column_head: "Column"
   part: 第%pR部份
   part_short: "%pR"
   chapter: 第%d章

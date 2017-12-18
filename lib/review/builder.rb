@@ -309,7 +309,7 @@ module ReVIEW
     end
 
     def inline_column_chap(chapter, id)
-      chapter.column(id).caption
+      I18n.t('column', chapter.column(id).caption)
     end
 
     def inline_pageref(id)

@@ -347,7 +347,7 @@ EOS
 next level
 --------------------
 
-this is test.
+this is コラム「test」.
 
 EOS
 

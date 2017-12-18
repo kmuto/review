@@ -850,7 +850,7 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       macro('reviewcolumnref',
-            I18n.t('hd_quote_without_number', compile_inline(chapter.column(id).caption)),
+            I18n.t('column', compile_inline(chapter.column(id).caption)),
             column_label(id, chapter))
     end
 
