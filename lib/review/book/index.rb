@@ -326,6 +326,7 @@ module ReVIEW
         @items = items
         @chap = chap
         @index = {}
+        @logger = ReVIEW.logger
         items.each do |i|
           @logger.warn "warning: duplicate ID: #{i.id}" if @index[i.id]
           @index[i.id] = i
