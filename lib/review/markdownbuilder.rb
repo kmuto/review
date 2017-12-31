@@ -28,7 +28,9 @@ module ReVIEW
     end
 
     def blank
-      @output.puts unless @blank_seen
+      unless @blank_seen
+        @output.puts
+      end
       @blank_seen = true
     end
 
@@ -132,7 +134,9 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      label = url if label.blank?
+      if label.blank?
+        label = url
+      end
       "[#{label}](#{url})"
     end
 
@@ -193,7 +197,9 @@ module ReVIEW
 
     def cmd(lines)
       puts '```shell-session'
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts '```'
     end
 
@@ -297,7 +303,9 @@ module ReVIEW
     def comment(lines, comment = nil)
       return unless @book.config['draft']
       lines ||= []
-      lines.unshift comment unless comment.blank?
+      unless comment.blank?
+        lines.unshift comment
+      end
       str = lines.join('<br />')
       puts %Q(<div class="red">#{escape_html(str)}</div>)
     end
