@@ -1,4 +1,109 @@
-% TeXデータ吐き出しの検討ファイル
+% TeXデータ吐き出しの検討ファイル (ver.2)
+\rdreviewversion{2.0}% review_version
+\rdbooktitle{Re:VIEWサンプル書籍}% 書籍名
+% ルビは難しいなぁ。別の定義が必要そう
+
+\begin{rdnames}{aut}% 著者名
+\item 青木峰郎\rdfileas{あお|き|みね|ろう}
+\item 武藤健志\rdfileas{む|とう|けん|し}
+\end{rdnames}
+
+\begin{rdnames}{trl}% 訳者名
+\item 角征典\rdfileas{かど|まさ|のり}
+\end{rdnames}
+
+\begin{rdnames}{edt}% 編集者名
+\item 高橋征義\rdfileas{たか|はし|まさ|よし}
+\end{rdnames}
+
+% csl: 監修者名
+% dsr: デザイナ名
+% ill: イラストレータ名
+
+\rdprt{印刷所名}
+\rdpbl{出版社名}
+% \rdpbl{出版社名\rdfileas{シュッパンシャメイ}} かrdnamesを使いたいケースはある?
+
+\rddate{2017-11-5}% 刊行日。大扉や奥付で使うことがある
+% ↓奥付のための履歴情報。実際には配列の配列
+\begin{rdhistory}
+\begin{rdedition}
+\item 2016年1月11日 % 初版1刷
+\item 2016年2月14日 % 初版2刷
+\end{rdedition}
+\begin{rdedition}
+\item 2016年12月24日 % 2版1刷
+\item 2017年11月5日 % 2版2刷
+\end{rdedition}
+\end{rdhistory}
+% いわゆるiiページに置きたいもの。TeXだと今は使ってないが…
+\begin{rdrights}
+権利表記文字列(TeX生?)
+\end{rdrights}
+
+\rdisbn{ISBN}% 指定があったら奥付に入れたい
+\rdtoclevel{3}% 目次掲載tocdepthの値+1相当。1=部および章のみ、2=節まで
+\rdsecnolevel{2}% これは渡さなくてもいいかも…。どの見出しレベルまで採番を付けるか。latexbuilderで*を付ける付けないを判断している
+\rdtoc{true}% \tableofcontentsを入れるかどうか。値はなんでもよくて定義ありなしで判断させるのがいい?
+\rdcoverpage{true}% 表紙を入れるかどうか
+\rdcoverfile{TeXファイルパス}% このファイル内容を表紙のTeX断片としてincludeする
+\rdcoverimage{画像ファイルパス}% このファイルを表紙の画像にする (coverfile指定がない場合)
+% 本当はfullpagegraphicsではっつけたほうがいいんだろうか…
+\rdtitlepage{true}% 大扉を入れるか
+\rdtitlefile{TeXファイルパス}% このファイル内容を大扉のTeX断片としてincludeする
+\rdoriginaltitlefile{TeXファイルパス}% このファイル内容を原書大扉のTeX断片としてincludeする
+\rdcreditfile{TeXファイルパス}% このファイル内容をクレジットページのTeX断片としてincludeする
+%% 表紙→大扉→原書大扉→クレジットページ→PREDEF→目次→CHAPS の順 (オライリーなどでは大扉と原書大扉の間に権利表記まわりが1pあったりするが…それは原書大扉カスタムファイルのほうで対処)
+\rdmakeindex}{true}% 索引を入れるかどうか
+\rdcolophonpage{true}% 奥付を入れるか。true/false
+\rdcolophonfile{TeXファイルパス}% このファイル内容を奥付のTeX断片としてincludeする
+\rdadvfile{TeXファイルパス}% % このファイル内容を広告のTeX断片としてincludeする
+\rdbackcover{TeXファイルパス}% このファイル内容を裏表紙のTeX断片としてincludeする
+%% CHAPS→APPENDIX→POSTDEF→索引→奥付→広告→裏表紙 の順
+% 
+% imagedir,fontdir,image_ext,font_extはなくていいかな
+\rdhighlight{plistings}% 使用するハイライト。定義がなければハイライトしない
+
+% documentclassに与えるべきオプションは、ここで定義せずにconfig.ymlで定義したほうがよいだろうか…わかっていないと難しいものがありそう
+% []内はjlreq.clsで定義されているもの
+%
+% twoside/oneside
+% 仕上がり用紙サイズ
+% 出力用紙サイズ
+% トンボ有無
+% 版面表示有無
+% ぬりたし領域幅
+% 紙(print)/電子(pdf)
+% hyperrefのオプション
+% 天から版面までのアキ(mmかzh) [head_space]
+% ノドから版面までのアキ(mmかzw) [gutter]
+% 行あたり文字数(zw) [line_length]
+% 行数 [number_of_lines]
+% 欧文基本Q、和文基本Q [fontsize, jafontsize]
+% 行送り [baselineskip]
+% ノンブル/柱の小口からの位置 [headfoot_sidemargin]
+% 
+% 以下は使用しない?
+% 傍注幅 [sidenote_length]
+% 行間 [linegap]
+% twocolumn時の段間アキ [column_gap]
+% 地アキ [foot_space]
+% 始め括弧位置 [open_bracket_pos]
+% JLREQ警告 [jlreq_notes]
+
+% 以下はgreencherryクラスでよくあるもの
+% 章の開始ページ左右位置: page,odd,even
+% 部の開始ページ左右位置: page,odd,even
+% 目次の開始ページ左右位置: page,odd,even
+% 索引の開始ページ左右位置: page,odd,even
+% 奥付の開始ページ左右位置: page,odd,even
+
+% includegprahicsのためのboxオプションはどうしよう
+
+% ver.2の定義例ここまで
+%-----------------------------------------------
+
+% TeXデータ吐き出しの検討ファイル (ver.1)
 % マクロ名\rdはReVIEW-Defineの意で、別にこの名前にこだわるわけではない(どっちにしろ自動生成だし)
 \rd{review_version}{2.0}% review_version
 % bookname, languageはいらなそう
