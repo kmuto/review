@@ -150,8 +150,15 @@
 \newcommand{\reviewlistcaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
 
+\def \ifempty#1{\def\temp{#1} \ifx\temp\empty }
+
 \newcommand{\reviewemlistcaption}[1]{%
-  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+  \ifempty{#1}
+    \vspace*{-1.0zw}
+  \else
+    \medskip{\small\noindent #1}\vspace*{-1.3zw}
+  \fi
+}
 
 \newcommand{\reviewsourcecaption}[1]{%
   \medskip{\small\noindent #1}\vspace*{-1.3zw}}
