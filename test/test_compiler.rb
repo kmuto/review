@@ -42,7 +42,13 @@ class CompilerTest < Test::Unit::TestCase
   end
 
   def test_replace_fence
-    actual = @c.__send__(:replace_fence, '@<m>${}\\}|$, @<m>|{}\\}\\$|, @<m>|\\{\\a\\}|, @<tt>|}|, @<tt>|\\|, @<tt>|\\\\|, @<tt>|\\\\\\|')
-    assert_equal '@<m>{{\\}\\\\\\}|}, @<m>{{\\}\\\\\\}\\$}, @<m>{\\{\\a\\\\\\}}, @<tt>{\\}}, @<tt>{\\\\}, @<tt>{\\\\\\\\}, @<tt>{\\\\\\\\\\\\}', actual
+    source_str = <<-'EOB'
+@<m>${}\}|$, @<m>|{}\}\$|, @<m>|\{\a\}|, @<tt>|}|, @<tt>|\|, @<tt>|\\|, @<tt>|\\\|
+    EOB
+    expected = <<-'EOB'
+@<m>{{\}\\\}|}, @<m>{{\}\\\}\$}, @<m>{\{\a\\\}}, @<tt>{\}}, @<tt>{\\}, @<tt>{\\\\}, @<tt>{\\\\\\}
+    EOB
+    actual = @c.__send__(:replace_fence, source_str)
+    assert_equal expected, actual
   end
 end
