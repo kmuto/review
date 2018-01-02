@@ -88,9 +88,11 @@ module ReVIEW
 
       def number(id)
         chapter = @index.fetch(id)
-        chapter.format_number
-      rescue # part
-        I18n.t('part', chapter.number)
+        begin
+          chapter.format_number
+        rescue # part
+          I18n.t('part', chapter.number)
+        end
       end
 
       def title(id)
@@ -280,6 +282,7 @@ module ReVIEW
         headlines = []
         inside_column = false
         inside_block = nil
+        column_level = -1
         src.each do |line|
           if line =~ %r{\A//[a-z]+.*\{\Z}
             inside_block = true
@@ -293,19 +296,20 @@ module ReVIEW
 
           m = HEADLINE_PATTERN.match(line)
           next if m.nil? || m[1].size > 10 # Ignore too deep index
-          next if m[4].strip.empty? # no title
           index = m[1].size - 2
 
           # column
           if m[2] == 'column'
             inside_column = true
+            column_level = index
             next
           elsif m[2] == '/column'
             inside_column = false
             next
           end
-          inside_column = false if indexs.blank? || index <= indexs[-1]
+          inside_column = false if indexs.blank? || index <= column_level
           next if inside_column
+          next if m[4].strip.empty? # no title
 
           next unless index >= 0
           if indexs.size > (index + 1)
@@ -324,6 +328,7 @@ module ReVIEW
         @items = items
         @chap = chap
         @index = {}
+        @logger = ReVIEW.logger
         items.each do |i|
           @logger.warn "warning: duplicate ID: #{i.id}" if @index[i.id]
           @index[i.id] = i
