@@ -218,9 +218,6 @@ module ReVIEW
 
         check_compile_status(@config['ignore-errors'])
 
-        @config['usepackage'] = ''
-        @config['usepackage'] = "\\usepackage{#{@config['texstyle']}}" if @config['texstyle']
-
         copy_images(@config['imagedir'], File.join(@path, @config['imagedir']))
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
