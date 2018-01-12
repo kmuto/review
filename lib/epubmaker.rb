@@ -10,7 +10,7 @@
 # == Quick usage
 #  require 'epubmaker'
 #  producer = EPUBMaker::Producer.new
-#  params = producer.load("config.yml")
+#  config = producer.load("config.yml")
 #  producer.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
 #  producer.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
 #   ...

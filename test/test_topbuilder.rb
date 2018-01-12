@@ -148,7 +148,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_dlist_beforeulol
     actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
-    assert_equal %Q(★foo☆\n\tfoo.\n\t\n\npara\n\n★foo☆\n\tfoo.\n\t\n\n1\tbar\n\n★foo☆\n\tfoo.\n\t\n\n●\tbar\n\n), actual
+    assert_equal %Q(★foo☆\n\tfoo.\n\npara\n\n★foo☆\n\tfoo.\n\n1\tbar\n\n★foo☆\n\tfoo.\n\n●\tbar\n\n), actual
   end
 
   def test_paragraph

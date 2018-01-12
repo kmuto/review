@@ -59,6 +59,8 @@ module ReVIEW
     end
 
     def remove_old_files(path)
+      math_dir = "./#{@config['imagedir']}/_review_math"
+      FileUtils.rm_rf(math_dir) if @config['imgmath'] && Dir.exist?(math_dir)
       FileUtils.rm_rf(path)
     end
 

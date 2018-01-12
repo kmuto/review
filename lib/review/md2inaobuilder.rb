@@ -20,7 +20,9 @@ module ReVIEW
     def cmd(lines)
       # WEB+DB では使っていないらしいけど
       puts '!!! cmd'
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts ''
     end
 

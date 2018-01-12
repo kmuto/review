@@ -184,7 +184,7 @@ module ReVIEW
         return @catalog if @catalog.present?
 
         catalogfile_path = "#{basedir}/#{config['catalogfile']}"
-        @catalog = File.open(catalogfile_path) { |f| Catalog.new(f) } if File.file? catalogfile_path
+        @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
         @catalog
       end
 

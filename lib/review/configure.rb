@@ -38,6 +38,7 @@ module ReVIEW
         'catalogfile' => 'catalog.yml',
         'language' => 'ja', # XXX default language should be JA??
         'mathml' => nil, # for HTML
+        'imgmath' => nil, # for HTML
         'htmlext' => 'html',
         'htmlversion' => 5,
         'imagedir' => 'images',
@@ -52,23 +53,24 @@ module ReVIEW
         'ext' => '.re',
         'image_dir' => 'images',
         'image_types' => %w[.ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg],
-        'image_scale2width' => true, # for LaTeX
         'bib_file' => 'bib.re',
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
         'externallink' => true,
-        'tableopt' => nil,      # for IDGXML
-        'listinfo' => nil,      # for IDGXML
-        'nolf' => true,         # for IDGXML
-        'chapref' => nil,       # for IDGXML
-        'structuredxml' => nil, # for IDGXML
-        'pt_to_mm_unit' => 0.3528, # for IDGXML (DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm)
-
-        'footnotetext' => nil, # for LaTeX
-        'texcommand' => 'uplatex', # for LaTeX
-        'texdocumentclass' => ['jsbook', 'uplatex,oneside'], # for LaTeX
-        'dvicommand' => 'dvipdfmx', # for LaTeX
-        'dvioptions' => '-d 5', # for LaTeX
-
+        # for IDGXML
+        'tableopt' => nil,
+        'listinfo' => nil,
+        'nolf' => true,
+        'chapref' => nil,
+        'structuredxml' => nil,
+        'pt_to_mm_unit' => 0.3528, # DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm
+        # for LaTeX
+        'image_scale2width' => true,
+        'footnotetext' => nil,
+        'texcommand' => 'uplatex',
+        'texdocumentclass' => ['jsbook', 'uplatex,oneside'],
+        'dvicommand' => 'dvipdfmx',
+        'dvioptions' => '-d 5',
+        # for PDFMaker
         'pdfmaker' => {
           'makeindex' => nil, # Make index page
           'makeindex_command' => 'mendex', # works only when makeindex is true

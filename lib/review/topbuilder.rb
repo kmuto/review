@@ -13,7 +13,9 @@ module ReVIEW
   class TOPBuilder < Builder
     include TextUtils
 
-    %i[ttbold hint maru keytop labelref ref].each { |e| Compiler.definline(e) }
+    %i[ttbold hint maru keytop labelref ref balloon strong].each do |e|
+      Compiler.definline(e)
+    end
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 1)
@@ -156,7 +158,9 @@ module ReVIEW
     end
 
     def dd(lines)
-      split_paragraph(lines).each { |paragraph| puts "\t#{paragraph.gsub(/\n/, '')}" }
+      split_paragraph(lines).each do |paragraph|
+        puts "\t#{paragraph.gsub(/\n/, '')}"
+      end
     end
 
     def dl_end
@@ -197,7 +201,9 @@ module ReVIEW
     end
 
     def list_body(_id, lines, _lang)
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts "◆→終了:#{@titles['list']}←◆"
       blank
     end
@@ -228,13 +234,17 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles['emlist']}←◆"
       puts "■#{compile_inline(caption)}" if caption.present?
-      lines.each_with_index { |line, i| puts((i + 1).to_s.rjust(2) + ": #{line}") }
+      lines.each_with_index do |line, i|
+        puts((i + 1).to_s.rjust(2) + ": #{line}")
+      end
       puts "◆→終了:#{@titles['emlist']}←◆"
       blank
     end
 
     def listnum_body(lines, _lang)
-      lines.each_with_index { |line, i| puts((i + 1).to_s.rjust(2) + ": #{line}") }
+      lines.each_with_index do |line, i|
+        puts((i + 1).to_s.rjust(2) + ": #{line}")
+      end
       puts "◆→終了:#{@titles['list']}←◆"
       blank
     end
@@ -288,7 +298,9 @@ module ReVIEW
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
         warn "image not bound: #{id}"
-        lines.each { |line| puts line }
+        lines.each do |line|
+          puts line
+        end
       end
       puts "◆→終了:#{@titles['image']}←◆"
       blank
@@ -326,8 +338,12 @@ module ReVIEW
       return if rows.empty?
       table_begin rows.first.size
       if sepidx
-        sepidx.times { tr(rows.shift.map { |s| th(s) }) }
-        rows.each { |cols| tr(cols.map { |s| td(s) }) }
+        sepidx.times do
+          tr(rows.shift.map { |s| th(s) })
+        end
+        rows.each do |cols|
+          tr(cols.map { |s| td(s) })
+        end
       else
         rows.each do |cols|
           h, *cs = *cols
@@ -371,7 +387,9 @@ module ReVIEW
     def comment(lines, comment = nil)
       return unless @book.config['draft']
       lines ||= []
-      lines.unshift comment unless comment.blank?
+      unless comment.blank?
+        lines.unshift comment
+      end
       str = lines.join
       puts "◆→#{str}←◆"
     end

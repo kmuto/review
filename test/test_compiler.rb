@@ -40,4 +40,15 @@ class CompilerTest < Test::Unit::TestCase
     args = @c.__send__(:parse_args, '[foo][bar\\\\buz]')
     assert_equal ['foo', 'bar\\buz'], args
   end
+
+  def test_replace_fence
+    source_str = <<-'EOB'
+@<m>${}\}|$, @<m>|{}\}\$|, @<m>|\{\a\}|, @<tt>|}|, @<tt>|\|, @<tt>|\\|, @<tt>|\\\|
+    EOB
+    expected = <<-'EOB'
+@<m>{{\}\\\}|}, @<m>{{\}\\\}\$}, @<m>{\{\a\\\}}, @<tt>{\}}, @<tt>{\\}, @<tt>{\\\\}, @<tt>{\\\\\\}
+    EOB
+    actual = @c.__send__(:replace_fence, source_str)
+    assert_equal expected, actual
+  end
 end

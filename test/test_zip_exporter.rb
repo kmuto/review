@@ -65,9 +65,9 @@ class ZipExporterTest < Test::Unit::TestCase
       return
     end
 
-    params = { 'epubmaker' => {} }
+    config = { 'epubmaker' => {} }
     epubfile = File.join(@tmpdir, 'test.epub')
-    exporter = ZipExporter.new(@epubdir, params)
+    exporter = ZipExporter.new(@epubdir, config)
     exporter.export_zip_extcmd(epubfile)
     assert_true(File.exist?(epubfile))
 
@@ -85,9 +85,9 @@ class ZipExporterTest < Test::Unit::TestCase
 
   def test_export_rubyzip
     return unless defined?(Zip) ## skip test
-    params = { 'epubmaker' => {} }
+    config = { 'epubmaker' => {} }
     epubfile = File.join(@tmpdir, 'test.epub')
-    exporter = ZipExporter.new(@epubdir, params)
+    exporter = ZipExporter.new(@epubdir, config)
     exporter.export_zip_rubyzip(epubfile)
     assert_true(File.exist?(epubfile))
 
