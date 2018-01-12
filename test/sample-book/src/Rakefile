@@ -46,7 +46,7 @@ task all: %i[pdf epub]
 desc 'generate PDF file'
 task pdf: BOOK_PDF
 
-desc 'generate stagic HTML file for web'
+desc 'generate static HTML file for web'
 task web: WEBROOT
 
 desc 'generate EPUB file'
