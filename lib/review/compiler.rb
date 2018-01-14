@@ -444,8 +444,9 @@ module ReVIEW
       name = line.slice(/[a-z]+/).to_sym
       ignore_inline = (name == :embed)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
+      @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
-
+      @strategy.doc_status[name] = nil
       [name, args, lines]
     end
 
