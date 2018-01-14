@@ -12,6 +12,7 @@ require 'review/compiler'
 require 'review/sec_counter'
 require 'stringio'
 require 'cgi'
+require 'fileutils'
 
 module ReVIEW
   class Builder
@@ -151,8 +152,12 @@ module ReVIEW
       return if rows.empty?
       table_begin rows.first.size
       if sepidx
-        sepidx.times { tr(rows.shift.map { |s| th(s) }) }
-        rows.each { |cols| tr(cols.map { |s| td(s) }) }
+        sepidx.times do
+          tr(rows.shift.map { |s| th(s) })
+        end
+        rows.each do |cols|
+          tr(cols.map { |s| td(s) })
+        end
       else
         rows.each do |cols|
           h, *cs = *cols
@@ -163,9 +168,15 @@ module ReVIEW
     end
 
     def adjust_n_cols(rows)
-      rows.each { |cols| cols.pop while cols.last and cols.last.strip.empty? }
+      rows.each do |cols|
+        while cols.last and cols.last.strip.empty?
+          cols.pop
+        end
+      end
       n_maxcols = rows.map(&:size).max
-      rows.each { |cols| cols.concat [''] * (n_maxcols - cols.size) }
+      rows.each do |cols|
+        cols.concat [''] * (n_maxcols - cols.size)
+      end
       rows
     end
     private :adjust_n_cols
@@ -255,8 +266,12 @@ module ReVIEW
 
     def inline_ruby(arg)
       base, *ruby = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/)
-      base = base.gsub(/\\,/, ',') if base
-      ruby = ruby.join(',').gsub(/\\,/, ',') if ruby
+      if base
+        base = base.gsub(/\\,/, ',')
+      end
+      if ruby
+        ruby = ruby.join(',').gsub(/\\,/, ',')
+      end
       compile_ruby(base, ruby)
     end
 
@@ -268,7 +283,9 @@ module ReVIEW
     def inline_href(arg)
       url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
       url = url.gsub(/\\,/, ',').strip
-      label = label.gsub(/\\,/, ',').strip if label
+      if label
+        label = label.gsub(/\\,/, ',').strip
+      end
       compile_href(url, label)
     end
 
@@ -287,7 +304,9 @@ module ReVIEW
 
     def inline_hd(id)
       m = /\A([^|]+)\|(.+)/.match(id)
-      chapter = @book.contents.detect { |chap| chap.id == m[1] } if m && m[1]
+      if m && m[1]
+        chapter = @book.contents.detect { |chap| chap.id == m[1] }
+      end
       if chapter
         inline_hd_chap(chapter, m[2])
       else
@@ -300,7 +319,9 @@ module ReVIEW
 
     def inline_column(id)
       m = /\A([^|]+)\|(.+)/.match(id)
-      chapter = @book.chapters.detect { |chap| chap.id == m[1] } if m && m[1]
+      if m && m[1]
+        chapter = @book.chapters.detect { |chap| chap.id == m[1] }
+      end
       if chapter
         inline_column_chap(chapter, m[2])
       else
@@ -327,7 +348,9 @@ module ReVIEW
       if matched = str.match(/\|(.*?)\|(.*)/)
         builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
         c = target_name
-        print matched[2].gsub('\\n', "\n") if builders.include?(c)
+        if builders.include?(c)
+          print matched[2].gsub('\\n', "\n")
+        end
       else
         print str.gsub('\\n', "\n")
       end
@@ -348,8 +371,11 @@ module ReVIEW
     end
 
     def error(msg)
-      raise ApplicationError, msg if msg =~ /:\d+: error: /
-      raise ApplicationError, "#{@location}: error: #{msg}"
+      if msg =~ /:\d+: error: /
+        raise ApplicationError, msg
+      else
+        raise ApplicationError, "#{@location}: error: #{msg}"
+      end
     end
 
     def handle_metric(str)
@@ -377,15 +403,20 @@ module ReVIEW
 
     def get_chap(chapter = @chapter)
       if @book.config['secnolevel'] > 0 && !chapter.number.nil? && !chapter.number.to_s.empty?
-        return I18n.t('part_short', chapter.number) if chapter.is_a?(ReVIEW::Book::Part)
-        return chapter.format_number(nil)
+        if chapter.is_a?(ReVIEW::Book::Part)
+          return I18n.t('part_short', chapter.number)
+        else
+          return chapter.format_number(nil)
+        end
       end
       nil
     end
 
     def extract_chapter_id(chap_ref)
       m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
-      return [@book.contents.detect { |chap| chap.id == m[1] }, m[2]] if m
+      if m
+        return [@book.contents.detect { |chap| chap.id == m[1] }, m[2]]
+      end
       [@chapter, chap_ref]
     end
 
@@ -404,7 +435,7 @@ module ReVIEW
     def graph(lines, id, command, caption = nil)
       c = target_name
       dir = File.join(@book.basedir, @book.image_dir, c)
-      Dir.mkdir(dir) unless File.exist?(dir)
+      FileUtils.mkdir_p(dir)
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
@@ -435,7 +466,9 @@ module ReVIEW
     end
 
     def include(file_name)
-      File.foreach(file_name) { |line| paragraph([line]) }
+      File.foreach(file_name) do |line|
+        paragraph([line])
+      end
     end
 
     def ul_item_begin(lines)

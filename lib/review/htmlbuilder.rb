@@ -20,7 +20,9 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    [:ref].each { |e| Compiler.definline(e) }
+    [:ref].each do |e|
+      Compiler.definline(e)
+    end
     Compiler.defblock(:planning, 0..1)
     Compiler.defblock(:best, 0..1)
     Compiler.defblock(:security, 0..1)
@@ -101,7 +103,9 @@ module ReVIEW
       @next_title = @next ? compile_inline(@next.title) : ''
       @prev_title = @prev ? compile_inline(@prev.title) : ''
 
-      @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book) if @book.config.maker == 'webmaker'
+      if @book.config.maker == 'webmaker'
+        @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
+      end
 
       ReVIEW::Template.load(layoutfile).result(binding)
     end
@@ -116,10 +120,14 @@ module ReVIEW
 
     def headline(level, label, caption)
       prefix, anchor = headline_prefix(level)
-      prefix = %Q(<span class="secno">#{prefix}</span>) if prefix
+      if prefix
+        prefix = %Q(<span class="secno">#{prefix}</span>)
+      end
       puts '' if level > 1
       a_id = ''
-      a_id = %Q(<a id="h#{anchor}"></a>) if anchor
+      if anchor
+        a_id = %Q(<a id="h#{anchor}"></a>)
+      end
 
       if caption.empty?
         puts a_id if label
@@ -282,7 +290,9 @@ module ReVIEW
       puts %Q(<div class="syntax">)
       puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
       print %Q(<pre class="syntax">)
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts '</pre>'
       puts '</div>'
     end
@@ -435,7 +445,9 @@ module ReVIEW
         class_names.push('highlight') if highlight?
         print %Q(<pre class="#{class_names.join(' ')}">)
         first_line_num = line_num
-        lines.each_with_index { |line, i| puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line) }
+        lines.each_with_index do |line, i|
+          puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line)
+        end
         puts '</pre>'
       end
     end
@@ -470,7 +482,9 @@ module ReVIEW
         class_names.push('highlight') if highlight?
         print %Q(<pre class="#{class_names.join(' ')}">)
         first_line_num = line_num
-        lines.each_with_index { |line, i| puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line) }
+        lines.each_with_index do |line, i|
+          puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line)
+        end
         puts '</pre>'
       end
 
@@ -490,7 +504,9 @@ module ReVIEW
 
     def quotedlist(lines, css_class)
       print %Q(<blockquote><pre class="#{css_class}">)
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts '</pre></blockquote>'
     end
     private :quotedlist
@@ -526,7 +542,9 @@ module ReVIEW
         puts %Q(<div class="equation">)
         math_str = "\\begin{equation*}\n" + unescape_html(lines.join("\n")) + "\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
-        img_path = "./images/_gen_#{key}.png"
+        math_dir = "./#{@book.config['imagedir']}/_review_math"
+        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
+        img_path = "./#{math_dir}/_gen_#{key}.png"
         make_math_image(math_str, img_path)
         puts %Q(<img src="#{img_path}" />)
         puts '</div>'
@@ -539,7 +557,9 @@ module ReVIEW
     end
 
     def handle_metric(str)
-      return { 'class' => sprintf('width-%03dper', ($1.to_f * 100).round) } if str =~ /\Ascale=([\d.]+)\Z/
+      if str =~ /\Ascale=([\d.]+)\Z/
+        return { 'class' => sprintf('width-%03dper', ($1.to_f * 100).round) }
+      end
 
       k, v = str.split('=', 2)
       { k => v.sub(/\A["']/, '').sub(/["']\Z/, '') }
@@ -570,7 +590,9 @@ module ReVIEW
       warn "image not bound: #{id}"
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
       puts %Q(<pre class="dummyimage">)
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts '</pre>'
       image_header id, caption
       puts '</div>'
@@ -613,8 +635,12 @@ module ReVIEW
       table_begin rows.first.size
       return if rows.empty?
       if sepidx
-        sepidx.times { tr(rows.shift.map { |s| th(s) }) }
-        rows.each { |cols| tr(cols.map { |s| td(s) }) }
+        sepidx.times do
+          tr(rows.shift.map { |s| th(s) })
+        end
+        rows.each do |cols|
+          tr(cols.map { |s| td(s) })
+        end
       else
         rows.each do |cols|
           h, *cs = *cols
@@ -709,7 +735,9 @@ module ReVIEW
         warn "image not bound: #{id}"
         if lines
           puts %Q(<pre class="dummyimage">)
-          lines.each { |line| puts detab(line) }
+          lines.each do |line|
+            puts detab(line)
+          end
           puts '</pre>'
         end
       end
@@ -742,7 +770,9 @@ module ReVIEW
 
     def bpo(lines)
       puts '<bpo>'
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts '</bpo>'
     end
 
@@ -885,7 +915,9 @@ module ReVIEW
       elsif @book.config['imgmath']
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
-        img_path = "./images/_gen_#{key}.png"
+        math_dir = "./#{@book.config['imagedir']}/_review_math"
+        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
+        img_path = "./#{math_dir}/_gen_#{key}.png"
         make_math_image(math_str, img_path)
         %Q(<span class="equation"><img src="#{img_path}" /></span>)
       else
@@ -1106,7 +1138,9 @@ module ReVIEW
     def inline_tcy(str)
       # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
       style = 'tcy'
-      style = 'upright' if str.size == 1 && str.match(/[[:ascii:]]/)
+      if str.size == 1 && str.match(/[[:ascii:]]/)
+        style = 'upright'
+      end
       %Q(<span class="#{style}">#{escape_html(str)}</span>)
     end
 

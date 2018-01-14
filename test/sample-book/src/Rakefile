@@ -46,7 +46,7 @@ task all: %i[pdf epub]
 desc 'generate PDF file'
 task pdf: BOOK_PDF
 
-desc 'generate stagic HTML file for web'
+desc 'generate static HTML file for web'
 task web: WEBROOT
 
 desc 'generate EPUB file'
@@ -69,4 +69,4 @@ file WEBROOT => SRC do
   sh "review-webmaker #{CONFIG_FILE}"
 end
 
-CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT])
+CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT, 'images/_review_math'])

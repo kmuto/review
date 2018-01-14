@@ -21,9 +21,9 @@ module EPUBMaker
   class ZipExporter
     attr_reader :tmpdir
 
-    def initialize(tmpdir, params)
+    def initialize(tmpdir, config)
       @tmpdir = tmpdir
-      @params = params
+      @config = config
     end
 
     def export_zip(epubfile)
@@ -35,16 +35,16 @@ module EPUBMaker
     end
 
     def export_zip_extcmd(epubfile)
-      stage1 = @params['epubmaker']['zip_stage1'].to_s.split
+      stage1 = @config['epubmaker']['zip_stage1'].to_s.split
       path1 = stage1[0] || 'zip'
       opt1 = stage1[1] || '-0Xq'
-      stage2 = @params['epubmaker']['zip_stage2'].to_s.split
+      stage2 = @config['epubmaker']['zip_stage2'].to_s.split
       path2 = stage2[0] || 'zip'
       opt2 = stage2[1] || '-Xr9Dq'
 
       Dir.chdir(tmpdir) do
         system(path1, opt1, epubfile, 'mimetype')
-        addpath = @params['epubmaker']['zip_addpath']
+        addpath = @config['epubmaker']['zip_addpath']
         if addpath
           system(path2, opt2, epubfile, 'META-INF', 'OEBPS', addpath)
         else
@@ -62,8 +62,8 @@ module EPUBMaker
 
           export_zip_rubyzip_addpath(epub, File.join(tmpdir, 'META-INF'), root_pathname)
           export_zip_rubyzip_addpath(epub, File.join(tmpdir, 'OEBPS'), root_pathname)
-          if @params['zip_addpath'].present?
-            export_zip_rubyzip_addpath(epub, File.join(tmpdir, @params['zip_addpath']), root_pathname)
+          if @config['zip_addpath'].present?
+            export_zip_rubyzip_addpath(epub, File.join(tmpdir, @config['zip_addpath']), root_pathname)
           end
         end
       end

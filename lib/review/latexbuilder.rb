@@ -17,7 +17,9 @@ module ReVIEW
     include LaTeXUtils
     include TextUtils
 
-    %i[dtp hd_chap].each { |e| Compiler.definline(e) }
+    %i[dtp hd_chap].each do |e|
+      Compiler.definline(e)
+    end
 
     Compiler.defsingle(:latextsize, 1)
 
@@ -45,7 +47,9 @@ module ReVIEW
       @index_mecab = nil
       return true unless @book.config['pdfmaker']['makeindex']
 
-      @index_db = load_idxdb(@book.config['pdfmaker']['makeindex_dic']) if @book.config['pdfmaker']['makeindex_dic']
+      if @book.config['pdfmaker']['makeindex_dic']
+        @index_db = load_idxdb(@book.config['pdfmaker']['makeindex_dic'])
+      end
       return true unless @book.config['pdfmaker']['makeindex_mecab']
       begin
         require 'MeCab'
@@ -100,17 +104,20 @@ module ReVIEW
     def headline(level, label, caption)
       _, anchor = headline_prefix(level)
       headline_name = HEADLINE[level]
-      headline_name = 'part' if @chapter.is_a? ReVIEW::Book::Part
-      prefix = if level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)
-                 '*'
-               else
-                 ''
-               end
+      if @chapter.is_a? ReVIEW::Book::Part
+        headline_name = 'part'
+      end
+      prefix = ''
+      if level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)
+        prefix = '*'
+      end
       blank unless @output.pos == 0
       @doc_status[:caption] = true
       puts macro(headline_name + prefix, compile_inline(caption))
       @doc_status[:caption] = nil
-      puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline(caption)}}" if prefix == '*' && level <= @book.config['toclevel'].to_i
+      if prefix == '*' && level <= @book.config['toclevel'].to_i
+        puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline(caption)}}"
+      end
       if level == 1
         puts macro('label', chapter_label)
       else
@@ -164,7 +171,9 @@ module ReVIEW
       @doc_status[:caption] = true
       puts macro('reviewcolumnhead', nil, compile_inline(caption))
       @doc_status[:caption] = nil
-      puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}" if level <= @book.config['toclevel'].to_i
+      if level <= @book.config['toclevel'].to_i
+        puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
+      end
     end
 
     def column_end(_level)
@@ -189,7 +198,9 @@ module ReVIEW
       blank
       puts macro('reviewboxcaption', compile_inline(caption)) if caption
       puts '\begin{reviewbox}'
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts '\end{reviewbox}'
       blank
     end
@@ -251,7 +262,9 @@ module ReVIEW
 
     def paragraph(lines)
       blank
-      lines.each { |line| puts line }
+      lines.each do |line|
+        puts line
+      end
       blank
     end
 
@@ -336,7 +349,9 @@ module ReVIEW
       end
       @doc_status[:caption] = nil
       body = ''
-      lines.each_with_index { |line, idx| body.concat(yield(line, idx)) }
+      lines.each_with_index do |line, idx|
+        body.concat(yield(line, idx))
+      end
       puts macro('begin', command)
       print body
       puts macro('end', command)
@@ -344,7 +359,9 @@ module ReVIEW
     end
 
     def common_code_block_lst(_id, lines, command, title, caption, lang, first_line_num: 1)
-      print '\vspace{-1.5em}' if title == 'title' && caption.blank?
+      if title == 'title' && caption.blank?
+        print '\vspace{-1.5em}'
+      end
       body = lines.inject('') { |i, j| i + detab(unescape_latex(j)) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
@@ -365,7 +382,9 @@ module ReVIEW
               end
       lexer = lang if lang.present?
       args = %Q(#{title}={#{caption_str}},language={#{lexer}})
-      args += ",firstnumber=#{first_line_num}" if first_line_num != 1
+      if first_line_num != 1
+        args += ",firstnumber=#{first_line_num}"
+      end
       args
     end
 
@@ -412,7 +431,9 @@ module ReVIEW
       puts '\begin{reviewdummyimage}'
       # path = @chapter.image(id).path
       puts "--[[path = #{id} (#{existence(id)})]]--"
-      lines.each { |line| puts detab(line.rstrip) }
+      lines.each do |line|
+        puts detab(line.rstrip)
+      end
       puts macro('label', image_label(id))
       @doc_status[:caption] = true
       puts macro('caption', compile_inline(caption)) if caption.present?
@@ -473,7 +494,9 @@ module ReVIEW
         warn "image not bound: #{id}"
         puts '\begin{reviewdummyimage}'
         puts "--[[path = #{id} (#{existence(id)})]]--"
-        lines.each { |line| puts detab(line.rstrip) }
+        lines.each do |line|
+          puts detab(line.rstrip)
+        end
       end
 
       @doc_status[:caption] = true
@@ -511,8 +534,12 @@ module ReVIEW
       return if rows.empty?
       table_begin rows.first.size
       if sepidx
-        sepidx.times { tr(rows.shift.map { |s| th(s) }) }
-        rows.each { |cols| tr(cols.map { |s| td(s) }) }
+        sepidx.times do
+          tr(rows.shift.map { |s| th(s) })
+        end
+        rows.each do |cols|
+          tr(cols.map { |s| td(s) })
+        end
       else
         rows.each do |cols|
           h, *cs = *cols
@@ -654,7 +681,9 @@ module ReVIEW
     def texequation(lines)
       blank
       puts macro('begin', 'equation*')
-      lines.each { |line| puts unescape_latex(line) }
+      lines.each do |line|
+        puts unescape_latex(line)
+      end
       puts macro('end', 'equation*')
       blank
     end
@@ -671,12 +700,16 @@ module ReVIEW
 
     def direct(lines, fmt)
       return unless fmt == 'latex'
-      lines.each { |line| puts line }
+      lines.each do |line|
+        puts line
+      end
     end
 
     def comment(lines, comment = nil)
       lines ||= []
-      lines.unshift comment unless comment.blank?
+      unless comment.blank?
+        lines.unshift comment
+      end
       return true unless @book.config['draft']
       str = lines.join('\par ')
       puts macro('pdfcomment', escape(str))
@@ -770,9 +803,7 @@ module ReVIEW
     end
 
     def footnote(id, content)
-      if @book.config['footnotetext']
-        puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
-      elsif @foottext[id]
+      if @book.config['footnotetext'] || @foottext[id]
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       end
     end
