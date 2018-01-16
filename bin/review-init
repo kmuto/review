@@ -130,7 +130,18 @@ def generate_texmacro(dir)
 end
 
 def generate_rakefile(dir)
-  FileUtils.cp @review_dir + '/test/sample-book/src/Rakefile', dir
+  FileUtils.mkdir_p dir + '/lib/tasks'
+
+  File.open(dir + '/Rakefile', 'w') do |file|
+    file.write <<-EOS
+Dir.glob('lib/tasks/*.rake').each do |file|
+  load(file)
+end
+EOS
+  end
+
+  FileUtils.cp @review_dir + '/test/sample-book/src/Rakefile',
+               dir + '/lib/tasks/review.rake'
 end
 
 def generate_locale(dir)
