@@ -185,7 +185,7 @@ module ReVIEW
     def captionblock(_type, lines, caption)
       puts "\\begin{reviewminicolumn}\n"
       @doc_status[:caption] = true
-      puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n" if caption
+      puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n" if caption.present?
 
       @doc_status[:caption] = nil
       blocked_lines = split_paragraph(lines)
@@ -196,7 +196,7 @@ module ReVIEW
 
     def box(lines, caption = nil)
       blank
-      puts macro('reviewboxcaption', compile_inline(caption)) if caption
+      puts macro('reviewboxcaption', compile_inline(caption)) if caption.present?
       puts '\begin{reviewbox}'
       lines.each do |line|
         puts detab(line)
@@ -332,7 +332,7 @@ module ReVIEW
 
     def common_code_block(id, lines, command, caption, _lang)
       @doc_status[:caption] = true
-      if caption
+      if caption.present?
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
           puts macro(command + 'caption', compile_inline(caption))
         else
@@ -527,7 +527,7 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption unless caption.nil?
+        table_header id, caption if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
