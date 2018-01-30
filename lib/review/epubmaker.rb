@@ -435,7 +435,7 @@ module ReVIEW
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>\n)
         @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@config.name_of('subtitle'))}</h2>\n) if @config['subtitle']
         @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n) if @config['aut']
-        @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('prt').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n) if @config['prt']
+        @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n) if @config['pbl']
         @body << '</div>'
 
         @language = @producer.config['language']
