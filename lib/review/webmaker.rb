@@ -240,7 +240,7 @@ module ReVIEW
         @body << %Q(<div class="titlepage">)
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>)
         @body << %Q(<h2 class="tp-author">#{join_with_separator(@config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))}</h2>) if @config['aut']
-        @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config.names_of('prt'), ReVIEW::I18n.t('names_splitter'))}</h3>) if @config['prt']
+        @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))}</h3>) if @config['pbl']
         @body << '</div>'
 
         @language = @config['language']
