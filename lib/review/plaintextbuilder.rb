@@ -207,14 +207,14 @@ module ReVIEW
       blank
     end
 
-    def base_block(type, lines, caption = nil)
+    def base_block(_type, lines, caption = nil)
       blank
       puts compile_inline(caption) if caption.present?
       puts lines.join("\n")
       blank
     end
 
-    def base_parablock(type, lines, caption = nil)
+    def base_parablock(_type, lines, caption = nil)
       blank
       puts compile_inline(caption) if caption.present?
       puts split_paragraph(lines).join("\n")
@@ -275,9 +275,7 @@ module ReVIEW
       array.join(',')
     end
 
-    def image(lines, id, caption, metric = nil)
-      metrics = parse_metric('top', metric)
-      metrics = " #{metrics}" if metrics.present?
+    def image(_lines, id, caption, _metric = nil)
       blank
       if get_chap
         puts "#{I18n.t('image')}#{I18n.t('format_number', [get_chap, @chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
@@ -344,7 +342,7 @@ module ReVIEW
     def table_begin(ncols)
     end
 
-    def imgtable(lines, id, caption = nil, metric = nil)
+    def imgtable(_lines, id, caption = nil, _metric = nil)
       blank
       table_header id, caption if caption.present?
       blank
@@ -377,7 +375,7 @@ module ReVIEW
       " 注#{@chapter.footnote(id).number} "
     end
 
-    def compile_ruby(base, ruby)
+    def compile_ruby(base, _ruby)
       base
     end
 
@@ -420,7 +418,7 @@ module ReVIEW
       str
     end
 
-    def inline_hidx(str)
+    def inline_hidx(_str)
       ''
     end
 
@@ -460,7 +458,7 @@ module ReVIEW
       str
     end
 
-    def inline_icon(id)
+    def inline_icon(_id)
       ''
     end
 
@@ -480,7 +478,7 @@ module ReVIEW
       [str.to_i(16)].pack('U')
     end
 
-    def inline_comment(str)
+    def inline_comment(_str)
       ''
     end
 
@@ -517,14 +515,14 @@ module ReVIEW
     def noindent
     end
 
-    def nonum_begin(level, _label, caption)
+    def nonum_begin(_level, _label, caption)
       puts compile_inline(caption)
     end
 
-    def nonum_end(level)
+    def nonum_end(_level)
     end
 
-    def notoc_begin(level, _label, caption)
+    def notoc_begin(_level, _label, caption)
       puts compile_inline(caption)
     end
 
@@ -538,12 +536,12 @@ module ReVIEW
     def nodisp_end(level)
     end
 
-    def common_column_begin(type, caption)
+    def common_column_begin(_type, caption)
       blank
       puts compile_inline(caption)
     end
 
-    def common_column_end(type)
+    def common_column_end(_type)
       blank
     end
 
@@ -697,9 +695,7 @@ module ReVIEW
 
     alias_method :box, :insn
 
-    def indepimage(_lines, id, caption = nil, metric = nil)
-      metrics = parse_metric('top', metric)
-      metrics = " #{metrics}" if metrics.present?
+    def indepimage(_lines, _id, caption = nil, _metric = nil)
       blank
       puts "図　#{compile_inline(caption)}" if caption.present?
       blank
@@ -769,14 +765,14 @@ module ReVIEW
       str
     end
 
-    def inline_labelref(idref)
+    def inline_labelref(_idref)
       '●'
     end
 
     alias_method :inline_ref, :inline_labelref
 
-    def inline_pageref(idref)
-      "●ページ" # ページ番号を参照
+    def inline_pageref(_idref)
+      '●ページ' # ページ番号を参照
     end
 
     def circle_begin(_level, _label, caption)
