@@ -48,50 +48,6 @@ module ReVIEW
       @subsubsubsection = 0
       @blank_seen = true
       @sec_counter = SecCounter.new(5, @chapter)
-
-      @titles = {
-        'emlist' => 'インラインリスト',
-        'cmd' => 'コマンド',
-        'quote' => '引用',
-        'centering' => '中央揃え',
-        'flushright' => '右寄せ',
-        'note' => 'ノート',
-        'memo' => 'メモ',
-        'important' => '重要',
-        'info' => '情報',
-        'planning' => 'プランニング',
-        'shoot' => 'トラブルシュート',
-        'term' => '用語解説',
-        'notice' => '注意',
-        'caution' => '警告',
-        'warning' => '危険',
-        'point' => 'ここがポイント',
-        'reference' => '参考',
-        'link' => 'リンク',
-        'best' => 'ベストプラクティス',
-        'practice' => '練習問題',
-        'security' => 'セキュリティ',
-        'expert' => 'エキスパートに訊け',
-        'tip' => 'TIP',
-        'box' => '書式',
-        'insn' => '書式',
-        'column' => 'コラム',
-        'xcolumn' => 'コラムパターン2',
-        'world' => 'Worldコラム',
-        'hood' => 'Under The Hoodコラム',
-        'edition' => 'Editionコラム',
-        'insideout' => 'InSideOutコラム',
-        'ref' => '参照',
-        'sup' => '補足',
-        'read' => 'リード',
-        'lead' => 'リード',
-        'list' => 'リスト',
-        'image' => '図',
-        'texequation' => 'TeX式',
-        'table' => '表',
-        'bpo' => 'bpo',
-        'source' => 'ソースコードリスト'
-      }
     end
     private :builder_init_file
 
@@ -267,14 +223,6 @@ module ReVIEW
       end
     end
 
-    def handle_metric(str)
-      str
-    end
-
-    def result_metric(array)
-      array.join(',')
-    end
-
     def image(_lines, id, caption, _metric = nil)
       blank
       if get_chap
@@ -339,7 +287,7 @@ module ReVIEW
       blank
     end
 
-    def table_begin(ncols)
+    def table_begin(_ncols)
     end
 
     def imgtable(_lines, id, caption = nil, _metric = nil)
@@ -350,14 +298,6 @@ module ReVIEW
 
     def tr(rows)
       puts rows.join("\t")
-    end
-
-    def th(str)
-      str
-    end
-
-    def td(str)
-      str
     end
 
     def table_end
@@ -381,8 +321,9 @@ module ReVIEW
 
     def compile_kw(word, alt)
       if alt
-      then "#{word}（#{alt.strip}）"
-      else word
+        "#{word}（#{alt.strip}）"
+      else
+        word
       end
     end
 
@@ -394,80 +335,16 @@ module ReVIEW
       end
     end
 
-    def inline_sup(str)
-      str
-    end
-
-    def inline_sub(str)
-      str
-    end
-
     def inline_raw(str)
       super(str).gsub('\\n', "\n")
-    end
-
-    def inline_hint(str)
-      str
-    end
-
-    def inline_maru(str)
-      str
-    end
-
-    def inline_idx(str)
-      str
     end
 
     def inline_hidx(_str)
       ''
     end
 
-    def inline_ami(str)
-      str
-    end
-
-    def inline_i(str)
-      str
-    end
-
-    def inline_em(str)
-      str
-    end
-
-    def inline_b(str)
-      str
-    end
-
-    alias_method :inline_strong, :inline_b
-
-    def inline_tt(str)
-      str
-    end
-
-    def inline_ttb(str)
-      str
-    end
-
-    alias_method :inline_ttbold, :inline_ttb
-
-    def inline_tti(str)
-      str
-    end
-
-    def inline_u(str)
-      str
-    end
-
     def inline_icon(_id)
       ''
-    end
-
-    def inline_bou(str)
-      str
-    end
-
-    def inline_keytop(str)
-      str
     end
 
     def inline_balloon(str)
@@ -482,17 +359,13 @@ module ReVIEW
       ''
     end
 
-    def inline_m(str)
-      str
-    end
-
     def bibpaper(lines, id, caption)
       bibpaper_header id, caption
       bibpaper_bibpaper id, caption, lines unless lines.empty?
     end
 
     def bibpaper_header(id, caption)
-      print "[#{@chapter.bibpaper(id).number}]"
+      print @chapter.bibpaper(id).number
       puts " #{compile_inline(caption)}"
     end
 
@@ -501,7 +374,7 @@ module ReVIEW
     end
 
     def inline_bib(id)
-      %Q([#{@chapter.bibpaper(id).number}])
+      %Q(#{@chapter.bibpaper(id).number} )
     end
 
     def inline_hd_chap(chap, id)
@@ -530,7 +403,6 @@ module ReVIEW
     end
 
     def nodisp_begin(level, label, caption)
-      # return empty
     end
 
     def nodisp_end(level)
@@ -704,12 +576,10 @@ module ReVIEW
     alias_method :numberlessimage, :indepimage
 
     def label(_id)
-      # FIXME
       ''
     end
 
     def dtp(str)
-      # FIXME
     end
 
     def bpo(lines)
@@ -717,17 +587,11 @@ module ReVIEW
     end
 
     def inline_dtp(_str)
-      # FIXME
       ''
     end
 
     def inline_del(_str)
-      # FIXME
       ''
-    end
-
-    def inline_code(str)
-      str
     end
 
     def inline_br(_str)
@@ -761,10 +625,6 @@ module ReVIEW
       base_block 'source', lines, caption
     end
 
-    def inline_ttibold(str)
-      str
-    end
-
     def inline_labelref(_idref)
       '●'
     end
@@ -785,5 +645,28 @@ module ReVIEW
     def nofunc_text(str)
       str
     end
+
+    alias_method :th, :nofunc_text
+    alias_method :td, :nofunc_text
+    alias_method :inline_sup, :nofunc_text
+    alias_method :inline_sub, :nofunc_text
+    alias_method :inline_hint, :nofunc_text
+    alias_method :inline_maru, :nofunc_text
+    alias_method :inline_idx, :nofunc_text
+    alias_method :inline_ami, :nofunc_text
+    alias_method :inline_i, :nofunc_text
+    alias_method :inline_em, :nofunc_text
+    alias_method :inline_b, :nofunc_text
+    alias_method :inline_strong, :nofunc_text
+    alias_method :inline_tt, :nofunc_text
+    alias_method :inline_code, :nofunc_text
+    alias_method :inline_ttb, :nofunc_text
+    alias_method :inline_ttbold, :nofunc_text
+    alias_method :inline_tti, :nofunc_text
+    alias_method :inline_ttibold, :nofunc_text
+    alias_method :inline_u, :nofunc_text
+    alias_method :inline_bou, :nofunc_text
+    alias_method :inline_keytop, :nofunc_text
+    alias_method :inline_m, :nofunc_text
   end
 end # module ReVIEW
