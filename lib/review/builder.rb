@@ -444,7 +444,7 @@ module ReVIEW
         graphviz: "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
         gnuplot: %Q(echo 'set terminal ) +
         "#{image_ext == 'eps' ? 'postscript eps' : image_ext}\n" +
-        %Q(" set output "#{file_path}"\n#{line}' | gnuplot),
+        %Q( set output "#{file_path}"\n#{line}' | gnuplot),
         blockdiag: "echo '#{line}' " +
         "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin",
         aafigure: "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}"
