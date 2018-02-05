@@ -30,6 +30,22 @@ end
 
 usage if ARGV.length == 0
 
+if ARGV[0] && ARGV[0].start_with?('-')
+  cmdopt = ARGV[0]
+  case cmdopt
+  when '-h', '--help'
+    usage()
+    exit 0
+  when '-v', '--version'
+    require 'review/version'
+    puts "Re:VIEW #{ReVIEW::VERSION}"
+    exit 0
+  else
+    $stderr.puts "#{cmdopt}: unknown option."
+    exit 1
+  end
+end
+
 command = "review-#{ARGV.shift}"
 bindir = Pathname.new(__FILE__).realpath.dirname
 command_path = File.join(bindir, command)
