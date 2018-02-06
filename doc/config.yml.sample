@@ -291,7 +291,7 @@ epubmaker:
 # dvicommand: "dvipdfmx"
 #
 # LaTeX用のdvi変換コマンドのオプションを指定する
-# dvioptions: "-d 5"
+# dvioptions: "-d 5 -z 9"
 
 # 以下のパラメータを有効にするときには、
 # pdfmaker:
