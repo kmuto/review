@@ -74,4 +74,5 @@ texdocumentclass: ["jsbook", "uplatex,oneside"]
 ## for PDFMaker
 
 pdfmaker:
+  toc: true
   colophon: true
