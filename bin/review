@@ -30,13 +30,13 @@ ReVIEW commands are:
   index     : show heading list.
   validate  : validate Re:VIEW document files.
   version   : show Re:VIEW version.
-  help      : show this message.
+  --help    : show this message.
 EOB
   print message
   exit 1
 end
 
-usage if ARGV.length == 0 || ARGV[0] == 'help'
+usage if ARGV.length == 0 || ARGV[0] == '--help'
 
 if ARGV[0] == 'version'
   puts ReVIEW::VERSION
