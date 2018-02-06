@@ -413,7 +413,7 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric('latex', metric)
       # image is always bound here
-      puts '\begin{reviewimage}'
+      puts "\\begin{reviewimage}%%#{id}"
       if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
@@ -484,7 +484,7 @@ module ReVIEW
       metrics = parse_metric('latex', metric)
 
       if @chapter.image(id).path
-        puts '\begin{reviewimage}'
+        puts "\\begin{reviewimage}%%#{id}"
         if metrics.present?
           puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
         else
@@ -554,7 +554,7 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          puts "\\begin{table}[h]%%#{id}"
           puts macro('reviewtablecaption*', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -562,7 +562,7 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          puts "\\begin{table}[h]%%#{id}"
           puts macro('reviewtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -637,7 +637,7 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          puts "\\begin{table}[h]%%#{id}"
           puts macro('reviewimgtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -655,7 +655,7 @@ module ReVIEW
     def imgtable_image(id, _caption, metric)
       metrics = parse_metric('latex', metric)
       # image is always bound here
-      puts '\begin{reviewimage}'
+      puts "\\begin{reviewimage}%%#{id}"
       if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
