@@ -18,7 +18,9 @@ ReVIEW commands are:
   preproc
   compile
   epubmaker
+  webmaker
   pdfmaker
+  textmaker
   vol
   check
   index

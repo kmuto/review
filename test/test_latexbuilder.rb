@@ -303,6 +303,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n), actual
   end
 
+  def test_emlist_empty_caption
+    actual = compile_block("//emlist[]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n), actual
+  end
+
   def test_emlist_with_tab
     actual = compile_block("//emlist{\n\tfoo\n\t\tbar\n\n\tbuz\n//}\n")
     assert_equal %Q(\n\\begin{reviewemlist}\n        foo\n                bar\n\n        buz\n\\end{reviewemlist}\n), actual
@@ -366,6 +371,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_source
     actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(\\reviewsourcecaption{foo/bar/test.rb}\n\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n), actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n), actual
   end
 
   def test_source_lst

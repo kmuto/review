@@ -28,10 +28,13 @@ module ReVIEW
       nil
     end
 
+    attr_accessor :doc_status
+
     def initialize(strict = false, *args)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
+      @doc_status = {}
       builder_init(*args)
     end
 
@@ -441,7 +444,7 @@ module ReVIEW
         graphviz: "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
         gnuplot: %Q(echo 'set terminal ) +
         "#{image_ext == 'eps' ? 'postscript eps' : image_ext}\n" +
-        %Q(" set output "#{file_path}"\n#{line}' | gnuplot),
+        %Q( set output "#{file_path}"\n#{line}' | gnuplot),
         blockdiag: "echo '#{line}' " +
         "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin",
         aafigure: "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}"
@@ -459,13 +462,7 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline File.read(file_name)
-    end
-
-    def include(file_name)
-      File.foreach(file_name) do |line|
-        paragraph([line])
-      end
+      compile_inline File.read(file_name, mode: 'rt:BOM|utf-8').chomp
     end
 
     def ul_item_begin(lines)

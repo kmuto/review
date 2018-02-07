@@ -249,8 +249,10 @@
 }
 \makeatother
 
-<%- if @config["usepackage"] -%>
-<%= @config["usepackage"] %>
+<%- if @config["texstyle"] -%>
+<%-   [@config["texstyle"]].flatten.each do |x| -%>
+\usepackage{<%= x %>}
+<%-   end -%>
 <%- end -%>
 <%- if @config["makeindex"] -%>
 \usepackage{makeidx}
@@ -360,7 +362,7 @@
 <%- if @config["subtitle"] -%>
 {\noindent\reviewtitlefont\large <%= escape_latex(@config.name_of("subtitle")) %>} \\
 <%- end -%>
-\rule[8pt]{14cm}{1pt} \\
+\rule[8pt]{\textwidth}{1pt} \\
 {\noindent
 <%= @config["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>
 }
@@ -369,7 +371,7 @@
 <%= @okuduke %>
 \end{tabular}
 　\\
-\rule[0pt]{14cm}{1pt} \\
+\rule[0pt]{\textwidth}{1pt} \\
 <%-     if @config["rights"] -%>
 <%= @config.names_of("rights").map{|s| escape_latex(s)}.join('\\' + '\\') %> \\
 <%-     end -%>
