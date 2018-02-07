@@ -22,8 +22,8 @@ ReVIEW commands are:
   preproc   : preprocess Re:VIEW document file.
   compile   : convert Re:VIEW document file.
   epubmaker : build EPUB.
-  webmaker  : build Web page set.
-  pdfmaker  : build PDF by using LaTeX.
+  webmaker  : build web pages.
+  pdfmaker  : build PDF with LaTeX.
   textmaker : build text files.
   vol       : show volume of Re:VIEW document.
   check     : check there are no REJECT words in the document.
