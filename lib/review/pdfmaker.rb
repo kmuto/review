@@ -120,7 +120,109 @@ module ReVIEW
       rescue ReVIEW::ConfigError => e
         warn e.message
       end
+
+      make_valcommand
+
       generate_pdf(yamlfile)
+    end
+
+    def make_valcommand
+      # config.ymlの内容をrd〜の命令または環境にする
+      # rd〜命令とかrdnamesとかを全部どこかで最初にdefineしないといけないのでは?
+      # カスタムに利用するパラメータを入れると困ったことになる？
+      initialize_metachars(@config['texcommand'])
+      # parse config and generate keyval
+      copyconfig = @config.dup
+
+      copyconfig.delete_if do |k, _v|
+        %w[epubmaker textmaker webmaker bib_file catalogfile chapter_file
+           chapref epubversion debug externallink fontdir ext footnotetext
+           htmlext htmlversion imagedir image_types image_ext imgmath listinfo
+           mathml nolf opf_prefix opf_meta part_file postdef_file predef_file
+           pt_to_mm_unit structuredxml tableopt reject_file].include?(k)
+      end
+
+      copyconfig['pdfmaker'].each do |k, v|
+        copyconfig[k] = v
+      end
+      copyconfig.delete('pdfmaker')
+
+      ret = []
+      copyconfig.each_pair do |k, v|
+        next unless v.present?
+        k = escape_keyname(k)
+        case v.class.to_s
+        when 'String'
+          ret << %Q(\\rd#{k}{#{escape_latex(v)}})
+        when 'TrueClass', 'Float', 'Fixnum'
+          ret << %Q(\\rd#{k}{#{v}})
+        when 'Hash'
+          case k
+          when 'booktitle', 'subtitle'
+            s = %Q(\\rd#{k}{#{escape_latex(@config.name_of(k))})
+            v.each_pair do |k2, v2|
+              next if k2 == 'name'
+              s += %Q(\\rd#{escape_keyname(k2)}{#{escape_latex(v2)}})
+            end
+            s += '}'
+            ret << s
+          when 'aut', 'prt', 'asn', 'ant', 'clb', 'edt', 'dsr', 'ill', 'pht', 'trl'
+            ret << "\\begin{rdnames}{#{k}}"
+            case v.class.to_s
+            when 'String'
+              ret << "\\item {#{escape_latex(v)}}"
+            when 'Hash'
+              s = "\\item {#{escape_latex(v['name'])}"
+
+              v.each_pair do |k2, v2|
+                next if k2 == 'name'
+                s += %Q(\\rd#{escape_keyname(k2)}{#{escape_latex(v2)}})
+              end
+
+              s += "}\n"
+              ret << s
+            end
+            ret << '\end{rdnames}'
+          else
+            STDERR.puts v
+          end
+        when 'Array'
+          case k
+          when 'aut', 'prt', 'asn', 'ant', 'clb', 'edt', 'dsr', 'ill', 'pht', 'trl'
+            ret << "\\begin{rdnames}{#{k}}"
+            v.each do |item|
+              case item.class.to_s
+              when 'String'
+                ret << "\\item {#{escape_latex(item)}}"
+              when 'Hash'
+                s = "\\item {#{escape_latex(item['name'])}"
+
+                item.each_pair do |k2, v2|
+                  next if k2 == 'name'
+                  s += %Q(\\rd#{escape_keyname(k2)}{#{escape_latex(v2)}})
+                end
+
+                s += "}\n"
+                ret << s
+              end
+            end
+            ret << '\end{rdnames}'
+          end
+        when 'Date'
+          # ローカリゼーションはどこでやるべきか?
+          STDERR.puts v
+        else
+          # Date, PageMetric
+          STDERR.puts v.class
+        end
+      end
+
+      puts ret.join("\n")
+      exit
+    end
+
+    def escape_keyname(k)
+      k.gsub(/[_-]/, '')
     end
 
     def make_input_files(book, yamlfile)
