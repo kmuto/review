@@ -8,29 +8,40 @@
 #
 
 require 'pathname'
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review'
 
 def usage
   message = <<-EOB
 usage: review <command> [<args>]
 
 ReVIEW commands are:
-  init
-  preproc
-  compile
-  epubmaker
-  webmaker
-  pdfmaker
-  textmaker
-  vol
-  check
-  index
-  validate
+  init      : generate Re:VIEW project directory.
+  preproc   : preprocess Re:VIEW document file.
+  compile   : convert Re:VIEW document file.
+  epubmaker : build EPUB.
+  webmaker  : build web pages.
+  pdfmaker  : build PDF with LaTeX.
+  textmaker : build text files.
+  vol       : show volume of Re:VIEW document.
+  check     : check there are no REJECT words in the document.
+  index     : show heading list.
+  validate  : validate Re:VIEW document files.
+  version   : show Re:VIEW version.
+  --help    : show this message.
 EOB
   print message
   exit 1
 end
 
-usage if ARGV.length == 0
+usage if ARGV.length == 0 || ARGV[0] == '--help'
+
+if ARGV[0] == 'version'
+  puts ReVIEW::VERSION
+  exit
+end
 
 command = "review-#{ARGV.shift}"
 bindir = Pathname.new(__FILE__).realpath.dirname
