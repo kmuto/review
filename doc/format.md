@@ -380,6 +380,12 @@ The order of finding image is as follows.  The first matched one is used.
 * ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
 
+For each builder, image files are searched in order of the following extensions, and the first hit file is adopted.
+
+* HTMLBuilder (EPUBMaker, WEBMaker), MARKDOWNBuilder: .png, .jpg, .jpeg, .gif, .svg
+* LATEXBuilder (PDFMaker): .ai, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif
+* Other builders: .ai, .psd, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif, .svg
+
 ### Inline Images
 
 When you want to use images in paragraph, you can use the inline command `@<icon>{ID}`.  The order of finding images are same as `//image`.
