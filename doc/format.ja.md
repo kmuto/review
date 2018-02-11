@@ -337,6 +337,12 @@ V1 --> V6 --|
 * `<id>` は //image[〜] の最初に入れた「〜」のことです（つまり、ID に日本語や空白交じりの文字を使ってしまうと、後で画像ファイル名の名前付けに苦労することになります！）。
 * `<ext>` は Re:VIEW が自動で判別する拡張子です。ビルダによってサポートおよび優先する拡張子は異なります。
 
+各ビルダでは、以下の拡張子から最初に発見した画像ファイルが使われます。
+
+* HTMLBuilder (EPUBMaker、WEBMaker)、MARKDOWNBuilder: .png、.jpg、.jpeg、.gif、.svg
+* LATEXBuilder (PDFMaker): .ai、.eps、.pdf、.tif、.tiff、.png、.bmp、.jpg、.jpeg、.gif
+* それ以外のビルダ: .ai、.psd、.eps、.pdf、.tif、.tiff、.png、.bmp、.jpg、.jpeg、.gif、.svg
+
 ### インラインの画像挿入
 
 段落途中などに画像を貼り込むには、インライン命令の `@<icon>{識別子}` を使います。ファイルの探索ルールは同じです。
