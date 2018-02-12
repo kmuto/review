@@ -160,14 +160,14 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_m
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
-    assert_equal 'abc $\\alpha^n = \\inf < 2$ ghi', actual
+    assert_equal 'abc$\\alpha^n = \\inf < 2$ghi', actual
   end
 
   def test_inline_m2
     ## target text: @<m>{X = \{ {x_1\},{x_2\}, \cdots ,{x_n\} \\\}}
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
     ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
-    assert_equal ' $X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$ ', actual
+    assert_equal '$X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$', actual
   end
 
   def test_inline_tt

@@ -831,7 +831,7 @@ module ReVIEW
 
     # math
     def inline_m(str)
-      " $#{str}$ "
+      "$#{str}$"
     end
 
     # hidden index
