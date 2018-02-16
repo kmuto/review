@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -147,15 +147,18 @@ module ReVIEW
       end
       copyconfig.delete('pdfmaker')
 
-      ret = []
+      defines = []
+      values = []
+
       copyconfig.each_pair do |k, v|
         next unless v.present?
         k = escape_keyname(k)
         case v.class.to_s
         when 'String'
-          ret << %Q(\\rd#{k}{#{escape_latex(v)}})
+          defines << %Q(\\newcommand{\\rd#{k}[1]{})
+          values << %Q(\\rd#{k}{#{escape_latex(v)}})
         when 'TrueClass', 'Float', 'Fixnum'
-          ret << %Q(\\rd#{k}{#{v}})
+          values << %Q(\\rd#{k}{#{v}})
         when 'Hash'
           case k
           when 'booktitle', 'subtitle'
@@ -165,12 +168,12 @@ module ReVIEW
               s += %Q(\\rd#{escape_keyname(k2)}{#{escape_latex(v2)}})
             end
             s += '}'
-            ret << s
+            values << s
           when 'aut', 'prt', 'asn', 'ant', 'clb', 'edt', 'dsr', 'ill', 'pht', 'trl'
-            ret << "\\begin{rdnames}{#{k}}"
+            values << "\\begin{rdnames}{#{k}}"
             case v.class.to_s
             when 'String'
-              ret << "\\item {#{escape_latex(v)}}"
+              values << "\\item {#{escape_latex(v)}}"
             when 'Hash'
               s = "\\item {#{escape_latex(v['name'])}"
 
@@ -180,20 +183,20 @@ module ReVIEW
               end
 
               s += "}\n"
-              ret << s
+              values << s
             end
-            ret << '\end{rdnames}'
+            values << '\end{rdnames}'
           else
             STDERR.puts v
           end
         when 'Array'
           case k
           when 'aut', 'prt', 'asn', 'ant', 'clb', 'edt', 'dsr', 'ill', 'pht', 'trl'
-            ret << "\\begin{rdnames}{#{k}}"
+            values << "\\begin{rdnames}{#{k}}"
             v.each do |item|
               case item.class.to_s
               when 'String'
-                ret << "\\item {#{escape_latex(item)}}"
+                values << "\\item {#{escape_latex(item)}}"
               when 'Hash'
                 s = "\\item {#{escape_latex(item['name'])}"
 
@@ -203,10 +206,10 @@ module ReVIEW
                 end
 
                 s += "}\n"
-                ret << s
+                values << s
               end
             end
-            ret << '\end{rdnames}'
+            values << '\end{rdnames}'
           end
         when 'Date'
           # ローカリゼーションはどこでやるべきか?
@@ -217,7 +220,8 @@ module ReVIEW
         end
       end
 
-      puts ret.join("\n")
+      puts defines.values.join("\n")
+      puts values.join("\n")
       exit
     end
 
