@@ -135,7 +135,11 @@ module ReVIEW
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
         log('Finished.')
       ensure
-        FileUtils.remove_entry_secure basetmpdir unless @config['debug']
+        unless @config['debug']
+          FileUtils.remove_entry_secure(basetmpdir, true)
+          # XXX: workaround strange behavior in Windows
+          FileUtils.remove_entry_secure(basetmpdir) if File.exist?(basetmpdir)
+        end
       end
     end
 
