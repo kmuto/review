@@ -314,8 +314,13 @@ pdfmaker:
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
   # hook_afterdvipdf: null
   #
-  # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換します。
+  # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換する
   # image_scale2width: true
+  #
+  # PDFやIllustratorファイル(.ai)の画像のBoudingBoxの抽出に指定のボックスを採用する
+  # cropbox(デフォルト), mediabox, artbox, trimbox, bleedboxから選択する。
+  # Illustrator CC以降のIllustratorファイルに対してはmediaboxを指定する必要がある
+  # bbox: mediabox
   #
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
   colophon: true
