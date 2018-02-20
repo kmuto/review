@@ -135,11 +135,7 @@ module ReVIEW
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
         log('Finished.')
       ensure
-        unless @config['debug']
-          FileUtils.remove_entry_secure(basetmpdir, true)
-          # XXX: workaround strange behavior in Windows
-          FileUtils.remove_entry_secure(basetmpdir) if File.exist?(basetmpdir)
-        end
+        FileUtils.remove_entry_secure(basetmpdir) unless @config['debug']
       end
     end
 
@@ -368,7 +364,8 @@ module ReVIEW
     def write_info_body(basetmpdir, _id, filename, ispart = nil, chaptype = nil)
       headlines = []
       path = File.join(basetmpdir, filename)
-      Document.parse_stream(File.new(path), ReVIEWHeaderListener.new(headlines))
+      htmlio = File.new(path)
+      Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
       properties = detect_properties(path)
       prop_str = ''
       prop_str = ',properties=' + properties.join(' ') if properties.present?
@@ -382,6 +379,7 @@ module ReVIEW
           first = nil
         end
       end
+      htmlio.close
     end
 
     def push_contents(_basetmpdir)
