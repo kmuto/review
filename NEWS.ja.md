@@ -4,7 +4,6 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 
 以下は未マージ・開発中。なるべく入れたいが…
 
-* バグ修正：Windows で EPUB 生成時に一時作業ファイルの削除エラーが発生するのを修正しました ([#946])
 * 非互換の変更：LaTeX の `@<m>` によるインラインの数式の前後にスペースを入れるのを止めました ([#943])
 * 機能追加：`//table` および `//image` を LaTeX の環境命令に変更したときに、コメントで ID を記すようにしました ([#937])
 * 機能追加：LaTeX から生成する PDF の圧縮レベルオプション指定 (`-z 9`、最大圧縮) を config.yml のサンプルに記載しました ([#935])
@@ -40,6 +39,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 * LaTeX において、キャプションが空のときに空行が入ってしまうのを修正しました ([#922])
 * `//graph` 命令内で gnuplot を使用したときにエラーが発生するのを修正しました ([#931])
 * Windows で review コマンドがエラーになるのを修正しました ([#940])
+* Windows で EPUB 生成時に一時作業ファイルの削除エラーが発生するのを修正しました ([#946])
 
 ## 機能強化
 * `//note` などの囲み要素内で末尾に空行があるときに不要な空の段落が作成されるのを修正しました ([#882])
@@ -80,6 +80,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 [#939]: https://github.com/kmuto/review/pull/939
 [#940]: https://github.com/kmuto/review/issues/940
 [#944]: https://github.com/kmuto/review/pull/944
+[#946]: https://github.com/kmuto/review/issues/946
 [#947]: https://github.com/kmuto/review/pull/947
 
 # Version 2.4.0
