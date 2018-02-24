@@ -388,6 +388,7 @@ module ReVIEW
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       template = layout_file if File.exist?(layout_file)
       erb = ReVIEW::Template.load(template, '-')
+      puts "ERB processes layout.tex.erb" if @config['debug']
       erb.result(binding)
     end
 
@@ -398,11 +399,12 @@ module ReVIEW
       end
 
       Dir.open(dirname) do |dir|
-        dir.each do |fname|
+        dir.sort.each do |fname|
           next unless File.extname(fname).downcase == '.' + extname
           FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
           if extname == 'erb'
             erb = ReVIEW::Template.load(File.join(dirname, fname), '-')
+            puts "ERB processes #{fname}" if @config['debug']
             File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') { |f| f.print erb.result(binding) }
           else
             FileUtils.cp File.join(dirname, fname), copybase

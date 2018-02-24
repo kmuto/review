@@ -1,0 +1,28 @@
+<%- if @config['colophon'] -%>
+<%-   if @custom_colophonpage -%>
+<%= @custom_colophonpage %>
+<%-   else -%>
+\reviewcolophon
+\thispagestyle{empty}
+
+\vspace*{\fill}
+
+{\noindent\reviewtitlefont\Large <%= escape_latex(@config.name_of('booktitle')) %>} \\
+<%- if @config['subtitle'] -%>
+{\noindent\reviewtitlefont\large <%= escape_latex(@config.name_of('subtitle')) %>} \\
+<%- end -%>
+\rule[8pt]{\textwidth}{1pt} \\
+{\noindent
+<%= @config['pubhistory'].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>
+}
+
+\begin{tabular}{ll}
+<%= @okuduke %>
+\end{tabular}
+　\\
+\rule[0pt]{\textwidth}{1pt} \\
+<%-     if @config['rights'] -%>
+<%= @config.names_of('rights').map{|s| escape_latex(s)}.join('\\' + '\\') %> \\
+<%-     end -%>
+<%-   end -%>
+<%- end -%>

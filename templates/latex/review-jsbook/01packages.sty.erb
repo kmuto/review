@@ -1,0 +1,47 @@
+<%- if @texcompiler == 'uplatex' -%>
+\usepackage[deluxe,uplatex]{otf}
+<%- else -%>
+\usepackage[deluxe]{otf}
+<%- end -%>
+\usepackage{caption}
+\usepackage{suffix}
+\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+\usepackage{lmodern}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
+\usepackage{framed}
+\usepackage{wrapfig}
+\definecolor{shadecolor}{gray}{0.9}
+\definecolor{shadecolorb}{gray}{0.1}
+\definecolor{reviewgreen}{rgb}{0,0.4,0}
+\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
+\definecolor{reviewred}{rgb}{0.7,0,0}
+\definecolor{reviewdarkred}{rgb}{0.3,0,0}
+\usepackage[utf8]{inputenc}
+\usepackage{ascmac}
+\usepackage{float}
+\usepackage{alltt}
+\usepackage{amsmath}
+
+%% if you use @<u>{} (underline), use jumoline.sty
+\IfFileExists{jumoline.sty}{
+\usepackage{jumoline}
+}
+
+<%- if ['utbook', 'tbook'].include?(@documentclass)  -%>
+\newcommand{\headfont}{\gtfamily\sffamily\bfseries}
+\usepackage{plext}
+<%- end -%>
+
+<%- if config['highlight'] && config['highlight']['latex'] == 'listings' -%>
+<%-   if config['language'] == 'ja' -%>
+\usepackage{listings,jlisting}
+<%-   else -%>
+\usepackage{listings}
+<%-   end -%>
+<%- end -%>
+
+<%- if @config['makeindex'] -%>
+\usepackage{makeidx}
+\makeindex
+<%- end -%>
