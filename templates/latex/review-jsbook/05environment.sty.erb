@@ -6,30 +6,6 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-\renewcommand{\lstlistingname}{<%= escape_latex(I18n.t('list')) %>}
-\lstset{%
-  breaklines=true,%
-  breakautoindent=false,%
-  breakindent=0pt,%
-  fontadjust=true,%
-  backgroundcolor=\color{shadecolor},%
-  frame=single,%
-  framerule=0pt,%
-  basicstyle=\ttfamily\scriptsize,%
-  commentstyle=\color{reviewgreen},%
-  identifierstyle=\color{reviewblue},%
-  stringstyle=\color{reviewred},%
-  keywordstyle=\bfseries\color{reviewdarkred},%
-}
-
-\lstnewenvironment{reviewemlistlst}[1][]{\lstset{#1}}{}
-\lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
-\lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
-\lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
-\lstnewenvironment{reviewsourcelst}[1][]{\lstset{#1}}{}
-\lstnewenvironment{reviewsourcenumlst}[1][]{\lstset{numbers=left, #1}}{}
-\lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
-
 \newenvironment{reviewimage}{%
   \begin{figure}[H]
     \begin{center}}{%

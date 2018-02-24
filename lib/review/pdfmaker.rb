@@ -149,7 +149,6 @@ module ReVIEW
     end
 
     def build_pdf
-      erb_config
       template = template_content
       Dir.chdir(@path) do
         File.open('./book.tex', 'wb') { |f| f.write(template) }
@@ -207,6 +206,7 @@ module ReVIEW
 
     def generate_pdf(yamlfile)
       remove_old_file
+      erb_config
       @path = build_path
       begin
         @compile_errors = nil
@@ -224,6 +224,7 @@ module ReVIEW
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'cls')
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'erb')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'tex')
         copy_sty(Dir.pwd, @path, 'tex')
 
         build_pdf
@@ -388,7 +389,7 @@ module ReVIEW
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       template = layout_file if File.exist?(layout_file)
       erb = ReVIEW::Template.load(template, '-')
-      puts "ERB processes layout.tex.erb" if @config['debug']
+      puts 'erb processes layout.tex.erb' if @config['debug']
       erb.result(binding)
     end
 
@@ -404,7 +405,7 @@ module ReVIEW
           FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
           if extname == 'erb'
             erb = ReVIEW::Template.load(File.join(dirname, fname), '-')
-            puts "ERB processes #{fname}" if @config['debug']
+            puts "erb processes #{fname}" if @config['debug']
             File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') { |f| f.print erb.result(binding) }
           else
             FileUtils.cp File.join(dirname, fname), copybase

@@ -1,6 +1,7 @@
 \documentclass[dvipdfmx,<%= @documentclassoption %>]{<%= @documentclass %>}
 
-\input{__define}
+\usepackage{__define}
+
 <%- if @config['texstyle'] -%>
 <%-   [@config['texstyle']].flatten.each do |x| -%>
 \usepackage{<%= x %>}
