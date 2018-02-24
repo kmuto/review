@@ -148,31 +148,29 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
-  #   def test_gettemplate_with_backmatter
-  #     @config.merge!(
-  #       'backcover' => 'backcover.html',
-  #       'profile' => 'profile.html',
-  #       'advfile' => 'advfile.html'
-  #     )
-  #     Dir.mktmpdir do |dir|
-  #       Dir.chdir(dir) do
-  #         profile = "\\thispagestyle{empty}\\chapter*{Profile}\nsome profile\n"
-  #         File.open(File.join(dir, 'profile.tex'), 'w') { |f| f.write(profile) }
-  #         advfile = "\\thispagestyle{empty}\\chapter*{Ad}\nsome ad content\n"
-  #         File.open(File.join(dir, 'advfile.tex'), 'w') { |f| f.write(advfile) }
-  #         backcover = "\\clearpage\n\\thispagestyle{empty}\\AddToShipoutPictureBG{%\n\\AtPageLowerLeft{\\includegraphics[width=\\paperwidth,height=\\paperheight]{images/backcover.png}}\n}\n\\null"
-  #         File.open(File.join(dir, 'backcover.tex'), 'w') { |f| f.write(backcover) }
-  #
-  #         expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
-  #
-  #         @maker.basedir = Dir.pwd
-  #         @maker.erb_config
-  #         tmpl = @maker.template_content
-  #         tmpl.gsub!(/\A.*%% backmatter begins\n/m, '')
-  #         assert_equal(expect, tmpl)
-  #       end
-  #     end
-  #   end
+  def test_gettemplate_with_backmatter
+    @config.merge!(
+      'backcover' => 'backcover.tex',
+      'profile' => 'profile.tex',
+      'advfile' => 'advfile.tex'
+    )
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        profile = "\\thispagestyle{empty}\\chapter*{Profile}\nsome profile\n"
+        File.open(File.join(dir, 'profile.tex'), 'w') { |f| f.write(profile) }
+        advfile = "\\thispagestyle{empty}\\chapter*{Ad}\nsome ad content\n"
+        File.open(File.join(dir, 'advfile.tex'), 'w') { |f| f.write(advfile) }
+        backcover = "\\clearpage\n\\thispagestyle{empty}\\AddToShipoutPictureBG{%\n\\AtPageLowerLeft{\\includegraphics[width=\\paperwidth,height=\\paperheight]{images/backcover.png}}\n}\n\\null"
+        File.open(File.join(dir, 'backcover.tex'), 'w') { |f| f.write(backcover) }
+        expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
+        @maker.basedir = Dir.pwd
+        @maker.erb_config
+        tmpl = @maker.erb_content(File.join(ReVIEW::Template::TEMPLATE_DIR, './latex/review-jsbook/50backmatter_misc.tex.erb'))
+        tmpl << @maker.erb_content(File.join(ReVIEW::Template::TEMPLATE_DIR, './latex/review-jsbook/52backcover.tex.erb'))
+        assert_equal(expect, tmpl)
+      end
+    end
+  end
 
   def test_colophon_history
     @config['aut'] = ['Mr.Smith']

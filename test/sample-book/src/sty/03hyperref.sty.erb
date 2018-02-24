@@ -1,0 +1,4 @@
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+     pdftitle={<%= escape_latex(@config.name_of('booktitle')) %>},%
+     pdfauthor={<%= escape_latex(@config.names_of('aut')).join(I18n.t('names_splitter')))}]{hyperref}
+\usepackage[dvipdfmx]{pxjahyper}

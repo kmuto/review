@@ -384,13 +384,17 @@ module ReVIEW
       @texcompiler = File.basename(@config['texcommand'], '.*')
     end
 
+    def erb_content(file)
+      erb = ReVIEW::Template.load(file, '-')
+      puts "erb processes #{File.basename(file)}" if @config['debug']
+      erb.result(binding)
+    end
+
     def template_content
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       template = layout_file if File.exist?(layout_file)
-      erb = ReVIEW::Template.load(template, '-')
-      puts 'erb processes layout.tex.erb' if @config['debug']
-      erb.result(binding)
+      erb_content(template)
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
@@ -404,9 +408,9 @@ module ReVIEW
           next unless File.extname(fname).downcase == '.' + extname
           FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
           if extname == 'erb'
-            erb = ReVIEW::Template.load(File.join(dirname, fname), '-')
-            puts "erb processes #{fname}" if @config['debug']
-            File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') { |f| f.print erb.result(binding) }
+            File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
+              f.print erb_content(File.join(dirname, fname))
+            end
           else
             FileUtils.cp File.join(dirname, fname), copybase
           end
