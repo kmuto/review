@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2018 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -196,6 +196,10 @@ module ReVIEW
     #   end
     #   footnote_end
     # end
+
+    def blankline
+      puts ''
+    end
 
     def compile_inline(s)
       @compiler.text(s)
