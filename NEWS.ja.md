@@ -7,10 +7,9 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 * 非互換の変更：LaTeX の `@<m>` によるインラインの数式の前後にスペースを入れるのを止めました ([#943])
 * 機能追加：`//table` および `//image` を LaTeX の環境命令に変更したときに、コメントで ID を記すようにしました ([#937])
 * 機能追加：LaTeX から生成する PDF の圧縮レベルオプション指定 (`-z 9`、最大圧縮) を config.yml のサンプルに記載しました ([#935])
-* 非互換の変更：`@<chapref>`、@<column>` の展開文字列を locale.yml で変更しやすいようにしました ([#886])
+* 非互換の変更：`@<chapref>`、`@<column>` の展開文字列を locale.yml で変更しやすいようにしました ([#886])
 * 非互換の変更：LaTeX の表紙 (`cover` パラメータ) と大扉 (`titlepage` パラメータ) は独立した設定となりました ([#848])
 * 非互換の変更：インライン文字装飾の LaTeX への変換結果を `\textbf` ではなく `\reviewbold` のように抽象化した名前にしました ([#792])
-* 新機能：空行を入れる命令？？？を追加しました ([#942])
 * 非互換の変更：LaTeX でルビを表現できるよう pxrubrica パッケージを読み込むようにしました ([#655])
 * 非互換の変更：LaTeX のコードリスト環境を jlisting から plistings パッケージに変更しました ([#635])
 * 非互換の変更：LaTeX のハイパーリンクの枠線のデフォルトをなしにしました ([#808])
@@ -27,10 +26,11 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 ## 新機能
 * プレインテキストを出力する review-textmaker コマンドを用意しました ([#926])
 * LaTeX 向けに、図版の BoudingBox の採取手段を変更する `pdfmaker/bbox` パラメータを追加しました ([#947])
+* 新機能：空行を入れる命令 `//blankline` を追加しました ([#942])
 
 ## 非互換の変更
 * `//include` 命令は不完全でユーザーの混乱を招くため、削除しました ([#887])
-* LaTeX において、見出しや図表キャプション内にある脚注は `\footnotemark` を暗黙に使うようにしました ([#668])
+* LaTeX において、見出しや図表キャプション内にある脚注は `\footnotemark` を暗黙に使うようにしました ([#841])
 * EPUB および WebMaker の大扉では、印刷所 (prt) の代わりに出版社 (pbl) を記載するようにしました ([#927])
 
 ## バグ修正
@@ -79,6 +79,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 [#933]: https://github.com/kmuto/review/issues/933
 [#939]: https://github.com/kmuto/review/pull/939
 [#940]: https://github.com/kmuto/review/issues/940
+[#942]: https://github.com/kmuto/review/issues/942
 [#944]: https://github.com/kmuto/review/pull/944
 [#946]: https://github.com/kmuto/review/issues/946
 [#947]: https://github.com/kmuto/review/pull/947
