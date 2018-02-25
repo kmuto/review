@@ -166,6 +166,11 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n), actual
   end
 
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(\nfoo\n), actual
+  end
+
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n), actual

@@ -430,6 +430,11 @@ EOS
     assert_equal %Q(<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n), actual
   end
 
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(<p><br /></p>\n<p>foo</p>\n), actual
+  end
+
   def test_noindent
     @builder.noindent
     actual = compile_block("foo\nbar\n\nfoo2\nbar2\n")

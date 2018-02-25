@@ -341,6 +341,11 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<p align='center'>foobar</p><p align='center'>buz</p>), actual
   end
 
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(<p/><p>foo</p>), actual
+  end
+
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(<p aid:pstyle="noindent" noindent='1'>foobar</p><p>foo2bar2</p>), actual

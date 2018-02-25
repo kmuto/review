@@ -197,7 +197,7 @@ module ReVIEW
     #   footnote_end
     # end
 
-    def linebreak
+    def blankline
       puts ''
     end
 

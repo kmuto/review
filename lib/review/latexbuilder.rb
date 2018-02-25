@@ -727,7 +727,7 @@ module ReVIEW
       puts '\pagebreak'
     end
 
-    def linebreak
+    def blankline
       puts '\vspace*{\baselineskip}'
     end
 

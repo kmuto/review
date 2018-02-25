@@ -760,7 +760,7 @@ module ReVIEW
       puts %Q(<a id="#{normalize_id(id)}"></a>)
     end
 
-    def linebreak
+    def blankline
       puts '<p><br /></p>'
     end
 

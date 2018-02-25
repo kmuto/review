@@ -165,7 +165,7 @@ module ReVIEW
 
     defsingle :footnote, 2
     defsingle :noindent, 0
-    defsingle :linebreak, 0
+    defsingle :blankline, 0
     defsingle :pagebreak, 0
     defsingle :hr, 0
     defsingle :parasep, 0

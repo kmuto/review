@@ -747,7 +747,7 @@ module ReVIEW
       @noindent = true
     end
 
-    def linebreak
+    def blankline
       puts '<p/>'
     end
 

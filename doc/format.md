@@ -616,12 +616,24 @@ Usage:
 
 `//noindent` is a tag for spacing.
 
-
 * `//noindent` : ingore indentation immediately following line. (in HTML, add `noindent` class)
 
+## Blank line
 
-`//linebreak` and `//pagebreak` will be obsoleted.
+`//blankline` put an empty line.
 
+Usage:
+
+```
+Insert one blank line below.
+
+//blankline
+
+Insert two blank line below.
+
+//blankline
+//blankline
+```
 
 ## Referring headings
 
