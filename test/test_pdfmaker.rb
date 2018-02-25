@@ -10,7 +10,7 @@ class PDFMakerTest < Test::Unit::TestCase
     @config.merge!(
       'bookname' => 'sample',
       'title' => 'Sample Book',
-      'version' => 2,
+      'review_version' => 3,
       'urnid' => 'http://example.jp/',
       'date' => '2011-01-01',
       'language' => 'ja',
