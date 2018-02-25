@@ -1,3 +1,11 @@
+#
+# Copyright (c) 2012-2018 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
 require 'securerandom'
 
 module ReVIEW
@@ -41,7 +49,7 @@ module ReVIEW
         'imgmath' => nil, # for HTML
         'htmlext' => 'html',
         'htmlversion' => 5,
-        'draftdir' => '.',
+        'draftdir' => '',
         'imagedir' => 'images',
         'image_ext' => %w[png gif jpg jpeg svg ttf woff otf],
         'fontdir' => 'fonts',
