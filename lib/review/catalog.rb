@@ -48,5 +48,22 @@ module ReVIEW
       return '' unless @yaml['POSTDEF']
       @yaml['POSTDEF'].join("\n")
     end
+
+    def validate!(basedir)
+      %w[PREDEF CHAPS POSTDEF APPENDIX].each do |cat_name|
+        next unless @yaml[cat_name]
+        @yaml[cat_name].each do |item|
+          filenames = [item]
+          if item.is_a?(Hash)
+            filenames = item.values
+          end
+          filenames.each do |filename|
+            unless File.exist?(File.join(basedir, filename))
+              raise FileNotFound, "file not found in catalog.yml: #{basedir}/#{filename}"
+            end
+          end
+        end
+      end
+    end
   end
 end
