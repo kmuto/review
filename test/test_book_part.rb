@@ -23,7 +23,7 @@ class PartTest < Test::Unit::TestCase
   end
 
   def test_volume
-    book = Book::Base.new(nil)
+    book = Book::Base.new
     part = Book::Part.new(book, nil, [])
     assert part.volume
     assert_equal 0, part.volume.bytes

@@ -32,11 +32,11 @@ module ReVIEW
 
       def self.update_rubyenv(dir)
         return if @basedir_seen.key?(dir)
-        if File.file?("#{dir}/review-ext.rb")
+        if File.file?(File.join(dir, '/review-ext.rb'))
           if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
             ReVIEW.logger.warn 'review-ext.rb is prohibited in safe mode. ignored.'
           else
-            Kernel.load File.expand_path("#{dir}/review-ext.rb")
+            Kernel.load File.expand_path(File.join(dir, '/review-ext.rb'))
           end
         end
         @basedir_seen[dir] = true
@@ -46,7 +46,7 @@ module ReVIEW
         @basedir_seen = {}
       end
 
-      def initialize(basedir)
+      def initialize(basedir='')
         @basedir = basedir
         @parts = nil
         @chapter_index = nil
@@ -182,8 +182,9 @@ module ReVIEW
 
       def catalog
         return @catalog if @catalog.present?
+        return nil unless config['catalogfile']
 
-        catalogfile_path = "#{basedir}/#{config['catalogfile']}"
+        catalogfile_path = File.join(@basedir, config['catalogfile'])
         @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
         @catalog
       end
@@ -226,7 +227,7 @@ module ReVIEW
         if catalog
           @read_part = catalog.parts
         else
-          @read_part = File.read("#{@basedir}/#{config['part_file']}")
+          @read_part = File.read(File.join(@basedir, config['part_file']))
         end
       end
 
@@ -234,23 +235,25 @@ module ReVIEW
         if catalog
           catalog.parts.present?
         else
-          File.exist?("#{@basedir}/#{config['part_file']}")
+          File.exist?(File.join(@basedir, config['part_file']))
         end
       end
 
       def read_bib
-        File.read("#{@basedir}/#{bib_file}")
+        File.read(File.join(@basedir, bib_file))
       end
 
       def bib_exist?
-        File.exist?("#{@basedir}/#{bib_file}")
+        File.exist?(File.join(@basedir, bib_file))
       end
 
       def prefaces
         return mkpart_from_namelist(catalog.predef.split("\n")) if catalog
+        return nil unless config['predef_file']
 
         begin
-          mkpart_from_namelistfile("#{@basedir}/#{config['predef_file']}") if File.file?("#{@basedir}/#{config['predef_file']}")
+          predef_file = File.join(@basedir, config['predef_file'])
+          mkpart_from_namelistfile(predef_file) if File.file?(predef_file)
         rescue FileNotFound => err
           raise FileNotFound, "preface #{err.message}"
         end
@@ -263,8 +266,9 @@ module ReVIEW
           return mkpart(chaps)
         end
 
+        return nil unless config['postdef_file']
         begin
-          mkpart_from_namelistfile("#{@basedir}/#{config['postdef_file']}") if File.file?("#{@basedir}/#{config['postdef_file']}")
+          mkpart_from_namelistfile(File.join(@basedir, config['postdef_file'])) if File.file?(File.join(@basedir, config['postdef_file']))
         rescue FileNotFound => err
           raise FileNotFound, "postscript #{err.message}"
         end

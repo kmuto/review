@@ -1,3 +1,5 @@
+# Copyright (c) 2016-2018 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
+#
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
@@ -37,7 +39,7 @@ module ReVIEW
       cmd_config = {}
       opts = OptionParser.new
 
-      opts.banner = 'Usage: review-webmaker configfile'
+      opts.banner = 'Usage: review-webmaker [option] configfile'
       opts.version = ReVIEW::VERSION
       opts.on('--help', 'Prints this message and quit.') do
         puts opts.help

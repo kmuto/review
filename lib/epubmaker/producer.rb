@@ -237,7 +237,7 @@ module EPUBMaker
           'cover_linear' => nil
         },
         'externallink' => true,
-        'draftdir' => '.',
+        'draftdir' => '',
         'imagedir' => 'images',
         'fontdir' => 'fonts',
         'image_ext' => %w[png gif jpg jpeg svg ttf woff otf],

@@ -17,7 +17,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       'image_scale2width' => false,
       'texcommand' => 'uplatex'
     )
-    @book = Book::Base.new(nil)
+    @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
