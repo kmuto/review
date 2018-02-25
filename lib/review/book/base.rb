@@ -46,7 +46,7 @@ module ReVIEW
         @basedir_seen = {}
       end
 
-      def initialize(basedir = '')
+      def initialize(basedir = '.')
         @basedir = basedir
         @parts = nil
         @chapter_index = nil
