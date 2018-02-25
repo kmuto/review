@@ -405,6 +405,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(\n\\begin{center}\nfoobar\n\nbuz\n\\end{center}\n), actual
   end
 
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(\\vspace*{\\baselineskip}\n\nfoo\n), actual
+  end
+
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(\\noindent\nfoo\nbar\n\nfoo2\nbar2\n), actual
