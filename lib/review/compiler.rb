@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.

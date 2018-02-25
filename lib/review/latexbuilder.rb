@@ -1,6 +1,6 @@
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2017 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2018 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -728,7 +728,7 @@ module ReVIEW
     end
 
     def linebreak
-      puts '\\\\'
+      puts '\vspace*{\baselineskip}'
     end
 
     def noindent

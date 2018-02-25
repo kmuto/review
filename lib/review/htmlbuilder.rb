@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -761,7 +761,7 @@ module ReVIEW
     end
 
     def linebreak
-      puts '<br />'
+      puts '<p><br /></p>'
     end
 
     def pagebreak

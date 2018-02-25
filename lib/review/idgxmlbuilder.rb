@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -748,8 +748,7 @@ module ReVIEW
     end
 
     def linebreak
-      # FIXME: pが閉じちゃってるので一度戻らないといけないが、難しい…。
-      puts '<br />'
+      puts '<p/>'
     end
 
     def pagebreak
