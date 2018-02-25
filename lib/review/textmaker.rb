@@ -106,7 +106,7 @@ module ReVIEW
     end
 
     def build_part(part, basetmpdir, textfile)
-      File.open("#{basetmpdir}/#{textfile}", 'w') do |f|
+      File.open(File.join(basetmpdir, textfile), 'w') do |f|
         f.print '■H1■' unless @plaintext
         f.print ReVIEW::I18n.t('part', part.number)
         f.print "　#{part.name.strip}" if part.name.strip.present?
@@ -122,7 +122,7 @@ module ReVIEW
       else
         filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
       end
-      id = filename.sub(/\.re\Z/, '')
+      id = File.basename(filename).sub(/\.re\Z/, '')
 
       textfile = "#{id}.txt"
 

@@ -25,7 +25,7 @@ def main
 
   part_sensitive = false
   basedir = nil
-  yamlfile = nil
+  yamlfile = 'config.yml'
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| yamlfile = yaml }

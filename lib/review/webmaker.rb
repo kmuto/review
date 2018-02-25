@@ -151,7 +151,7 @@ module ReVIEW
       else
         filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
       end
-      id = filename.sub(/\.re\Z/, '')
+      id = File.basename(filename).sub(/\.re\Z/, '')
 
       htmlfile = "#{id}.#{@config['htmlext']}"
 

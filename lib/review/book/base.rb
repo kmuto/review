@@ -32,11 +32,11 @@ module ReVIEW
 
       def self.update_rubyenv(dir)
         return if @basedir_seen.key?(dir)
-        if File.file?(File.join(dir, '/review-ext.rb'))
+        if File.file?(File.join(dir, 'review-ext.rb'))
           if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
             ReVIEW.logger.warn 'review-ext.rb is prohibited in safe mode. ignored.'
           else
-            Kernel.load File.expand_path(File.join(dir, '/review-ext.rb'))
+            Kernel.load File.expand_path(File.join(dir, 'review-ext.rb'))
           end
         end
         @basedir_seen[dir] = true
@@ -46,7 +46,7 @@ module ReVIEW
         @basedir_seen = {}
       end
 
-      def initialize(basedir='')
+      def initialize(basedir = '')
         @basedir = basedir
         @parts = nil
         @chapter_index = nil

@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -300,7 +300,7 @@ module ReVIEW
           Pathname.new(chap.path).relative_path_from(base_path).to_s
         end
 
-      id = filename.sub(/\.re\Z/, '')
+      id = File.basename(filename).sub(/\.re\Z/, '')
 
       if @config['epubmaker']['rename_for_legacy'] && ispart.nil?
         if chap.on_predef?

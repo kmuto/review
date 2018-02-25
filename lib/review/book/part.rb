@@ -24,8 +24,8 @@ module ReVIEW
         @content = nil
         if io
           @content = io.read
-        elsif @path && File.exist?(@path)
-          @content = File.read(@path, mode: 'r:BOM|utf-8')
+        elsif @path && File.exist?(File.join(@book.config['draftdir'], @path))
+          @content = File.read(File.join(@book.config['draftdir'], @path), mode: 'r:BOM|utf-8')
           @name = File.basename(@name, '.re')
         end
         @title = name
