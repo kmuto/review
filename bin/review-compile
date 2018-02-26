@@ -99,11 +99,26 @@ def _main
   end
 
   begin
-    loader = ReVIEW::YAMLLoader.new
     if config['yaml']
-      config.deep_merge!(loader.load_file(config['yaml']))
+      unless File.exist?(config['yaml'])
+        @logger.error "#{config['yaml']} not found."
+        exit 1
+      end
+      begin
+        config.deep_merge!(YAML.load_file(config['yaml']))
+      rescue => e
+        @logger.error 'yaml error'
+        @logger.error e.message
+        exit 1
+      end
     elsif File.exist?(DEFAULT_CONFIG_FILENAME)
-      config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
+      begin
+        config.deep_merge!(YAML.load_file(DEFAULT_CONFIG_FILENAME))
+      rescue => e
+        @logger.error 'yaml error'
+        @logger.error e.message
+        exit 1
+      end
     end
 
     config['builder'] = target

@@ -107,10 +107,20 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'pdfmaker'
       cmd_config, yamlfile = parse_opts(args)
-      loader = ReVIEW::YAMLLoader.new
-      @config.deep_merge!(loader.load_file(yamlfile))
+      unless File.exist?(yamlfile)
+        @logger.error "#{yamlfile} not found."
+        exit 1
+      end
+
+      begin
+        @config.deep_merge!(YAML.load_file(yamlfile))
+      rescue => e
+        @logger.error 'yaml error'
+        @logger.error e.message
+        exit 1
+      end
       # YAML configs will be overridden by command line options.
-      @config.merge!(cmd_config)
+      @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
       @basedir = File.dirname(yamlfile)
       @basehookdir = File.absolute_path(File.dirname(yamlfile))

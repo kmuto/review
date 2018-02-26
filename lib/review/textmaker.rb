@@ -62,10 +62,20 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'textmaker'
       cmd_config, yamlfile = parse_opts(args)
+      unless File.exist?(yamlfile)
+        @logger.error "#{yamlfile} not found."
+        exit 1
+      end
 
-      @config.merge!(YAML.load_file(yamlfile))
+      begin
+        @config.deep_merge!(YAML.load_file(yamlfile))
+      rescue => e
+        @logger.error 'yaml error'
+        @logger.error e.message
+        exit 1
+      end
       # YAML configs will be overridden by command line options.
-      @config.merge!(cmd_config)
+      @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
       generate_text_files(yamlfile)
     end
