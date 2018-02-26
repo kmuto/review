@@ -782,6 +782,8 @@ module ReVIEW
       else
         macro('reviewlistref', I18n.t('format_number', [get_chap(chapter), chapter.list(id).number]))
       end
+    rescue KeyError
+      error "unknown list: #{id}"
     end
 
     def inline_table(id)
@@ -791,6 +793,8 @@ module ReVIEW
       else
         macro('reviewtableref', I18n.t('format_number', [get_chap(chapter), chapter.table(id).number]), table_label(id, chapter))
       end
+    rescue KeyError
+      error "unknown table: #{id}"
     end
 
     def inline_img(id)
@@ -800,6 +804,8 @@ module ReVIEW
       else
         macro('reviewimageref', I18n.t('format_number', [get_chap(chapter), chapter.image(id).number]), image_label(id, chapter))
       end
+    rescue KeyError
+      error "unknown image: #{id}"
     end
 
     def footnote(id, content)
@@ -817,6 +823,8 @@ module ReVIEW
       else
         macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
       end
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     BOUTEN = '・'.freeze
@@ -917,6 +925,8 @@ module ReVIEW
       macro('reviewcolumnref',
             I18n.t('chapter_quote', compile_inline(chapter.column(id).caption)),
             column_label(id, chapter))
+    rescue KeyError
+      error "unknown column: #{id}"
     end
 
     def inline_raw(str)

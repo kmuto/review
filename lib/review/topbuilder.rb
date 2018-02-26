@@ -242,6 +242,8 @@ module ReVIEW
 
     def inline_fn(id)
       "【注#{@chapter.footnote(id).number}】"
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, ruby)
@@ -359,6 +361,8 @@ module ReVIEW
 
     def inline_bib(id)
       %Q([#{@chapter.bibpaper(id).number}])
+    rescue KeyError
+      error "unknown bib: #{id}"
     end
 
     def noindent

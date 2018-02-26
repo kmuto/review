@@ -1691,4 +1691,21 @@ EOS
     actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
     assert_equal 'test <code class="inline-code tt">@&lt;code&gt;{$サンプル$}</code>', actual
   end
+
+  def test_inline_unknown
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    assert_equal ':1: error: unknown image: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    assert_equal ':1: error: unknown footnote: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    assert_equal ':1: error: unknown headline: n', e.message
+    %w[list table column].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ":1: error: unknown #{name}: n", e.message
+    end
+    %w[chap chapref title].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ':1: error: key not found: "n"', e.message
+    end
+  end
 end
