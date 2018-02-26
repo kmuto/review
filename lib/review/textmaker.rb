@@ -12,6 +12,7 @@ require 'fileutils'
 require 'review/converter'
 require 'review/configure'
 require 'review/book'
+require 'review/yamlloader'
 require 'review/topbuilder'
 require 'review/version'
 
@@ -23,6 +24,15 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @plaintext = nil
+    end
+
+    def error(msg)
+      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      exit 1
+    end
+
+    def warn(msg)
+      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
     end
 
     def self.execute(*args)
@@ -62,17 +72,13 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'textmaker'
       cmd_config, yamlfile = parse_opts(args)
-      unless File.exist?(yamlfile)
-        @logger.error "#{yamlfile} not found."
-        exit 1
-      end
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       begin
-        @config.deep_merge!(YAML.load_file(yamlfile))
+        loader = ReVIEW::YAMLLoader.new
+        @config.deep_merge!(loader.load_file(yamlfile))
       rescue => e
-        @logger.error 'yaml error'
-        @logger.error e.message
-        exit 1
+        error "yaml error #{e.message}"
       end
       # YAML configs will be overridden by command line options.
       @config.deep_merge!(cmd_config)
@@ -139,8 +145,8 @@ module ReVIEW
       begin
         @converter.convert(filename, File.join(basetmpdir, textfile))
       rescue => e
-        @logger.warn "compile error in #{filename} (#{e.class})"
-        @logger.warn e.message
+        warn "compile error in #{filename} (#{e.class})"
+        warn e.message
       end
     end
   end

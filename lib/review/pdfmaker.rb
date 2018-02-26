@@ -107,17 +107,13 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'pdfmaker'
       cmd_config, yamlfile = parse_opts(args)
-      unless File.exist?(yamlfile)
-        @logger.error "#{yamlfile} not found."
-        exit 1
-      end
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       begin
-        @config.deep_merge!(YAML.load_file(yamlfile))
+        loader = ReVIEW::YAMLLoader.new
+        @config.deep_merge!(loader.load_file(yamlfile))
       rescue => e
-        @logger.error 'yaml error'
-        @logger.error e.message
-        exit 1
+        error "yaml error #{e.message}"
       end
       # YAML configs will be overridden by command line options.
       @config.deep_merge!(cmd_config)

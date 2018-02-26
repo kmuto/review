@@ -13,6 +13,7 @@ require 'review/converter'
 require 'review/configure'
 require 'review/book'
 require 'review/htmlbuilder'
+require 'review/yamlloader'
 require 'review/template'
 require 'review/tocprinter'
 require 'review/version'
@@ -27,6 +28,15 @@ module ReVIEW
     def initialize
       @basedir = nil
       @logger = ReVIEW.logger
+    end
+
+    def error(msg)
+      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      exit 1
+    end
+
+    def warn(msg)
+      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
     end
 
     def self.execute(*args)
@@ -68,17 +78,13 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'webmaker'
       cmd_config, yamlfile = parse_opts(args)
-      unless File.exist?(yamlfile)
-        @logger.error "#{yamlfile} not found."
-        exit 1
-      end
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       begin
-        @config.deep_merge!(YAML.load_file(yamlfile))
+        loader = ReVIEW::YAMLLoader.new
+        @config.deep_merge!(loader.load_file(yamlfile))
       rescue => e
-        @logger.error 'yaml error'
-        @logger.error e.message
-        exit 1
+        error "yaml error #{e.message}"
       end
       # YAML configs will be overridden by command line options.
       @config.deep_merge!(cmd_config)
@@ -164,14 +170,14 @@ module ReVIEW
       htmlfile = "#{id}.#{@config['htmlext']}"
 
       if @config['params'].present?
-        @logger.warn %Q('params:' in config.yml is obsoleted.)
+        warn %Q('params:' in config.yml is obsoleted.)
       end
 
       begin
         @converter.convert(filename, File.join(basetmpdir, htmlfile))
       rescue => e
-        @logger.warn "compile error in #{filename} (#{e.class})"
-        @logger.warn e.message
+        warn "compile error in #{filename} (#{e.class})"
+        warn e.message
       end
     end
 

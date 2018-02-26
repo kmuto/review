@@ -39,7 +39,7 @@ if ARGV.size < 1
 end
 
 unless File.exist?(ARGV[0])
-  @logger.error "#{ARGV[0]} not found."
+  @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{ARGV[0]} not found."
   exit 1
 end
 
