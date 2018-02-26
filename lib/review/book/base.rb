@@ -80,6 +80,14 @@ module ReVIEW
         config['image_types'] = types
       end
 
+      def draftdir
+        if !config['draftdir'].present? || config['draftdir'] == '.'
+          ''
+        else
+          config['draftdir']
+        end
+      end
+
       def page_metric
         if config['page_metric'].respond_to?(:downcase) && config['page_metric'].upcase =~ /\A[A-Z0-9_]+\Z/
           ReVIEW::Book::PageMetric.const_get(config['page_metric'].upcase)
@@ -305,12 +313,12 @@ module ReVIEW
           return catalog.parts_with_chaps.map do |entry|
             if entry.is_a?(Hash)
               chaps = entry.values.first.map do |chap|
-                chap = Chapter.new(self, num += 1, chap, File.join(@basedir, config['draftdir'], chap))
+                chap = Chapter.new(self, num += 1, chap, File.join(@basedir, draftdir, chap))
                 chap
               end
               Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
             else
-              chap = Chapter.new(self, num += 1, entry, File.join(@basedir, config['draftdir'], entry))
+              chap = Chapter.new(self, num += 1, entry, File.join(@basedir, draftdir, entry))
               if chap.number
                 num = chap.number
               else
@@ -324,7 +332,7 @@ module ReVIEW
         chap = read_chaps.
                strip.lines.map(&:strip).join("\n").split(/\n{2,}/).
                map do |part_chunk|
-          chaps = part_chunk.split.map { |chapid| Chapter.new(self, num += 1, chapid, File.join(@basedir, config['draftdir'], chapid)) }
+          chaps = part_chunk.split.map { |chapid| Chapter.new(self, num += 1, chapid, File.join(@basedir, draftdir, chapid)) }
           if part_exist? && read_part.split("\n").size > part
             Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
           else
@@ -356,14 +364,14 @@ module ReVIEW
 
       def mkchap(name, number = nil)
         name += ext if File.extname(name).empty?
-        path = File.join(@basedir, config['draftdir'], name)
+        path = File.join(@basedir, draftdir, name)
         raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
         Chapter.new(self, number, name, path)
       end
 
       def mkchap_ifexist(name, idx = nil)
         name += ext if File.extname(name).empty?
-        path = File.join(@basedir, config['draftdir'], name)
+        path = File.join(@basedir, draftdir, name)
         if File.file?(path)
           idx += 1 if idx
           Chapter.new(self, idx, name, path)

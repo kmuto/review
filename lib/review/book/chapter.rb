@@ -37,7 +37,6 @@ module ReVIEW
         if !@content && @path && File.exist?(@path)
           @content = File.read(@path, mode: 'r:BOM|utf-8')
           @number = nil if %w[nonum nodisp notoc].include?(find_first_header_option)
-          # @path = Pathname.new(@path).cleanpath.to_s
         end
         @list_index = nil
         @table_index = nil
