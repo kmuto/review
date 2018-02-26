@@ -51,6 +51,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 * `review-init` コマンド実行時に、`doc` フォルダにドキュメントをコピーするようにしました ([#918])
 * `review` コマンドのヘルプメッセージを追加しました ([#933])
 * 存在しないあるいは壊れている YAML ファイルを読み込もうとしたときに妥当なエラーメッセージを出すようにしました ([#958])
+* `@<img>` や `@<table>` などのインライン命令で存在しない ID を指定したときのエラーメッセージをわかりやすいものに統一しました ([#954])
 
 ## ドキュメント
 * 画像ファイルの拡張子の探索順序を文書化しました ([#939])
@@ -84,6 +85,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 [#944]: https://github.com/kmuto/review/pull/944
 [#946]: https://github.com/kmuto/review/issues/946
 [#947]: https://github.com/kmuto/review/pull/947
+[#954]: https://github.com/kmuto/review/issues/954
 [#958]: https://github.com/kmuto/review/issues/958
 
 # Version 2.4.0
