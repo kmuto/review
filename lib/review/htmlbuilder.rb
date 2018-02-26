@@ -799,7 +799,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_chap(id)
@@ -810,7 +809,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_title(id)
@@ -822,7 +820,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_fn(id)
@@ -831,6 +828,8 @@ module ReVIEW
       else
         %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref">*#{@chapter.footnote(id).number}</a>)
       end
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, ruby)
@@ -949,6 +948,8 @@ module ReVIEW
 
     def inline_bib(id)
       %Q(<a href="#{@book.bib_file.gsub(/\.re\Z/, ".#{@book.config['htmlext']}")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
+    rescue KeyError
+      error "unknown bib: #{id}"
     end
 
     def inline_hd_chap(chap, id)
@@ -964,6 +965,8 @@ module ReVIEW
       else
         str
       end
+    rescue KeyError
+      error "unknown headline: #{id}"
     end
 
     def column_label(id, chapter = @chapter)
@@ -978,6 +981,8 @@ module ReVIEW
       else
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end
+    rescue KeyError
+      error "unknown column: #{id}"
     end
 
     def inline_list(id)
@@ -995,7 +1000,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown list: #{id}"
-      nofunc_text("[UnknownList:#{id}]")
     end
 
     def inline_table(id)
@@ -1013,7 +1017,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown table: #{id}"
-      nofunc_text("[UnknownTable:#{id}]")
     end
 
     def inline_img(id)
@@ -1031,7 +1034,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown image: #{id}"
-      nofunc_text("[UnknownImage:#{id}]")
     end
 
     def inline_asis(str, tag)

@@ -144,6 +144,8 @@ module ReVIEW
       else
         %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(id).number])})
       end
+    rescue KeyError
+      error "unknown list: #{id}"
     end
 
     def list_header(id, caption, _lang)
@@ -212,6 +214,8 @@ module ReVIEW
       else
         "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(id).number])}"
       end
+    rescue KeyError
+      error "unknown table: #{id}"
     end
 
     def inline_img(id)
@@ -221,6 +225,8 @@ module ReVIEW
       else
         "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(id).number])}"
       end
+    rescue KeyError
+      error "unknown image: #{id}"
     end
 
     def image(_lines, id, caption, _metric = nil)
@@ -313,6 +319,8 @@ module ReVIEW
 
     def inline_fn(id)
       " 注#{@chapter.footnote(id).number} "
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, _ruby)
@@ -375,6 +383,8 @@ module ReVIEW
 
     def inline_bib(id)
       %Q(#{@chapter.bibpaper(id).number} )
+    rescue KeyError
+      error "unknown bib: #{id}"
     end
 
     def inline_hd_chap(chap, id)
@@ -383,6 +393,8 @@ module ReVIEW
         return I18n.t('chapter_quote', "#{n}　#{compile_inline(chap.headline(id).caption)}") if @book.config['secnolevel'] >= n.split('.').size
       end
       I18n.t('chapter_quote', compile_inline(chap.headline(id).caption))
+    rescue KeyError
+      error "unknown headline: #{id}"
     end
 
     def noindent
@@ -618,7 +630,6 @@ module ReVIEW
       "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def source(lines, caption = nil, _lang = nil)
