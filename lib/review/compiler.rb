@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -165,7 +165,7 @@ module ReVIEW
 
     defsingle :footnote, 2
     defsingle :noindent, 0
-    defsingle :linebreak, 0
+    defsingle :blankline, 0
     defsingle :pagebreak, 0
     defsingle :hr, 0
     defsingle :parasep, 0

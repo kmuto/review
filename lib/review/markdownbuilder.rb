@@ -178,7 +178,6 @@ module ReVIEW
       "#{I18n.t('image')}#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
-      nofunc_text("[UnknownImage:#{id}]")
     end
 
     def indepimage(_lines, id, caption = '', _metric = nil)

@@ -50,7 +50,13 @@ module ReVIEW
 
     def load_yaml(yamlfile)
       loader = ReVIEW::YAMLLoader.new
-      @config = ReVIEW::Configure.values.deep_merge(loader.load_file(yamlfile))
+      @config = ReVIEW::Configure.values
+      begin
+        @config.deep_merge!(loader.load_file(yamlfile))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
+
       @producer = Producer.new(@config)
       @producer.load(yamlfile)
       @config = @producer.config
