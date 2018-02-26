@@ -101,9 +101,18 @@ def _main
   begin
     loader = ReVIEW::YAMLLoader.new
     if config['yaml']
-      config.deep_merge!(loader.load_file(config['yaml']))
+      error "#{config['yaml']} not found." unless File.exist?(config['yaml'])
+      begin
+        config.deep_merge!(loader.load_file(config['yaml']))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
     elsif File.exist?(DEFAULT_CONFIG_FILENAME)
-      config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
+      begin
+        config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
     end
 
     config['builder'] = target
@@ -111,7 +120,7 @@ def _main
     begin
       config.check_version(ReVIEW::VERSION)
     rescue ReVIEW::ConfigError => e
-      @logger.warn e.message
+      warn e.message
     end
 
     mode = :dir if ARGV.blank?
@@ -119,7 +128,7 @@ def _main
     case mode
     when :files
       if ARGV.empty?
-        @logger.error('no input')
+        error('no input')
         exit 1
       end
 
@@ -155,9 +164,18 @@ def _main
     end
   rescue ReVIEW::ApplicationError => err
     raise if $DEBUG
-    @logger.error(err.message)
+    error(err.message)
     exit 1
   end
+end
+
+def error(msg)
+  @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+  exit 1
+end
+
+def warn(msg)
+  @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
 end
 
 def load_strategy_class(target, strict)
