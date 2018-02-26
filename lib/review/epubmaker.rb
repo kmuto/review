@@ -134,6 +134,9 @@ module ReVIEW
         log('Call ePUB producer.')
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
         log('Finished.')
+      rescue ApplicationError => e
+        raise if $DEBUG
+        error(e.message)
       ensure
         FileUtils.remove_entry_secure basetmpdir unless @config['debug']
       end
