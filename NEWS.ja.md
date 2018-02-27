@@ -43,7 +43,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 
 ## 機能強化
 * `//note` などの囲み要素内で末尾に空行があるときに不要な空の段落が作成されるのを修正しました ([#882])
-* `@<chap>` などで catalog.yml に存在しない ID を指定したときに妥当なエラーメッセージを出すようにしました ([#891])
+* `@<chap>` などで catalog.yml に存在しない ID を指定したときのエラーメッセージをわかりやすいものにしました ([#891])
 * catalog.yml に UTF-8 BOM ヘッダがあっても正常に動作するようにしました ([#899])
 * LaTeX の奥付の罫線の長さを固定幅ではなく紙面幅にしました ([#907])
 * texstyle パラメータで配列による複数の TeX スタイルファイルの読み込みを許可するようにしました ([#908])
@@ -52,6 +52,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 * `review` コマンドのヘルプメッセージを追加しました ([#933])
 * 存在しないあるいは壊れている YAML ファイルを読み込もうとしたときに妥当なエラーメッセージを出すようにしました ([#958])
 * `@<img>` や `@<table>` などのインライン命令で存在しない ID を指定したときのエラーメッセージをわかりやすいものに統一しました ([#954])
+* catalog.yml に存在しないファイルをコンパイルしようとしたときのエラーメッセージをわかりやすいものにしました ([#953])
 
 ## ドキュメント
 * 画像ファイルの拡張子の探索順序を文書化しました ([#939])
@@ -85,6 +86,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 [#944]: https://github.com/kmuto/review/pull/944
 [#946]: https://github.com/kmuto/review/issues/946
 [#947]: https://github.com/kmuto/review/pull/947
+[#953]: https://github.com/kmuto/review/issues/953
 [#954]: https://github.com/kmuto/review/issues/954
 [#958]: https://github.com/kmuto/review/issues/958
 
