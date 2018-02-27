@@ -126,7 +126,13 @@ module ReVIEW
       rescue ReVIEW::ConfigError => e
         warn e.message
       end
-      generate_pdf(yamlfile)
+
+      begin
+        generate_pdf(yamlfile)
+      rescue ApplicationError => e
+        raise if $DEBUG
+        error(e.message)
+      end
     end
 
     def make_input_files(book, yamlfile)
@@ -233,9 +239,6 @@ module ReVIEW
         build_pdf
 
         FileUtils.cp(File.join(@path, 'book.pdf'), pdf_filepath)
-      rescue ApplicationError => e
-        raise if $DEBUG
-        error(e.message)
       ensure
         remove_entry_secure @path unless @config['debug']
       end

@@ -90,7 +90,12 @@ module ReVIEW
       @config.deep_merge!(cmd_config)
       @config['htmlext'] = 'html'
       I18n.setup(@config['language'])
-      generate_html_files(yamlfile)
+      begin
+        generate_html_files(yamlfile)
+      rescue ApplicationError => e
+        raise if $DEBUG
+        error(e.message)
+      end
     end
 
     def generate_html_files(yamlfile)
@@ -112,9 +117,6 @@ module ReVIEW
       copy_resources('covers', "#{@path}/#{@config['imagedir']}")
       copy_resources('adv', "#{@path}/#{@config['imagedir']}")
       copy_resources(@config['fontdir'], "#{@path}/fonts", @config['font_ext'])
-    rescue ApplicationError => e
-      raise if $DEBUG
-      error(e.message)
     end
 
     def build_body(basetmpdir, _yamlfile)

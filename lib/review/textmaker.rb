@@ -83,7 +83,12 @@ module ReVIEW
       # YAML configs will be overridden by command line options.
       @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
-      generate_text_files(yamlfile)
+      begin
+        generate_text_files(yamlfile)
+      rescue ApplicationError => e
+        raise if $DEBUG
+        error(e.message)
+      end
     end
 
     def generate_text_files(yamlfile)
