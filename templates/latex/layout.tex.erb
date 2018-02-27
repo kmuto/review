@@ -5,14 +5,15 @@
 
 \usepackage{ifthen}
 
-% define from yaml parameters
+% BEGIN: define
 \makeatletter
 \def\review@texcompiler{<%= @texcompiler %>}
 \def\review@documentclass{<%= @documentclass %>}
 \def\review@booktitle_name{<%= escape_latex(@config.name_of('booktitle')) %>}
 \def\review@aut_names{<%= escape_latex(@config.names_of('aut').join(I18n.t('names_splitter'))) %>}
-\def\review@highlight_latex{<%= @config['highlight'] ? (@config['highlight']['latex'] ? @config['highlight']['latex'] : '') : '' %>}
-
+<%- if @config['highlight'] && @config['highlight']['latex'] -%>
+\def\review@highlight_latex{<%= @config['highlight']['latex'] %>}
+<%- end -%>
 \def\review@language{<%= @config['language'] %>}
 \def\review@intn@list{<%= escape_latex(I18n.t('list')) %>}
 \def\review@intn@column_head{<%= escape_latex(I18n.t('column_head')) %>}
@@ -28,9 +29,12 @@
 \def\review@figurename{<%= escape_latex(I18n.t('image')) %>}
 \def\review@tablename{<%= escape_latex(I18n.t('table')) %>}
 \def\review@appendixname{<%= escape_latex(@locale_latex['preappendixname']) %>}
-\def\review@makeindex{<%= config['makeindex'] %>}
+<%- if @config['makeindex'] -%>
+\def\review@makeindex{true}
+<%- end -%>
+% END: define
 
-% packages
+% BEGIN: sty
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
 \usepackage[deluxe,uplatex]{otf}%
 }{%
@@ -86,37 +90,38 @@
 }{%
 }
 
-\ifthenelse{\equal{\review@highlight_latex}{listings}}{%
-  \ifhtneelse{\equal{\review@language}{ja}}{%
-    \usepackage{listings,jlisting}
+\ifdefined\review@highlight_latex
+  \ifthenelse{\equal{\review@highlight_latex}{listings}}{%
+    \ifhtneelse{\equal{\review@language}{ja}}{%
+      \usepackage{listings,jlisting}
+    }{%
+      \usepackage{listings}
+    }%
+  \renewcommand{\lstlistingname}{\review@intn@list}
+  \lstset{%
+    breaklines=true,%
+    breakautoindent=false,%
+    breakindent=0pt,%
+    fontadjust=true,%
+    backgroundcolor=\color{shadecolor},%
+    frame=single,%
+    framerule=0pt,%
+    basicstyle=\ttfamily\scriptsize,%
+    commentstyle=\color{reviewgreen},%
+    identifierstyle=\color{reviewblue},%
+    stringstyle=\color{reviewred},%
+    keywordstyle=\bfseries\color{reviewdarkred},%
+  }
+  \lstnewenvironment{reviewemlistlst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewsourcelst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewsourcenumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
   }{%
-    \usepackage{listings}
-  }%
-\renewcommand{\lstlistingname}{\review@intn@list}
-\lstset{%
-  breaklines=true,%
-  breakautoindent=false,%
-  breakindent=0pt,%
-  fontadjust=true,%
-  backgroundcolor=\color{shadecolor},%
-  frame=single,%
-  framerule=0pt,%
-  basicstyle=\ttfamily\scriptsize,%
-  commentstyle=\color{reviewgreen},%
-  identifierstyle=\color{reviewblue},%
-  stringstyle=\color{reviewred},%
-  keywordstyle=\bfseries\color{reviewdarkred},%
-}
-
-\lstnewenvironment{reviewemlistlst}[1][]{\lstset{#1}}{}
-\lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
-\lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
-\lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
-\lstnewenvironment{reviewsourcelst}[1][]{\lstset{#1}}{}
-\lstnewenvironment{reviewsourcenumlst}[1][]{\lstset{numbers=left, #1}}{}
-\lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
-}{%
-}
+  }
+\fi
 
 \newenvironment{reviewimage}{%
   \begin{figure}[H]
@@ -216,6 +221,10 @@
 \newcommand{\reviewem}[1]{\textbf{#1}}
 \newcommand{\reviewstrong}[1]{\textbf{#1}}
 \newcommand{\reviewunderline}{\Underline}
+\newcommand{\reviewit}[1]{\textit{#1}}
+\newcommand{\reviewbold}[1]{\textbf{#1}}
+\newcommand{\reviewcode}[1]{\texttt{#1}}
+\newcommand{\reviewtt}[1]{\texttt{#1}}
 
 %% @<del> is ignored in LaTeX with default style
 \newcommand{\reviewstrike}[1]{#1}
@@ -280,12 +289,52 @@
 <%- end -%>
 
 \makeatletter
-\ifthenelse{\equal{\review@makeindex}{true}}{%
-\usepackage{makeidx}
-\makeindex
-}{%
-}
+\ifdefined\review@makeindex
+  \usepackage{makeidx}
+  \makeindex
+\fi
+
+%% reviewmacro
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{\gtfamily\sffamily\bfseries\upshape \leftmark}
+\chead{}
+\rhead{\gtfamily\sffamily\bfseries\upshape \rightmark}
+\renewcommand{\sectionmark}[1]{\markright{\thesection~#1}{}}
+\renewcommand{\chaptermark}[1]{\markboth{\prechaptername\ \thechapter\ \postchaptername~#1}{}}
+\renewcommand{\headfont}{\gtfamily\sffamily\bfseries}
+
+\fancypagestyle{plainhead}{%
+\fancyhead{}
+\fancyfoot{} % clear all header and footer fields
+\fancyfoot[CE,CO]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}}
+
+%% using Helvetica as sans-serif
+\renewcommand{\sfdefault}{phv}
+
+%% for listings
+%\renewcommand{\lstlistingname}{List}
+%\lstset{%
+%  breaklines=true,%
+%  breakautoindent=false,%
+%  breakindent=0pt,%
+%  fontadjust=true,%
+%  backgroundcolor=\color{shadecolor},%
+%  frame=single,%
+%  framerule=0pt,%
+%  basicstyle=\ttfamily\scriptsize,%
+%  commentstyle=\color{reviewgreen},%
+%  identifierstyle=\color{reviewblue},%
+%  stringstyle=\color{reviewred},%
+%  keywordstyle=\bfseries\color{reviewdarkred},%
+%}
+
+\sloppy
+
 \makeatother
+% END: sty
 
 \begin{document}
 

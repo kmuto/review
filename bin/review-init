@@ -30,7 +30,7 @@ def main
   end
   opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') { @force = true }
   opts.on('-l', '--locale', 'generate locale.yml file.') { @locale = true }
-  opts.on('-t name', '--template name', 'specify LaTeX template name. (default: review-jsbook)') { |tname| @template = tname }
+  opts.on('--latex-template name', 'specify LaTeX template name. (default: review-jsbook)') { |tname| @template = tname }
   opts.on('', '--epub-version VERSION', 'define EPUB version') { |version| @epub_version = version }
   opts.on('', '--without-doc', "don't generate doc files") { @without_doc = true }
   begin
