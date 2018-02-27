@@ -101,6 +101,16 @@ ch02.re
     end
   end
 
+  def test_validate_with_parts
+    mktmpbookdir do |dir, _book, _files|
+      %w[ch01.re part1.re ch02.re ch03.re part2.re ch04.re ch05.re].each do |file|
+        FileUtils.touch(file)
+      end
+      cat = Catalog.new(yaml_with_parts)
+      cat.validate!(dir)
+    end
+  end
+
   def test_validate_fail_ch02
     assert_raise FileNotFound do
       mktmpbookdir do |dir, _book, _files|
