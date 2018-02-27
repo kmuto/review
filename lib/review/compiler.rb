@@ -43,6 +43,7 @@ module ReVIEW
     attr_reader :strategy
 
     def compile(chap)
+      raise FileNotFound, "#{chap.path} is not found" if chap.path.present? && !File.exist?(chap.path)
       @chapter = chap
       do_compile
       @strategy.result
