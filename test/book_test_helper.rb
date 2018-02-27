@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'book_test_helper'
 require 'review/book'
 
 require 'stringio'

@@ -185,6 +185,9 @@ module ReVIEW
 
         catalogfile_path = "#{basedir}/#{config['catalogfile']}"
         @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
+        if @catalog
+          @catalog.validate!(basedir)
+        end
         @catalog
       end
 
@@ -247,10 +250,14 @@ module ReVIEW
       end
 
       def prefaces
-        return mkpart_from_namelist(catalog.predef.split("\n")) if catalog
+        if catalog
+          return mkpart_from_namelist(catalog.predef.split("\n"))
+        end
 
         begin
-          mkpart_from_namelistfile("#{@basedir}/#{config['predef_file']}") if File.file?("#{@basedir}/#{config['predef_file']}")
+          if File.file?("#{@basedir}/#{config['predef_file']}")
+            mkpart_from_namelistfile("#{@basedir}/#{config['predef_file']}")
+          end
         rescue FileNotFound => err
           raise FileNotFound, "preface #{err.message}"
         end

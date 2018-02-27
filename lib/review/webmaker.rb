@@ -90,7 +90,12 @@ module ReVIEW
       @config.deep_merge!(cmd_config)
       @config['htmlext'] = 'html'
       I18n.setup(@config['language'])
-      generate_html_files(yamlfile)
+      begin
+        generate_html_files(yamlfile)
+      rescue ApplicationError => e
+        raise if @config['debug']
+        error(e.message)
+      end
     end
 
     def generate_html_files(yamlfile)
