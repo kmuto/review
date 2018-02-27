@@ -190,7 +190,6 @@ module ReVIEW
 
       def catalog
         return @catalog if @catalog.present?
-        return nil unless config['catalogfile']
 
         catalogfile_path = filename_join(@basedir, config['catalogfile'])
         @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
@@ -278,7 +277,6 @@ module ReVIEW
           return mkpart(chaps)
         end
 
-        return nil unless config['postdef_file']
         begin
           postdef_file = filename_join(@basedir, config['postdef_file'])
           mkpart_from_namelistfile(postdef_file) if File.file?(postdef_file)
@@ -384,7 +382,6 @@ module ReVIEW
       end
 
       def read_file(filename)
-        return '' if @basedir.nil? || filename.nil?
         unless @warn_old_files[filename]
           @warn_old_files[filename] = true
           ReVIEW.logger.warn "!!! #{filename} is obsoleted. please use catalog.yml." if caller.none? { |item| item =~ %r{/review/test/test_} }
