@@ -192,7 +192,7 @@ module ReVIEW
         return @catalog if @catalog.present?
         return nil unless config['catalogfile']
 
-        catalogfile_path = File.join(@basedir, config['catalogfile'])
+        catalogfile_path = filename_join(@basedir, config['catalogfile'])
         @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
         if @catalog
           @catalog.validate!(@config, basedir)
@@ -264,7 +264,7 @@ module ReVIEW
         end
 
         begin
-          predef_file = File.join(@basedir, config['predef_file'])
+          predef_file = filename_join(@basedir, config['predef_file'])
           mkpart_from_namelistfile(predef_file) if File.file?(predef_file)
         rescue FileNotFound => err
           raise FileNotFound, "preface #{err.message}"
@@ -280,7 +280,8 @@ module ReVIEW
 
         return nil unless config['postdef_file']
         begin
-          mkpart_from_namelistfile(File.join(@basedir, config['postdef_file'])) if File.file?(File.join(@basedir, config['postdef_file']))
+          postdef_file = filename_join(@basedir, config['postdef_file'])
+          mkpart_from_namelistfile(postdef_file) if File.file?(postdef_file)
         rescue FileNotFound => err
           raise FileNotFound, "postscript #{err.message}"
         end
@@ -389,7 +390,7 @@ module ReVIEW
           ReVIEW.logger.warn "!!! #{filename} is obsoleted. please use catalog.yml." if caller.none? { |item| item =~ %r{/review/test/test_} }
         end
         res = ''
-        File.open(File.join(@basedir, filename), 'r:BOM|utf-8') do |f|
+        File.open(filename_join(@basedir, filename), 'r:BOM|utf-8') do |f|
           f.each_line do |line|
             next if /\A#/ =~ line
             line.gsub!(/#.*\Z/, '')
@@ -401,6 +402,10 @@ module ReVIEW
         Dir.glob("#{@basedir}/*#{ext}").sort.join("\n")
       rescue Errno::EISDIR
         ''
+      end
+
+      def filename_join(*args)
+        File.join(args.reject(&:nil?))
       end
     end
   end

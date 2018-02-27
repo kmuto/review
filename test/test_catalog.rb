@@ -97,7 +97,7 @@ ch02.re
         FileUtils.touch(file)
       end
       cat = Catalog.new(yaml_hash)
-      cat.validate!({'draftdir' => '.'}, dir)
+      cat.validate!({ 'draftdir' => '.' }, dir)
     end
   end
 
@@ -107,7 +107,7 @@ ch02.re
         FileUtils.touch(file)
       end
       cat = Catalog.new(yaml_with_parts)
-      cat.validate!({'draftdir' => '.'}, dir)
+      cat.validate!({ 'draftdir' => '.' }, dir)
     end
   end
 
@@ -118,7 +118,7 @@ ch02.re
           FileUtils.touch(file)
         end
         cat = Catalog.new(yaml_hash)
-        cat.validate!({'draftdir' => '.'}, dir)
+        cat.validate!({ 'draftdir' => '.' }, dir)
       end
     end
   end
@@ -130,7 +130,7 @@ ch02.re
           FileUtils.touch(file)
         end
         cat = Catalog.new(yaml_hash)
-        cat.validate!({'draftdir' => '.'}, dir)
+        cat.validate!({ 'draftdir' => '.' }, dir)
       end
     end
   end
