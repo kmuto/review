@@ -130,7 +130,7 @@ module ReVIEW
       begin
         generate_pdf(yamlfile)
       rescue ApplicationError => e
-        raise if $DEBUG
+        raise if @config['debug']
         error(e.message)
       end
     end
