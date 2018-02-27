@@ -195,7 +195,7 @@ module ReVIEW
         catalogfile_path = File.join(@basedir, config['catalogfile'])
         @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
         if @catalog
-          @catalog.validate!(basedir)
+          @catalog.validate!(@config, basedir)
         end
         @catalog
       end

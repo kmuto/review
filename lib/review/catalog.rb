@@ -49,7 +49,7 @@ module ReVIEW
       @yaml['POSTDEF'].join("\n")
     end
 
-    def validate!(basedir)
+    def validate!(config, basedir)
       filenames = []
       if predef.present?
         filenames.concat(predef.split(/\n/))
@@ -73,8 +73,9 @@ module ReVIEW
         filenames.concat(postdef.split(/\n/))
       end
       filenames.each do |filename|
-        unless File.exist?(File.join(basedir, filename))
-          raise FileNotFound, "file not found in catalog.yml: #{basedir}/#{filename}"
+        refile = File.join(basedir, config['draftdir'], filename)
+        unless File.exist?(refile)
+          raise FileNotFound, "file not found in catalog.yml: #{refile}"
         end
       end
     end
