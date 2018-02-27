@@ -1,6 +1,6 @@
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2017 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2018 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -185,7 +185,7 @@ module ReVIEW
     def captionblock(_type, lines, caption)
       puts "\\begin{reviewminicolumn}\n"
       @doc_status[:caption] = true
-      puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n" if caption
+      puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n" if caption.present?
 
       @doc_status[:caption] = nil
       blocked_lines = split_paragraph(lines)
@@ -196,7 +196,7 @@ module ReVIEW
 
     def box(lines, caption = nil)
       blank
-      puts macro('reviewboxcaption', compile_inline(caption)) if caption
+      puts macro('reviewboxcaption', compile_inline(caption)) if caption.present?
       puts '\begin{reviewbox}'
       lines.each do |line|
         puts detab(line)
@@ -332,7 +332,7 @@ module ReVIEW
 
     def common_code_block(id, lines, command, caption, _lang)
       @doc_status[:caption] = true
-      if caption
+      if caption.present?
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
           puts macro(command + 'caption', compile_inline(caption))
         else
@@ -527,7 +527,7 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption unless caption.nil?
+        table_header id, caption if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
@@ -727,8 +727,8 @@ module ReVIEW
       puts '\pagebreak'
     end
 
-    def linebreak
-      puts '\\\\'
+    def blankline
+      puts '\vspace*{\baselineskip}'
     end
 
     def noindent
@@ -782,6 +782,8 @@ module ReVIEW
       else
         macro('reviewlistref', I18n.t('format_number', [get_chap(chapter), chapter.list(id).number]))
       end
+    rescue KeyError
+      error "unknown list: #{id}"
     end
 
     def inline_table(id)
@@ -791,6 +793,8 @@ module ReVIEW
       else
         macro('reviewtableref', I18n.t('format_number', [get_chap(chapter), chapter.table(id).number]), table_label(id, chapter))
       end
+    rescue KeyError
+      error "unknown table: #{id}"
     end
 
     def inline_img(id)
@@ -800,6 +804,8 @@ module ReVIEW
       else
         macro('reviewimageref', I18n.t('format_number', [get_chap(chapter), chapter.image(id).number]), image_label(id, chapter))
       end
+    rescue KeyError
+      error "unknown image: #{id}"
     end
 
     def footnote(id, content)
@@ -817,6 +823,8 @@ module ReVIEW
       else
         macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
       end
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     BOUTEN = '・'.freeze
@@ -917,6 +925,8 @@ module ReVIEW
       macro('reviewcolumnref',
             I18n.t('chapter_quote', compile_inline(chapter.column(id).caption)),
             column_label(id, chapter))
+    rescue KeyError
+      error "unknown column: #{id}"
     end
 
     def inline_raw(str)

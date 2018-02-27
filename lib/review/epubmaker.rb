@@ -50,7 +50,13 @@ module ReVIEW
 
     def load_yaml(yamlfile)
       loader = ReVIEW::YAMLLoader.new
-      @config = ReVIEW::Configure.values.deep_merge(loader.load_file(yamlfile))
+      @config = ReVIEW::Configure.values
+      begin
+        @config.deep_merge!(loader.load_file(yamlfile))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
+
       @producer = Producer.new(@config)
       @producer.load(yamlfile)
       @config = @producer.config
@@ -138,7 +144,7 @@ module ReVIEW
         raise if $DEBUG
         error(e.message)
       ensure
-        FileUtils.remove_entry_secure basetmpdir unless @config['debug']
+        FileUtils.remove_entry_secure(basetmpdir) unless @config['debug']
       end
     end
 
@@ -367,7 +373,8 @@ module ReVIEW
     def write_info_body(basetmpdir, _id, filename, ispart = nil, chaptype = nil)
       headlines = []
       path = File.join(basetmpdir, filename)
-      Document.parse_stream(File.new(path), ReVIEWHeaderListener.new(headlines))
+      htmlio = File.new(path)
+      Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
       properties = detect_properties(path)
       prop_str = ''
       prop_str = ',properties=' + properties.join(' ') if properties.present?
@@ -381,6 +388,7 @@ module ReVIEW
           first = nil
         end
       end
+      htmlio.close
     end
 
     def push_contents(_basetmpdir)
@@ -438,7 +446,7 @@ module ReVIEW
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>\n)
         @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@config.name_of('subtitle'))}</h2>\n) if @config['subtitle']
         @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n) if @config['aut']
-        @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('prt').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n) if @config['prt']
+        @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n) if @config['pbl']
         @body << '</div>'
 
         @language = @producer.config['language']

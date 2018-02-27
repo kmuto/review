@@ -337,6 +337,12 @@ V1 --> V6 --|
 * `<id>` は //image[〜] の最初に入れた「〜」のことです（つまり、ID に日本語や空白交じりの文字を使ってしまうと、後で画像ファイル名の名前付けに苦労することになります！）。
 * `<ext>` は Re:VIEW が自動で判別する拡張子です。ビルダによってサポートおよび優先する拡張子は異なります。
 
+各ビルダでは、以下の拡張子から最初に発見した画像ファイルが使われます。
+
+* HTMLBuilder (EPUBMaker、WEBMaker)、MARKDOWNBuilder: .png、.jpg、.jpeg、.gif、.svg
+* LATEXBuilder (PDFMaker): .ai、.eps、.pdf、.tif、.tiff、.png、.bmp、.jpg、.jpeg、.gif
+* それ以外のビルダ: .ai、.psd、.eps、.pdf、.tif、.tiff、.png、.bmp、.jpg、.jpeg、.gif、.svg
+
 ### インラインの画像挿入
 
 段落途中などに画像を貼り込むには、インライン命令の `@<icon>{識別子}` を使います。ファイルの探索ルールは同じです。
@@ -568,6 +574,23 @@ LaTeX の数式が正常に整形されるかどうかは処理系に依存し�
 ## 字下げの制御
 
 段落の行頭字下げを制御するタグとして、`//noindent` があります。HTML では `noindent` が `class` 属性に設定されます。
+
+## 空行
+
+1行ぶんの空行を明示して入れるには、`//blankline` を使います。
+
+例:
+
+```
+この下に1行の空行が入る
+
+//blankline
+
+この下に2行の空行が入る
+
+//blankline
+//blankline
+```
 
 ## 見出し参照
 章に対する参照は、次の3つのインライン命令を利用できます。章 ID は、各章のファイル名から拡張子を除いたものです。たとえば `advanced.re` であれば `advanced` が章 ID です。

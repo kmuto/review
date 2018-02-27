@@ -303,6 +303,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n), actual
   end
 
+  def test_emlist_empty_caption
+    actual = compile_block("//emlist[]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n), actual
+  end
+
   def test_emlist_with_tab
     actual = compile_block("//emlist{\n\tfoo\n\t\tbar\n\n\tbuz\n//}\n")
     assert_equal %Q(\n\\begin{reviewemlist}\n        foo\n                bar\n\n        buz\n\\end{reviewemlist}\n), actual
@@ -368,6 +373,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(\\reviewsourcecaption{foo/bar/test.rb}\n\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n), actual
   end
 
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n), actual
+  end
+
   def test_source_lst
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
@@ -393,6 +403,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_centering
     actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(\n\\begin{center}\nfoobar\n\nbuz\n\\end{center}\n), actual
+  end
+
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(\\vspace*{\\baselineskip}\n\nfoo\n), actual
   end
 
   def test_noindent
@@ -956,6 +971,23 @@ EOS
   def test_inline_fence
     actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
     assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
+  end
+
+  def test_inline_unknown
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    assert_equal ':1: error: unknown image: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    assert_equal ':1: error: unknown footnote: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    assert_equal ':1: error: unknown headline: n', e.message
+    %w[list table column].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ":1: error: unknown #{name}: n", e.message
+    end
+    %w[chap chapref title].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ':1: error: key not found: "n"', e.message
+    end
   end
 
   def test_appendix_list

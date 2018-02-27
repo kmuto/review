@@ -107,10 +107,16 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'pdfmaker'
       cmd_config, yamlfile = parse_opts(args)
-      loader = ReVIEW::YAMLLoader.new
-      @config.deep_merge!(loader.load_file(yamlfile))
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+
+      begin
+        loader = ReVIEW::YAMLLoader.new
+        @config.deep_merge!(loader.load_file(yamlfile))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
       # YAML configs will be overridden by command line options.
-      @config.merge!(cmd_config)
+      @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
       @basedir = File.dirname(yamlfile)
       @basehookdir = File.absolute_path(File.dirname(yamlfile))
@@ -255,8 +261,13 @@ module ReVIEW
       Dir.chdir(to) do
         images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/ }
         break if images.empty?
-        system('extractbb', *images)
-        system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
+        if @config['pdfmaker']['bbox']
+          system('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
+          system_or_raise('ebb', '-B', @config['pdfmaker']['bbox'], *images) unless system('extractbb', '-B', @config['pdfmaker']['bbox'], '-m', *images)
+        else
+          system('extractbb', *images)
+          system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
+        end
       end
     end
 
