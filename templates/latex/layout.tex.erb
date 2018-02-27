@@ -10,7 +10,12 @@
 \def\review@texcompiler{<%= @texcompiler %>}
 \def\review@documentclass{<%= @documentclass %>}
 \def\review@booktitle_name{<%= escape_latex(@config.name_of('booktitle')) %>}
+<%- if @config['subtitle'] -%>
+\def\review@subtitle_name{<%= escape_latex(@config.name_of('subtitle')) %>}
+<%- end -%>
 \def\review@aut_names{<%= escape_latex(@config.names_of('aut').join(I18n.t('names_splitter'))) %>}
+\def\review@titlepage_authors{<%= @authors %>}
+\def\review@date{<%= escape_latex(@config['date'].to_s) %>}
 <%- if @config['highlight'] && @config['highlight']['latex'] -%>
 \def\review@highlight_latex{<%= @config['highlight']['latex'] %>}
 <%- end -%>
@@ -21,6 +26,8 @@
 \def\review@intn@table{<%= escape_latex(I18n.t('table')) %>}
 \def\review@intn@columnname{<%= escape_latex(I18n.t('columnname')) %>}
 \def\review@intn@memo_head{<%= escape_latex(I18n.t('memo_head')) %>}
+\def\review@intn@edition{<%= escape_latex(I18n.t('edition')) %>}
+\def\review@intn@published_by{<%= escape_latex(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
 \def\review@toctitle{<%= escape_latex(@config['toctitle'].present? ? @config['toctitle'] : I18n.t('toctitle')) %>}
 \def\review@prepartname{<%= escape_latex(@locale_latex['prepartname']) %>}
 \def\review@postpartname{<%= escape_latex(@locale_latex['postpartname']) %>}
@@ -31,6 +38,18 @@
 \def\review@appendixname{<%= escape_latex(@locale_latex['preappendixname']) %>}
 <%- if @config['makeindex'] -%>
 \def\review@makeindex{true}
+<%- end -%>
+<%- if @config['cover'] -%>
+\def\review@coverfile{<%= File.read(@config['cover']) %>}
+<%- elsif @config['coverimage'] -%>
+\def\review@coverimage{./<%= @config['imagedir'] %>/<%= @config['coverimage'] %>}
+\def\review@coverimageoption{<%= @coverimageoption%>}
+<%- end -%>
+<%- if @config['titlepage'] -%>
+\def\review@titlepage{true}
+<%-   if @config['titlefile'] -%>
+\def\review@titlefile{<%= File.read(@config['titlefile']) %>}
+<%-   end -%>
 <%- end -%>
 % END: define
 
@@ -281,17 +300,53 @@
   \fi
 }
 
-\makeatother
-<%- if @config['texstyle'] -%>
-<%-   [@config['texstyle']].flatten.each do |x| -%>
-\usepackage{<%= x %>}
-<%-   end -%>
-<%- end -%>
 
-\makeatletter
-\ifdefined\review@makeindex
-  \usepackage{makeidx}
-  \makeindex
+\def\review@frontmatter{%
+  \renewcommand{\chaptermark}[1]{{}}
+  \frontmatter
+}
+
+\ifdefined\review@cover
+  \def\reviewcoverpagecont{\review@coverfile}
+\fi
+\ifdefined\review@coverimage
+  \def\reviewcoverpagecont{%
+\thispagestyle{empty}
+\begin{center}
+\includegraphics[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+\end{center}
+\clearpage
+}
+\fi
+
+\ifdefined\review@titlepage
+  \ifthenelse{\isundefined{\review@titlefile}}{%
+    \def\reviewtitlepagecont{%
+       \begin{titlepage}
+       \thispagestyle{empty}
+       \begin{center}%
+       \mbox{} \vskip5zw
+       \reviewtitlefont%
+       {\Huge\review@booktitle_name\par}%
+       \ifdefined\review@subtitle_name
+         \vskip 1em%
+         {\Large\review@subtitle_name\par}%
+       \fi
+       \vskip 15em%
+       {\huge
+       \lineskip .75em
+       \begin{tabular}[t]{c}%
+       \review@titlepage_authors
+       \end{tabular}\par}%
+       \vfill
+       {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@published_by\par}%
+       \vskip4zw\mbox{}
+       \end{center}%
+       \end{titlepage}\nobreak
+    }
+  }{%
+    \def\reviewtitlepagecont{\review@titlefile}
+  }
 \fi
 
 %% reviewmacro
@@ -330,6 +385,20 @@
 %  stringstyle=\color{reviewred},%
 %  keywordstyle=\bfseries\color{reviewdarkred},%
 %}
+%% -- reviewmacro end
+
+\makeatother
+<%- if @config['texstyle'] -%>
+<%-   [@config['texstyle']].flatten.each do |x| -%>
+\usepackage{<%= x %>}
+<%-   end -%>
+<%- end -%>
+
+\makeatletter
+\ifdefined\review@makeindex
+  \usepackage{makeidx}
+  \makeindex
+\fi
 
 \sloppy
 
@@ -338,44 +407,98 @@
 
 \begin{document}
 
-\reviewmainfont
+%% coverpage
+\ifdefined\reviewcoverpagecont
+\reviewcoverpagecont
+\fi
+% FIXME:Missing \endcsname inserted.になる
 
-<%- if @config['titlepage'] -%>
-<%-   if @custom_titlepage -%>
-<%= @custom_titlepage %>
-<%-   else -%>
-\begin{titlepage}
-<%-     if @config['coverimage'] -%>
-  \begin{center}
-    \includegraphics[<%= @coverimageoption%>]{./<%= @config['imagedir'] %>/<%= @config['coverimage'] %>}
-  \end{center}
-  \clearpage
-<%-     end -%>
-\thispagestyle{empty}
-\begin{center}%
-  \mbox{} \vskip5zw
-   \reviewtitlefont%
-    {\Huge <%= escape_latex(@config.name_of('booktitle')) %> \par}%
-<%- if @config['subtitle'] -%>
-    \vskip 1em%
-    {\Large <%= escape_latex(@config.name_of('subtitle')) %> \par}%
-<%- end -%>
-    \vskip 15em%
-    {\huge
-      \lineskip .75em
-      \begin{tabular}[t]{c}%
-        <%= @authors %>
-      \end{tabular}\par}%
-    \vfill
-    {\large <%= escape_latex(@config['date'].to_s) %> <%= escape_latex(I18n.t('edition')) %>\hspace{2zw}<%= escape_latex(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>\par}%
-\vskip4zw\mbox{}
-  \end{center}%
-\end{titlepage}
-<%-   end -%>
-<%- end -%>
+%% title page
+\ifdefined\reviewtitlepagecont
+\reviewtitlepagecont
+\fi
 
-\renewcommand{\chaptermark}[1]{{}}
-\frontmatter
+%% frontmatter hook
+\ifdefined\reviewfrontmatter
+\reviewfrontmatter
+\fi
+
+%% originaltitle
+\ifdefined\revieworiginaltitlepage
+\revieworiginaltitlepage
+\fi
+
+%% credit
+\ifdefined\reviewcreditfile
+\reviewcreditfile
+\fi
+
+%% preface
+\ifdefined\reviewprefacefiles
+\reviewprefacefiles
+\fi
+
+%% toc
+\ifdefined\reviewusetoc
+\reviewtableofcontents
+\fi
+
+%% mainmatter hook
+\ifdefined\reviewmainmatter
+\reviewmainmatter
+\fi
+
+%% chapters body
+\ifdefined\reviewchapterfiles
+\reviewchapterfiles
+\fi
+
+%% appendix hook
+\ifdefined\reviewappendix
+\reviewappendix
+\fi
+
+%% appendix body
+\ifdefined\reviewappendixfiles
+\reviewappendixfiles
+\fi
+
+%% backmatter hook
+\ifdefined\reviewbackmatter
+\reviewbackmatter
+\fi
+
+%% postdef body
+\ifdefined\reviewpostdeffiles
+\reviewpostdeffiles
+\fi
+
+%% index page
+\ifdefined\reviewprintindex
+\reviewprintindex
+\fi
+
+%% profile page
+\ifdefined\reviewprofilepage
+\reviewprofilepage
+\fi
+
+%% advfile page
+\ifdefined\reviewadvfilepage
+\reviewadvfilepage
+\fi
+
+%%% colophon page
+\ifdefined\reviewcolophonpage
+\reviewcolophonpage
+\fi
+
+%%% backcover page
+\ifdefined\reviewbackcover
+\reviewbackcover
+\fi
+
+
 
 %%% originaltitle
 <%- if @config['originaltitlefile'] -%>
