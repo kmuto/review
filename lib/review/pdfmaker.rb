@@ -126,7 +126,13 @@ module ReVIEW
       rescue ReVIEW::ConfigError => e
         warn e.message
       end
-      generate_pdf(yamlfile)
+
+      begin
+        generate_pdf(yamlfile)
+      rescue ApplicationError => e
+        raise if @config['debug']
+        error(e.message)
+      end
     end
 
     def make_input_files(book, yamlfile)

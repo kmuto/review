@@ -61,5 +61,35 @@ module ReVIEW
     def to_s
       YAML.dump(@yaml).gsub(/\A---\n/, '') # remove yaml header
     end
+
+    def validate!(basedir)
+      filenames = []
+      if predef.present?
+        filenames.concat(predef.split(/\n/))
+      end
+      parts_with_chaps.each do |chap|
+        if chap.is_a?(Hash)
+          chap.each_key do |part|
+            if File.extname(part) == '.re'
+              filenames.push(part)
+            end
+          end
+          filenames.concat(chap.values.flatten)
+        else
+          filenames.push(chap)
+        end
+      end
+      if appendix.present?
+        filenames.concat(appendix.split(/\n/))
+      end
+      if postdef.present?
+        filenames.concat(postdef.split(/\n/))
+      end
+      filenames.each do |filename|
+        unless File.exist?(File.join(basedir, filename))
+          raise FileNotFound, "file not found in catalog.yml: #{basedir}/#{filename}"
+        end
+      end
+    end
   end
 end
