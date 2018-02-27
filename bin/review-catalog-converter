@@ -63,7 +63,7 @@ def main
       if File.exist?("#{dir}/CHAPS")
         if File.exist?("#{dir}/PART")
           catalog << parse_parts(File.open("#{dir}/PART").read,
-            File.open("#{dir}/CHAPS").read)
+                                 File.open("#{dir}/CHAPS").read)
         else
           catalog << parse_chaps(File.open("#{dir}/CHAPS").read)
         end
@@ -137,29 +137,29 @@ end
 def replace_old_style_part(dir)
   catalog = ReVIEW::Catalog.new(File.open("#{dir}/catalog.yml"))
   Array.new(catalog.parts.split("\n")).each do |part|
-    unless part =~ /\.re\z/
-      allow_overwrite = true
-      if File.exist?("#{dir}/#{part}.re")
-        loop do
-          print "The #{part}.re already exists. Do you want to overwrite it? [y/n]"
-          case gets
-          when /\A[yY]/
-            break
-          when /\A[nN]/, /\A\Z/
-            allow_overwrite = false
-            break
-          end
-        end
-      end
+    next if part.end_with? '.re'
 
-      if allow_overwrite
-        File.open("#{dir}/#{part}.re", "w") do |f|
-          f.write("= #{part}")
+    allow_overwrite = true
+    if File.exist?("#{dir}/#{part}.re")
+      loop do
+        print "The #{part}.re already exists. Do you want to overwrite it? [y/n]"
+        case gets
+        when /\A[yY]/
+          break
+        when /\A[nN]/, /\A\Z/
+          allow_overwrite = false
+          break
         end
-        catalog.replace_part(part, "#{part}.re")
       end
     end
+
+    next unless allow_overwrite
+    File.open("#{dir}/#{part}.re", 'w') do |f|
+      f.write("= #{part}")
+    end
+    catalog.replace_part(part, "#{part}.re")
   end
+
   catalog.to_s
 end
 
