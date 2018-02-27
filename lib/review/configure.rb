@@ -49,7 +49,7 @@ module ReVIEW
         'imgmath' => nil, # for HTML
         'htmlext' => 'html',
         'htmlversion' => 5,
-        'draftdir' => '.',
+        'contentdir' => '.',
         'imagedir' => 'images',
         'image_ext' => %w[png gif jpg jpeg svg ttf woff otf],
         'fontdir' => 'fonts',
