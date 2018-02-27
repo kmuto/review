@@ -209,35 +209,30 @@ module ReVIEW
       compile_inline @book.chapter_index.display_string(id)
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_chap(id)
       @book.chapter_index.number(id)
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_title(id)
       compile_inline @book.chapter_index.title(id)
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_list(id)
       "#{I18n.t('list')}#{@chapter.list(id).number}"
     rescue KeyError
       error "unknown list: #{id}"
-      nofunc_text("[UnknownList:#{id}]")
     end
 
     def inline_img(id)
       "#{I18n.t('image')}#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
-      nofunc_text("[UnknownImage:#{id}]")
     end
 
     def inline_imgref(id)
@@ -254,14 +249,12 @@ module ReVIEW
       "#{I18n.t('table')}#{@chapter.table(id).number}"
     rescue KeyError
       error "unknown table: #{id}"
-      nofunc_text("[UnknownTable:#{id}]")
     end
 
     def inline_fn(id)
       @chapter.footnote(id).content
     rescue KeyError
       error "unknown footnote: #{id}"
-      nofunc_text("[UnknownFootnote:#{id}]")
     end
 
     def inline_bou(str)
@@ -317,8 +310,7 @@ module ReVIEW
         inline_hd_chap(@chapter, id)
       end
     rescue KeyError
-      error "unknown hd: #{id}"
-      nofunc_text("[UnknownHeader:#{id}]")
+      error "unknown headline: #{id}"
     end
 
     def inline_column(id)
@@ -333,7 +325,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown column: #{id}"
-      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_column_chap(chapter, id)

@@ -12,6 +12,7 @@ require 'fileutils'
 require 'review/converter'
 require 'review/configure'
 require 'review/book'
+require 'review/yamlloader'
 require 'review/topbuilder'
 require 'review/version'
 
@@ -23,6 +24,15 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @plaintext = nil
+    end
+
+    def error(msg)
+      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      exit 1
+    end
+
+    def warn(msg)
+      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
     end
 
     def self.execute(*args)
@@ -62,12 +72,23 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'textmaker'
       cmd_config, yamlfile = parse_opts(args)
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      @config.merge!(YAML.load_file(yamlfile))
+      begin
+        loader = ReVIEW::YAMLLoader.new
+        @config.deep_merge!(loader.load_file(yamlfile))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
       # YAML configs will be overridden by command line options.
-      @config.merge!(cmd_config)
+      @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
-      generate_text_files(yamlfile)
+      begin
+        generate_text_files(yamlfile)
+      rescue ApplicationError => e
+        raise if @config['debug']
+        error(e.message)
+      end
     end
 
     def generate_text_files(yamlfile)
@@ -129,8 +150,8 @@ module ReVIEW
       begin
         @converter.convert(filename, File.join(basetmpdir, textfile))
       rescue => e
-        @logger.warn "compile error in #{filename} (#{e.class})"
-        @logger.warn e.message
+        warn "compile error in #{filename} (#{e.class})"
+        warn e.message
       end
     end
   end

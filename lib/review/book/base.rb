@@ -194,6 +194,9 @@ module ReVIEW
 
         catalogfile_path = File.join(@basedir, config['catalogfile'])
         @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
+        if @catalog
+          @catalog.validate!(basedir)
+        end
         @catalog
       end
 
@@ -256,8 +259,9 @@ module ReVIEW
       end
 
       def prefaces
-        return mkpart_from_namelist(catalog.predef.split("\n")) if catalog
-        return nil unless config['predef_file']
+        if catalog
+          return mkpart_from_namelist(catalog.predef.split("\n"))
+        end
 
         begin
           predef_file = File.join(@basedir, config['predef_file'])
@@ -382,7 +386,7 @@ module ReVIEW
         return '' if @basedir.nil? || filename.nil?
         unless @warn_old_files[filename]
           @warn_old_files[filename] = true
-          warn "!!! #{filename} is obsoleted. please use catalog.yml." if caller.none? { |item| item =~ %r{/review/test/test_} }
+          ReVIEW.logger.warn "!!! #{filename} is obsoleted. please use catalog.yml." if caller.none? { |item| item =~ %r{/review/test/test_} }
         end
         res = ''
         File.open(File.join(@basedir, filename), 'r:BOM|utf-8') do |f|

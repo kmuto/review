@@ -261,6 +261,8 @@ module ReVIEW
       else
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end
+    rescue KeyError
+      error "unknown column: #{id}"
     end
 
     def inline_list(id)
@@ -270,6 +272,8 @@ module ReVIEW
       else
         "<span type='list'>#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])}</span>"
       end
+    rescue KeyError
+      error "unknown list: #{id}"
     end
 
     def list_header(id, caption, _lang)
@@ -373,6 +377,8 @@ module ReVIEW
       else
         "<span type='table'>#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(id).number])}</span>"
       end
+    rescue KeyError
+      error "unknown table: #{id}"
     end
 
     def inline_img(id)
@@ -382,6 +388,8 @@ module ReVIEW
       else
         "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(id).number])}</span>"
       end
+    rescue KeyError
+      error "unknown image: #{id}"
     end
 
     def inline_imgref(id)
@@ -600,6 +608,8 @@ module ReVIEW
 
     def inline_fn(id)
       %Q(<footnote>#{compile_inline(@chapter.footnote(id).content.strip)}</footnote>)
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, ruby)
@@ -1063,7 +1073,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_chap(id)
@@ -1074,7 +1083,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_title(id)
@@ -1086,7 +1094,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def source_header(caption)
@@ -1117,6 +1124,8 @@ module ReVIEW
 
     def inline_bib(id)
       %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
+    rescue KeyError
+      error "unknown bib: #{id}"
     end
 
     def inline_hd_chap(chap, id)
@@ -1127,6 +1136,8 @@ module ReVIEW
         end
       end
       I18n.t('chapter_quote', compile_inline(chap.headline(id).caption))
+    rescue KeyError
+      error "unknown headline: #{id}"
     end
 
     def inline_recipe(id)
