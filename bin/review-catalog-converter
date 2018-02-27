@@ -16,6 +16,7 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/version'
 require 'review/extentions'
 require 'review/logger'
+require 'review/catalog'
 
 def main
   @logger = ReVIEW.logger
@@ -52,35 +53,42 @@ def main
     end
   end
 
-  File.open("#{dir}/catalog.yml", 'w') do |catalog|
-    # predef
-    if File.exist?("#{dir}/PREDEF")
-      catalog << parse_predef(File.open("#{dir}/PREDEF").read)
-    end
-    # chaps and parts
-    if File.exist?("#{dir}/CHAPS")
-      if File.exist?("#{dir}/PART")
-        catalog << parse_parts(File.open("#{dir}/PART").read,
-                               File.open("#{dir}/CHAPS").read)
-      else
-        catalog << parse_chaps(File.open("#{dir}/CHAPS").read)
+  if exist_old_style_catalog_files?(dir)
+    File.open("#{dir}/catalog.yml", 'w') do |catalog|
+      # predef
+      if File.exist?("#{dir}/PREDEF")
+        catalog << parse_predef(File.open("#{dir}/PREDEF").read)
       end
-    end
-    # postdef
-    if File.exist?("#{dir}/POSTDEF")
-      postdef = File.open("#{dir}/POSTDEF").read
-      loop do
-        print 'Do you want to convert POSTDEF into APPENDIX? [y/n]'
-        case gets
-        when /\A[yY]/
-          catalog << parse_postdef(postdef, true)
-          break
-        when /\A[nN]/, /\A\Z/
-          catalog << parse_postdef(postdef)
-          break
+      # chaps and parts
+      if File.exist?("#{dir}/CHAPS")
+        if File.exist?("#{dir}/PART")
+          catalog << parse_parts(File.open("#{dir}/PART").read,
+            File.open("#{dir}/CHAPS").read)
+        else
+          catalog << parse_chaps(File.open("#{dir}/CHAPS").read)
+        end
+      end
+      # postdef
+      if File.exist?("#{dir}/POSTDEF")
+        postdef = File.open("#{dir}/POSTDEF").read
+        loop do
+          print 'Do you want to convert POSTDEF into APPENDIX? [y/n]'
+          case gets
+          when /\A[yY]/
+            catalog << parse_postdef(postdef, true)
+            break
+          when /\A[nN]/, /\A\Z/
+            catalog << parse_postdef(postdef)
+            break
+          end
         end
       end
     end
+  end
+
+  new_catalog = replace_old_style_part(dir)
+  File.open("#{dir}/catalog.yml", 'w') do |catalog|
+    catalog << new_catalog
   end
 
   puts File.open("#{dir}/catalog.yml").read
@@ -119,6 +127,40 @@ def parse_parts(parts_str, chaps_str)
   parts = parts_str.split("\n")
   chaps = chaps_str.split("\n\n")
   "CHAPS:\n" + parts.zip(chaps).map { |k, vs| "  - #{k}:\n" + vs.split("\n").map { |i| "    - #{i}\n" }.join }.join + "\n"
+end
+
+def exist_old_style_catalog_files?(dir)
+  File.exist?("#{dir}/PREDEF") || File.exist?("#{dir}/CHAPS") ||
+    File.exist?("#{dir}/PART") || File.exist?("#{dir}/POSTDEF")
+end
+
+def replace_old_style_part(dir)
+  catalog = ReVIEW::Catalog.new(File.open("#{dir}/catalog.yml"))
+  Array.new(catalog.parts.split("\n")).each do |part|
+    unless part =~ /\.re\z/
+      allow_overwrite = true
+      if File.exist?("#{dir}/#{part}.re")
+        loop do
+          print "The #{part}.re already exists. Do you want to overwrite it? [y/n]"
+          case gets
+          when /\A[yY]/
+            break
+          when /\A[nN]/, /\A\Z/
+            allow_overwrite = false
+            break
+          end
+        end
+      end
+
+      if allow_overwrite
+        File.open("#{dir}/#{part}.re", "w") do |f|
+          f.write("= #{part}")
+        end
+        catalog.replace_part(part, "#{part}.re")
+      end
+    end
+  end
+  catalog.to_s
 end
 
 main if File.basename($PROGRAM_NAME) == File.basename(__FILE__)

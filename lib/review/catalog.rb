@@ -34,6 +34,15 @@ module ReVIEW
       @yaml['CHAPS'].map { |entry| entry.keys if entry.is_a?(Hash) }.flatten.compact.join("\n")
     end
 
+    def replace_part(old_name, new_name)
+      @yaml['CHAPS'].map! do |e|
+        if e.is_a?(Hash) and (e.keys.first == old_name)
+          e = { new_name => e.values.first }
+        end
+        e
+      end
+    end
+
     def parts_with_chaps
       return '' unless @yaml['CHAPS']
       @yaml['CHAPS'].flatten.compact
@@ -47,6 +56,10 @@ module ReVIEW
     def postdef
       return '' unless @yaml['POSTDEF']
       @yaml['POSTDEF'].join("\n")
+    end
+
+    def to_s
+      YAML.dump(@yaml).gsub(/\A---\n/, '') # remove yaml header
     end
   end
 end
