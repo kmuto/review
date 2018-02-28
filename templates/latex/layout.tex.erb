@@ -133,7 +133,6 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-%% Bookmarkの文字化け対策（日本語向け）
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
      pdftitle={\review@booktitle_name},%
      pdfauthor={\review@aut_names}]{hyperref}
@@ -486,6 +485,9 @@
 %  stringstyle=\color{reviewred},%
 %  keywordstyle=\bfseries\color{reviewdarkred},%
 %}
+
+%% disable hyperlink color and border
+\hypersetup{hidelinks}
 %% -- reviewmacro end
 
 \makeatother
