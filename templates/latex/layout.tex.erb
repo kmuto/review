@@ -3,8 +3,6 @@
 % \usepackage{fix-cm}[2006/09/13 v1.1m]
 % \usepackage{fixltx2e}[2006/09/13 v1.1m]
 
-\usepackage{ifthen}
-
 % BEGIN: define
 \makeatletter
 \def\review@texcompiler{<%= @texcompiler %>}
@@ -14,7 +12,7 @@
 \def\review@subtitle_name{<%= escape_latex(@config.name_of('subtitle')) %>}
 <%- end -%>
 \def\review@aut_names{<%= escape_latex(@config.names_of('aut').join(I18n.t('names_splitter'))) %>}
-\def\review@titlepage_authors{<%= @authors %>}
+\def\review@titlepageauthors{<%= @authors %>}
 \def\review@date{<%= escape_latex(@config['date'].to_s) %>}
 <%- if @config['highlight'] && @config['highlight']['latex'] -%>
 \def\review@highlight_latex{<%= @config['highlight']['latex'] %>}
@@ -36,6 +34,10 @@
 \def\review@figurename{<%= escape_latex(I18n.t('image')) %>}
 \def\review@tablename{<%= escape_latex(I18n.t('table')) %>}
 \def\review@appendixname{<%= escape_latex(@locale_latex['preappendixname']) %>}
+<%- if @config['toc'] -%>
+\def\review@toc{true}
+\def\review@tocdepth{<%= @config['toclevel'] - 1 %>}
+<%- end -%>
 <%- if @config['makeindex'] -%>
 \def\review@makeindex{true}
 <%- end -%>
@@ -51,9 +53,38 @@
 \def\review@titlefile{<%= File.read(@config['titlefile']) %>}
 <%-   end -%>
 <%- end -%>
+<%- if @custom_originaltitlepage -%>
+\def\revieworiginaltitlepagecont{<%= @custom_originaltitlepage %>}
+<%- end -%>
+<%- if @custom_creditpage -%>
+\def\reviewcreditfilecont{<%= @custom_creditpage %>}
+<%- end -%>
+<%- if @custom_profilepage -%>
+\def\reviewprofilepagecont{<%= @custom_profilepage %>}
+<%- end -%>
+<%- if @custom_advfilepage -%>
+\def\reviewadvfilepagecont{<%= @custom_advfilepage %>}
+<%- end -%>
+<%- if @custom_backcoverpage -%>
+\def\reviewbackcovercont{<%= @custom_backcoverpage %>}
+<%- end -%>
+
+<%- if @config['colophon'] && @config['colophon'] -%>
+\def\review@colophon{true}
+<%-   if @custom_colophonpage -%>
+\def\review@colophonfile{<%= @custom_colophonpage %>}
+<%-   end -%>
+<%- end -%>
+
+\def\reviewprefacefiles{<%= @input_files['PREDEF'] %>}
+\def\reviewchapterfiles{<%= @input_files['CHAPS'] %>}
+\def\reviewappendixfiles{<%= @input_files['APPENDIX'] %>}
+\def\reviewpostdeffiles{<%= @input_files['POSTDEF'] %>}
+
 % END: define
 
 % BEGIN: sty
+\usepackage{ifthen}
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
 \usepackage[deluxe,uplatex]{otf}%
 }{%
@@ -300,12 +331,27 @@
   \fi
 }
 
-
-\def\review@frontmatter{%
+% hooks
+\def\reviewfrontmatterhook{%
   \renewcommand{\chaptermark}[1]{{}}
   \frontmatter
 }
 
+\def\reviewmainmatterhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~##1}{}}
+  \mainmatter
+}
+
+\def\reviewappendixhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~##1}{}}
+  \reviewappendix
+}
+
+\def\reviewbackmatterhook{%
+  \backmatter
+}
+
+% cover
 \ifdefined\review@cover
   \def\reviewcoverpagecont{\review@coverfile}
 \fi
@@ -313,12 +359,15 @@
   \def\reviewcoverpagecont{%
 \thispagestyle{empty}
 \begin{center}
-\includegraphics[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+% FIXME:review@coverimageoptionの参照で ! Missing \endcsname inserted. \textwidthになってしまう。このmacroの内容は"width=\textwidth ,height=\textheight ,keepaspectratio"。erb経由で文字列を指定する場合は問題が生じない…
+\includegraphics[<%= @coverimageoption %>]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+% \includegraphics[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
 \end{center}
 \clearpage
-}
+  }
 \fi
 
+% titlepage
 \ifdefined\review@titlepage
   \ifthenelse{\isundefined{\review@titlefile}}{%
     \def\reviewtitlepagecont{%
@@ -336,16 +385,48 @@
        {\huge
        \lineskip .75em
        \begin{tabular}[t]{c}%
-       \review@titlepage_authors
+       \review@titlepageauthors
        \end{tabular}\par}%
        \vfill
        {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@published_by\par}%
        \vskip4zw\mbox{}
        \end{center}%
-       \end{titlepage}\nobreak
+       \end{titlepage}\clearpage
     }
   }{%
     \def\reviewtitlepagecont{\review@titlefile}
+  }
+\fi
+
+% toc
+\ifdefined\review@toc
+  \def\reviewtableofcontents{%
+\setcounter{tocdepth}{\review@tocdepth}
+\tableofcontents
+}
+\fi
+
+% index
+\ifdefined\review@makeindex
+  \usepackage{makeidx}
+  \makeindex
+\fi
+
+\ifdefined\review@makeindex
+  \def\reviewprintindex{%
+\printindex
+}
+\fi
+
+% colophon
+\ifdefined\review@colophon
+  \ifthenelse{\isundefined{\review@colophonfile}}{%
+\reviewcolophon
+\thispagestyle{empty}
+\vspace*{\fill}
+% {\noindent\reviewtitlefont\Large\review@booktitle_name} % FIXME:文字を入れようとするとエラーになるのはなんだろう…？
+  }{%
+    \def\reviewcolophonpagecont{\review@colophonfile}
   }
 \fi
 
@@ -394,15 +475,6 @@
 <%-   end -%>
 <%- end -%>
 
-\makeatletter
-\ifdefined\review@makeindex
-  \usepackage{makeidx}
-  \makeindex
-\fi
-
-\sloppy
-
-\makeatother
 % END: sty
 
 \begin{document}
@@ -411,7 +483,6 @@
 \ifdefined\reviewcoverpagecont
 \reviewcoverpagecont
 \fi
-% FIXME:Missing \endcsname inserted.になる
 
 %% title page
 \ifdefined\reviewtitlepagecont
@@ -419,18 +490,18 @@
 \fi
 
 %% frontmatter hook
-\ifdefined\reviewfrontmatter
-\reviewfrontmatter
+\ifdefined\reviewfrontmatterhook
+\reviewfrontmatterhook
 \fi
 
 %% originaltitle
-\ifdefined\revieworiginaltitlepage
-\revieworiginaltitlepage
+\ifdefined\revieworiginaltitlepagecont
+\revieworiginaltitlepagecont
 \fi
 
 %% credit
-\ifdefined\reviewcreditfile
-\reviewcreditfile
+\ifdefined\reviewcreditfilecont
+\reviewcreditfilecont
 \fi
 
 %% preface
@@ -439,13 +510,13 @@
 \fi
 
 %% toc
-\ifdefined\reviewusetoc
+\ifdefined\reviewtableofcontents
 \reviewtableofcontents
 \fi
 
 %% mainmatter hook
-\ifdefined\reviewmainmatter
-\reviewmainmatter
+\ifdefined\reviewmainmatterhook
+\reviewmainmatterhook
 \fi
 
 %% chapters body
@@ -454,8 +525,8 @@
 \fi
 
 %% appendix hook
-\ifdefined\reviewappendix
-\reviewappendix
+\ifdefined\reviewappendixhook
+\reviewappendixhook
 \fi
 
 %% appendix body
@@ -464,8 +535,8 @@
 \fi
 
 %% backmatter hook
-\ifdefined\reviewbackmatter
-\reviewbackmatter
+\ifdefined\reviewbackmatterhook
+\reviewbackmatterhook
 \fi
 
 %% postdef body
@@ -479,73 +550,29 @@
 \fi
 
 %% profile page
-\ifdefined\reviewprofilepage
-\reviewprofilepage
+\ifdefined\reviewprofilepagecont
+\reviewprofilepagecont
 \fi
 
 %% advfile page
-\ifdefined\reviewadvfilepage
-\reviewadvfilepage
+\ifdefined\reviewadvfilepagecont
+\reviewadvfilepagecont
 \fi
 
 %%% colophon page
-\ifdefined\reviewcolophonpage
-\reviewcolophonpage
+\ifdefined\reviewcolophonpagecont
+\reviewcolophonpagecont
 \fi
 
 %%% backcover page
-\ifdefined\reviewbackcover
-\reviewbackcover
+\ifdefined\reviewbackcovercont
+\reviewbackcovercont
 \fi
 
+\end{document}
 
 
-%%% originaltitle
-<%- if @config['originaltitlefile'] -%>
-<%= @custom_originaltitlepage %>
-<%- end -%>
-
-%%% credit
-<%- if @config['creditfile'] -%>
-<%= @custom_creditpage %>
-<%- end -%>
-
-%% preface
-<%= @input_files['PREDEF'] %>
-
-<%- if @config['toc'] -%>
-\setcounter{tocdepth}{<%= @config['toclevel'] - 1 %>}
-\tableofcontents
-<%- end -%>
-
-\renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~#1}{}}
-\mainmatter
-<%= @input_files['CHAPS'] %>
-\renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~#1}{}}
-\reviewappendix
-<%= @input_files['APPENDIX'] %>
-
-%% backmatter begins
-<%- if @input_files['POSTDEF'] or @config['colophon'] -%>
-\backmatter
-<%- end -%>
-
-<%- if @input_files['POSTDEF'] -%>
-<%= @input_files['POSTDEF'] %>
-<%- end -%>
-<%- if @config['pdfmaker']['makeindex'] -%>
-\printindex
-<%- end -%>
-
-%%% profile
-<%- if @config['profile'] -%>
-<%= @custom_profilepage %>
-<%- end -%>
-
-%%% advfile
-<%- if @config['advfile'] -%>
-<%= @custom_advfilepage %>
-<%- end -%>
+%%% 以下は元のlayout.tex.erb断片
 
 %%% colophon
 <%- if @config['colophon'] -%>
@@ -576,11 +603,6 @@
 <%= @config.names_of('rights').map{|s| escape_latex(s)}.join('\\' + '\\') %> \\
 <%-     end -%>
 <%-   end -%>
-<%- end -%>
-
-%%% backcover
-<%- if @config['backcover'] -%>
-<%= @custom_backcoverpage %>
 <%- end -%>
 
 \end{document}
