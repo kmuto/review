@@ -526,7 +526,7 @@ EOC
       book = Book::Base.new(dir)
       config_file = File.join(dir, 'config.yml')
       book.load_config(config_file)
-      assert_equal "\foo\n", book.chapters[0].content
+      assert_equal "foo\n", book.chapters[0].content
     end
   end
 
