@@ -75,6 +75,11 @@
 \def\review@colophonfile{<%= @custom_colophonpage %>}
 <%-   end -%>
 <%- end -%>
+\def\review@pubhistories{<%= @config['pubhistory'].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>}
+\def\review@colophon_names{<%= @okuduke %>}
+<%- if @config['rights'] -%>
+\def\review@rights{<%= @config.names_of('rights').map{|s| escape_latex(s)}.join('\\' + '\\') %>}
+<%- end -%>
 
 \def\reviewprefacefiles{<%= @input_files['PREDEF'] %>}
 \def\reviewchapterfiles{<%= @input_files['CHAPS'] %>}
@@ -359,9 +364,7 @@
   \def\reviewcoverpagecont{%
 \thispagestyle{empty}
 \begin{center}
-% FIXME:review@coverimageoptionの参照で ! Missing \endcsname inserted. \textwidthになってしまう。このmacroの内容は"width=\textwidth ,height=\textheight ,keepaspectratio"。erb経由で文字列を指定する場合は問題が生じない…
-\includegraphics[<%= @coverimageoption %>]{\review@coverimage}% includefullpagegraphicsを導入すべき?
-% \includegraphics[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+\expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
 \end{center}
 \clearpage
   }
@@ -421,10 +424,27 @@
 % colophon
 \ifdefined\review@colophon
   \ifthenelse{\isundefined{\review@colophonfile}}{%
+    \def\reviewcolophonpagecont{%
 \reviewcolophon
 \thispagestyle{empty}
 \vspace*{\fill}
-% {\noindent\reviewtitlefont\Large\review@booktitle_name} % FIXME:文字を入れようとするとエラーになるのはなんだろう…？
+\typeout{\review@booktitle_name}
+{\noindent\reviewtitlefont\Large\review@booktitle_name}\\
+\ifdefined\review@subtitle_name
+{\noindent\reviewtitlefont\large\review@subtitle_name} \\
+\fi
+\rule[8pt]{\textwidth}{1pt} \\
+{\noindent\review@pubhistories}
+
+\begin{tabular}{ll}
+\review@colophon_names
+\end{tabular}
+　\\
+\rule[0pt]{\textwidth}{1pt} \\
+\ifdefined\review@rights
+\review@rights
+\fi
+    }%
   }{%
     \def\reviewcolophonpagecont{\review@colophonfile}
   }
@@ -568,41 +588,5 @@
 \ifdefined\reviewbackcovercont
 \reviewbackcovercont
 \fi
-
-\end{document}
-
-
-%%% 以下は元のlayout.tex.erb断片
-
-%%% colophon
-<%- if @config['colophon'] -%>
-<%-   if @custom_colophonpage -%>
-<%= @custom_colophonpage %>
-<%-   else -%>
-%% okuduke
-\reviewcolophon
-\thispagestyle{empty}
-
-\vspace*{\fill}
-
-{\noindent\reviewtitlefont\Large <%= escape_latex(@config.name_of('booktitle')) %>} \\
-<%- if @config['subtitle'] -%>
-{\noindent\reviewtitlefont\large <%= escape_latex(@config.name_of('subtitle')) %>} \\
-<%- end -%>
-\rule[8pt]{\textwidth}{1pt} \\
-{\noindent
-<%= @config['pubhistory'].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>
-}
-
-\begin{tabular}{ll}
-<%= @okuduke %>
-\end{tabular}
-　\\
-\rule[0pt]{\textwidth}{1pt} \\
-<%-     if @config['rights'] -%>
-<%= @config.names_of('rights').map{|s| escape_latex(s)}.join('\\' + '\\') %> \\
-<%-     end -%>
-<%-   end -%>
-<%- end -%>
 
 \end{document}
