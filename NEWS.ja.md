@@ -32,6 +32,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 * `//include` 命令は不完全でユーザーの混乱を招くため、削除しました ([#887])
 * LaTeX において、見出しや図表キャプション内にある脚注は `\footnotemark` を暗黙に使うようにしました ([#841])
 * EPUB および WebMaker の大扉では、印刷所 (prt) の代わりに出版社 (pbl) を記載するようにしました ([#927])
+* LaTeX において、table, imgtable, image, indepimage から変換した TeX ソースコードにコメントで ID を記述するようにしました（`\begin{reviewimage}%%sampleimg` など）。フック処理での書き換えを簡易化するための修正ですが、独自のフック処理を使用していたプロジェクトでは修正が必要になるかもしれません ([#937])
 
 ## バグ修正
 * column の終了が正しく動作しないのを修正しました ([#894])
@@ -80,6 +81,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 [#927]: https://github.com/kmuto/review/pull/927
 [#931]: https://github.com/kmuto/review/pull/931
 [#933]: https://github.com/kmuto/review/issues/933
+[#937]: https://github.com/kmuto/review/pull/937
 [#939]: https://github.com/kmuto/review/pull/939
 [#940]: https://github.com/kmuto/review/issues/940
 [#942]: https://github.com/kmuto/review/issues/942
