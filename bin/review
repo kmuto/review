@@ -23,7 +23,7 @@ def usage
   message = <<-EOB
 usage: review <command> [<args>]
 
-ReVIEW commands are:
+Re:VIEW commands are:
   init      : generate Re:VIEW project directory.
   preproc   : preprocess Re:VIEW document file.
   compile   : convert Re:VIEW document file.
