@@ -90,7 +90,12 @@ module ReVIEW
       @config.deep_merge!(cmd_config)
       @config['htmlext'] = 'html'
       I18n.setup(@config['language'])
-      generate_html_files(yamlfile)
+      begin
+        generate_html_files(yamlfile)
+      rescue ApplicationError => e
+        raise if @config['debug']
+        error(e.message)
+      end
     end
 
     def generate_html_files(yamlfile)
@@ -278,7 +283,7 @@ module ReVIEW
     def copy_file_with_param(name, target_file = nil)
       return if @config[name].nil? || !File.exist?(@config[name])
       target_file ||= File.basename(@config[name])
-      FileUtils.cp(@config[name], File.join(basetmpdir, target_file))
+      FileUtils.cp(@config[name], File.join(@path, target_file))
     end
 
     def join_with_separator(value, sep)
