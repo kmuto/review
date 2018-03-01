@@ -15,7 +15,8 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       'toclevel' => 2,
       'stylesheet' => nil, # for EPUBBuilder
       'image_scale2width' => false,
-      'texcommand' => 'uplatex'
+      'texcommand' => 'uplatex',
+      'review_version' => '3'
     )
     @book = Book::Base.new(nil)
     @book.config = @config
@@ -160,11 +161,20 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_m
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
+    assert_equal 'abc$\\alpha^n = \\inf < 2$ghi', actual
+
+    @config['review_version'] = '2.0'
+    actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
     assert_equal 'abc $\\alpha^n = \\inf < 2$ ghi', actual
   end
 
   def test_inline_m2
     ## target text: @<m>{X = \{ {x_1\},{x_2\}, \cdots ,{x_n\} \\\}}
+    actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
+    ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
+    assert_equal '$X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$', actual
+
+    @config['review_version'] = '2.0'
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
     ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
     assert_equal ' $X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$ ', actual
