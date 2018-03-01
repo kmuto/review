@@ -831,7 +831,11 @@ module ReVIEW
 
     # math
     def inline_m(str)
-      "$#{str}$"
+      if @book.config['review_version'].nil? || @book.config['review_version'].to_f > 2
+        "$#{str}$"
+      else
+        " $#{str}$ "
+      end
     end
 
     # hidden index
