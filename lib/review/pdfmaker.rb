@@ -36,6 +36,7 @@ module ReVIEW
     end
 
     def system_or_raise(*args)
+      @logger.info *args
       Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
     end
 
