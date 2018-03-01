@@ -165,8 +165,7 @@ class PDFMakerTest < Test::Unit::TestCase
         expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
         @maker.basedir = Dir.pwd
         @maker.erb_config
-        tmpl = @maker.erb_content(File.join(ReVIEW::Template::TEMPLATE_DIR, './latex/review-jsbook/50backmatter_misc.tex.erb'))
-        tmpl << @maker.erb_content(File.join(ReVIEW::Template::TEMPLATE_DIR, './latex/review-jsbook/52backcover.tex.erb'))
+        tmpl = @maker.template_content
         assert_equal(expect, tmpl)
       end
     end

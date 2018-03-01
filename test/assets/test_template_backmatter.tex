@@ -1,16 +1,552 @@
+\documentclass[dvipdfmx,uplatex,oneside]{jsbook}
+% %% fixes to LaTeX2e
+% \usepackage{fix-cm}[2006/09/13 v1.1m]
+% \usepackage{fixltx2e}[2006/09/13 v1.1m]
 
-
-%%% profile
-\thispagestyle{empty}\chapter*{Profile}
+% BEGIN: define
+\makeatletter
+\def\review@texcompiler{uplatex}
+\def\review@documentclass{jsbook}
+\def\review@booktitle_name{Re:VIEW Sample Book}
+\def\review@aut_names{}
+\def\review@titlepageauthors{}
+\def\review@date{2011{-}01{-}01}
+\def\review@language{ja}
+\def\review@intn@list{リスト}
+\def\review@intn@column_head{■コラム}
+\def\review@intn@image{図}
+\def\review@intn@table{表}
+\def\review@intn@columnname{コラム}
+\def\review@intn@memo_head{■メモ}
+\def\review@intn@edition{版}
+\def\review@intn@published_by{ 発行}
+\def\review@toctitle{目次}
+\def\review@prepartname{第}
+\def\review@postpartname{部}
+\def\review@prechaptername{第}
+\def\review@postchaptername{章}
+\def\review@figurename{図}
+\def\review@tablename{表}
+\def\review@appendixname{付録}
+\def\review@titlepage{true}
+\def\reviewprofilepagecont{\thispagestyle{empty}\chapter*{Profile}
 some profile
-
-
-%%% advfile
-\thispagestyle{empty}\chapter*{Ad}
+}
+\def\reviewadvfilepagecont{\thispagestyle{empty}\chapter*{Ad}
 some ad content
-
-\clearpage
+}
+\def\reviewbackcovercont{\clearpage
 \thispagestyle{empty}\AddToShipoutPictureBG{%
 \AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{images/backcover.png}}
 }
-\null
+\null}
+
+\def\review@pubhistories{2011年1月1日　発行}
+\def\review@colophon_names{}
+
+\def\reviewprefacefiles{}
+\def\reviewchapterfiles{}
+\def\reviewappendixfiles{}
+\def\reviewpostdeffiles{}
+
+% END: define
+
+% BEGIN: sty
+\usepackage{ifthen}
+\ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
+\usepackage[deluxe,uplatex]{otf}%
+}{%
+\usepackage[deluxe]{otf}%
+}
+\usepackage{caption}
+\usepackage{suffix}
+\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+\usepackage{lmodern}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
+\usepackage{framed}
+\usepackage{wrapfig}
+\definecolor{shadecolor}{gray}{0.9}
+\definecolor{shadecolorb}{gray}{0.1}
+\definecolor{reviewgreen}{rgb}{0,0.4,0}
+\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
+\definecolor{reviewred}{rgb}{0.7,0,0}
+\definecolor{reviewdarkred}{rgb}{0.3,0,0}
+\usepackage[utf8]{inputenc}
+\usepackage{ascmac}
+\usepackage{float}
+\usepackage{alltt}
+\usepackage{amsmath}
+
+%% if you use @<u>{} (underline), use jumoline.sty
+\IfFileExists{jumoline.sty}{
+\usepackage{jumoline}
+}
+
+\newenvironment{shadedb}{%
+  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
+  \MakeFramed {\FrameRestore}}%
+ {\endMakeFramed}
+
+\ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
+}{%
+\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}%
+}
+
+\newcommand{\parasep}{\vspace*{3zh}}
+\setlength{\footskip}{30pt}
+
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+     pdftitle={\review@booktitle_name},%
+     pdfauthor={\review@aut_names}]{hyperref}
+\usepackage[dvipdfmx]{pxjahyper}
+
+\ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
+\newcommand{\headfont}{\gtfamily\sffamily\bfseries}
+\usepackage{plext}
+}{%
+}
+
+\ifdefined\review@highlight_latex
+  \ifthenelse{\equal{\review@highlight_latex}{listings}}{%
+    \ifhtneelse{\equal{\review@language}{ja}}{%
+      \usepackage{listings,jlisting}
+    }{%
+      \usepackage{listings}
+    }%
+  \renewcommand{\lstlistingname}{\review@intn@list}
+  \lstset{%
+    breaklines=true,%
+    breakautoindent=false,%
+    breakindent=0pt,%
+    fontadjust=true,%
+    backgroundcolor=\color{shadecolor},%
+    frame=single,%
+    framerule=0pt,%
+    basicstyle=\ttfamily\scriptsize,%
+    commentstyle=\color{reviewgreen},%
+    identifierstyle=\color{reviewblue},%
+    stringstyle=\color{reviewred},%
+    keywordstyle=\bfseries\color{reviewdarkred},%
+  }
+  \lstnewenvironment{reviewemlistlst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewsourcelst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewsourcenumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
+  }{%
+  }
+\fi
+
+\newenvironment{reviewimage}{%
+  \begin{figure}[H]
+    \begin{center}}{%
+    \end{center}
+  \end{figure}}
+
+\newenvironment{reviewdummyimage}{%
+  \begin{figure}[H]
+    \begin{center}\begin{alltt}}{%
+    \end{alltt}\end{center}
+  \end{figure}}
+
+\newenvironment{reviewemlist}{%
+  \medskip\small\begin{shaded}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}}
+
+\newenvironment{reviewlist}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewsource}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewcmd}{%
+  \color{white}\medskip\small\begin{shadedb}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shadedb}}
+
+\newenvironment{reviewbox}{%
+  \medskip\small\begin{framed}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{framed}}
+
+\newenvironment{reviewtable}[1]{%
+  \begin{center}\small\setlength{\baselineskip}{1.2zw}
+    \begin{tabular}{#1}}{%
+    \end{tabular}
+  \end{center}}
+
+\newenvironment{reviewcolumn}{%
+     \begin{framed}
+  }{%
+     \end{framed}
+  \vspace{2zw}}
+
+\newcommand{\reviewcolumnhead}[2]{%
+{\noindent\large \review@intn@column_head{}: #2}}
+
+\newcommand{\reviewtablecaption}[1]{%
+  \caption{#1}}
+
+\WithSuffix\newcommand\reviewtablecaption*[1]{%
+  \caption*{#1}}
+
+\newcommand{\reviewimgtablecaption}[1]{%
+  \caption{#1}\vspace{-3mm}}
+
+\newcommand{\reviewbackslash}[0]{%
+  \textbackslash{}}
+
+\newcommand{\reviewlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewemlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewsourcecaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewcmdcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewindepimagecaption}[1]{%
+  \begin{center}#1\end{center}}
+
+\newcommand{\reviewboxcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewimageref}[2]{\review@intn@image #1}
+\newcommand{\reviewtableref}[2]{\review@intn@table #1}
+\newcommand{\reviewlistref}[1]{\review@intn@list #1}
+\newcommand{\reviewbibref}[2]{#1}
+\newcommand{\reviewcolumnref}[2]{\review@intn@columnname #1}
+\newcommand{\reviewsecref}[2]{#1}
+
+\newcommand{\reviewminicolumntitle}[1]{%
+  {\large \review@intn@memo_head{}: #1}\\}
+
+\renewcommand{\contentsname}{\review@toctitle}
+
+\newenvironment{reviewminicolumn}{%
+  \vspace{1.5zw}\begin{screen}}{%
+  \end{screen}\vspace{2zw}}
+
+\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\newcommand{\reviewami}[1]{\mask{#1}{A}}
+\newcommand{\reviewem}[1]{\textbf{#1}}
+\newcommand{\reviewstrong}[1]{\textbf{#1}}
+\newcommand{\reviewunderline}{\Underline}
+\newcommand{\reviewit}[1]{\textit{#1}}
+\newcommand{\reviewbold}[1]{\textbf{#1}}
+\newcommand{\reviewcode}[1]{\texttt{#1}}
+\newcommand{\reviewtt}[1]{\texttt{#1}}
+
+%% @<del> is ignored in LaTeX with default style
+\newcommand{\reviewstrike}[1]{#1}
+
+%%%% for ulem.sty:
+%%\renewcommand{\reviewstrike}[1]{\sout{#1}}
+%%
+%%%% for jumoline.sty:
+%%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
+
+\newcommand{\reviewth}[1]{\textgt{#1}}
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
+
+\newcommand{\reviewprepartname}{\review@prepartname}
+\newcommand{\reviewpostpartname}{\review@postpartname}
+\newcommand{\reviewprechaptername}{\review@prechaptername}
+\newcommand{\reviewpostchaptername}{\review@postchaptername}
+\newcommand{\reviewfigurename}{\review@figurename}
+\newcommand{\reviewtablename}{\review@tablename}
+\newcommand{\reviewappendixname}{\review@appendixname}
+
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
+
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\def\maxwidth{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+
+% hooks
+\def\reviewfrontmatterhook{%
+  \renewcommand{\chaptermark}[1]{{}}
+  \frontmatter
+}
+
+\def\reviewmainmatterhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~##1}{}}
+  \mainmatter
+}
+
+\def\reviewappendixhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~##1}{}}
+  \reviewappendix
+}
+
+\def\reviewbackmatterhook{%
+  \backmatter
+}
+
+% cover
+\ifdefined\review@cover
+  \def\reviewcoverpagecont{\review@coverfile}
+\fi
+\ifdefined\review@coverimage
+  \def\reviewcoverpagecont{%
+\thispagestyle{empty}
+\begin{center}
+\expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+\end{center}
+\clearpage
+  }
+\fi
+
+% titlepage
+\ifdefined\review@titlepage
+  \ifthenelse{\isundefined{\review@titlefile}}{%
+    \def\reviewtitlepagecont{%
+       \begin{titlepage}
+       \thispagestyle{empty}
+       \begin{center}%
+       \mbox{} \vskip5zw
+       \reviewtitlefont%
+       {\Huge\review@booktitle_name\par}%
+       \ifdefined\review@subtitle_name
+         \vskip 1em%
+         {\Large\review@subtitle_name\par}%
+       \fi
+       \vskip 15em%
+       {\huge
+       \lineskip .75em
+       \begin{tabular}[t]{c}%
+       \review@titlepageauthors
+       \end{tabular}\par}%
+       \vfill
+       {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@published_by\par}%
+       \vskip4zw\mbox{}
+       \end{center}%
+       \end{titlepage}\clearpage
+    }
+  }{%
+    \def\reviewtitlepagecont{\review@titlefile}
+  }
+\fi
+
+% toc
+\ifdefined\review@toc
+  \def\reviewtableofcontents{%
+\setcounter{tocdepth}{\review@tocdepth}
+\tableofcontents
+}
+\fi
+
+% index
+\ifdefined\review@makeindex
+  \usepackage{makeidx}
+  \makeindex
+\fi
+
+\ifdefined\review@makeindex
+  \def\reviewprintindex{%
+\printindex
+}
+\fi
+
+% colophon
+\ifdefined\review@colophon
+  \ifthenelse{\isundefined{\review@colophonfile}}{%
+    \def\reviewcolophonpagecont{%
+\reviewcolophon
+\thispagestyle{empty}
+\vspace*{\fill}
+\typeout{\review@booktitle_name}
+{\noindent\reviewtitlefont\Large\review@booktitle_name}\\
+\ifdefined\review@subtitle_name
+{\noindent\reviewtitlefont\large\review@subtitle_name} \\
+\fi
+\rule[8pt]{\textwidth}{1pt} \\
+{\noindent\review@pubhistories}
+
+\begin{tabular}{ll}
+\review@colophon_names
+\end{tabular}
+　\\
+\rule[0pt]{\textwidth}{1pt} \\
+\ifdefined\review@rights
+\review@rights
+\fi
+    }%
+  }{%
+    \def\reviewcolophonpagecont{\review@colophonfile}
+  }
+\fi
+
+%% reviewmacro
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{\gtfamily\sffamily\bfseries\upshape \leftmark}
+\chead{}
+\rhead{\gtfamily\sffamily\bfseries\upshape \rightmark}
+\renewcommand{\sectionmark}[1]{\markright{\thesection~#1}{}}
+\renewcommand{\chaptermark}[1]{\markboth{\prechaptername\ \thechapter\ \postchaptername~#1}{}}
+\renewcommand{\headfont}{\gtfamily\sffamily\bfseries}
+
+\fancypagestyle{plainhead}{%
+\fancyhead{}
+\fancyfoot{} % clear all header and footer fields
+\fancyfoot[CE,CO]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}}
+
+%% using Helvetica as sans-serif
+\renewcommand{\sfdefault}{phv}
+
+%% for listings
+%\renewcommand{\lstlistingname}{List}
+%\lstset{%
+%  breaklines=true,%
+%  breakautoindent=false,%
+%  breakindent=0pt,%
+%  fontadjust=true,%
+%  backgroundcolor=\color{shadecolor},%
+%  frame=single,%
+%  framerule=0pt,%
+%  basicstyle=\ttfamily\scriptsize,%
+%  commentstyle=\color{reviewgreen},%
+%  identifierstyle=\color{reviewblue},%
+%  stringstyle=\color{reviewred},%
+%  keywordstyle=\bfseries\color{reviewdarkred},%
+%}
+
+%% disable hyperlink color and border
+\hypersetup{hidelinks}
+%% -- reviewmacro end
+
+\makeatother
+
+% END: sty
+
+\begin{document}
+
+%% coverpage
+\ifdefined\reviewcoverpagecont
+\reviewcoverpagecont
+\fi
+
+%% title page
+\ifdefined\reviewtitlepagecont
+\reviewtitlepagecont
+\fi
+
+%% frontmatter hook
+\ifdefined\reviewfrontmatterhook
+\reviewfrontmatterhook
+\fi
+
+%% originaltitle
+\ifdefined\revieworiginaltitlepagecont
+\revieworiginaltitlepagecont
+\fi
+
+%% credit
+\ifdefined\reviewcreditfilecont
+\reviewcreditfilecont
+\fi
+
+%% preface
+\ifdefined\reviewprefacefiles
+\reviewprefacefiles
+\fi
+
+%% toc
+\ifdefined\reviewtableofcontents
+\reviewtableofcontents
+\fi
+
+%% mainmatter hook
+\ifdefined\reviewmainmatterhook
+\reviewmainmatterhook
+\fi
+
+%% chapters body
+\ifdefined\reviewchapterfiles
+\reviewchapterfiles
+\fi
+
+%% appendix hook
+\ifdefined\reviewappendixhook
+\reviewappendixhook
+\fi
+
+%% appendix body
+\ifdefined\reviewappendixfiles
+\reviewappendixfiles
+\fi
+
+%% backmatter hook
+\ifdefined\reviewbackmatterhook
+\reviewbackmatterhook
+\fi
+
+%% postdef body
+\ifdefined\reviewpostdeffiles
+\reviewpostdeffiles
+\fi
+
+%% index page
+\ifdefined\reviewprintindex
+\reviewprintindex
+\fi
+
+%% profile page
+\ifdefined\reviewprofilepagecont
+\reviewprofilepagecont
+\fi
+
+%% advfile page
+\ifdefined\reviewadvfilepagecont
+\reviewadvfilepagecont
+\fi
+
+%%% colophon page
+\ifdefined\reviewcolophonpagecont
+\reviewcolophonpagecont
+\fi
+
+%%% backcover page
+\ifdefined\reviewbackcovercont
+\reviewbackcovercont
+\fi
+
+\end{document}
