@@ -1,5 +1,5 @@
-# Version 2.5.0 or 3.0.0?
-----
+# Version 3.x (未リリース)
+
 TODO:lib/review/version.rbとreview.gemspecの更新をすること
 
 以下は未マージ・開発中。なるべく入れたいが…
@@ -21,7 +21,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 
 非互換になるところはもう少し詳しく説明が必要そう
 
-----
+# Version 2.5.0
 
 ## 新機能
 * プレインテキストを出力する review-textmaker コマンドを用意しました ([#926])
@@ -32,7 +32,6 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 * `//include` 命令は不完全でユーザーの混乱を招くため、削除しました ([#887])
 * LaTeX において、見出しや図表キャプション内にある脚注は `\footnotemark` を暗黙に使うようにしました ([#841])
 * EPUB および WebMaker の大扉では、印刷所 (prt) の代わりに出版社 (pbl) を記載するようにしました ([#927])
-* LaTeX において、table, imgtable, image, indepimage から変換した TeX ソースコードにコメントで ID を記述するようにしました（`\begin{reviewimage}%%sampleimg` など）。フック処理での書き換えを簡易化するための修正ですが、独自のフック処理を使用していたプロジェクトでは修正が必要になるかもしれません ([#937])
 
 ## バグ修正
 * column の終了が正しく動作しないのを修正しました ([#894])
@@ -54,6 +53,7 @@ TODO:lib/review/version.rbとreview.gemspecの更新をすること
 * 存在しないあるいは壊れている YAML ファイルを読み込もうとしたときに妥当なエラーメッセージを出すようにしました ([#958])
 * `@<img>` や `@<table>` などのインライン命令で存在しない ID を指定したときのエラーメッセージをわかりやすいものに統一しました ([#954])
 * catalog.yml に存在しないファイルをコンパイルしようとしたときのエラーメッセージをわかりやすいものにしました ([#953])
+* LaTeX において、table, imgtable, image, indepimage から変換した TeX ソースコードにコメントで ID を記述するようにしました（`\begin{reviewimage}%%sampleimg` など）。フック処理での書き換えを簡易化するための修正であり、通常のLaTeX(PDF)の出力には影響ありませんが、独自のフック処理を使用していたプロジェクトでは修正が必要になるかもしれません ([#937])
 
 ## ドキュメント
 * 画像ファイルの拡張子の探索順序を文書化しました ([#939])
