@@ -45,9 +45,7 @@ class CompilerTest < Test::Unit::TestCase
     source_str = <<-'EOB'
 @<m>${}\}|$, @<m>|{}\}\$|, @<m>|\{\a\}|, @<tt>|}|, @<tt>|\|, @<tt>|\\|, @<tt>|\\\|
     EOB
-    expected = <<-'EOB'
-@<m>{{\}\\\}|}, @<m>{{\}\\\}\$}, @<m>{\{\a\\\}}, @<tt>{\}}, @<tt>{\\}, @<tt>{\\\\}, @<tt>{\\\\\\}
-    EOB
+    expected = "@<m>{\x03\x04\x02\x04|}, @<m>{\x03\x04\x02\x04\x02$}, @<m>{\x02\x03\x02a\x02\x04}, @<tt>{\x04}, @<tt>{\x02}, @<tt>{\x02\x02}, @<tt>{\x02\x02\x02}\n"
     actual = @c.__send__(:replace_fence, source_str)
     assert_equal expected, actual
   end

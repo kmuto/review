@@ -969,8 +969,8 @@ EOS
   end
 
   def test_inline_fence
-    actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
-    assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
+    actual = compile_inline('test @<code>|@<code>{$サンプル$}|, @<m>$\begin{array}{ll}a & b\\\alpha & @\\\end{array}$')
+    assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}{\\textdollar{}サンプル\\textdollar{}}},  $\begin{array}{ll}a & b\\\alpha & @\\\end{array}$ ', actual
   end
 
   def test_inline_unknown
