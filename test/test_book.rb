@@ -519,6 +519,17 @@ EOC
     end
   end
 
+  def test_contentdir
+    mktmpbookdir('config.yml' => "contentdir: content\n", 'catalog.yml' => "CHAPS:\n - ch01.re\n") do |dir, _book, _files|
+      Dir.mkdir('content')
+      File.open('content/ch01.re', 'w') { |f| f.puts "foo\n" }
+      book = Book::Base.new(dir)
+      config_file = File.join(dir, 'config.yml')
+      book.load_config(config_file)
+      assert_equal "foo\n", book.chapters[0].content
+    end
+  end
+
   def test_page_metric
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)

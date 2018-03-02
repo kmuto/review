@@ -12,7 +12,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
-    @book = Book::Base.new(nil)
+    @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
