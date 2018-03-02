@@ -15,6 +15,7 @@
 
 [#920]: https://github.com/kmuto/review/issues/920
 [#943]: https://github.com/kmuto/review/issues/943
+[#975]: https://github.com/kmuto/review/issues/975
 
 # Version 2.5.0
 
