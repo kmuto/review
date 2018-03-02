@@ -15,9 +15,7 @@ module ReVIEW
     return @logger if @logger
 
     @logger = ReVIEW::Logger.new
-    @logger.formatter = ->(severity, _datetime, _progname, msg) {
-      "#{severity}: #{msg}\n"
-    }
+    @logger.formatter = ->(severity, _datetime, _progname, msg) { "#{severity}: #{msg}\n" }
     @logger
   end
 
