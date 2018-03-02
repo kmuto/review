@@ -1,15 +1,21 @@
 # Version 3.0.0preview1 (未リリース)
 
 ## 新機能
+* `contentdir` パラメータで、re ファイルをサブフォルダに配置してそのフォルダを指定できるようにしました ([#920])
+
 ## 非互換の変更
 * review_version の値が 3 以上のときには、LaTeX の `@<m>` によるインラインの数式の前後にスペース文字を入れないようにしました ([#943])
 
 ## バグ修正
+* Ruby 2.3 以下で実行時のログ表示が冗長になるのを修正しました ([#975])
+
 ## 機能強化
 ## ドキュメント
 ## コントリビューターのみなさん
 
+[#920]: https://github.com/kmuto/review/issues/920
 [#943]: https://github.com/kmuto/review/issues/943
+[#975]: https://github.com/kmuto/review/issues/975
 
 # Version 2.5.0
 
