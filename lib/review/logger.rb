@@ -4,7 +4,8 @@ module ReVIEW
   class Logger < ::Logger
     def initialize(*logdev)
       if logdev.empty?
-        super(STDERR, formatter: ->(severity, _datetime, _progname, msg) { "#{severity}: #{msg}\n" })
+        super(STDERR)
+        self.formatter = ->(severity, _datetime, _progname, msg) { "#{severity}: #{msg}\n" }
       else
         super
       end
@@ -12,11 +13,7 @@ module ReVIEW
   end
 
   def self.logger
-    return @logger if @logger
-
-    @logger = ReVIEW::Logger.new
-    @logger.formatter = ->(severity, _datetime, _progname, msg) { "#{severity}: #{msg}\n" }
-    @logger
+    @logger ||= ReVIEW::Logger.new
   end
 
   def self.logger=(logger)
