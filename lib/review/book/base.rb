@@ -111,7 +111,10 @@ module ReVIEW
       end
 
       def parts_in_file
-        parts.find_all { |part| part if part.present? and part.file? }
+        # TODO: should be `parts.find_all{|part| part.present? and part.file?}` ?
+        parts.find_all do |part|
+          part if part.present? and part.file?
+        end
       end
 
       def part(n)
@@ -147,7 +150,12 @@ module ReVIEW
         return @chapter_index if @chapter_index
 
         contents = chapters
-        parts.each { |prt| contents << prt if prt.id.present? }
+        # TODO: contents += parts.find_all { |prt| prt.id.present? }
+        parts.each do |prt|
+          if prt.id.present?
+            contents << prt
+          end
+        end
         @chapter_index = ChapterIndex.new(contents)
       end
 
@@ -159,7 +167,9 @@ module ReVIEW
         finded = false
         each_chapter do |c|
           return c if finded
-          finded = true if c == chapter
+          if c == chapter
+            finded = true
+          end
         end
         nil # not found
       end
@@ -168,7 +178,9 @@ module ReVIEW
         finded = false
         each_chapter_r do |c|
           return c if finded
-          finded = true if c == chapter
+          if c == chapter
+            finded = true
+          end
         end
         nil # not found
       end
@@ -192,7 +204,9 @@ module ReVIEW
         return @catalog if @catalog.present?
 
         catalogfile_path = filename_join(@basedir, config['catalogfile'])
-        @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) } if File.file? catalogfile_path
+        if File.file? catalogfile_path
+          @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) }
+        end
         if @catalog
           @catalog.validate!(@config, basedir)
         end
@@ -264,7 +278,9 @@ module ReVIEW
 
         begin
           predef_file = filename_join(@basedir, config['predef_file'])
-          mkpart_from_namelistfile(predef_file) if File.file?(predef_file)
+          if File.file?(predef_file)
+            mkpart_from_namelistfile(predef_file)
+          end
         rescue FileNotFound => err
           raise FileNotFound, "preface #{err.message}"
         end
@@ -279,14 +295,18 @@ module ReVIEW
 
         begin
           postdef_file = filename_join(@basedir, config['postdef_file'])
-          mkpart_from_namelistfile(postdef_file) if File.file?(postdef_file)
+          if File.file?(postdef_file)
+            mkpart_from_namelistfile(postdef_file)
+          end
         rescue FileNotFound => err
           raise FileNotFound, "postscript #{err.message}"
         end
       end
 
       def postscripts
-        mkpart_from_namelist(catalog.postdef.split("\n")) if catalog
+        if catalog
+          mkpart_from_namelist(catalog.postdef.split("\n"))
+        end
       end
 
       private
@@ -384,7 +404,9 @@ module ReVIEW
       def read_file(filename)
         unless @warn_old_files[filename]
           @warn_old_files[filename] = true
-          ReVIEW.logger.warn "!!! #{filename} is obsoleted. please use catalog.yml." if caller.none? { |item| item =~ %r{/review/test/test_} }
+          if caller.none? { |item| item =~ %r{/review/test/test_} }
+            ReVIEW.logger.warn "!!! #{filename} is obsoleted. please use catalog.yml."
+          end
         end
         res = ''
         File.open(filename_join(@basedir, filename), 'r:BOM|utf-8') do |f|

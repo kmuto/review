@@ -62,9 +62,11 @@ module ReVIEW
         @volume
       end
 
-      # deprecated; use content()
+      # XXX deprecated; use content()
       def open(&_block)
-        return (block_given? ? yield(@io) : @io) if @io
+        if @io
+          return (block_given? ? yield(@io) : @io)
+        end
         StringIO.new(content)
       end
 

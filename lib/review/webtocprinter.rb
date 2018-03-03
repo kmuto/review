@@ -31,8 +31,12 @@ module ReVIEW
           @out.puts %Q(<li>#{h(I18n.t('part_short', part.number) + ' ' + part.title)}\n<ul>\n)
         end
       end
-      part.each_chapter { |chap| print_chapter(chap) }
-      @out.puts "</ul>\n</li>\n" if part.number
+      part.each_chapter do |chap|
+        print_chapter(chap)
+      end
+      if part.number
+        @out.puts "</ul>\n</li>\n"
+      end
     end
 
     def print_chapter(chap)

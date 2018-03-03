@@ -59,7 +59,9 @@ module ReVIEW
             return m[2] # tag
           when %r{/\A//[a-z]+/}
             line = f.gets
-            f.until_match(%r{\A//\}}) if line.rstrip[-1, 1] == '{'
+            if line.rstrip[-1, 1] == '{'
+              f.until_match(%r{\A//\}})
+            end
           end
           f.gets
         end
@@ -72,18 +74,28 @@ module ReVIEW
 
       def format_number(heading = true)
         return '' unless @number
-        return @number.to_s if on_predef?
+        if on_predef?
+          return @number.to_s
+        end
 
         if on_appendix?
-          return @number.to_s if @number < 1 || @number > 27
-          raise ReVIEW::ConfigError, %Q('appendix_format:' in config.yml is obsoleted.) if @book.config['appendix_format']
+          # XXX: should be extracted with magic number
+          if @number < 1 || @number > 27
+            return @number.to_s
+          end
+          if @book.config['appendix_format']
+            raise ReVIEW::ConfigError, %Q('appendix_format:' in config.yml is obsoleted.)
+          end
 
           i18n_appendix = I18n.get('appendix')
           fmt = i18n_appendix.scan(/%\w{1,3}/).first || '%s'
           I18n.update('appendix_without_heading' => fmt)
 
-          return I18n.t('appendix', @number) if heading
-          return I18n.t('appendix_without_heading', @number)
+          if heading
+            return I18n.t('appendix', @number)
+          else
+            return I18n.t('appendix_without_heading', @number)
+          end
         end
 
         if heading

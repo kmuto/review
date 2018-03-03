@@ -63,7 +63,9 @@ module EPUBMaker
         next unless @producer.config[role]
         @producer.config.names_of(role).each do |v|
           s << %Q(    <dc:contributor opf:role="#{role}">#{CGI.escapeHTML(v)}</dc:contributor>\n)
-          s << %Q(    <dc:publisher>#{v}</dc:publisher>\n) if role == 'prt'
+          if role == 'prt'
+            s << %Q(    <dc:publisher>#{v}</dc:publisher>\n)
+          end
         end
       end
 
@@ -124,8 +126,14 @@ EOT
     def produce(epubfile, basedir, tmpdir)
       produce_write_common(basedir, tmpdir)
 
-      File.open("#{tmpdir}/OEBPS/#{@producer.config['bookname']}.ncx", 'w') { |f| @producer.ncx(f, @producer.config['epubmaker']['ncxindent']) }
-      File.open("#{tmpdir}/OEBPS/#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}", 'w') { |f| @producer.mytoc(f) } if @producer.config['mytoc']
+      File.open("#{tmpdir}/OEBPS/#{@producer.config['bookname']}.ncx", 'w') do |f|
+        @producer.ncx(f, @producer.config['epubmaker']['ncxindent'])
+      end
+      if @producer.config['mytoc']
+        File.open("#{tmpdir}/OEBPS/#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}", 'w') do |f|
+          @producer.mytoc(f)
+        end
+      end
 
       @producer.call_hook(@producer.config['epubmaker']['hook_prepack'], tmpdir)
       expoter = EPUBMaker::ZipExporter.new(tmpdir, @producer.config)

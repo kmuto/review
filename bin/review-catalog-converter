@@ -114,11 +114,17 @@ def parse_postdef(str, to_appendix = false)
 end
 
 def parse_parts(parts_str, chaps_str)
-  return "CHAPS:\n\n" if parts_str.blank? or chaps_str.blank?
+  if parts_str.blank? or chaps_str.blank?
+    return "CHAPS:\n\n"
+  end
 
   parts = parts_str.split("\n")
   chaps = chaps_str.split("\n\n")
-  "CHAPS:\n" + parts.zip(chaps).map { |k, vs| "  - #{k}:\n" + vs.split("\n").map { |i| "    - #{i}\n" }.join }.join + "\n"
+  "CHAPS:\n" + parts.zip(chaps).map do |k, vs|
+    "  - #{k}:\n" + vs.split("\n").map { |i| "    - #{i}\n" }.join
+  end.join + "\n"
 end
 
-main if File.basename($PROGRAM_NAME) == File.basename(__FILE__)
+if File.basename($PROGRAM_NAME) == File.basename(__FILE__)
+  main
+end
