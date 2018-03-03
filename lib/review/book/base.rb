@@ -18,11 +18,6 @@ module ReVIEW
       attr_writer :catalog
       attr_reader :basedir
 
-      def self.load_default
-        ReVIEW.logger.warn 'Book::Base.load_default() is obsoleted. Use Book::Base.load().'
-        load
-      end
-
       def self.load(dir = '.')
         update_rubyenv dir
         new(dir)
