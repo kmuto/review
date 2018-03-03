@@ -96,18 +96,29 @@ module ReVIEW
 
     def [](key)
       maker = self.maker
-      return self.fetch(maker).fetch(key, nil) if maker && self.key?(maker) && self.fetch(maker) && self.fetch(maker).key?(key)
-      return self.fetch(key) if self.key?(key)
+      if maker && self.key?(maker) && self.fetch(maker) && self.fetch(maker).key?(key)
+        return self.fetch(maker).fetch(key, nil)
+      end
+      if self.key?(key)
+        return self.fetch(key)
+      end
       nil
     end
 
     def check_version(version)
-      raise ReVIEW::ConfigError, 'configuration file has no review_version property.' unless self.key?('review_version')
+      unless self.key?('review_version')
+        raise ReVIEW::ConfigError, 'configuration file has no review_version property.'
+      end
 
-      return true if self['review_version'].blank?
+      if self['review_version'].blank?
+        return true
+      end
 
-      raise ReVIEW::ConfigError, 'major version of configuration file is different.' if self['review_version'].to_i != version.to_i ## major version
-      raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self['review_version']}'." if self['review_version'].to_f > version.to_f ## minor version
+      if self['review_version'].to_i != version.to_i ## major version
+        raise ReVIEW::ConfigError, 'major version of configuration file is different.'
+      elsif self['review_version'].to_f > version.to_f ## minor version
+        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self['review_version']}'."
+      end
     end
 
     def name_of(key)

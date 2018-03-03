@@ -22,12 +22,18 @@ module ReVIEW
     def inc(level)
       n = level - 2
       @counter[n] += 1 if n >= 0
-      (n + 1..@counter.size).each { |i| @counter[i] = 0 } if @counter.size > n
+      if @counter.size > n
+        (n + 1..@counter.size).each do |i|
+          @counter[i] = 0
+        end
+      end
     end
 
     def anchor(level)
       str = @chapter.format_number(false)
-      0.upto(level - 2) { |i| str << "-#{@counter[i]}" }
+      0.upto(level - 2) do |i|
+        str << "-#{@counter[i]}"
+      end
       str
     end
 

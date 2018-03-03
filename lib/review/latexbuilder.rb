@@ -150,8 +150,11 @@ module ReVIEW
     end
 
     def nodisp_begin(level, _label, caption)
-      blank unless @output.pos == 0
-      puts macro('clearpage') if @output.pos == 0
+      if @output.pos != 0
+        blank
+      else
+        puts macro('clearpage')
+      end
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
       # FIXME: headings
     end
@@ -500,7 +503,10 @@ module ReVIEW
       end
 
       @doc_status[:caption] = true
-      puts macro('reviewindepimagecaption', %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})) if caption.present?
+      if caption.present?
+        puts macro('reviewindepimagecaption',
+                   %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}))
+      end
       @doc_status[:caption] = nil
 
       if @chapter.image(id).path
@@ -527,12 +533,12 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
       return if rows.empty?
-      table_begin rows.first.size
+      table_begin(rows.first.size)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })

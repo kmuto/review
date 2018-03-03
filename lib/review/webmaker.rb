@@ -72,7 +72,9 @@ module ReVIEW
 
     def remove_old_files(path)
       math_dir = "./#{@config['imagedir']}/_review_math"
-      FileUtils.rm_rf(math_dir) if @config['imgmath'] && Dir.exist?(math_dir)
+      if @config['imgmath'] && Dir.exist?(math_dir)
+        FileUtils.rm_rf(math_dir)
+      end
       FileUtils.rm_rf(path)
     end
 
@@ -197,7 +199,7 @@ module ReVIEW
 
     def copy_resources(resdir, destdir, allow_exts = nil)
       return nil if !resdir || !File.exist?(resdir)
-      allow_exts = @config['image_ext'] if allow_exts.nil?
+      allow_exts ||= @config['image_ext']
       FileUtils.mkdir_p(destdir)
       recursive_copy_files(resdir, destdir, allow_exts)
     end
@@ -217,7 +219,11 @@ module ReVIEW
     end
 
     def copy_stylesheet(basetmpdir)
-      @config['stylesheet'].each { |sfile| FileUtils.cp(sfile, basetmpdir) } if @config['stylesheet'].size > 0
+      if @config['stylesheet'].size > 0
+        @config['stylesheet'].each do |sfile|
+          FileUtils.cp(sfile, basetmpdir)
+        end
+      end
     end
 
     def copy_frontmatter(basetmpdir)
@@ -262,8 +268,12 @@ module ReVIEW
         @body = ''
         @body << %Q(<div class="titlepage">)
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>)
-        @body << %Q(<h2 class="tp-author">#{join_with_separator(@config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))}</h2>) if @config['aut']
-        @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))}</h3>) if @config['pbl']
+        if @config['aut']
+          @body << %Q(<h2 class="tp-author">#{join_with_separator(@config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))}</h2>)
+        end
+        if @config['pbl']
+          @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))}</h3>)
+        end
         @body << '</div>'
 
         @language = @config['language']

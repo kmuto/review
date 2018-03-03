@@ -33,7 +33,11 @@ module ReVIEW
       def find_path(id)
         targets = target_list(id)
         targets.each do |target|
-          @exts.each { |ext| return "#{target}#{ext}" if @entries.include?("#{target}#{ext}") }
+          @exts.each do |ext|
+            if @entries.include?("#{target}#{ext}")
+              return "#{target}#{ext}"
+            end
+          end
         end
         nil
       end

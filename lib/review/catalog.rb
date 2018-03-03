@@ -31,7 +31,13 @@ module ReVIEW
     def parts
       return '' unless @yaml['CHAPS']
 
-      @yaml['CHAPS'].map { |entry| entry.keys if entry.is_a?(Hash) }.flatten.compact.join("\n")
+      part_list = @yaml['CHAPS'].map do |entry|
+        if entry.is_a?(Hash)
+          entry.keys
+        end
+      end
+
+      part_list.flatten.compact.join("\n")
     end
 
     def parts_with_chaps

@@ -28,8 +28,11 @@ module ReVIEW
           @content = File.read(File.join(@book.config['contentdir'], @path), mode: 'r:BOM|utf-8')
           @name = File.basename(@name, '.re')
         end
-        @title = name
-        @title = nil if file?
+        if file?
+          @title = nil
+        else
+          @title = name
+        end
         @volume = nil
       end
 

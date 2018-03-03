@@ -72,20 +72,39 @@ module EPUBMaker
 
     # Complement other parameters by using file parameter.
     def complement
-      @id = @file.gsub(%r{[\\/\. ]}, '-') if @id.nil?
-      @id = "rv-#{@id}" if @id =~ /\A[^a-z]/i
-      @media = @file.sub(/.+\./, '').downcase if !@file.nil? && @media.nil?
+      if @id.nil?
+        @id = @file.gsub(%r{[\\/\. ]}, '-')
+      end
+      if @id =~ /\A[^a-z]/i
+        @id = "rv-#{@id}"
+      end
 
-      @media = 'application/xhtml+xml' if @media == 'xhtml' || @media == 'xml' || @media == 'html'
-      @media = 'text/css' if @media == 'css'
-      @media = 'image/jpeg' if @media == 'jpg' || @media == 'jpeg' || @media == 'image/jpg'
-      @media = 'image/png' if @media == 'png'
-      @media = 'image/gif' if @media == 'gif'
-      @media = 'image/svg+xml' if @media == 'svg' || @media == 'image/svg'
-      @media = 'application/vnd.ms-opentype' if @media == 'ttf' || @media == 'otf'
-      @media = 'application/font-woff' if @media == 'woff'
+      if !@file.nil? && @media.nil?
+        @media = @file.sub(/.+\./, '').downcase
+      end
 
-      raise "Type error: #{id}, #{file}, #{media}, #{title}, #{notoc}" if @id.nil? || @file.nil? || @media.nil?
+      case @media
+      when 'xhtml', 'xml', 'html'
+        @media = 'application/xhtml+xml'
+      when 'css'
+        @media = 'text/css'
+      when 'jpg', 'jpeg', 'image/jpg'
+        @media = 'image/jpeg'
+      when 'png'
+        @media = 'image/png'
+      when 'gif'
+        @media = 'image/gif'
+      when 'svg', 'image/svg'
+        @media = 'image/svg+xml'
+      when 'ttf', 'otf'
+        @media = 'application/vnd.ms-opentype'
+      when 'woff'
+        @media = 'application/font-woff'
+      end
+
+      if @id.nil? || @file.nil? || @media.nil?
+        raise "Type error: #{id}, #{file}, #{media}, #{title}, #{notoc}"
+      end
     end
   end
 end

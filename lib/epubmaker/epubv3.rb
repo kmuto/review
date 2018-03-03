@@ -18,7 +18,9 @@ module EPUBMaker
     def initialize(producer)
       super
       @opf_prefix = {}
-      @producer.config['opf_prefix'].each { |k, v| @opf_prefix[k] = v } if @producer.config['opf_prefix'].present?
+      if @producer.config['opf_prefix'].present?
+        @producer.config['opf_prefix'].each { |k, v| @opf_prefix[k] = v }
+      end
     end
 
     # Return opf file content.
@@ -124,7 +126,11 @@ module EPUBMaker
       end
 
       ## add custom <meta> element
-      @producer.config['opf_meta'].each { |k, v| s << %Q(    <meta property="#{k}">#{CGI.escapeHTML(v)}</meta>\n) } if @producer.config['opf_meta'].present?
+      if @producer.config['opf_meta'].present?
+        @producer.config['opf_meta'].each do |k, v|
+          s << %Q(    <meta property="#{k}">#{CGI.escapeHTML(v)}</meta>\n)
+        end
+      end
 
       s
     end
@@ -178,7 +184,9 @@ EOT
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
         if toc.nil? && item.chaptype != 'pre'
-          s << %Q(    <itemref idref="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}" />\n) if @producer.config['toc']
+          if @producer.config['toc']
+            s << %Q(    <itemref idref="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}" />\n)
+          end
           toc = true
         end
         s << %Q(    <itemref idref="#{item.id}"/>\n)
