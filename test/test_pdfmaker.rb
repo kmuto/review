@@ -141,6 +141,7 @@ class PDFMakerTest < Test::Unit::TestCase
   def test_template_content
     Dir.mktmpdir do
       @maker.basedir = Dir.pwd
+      @maker.erb_config
       tmpl = @maker.template_content
       expect = File.read(File.join(assets_dir, 'test_template.tex'))
       assert_equal(expect, tmpl)
@@ -165,6 +166,7 @@ class PDFMakerTest < Test::Unit::TestCase
         expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
 
         @maker.basedir = Dir.pwd
+        @maker.erb_config
         tmpl = @maker.template_content
         tmpl.gsub!(/\A.*%% backmatter begins\n/m, '')
         assert_equal(expect, tmpl)

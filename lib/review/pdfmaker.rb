@@ -218,6 +218,7 @@ module ReVIEW
 
     def generate_pdf(yamlfile)
       remove_old_file
+      erb_config
       @path = build_path
       begin
         @compile_errors = nil
@@ -234,6 +235,8 @@ module ReVIEW
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'cls')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'erb')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'tex')
         copy_sty(Dir.pwd, @path, 'tex')
 
         build_pdf
@@ -350,7 +353,7 @@ module ReVIEW
       d.strftime(ReVIEW::I18n.t('date_format'))
     end
 
-    def template_content
+    def erb_config
       dclass = @config['texdocumentclass'] || []
       @documentclass = dclass[0] || 'jsbook'
       @documentclassoption = dclass[1] || 'uplatex,oneside'
@@ -390,14 +393,15 @@ module ReVIEW
       @locale_latex['postchaptername'] = chapter_tuple[1]
       @locale_latex['preappendixname'] = appendix_tuple[0]
       @locale_latex['postappendixname'] = appendix_tuple[1]
+      @texcompiler = File.basename(@config['texcommand'], '.*')
+    end
 
+    def template_content
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       template = layout_file if File.exist?(layout_file)
-
-      @texcompiler = File.basename(@config['texcommand'], '.*')
-
       erb = ReVIEW::Template.load(template, '-')
+      puts 'erb processes layout.tex.erb' if @config['debug']
       erb.result(binding)
     end
 
@@ -409,8 +413,13 @@ module ReVIEW
 
       Dir.open(dirname) do |dir|
         dir.each do |fname|
-          if File.extname(fname).downcase == '.' + extname
-            FileUtils.mkdir_p(copybase)
+          next unless File.extname(fname).downcase == '.' + extname
+          FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
+          if extname == 'erb'
+            erb = ReVIEW::Template.load(File.join(dirname, fname), '-')
+            puts "erb processes #{fname}" if @config['debug']
+            File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') { |f| f.print erb.result(binding) }
+          else
             FileUtils.cp File.join(dirname, fname), copybase
           end
         end
