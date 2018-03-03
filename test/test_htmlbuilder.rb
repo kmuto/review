@@ -436,8 +436,7 @@ EOS
   end
 
   def test_noindent
-    @builder.noindent
-    actual = compile_block("foo\nbar\n\nfoo2\nbar2\n")
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n), actual
   end
 

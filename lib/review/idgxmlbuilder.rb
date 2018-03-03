@@ -44,8 +44,7 @@ module ReVIEW
       '.xml'
     end
 
-    def builder_init(no_error = false)
-      @no_error = no_error
+    def builder_init
     end
     private :builder_init
 
