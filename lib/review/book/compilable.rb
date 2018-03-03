@@ -63,7 +63,6 @@ module ReVIEW
         @volume
       end
 
-
       def lines
         # FIXME: we cannot duplicate Enumerator on ruby 1.9 HEAD
         (@lines ||= content.lines.to_a).dup
