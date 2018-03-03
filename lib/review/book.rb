@@ -18,10 +18,6 @@ require 'review/book/index'
 
 module ReVIEW
   module Book
-    def self.load_default
-      Base.load_default
-    end
-
     def self.load(dir)
       Base.load dir
     end
