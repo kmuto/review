@@ -35,12 +35,6 @@ class ChapterTest < Test::Unit::TestCase
     # assert_raises(TypeError) { ch.name } # XXX: OK?
   end
 
-  def test_open
-    ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
-    assert_equal :io, ch.open
-    assert_equal [:io], (ch.open { |io| [io] })
-  end
-
   def test_size
     ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal File.size(__FILE__), ch.size
