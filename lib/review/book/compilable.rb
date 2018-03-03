@@ -14,6 +14,7 @@ module ReVIEW
       include TextUtils
       attr_reader :book
       attr_reader :path
+      attr_accessor :content
 
       def env
         @book
@@ -62,19 +63,6 @@ module ReVIEW
         @volume
       end
 
-      # XXX deprecated; use content()
-      def open(&_block)
-        if @io
-          return (block_given? ? yield(@io) : @io)
-        end
-        StringIO.new(content)
-      end
-
-      attr_writer :content
-
-      def content
-        @content
-      end
 
       def lines
         # FIXME: we cannot duplicate Enumerator on ruby 1.9 HEAD
