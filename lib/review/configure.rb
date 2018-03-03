@@ -60,7 +60,6 @@ module ReVIEW
         'postdef_file' => 'POSTDEF',
         'page_metric' => ReVIEW::Book::PageMetric::A5,
         'ext' => '.re',
-        'image_dir' => 'images',
         'image_types' => %w[.ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg],
         'bib_file' => 'bib.re',
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],

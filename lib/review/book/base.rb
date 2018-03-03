@@ -68,10 +68,6 @@ module ReVIEW
         config['ext']
       end
 
-      def image_dir
-        config['image_dir']
-      end
-
       def image_types
         config['image_types']
       end

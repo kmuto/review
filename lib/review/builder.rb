@@ -435,7 +435,7 @@ module ReVIEW
 
     def graph(lines, id, command, caption = nil)
       c = target_name
-      dir = File.join(@book.basedir, @book.image_dir, c)
+      dir = File.join(@book.basedir, @book.imagedir, c)
       FileUtils.mkdir_p(dir)
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
