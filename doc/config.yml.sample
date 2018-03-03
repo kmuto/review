@@ -128,7 +128,7 @@ secnolevel: 2
 # ePUB3においてはこの設定によらず必ず作成される
 # mytoc: true
 
-# 表紙にするHTMLファイル。ファイル名を指定すると表紙として入る
+# 表紙にするファイル。ファイル名を指定すると表紙として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # cover: null
 #
 # 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
@@ -140,7 +140,7 @@ secnolevel: 2
 # 自動生成される大扉ページを上書きするファイル。ファイル名を指定すると大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # titlefile: null
 #
-# 原書大扉ページにするHTMLファイル。ファイル名を指定すると原書大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
+# 原書大扉ページにするファイル。ファイル名を指定すると原書大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # originaltitlefile: null
 #
 # 権利表記ページファイル。ファイル名を指定すると権利表記として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
