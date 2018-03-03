@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # = epubmaker.rb -- EPUB production set.
 #
 # Copyright (c) 2010-2017 Kenshi Muto
@@ -12,7 +10,7 @@
 # == Quick usage
 #  require 'epubmaker'
 #  producer = EPUBMaker::Producer.new
-#  params = producer.load("config.yml")
+#  config = producer.load("config.yml")
 #  producer.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
 #  producer.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
 #   ...

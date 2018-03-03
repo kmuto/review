@@ -2,6 +2,7 @@ AllCops:
   Exclude:
     - lib/lineinput.rb
     - lib/uuid.rb
+    - test/syntax-book/*
   DisplayCopNames: true
 
 inherit_from: .rubocop_todo.yml
@@ -15,7 +16,7 @@ Lint/EndAlignment:
   Enabled: AlignWith
 
 Lint/EmptyWhen:
-  Enabled: false
+  Enabled: true
 
 Lint/NestedMethodDefinition:
   Exclude:
@@ -25,24 +26,27 @@ Lint/AssignmentInCondition:
   Enabled: false
 
 Lint/ParenthesesAsGroupedExpression:
-  Enabled: false
+  Enabled: true
+
+#Lint/RescueWithoutErrorClass:
+#  Enabled: false
 
 Lint/UnderscorePrefixedVariableName:
-  Enabled: false
+  Enabled: true
 
 Lint/UnusedBlockArgument:
-  Enabled: false
+  Enabled: true
 
 Lint/UnusedMethodArgument:
-  Enabled: false
+  Enabled: true
 
 Lint/UselessAssignment:
-  Enabled: false
+  Enabled: true
 
 #### Performance
 
 Performance/RegexpMatch:
-  Enabled: false
+  Enabled: true
 
 Performance/ReverseEach:
   Enabled: true
@@ -52,12 +56,9 @@ Performance/StringReplacement:
   Enabled: false
 
 Performance/RangeInclude:
-  Enabled: false
+  Enabled: true
 
 #### Style
-
-Style/AccessorMethodName:
-  Enabled: false
 
 Style/AsciiComments:
   Enabled: false
@@ -75,7 +76,7 @@ Style/BarePercentLiterals:
   Enabled: true
 
 Style/BlockDelimiters:
-  Enabled: false
+  Enabled: true
 
 Style/BracesAroundHashParameters:
   Enabled: false
@@ -84,9 +85,12 @@ Style/CaseEquality:
   Enabled: false
 
 Style/ClassCheck:
-  Enabled: false
+  Enabled: true
 
 Style/ClassMethods:
+  Enabled: true
+
+Style/CommentedKeyword:
   Enabled: false
 
 # Do not introduce global variables.
@@ -97,26 +101,27 @@ Style/GlobalVars:
 Style/SelfAssignment:
   Enabled: true
 
-# When defining the == operator, name its argument other.
-Style/OpMethod:
-  Enabled: true
-
-# Use snake_case for variable names.
-Style/VariableName:
-  Enabled: true
-
 Style/ConditionalAssignment:
   Enabled: false
 
 Style/Documentation:
   Enabled: false
 
+Style/Encoding:
+  Enabled: true
+
 Style/EmptyElse:
+  Enabled: true
+
+Style/EvalWithLocation:
   Enabled: false
 
 Style/FormatString:
   EnforcedStyle: sprintf
   Enabled: true
+
+Style/FormatStringToken:
+  Enabled: false
 
 Style/GuardClause:
   Enabled: false
@@ -130,14 +135,14 @@ Style/IfUnlessModifier:
 Style/MutableConstant:
   Enabled: false
 
-Style/MultipleComparison:
-  Enabled: false
+#Style/MultipleComparison:
+#  Enabled: true
 
 Style/UnneededInterpolation:
-  Enabled: false
+  Enabled: true
 
 Performance/RedundantMerge:
-  Enabled: false
+  Enabled: true
 
 Style/ZeroLengthPredicate:
   Enabled: false
@@ -149,16 +154,9 @@ Style/NumericPredicate:
 Style/TernaryParentheses:
   Enabled: false
 
-Style/VariableNumber:
-  EnforcedStyle: normalcase
-  Enabled: true
-
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
   Enabled: true
-
-MultilineMethodCallBraceLayout:
-  Enabled: false
 
 Style/SafeNavigation:
   Enabled: false
@@ -168,7 +166,7 @@ Style/EmptyMethod:
   Enabled: true
 
 Style/HashSyntax:
-  Enabled: false
+  Enabled: true
 
 Style/RescueModifier:
   Enabled: false
@@ -184,25 +182,25 @@ Style/For:
   Enabled: true
 
 Style/InfiniteLoop:
-  Enabled: false
+  Enabled: true
 
 Style/LineEndConcatenation:
   Enabled: false
 
 Style/MethodCallWithoutArgsParentheses:
-  Enabled: false
+  Enabled: true
 
-Style/MethodName:
+Style/MixinUsage:
   Enabled: false
 
 Style/MultilineBlockChain:
-  Enabled: false
+  Enabled: true
 
 Style/NegatedIf:
-  Enabled: false
+  Enabled: true
 
 Style/Next:
-  Enabled: false
+  Enabled: true
 
 Style/Not:
   Enabled: true
@@ -211,7 +209,7 @@ Style/NumericLiterals:
   MinDigits: 6
 
 Style/PercentLiteralDelimiters:
-  Enabled: false
+  Enabled: true
 
 Style/PercentQLiterals:
   EnforcedStyle: upper_case_q
@@ -220,8 +218,15 @@ Style/PercentQLiterals:
 Style/PerlBackrefs:
   Enabled: false
 
+Style/RaiseArgs:
+  EnforcedStyle: exploded
+  Enabled: true
+
 Style/RedundantBegin:
   Enabled: false
+
+Style/RedundantParentheses:
+  Enabled: true
 
 Style/RedundantReturn:
   Enabled: false
@@ -230,6 +235,9 @@ Style/RedundantSelf:
   Enabled: false
 
 Style/RegexpLiteral:
+  Enabled: true
+
+Style/RescueStandardError:
   Enabled: false
 
 Style/Semicolon:
@@ -239,22 +247,25 @@ Style/SingleLineMethods:
   Enabled: true
 
 Style/SpecialGlobalVars:
+  Enabled: true
+
+Style/StderrPuts:
   Enabled: false
 
 Style/StringLiterals:
-  Enabled: false
+  Enabled: true
 
 Style/StringLiteralsInInterpolation:
-  Enabled: false
+  Enabled: true
 
 Style/SymbolProc:
-  Enabled: false
+  Enabled: true
 
 Style/SymbolArray:
-  Enabled: false
+  Enabled: true
 
 Style/TrailingCommaInLiteral:
-  Enabled: false
+  Enabled: true
 
 Style/WordArray:
   MinSize: 10
@@ -265,10 +276,12 @@ Style/UnneededPercentQ:
 Style/WhileUntilModifier:
   Enabled: false
 
-Style/YodaCondition:
-  Enabled: false
+#Style/YodaCondition:
+#  Enabled: true
 
-#### Layout
+### Layout
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: true
 
 Layout/AccessModifierIndentation:
   EnforcedStyle: indent
@@ -279,19 +292,19 @@ Layout/DotPosition:
   Enabled: true
 
 Layout/EmptyLines:
-  Enabled: false
+  Enabled: true
 
 Layout/EmptyLinesAroundAccessModifier:
   Enabled: true
 
 Layout/EmptyLinesAroundClassBody:
-  Enabled: false
+  Enabled: true
 
 Layout/EmptyLinesAroundMethodBody:
   Enabled: true
 
 Layout/EmptyLinesAroundModuleBody:
-  Enabled: false
+  Enabled: true
 
 Layout/EndOfLine:
   Enabled: false
@@ -312,7 +325,7 @@ Layout/IndentHeredoc:
   Enabled: false
 
 Layout/LeadingCommentSpace:
-  Enabled: false
+  Enabled: true
 
 Layout/MultilineOperationIndentation:
   Enabled: false
@@ -322,7 +335,7 @@ Layout/SpaceAroundBlockParameters:
   Enabled: true
 
 Layout/SpaceAfterComma:
-  Enabled: false
+  Enabled: true
 
 Layout/SpaceAfterNot:
   Enabled: true
@@ -331,10 +344,10 @@ Layout/SpaceAfterSemicolon:
   Enabled: true
 
 Layout/SpaceAroundEqualsInParameterDefault:
-  Enabled: false
+  Enabled: true
 
 Layout/SpaceAroundOperators:
-  Enabled: false
+  Enabled: true
 
 Layout/SpaceBeforeBlockBraces:
   Enabled: false
@@ -343,18 +356,20 @@ Layout/SpaceBeforeComma:
   Enabled: true
 
 Layout/SpaceInsideBlockBraces:
-  Enabled: false
+  Enabled: true
 
 Layout/SpaceInsideHashLiteralBraces:
-  Enabled: false
+  Enabled: true
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: true
 
 Layout/SpaceInsideStringInterpolation:
   EnforcedStyle: no_space
   Enabled: true
 
 Layout/TrailingBlankLines:
-  Enabled: false
-
+  Enabled: true
 
 #### Metrics
 
@@ -362,7 +377,7 @@ Metrics/BlockNesting:
   Max: 4
 
 Metrics/ModuleLength:
-  Max: 129
+  Max: 200
 
 Metrics/ParameterLists:
   Max: 8
@@ -383,6 +398,7 @@ Metrics/MethodLength:
   Max: 100
   Exclude:
     - "bin/review-*"
+    - "bin/review2*"
     - "test/**/*"
 
 ### should be < 20
@@ -404,6 +420,29 @@ Metrics/BlockLength:
     - 'Rakefile'
     - '**/*.rake'
     - 'test/**/*.rb'
+
+## Naming
+
+Naming/AccessorMethodName:
+  Enabled: true
+
+# When defining the == operator, name its argument other.
+#Style/BinaryOperatorParameterName:
+#  Enabled: true
+
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
+Naming/MethodName:
+  Enabled: true
+
+# Use snake_case for variable names.
+Naming/VariableName:
+  Enabled: true
+
+Naming/VariableNumber:
+  EnforcedStyle: normalcase
+  Enabled: true
 
 #### Security
 

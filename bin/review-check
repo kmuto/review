@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 #
-#
-# Copyright (c) 1999-2007 Minero Aoki
-# Copyright (c) 2010-2014 Kenshi Muto, Minero Aoki
+# Copyright (c) 2010-2017 Kenshi Muto, Minero Aoki
+#               1999-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -35,34 +34,37 @@ def main
   @book = ReVIEW::Book::Base.load
   @book.config = @config
 
+  @logger = ReVIEW.logger
+
   modes = nil
   files = ARGV unless ARGV.empty?
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('-a', '--all-chapters', 'Check all chapters.') {
-    files = @book.chapters.map {|ent| ent.path }
-  }
-  opts.on('-s', '--section N', 'Check section N. (deprecated)') {|n|
+  opts.on('-a', '--all-chapters', 'Check all chapters.') do
+    files = @book.chapters.map(&:path)
+  end
+  opts.on('-s', '--section N', 'Check section N. (deprecated)') do |n|
     ents = @book.parts[Integer(n) - 1] or
-        raise ReVIEW::ApplicationError, "section #{n} not exist"
-    files = ents.map {|ent| ent.path }
-  }
-  opts.on('--text', 'Check text.') {
-    (modes ||= []).push :text
-  }
-  opts.on('--help', 'print this message and quit.') {
+      raise ReVIEW::ApplicationError, "section #{n} not exist"
+    files = ents.map(&:path)
+  end
+  opts.on('--text', 'Check text.') do
+    modes ||= []
+    modes.push :text
+  end
+  opts.on('--help', 'print this message and quit.') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
-    $stderr.puts opts.help
+    @logger.error(err.message)
+    puts opts.help
     exit 1
   end
   unless files
-    $stderr.puts "no input"
+    @logger.error('no input')
     exit 1
   end
   modes ||= [:text]
@@ -80,31 +82,32 @@ end
 def check_text(files)
   re, neg = words_re("#{@book.basedir}/#{@book.reject_file}")
   files.each do |path|
-    File.open(path) {|f|
+    File.open(path) do |f|
       each_paragraph(f) do |para, lineno|
-        s = para.join('')
-        if m = re.match(s)
-          next if m[0] == @review_utils_word_ok
-          next if neg and neg =~ s
-          str, offset = find_line(para, re)
-          out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
-          print out
-        end
+        s = para.join
+        m = re.match(s)
+        next if m.nil? || m[0] == @review_utils_word_ok
+        next if neg and neg =~ s
+        str, offset = find_line(para, re)
+        out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
+        print out
       end
-    }
+    end
   end
 end
 
 def find_line(lines, re)
   # single line?
   lines.each_with_index do |line, idx|
-    return line.gsub(re, '<<<\&>>>'), idx if re =~ line
+    if re =~ line
+      return line.gsub(re, '<<<\&>>>'), idx
+    end
   end
 
   # multiple lines?
   i = 0
   while i < lines.size - 1
-    str = lines[i] + lines[i+1]
+    str = lines[i] + lines[i + 1]
     return str.gsub(re, '<<<\&>>>'), i if re =~ str
     i += 1
   end
@@ -116,15 +119,15 @@ def words_re(rc)
   words = []
   nega = []
   File.foreach(rc) do |line|
-    next if line[0,1] == '#'
+    next if line[0, 1] == '#'
     if / !/ =~ line
-      line, n = *line.split(/!/, 2)
+      line, n = *line.split('!', 2)
       nega.push n.strip
     end
     words.push line.strip
   end
   return Regexp.compile(words.join('|')),
-         nega.empty?() ? nil : Regexp.compile(nega.join('|'))
+         nega.empty? ? nil : Regexp.compile(nega.join('|'))
 end
 
 def each_paragraph(f)
@@ -135,23 +138,25 @@ def each_paragraph(f)
       @review_utils_word_ok = $1
     when /\A\#@/
       # do nothing
-    when %r[\A//caption\{(.*?)//\}]
+      next
+    when %r{\A//caption\{(.*?)//\}}
       yield [$1], f.filename, f.lineno
     when %r<\A//\w.*\{\s*\z>
       while line = f.gets
-        break if %r<//\}> === line
+        break if %r{//\}} === line
       end
     when /\A=/
       yield [line.slice(/\A=+(?:\[.*?\])?\s+(.*)/, 1).strip], f.lineno
     when /\A\s*\z/
       # skip
+      next
     else
       buf = [line.strip]
       lineno = f.lineno
       while line = f.gets
         break if line.strip.empty?
-        break if %r<\A(?:=|//[\w\}])> =~ line
-        next if %r<\A\#@> =~ line
+        break if %r{\A(?:=|//[\w\}])} =~ line
+        next if /\A\#@/ =~ line
         buf.push line.strip
       end
       yield buf, lineno

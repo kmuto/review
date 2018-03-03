@@ -4,7 +4,7 @@ module ReVIEW
   class LineInput < LineInput
     def skip_comment_lines
       n = 0
-      while line = gets()
+      while line = gets
         unless line.strip =~ /\A\#@/
           ungets line
           return n

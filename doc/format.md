@@ -115,7 +115,6 @@ They aren't nested.
 
 Usage:
 
-
 ```
 1. 1st condition
 2. 2nd condition
@@ -185,13 +184,31 @@ Inline commands are used in block,  paragraphes, headings, block contents and bl
 @<command>{content}
 ```
 
-When you want to use a character `}` in inline content, you must use escaping `\}`.
+When you want to use a character `}` in inline content, you must use escaping `\}`. If the content ends with `\`, it must be written `\\`. (ex. `@<tt>{\\}`)
 
 There are some limitations in blocks and inlines.
 
 * Block commands do not support nestins.  You cannot write blocks in another block.
 * You cannot write headings and itemize in block contents.
 * Inline commands also do not support nestins.  You cannot write inlines in another inline.
+
+### Fence notation for inline commands
+You may be tired of escaping when you use a large number of inline commands including `{` and `\`. By surrounding the contents with `$ $` or `| |` instead of `{ }`, you can write without escaping.
+
+```
+@<command>$content$
+@<command>|content|
+```
+
+Example:
+
+```review
+@<m>$\Delta = \frac{\partial^2}{\partial x_1^2}+\frac{\partial^2}{\partial x_2^2} + \cdots + \frac{\partial^2}{\partial x_n^2}$
+@<tt>|if (exp) then { ... } else { ... }|
+@<b>|\|
+```
+
+Since this notation is substitute, please avoid abuse.
 
 ## Code List
 
@@ -363,6 +380,12 @@ The order of finding image is as follows.  The first matched one is used.
 * ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
 
+For each builder, image files are searched in order of the following extensions, and the first hit file is adopted.
+
+* HTMLBuilder (EPUBMaker, WEBMaker), MARKDOWNBuilder: .png, .jpg, .jpeg, .gif, .svg
+* LATEXBuilder (PDFMaker): .ai, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif
+* Other builders: .ai, .psd, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif, .svg
+
 ### Inline Images
 
 When you want to use images in paragraph, you can use the inline command `@<icon>{ID}`.  The order of finding images are same as `//image`.
@@ -518,10 +541,9 @@ is in footnotes.
 
 Note that In LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in columns and tables.
 
-### `--footnotetext` option
+### `footnotetext` option
 
-When you want to use `footnotetext` option, you can add `--footnotetext` with `params` in config.yml.
-With this option, you can use footnote in tables and short notes.
+By adding `footnotetext:true` in config.yml, you can use footnote in tables and short notes.
 
 Note that there are some constraints that (because of normal footnote )
 
@@ -594,12 +616,24 @@ Usage:
 
 `//noindent` is a tag for spacing.
 
-
 * `//noindent` : ingore indentation immediately following line. (in HTML, add `noindent` class)
 
+## Blank line
 
-`//linebreak` and `//pagebreak` will be obsoleted.
+`//blankline` put an empty line.
 
+Usage:
+
+```
+Insert one blank line below.
+
+//blankline
+
+Insert two blank line below.
+
+//blankline
+//blankline
+```
 
 ## Referring headings
 

@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'book_test_helper'
 require 'review/book'
 
 require 'stringio'
@@ -12,13 +13,14 @@ module BookTestHelper
     created_files = {}
     Dir.mktmpdir do |tmpdir|
       Dir.chdir(tmpdir) do
-        dir = "."
+        dir = '.'
         files.each_pair do |basename, content|
           path = File.join(dir, basename)
-          File.open(path, 'w') {|o| o.print content }
+          File.open(path, 'w') { |o| o.print content }
           created_files[basename] = path
         end
         book = Book::Base.load(dir)
+        book.config = ReVIEW::Configure.values
         yield(dir, book, created_files)
       end
     end

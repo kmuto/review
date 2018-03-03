@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
@@ -6,26 +5,25 @@
 require 'review/markdownbuilder'
 
 module ReVIEW
-
   class MD2INAOBuilder < MARKDOWNBuilder
     def paragraph(lines)
-      puts "　" + lines.join
+      puts '　' + lines.join
       puts "\n"
     end
 
     def list_header(id, caption, lang)
-      lang ||= ""
+      lang ||= ''
       puts "```#{lang}"
-      print %Q[●リスト#{@chapter.list(id).number}::#{compile_inline(caption)}\n\n]
+      print %Q(●リスト#{@chapter.list(id).number}::#{compile_inline(caption)}\n\n)
     end
 
     def cmd(lines)
       # WEB+DB では使っていないらしいけど
-      puts "!!! cmd"
+      puts '!!! cmd'
       lines.each do |line|
         puts detab(line)
       end
-      puts ""
+      puts ''
     end
 
     def dl_begin
@@ -51,7 +49,5 @@ module ReVIEW
         %Q[<span class='groupruby'>#{escape_html(base)}(#{escape_html(ruby)})</span>]
       end
     end
-
   end
-
 end # module ReVIEW

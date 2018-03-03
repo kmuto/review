@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Copyright (c) 2010-2016 Kenshi Muto
+# Copyright (c) 2010-2017 Kenshi Muto
 #
 # This program is free software
 # You can distribute or modify this program under the terms of
@@ -8,45 +8,60 @@
 #
 
 # simple validator for Re:VIEW
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+require 'review/logger'
 
 block = nil
 maxcolcount = 0
 colcount = 0
 ln = 0
 
-ARGF.each {|line|
+@logger = ReVIEW.logger
+
+ARGF.each do |line|
   ln += 1
-  if line =~ /\A\/\/([a-z]+)\{\s*\Z/ || line =~ /\A\/\/([a-z]+)\[.+?\{\s*\Z/
+  if line =~ %r{\A//([a-z]+)\{\s*\Z} || line =~ %r{\A//([a-z]+)\[.+?\{\s*\Z}
     # block
     new_block = $1
-    puts "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet." unless block.nil?
+    if block
+      @logger.warn "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet."
+    end
     block = new_block
-  elsif line =~ /\A\/\/\}/
-    puts "#{ln}: block ended, but not opened." if block.nil?
+  elsif line =~ %r{\A//\}}
+    if block.nil?
+      @logger.warn "#{ln}: block ended, but not opened."
+    end
     block = nil
     maxcolcount = 0
     colcount = 0
   elsif line =~ /\A(\d+\.)\s+/
     # number
-    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
-      puts "#{ln}: found '#{$1}' without the head space. Is it correct?"
+    unless %w[list emlist listnum emlistnum cmd image table].include?(block)
+      @logger.warn "#{ln}: found '#{$1}' without the head space. Is it correct?"
     end
   elsif line =~ /\A\*\s+/
     # itemize
-    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
-      puts "#{ln}: found '*' without the head space. Is it correct?"
+    unless %w[list emlist listnum emlistnum cmd image table].include?(block)
+      @logger.warn "#{ln}: found '*' without the head space. Is it correct?"
     end
   elsif line =~ /\A\s+(\d+\.)\s+/ && line =~ /\A\s+\*\s+/
-    unless ["list", "emlist", "listnum", "emlistnum", "cmd", "image", "table"].include?(block)
-      puts "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
+    unless Tw[list emlist listnum emlistnum cmd image table].include?(block)
+      @logger.warn "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
     end
-  elsif block == "table"
+  elsif block == 'table'
     next if line.start_with?('#@')
     if line !~ /\A\-\-\-\-\-/
       # table
       colcount = line.split("\t").size
-      maxcolcount = colcount if maxcolcount == 0
-      puts "#{ln}: the number of table columns seems mismatch. (#{maxcolcount} != #{colcount})" if colcount != maxcolcount
+      if maxcolcount == 0
+        maxcolcount = colcount
+      end
+      if colcount != maxcolcount
+        @logger.warn "#{ln}: the number of table columns seems mismatch. (#{maxcolcount} != #{colcount})"
+      end
     end
   end
-}
+end

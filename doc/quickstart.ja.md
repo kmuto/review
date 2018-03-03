@@ -113,17 +113,19 @@ review-init コマンドによらず、独自に作業フォルダを作成し�
 
 テキストファイルの文字エンコーディングには、UTF-8 を使用してください。
 
-### PDF 化と EPUB 化
+### PDF 化と EPUB 化、プレインテキスト化
 
-review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマンドで EPUB ファイルの作成ができます。
+review-pdfmaker コマンドで PDF ブックの作成、review-epubmaker コマンドで EPUB ファイルの作成、review-textmaker コマンドでプレインテキストの作成ができます。
 
 PDF を作成するには、TeXLive2012 以上の環境が必要です。EPUB を作成するには、rubyzip gem あるいは zip コマンドが必要です（MathML も使いたいときには、 [MathML ライブラリ](http://www.hinet.mydns.jp/?mathml.rb)も必要です）。
 
 いずれのコマンドも、必要な設定情報を記した YAML 形式ファイルを引数に指定して実行します。review-init コマンドで作成した環境には、デフォルトで config.yml として用意されているので、これを利用します。
 
 ```bash
-$ review-pdfmaker config.yml  ←PDFの作成
-$ review-epubmaker config.yml ←EPUBの作成
+$ review-pdfmaker config.yml     ←PDFの作成
+$ review-epubmaker config.yml    ←EPUBの作成
+$ review-textmaker config.yml    ←テキストの作成（装飾情報あり）
+$ review-textmaker -n config.yml ←テキストの作成（装飾情報なし）
 ```
 
 rake コマンドを利用できるなら、次のように実行することもできます。
@@ -131,6 +133,8 @@ rake コマンドを利用できるなら、次のように実行することも
 ```bash
 $ rake pdf  ←PDFの作成
 $ rake epub ←EPUBの作成
+$ rake text  ←テキストの作成（装飾情報あり）
+$ rake plaintext ←テキストの作成（装飾情報なし）
 ```
 
 config.yml のサンプルについては以下を参照してください。

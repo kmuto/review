@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'epubmaker'
 require 'review/epubmaker'
@@ -9,15 +7,16 @@ class EPUB3MakerTest < Test::Unit::TestCase
 
   def setup
     @producer = Producer.new
-    @producer.merge_params({
-                             "bookname" => "sample",
-                             "title" => "Sample Book",
-                             "epubversion" => 3,
-                             "urnid" => "http://example.jp/",
-                             "date" => "2011-01-01",
-                             "language" => "en",
-                             "modified" => "2014-12-13T14:15:16Z"
-                           })
+    @producer.merge_config(
+      'bookname' => 'sample',
+      'title' => 'Sample Book',
+      'epubversion' => 3,
+      'urnid' => 'http://example.jp/',
+      'date' => '2011-01-01',
+      'language' => 'en',
+      'modified' => '2014-12-13T14:15:16Z',
+      'titlepage' => nil
+    )
     @output = StringIO.new
   end
 
@@ -26,18 +25,18 @@ class EPUB3MakerTest < Test::Unit::TestCase
   end
 
   def test_resource_en
-    @producer.merge_params({"language" => "en"})
-    assert_equal "Table of Contents", @producer.res.v("toctitle")
+    @producer.merge_config('language' => 'en')
+    assert_equal 'Table of Contents', @producer.res.v('toctitle')
   end
 
   def test_resource_ja
-    @producer.merge_params({"language" => "ja"})
-    assert_equal "目次", @producer.res.v("toctitle")
+    @producer.merge_config('language' => 'ja')
+    assert_equal '目次', @producer.res.v('toctitle')
   end
 
   def test_mimetype
     @producer.mimetype(@output)
-    assert_equal %Q[application/epub+zip], @output.string
+    assert_equal 'application/epub+zip', @output.string
   end
 
   def test_container
@@ -82,7 +81,10 @@ EOT
   end
 
   def test_stage1_opf_ebpaj
-    @producer.merge_params({"opf_prefix"=>{"ebpaj"=>"http://www.ebpaj.jp/"},"opf_meta"=>{"ebpaj:guide-version" => "1.1.2"}})
+    @producer.merge_config(
+      'opf_prefix' => { 'ebpaj' => 'http://www.ebpaj.jp/' },
+      'opf_meta' => { 'ebpaj:guide-version' => '1.1.2' }
+    )
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -112,9 +114,9 @@ EOT
   end
 
   def test_stage1_opf_fileas
-    @producer.params["title"] = {"name" => "これは書籍です", "file-as" => "コレハショセキデス"}
-    @producer.params["aut"] = [{"name" => "著者A", "file-as" => "チョシャA"}, {"name" => "著者B", "file-as" => "チョシャB"}]
-    @producer.params["pbl"] = [{"name" => "出版社", "file-as" => "シュッパンシャ"}]
+    @producer.config['title'] = { 'name' => 'これは書籍です', 'file-as' => 'コレハショセキデス' }
+    @producer.config['aut'] = [{ 'name' => '著者A', 'file-as' => 'チョシャA' }, { 'name' => '著者B', 'file-as' => 'チョシャB' }]
+    @producer.config['pbl'] = [{ 'name' => '出版社', 'file-as' => 'シュッパンシャ' }]
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -179,15 +181,15 @@ EOT
 
   def stage2
     # add one item
-    @producer.contents << Content.new({"file" => "ch01.html", "title" => "CH01", "level" => 1})
+    @producer.contents << Content.new({ 'file' => 'ch01.html', 'title' => 'CH01', 'level' => 1 })
   end
 
   def test_stage2_add_l1item
     stage2
-    expect = EPUBMaker::Content.new("ch01.html",
-                                    "ch01-html",
-                                    "application/xhtml+xml",
-                                    "CH01",
+    expect = EPUBMaker::Content.new('ch01.html',
+                                    'ch01-html',
+                                    'application/xhtml+xml',
+                                    'CH01',
                                     1)
     assert_equal expect, @producer.contents[0]
   end
@@ -249,49 +251,49 @@ EOT
 
   def stage3
     # add more items
-    @producer.contents << Content.new({"file" => "ch01.html", "title" => "CH01<>&\"", "level" => 1})
-    @producer.contents << Content.new({"file" => "ch02.html", "title" => "CH02", "level" => 1})
-    @producer.contents << Content.new({"file" => "ch02.html#S1", "title" => "CH02.1", "level" => 2})
-    @producer.contents << Content.new({"file" => "ch02.html#S1.1", "title" => "CH02.1.1", "level" => 3})
-    @producer.contents << Content.new({"file" => "ch02.html#S1.1.1", "title" => "CH02.1.1.1", "level" => 4})
-    @producer.contents << Content.new({"file" => "ch02.html#S1.1.1.1", "title" => "CH02.1.1.1.1", "level" => 5})
-    @producer.contents << Content.new({"file" => "ch02.html#S1.1.2", "title" => "CH02.1.1.2", "level" => 4})
-    @producer.contents << Content.new({"file" => "ch02.html#S2", "title" => "CH02.2", "level" => 2})
-    @producer.contents << Content.new({"file" => "ch02.html#S2.1", "title" => "CH02.2.1", "level" => 3})
-    @producer.contents << Content.new({"file" => "ch03.html", "title" => "CH03", "level" => 1, "properties" => ["mathml"]})
-    @producer.contents << Content.new({"file" => "ch03.html#S1", "title" => "CH03.1", "level" => 2})
-    @producer.contents << Content.new({"file" => "ch03.html#S1.1", "title" => "CH03.1.1", "level" => 3})
-    @producer.contents << Content.new({"file" => "ch04.html", "title" => "CH04", "level" => 1})
-    @producer.contents << Content.new({"file" => "sample.png"})
-    @producer.contents << Content.new({"file" => "sample.jpg"})
-    @producer.contents << Content.new({"file" => "sample.JPEG"})
-    @producer.contents << Content.new({"file" => "sample.SvG"})
-    @producer.contents << Content.new({"file" => "sample.GIF"})
-    @producer.contents << Content.new({"file" => "sample.css"})
+    @producer.contents << Content.new({ 'file' => 'ch01.html', 'title' => %Q(CH01<>&"), 'level' => 1 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html', 'title' => 'CH02', 'level' => 1 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html#S1', 'title' => 'CH02.1', 'level' => 2 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html#S1.1', 'title' => 'CH02.1.1', 'level' => 3 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html#S1.1.1', 'title' => 'CH02.1.1.1', 'level' => 4 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html#S1.1.1.1', 'title' => 'CH02.1.1.1.1', 'level' => 5 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html#S1.1.2', 'title' => 'CH02.1.1.2', 'level' => 4 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html#S2', 'title' => 'CH02.2', 'level' => 2 })
+    @producer.contents << Content.new({ 'file' => 'ch02.html#S2.1', 'title' => 'CH02.2.1', 'level' => 3 })
+    @producer.contents << Content.new({ 'file' => 'ch03.html', 'title' => 'CH03', 'level' => 1, 'properties' => ['mathml'] })
+    @producer.contents << Content.new({ 'file' => 'ch03.html#S1', 'title' => 'CH03.1', 'level' => 2 })
+    @producer.contents << Content.new({ 'file' => 'ch03.html#S1.1', 'title' => 'CH03.1.1', 'level' => 3 })
+    @producer.contents << Content.new({ 'file' => 'ch04.html', 'title' => 'CH04', 'level' => 1 })
+    @producer.contents << Content.new({ 'file' => 'sample.png' })
+    @producer.contents << Content.new({ 'file' => 'sample.jpg' })
+    @producer.contents << Content.new({ 'file' => 'sample.JPEG' })
+    @producer.contents << Content.new({ 'file' => 'sample.SvG' })
+    @producer.contents << Content.new({ 'file' => 'sample.GIF' })
+    @producer.contents << Content.new({ 'file' => 'sample.css' })
   end
 
   def test_stage3_add_various_items
     stage3
     expect = [
-      Content.new("ch01.html", "ch01-html", "application/xhtml+xml", "CH01<>&\"", 1),
-      Content.new("ch02.html", "ch02-html", "application/xhtml+xml", "CH02", 1),
-      Content.new("ch02.html#S1", "ch02-html#S1","html#s1","CH02.1", 2),
-      Content.new("ch02.html#S1.1", "ch02-html#S1-1", "1", "CH02.1.1", 3),
-      Content.new("ch02.html#S1.1.1", "ch02-html#S1-1-1","1", "CH02.1.1.1", 4),
-      Content.new("ch02.html#S1.1.1.1", "ch02-html#S1-1-1-1", "1","CH02.1.1.1.1", 5),
-      Content.new("ch02.html#S1.1.2", "ch02-html#S1-1-2", "2", "CH02.1.1.2", 4),
-      Content.new("ch02.html#S2", "ch02-html#S2", "html#s2", "CH02.2", 2),
-      Content.new("ch02.html#S2.1", "ch02-html#S2-1", "1", "CH02.2.1", 3),
-      Content.new("ch03.html", "ch03-html", "application/xhtml+xml", "CH03", 1, nil, ["mathml"]),
-      Content.new("ch03.html#S1", "ch03-html#S1", "html#s1", "CH03.1", 2),
-      Content.new("ch03.html#S1.1", "ch03-html#S1-1", "1", "CH03.1.1", 3),
-      Content.new("ch04.html", "ch04-html", "application/xhtml+xml", "CH04", 1),
-      Content.new("sample.png", "sample-png", "image/png"),
-      Content.new("sample.jpg", "sample-jpg", "image/jpeg"),
-      Content.new("sample.JPEG", "sample-JPEG", "image/jpeg"),
-      Content.new("sample.SvG", "sample-SvG", "image/svg+xml"),
-      Content.new("sample.GIF", "sample-GIF", "image/gif"),
-      Content.new("sample.css", "sample-css", "text/css")
+      Content.new('ch01.html', 'ch01-html', 'application/xhtml+xml', %Q(CH01<>&"), 1),
+      Content.new('ch02.html', 'ch02-html', 'application/xhtml+xml', 'CH02', 1),
+      Content.new('ch02.html#S1', 'ch02-html#S1', 'html#s1', 'CH02.1', 2),
+      Content.new('ch02.html#S1.1', 'ch02-html#S1-1', '1', 'CH02.1.1', 3),
+      Content.new('ch02.html#S1.1.1', 'ch02-html#S1-1-1', '1', 'CH02.1.1.1', 4),
+      Content.new('ch02.html#S1.1.1.1', 'ch02-html#S1-1-1-1', '1', 'CH02.1.1.1.1', 5),
+      Content.new('ch02.html#S1.1.2', 'ch02-html#S1-1-2', '2', 'CH02.1.1.2', 4),
+      Content.new('ch02.html#S2', 'ch02-html#S2', 'html#s2', 'CH02.2', 2),
+      Content.new('ch02.html#S2.1', 'ch02-html#S2-1', '1', 'CH02.2.1', 3),
+      Content.new('ch03.html', 'ch03-html', 'application/xhtml+xml', 'CH03', 1, nil, ['mathml']),
+      Content.new('ch03.html#S1', 'ch03-html#S1', 'html#s1', 'CH03.1', 2),
+      Content.new('ch03.html#S1.1', 'ch03-html#S1-1', '1', 'CH03.1.1', 3),
+      Content.new('ch04.html', 'ch04-html', 'application/xhtml+xml', 'CH04', 1),
+      Content.new('sample.png', 'sample-png', 'image/png'),
+      Content.new('sample.jpg', 'sample-jpg', 'image/jpeg'),
+      Content.new('sample.JPEG', 'sample-JPEG', 'image/jpeg'),
+      Content.new('sample.SvG', 'sample-SvG', 'image/svg+xml'),
+      Content.new('sample.GIF', 'sample-GIF', 'image/gif'),
+      Content.new('sample.css', 'sample-css', 'text/css')
     ]
 
     assert_equal expect, @producer.contents
@@ -403,7 +405,7 @@ EOT
   end
 
   def test_stage3_flat
-    @producer.merge_params({"epubmaker" => {"flattoc" => true, "flattocindent" => false}})
+    @producer.merge_config('epubmaker' => { 'flattoc' => true, 'flattocindent' => false })
     stage3
     @producer.mytoc(@output)
     expect = <<EOT
@@ -454,7 +456,7 @@ EOT
 
   def test_stage3_cover_with_image
     stage3
-    @producer.params["coverimage"] = "sample.png"
+    @producer.config['coverimage'] = 'sample.png'
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -476,8 +478,8 @@ EOT
   end
 
   def test_colophon_default
-    @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["pbl"] = ["BLUEPRINT"]
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -506,9 +508,9 @@ EOT
   end
 
   def test_colophon_pht
-    @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["pbl"] = ["BLUEPRINT"]
-    @producer.params["pht"] = ["Mrs.Smith"]
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -538,11 +540,11 @@ EOT
   end
 
   def test_colophon_history
-    @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["pbl"] = ["BLUEPRINT"]
-    @producer.params["pht"] = ["Mrs.Smith"]
-    @producer.merge_params({"language" => "ja"})
-    history = @producer.instance_eval{ @epub.colophon_history }
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config('language' => 'ja')
+    history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
       <p>2011年1月1日　発行</p>
@@ -552,15 +554,14 @@ EOT
   end
 
   def test_colophon_history_2
-    @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["pbl"] = ["BLUEPRINT"]
-    @producer.params["pht"] = ["Mrs.Smith"]
-    @producer.merge_params({"language" => "ja",
-                            "history" => [[
-                              "2011-08-03 v1.0.0版発行",
-                              "2012-02-15 v1.1.0版発行",
-                            ]] })
-    history = @producer.instance_eval{ @epub.colophon_history }
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config(
+      'language' => 'ja',
+      'history' => [['2011-08-03 v1.0.0版発行', '2012-02-15 v1.1.0版発行']]
+    )
+    history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
       <p>2011年8月3日　v1.0.0版発行</p>
@@ -571,15 +572,14 @@ EOT
   end
 
   def test_colophon_history_date
-    @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["pbl"] = ["BLUEPRINT"]
-    @producer.params["pht"] = ["Mrs.Smith"]
-    @producer.merge_params({"language" => "ja",
-                            "history" => [[
-                              "2011-08-03",
-                              "2012-02-15",
-                            ]] })
-    history = @producer.instance_eval{ @epub.colophon_history }
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config(
+      'language' => 'ja',
+      'history' => [['2011-08-03', '2012-02-15']]
+    )
+    history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
       <p>2011年8月3日　初版第1刷　発行</p>
@@ -590,19 +590,16 @@ EOT
   end
 
   def test_colophon_history_date2
-    @producer.params["aut"] = ["Mr.Smith"]
-    @producer.params["pbl"] = ["BLUEPRINT"]
-    @producer.params["pht"] = ["Mrs.Smith"]
-    @producer.merge_params({"language" => "ja",
-                            "history" => [[
-                              "2011-08-03",
-                              "2012-02-15",
-                            ],[
-                              "2012-10-01",
-                            ],[
-                              "2013-03-01",
-                            ]] })
-    history = @producer.instance_eval{ @epub.colophon_history }
+    @producer.config['aut'] = ['Mr.Smith']
+    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.merge_config(
+      'language' => 'ja',
+      'history' => [['2011-08-03', '2012-02-15'],
+                    ['2012-10-01'],
+                    ['2013-03-01']]
+    )
+    history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
       <p>2011年8月3日　初版第1刷　発行</p>
@@ -617,7 +614,7 @@ EOT
   def test_detect_mathml
     Dir.mktmpdir do |dir|
       epubmaker = ReVIEW::EPUBMaker.new
-      path = File.join(dir,"test.html")
+      path = File.join(dir, 'test.html')
       html = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -629,22 +626,20 @@ EOT
 </head>
 <body>
   <div>
-   <p><span class=\"equation\"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span></p>
+   <p><span class="equation"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span></p>
   </div>
 </body>
 </html>
 EOT
-      File.open(path, "w") do |f|
-        f.write(html)
-      end
-      assert_equal ["mathml"], epubmaker.detect_properties(path)
+      File.open(path, 'w') { |f| f.write(html) }
+      assert_equal ['mathml'], epubmaker.detect_properties(path)
     end
   end
 
   def test_detect_mathml_ns
     Dir.mktmpdir do |dir|
       epubmaker = ReVIEW::EPUBMaker.new
-      path = File.join(dir,"test.html")
+      path = File.join(dir, 'test.html')
       html = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -656,15 +651,39 @@ EOT
 </head>
 <body>
   <div>
-   <p><span class=\"equation\"><m:math xmlns:m='http://www.w3.org/1998/Math/MathML' display='inline'><m:mfrac><m:mrow><m:mo stretchy='false'>-</m:mo><m:mi>b</m:mi><m:mo stretchy='false'>&#xb1;</m:mo><m:msqrt><m:mrow><m:msup><m:mi>b</m:mi><m:mn>2</m:mn></m:msup><m:mo stretchy='false'>-</m:mo><m:mn>4</m:mn><m:mi>a</m:mi><m:mi>c</m:mi></m:mrow></m:msqrt></m:mrow><m:mrow><m:mn>2</m:mn><m:mi>a</m:mi></m:mrow></m:mfrac></m:math></span></p>
+   <p><span class="equation"><m:math xmlns:m='http://www.w3.org/1998/Math/MathML' display='inline'><m:mfrac><m:mrow><m:mo stretchy='false'>-</m:mo><m:mi>b</m:mi><m:mo stretchy='false'>&#xb1;</m:mo><m:msqrt><m:mrow><m:msup><m:mi>b</m:mi><m:mn>2</m:mn></m:msup><m:mo stretchy='false'>-</m:mo><m:mn>4</m:mn><m:mi>a</m:mi><m:mi>c</m:mi></m:mrow></m:msqrt></m:mrow><m:mrow><m:mn>2</m:mn><m:mi>a</m:mi></m:mrow></m:mfrac></m:math></span></p>
   </div>
 </body>
 </html>
 EOT
-      File.open(path, "w") do |f|
-        f.write(html)
-      end
-      assert_equal ["mathml"], epubmaker.detect_properties(path)
+      File.open(path, 'w') { |f| f.write(html) }
+      assert_equal ['mathml'], epubmaker.detect_properties(path)
     end
+  end
+
+  def test_image_size
+    begin
+      require 'image_size'
+    rescue LoadError
+      $stderr.puts 'skip test_image_size (cannot find image_size.rb)'
+      return true
+    end
+    epubmaker = ReVIEW::EPUBMaker.new
+    epubmaker.instance_eval do
+      def warn(msg)
+        $stderr.puts msg
+      end
+    end
+    _out, err = capture_output do
+      epubmaker.check_image_size(assets_dir, 5500, %w[png gif jpg jpeg svg ttf woff otf])
+    end
+
+    expected = <<-EOS
+large.gif: 250x150 exceeds a limit. suggeted value is 95x57
+large.jpg: 250x150 exceeds a limit. suggeted value is 95x57
+large.png: 250x150 exceeds a limit. suggeted value is 95x57
+large.svg: 250x150 exceeds a limit. suggeted value is 95x57
+EOS
+    assert_equal expected, err
   end
 end

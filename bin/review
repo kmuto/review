@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-
 #
 # review: Wrapper command to call subcommand
 #
@@ -7,40 +6,63 @@
 #    review epubmaker config.yml
 #      -> call `review-epubmaker config.yml`
 #
+# Copyright (c) 2017-2018 Kenshi Muto, Masayoshi Takahashi
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
 
 require 'pathname'
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review'
 
 def usage
   message = <<-EOB
 usage: review <command> [<args>]
 
-ReVIEW commands are:
-  init
-  preproc
-  compile
-  epubmaker
-  pdfmaker
-  vol
-  check
-  index
-  validate
+Re:VIEW commands are:
+  init      : generate Re:VIEW project directory.
+  preproc   : preprocess Re:VIEW document file.
+  compile   : convert Re:VIEW document file.
+  epubmaker : build EPUB.
+  webmaker  : build web pages.
+  pdfmaker  : build PDF with LaTeX.
+  textmaker : build text files.
+  vol       : show volume of Re:VIEW document.
+  check     : check there are no REJECT words in the document.
+  index     : show heading list.
+  validate  : validate Re:VIEW document files.
+  version   : show Re:VIEW version.
+  --help    : show this message.
 EOB
   print message
   exit 1
 end
 
-usage if ARGV.length == 0
+usage if ARGV.length == 0 || ARGV[0] == '--help'
+
+if ARGV[0] == 'version'
+  puts ReVIEW::VERSION
+  exit
+end
 
 command = "review-#{ARGV.shift}"
 bindir = Pathname.new(__FILE__).realpath.dirname
 command_path = File.join(bindir, command)
 
-if !File.exist?(command_path)
+unless File.exist?(command_path)
   print "cannot find command: #{command}\n\n"
   usage
 end
 
-exec(command_path, *ARGV)
-
-
-
+if RUBY_PLATFORM =~ /mswin|bccwin|mingw/
+  cmd = File.join(RbConfig::CONFIG['bindir'],
+                  RbConfig::CONFIG['ruby_install_name'])
+  cmd << RbConfig::CONFIG['EXEEXT']
+  exec(cmd, command_path, *ARGV)
+else
+  exec(command_path, *ARGV)
+end

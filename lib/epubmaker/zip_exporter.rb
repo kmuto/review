@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
@@ -13,21 +11,19 @@ begin
   require 'zip'
 rescue LoadError
   ## I cannot find rubyzip library, so I use external zip command.
-  warn "rubyzip not found, so use external zip command"
+  warn 'rubyzip not found, so use external zip command'
 end
 
 module EPUBMaker
-
   ##
   # Export into zip file for EPUB producer.
   #
   class ZipExporter
-
     attr_reader :tmpdir
 
-    def initialize(tmpdir, params)
+    def initialize(tmpdir, config)
       @tmpdir = tmpdir
-      @params = params
+      @config = config
     end
 
     def export_zip(epubfile)
@@ -39,43 +35,42 @@ module EPUBMaker
     end
 
     def export_zip_extcmd(epubfile)
-      stage1 = @params["epubmaker"]["zip_stage1"].to_s.split
-      path1 = stage1[0] || "zip"
-      opt1 = stage1[1] || "-0Xq"
-      stage2 = @params["epubmaker"]["zip_stage2"].to_s.split
-      path2 = stage2[0] || "zip"
-      opt2 = stage2[1] || "-Xr9Dq"
+      stage1 = @config['epubmaker']['zip_stage1'].to_s.split
+      path1 = stage1[0] || 'zip'
+      opt1 = stage1[1] || '-0Xq'
+      stage2 = @config['epubmaker']['zip_stage2'].to_s.split
+      path2 = stage2[0] || 'zip'
+      opt2 = stage2[1] || '-Xr9Dq'
 
-      Dir.chdir(tmpdir) do |d|
-        system(path1, opt1, epubfile, "mimetype")
-        addpath = @params["epubmaker"]["zip_addpath"]
+      Dir.chdir(tmpdir) do
+        system(path1, opt1, epubfile, 'mimetype')
+        addpath = @config['epubmaker']['zip_addpath']
         if addpath
-          system(path2, opt2, epubfile, "META-INF", "OEBPS", addpath)
+          system(path2, opt2, epubfile, 'META-INF', 'OEBPS', addpath)
         else
-          system(path2, opt2, epubfile, "META-INF", "OEBPS")
+          system(path2, opt2, epubfile, 'META-INF', 'OEBPS')
         end
       end
     end
 
     def export_zip_rubyzip(epubfile)
-      Dir.chdir(tmpdir) do |d|
+      Dir.chdir(tmpdir) do
         Zip::OutputStream.open(epubfile) do |epub|
           root_pathname = Pathname.new(tmpdir)
-          # relpath = Pathname.new(File.join(tmpdir,'mimetype')).relative_path_from(root_pathname)
           epub.put_next_entry('mimetype', nil, nil, Zip::Entry::STORED)
-          epub << "application/epub+zip"
+          epub << 'application/epub+zip'
 
-          export_zip_rubyzip_addpath(epub, File.join(tmpdir,'META-INF'), root_pathname)
-          export_zip_rubyzip_addpath(epub, File.join(tmpdir,'OEBPS'), root_pathname)
-          if @params["zip_addpath"].present?
-            export_zip_rubyzip_addpath(epub, File.join(tmpdir, @params["zip_addpath"]), root_pathname)
+          export_zip_rubyzip_addpath(epub, File.join(tmpdir, 'META-INF'), root_pathname)
+          export_zip_rubyzip_addpath(epub, File.join(tmpdir, 'OEBPS'), root_pathname)
+          if @config['zip_addpath'].present?
+            export_zip_rubyzip_addpath(epub, File.join(tmpdir, @config['zip_addpath']), root_pathname)
           end
         end
       end
     end
 
     def export_zip_rubyzip_addpath(epub, dirname, rootdir)
-      Dir[File.join(dirname,'**','**')].each do |path|
+      Dir[File.join(dirname, '**', '**')].each do |path|
         next if File.directory?(path)
         relpath = Pathname.new(path).relative_path_from(rootdir)
         epub.put_next_entry(relpath)

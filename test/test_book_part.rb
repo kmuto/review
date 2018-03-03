@@ -3,12 +3,13 @@ class PartTest < Test::Unit::TestCase
   include BookTestHelper
 
   def test_initialize
-    part = Book::Part.new(nil, nil, nil)
+    book = Book::Base.new
+    part = Book::Part.new(book, nil, nil)
     assert_equal nil, part.number
     assert_equal nil, part.chapters
     assert_equal '', part.name
 
-    part = Book::Part.new(nil, 123, [], 'name')
+    part = Book::Part.new(book, 123, [], 'name')
     assert_equal 123, part.number
     assert_equal [], part.chapters
     assert_equal 'name', part.name
@@ -18,14 +19,12 @@ class PartTest < Test::Unit::TestCase
     part = Book::Part.new(nil, nil, [1, 2, 3])
 
     tmp = []
-    part.each_chapter do |ch|
-      tmp << ch
-    end
+    part.each_chapter { |ch| tmp << ch }
     assert_equal [1, 2, 3], tmp
   end
 
   def test_volume
-    book = Book::Base.new(nil)
+    book = Book::Base.new
     part = Book::Part.new(book, nil, [])
     assert part.volume
     assert_equal 0, part.volume.bytes
@@ -35,12 +34,12 @@ class PartTest < Test::Unit::TestCase
     chs = []
     tfs = [] ## prevent from removing Tempfile
     Tempfile.open('part_test') do |o|
-      o.print "12345"
+      o.print '12345'
       chs << Book::Chapter.new(book, nil, nil, o.path)
       tfs << o
     end
     Tempfile.open('part_test') do |o|
-      o.print "67890"
+      o.print '67890'
       chs << Book::Chapter.new(book, nil, nil, o.path)
       tfs << o
     end

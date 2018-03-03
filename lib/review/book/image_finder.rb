@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
+# Copyright (c) 2014-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -18,17 +18,15 @@ module ReVIEW
         @chapid = chapid
         @builder = builder
         @exts = exts
-        @entries = get_entries()
+        @entries = dir_entries
       end
 
-      def get_entries
-        Dir.glob(File.join(@basedir, "**{,/*/**}/*.*")).uniq
+      def dir_entries
+        Dir.glob(File.join(@basedir, '**{,/*/**}/*.*')).uniq
       end
 
       def add_entry(path)
-        unless @entries.include?(path)
-          @entries << path
-        end
+        @entries << path unless @entries.include?(path)
         @entries
       end
 
@@ -65,7 +63,6 @@ module ReVIEW
           "#{@basedir}/#{id}"
         ]
       end
-
     end
   end
 end

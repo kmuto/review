@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby
-# encoding: utf-8
-
 # Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
@@ -15,11 +13,13 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 require 'review/epubmaker'
 require 'review/version'
 
+@logger = ReVIEW.logger
+
 rv = ReVIEW::EPUBMaker.new
 
 opts = OptionParser.new
 opts.version = ReVIEW::VERSION
-opts.banner = "Usage: #{File.basename($0)} [options] YAML_filename [export_filename]"
+opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [options] YAML_filename [export_filename]"
 opts.on('--help', 'Prints this message and quit.') do
   puts opts.help
   exit 0
@@ -28,14 +28,18 @@ end
 begin
   opts.parse!
 rescue OptionParser::ParseError => err
-  $stderr.puts err.message
+  @logger.error err.message
   $stderr.puts opts.help
   exit 1
 end
 
-
-if ARGV.size < 1 || !File.exist?(ARGV[0])
+if ARGV.size < 1
   puts opts.help
+  exit 1
+end
+
+unless File.exist?(ARGV[0])
+  @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{ARGV[0]} not found."
   exit 1
 end
 

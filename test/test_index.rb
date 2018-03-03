@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'review/book'
 require 'review/book/index'
@@ -40,7 +38,7 @@ class IndexTest < Test::Unit::TestCase
     # rubocop:enable Style/PreferredHashMethods
   end
 
-  def test_HeadelineIndex
+  def test_headeline_index
     src = <<-EOB
 = chap1
 == sec1-1
@@ -57,11 +55,11 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal [2,2], index['sec1-2|sec1-2-2'].number
-    assert_equal "1.2.2", index.number('sec1-2|sec1-2-2')
+    assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
+    assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
 
-  def test_HeadelineIndex2
+  def test_headeline_index2
     src = <<-EOB
 = chap1
 == sec1-1
@@ -74,11 +72,11 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal [3,1], index['sec1-3|sec1-3-1'].number
-    assert_equal "1.3.1", index.number('sec1-3|sec1-3-1')
+    assert_equal [3, 1], index['sec1-3|sec1-3-1'].number
+    assert_equal '1.3.1', index.number('sec1-3|sec1-3-1')
   end
 
-  def test_HeadelineIndex3
+  def test_headeline_index3
     src = <<-EOB
 = chap1
 == sec1-1
@@ -92,14 +90,14 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal [2,2], index['sec1-2|sec1-2-2'].number
-    assert_equal "1.2.2", index.number('sec1-2|sec1-2-2')
+    assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
+    assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
 
-    assert_equal [3,1], index['sec1-3|sec1-3-1'].number
-    assert_equal "1.3.1", index.number('sec1-3|sec1-3-1')
+    assert_equal [3, 1], index['sec1-3|sec1-3-1'].number
+    assert_equal '1.3.1', index.number('sec1-3|sec1-3-1')
   end
 
-  def test_HeadelineIndex4
+  def test_headeline_index4
     src = <<-EOB
 = chap1
 ====[column] c1
@@ -111,11 +109,11 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal [2,2], index['sec1-2|sec1-2-2'].number
-    assert_equal "1.2.2", index.number('sec1-2|sec1-2-2')
+    assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
+    assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
 
-  def test_HeadelineIndex5
+  def test_headeline_index5
     src = <<-EOB
 = chap1
 ====[column] c1
@@ -127,11 +125,11 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal [2,2], index['sec1-2-2'].number
-    assert_equal "1.2.2", index.number('sec1-2-2')
+    assert_equal [2, 2], index['sec1-2-2'].number
+    assert_equal '1.2.2', index.number('sec1-2-2')
   end
 
-  def test_HeadelineIndex6
+  def test_headeline_index6
     src = <<-EOB
 = chap1
 == sec1
@@ -142,11 +140,11 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal [1,1], index['target'].number
-    assert_equal "1.1.1", index.number('target')
+    assert_equal [1, 1], index['target'].number
+    assert_equal '1.1.1', index.number('target')
   end
 
-  def test_HeadelineIndex7
+  def test_headeline_index7
     src = <<-EOB
 = chap1
 == sec1
@@ -162,11 +160,11 @@ class IndexTest < Test::Unit::TestCase
     index = Book::HeadlineIndex.parse(src, chap)
 
     assert_raise ReVIEW::KeyError do
-      assert_equal [1,1], index['target'].number
+      assert_equal [1, 1], index['target'].number
     end
   end
 
-  def test_HeadelineIndex8
+  def test_headeline_index8
     src = <<-EOB
 = chap1
 == sec1
@@ -177,9 +175,37 @@ class IndexTest < Test::Unit::TestCase
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil)
     index = Book::HeadlineIndex.parse(src, chap)
-    assert_equal "1.1.1", index.number('sec1-1')
+    assert_equal '1.1.1', index.number('sec1-1')
   end
 
+  def test_headeline_index9
+    src = <<-EOB
+= chap1
+== sec1
+=== sec1-1
+===[column] column1
+===[/column]
+==== sec1-1-1
+=== sec1-2
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil)
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [1, 1, 1], index['sec1-1-1'].number
+  end
 
+  def test_headeline_index10
+    src = <<-EOB
+= chap1
+== sec1
+=== sec1-1
+====[column] column1
+==== sec1-1-1
+=== sec1-2
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil)
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal [1, 1, 1], index['sec1-1-1'].number
+  end
 end
-

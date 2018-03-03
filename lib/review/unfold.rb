@@ -1,7 +1,5 @@
-#
-# $Id: unfold.rb 3878 2008-02-09 13:12:15Z aamine $
-#
-# Copyright (c) 2002-2007 Minero Aoki
+# Copyright (c) 2007-2017 Kenshi Muto
+#               2002-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -13,18 +11,16 @@ require 'review/preprocessor'
 require 'stringio'
 
 module ReVIEW
-
   class WrongInput < Error; end
 
   class Unfold
-
     # unfold paragraphs and strip preprocessor tags.
-    def Unfold.unfold_author_source(s)
+    def self.unfold_author_source(s)
       unfold(Preprocessor::Strip.new(StringIO.new(s)))
     end
 
-    def Unfold.unfold(f)
-      new().unfold(f)
+    def self.unfold(f)
+      new.unfold(f)
     end
 
     def initialize(indent_paragraph = false)
@@ -47,14 +43,14 @@ module ReVIEW
 
     private
 
-    ZSPACE = "\241\241" # EUC-JP zen-kaku space
+    ZSPACE = "\241\241".freeze # EUC-JP zen-kaku space
 
     def do_unfold(input)
       @blank_needed = false
       first = true
       indent = @indent_paragraph ? ZSPACE : ''
       f = LineInput.new(input)
-      while line = f.gets
+      f.each_line do |line|
         case line
         when /\A\#@/
           raise "must not happen: input includes preproc directive: #{line.inspect}"
@@ -81,27 +77,25 @@ module ReVIEW
           println line
           skip_block f, /\A:|\A\s+\S/
           blank
-        when %r<\A//\w.*\{\s*\z>
+        when %r{\A//\w.*\{\s*\z}
           blank
           println line
-          f.until_terminator(%r<\A//\}>) do |s|
+          f.until_terminator(%r{\A//\}}) do |s|
             println s
           end
           println '//}'
           blank
-        when %r<\A//\w>
+        when %r{\A//\w}
           blank
           println line
           blank
         when /\A\S/
-          if %r<\A//\[> =~ line
+          if %r{\A//\[} =~ line
             $stderr.puts "warning: #{f.path}:#{f.lineno}: paragraph begin with `//['; missing ReVIEW directive name?"
           end
           flush_blank
           @output.print indent + line.rstrip
-          f.until_match(%r<\A\s*\z|\A//\w>) do |s|
-            @output.print s.rstrip
-          end
+          f.until_match(%r{\A\s*\z|\A//\w}) { |s| @output.print s.rstrip }
           @output.puts
         else
           unless line.strip.empty?
@@ -127,12 +121,9 @@ module ReVIEW
     end
 
     def flush_blank
-      if @blank_needed
-        @output.puts
-        @blank_needed = false
-      end
+      return unless @blank_needed
+      @output.puts
+      @blank_needed = false
     end
-
   end
-
 end # module ReVIEW

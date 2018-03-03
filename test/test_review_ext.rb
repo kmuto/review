@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'book_test_helper'
 require 'review/compiler'
@@ -22,11 +20,11 @@ end
 
     ReVIEW::Book::Base.clear_rubyenv ## to load review-ext.rb
     mktmpbookdir('CHAPS' => "ch01.re\n",
-                 "ch01.re" => "= test\n\ntest.\n",
-                 "review-ext.rb" => review_ext) do |dir, book, files|
+                 'ch01.re' => "= test\n\ntest.\n",
+                 'review-ext.rb' => review_ext) do |_dir, _book, _files|
       builder = ReVIEW::HTMLBuilder.new(false)
       ReVIEW::Compiler.new(builder)
-      assert_equal "test", builder.builder_init_test
+      assert_equal 'test', builder.builder_init_test
     end
   end
 end

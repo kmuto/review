@@ -25,7 +25,7 @@ CHAPS:
   end
 
   def test_parse_chaps_empty
-    assert_equal "CHAPS:\n\n", parse_chaps("")
+    assert_equal "CHAPS:\n\n", parse_chaps('')
     assert_equal "CHAPS:\n\n", parse_chaps(nil)
   end
 
@@ -61,13 +61,13 @@ CHAPS:
   end
 
   def test_parse_parts_chaps_empty
-    assert_equal "CHAPS:\n\n", parse_parts("", "")
+    assert_equal "CHAPS:\n\n", parse_parts('', '')
     assert_equal "CHAPS:\n\n", parse_parts(nil, nil)
   end
 
   def test_parse_postdef
-    assert_equal "APPENDIX:\n\n", parse_postdef("", true)
-    assert_equal "POSTDEF:\n\n", parse_postdef("")
-    assert_equal "POSTDEF:\n\n", parse_postdef("", false)
+    assert_equal "APPENDIX:\n\n", parse_postdef('', true)
+    assert_equal "POSTDEF:\n\n", parse_postdef('')
+    assert_equal "POSTDEF:\n\n", parse_postdef('', false)
   end
 end

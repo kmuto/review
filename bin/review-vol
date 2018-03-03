@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 #
-# $Id: review-vol 3901 2008-02-11 20:04:59Z aamine $
-#
-# Copyright (c) 2003-2014 Minero Aoki
+# Copyright (c) 2014-2017 Minero Aoki, Kenshi Muto
+#               2003-2014 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -21,30 +20,25 @@ require 'optparse'
 include ReVIEW::TextUtils
 
 def main
+  @logger = ReVIEW.logger
   @config = ReVIEW::Configure.values
 
   part_sensitive = false
   basedir = nil
-  yamlfile = nil
+  yamlfile = 'config.yml'
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('--yaml=YAML', 'Read configurations from YAML file.') do |yaml|
-    yamlfile = yaml
-  end
-  opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') {
-    part_sensitive = true
-  }
-  opts.on('--directory=DIR', 'Compile all chapters in DIR.') {|path|
-    basedir = path
-  }
-  opts.on('--help', 'Print this message and quit') {
+  opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| yamlfile = yaml }
+  opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') { part_sensitive = true }
+  opts.on('--directory=DIR', 'Compile all chapters in DIR.') { |path| basedir = path }
+  opts.on('--help', 'Print this message and quit') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -56,11 +50,13 @@ def main
   end
 
   if part_sensitive
-    sep = ""
+    sep = ''
     book.each_part do |part|
       print sep
       sep = "\n"
-      puts "Part #{part.number} #{part.name}" if part.number
+      if part.number
+        puts "Part #{part.number} #{part.name}"
+      end
       part.each_chapter do |chap|
         print_chapter_volume chap
       end
@@ -73,10 +69,10 @@ def main
     end
   end
   puts '============================='
-  print_volume book.volume #puts "Total #{book.volume}"
+  print_volume book.volume # puts "Total #{book.volume}"
 rescue ReVIEW::ApplicationError, Errno::ENOENT => err
   raise if $DEBUG
-  $stderr.puts "#{File.basename($0)}: #{err.message}"
+  @logger.error "#{File.basename($PROGRAM_NAME)}: #{err.message}"
   exit 1
 end
 

@@ -1,7 +1,6 @@
 #
-# $Id: exception.rb 3881 2008-02-09 14:44:17Z aamine $
-#
-# Copyright (c) 2002-2007 Minero Aoki
+# Copyright (c) 2007-2017 Minero Aoki, Kenshi Muto
+#               2002-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -10,7 +9,6 @@
 #
 
 module ReVIEW
-
   class Error < ::StandardError; end
   class ApplicationError < Error; end
   class ConfigError < ApplicationError; end

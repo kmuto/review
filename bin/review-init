@@ -15,29 +15,25 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/version'
+require 'review'
 
 def main
+  @logger = ReVIEW.logger
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.banner = "Usage: #{File.basename($0)} [option] dirname"
+  opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [option] dirname"
   opts.on('-h', '--help', 'print this message and quit.') do
     puts opts.help
     exit 0
   end
-  opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') do
-    @force = true
-  end
-  opts.on('-l', '--locale', 'generate locale.yml file.') do
-    @locale = true
-  end
-  opts.on('', '--epub-version VERSION', 'define EPUB version') do |version|
-    @epub_version = version
-  end
+  opts.on('-f', '--force', 'generate files (except *.re) if directory has already existed.') { @force = true }
+  opts.on('-l', '--locale', 'generate locale.yml file.') { @locale = true }
+  opts.on('', '--epub-version VERSION', 'define EPUB version') { |version| @epub_version = version }
+  opts.on('', '--without-doc', "don't generate doc files") { @without_doc = true }
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -48,7 +44,7 @@ def main
   end
 
   initdir = File.expand_path(ARGV.shift)
-  @review_dir = File.dirname(File.expand_path(__FILE__ + "./../"))
+  @review_dir = File.dirname(File.expand_path(__FILE__ + './../'))
 
   generate_dir(initdir) do |dir|
     generate_catalog_file(dir)
@@ -62,12 +58,13 @@ def main
     generate_locale(dir) if @locale
     generate_rakefile(dir)
     generate_gemfile(dir)
+    generate_doc(dir) unless @without_doc
   end
 end
 
 def generate_dir(dir)
   if File.exist?(dir) && !@force
-    puts "#{dir} already exists."
+    @logger.error "#{dir} already exists."
     exit
   end
   FileUtils.mkdir_p dir
@@ -75,11 +72,7 @@ def generate_dir(dir)
 end
 
 def generate_sample(dir)
-  if !@force
-    File.open("#{dir}/#{File.basename(dir)}.re", "w") do |file|
-      file.write("= ")
-    end
-  end
+  File.open("#{dir}/#{File.basename(dir)}.re", 'w') { |file| file.write('= ') } unless @force
 end
 
 def generate_layout(dir)
@@ -87,7 +80,7 @@ def generate_layout(dir)
 end
 
 def generate_catalog_file(dir)
-  File.open(dir + "/catalog.yml", "w") do |file|
+  File.open(dir + '/catalog.yml', 'w') do |file|
     file.write <<-EOS
 PREDEF:
 
@@ -107,39 +100,50 @@ def generate_images_dir(dir)
 end
 
 def generate_cover_image(dir)
-  FileUtils.cp @review_dir + "/test/sample-book/src/images/cover.jpg", dir + '/images/'
+  FileUtils.cp @review_dir + '/test/sample-book/src/images/cover.jpg', dir + '/images/'
 end
 
 def generate_config(dir)
-  today = Time.now.strftime("%Y-%m-%d")
-  content = File.read(@review_dir + "/doc/config.yml.sample", {:encoding => 'utf-8'})
+  today = Time.now.strftime('%Y-%m-%d')
+  content = File.read(@review_dir + '/doc/config.yml.sample', encoding: 'utf-8')
   content.gsub!(/^#\s*coverimage:.*$/, 'coverimage: cover.jpg')
   content.gsub!(/^#\s*date:.*$/, "date: #{today}")
-  content.gsub!(/^#\s*history:.*$/, %Q|history: [["#{today}"]]|)
-  content.gsub!(/^#\s*texstyle:.*$/, "texstyle: reviewmacro")
-  content.gsub!(/^(#\s*)?stylesheet:.*$/, %Q|stylesheet: ["style.css"]|)
+  content.gsub!(/^#\s*history:.*$/, %Q(history: [["#{today}"]]))
+  content.gsub!(/^#\s*texstyle:.*$/, 'texstyle: reviewmacro')
+  content.gsub!(/^(#\s*)?stylesheet:.*$/, %Q(stylesheet: ["style.css"]))
   if @epub_version.to_i == 2
-    content.gsub!(/^#.*epubversion:.*$/,'epubversion: 2')
-    content.gsub!(/^#.*htmlversion:.*$/,'htmlversion: 4')
+    content.gsub!(/^#.*epubversion:.*$/, 'epubversion: 2')
+    content.gsub!(/^#.*htmlversion:.*$/, 'htmlversion: 4')
   end
-  File.open(File.join(dir, "config.yml"), "w"){|f| f.write(content) }
+  File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write(content) }
 end
 
 def generate_style(dir)
-  FileUtils.cp @review_dir + "/test/sample-book/src/style.css", dir
+  FileUtils.cp @review_dir + '/test/sample-book/src/style.css', dir
 end
 
 def generate_texmacro(dir)
   texmacrodir = dir + '/sty'
   FileUtils.mkdir_p texmacrodir
   FileUtils.cp [
-    @review_dir + "/test/sample-book/src/sty/reviewmacro.sty",
-    @review_dir + "/test/sample-book/src/sty/jumoline.sty"
+    @review_dir + '/test/sample-book/src/sty/reviewmacro.sty',
+    @review_dir + '/test/sample-book/src/sty/jumoline.sty'
   ], texmacrodir
 end
 
 def generate_rakefile(dir)
-  FileUtils.cp @review_dir + "/test/sample-book/src/Rakefile", dir
+  FileUtils.mkdir_p dir + '/lib/tasks'
+
+  File.open(dir + '/Rakefile', 'w') do |file|
+    file.write <<-EOS
+Dir.glob('lib/tasks/*.rake').each do |file|
+  load(file)
+end
+EOS
+  end
+
+  FileUtils.cp @review_dir + '/test/sample-book/src/Rakefile',
+               dir + '/lib/tasks/review.rake'
 end
 
 def generate_locale(dir)
@@ -147,7 +151,7 @@ def generate_locale(dir)
 end
 
 def generate_gemfile(dir)
-  File.open(dir + "/Gemfile", "w") do |file|
+  File.open(dir + '/Gemfile', 'w') do |file|
     file.write <<-EOS
 source 'https://rubygems.org'
 
@@ -157,6 +161,11 @@ EOS
   end
 end
 
-if File.basename($0) == File.basename(__FILE__)
-  main()
+def generate_doc(dir)
+  docdir = dir + '/doc'
+  FileUtils.mkdir_p docdir
+  md_files = Dir.glob(@review_dir + '/doc/*.md').map.to_a
+  FileUtils.cp md_files, docdir
 end
+
+main if File.basename($PROGRAM_NAME) == File.basename(__FILE__)

@@ -1,9 +1,7 @@
 #!/usr/bin/env ruby
 #
-# $Id: review-preproc 3761 2007-12-31 07:20:09Z aamine $
-#
 # Copyright (c) 2010-2014 Minero Aoki, Kenshi Muto
-# Copyright (c) 1999-2007 Minero Aoki
+#               1999-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -20,6 +18,7 @@ require 'review/preprocessor'
 require 'review/unfold'
 require 'review/version'
 require 'review/extentions'
+require 'review/logger'
 require 'lineinput'
 require 'stringio'
 require 'fileutils'
@@ -36,11 +35,12 @@ rescue Errno::EPIPE
 end
 
 def main
-  if File.file?("review-preproc-ext.rb")
-    if ENV["REVIEW_SAFE_MODE"].to_i & 2 > 0
-      warn "review-preproc-ext.rb is prohibited in safe mode. ignored."
+  @logger = ReVIEW.logger
+  if File.file?('review-preproc-ext.rb')
+    if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
+      @logger.warn 'review-preproc-ext.rb is prohibited in safe mode. ignored.'
     else
-      Kernel.load File.expand_path("review-preproc-ext.rb")
+      Kernel.load File.expand_path('review-preproc-ext.rb')
     end
   end
 
@@ -49,31 +49,21 @@ def main
   mode = :output
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.banner = "Usage: #{File.basename($0)} [-c|-d|-s|--replace] [<file>...]"
-  opts.on('-c', '--check', 'Check if preprocess is needed.') {
-    mode = :check
-  }
-  opts.on('-d', '--diff', 'Show diff from current file.') {
-    mode = :diff
-  }
-  opts.on('--replace', 'Replace file by preprocessed one.') {
-    mode = :replace
-  }
-  opts.on('-s', '--strip', 'Strip preprocessor tags.') {
-    mode = :strip
-  }
-  opts.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') {
-    mode = :final
-  }
-  opts.on('--tabwidth=WIDTH', "Replace tabs with space characters. (0: don't replace)") {|width| param["tabwidth"] = width.to_i }
-  opts.on('--help', 'Print this message and quit.') {
+  opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [-c|-d|-s|--replace] [<file>...]"
+  opts.on('-c', '--check', 'Check if preprocess is needed.') { mode = :check }
+  opts.on('-d', '--diff', 'Show diff from current file.') { mode = :diff }
+  opts.on('--replace', 'Replace file by preprocessed one.') { mode = :replace }
+  opts.on('-s', '--strip', 'Strip preprocessor tags.') { mode = :strip }
+  opts.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') { mode = :final }
+  opts.on('--tabwidth=WIDTH', "Replace tabs with space characters. (0: don't replace)") { |width| param['tabwidth'] = width.to_i }
+  opts.on('--help', 'Print this message and quit.') do
     puts opts.help
     exit 0
-  }
+  end
   begin
     opts.parse!
   rescue OptionParser::ParseError => err
-    $stderr.puts err.message
+    @logger.error err.message
     $stderr.puts opts.help
     exit 1
   end
@@ -84,9 +74,7 @@ def main
     current_file = path
     case mode
     when :output
-      File.open(path) {|f|
-        pp.process f, $stdout
-      }
+      File.open(path) { |f| pp.process f, $stdout }
     when :replace
       File.write "#{path}.pptmp", preproc(pp, path)
       File.rename "#{path}.pptmp", path
@@ -103,38 +91,30 @@ def main
         FileUtils.rm_f tmp
       end
     when :strip
-      File.open(path) {|f|
-        ReVIEW::Preprocessor::Strip.new(f).each do |line|
-          puts line
-        end
-      }
+      File.open(path) do |f|
+        ReVIEW::Preprocessor::Strip.new(f).each { |line| puts line }
+      end
     when :final
       u = ReVIEW::Unfold.new
-      File.open(path) {|f|
-        u.unfold ReVIEW::Preprocessor::Strip.new(f), $stdout
-      }
+      File.open(path) { |f| u.unfold ReVIEW::Preprocessor::Strip.new(f), $stdout }
     else
       raise "must not happen: #{mode}"
     end
   end
 rescue ReVIEW::Error => err
   raise if $DEBUG
-  $stderr.puts err.message
+  @logger.error err.message
   exit 1
 end
 
 def preproc(pp, path)
   buf = StringIO.new
-  File.open(path) {|f|
-    pp.process f, buf
-  }
+  File.open(path) { |f| pp.process f, buf }
   buf.string
 end
 
 def File.write(path, str)
-  File.open(path, 'w') {|f|
-    f.write str
-  }
+  File.open(path, 'w') { |f| f.write str }
 end
 
 sigmain

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'test_helper'
 require 'review/compiler'
 require 'review/book'
@@ -10,22 +8,22 @@ class MD2INAOBuilderTest < Test::Unit::TestCase
   include ReVIEW
 
   def setup
-    @builder = MD2INAOBuilder.new()
+    @builder = MD2INAOBuilder.new
     @config = {
-      "secnolevel" => 2, # for IDGXMLBuilder, HTMLBuilder
-      "stylesheet" => nil, # for HTMLBuilder
+      'secnolevel' => 2,
+      'stylesheet' => nil
     }
-    @book = Book::Base.new(".")
+    @book = Book::Base.new('.')
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
-    I18n.setup("ja")
+    I18n.setup('ja')
   end
 
   def test_paragraph
-    actual = compile_block("Hello, world!")
+    actual = compile_block('Hello, world!')
     assert_equal "　Hello, world!\n\n", actual
   end
 
@@ -58,13 +56,12 @@ BBB
   end
 
   def test_ruby_mono
-    actual = compile_block("@<ruby>{謳,うた}い文句")
+    actual = compile_block('@<ruby>{謳,うた}い文句')
     assert_equal "　<span class='monoruby'>謳(うた)</span>い文句\n\n", actual
   end
 
   def test_ruby_group
-    actual = compile_block("@<ruby>{欠伸,あくび}が出る")
+    actual = compile_block('@<ruby>{欠伸,あくび}が出る')
     assert_equal "　<span class='groupruby'>欠伸(あくび)</span>が出る\n\n", actual
   end
-
 end

@@ -12,45 +12,78 @@ module ReVIEW
     end
 
     def predef
-      return "" unless @yaml["PREDEF"]
-      @yaml["PREDEF"].join("\n")
+      return '' unless @yaml['PREDEF']
+      @yaml['PREDEF'].join("\n")
     end
 
     def chaps
-      return "" unless @yaml["CHAPS"]
+      return '' unless @yaml['CHAPS']
 
-      @yaml["CHAPS"].map {|entry|
-        if entry.is_a? String
+      @yaml['CHAPS'].map do |entry|
+        if entry.is_a?(String)
           entry
-        elsif entry.is_a? Hash
+        elsif entry.is_a?(Hash)
           entry.values # chaps in a part
         end
-      }.flatten.join("\n")
+      end.flatten.join("\n")
     end
 
     def parts
-      return "" unless @yaml["CHAPS"]
+      return '' unless @yaml['CHAPS']
 
-      @yaml["CHAPS"].map {|entry|
-        if entry.is_a? Hash
+      part_list = @yaml['CHAPS'].map do |entry|
+        if entry.is_a?(Hash)
           entry.keys
         end
-      }.flatten.compact.join("\n")
+      end
+
+      part_list.flatten.compact.join("\n")
     end
 
     def parts_with_chaps
-      return "" unless @yaml["CHAPS"]
-      @yaml["CHAPS"].flatten.compact
+      return '' unless @yaml['CHAPS']
+      @yaml['CHAPS'].flatten.compact
     end
 
     def appendix
-      return "" unless @yaml["APPENDIX"]
-      @yaml["APPENDIX"].join("\n")
+      return '' unless @yaml['APPENDIX']
+      @yaml['APPENDIX'].join("\n")
     end
 
     def postdef
-      return "" unless @yaml["POSTDEF"]
-      @yaml["POSTDEF"].join("\n")
+      return '' unless @yaml['POSTDEF']
+      @yaml['POSTDEF'].join("\n")
+    end
+
+    def validate!(config, basedir)
+      filenames = []
+      if predef.present?
+        filenames.concat(predef.split(/\n/))
+      end
+      parts_with_chaps.each do |chap|
+        if chap.is_a?(Hash)
+          chap.each_key do |part|
+            if File.extname(part) == '.re'
+              filenames.push(part)
+            end
+          end
+          filenames.concat(chap.values.flatten)
+        else
+          filenames.push(chap)
+        end
+      end
+      if appendix.present?
+        filenames.concat(appendix.split(/\n/))
+      end
+      if postdef.present?
+        filenames.concat(postdef.split(/\n/))
+      end
+      filenames.each do |filename|
+        refile = File.join(basedir, config['contentdir'], filename)
+        unless File.exist?(refile)
+          raise FileNotFound, "file not found in catalog.yml: #{refile}"
+        end
+      end
     end
   end
 end

@@ -115,27 +115,30 @@ The web site of Re:VIEW is @<tt>{https://reviewml.org/}.
 
 You should use UTF-8 as encodings in text files.
 
-### generating PDF and EPUB
+### generating PDF, EPUB, and plain-text
 
-You can generate a PDF file with `review-pdfmaker` command.  Also you can generate an EPUB file with `review-epubmaker` command.
+You can generate a PDF file with `review-pdfmaker` command.  Also you can generate an EPUB file with `review-epubmaker` command, and can generate an plain-text file with 'review-textmaker' command.
 
 To generate PDF, you should install TeXLive 2012 or later.  To generate EPUB, you should install zip command.
 When you want to use MathML, you should install [MathML library](http://www.hinet.mydns.jp/?mathml.rb)
 
-`review-pdfmaker` and `review-epubmaker` need `config.yml`, configuration YAML files.  `review-init` command generates `config.yml` in default.
+Each maker need `config.yml`, configuration YAML files.  `review-init` command generates `config.yml` in default.
 
 ```bash
-$ review-pdfmaker config.yml  ## generate PDF
-$ review-epubmaker config.yml ## generate EPUB
+$ review-pdfmaker config.yml     ## generate PDF
+$ review-epubmaker config.yml    ## generate EPUB
+$ review-textmaker config.yml    ## generate text with decoration
+$ review-textmaker -n config.yml ## generate text without decoration
 ```
 
 You also can generate them with Rake.
 
 ```bash
-$ rake pdf  ## generate PDF
-$ rake epub ## generate EPUB
+$ rake pdf       ## generate PDF
+$ rake epub      ## generate EPUB
+$ rake text      ## generate text with decoration
+$ rake plaintext ## generate text without decoration
 ```
-
 
 There is a sample YAML file [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) in the same directory of this document.
 

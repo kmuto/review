@@ -1,8 +1,5 @@
-#
-# $Id: book.rb 4315 2009-09-02 04:15:24Z kmuto $
-#
-# Copyright (c) 2002-2008 Minero Aoki
-#               2009 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+#               2002-2008 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -12,7 +9,6 @@
 module ReVIEW
   module Book
     class PageMetric
-
       MetricData = Struct.new(:n_lines, :n_columns)
 
       def initialize(list_lines, list_columns, text_lines, text_columns, page_per_kbyte)
@@ -31,7 +27,6 @@ module ReVIEW
       def ==(other)
         self.list == other.list && self.text == other.text && self.page_per_kbyte == other.page_per_kbyte
       end
-
     end
   end
 end

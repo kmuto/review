@@ -5,7 +5,7 @@ ja:
   column: "コラム「%s」"
   columnname: "コラム"
   column_head: "■コラム"
-  part: 第%d部
+  part: 第%pR部
   part_short: "%pR"
   chapter: 第%d章
   chapter_short: "%d"
@@ -67,7 +67,7 @@ en:
   column: "Column %s"
   columnname: "Column"
   column_head: "Column"
-  part: "Part %s"
+  part: "Part %pR"
   part_short: "%pR"
   chapter: Chapter %d
   chapter_short: "%d"
@@ -126,7 +126,7 @@ zh-TW:
   image: 圖
   table: 表
   list: List
-  part: 第%d部份
+  part: 第%pR部份
   part_short: "%pR"
   chapter: 第%d章
   chapter_short: "%d"
