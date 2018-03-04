@@ -19,36 +19,30 @@ module ReVIEW
       attr_reader :basedir
 
       def self.load(dir = '.')
-        update_rubyenv dir
         new(dir)
-      end
-
-      @basedir_seen = {}
-
-      def self.update_rubyenv(dir)
-        return if @basedir_seen.key?(dir)
-        if File.file?(File.join(dir, 'review-ext.rb'))
-          if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
-            ReVIEW.logger.warn 'review-ext.rb is prohibited in safe mode. ignored.'
-          else
-            Kernel.load File.expand_path(File.join(dir, 'review-ext.rb'))
-          end
-        end
-        @basedir_seen[dir] = true
-      end
-
-      def self.clear_rubyenv
-        @basedir_seen = {}
       end
 
       def initialize(basedir = '.')
         @basedir = basedir
+        @logger = ReVIEW.logger
         @parts = nil
         @chapter_index = nil
         @config = ReVIEW::Configure.values
         @catalog = nil
         @read_part = nil
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
+        @basedir_seen = {}
+        update_rubyenv
+      end
+
+      def update_rubyenv
+        if File.file?(File.join(@basedir, 'review-ext.rb'))
+          if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
+            @logger.warn 'review-ext.rb is prohibited in safe mode. ignored.'
+          else
+            Kernel.load(File.expand_path(File.join(@basedir, 'review-ext.rb')))
+          end
+        end
       end
 
       def bib_file
@@ -396,7 +390,7 @@ module ReVIEW
         unless @warn_old_files[filename]
           @warn_old_files[filename] = true
           if caller.none? { |item| item =~ %r{/review/test/test_} }
-            ReVIEW.logger.warn "!!! #{filename} is obsoleted. please use catalog.yml."
+            @logger.warn "!!! #{filename} is obsoleted. please use catalog.yml."
           end
         end
         res = ''
