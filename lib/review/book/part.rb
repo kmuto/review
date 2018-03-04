@@ -51,7 +51,7 @@ module ReVIEW
       end
 
       def file?
-        name.present? and path.end_with?('.re') ? true : false
+        name.present? and path.end_with?('.re')
       end
 
       def format_number(heading = true)
