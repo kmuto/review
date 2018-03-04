@@ -41,16 +41,13 @@ module ReVIEW
       ".#{@book.config['htmlext']}"
     end
 
-    def builder_init(no_error = false)
-      @no_error = no_error
-      @noindent = nil
-      @ol_num = nil
-      @error_messages = nil
-      @warning_messages = nil
+    def builder_init
     end
     private :builder_init
 
     def builder_init_file
+      @noindent = nil
+      @ol_num = nil
       @warns = []
       @errors = []
       @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
