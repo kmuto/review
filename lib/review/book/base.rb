@@ -57,6 +57,10 @@ module ReVIEW
         config['ext']
       end
 
+      def imagedir
+        File.join(@basedir, config['imagedir'])
+      end
+
       def image_types
         config['image_types']
       end
