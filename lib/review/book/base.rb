@@ -13,7 +13,7 @@ require 'review/catalog'
 module ReVIEW
   module Book
     class Base
-      attr_writer :config
+      attr_accessor :config
       attr_writer :parts
       attr_writer :catalog
       attr_reader :basedir
@@ -178,10 +178,6 @@ module ReVIEW
         vol = Volume.sum(chapters.map(&:volume))
         vol.page_per_kbyte = page_metric.page_per_kbyte
         vol
-      end
-
-      def config
-        @config ||= Configure.values
       end
 
       def load_config(filename)
