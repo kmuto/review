@@ -15,8 +15,7 @@ require 'review/textbuilder'
 module ReVIEW
   class TOCParser
     def self.parse(chap)
-      f = StringIO.new(chap.content, 'r:BOM|utf-8')
-      stream = Preprocessor::Strip.new(f)
+      stream = StringIO.new(chap.content, 'r:BOM|utf-8')
       new.parse(stream, chap).map do |root|
         root.number = chap.number
         root

@@ -43,12 +43,6 @@ module ReVIEW
   class Preprocessor
     include ErrorUtils
 
-    def self.strip(f)
-      buf = ''
-      Strip.new(f).each { |line| buf << line.rstrip << "\n" }
-      buf
-    end
-
     class Strip
       def initialize(f)
         @f = f
@@ -68,12 +62,6 @@ module ReVIEW
           return line
         end
         nil
-      end
-
-      def each
-        @f.each do |line|
-          yield line unless /\A\#@/ =~ line
-        end
       end
     end
 
