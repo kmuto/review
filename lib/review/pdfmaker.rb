@@ -35,7 +35,13 @@ module ReVIEW
       @input_files = Hash.new { |h, key| h[key] = '' }
     end
 
+    def system_with_info(*args)
+      @logger.info args.join(' ')
+      Kernel.system(*args)
+    end
+
     def system_or_raise(*args)
+      @logger.info args.join(' ')
       Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
     end
 
@@ -269,10 +275,10 @@ module ReVIEW
         images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/ }
         break if images.empty?
         if @config['pdfmaker']['bbox']
-          system('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
+          system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
           system_or_raise('ebb', '-B', @config['pdfmaker']['bbox'], *images) unless system('extractbb', '-B', @config['pdfmaker']['bbox'], '-m', *images)
         else
-          system('extractbb', *images)
+          system_with_info('extractbb', *images)
           system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
         end
       end
