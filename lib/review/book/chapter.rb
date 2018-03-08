@@ -51,7 +51,7 @@ module ReVIEW
       end
 
       def find_first_header_option
-        f = LineInput.new(Preprocessor::Strip.new(StringIO.new(@content)))
+        f = LineInput.new(StringIO.new(@content))
         while f.next?
           case f.peek
           when /\A=+[\[\s\{]/
