@@ -548,7 +548,6 @@ module ReVIEW
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
       elsif @book.config['imgmath']
-        puts %Q(<div class="equation">)
         math_str = "\\begin{equation*}\n" + unescape_html(lines.join("\n")) + "\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = "./#{@book.config['imagedir']}/_review_math"
@@ -556,7 +555,6 @@ module ReVIEW
         img_path = "./#{math_dir}/_gen_#{key}.png"
         make_math_image(math_str, img_path)
         puts %Q(<img src="#{img_path}" />)
-        puts '</div>'
       else
         print '<pre>'
         puts lines.join("\n")
