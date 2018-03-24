@@ -11,6 +11,7 @@
 * remove (incomplete) command `//include` ([#887])
 * LATEXBuilder: use `\footnotemark` implicitly for captions and headings ([#841])
 * EPUBMaker, WEBMaker: use `pbl` (publisher) instead of `prt` (printer) in titlepage ([#927])
+* PDFMaker: use `texstyle` parameter instead of `usepackage` in layout.tex.erb. When using your own layout.tex.erb, you need to rewrite it with a new code of texstyle parsing. ([#908])
 
 ## Bug Fixes
 
