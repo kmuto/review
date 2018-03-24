@@ -144,7 +144,7 @@ def replace_old_style_part(dir)
     next if part.end_with? '.re'
 
     allow_overwrite = true
-    part_name = sprintf("part%d.re", part_idx + 1)
+    part_name = sprintf('part%d.re', part_idx + 1)
     if File.exist?("#{dir}/#{part_name}")
       loop do
         print "The #{part_name} already exists. Do you want to overwrite it? [y/n]"
