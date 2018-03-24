@@ -1,8 +1,10 @@
 require 'test_helper'
+require 'book_test_helper'
 require 'review'
 
 class HTMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW
+  include BookTestHelper
 
   def setup
     ReVIEW::I18n.setup
@@ -436,8 +438,7 @@ EOS
   end
 
   def test_noindent
-    @builder.noindent
-    actual = compile_block("foo\nbar\n\nfoo2\nbar2\n")
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n), actual
   end
 
@@ -1066,6 +1067,33 @@ EOS
   def test_cmd_caption
     actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
     assert_equal %Q(<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n), actual
+  end
+
+  def test_texequation
+    mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
+                 'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P} q\n//}\n") do |dir, book, _files|
+      @book = book
+      @book.config = @config
+      @config['imgmath'] = true
+      @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+      FileUtils.mkdir_p(File.join(dir, 'images'))
+      expected = <<-EOB
+<div class=\"equation\">
+<img src=\"././images/_review_math/_gen_XXX.png\" />
+</div>
+      EOB
+      tmpio = $stderr
+      $stderr = StringIO.new
+      begin
+        result = compile_block("//texequation{\np \\land \\bm{P} q\n//}\n")
+      ensure
+        $stderr = tmpio
+      end
+      actual = result.gsub(/_gen_[0-9a-f]+\.png/, '_gen_XXX.png')
+      assert_equal expected, actual
+    end
   end
 
   def test_bib

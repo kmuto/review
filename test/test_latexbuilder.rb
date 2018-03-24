@@ -15,9 +15,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       'toclevel' => 2,
       'stylesheet' => nil, # for EPUBBuilder
       'image_scale2width' => false,
-      'texcommand' => 'uplatex'
+      'texcommand' => 'uplatex',
+      'review_version' => '3'
     )
-    @book = Book::Base.new(nil)
+    @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
@@ -160,11 +161,20 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_m
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
+    assert_equal 'abc$\\alpha^n = \\inf < 2$ghi', actual
+
+    @config['review_version'] = '2.0'
+    actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
     assert_equal 'abc $\\alpha^n = \\inf < 2$ ghi', actual
   end
 
   def test_inline_m2
     ## target text: @<m>{X = \{ {x_1\},{x_2\}, \cdots ,{x_n\} \\\}}
+    actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
+    ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
+    assert_equal '$X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$', actual
+
+    @config['review_version'] = '2.0'
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
     ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
     assert_equal ' $X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$ ', actual
@@ -423,7 +433,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric
@@ -434,7 +444,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric_width
@@ -446,7 +456,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     @config['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric2
@@ -457,7 +467,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric2_width
@@ -469,7 +479,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     @config['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[width=1.2\\maxwidth,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=1.2\\maxwidth,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_indepimage
@@ -480,7 +490,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
   end
 
   def test_indepimage_without_caption
@@ -492,7 +502,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     # FIXME: indepimage's caption should not be with a counter.
     actual = compile_block("//indepimage[sampleimg]\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n), actual
   end
 
   def test_indepimage_with_metric
@@ -503,7 +513,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
   end
 
   def test_indepimage_with_metric_width
@@ -515,7 +525,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     @config['image_scale2width'] = true
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
   end
 
   def test_indepimage_with_metric2
@@ -526,7 +536,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block(%Q(//indepimage[sampleimg][sample photo][scale=1.2, html::class="sample",latex::ignore=params]\n))
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\reviewindepimagecaption{図: sample photo}\n\\end{reviewimage}\n), actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -538,7 +548,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     # FIXME: indepimage's caption should not be with a counter.
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
-    assert_equal %Q(\\begin{reviewimage}\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\end{reviewimage}\n), actual
   end
 
   def test_table
@@ -566,7 +576,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_emtable
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal "\\begin{table}[h]\n\\reviewtablecaption*{foo}\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n\\end{table}\n\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n",
+    assert_equal "\\begin{table}[h]%%\n\\reviewtablecaption*{foo}\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n\\end{table}\n\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n",
                  actual
   end
 
@@ -580,10 +590,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
 
     expected = <<-EOS
-\\begin{table}[h]
+\\begin{table}[h]%%sampleimg
 \\reviewimgtablecaption{test for imgtable}
 \\label{table:chap1:sampleimg}
-\\begin{reviewimage}
+\\begin{reviewimage}%%sampleimg
 \\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
 \\end{reviewimage}
 \\end{table}
@@ -1029,7 +1039,7 @@ EOS
 
 \\reviewtableref{A.1}{table:chap1:foo}
 
-\\begin{table}[h]
+\\begin{table}[h]%%foo
 \\reviewtablecaption{FOO}
 \\label{table:chap1:foo}
 \\begin{reviewtable}{|l|l|}
@@ -1064,7 +1074,7 @@ EOS
 
 \\reviewimageref{A.1}{image:chap1:sampleimg}
 
-\\begin{reviewimage}
+\\begin{reviewimage}%%sampleimg
 \\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
 \\caption{FOO}
 \\label{image:chap1:sampleimg}

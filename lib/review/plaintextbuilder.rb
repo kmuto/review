@@ -260,7 +260,7 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
@@ -298,7 +298,7 @@ module ReVIEW
 
     def imgtable(_lines, id, caption = nil, _metric = nil)
       blank
-      table_header id, caption if caption.present?
+      table_header(id, caption) if caption.present?
       blank
     end
 
@@ -390,7 +390,9 @@ module ReVIEW
     def inline_hd_chap(chap, id)
       if chap.number
         n = chap.headline_index.number(id)
-        return I18n.t('chapter_quote', "#{n}　#{compile_inline(chap.headline(id).caption)}") if @book.config['secnolevel'] >= n.split('.').size
+        if @book.config['secnolevel'] >= n.split('.').size
+          return I18n.t('chapter_quote', "#{n}　#{compile_inline(chap.headline(id).caption)}")
+        end
       end
       I18n.t('chapter_quote', compile_inline(chap.headline(id).caption))
     rescue KeyError
@@ -624,7 +626,9 @@ module ReVIEW
       chs = ['', '「', '」']
       if @book.config['chapref']
         chs2 = @book.config['chapref'].split(',')
-        error '--chapsplitter must have exactly 3 parameters with comma.' if chs2.size != 3
+        if chs2.size != 3
+          error '--chapsplitter must have exactly 3 parameters with comma.'
+        end
         chs = chs2
       end
       "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"

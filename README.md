@@ -29,7 +29,7 @@ There are two commands generate files directly.
 
 And some useful commands.
 
-* review-compile: compile Re:VIEW fomat files.
+* review-compile: compile Re:VIEW format files.
 * review-vol: figure out size of Re:VIEW files.
 * review-index: generate index with various format.
 * review-preproc: preprocessor.

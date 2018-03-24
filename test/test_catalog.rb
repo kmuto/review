@@ -97,7 +97,7 @@ ch02.re
         FileUtils.touch(file)
       end
       cat = Catalog.new(yaml_hash)
-      cat.validate!(dir)
+      cat.validate!({ 'contentdir' => '.' }, dir)
     end
   end
 
@@ -107,7 +107,7 @@ ch02.re
         FileUtils.touch(file)
       end
       cat = Catalog.new(yaml_with_parts)
-      cat.validate!(dir)
+      cat.validate!({ 'contentdir' => '.' }, dir)
     end
   end
 
@@ -118,7 +118,7 @@ ch02.re
           FileUtils.touch(file)
         end
         cat = Catalog.new(yaml_hash)
-        cat.validate!(dir)
+        cat.validate!({ 'contentdir' => '.' }, dir)
       end
     end
   end
@@ -130,8 +130,19 @@ ch02.re
           FileUtils.touch(file)
         end
         cat = Catalog.new(yaml_hash)
-        cat.validate!(dir)
+        cat.validate!({ 'contentdir' => '.' }, dir)
       end
+    end
+  end
+
+  def test_validate_contentdir
+    mktmpbookdir do |dir, _book, _files|
+      Dir.mkdir('content')
+      %w[content/pre01.re content/pre02.re content/ch01.re content/ch02.re content/post01.re content/post02.re content/back01.re content/back02.re].each do |file|
+        FileUtils.touch(file)
+      end
+      cat = Catalog.new(yaml_hash)
+      cat.validate!({ 'contentdir' => 'content' }, dir)
     end
   end
 

@@ -21,10 +21,14 @@ module ReVIEW
         lfile = File.expand_path(ymlfile, Dir.pwd)
 
         # backward compatibility
-        raise ReVIEW::ConfigError, 'locale.yaml is obsoleted. Please use locale.yml.' if !File.exist?(lfile) && (ymlfile == 'locale.yml') && File.exist?(File.expand_path('locale.yaml', Dir.pwd))
+        if !File.exist?(lfile) && (ymlfile == 'locale.yml') && File.exist?(File.expand_path('locale.yaml', Dir.pwd))
+          raise ReVIEW::ConfigError, 'locale.yaml is obsoleted. Please use locale.yml.'
+        end
       end
 
-      @i18n.update_localefile(lfile) if lfile && File.file?(lfile)
+      if lfile && File.file?(lfile)
+        @i18n.update_localefile(lfile)
+      end
     end
 
     def self.i18n(*_args)

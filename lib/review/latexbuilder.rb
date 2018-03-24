@@ -150,8 +150,11 @@ module ReVIEW
     end
 
     def nodisp_begin(level, _label, caption)
-      blank unless @output.pos == 0
-      puts macro('clearpage') if @output.pos == 0
+      if @output.pos != 0
+        blank
+      else
+        puts macro('clearpage')
+      end
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
       # FIXME: headings
     end
@@ -413,7 +416,7 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric('latex', metric)
       # image is always bound here
-      puts '\begin{reviewimage}'
+      puts "\\begin{reviewimage}%%#{id}"
       if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
@@ -484,7 +487,7 @@ module ReVIEW
       metrics = parse_metric('latex', metric)
 
       if @chapter.image(id).path
-        puts '\begin{reviewimage}'
+        puts "\\begin{reviewimage}%%#{id}"
         if metrics.present?
           puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
         else
@@ -500,7 +503,10 @@ module ReVIEW
       end
 
       @doc_status[:caption] = true
-      puts macro('reviewindepimagecaption', %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})) if caption.present?
+      if caption.present?
+        puts macro('reviewindepimagecaption',
+                   %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}))
+      end
       @doc_status[:caption] = nil
 
       if @chapter.image(id).path
@@ -527,12 +533,12 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
       return if rows.empty?
-      table_begin rows.first.size
+      table_begin(rows.first.size)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
@@ -554,7 +560,7 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          puts "\\begin{table}[h]%%#{id}"
           puts macro('reviewtablecaption*', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -562,7 +568,7 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          puts "\\begin{table}[h]%%#{id}"
           puts macro('reviewtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -637,7 +643,7 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          puts "\\begin{table}[h]%%#{id}"
           puts macro('reviewimgtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -655,7 +661,7 @@ module ReVIEW
     def imgtable_image(id, _caption, metric)
       metrics = parse_metric('latex', metric)
       # image is always bound here
-      puts '\begin{reviewimage}'
+      puts "\\begin{reviewimage}%%#{id}"
       if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
@@ -839,7 +845,11 @@ module ReVIEW
 
     # math
     def inline_m(str)
-      " $#{str}$ "
+      if @book.config['review_version'].nil? || @book.config['review_version'].to_f > 2
+        "$#{str}$"
+      else
+        " $#{str}$ "
+      end
     end
 
     # hidden index

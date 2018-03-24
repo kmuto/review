@@ -14,6 +14,7 @@ module ReVIEW
       include TextUtils
       attr_reader :book
       attr_reader :path
+      attr_accessor :content
 
       def env
         @book
@@ -62,18 +63,6 @@ module ReVIEW
         @volume
       end
 
-      # deprecated; use content()
-      def open(&_block)
-        return (block_given? ? yield(@io) : @io) if @io
-        StringIO.new(content)
-      end
-
-      attr_writer :content
-
-      def content
-        @content
-      end
-
       def lines
         # FIXME: we cannot duplicate Enumerator on ruby 1.9 HEAD
         (@lines ||= content.lines.to_a).dup
@@ -116,20 +105,20 @@ module ReVIEW
       def numberless_image_index
         @numberless_image_index ||=
           NumberlessImageIndex.parse(lines, id,
-                                     "#{book.basedir}/#{@book.config['imagedir']}",
+                                     @book.imagedir,
                                      @book.image_types, @book.config['builder'])
       end
 
       def image_index
         @image_index ||= ImageIndex.parse(lines, id,
-                                          "#{book.basedir}/#{@book.config['imagedir']}",
+                                          @book.imagedir,
                                           @book.image_types, @book.config['builder'])
         @image_index
       end
 
       def icon_index
         @icon_index ||= IconIndex.parse(lines, id,
-                                        "#{book.basedir}/#{@book.config['imagedir']}",
+                                        @book.imagedir,
                                         @book.image_types, @book.config['builder'])
         @icon_index
       end
@@ -137,7 +126,7 @@ module ReVIEW
       def indepimage_index
         @indepimage_index ||=
           IndepImageIndex.parse(lines, id,
-                                "#{book.basedir}/#{@book.config['imagedir']}",
+                                @book.imagedir,
                                 @book.image_types, @book.config['builder'])
       end
 

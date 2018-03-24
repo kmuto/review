@@ -1,3 +1,93 @@
+# Version 3.0.0preview1 (未リリース)
+
+## 新機能
+* `contentdir` パラメータで、re ファイルをサブフォルダに配置してそのフォルダを指定できるようにしました ([#920])
+
+## 非互換の変更
+* review_version の値が 3 以上のときには、LaTeX の `@<m>` によるインラインの数式の前後にスペース文字を入れないようにしました ([#943])
+
+## バグ修正
+* Ruby 2.3 以下で実行時のログ表示が冗長になるのを修正しました ([#975])
+
+## 機能強化
+## ドキュメント
+## コントリビューターのみなさん
+
+[#920]: https://github.com/kmuto/review/issues/920
+[#943]: https://github.com/kmuto/review/issues/943
+[#975]: https://github.com/kmuto/review/issues/975
+
+# Version 2.5.0
+
+## 新機能
+* プレインテキストを出力する review-textmaker コマンドを用意しました ([#926])
+* LaTeX 向けに、図版の BoudingBox の採取手段を変更する `pdfmaker/bbox` パラメータを追加しました ([#947])
+* 新機能：空行を入れる命令 `//blankline` を追加しました ([#942])
+
+## 非互換の変更
+* `//include` 命令は不完全でユーザーの混乱を招くため、削除しました ([#887])
+* LaTeX において、見出しや図表キャプション内にある脚注は `\footnotemark` を暗黙に使うようにしました ([#841])
+* EPUB および WebMaker の大扉では、印刷所 (prt) の代わりに出版社 (pbl) を記載するようにしました ([#927])
+
+## バグ修正
+* column の終了が正しく動作しないのを修正しました ([#894])
+* `@<hd>` 命令の使用時に内部エラーが出ることがあるのを修正しました ([#896])
+* LaTeX において、キャプションが空のときに空行が入ってしまうのを修正しました ([#922])
+* `//graph` 命令内で gnuplot を使用したときにエラーが発生するのを修正しました ([#931])
+* Windows で review コマンドがエラーになるのを修正しました ([#940])
+* Windows で EPUB 生成時に一時作業ファイルの削除エラーが発生するのを修正しました ([#946])
+
+## 機能強化
+* `//note` などの囲み要素内で末尾に空行があるときに不要な空の段落が作成されるのを修正しました ([#882])
+* `@<chap>` などで catalog.yml に存在しない ID を指定したときのエラーメッセージをわかりやすいものにしました ([#891])
+* catalog.yml に UTF-8 BOM ヘッダがあっても正常に動作するようにしました ([#899])
+* LaTeX の奥付の罫線の長さを固定幅ではなく紙面幅にしました ([#907])
+* texstyle パラメータで配列による複数の TeX スタイルファイルの読み込みを許可するようにしました ([#908])
+* 独自の Rakefile を利用するための `lib/tasks` フォルダを `review-init` コマンドで作成するようにしました ([#921])
+* `review-init` コマンド実行時に、`doc` フォルダにドキュメントをコピーするようにしました ([#918])
+* `review` コマンドのヘルプメッセージを追加しました ([#933])
+* 存在しないあるいは壊れている YAML ファイルを読み込もうとしたときに妥当なエラーメッセージを出すようにしました ([#958])
+* `@<img>` や `@<table>` などのインライン命令で存在しない ID を指定したときのエラーメッセージをわかりやすいものに統一しました ([#954])
+* catalog.yml に存在しないファイルをコンパイルしようとしたときのエラーメッセージをわかりやすいものにしました ([#953])
+* LaTeX において、table, imgtable, image, indepimage から変換した TeX ソースコードにコメントで ID を記述するようにしました（`\begin{reviewimage}%%sampleimg` など）。フック処理での書き換えを簡易化するための修正であり、通常のLaTeX(PDF)の出力には影響ありませんが、独自のフック処理を使用していたプロジェクトでは修正が必要になるかもしれません ([#937])
+
+## ドキュメント
+* 画像ファイルの拡張子の探索順序を文書化しました ([#939])
+* review-textmaker の説明を追加しました ([#944])
+
+## コントリビューターのみなさん
+* [@kauplan](https://github.com/kauplan)
+* [@krororo](https://github.com/krororo)
+* [@mhidaka](https://github.com/mhidaka)
+* [@Pegasus204](https://github.com/Pegasus204)
+
+[#841]: https://github.com/kmuto/review/issues/841
+[#882]: https://github.com/kmuto/review/issues/882
+[#887]: https://github.com/kmuto/review/issues/887
+[#891]: https://github.com/kmuto/review/issues/891
+[#894]: https://github.com/kmuto/review/pull/894
+[#896]: https://github.com/kmuto/review/issues/896
+[#899]: https://github.com/kmuto/review/issues/899
+[#907]: https://github.com/kmuto/review/pull/907
+[#908]: https://github.com/kmuto/review/pull/908
+[#918]: https://github.com/kmuto/review/issues/918
+[#921]: https://github.com/kmuto/review/issues/921
+[#922]: https://github.com/kmuto/review/pull/922
+[#926]: https://github.com/kmuto/review/issues/926
+[#927]: https://github.com/kmuto/review/pull/927
+[#931]: https://github.com/kmuto/review/pull/931
+[#933]: https://github.com/kmuto/review/issues/933
+[#937]: https://github.com/kmuto/review/pull/937
+[#939]: https://github.com/kmuto/review/pull/939
+[#940]: https://github.com/kmuto/review/issues/940
+[#942]: https://github.com/kmuto/review/issues/942
+[#944]: https://github.com/kmuto/review/pull/944
+[#946]: https://github.com/kmuto/review/issues/946
+[#947]: https://github.com/kmuto/review/pull/947
+[#953]: https://github.com/kmuto/review/issues/953
+[#954]: https://github.com/kmuto/review/issues/954
+[#958]: https://github.com/kmuto/review/issues/958
+
 # Version 2.4.0
 
 ## 新機能

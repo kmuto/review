@@ -41,16 +41,13 @@ module ReVIEW
       ".#{@book.config['htmlext']}"
     end
 
-    def builder_init(no_error = false)
-      @no_error = no_error
-      @noindent = nil
-      @ol_num = nil
-      @error_messages = nil
-      @warning_messages = nil
+    def builder_init
     end
     private :builder_init
 
     def builder_init_file
+      @noindent = nil
+      @ol_num = nil
       @warns = []
       @errors = []
       @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
@@ -232,7 +229,9 @@ module ReVIEW
 
     def captionblock(type, lines, caption)
       puts %Q(<div class="#{type}">)
-      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n")
       puts '</div>'
@@ -288,7 +287,9 @@ module ReVIEW
 
     def box(lines, caption = nil)
       puts %Q(<div class="syntax">)
-      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       print %Q(<pre class="syntax">)
       lines.each do |line|
         puts detab(line)
@@ -409,7 +410,9 @@ module ReVIEW
     end
 
     def source_header(caption)
-      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
     end
 
     def source_body(id, lines, lang)
@@ -454,7 +457,9 @@ module ReVIEW
 
     def emlist(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlist-code">)
-      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       class_names = ['emlist']
       class_names.push("language-#{lang}") unless lang.blank?
       class_names.push('highlight') if highlight?
@@ -468,7 +473,9 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlistnum-code">)
-      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
 
       if highlight?
         body = lines.inject('') { |i, j| i + detab(j) + "\n" }
@@ -493,7 +500,9 @@ module ReVIEW
 
     def cmd(lines, caption = nil)
       puts %Q(<div class="cmd-code">)
-      puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
+      if caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       print %Q(<pre class="cmd">)
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = 'shell-session'
@@ -539,7 +548,6 @@ module ReVIEW
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         puts p.parse(unescape_html(lines.join("\n")), true)
       elsif @book.config['imgmath']
-        puts %Q(<div class="equation">)
         math_str = "\\begin{equation*}\n" + unescape_html(lines.join("\n")) + "\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = "./#{@book.config['imagedir']}/_review_math"
@@ -547,7 +555,6 @@ module ReVIEW
         img_path = "./#{math_dir}/_gen_#{key}.png"
         make_math_image(math_str, img_path)
         puts %Q(<img src="#{img_path}" />)
-        puts '</div>'
       else
         print '<pre>'
         puts lines.join("\n")
@@ -628,7 +635,9 @@ module ReVIEW
         puts %Q(<div class="table">)
       end
       begin
-        table_header id, caption if caption.present?
+        if caption.present?
+          table_header id, caption
+        end
       rescue KeyError
         error "no such table: #{id}"
       end
@@ -690,7 +699,9 @@ module ReVIEW
 
       puts %Q(<div id="#{normalize_id(id)}" class="imgtable image">)
       begin
-        table_header id, caption if caption.present?
+        if caption.present?
+          table_header id, caption
+        end
       rescue KeyError
         error "no such table: #{id}"
       end

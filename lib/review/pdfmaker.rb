@@ -35,7 +35,13 @@ module ReVIEW
       @input_files = Hash.new { |h, key| h[key] = '' }
     end
 
+    def system_with_info(*args)
+      @logger.info args.join(' ')
+      Kernel.system(*args)
+    end
+
     def system_or_raise(*args)
+      @logger.info args.join(' ')
       Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
     end
 
@@ -59,7 +65,9 @@ module ReVIEW
     def build_path
       if @config['debug']
         path = "#{@config['bookname']}-pdf"
-        FileUtils.rm_rf(path, secure: true) if File.exist?(path)
+        if File.exist?(path)
+          FileUtils.rm_rf(path, secure: true)
+        end
         Dir.mkdir(path)
         path
       else
@@ -203,7 +211,9 @@ module ReVIEW
         end
 
         call_hook('hook_beforemakeindex')
-        system_or_raise("#{makeindex_command} #{makeindex_options} book") if @config['pdfmaker']['makeindex'] && File.exist?('book.idx')
+        if @config['pdfmaker']['makeindex'] && File.exist?('book.idx')
+          system_or_raise("#{makeindex_command} #{makeindex_options} book")
+        end
         call_hook('hook_aftermakeindex')
 
         system_or_raise("#{texcommand} #{texoptions} book.tex")
@@ -265,10 +275,10 @@ module ReVIEW
         images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/ }
         break if images.empty?
         if @config['pdfmaker']['bbox']
-          system('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
+          system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
           system_or_raise('ebb', '-B', @config['pdfmaker']['bbox'], *images) unless system('extractbb', '-B', @config['pdfmaker']['bbox'], '-m', *images)
         else
-          system('extractbb', *images)
+          system_with_info('extractbb', *images)
           system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
         end
       end
@@ -276,7 +286,9 @@ module ReVIEW
 
     def make_custom_page(file)
       file_sty = file.to_s.sub(/\.[^.]+\Z/, '.tex')
-      return File.read(file_sty) if File.exist?(file_sty)
+      if File.exist?(file_sty)
+        return File.read(file_sty)
+      end
       nil
     end
 
@@ -358,13 +370,16 @@ module ReVIEW
       @okuduke = make_colophon
       @authors = make_authors
 
-      @custom_titlepage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_coverpage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_titlepage = make_custom_page(@config['titlefile'])
       @custom_originaltitlepage = make_custom_page(@config['originaltitlefile'])
       @custom_creditpage = make_custom_page(@config['creditfile'])
 
       @custom_profilepage = make_custom_page(@config['profile'])
       @custom_advfilepage = make_custom_page(@config['advfile'])
-      @custom_colophonpage = make_custom_page(@config['colophon']) if @config['colophon'] && @config['colophon'].is_a?(String)
+      if @config['colophon'] && @config['colophon'].is_a?(String)
+        @custom_colophonpage = make_custom_page(@config['colophon'])
+      end
       @custom_backcoverpage = make_custom_page(@config['backcover'])
 
       if @config['pubhistory']
@@ -391,9 +406,12 @@ module ReVIEW
       @locale_latex['preappendixname'] = appendix_tuple[0]
       @locale_latex['postappendixname'] = appendix_tuple[1]
 
-      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
-      template = layout_file if File.exist?(layout_file)
+      if File.exist?(layout_file)
+        template = layout_file
+      else
+        template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      end
 
       @texcompiler = File.basename(@config['texcommand'], '.*')
 
