@@ -68,7 +68,6 @@ module ReVIEW
       YAML.dump(@yaml).gsub(/\A---\n/, '') # remove yaml header
     end
 
-#    def validate!(basedir)
     def validate!(config, basedir)
       filenames = []
       if predef.present?
