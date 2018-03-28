@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'book_test_helper'
 require 'review/book'
 
 require 'stringio'
@@ -20,6 +19,7 @@ module BookTestHelper
           created_files[basename] = path
         end
         book = Book::Base.load(dir)
+        book.config = ReVIEW::Configure.values
         yield(dir, book, created_files)
       end
     end

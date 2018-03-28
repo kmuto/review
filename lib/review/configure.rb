@@ -1,3 +1,11 @@
+#
+# Copyright (c) 2012-2018 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+# For details of the GNU LGPL, see the file "COPYING".
+#
 require 'securerandom'
 
 module ReVIEW
@@ -41,6 +49,7 @@ module ReVIEW
         'imgmath' => nil, # for HTML
         'htmlext' => 'html',
         'htmlversion' => 5,
+        'contentdir' => '.',
         'imagedir' => 'images',
         'image_ext' => %w[png gif jpg jpeg svg ttf woff otf],
         'fontdir' => 'fonts',
@@ -51,7 +60,6 @@ module ReVIEW
         'postdef_file' => 'POSTDEF',
         'page_metric' => ReVIEW::Book::PageMetric::A5,
         'ext' => '.re',
-        'image_dir' => 'images',
         'image_types' => %w[.ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg],
         'bib_file' => 'bib.re',
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
@@ -87,18 +95,29 @@ module ReVIEW
 
     def [](key)
       maker = self.maker
-      return self.fetch(maker).fetch(key, nil) if maker && self.key?(maker) && self.fetch(maker) && self.fetch(maker).key?(key)
-      return self.fetch(key) if self.key?(key)
+      if maker && self.key?(maker) && self.fetch(maker) && self.fetch(maker).key?(key)
+        return self.fetch(maker).fetch(key, nil)
+      end
+      if self.key?(key)
+        return self.fetch(key)
+      end
       nil
     end
 
     def check_version(version)
-      raise ReVIEW::ConfigError, 'configuration file has no review_version property.' unless self.key?('review_version')
+      unless self.key?('review_version')
+        raise ReVIEW::ConfigError, 'configuration file has no review_version property.'
+      end
 
-      return true if self['review_version'].blank?
+      if self['review_version'].blank?
+        return true
+      end
 
-      raise ReVIEW::ConfigError, 'major version of configuration file is different.' if self['review_version'].to_i != version.to_i ## major version
-      raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self['review_version']}'." if self['review_version'].to_f > version.to_f ## minor version
+      if self['review_version'].to_i != version.to_i ## major version
+        raise ReVIEW::ConfigError, 'major version of configuration file is different.'
+      elsif self['review_version'].to_f > version.to_f ## minor version
+        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self['review_version']}'."
+      end
     end
 
     def name_of(key)

@@ -44,8 +44,7 @@ module ReVIEW
       '.xml'
     end
 
-    def builder_init(no_error = false)
-      @no_error = no_error
+    def builder_init
     end
     private :builder_init
 
@@ -62,13 +61,12 @@ module ReVIEW
       @ol_num = nil
       @first_line_num = nil
       @rootelement = 'doc'
-      @secttags = nil
       @tsize = nil
       @texblockequation = 0
       @texinlineequation = 0
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
-      @secttags = true unless @book.config['structuredxml'].nil?
+      @secttags = @book.config['structuredxml']
     end
     private :builder_init_file
 
@@ -102,7 +100,7 @@ module ReVIEW
           print '</sect>' if @section > 0
         end
 
-        print %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
+        print %Q(<chapter id="chap:#{@chapter.number}">) if @secttags
 
         @section = 0
         @subsection = 0
@@ -116,7 +114,7 @@ module ReVIEW
           print '</sect>' if @section > 0
         end
         @section += 1
-        print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
+        print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) if @secttags
 
         @subsection = 0
         @subsubsection = 0
@@ -129,7 +127,7 @@ module ReVIEW
         end
 
         @subsection += 1
-        print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
+        print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) if @secttags
 
         @subsubsection = 0
         @subsubsubsection = 0

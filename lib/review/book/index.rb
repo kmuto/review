@@ -23,7 +23,9 @@ module ReVIEW
           if id = line.slice(/\[(.*?)\]/, 1)
             items.push item_class.new(id, seq)
             seq += 1
-            ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}" if id.empty?
+            if id.empty?
+              ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
+            end
           end
         end
         new(items, *args)
@@ -46,7 +48,9 @@ module ReVIEW
         @index = {}
         @logger = ReVIEW.logger
         items.each do |i|
-          @logger.warn "warning: duplicate ID: #{i.id} (#{i})" if @index[i.id]
+          if @index[i.id]
+            @logger.warn "warning: duplicate ID: #{i.id} (#{i})"
+          end
           @index[i.id] = i
         end
         @image_finder = nil
@@ -62,7 +66,9 @@ module ReVIEW
         end
 
         @items.each do |i|
-          return i if i.id.split('|').include?(id)
+          if i.id.split('|').include?(id)
+            return i
+          end
         end
         raise KeyError, "not found key '#{id}' for #{self.class}"
       end
@@ -150,7 +156,9 @@ module ReVIEW
               items.push item_class.new(elements[1], seq, elements[3])
               seq += 1
             end
-            ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}" if elements[1] == ''
+            if elements[1] == ''
+              ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
+            end
           end
         end
         new(items, *args)
@@ -295,7 +303,9 @@ module ReVIEW
           end
 
           m = HEADLINE_PATTERN.match(line)
-          next if m.nil? || m[1].size > 10 # Ignore too deep index
+          if m.nil? || m[1].size > 10 # Ignore too deep index
+            next
+          end
           index = m[1].size - 2
 
           # column
@@ -307,7 +317,9 @@ module ReVIEW
             inside_column = false
             next
           end
-          inside_column = false if indexs.blank? || index <= column_level
+          if indexs.blank? || index <= column_level
+            inside_column = false
+          end
           next if inside_column
           next if m[4].strip.empty? # no title
 
@@ -316,7 +328,11 @@ module ReVIEW
             indexs = indexs.take(index + 1)
             headlines = headlines.take(index + 1)
           end
-          (0..index).each { |i| indexs[i] = 0 if indexs[i].nil? } if indexs[index].nil?
+          if indexs[index].nil?
+            (0..index).each do |i|
+              indexs[i] ||= 0
+            end
+          end
           indexs[index] += 1
           headlines[index] = m[3].present? ? m[3].strip : m[4].strip
           items.push Item.new(headlines.join('|'), indexs.dup, m[4].strip)
@@ -330,14 +346,19 @@ module ReVIEW
         @index = {}
         @logger = ReVIEW.logger
         items.each do |i|
-          @logger.warn "warning: duplicate ID: #{i.id}" if @index[i.id]
+          if @index[i.id]
+            @logger.warn "warning: duplicate ID: #{i.id}"
+          end
           @index[i.id] = i
         end
       end
 
       def number(id)
         n = @chap.number
-        n = @chap.format_number(false) if @chap.on_appendix? && @chap.number > 0 && @chap.number < 28
+        # XXX: remove magic number (move to lib/review/book/chapter.rb)
+        if @chap.on_appendix? && @chap.number > 0 && @chap.number < 28
+          n = @chap.format_number(false)
+        end
         ([n] + self[id].number).join('.')
       end
     end

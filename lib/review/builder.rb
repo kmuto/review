@@ -47,10 +47,14 @@ module ReVIEW
       @chapter = chapter
       @location = location
       @output = StringIO.new
-      @book = @chapter.book if @chapter.present?
+      if @chapter.present?
+        @book = @chapter.book
+      end
       @tabwidth = nil
       @tsize = nil
-      @tabwidth = @book.config['tabwidth'] if @book && @book.config && @book.config['tabwidth']
+      if @book && @book.config && @book.config['tabwidth']
+        @tabwidth = @book.config['tabwidth']
+      end
       builder_init_file
     end
 
@@ -145,7 +149,9 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption if caption.present?
+        if caption.present?
+          table_header id, caption
+        end
       rescue KeyError
         error "no such table: #{id}"
       end
@@ -429,7 +435,7 @@ module ReVIEW
 
     def graph(lines, id, command, caption = nil)
       c = target_name
-      dir = File.join(@book.basedir, @book.image_dir, c)
+      dir = File.join(@book.imagedir, c)
       FileUtils.mkdir_p(dir)
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
@@ -471,7 +477,9 @@ module ReVIEW
       if matched = str.match(/\A\|(.*?)\|(.*)/)
         builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
         c = self.class.to_s.gsub('ReVIEW::', '').gsub('Builder', '').downcase
-        @tsize = matched[2] if builders.include?(c)
+        if builders.include?(c)
+          @tsize = matched[2]
+        end
       else
         @tsize = str
       end

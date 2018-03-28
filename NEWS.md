@@ -1,3 +1,81 @@
+# Version 2.5.0
+
+## New Features
+
+* add a new maker command `review-textmaker` to output plain text files ([#926])
+* LATEXBuilder: add a new parameter `pdfmaker/bbox` for settings of BoudingBox ([#947])
+* add a new command `//blankline` ([#942])
+
+## Breaking Changes
+
+* remove (incomplete) command `//include` ([#887])
+* LATEXBuilder: use `\footnotemark` implicitly for captions and headings ([#841])
+* EPUBMaker, WEBMaker: use `pbl` (publisher) instead of `prt` (printer) in titlepage ([#927])
+* PDFMaker: use `texstyle` parameter instead of `usepackage` in layout.tex.erb. When using your own layout.tex.erb, you need to rewrite it with a new code of texstyle parsing. ([#908])
+
+## Bug Fixes
+
+* fix column closing ([#894])
+* fix internal errors in `@<hd>` ([#896])
+* LATEXBuilder: fix to ignore empty caption ([#922])
+* fix invalid commmand errors in `//graph` when using gnuplot ([#931])
+* fix errors of `review` command in Windows ([#940])
+* EPUBMaker: fix error of removing temporary files in Windows ([#946])
+
+## Enhancements
+
+* remove tailing empty lines in block (captionblocks) such as `//note`. ([#882])
+* fix error messages when using non-existent ID of catalog.yml in inline commands such as `@<chap>` ([#891])
+* ignore UTF-8 BOM in catalog.yml ([#899])
+* LATEXBuilder: fix a length of horizontal line in colophon ([#907])
+* allow to use multiple parameters of `texstyle` in config.yml ([#908])
+* review-init: create `lib/tasks` folder to use original Rake commands ([#921])
+* review-init: copy `doc` folder into the target project ([#918])
+* add a help message of `review` ([#933])
+* show appropriate error messages when using invalid or non-existent YAML files ([#958])
+* show better error messages when using unknown ID in inline commands such as `@<img>` and `@<table>` ([#954])
+* show better error messages when compiling a file not included in catalog.yml ([#953])
+* LATEXBuilder: add IDs of `table`, `imgtable`, `image` and `indepimage` as comments (ex. `\begin{reviewimage}%%sampleimg`) ([#937])
+
+## Docs
+
+* add the rule of searching image files with extension ([#939])
+* add description of `review-textmaker` ([#944])
+
+## Contributors
+
+* [@kauplan](https://github.com/kauplan)
+* [@krororo](https://github.com/krororo)
+* [@mhidaka](https://github.com/mhidaka)
+* [@Pegasus204](https://github.com/Pegasus204)
+
+[#841]: https://github.com/kmuto/review/issues/841
+[#882]: https://github.com/kmuto/review/issues/882
+[#887]: https://github.com/kmuto/review/issues/887
+[#891]: https://github.com/kmuto/review/issues/891
+[#894]: https://github.com/kmuto/review/pull/894
+[#896]: https://github.com/kmuto/review/issues/896
+[#899]: https://github.com/kmuto/review/issues/899
+[#907]: https://github.com/kmuto/review/pull/907
+[#908]: https://github.com/kmuto/review/pull/908
+[#918]: https://github.com/kmuto/review/issues/918
+[#921]: https://github.com/kmuto/review/issues/921
+[#922]: https://github.com/kmuto/review/pull/922
+[#926]: https://github.com/kmuto/review/issues/926
+[#927]: https://github.com/kmuto/review/pull/927
+[#931]: https://github.com/kmuto/review/pull/931
+[#933]: https://github.com/kmuto/review/issues/933
+[#937]: https://github.com/kmuto/review/pull/937
+[#939]: https://github.com/kmuto/review/pull/939
+[#940]: https://github.com/kmuto/review/issues/940
+[#942]: https://github.com/kmuto/review/issues/942
+[#944]: https://github.com/kmuto/review/pull/944
+[#946]: https://github.com/kmuto/review/issues/946
+[#947]: https://github.com/kmuto/review/pull/947
+[#953]: https://github.com/kmuto/review/issues/953
+[#954]: https://github.com/kmuto/review/issues/954
+[#958]: https://github.com/kmuto/review/issues/958
+
 # Version 2.4.0
 
 ## New Features

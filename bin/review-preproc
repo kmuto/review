@@ -15,7 +15,6 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review/preprocessor'
-require 'review/unfold'
 require 'review/version'
 require 'review/extentions'
 require 'review/logger'
@@ -54,7 +53,6 @@ def main
   opts.on('-d', '--diff', 'Show diff from current file.') { mode = :diff }
   opts.on('--replace', 'Replace file by preprocessed one.') { mode = :replace }
   opts.on('-s', '--strip', 'Strip preprocessor tags.') { mode = :strip }
-  opts.on('--final', 'Unfold text and strip preprocessor tags. (deprecated)') { mode = :final }
   opts.on('--tabwidth=WIDTH', "Replace tabs with space characters. (0: don't replace)") { |width| param['tabwidth'] = width.to_i }
   opts.on('--help', 'Print this message and quit.') do
     puts opts.help
@@ -94,9 +92,6 @@ def main
       File.open(path) do |f|
         ReVIEW::Preprocessor::Strip.new(f).each { |line| puts line }
       end
-    when :final
-      u = ReVIEW::Unfold.new
-      File.open(path) { |f| u.unfold ReVIEW::Preprocessor::Strip.new(f), $stdout }
     else
       raise "must not happen: #{mode}"
     end
