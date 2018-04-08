@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -239,6 +239,10 @@ module ReVIEW
         @input_files = make_input_files(book, yamlfile)
 
         check_compile_status(@config['ignore-errors'])
+
+        # for backward compatibility
+        @config['usepackage'] = ''
+        @config['usepackage'] = "\\usepackage{#{@config['texstyle']}}" if @config['texstyle']
 
         copy_images(@config['imagedir'], File.join(@path, @config['imagedir']))
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
