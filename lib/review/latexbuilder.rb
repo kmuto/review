@@ -874,7 +874,11 @@ module ReVIEW
 
     # bold
     def inline_b(str)
-      macro('textbf', escape(str))
+      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+        macro('textbf', escape(str))
+      else
+        macro('reviewbold', escape(str))
+      end
     end
 
     # line break
@@ -889,7 +893,11 @@ module ReVIEW
 
     ## @<code> is same as @<tt>
     def inline_code(str)
-      macro('texttt', escape(str))
+      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+        macro('texttt', escape(str))
+      else
+        macro('reviewcode', escape(str))
+      end
     end
 
     def nofunc_text(str)
@@ -897,7 +905,11 @@ module ReVIEW
     end
 
     def inline_tt(str)
-      macro('texttt', escape(str))
+      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+        macro('texttt', escape(str))
+      else
+        macro('reviewtt', escape(str))
+      end
     end
 
     def inline_del(str)
@@ -905,11 +917,19 @@ module ReVIEW
     end
 
     def inline_tti(str)
-      macro('texttt', macro('textit', escape(str)))
+      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+        macro('texttt', macro('textit', escape(str)))
+      else
+        macro('reviewtti', escape(str))
+      end
     end
 
     def inline_ttb(str)
-      macro('texttt', macro('textbf', escape(str)))
+      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+        macro('texttt', macro('textbf', escape(str)))
+      else
+        macro('reviewttb', escape(str))
+      end
     end
 
     def inline_bib(id)
