@@ -418,6 +418,10 @@ module ReVIEW
       erb.result(binding)
     end
 
+    def latex_config
+      erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+    end
+
     def template_content
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       if !@config['review_version'].present? || @config['review_version'].to_f < 3
