@@ -16,29 +16,54 @@
 % toc:break-before=right, index:break-before=both あたりは完全白ページが問題になる同人誌だと怖い？
 % 白ページでもノンブルを打つ という設定(とpagestyleが必要？)
 % 扉画像の指定はreviewmacroのパラメータのほうでやらせるべきかな
+%
+% <<review-jlreq独自>>
+% tombo:bleed(数値+単位) : 裁ち落とし幅。デフォルト3mm
+% tombo:color(\colorの色またはcmykの組み合わせ) : トンボの色。デフォルトcmyk(全プレート)
+% tombo:paper(トンボ入り紙面サイズ) : トンボを付けたときのサイズ。デフォルトは現在のサイズ+2インチ。a4, b5(ここでのbはJISサイズ)などを指定可能。{width, height}も指定可能…だけど今はダメ(FIXME)
+% tombo:show({}指定) : {trimmarks,banner,digital}からの組み合わせ。trimmarksはトンボマーク表示、bannerはファイル名+日付、digitalはデジタルトンボ情報を入れる (FIXME、{}がまだとれない)
+% hyperrefの設定もやったほうがよさそう
 
-% Unused global option [book] が出るの嫌だなぁ(実際はchapterに必要)
+% FIXME: Unused global option [book] が出るの嫌だなぁ(実際はchapterに必要)
 % \setkeyしたら影響が…なんとかなるんかなこれ
 \DeclareOption{book}{}
 \DeclareOption{dvipdfmx}{}
 
-\newif\if@review@jlreq@tombo
-\@review@jlreq@tombofalse
-\DeclareOption{tombo}{\@review@jlreq@tombotrue}% トンボ有効化
+% documentclassでのkeyval使用定義
 \DeclareOption*{\rjreq@setkey}
 \def\rjreq@setkey{\expandafter\@rjreq@setkey\expandafter{\CurrentOption}}
 \def\@rjreq@setkey{\setkeys{rjreq}}
-% トンボのバナー、bleed幅、色の指定
-% バナーにはむしろ通し番号とか入れたくなるが…
-\def\@review@jlreq@tombo@banner{\jobname\space(\number\year-\two@digits\month-\two@digits\day\space\two@digits\hour:\two@digits\minute)}
-\def\@review@jlreq@tombo@bleed{3mm}
-\def\@review@jlreq@tombo@color{cmyk}
+
+% トンボ有効化時設定
+\newif\if@review@jlreq@tombo
+\@review@jlreq@tombofalse
+\DeclareOption{tombo}{\@review@jlreq@tombotrue}
+% トンボの詳細設定
+%% パッケージオプション系。初期値は定義しないことにしてundefined評価でオプション追加するかどうかを判定させることに
+%\def\@review@jkreq@tombo@paper{a4}
+%\def\@review@jkreq@tombo@show{trimmarks,banner,digital}
+
+%% \jlreqtrimmarkssetup設定系
+\def\@review@jlreq@tombo@banner{\jobname\space(\number\year-\two@digits\month-\two@digits\day\space\two@digits\hour:\two@digits\minute)}% バナー(動的にはできない)
+\def\@review@jlreq@tombo@bleed{3mm}% 裁ち落とし幅(ドブ)
+\def\@review@jlreq@tombo@color{cmyk}% トンボの色。cmykはCMYK全プレートで100%
+
+% documentoptionからの取り込み
+\define@key{rjreq}{tombo:paper}{\def\@review@jlreq@tombo@paper{#1}}
+\define@key{rjreq}{tombo:show}{\def\@review@jlreq@tombo@show{#1}}% FIXME:これは{}を取るのでダメ
 \define@key{rjreq}{tombo:banner}{\def\@review@jlreq@tombo@banner{#1}}
 \define@key{rjreq}{tombo:bleed}{\def\@review@jlreq@tombo@bleed{#1}}
 \define@key{rjreq}{tombo:color}{\def\@review@jlreq@tombo@color{#1}}
 
 \ExecuteOptions{}% 初期有効化するもの
 \ProcessOptions\relax
+% パッケージオプションの適用
+\ifdefined\@review@jlreq@tombo@paper
+  \PassOptionsToPackage{trimmarks_paper=\@review@jlreq@tombo@paper}{jlreq-trimmarks}
+\fi
+\ifdefined\@review@jlreq@tombo@show% FIXME:これは{}を取るのでダメ
+  \PassOptionsToPackage{show=\@review@jlreq@tombo@show}{jlreq-trimmarks}
+\fi
 
 %% fixes to LaTeX2e
 \RequirePackage{fix-cm,exscale}
@@ -91,13 +116,14 @@
 \RequirePackage[T1]{fontenc}
 \RequirePackage{textcomp}%T1/TS1
 \RequirePackage{lmodern}%\ttdefault: lmtt
+% FIXME:documentoptionである程度指定したい
 \RequirePackage[\review@jlreq@driver, bookmarks=true, bookmarksnumbered=true,
   % colorlinks=true,
   hidelinks,
 setpagesize=false]{hyperref}[2016/06/24 v6.83q]
 \RequirePackage[\review@jlreq@driver]{pxjahyper}[2012/05/27 v0.2]
 
-\RequirePackage{tikz}%requires xcolor
+\RequirePackage{tikz}
 \usetikzlibrary{calc}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{xparse,hooks,skins,breakable}
@@ -106,3 +132,4 @@ setpagesize=false]{hyperref}[2016/06/24 v6.83q]
 \RequirePackage{amssymb}
 \RequirePackage{bm}
 \RequirePackage{needspace}
+\usepackage{upquote,textcomp}
