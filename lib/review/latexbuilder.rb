@@ -845,7 +845,7 @@ module ReVIEW
 
     # math
     def inline_m(str)
-      if @book.config['review_version'].nil? || @book.config['review_version'].to_f > 2
+      if is_r2?
         "$#{str}$"
       else
         " $#{str}$ "
@@ -859,7 +859,11 @@ module ReVIEW
 
     # index -> italic
     def inline_i(str)
-      macro('textit', escape(str))
+      if is_r2?
+        macro('textit', escape(str))
+      else
+        macro('reviewit', escape(str))
+      end
     end
 
     # index
@@ -874,7 +878,7 @@ module ReVIEW
 
     # bold
     def inline_b(str)
-      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+      if is_r2?
         macro('textbf', escape(str))
       else
         macro('reviewbold', escape(str))
@@ -893,7 +897,7 @@ module ReVIEW
 
     ## @<code> is same as @<tt>
     def inline_code(str)
-      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+      if is_r2?
         macro('texttt', escape(str))
       else
         macro('reviewcode', escape(str))
@@ -905,7 +909,7 @@ module ReVIEW
     end
 
     def inline_tt(str)
-      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+      if is_r2?
         macro('texttt', escape(str))
       else
         macro('reviewtt', escape(str))
@@ -917,7 +921,7 @@ module ReVIEW
     end
 
     def inline_tti(str)
-      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+      if is_r2?
         macro('texttt', macro('textit', escape(str)))
       else
         macro('reviewtti', escape(str))
@@ -925,7 +929,7 @@ module ReVIEW
     end
 
     def inline_ttb(str)
-      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
+      if is_r2?
         macro('texttt', macro('textbf', escape(str)))
       else
         macro('reviewttb', escape(str))
