@@ -13,6 +13,7 @@ require 'review/sec_counter'
 require 'stringio'
 require 'cgi'
 require 'fileutils'
+require 'csv'
 
 module ReVIEW
   class Builder
@@ -35,6 +36,8 @@ module ReVIEW
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
+      @dictionary = {}
+      load_csv('words.csv') # FIXME
       builder_init(*args)
     end
 
@@ -79,6 +82,14 @@ module ReVIEW
 
     def target_name
       self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+    end
+
+    def load_csv(file)
+      if File.exist?(file)
+        CSV.foreach(file) do |row|
+          @dictionary[row[0]] = row[1]
+        end
+      end
     end
 
     def headline_prefix(level)
@@ -343,6 +354,20 @@ module ReVIEW
 
     def inline_tcy(arg)
       "#{arg}[rotate 90 degree]"
+    end
+
+    def inline_w(s)
+      translated = @dictionary[s]
+      if translated
+        escape(translated)
+      else
+        @logger.info("missing word: #{s}")
+        escape(s)
+      end
+    end
+
+    def inline_wb(s)
+      inline_b(unescape(inline_w(s)))
     end
 
     def raw(str)
