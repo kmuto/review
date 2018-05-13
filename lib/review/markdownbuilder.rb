@@ -293,9 +293,9 @@ module ReVIEW
 
     def compile_ruby(base, ruby)
       if @book.htmlversion == 5
-        %Q(<ruby>#{escape_html(base)}<rp>#{I18n.t('ruby_prefix')}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
+        %Q(<ruby>#{escape(base)}<rp>#{I18n.t('ruby_prefix')}</rp><rt>#{escape(ruby)}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       else
-        %Q(<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t('ruby_prefix')}</rp><rt>#{ruby}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
+        %Q(<ruby><rb>#{escape(base)}</rb><rp>#{I18n.t('ruby_prefix')}</rp><rt>#{ruby}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       end
     end
 
@@ -306,12 +306,12 @@ module ReVIEW
         lines.unshift comment
       end
       str = lines.join('<br />')
-      puts %Q(<div class="red">#{escape_html(str)}</div>)
+      puts %Q(<div class="red">#{escape(str)}</div>)
     end
 
     def inline_comment(str)
       if @book.config['draft']
-        %Q(<span class="red">#{escape_html(str)}</span>)
+        %Q(<span class="red">#{escape(str)}</span>)
       else
         ''
       end

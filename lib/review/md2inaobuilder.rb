@@ -44,9 +44,9 @@ module ReVIEW
 
     def compile_ruby(base, ruby)
       if base.length == 1
-        %Q[<span class='monoruby'>#{escape_html(base)}(#{escape_html(ruby)})</span>]
+        %Q[<span class='monoruby'>#{escape(base)}(#{escape(ruby)})</span>]
       else
-        %Q[<span class='groupruby'>#{escape_html(base)}(#{escape_html(ruby)})</span>]
+        %Q[<span class='groupruby'>#{escape(base)}(#{escape(ruby)})</span>]
       end
     end
   end

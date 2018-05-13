@@ -365,7 +365,7 @@ module ReVIEW
       if title == 'title' && caption.blank?
         print '\vspace{-1.5em}'
       end
-      body = lines.inject('') { |i, j| i + detab(unescape_latex(j)) + "\n" }
+      body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
       print body
@@ -688,7 +688,7 @@ module ReVIEW
       blank
       puts macro('begin', 'equation*')
       lines.each do |line|
-        puts unescape_latex(line)
+        puts unescape(line)
       end
       puts macro('end', 'equation*')
       blank
@@ -1008,10 +1008,10 @@ module ReVIEW
 
       sa.map! do |item|
         if @index_db[item]
-          escape_index(escape_latex(@index_db[item])) + '@' + escape_index(escape_latex(item))
+          escape_index(escape(@index_db[item])) + '@' + escape_index(escape(item))
         else
           if item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
-            esc_item = escape_index(escape_latex(item))
+            esc_item = escape_index(escape(item))
             if esc_item != item
               "#{escape_index(item)}@#{esc_item}"
             else
@@ -1019,7 +1019,7 @@ module ReVIEW
             end
           else
             yomi = NKF.nkf('-w --hiragana', @index_mecab.parse(item).force_encoding('UTF-8').chomp)
-            escape_index(escape_latex(yomi)) + '@' + escape_index(escape_latex(item))
+            escape_index(escape(yomi)) + '@' + escape_index(escape(item))
           end
         end
       end

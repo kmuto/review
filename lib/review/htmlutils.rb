@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2006-2018 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -17,20 +17,20 @@ module ReVIEW
       '"' => '&quot;'
     } # .freeze
 
-    def escape_html(str)
+    def escape(str)
       t = ESC
       str.gsub(/[&"<>]/) { |c| t[c] }
     end
 
-    alias_method :escape, :escape_html
-    alias_method :h, :escape_html
+    alias_method :escape_html, :escape # for backward compatibility
+    alias_method :h, :escape
 
-    def unescape_html(str)
+    def unescape(str)
       # FIXME: better code
       str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
     end
 
-    alias_method :unescape, :unescape_html
+    alias_method :unescape_html, :unescape # for backward compatibility
 
     def strip_html(str)
       str.gsub(%r{</?[^>]*>}, '')
@@ -82,7 +82,7 @@ module ReVIEW
       begin
         require 'pygments'
         begin
-          Pygments.highlight(unescape_html(body),
+          Pygments.highlight(unescape(body),
                              options: options,
                              formatter: format,
                              lexer: lexer)
@@ -122,7 +122,7 @@ module ReVIEW
       end
       raise "unknown formatter #{formatter}" unless formatter
 
-      text = unescape_html(body)
+      text = unescape(body)
       formatter.format(lexer.lex(text))
     end
 
