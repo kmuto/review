@@ -26,8 +26,8 @@
 
 % FIXME: Unused global option [book] が出るの嫌だなぁ(実際はchapterに必要)
 % \setkeyしたら影響が…なんとかなるんかなこれ
-\DeclareOption{book}{}
-\DeclareOption{dvipdfmx}{}
+\DeclareOption{book}{\OptionNotUsed}
+\DeclareOption{dvipdfmx}{\OptionNotUsed}
 
 % documentclassでのkeyval使用定義
 \DeclareOption*{\rjreq@setkey}
