@@ -522,5 +522,13 @@ module ReVIEW
         super(str)
       end
     end
+
+    def escape(str)
+      str
+    end
+
+    def unescape(str)
+      str
+    end
   end
 end # module ReVIEW

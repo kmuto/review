@@ -27,6 +27,16 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     I18n.setup('ja')
   end
 
+  def test_escape
+    actual = @builder.escape('<>&_')
+    assert_equal %Q(\\textless{}\\textgreater{}\\&\\textunderscore{}), actual
+  end
+
+  def test_unescape
+    actual = @builder.unescape(%Q(\\textless{}\\textgreater{}\\&\\textunderscore{}))
+    assert_equal '<>&_', actual
+  end
+
   def test_headline_level1
     actual = compile_block("={test} this is test.\n")
     assert_equal %Q(\\chapter{this is test.}\n\\label{chap:chap1}\n), actual

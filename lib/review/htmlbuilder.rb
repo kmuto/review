@@ -546,9 +546,9 @@ module ReVIEW
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
-        puts p.parse(unescape_html(lines.join("\n")), true)
+        puts p.parse(unescape(lines.join("\n")), true)
       elsif @book.config['imgmath']
-        math_str = "\\begin{equation*}\n" + unescape_html(lines.join("\n")) + "\n\\end{equation*}\n"
+        math_str = "\\begin{equation*}\n" + unescape(lines.join("\n")) + "\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = "./#{@book.config['imagedir']}/_review_math"
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
@@ -588,7 +588,7 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
-      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />)
+      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
       image_header id, caption
       puts '</div>'
     end
@@ -713,7 +713,7 @@ module ReVIEW
 
     def imgtable_image(id, caption, metric)
       metrics = parse_metric('html', metric)
-      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />)
+      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
     end
 
     def emtable(lines, caption = nil)
@@ -725,7 +725,7 @@ module ReVIEW
       lines.unshift comment unless comment.blank?
       return unless @book.config['draft']
       str = lines.join('<br />')
-      puts %Q(<div class="draft-comment">#{escape_html(str)}</div>)
+      puts %Q(<div class="draft-comment">#{escape(str)}</div>)
     end
 
     def footnote(id, str)
@@ -741,7 +741,7 @@ module ReVIEW
       caption = '' unless caption.present?
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
       begin
-        puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape_html(compile_inline(caption))}"#{metrics} />)
+        puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
       rescue
         warn "image not bound: #{id}"
         if lines
@@ -792,7 +792,7 @@ module ReVIEW
     end
 
     def inline_labelref(idref)
-      %Q(<a target='#{escape_html(idref)}'>「#{I18n.t('label_marker')}#{escape_html(idref)}」</a>)
+      %Q(<a target='#{escape(idref)}'>「#{I18n.t('label_marker')}#{escape(idref)}」</a>)
     end
 
     alias_method :inline_ref, :inline_labelref
@@ -845,50 +845,50 @@ module ReVIEW
 
     def compile_ruby(base, ruby)
       if @book.htmlversion == 5
-        %Q(<ruby>#{escape_html(base)}<rp>#{I18n.t('ruby_prefix')}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
+        %Q(<ruby>#{escape(base)}<rp>#{I18n.t('ruby_prefix')}</rp><rt>#{escape(ruby)}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       else
-        %Q(<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t('ruby_prefix')}</rp><rt>#{ruby}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
+        %Q(<ruby><rb>#{escape(base)}</rb><rp>#{I18n.t('ruby_prefix')}</rp><rt>#{ruby}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       end
     end
 
     def compile_kw(word, alt)
       %Q(<b class="kw">) +
         if alt
-        then escape_html(word + " (#{alt.strip})")
-        else escape_html(word)
+        then escape(word + " (#{alt.strip})")
+        else escape(word)
         end +
-        "</b><!-- IDX:#{escape_comment(escape_html(word))} -->"
+        "</b><!-- IDX:#{escape_comment(escape(word))} -->"
     end
 
     def inline_i(str)
-      %Q(<i>#{escape_html(str)}</i>)
+      %Q(<i>#{escape(str)}</i>)
     end
 
     def inline_b(str)
-      %Q(<b>#{escape_html(str)}</b>)
+      %Q(<b>#{escape(str)}</b>)
     end
 
     def inline_ami(str)
-      %Q(<span class="ami">#{escape_html(str)}</span>)
+      %Q(<span class="ami">#{escape(str)}</span>)
     end
 
     def inline_bou(str)
-      %Q(<span class="bou">#{escape_html(str)}</span>)
+      %Q(<span class="bou">#{escape(str)}</span>)
     end
 
     def inline_tti(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt"><i>#{escape_html(str)}</i></code>)
+        %Q(<code class="tt"><i>#{escape(str)}</i></code>)
       else
-        %Q(<tt><i>#{escape_html(str)}</i></tt>)
+        %Q(<tt><i>#{escape(str)}</i></tt>)
       end
     end
 
     def inline_ttb(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt"><b>#{escape_html(str)}</b></code>)
+        %Q(<code class="tt"><b>#{escape(str)}</b></code>)
       else
-        %Q(<tt><b>#{escape_html(str)}</b></tt>)
+        %Q(<tt><b>#{escape(str)}</b></tt>)
       end
     end
 
@@ -898,18 +898,18 @@ module ReVIEW
 
     def inline_code(str)
       if @book.htmlversion == 5
-        %Q(<code class="inline-code tt">#{escape_html(str)}</code>)
+        %Q(<code class="inline-code tt">#{escape(str)}</code>)
       else
-        %Q(<tt class="inline-code">#{escape_html(str)}</tt>)
+        %Q(<tt class="inline-code">#{escape(str)}</tt>)
       end
     end
 
     def inline_idx(str)
-      %Q(#{escape_html(str)}<!-- IDX:#{escape_comment(escape_html(str))} -->)
+      %Q(#{escape(str)}<!-- IDX:#{escape_comment(escape(str))} -->)
     end
 
     def inline_hidx(str)
-      %Q(<!-- IDX:#{escape_comment(escape_html(str))} -->)
+      %Q(<!-- IDX:#{escape_comment(escape(str))} -->)
     end
 
     def inline_br(_str)
@@ -931,7 +931,7 @@ module ReVIEW
         make_math_image(math_str, img_path)
         %Q(<span class="equation"><img src="#{img_path}" /></span>)
       else
-        %Q(<span class="equation">#{escape_html(str)}</span>)
+        %Q(<span class="equation">#{escape(str)}</span>)
       end
     end
 
@@ -1048,7 +1048,7 @@ module ReVIEW
     end
 
     def inline_asis(str, tag)
-      %Q(<#{tag}>#{escape_html(str)}</#{tag}>)
+      %Q(<#{tag}>#{escape(str)}</#{tag}>)
     end
 
     def inline_abbr(str)
@@ -1105,9 +1105,9 @@ module ReVIEW
 
     def inline_tt(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt">#{escape_html(str)}</code>)
+        %Q(<code class="tt">#{escape(str)}</code>)
       else
-        %Q(<tt>#{escape_html(str)}</tt>)
+        %Q(<tt>#{escape(str)}</tt>)
       end
     end
 
@@ -1120,11 +1120,11 @@ module ReVIEW
     end
 
     def inline_u(str)
-      %Q(<u>#{escape_html(str)}</u>)
+      %Q(<u>#{escape(str)}</u>)
     end
 
     def inline_recipe(str)
-      %Q(<span class="recipe">「#{escape_html(str)}」</span>)
+      %Q(<span class="recipe">「#{escape(str)}」</span>)
     end
 
     def inline_icon(id)
@@ -1142,7 +1142,7 @@ module ReVIEW
 
     def inline_comment(str)
       if @book.config['draft']
-        %Q(<span class="draft-comment">#{escape_html(str)}</span>)
+        %Q(<span class="draft-comment">#{escape(str)}</span>)
       else
         ''
       end
@@ -1154,7 +1154,7 @@ module ReVIEW
       if str.size == 1 && str.match(/[[:ascii:]]/)
         style = 'upright'
       end
-      %Q(<span class="#{style}">#{escape_html(str)}</span>)
+      %Q(<span class="#{style}">#{escape(str)}</span>)
     end
 
     def inline_raw(str)
@@ -1162,14 +1162,14 @@ module ReVIEW
     end
 
     def nofunc_text(str)
-      escape_html(str)
+      escape(str)
     end
 
     def compile_href(url, label)
       if @book.config['externallink']
-        %Q(<a href="#{escape_html(url)}" class="link">#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+        %Q(<a href="#{escape(url)}" class="link">#{label.nil? ? escape(url) : escape(label)}</a>)
       else
-        label.nil? ? escape_html(url) : I18n.t('external_link', [escape_html(label), escape_html(url)])
+        label.nil? ? escape(url) : I18n.t('external_link', [escape(label), escape(url)])
       end
     end
 
