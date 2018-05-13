@@ -361,8 +361,8 @@ module ReVIEW
       if translated
         escape(translated)
       else
-        @logger.info("missing word: #{s}")
-        escape(s)
+        warn "word not bound: #{s}"
+        escape("[missing word: #{s}]")
       end
     end
 
