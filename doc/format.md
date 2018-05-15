@@ -416,8 +416,14 @@ plot sin(x)
 //}
 ```
 
-You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure` as the command name.
-Before using these tools, you should installed them.
+You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure`, and `plantuml` as the command name.
+Before using these tools, you should installed them and configured path appropriately.
+
+* Graphviz ( https://www.graphviz.org/ ) : set path to `dot` command
+* Gnuplot ( http://www.gnuplot.info/ ) : set path to `gnuplot` command
+* Blockdiag ( http://blockdiag.com/ ) : set path to `blockdiag` command. Install ReportLab also to make a PDF
+* aafigure ( https://launchpad.net/aafigure ) : set path to `aafigure` command
+* PlantUML ( http://plantuml.com/ ) : set path to `java` command. place `plantuml.jar` on working folder
 
 ## Tables
 
