@@ -2,6 +2,7 @@
 
 ## 新機能
 * `contentdir` パラメータで、re ファイルをサブフォルダに配置してそのフォルダを指定できるようにしました ([#920])
+* `//graph` 命令 で PlantUML をサポートしました ([#1006])
 
 ## 非互換の変更
 * review_version の値が 3 以上のときには、LaTeX の `@<m>` によるインラインの数式の前後にスペース文字を入れないようにしました ([#943])
@@ -10,12 +11,16 @@
 * Ruby 2.3 以下で実行時のログ表示が冗長になるのを修正しました ([#975])
 
 ## 機能強化
+* Windows でも `//graph` 命令が動作するようにしました ([#1008])
+
 ## ドキュメント
 ## コントリビューターのみなさん
 
 [#920]: https://github.com/kmuto/review/issues/920
 [#943]: https://github.com/kmuto/review/issues/943
 [#975]: https://github.com/kmuto/review/issues/975
+[#1006]: https://github.com/kmuto/review/issues/1006
+[#1008]: https://github.com/kmuto/review/pull/1008
 
 # Version 2.5.0
 
