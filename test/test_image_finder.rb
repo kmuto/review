@@ -96,4 +96,26 @@ class ImageFinderTest < Test::Unit::TestCase
       FileUtils.remove_entry_secure dir
     end
   end
+
+  def test_find_path_caseinsensitive
+    dir = Dir.mktmpdir
+    begin
+      path = File.join(dir, 'ch01-foo.jpg')
+      FileUtils.touch(path)
+      path = File.join(dir, 'ch01-Foo.png')
+      FileUtils.touch(path)
+      finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
+      assert_equal(File.join(dir, 'ch01-foo.jpg'), finder.find_path('foo'))
+
+      %w[JPG Jpg JPg jPG].each do |ext|
+        path = File.join(dir, "ch01-foo.#{ext}")
+        FileUtils.touch(path)
+      end
+
+      finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
+      assert_equal(File.join(dir, 'ch01-foo.JPG'), finder.find_path('foo'))
+    ensure
+      FileUtils.remove_entry_secure dir
+    end
+  end
 end
