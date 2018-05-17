@@ -372,12 +372,18 @@ V1 --> V6 --|
 例: gnuplotの使用
 
 ```
-//graph[sin_x][gnuplot]{
+//graph[sin_x][gnuplot][Gnuplotの使用]{
 plot sin(x)
 //}
 ```
 
-コマンド名には、「`graphviz`」「`gnuplot`」「`blockdiag`」「`aafigure`」のいずれかを指定できます。ツールはそれぞれ別途インストールする必要があります。
+コマンド名には、「`graphviz`」「`gnuplot`」「`blockdiag`」「`aafigure`」「`plantuml`」のいずれかを指定できます。ツールはそれぞれ別途インストールし、インストール先のフォルダ名を指定することなく実行できる (パスを通す) 必要があります。
+
+* Graphviz ( https://www.graphviz.org/ ) : `dot` コマンドへのパスを OS に設定すること
+* Gnuplot ( http://www.gnuplot.info/ ) : `gnuplot` コマンドへのパスを OS に設定すること
+* Blockdiag ( http://blockdiag.com/ ) : `blockdiag` コマンドへのパスを OS に設定すること。PDF を生成する場合は ReportLab もインストールすること
+* aafigure ( https://launchpad.net/aafigure ) : `aafigure` コマンドへのパスを OS に設定すること
+* PlantUML ( http://plantuml.com/ ) : `java` コマンドへのパスを OS に設定し、`plantuml.jar` が作業フォルダにあること
 
 ## 表
 

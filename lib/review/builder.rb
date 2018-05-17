@@ -13,6 +13,7 @@ require 'review/sec_counter'
 require 'stringio'
 require 'cgi'
 require 'fileutils'
+require 'tempfile'
 require 'csv'
 
 module ReVIEW
@@ -462,7 +463,7 @@ module ReVIEW
       )
     end
 
-    def graph(lines, id, command, caption = nil)
+    def graph(lines, id, command, caption = '')
       c = target_name
       dir = File.join(@book.imagedir, c)
       FileUtils.mkdir_p(dir)
@@ -470,21 +471,61 @@ module ReVIEW
       file_path = File.join(dir, file)
 
       line = self.unescape(lines.join("\n"))
-      cmds = {
-        graphviz: "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
-        gnuplot: %Q(echo 'set terminal ) +
-        "#{image_ext == 'eps' ? 'postscript eps' : image_ext}\n" +
-        %Q( set output "#{file_path}"\n#{line}' | gnuplot),
-        blockdiag: "echo '#{line}' " +
-        "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin",
-        aafigure: "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}"
-      }
-      cmd = cmds[command.to_sym]
-      warn cmd
-      system cmd
+
+      tf = Tempfile.new('review_graph')
+      tf.puts line
+      tf.close
+      begin
+        file_path = send("graph_#{command}".to_sym, id, file_path, line, tf.path)
+      ensure
+        tf.unlink
+      end
       @chapter.image_index.image_finder.add_entry(file_path)
 
       image(lines, id, caption)
+    end
+
+    def system_graph(id, *args)
+      @logger.info args.join(' ')
+      Kernel.system(*args) or @logger.error("failed to run command for id #{id}: #{args.join(' ')}")
+    end
+
+    def graph_graphviz(id, file_path, _line, tf_path)
+      system_graph(id, 'dot', "-T#{image_ext}", "-o#{file_path}", tf_path)
+      file_path
+    end
+
+    def graph_gnuplot(id, file_path, line, tf_path)
+      File.open(tf_path, 'w') do |tf|
+        tf.puts <<EOTGNUPLOT
+set terminal #{image_ext == 'eps' ? 'postscript eps' : image_ext}
+set output "#{file_path}"
+#{line}
+EOTGNUPLOT
+      end
+      system_graph(id, 'gnuplot', tf_path)
+      file_path
+    end
+
+    def graph_blockdiag(id, file_path, _line, tf_path)
+      system_graph(id, 'blockdiag', '-a', '-T', image_ext, '-o', file_path, tf_path)
+      file_path
+    end
+
+    def graph_aafigure(id, file_path, _line, tf_path)
+      system_graph(id, 'aafigure', '-t', image_ext, '-o', file_path, tf_path)
+      file_path
+    end
+
+    def graph_plantuml(id, file_path, _line, tf_path)
+      ext = image_ext
+      if ext == 'pdf'
+        ext = 'eps'
+        file_path.sub!(/\.pdf\Z/, '.eps')
+      end
+      system_graph(id, 'java', '-jar', 'plantuml.jar', "-t#{ext}", '-charset', 'UTF-8', tf_path)
+      FileUtils.mv "#{tf_path}.#{ext}", file_path
+      file_path
     end
 
     def image_ext
