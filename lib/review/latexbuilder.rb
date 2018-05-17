@@ -28,7 +28,7 @@ module ReVIEW
     end
 
     def builder_init_file
-      @chapter.book.image_types = %w[.ai .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif]
+      @chapter.book.image_types = %w[.ai .AI .eps .EPS .pdf .PDF .tif .TIF .tiff .TIFF .png .PNG .bmp .BMP .jpg .JPG .jpeg .JPEG .gif .GIF]
       @blank_needed = false
       @latex_tsize = nil
       @tsize = nil
