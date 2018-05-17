@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -272,7 +272,7 @@ module ReVIEW
       Dir.mkdir(to)
       ReVIEW::MakerHelper.copy_images_to_dir(from, to)
       Dir.chdir(to) do
-        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|JPG|jpeg|JPEG|png|PNG|pdf|PDF|ai|AI|eps|EPS|tif|TIF)\z/ }
+        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/i }
         break if images.empty?
         if @config['pdfmaker']['bbox']
           system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)

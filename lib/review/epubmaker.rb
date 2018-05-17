@@ -580,7 +580,7 @@ module ReVIEW
       require 'find'
       allow_exts ||= @config['image_ext']
 
-      pat = '\\.(' + allow_exts.delete_if { |t| %w[ttf TTF woff WOFF otf OTF].member?(t) }.join('|') + ')'
+      pat = '\\.(' + allow_exts.delete_if { |t| %w[ttf woff otf].member?(t.downcase) }.join('|') + ')'
       extre = Regexp.new(pat, Regexp::IGNORECASE)
       Find.find(basetmpdir) do |fname|
         next unless fname.match(extre)

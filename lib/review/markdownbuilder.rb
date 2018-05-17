@@ -18,7 +18,7 @@ module ReVIEW
     def builder_init_file
       @blank_seen = nil
       @ul_indent = 0
-      @chapter.book.image_types = %w[.png .PNG .jpg .JPG .jpeg .JPEG .gif .GIF .svg .SVG]
+      @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
     end
     private :builder_init_file
 

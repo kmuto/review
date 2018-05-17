@@ -50,7 +50,7 @@ module ReVIEW
       @ol_num = nil
       @warns = []
       @errors = []
-      @chapter.book.image_types = %w[.png .PNG .jpg .JPG .jpeg .JPEG .gif .GIF .svg .SVG]
+      @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0

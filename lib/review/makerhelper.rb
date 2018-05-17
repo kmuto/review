@@ -51,7 +51,7 @@ module ReVIEW
               image_files << "#{from_dir}/#{fname}.#{conv_type}"
             end
 
-            exts = options[:exts] || %w[png PNG gif GIF jpg JPG jpeg JPEG svg SVG pdf PDF eps EPS ai AI tif TIF]
+            exts = options[:exts] || %w[png gif jpg jpeg svg pdf eps ai tif]
             exts_str = exts.join('|')
             if !is_converted && fname =~ /\.(#{exts_str})$/i
               FileUtils.cp "#{from_dir}/#{fname}", to_dir
