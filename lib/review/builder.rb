@@ -37,7 +37,6 @@ module ReVIEW
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
-      load_csv('words.csv') # FIXME
       builder_init(*args)
     end
 
@@ -55,8 +54,13 @@ module ReVIEW
       end
       @tabwidth = nil
       @tsize = nil
-      if @book && @book.config && @book.config['tabwidth']
-        @tabwidth = @book.config['tabwidth']
+      if @book && @book.config
+        if @book.config['wordcsvfile']
+          load_csv(@book.config['wordcsvfile'])
+        end
+        if @book.config['tabwidth']
+          @tabwidth = @book.config['tabwidth']
+        end
       end
       builder_init_file
     end
