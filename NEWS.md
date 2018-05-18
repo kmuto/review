@@ -3,17 +3,23 @@
 ## New Features
 * .re files can be placed in subfolders by specifying a folder with `contentdir` parameter ([#920])
 * `//graph` supports PlantUML ([#1006])
+* add `@<w>` and `@<wb>` to expand the value corresponding to the specified key from CSV word file ([#1007])
 
 ## Breaking Changes
 * When the value of review_version is 3 or more, `@<m>` no longer add a space before and after formula ([#943])
 
 ## Bug Fixes
 * Fix redundant log display with Ruby 2.3 or later ([#975])
+* for backward compatibility, revert `usepackage` parameter which was removed Version 2.5.0 ([#1001])
 
 ## Enhancements
 * `//graph` now works on Windows ([#1008])
+* file extensions of image files and font files becomes case insensitive ([#1002])
 
 ## Docs
+* add description of external tools used in `//graph` ([#1008])
+* add description of `@<w>` and `@<wb>` ([#1007])
+
 ## Contributors
 
 [#920]: https://github.com/kmuto/review/issues/920
