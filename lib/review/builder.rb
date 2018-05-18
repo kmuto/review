@@ -56,8 +56,8 @@ module ReVIEW
       @tabwidth = nil
       @tsize = nil
       if @book && @book.config
-        if @book.config['wordcsvfile']
-          load_csv(@book.config['wordcsvfile'])
+        if @book.config['words_file']
+          load_words(@book.config['words_file'])
         end
         if @book.config['tabwidth']
           @tabwidth = @book.config['tabwidth']
@@ -89,10 +89,12 @@ module ReVIEW
       self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
     end
 
-    def load_csv(file)
+    def load_words(file)
       if File.exist?(file)
-        CSV.foreach(file) do |row|
-          @dictionary[row[0]] = row[1]
+        if file =~ /\.csv\Z/i
+          CSV.foreach(file) do |row|
+            @dictionary[row[0]] = row[1]
+          end
         end
       end
     end

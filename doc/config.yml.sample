@@ -183,8 +183,8 @@ secnolevel: 2
 # reファイルを格納するディレクトリ。省略した場合は以下 (. はカレントディレクトリを示す)
 # contentdir: .
 
-# @<w>命令で使用するCSV単語ファイルのパス
-# wordcsvfile: words.csv
+# @<w>命令で使用する単語ファイルのパス
+# words_file: words.csv
 
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)。
 # page_metric: A5
