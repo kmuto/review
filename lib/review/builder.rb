@@ -14,6 +14,7 @@ require 'stringio'
 require 'cgi'
 require 'fileutils'
 require 'tempfile'
+require 'csv'
 
 module ReVIEW
   class Builder
@@ -36,6 +37,7 @@ module ReVIEW
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
+      @dictionary = {}
       builder_init(*args)
     end
 
@@ -53,8 +55,13 @@ module ReVIEW
       end
       @tabwidth = nil
       @tsize = nil
-      if @book && @book.config && @book.config['tabwidth']
-        @tabwidth = @book.config['tabwidth']
+      if @book && @book.config
+        if @book.config['words_file']
+          load_words(@book.config['words_file'])
+        end
+        if @book.config['tabwidth']
+          @tabwidth = @book.config['tabwidth']
+        end
       end
       builder_init_file
     end
@@ -80,6 +87,16 @@ module ReVIEW
 
     def target_name
       self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+    end
+
+    def load_words(file)
+      if File.exist?(file)
+        if file =~ /\.csv\Z/i
+          CSV.foreach(file) do |row|
+            @dictionary[row[0]] = row[1]
+          end
+        end
+      end
     end
 
     def headline_prefix(level)
@@ -344,6 +361,20 @@ module ReVIEW
 
     def inline_tcy(arg)
       "#{arg}[rotate 90 degree]"
+    end
+
+    def inline_w(s)
+      translated = @dictionary[s]
+      if translated
+        escape(translated)
+      else
+        warn "word not bound: #{s}"
+        escape("[missing word: #{s}]")
+      end
+    end
+
+    def inline_wb(s)
+      inline_b(unescape(inline_w(s)))
     end
 
     def raw(str)

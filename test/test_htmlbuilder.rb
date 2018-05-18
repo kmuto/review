@@ -1720,6 +1720,21 @@ EOS
     assert_equal 'test <code class="inline-code tt">@&lt;code&gt;{$サンプル$}</code>', actual
   end
 
+  def test_inline_w
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'words.csv'), 'w') do |f|
+        f.write <<EOB
+"F","foo"
+"B","bar""\\<>_@<b>{BAZ}"
+EOB
+      end
+      @book.config['words_file'] = File.join(dir, 'words.csv')
+
+      actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
+      assert_equal %Q(<p>foo bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ} <b>bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ}</b> [missing word: N]</p>\n), actual
+    end
+  end
+
   def test_inline_unknown
     e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
     assert_equal ':1: error: unknown image: n', e.message
