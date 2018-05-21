@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 2.0.
+This document explains about the format of Re:VIEW 3.0.
 
 
 ## Paragraph
@@ -718,6 +718,33 @@ Usage:
 //label[point1]
 ```
 
+## Words file
+
+By creating a word file with key / value pair, `@<w>{key}` or `@<wb>{key}` will be expanded the key to the corresponding value. `@<wb>` means bold style.
+
+This word file is a CSV file with extension .csv. This first columns is the key, the second row is the value.
+
+```
+"LGPL","Lesser General Public License"
+"i18n","""i""nternationalizatio""n"""
+```
+
+Specify the word file path in `words_file` parameter of `config.yml`.
+
+Usage:
+
+```review
+@<w>{LGPL}, @<wb>{i18n}
+```
+
+(In HTML:)
+
+```
+Lesser General Public License, ★"i"nternationalizatio"n"☆
+```
+
+Values are escaped by the builder. It is not possible to include inline commands in the value.
+
 ## Comments
 
 If you want to write some comments that do not output in the document, you can use comment notation `#@#`.
@@ -850,6 +877,8 @@ this is a special line.
 @<href>{http://www.google.com/, google}:: hyper link(URL)
 @<icon>{samplephoto}:: inline image
 @<m>{a + \alpha}:: TeX inline equation
+@<w>{key}:: expand the value corresponding to the key.
+@<wb>{key}:: expand the value corresponding to the key with bold style.
 @<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}`, `\\` is `\`, and `\n` is newline.
 @<embed>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
 @<idx>{string}:: output a string and register it as an index. See makeindex.md.

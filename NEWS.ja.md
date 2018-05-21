@@ -3,23 +3,32 @@
 ## 新機能
 * `contentdir` パラメータで、re ファイルをサブフォルダに配置してそのフォルダを指定できるようにしました ([#920])
 * `//graph` 命令 で PlantUML をサポートしました ([#1006])
+* CSV 形式の単語ファイルから指定キーに対応する値を展開する、`@<w>` および `@<wb>` 命令を追加しました ([#1007])
 
 ## 非互換の変更
 * review_version の値が 3 以上のときには、LaTeX の `@<m>` によるインラインの数式の前後にスペース文字を入れないようにしました ([#943])
 
 ## バグ修正
 * Ruby 2.3 以下で実行時のログ表示が冗長になるのを修正しました ([#975])
+* Version 2.5.0 で削除した `usepackage` パラメータを、互換性のために戻しました ([#1001])
 
 ## 機能強化
 * Windows でも `//graph` 命令が動作するようにしました ([#1008])
+* 画像ファイルやフォントファイルの拡張子が大文字・小文字どちらでも利用できるようにしました ([#1002])
 
 ## ドキュメント
+* `//graph` 命令の各外部ツールについての説明を追加しました ([#1008])
+* `@<w>`, `@<wb>` 命令の説明を追加しました ([#1007])
+
 ## コントリビューターのみなさん
 
 [#920]: https://github.com/kmuto/review/issues/920
 [#943]: https://github.com/kmuto/review/issues/943
 [#975]: https://github.com/kmuto/review/issues/975
+[#1001]: https://github.com/kmuto/review/pull/1001
+[#1002]: https://github.com/kmuto/review/issues/1002
 [#1006]: https://github.com/kmuto/review/issues/1006
+[#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
 
 # Version 2.5.0
