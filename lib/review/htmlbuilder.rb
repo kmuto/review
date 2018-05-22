@@ -390,10 +390,9 @@ module ReVIEW
       end
     end
 
-    def list_body(id, lines, lang)
-      id ||= ''
+    def list_body(_id, lines, lang)
       class_names = ['list']
-      lexer = lang || File.extname(id).gsub('.', '')
+      lexer = lang
       class_names.push("language-#{lexer}") unless lexer.blank?
       class_names.push('highlight') if highlight?
       print %Q(<pre class="#{class_names.join(' ')}">)
@@ -415,11 +414,10 @@ module ReVIEW
       end
     end
 
-    def source_body(id, lines, lang)
-      id ||= ''
+    def source_body(_id, lines, lang)
       print %Q(<pre class="source">)
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-      lexer = lang || File.extname(id).gsub('.', '')
+      lexer = lang
       puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
     end

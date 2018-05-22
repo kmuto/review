@@ -748,14 +748,6 @@ EOS
     assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n), actual
   end
 
-  def test_list_ext
-    def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist.rb', 1)
-    end
-    actual = compile_block("//list[samplelist.rb][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<div id="samplelist.rb" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list language-rb">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n), actual
-  end
-
   def test_listnum
     def @chapter.list(_id)
       Book::ListIndex::Item.new('samplelist', 1)
