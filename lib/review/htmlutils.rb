@@ -112,7 +112,10 @@ module ReVIEW
 
       require 'rouge'
       lexer = Rouge::Lexer.find(lexer)
-      raise "unknown lexer #{lexer}" unless lexer
+
+      unless lexer
+        return body
+      end
 
       formatter = Rouge::Formatters::HTML.new(css_class: 'highlight')
       if ops[:linenum]
@@ -120,7 +123,10 @@ module ReVIEW
                                                      table_class: 'highlight rouge-table',
                                                      start_line: first_line_num)
       end
-      raise "unknown formatter #{formatter}" unless formatter
+
+      unless formatter
+        return body
+      end
 
       text = unescape(body)
       formatter.format(lexer.lex(text))
