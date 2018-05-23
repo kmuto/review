@@ -7,6 +7,7 @@
 
 ## 非互換の変更
 * review_version の値が 3 以上のときには、LaTeX の `@<m>` によるインラインの数式の前後にスペース文字を入れないようにしました ([#943])
+* HTML ビルダにおいて、`//list`, `//listnum` で識別子に基づくハイライト言語の自動検出をやめました (ハイライト言語は命令の 3 つめのオプションで指定してください) ([#1016])
 
 ## バグ修正
 * Ruby 2.3 以下で実行時のログ表示が冗長になるのを修正しました ([#975])
@@ -30,6 +31,7 @@
 [#1006]: https://github.com/kmuto/review/issues/1006
 [#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
+[#1016]: https://github.com/kmuto/review/issues/1016
 
 # Version 2.5.0
 
