@@ -7,6 +7,7 @@
 
 ## Breaking Changes
 * When the value of review_version is 3 or more, `@<m>` no longer add a space before and after formula ([#943])
+* the function of automatic detection of highlight target language by identifier in `//list`, `//listnum` is removed from HTMLBuilder ([#1016])
 
 ## Bug Fixes
 * Fix redundant log display with Ruby 2.3 or later ([#975])
@@ -30,6 +31,7 @@
 [#1006]: https://github.com/kmuto/review/issues/1006
 [#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
+[#1016]: https://github.com/kmuto/review/issues/1016
 
 # Version 2.5.0
 
