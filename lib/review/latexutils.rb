@@ -88,13 +88,5 @@ module ReVIEW
     def macro(name, *args)
       "\\#{name}" + args.map { |a| "{#{a}}" }.join
     end
-
-    def is_r2?
-      if @book.config['review_version'] && @book.config['review_version'].to_f < 3
-        true
-      else
-        false
-      end
-    end
   end
 end

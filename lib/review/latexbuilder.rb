@@ -845,7 +845,7 @@ module ReVIEW
 
     # math
     def inline_m(str)
-      if is_r2?
+      if @book.config.check_version('2', exception: false)
         "$#{str}$"
       else
         " $#{str}$ "
@@ -859,7 +859,7 @@ module ReVIEW
 
     # index -> italic
     def inline_i(str)
-      if is_r2?
+      if @book.config.check_version('2', exception: false)
         macro('textit', escape(str))
       else
         macro('reviewit', escape(str))
@@ -878,7 +878,7 @@ module ReVIEW
 
     # bold
     def inline_b(str)
-      if is_r2?
+      if @book.config.check_version('2', exception: false)
         macro('textbf', escape(str))
       else
         macro('reviewbold', escape(str))
@@ -897,7 +897,7 @@ module ReVIEW
 
     ## @<code> is same as @<tt>
     def inline_code(str)
-      if is_r2?
+      if @book.config.check_version('2', exception: false)
         macro('texttt', escape(str))
       else
         macro('reviewcode', escape(str))
@@ -909,7 +909,7 @@ module ReVIEW
     end
 
     def inline_tt(str)
-      if is_r2?
+      if @book.config.check_version('2', exception: false)
         macro('texttt', escape(str))
       else
         macro('reviewtt', escape(str))
@@ -921,7 +921,7 @@ module ReVIEW
     end
 
     def inline_tti(str)
-      if is_r2?
+      if @book.config.check_version('2', exception: false)
         macro('texttt', macro('textit', escape(str)))
       else
         macro('reviewtti', escape(str))
@@ -929,7 +929,7 @@ module ReVIEW
     end
 
     def inline_ttb(str)
-      if is_r2?
+      if @book.config.check_version('2', exception: false)
         macro('texttt', macro('textbf', escape(str)))
       else
         macro('reviewttb', escape(str))
