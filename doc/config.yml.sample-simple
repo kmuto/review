@@ -7,6 +7,7 @@ debug: true
 
 # inherit: ["config-default.yml"]
 
+
 ## Book Metadata
 
 bookname: book
