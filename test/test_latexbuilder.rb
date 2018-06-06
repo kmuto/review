@@ -27,6 +27,16 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     I18n.setup('ja')
   end
 
+  def test_escape
+    actual = @builder.escape('<>&_')
+    assert_equal %Q(\\textless{}\\textgreater{}\\&\\textunderscore{}), actual
+  end
+
+  def test_unescape
+    actual = @builder.unescape(%Q(\\textless{}\\textgreater{}\\&\\textunderscore{}))
+    assert_equal '<>&_', actual
+  end
+
   def test_headline_level1
     actual = compile_block("={test} this is test.\n")
     assert_equal %Q(\\chapter{this is test.}\n\\label{chap:chap1}\n), actual
@@ -983,6 +993,25 @@ EOS
   def test_inline_fence
     actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
     assert_equal 'test \\reviewcode{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
+  end
+
+  def test_inline_w
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'words.csv'), 'w') do |f|
+        f.write <<EOB
+"F","foo"
+"B","bar""\\<>_@<b>{BAZ}"
+EOB
+      end
+      @book.config['words_file'] = File.join(dir, 'words.csv')
+
+      actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
+      expected = <<-EOS
+
+foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\textbf{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
+EOS
+      assert_equal expected, actual
+    end
   end
 
   def test_inline_unknown

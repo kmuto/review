@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2006-2018 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -17,20 +17,20 @@ module ReVIEW
       '"' => '&quot;'
     } # .freeze
 
-    def escape_html(str)
+    def escape(str)
       t = ESC
       str.gsub(/[&"<>]/) { |c| t[c] }
     end
 
-    alias_method :escape, :escape_html
-    alias_method :h, :escape_html
+    alias_method :escape_html, :escape # for backward compatibility
+    alias_method :h, :escape
 
-    def unescape_html(str)
+    def unescape(str)
       # FIXME: better code
       str.gsub('&quot;', '"').gsub('&gt;', '>').gsub('&lt;', '<').gsub('&amp;', '&')
     end
 
-    alias_method :unescape, :unescape_html
+    alias_method :unescape_html, :unescape # for backward compatibility
 
     def strip_html(str)
       str.gsub(%r{</?[^>]*>}, '')
@@ -82,7 +82,7 @@ module ReVIEW
       begin
         require 'pygments'
         begin
-          Pygments.highlight(unescape_html(body),
+          Pygments.highlight(unescape(body),
                              options: options,
                              formatter: format,
                              lexer: lexer)
@@ -112,7 +112,10 @@ module ReVIEW
 
       require 'rouge'
       lexer = Rouge::Lexer.find(lexer)
-      raise "unknown lexer #{lexer}" unless lexer
+
+      unless lexer
+        return body
+      end
 
       formatter = Rouge::Formatters::HTML.new(css_class: 'highlight')
       if ops[:linenum]
@@ -120,9 +123,12 @@ module ReVIEW
                                                      table_class: 'highlight rouge-table',
                                                      start_line: first_line_num)
       end
-      raise "unknown formatter #{formatter}" unless formatter
 
-      text = unescape_html(body)
+      unless formatter
+        return body
+      end
+
+      text = unescape(body)
       formatter.format(lexer.lex(text))
     end
 

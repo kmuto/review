@@ -241,6 +241,10 @@ module ReVIEW
 
         check_compile_status(@config['ignore-errors'])
 
+        # for backward compatibility
+        @config['usepackage'] = ''
+        @config['usepackage'] = "\\usepackage{#{@config['texstyle']}}" if @config['texstyle']
+
         copy_images(@config['imagedir'], File.join(@path, @config['imagedir']))
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
@@ -275,7 +279,7 @@ module ReVIEW
       Dir.mkdir(to)
       ReVIEW::MakerHelper.copy_images_to_dir(from, to)
       Dir.chdir(to) do
-        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/ }
+        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/i }
         break if images.empty?
         if @config['pdfmaker']['bbox']
           system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
