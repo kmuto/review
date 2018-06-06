@@ -1008,7 +1008,7 @@ EOB
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       expected = <<-EOS
 
-foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\textbf{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
+foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\reviewbold{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
 EOS
       assert_equal expected, actual
     end
