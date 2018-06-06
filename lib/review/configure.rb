@@ -104,9 +104,13 @@ module ReVIEW
       nil
     end
 
-    def check_version(version)
+    def check_version(version, exception: true)
       unless self.key?('review_version')
-        raise ReVIEW::ConfigError, 'configuration file has no review_version property.'
+        if exception
+          raise ReVIEW::ConfigError, 'configuration file has no review_version property.'
+        else
+          return false
+        end
       end
 
       if self['review_version'].blank?
@@ -114,10 +118,19 @@ module ReVIEW
       end
 
       if self['review_version'].to_i != version.to_i ## major version
-        raise ReVIEW::ConfigError, 'major version of configuration file is different.'
+        if exception
+          raise ReVIEW::ConfigError, 'major version of configuration file is different.'
+        else
+          return false
+        end
       elsif self['review_version'].to_f > version.to_f ## minor version
-        raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self['review_version']}'."
+        if exception
+          raise ReVIEW::ConfigError, "Re:VIEW version '#{version}' is older than configuration file's version '#{self['review_version']}'."
+        else
+          return false
+        end
       end
+      return true
     end
 
     def name_of(key)
