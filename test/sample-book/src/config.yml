@@ -54,7 +54,7 @@ epubmaker:
 #  externallink: true
 
 pdfmaker:
-  texstyle: reviewmacro
+  texstyle: ["reviewmacro"]
   # texdocumentclass: ["jsbook", "uplatex,oneside"]
   # texcommand: "uplatex"
   # texoptions: null

@@ -10,7 +10,7 @@ class PDFMakerTest < Test::Unit::TestCase
     @config.merge!(
       'bookname' => 'sample',
       'title' => 'Sample Book',
-      'version' => 2,
+      'review_version' => 3,
       'urnid' => 'http://example.jp/',
       'date' => '2011-01-01',
       'language' => 'ja',
@@ -141,6 +141,7 @@ class PDFMakerTest < Test::Unit::TestCase
   def test_template_content
     Dir.mktmpdir do
       @maker.basedir = Dir.pwd
+      @maker.erb_config
       tmpl = @maker.template_content
       expect = File.read(File.join(assets_dir, 'test_template.tex'))
       assert_equal(expect, tmpl)
@@ -149,9 +150,9 @@ class PDFMakerTest < Test::Unit::TestCase
 
   def test_gettemplate_with_backmatter
     @config.merge!(
-      'backcover' => 'backcover.html',
-      'profile' => 'profile.html',
-      'advfile' => 'advfile.html'
+      'backcover' => 'backcover.tex',
+      'profile' => 'profile.tex',
+      'advfile' => 'advfile.tex'
     )
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
@@ -161,12 +162,10 @@ class PDFMakerTest < Test::Unit::TestCase
         File.open(File.join(dir, 'advfile.tex'), 'w') { |f| f.write(advfile) }
         backcover = "\\clearpage\n\\thispagestyle{empty}\\AddToShipoutPictureBG{%\n\\AtPageLowerLeft{\\includegraphics[width=\\paperwidth,height=\\paperheight]{images/backcover.png}}\n}\n\\null"
         File.open(File.join(dir, 'backcover.tex'), 'w') { |f| f.write(backcover) }
-
         expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
-
         @maker.basedir = Dir.pwd
+        @maker.erb_config
         tmpl = @maker.template_content
-        tmpl.gsub!(/\A.*%% backmatter begins\n/m, '')
         assert_equal(expect, tmpl)
       end
     end

@@ -228,6 +228,7 @@ module ReVIEW
 
     def generate_pdf(yamlfile)
       remove_old_file
+      erb_config
       @path = build_path
       begin
         @compile_errors = nil
@@ -248,6 +249,8 @@ module ReVIEW
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'cls')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'erb')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'tex')
         copy_sty(Dir.pwd, @path, 'tex')
 
         build_pdf
@@ -366,7 +369,7 @@ module ReVIEW
       d.strftime(ReVIEW::I18n.t('date_format'))
     end
 
-    def template_content
+    def erb_config
       dclass = @config['texdocumentclass'] || []
       @documentclass = dclass[0] || 'jsbook'
       @documentclassoption = dclass[1] || 'uplatex,oneside'
@@ -409,18 +412,28 @@ module ReVIEW
       @locale_latex['postchaptername'] = chapter_tuple[1]
       @locale_latex['preappendixname'] = appendix_tuple[0]
       @locale_latex['postappendixname'] = appendix_tuple[1]
-
-      layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
-      if File.exist?(layout_file)
-        template = layout_file
-      else
-        template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
-      end
-
       @texcompiler = File.basename(@config['texcommand'], '.*')
+    end
 
-      erb = ReVIEW::Template.load(template, '-')
+    def erb_content(file)
+      @texcompiler = File.basename(@config['texcommand'], '.*')
+      erb = ReVIEW::Template.load(file, '-')
+      puts "erb processes #{File.basename(file)}" if @config['debug']
       erb.result(binding)
+    end
+
+    def latex_config
+      erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+    end
+
+    def template_content
+      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      if @config['review_version'] && @config['review_version'].to_f < 3
+        template = File.expand_path('./latex-compat2/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      end
+      layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
+      template = layout_file if File.exist?(layout_file)
+      erb_content(template)
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
@@ -430,9 +443,14 @@ module ReVIEW
       end
 
       Dir.open(dirname) do |dir|
-        dir.each do |fname|
-          if File.extname(fname).downcase == '.' + extname
-            FileUtils.mkdir_p(copybase)
+        dir.sort.each do |fname|
+          next unless File.extname(fname).downcase == '.' + extname
+          FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
+          if extname == 'erb'
+            File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
+              f.print erb_content(File.join(dirname, fname))
+            end
+          else
             FileUtils.cp File.join(dirname, fname), copybase
           end
         end

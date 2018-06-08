@@ -17,6 +17,7 @@ module ReVIEW
     end
 
     def initialize
+      @template = 'review-jsbook'
       @logger = ReVIEW.logger
       @review_dir = File.dirname(File.expand_path('../../', __FILE__))
     end
@@ -53,6 +54,9 @@ module ReVIEW
       end
       opts.on('-l', '--locale', 'generate locale.yml file.') do
         @locale = true
+      end
+      opts.on('--latex-template name', 'specify LaTeX template name. (default: review-jsbook)') do |tname|
+        @template = tname
       end
       opts.on('', '--epub-version VERSION', 'define EPUB version') do |version|
         @epub_version = version
@@ -145,8 +149,9 @@ EOS
     def generate_texmacro(dir)
       texmacrodir = dir + '/sty'
       FileUtils.mkdir_p texmacrodir
-      FileUtils.cp [@review_dir + '/test/sample-book/src/sty/reviewmacro.sty',
-                    @review_dir + '/test/sample-book/src/sty/jumoline.sty'], texmacrodir
+      tdir = File.join(@review_dir, '/templates/latex', @template)
+      @logger.error "#{tdir} not found." unless File.exist?(tdir)
+      FileUtils.cp Dir.glob(tdir + '/*.*'), texmacrodir
     end
 
     def generate_rakefile(dir)

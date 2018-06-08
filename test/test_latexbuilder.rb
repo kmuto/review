@@ -50,7 +50,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1_with_inlinetag
     actual = compile_block(%Q(={test} this @<b>{is} test.<&"_>\n))
-    assert_equal %Q(\\chapter{this \\textbf{is} test.\\textless{}\\&"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n), actual
+    assert_equal %Q(\\chapter{this \\reviewbold{is} test.\\textless{}\\&"\\textunderscore{}\\textgreater{}}\n\\label{chap:chap1}\n), actual
   end
 
   def test_headline_level2
@@ -111,12 +111,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_i
     actual = compile_inline('abc@<i>{def}ghi')
-    assert_equal 'abc\\textit{def}ghi', actual
+    assert_equal 'abc\\reviewit{def}ghi', actual
   end
 
   def test_inline_i_and_escape
     actual = compile_inline('test @<i>{inline<&;\\ test} test2')
-    assert_equal 'test \\textit{inline\\textless{}\\&;\\reviewbackslash{} test} test2', actual
+    assert_equal 'test \\reviewit{inline\\textless{}\\&;\\reviewbackslash{} test} test2', actual
   end
 
   def test_inline_dtp
@@ -126,7 +126,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_code
     actual = compile_inline('abc@<code>{def}ghi')
-    assert_equal 'abc\\texttt{def}ghi', actual
+    assert_equal 'abc\\reviewcode{def}ghi', actual
   end
 
   def test_inline_raw
@@ -146,12 +146,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_b
     actual = compile_inline('abc@<b>{def}')
-    assert_equal 'abc\\textbf{def}', actual
+    assert_equal 'abc\\reviewbold{def}', actual
   end
 
   def test_inline_b_and_escape
     actual = compile_inline('test @<b>{inline<&;\\ test} test2')
-    assert_equal 'test \\textbf{inline\\textless{}\\&;\\reviewbackslash{} test} test2', actual
+    assert_equal 'test \\reviewbold{inline\\textless{}\\&;\\reviewbackslash{} test} test2', actual
   end
 
   def test_inline_em
@@ -170,21 +170,23 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_m
+    @config['review_version'] = '2.0'
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
     assert_equal 'abc$\\alpha^n = \\inf < 2$ghi', actual
 
-    @config['review_version'] = '2.0'
+    @config['review_version'] = '3.0'
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
     assert_equal 'abc $\\alpha^n = \\inf < 2$ ghi', actual
   end
 
   def test_inline_m2
+    @config['review_version'] = '2.0'
     ## target text: @<m>{X = \{ {x_1\},{x_2\}, \cdots ,{x_n\} \\\}}
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
     ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
     assert_equal '$X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$', actual
 
-    @config['review_version'] = '2.0'
+    @config['review_version'] = '3.0'
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
     ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
     assert_equal ' $X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$ ', actual
@@ -192,22 +194,22 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_inline_tt
     actual = compile_inline('test @<tt>{inline test} test2')
-    assert_equal 'test \\texttt{inline test} test2', actual
+    assert_equal 'test \\reviewtt{inline test} test2', actual
   end
 
   def test_inline_tt_endash
     actual = compile_inline('test @<tt>{in-line --test ---foo ----bar -----buz} --test2')
-    assert_equal 'test \\texttt{in{-}line {-}{-}test {-}{-}{-}foo {-}{-}{-}{-}bar {-}{-}{-}{-}{-}buz} {-}{-}test2', actual
+    assert_equal 'test \\reviewtt{in{-}line {-}{-}test {-}{-}{-}foo {-}{-}{-}{-}bar {-}{-}{-}{-}{-}buz} {-}{-}test2', actual
   end
 
   def test_inline_tti
     actual = compile_inline('test @<tti>{inline test} test2')
-    assert_equal 'test \\texttt{\\textit{inline test}} test2', actual
+    assert_equal 'test \\reviewtti{inline test} test2', actual
   end
 
   def test_inline_ttb
     actual = compile_inline('test @<ttb>{inline test} test2')
-    assert_equal 'test \\texttt{\\textbf{inline test}} test2', actual
+    assert_equal 'test \\reviewttb{inline test} test2', actual
   end
 
   def test_inline_hd_chap
@@ -412,7 +414,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_memo
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest\\textit{2}\n\\end{reviewminicolumn}\n), actual
+    assert_equal %Q(\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest\\reviewit{2}\n\\end{reviewminicolumn}\n), actual
   end
 
   def test_flushright
@@ -625,7 +627,7 @@ EOS
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q([1] sample bib \\textbf{bold}\n\\label{bib:samplebib}\n\nab\n\n), actual
+    assert_equal %Q([1] sample bib \\reviewbold{bold}\n\\label{bib:samplebib}\n\nab\n\n), actual
   end
 
   def test_bibpaper_without_body
@@ -990,7 +992,7 @@ EOS
 
   def test_inline_fence
     actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
-    assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
+    assert_equal 'test \\reviewcode{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
   end
 
   def test_inline_w
@@ -1006,7 +1008,7 @@ EOB
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       expected = <<-EOS
 
-foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\textbf{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
+foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\reviewbold{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
 EOS
       assert_equal expected, actual
     end
