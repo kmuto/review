@@ -770,6 +770,19 @@ module ReVIEW
     def nonum_end(level)
     end
 
+    def notoc_begin(level, _label, caption)
+      puts %Q(<title aid:pstyle="h#{level}">#{compile_inline(caption)}</title>)
+    end
+
+    def notoc_end(level)
+    end
+
+    def nodisp_begin(level, label, caption)
+    end
+
+    def nodisp_end(level)
+    end
+
     def circle_begin(_level, _label, caption)
       puts %Q(<title aid:pstyle="smallcircle">&#x2022;#{compile_inline(caption)}</title>)
     end
