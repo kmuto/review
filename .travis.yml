@@ -2,6 +2,13 @@ language: ruby
 sudo: false
 dist: trusty
 
+addons:
+  apt:
+    packages:
+      - texlive-fonts-recommended
+      - texlive-latex-extra
+      - texlive-latex-recommended
+
 before_install:
   - gem update --system
   - gem update bundler
