@@ -60,6 +60,9 @@ Performance/RangeInclude:
 
 #### Style
 
+Style/AccessModifierDeclarations:
+  Enabled: false
+
 Style/AsciiComments:
   Enabled: false
 
@@ -264,7 +267,10 @@ Style/SymbolProc:
 Style/SymbolArray:
   Enabled: true
 
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+
+Style/TrailingCommaInHashLiteral:
   Enabled: true
 
 Style/WordArray:
@@ -286,6 +292,9 @@ Layout/MultilineMethodCallBraceLayout:
 Layout/AccessModifierIndentation:
   EnforcedStyle: indent
   Enabled: true
+
+Layout/ClosingHeredocIndentation:
+  Enabled: false
 
 Layout/DotPosition:
   EnforcedStyle: trailing
@@ -433,8 +442,14 @@ Naming/AccessorMethodName:
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
 Naming/MethodName:
   Enabled: true
+
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
 
 # Use snake_case for variable names.
 Naming/VariableName:
