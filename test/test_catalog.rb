@@ -3,6 +3,7 @@ require 'review/catalog'
 
 class CatalogTest < Test::Unit::TestCase
   include ReVIEW
+  include BookTestHelper
 
   def test_predef
     sut = Catalog.new(yaml)
@@ -88,6 +89,61 @@ ch01.re
 ch02.re
     EOS
     assert_equal(exp.chomp, sut.chaps)
+  end
+
+  def test_validate
+    mktmpbookdir do |dir, _book, _files|
+      %w[pre01.re pre02.re ch01.re ch02.re post01.re post02.re back01.re back02.re].each do |file|
+        FileUtils.touch(file)
+      end
+      cat = Catalog.new(yaml_hash)
+      cat.validate!({ 'contentdir' => '.' }, dir)
+    end
+  end
+
+  def test_validate_with_parts
+    mktmpbookdir do |dir, _book, _files|
+      %w[ch01.re part1.re ch02.re ch03.re part2.re ch04.re ch05.re].each do |file|
+        FileUtils.touch(file)
+      end
+      cat = Catalog.new(yaml_with_parts)
+      cat.validate!({ 'contentdir' => '.' }, dir)
+    end
+  end
+
+  def test_validate_fail_ch02
+    assert_raise FileNotFound do
+      mktmpbookdir do |dir, _book, _files|
+        %w[pre01.re pre02.re ch01.re].each do |file|
+          FileUtils.touch(file)
+        end
+        cat = Catalog.new(yaml_hash)
+        cat.validate!({ 'contentdir' => '.' }, dir)
+      end
+    end
+  end
+
+  def test_validate_fail_back02
+    assert_raise FileNotFound do
+      mktmpbookdir do |dir, _book, _files|
+        %w[pre01.re pre02.re ch01.re ch02.re post01.re post02.re back01.re back03.re].each do |file|
+          FileUtils.touch(file)
+        end
+        cat = Catalog.new(yaml_hash)
+        cat.validate!({ 'contentdir' => '.' }, dir)
+      end
+    end
+  end
+
+  def test_validate_contentdir
+    mktmpbookdir do |dir, _book, _files|
+      Dir.mkdir('content')
+      %w[content/pre01.re content/pre02.re content/ch01.re content/ch02.re content/post01.re content/post02.re content/back01.re content/back02.re].each do |file|
+        FileUtils.touch(file)
+      end
+      cat = Catalog.new(yaml_hash)
+      cat.validate!({ 'contentdir' => 'content' }, dir)
+    end
   end
 
   private

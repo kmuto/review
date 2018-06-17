@@ -26,7 +26,9 @@ module ReVIEW
         end
       end
 
-      blocked_lines.map! { |i| [pre] + i + [post] } if pre && post
+      if pre && post
+        blocked_lines.map! { |i| [pre] + i + [post] }
+      end
       blocked_lines.map(&:join)
     end
 

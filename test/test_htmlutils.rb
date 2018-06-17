@@ -5,9 +5,16 @@ class HTMLUtilsTest < Test::Unit::TestCase
   include ReVIEW::HTMLUtils
 
   def test_escape_html
-    assert_equal '&lt;', escape_html('<')
-    assert_equal '&lt;&lt;', escape_html('<<')
-    assert_equal '_&lt;_&lt;_', escape_html('_<_<_')
+    assert_equal '&lt;', escape('<')
+    assert_equal '&lt;&lt;', escape('<<')
+    assert_equal '_&lt;_&lt;_', escape('_<_<_')
+  end
+
+  def test_unescape_html
+    assert_equal '<', unescape('&lt;')
+    assert_equal '>', unescape('&gt;')
+    assert_equal '&', unescape('&amp;')
+    assert_equal '&amp;', unescape('&amp;amp;')
   end
 
   def test_escape_html_ex
@@ -15,9 +22,9 @@ class HTMLUtilsTest < Test::Unit::TestCase
     ESC['.'] = 'X'
     ESC.each_pair do |ch, ref|
       if keys.include?(ch)
-        assert_equal ref, escape_html(ch)
+        assert_equal ref, escape(ch)
       else
-        assert_equal ch, escape_html(ch)
+        assert_equal ch, escape(ch)
       end
     end
   end

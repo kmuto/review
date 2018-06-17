@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -165,7 +165,7 @@ module ReVIEW
 
     defsingle :footnote, 2
     defsingle :noindent, 0
-    defsingle :linebreak, 0
+    defsingle :blankline, 0
     defsingle :pagebreak, 0
     defsingle :hr, 0
     defsingle :parasep, 0
@@ -231,6 +231,8 @@ module ReVIEW
     definline :include
     definline :embed
     definline :pageref
+    definline :w
+    definline :wb
 
     private
 
@@ -444,8 +446,9 @@ module ReVIEW
       name = line.slice(/[a-z]+/).to_sym
       ignore_inline = (name == :embed)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
+      @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
-
+      @strategy.doc_status[name] = nil
       [name, args, lines]
     end
 

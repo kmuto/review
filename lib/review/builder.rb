@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2018 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -13,6 +13,8 @@ require 'review/sec_counter'
 require 'stringio'
 require 'cgi'
 require 'fileutils'
+require 'tempfile'
+require 'csv'
 
 module ReVIEW
   class Builder
@@ -28,10 +30,14 @@ module ReVIEW
       nil
     end
 
+    attr_accessor :doc_status
+
     def initialize(strict = false, *args)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
+      @doc_status = {}
+      @dictionary = {}
       builder_init(*args)
     end
 
@@ -44,10 +50,19 @@ module ReVIEW
       @chapter = chapter
       @location = location
       @output = StringIO.new
-      @book = @chapter.book if @chapter.present?
+      if @chapter.present?
+        @book = @chapter.book
+      end
       @tabwidth = nil
       @tsize = nil
-      @tabwidth = @book.config['tabwidth'] if @book && @book.config && @book.config['tabwidth']
+      if @book && @book.config
+        if @book.config['words_file']
+          load_words(@book.config['words_file'])
+        end
+        if @book.config['tabwidth']
+          @tabwidth = @book.config['tabwidth']
+        end
+      end
       builder_init_file
     end
 
@@ -72,6 +87,16 @@ module ReVIEW
 
     def target_name
       self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+    end
+
+    def load_words(file)
+      if File.exist?(file)
+        if file =~ /\.csv\Z/i
+          CSV.foreach(file) do |row|
+            @dictionary[row[0]] = row[1]
+          end
+        end
+      end
     end
 
     def headline_prefix(level)
@@ -142,7 +167,9 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption if caption.present?
+        if caption.present?
+          table_header id, caption
+        end
       rescue KeyError
         error "no such table: #{id}"
       end
@@ -194,6 +221,10 @@ module ReVIEW
     #   footnote_end
     # end
 
+    def blankline
+      puts ''
+    end
+
     def compile_inline(s)
       @compiler.text(s)
     end
@@ -202,35 +233,30 @@ module ReVIEW
       compile_inline @book.chapter_index.display_string(id)
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_chap(id)
       @book.chapter_index.number(id)
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_title(id)
       compile_inline @book.chapter_index.title(id)
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_list(id)
       "#{I18n.t('list')}#{@chapter.list(id).number}"
     rescue KeyError
       error "unknown list: #{id}"
-      nofunc_text("[UnknownList:#{id}]")
     end
 
     def inline_img(id)
       "#{I18n.t('image')}#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
-      nofunc_text("[UnknownImage:#{id}]")
     end
 
     def inline_imgref(id)
@@ -247,14 +273,12 @@ module ReVIEW
       "#{I18n.t('table')}#{@chapter.table(id).number}"
     rescue KeyError
       error "unknown table: #{id}"
-      nofunc_text("[UnknownTable:#{id}]")
     end
 
     def inline_fn(id)
       @chapter.footnote(id).content
     rescue KeyError
       error "unknown footnote: #{id}"
-      nofunc_text("[UnknownFootnote:#{id}]")
     end
 
     def inline_bou(str)
@@ -310,8 +334,7 @@ module ReVIEW
         inline_hd_chap(@chapter, id)
       end
     rescue KeyError
-      error "unknown hd: #{id}"
-      nofunc_text("[UnknownHeader:#{id}]")
+      error "unknown headline: #{id}"
     end
 
     def inline_column(id)
@@ -326,7 +349,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown column: #{id}"
-      nofunc_text("[UnknownColumn:#{id}]")
     end
 
     def inline_column_chap(chapter, id)
@@ -343,6 +365,20 @@ module ReVIEW
 
     def inline_balloon(arg)
       "← #{arg}"
+    end
+
+    def inline_w(s)
+      translated = @dictionary[s]
+      if translated
+        escape(translated)
+      else
+        warn "word not bound: #{s}"
+        escape("[missing word: #{s}]")
+      end
+    end
+
+    def inline_wb(s)
+      inline_b(unescape(inline_w(s)))
     end
 
     def raw(str)
@@ -433,29 +469,69 @@ module ReVIEW
       )
     end
 
-    def graph(lines, id, command, caption = nil)
+    def graph(lines, id, command, caption = '')
       c = target_name
-      dir = File.join(@book.basedir, @book.image_dir, c)
+      dir = File.join(@book.imagedir, c)
       FileUtils.mkdir_p(dir)
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
       line = self.unescape(lines.join("\n"))
-      cmds = {
-        graphviz: "echo '#{line}' | dot -T#{image_ext} -o#{file_path}",
-        gnuplot: %Q(echo 'set terminal ) +
-        "#{image_ext == 'eps' ? 'postscript eps' : image_ext}\n" +
-        %Q(" set output "#{file_path}"\n#{line}' | gnuplot),
-        blockdiag: "echo '#{line}' " +
-        "| blockdiag -a -T #{image_ext} -o #{file_path} /dev/stdin",
-        aafigure: "echo '#{line}' | aafigure -t#{image_ext} -o#{file_path}"
-      }
-      cmd = cmds[command.to_sym]
-      warn cmd
-      system cmd
+
+      tf = Tempfile.new('review_graph')
+      tf.puts line
+      tf.close
+      begin
+        file_path = send("graph_#{command}".to_sym, id, file_path, line, tf.path)
+      ensure
+        tf.unlink
+      end
       @chapter.image_index.image_finder.add_entry(file_path)
 
       image(lines, id, caption)
+    end
+
+    def system_graph(id, *args)
+      @logger.info args.join(' ')
+      Kernel.system(*args) or @logger.error("failed to run command for id #{id}: #{args.join(' ')}")
+    end
+
+    def graph_graphviz(id, file_path, _line, tf_path)
+      system_graph(id, 'dot', "-T#{image_ext}", "-o#{file_path}", tf_path)
+      file_path
+    end
+
+    def graph_gnuplot(id, file_path, line, tf_path)
+      File.open(tf_path, 'w') do |tf|
+        tf.puts <<EOTGNUPLOT
+set terminal #{image_ext == 'eps' ? 'postscript eps' : image_ext}
+set output "#{file_path}"
+#{line}
+EOTGNUPLOT
+      end
+      system_graph(id, 'gnuplot', tf_path)
+      file_path
+    end
+
+    def graph_blockdiag(id, file_path, _line, tf_path)
+      system_graph(id, 'blockdiag', '-a', '-T', image_ext, '-o', file_path, tf_path)
+      file_path
+    end
+
+    def graph_aafigure(id, file_path, _line, tf_path)
+      system_graph(id, 'aafigure', '-t', image_ext, '-o', file_path, tf_path)
+      file_path
+    end
+
+    def graph_plantuml(id, file_path, _line, tf_path)
+      ext = image_ext
+      if ext == 'pdf'
+        ext = 'eps'
+        file_path.sub!(/\.pdf\Z/, '.eps')
+      end
+      system_graph(id, 'java', '-jar', 'plantuml.jar', "-t#{ext}", '-charset', 'UTF-8', tf_path)
+      FileUtils.mv "#{tf_path}.#{ext}", file_path
+      file_path
     end
 
     def image_ext
@@ -463,13 +539,7 @@ module ReVIEW
     end
 
     def inline_include(file_name)
-      compile_inline File.read(file_name)
-    end
-
-    def include(file_name)
-      File.foreach(file_name) do |line|
-        paragraph([line])
-      end
+      compile_inline File.read(file_name, mode: 'rt:BOM|utf-8').chomp
     end
 
     def ul_item_begin(lines)
@@ -483,7 +553,9 @@ module ReVIEW
       if matched = str.match(/\A\|(.*?)\|(.*)/)
         builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
         c = self.class.to_s.gsub('ReVIEW::', '').gsub('Builder', '').downcase
-        @tsize = matched[2] if builders.include?(c)
+        if builders.include?(c)
+          @tsize = matched[2]
+        end
       else
         @tsize = str
       end
@@ -525,6 +597,14 @@ module ReVIEW
       else
         super(str)
       end
+    end
+
+    def escape(str)
+      str
+    end
+
+    def unescape(str)
+      str
     end
   end
 end # module ReVIEW

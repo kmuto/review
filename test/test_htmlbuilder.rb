@@ -1,8 +1,10 @@
 require 'test_helper'
+require 'book_test_helper'
 require 'review'
 
 class HTMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW
+  include BookTestHelper
 
   def setup
     ReVIEW::I18n.setup
@@ -435,9 +437,13 @@ EOS
     assert_equal %Q(<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n), actual
   end
 
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(<p><br /></p>\n<p>foo</p>\n), actual
+  end
+
   def test_noindent
-    @builder.noindent
-    actual = compile_block("foo\nbar\n\nfoo2\nbar2\n")
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n), actual
   end
 
@@ -745,14 +751,6 @@ EOS
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n), actual
-  end
-
-  def test_list_ext
-    def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist.rb', 1)
-    end
-    actual = compile_block("//list[samplelist.rb][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<div id="samplelist.rb" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list language-rb">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n), actual
   end
 
   def test_listnum
@@ -1066,6 +1064,33 @@ EOS
   def test_cmd_caption
     actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
     assert_equal %Q(<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n), actual
+  end
+
+  def test_texequation
+    mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
+                 'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P} q\n//}\n") do |dir, book, _files|
+      @book = book
+      @book.config = @config
+      @config['imgmath'] = true
+      @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+      FileUtils.mkdir_p(File.join(dir, 'images'))
+      expected = <<-EOB
+<div class=\"equation\">
+<img src=\"././images/_review_math/_gen_XXX.png\" />
+</div>
+      EOB
+      tmpio = $stderr
+      $stderr = StringIO.new
+      begin
+        result = compile_block("//texequation{\np \\land \\bm{P} q\n//}\n")
+      ensure
+        $stderr = tmpio
+      end
+      actual = result.gsub(/_gen_[0-9a-f]+\.png/, '_gen_XXX.png')
+      assert_equal expected, actual
+    end
   end
 
   def test_bib
@@ -1690,5 +1715,37 @@ EOS
   def test_inline_fence
     actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
     assert_equal 'test <code class="inline-code tt">@&lt;code&gt;{$サンプル$}</code>', actual
+  end
+
+  def test_inline_w
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'words.csv'), 'w') do |f|
+        f.write <<EOB
+"F","foo"
+"B","bar""\\<>_@<b>{BAZ}"
+EOB
+      end
+      @book.config['words_file'] = File.join(dir, 'words.csv')
+
+      actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
+      assert_equal %Q(<p>foo bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ} <b>bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ}</b> [missing word: N]</p>\n), actual
+    end
+  end
+
+  def test_inline_unknown
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    assert_equal ':1: error: unknown image: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    assert_equal ':1: error: unknown footnote: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    assert_equal ':1: error: unknown headline: n', e.message
+    %w[list table column].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ":1: error: unknown #{name}: n", e.message
+    end
+    %w[chap chapref title].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ':1: error: key not found: "n"', e.message
+    end
   end
 end

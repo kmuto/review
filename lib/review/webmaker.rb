@@ -1,3 +1,5 @@
+# Copyright (c) 2016-2018 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
+#
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
@@ -13,6 +15,7 @@ require 'review/converter'
 require 'review/configure'
 require 'review/book'
 require 'review/htmlbuilder'
+require 'review/yamlloader'
 require 'review/template'
 require 'review/tocprinter'
 require 'review/version'
@@ -29,6 +32,15 @@ module ReVIEW
       @logger = ReVIEW.logger
     end
 
+    def error(msg)
+      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      exit 1
+    end
+
+    def warn(msg)
+      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+    end
+
     def self.execute(*args)
       self.new.execute(*args)
     end
@@ -37,7 +49,7 @@ module ReVIEW
       cmd_config = {}
       opts = OptionParser.new
 
-      opts.banner = 'Usage: review-webmaker configfile'
+      opts.banner = 'Usage: review-webmaker [option] configfile'
       opts.version = ReVIEW::VERSION
       opts.on('--help', 'Prints this message and quit.') do
         puts opts.help
@@ -60,7 +72,9 @@ module ReVIEW
 
     def remove_old_files(path)
       math_dir = "./#{@config['imagedir']}/_review_math"
-      FileUtils.rm_rf(math_dir) if @config['imgmath'] && Dir.exist?(math_dir)
+      if @config['imgmath'] && Dir.exist?(math_dir)
+        FileUtils.rm_rf(math_dir)
+      end
       FileUtils.rm_rf(path)
     end
 
@@ -68,13 +82,24 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'webmaker'
       cmd_config, yamlfile = parse_opts(args)
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      @config.merge!(YAML.load_file(yamlfile))
+      begin
+        loader = ReVIEW::YAMLLoader.new
+        @config.deep_merge!(loader.load_file(yamlfile))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
       # YAML configs will be overridden by command line options.
-      @config.merge!(cmd_config)
+      @config.deep_merge!(cmd_config)
       @config['htmlext'] = 'html'
       I18n.setup(@config['language'])
-      generate_html_files(yamlfile)
+      begin
+        generate_html_files(yamlfile)
+      rescue ApplicationError => e
+        raise if @config['debug']
+        error(e.message)
+      end
     end
 
     def generate_html_files(yamlfile)
@@ -149,19 +174,19 @@ module ReVIEW
       else
         filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
       end
-      id = filename.sub(/\.re\Z/, '')
+      id = File.basename(filename).sub(/\.re\Z/, '')
 
       htmlfile = "#{id}.#{@config['htmlext']}"
 
       if @config['params'].present?
-        @logger.warn %Q('params:' in config.yml is obsoleted.)
+        warn %Q('params:' in config.yml is obsoleted.)
       end
 
       begin
         @converter.convert(filename, File.join(basetmpdir, htmlfile))
       rescue => e
-        @logger.warn "compile error in #{filename} (#{e.class})"
-        @logger.warn e.message
+        warn "compile error in #{filename} (#{e.class})"
+        warn e.message
       end
     end
 
@@ -174,7 +199,7 @@ module ReVIEW
 
     def copy_resources(resdir, destdir, allow_exts = nil)
       return nil if !resdir || !File.exist?(resdir)
-      allow_exts = @config['image_ext'] if allow_exts.nil?
+      allow_exts ||= @config['image_ext']
       FileUtils.mkdir_p(destdir)
       recursive_copy_files(resdir, destdir, allow_exts)
     end
@@ -194,7 +219,11 @@ module ReVIEW
     end
 
     def copy_stylesheet(basetmpdir)
-      @config['stylesheet'].each { |sfile| FileUtils.cp(sfile, basetmpdir) } if @config['stylesheet'].size > 0
+      if @config['stylesheet'].size > 0
+        @config['stylesheet'].each do |sfile|
+          FileUtils.cp(sfile, basetmpdir)
+        end
+      end
     end
 
     def copy_frontmatter(basetmpdir)
@@ -239,8 +268,12 @@ module ReVIEW
         @body = ''
         @body << %Q(<div class="titlepage">)
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>)
-        @body << %Q(<h2 class="tp-author">#{join_with_separator(@config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))}</h2>) if @config['aut']
-        @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config.names_of('prt'), ReVIEW::I18n.t('names_splitter'))}</h3>) if @config['prt']
+        if @config['aut']
+          @body << %Q(<h2 class="tp-author">#{join_with_separator(@config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))}</h2>)
+        end
+        if @config['pbl']
+          @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))}</h3>)
+        end
         @body << '</div>'
 
         @language = @config['language']
@@ -262,7 +295,7 @@ module ReVIEW
     def copy_file_with_param(name, target_file = nil)
       return if @config[name].nil? || !File.exist?(@config[name])
       target_file ||= File.basename(@config[name])
-      FileUtils.cp(@config[name], File.join(basetmpdir, target_file))
+      FileUtils.cp(@config[name], File.join(@path, target_file))
     end
 
     def join_with_separator(value, sep)

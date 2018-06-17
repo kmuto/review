@@ -40,13 +40,18 @@ def main
   files = ARGV unless ARGV.empty?
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
-  opts.on('-a', '--all-chapters', 'Check all chapters.') { files = @book.chapters.map(&:path) }
+  opts.on('-a', '--all-chapters', 'Check all chapters.') do
+    files = @book.chapters.map(&:path)
+  end
   opts.on('-s', '--section N', 'Check section N. (deprecated)') do |n|
     ents = @book.parts[Integer(n) - 1] or
       raise ReVIEW::ApplicationError, "section #{n} not exist"
     files = ents.map(&:path)
   end
-  opts.on('--text', 'Check text.') { (modes ||= []).push :text }
+  opts.on('--text', 'Check text.') do
+    modes ||= []
+    modes.push :text
+  end
   opts.on('--help', 'print this message and quit.') do
     puts opts.help
     exit 0
@@ -93,7 +98,11 @@ end
 
 def find_line(lines, re)
   # single line?
-  lines.each_with_index { |line, idx| return line.gsub(re, '<<<\&>>>'), idx if re =~ line }
+  lines.each_with_index do |line, idx|
+    if re =~ line
+      return line.gsub(re, '<<<\&>>>'), idx
+    end
+  end
 
   # multiple lines?
   i = 0
@@ -117,7 +126,8 @@ def words_re(rc)
     end
     words.push line.strip
   end
-  [Regexp.compile(words.join('|')), nega.empty? ? nil : Regexp.compile(nega.join('|'))]
+  return Regexp.compile(words.join('|')),
+         nega.empty? ? nil : Regexp.compile(nega.join('|'))
 end
 
 def each_paragraph(f)
@@ -156,7 +166,9 @@ def each_paragraph(f)
 end
 
 def each_paragraph_line(f, &block)
-  each_paragraph(f) { |para, *| para.each(&block) }
+  each_paragraph(f) do |para, *|
+    para.each(&block)
+  end
 end
 
 sigmain

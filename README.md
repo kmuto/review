@@ -29,7 +29,7 @@ There are two commands generate files directly.
 
 And some useful commands.
 
-* review-compile: compile Re:VIEW fomat files.
+* review-compile: compile Re:VIEW format files.
 * review-vol: figure out size of Re:VIEW files.
 * review-index: generate index with various format.
 * review-preproc: preprocessor.
@@ -99,4 +99,4 @@ LGPL. See [COPYING](https://github.com/kmuto/review/blob/master/COPYING) file.
 
 ## Copyright
 
-Copyright (c) 2006-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
+Copyright (c) 2006-2018 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.

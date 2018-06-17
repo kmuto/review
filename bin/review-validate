@@ -26,28 +26,42 @@ ARGF.each do |line|
   if line =~ %r{\A//([a-z]+)\{\s*\Z} || line =~ %r{\A//([a-z]+)\[.+?\{\s*\Z}
     # block
     new_block = $1
-    @logger.warn "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet." if block
+    if block
+      @logger.warn "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet."
+    end
     block = new_block
   elsif line =~ %r{\A//\}}
-    @logger.warn "#{ln}: block ended, but not opened." if block.nil?
+    if block.nil?
+      @logger.warn "#{ln}: block ended, but not opened."
+    end
     block = nil
     maxcolcount = 0
     colcount = 0
   elsif line =~ /\A(\d+\.)\s+/
     # number
-    @logger.warn "#{ln}: found '#{$1}' without the head space. Is it correct?" unless %w[list emlist listnum emlistnum cmd image table].include?(block)
+    unless %w[list emlist listnum emlistnum cmd image table].include?(block)
+      @logger.warn "#{ln}: found '#{$1}' without the head space. Is it correct?"
+    end
   elsif line =~ /\A\*\s+/
     # itemize
-    @logger.warn "#{ln}: found '*' without the head space. Is it correct?" unless %w[list emlist listnum emlistnum cmd image table].include?(block)
+    unless %w[list emlist listnum emlistnum cmd image table].include?(block)
+      @logger.warn "#{ln}: found '*' without the head space. Is it correct?"
+    end
   elsif line =~ /\A\s+(\d+\.)\s+/ && line =~ /\A\s+\*\s+/
-    @logger.warn "#{ln}: found itemized list or numbered list in #{block}. Is it correct?" unless Tw[list emlist listnum emlistnum cmd image table].include?(block)
+    unless Tw[list emlist listnum emlistnum cmd image table].include?(block)
+      @logger.warn "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
+    end
   elsif block == 'table'
     next if line.start_with?('#@')
     if line !~ /\A\-\-\-\-\-/
       # table
       colcount = line.split("\t").size
-      maxcolcount = colcount if maxcolcount == 0
-      @logger.warn "#{ln}: the number of table columns seems mismatch. (#{maxcolcount} != #{colcount})" if colcount != maxcolcount
+      if maxcolcount == 0
+        maxcolcount = colcount
+      end
+      if colcount != maxcolcount
+        @logger.warn "#{ln}: the number of table columns seems mismatch. (#{maxcolcount} != #{colcount})"
+      end
     end
   end
 end
