@@ -1062,6 +1062,8 @@ EOS
   end
 
   def test_texequation
+    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true unless system('latex -version 1>/dev/null 2>/dev/null')
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
                  'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P} q\n//}\n") do |dir, book, _files|
       @book = book
@@ -1089,6 +1091,8 @@ EOS
   end
 
   def test_texequation_fail
+    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true unless system('latex -version 1>/dev/null 2>/dev/null')
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
                  'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P}} q\n//}\n") do |dir, book, _files|
       @book = book
