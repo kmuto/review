@@ -78,7 +78,7 @@ module ReVIEW
         'texcommand' => 'uplatex',
         'texdocumentclass' => ['jsbook', 'uplatex,oneside'],
         'dvicommand' => 'dvipdfmx',
-        'dvioptions' => '-d 5',
+        'dvioptions' => '-d 5 -z 3',
         # for PDFMaker
         'pdfmaker' => {
           'makeindex' => nil, # Make index page
