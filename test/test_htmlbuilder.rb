@@ -1088,6 +1088,28 @@ EOS
     end
   end
 
+  def test_texequation_fail
+    mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
+                 'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P}} q\n//}\n") do |dir, book, _files|
+      @book = book
+      @book.config = @config
+      @config['imgmath'] = true
+      @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+      FileUtils.mkdir_p(File.join(dir, 'images'))
+      tmpio = $stderr
+      $stderr = StringIO.new
+      begin
+        assert_raise(ReVIEW::ApplicationError) do
+          _result = compile_block("//texequation{\np \\land \\bm{P}} q\n//}\n")
+        end
+      ensure
+        $stderr = tmpio
+      end
+    end
+  end
+
   def test_bib
     def @chapter.bibpaper(_id)
       Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
