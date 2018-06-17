@@ -1,4 +1,4 @@
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+$LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'review/version'
 
 Gem::Specification.new do |gem|
@@ -25,7 +25,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('rubyzip')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
-  gem.add_development_dependency('rubocop', '~> 0.52.0')
+  gem.add_development_dependency('rubocop', '~> 0.57.2')
   gem.add_development_dependency('simplecov')
   gem.add_development_dependency('test-unit')
 end

@@ -19,7 +19,7 @@ module ReVIEW
     def initialize
       @template = 'review-jsbook'
       @logger = ReVIEW.logger
-      @review_dir = File.dirname(File.expand_path('../../', __FILE__))
+      @review_dir = File.dirname(File.expand_path('..', __dir__))
     end
 
     def execute(*args)
