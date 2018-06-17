@@ -1005,12 +1005,15 @@ EOB
       end
       @book.config['words_file'] = File.join(dir, 'words.csv')
 
+      io = StringIO.new
+      @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       expected = <<-EOS
 
 foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\reviewbold{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
 EOS
       assert_equal expected, actual
+      assert_match(/WARN -- : :1: word not bound: N/, io.string)
     end
   end
 
