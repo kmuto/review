@@ -8,6 +8,7 @@ addons:
       - texlive-fonts-recommended
       - texlive-latex-extra
       - texlive-latex-recommended
+      - dvipng
 
 before_install:
   - gem update --system
