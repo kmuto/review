@@ -82,7 +82,7 @@ def _main
       book = ReVIEW::Book::Base.load(@basedir)
       book.config = @config # needs only at the first time
       ARGV.each do |item|
-        error("file not found: #{item}") unless File.exist?(item)
+        error("file not found: #{item}") unless File.exist?(File.join(book.config['contentdir'], item))
         chap_name = File.basename(item, '.*')
         chap = book.chapter(chap_name)
         compiler = ReVIEW::Compiler.new(load_strategy_class(@target, @check_only))

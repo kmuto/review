@@ -43,12 +43,6 @@ module ReVIEW
   class Preprocessor
     include ErrorUtils
 
-    def self.strip(f)
-      buf = ''
-      Strip.new(f).each { |line| buf << line.rstrip << "\n" }
-      buf
-    end
-
     class Strip
       def initialize(f)
         @f = f
@@ -68,12 +62,6 @@ module ReVIEW
           return line
         end
         nil
-      end
-
-      def each
-        @f.each do |line|
-          yield line unless /\A\#@/ =~ line
-        end
       end
     end
 
@@ -118,8 +106,11 @@ module ReVIEW
         when /\A\#@mapfile/
           direc = parse_directive(line, 1, 'eval')
           path = expand(direc.arg)
-          ent = @repository.fetch_file(path)
-          ent = evaluate(path, ent) if direc['eval']
+          if direc['eval']
+            ent = evaluate(path, ent)
+          else
+            ent = @repository.fetch_file(path)
+          end
           replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
         when /\A\#@map(?:range)?/
@@ -155,7 +146,9 @@ module ReVIEW
     def replace_block(f, directive_line, newlines, with_lineno)
       @f.print directive_line
       newlines.each do |line|
-        print_number line.number if with_lineno
+        if with_lineno
+          print_number line.number
+        end
         @f.print line.string
       end
       skip_list f
@@ -404,7 +397,9 @@ module ReVIEW
           case direction
           when 'begin'
             key = "#{type}/#{spec}"
-            error "begin x2: #{key}" if curr[key]
+            if curr[key]
+              error "begin x2: #{key}"
+            end
             (repo[type] ||= {})[spec] = curr[key] = []
           when 'end'
             curr.delete("#{type}/#{spec}") or
@@ -417,7 +412,9 @@ module ReVIEW
           type = check_type($1)
           spec = check_spec($2)
           key = "#{type}/#{spec}"
-          error "begin x2: #{key}" if curr[key]
+          if curr[key]
+            error "begin x2: #{key}"
+          end
           (repo[type] ||= {})[spec] = curr[key] = []
           opened.push [type, spec]
 

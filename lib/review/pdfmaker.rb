@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -35,7 +35,13 @@ module ReVIEW
       @input_files = Hash.new { |h, key| h[key] = '' }
     end
 
+    def system_with_info(*args)
+      @logger.info args.join(' ')
+      Kernel.system(*args)
+    end
+
     def system_or_raise(*args)
+      @logger.info args.join(' ')
       Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
     end
 
@@ -59,7 +65,9 @@ module ReVIEW
     def build_path
       if @config['debug']
         path = "#{@config['bookname']}-pdf"
-        FileUtils.rm_rf(path, secure: true) if File.exist?(path)
+        if File.exist?(path)
+          FileUtils.rm_rf(path, secure: true)
+        end
         Dir.mkdir(path)
         path
       else
@@ -203,7 +211,9 @@ module ReVIEW
         end
 
         call_hook('hook_beforemakeindex')
-        system_or_raise("#{makeindex_command} #{makeindex_options} book") if @config['pdfmaker']['makeindex'] && File.exist?('book.idx')
+        if @config['pdfmaker']['makeindex'] && File.exist?('book.idx')
+          system_or_raise("#{makeindex_command} #{makeindex_options} book")
+        end
         call_hook('hook_aftermakeindex')
 
         system_or_raise("#{texcommand} #{texoptions} book.tex")
@@ -218,6 +228,7 @@ module ReVIEW
 
     def generate_pdf(yamlfile)
       remove_old_file
+      erb_config
       @path = build_path
       begin
         @compile_errors = nil
@@ -230,10 +241,16 @@ module ReVIEW
 
         check_compile_status(@config['ignore-errors'])
 
+        # for backward compatibility
+        @config['usepackage'] = ''
+        @config['usepackage'] = "\\usepackage{#{@config['texstyle']}}" if @config['texstyle']
+
         copy_images(@config['imagedir'], File.join(@path, @config['imagedir']))
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'cls')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'erb')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'tex')
         copy_sty(Dir.pwd, @path, 'tex')
 
         build_pdf
@@ -262,13 +279,13 @@ module ReVIEW
       Dir.mkdir(to)
       ReVIEW::MakerHelper.copy_images_to_dir(from, to)
       Dir.chdir(to) do
-        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/ }
+        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/i }
         break if images.empty?
         if @config['pdfmaker']['bbox']
-          system('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
+          system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
           system_or_raise('ebb', '-B', @config['pdfmaker']['bbox'], *images) unless system('extractbb', '-B', @config['pdfmaker']['bbox'], '-m', *images)
         else
-          system('extractbb', *images)
+          system_with_info('extractbb', *images)
           system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
         end
       end
@@ -276,7 +293,9 @@ module ReVIEW
 
     def make_custom_page(file)
       file_sty = file.to_s.sub(/\.[^.]+\Z/, '.tex')
-      return File.read(file_sty) if File.exist?(file_sty)
+      if File.exist?(file_sty)
+        return File.read(file_sty)
+      end
       nil
     end
 
@@ -350,7 +369,7 @@ module ReVIEW
       d.strftime(ReVIEW::I18n.t('date_format'))
     end
 
-    def template_content
+    def erb_config
       dclass = @config['texdocumentclass'] || []
       @documentclass = dclass[0] || 'jsbook'
       @documentclassoption = dclass[1] || 'uplatex,oneside'
@@ -358,13 +377,16 @@ module ReVIEW
       @okuduke = make_colophon
       @authors = make_authors
 
-      @custom_titlepage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_coverpage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_titlepage = make_custom_page(@config['titlefile'])
       @custom_originaltitlepage = make_custom_page(@config['originaltitlefile'])
       @custom_creditpage = make_custom_page(@config['creditfile'])
 
       @custom_profilepage = make_custom_page(@config['profile'])
       @custom_advfilepage = make_custom_page(@config['advfile'])
-      @custom_colophonpage = make_custom_page(@config['colophon']) if @config['colophon'] && @config['colophon'].is_a?(String)
+      if @config['colophon'] && @config['colophon'].is_a?(String)
+        @custom_colophonpage = make_custom_page(@config['colophon'])
+      end
       @custom_backcoverpage = make_custom_page(@config['backcover'])
 
       if @config['pubhistory']
@@ -390,15 +412,28 @@ module ReVIEW
       @locale_latex['postchaptername'] = chapter_tuple[1]
       @locale_latex['preappendixname'] = appendix_tuple[0]
       @locale_latex['postappendixname'] = appendix_tuple[1]
+      @texcompiler = File.basename(@config['texcommand'], '.*')
+    end
 
+    def erb_content(file)
+      @texcompiler = File.basename(@config['texcommand'], '.*')
+      erb = ReVIEW::Template.load(file, '-')
+      puts "erb processes #{File.basename(file)}" if @config['debug']
+      erb.result(binding)
+    end
+
+    def latex_config
+      erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+    end
+
+    def template_content
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      if @config['review_version'] && @config['review_version'].to_f < 3
+        template = File.expand_path('./latex-compat2/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      end
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       template = layout_file if File.exist?(layout_file)
-
-      @texcompiler = File.basename(@config['texcommand'], '.*')
-
-      erb = ReVIEW::Template.load(template, '-')
-      erb.result(binding)
+      erb_content(template)
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
@@ -408,9 +443,14 @@ module ReVIEW
       end
 
       Dir.open(dirname) do |dir|
-        dir.each do |fname|
-          if File.extname(fname).downcase == '.' + extname
-            FileUtils.mkdir_p(copybase)
+        dir.sort.each do |fname|
+          next unless File.extname(fname).downcase == '.' + extname
+          FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
+          if extname == 'erb'
+            File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
+              f.print erb_content(File.join(dirname, fname))
+            end
+          else
             FileUtils.cp File.join(dirname, fname), copybase
           end
         end

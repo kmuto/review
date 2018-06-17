@@ -46,7 +46,7 @@ Lint/UselessAssignment:
 #### Performance
 
 Performance/RegexpMatch:
-  Enabled: true
+  Enabled: false
 
 Performance/ReverseEach:
   Enabled: true
@@ -229,7 +229,7 @@ Style/RedundantParentheses:
   Enabled: true
 
 Style/RedundantReturn:
-  Enabled: true
+  Enabled: false
 
 Style/RedundantSelf:
   Enabled: false
@@ -377,7 +377,7 @@ Metrics/BlockNesting:
   Max: 4
 
 Metrics/ModuleLength:
-  Max: 129
+  Max: 200
 
 Metrics/ParameterLists:
   Max: 8

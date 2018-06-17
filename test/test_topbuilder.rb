@@ -12,19 +12,13 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
-    @book = Book::Base.new(nil)
+    @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
 
-    @builder.instance_eval do
-      # to ignore lineno in original method
-      def warn(msg)
-        puts msg
-      end
-    end
     I18n.setup(@config['language'])
   end
 
@@ -295,6 +289,21 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_texequation
     actual = compile_block("//texequation{\n\\sin\n1^{2}\n//}\n")
     assert_equal %Q(◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n), actual
+  end
+
+  def test_inline_w
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'words.csv'), 'w') do |f|
+        f.write <<EOB
+"F","foo"
+"B","bar""\\<>_@<b>{BAZ}"
+EOB
+      end
+      @book.config['words_file'] = File.join(dir, 'words.csv')
+
+      actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
+      assert_equal %Q(foo bar"\\<>_@<b>{BAZ} ★bar"\\<>_@<b>{BAZ}☆ [missing word: N]\n), actual
+    end
   end
 
   def test_inline_unknown

@@ -1,0 +1,386 @@
+\documentclass[dvipdfmx,<%= @documentclassoption %>]{<%= @documentclass %>}
+% %% fixes to LaTeX2e
+% \usepackage{fix-cm}[2006/09/13 v1.1m]
+% \usepackage{fixltx2e}[2006/09/13 v1.1m]
+
+<%- if @texcompiler == "uplatex" -%>
+\usepackage[deluxe,uplatex]{otf}
+<%- else -%>
+\usepackage[deluxe]{otf}
+<%- end -%>
+\usepackage{caption}
+\usepackage{suffix}
+\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
+\usepackage{lmodern}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
+\usepackage{framed}
+\usepackage{wrapfig}
+\definecolor{shadecolor}{gray}{0.9}
+\definecolor{shadecolorb}{gray}{0.1}
+\definecolor{reviewgreen}{rgb}{0,0.4,0}
+\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
+\definecolor{reviewred}{rgb}{0.7,0,0}
+\definecolor{reviewdarkred}{rgb}{0.3,0,0}
+\usepackage[utf8]{inputenc}
+\usepackage{ascmac}
+\usepackage{float}
+\usepackage{alltt}
+\usepackage{amsmath}
+
+%% if you use @<u>{} (underline), use jumoline.sty
+\IfFileExists{jumoline.sty}{
+\usepackage{jumoline}
+}
+
+\newenvironment{shadedb}{%
+  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
+  \MakeFramed {\FrameRestore}}%
+ {\endMakeFramed}
+
+<%- unless ["utbook", "tbook"].include?(@documentclass)  -%>
+\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
+%\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
+<%- end -%>
+
+\newcommand{\parasep}{\vspace*{3zh}}
+\setlength{\footskip}{30pt}
+
+%% Bookmarkの文字化け対策（日本語向け）
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+     pdftitle={<%= escape_latex(@config.name_of("booktitle")) %>},%
+     pdfauthor={<%= escape_latex(@config.names_of("aut").join(I18n.t("names_splitter"))) %>}]{hyperref}
+\usepackage[dvipdfmx]{pxjahyper}
+
+<%- if ["utbook", "tbook"].include?(@documentclass)  -%>
+\newcommand{\headfont}{\gtfamily\sffamily\bfseries}
+\usepackage{plext}
+<%- end -%>
+
+<%- if config["highlight"] && config["highlight"]["latex"] == "listings" -%>
+<%-   if config["language"] == "ja" -%>
+\usepackage{listings,jlisting}
+<%-   else -%>
+\usepackage{listings}
+<%-   end -%>
+\renewcommand{\lstlistingname}{<%= escape_latex(I18n.t("list")) %>}
+\lstset{%
+  breaklines=true,%
+  breakautoindent=false,%
+  breakindent=0pt,%
+  fontadjust=true,%
+  backgroundcolor=\color{shadecolor},%
+  frame=single,%
+  framerule=0pt,%
+  basicstyle=\ttfamily\scriptsize,%
+  commentstyle=\color{reviewgreen},%
+  identifierstyle=\color{reviewblue},%
+  stringstyle=\color{reviewred},%
+  keywordstyle=\bfseries\color{reviewdarkred},%
+}
+
+\lstnewenvironment{reviewemlistlst}[1][]{\lstset{#1}}{}
+\lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+\lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
+\lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+\lstnewenvironment{reviewsourcelst}[1][]{\lstset{#1}}{}
+\lstnewenvironment{reviewsourcenumlst}[1][]{\lstset{numbers=left, #1}}{}
+\lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
+<%- end -%>
+
+\newenvironment{reviewimage}{%
+  \begin{figure}[H]
+    \begin{center}}{%
+    \end{center}
+  \end{figure}}
+
+\newenvironment{reviewdummyimage}{%
+  \begin{figure}[H]
+    \begin{center}\begin{alltt}}{%
+    \end{alltt}\end{center}
+  \end{figure}}
+
+\newenvironment{reviewemlist}{%
+  \medskip\small\begin{shaded}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}}
+
+\newenvironment{reviewlist}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewsource}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewcmd}{%
+  \color{white}\medskip\small\begin{shadedb}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shadedb}}
+
+\newenvironment{reviewbox}{%
+  \medskip\small\begin{framed}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{framed}}
+
+\newenvironment{reviewtable}[1]{%
+  \begin{center}\small\setlength{\baselineskip}{1.2zw}
+    \begin{tabular}{#1}}{%
+    \end{tabular}
+  \end{center}}
+
+\newenvironment{reviewcolumn}{%
+     \begin{framed}
+  }{%
+     \end{framed}
+  \vspace{2zw}}
+
+\newcommand{\reviewcolumnhead}[2]{%
+{\noindent\large <%= escape_latex(I18n.t("column_head"))%>: #2}}
+
+\newcommand{\reviewtablecaption}[1]{%
+  \caption{#1}}
+
+\WithSuffix\newcommand\reviewtablecaption*[1]{%
+  \caption*{#1}}
+
+\newcommand{\reviewimgtablecaption}[1]{%
+  \caption{#1}\vspace{-3mm}}
+
+\newcommand{\reviewbackslash}[0]{%
+  \textbackslash{}}
+
+\newcommand{\reviewlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewemlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewsourcecaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewcmdcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewindepimagecaption}[1]{%
+  \begin{center}#1\end{center}}
+
+\newcommand{\reviewboxcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewimageref}[2]{<%= escape_latex(I18n.t("image"))%> #1}
+\newcommand{\reviewtableref}[2]{<%= escape_latex(I18n.t("table"))%> #1}
+\newcommand{\reviewlistref}[1]{<%= escape_latex(I18n.t("list"))%> #1}
+\newcommand{\reviewbibref}[2]{#1}
+\newcommand{\reviewcolumnref}[2]{<%= escape_latex(I18n.t("columnname"))%> #1}
+\newcommand{\reviewsecref}[2]{#1}
+
+\newcommand{\reviewminicolumntitle}[1]{%
+  {\large <%= escape_latex(I18n.t("memo_head"))%>: #1}\\}
+
+<%- if @config["toctitle"].present? -%>
+\renewcommand{\contentsname}{<%= escape_latex(@config["toctitle"]) %>}
+<%- elsif I18n.t("toctitle") -%>
+\renewcommand{\contentsname}{<%= escape_latex(I18n.t("toctitle")) %>}
+<%- end -%>
+
+\newenvironment{reviewminicolumn}{%
+  \vspace{1.5zw}\begin{screen}}{%
+  \end{screen}\vspace{2zw}}
+
+\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\newcommand{\reviewami}[1]{\mask{#1}{A}}
+\newcommand{\reviewem}[1]{\textbf{#1}}
+\newcommand{\reviewstrong}[1]{\textbf{#1}}
+\newcommand{\reviewunderline}{\Underline}
+
+%% @<del> is ignored in LaTeX with default style
+\newcommand{\reviewstrike}[1]{#1}
+
+%%%% for ulem.sty:
+%%\renewcommand{\reviewstrike}[1]{\sout{#1}}
+%%
+%%%% for jumoline.sty:
+%%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
+
+\newcommand{\reviewth}[1]{\textgt{#1}}
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
+
+\newcommand{\reviewprepartname}{<%= escape_latex(@locale_latex["prepartname"]) %>}
+\newcommand{\reviewpostpartname}{<%= escape_latex(@locale_latex["postpartname"]) %>}
+\newcommand{\reviewprechaptername}{<%= escape_latex(@locale_latex["prechaptername"]) %>}
+\newcommand{\reviewpostchaptername}{<%= escape_latex(@locale_latex["postchaptername"]) %>}
+\newcommand{\reviewfigurename}{<%= escape_latex(I18n.t("image")) %>}
+\newcommand{\reviewtablename}{<%= escape_latex(I18n.t("table")) %>}
+\newcommand{\reviewappendixname}{<%= escape_latex(@locale_latex["preappendixname"]) %>}
+
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
+
+
+\makeatletter
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\def\maxwidth{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+<%- if @config["texstyle"] -%>
+<%-   [@config["texstyle"]].flatten.each do |x| -%>
+\usepackage{<%= x %>}
+<%-   end -%>
+<%- end -%>
+<%- if @config["makeindex"] -%>
+\usepackage{makeidx}
+\makeindex
+<%- end -%>
+
+\begin{document}
+
+\reviewmainfont
+
+<%- if @config["titlepage"] -%>
+<%-   if @custom_titlepage -%>
+<%= @custom_titlepage %>
+<%-   else -%>
+\begin{titlepage}
+<%-     if @config["coverimage"] -%>
+  \begin{center}
+    \includegraphics[<%= @coverimageoption%>]{./<%= @config["imagedir"] %>/<%= @config["coverimage"] %>}
+  \end{center}
+  \clearpage
+<%-     end -%>
+\thispagestyle{empty}
+\begin{center}%
+  \mbox{} \vskip5zw
+   \reviewtitlefont%
+    {\Huge <%= escape_latex(@config.name_of("booktitle")) %> \par}%
+<%- if @config["subtitle"] -%>
+    \vskip 1em%
+    {\Large <%= escape_latex(@config.name_of("subtitle")) %> \par}%
+<%- end -%>
+    \vskip 15em%
+    {\huge
+      \lineskip .75em
+      \begin{tabular}[t]{c}%
+        <%= @authors %>
+      \end{tabular}\par}%
+    \vfill
+    {\large <%= escape_latex(@config["date"].to_s) %> <%= escape_latex(I18n.t("edition")) %>\hspace{2zw}<%= escape_latex(I18n.t("published_by", @config.names_of("pbl").join(I18n.t("names_splitter"))))%>\par}%
+\vskip4zw\mbox{}
+  \end{center}%
+\end{titlepage}
+<%-   end -%>
+<%- end -%>
+
+\renewcommand{\chaptermark}[1]{{}}
+\frontmatter
+
+%%% originaltitle
+<%- if @config["originaltitlefile"] -%>
+<%= @custom_originaltitlepage %>
+<%- end -%>
+
+%%% credit
+<%- if @config["creditfile"] -%>
+<%= @custom_creditpage %>
+<%- end -%>
+
+%% preface
+<%= @input_files["PREDEF"] %>
+
+<%- if @config["toc"] -%>
+\setcounter{tocdepth}{<%= @config["toclevel"] - 1 %>}
+\tableofcontents
+<%- end -%>
+
+\renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~#1}{}}
+\mainmatter
+<%= @input_files["CHAPS"] %>
+\renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~#1}{}}
+\reviewappendix
+<%= @input_files["APPENDIX"] %>
+
+%% backmatter begins
+<%- if @input_files["POSTDEF"] or @config["colophon"] -%>
+\backmatter
+<%- end -%>
+
+<%- if @input_files["POSTDEF"] -%>
+<%= @input_files["POSTDEF"] %>
+<%- end -%>
+<%- if @config["pdfmaker"]["makeindex"] -%>
+\printindex
+<%- end -%>
+
+%%% profile
+<%- if @config["profile"] -%>
+<%= @custom_profilepage %>
+<%- end -%>
+
+%%% advfile
+<%- if @config["advfile"] -%>
+<%= @custom_advfilepage %>
+<%- end -%>
+
+%%% colophon
+<%- if @config["colophon"] -%>
+<%-   if @custom_colophonpage -%>
+<%= @custom_colophonpage %>
+<%-   else -%>
+%% okuduke
+\reviewcolophon
+\thispagestyle{empty}
+
+\vspace*{\fill}
+
+{\noindent\reviewtitlefont\Large <%= escape_latex(@config.name_of("booktitle")) %>} \\
+<%- if @config["subtitle"] -%>
+{\noindent\reviewtitlefont\large <%= escape_latex(@config.name_of("subtitle")) %>} \\
+<%- end -%>
+\rule[8pt]{\textwidth}{1pt} \\
+{\noindent
+<%= @config["pubhistory"].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>
+}
+
+\begin{tabular}{ll}
+<%= @okuduke %>
+\end{tabular}
+　\\
+\rule[0pt]{\textwidth}{1pt} \\
+<%-     if @config["rights"] -%>
+<%= @config.names_of("rights").map{|s| escape_latex(s)}.join('\\' + '\\') %> \\
+<%-     end -%>
+<%-   end -%>
+<%- end -%>
+
+%%% backcover
+<%- if @config["backcover"] -%>
+<%= @custom_backcoverpage %>
+<%- end -%>
+
+\end{document}

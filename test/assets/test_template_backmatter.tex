@@ -1,24 +1,142 @@
-\backmatter
-
-
-
-%%% profile
-\thispagestyle{empty}\chapter*{Profile}
+\documentclass[dvipdfmx,uplatex,oneside]{jsbook}
+\makeatletter
+\def\review@texcompiler{uplatex}
+\def\review@documentclass{jsbook}
+\def\review@booktitle_name{Re:VIEW Sample Book}
+\def\review@aut_names{}
+\def\review@titlepageauthors{}
+\def\review@date{2011{-}01{-}01}
+\def\review@language{ja}
+\def\review@intn@list{リスト}
+\def\review@intn@column_head{■コラム}
+\def\review@intn@image{図}
+\def\review@intn@table{表}
+\def\review@intn@columnname{コラム}
+\def\review@intn@memo_head{■メモ}
+\def\review@intn@edition{版}
+\def\review@intn@published_by{ 発行}
+\def\review@toctitle{目次}
+\def\review@prepartname{第}
+\def\review@postpartname{部}
+\def\review@prechaptername{第}
+\def\review@postchaptername{章}
+\def\review@figurename{図}
+\def\review@tablename{表}
+\def\review@appendixname{付録}
+\def\review@titlepage{true}
+\def\reviewprofilepagecont{\thispagestyle{empty}\chapter*{Profile}
 some profile
-
-
-%%% advfile
-\thispagestyle{empty}\chapter*{Ad}
+}
+\def\reviewadvfilepagecont{\thispagestyle{empty}\chapter*{Ad}
 some ad content
-
-
-%%% colophon
-
-%%% backcover
-\clearpage
+}
+\def\reviewbackcovercont{\clearpage
 \thispagestyle{empty}\AddToShipoutPictureBG{%
 \AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{images/backcover.png}}
 }
-\null
+\null}
+
+\def\review@pubhistories{2011年1月1日　発行}
+\def\review@colophon_names{}
+
+\def\reviewprefacefiles{}
+\def\reviewchapterfiles{}
+\def\reviewappendixfiles{}
+\def\reviewpostdeffiles{}
+
+\makeatother
+
+
+\begin{document}
+
+%% coverpage
+\ifdefined\reviewcoverpagecont
+\reviewcoverpagecont
+\fi
+
+%% title page
+\ifdefined\reviewtitlepagecont
+\reviewtitlepagecont
+\fi
+
+%% frontmatter hook
+\ifdefined\reviewfrontmatterhook
+\reviewfrontmatterhook
+\fi
+
+%% originaltitle
+\ifdefined\revieworiginaltitlepagecont
+\revieworiginaltitlepagecont
+\fi
+
+%% credit
+\ifdefined\reviewcreditfilecont
+\reviewcreditfilecont
+\fi
+
+%% preface
+\ifdefined\reviewprefacefiles
+\reviewprefacefiles
+\fi
+
+%% toc
+\ifdefined\reviewtableofcontents
+\reviewtableofcontents
+\fi
+
+%% mainmatter hook
+\ifdefined\reviewmainmatterhook
+\reviewmainmatterhook
+\fi
+
+%% chapters body
+\ifdefined\reviewchapterfiles
+\reviewchapterfiles
+\fi
+
+%% appendix hook
+\ifdefined\reviewappendixhook
+\reviewappendixhook
+\fi
+
+%% appendix body
+\ifdefined\reviewappendixfiles
+\reviewappendixfiles
+\fi
+
+%% backmatter hook
+\ifdefined\reviewbackmatterhook
+\reviewbackmatterhook
+\fi
+
+%% postdef body
+\ifdefined\reviewpostdeffiles
+\reviewpostdeffiles
+\fi
+
+%% index page
+\ifdefined\reviewprintindex
+\reviewprintindex
+\fi
+
+%% profile page
+\ifdefined\reviewprofilepagecont
+\reviewprofilepagecont
+\fi
+
+%% advfile page
+\ifdefined\reviewadvfilepagecont
+\reviewadvfilepagecont
+\fi
+
+%%% colophon page
+\ifdefined\reviewcolophonpagecont
+\reviewcolophonpagecont
+\fi
+
+%%% backcover page
+\ifdefined\reviewbackcovercont
+\reviewbackcovercont
+\fi
 
 \end{document}
