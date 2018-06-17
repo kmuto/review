@@ -14,6 +14,7 @@ require 'review/textutils'
 require 'review/webtocprinter'
 require 'digest'
 require 'tmpdir'
+require 'open3'
 
 module ReVIEW
   class HTMLBuilder < Builder
@@ -1208,7 +1209,11 @@ module ReVIEW
         tex_path = File.join(tmpdir, 'tmpmath.tex')
         dvi_path = File.join(tmpdir, 'tmpmath.dvi')
         File.write(tex_path, texsrc)
-        system("latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{path} #{dvi_path}")
+        cmd = "latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{path} #{dvi_path}"
+        out, status = Open3.capture2e(cmd)
+        unless status.success?
+          error "latex compile error\n\nError log:\n" + out
+        end
       end
     end
   end

@@ -1062,6 +1062,8 @@ EOS
   end
 
   def test_texequation
+    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true unless system('latex -version 1>/dev/null 2>/dev/null')
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
                  'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P} q\n//}\n") do |dir, book, _files|
       @book = book
@@ -1085,6 +1087,30 @@ EOS
       end
       actual = result.gsub(/_gen_[0-9a-f]+\.png/, '_gen_XXX.png')
       assert_equal expected, actual
+    end
+  end
+
+  def test_texequation_fail
+    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true unless system('latex -version 1>/dev/null 2>/dev/null')
+    mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
+                 'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P}} q\n//}\n") do |dir, book, _files|
+      @book = book
+      @book.config = @config
+      @config['imgmath'] = true
+      @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+      FileUtils.mkdir_p(File.join(dir, 'images'))
+      tmpio = $stderr
+      $stderr = StringIO.new
+      begin
+        assert_raise(ReVIEW::ApplicationError) do
+          _result = compile_block("//texequation{\np \\land \\bm{P}} q\n//}\n")
+        end
+      ensure
+        $stderr = tmpio
+      end
     end
   end
 

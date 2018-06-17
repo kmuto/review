@@ -397,6 +397,8 @@ Metrics/PerceivedComplexity:
 
 Metrics/ClassLength:
   Max: 1500
+  Exclude:
+    - 'test/*.rb'
 
 Metrics/LineLength:
   Max: 256
