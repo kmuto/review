@@ -9,10 +9,10 @@ inherit_from: .rubocop_todo.yml
 
 #### Lint
 
-Lint/BlockAlignment:
+Layout/BlockAlignment:
   Enabled: true
 
-Lint/EndAlignment:
+Layout/EndAlignment:
   Enabled: AlignWith
 
 Lint/EmptyWhen:
