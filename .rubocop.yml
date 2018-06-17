@@ -46,7 +46,7 @@ Lint/UselessAssignment:
 #### Performance
 
 Performance/RegexpMatch:
-  Enabled: true
+  Enabled: false
 
 Performance/ReverseEach:
   Enabled: true
