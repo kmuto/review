@@ -9,12 +9,6 @@ inherit_from: .rubocop_todo.yml
 
 #### Lint
 
-Lint/BlockAlignment:
-  Enabled: true
-
-Lint/EndAlignment:
-  Enabled: AlignWith
-
 Lint/EmptyWhen:
   Enabled: true
 
@@ -286,6 +280,13 @@ Style/WhileUntilModifier:
 #  Enabled: true
 
 ### Layout
+
+Layout/BlockAlignment:
+  Enabled: true
+
+Layout/EndAlignment:
+  Enabled: AlignWith
+
 Layout/MultilineMethodCallBraceLayout:
   Enabled: true
 
