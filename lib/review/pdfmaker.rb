@@ -10,6 +10,7 @@ require 'yaml'
 require 'fileutils'
 require 'erb'
 require 'tmpdir'
+require 'open3'
 
 require 'review/i18n'
 require 'review/book'
@@ -37,12 +38,18 @@ module ReVIEW
 
     def system_with_info(*args)
       @logger.info args.join(' ')
-      Kernel.system(*args)
+      out, status = Open3.capture2e(*args)
+      unless status.success?
+        @logger.error "execution error\n\nError log:\n" + out
+      end
     end
 
     def system_or_raise(*args)
       @logger.info args.join(' ')
-      Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
+      out, status = Open3.capture2e(*args)
+      unless status.success?
+        error "failed to run command: #{args.join(' ')}\n\nError log:\n" + out
+      end
     end
 
     def error(msg)
