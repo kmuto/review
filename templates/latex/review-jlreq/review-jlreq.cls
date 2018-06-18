@@ -132,4 +132,6 @@ setpagesize=false]{hyperref}[2016/06/24 v6.83q]
 \RequirePackage{amssymb}
 \RequirePackage{bm}
 \RequirePackage{needspace}
+\RequirePackage{alltt}
+\RequirePackage{float}
 \usepackage{upquote,textcomp}

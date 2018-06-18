@@ -20,6 +20,7 @@
 \def\review@intn@memo_head{<%= escape_latex(I18n.t('memo_head')) %>}
 \def\review@intn@edition{<%= escape_latex(I18n.t('edition')) %>}
 \def\review@intn@published_by{<%= escape_latex(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
+\def\review@intn@captionprefix{<%= escape_latex(I18n.t('caption_prefix')) %>}
 \def\review@toctitle{<%= escape_latex(@config['toctitle'].present? ? @config['toctitle'] : I18n.t('toctitle')) %>}
 \def\review@prepartname{<%= escape_latex(@locale_latex['prepartname']) %>}
 \def\review@postpartname{<%= escape_latex(@locale_latex['postpartname']) %>}
