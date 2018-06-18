@@ -1,0 +1,54 @@
+%#!ptex2pdf -l -e test2.tex
+\ifdefined\directlua
+  \documentclass{ltjsarticle}
+  \usepackage{listings,xcolor}
+\else
+  \documentclass[uplatex,dvipdfmx]{jsarticle}
+  \usepackage{plistings,xcolor}
+  \def\zw{zw}
+\fi
+\usepackage{lmodern}
+\usepackage{showexpl}
+\lstset{
+  language=C, frame=trbl, framesep=5pt,
+  commentstyle=\color{green!50!black},
+  basicstyle=\ttfamily, basewidth=0.5em,
+  keywordstyle=\bfseries\color{blue},
+}
+\begin{document}
+\begin{lstlisting}
+#define N 6
+#define ARSZ 2*N
+#define ARY unsigned int
+/* 1 次元配列 ARY data[ARSZ] をテーブルだと思う */
+/* ARY は 32bit 符号なし整数と仮定．すると各行 1変数で済む */
+
+/* 読みだし */
+inline ARY read(const ARY data[], const int row, const int col) {
+  return data[row] & ((ARY)1)<<col;
+}
+/* 書き込み */
+inline void mark(ARY data[], const int row, const int col) {
+  data[row] |= ((ARY)1)<<col;
+}
+
+unsigned long long counter;
+/* 「次に探索」 */
+int next_pos_x, next_pos_y;
+/* pos_history[i][k] は，i 番の短冊の (k-1) 番目の cellの位置を
+   pack(row, col) = (row << 8) + col という 16ビット整数として管理する．*/
+int pos_history[(N*N)<<2];
+#define pack(x,y) ((x)<<8)+(y) 
+\end{lstlisting}
+
+\lstinputlisting[language={[LaTeX]TeX}]{\jobname.tex}
+
+{\catcode`\^^@=12 \global\let\NUL=^^@
+\begin{LTXexample}
+ \西暦\today，\和暦\today
+ \par{\ttfamily\meaning\西暦}
+ a\NUL a^^@a
+\end{LTXexample}}
+なお，\lstinline|^^@|~(\lstinline|\0|) を陽にソース中に書いた場合は
+エラーが発生する．
+\end{document}
