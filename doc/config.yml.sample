@@ -290,7 +290,7 @@ epubmaker:
 # texcommand: "uplatex"
 #
 # LaTeXのコマンドに渡すオプションを指定する
-# texoptions: null
+# texoptions: "-interaction=nonstopmode -file-line-error"
 #
 # LaTeX用のdvi変換コマンドを指定する(dvipdfmx)
 # dvicommand: "dvipdfmx"
