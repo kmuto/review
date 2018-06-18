@@ -228,7 +228,6 @@ module ReVIEW
     definline :hidx
     definline :comment
     definline :include
-    definline :tcy
     definline :embed
     definline :pageref
     definline :w
