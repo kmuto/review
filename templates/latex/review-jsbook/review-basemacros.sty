@@ -45,9 +45,11 @@
 \setlength{\footskip}{30pt}
 
 \usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-     pdftitle={\review@booktitle_name},%
-     pdfauthor={\review@aut_names}]{hyperref}
+     pdftitle={\review@booktitlename},%
+     pdfauthor={\review@autnames}]{hyperref}
 \usepackage[dvipdfmx]{pxjahyper}
+\usepackage{pxrubrica}
+\rubysetup{J}
 
 \ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
 \newcommand{\headfont}{\gtfamily\sffamily\bfseries}
@@ -55,9 +57,9 @@
 }{%
 }
 
-\ifdefined\review@highlight_latex
-  \ifthenelse{\equal{\review@highlight_latex}{listings}}{%
-    \ifhtneelse{\equal{\review@language}{ja}}{%
+\ifdefined\review@highlightlatex
+  \ifthenelse{\equal{\review@highlightlatex}{listings}}{%
+    \ifthenelse{\equal{\review@language}{ja}}{%
       \usepackage{listings,jlisting}
     }{%
       \usepackage{listings}
@@ -134,7 +136,7 @@
   \vspace{2zw}}
 
 \newcommand{\reviewcolumnhead}[2]{%
-{\noindent\large \review@intn@column_head{}: #2}}
+{\noindent\large \review@intn@columnhead{}: #2}}
 
 \newcommand{\reviewtablecaption}[1]{%
   \caption{#1}}
@@ -175,7 +177,7 @@
 
 \newcommand{\reviewminicolumntitle}[1]{%
 \review@ifempty{#1}{}{%
-  {\large \review@intn@memo_head{}: #1}\\}}
+  {\large \review@intn@memohead{}: #1}\\}}
 
 \renewcommand{\contentsname}{\review@toctitle}
 
@@ -326,10 +328,10 @@
        \begin{center}%
        \mbox{} \vskip5zw
        \reviewtitlefont%
-       {\Huge\review@booktitle_name\par}%
-       \ifdefined\review@subtitle_name
+       {\Huge\review@booktitlename\par}%
+       \ifdefined\review@subtitlename
          \vskip 1em%
-         {\Large\review@subtitle_name\par}%
+         {\Large\review@subtitlename\par}%
        \fi
        \vskip 15em%
        {\huge
@@ -338,7 +340,7 @@
        \review@titlepageauthors
        \end{tabular}\par}%
        \vfill
-       {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@published_by\par}%
+       {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@publishedby\par}%
        \vskip4zw\mbox{}
        \end{center}%
        \end{titlepage}\clearpage
@@ -375,16 +377,16 @@
 \reviewcolophon
 \thispagestyle{empty}
 \vspace*{\fill}
-\typeout{\review@booktitle_name}
-{\noindent\reviewtitlefont\Large\review@booktitle_name}\\
-\ifdefined\review@subtitle_name
-{\noindent\reviewtitlefont\large\review@subtitle_name} \\
+\typeout{\review@booktitlename}
+{\noindent\reviewtitlefont\Large\review@booktitlename}\\
+\ifdefined\review@subtitlename
+{\noindent\reviewtitlefont\large\review@subtitlename} \\
 \fi
 \rule[8pt]{\textwidth}{1pt} \\
 {\noindent\review@pubhistories}
 
 \begin{tabular}{ll}
-\review@colophon_names
+\review@colophonnames
 \end{tabular}
 　\\
 \rule[0pt]{\textwidth}{1pt} \\
