@@ -165,15 +165,26 @@ module ReVIEW
     def column_begin(level, label, caption)
       blank
       @doc_status[:column] = true
-      puts "\\begin{reviewcolumn}\n"
+
+      target = nil
       if label
-        puts "\\hypertarget{#{column_label(label)}}{}"
+        target = "\\hypertarget{#{column_label(label)}}{}"
       else
-        puts "\\hypertarget{#{column_label(caption)}}{}"
+        target = "\\hypertarget{#{column_label(caption)}}{}"
       end
+
       @doc_status[:caption] = true
-      puts macro('reviewcolumnhead', nil, compile_inline(caption))
+      if @book.config.check_version('2', exception: false)
+        puts "\\begin{reviewcolumn}\n"
+        puts target
+        puts macro('reviewcolumnhead', nil, compile_inline(caption))
+      else
+        # ver.3
+        print '\\begin{reviewcolumn}'
+        puts "[#{compile_inline(caption)}#{target}]"
+      end
       @doc_status[:caption] = nil
+
       if level <= @book.config['toclevel'].to_i
         puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
       end
@@ -185,16 +196,31 @@ module ReVIEW
       @doc_status[:column] = nil
     end
 
-    def captionblock(_type, lines, caption)
-      puts "\\begin{reviewminicolumn}\n"
+    def captionblock(type, lines, caption)
+      if @book.config.check_version('2', exception: false)
+        type = 'minicolumn'
+      end
+
+      print "\\begin{review#{type}}"
+
       @doc_status[:caption] = true
-      puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n" if caption.present?
+      if @book.config.check_version('2', exception: false)
+        if caption.present?
+          puts
+          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
+        end
+      else
+        if caption.present?
+          print "[#{compile_inline(caption)}]"
+        end
+        puts
+      end
 
       @doc_status[:caption] = nil
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n\n")
 
-      puts "\\end{reviewminicolumn}\n"
+      puts "\\end{review#{type}}\n"
     end
 
     def box(lines, caption = nil)

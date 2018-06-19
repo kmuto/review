@@ -414,7 +414,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_memo
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(\\begin{reviewminicolumn}\n\\reviewminicolumntitle{this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}\ntest1\n\ntest\\reviewit{2}\n\\end{reviewminicolumn}\n), actual
+    assert_equal %Q(\\begin{reviewmemo}[this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}]\ntest1\n\ntest\\reviewit{2}\n\\end{reviewmemo}\n), actual
   end
 
   def test_flushright
@@ -657,18 +657,14 @@ inside column
 EOS
     expected = <<-EOS
 
-\\begin{reviewcolumn}
-\\hypertarget{column:chap1:1}{}
-\\reviewcolumnhead{}{prev column}
+\\begin{reviewcolumn}[prev column\\hypertarget{column:chap1:1}{}]
 \\addcontentsline{toc}{subsection}{prev column}
 
 inside prev column
 
 \\end{reviewcolumn}
 
-\\begin{reviewcolumn}
-\\hypertarget{column:chap1:2}{}
-\\reviewcolumnhead{}{test}
+\\begin{reviewcolumn}[test\\hypertarget{column:chap1:2}{}]
 \\addcontentsline{toc}{subsection}{test}
 
 inside column
@@ -689,9 +685,7 @@ inside column
 EOS
     expected = <<-EOS
 
-\\begin{reviewcolumn}
-\\hypertarget{column:chap1:1}{}
-\\reviewcolumnhead{}{test}
+\\begin{reviewcolumn}[test\\hypertarget{column:chap1:1}{}]
 
 inside column
 
@@ -853,35 +847,35 @@ EOS
 
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewnote}\nA\n\nB\n\\end{reviewnote}\n\\begin{reviewnote}[caption]\nA\n\\end{reviewnote}\n)
     assert_equal expected, actual
 
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewmemo}\nA\n\nB\n\\end{reviewmemo}\n\\begin{reviewmemo}[caption]\nA\n\\end{reviewmemo}\n)
     assert_equal expected, actual
 
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewinfo}\nA\n\nB\n\\end{reviewinfo}\n\\begin{reviewinfo}[caption]\nA\n\\end{reviewinfo}\n)
     assert_equal expected, actual
 
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewimportant}\nA\n\nB\n\\end{reviewimportant}\n\\begin{reviewimportant}[caption]\nA\n\\end{reviewimportant}\n)
     assert_equal expected, actual
 
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewcaution}\nA\n\nB\n\\end{reviewcaution}\n\\begin{reviewcaution}[caption]\nA\n\\end{reviewcaution}\n)
     assert_equal expected, actual
 
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewnotice}\nA\n\nB\n\\end{reviewnotice}\n\\begin{reviewnotice}[caption]\nA\n\\end{reviewnotice}\n)
     assert_equal expected, actual
 
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewwarning}\nA\n\nB\n\\end{reviewwarning}\n\\begin{reviewwarning}[caption]\nA\n\\end{reviewwarning}\n)
     assert_equal expected, actual
 
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
-    expected = %Q(\\begin{reviewminicolumn}\nA\n\nB\n\\end{reviewminicolumn}\n\\begin{reviewminicolumn}\n\\reviewminicolumntitle{caption}\nA\n\\end{reviewminicolumn}\n)
+    expected = %Q(\\begin{reviewtip}\nA\n\nB\n\\end{reviewtip}\n\\begin{reviewtip}[caption]\nA\n\\end{reviewtip}\n)
     assert_equal expected, actual
   end
 

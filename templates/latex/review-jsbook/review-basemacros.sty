@@ -29,6 +29,8 @@
 \usepackage{jumoline}
 }
 
+\long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
+
 \newenvironment{shadedb}{%
   \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
   \MakeFramed {\FrameRestore}}%
@@ -126,8 +128,9 @@
     \end{tabular}
   \end{center}}
 
-\newenvironment{reviewcolumn}{%
+\newenvironment{reviewcolumn}[1][]{%
      \begin{framed}
+     \reviewcolumnhead{}{#1}
   }{%
      \end{framed}
   \vspace{2zw}}
@@ -173,13 +176,47 @@
 \newcommand{\reviewsecref}[2]{#1}
 
 \newcommand{\reviewminicolumntitle}[1]{%
-  {\large \review@intn@memohead{}: #1}\\}
+\review@ifempty{#1}{}{%
+  {\large \review@intn@memohead{}: #1}\\}}
 
 \renewcommand{\contentsname}{\review@toctitle}
 
 \newenvironment{reviewminicolumn}{%
   \vspace{1.5zw}\begin{screen}}{%
   \end{screen}\vspace{2zw}}
+
+\newenvironment{reviewnote}[1][]{%
+  \begin{reviewminicolumn}
+\review@ifempty{#1}{}{\reviewminicolumntitle{#1}}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewmemo}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewtip}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewinfo}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewwarning}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewimportant}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewcaution}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewnotice}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
 
 \newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
 \newcommand{\reviewami}[1]{\mask{#1}{A}}
