@@ -238,6 +238,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal 'test \\UTF{2460} test2', actual
   end
 
+  def test_inline_balloon
+    actual = compile_inline('test @<balloon>{①}')
+    assert_equal 'test \\reviewballoon{①}', actual
+  end
+
   def test_inline_idx
     actual = compile_inline('@<idx>{__TEST%$}, @<hidx>{__TEST%$}')
     assert_equal '\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}, \\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}', actual

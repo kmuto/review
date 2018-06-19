@@ -363,6 +363,10 @@ module ReVIEW
       "#{arg}[rotate 90 degree]"
     end
 
+    def inline_balloon(arg)
+      "← #{arg}"
+    end
+
     def inline_w(s)
       translated = @dictionary[s]
       if translated

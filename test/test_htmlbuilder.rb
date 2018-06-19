@@ -299,6 +299,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal 'test &#x2460; test2', actual
   end
 
+  def test_inline_balloon
+    actual = compile_inline('test @<balloon>{①}')
+    assert_equal %Q(test <span class="balloon">①</span>), actual
+  end
+
   def test_inline_ruby
     actual = compile_inline('@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。')
     assert_equal '<ruby>粗雑<rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby>繊細<rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。', actual
