@@ -1001,8 +1001,13 @@ module ReVIEW
     end
 
     def inline_uchar(str)
-      # with otf package
-      macro('UTF', escape(str))
+      if @texcompiler && @texcompiler.start_with?('platex')
+        # with otf package
+        macro('UTF', escape(str))
+      else
+        # passthrough
+        [str.to_i(16)].pack('U')
+      end
     end
 
     def inline_comment(str)
