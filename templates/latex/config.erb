@@ -1,25 +1,25 @@
 \makeatletter
 \def\review@texcompiler{<%= @texcompiler %>}
 \def\review@documentclass{<%= @documentclass %>}
-\def\review@booktitle_name{<%= escape_latex(@config.name_of('booktitle')) %>}
+\def\review@booktitlename{<%= escape_latex(@config.name_of('booktitle')) %>}
 <%- if @config['subtitle'] -%>
-\def\review@subtitle_name{<%= escape_latex(@config.name_of('subtitle')) %>}
+\def\review@subtitlename{<%= escape_latex(@config.name_of('subtitle')) %>}
 <%- end -%>
-\def\review@aut_names{<%= escape_latex(@config.names_of('aut').join(I18n.t('names_splitter'))) %>}
+\def\review@autnames{<%= escape_latex(@config.names_of('aut').join(I18n.t('names_splitter'))) %>}
 \def\review@titlepageauthors{<%= @authors %>}
 \def\review@date{<%= escape_latex(@config['date'].to_s) %>}
 <%- if @config['highlight'] && @config['highlight']['latex'] -%>
-\def\review@highlight_latex{<%= @config['highlight']['latex'] %>}
+\def\review@highlightlatex{<%= @config['highlight']['latex'] %>}
 <%- end -%>
 \def\review@language{<%= @config['language'] %>}
 \def\review@intn@list{<%= escape_latex(I18n.t('list')) %>}
-\def\review@intn@column_head{<%= escape_latex(I18n.t('column_head')) %>}
+\def\review@intn@columnhead{<%= escape_latex(I18n.t('column_head')) %>}
 \def\review@intn@image{<%= escape_latex(I18n.t('image')) %>}
 \def\review@intn@table{<%= escape_latex(I18n.t('table')) %>}
 \def\review@intn@columnname{<%= escape_latex(I18n.t('columnname')) %>}
-\def\review@intn@memo_head{<%= escape_latex(I18n.t('memo_head')) %>}
+\def\review@intn@memohead{<%= escape_latex(I18n.t('memo_head')) %>}
 \def\review@intn@edition{<%= escape_latex(I18n.t('edition')) %>}
-\def\review@intn@published_by{<%= escape_latex(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
+\def\review@intn@publishedby{<%= escape_latex(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
 \def\review@toctitle{<%= escape_latex(@config['toctitle'].present? ? @config['toctitle'] : I18n.t('toctitle')) %>}
 \def\review@prepartname{<%= escape_latex(@locale_latex['prepartname']) %>}
 \def\review@postpartname{<%= escape_latex(@locale_latex['postpartname']) %>}
@@ -70,7 +70,7 @@
 <%-   end -%>
 <%- end -%>
 \def\review@pubhistories{<%= @config['pubhistory'].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>}
-\def\review@colophon_names{<%= @okuduke %>}
+\def\review@colophonnames{<%= @okuduke %>}
 <%- if @config['rights'] -%>
 \def\review@rights{<%= @config.names_of('rights').map{|s| escape_latex(s)}.join('\\' + '\\') %>}
 <%- end -%>
