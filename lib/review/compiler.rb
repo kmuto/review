@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -59,8 +59,12 @@ module ReVIEW
       attr_reader :name
 
       def check_args(args)
-        raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})" unless @argc_spec === args.size
-        @checker.call(*args) if @checker
+        unless @argc_spec === args.size
+          raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
+        end
+        if @checker
+          @checker.call(*args)
+        end
       end
 
       def min_argc
@@ -161,7 +165,7 @@ module ReVIEW
 
     defsingle :footnote, 2
     defsingle :noindent, 0
-    defsingle :linebreak, 0
+    defsingle :blankline, 0
     defsingle :pagebreak, 0
     defsingle :hr, 0
     defsingle :parasep, 0
@@ -224,9 +228,10 @@ module ReVIEW
     definline :hidx
     definline :comment
     definline :include
-    definline :tcy
     definline :embed
     definline :pageref
+    definline :w
+    definline :wb
 
     private
 
@@ -286,17 +291,29 @@ module ReVIEW
       index = level - 1
       if tag
         if tag !~ %r{\A/}
+          if caption.empty?
+            warn 'headline is empty.'
+          end
           close_current_tagged_section(level)
           open_tagged_section(tag, level, label, caption)
         else
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
-          raise CompileError, "#{open_tag} is not opened." unless prev_tag_info.first == open_tag
+          if prev_tag_info.nil? || prev_tag_info.first != open_tag
+            error "#{open_tag} is not opened."
+          end
           close_tagged_section(*prev_tag_info)
         end
       else
-        @headline_indexs = @headline_indexs[0..index] if @headline_indexs.size > (index + 1)
-        @headline_indexs[index] = 0 if @headline_indexs[index].nil?
+        if caption.empty?
+          warn 'headline is empty.'
+        end
+        if @headline_indexs.size > (index + 1)
+          @headline_indexs = @headline_indexs[0..index]
+        end
+        if @headline_indexs[index].nil?
+          @headline_indexs[index] = 0
+        end
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
         @strategy.headline level, label, caption
@@ -338,7 +355,9 @@ module ReVIEW
     end
 
     def close_all_tagged_section
-      close_tagged_section(* @tagged_section.pop) until @tagged_section.empty?
+      until @tagged_section.empty?
+        close_tagged_section(* @tagged_section.pop)
+      end
     end
 
     def compile_ulist(f)
@@ -347,7 +366,9 @@ module ReVIEW
         next if line =~ /\A\#@/
 
         buf = [text(line.sub(/\*+/, '').strip)]
-        f.while_match(/\A\s+(?!\*)\S/) { |cont| buf.push text(cont.strip) }
+        f.while_match(/\A\s+(?!\*)\S/) do |cont|
+          buf.push text(cont.strip)
+        end
 
         line =~ /\A\s+(\*+)/
         current_level = $1.size
@@ -390,7 +411,9 @@ module ReVIEW
 
         num = line.match(/(\d+)\./)[1]
         buf = [text(line.sub(/\d+\./, '').strip)]
-        f.while_match(/\A\s+(?!\d+\.)\S/) { |cont| buf.push text(cont.strip) }
+        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
+          buf.push text(cont.strip)
+        end
         @strategy.ol_item buf, num
       end
       @strategy.ol_end
@@ -400,7 +423,8 @@ module ReVIEW
       @strategy.dl_begin
       while /\A\s*:/ =~ f.peek
         @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
-        @strategy.dd(f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) })
+        desc = f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) }
+        @strategy.dd(desc)
         f.skip_blank_lines
         f.skip_comment_lines
       end
@@ -421,8 +445,9 @@ module ReVIEW
       name = line.slice(/[a-z]+/).to_sym
       ignore_inline = (name == :embed)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
+      @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
-
+      @strategy.doc_status[name] = nil
       [name, args, lines]
     end
 
@@ -481,7 +506,9 @@ module ReVIEW
       if syntax.block_allowed?
         compile_block syntax, args, lines
       else
-        error "block is not allowed for command //#{syntax.name}; ignore" if lines
+        if lines
+          error "block is not allowed for command //#{syntax.name}; ignore"
+        end
         compile_single syntax, args
       end
     end
@@ -495,7 +522,9 @@ module ReVIEW
     end
 
     def default_block(syntax)
-      error "block is required for //#{syntax.name}; use empty block" if syntax.block_required?
+      if syntax.block_required?
+        error "block is required for //#{syntax.name}; use empty block"
+      end
       []
     end
 
@@ -506,7 +535,7 @@ module ReVIEW
     def replace_fence(str)
       str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
         op = $1
-        arg = $3.gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) { |m| '\\\\' * m.size }
+        arg = $3.gsub('@', "\x01").gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) { |m| '\\\\' * m.size }
         "@<#{op}>{#{arg}}"
       end
     end
@@ -514,13 +543,17 @@ module ReVIEW
     def text(str)
       return '' if str.empty?
       words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
-      words.each { |w| error "`@<xxx>' seen but is not valid inline op: #{w}" if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w) }
+      words.each do |w|
+        if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
+          error "`@<xxx>' seen but is not valid inline op: #{w}"
+        end
+      end
       result = @strategy.nofunc_text(words.shift)
       until words.empty?
         result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
         result << @strategy.nofunc_text(words.shift)
       end
-      result
+      result.gsub("\x01", '@')
     rescue => err
       error err.message
     end
@@ -528,8 +561,12 @@ module ReVIEW
 
     def compile_inline(str)
       op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
-      raise CompileError, "no such inline op: #{op}" unless inline_defined?(op)
-      raise "strategy does not support inline op: @<#{op}>" unless @strategy.respond_to?("inline_#{op}")
+      unless inline_defined?(op)
+        raise CompileError, "no such inline op: #{op}"
+      end
+      unless @strategy.respond_to?("inline_#{op}")
+        raise "strategy does not support inline op: @<#{op}>"
+      end
       @strategy.__send__("inline_#{op}", arg)
     rescue => err
       error err.message

@@ -6,10 +6,12 @@ BOOK_PDF = BOOK + '.pdf'
 BOOK_EPUB = BOOK + '.epub'
 CONFIG_FILE = 'config.yml'
 WEBROOT = 'webroot'
+TEXTROOT = BOOK + '-text'
+TOPROOT = BOOK + '-text'
 
 def build(mode, chapter)
   sh "review-compile --target=#{mode} --footnotetext --stylesheet=style.css #{chapter} > tmp"
-  mode_ext = { 'html' => 'html', 'latex' => 'tex', 'idgxml' => 'xml' }
+  mode_ext = { 'html' => 'html', 'latex' => 'tex', 'idgxml' => 'xml', 'top' => 'txt', 'plaintext' => 'txt' }
   FileUtils.mv 'tmp', chapter.gsub(/re\z/, mode_ext[mode])
 end
 
@@ -46,8 +48,18 @@ task all: %i[pdf epub]
 desc 'generate PDF file'
 task pdf: BOOK_PDF
 
-desc 'generate stagic HTML file for web'
+desc 'generate static HTML file for web'
 task web: WEBROOT
+
+desc 'generate text file (without decoration)'
+task plaintext: TEXTROOT do
+  sh "review-textmaker -n #{CONFIG_FILE}"
+end
+
+desc 'generate (decorated) text file'
+task text: TOPROOT do
+  sh "review-textmaker #{CONFIG_FILE}"
+end
 
 desc 'generate EPUB file'
 task epub: BOOK_EPUB
@@ -69,4 +81,8 @@ file WEBROOT => SRC do
   sh "review-webmaker #{CONFIG_FILE}"
 end
 
-CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT])
+file TEXTROOT => SRC do
+  FileUtils.rm_rf [TEXTROOT]
+end
+
+CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT, 'images/_review_math', TEXTROOT])

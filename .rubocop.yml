@@ -9,12 +9,6 @@ inherit_from: .rubocop_todo.yml
 
 #### Lint
 
-Lint/BlockAlignment:
-  Enabled: true
-
-Lint/EndAlignment:
-  Enabled: AlignWith
-
 Lint/EmptyWhen:
   Enabled: true
 
@@ -28,8 +22,8 @@ Lint/AssignmentInCondition:
 Lint/ParenthesesAsGroupedExpression:
   Enabled: true
 
-Lint/RescueWithoutErrorClass:
-  Enabled: false
+#Lint/RescueWithoutErrorClass:
+#  Enabled: false
 
 Lint/UnderscorePrefixedVariableName:
   Enabled: true
@@ -46,7 +40,7 @@ Lint/UselessAssignment:
 #### Performance
 
 Performance/RegexpMatch:
-  Enabled: true
+  Enabled: false
 
 Performance/ReverseEach:
   Enabled: true
@@ -59,6 +53,9 @@ Performance/RangeInclude:
   Enabled: true
 
 #### Style
+
+Style/AccessModifierDeclarations:
+  Enabled: false
 
 Style/AsciiComments:
   Enabled: false
@@ -113,9 +110,15 @@ Style/Encoding:
 Style/EmptyElse:
   Enabled: true
 
+Style/EvalWithLocation:
+  Enabled: false
+
 Style/FormatString:
   EnforcedStyle: sprintf
   Enabled: true
+
+Style/FormatStringToken:
+  Enabled: false
 
 Style/GuardClause:
   Enabled: false
@@ -124,7 +127,7 @@ Style/IfInsideElse:
   Enabled: false
 
 Style/IfUnlessModifier:
-  Enabled: true
+  Enabled: false
 
 Style/MutableConstant:
   Enabled: false
@@ -184,6 +187,9 @@ Style/LineEndConcatenation:
 Style/MethodCallWithoutArgsParentheses:
   Enabled: true
 
+Style/MixinUsage:
+  Enabled: false
+
 Style/MultilineBlockChain:
   Enabled: true
 
@@ -220,13 +226,16 @@ Style/RedundantParentheses:
   Enabled: true
 
 Style/RedundantReturn:
-  Enabled: true
+  Enabled: false
 
 Style/RedundantSelf:
   Enabled: false
 
 Style/RegexpLiteral:
   Enabled: true
+
+Style/RescueStandardError:
+  Enabled: false
 
 Style/Semicolon:
   Enabled: true
@@ -252,7 +261,10 @@ Style/SymbolProc:
 Style/SymbolArray:
   Enabled: true
 
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+
+Style/TrailingCommaInHashLiteral:
   Enabled: true
 
 Style/WordArray:
@@ -262,18 +274,28 @@ Style/UnneededPercentQ:
   Enabled: false
 
 Style/WhileUntilModifier:
-  Enabled: true
+  Enabled: false
 
 #Style/YodaCondition:
 #  Enabled: true
 
 ### Layout
+
+Layout/BlockAlignment:
+  Enabled: true
+
+Layout/EndAlignment:
+  Enabled: AlignWith
+
 Layout/MultilineMethodCallBraceLayout:
   Enabled: true
 
 Layout/AccessModifierIndentation:
   EnforcedStyle: indent
   Enabled: true
+
+Layout/ClosingHeredocIndentation:
+  Enabled: false
 
 Layout/DotPosition:
   EnforcedStyle: trailing
@@ -338,7 +360,7 @@ Layout/SpaceAroundOperators:
   Enabled: true
 
 Layout/SpaceBeforeBlockBraces:
-  Enabled: true
+  Enabled: false
 
 Layout/SpaceBeforeComma:
   Enabled: true
@@ -347,6 +369,9 @@ Layout/SpaceInsideBlockBraces:
   Enabled: true
 
 Layout/SpaceInsideHashLiteralBraces:
+  Enabled: true
+
+Layout/SpaceInsideArrayLiteralBrackets:
   Enabled: true
 
 Layout/SpaceInsideStringInterpolation:
@@ -362,7 +387,7 @@ Metrics/BlockNesting:
   Max: 4
 
 Metrics/ModuleLength:
-  Max: 129
+  Max: 200
 
 Metrics/ParameterLists:
   Max: 8
@@ -372,6 +397,8 @@ Metrics/PerceivedComplexity:
 
 Metrics/ClassLength:
   Max: 1500
+  Exclude:
+    - 'test/*.rb'
 
 Metrics/LineLength:
   Max: 256
@@ -418,8 +445,14 @@ Naming/AccessorMethodName:
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
 Naming/MethodName:
   Enabled: true
+
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
 
 # Use snake_case for variable names.
 Naming/VariableName:

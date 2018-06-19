@@ -1,8 +1,10 @@
 require 'test_helper'
+require 'book_test_helper'
 require 'review'
 
 class HTMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW
+  include BookTestHelper
 
   def setup
     ReVIEW::I18n.setup
@@ -430,9 +432,13 @@ EOS
     assert_equal %Q(<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n), actual
   end
 
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(<p><br /></p>\n<p>foo</p>\n), actual
+  end
+
   def test_noindent
-    @builder.noindent
-    actual = compile_block("foo\nbar\n\nfoo2\nbar2\n")
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n), actual
   end
 
@@ -740,14 +746,6 @@ EOS
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
     assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n), actual
-  end
-
-  def test_list_ext
-    def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist.rb', 1)
-    end
-    actual = compile_block("//list[samplelist.rb][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<div id="samplelist.rb" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list language-rb">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n), actual
   end
 
   def test_listnum
@@ -1063,6 +1061,59 @@ EOS
     assert_equal %Q(<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n), actual
   end
 
+  def test_texequation
+    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true unless system('latex -version 1>/dev/null 2>/dev/null')
+    mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
+                 'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P} q\n//}\n") do |dir, book, _files|
+      @book = book
+      @book.config = @config
+      @config['imgmath'] = true
+      @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+      FileUtils.mkdir_p(File.join(dir, 'images'))
+      expected = <<-EOB
+<div class=\"equation\">
+<img src=\"././images/_review_math/_gen_XXX.png\" />
+</div>
+      EOB
+      tmpio = $stderr
+      $stderr = StringIO.new
+      begin
+        result = compile_block("//texequation{\np \\land \\bm{P} q\n//}\n")
+      ensure
+        $stderr = tmpio
+      end
+      actual = result.gsub(/_gen_[0-9a-f]+\.png/, '_gen_XXX.png')
+      assert_equal expected, actual
+    end
+  end
+
+  def test_texequation_fail
+    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true unless system('latex -version 1>/dev/null 2>/dev/null')
+    mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
+                 'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P}} q\n//}\n") do |dir, book, _files|
+      @book = book
+      @book.config = @config
+      @config['imgmath'] = true
+      @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
+      location = Location.new(nil, nil)
+      @builder.bind(@compiler, @chapter, location)
+      FileUtils.mkdir_p(File.join(dir, 'images'))
+      tmpio = $stderr
+      $stderr = StringIO.new
+      begin
+        assert_raise(ReVIEW::ApplicationError) do
+          _result = compile_block("//texequation{\np \\land \\bm{P}} q\n//}\n")
+        end
+      ensure
+        $stderr = tmpio
+      end
+    end
+  end
+
   def test_bib
     def @chapter.bibpaper(_id)
       Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
@@ -1175,7 +1226,7 @@ inside column
 
 ===[/column_dummy]
 EOS
-    assert_raise(ReVIEW::CompileError) do
+    assert_raise(ReVIEW::ApplicationError) do
       column_helper(review)
     end
   end
@@ -1583,6 +1634,17 @@ EOS
     assert_equal '「1.1 part1-1」', hd
   end
 
+  def test_inline_hd_with_block
+    io1 = StringIO.new("= test1\n=={foo} foo\n//emlist{\n======\nbar\n======\n}\n//}\n=={bar} bar")
+    chap1 = Book::Chapter.new(@book, 1, '-', nil, io1)
+    location = Location.new(nil, nil)
+    @builder.bind(@compiler, chap1, location)
+    hd = @builder.inline_hd('foo')
+    assert_equal '「1.1 foo」', hd
+    hd = @builder.inline_hd('bar')
+    assert_equal '「1.2 bar」', hd
+  end
+
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n),
@@ -1669,5 +1731,44 @@ EOS
     @config['draft'] = true
     actual = compile_inline('test @<comment>{コメント} test2')
     assert_equal %Q(test <span class="draft-comment">コメント</span> test2), actual
+  end
+
+  def test_inline_fence
+    actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
+    assert_equal 'test <code class="inline-code tt">@&lt;code&gt;{$サンプル$}</code>', actual
+  end
+
+  def test_inline_w
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'words.csv'), 'w') do |f|
+        f.write <<EOB
+"F","foo"
+"B","bar""\\<>_@<b>{BAZ}"
+EOB
+      end
+      @book.config['words_file'] = File.join(dir, 'words.csv')
+      io = StringIO.new
+      @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+      actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
+      assert_equal %Q(<p>foo bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ} <b>bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ}</b> [missing word: N]</p>\n), actual
+      assert_match(/WARN -- : :1: word not bound: N/, io.string)
+    end
+  end
+
+  def test_inline_unknown
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    assert_equal ':1: error: unknown image: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    assert_equal ':1: error: unknown footnote: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    assert_equal ':1: error: unknown headline: n', e.message
+    %w[list table column].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ":1: error: unknown #{name}: n", e.message
+    end
+    %w[chap chapref title].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ':1: error: key not found: "n"', e.message
+    end
   end
 end

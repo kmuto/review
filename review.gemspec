@@ -1,4 +1,4 @@
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+$LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'review/version'
 
 Gem::Specification.new do |gem|
@@ -12,13 +12,12 @@ Gem::Specification.new do |gem|
   gem.summary     = 'Re:VIEW: a easy-to-use digital publishing system'
   gem.description = 'Re:VIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.'
   gem.required_rubygems_version = Gem::Requirement.new('>= 0') if gem.respond_to? :required_rubygems_version=
-  gem.date = '2017-06-29'
+  gem.date = '2018-03-01'
 
   gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   gem.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
-  gem.extra_rdoc_files = [
-  ]
+  gem.extra_rdoc_files = []
   gem.require_paths = ['lib']
 
   gem.add_dependency('image_size')
@@ -26,6 +25,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('rubyzip')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
-  gem.add_development_dependency('rubocop')
+  gem.add_development_dependency('rubocop', '~> 0.57.2')
+  gem.add_development_dependency('simplecov')
   gem.add_development_dependency('test-unit')
 end

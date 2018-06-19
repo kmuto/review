@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
 #               2002-2008 Minero Aoki
 #
 # This program is free software.
@@ -13,47 +13,36 @@ require 'review/catalog'
 module ReVIEW
   module Book
     class Base
-      attr_writer :config
+      attr_accessor :config
       attr_writer :parts
       attr_writer :catalog
       attr_reader :basedir
 
-      def self.load_default
-        ReVIEW.logger.warn 'Book::Base.load_default() is obsoleted. Use Book::Base.load().'
-        load
-      end
-
       def self.load(dir = '.')
-        update_rubyenv dir
         new(dir)
       end
 
-      @basedir_seen = {}
-
-      def self.update_rubyenv(dir)
-        return if @basedir_seen.key?(dir)
-        if File.file?("#{dir}/review-ext.rb")
-          if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
-            ReVIEW.logger.warn 'review-ext.rb is prohibited in safe mode. ignored.'
-          else
-            Kernel.load File.expand_path("#{dir}/review-ext.rb")
-          end
-        end
-        @basedir_seen[dir] = true
-      end
-
-      def self.clear_rubyenv
-        @basedir_seen = {}
-      end
-
-      def initialize(basedir)
+      def initialize(basedir = '.')
         @basedir = basedir
+        @logger = ReVIEW.logger
         @parts = nil
         @chapter_index = nil
         @config = ReVIEW::Configure.values
         @catalog = nil
         @read_part = nil
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
+        @basedir_seen = {}
+        update_rubyenv
+      end
+
+      def update_rubyenv
+        if File.file?(File.join(@basedir, 'review-ext.rb'))
+          if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
+            @logger.warn 'review-ext.rb is prohibited in safe mode. ignored.'
+          else
+            Kernel.load(File.expand_path(File.join(@basedir, 'review-ext.rb')))
+          end
+        end
       end
 
       def bib_file
@@ -68,8 +57,8 @@ module ReVIEW
         config['ext']
       end
 
-      def image_dir
-        config['image_dir']
+      def imagedir
+        File.join(@basedir, config['imagedir'])
       end
 
       def image_types
@@ -78,6 +67,14 @@ module ReVIEW
 
       def image_types=(types)
         config['image_types'] = types
+      end
+
+      def contentdir
+        if !config['contentdir'].present? || config['contentdir'] == '.'
+          @basedir
+        else
+          File.join(@basedir, config['contentdir'])
+        end
       end
 
       def page_metric
@@ -103,7 +100,10 @@ module ReVIEW
       end
 
       def parts_in_file
-        parts.find_all { |part| part if part.present? and part.file? }
+        # TODO: should be `parts.find_all{|part| part.present? and part.file?}` ?
+        parts.find_all do |part|
+          part if part.present? and part.file?
+        end
       end
 
       def part(n)
@@ -139,7 +139,12 @@ module ReVIEW
         return @chapter_index if @chapter_index
 
         contents = chapters
-        parts.each { |prt| contents << prt if prt.id.present? }
+        # TODO: contents += parts.find_all { |prt| prt.id.present? }
+        parts.each do |prt|
+          if prt.id.present?
+            contents << prt
+          end
+        end
         @chapter_index = ChapterIndex.new(contents)
       end
 
@@ -151,7 +156,9 @@ module ReVIEW
         finded = false
         each_chapter do |c|
           return c if finded
-          finded = true if c == chapter
+          if c == chapter
+            finded = true
+          end
         end
         nil # not found
       end
@@ -160,7 +167,9 @@ module ReVIEW
         finded = false
         each_chapter_r do |c|
           return c if finded
-          finded = true if c == chapter
+          if c == chapter
+            finded = true
+          end
         end
         nil # not found
       end
@@ -171,10 +180,6 @@ module ReVIEW
         vol
       end
 
-      def config
-        @config ||= Configure.values
-      end
-
       def load_config(filename)
         new_conf = YAML.load_file(filename)
         @config.merge!(new_conf)
@@ -183,8 +188,13 @@ module ReVIEW
       def catalog
         return @catalog if @catalog.present?
 
-        catalogfile_path = "#{basedir}/#{config['catalogfile']}"
-        @catalog = File.open(catalogfile_path) { |f| Catalog.new(f) } if File.file? catalogfile_path
+        catalogfile_path = filename_join(@basedir, config['catalogfile'])
+        if File.file? catalogfile_path
+          @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) }
+        end
+        if @catalog
+          @catalog.validate!(@config, basedir)
+        end
         @catalog
       end
 
@@ -226,7 +236,7 @@ module ReVIEW
         if catalog
           @read_part = catalog.parts
         else
-          @read_part = File.read("#{@basedir}/#{config['part_file']}")
+          @read_part = File.read(File.join(@basedir, config['part_file']))
         end
       end
 
@@ -234,23 +244,28 @@ module ReVIEW
         if catalog
           catalog.parts.present?
         else
-          File.exist?("#{@basedir}/#{config['part_file']}")
+          File.exist?(File.join(@basedir, config['part_file']))
         end
       end
 
       def read_bib
-        File.read("#{@basedir}/#{bib_file}")
+        File.read(File.join(@basedir, bib_file))
       end
 
       def bib_exist?
-        File.exist?("#{@basedir}/#{bib_file}")
+        File.exist?(File.join(@basedir, bib_file))
       end
 
       def prefaces
-        return mkpart_from_namelist(catalog.predef.split("\n")) if catalog
+        if catalog
+          return mkpart_from_namelist(catalog.predef.split("\n"))
+        end
 
         begin
-          mkpart_from_namelistfile("#{@basedir}/#{config['predef_file']}") if File.file?("#{@basedir}/#{config['predef_file']}")
+          predef_file = filename_join(@basedir, config['predef_file'])
+          if File.file?(predef_file)
+            mkpart_from_namelistfile(predef_file)
+          end
         rescue FileNotFound => err
           raise FileNotFound, "preface #{err.message}"
         end
@@ -264,14 +279,19 @@ module ReVIEW
         end
 
         begin
-          mkpart_from_namelistfile("#{@basedir}/#{config['postdef_file']}") if File.file?("#{@basedir}/#{config['postdef_file']}")
+          postdef_file = filename_join(@basedir, config['postdef_file'])
+          if File.file?(postdef_file)
+            mkpart_from_namelistfile(postdef_file)
+          end
         rescue FileNotFound => err
           raise FileNotFound, "postscript #{err.message}"
         end
       end
 
       def postscripts
-        mkpart_from_namelist(catalog.postdef.split("\n")) if catalog
+        if catalog
+          mkpart_from_namelist(catalog.postdef.split("\n"))
+        end
       end
 
       private
@@ -301,12 +321,12 @@ module ReVIEW
           return catalog.parts_with_chaps.map do |entry|
             if entry.is_a?(Hash)
               chaps = entry.values.first.map do |chap|
-                chap = Chapter.new(self, num += 1, chap, "#{@basedir}/#{chap}")
+                chap = Chapter.new(self, num += 1, chap, File.join(contentdir, chap))
                 chap
               end
               Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
             else
-              chap = Chapter.new(self, num += 1, entry, "#{@basedir}/#{entry}")
+              chap = Chapter.new(self, num += 1, entry, File.join(contentdir, entry))
               if chap.number
                 num = chap.number
               else
@@ -320,7 +340,7 @@ module ReVIEW
         chap = read_chaps.
                strip.lines.map(&:strip).join("\n").split(/\n{2,}/).
                map do |part_chunk|
-          chaps = part_chunk.split.map { |chapid| Chapter.new(self, num += 1, chapid, "#{@basedir}/#{chapid}") }
+          chaps = part_chunk.split.map { |chapid| Chapter.new(self, num += 1, chapid, File.join(contentdir, chapid)) }
           if part_exist? && read_part.split("\n").size > part
             Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
           else
@@ -352,14 +372,14 @@ module ReVIEW
 
       def mkchap(name, number = nil)
         name += ext if File.extname(name).empty?
-        path = "#{@basedir}/#{name}"
+        path = File.join(contentdir, name)
         raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
         Chapter.new(self, number, name, path)
       end
 
       def mkchap_ifexist(name, idx = nil)
         name += ext if File.extname(name).empty?
-        path = "#{@basedir}/#{name}"
+        path = File.join(contentdir, name)
         if File.file?(path)
           idx += 1 if idx
           Chapter.new(self, idx, name, path)
@@ -369,10 +389,12 @@ module ReVIEW
       def read_file(filename)
         unless @warn_old_files[filename]
           @warn_old_files[filename] = true
-          warn "!!! #{filename} is obsoleted. please use catalog.yml." if caller.none? { |item| item =~ %r{/review/test/test_} }
+          if caller.none? { |item| item =~ %r{/review/test/test_} }
+            @logger.warn "!!! #{filename} is obsoleted. please use catalog.yml."
+          end
         end
         res = ''
-        File.open("#{@basedir}/#{filename}", 'r:BOM|utf-8') do |f|
+        File.open(filename_join(@basedir, filename), 'r:BOM|utf-8') do |f|
           f.each_line do |line|
             next if /\A#/ =~ line
             line.gsub!(/#.*\Z/, '')
@@ -384,6 +406,10 @@ module ReVIEW
         Dir.glob("#{@basedir}/*#{ext}").sort.join("\n")
       rescue Errno::EISDIR
         ''
+      end
+
+      def filename_join(*args)
+        File.join(args.reject(&:nil?))
       end
     end
   end

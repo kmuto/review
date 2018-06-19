@@ -25,20 +25,24 @@ module ReVIEW
       if part.number
         if part.file?
           ext = part.book.config['htmlext'] || 'html'
-          path = part.path.sub(/\.re/, '.' + ext)
+          path = File.basename(part.path.sub(/\.re/, '.' + ext))
           @out.puts %Q(<li><a href="#{path}">#{h(I18n.t('part_short', part.number) + ' ' + part.title)}</a>\n<ul>\n)
         else
           @out.puts %Q(<li>#{h(I18n.t('part_short', part.number) + ' ' + part.title)}\n<ul>\n)
         end
       end
-      part.each_chapter { |chap| print_chapter(chap) }
-      @out.puts "</ul>\n</li>\n" if part.number
+      part.each_chapter do |chap|
+        print_chapter(chap)
+      end
+      if part.number
+        @out.puts "</ul>\n</li>\n"
+      end
     end
 
     def print_chapter(chap)
       chap_node = TOCParser.chapter_node(chap)
       ext = chap.book.config['htmlext'] || 'html'
-      path = chap.path.sub(/\.re/, '.' + ext)
+      path = File.basename(chap.path.sub(/\.re/, '.' + ext))
       label = if chap_node.number && chap.on_chaps?
                 "#{I18n.t('chapter_short', chap.number)} #{chap.title}"
               else

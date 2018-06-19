@@ -1,3 +1,199 @@
+# Version 3.0.0preview1 (unreleased)
+
+## New Features
+* .re files can be placed in subfolders by specifying a folder with `contentdir` parameter ([#920])
+* `//graph` supports PlantUML ([#1006])
+* add `@<w>` and `@<wb>` to expand the value corresponding to the specified key from CSV word file ([#1007])
+
+## Breaking Changes
+* When the value of review_version is 3 or more, `@<m>` no longer add a space before and after formula ([#943])
+* the function of automatic detection of highlight target language by identifier in `//list`, `//listnum` is removed from HTMLBuilder ([#1016])
+
+## Bug Fixes
+* Fix redundant log display with Ruby 2.3 or later ([#975])
+* for backward compatibility, revert `usepackage` parameter which was removed Version 2.5.0 ([#1001])
+
+## Enhancements
+* `//graph` now works on Windows ([#1008])
+* file extensions of image files and font files becomes case insensitive ([#1002])
+
+## Docs
+* add description of external tools used in `//graph` ([#1008])
+* add description of `@<w>` and `@<wb>` ([#1007])
+
+## Contributors
+
+[#920]: https://github.com/kmuto/review/issues/920
+[#943]: https://github.com/kmuto/review/issues/943
+[#975]: https://github.com/kmuto/review/issues/975
+[#1001]: https://github.com/kmuto/review/pull/1001
+[#1002]: https://github.com/kmuto/review/issues/1002
+[#1006]: https://github.com/kmuto/review/issues/1006
+[#1007]: https://github.com/kmuto/review/issues/1007
+[#1008]: https://github.com/kmuto/review/pull/1008
+[#1016]: https://github.com/kmuto/review/issues/1016
+
+# Version 2.5.0
+
+## New Features
+
+* add a new maker command `review-textmaker` to output plain text files ([#926])
+* LATEXBuilder: add a new parameter `pdfmaker/bbox` for settings of BoudingBox ([#947])
+* add a new command `//blankline` ([#942])
+
+## Breaking Changes
+
+* remove (incomplete) command `//include` ([#887])
+* LATEXBuilder: use `\footnotemark` implicitly for captions and headings ([#841])
+* EPUBMaker, WEBMaker: use `pbl` (publisher) instead of `prt` (printer) in titlepage ([#927])
+* PDFMaker: use `texstyle` parameter instead of `usepackage` in layout.tex.erb. When using your own layout.tex.erb, you need to rewrite it with a new code of texstyle parsing. ([#908])
+
+## Bug Fixes
+
+* fix column closing ([#894])
+* fix internal errors in `@<hd>` ([#896])
+* LATEXBuilder: fix to ignore empty caption ([#922])
+* fix invalid commmand errors in `//graph` when using gnuplot ([#931])
+* fix errors of `review` command in Windows ([#940])
+* EPUBMaker: fix error of removing temporary files in Windows ([#946])
+
+## Enhancements
+
+* remove tailing empty lines in block (captionblocks) such as `//note`. ([#882])
+* fix error messages when using non-existent ID of catalog.yml in inline commands such as `@<chap>` ([#891])
+* ignore UTF-8 BOM in catalog.yml ([#899])
+* LATEXBuilder: fix a length of horizontal line in colophon ([#907])
+* allow to use multiple parameters of `texstyle` in config.yml ([#908])
+* review-init: create `lib/tasks` folder to use original Rake commands ([#921])
+* review-init: copy `doc` folder into the target project ([#918])
+* add a help message of `review` ([#933])
+* show appropriate error messages when using invalid or non-existent YAML files ([#958])
+* show better error messages when using unknown ID in inline commands such as `@<img>` and `@<table>` ([#954])
+* show better error messages when compiling a file not included in catalog.yml ([#953])
+* LATEXBuilder: add IDs of `table`, `imgtable`, `image` and `indepimage` as comments (ex. `\begin{reviewimage}%%sampleimg`) ([#937])
+
+## Docs
+
+* add the rule of searching image files with extension ([#939])
+* add description of `review-textmaker` ([#944])
+
+## Contributors
+
+* [@kauplan](https://github.com/kauplan)
+* [@krororo](https://github.com/krororo)
+* [@mhidaka](https://github.com/mhidaka)
+* [@Pegasus204](https://github.com/Pegasus204)
+
+[#841]: https://github.com/kmuto/review/issues/841
+[#882]: https://github.com/kmuto/review/issues/882
+[#887]: https://github.com/kmuto/review/issues/887
+[#891]: https://github.com/kmuto/review/issues/891
+[#894]: https://github.com/kmuto/review/pull/894
+[#896]: https://github.com/kmuto/review/issues/896
+[#899]: https://github.com/kmuto/review/issues/899
+[#907]: https://github.com/kmuto/review/pull/907
+[#908]: https://github.com/kmuto/review/pull/908
+[#918]: https://github.com/kmuto/review/issues/918
+[#921]: https://github.com/kmuto/review/issues/921
+[#922]: https://github.com/kmuto/review/pull/922
+[#926]: https://github.com/kmuto/review/issues/926
+[#927]: https://github.com/kmuto/review/pull/927
+[#931]: https://github.com/kmuto/review/pull/931
+[#933]: https://github.com/kmuto/review/issues/933
+[#937]: https://github.com/kmuto/review/pull/937
+[#939]: https://github.com/kmuto/review/pull/939
+[#940]: https://github.com/kmuto/review/issues/940
+[#942]: https://github.com/kmuto/review/issues/942
+[#944]: https://github.com/kmuto/review/pull/944
+[#946]: https://github.com/kmuto/review/issues/946
+[#947]: https://github.com/kmuto/review/pull/947
+[#953]: https://github.com/kmuto/review/issues/953
+[#954]: https://github.com/kmuto/review/issues/954
+[#958]: https://github.com/kmuto/review/issues/958
+
+# Version 2.4.0
+
+## New Features
+
+* use built-in Logger class for warns and errors ([#705])
+* EPUBMaker: warn of large images because of rejecting ebook stores ([#819])
+* LATEXBuilder: add new inline command `@<pageref>` ([#836])
+* support inline notaion `| |` and `$ $` instead of `{}` to surpress escaping `}` ([#876])
+
+## Breaking Changes
+
+* LATEXBuilder: use Roman numerals as part numbers ([#837])
+* EPUBMaker: TOC should be after frontmatter ([#840])
+* `imgmath` uses folder `images/_review_math`, not `images` directly ([#856])
+* EPUBMaker: default value of titlepage is `true`, not `null` ([#862])
+* EPUBMaker: `params` in template files should be `config` ([#867])
+* EWBBuilder is removed because nobody maintained it ([#828])
+
+## Bug Fixes
+
+* fix misrecognition of HeadlineIndex ([#121])
+* TOPBuilder: fix metric parameter in `//image` and `//indepimage` ([#805])
+* fix refering columns in other chapters ([#817])
+* use execution date when `date` in config.yml is empty ([#824])
+* fix I18N messages of `listref`, `imgref`, and `tableref` in frontmatters and backmatters ([#830])
+* WebMaker: fix booktitle using Hash ([#831])
+* LATEXBuilder: use lmodern package to avoid to use Type3 font in Western languages ([#843])
+* fix broken title using `/` in config.yml ([#852])
+* PDFMaker: fix toclevel ([#846])
+
+## Enhancements
+
+* allow block `{ 〜 //}` in `//indepimage`. ([#802])
+* warn when images are not found in `//indepimage`([#803])
+* LATEXBuilder: allow caption in `//source` ([#834])
+
+## Docs
+
+* add that installing LaTeX environments is needed to use `rake pdf` ([#800])
+* fix links in README.md ([#815])
+* add sample document to test commands of Re:VIEW ([#833])
+* fix comment of `titlepage` in config.yml ([#847])
+* fix description of `footnotetext` ([#872])
+
+## Others
+
+* fix coding rules to surpress rubocop v0.50.0 ([#823])
+
+## Contributors
+
+* [@ryota-murakami](https://github.com/ryota-murakami)
+* [@nasum](https://github.com/nasum)
+* [@kokuyouwind](https://github.com/kokuyouwind)
+
+[#121]: https://github.com/kmuto/review/issues/121
+[#705]: https://github.com/kmuto/review/issues/705
+[#800]: https://github.com/kmuto/review/pull/800
+[#802]: https://github.com/kmuto/review/issues/802
+[#803]: https://github.com/kmuto/review/issues/803
+[#805]: https://github.com/kmuto/review/pull/805
+[#815]: https://github.com/kmuto/review/pull/815
+[#817]: https://github.com/kmuto/review/pull/817
+[#819]: https://github.com/kmuto/review/issues/819
+[#823]: https://github.com/kmuto/review/issues/823
+[#824]: https://github.com/kmuto/review/issues/824
+[#828]: https://github.com/kmuto/review/pull/828
+[#830]: https://github.com/kmuto/review/pull/830
+[#831]: https://github.com/kmuto/review/pull/831
+[#833]: https://github.com/kmuto/review/pull/833
+[#834]: https://github.com/kmuto/review/issues/834
+[#836]: https://github.com/kmuto/review/issues/836
+[#840]: https://github.com/kmuto/review/pull/840
+[#843]: https://github.com/kmuto/review/issues/843
+[#837]: https://github.com/kmuto/review/issues/837
+[#846]: https://github.com/kmuto/review/issues/846
+[#847]: https://github.com/kmuto/review/pull/847
+[#852]: https://github.com/kmuto/review/issues/852
+[#856]: https://github.com/kmuto/review/issues/856
+[#862]: https://github.com/kmuto/review/pull/862
+[#867]: https://github.com/kmuto/review/issues/867
+[#872]: https://github.com/kmuto/review/issues/872
+[#876]: https://github.com/kmuto/review/issues/876
+
 # Version 2.3.0
 
 ## New Features

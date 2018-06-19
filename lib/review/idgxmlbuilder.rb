@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -44,8 +44,7 @@ module ReVIEW
       '.xml'
     end
 
-    def builder_init(no_error = false)
-      @no_error = no_error
+    def builder_init
     end
     private :builder_init
 
@@ -62,13 +61,12 @@ module ReVIEW
       @ol_num = nil
       @first_line_num = nil
       @rootelement = 'doc'
-      @secttags = nil
       @tsize = nil
       @texblockequation = 0
       @texinlineequation = 0
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
-      @secttags = true unless @book.config['structuredxml'].nil?
+      @secttags = @book.config['structuredxml']
     end
     private :builder_init_file
 
@@ -102,7 +100,7 @@ module ReVIEW
           print '</sect>' if @section > 0
         end
 
-        print %Q(<chapter id="chap:#{@chapter.number}">) unless @secttags.nil?
+        print %Q(<chapter id="chap:#{@chapter.number}">) if @secttags
 
         @section = 0
         @subsection = 0
@@ -116,7 +114,7 @@ module ReVIEW
           print '</sect>' if @section > 0
         end
         @section += 1
-        print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) unless @secttags.nil?
+        print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) if @secttags
 
         @subsection = 0
         @subsubsection = 0
@@ -129,7 +127,7 @@ module ReVIEW
         end
 
         @subsection += 1
-        print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) unless @secttags.nil?
+        print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) if @secttags
 
         @subsubsection = 0
         @subsubsubsection = 0
@@ -155,7 +153,7 @@ module ReVIEW
       prefix, _anchor = headline_prefix(level)
 
       label = label.nil? ? '' : %Q( id="#{label}")
-      toccaption = escape_html(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
+      toccaption = escape(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>)
     end
 
@@ -261,6 +259,8 @@ module ReVIEW
       else
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end
+    rescue KeyError
+      error "unknown column: #{id}"
     end
 
     def inline_list(id)
@@ -270,6 +270,8 @@ module ReVIEW
       else
         "<span type='list'>#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])}</span>"
       end
+    rescue KeyError
+      error "unknown list: #{id}"
     end
 
     def list_header(id, caption, _lang)
@@ -373,6 +375,8 @@ module ReVIEW
       else
         "<span type='table'>#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(id).number])}</span>"
       end
+    rescue KeyError
+      error "unknown table: #{id}"
     end
 
     def inline_img(id)
@@ -382,6 +386,8 @@ module ReVIEW
       else
         "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(id).number])}</span>"
       end
+    rescue KeyError
+      error "unknown image: #{id}"
     end
 
     def inline_imgref(id)
@@ -583,12 +589,12 @@ module ReVIEW
       lines ||= []
       lines.unshift comment unless comment.blank?
       str = lines.join("\n")
-      print "<msg>#{escape_html(str)}</msg>"
+      print "<msg>#{escape(str)}</msg>"
     end
 
     def inline_comment(str)
       if @book.config['draft']
-        %Q(<msg>#{escape_html(str)}</msg>)
+        %Q(<msg>#{escape(str)}</msg>)
       else
         ''
       end
@@ -600,37 +606,39 @@ module ReVIEW
 
     def inline_fn(id)
       %Q(<footnote>#{compile_inline(@chapter.footnote(id).content.strip)}</footnote>)
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, ruby)
-      %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape_html(base.strip)}</aid:rb><aid:rt>#{escape_html(ruby.strip)}</aid:rt></aid:ruby></GroupRuby>)
+      %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape(base.strip)}</aid:rb><aid:rt>#{escape(ruby.strip)}</aid:rt></aid:ruby></GroupRuby>)
     end
 
     def compile_kw(word, alt)
       '<keyword>' +
         if alt
-        then escape_html("#{word}（#{alt.strip}）")
-        else escape_html(word)
+        then escape("#{word}（#{alt.strip}）")
+        else escape(word)
         end +
       '</keyword>' +
-        %Q(<index value="#{escape_html(word)}" />) +
+        %Q(<index value="#{escape(word)}" />) +
         if alt
-          alt.split(/\s*,\s*/).collect! { |e| %Q(<index value="#{escape_html(e.strip)}" />) }.join
+          alt.split(/\s*,\s*/).collect! { |e| %Q(<index value="#{escape(e.strip)}" />) }.join
         else
           ''
         end
     end
 
     def compile_href(url, label)
-      %Q(<a linkurl='#{escape_html(url)}'>#{label.nil? ? escape_html(url) : escape_html(label)}</a>)
+      %Q(<a linkurl='#{escape(url)}'>#{label.nil? ? escape(url) : escape(label)}</a>)
     end
 
     def inline_sup(str)
-      %Q(<sup>#{escape_html(str)}</sup>)
+      %Q(<sup>#{escape(str)}</sup>)
     end
 
     def inline_sub(str)
-      %Q(<sub>#{escape_html(str)}</sub>)
+      %Q(<sub>#{escape(str)}</sub>)
     end
 
     def inline_raw(str)
@@ -639,9 +647,9 @@ module ReVIEW
 
     def inline_hint(str)
       if @book.config['nolf']
-        %Q(<hint>#{escape_html(str)}</hint>)
+        %Q(<hint>#{escape(str)}</hint>)
       else
-        %Q(\n<hint>#{escape_html(str)}</hint>)
+        %Q(\n<hint>#{escape(str)}</hint>)
       end
     end
 
@@ -666,41 +674,41 @@ module ReVIEW
     end
 
     def inline_idx(str)
-      %Q(#{escape_html(str)}<index value="#{escape_html(str)}" />)
+      %Q(#{escape(str)}<index value="#{escape(str)}" />)
     end
 
     def inline_hidx(str)
-      %Q(<index value="#{escape_html(str)}" />)
+      %Q(<index value="#{escape(str)}" />)
     end
 
     def inline_ami(str)
-      %Q(<ami>#{escape_html(str)}</ami>)
+      %Q(<ami>#{escape(str)}</ami>)
     end
 
     def inline_i(str)
-      %Q(<i>#{escape_html(str)}</i>)
+      %Q(<i>#{escape(str)}</i>)
     end
 
     def inline_b(str)
-      %Q(<b>#{escape_html(str)}</b>)
+      %Q(<b>#{escape(str)}</b>)
     end
 
     def inline_tt(str)
-      %Q(<tt>#{escape_html(str)}</tt>)
+      %Q(<tt>#{escape(str)}</tt>)
     end
 
     def inline_ttb(str)
-      %Q(<tt style='bold'>#{escape_html(str)}</tt>)
+      %Q(<tt style='bold'>#{escape(str)}</tt>)
     end
 
     alias_method :inline_ttbold, :inline_ttb
 
     def inline_tti(str)
-      %Q(<tt style='italic'>#{escape_html(str)}</tt>)
+      %Q(<tt style='italic'>#{escape(str)}</tt>)
     end
 
     def inline_u(str)
-      %Q(<underline>#{escape_html(str)}</underline>)
+      %Q(<underline>#{escape(str)}</underline>)
     end
 
     def inline_icon(id)
@@ -713,25 +721,25 @@ module ReVIEW
     end
 
     def inline_bou(str)
-      %Q(<bou>#{escape_html(str)}</bou>)
+      %Q(<bou>#{escape(str)}</bou>)
     end
 
     def inline_keytop(str)
-      %Q(<keytop>#{escape_html(str)}</keytop>)
+      %Q(<keytop>#{escape(str)}</keytop>)
     end
 
     def inline_labelref(idref)
-      %Q(<ref idref='#{escape_html(idref)}'>「#{I18n.t('label_marker')}#{escape_html(idref)}」</ref>) # FIXME: 節名とタイトルも込みで要出力
+      %Q(<ref idref='#{escape(idref)}'>「#{I18n.t('label_marker')}#{escape(idref)}」</ref>) # FIXME: 節名とタイトルも込みで要出力
     end
 
     alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(idref)
-      %Q(<pageref idref='#{escape_html(idref)}'>●●</pageref>) # ページ番号を参照
+      %Q(<pageref idref='#{escape(idref)}'>●●</pageref>) # ページ番号を参照
     end
 
     def inline_balloon(str)
-      %Q(<balloon>#{escape_html(str).gsub(/@maru\[(\d+)\]/) { inline_maru($1) }}</balloon>)
+      %Q(<balloon>#{escape(str).gsub(/@maru\[(\d+)\]/) { inline_maru($1) }}</balloon>)
     end
 
     def inline_uchar(str)
@@ -740,16 +748,15 @@ module ReVIEW
 
     def inline_m(str)
       @texinlineequation += 1
-      %Q(<replace idref="texinline-#{@texinlineequation}"><pre>#{escape_html(str)}</pre></replace>)
+      %Q(<replace idref="texinline-#{@texinlineequation}"><pre>#{escape(str)}</pre></replace>)
     end
 
     def noindent
       @noindent = true
     end
 
-    def linebreak
-      # FIXME: pが閉じちゃってるので一度戻らないといけないが、難しい…。
-      puts '<br />'
+    def blankline
+      puts '<p/>'
     end
 
     def pagebreak
@@ -757,10 +764,23 @@ module ReVIEW
     end
 
     def nonum_begin(level, _label, caption)
-      puts %Q(<title aid:pstyle="h#{level}">#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{escape_html(compile_inline(caption))}"?>)
+      puts %Q(<title aid:pstyle="h#{level}">#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{escape(compile_inline(caption))}"?>)
     end
 
     def nonum_end(level)
+    end
+
+    def notoc_begin(level, _label, caption)
+      puts %Q(<title aid:pstyle="h#{level}">#{compile_inline(caption)}</title>)
+    end
+
+    def notoc_end(level)
+    end
+
+    def nodisp_begin(level, label, caption)
+    end
+
+    def nodisp_end(level)
     end
 
     def circle_begin(_level, _label, caption)
@@ -774,7 +794,7 @@ module ReVIEW
       @column += 1
       a_id = %Q(id="column-#{@column}")
       print "<#{type}column #{a_id}>"
-      puts %Q(<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title><?dtp level="9" section="#{escape_html(compile_inline(caption))}"?>)
+      puts %Q(<title aid:pstyle="#{type}column-title">#{compile_inline(caption)}</title><?dtp level="9" section="#{escape(compile_inline(caption))}"?>)
     end
 
     def common_column_end(type)
@@ -1026,7 +1046,7 @@ module ReVIEW
     end
 
     def inline_code(str)
-      %Q(<tt type='inline-code'>#{escape_html(str)}</tt>)
+      %Q(<tt type='inline-code'>#{escape(str)}</tt>)
     end
 
     def inline_br(_str)
@@ -1064,7 +1084,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_chap(id)
@@ -1075,7 +1094,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def inline_title(id)
@@ -1087,7 +1105,6 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown chapter: #{id}"
-      nofunc_text("[UnknownChapter:#{id}]")
     end
 
     def source_header(caption)
@@ -1118,6 +1135,8 @@ module ReVIEW
 
     def inline_bib(id)
       %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
+    rescue KeyError
+      error "unknown bib: #{id}"
     end
 
     def inline_hd_chap(chap, id)
@@ -1128,15 +1147,17 @@ module ReVIEW
         end
       end
       I18n.t('chapter_quote', compile_inline(chap.headline(id).caption))
+    rescue KeyError
+      error "unknown headline: #{id}"
     end
 
     def inline_recipe(id)
       # FIXME
-      %Q(<recipe idref="#{escape_html(id)}">[XXX]「#{escape_html(id)}」　p.XX</recipe>)
+      %Q(<recipe idref="#{escape(id)}">[XXX]「#{escape(id)}」　p.XX</recipe>)
     end
 
     def nofunc_text(str)
-      escape_html(str)
+      escape(str)
     end
 
     def image_ext

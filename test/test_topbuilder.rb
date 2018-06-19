@@ -12,19 +12,13 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
-    @book = Book::Base.new(nil)
+    @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
 
-    @builder.instance_eval do
-      # to ignore lineno in original method
-      def warn(msg)
-        puts msg
-      end
-    end
     I18n.setup(@config['language'])
   end
 
@@ -148,7 +142,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_dlist_beforeulol
     actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
-    assert_equal %Q(★foo☆\n\tfoo.\n\t\n\npara\n\n★foo☆\n\tfoo.\n\t\n\n1\tbar\n\n★foo☆\n\tfoo.\n\t\n\n●\tbar\n\n), actual
+    assert_equal %Q(★foo☆\n\tfoo.\n\npara\n\n★foo☆\n\tfoo.\n\n1\tbar\n\n★foo☆\n\tfoo.\n\n●\tbar\n\n), actual
   end
 
   def test_paragraph
@@ -164,6 +158,11 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n), actual
+  end
+
+  def test_blankline
+    actual = compile_block("//blankline\nfoo\n")
+    assert_equal %Q(\nfoo\n), actual
   end
 
   def test_noindent
@@ -290,6 +289,41 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_texequation
     actual = compile_block("//texequation{\n\\sin\n1^{2}\n//}\n")
     assert_equal %Q(◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n), actual
+  end
+
+  def test_inline_w
+    Dir.mktmpdir do |dir|
+      File.open(File.join(dir, 'words.csv'), 'w') do |f|
+        f.write <<EOB
+"F","foo"
+"B","bar""\\<>_@<b>{BAZ}"
+EOB
+      end
+      @book.config['words_file'] = File.join(dir, 'words.csv')
+
+      io = StringIO.new
+      @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+      actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
+      assert_equal %Q(foo bar"\\<>_@<b>{BAZ} ★bar"\\<>_@<b>{BAZ}☆ [missing word: N]\n), actual
+      assert_match(/WARN -- : :1: word not bound: N/, io.string)
+    end
+  end
+
+  def test_inline_unknown
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    assert_equal ':1: error: unknown image: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    assert_equal ':1: error: unknown footnote: n', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    assert_equal ':1: error: unknown headline: n', e.message
+    %w[list table column].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ":1: error: unknown #{name}: n", e.message
+    end
+    %w[chap chapref title].each do |name|
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      assert_equal ':1: error: key not found: "n"', e.message
+    end
   end
 
   def test_inline_raw0

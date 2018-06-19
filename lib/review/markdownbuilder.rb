@@ -29,7 +29,9 @@ module ReVIEW
     end
 
     def blank
-      @output.puts unless @blank_seen
+      unless @blank_seen
+        @output.puts
+      end
       @blank_seen = true
     end
 
@@ -151,7 +153,9 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      label = url if label.blank?
+      if label.blank?
+        label = url
+      end
       "[#{label}](#{url})"
     end
 
@@ -205,7 +209,6 @@ module ReVIEW
       "#{I18n.t('image')}#{@chapter.image(id).number}"
     rescue KeyError
       error "unknown image: #{id}"
-      nofunc_text("[UnknownImage:#{id}]")
     end
 
     def inline_dtp(str)
@@ -228,7 +231,9 @@ module ReVIEW
 
     def cmd(lines)
       puts '```shell-session'
-      lines.each { |line| puts detab(line) }
+      lines.each do |line|
+        puts detab(line)
+      end
       puts '```'
     end
 
@@ -323,9 +328,9 @@ module ReVIEW
 
     def compile_ruby(base, ruby)
       if @book.htmlversion == 5
-        %Q(<ruby>#{escape_html(base)}<rp>#{I18n.t('ruby_prefix')}</rp><rt>#{escape_html(ruby)}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
+        %Q(<ruby>#{escape(base)}<rp>#{I18n.t('ruby_prefix')}</rp><rt>#{escape(ruby)}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       else
-        %Q(<ruby><rb>#{escape_html(base)}</rb><rp>#{I18n.t('ruby_prefix')}</rp><rt>#{ruby}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
+        %Q(<ruby><rb>#{escape(base)}</rb><rp>#{I18n.t('ruby_prefix')}</rp><rt>#{ruby}</rt><rp>#{I18n.t('ruby_postfix')}</rp></ruby>)
       end
     end
 
@@ -342,9 +347,11 @@ module ReVIEW
     def comment(lines, comment = nil)
       return unless @book.config['draft']
       lines ||= []
-      lines.unshift comment unless comment.blank?
+      unless comment.blank?
+        lines.unshift comment
+      end
       str = lines.join('<br />')
-      puts %Q(<div class="red">#{escape_html(str)}</div>)
+      puts %Q(<div class="red">#{escape(str)}</div>)
     end
 
     def inline_icon(id)
@@ -358,7 +365,7 @@ module ReVIEW
 
     def inline_comment(str)
       if @book.config['draft']
-        %Q(<span class="red">#{escape_html(str)}</span>)
+        %Q(<span class="red">#{escape(str)}</span>)
       else
         ''
       end

@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
 #               2002-2008 Minero Aoki
 #
 # This program is free software.
@@ -24,12 +24,15 @@ module ReVIEW
         @content = nil
         if io
           @content = io.read
-        elsif @path && File.exist?(@path)
-          @content = File.read(@path, mode: 'r:BOM|utf-8')
+        elsif @path.present? && File.exist?(File.join(@book.config['contentdir'], @path))
+          @content = File.read(File.join(@book.config['contentdir'], @path), mode: 'r:BOM|utf-8')
           @name = File.basename(@name, '.re')
         end
-        @title = name
-        @title = nil if file?
+        if file?
+          @title = nil
+        else
+          @title = name
+        end
         @volume = nil
       end
 
@@ -48,7 +51,7 @@ module ReVIEW
       end
 
       def file?
-        name.present? and path.end_with?('.re') ? true : false
+        name.present? and path.end_with?('.re')
       end
 
       def format_number(heading = true)

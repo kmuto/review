@@ -5,8 +5,7 @@
 # このファイルはUTF-8エンコーディングで記述してください。
 
 # この設定ファイルでサポートするRe:VIEWのバージョン番号。
-# major versionが違うときにはエラーを出す。
-review_version: 2.0
+review_version: 3.0
 
 # ほかの設定ファイルの継承を指定できる。同じパラメータに異なる値がある場合は、
 # 呼び出し元の値が優先される。
@@ -128,19 +127,19 @@ secnolevel: 2
 # ePUB3においてはこの設定によらず必ず作成される
 # mytoc: true
 
-# 表紙にするHTMLファイル。ファイル名を指定すると表紙として入る
+# 表紙にするファイル。ファイル名を指定すると表紙として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # cover: null
 #
 # 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
 # coverimage: null
 #
-# 表紙の後に大扉ページを作成するか。省略した場合はnull (作成しない)
-# titlepage: null
+# 表紙の後に大扉ページを作成するか。省略した場合はtrue (作成する)
+# titlepage: true
 #
 # 自動生成される大扉ページを上書きするファイル。ファイル名を指定すると大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # titlefile: null
 #
-# 原書大扉ページにするHTMLファイル。ファイル名を指定すると原書大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
+# 原書大扉ページにするファイル。ファイル名を指定すると原書大扉として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # originaltitlefile: null
 #
 # 権利表記ページファイル。ファイル名を指定すると権利表記として入る (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
@@ -179,6 +178,12 @@ secnolevel: 2
 
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
+
+# reファイルを格納するディレクトリ。省略した場合は以下 (. はカレントディレクトリを示す)
+# contentdir: .
+
+# @<w>命令で使用する単語ファイルのパス
+# words_file: words.csv
 
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)。
 # page_metric: A5
@@ -285,13 +290,13 @@ epubmaker:
 # texcommand: "uplatex"
 #
 # LaTeXのコマンドに渡すオプションを指定する
-# texoptions: null
+# texoptions: "-interaction=nonstopmode -file-line-error"
 #
 # LaTeX用のdvi変換コマンドを指定する(dvipdfmx)
 # dvicommand: "dvipdfmx"
 #
 # LaTeX用のdvi変換コマンドのオプションを指定する
-# dvioptions: "-d 5"
+# dvioptions: "-d 5 -z 9"
 
 # 以下のパラメータを有効にするときには、
 # pdfmaker:
@@ -314,8 +319,13 @@ pdfmaker:
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
   # hook_afterdvipdf: null
   #
-  # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換します。
+  # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換する
   # image_scale2width: true
+  #
+  # PDFやIllustratorファイル(.ai)の画像のBoudingBoxの抽出に指定のボックスを採用する
+  # cropbox(デフォルト), mediabox, artbox, trimbox, bleedboxから選択する。
+  # Illustrator CC以降のIllustratorファイルに対してはmediaboxを指定する必要がある
+  # bbox: mediabox
   #
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
   colophon: true

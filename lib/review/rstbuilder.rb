@@ -20,7 +20,9 @@ module ReVIEW
   class RSTBuilder < Builder
     include TextUtils
 
-    %i[ttbold hint maru keytop labelref ref balloon strong].each { |e| Compiler.definline(e) }
+    %i[ttbold hint maru keytop labelref ref balloon strong].each do |e|
+      Compiler.definline(e)
+    end
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 1)
@@ -152,7 +154,9 @@ module ReVIEW
     end
 
     def dd(lines)
-      split_paragraph(lines).each { |paragraph| puts "  #{paragraph.gsub(/\n/, '')}" }
+      split_paragraph(lines).each do |paragraph|
+        puts "  #{paragraph.gsub(/\n/, '')}"
+      end
     end
 
     def dl_end
@@ -160,7 +164,9 @@ module ReVIEW
 
     def paragraph(lines)
       pre = ''
-      pre = '   ' if @in_role == true
+      if @in_role
+        pre = '   '
+      end
       puts pre + lines.join
       puts "\n"
     end
@@ -186,7 +192,9 @@ module ReVIEW
     end
 
     def list_body(_id, lines, _lang)
-      lines.each { |line| puts '-' + detab(line) }
+      lines.each do |line|
+        puts '-' + detab(line)
+      end
     end
 
     def base_block(_type, lines, caption = nil)
@@ -213,7 +221,9 @@ module ReVIEW
       lang ||= 'none'
       puts ".. code-block:: #{lang}"
       blank
-      lines.each { |line| puts '   ' + detab(line) }
+      lines.each do |line|
+        puts '   ' + detab(line)
+      end
       blank
     end
 
@@ -227,18 +237,24 @@ module ReVIEW
       puts ".. code-block:: #{lang}"
       puts '   :linenos:'
       blank
-      lines.each { |line| puts '   ' + detab(line) }
+      lines.each do |line|
+        puts '   ' + detab(line)
+      end
       blank
     end
 
     def listnum_body(lines, _lang)
-      lines.each_with_index { |line, i| puts(i + 1).to_s.rjust(2) + ": #{line}" }
+      lines.each_with_index do |line, i|
+        puts(i + 1).to_s.rjust(2) + ": #{line}"
+      end
       blank
     end
 
     def cmd(lines, _caption = nil)
       puts '.. code-block:: bash'
-      lines.each { |line| puts '   ' + detab(line) }
+      lines.each do |line|
+        puts '   ' + detab(line)
+      end
     end
 
     def quote(lines)
@@ -257,7 +273,9 @@ module ReVIEW
 
     def image_image(id, caption, metric)
       chapter, id = extract_chapter_id(id)
-      scale = metric.split('=')[1].to_f * 100 if metric
+      if metric
+        scale = metric.split('=')[1].to_f * 100
+      end
 
       puts ".. _#{id}:"
       blank
@@ -353,7 +371,9 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      label = url if label.blank?
+      if label.blank?
+        label = url
+      end
       " `#{label} <#{url}>`_ "
     end
 
