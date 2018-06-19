@@ -1,0 +1,174 @@
+%#!ptex2pdf -l -e -u test1.tex
+\ifdefined\directlua
+  \documentclass{ltjarticle}
+  \usepackage{listings,xcolor}
+\else
+  \documentclass[dvipdfmx]{ujarticle}
+  \usepackage{plistings,xcolor}
+  \def\zw{zw}
+\fi
+\usepackage{amsmath,showexpl,comment}
+\usepackage
+[
+	papersize={100mm,100mm},
+	hmargin={5mm,5mm},
+	vmargin={5mm,5mm}
+]{geometry}
+\pagestyle{empty}
+
+\lstset
+{
+	language=sh, extendedchars=false,
+	backgroundcolor=\color[gray]{.75},
+	breaklines=true,
+        explpreset={columns=fixed},
+        basewidth={0.5\zw, 0.45em},
+	numbers=left,numberstyle=\tiny, numbersep=2pt,
+}
+
+\lstnewenvironment{env}[1]
+{
+	\ifx\relax#1\else
+	\renewcommand{\lstlistingname}{ex}
+	\lstset
+	{
+		caption=#1,
+	}
+	\fi
+}{}
+\def\rmdefault{qpl}
+\def\ttdefault{qcr}
+\def\cs#1{\hbox{\texttt{\textbackslash #1}}}
+\begin{document}
+
+This test file is based on a.tex\footnote{This can be downloaded from {\tt https://gist.github.com/1574793}.} by x19290.
+
+
+\textbf{SOLVED}: bad folding and not slanted problems are common in pLaTeX and LuaTeX-ja.
+
+The cause of the latter problem is that Japanese fonts don't have italic shape by default.
+In this document, we define them by
+\begin{lstlisting}[language={[AlLaTeX]TeX}, basicstyle=\ttfamily]
+\DeclareFontShape{JY3}{mc}{m}{sl}{<-> s * [0.92489] psft:Ryumin-Light:jfm=ujis;slant=0.167}{}
+\DeclareFontShape{JY3}{mc}{m}{it}{<-> ssub* mc/m/sl}{}
+\end{lstlisting}
+
+\newpage
+
+We also avoid white band problem, by setting the value of \cs{lineskiplimit} to
+\begin{multline}
+ -\min(\cs{cht}-\cs{ht}\cs{strutbox}, 0)\\
+ -\min(\cs{cdp}-\cs{dp}\cs{strutbox}, 0).
+\end{multline}
+
+Note: we still have a white band if the first line is line-broken.
+
+\begin{env}{\relax}aa
+#!/bin/sh
+#長い長い長い長い長い長い長い長い長い長い長い長い長い長い長い長い
+#超長い長い長い長い長い長い長い長い長い長い長い長い長い，長い長い長い長い長い長い
+#長い長い長い長い長い長い長い長い長い長い長い長い，長い長い長い長い長い長い
+#I.長い長い長い長い長い長い長い長い長い長い長い長い長い長い長い長いI
+長い長い長い長い長い長い長い長い長い長い長い長い長い長い長い長い
+#IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII
+IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII IIII
+\end{env}
+
+\newpage
+
+\textbf{SOLVED}: LuaTeX-ja specific problem:
+when the \emph{begin} line of a listings environment ends with JAchar,
+the first line of the listing is not rendered.
+
+\begin{env}{problem; shebang not rendered --- 問題}
+#!/bin/bash
+:
+\end{env}
+
+\begin{LTXexample}[language=TeX]
+え!1あ，い・あ）う（え
+え!2あ
+\end{LTXexample}
+
+\begin{lstlisting}
+え!1あｱｲｳｴｵ
+え!2あ
+\end{lstlisting}
+\newpage
+\textbf{Ticket \#29311}
+
+\begin{env}{\relax}
+長い長い長い長い長い長い長い長い長い長い長い長aaa長い::い長い
+長い長い長い長い長い長い長い長い長い長い長い長aaaa長い::い長い
+長い長い長い長い長い長い長い長い長い長い長い長い長い，長い長い
+あ長い長い長い長い長い長い長い長い長い長い長い長い長い，長い長い
+長い長い長い長い長い長い長い長い長い長い長い長い長a，::い長い
+長い長い長い長い長い長い長い長い長い長い長い長い長aa，::い長い
+長い長い長い長い長い長い長い長い長い長い長い長い長aaa，::い長い
+長い長い長い長い長い長い長い長い長い長い長い長い長aaaa，::い長い
+長い長い長い長い長い長い長い長い長い長い長い長い長い，，::い長い
+長い長い長い長い長い長い長い長い長い長い長い長（い長い
+長い長い長い長い長い長い長い長い長い長い長いaa（い長い
+長い長い長い長い長い長い長い長い長い長い長い長（aa長い
+長い長い長い長い長い長い長い長い長い長い長い長い）（長い
+あ長い長い長い長い長い長い長い長い長い長い長い長い）（長い
+\end{env}
+
+下の行において，最初の「1」の場所がずれてしまうのは半ば仕方がないとも言える．
+1行目では，「1234567890」が前後・文字間に計11箇所の等量の空白を入れて10全角の領域に
+出力されているのに対し，2,~3行目では「1」が全角幅に左右中央で出力されているからである．
+\begin{lstlisting}[basewidth=1em, basicstyle=\tt]
+1234567890
+1あ，23
+1あ2，3
+1234567890
+\end{lstlisting}
+
+\texttt{doubleletterspace}オプションを指定すると，出力単位中の文字と文字の間隔を2倍にするため，
+下の例の「1」のように，各文字の垂直位置が揃いやすくなる．
+\begin{lstlisting}[doubleletterspace, basewidth=1em, basicstyle=\tt]
+1234567890
+1あ，23
+1あ2，3
+1）2，3
+1234567890
+\end{lstlisting}
+
+
+\newpage
+\textbf{Ticket \#34786}
+
+foo \lstinline[basicstyle=\tt]!b  a{}#shr! baz あ
+
+foo \lstinline[basicstyle=\tt]!bxxa{}#shr! baz あ
+
+あ\lstinline[basicstyle=\tt]{bar  s}hoge
+
+あ\lstinline[basicstyle=\tt]{bar..{a}hoge
+
+foo \lstinline[basicstyle=\tt\gtfamily]!あexit 0; #shbar! baz あ
+
+あ\lstinline[basicstyle=\tt]{いbexit #sh$ar}hoge
+
+\bigskip
+\textbf{Ticket \#35484}
+
+\colorbox{red}{\lstinline!aiu#sheoxyz!}
+\colorbox{red}{\lstinline!あいexit 0;#shうえお!}
+
+
+\colorbox{red}{\lstinline{aiu#sheoxyz}}
+\colorbox{red}{\lstinline{あいexit 0;#shうえお}}
+
+\bigskip
+\textbf{escape to \LaTeX}
+
+あおいうえお
+%\tracingall
+\begin{lstlisting}[commentstyle=\color{green}\bfseries,
+  frame=single,language=TeX, escapechar=!]
+ABCXYZあい!\color{blue}あ$a_{ijk}\times\hbox{ほげ}$いうえ!うえ% あいうえおAIg
+あいうえお!\西暦\today\和暦\today!abcdef
+\end{lstlisting}
+あいうえお
+\end{document}
