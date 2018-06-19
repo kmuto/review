@@ -86,7 +86,7 @@ module ReVIEW
       return unless @compile_errors
 
       if ignore_errors
-        $stderr.puts 'compile error, but try to generate PDF file'
+        @logger.info 'compile error, but try to generate PDF file'
       else
         error 'compile error, No PDF file output.'
       end
@@ -269,7 +269,7 @@ module ReVIEW
     end
 
     def output_chaps(filename, _yamlfile)
-      $stderr.puts "compiling #{filename}.tex"
+      @logger.info "compiling #{filename}.tex"
       begin
         @converter.convert(filename + '.re', File.join(@path, filename + '.tex'))
       rescue => e
@@ -425,7 +425,7 @@ module ReVIEW
     def erb_content(file)
       @texcompiler = File.basename(@config['texcommand'], '.*')
       erb = ReVIEW::Template.load(file, '-')
-      puts "erb processes #{File.basename(file)}" if @config['debug']
+      @logger.debug "erb processes #{File.basename(file)}" if @config['debug']
       erb.result(binding)
     end
 
