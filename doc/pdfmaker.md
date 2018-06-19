@@ -21,7 +21,7 @@ Default settings of Re:VIEW is below:
 
 ```yaml
 texcommand: uplatex
-texoptions: null
+texoptions: "-interaction=nonstopmode -file-line-error"
 texdocumentclass: ["jsbook", "uplatex,oneside"]
 dvicommand: dvipdfmx
 dvioptions: "-d 5"

@@ -840,7 +840,7 @@ module ReVIEW
     end
 
     def compile_ruby(base, ruby)
-      macro('ruby', escape(base), escape(ruby))
+      macro('ruby', escape(base), escape(ruby).gsub('\\textbar{}', '|'))
     end
 
     # math

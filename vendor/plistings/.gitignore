@@ -1,0 +1,9 @@
+*.dvi
+*.aux
+*.tmp
+*.out
+*.pdf
+*.log
+*~
+*.synctex*
+

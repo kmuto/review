@@ -10,6 +10,7 @@ require 'yaml'
 require 'fileutils'
 require 'erb'
 require 'tmpdir'
+require 'open3'
 
 require 'review/i18n'
 require 'review/book'
@@ -37,12 +38,18 @@ module ReVIEW
 
     def system_with_info(*args)
       @logger.info args.join(' ')
-      Kernel.system(*args)
+      out, status = Open3.capture2e(*args)
+      unless status.success?
+        @logger.error "execution error\n\nError log:\n" + out
+      end
     end
 
     def system_or_raise(*args)
       @logger.info args.join(' ')
-      Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
+      out, status = Open3.capture2e(*args)
+      unless status.success?
+        error "failed to run command: #{args.join(' ')}\n\nError log:\n" + out
+      end
     end
 
     def error(msg)
@@ -79,7 +86,7 @@ module ReVIEW
       return unless @compile_errors
 
       if ignore_errors
-        $stderr.puts 'compile error, but try to generate PDF file'
+        @logger.info 'compile error, but try to generate PDF file'
       else
         error 'compile error, No PDF file output.'
       end
@@ -262,7 +269,7 @@ module ReVIEW
     end
 
     def output_chaps(filename, _yamlfile)
-      $stderr.puts "compiling #{filename}.tex"
+      @logger.info "compiling #{filename}.tex"
       begin
         @converter.convert(filename + '.re', File.join(@path, filename + '.tex'))
       rescue => e
@@ -418,7 +425,7 @@ module ReVIEW
     def erb_content(file)
       @texcompiler = File.basename(@config['texcommand'], '.*')
       erb = ReVIEW::Template.load(file, '-')
-      puts "erb processes #{File.basename(file)}" if @config['debug']
+      @logger.debug "erb processes #{File.basename(file)}" if @config['debug']
       erb.result(binding)
     end
 
