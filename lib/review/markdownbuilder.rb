@@ -16,6 +16,7 @@ module ReVIEW
     end
 
     def builder_init_file
+      @noindent = nil
       @blank_seen = nil
       @ul_indent = 0
       @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
@@ -46,13 +47,18 @@ module ReVIEW
     end
 
     def paragraph(lines)
-      puts lines.join
-      puts "\n"
+      if @noindent
+        puts %Q(<p class="noindent">#{lines.join}</p>)
+        puts "\n"
+        @noindent = nil
+      else
+        puts lines.join
+        puts "\n"
+      end
     end
 
     def noindent
-      warn 'markdown not support //noindent'
-      puts '<!-- noindent -->'
+      @noindent = true
     end
 
     def list_header(id, caption, lang)
