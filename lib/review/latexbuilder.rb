@@ -361,6 +361,7 @@ module ReVIEW
 
     def common_code_block(id, lines, command, caption, _lang)
       @doc_status[:caption] = true
+      puts '\\begin{reviewlistblock}'
       if caption.present?
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
           puts macro(command + 'caption', compile_inline(caption))
@@ -384,6 +385,7 @@ module ReVIEW
       puts macro('begin', command)
       print body
       puts macro('end', command)
+      puts '\\end{reviewlistblock}'
       blank
     end
 
