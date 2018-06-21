@@ -34,9 +34,14 @@ module ReVIEW
 
     private
 
+    # remove elements at the back of `lines` if element is empty string
+    # (`lines` should be Array of String.)
+    #
     def trim_lines(lines)
       new_lines = lines.dup
-      new_lines.pop while new_lines[-1] && new_lines[-1].strip.empty?
+      while new_lines[-1] && new_lines[-1].strip.empty?
+        new_lines.pop
+      end
       new_lines
     end
   end
