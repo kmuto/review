@@ -175,7 +175,7 @@ module ReVIEW
 
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
-        puts "\\begin{reviewcolumn}\n"
+        puts '\\begin{reviewcolumn}'
         puts target
         puts macro('reviewcolumnhead', nil, compile_inline(caption))
       else
@@ -191,7 +191,7 @@ module ReVIEW
     end
 
     def column_end(_level)
-      puts "\\end{reviewcolumn}\n"
+      puts '\\end{reviewcolumn}'
       blank
       @doc_status[:column] = nil
     end
@@ -205,9 +205,9 @@ module ReVIEW
 
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
+        puts
         if caption.present?
-          puts
-          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
+          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
         end
       else
         if caption.present?
@@ -220,7 +220,7 @@ module ReVIEW
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n\n")
 
-      puts "\\end{review#{type}}\n"
+      puts "\\end{review#{type}}"
     end
 
     def box(lines, caption = nil)
