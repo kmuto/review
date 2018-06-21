@@ -249,6 +249,12 @@ strong{
 em {
     font-style: italic;
 }
+span.balloon {
+    font-size: 0.9em;
+}
+span.balloon:before {
+    content: "←";
+}
 
 /**
  * from Rouge

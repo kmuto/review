@@ -883,6 +883,7 @@ this is a special line.
 @<embed>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
 @<idx>{string}:: output a string and register it as an index. See makeindex.md.
 @<hidx>{string}:: register a string as an index. A leveled index is expressed like `parent<<>>child`
+@<balloon>{abc}:: inline balloon in code block. For example, `@<balloon>{ABC}` produces `←ABC`. This may seem too simple. To decorate it, modify the style sheet file or override a function by `review-ext.rb`
 ```
 
 ## Commands for Authors (pre-processor commands)

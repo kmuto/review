@@ -44,7 +44,7 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
+\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,hidelinks,%
      pdftitle={\review@booktitlename},%
      pdfauthor={\review@autnames}]{hyperref}
 \usepackage[dvipdfmx]{pxjahyper}
@@ -60,7 +60,7 @@
 \ifdefined\review@highlightlatex
   \ifthenelse{\equal{\review@highlightlatex}{listings}}{%
     \ifthenelse{\equal{\review@language}{ja}}{%
-      \usepackage{listings,jlisting}
+      \usepackage{listings,plistings}
     }{%
       \usepackage{listings}
     }%
@@ -222,6 +222,7 @@
 \newcommand{\reviewami}[1]{\mask{#1}{A}}
 \newcommand{\reviewem}[1]{\textbf{#1}}
 \newcommand{\reviewstrong}[1]{\textbf{#1}}
+\newcommand{\reviewballoon}[1]{←{#1}}
 \newcommand{\reviewunderline}[1]{\Underline{#1}}
 \newcommand{\reviewit}[1]{\textit{#1}}
 \newcommand{\reviewbold}[1]{\textbf{#1}}

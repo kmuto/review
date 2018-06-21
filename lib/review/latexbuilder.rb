@@ -388,9 +388,6 @@ module ReVIEW
     end
 
     def common_code_block_lst(_id, lines, command, title, caption, lang, first_line_num: 1)
-      if title == 'title' && caption.blank?
-        print '\vspace{-1.5em}'
-      end
       body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
@@ -401,18 +398,20 @@ module ReVIEW
 
     def make_code_block_args(title, caption, lang, first_line_num: 1)
       caption_str = compile_inline((caption || ''))
-      if title == 'title' && caption_str == ''
-        caption_str = '\relax' ## dummy charactor to remove lstname
-      end
       lexer = if @book.config['highlight'] && @book.config['highlight']['lang']
                 @book.config['highlight']['lang'] # default setting
               else
                 ''
               end
       lexer = lang if lang.present?
-      args = %Q(#{title}={#{caption_str}},language={#{lexer}})
+      args = "language={#{lexer}}"
+      if title == 'title' && caption_str == ''
+        # ignore
+      else
+        args = "#{title}={#{caption_str}}," + args
+      end
       if first_line_num != 1
-        args += ",firstnumber=#{first_line_num}"
+        args << ",firstnumber=#{first_line_num}"
       end
       args
     end
@@ -1046,6 +1045,10 @@ module ReVIEW
 
     def inline_tcy(str)
       macro('rensuji', escape(str))
+    end
+
+    def inline_balloon(str)
+      macro('reviewballoon', escape(str))
     end
 
     def bibpaper_header(id, caption)

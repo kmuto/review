@@ -198,6 +198,7 @@ module ReVIEW
     definline :recipe
     definline :column
     definline :tcy
+    definline :balloon
 
     definline :abbr
     definline :acronym

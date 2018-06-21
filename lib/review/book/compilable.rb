@@ -16,10 +16,6 @@ module ReVIEW
       attr_reader :path
       attr_accessor :content
 
-      def env
-        @book
-      end
-
       def dirname
         return nil unless @path
         File.dirname(@path)

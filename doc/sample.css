@@ -75,6 +75,13 @@ span.kw {
     font-weight: bold;
 }
 
+span.balloon {
+    font-size: 0.9em;
+}
+span.balloon:before {
+    content: "←";
+}
+
 div.column {
     padding: 0.5em;
     background: #ffd0d0;

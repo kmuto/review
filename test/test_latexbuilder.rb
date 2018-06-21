@@ -238,6 +238,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal 'test ① test2', actual
   end
 
+  def test_inline_balloon
+    actual = compile_inline('test @<balloon>{①}')
+    assert_equal 'test \\reviewballoon{①}', actual
+  end
+
   def test_inline_idx
     actual = compile_inline('@<idx>{__TEST%$}, @<hidx>{__TEST%$}')
     assert_equal '\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}\\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}, \\index{__TEST%$@\\textunderscore{}\\textunderscore{}TEST\\%\\textdollar{}}', actual
@@ -297,7 +302,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
     actual = compile_block("//cmd{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\\vspace{-1.5em}\\begin{reviewcmdlst}[title={\\relax},language={}]\nfoo\nbar\n\nbuz\n\\end{reviewcmdlst}\n), actual
+    assert_equal %Q(\\begin{reviewcmdlst}[language={}]\nfoo\nbar\n\nbuz\n\\end{reviewcmdlst}\n), actual
   end
 
   def test_emlist
@@ -309,7 +314,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
     actual = compile_block("//emlist[][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
-    assert_equal %Q(\n\\vspace{-1.5em}\\begin{reviewemlistlst}[title={\\relax},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n), actual
+    assert_equal %Q(\n\\begin{reviewemlistlst}[language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n), actual
   end
 
   def test_emlist_lst_without_lang
@@ -317,7 +322,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     @book.config['highlight']['latex'] = 'listings'
     @book.config['highlight']['lang'] = 'sql'
     actual = compile_block("//emlist[]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
-    assert_equal %Q(\n\\vspace{-1.5em}\\begin{reviewemlistlst}[title={\\relax},language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n), actual
+    assert_equal %Q(\n\\begin{reviewemlistlst}[language={sql}]\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n\\end{reviewemlistlst}\n), actual
   end
 
   def test_emlist_caption
