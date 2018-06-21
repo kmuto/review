@@ -435,11 +435,13 @@ module ReVIEW
 
     def template_content
       template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
-      if @config['review_version'] && @config['review_version'].to_f < 3
+      if @config.check_version('2', exception: false)
         template = File.expand_path('./latex-compat2/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
       end
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
-      template = layout_file if File.exist?(layout_file)
+      if File.exist?(layout_file)
+        template = layout_file
+      end
       erb_content(template)
     end
 
