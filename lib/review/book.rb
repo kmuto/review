@@ -21,9 +21,5 @@ module ReVIEW
     def self.load(dir)
       Base.load dir
     end
-
-    def self.update_rubyenv(dir)
-      Base.update_rubyenv dir
-    end
   end
 end
