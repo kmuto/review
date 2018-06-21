@@ -175,7 +175,7 @@ module ReVIEW
 
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
-        puts "\\begin{reviewcolumn}\n"
+        puts '\\begin{reviewcolumn}'
         puts target
         puts macro('reviewcolumnhead', nil, compile_inline(caption))
       else
@@ -191,7 +191,7 @@ module ReVIEW
     end
 
     def column_end(_level)
-      puts "\\end{reviewcolumn}\n"
+      puts '\\end{reviewcolumn}'
       blank
       @doc_status[:column] = nil
     end
@@ -205,9 +205,9 @@ module ReVIEW
 
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
+        puts
         if caption.present?
-          puts
-          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n"
+          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
         end
       else
         if caption.present?
@@ -220,7 +220,7 @@ module ReVIEW
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n\n")
 
-      puts "\\end{review#{type}}\n"
+      puts "\\end{review#{type}}"
     end
 
     def box(lines, caption = nil)
@@ -394,6 +394,9 @@ module ReVIEW
     end
 
     def common_code_block_lst(_id, lines, command, title, caption, lang, first_line_num: 1)
+      if title == 'title' && caption.blank? && @book.config.check_version('2', exception: false)
+        print '\vspace{-1.5em}'
+      end
       body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
@@ -404,6 +407,9 @@ module ReVIEW
 
     def make_code_block_args(title, caption, lang, first_line_num: 1)
       caption_str = compile_inline((caption || ''))
+      if title == 'title' && caption_str == '' && @book.config.check_version('2', exception: false)
+        caption_str = '\relax' ## dummy charactor to remove lstname
+      end
       lexer = if @book.config['highlight'] && @book.config['highlight']['lang']
                 @book.config['highlight']['lang'] # default setting
               else
