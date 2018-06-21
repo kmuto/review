@@ -214,7 +214,7 @@ class LATEXBuidlerV2Test < Test::Unit::TestCase
 
   def test_inline_uchar
     actual = compile_inline('test @<uchar>{2460} test2')
-    assert_equal 'test \\UTF{2460} test2', actual
+    assert_equal 'test ① test2', actual
   end
 
   def test_inline_idx
