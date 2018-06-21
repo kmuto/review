@@ -290,12 +290,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_cmd
     actual = compile_block("//cmd{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_cmd_caption
     actual = compile_block("//cmd[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_cmd_lst
@@ -307,7 +307,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_emlist
     actual = compile_block("//emlist{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_emlist_lst
@@ -327,33 +327,33 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_emlist_caption
     actual = compile_block("//emlist[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_emlist_empty_caption
     actual = compile_block("//emlist[]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\begin{reviewemlist}\nfoo\nbar\n\nbuz\n\\end{reviewemlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_emlist_with_tab
     actual = compile_block("//emlist{\n\tfoo\n\t\tbar\n\n\tbuz\n//}\n")
-    assert_equal %Q(\n\\begin{reviewemlist}\n        foo\n                bar\n\n        buz\n\\end{reviewemlist}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\begin{reviewemlist}\n        foo\n                bar\n\n        buz\n\\end{reviewemlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_emlist_with_tab4
     @config['tabwidth'] = 4
     actual = compile_block("//emlist{\n\tfoo\n\t\tbar\n\n\tbuz\n//}\n")
-    assert_equal %Q(\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\begin{reviewemlist}\n    foo\n        bar\n\n    buz\n\\end{reviewemlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_emlistnum_caption
     actual = compile_block("//emlistnum[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\n 1: foo\n 2: bar\n 3: \n 4: buz\n\\end{reviewemlist}\n), actual
+    assert_equal %Q(\n\\begin{reviewlistblock}\n\\reviewemlistcaption{cap1}\n\\begin{reviewemlist}\n 1: foo\n 2: bar\n 3: \n 4: buz\n\\end{reviewemlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_list
     actual = compile_block("//list[id1][cap1]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\\reviewlistcaption{リスト1.1: cap1}\n\\begin{reviewlist}\nfoo\nbar\n\nbuz\n\\end{reviewlist}\n), actual
+    assert_equal %Q(\\begin{reviewlistblock}\n\\reviewlistcaption{リスト1.1: cap1}\n\\begin{reviewlist}\nfoo\nbar\n\nbuz\n\\end{reviewlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_list_lst
@@ -373,12 +373,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_listnum
     actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
-    assert_equal %Q(\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n), actual
+    assert_equal %Q(\\begin{reviewlistblock}\n\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n 1: class Foo\n 2:   def foo\n 3:     bar\n 4: \n 5:     buz\n 6:   end\n 7: end\n\\end{reviewlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_listnum_linenum
     actual = compile_block("//firstlinenum[100]\n//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
-    assert_equal %Q(\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n100: class Foo\n101:   def foo\n102:     bar\n103: \n104:     buz\n105:   end\n106: end\n\\end{reviewlist}\n), actual
+    assert_equal %Q(\\begin{reviewlistblock}\n\\reviewlistcaption{リスト1.1: ruby}\n\\begin{reviewlist}\n100: class Foo\n101:   def foo\n102:     bar\n103: \n104:     buz\n105:   end\n106: end\n\\end{reviewlist}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_listnum_lst
@@ -397,12 +397,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_source
     actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\\reviewsourcecaption{foo/bar/test.rb}\n\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n), actual
+    assert_equal %Q(\\begin{reviewlistblock}\n\\reviewsourcecaption{foo/bar/test.rb}\n\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_source_empty_caption
     actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n), actual
+    assert_equal %Q(\\begin{reviewlistblock}\n\\begin{reviewsource}\nfoo\nbar\n\nbuz\n\\end{reviewsource}\n\\end{reviewlistblock}\n), actual
   end
 
   def test_source_lst
@@ -1048,9 +1048,11 @@ EOS
 
 \\reviewlistref{A.1}
 
+\\begin{reviewlistblock}
 \\reviewlistcaption{リストA.1: FOO}
 \\begin{reviewlist}
 \\end{reviewlist}
+\\end{reviewlistblock}
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
