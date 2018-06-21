@@ -170,23 +170,23 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_m
-    @config['review_version'] = '2.0'
+    @config['review_version'] = '3.0'
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
     assert_equal 'abc$\\alpha^n = \\inf < 2$ghi', actual
 
-    @config['review_version'] = '3.0'
+    @config['review_version'] = '2.0'
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')
     assert_equal 'abc $\\alpha^n = \\inf < 2$ ghi', actual
   end
 
   def test_inline_m2
-    @config['review_version'] = '2.0'
+    @config['review_version'] = '3.0'
     ## target text: @<m>{X = \{ {x_1\},{x_2\}, \cdots ,{x_n\} \\\}}
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
     ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
     assert_equal '$X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$', actual
 
-    @config['review_version'] = '3.0'
+    @config['review_version'] = '2.0'
     actual = compile_inline('@<m>{X = \\{ {x_1\\},{x_2\\}, \\cdots ,{x_n\\} \\\\\\}}')
     ## expected text: $X = \{ {x_1},{x_2}, \cdots ,{x_n} \}$
     assert_equal ' $X = \\{ {x_1},{x_2}, \\cdots ,{x_n} \\}$ ', actual
