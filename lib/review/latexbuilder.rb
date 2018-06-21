@@ -871,9 +871,9 @@ module ReVIEW
     # math
     def inline_m(str)
       if @book.config.check_version('2', exception: false)
-        "$#{str}$"
-      else
         " $#{str}$ "
+      else
+        "$#{str}$"
       end
     end
 
