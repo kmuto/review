@@ -22,6 +22,7 @@ require 'review/yamlloader'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
+require 'review/epubmaker/reviewheaderlistener'
 
 module ReVIEW
   class EPUBMaker
@@ -593,53 +594,6 @@ module ReVIEW
       end
 
       true
-    end
-
-    class ReVIEWHeaderListener
-      include REXML::StreamListener
-      def initialize(headlines)
-        @level = nil
-        @content = ''
-        @headlines = headlines
-      end
-
-      def tag_start(name, attrs)
-        if name =~ /\Ah(\d+)/
-          raise "#{name}, #{attrs}" if @level.present?
-          @level = $1.to_i
-          @id = attrs['id'] if attrs['id'].present?
-          @notoc = attrs['notoc'] if attrs['notoc'].present?
-        elsif !@level.nil?
-          if name == 'img' && attrs['alt'].present?
-            @content << attrs['alt']
-          elsif name == 'a' && attrs['id'].present?
-            @id = attrs['id']
-          end
-        end
-      end
-
-      def tag_end(name)
-        if name =~ /\Ah\d+/
-          if @id.present?
-            @headlines.push({ 'level' => @level,
-                              'id' => @id,
-                              'title' => @content,
-                              'notoc' => @notoc })
-          end
-          @content = ''
-          @level = nil
-          @id = nil
-          @notoc = nil
-        end
-
-        true
-      end
-
-      def text(text)
-        if @level.present?
-          @content << text.gsub("\t", '　')
-        end
-      end
     end
   end
 end
