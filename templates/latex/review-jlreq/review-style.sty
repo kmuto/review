@@ -1,14 +1,4 @@
-\def\maxwidth{%
-  \ifdim\Gin@nat@width>\linewidth
-    % \linewidth
-    \dimexpr\linewidth - 1\p@ - 3mm\relax
-  \else
-    % \Gin@nat@width
-    \dimexpr\Gin@nat@width - 1\p@ - 3mm\relax
-  \fi
-}
-
-% コードリスト装飾
+% コードリスト装飾のデフォルト
 \usepackage{tcolorbox}
 \tcbuselibrary{xparse,hooks,skins,breakable}
 
@@ -66,7 +56,7 @@
   \begin{tcolorbox}[skin=enhanced jigsaw,breakable,boxrule=0.2mm,arc=2mm,colback=white,colframe=black!100!white,title={\sffamily\bfseries #1}]\par}
  {\end{tcolorbox}}
 
-\renewcommand{\@makecaption}[2]{{% %本当はl,c,rを[]で指定したいなぁ
+\renewcommand{\@makecaption}[2]{{% %本当はl,c,rを[]で指定したい
   \reset@font\small
   \vskip\abovecaptionskip
   \jlreq@ifempty{#1}{%
@@ -112,11 +102,6 @@
 
 \newcommand*\reviewimgtablecaption[1]{\caption{#1}}
 
-% 引用
-\jlreqsetup{quote_beforeafter_space=\baselineskip}
-% 箇条書き
-\jlreqsetup{itemization_beforeafter_space=\baselineskip}
-
 \newcommand{\reviewimageref}[2]{\review@intn@image #1}
 \newcommand{\reviewtableref}[2]{\review@intn@table #1}
 \newcommand{\reviewlistref}[1]{\review@intn@list #1}
@@ -138,10 +123,9 @@
 \newcommand{\reviewtti}[1]{\texttt{\textit{#1}}}
 \newcommand{\reviewttb}[1]{\texttt{\textbf{#1}}}
 
-\newcommand{\reviewappendix}[0]{\appendix}
 \newcommand{\reviewbackslash}[0]{\textbackslash{}}
 
-% 色。コードリスト用にしか使っていない。
+% コードリスト用色
 \definecolor{shadecolor}{gray}{0.9}
 \definecolor{shadecolorb}{gray}{0.1}
 \definecolor{reviewgreen}{rgb}{0,0.4,0}
@@ -150,9 +134,15 @@
 \definecolor{reviewdarkred}{rgb}{0.3,0,0}
 
 % ハイフネーション禁止。@M=10000。@m=1000
-% latexdef 〜 で調べるといいらしい
+% latexdef 〜 で確認
 \hyphenpenalty\@M\relax
 \exhyphenpenalty\@M\relax
+
+% 上下アキ
+% 引用
+\jlreqsetup{quote_beforeafter_space=\baselineskip}
+% 箇条書き
+\jlreqsetup{itemization_beforeafter_space=\baselineskip}
 
 % ヘッダスタイル
 \ModifyPageStyle{headings}{nombre_position={top-fore_edge},running_head_position={top-fore_edge}}

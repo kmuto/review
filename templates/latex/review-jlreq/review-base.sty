@@ -1,0 +1,160 @@
+% jlreq用基本設定
+\RequirePackage{needspace}
+\RequirePackage{alltt}
+\RequirePackage{float}
+\RequirePackage{upquote}
+\RequirePackage{bm}
+
+\IfFileExists{jumoline.sty}{
+\usepackage{jumoline}
+}
+
+\long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
+
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
+
+\newcommand{\reviewprepartname}{\review@prepartname}
+\newcommand{\reviewpostpartname}{\review@postpartname}
+\newcommand{\reviewprechaptername}{\review@prechaptername}
+\newcommand{\reviewpostchaptername}{\review@postchaptername}
+\newcommand{\reviewfigurename}{\review@figurename}
+\newcommand{\reviewtablename}{\review@tablename}
+\newcommand{\reviewappendixname}{\review@appendixname}
+
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
+
+\def\reviewfrontmatterhook{%
+  \renewcommand{\chaptermark}[1]{{}}
+  \frontmatter
+}
+
+\def\reviewmainmatterhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~##1}{}}
+  \mainmatter
+}
+
+\def\reviewappendixhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~##1}{}}
+  \reviewappendix
+}
+
+\def\reviewbackmatterhook{%
+  \backmatter
+}
+
+% cover
+\ifdefined\review@cover
+  \def\reviewcoverpagecont{\review@coverfile}
+\fi
+\ifdefined\review@coverimage
+  \def\reviewcoverpagecont{%
+\thispagestyle{empty}
+\begin{center}
+\expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+\end{center}
+\clearpage
+  }
+\fi
+
+% titlepage
+\ifdefined\review@titlepage
+  \ifthenelse{\isundefined{\review@titlefile}}{%
+    \def\reviewtitlepagecont{%
+       \begin{titlepage}
+       \thispagestyle{empty}
+       \begin{center}%
+       \mbox{} \vskip5zw
+       \reviewtitlefont%
+       {\Huge\review@booktitlename\par}%
+       \ifdefined\review@subtitlename
+         \vskip 1em%
+         {\Large\review@subtitlename\par}%
+       \fi
+       \vskip 15em%
+       {\huge
+       \lineskip .75em
+       \begin{tabular}[t]{c}%
+       \review@titlepageauthors
+       \end{tabular}\par}%
+       \vfill
+       {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@publishedby\par}%
+       \vskip4zw\mbox{}
+       \end{center}%
+       \end{titlepage}\clearpage
+    }
+  }{%
+    \def\reviewtitlepagecont{\review@titlefile}
+  }
+\fi
+
+% toc
+\ifdefined\review@toc
+  \def\reviewtableofcontents{%
+\setcounter{tocdepth}{\review@tocdepth}
+\tableofcontents
+}
+\fi
+
+% index
+\ifdefined\review@makeindex
+  \usepackage{makeidx}
+  \makeindex
+\fi
+
+\ifdefined\review@makeindex
+  \def\reviewprintindex{%
+\printindex
+}
+\fi
+
+% colophon
+\ifdefined\review@colophon
+  \ifthenelse{\isundefined{\review@colophonfile}}{%
+    \def\reviewcolophonpagecont{%
+\reviewcolophon
+\thispagestyle{empty}
+\vspace*{\fill}
+\typeout{\review@booktitlename}
+{\noindent\reviewtitlefont\Large\review@booktitlename}\\
+\ifdefined\review@subtitlename
+{\noindent\reviewtitlefont\large\review@subtitlename} \\
+\fi
+\rule[8pt]{\textwidth}{1pt} \\
+{\noindent\review@pubhistories}
+
+\begin{tabular}{ll}
+\review@colophonnames
+\end{tabular}
+　\\
+\rule[0pt]{\textwidth}{1pt} \\
+\ifdefined\review@rights
+\review@rights
+\fi
+    }%
+  }{%
+    \def\reviewcolophonpagecont{\review@colophonfile}
+  }
+\fi
