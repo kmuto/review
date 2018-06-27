@@ -5,27 +5,25 @@
 \LoadClassWithOptions{jlreq}
 
 % クラスオプション
-% munepiさんのを踏襲しておいたほうがいいかな
-% hanmengrid(boolean)→これは今回実装対応しない
+% TODO:
 % hanmen(boolean)→版面表示。便利なので入れたい
-% draft(boolean)→これはjlreqでいける？
-% tombo(boolean)→トンボ有効化 (done)
-% mentuke(boolean)→これはどうしようかな
-% cameraready=pdf/print(string)→設定どうしよう
-% paper=a5+3mm→これだとパースをまるまる複製しないとかな…。jlreq-trimmarksのオプションとだいぶ違う
-% toc:break-before=right, index:break-before=both あたりは完全白ページが問題になる同人誌だと怖い？
-% 白ページでもノンブルを打つ という設定(とpagestyleが必要？)
-% 扉画像の指定はreviewmacroのパラメータのほうでやらせるべきかな
+% draft(boolean)→これはjlreqでいけるはず?
+% mentuke(boolean)→なくてもよいか
+% cameraready=pdf/print(string)→設定が難しい
+% paper=a5+3mm→jlreq-trimmarksのオプションとだいぶ違う
+% toc:break-before=right, index:break-before=both→完全白ページが問題になる同人誌だと怖そう
+% 白ページでもノンブルを打つ という設定(とpagestyle)がほしいか
+% 扉画像の指定はreviewmacroのパラメータのほうでやらせるべきか
 %
 % <<review-jlreq独自>>
 % tombo:bleed(数値+単位) : 裁ち落とし幅。デフォルト3mm
 % tombo:color(\colorの色またはcmykの組み合わせ) : トンボの色。デフォルトcmyk(全プレート)
-% tombo:paper(トンボ入り紙面サイズ) : トンボを付けたときのサイズ。デフォルトは現在のサイズ+2インチ。a4, b5(ここでのbはJISサイズ)などを指定可能。{width, height}も指定可能…だけど今はダメ(FIXME)
+% tombo:paper(トンボ入り紙面サイズ) : トンボを付けたときのサイズ。デフォルトは現在のサイズ+2インチ。a4, b5(ここでのbはJISサイズ)などを指定可能。{width, height}も指定可能…だが今はダメ(FIXME)
 % tombo:show({}指定) : {trimmarks,banner,digital}からの組み合わせ。trimmarksはトンボマーク表示、bannerはファイル名+日付、digitalはデジタルトンボ情報を入れる (FIXME、{}がまだとれない)
 % hyperrefの設定もやったほうがよさそう
 
-% FIXME: Unused global option [book] が出るの嫌だなぁ(実際はchapterに必要)
-% \setkeyしたら影響が…なんとかなるんかなこれ
+% FIXME: Unused global option [book] が出るの嫌だ(実際はchapterに必要)
+% \setkeyしたら別の影響が出る
 \DeclareOption{book}{\OptionNotUsed}
 \DeclareOption{dvipdfmx}{\OptionNotUsed}
 
@@ -39,13 +37,13 @@
 \@review@jlreq@tombofalse
 \DeclareOption{tombo}{\@review@jlreq@tombotrue}
 % トンボの詳細設定
-%% パッケージオプション系。初期値は定義しないことにしてundefined評価でオプション追加するかどうかを判定させることに
+%% パッケージオプション系。初期値は定義しないことにしてundefined評価でオプション追加するかどうかを判定させる
 %\def\@review@jkreq@tombo@paper{a4}
 %\def\@review@jkreq@tombo@show{trimmarks,banner,digital}
 
 %% \jlreqtrimmarkssetup設定系
 \def\@review@jlreq@tombo@banner{\jobname\space(\number\year-\two@digits\month-\two@digits\day\space\two@digits\hour:\two@digits\minute)}% バナー(動的にはできない)
-\def\@review@jlreq@tombo@bleed{3mm}% 裁ち落とし幅(ドブ)
+\def\@review@jlreq@tombo@bleed{3mm}% 裁ち落とし幅
 \def\@review@jlreq@tombo@color{cmyk}% トンボの色。cmykはCMYK全プレートで100%
 
 % documentoptionからの取り込み
@@ -79,6 +77,16 @@
 \RequirePackage{jlreq-trimmarks}
 \fi
 
+\def\maxwidth{%
+  \ifdim\Gin@nat@width>\linewidth
+    % \linewidth
+    \dimexpr\linewidth - 1\p@ - 3mm\relax
+  \else
+    % \Gin@nat@width
+    \dimexpr\Gin@nat@width - 1\p@ - 3mm\relax
+  \fi
+}
+
 % エンジンとドライバの情報。jlreq-trimmarksが定義されていればそっちから持ってくる。
 % 定義されていなければjlreqから持ってくる
 \def\review@jlreq@engine{}
@@ -108,28 +116,22 @@
 \RequirePackage[\review@jlreq@driver,table]{xcolor}
 
 % jlreq-trimmarksへ追加オプション渡し(事前にxcolorが必要)
-% trimmarks_widthを指定したくなるケースはまずないとしてよいかな…bannerもどうするか
+% trimmarks_widthを指定したくなるケースはまずないとしてよいか…bannerもどうするか
 \if@review@jlreq@tombo
   \jlreqtrimmarkssetup{bleed_margin=\@review@jlreq@tombo@bleed,color=\@review@jlreq@tombo@color,banner=\@review@jlreq@tombo@banner}% デフォルトは3mm, cmyk
 \fi
 
-\RequirePackage[T1]{fontenc}
-\RequirePackage{textcomp}%T1/TS1
-\RequirePackage{lmodern}%\ttdefault: lmtt
-% FIXME:documentoptionである程度指定したい
+% TODO:documentoptionである程度指定したい
 \RequirePackage[\review@jlreq@driver, bookmarks=true, bookmarksnumbered=true,
   % colorlinks=true,
   hidelinks,
 setpagesize=false]{hyperref}[2016/06/24 v6.83q]
+\RequirePackage[T1]{fontenc}
+\RequirePackage{textcomp}%T1/TS1
+\RequirePackage{lmodern}%\ttdefault: lmtt
 \RequirePackage[\review@jlreq@driver]{pxjahyper}[2012/05/27 v0.2]
-
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
-\RequirePackage{tcolorbox}
-\tcbuselibrary{xparse,hooks,skins,breakable}
 \RequirePackage{multirow}
 \RequirePackage{amsmath}
 \RequirePackage{amssymb}
-\RequirePackage{bm}
-\RequirePackage{needspace}
-\usepackage{upquote,textcomp}
