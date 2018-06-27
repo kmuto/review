@@ -1,11 +1,11 @@
 require 'fileutils'
 require 'rake/clean'
 
-BOOK = 'book'
+BOOK = ENV['BOOK'] || 'book'
 BOOK_PDF = BOOK + '.pdf'
 BOOK_EPUB = BOOK + '.epub'
-CONFIG_FILE = 'config.yml'
-WEBROOT = 'webroot'
+CONFIG_FILE = ENV['CONFIG_FILE'] || 'config.yml'
+WEBROOT = ENV['WEBROOT'] || 'webroot'
 TEXTROOT = BOOK + '-text'
 TOPROOT = BOOK + '-text'
 
