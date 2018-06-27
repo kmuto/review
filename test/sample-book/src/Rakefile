@@ -5,6 +5,7 @@ BOOK = ENV['REVIEW_BOOK'] || 'book'
 BOOK_PDF = BOOK + '.pdf'
 BOOK_EPUB = BOOK + '.epub'
 CONFIG_FILE = ENV['REVIEW_CONFIG_FILE'] || 'config.yml'
+CATALOG_FILE = ENV['REVIEW_CATALOG_FILE'] || 'catalog.yml'
 WEBROOT = ENV['REVIEW_WEBROOT'] || 'webroot'
 TEXTROOT = BOOK + '-text'
 TOPROOT = BOOK + '-text'
@@ -64,14 +65,19 @@ end
 desc 'generate EPUB file'
 task epub: BOOK_EPUB
 
-SRC = FileList['*.re'] + [CONFIG_FILE]
+IMAGES = FileList['images/**/*']
+OTHERS = ENV['REVIEW_DEPS'] ? ENV['REVIEW_DEPS'].split(',') : []
+SRC = FileList['./**/*.re', '*.rb'] + [CONFIG_FILE, CATALOG_FILE] \
+        + IMAGES + OTHERS
+SRC_EPUB = FileList['*.css']
+SRC_PDF = FileList['layouts/*.erb', 'sty/**/*.sty']
 
-file BOOK_PDF => SRC do
+file BOOK_PDF => SRC + SRC_PDF do
   FileUtils.rm_rf [BOOK_PDF, BOOK, BOOK + '-pdf']
   sh "review-pdfmaker #{CONFIG_FILE}"
 end
 
-file BOOK_EPUB => SRC do
+file BOOK_EPUB => SRC + SRC_EPUB do
   FileUtils.rm_rf [BOOK_EPUB, BOOK, BOOK + '-epub']
   sh "review-epubmaker #{CONFIG_FILE}"
 end
