@@ -49,7 +49,9 @@
      pdfauthor={\review@autnames}]{hyperref}
 \usepackage[dvipdfmx]{pxjahyper}
 \usepackage{pxrubrica}
-\rubysetup{J}
+\@ifpackagelater{pxrubrica}{2017/04/20}{%
+\rubysetup{J}}{%
+\rubysetup{g}}
 
 \ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
 \newcommand{\headfont}{\gtfamily\sffamily\bfseries}
