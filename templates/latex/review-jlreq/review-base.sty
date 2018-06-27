@@ -6,8 +6,13 @@
 \RequirePackage{bm}
 
 \IfFileExists{jumoline.sty}{
-\usepackage{jumoline}
+\RequirePackage{jumoline}
 }
+
+\RequirePackage{pxrubrica}
+\@ifpackagelater{pxrubrica}{2017/04/20}{% true
+\rubysetup{J}}{% false
+\rubysetup{j}}
 
 \long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
 
@@ -120,7 +125,7 @@
 
 % index
 \ifdefined\review@makeindex
-  \usepackage{makeidx}
+  \RequirePackage{makeidx}
   \makeindex
 \fi
 

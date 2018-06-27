@@ -132,8 +132,6 @@ setpagesize=false]{hyperref}[2016/06/24 v6.83q]
 \RequirePackage[\review@jlreq@driver]{pxjahyper}[2012/05/27 v0.2]
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
-\RequirePackage{tcolorbox}
-\tcbuselibrary{xparse,hooks,skins,breakable}
 \RequirePackage{multirow}
 \RequirePackage{amsmath}
 \RequirePackage{amssymb}
