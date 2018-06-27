@@ -1,32 +1,32 @@
-\usepackage{ifthen}
+\RequirePackage{ifthen}
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
-\usepackage[deluxe,uplatex]{otf}%
+\RequirePackage[deluxe,uplatex]{otf}%
 }{%
-\usepackage[deluxe]{otf}%
+\RequirePackage[deluxe]{otf}%
 }
-\usepackage{caption}
-\usepackage{suffix}
-\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
-\usepackage{lmodern}
-\usepackage[dvipdfmx]{graphicx}
-\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
-\usepackage{framed}
-\usepackage{wrapfig}
+\RequirePackage{caption}
+\RequirePackage{suffix}
+\RequirePackage[T1]{fontenc}\RequirePackage{textcomp}%T1/TS1
+\RequirePackage{lmodern}
+\RequirePackage[dvipdfmx]{graphicx}
+\RequirePackage[dvipdfmx,table]{xcolor}%requires colortbl, array
+\RequirePackage{framed}
+\RequirePackage{wrapfig}
 \definecolor{shadecolor}{gray}{0.9}
 \definecolor{shadecolorb}{gray}{0.1}
 \definecolor{reviewgreen}{rgb}{0,0.4,0}
 \definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
 \definecolor{reviewred}{rgb}{0.7,0,0}
 \definecolor{reviewdarkred}{rgb}{0.3,0,0}
-\usepackage[utf8]{inputenc}
-\usepackage{ascmac}
-\usepackage{float}
-\usepackage{alltt}
-\usepackage{amsmath}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{ascmac}
+\RequirePackage{float}
+\RequirePackage{alltt}
+\RequirePackage{amsmath}
 
 %% if you use @<u>{} (underline), use jumoline.sty
 \IfFileExists{jumoline.sty}{
-\usepackage{jumoline}
+\RequirePackage{jumoline}
 }
 
 \long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
@@ -38,33 +38,33 @@
 
 \ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
 }{%
-\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}%
+\RequirePackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}%
 }
 
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,hidelinks,%
+\RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,hidelinks,%
      pdftitle={\review@booktitlename},%
      pdfauthor={\review@autnames}]{hyperref}
-\usepackage[dvipdfmx]{pxjahyper}
-\usepackage{pxrubrica}
+\RequirePackage[dvipdfmx]{pxjahyper}
+\RequirePackage{pxrubrica}
 \@ifpackagelater{pxrubrica}{2017/04/20}{%
 \rubysetup{J}}{%
 \rubysetup{g}}
 
 \ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
 \newcommand{\headfont}{\gtfamily\sffamily\bfseries}
-\usepackage{plext}
+\RequirePackage{plext}
 }{%
 }
 
 \ifdefined\review@highlightlatex
   \ifthenelse{\equal{\review@highlightlatex}{listings}}{%
     \ifthenelse{\equal{\review@language}{ja}}{%
-      \usepackage{listings,plistings}
+      \RequirePackage{listings,plistings}
     }{%
-      \usepackage{listings}
+      \RequirePackage{listings}
     }%
   \renewcommand{\lstlistingname}{\review@intn@list}
   \lstset{%
@@ -365,7 +365,7 @@
 
 % index
 \ifdefined\review@makeindex
-  \usepackage{makeidx}
+  \RequirePackage{makeidx}
   \makeindex
 \fi
 
