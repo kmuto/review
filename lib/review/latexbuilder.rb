@@ -52,7 +52,11 @@ module ReVIEW
       end
       return true unless @book.config['pdfmaker']['makeindex_mecab']
       begin
-        require 'MeCab'
+        begin
+          require 'MeCab'
+        rescue LoadError
+          require 'mecab'
+        end
         require 'nkf'
         @index_mecab = MeCab::Tagger.new(@book.config['pdfmaker']['makeindex_mecab_opts'])
       rescue LoadError
