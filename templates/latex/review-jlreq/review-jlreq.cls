@@ -89,6 +89,7 @@
 
 % エンジンとドライバの情報。jlreq-trimmarksが定義されていればそっちから持ってくる。
 % 定義されていなければjlreqから持ってくる
+\def\review@jlreq@driver@luatex{luatex}
 \def\review@jlreq@engine{}
 \def\review@jlreq@driver{}
 \ifdefined\jlreq@trimmarks@engine
@@ -106,7 +107,7 @@
   \ifx o\jlreq@trimmarks@driver\def\review@jlreq@driver{dviout}\fi
 \else% jlreqから持ってくる
   \ifx l\jlreq@engine
-    \def\review@jlreq@driver{lualatex}
+    \def\review@jlreq@driver{luatex}
   \else
     \def\review@jlreq@driver{dvipdfmx}
   \fi
@@ -129,7 +130,10 @@ setpagesize=false]{hyperref}[2016/06/24 v6.83q]
 \RequirePackage[T1]{fontenc}
 \RequirePackage{textcomp}%T1/TS1
 \RequirePackage{lmodern}%\ttdefault: lmtt
+\def\review@jlreq@driver@luatex{luatex}
+\ifx\review@jlreq@driver\review@jlreq@driver@luatex\else
 \RequirePackage[\review@jlreq@driver]{pxjahyper}[2012/05/27 v0.2]
+\fi
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 \RequirePackage{multirow}

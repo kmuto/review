@@ -76,11 +76,13 @@
 \fi
 \ifdefined\review@coverimage
   \def\reviewcoverpagecont{%
-\thispagestyle{empty}
-\begin{center}
-\expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
-\end{center}
-\clearpage
+    \thispagestyle{empty}
+    \null\vfill
+    \centerline{\vbox to 0pt{\vss\hbox to 0pt{\hss
+      \expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+      \hss}\vss}}
+    \vfill\null
+    \clearpage
   }
 \fi
 
@@ -91,7 +93,12 @@
        \begin{titlepage}
        \thispagestyle{empty}
        \begin{center}%
-       \mbox{} \vskip5zw
+       \mbox{}%
+       \ifx\review@jlreq@driver\review@jlreq@driver@luatex
+         \vskip5\zw
+       \else
+         \vskip5zw
+       \fi
        \reviewtitlefont%
        {\Huge\review@booktitlename\par}%
        \ifdefined\review@subtitlename
@@ -105,8 +112,14 @@
        \review@titlepageauthors
        \end{tabular}\par}%
        \vfill
-       {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@publishedby\par}%
-       \vskip4zw\mbox{}
+       {\large\review@date \review@intn@edition%
+         \ifx\review@jlreq@driver\review@jlreq@driver@luatex
+           \hspace{2\zw}%
+         \else
+           \hspace{2zw}%
+         \fi
+         \review@intn@publishedby\par}%
+       \vskip4\zw\mbox{}
        \end{center}%
        \end{titlepage}\clearpage
     }
