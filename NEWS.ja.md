@@ -40,6 +40,7 @@
 * LATEXBuilder: LaTeXなどのログメッセージを正常時には出力しないようにしました ([#1036])
 * MARKDOWNBuilder: サポートするコマンドを追加しました ([#881])
 * image_finder.rb: シンボリックリンクされたディレクトリをサポートしました ([#743])
+* Rakefileの依存関係にcatalog.ymlなどのファイルを追加しました ([#1060])
 
 ## ドキュメント
 * `//graph` 命令の各外部ツールについての説明を追加しました ([#1008])
@@ -87,6 +88,7 @@
 [#1045]: https://github.com/kmuto/review/issues/1045
 [#1046]: https://github.com/kmuto/review/issues/1046
 [#1059]: https://github.com/kmuto/review/issues/1059
+[#1060]: https://github.com/kmuto/review/issues/1060
 [#1063]: https://github.com/kmuto/review/issues/1063
 
 # Version 2.5.0

@@ -39,6 +39,7 @@
 * hide (latex and other commands') log messages ([#1036])
 * MARKDOWNBuilder: support some commands ([#881])
 * image_finder.rb: support symlinked directory ([#743])
+* add files like `catalog.yml` as denendency relation ([#1060])
 
 ## Docs
 * add description of external tools used in `//graph` ([#1008])
