@@ -377,9 +377,13 @@ module ReVIEW
     end
 
     def erb_config
+      @texcompiler = File.basename(@config['texcommand'], '.*')
       dclass = @config['texdocumentclass'] || []
       @documentclass = dclass[0] || 'jsbook'
       @documentclassoption = dclass[1] || 'uplatex,oneside'
+      if @config['dvicommand'] =~ /dvipdfmx/ && @documentclassoption !~ /dvipdfmx/
+        @documentclassoption = "dvipdfmx,#{@documentclassoption}".sub(/,\Z/, '')
+      end
 
       @okuduke = make_colophon
       @authors = make_authors
@@ -419,7 +423,6 @@ module ReVIEW
       @locale_latex['postchaptername'] = chapter_tuple[1]
       @locale_latex['preappendixname'] = appendix_tuple[0]
       @locale_latex['postappendixname'] = appendix_tuple[1]
-      @texcompiler = File.basename(@config['texcommand'], '.*')
     end
 
     def erb_content(file)

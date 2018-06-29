@@ -1,4 +1,4 @@
-\documentclass[dvipdfmx,<%= @documentclassoption %>]{<%= @documentclass %>}
+\documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
 <%= latex_config %>
 <%- if @config['texstyle'] -%>
 <%-   [@config['texstyle']].flatten.each do |x| -%>
