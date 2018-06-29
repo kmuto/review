@@ -66,9 +66,8 @@ desc 'generate EPUB file'
 task epub: BOOK_EPUB
 
 IMAGES = FileList['images/**/*']
-OTHERS = ENV['REVIEW_DEPS'] ? ENV['REVIEW_DEPS'].split(',') : []
-SRC = FileList['./**/*.re', '*.rb'] + [CONFIG_FILE, CATALOG_FILE] \
-        + IMAGES + OTHERS
+OTHERS = ENV['REVIEW_DEPS'] || []
+SRC = FileList['./**/*.re', '*.rb'] + [CONFIG_FILE, CATALOG_FILE] + IMAGES + FileList[OTHERS]
 SRC_EPUB = FileList['*.css']
 SRC_PDF = FileList['layouts/*.erb', 'sty/**/*.sty']
 
