@@ -1,37 +1,95 @@
-# Version 3.0.0preview1 (未リリース)
+# Version 3.0.0preview1
 
 ## 新機能
-* `contentdir` パラメータで、re ファイルをサブフォルダに配置してそのフォルダを指定できるようにしました ([#920])
-* `//graph` 命令 で PlantUML をサポートしました ([#1006])
-* CSV 形式の単語ファイルから指定キーに対応する値を展開する、`@<w>` および `@<wb>` 命令を追加しました ([#1007])
+* `contentdir` パラメータで、re ファイルをサブフォルダに配置してそのフォルダを指定できるようにしました ([#920], [#938])
+* `//graph` 命令 で PlantUML をサポートしました ([#1006],[#1008])
+* CSV 形式の単語ファイルから指定キーに対応する値を展開する、`@<w>` および `@<wb>` 命令を追加しました ([#1007], [#1010])
+* catalog.ymlにある`*.re`ファイルが存在しない場合エラーになるようにしました ([#957])
+* LATEXBuilder: LaTeX でルビを表現できるよう pxrubrica パッケージを読み込むようにしました ([#655])
+* LATEXBuilder: 複数の LaTeX レイアウトファイルから選択できるようにしました ([#812])
+* `@<balloon>`を標準サポートタグとしました ([#829])
+* LATEXBuilder: `@<uchar>`でUnicode文字を直接出力できるようにしました ([#1045])
+* RakefileのオプションでCONFIG_FILEを上書きできるようにしました ([#1059])
 
 ## 非互換の変更
 * review_version の値が 3 以上のときには、LaTeX の `@<m>` によるインラインの数式の前後にスペース文字を入れないようにしました ([#943])
 * HTML ビルダにおいて、`//list`, `//listnum` で識別子に基づくハイライト言語の自動検出をやめました (ハイライト言語は命令の 3 つめのオプションで指定してください) ([#1016])
+* LATEXBuilder: layout.tex.erbを整理・再構成しました ([#950])
+* LATEXBuilder: LaTeX のコードリストを reviewlistblock 環境で囲むようにしました ([#916])
+* LATEXBuilder: LaTeX のコードリスト環境を jlisting から plistings パッケージに変更しました ([#635])
+* LATEXBuilder: PDF生成時にリンクの枠線について、標準では消すようにしました ([#808])
+* LATEXBuilder: インライン文字装飾の LaTeX への変換結果を`\textbf`ではなく`\reviewbold`のように抽象化した名前にしました ([#792])
+* LATEXBuilder: LaTeX の表紙 (coverパラメータ) と大扉 (titlepageパラメータ) は独立した設定となりました ([#848])
+* review-preproc: --final オプションを削除しました ([#993])
+* LATEXBuilder: キャプションブロックの出力について`reviewminicolumn`を使わず`reviewnote`等を使うようにしました ([#1046])
 
 ## バグ修正
 * Ruby 2.3 以下で実行時のログ表示が冗長になるのを修正しました ([#975])
 * Version 2.5.0 で削除した `usepackage` パラメータを、互換性のために戻しました ([#1001])
+* HTMLBuilder: `@<m>`や`//texequation{...//}`でのログ出力を抑制するようにしました ([#1027])
+* LATEXBuilder: リストのキャプションが空の場合の出力を修正しました ([#1040])
+* MeCabのロードパスを修正しました ([#1063])
 
 ## 機能強化
 * Windows でも `//graph` 命令が動作するようにしました ([#1008])
 * 画像ファイルやフォントファイルの拡張子が大文字・小文字どちらでも利用できるようにしました ([#1002])
+* review-pdfmaker: pdfmakerで実行したコマンド情報を出力するようにしました ([#962],[#968])
+* IDGXMLBuilder: `=[notoc]`および`=[nodisp]`をサポートしました ([#1022])
+* PDFMaker: psdファイルもコピーするようにしました ([#879])
+* PDFMaker: config.ymlの `texoptions`のデフォルト値を変更してLaTeX実行中に入力待ちにしないようにしました ([#1029])
+* LATEXBuilder: LaTeXなどのログメッセージを正常時には出力しないようにしました ([#1036])
+* MARKDOWNBuilder: サポートするコマンドを追加しました ([#881])
+* image_finder.rb: シンボリックリンクされたディレクトリをサポートしました ([#743])
+* Rakefileの依存関係にcatalog.ymlなどのファイルを追加しました ([#1060])
 
 ## ドキュメント
 * `//graph` 命令の各外部ツールについての説明を追加しました ([#1008])
 * `@<w>`, `@<wb>` 命令の説明を追加しました ([#1007])
+* LaTeX から生成する PDF の圧縮レベルオプション指定 (-z 9、最大圧縮) を config.yml のサンプルに記載しました ([#935])
 
 ## コントリビューターのみなさん
+* [@TeTiRoss](https://github.com/TeTiRoss)
+* [@kauplan](https://github.com/kauplan)
+* [@munepi](https://github.com/munepi)
+* [@m-shibata](https://github.com/m-shibata)
 
+[#635]: https://github.com/kmuto/review/issues/635
+[#655]: https://github.com/kmuto/review/issues/655
+[#743]: https://github.com/kmuto/review/issues/743
+[#792]: https://github.com/kmuto/review/issues/792
+[#808]: https://github.com/kmuto/review/issues/808
+[#812]: https://github.com/kmuto/review/issues/812
+[#829]: https://github.com/kmuto/review/issues/829
+[#848]: https://github.com/kmuto/review/issues/848
+[#879]: https://github.com/kmuto/review/issues/879
+[#881]: https://github.com/kmuto/review/issues/881
+[#916]: https://github.com/kmuto/review/issues/916
 [#920]: https://github.com/kmuto/review/issues/920
+[#938]: https://github.com/kmuto/review/issues/938
+[#935]: https://github.com/kmuto/review/issues/935
 [#943]: https://github.com/kmuto/review/issues/943
+[#950]: https://github.com/kmuto/review/issues/950
+[#957]: https://github.com/kmuto/review/issues/957
+[#962]: https://github.com/kmuto/review/issues/962
+[#968]: https://github.com/kmuto/review/issues/968
 [#975]: https://github.com/kmuto/review/issues/975
+[#993]: https://github.com/kmuto/review/issues/993
 [#1001]: https://github.com/kmuto/review/pull/1001
 [#1002]: https://github.com/kmuto/review/issues/1002
 [#1006]: https://github.com/kmuto/review/issues/1006
 [#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
 [#1016]: https://github.com/kmuto/review/issues/1016
+[#1022]: https://github.com/kmuto/review/issues/1022
+[#1027]: https://github.com/kmuto/review/issues/1027
+[#1029]: https://github.com/kmuto/review/issues/1029
+[#1036]: https://github.com/kmuto/review/issues/1036
+[#1040]: https://github.com/kmuto/review/issues/1040
+[#1045]: https://github.com/kmuto/review/issues/1045
+[#1046]: https://github.com/kmuto/review/issues/1046
+[#1059]: https://github.com/kmuto/review/issues/1059
+[#1060]: https://github.com/kmuto/review/issues/1060
+[#1063]: https://github.com/kmuto/review/issues/1063
 
 # Version 2.5.0
 
