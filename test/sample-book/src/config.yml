@@ -55,7 +55,7 @@ epubmaker:
 
 pdfmaker:
   texstyle: ["reviewmacro"]
-  # texdocumentclass: ["jsbook", "uplatex,oneside"]
+  # texdocumentclass: ["jsbook", "uplatex,twoside"]
   # texcommand: "uplatex"
   # texoptions: null
   # dvicommand: "dvipdfmx"
