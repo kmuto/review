@@ -9,12 +9,6 @@ inherit_from: .rubocop_todo.yml
 
 #### Lint
 
-Lint/BlockAlignment:
-  Enabled: true
-
-Lint/EndAlignment:
-  Enabled: AlignWith
-
 Lint/EmptyWhen:
   Enabled: true
 
@@ -46,7 +40,7 @@ Lint/UselessAssignment:
 #### Performance
 
 Performance/RegexpMatch:
-  Enabled: true
+  Enabled: false
 
 Performance/ReverseEach:
   Enabled: true
@@ -59,6 +53,9 @@ Performance/RangeInclude:
   Enabled: true
 
 #### Style
+
+Style/AccessModifierDeclarations:
+  Enabled: false
 
 Style/AsciiComments:
   Enabled: false
@@ -229,7 +226,7 @@ Style/RedundantParentheses:
   Enabled: true
 
 Style/RedundantReturn:
-  Enabled: true
+  Enabled: false
 
 Style/RedundantSelf:
   Enabled: false
@@ -264,7 +261,10 @@ Style/SymbolProc:
 Style/SymbolArray:
   Enabled: true
 
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
+  Enabled: true
+
+Style/TrailingCommaInHashLiteral:
   Enabled: true
 
 Style/WordArray:
@@ -280,12 +280,22 @@ Style/WhileUntilModifier:
 #  Enabled: true
 
 ### Layout
+
+Layout/BlockAlignment:
+  Enabled: true
+
+Layout/EndAlignment:
+  Enabled: AlignWith
+
 Layout/MultilineMethodCallBraceLayout:
   Enabled: true
 
 Layout/AccessModifierIndentation:
   EnforcedStyle: indent
   Enabled: true
+
+Layout/ClosingHeredocIndentation:
+  Enabled: false
 
 Layout/DotPosition:
   EnforcedStyle: trailing
@@ -377,7 +387,7 @@ Metrics/BlockNesting:
   Max: 4
 
 Metrics/ModuleLength:
-  Max: 129
+  Max: 200
 
 Metrics/ParameterLists:
   Max: 8
@@ -387,6 +397,8 @@ Metrics/PerceivedComplexity:
 
 Metrics/ClassLength:
   Max: 1500
+  Exclude:
+    - 'test/*.rb'
 
 Metrics/LineLength:
   Max: 256
@@ -433,8 +445,14 @@ Naming/AccessorMethodName:
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
 Naming/MethodName:
   Enabled: true
+
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
 
 # Use snake_case for variable names.
 Naming/VariableName:

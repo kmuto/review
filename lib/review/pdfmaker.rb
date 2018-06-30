@@ -10,6 +10,7 @@ require 'yaml'
 require 'fileutils'
 require 'erb'
 require 'tmpdir'
+require 'open3'
 
 require 'review/i18n'
 require 'review/book'
@@ -35,8 +36,20 @@ module ReVIEW
       @input_files = Hash.new { |h, key| h[key] = '' }
     end
 
+    def system_with_info(*args)
+      @logger.info args.join(' ')
+      out, status = Open3.capture2e(*args)
+      unless status.success?
+        @logger.error "execution error\n\nError log:\n" + out
+      end
+    end
+
     def system_or_raise(*args)
-      Kernel.system(*args) or raise("failed to run command: #{args.join(' ')}")
+      @logger.info args.join(' ')
+      out, status = Open3.capture2e(*args)
+      unless status.success?
+        error "failed to run command: #{args.join(' ')}\n\nError log:\n" + out
+      end
     end
 
     def error(msg)
@@ -59,7 +72,9 @@ module ReVIEW
     def build_path
       if @config['debug']
         path = "#{@config['bookname']}-pdf"
-        FileUtils.rm_rf(path, secure: true) if File.exist?(path)
+        if File.exist?(path)
+          FileUtils.rm_rf(path, secure: true)
+        end
         Dir.mkdir(path)
         path
       else
@@ -71,7 +86,7 @@ module ReVIEW
       return unless @compile_errors
 
       if ignore_errors
-        $stderr.puts 'compile error, but try to generate PDF file'
+        @logger.info 'compile error, but try to generate PDF file'
       else
         error 'compile error, No PDF file output.'
       end
@@ -107,10 +122,16 @@ module ReVIEW
       @config = ReVIEW::Configure.values
       @config.maker = 'pdfmaker'
       cmd_config, yamlfile = parse_opts(args)
-      loader = ReVIEW::YAMLLoader.new
-      @config.deep_merge!(loader.load_file(yamlfile))
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+
+      begin
+        loader = ReVIEW::YAMLLoader.new
+        @config.deep_merge!(loader.load_file(yamlfile))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
       # YAML configs will be overridden by command line options.
-      @config.merge!(cmd_config)
+      @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
       @basedir = File.dirname(yamlfile)
       @basehookdir = File.absolute_path(File.dirname(yamlfile))
@@ -121,9 +142,13 @@ module ReVIEW
         warn e.message
       end
 
-      make_valcommand
-
-      generate_pdf(yamlfile)
+      begin
+　　　　      make_valcommand
+        generate_pdf(yamlfile)
+      rescue ApplicationError => e
+        raise if @config['debug']
+        error(e.message)
+      end
     end
 
     def make_valcommand
@@ -297,7 +322,9 @@ module ReVIEW
         end
 
         call_hook('hook_beforemakeindex')
-        system_or_raise("#{makeindex_command} #{makeindex_options} book") if @config['pdfmaker']['makeindex'] && File.exist?('book.idx')
+        if @config['pdfmaker']['makeindex'] && File.exist?('book.idx')
+          system_or_raise("#{makeindex_command} #{makeindex_options} book")
+        end
         call_hook('hook_aftermakeindex')
 
         system_or_raise("#{texcommand} #{texoptions} book.tex")
@@ -312,6 +339,7 @@ module ReVIEW
 
     def generate_pdf(yamlfile)
       remove_old_file
+      erb_config
       @path = build_path
       begin
         @compile_errors = nil
@@ -324,10 +352,16 @@ module ReVIEW
 
         check_compile_status(@config['ignore-errors'])
 
+        # for backward compatibility
+        @config['usepackage'] = ''
+        @config['usepackage'] = "\\usepackage{#{@config['texstyle']}}" if @config['texstyle']
+
         copy_images(@config['imagedir'], File.join(@path, @config['imagedir']))
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'cls')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'erb')
+        copy_sty(File.join(Dir.pwd, 'sty'), @path, 'tex')
         copy_sty(Dir.pwd, @path, 'tex')
 
         build_pdf
@@ -339,7 +373,7 @@ module ReVIEW
     end
 
     def output_chaps(filename, _yamlfile)
-      $stderr.puts "compiling #{filename}.tex"
+      @logger.info "compiling #{filename}.tex"
       begin
         @converter.convert(filename + '.re', File.join(@path, filename + '.tex'))
       rescue => e
@@ -356,16 +390,23 @@ module ReVIEW
       Dir.mkdir(to)
       ReVIEW::MakerHelper.copy_images_to_dir(from, to)
       Dir.chdir(to) do
-        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/ }
+        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/i }
         break if images.empty?
-        system('extractbb', *images)
-        system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
+        if @config['pdfmaker']['bbox']
+          system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
+          system_or_raise('ebb', '-B', @config['pdfmaker']['bbox'], *images) unless system('extractbb', '-B', @config['pdfmaker']['bbox'], '-m', *images)
+        else
+          system_with_info('extractbb', *images)
+          system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
+        end
       end
     end
 
     def make_custom_page(file)
       file_sty = file.to_s.sub(/\.[^.]+\Z/, '.tex')
-      return File.read(file_sty) if File.exist?(file_sty)
+      if File.exist?(file_sty)
+        return File.read(file_sty)
+      end
       nil
     end
 
@@ -439,21 +480,28 @@ module ReVIEW
       d.strftime(ReVIEW::I18n.t('date_format'))
     end
 
-    def template_content
+    def erb_config
+      @texcompiler = File.basename(@config['texcommand'], '.*')
       dclass = @config['texdocumentclass'] || []
       @documentclass = dclass[0] || 'jsbook'
       @documentclassoption = dclass[1] || 'uplatex,oneside'
+      if @config['dvicommand'] =~ /dvipdfmx/ && @documentclassoption !~ /dvipdfmx/
+        @documentclassoption = "dvipdfmx,#{@documentclassoption}".sub(/,\Z/, '')
+      end
 
       @okuduke = make_colophon
       @authors = make_authors
 
-      @custom_titlepage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_coverpage = make_custom_page(@config['cover']) || make_custom_page(@config['coverfile'])
+      @custom_titlepage = make_custom_page(@config['titlefile'])
       @custom_originaltitlepage = make_custom_page(@config['originaltitlefile'])
       @custom_creditpage = make_custom_page(@config['creditfile'])
 
       @custom_profilepage = make_custom_page(@config['profile'])
       @custom_advfilepage = make_custom_page(@config['advfile'])
-      @custom_colophonpage = make_custom_page(@config['colophon']) if @config['colophon'] && @config['colophon'].is_a?(String)
+      if @config['colophon'] && @config['colophon'].is_a?(String)
+        @custom_colophonpage = make_custom_page(@config['colophon'])
+      end
       @custom_backcoverpage = make_custom_page(@config['backcover'])
 
       if @config['pubhistory']
@@ -479,15 +527,29 @@ module ReVIEW
       @locale_latex['postchaptername'] = chapter_tuple[1]
       @locale_latex['preappendixname'] = appendix_tuple[0]
       @locale_latex['postappendixname'] = appendix_tuple[1]
+    end
 
-      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
-      layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
-      template = layout_file if File.exist?(layout_file)
-
+    def erb_content(file)
       @texcompiler = File.basename(@config['texcommand'], '.*')
-
-      erb = ReVIEW::Template.load(template, '-')
+      erb = ReVIEW::Template.load(file, '-')
+      @logger.debug "erb processes #{File.basename(file)}" if @config['debug']
       erb.result(binding)
+    end
+
+    def latex_config
+      erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+    end
+
+    def template_content
+      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      if @config.check_version('2', exception: false)
+        template = File.expand_path('./latex-compat2/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      end
+      layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
+      if File.exist?(layout_file)
+        template = layout_file
+      end
+      erb_content(template)
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
@@ -497,9 +559,14 @@ module ReVIEW
       end
 
       Dir.open(dirname) do |dir|
-        dir.each do |fname|
-          if File.extname(fname).downcase == '.' + extname
-            FileUtils.mkdir_p(copybase)
+        dir.sort.each do |fname|
+          next unless File.extname(fname).downcase == '.' + extname
+          FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
+          if extname == 'erb'
+            File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
+              f.print erb_content(File.join(dirname, fname))
+            end
+          else
             FileUtils.cp File.join(dirname, fname), copybase
           end
         end

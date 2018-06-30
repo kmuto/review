@@ -1,5 +1,5 @@
 # Copyright (c) 2002-2006 Minero Aoki
-# Copyright (c) 2006-2017 Minero Aoki, Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2006-2018 Minero Aoki, Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -64,18 +64,18 @@ module ReVIEW
       @metachars_invert = @metachars.invert
     end
 
-    def escape_latex(str)
+    def escape(str)
       str.gsub(@metachars_re) { |s| @metachars[s] or raise "unknown trans char: #{s}" }
     end
 
-    alias_method :escape, :escape_latex
+    alias_method :escape_latex, :escape # backward compatibility
 
-    def unescape_latex(str)
+    def unescape(str)
       metachars_invert_re = Regexp.new(@metachars_invert.keys.collect { |key| Regexp.escape(key) }.join('|'))
       str.gsub(metachars_invert_re) { |s| @metachars_invert[s] or raise "unknown trans char: #{s}" }
     end
 
-    alias_method :unescape, :unescape_latex
+    alias_method :unescape_latex, :unescape # backward compatibility
 
     def escape_index(str)
       str.gsub(/[@!|"]/) { |s| '"' + s }

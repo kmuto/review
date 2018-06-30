@@ -1,0 +1,84 @@
+\makeatletter
+\def\review@texcompiler{<%= @texcompiler %>}
+\def\review@documentclass{<%= @documentclass %>}
+\def\review@booktitlename{<%= escape_latex(@config.name_of('booktitle')) %>}
+<%- if @config['subtitle'] -%>
+\def\review@subtitlename{<%= escape_latex(@config.name_of('subtitle')) %>}
+<%- end -%>
+\def\review@autnames{<%= escape_latex(@config.names_of('aut').join(I18n.t('names_splitter'))) %>}
+\def\review@titlepageauthors{<%= @authors %>}
+\def\review@date{<%= escape_latex(@config['date'].to_s) %>}
+<%- if @config['highlight'] && @config['highlight']['latex'] -%>
+\def\review@highlightlatex{<%= @config['highlight']['latex'] %>}
+<%- end -%>
+\def\review@language{<%= @config['language'] %>}
+\def\review@intn@list{<%= escape_latex(I18n.t('list')) %>}
+\def\review@intn@columnhead{<%= escape_latex(I18n.t('column_head')) %>}
+\def\review@intn@image{<%= escape_latex(I18n.t('image')) %>}
+\def\review@intn@table{<%= escape_latex(I18n.t('table')) %>}
+\def\review@intn@columnname{<%= escape_latex(I18n.t('columnname')) %>}
+\def\review@intn@memohead{<%= escape_latex(I18n.t('memo_head')) %>}
+\def\review@intn@edition{<%= escape_latex(I18n.t('edition')) %>}
+\def\review@intn@publishedby{<%= escape_latex(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
+\def\review@intn@captionprefix{<%= escape_latex(I18n.t('caption_prefix')) %>}
+\def\review@toctitle{<%= escape_latex(@config['toctitle'].present? ? @config['toctitle'] : I18n.t('toctitle')) %>}
+\def\review@prepartname{<%= escape_latex(@locale_latex['prepartname']) %>}
+\def\review@postpartname{<%= escape_latex(@locale_latex['postpartname']) %>}
+\def\review@prechaptername{<%= escape_latex(@locale_latex['prechaptername']) %>}
+\def\review@postchaptername{<%= escape_latex(@locale_latex['postchaptername']) %>}
+\def\review@figurename{<%= escape_latex(I18n.t('image')) %>}
+\def\review@tablename{<%= escape_latex(I18n.t('table')) %>}
+\def\review@appendixname{<%= escape_latex(@locale_latex['preappendixname']) %>}
+<%- if @config['toc'] -%>
+\def\review@toc{true}
+\def\review@tocdepth{<%= @config['toclevel'] - 1 %>}
+<%- end -%>
+<%- if @config['makeindex'] -%>
+\def\review@makeindex{true}
+<%- end -%>
+<%- if @config['cover'] -%>
+\def\review@coverfile{<%= File.read(@config['cover']) %>}
+<%- elsif @config['coverimage'] -%>
+\def\review@coverimage{./<%= @config['imagedir'] %>/<%= @config['coverimage'] %>}
+\def\review@coverimageoption{<%= @coverimageoption%>}
+<%- end -%>
+<%- if @config['titlepage'] -%>
+\def\review@titlepage{true}
+<%-   if @config['titlefile'] -%>
+\def\review@titlefile{<%= File.read(@config['titlefile']) %>}
+<%-   end -%>
+<%- end -%>
+<%- if @custom_originaltitlepage -%>
+\def\revieworiginaltitlepagecont{<%= @custom_originaltitlepage %>}
+<%- end -%>
+<%- if @custom_creditpage -%>
+\def\reviewcreditfilecont{<%= @custom_creditpage %>}
+<%- end -%>
+<%- if @custom_profilepage -%>
+\def\reviewprofilepagecont{<%= @custom_profilepage %>}
+<%- end -%>
+<%- if @custom_advfilepage -%>
+\def\reviewadvfilepagecont{<%= @custom_advfilepage %>}
+<%- end -%>
+<%- if @custom_backcoverpage -%>
+\def\reviewbackcovercont{<%= @custom_backcoverpage %>}
+<%- end -%>
+
+<%- if @config['colophon'] && @config['colophon'] -%>
+\def\review@colophon{true}
+<%-   if @custom_colophonpage -%>
+\def\review@colophonfile{<%= @custom_colophonpage %>}
+<%-   end -%>
+<%- end -%>
+\def\review@pubhistories{<%= @config['pubhistory'].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>}
+\def\review@colophonnames{<%= @okuduke %>}
+<%- if @config['rights'] -%>
+\def\review@rights{<%= @config.names_of('rights').map{|s| escape_latex(s)}.join('\\' + '\\') %>}
+<%- end -%>
+
+\def\reviewprefacefiles{<%= @input_files['PREDEF'] %>}
+\def\reviewchapterfiles{<%= @input_files['CHAPS'] %>}
+\def\reviewappendixfiles{<%= @input_files['APPENDIX'] %>}
+\def\reviewpostdeffiles{<%= @input_files['POSTDEF'] %>}
+
+\makeatother

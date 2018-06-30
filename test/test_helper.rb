@@ -1,9 +1,9 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
 require 'test/unit'
+require 'fileutils'
 
 def touch_file(path)
-  File.open(path, 'w').close
-  path
+  FileUtils.touch(path)
 end
 
 def assets_dir

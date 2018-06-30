@@ -1,0 +1,405 @@
+\RequirePackage{ifthen}
+\ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
+\RequirePackage[deluxe,uplatex]{otf}%
+}{%
+\RequirePackage[deluxe]{otf}%
+}
+\RequirePackage{caption}
+\RequirePackage{suffix}
+\RequirePackage[T1]{fontenc}\RequirePackage{textcomp}%T1/TS1
+\RequirePackage{lmodern}
+\RequirePackage[dvipdfmx]{graphicx}
+\RequirePackage[dvipdfmx,table]{xcolor}%requires colortbl, array
+\RequirePackage{framed}
+\RequirePackage{wrapfig}
+\definecolor{shadecolor}{gray}{0.9}
+\definecolor{shadecolorb}{gray}{0.1}
+\definecolor{reviewgreen}{rgb}{0,0.4,0}
+\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
+\definecolor{reviewred}{rgb}{0.7,0,0}
+\definecolor{reviewdarkred}{rgb}{0.3,0,0}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{ascmac}
+\RequirePackage{float}
+\RequirePackage{alltt}
+\RequirePackage{amsmath}
+
+%% if you use @<u>{} (underline), use jumoline.sty
+\IfFileExists{jumoline.sty}{
+\RequirePackage{jumoline}
+}
+
+\long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
+
+\newenvironment{shadedb}{%
+  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
+  \MakeFramed {\FrameRestore}}%
+ {\endMakeFramed}
+
+\ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
+}{%
+\RequirePackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}%
+}
+
+\newcommand{\parasep}{\vspace*{3zh}}
+\setlength{\footskip}{30pt}
+
+\RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,hidelinks,%
+     pdftitle={\review@booktitlename},%
+     pdfauthor={\review@autnames}]{hyperref}
+\RequirePackage[dvipdfmx]{pxjahyper}
+\RequirePackage{pxrubrica}
+\@ifpackagelater{pxrubrica}{2017/04/20}{%
+\rubysetup{J}}{%
+\rubysetup{g}}
+
+\ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
+\newcommand{\headfont}{\gtfamily\sffamily\bfseries}
+\RequirePackage{plext}
+}{%
+}
+
+\ifdefined\review@highlightlatex
+  \ifthenelse{\equal{\review@highlightlatex}{listings}}{%
+    \ifthenelse{\equal{\review@language}{ja}}{%
+      \RequirePackage{listings,plistings}
+    }{%
+      \RequirePackage{listings}
+    }%
+  \renewcommand{\lstlistingname}{\review@intn@list}
+  \lstset{%
+    breaklines=true,%
+    breakautoindent=false,%
+    breakindent=0pt,%
+    fontadjust=true,%
+    backgroundcolor=\color{shadecolor},%
+    frame=single,%
+    framerule=0pt,%
+    basicstyle=\ttfamily\scriptsize,%
+    commentstyle=\color{reviewgreen},%
+    identifierstyle=\color{reviewblue},%
+    stringstyle=\color{reviewred},%
+    keywordstyle=\bfseries\color{reviewdarkred},%
+  }
+  \lstnewenvironment{reviewemlistlst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewemlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewlistlst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewlistnumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewsourcelst}[1][]{\lstset{#1}}{}
+  \lstnewenvironment{reviewsourcenumlst}[1][]{\lstset{numbers=left, #1}}{}
+  \lstnewenvironment{reviewcmdlst}[1][]{\lstset{backgroundcolor=\color{white}, frameround=tttt, frame=trbl, #1}}{}
+  }{%
+  }
+\fi
+
+\newenvironment{reviewimage}{%
+  \begin{figure}[H]
+    \begin{center}}{%
+    \end{center}
+  \end{figure}}
+
+\newenvironment{reviewdummyimage}{%
+  \begin{figure}[H]
+    \begin{center}\begin{alltt}}{%
+    \end{alltt}\end{center}
+  \end{figure}}
+
+\newenvironment{reviewlistblock}{}{}
+
+\newenvironment{reviewemlist}{%
+  \medskip\small\begin{shaded}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}}
+
+\newenvironment{reviewlist}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewsource}{%
+  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
+
+\newenvironment{reviewcmd}{%
+  \color{white}\medskip\small\begin{shadedb}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{shadedb}}
+
+\newenvironment{reviewbox}{%
+  \medskip\small\begin{framed}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \end{alltt}\end{framed}}
+
+\newenvironment{reviewtable}[1]{%
+  \begin{center}\small\setlength{\baselineskip}{1.2zw}
+    \begin{tabular}{#1}}{%
+    \end{tabular}
+  \end{center}}
+
+\newenvironment{reviewcolumn}[1][]{%
+     \begin{framed}
+     \reviewcolumnhead{}{#1}
+  }{%
+     \end{framed}
+  \vspace{2zw}}
+
+\newcommand{\reviewcolumnhead}[2]{%
+{\noindent\large \review@intn@columnhead{}: #2}}
+
+\newcommand{\reviewtablecaption}[1]{%
+  \caption{#1}}
+
+\WithSuffix\newcommand\reviewtablecaption*[1]{%
+  \caption*{#1}}
+
+\newcommand{\reviewimgtablecaption}[1]{%
+  \caption{#1}\vspace{-3mm}}
+
+\newcommand{\reviewbackslash}[0]{%
+  \textbackslash{}}
+
+\newcommand{\reviewlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewemlistcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewsourcecaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewcmdcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewindepimagecaption}[1]{%
+  \begin{center}#1\end{center}}
+
+\newcommand{\reviewboxcaption}[1]{%
+  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
+
+\newcommand{\reviewimageref}[2]{\review@intn@image #1}
+\newcommand{\reviewtableref}[2]{\review@intn@table #1}
+\newcommand{\reviewlistref}[1]{\review@intn@list #1}
+\newcommand{\reviewbibref}[2]{#1}
+\newcommand{\reviewcolumnref}[2]{\review@intn@columnname #1}
+\newcommand{\reviewsecref}[2]{#1}
+
+\newcommand{\reviewminicolumntitle}[1]{%
+\review@ifempty{#1}{}{%
+  {\large \review@intn@memohead{}: #1}\\}}
+
+\renewcommand{\contentsname}{\review@toctitle}
+
+\newenvironment{reviewminicolumn}{%
+  \vspace{1.5zw}\begin{screen}}{%
+  \end{screen}\vspace{2zw}}
+
+\newenvironment{reviewnote}[1][]{%
+  \begin{reviewminicolumn}
+\review@ifempty{#1}{}{\reviewminicolumntitle{#1}}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewmemo}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewtip}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewinfo}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewwarning}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewimportant}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewcaution}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+\newenvironment{reviewnotice}[1][]{%
+  \begin{reviewminicolumn}
+  \reviewminicolumntitle{#1}
+}{\end{reviewminicolumn}}
+
+\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\newcommand{\reviewami}[1]{\mask{#1}{A}}
+\newcommand{\reviewem}[1]{\textbf{#1}}
+\newcommand{\reviewstrong}[1]{\textbf{#1}}
+\newcommand{\reviewballoon}[1]{←{#1}}
+\newcommand{\reviewunderline}[1]{\Underline{#1}}
+\newcommand{\reviewit}[1]{\textit{#1}}
+\newcommand{\reviewbold}[1]{\textbf{#1}}
+\newcommand{\reviewcode}[1]{\texttt{#1}}
+\newcommand{\reviewtt}[1]{\texttt{#1}}
+\newcommand{\reviewtti}[1]{\texttt{\textit{#1}}}
+\newcommand{\reviewttb}[1]{\texttt{\textbf{#1}}}
+
+%% @<del> is ignored in LaTeX with default style
+\newcommand{\reviewstrike}[1]{#1}
+
+%%%% for ulem.sty:
+%%\renewcommand{\reviewstrike}[1]{\sout{#1}}
+%%
+%%%% for jumoline.sty:
+%%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
+
+\newcommand{\reviewth}[1]{\textgt{#1}}
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
+
+\newcommand{\reviewprepartname}{\review@prepartname}
+\newcommand{\reviewpostpartname}{\review@postpartname}
+\newcommand{\reviewprechaptername}{\review@prechaptername}
+\newcommand{\reviewpostchaptername}{\review@postchaptername}
+\newcommand{\reviewfigurename}{\review@figurename}
+\newcommand{\reviewtablename}{\review@tablename}
+\newcommand{\reviewappendixname}{\review@appendixname}
+
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
+
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\def\maxwidth{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+
+% hooks
+\def\reviewfrontmatterhook{%
+  \renewcommand{\chaptermark}[1]{{}}
+  \frontmatter
+}
+
+\def\reviewmainmatterhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~##1}{}}
+  \mainmatter
+}
+
+\def\reviewappendixhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~##1}{}}
+  \reviewappendix
+}
+
+\def\reviewbackmatterhook{%
+  \backmatter
+}
+
+% cover
+\ifdefined\review@cover
+  \def\reviewcoverpagecont{\review@coverfile}
+\fi
+\ifdefined\review@coverimage
+  \def\reviewcoverpagecont{%
+\thispagestyle{empty}
+\begin{center}
+\expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
+\end{center}
+\clearpage
+  }
+\fi
+
+% titlepage
+\ifdefined\review@titlepage
+  \ifthenelse{\isundefined{\review@titlefile}}{%
+    \def\reviewtitlepagecont{%
+       \begin{titlepage}
+       \thispagestyle{empty}
+       \begin{center}%
+       \mbox{} \vskip5zw
+       \reviewtitlefont%
+       {\Huge\review@booktitlename\par}%
+       \ifdefined\review@subtitlename
+         \vskip 1em%
+         {\Large\review@subtitlename\par}%
+       \fi
+       \vskip 15em%
+       {\huge
+       \lineskip .75em
+       \begin{tabular}[t]{c}%
+       \review@titlepageauthors
+       \end{tabular}\par}%
+       \vfill
+       {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@publishedby\par}%
+       \vskip4zw\mbox{}
+       \end{center}%
+       \end{titlepage}\clearpage
+    }
+  }{%
+    \def\reviewtitlepagecont{\review@titlefile}
+  }
+\fi
+
+% toc
+\ifdefined\review@toc
+  \def\reviewtableofcontents{%
+\setcounter{tocdepth}{\review@tocdepth}
+\tableofcontents
+}
+\fi
+
+% index
+\ifdefined\review@makeindex
+  \RequirePackage{makeidx}
+  \makeindex
+\fi
+
+\ifdefined\review@makeindex
+  \def\reviewprintindex{%
+\printindex
+}
+\fi
+
+% colophon
+\ifdefined\review@colophon
+  \ifthenelse{\isundefined{\review@colophonfile}}{%
+    \def\reviewcolophonpagecont{%
+\reviewcolophon
+\thispagestyle{empty}
+\vspace*{\fill}
+\typeout{\review@booktitlename}
+{\noindent\reviewtitlefont\Large\review@booktitlename}\\
+\ifdefined\review@subtitlename
+{\noindent\reviewtitlefont\large\review@subtitlename} \\
+\fi
+\rule[8pt]{\textwidth}{1pt} \\
+{\noindent\review@pubhistories}
+
+\begin{tabular}{ll}
+\review@colophonnames
+\end{tabular}
+　\\
+\rule[0pt]{\textwidth}{1pt} \\
+\ifdefined\review@rights
+\review@rights
+\fi
+    }%
+  }{%
+    \def\reviewcolophonpagecont{\review@colophonfile}
+  }
+\fi

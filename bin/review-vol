@@ -25,7 +25,7 @@ def main
 
   part_sensitive = false
   basedir = nil
-  yamlfile = nil
+  yamlfile = 'config.yml'
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
   opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| yamlfile = yaml }
@@ -45,20 +45,28 @@ def main
 
   book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load
   book.config = @config
-  book.load_config(yamlfile) if yamlfile
+  if yamlfile
+    book.load_config(yamlfile)
+  end
 
   if part_sensitive
     sep = ''
     book.each_part do |part|
       print sep
       sep = "\n"
-      puts "Part #{part.number} #{part.name}" if part.number
-      part.each_chapter { |chap| print_chapter_volume chap }
+      if part.number
+        puts "Part #{part.number} #{part.name}"
+      end
+      part.each_chapter do |chap|
+        print_chapter_volume chap
+      end
       puts '    --------------------'
       print_volume part.volume
     end
   else
-    book.each_chapter { |chap| print_chapter_volume chap }
+    book.each_chapter do |chap|
+      print_chapter_volume chap
+    end
   end
   puts '============================='
   print_volume book.volume # puts "Total #{book.volume}"

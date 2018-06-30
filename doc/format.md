@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 2.0.
+This document explains about the format of Re:VIEW 3.0.
 
 
 ## Paragraph
@@ -380,6 +380,12 @@ The order of finding image is as follows.  The first matched one is used.
 * ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
 
+For each builder, image files are searched in order of the following extensions, and the first hit file is adopted.
+
+* HTMLBuilder (EPUBMaker, WEBMaker), MARKDOWNBuilder: .png, .jpg, .jpeg, .gif, .svg
+* LATEXBuilder (PDFMaker): .ai, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif
+* Other builders: .ai, .psd, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif, .svg
+
 ### Inline Images
 
 When you want to use images in paragraph, you can use the inline command `@<icon>{ID}`.  The order of finding images are same as `//image`.
@@ -410,8 +416,14 @@ plot sin(x)
 //}
 ```
 
-You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure` as the command name.
-Before using these tools, you should installed them.
+You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure`, and `plantuml` as the command name.
+Before using these tools, you should installed them and configured path appropriately.
+
+* Graphviz ( https://www.graphviz.org/ ) : set path to `dot` command
+* Gnuplot ( http://www.gnuplot.info/ ) : set path to `gnuplot` command
+* Blockdiag ( http://blockdiag.com/ ) : set path to `blockdiag` command. Install ReportLab also to make a PDF
+* aafigure ( https://launchpad.net/aafigure ) : set path to `aafigure` command
+* PlantUML ( http://plantuml.com/ ) : set path to `java` command. place `plantuml.jar` on working folder
 
 ## Tables
 
@@ -610,12 +622,24 @@ Usage:
 
 `//noindent` is a tag for spacing.
 
-
 * `//noindent` : ingore indentation immediately following line. (in HTML, add `noindent` class)
 
+## Blank line
 
-`//linebreak` and `//pagebreak` will be obsoleted.
+`//blankline` put an empty line.
 
+Usage:
+
+```
+Insert one blank line below.
+
+//blankline
+
+Insert two blank line below.
+
+//blankline
+//blankline
+```
 
 ## Referring headings
 
@@ -693,6 +717,33 @@ Usage:
 @<href>{chap1.html#point1, point1 in document}
 //label[point1]
 ```
+
+## Words file
+
+By creating a word file with key / value pair, `@<w>{key}` or `@<wb>{key}` will be expanded the key to the corresponding value. `@<wb>` means bold style.
+
+This word file is a CSV file with extension .csv. This first columns is the key, the second row is the value.
+
+```
+"LGPL","Lesser General Public License"
+"i18n","""i""nternationalizatio""n"""
+```
+
+Specify the word file path in `words_file` parameter of `config.yml`.
+
+Usage:
+
+```review
+@<w>{LGPL}, @<wb>{i18n}
+```
+
+(In HTML:)
+
+```
+Lesser General Public License, ★"i"nternationalizatio"n"☆
+```
+
+Values are escaped by the builder. It is not possible to include inline commands in the value.
 
 ## Comments
 
@@ -826,10 +877,13 @@ this is a special line.
 @<href>{http://www.google.com/, google}:: hyper link(URL)
 @<icon>{samplephoto}:: inline image
 @<m>{a + \alpha}:: TeX inline equation
+@<w>{key}:: expand the value corresponding to the key.
+@<wb>{key}:: expand the value corresponding to the key with bold style.
 @<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}`, `\\` is `\`, and `\n` is newline.
 @<embed>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
 @<idx>{string}:: output a string and register it as an index. See makeindex.md.
 @<hidx>{string}:: register a string as an index. A leveled index is expressed like `parent<<>>child`
+@<balloon>{abc}:: inline balloon in code block. For example, `@<balloon>{ABC}` produces `←ABC`. This may seem too simple. To decorate it, modify the style sheet file or override a function by `review-ext.rb`
 ```
 
 ## Commands for Authors (pre-processor commands)

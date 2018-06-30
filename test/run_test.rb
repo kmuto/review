@@ -4,6 +4,8 @@ test_dir = File.join(base_dir, 'test')
 
 $LOAD_PATH.unshift(lib_dir)
 
+require 'simplecov'
+SimpleCov.start
 require 'test/unit'
 
 argv = ARGV || ['--max-diff-target-string-size=10000']

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2017 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
+# Copyright (c) 2014-2018 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -22,7 +22,7 @@ module ReVIEW
       end
 
       def dir_entries
-        Dir.glob(File.join(@basedir, '**{,/*/**}/*.*')).uniq
+        Dir.glob(File.join(@basedir, '**{,/*/**}/*.*')).uniq.sort
       end
 
       def add_entry(path)
@@ -33,7 +33,14 @@ module ReVIEW
       def find_path(id)
         targets = target_list(id)
         targets.each do |target|
-          @exts.each { |ext| return "#{target}#{ext}" if @entries.include?("#{target}#{ext}") }
+          @exts.each do |ext|
+            @entries.find do |entry|
+              downname = entry.sub(/\.[^.]+$/, File.extname(entry).downcase)
+              if downname == "#{target}#{ext}"
+                return entry
+              end
+            end
+          end
         end
         nil
       end

@@ -21,7 +21,7 @@ LaTeX コンパイラコマンドおよびオプションについて、Re:VIEW 
 
 ```yaml
 texcommand: uplatex
-texoptions: null
+texoptions: "-interaction=nonstopmode -file-line-error"
 texdocumentclass: ["jsbook", "uplatex,oneside"]
 dvicommand: dvipdfmx
 dvioptions: "-d 5"

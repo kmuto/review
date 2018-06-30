@@ -32,6 +32,7 @@ rescue Errno::EPIPE
 end
 
 def _main
+  yamlfile = 'config.yml'
   printer_class = ReVIEW::TextTOCPrinter
   source = nil
   upper = ReVIEW::TOCPrinter.default_upper_level
@@ -40,6 +41,7 @@ def _main
 
   opts = OptionParser.new
   opts.version = ReVIEW::VERSION
+  opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| yamlfile = yaml }
   opts.on('-a', '--all', 'print all chapters.') { source = book }
   opts.on('-p', '--part N', 'list only part N.') do |n|
     source = book.part(Integer(n)) or
@@ -72,6 +74,10 @@ def _main
     $stderr.puts opts.help
     exit 1
   end
+
+  book.config = ReVIEW::Configure.values
+  book.load_config(yamlfile) if yamlfile
+
   if source
     error_exit '-a/-s option and file arguments are exclusive' unless ARGV.empty?
   else

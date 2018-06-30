@@ -35,12 +35,6 @@ class ChapterTest < Test::Unit::TestCase
     # assert_raises(TypeError) { ch.name } # XXX: OK?
   end
 
-  def test_open
-    ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
-    assert_equal :io, ch.open
-    assert_equal [:io], (ch.open { |io| [io] })
-  end
-
   def test_size
     ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
     assert_equal File.size(__FILE__), ch.size
@@ -53,7 +47,7 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_title
     io = StringIO.new
-    book = Book::Base.new(nil)
+    book = Book::Base.new
     ch = Book::Chapter.new(book, nil, nil, nil, io)
     assert_equal '', ch.title
 
@@ -68,7 +62,7 @@ class ChapterTest < Test::Unit::TestCase
     tf.print lines.join
     tf.close
 
-    book = Book::Base.new(nil)
+    book = Book::Base.new
     ch = Book::Chapter.new(book, nil, nil, tf.path)
     assert_equal lines, ch.lines
 
@@ -95,12 +89,12 @@ class ChapterTest < Test::Unit::TestCase
     tf2.print content
     tf2.close
 
-    book = Book::Base.new(nil)
+    book = Book::Base.new
     ch = Book::Chapter.new(book, nil, nil, tf1.path)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes
 
-    book = Book::Base.new(nil)
+    book = Book::Base.new
     ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2)
     assert ch.volume
     assert_equal content.gsub(/\s/, '').size, ch.volume.bytes # XXX: OK?

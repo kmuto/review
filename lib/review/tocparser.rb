@@ -15,8 +15,7 @@ require 'review/textbuilder'
 module ReVIEW
   class TOCParser
     def self.parse(chap)
-      f = StringIO.new(chap.content, 'r:BOM|utf-8')
-      stream = Preprocessor::Strip.new(f)
+      stream = StringIO.new(chap.content, 'r:BOM|utf-8')
       new.parse(stream, chap).map do |root|
         root.number = chap.number
         root
@@ -43,7 +42,9 @@ module ReVIEW
           next
         when /\A(={2,})[\[\s\{]/
           lev = $1.size
-          error! filename, f.lineno, "section level too deep: #{lev}" if lev > 5
+          if lev > 5
+            error! filename, f.lineno, "section level too deep: #{lev}"
+          end
           label = get_label(line)
           if node_stack.empty?
             # missing chapter label
@@ -65,7 +66,9 @@ module ReVIEW
           roots.push new_chapter
 
         when %r{\A//\w+(?:\[.*?\])*\{\s*\z}
-          error! filename, f.lineno, 'list found before section label' if node_stack.empty?
+          if node_stack.empty?
+            error! filename, f.lineno, 'list found before section label'
+          end
           node_stack.last.add_child(list = List.new)
           beg = f.lineno
           list.add line
