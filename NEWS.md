@@ -1,4 +1,4 @@
-# Version 3.0.0preview1 (unreleased)
+# Version 3.0.0 preview 1
 
 ## New Features
 * .re files can be placed in subfolders by specifying a folder with `contentdir` parameter ([#920])
@@ -47,6 +47,10 @@
 * add description of dvipdfmx option for zlib compression level (-z 9) in config.yml ([#935])
 
 ## Contributors
+* [@TeTiRoss](https://github.com/TeTiRoss)
+* [@kauplan](https://github.com/kauplan)
+* [@munepi](https://github.com/munepi)
+* [@m-shibata](https://github.com/m-shibata)
 
 [#635]: https://github.com/kmuto/review/issues/635
 [#655]: https://github.com/kmuto/review/issues/655
