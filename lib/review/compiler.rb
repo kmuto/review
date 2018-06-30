@@ -536,9 +536,17 @@ module ReVIEW
     def replace_fence(str)
       str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
         op = $1
-        arg = $3.gsub('@', "\x01").gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) { |m| '\\\\' * m.size }
-        "@<#{op}>{#{arg}}"
+        arg = $3
+        if arg =~ /[\x01\x02\x03\x04]/
+          error "invalid character in '#{str}'"
+        end
+        replaced = arg.gsub('@', "\x01").gsub('\\', "\x02").gsub('{', "\x03").gsub('}', "\x04")
+        "@<#{op}>{#{replaced}}"
       end
+    end
+
+    def revert_replace_fence(str)
+      str.gsub("\x01", '@').gsub("\x02", '\\').gsub("\x03", '{').gsub("\x04", '}')
     end
 
     def text(str)
@@ -554,7 +562,7 @@ module ReVIEW
         result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
         result << @strategy.nofunc_text(words.shift)
       end
-      result.gsub("\x01", '@')
+      revert_replace_fence(result)
     rescue => err
       error err.message
     end
