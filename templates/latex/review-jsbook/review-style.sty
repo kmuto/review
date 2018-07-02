@@ -1,6 +1,14 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{review-style}[2018/07/01]
 
+% page layout
+\setlength{\textwidth}{42\Cwd}
+\setlength{\textheight}{34\Cvs}
+\setlength{\headheight}{2\Cvs}
+\setlength{\headsep}{1\Cvs}
+\setlength{\footskip}{2\Cvs}
+\calculatePageLayout
+
 \RequirePackage{fancyhdr}
 \pagestyle{fancy}
 \lhead{\gtfamily\sffamily\bfseries\upshape \leftmark}
