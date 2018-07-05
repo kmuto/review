@@ -45,10 +45,8 @@ module ReVIEW
       @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
     end
 
-    def log(s)
-      if @config['debug'].present?
-        puts s
-      end
+    def log(msg)
+      @logger.debug(msg)
     end
 
     def load_yaml(yamlfile)
@@ -64,6 +62,15 @@ module ReVIEW
       @producer.load(yamlfile)
       @config = @producer.config
       @config.maker = 'epubmaker'
+      update_log_level
+    end
+
+    def update_log_level
+      if @config['debug']
+        @logger.level = Logger::DEBUG
+      else
+        @logger.level = Logger::INFO
+      end
     end
 
     def build_path
