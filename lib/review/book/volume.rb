@@ -15,7 +15,7 @@ module ReVIEW
           next if /\A\#@/ =~ line
           text = line.gsub(/\s+/, '')
           b += text.bytesize
-          c += text.charsize
+          c += text.size
           l += 1
         end
         new(b, c, l)
