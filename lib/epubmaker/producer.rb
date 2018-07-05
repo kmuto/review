@@ -45,6 +45,10 @@ module EPUBMaker
       merge_config(@config.deep_merge(loader.load_file(file)))
     end
 
+    def warn(msg)
+      @logger.warn(msg)
+    end
+
     # Construct producer object.
     # +config+ takes initial parameter hash. This parameters can be overriden by EPUBMaker#load or EPUBMaker#merge_config.
     # +version+ takes EPUB version (default is 2).
@@ -54,6 +58,7 @@ module EPUBMaker
       @epub = nil
       @config['epubversion'] = version unless version.nil?
       @res = ReVIEW::I18n
+      @logger = ReVIEW.logger
 
       merge_config(config) if config
     end
