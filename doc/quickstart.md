@@ -17,7 +17,7 @@ Re:VIEW is a software in Ruby and worked in Linux/Unix, Mac OS X, and Windows. Y
 
 Note that Re:VIEW format is plain texts with simple markups in UTF-8, so you can write it on any editors and OSes.
 
-### using RubyGmes
+### using RubyGems
 
 Re:VIEW is released as RubyGems.
 
