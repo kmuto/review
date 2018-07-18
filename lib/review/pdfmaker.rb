@@ -34,6 +34,7 @@ module ReVIEW
       @basehookdir = nil
       @logger = ReVIEW.logger
       @input_files = Hash.new { |h, key| h[key] = '' }
+      @mastertex = '__REVIEW_BOOK__'
     end
 
     def system_with_info(*args)
@@ -178,7 +179,7 @@ module ReVIEW
     def build_pdf
       template = template_content
       Dir.chdir(@path) do
-        File.open('./book.tex', 'wb') { |f| f.write(template) }
+        File.open("./#{@mastertex}.tex", 'wb') { |f| f.write(template) }
 
         call_hook('hook_beforetexcompile')
 
@@ -214,20 +215,20 @@ module ReVIEW
         end
 
         2.times do
-          system_or_raise("#{texcommand} #{texoptions} book.tex")
+          system_or_raise("#{texcommand} #{texoptions} #{@mastertex}.tex")
         end
 
         call_hook('hook_beforemakeindex')
-        if @config['pdfmaker']['makeindex'] && File.exist?('book.idx')
-          system_or_raise("#{makeindex_command} #{makeindex_options} book")
+        if @config['pdfmaker']['makeindex'] && File.exist?("#{@mastertex}.idx")
+          system_or_raise("#{makeindex_command} #{makeindex_options} #{@mastertex}")
         end
         call_hook('hook_aftermakeindex')
 
-        system_or_raise("#{texcommand} #{texoptions} book.tex")
+        system_or_raise("#{texcommand} #{texoptions} #{@mastertex}")
         call_hook('hook_aftertexcompile')
 
-        if File.exist?('book.dvi')
-          system_or_raise("#{dvicommand} #{dvioptions} book.dvi")
+        if File.exist?("#{@mastertex}.dvi")
+          system_or_raise("#{dvicommand} #{dvioptions} #{@mastertex}.dvi")
           call_hook('hook_afterdvipdf')
         end
       end
@@ -262,7 +263,7 @@ module ReVIEW
 
         build_pdf
 
-        FileUtils.cp(File.join(@path, 'book.pdf'), pdf_filepath)
+        FileUtils.cp(File.join(@path, "#{@mastertex}.pdf"), pdf_filepath)
       ensure
         remove_entry_secure @path unless @config['debug']
       end
