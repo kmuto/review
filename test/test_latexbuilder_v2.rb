@@ -971,7 +971,7 @@ EOS
 
   def test_inline_fence
     actual = compile_inline('test @<code>|@<code>{$サンプル$}|')
-    assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}{\\textdollar{}サンプル\\textdollar{}}}', actual
+    assert_equal 'test \\texttt{@\\textless{}code\\textgreater{}\\{\\textdollar{}サンプル\\textdollar{}\\}}', actual
   end
 
   def test_inline_unknown

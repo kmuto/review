@@ -557,12 +557,12 @@ module ReVIEW
           error "`@<xxx>' seen but is not valid inline op: #{w}"
         end
       end
-      result = @strategy.nofunc_text(words.shift)
+      result = @strategy.nofunc_text(revert_replace_fence(words.shift))
       until words.empty?
-        result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
-        result << @strategy.nofunc_text(words.shift)
+        result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
+        result << @strategy.nofunc_text(revert_replace_fence(words.shift))
       end
-      revert_replace_fence(result)
+      result
     rescue => err
       error err.message
     end
