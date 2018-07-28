@@ -551,16 +551,16 @@ module ReVIEW
 
     def text(str)
       return '' if str.empty?
-      words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1).map {|s| revert_replace_fence(s) }
+      words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
       words.each do |w|
         if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
           error "`@<xxx>' seen but is not valid inline op: #{w}"
         end
       end
-      result = @strategy.nofunc_text(words.shift)
+      result = @strategy.nofunc_text(revert_replace_fence(words.shift))
       until words.empty?
-        result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
-        result << @strategy.nofunc_text(words.shift)
+        result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
+        result << @strategy.nofunc_text(revert_replace_fence(words.shift))
       end
       result
     rescue => err
