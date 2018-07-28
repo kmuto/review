@@ -137,7 +137,7 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_inline_fence
     actual = compile_inline('@<m>|a|, @<m>{\\frac{1\\}{2\\}}, @<m>$\\frac{1}{2}$, @<m>{\\{ \\\\\\}}, @<m>|\\{ \\}|, test @<code>|@<code>{$サンプル$}|')
-    assert_equal '◆→TeX式ここから←◆a◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\frac{1}{2}◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\frac{1}{2}◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\\{ \\}◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\\{ \\}◆→TeX式ここまで←◆, test △@<code>{$サンプル$}☆', actual
+    assert_equal '◆→TeX式ここから←◆a◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\\frac{1}{2}◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\\frac{1}{2}◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\\{ \\}◆→TeX式ここまで←◆, ◆→TeX式ここから←◆\\{ \\}◆→TeX式ここまで←◆, test △@<code>{$サンプル$}☆', actual
   end
 
   def test_inline_in_table
