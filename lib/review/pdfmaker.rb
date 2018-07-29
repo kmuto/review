@@ -186,47 +186,47 @@ module ReVIEW
           warn 'command configuration is prohibited in safe mode. ignored.'
           texcommand = ReVIEW::Configure.values['texcommand']
           dvicommand = ReVIEW::Configure.values['dvicommand']
-          dvioptions = ReVIEW::Configure.values['dvioptions']
-          texoptions = ReVIEW::Configure.values['texoptions']
+          dvioptions = ReVIEW::Configure.values['dvioptions'].split(/\s+/)
+          texoptions = ReVIEW::Configure.values['texoptions'].split(/\s+/)
           makeindex_command = ReVIEW::Configure.values['pdfmaker']['makeindex_command']
-          makeindex_options = ReVIEW::Configure.values['pdfmaker']['makeindex_options']
+          makeindex_options = ReVIEW::Configure.values['pdfmaker']['makeindex_options'].split(/\s+/)
           makeindex_sty = ReVIEW::Configure.values['pdfmaker']['makeindex_sty']
           makeindex_dic = ReVIEW::Configure.values['pdfmaker']['makeindex_dic']
         else
           texcommand = @config['texcommand'] if @config['texcommand']
           dvicommand = @config['dvicommand'] if @config['dvicommand']
-          dvioptions = @config['dvioptions'] if @config['dvioptions']
-          texoptions = @config['texoptions'] if @config['texoptions']
+          dvioptions = @config['dvioptions'].split(/\s+/) if @config['dvioptions']
+          texoptions = @config['texoptions'].split(/\s+/) if @config['texoptions']
           makeindex_command = @config['pdfmaker']['makeindex_command']
-          makeindex_options = @config['pdfmaker']['makeindex_options']
+          makeindex_options = @config['pdfmaker']['makeindex_options'].split(/\s+/)
           makeindex_sty = @config['pdfmaker']['makeindex_sty']
           makeindex_dic = @config['pdfmaker']['makeindex_dic']
         end
 
         if makeindex_sty.present?
           makeindex_sty = File.absolute_path(makeindex_sty, @basedir)
-          makeindex_options += " -s #{makeindex_sty}" if File.exist?(makeindex_sty)
+          makeindex_options += ['-s', makeindex_sty] if File.exist?(makeindex_sty)
         end
         if makeindex_dic.present?
           makeindex_dic = File.absolute_path(makeindex_dic, @basedir)
-          makeindex_options += " -d #{makeindex_dic}" if File.exist?(makeindex_dic)
+          makeindex_options += ['-d', makeindex_dic] if File.exist?(makeindex_dic)
         end
 
         2.times do
-          system_or_raise(*[texcommand, texoptions.split(/\s+/), "#{@mastertex}.tex"].flatten)
+          system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
 
         call_hook('hook_beforemakeindex')
         if @config['pdfmaker']['makeindex'] && File.exist?("#{@mastertex}.idx")
-          system_or_raise(*[makeindex_command, makeindex_options.split(/\s+/), @mastertex].flatten)
+          system_or_raise(*[makeindex_command, makeindex_options, @mastertex].flatten.compact)
         end
         call_hook('hook_aftermakeindex')
 
-        system_or_raise(*[texcommand, texoptions.split(/\s+/), "#{@mastertex}.tex"].flatten)
+        system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         call_hook('hook_aftertexcompile')
 
         if File.exist?("#{@mastertex}.dvi")
-          system_or_raise(*[dvicommand, dvioptions.split(/\s+/), "#{@mastertex}.dvi"].flatten)
+          system_or_raise(*[dvicommand, dvioptions, "#{@mastertex}.dvi"].flatten.compact)
           call_hook('hook_afterdvipdf')
         end
       end
