@@ -213,20 +213,20 @@ module ReVIEW
         end
 
         2.times do
-          system_or_raise(texcommand, texoptions, "#{@mastertex}.tex")
+          system_or_raise(*[texcommand, texoptions.split(/\s+/), "#{@mastertex}.tex"].flatten)
         end
 
         call_hook('hook_beforemakeindex')
         if @config['pdfmaker']['makeindex'] && File.exist?("#{@mastertex}.idx")
-          system_or_raise(makeindex_command, makeindex_options, @mastertex)
+          system_or_raise(*[makeindex_command, makeindex_options.split(/\s+/), @mastertex].flatten)
         end
         call_hook('hook_aftermakeindex')
 
-        system_or_raise(texcommand, texoptions, "#{@mastertex}.tex")
+        system_or_raise(*[texcommand, texoptions.split(/\s+/), "#{@mastertex}.tex"].flatten)
         call_hook('hook_aftertexcompile')
 
         if File.exist?("#{@mastertex}.dvi")
-          system_or_raise(dvicommand, dvioptions, "#{@mastertex}.dvi")
+          system_or_raise(*[dvicommand, dvioptions.split(/\s+/), "#{@mastertex}.dvi"].flatten)
           call_hook('hook_afterdvipdf')
         end
       end
