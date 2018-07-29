@@ -239,7 +239,7 @@ module ReVIEW
       begin
         @compile_errors = nil
 
-        book = ReVIEW::Book.load(@basedir)
+        book = ReVIEW::Book.load(File.dirname(yamlfile))
         book.config = @config
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
 
