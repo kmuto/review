@@ -11,6 +11,7 @@ require 'fileutils'
 require 'erb'
 require 'tmpdir'
 require 'open3'
+require 'shellwords'
 
 require 'review/i18n'
 require 'review/book'
@@ -186,19 +187,25 @@ module ReVIEW
           warn 'command configuration is prohibited in safe mode. ignored.'
           texcommand = ReVIEW::Configure.values['texcommand']
           dvicommand = ReVIEW::Configure.values['dvicommand']
-          dvioptions = ReVIEW::Configure.values['dvioptions'].split(/\s+/)
-          texoptions = ReVIEW::Configure.values['texoptions'].split(/\s+/)
+          dvioptions = ReVIEW::Configure.values['dvioptions'].shellsplit
+          texoptions = ReVIEW::Configure.values['texoptions'].shellsplit
           makeindex_command = ReVIEW::Configure.values['pdfmaker']['makeindex_command']
-          makeindex_options = ReVIEW::Configure.values['pdfmaker']['makeindex_options'].split(/\s+/)
+          makeindex_options = ReVIEW::Configure.values['pdfmaker']['makeindex_options'].shellsplit
           makeindex_sty = ReVIEW::Configure.values['pdfmaker']['makeindex_sty']
           makeindex_dic = ReVIEW::Configure.values['pdfmaker']['makeindex_dic']
         else
-          texcommand = @config['texcommand'] if @config['texcommand']
-          dvicommand = @config['dvicommand'] if @config['dvicommand']
-          dvioptions = @config['dvioptions'].split(/\s+/) if @config['dvioptions']
-          texoptions = @config['texoptions'].split(/\s+/) if @config['texoptions']
+          unless @config['texcommand'].present?
+            error "texcommand isn't defined."
+          end
+          texcommand = @config['texcommand']
+          dvicommand = @config['dvicommand']
+          @config['dvioptions'] = '' unless @config['dvioptions']
+          dvioptions = @config['dvioptions'].shellsplit
+          @config['texoptions'] = '' unless @config['texoptions']
+          texoptions = @config['texoptions'].shellsplit
           makeindex_command = @config['pdfmaker']['makeindex_command']
-          makeindex_options = @config['pdfmaker']['makeindex_options'].split(/\s+/)
+          @config['pdfmaker']['makeindex_options'] = '' unless @config['pdfmaker']['makeindex_options']
+          makeindex_options = @config['pdfmaker']['makeindex_options'].shellsplit
           makeindex_sty = @config['pdfmaker']['makeindex_sty']
           makeindex_dic = @config['pdfmaker']['makeindex_dic']
         end
@@ -225,7 +232,7 @@ module ReVIEW
         system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         call_hook('hook_aftertexcompile')
 
-        if File.exist?("#{@mastertex}.dvi")
+        if File.exist?("#{@mastertex}.dvi") && dvicommand.present?
           system_or_raise(*[dvicommand, dvioptions, "#{@mastertex}.dvi"].flatten.compact)
           call_hook('hook_afterdvipdf')
         end
