@@ -236,7 +236,7 @@ module EPUBMaker
       defaults = ReVIEW::Configure.new.merge(
         'language' => 'ja',
         'date' => Time.now.strftime('%Y-%m-%d'),
-        'modified' => Time.now.strftime('%Y-%02m-%02dT%02H:%02M:%02SZ'),
+        'modified' => Time.now.utc.strftime('%Y-%02m-%02dT%02H:%02M:%02SZ'),
         'isbn' => nil,
         'toclevel' => 2,
         'stylesheet' => [],
