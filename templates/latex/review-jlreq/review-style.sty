@@ -81,10 +81,10 @@
 \newcommand{\reviewcmdcaption}[1]{\review@commoncaption{}{#1}}
 \newenvironment{reviewlistblock}{\list{}{\topsep.5\baselineskip \leftmargin\z@ \itemindent\z@}\item\relax}{\endlist}% 上下アキ0.5
 
-\newenvironment{reviewimage}[1][H]{%
+\newenvironment{reviewimage}[1]{%
   \begin{figure}[#1]\begin{center}}{\end{center}\end{figure}}
 
-\newenvironment{reviewdummyimage}[1][ht]{%
+\newenvironment{reviewdummyimage}[1]{%
   \begin{reviewimage}[#1]}{\end{reviewimage}}
 
 \newcommand{\reviewindepimagecaption[2]}{\@makecaption{}{#2}}
@@ -147,3 +147,7 @@
 % ヘッダスタイル
 \ModifyPageStyle{headings}{nombre_position={top-fore_edge},running_head_position={top-fore_edge}}
 \pagestyle{headings}
+
+% 図表フロートの配置
+\floatplacement{figure}{H}
+\floatplacement{table}{htp}
