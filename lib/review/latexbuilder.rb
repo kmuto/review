@@ -601,7 +601,11 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts "\\begin{table}[h]%%#{id}"
+          if @book.config.check_version('2', exception: false)
+            puts "\\begin{table}[h]%%#{id}"
+          else
+            puts "\\begin{table}%%#{id}"
+          end
           puts macro('reviewtablecaption*', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -609,7 +613,11 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts "\\begin{table}[h]%%#{id}"
+          if @book.config.check_version('2', exception: false)
+            puts "\\begin{table}[h]%%#{id}"
+          else
+            puts "\\begin{table}%%#{id}"
+          end
           puts macro('reviewtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
