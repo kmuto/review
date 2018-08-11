@@ -311,11 +311,19 @@ pdfmaker:
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
   # hook_beforetexcompile: null
   #
-  # TeXコンパイル後に実行するプログラム。索引作業をして再度コンパイルしたいときなどに使用する。
+  # 索引処理前に実行するプログラム。idxファイルを加工したいときなどに使用する。
+  # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
+  # hook_beforemakeindex: null
+  #
+  # 索引処理後に実行するプログラム。indファイルを加工したいときなどに使用する。
+  # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
+  # hook_aftermakeindex: null
+  #
+  # ひととおりのコンパイル後に実行するプログラム。目次を加工して再度コンパイルしたいときなどに使用する。
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
   # hook_aftertexcompile: null
   #
-  # PDF(book.pdf)作成後に実行するプログラム。PDFに加工を施したいときに使用する。
+  # PDF(__REVIEW_BOOK__.pdf)作成後に実行するプログラム。PDFに加工を施したいときに使用する。
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
   # hook_afterdvipdf: null
   #
@@ -327,7 +335,20 @@ pdfmaker:
   # Illustrator CC以降のIllustratorファイルに対してはmediaboxを指定する必要がある
   # bbox: mediabox
   #
+  # 索引を作成するか。trueにすると索引作成が有効になる
+  # makeindex: null
+  # 索引作成コマンド
+  # makeindex_command: mendex
+  # 索引作成コマンドのオプション
+  # makeindex_options: "-f -r -I utf8"
+  # 索引作成コマンドのスタイルファイル
+  # makeindex_sty: null
+  # 索引作成コマンドの辞書ファイル
+  # makeindex_dic: null
+  # MeCabによる索引読み探索を使うか
+  # makeindex_mecab: true
+  # MeCabの読みの取得オプション
+  # makeindex_mecab_opts: "-Oyomi"
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
   colophon: true
   # pdfmaker:階層を使うものはここまで
-
