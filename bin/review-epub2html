@@ -101,12 +101,12 @@ module ReVIEW
 
     def make_list
       items = {}
-      @opfxml.each_element("//package/manifest/item[@media-type='application/xhtml+xml']") do |e|
+      @opfxml.each_element("/package/manifest/item[@media-type='application/xhtml+xml']") do |e|
         items[e.attributes['id']] = e.attributes['href']
       end
 
       files = []
-      @opfxml.each_element('//package/spine/itemref') do |e|
+      @opfxml.each_element('/package/spine/itemref') do |e|
         files.push(items[e.attributes['idref']])
       end
 
