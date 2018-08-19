@@ -123,7 +123,7 @@ EOS
     end
 
     def generate_cover_image(dir)
-      FileUtils.cp(@review_dir + '/test/sample-book/src/images/cover.jpg',
+      FileUtils.cp(@review_dir + '/samples/sample-book/src/images/cover.jpg',
                    dir + '/images/')
     end
 
@@ -143,7 +143,7 @@ EOS
     end
 
     def generate_style(dir)
-      FileUtils.cp @review_dir + '/test/sample-book/src/style.css', dir
+      FileUtils.cp @review_dir + '/samples/sample-book/src/style.css', dir
     end
 
     def generate_texmacro(dir)
@@ -165,7 +165,7 @@ end
 EOS
       end
 
-      FileUtils.cp(@review_dir + '/test/sample-book/src/Rakefile',
+      FileUtils.cp(@review_dir + '/samples/sample-book/src/Rakefile',
                    dir + '/lib/tasks/review.rake')
     end
 
