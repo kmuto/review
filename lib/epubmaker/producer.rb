@@ -29,16 +29,24 @@ module EPUBMaker
 
     # Take YAML +file+ and return parameter hash.
     def self.load(file)
-      raise "Can't open #{file}." if file.nil? || !File.exist?(file)
+      if file.nil? || !File.exist?(file)
+        raise "Can't open #{file}."
+      end
       loader = ReVIEW::YAMLLoader.new
       loader.load_file(file)
     end
 
     # Take YAML +file+ and update parameter hash.
     def load(file)
-      raise "Can't open #{file}." if file.nil? || !File.exist?(file)
+      if file.nil? || !File.exist?(file)
+        raise "Can't open #{file}."
+      end
       loader = ReVIEW::YAMLLoader.new
       merge_config(@config.deep_merge(loader.load_file(file)))
+    end
+
+    def warn(msg)
+      @logger.warn(msg)
     end
 
     # Construct producer object.
@@ -50,6 +58,7 @@ module EPUBMaker
       @epub = nil
       @config['epubversion'] = version unless version.nil?
       @res = ReVIEW::I18n
+      @logger = ReVIEW.logger
 
       merge_config(config) if config
     end
@@ -79,33 +88,43 @@ module EPUBMaker
           raise "Invalid EPUB version (#{@config['epubversion']}.)"
         end
       end
-      ReVIEW::I18n.locale = config['language'] if config['language']
+      if config['language']
+        ReVIEW::I18n.locale = config['language']
+      end
       support_legacy_maker
     end
 
     # Write mimetype file to IO object +wobj+.
     def mimetype(wobj)
       s = @epub.mimetype
-      wobj.print s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.print s
+      end
     end
 
     # Write opf file to IO object +wobj+.
     def opf(wobj)
       s = @epub.opf
-      wobj.puts s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.puts s
+      end
     end
 
     # Write ncx file to IO object +wobj+. +indentarray+ defines prefix
     # string for each level.
     def ncx(wobj, indentarray = [])
       s = @epub.ncx(indentarray)
-      wobj.puts s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.puts s
+      end
     end
 
     # Write container file to IO object +wobj+.
     def container(wobj)
       s = @epub.container
-      wobj.puts s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.puts s
+      end
     end
 
     # Write cover file to IO object +wobj+.
@@ -114,32 +133,40 @@ module EPUBMaker
     def cover(wobj)
       type = @config['epubversion'] >= 3 ? 'cover' : nil
       s = @epub.cover(type)
-      wobj.puts s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.puts s
+      end
     end
 
     # Write title file (copying) to IO object +wobj+.
     def titlepage(wobj)
       s = @epub.titlepage
-      wobj.puts s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.puts s
+      end
     end
 
     # Write colophon file to IO object +wobj+.
     def colophon(wobj)
       s = @epub.colophon
-      wobj.puts s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.puts s
+      end
     end
 
     # Write own toc file to IO object +wobj+.
     def mytoc(wobj)
       s = @epub.mytoc
-      wobj.puts s if !s.nil? && !wobj.nil?
+      if !s.nil? && !wobj.nil?
+        wobj.puts s
+      end
     end
 
     # Add informations of figure files in +path+ to contents array.
     # +base+ defines a string to remove from path name.
     def import_imageinfo(path, base = nil, allow_exts = nil)
       return nil unless File.exist?(path)
-      allow_exts = @config['image_ext'] if allow_exts.nil?
+      allow_exts ||= @config['image_ext']
       Dir.foreach(path) do |f|
         next if f.start_with?('.')
         if f =~ /\.(#{allow_exts.join('|')})\Z/i
@@ -150,7 +177,9 @@ module EPUBMaker
             @contents.push(EPUBMaker::Content.new('file' => "#{path.sub(base + '/', '')}/#{f}"))
           end
         end
-        import_imageinfo("#{path}/#{f}", base) if FileTest.directory?("#{path}/#{f}")
+        if FileTest.directory?("#{path}/#{f}")
+          import_imageinfo("#{path}/#{f}", base)
+        end
       end
     end
 
@@ -161,10 +190,12 @@ module EPUBMaker
     # +tmpdir+ defines temporary directory.
     def produce(epubfile, basedir = nil, tmpdir = nil)
       current = Dir.pwd
-      basedir = current if basedir.nil?
+      basedir ||= current
 
       new_tmpdir = tmpdir.nil? ? Dir.mktmpdir : tmpdir
-      epubfile = "#{current}/#{epubfile}" if epubfile !~ %r{\A/}
+      if epubfile !~ %r{\A/}
+        epubfile = "#{current}/#{epubfile}"
+      end
 
       # FIXME: error check
       File.unlink(epubfile) if File.exist?(epubfile)
@@ -188,8 +219,12 @@ module EPUBMaker
     def isbn_hyphen
       str = @config['isbn'].to_s
 
-      return "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}" if str =~ /\A\d{10}\Z/
-      return "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}" if str =~ /\A\d{13}\Z/
+      if str =~ /\A\d{10}\Z/
+        return "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
+      end
+      if str =~ /\A\d{13}\Z/
+        return "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
+      end
       nil
     end
 
@@ -197,11 +232,11 @@ module EPUBMaker
 
     # Complement parameters.
     def complement
-      @config['htmlext'] = 'html' if @config['htmlext'].nil?
+      @config['htmlext'] ||= 'html'
       defaults = ReVIEW::Configure.new.merge(
         'language' => 'ja',
         'date' => Time.now.strftime('%Y-%m-%d'),
-        'modified' => Time.now.strftime('%Y-%02m-%02dT%02H:%02M:%02SZ'),
+        'modified' => Time.now.utc.strftime('%Y-%02m-%02dT%02H:%02M:%02SZ'),
         'isbn' => nil,
         'toclevel' => 2,
         'stylesheet' => [],
@@ -237,6 +272,7 @@ module EPUBMaker
           'cover_linear' => nil
         },
         'externallink' => true,
+        'contentdir' => '.',
         'imagedir' => 'images',
         'fontdir' => 'fonts',
         'image_ext' => %w[png gif jpg jpeg svg ttf woff otf],
@@ -274,7 +310,9 @@ module EPUBMaker
         @config.delete(k)
       end
 
-      @config['htmlversion'] = 5 if @config['epubversion'] >= 3
+      if @config['epubversion'] >= 3
+        @config['htmlversion'] = 5
+      end
 
       @config.maker = 'epubmaker'
       @config['cover'] = "#{@config['bookname']}.#{@config['htmlext']}" unless @config['cover']
@@ -290,7 +328,9 @@ module EPUBMaker
          ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl
          stylesheet rights].each do |item|
         next unless @config[item]
-        @config[item] = [@config[item]] if @config[item].is_a?(String)
+        if @config[item].is_a?(String)
+          @config[item] = [@config[item]]
+        end
       end
       # optional
       # type, format, identifier, source, relation, coverpage, aut

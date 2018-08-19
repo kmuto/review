@@ -1,3 +1,168 @@
+# Version 3.0.0 preview 1
+
+## 新機能
+* `contentdir` パラメータで、re ファイルをサブフォルダに配置してそのフォルダを指定できるようにしました ([#920], [#938])
+* `//graph` 命令 で PlantUML をサポートしました ([#1006],[#1008])
+* CSV 形式の単語ファイルから指定キーに対応する値を展開する、`@<w>` および `@<wb>` 命令を追加しました ([#1007], [#1010])
+* catalog.ymlにある`*.re`ファイルが存在しない場合エラーになるようにしました ([#957])
+* LATEXBuilder: LaTeX でルビを表現できるよう pxrubrica パッケージを読み込むようにしました ([#655])
+* LATEXBuilder: 複数の LaTeX レイアウトファイルから選択できるようにしました ([#812])
+* `@<balloon>`を標準サポートタグとしました ([#829])
+* LATEXBuilder: `@<uchar>`でUnicode文字を直接出力できるようにしました ([#1045])
+* RakefileのオプションでCONFIG_FILEを上書きできるようにしました ([#1059])
+
+## 非互換の変更
+* review_version の値が 3 以上のときには、LaTeX の `@<m>` によるインラインの数式の前後にスペース文字を入れないようにしました ([#943])
+* HTML ビルダにおいて、`//list`, `//listnum` で識別子に基づくハイライト言語の自動検出をやめました (ハイライト言語は命令の 3 つめのオプションで指定してください) ([#1016])
+* LATEXBuilder: layout.tex.erbを整理・再構成しました ([#950])
+* LATEXBuilder: LaTeX のコードリストを reviewlistblock 環境で囲むようにしました ([#916])
+* LATEXBuilder: LaTeX のコードリスト環境を jlisting から plistings パッケージに変更しました ([#635])
+* LATEXBuilder: PDF生成時にリンクの枠線について、標準では消すようにしました ([#808])
+* LATEXBuilder: インライン文字装飾の LaTeX への変換結果を`\textbf`ではなく`\reviewbold`のように抽象化した名前にしました ([#792])
+* LATEXBuilder: LaTeX の表紙 (coverパラメータ) と大扉 (titlepageパラメータ) は独立した設定となりました ([#848])
+* review-preproc: --final オプションを削除しました ([#993])
+* LATEXBuilder: キャプションブロックの出力について`reviewminicolumn`を使わず`reviewnote`等を使うようにしました ([#1046])
+
+## バグ修正
+* Ruby 2.3 以下で実行時のログ表示が冗長になるのを修正しました ([#975])
+* Version 2.5.0 で削除した `usepackage` パラメータを、互換性のために戻しました ([#1001])
+* HTMLBuilder: `@<m>`や`//texequation{...//}`でのログ出力を抑制するようにしました ([#1027])
+* LATEXBuilder: リストのキャプションが空の場合の出力を修正しました ([#1040])
+* MeCabのロードパスを修正しました ([#1063])
+
+## 機能強化
+* Windows でも `//graph` 命令が動作するようにしました ([#1008])
+* 画像ファイルやフォントファイルの拡張子が大文字・小文字どちらでも利用できるようにしました ([#1002])
+* review-pdfmaker: pdfmakerで実行したコマンド情報を出力するようにしました ([#962],[#968])
+* IDGXMLBuilder: `=[notoc]`および`=[nodisp]`をサポートしました ([#1022])
+* PDFMaker: psdファイルもコピーするようにしました ([#879])
+* PDFMaker: config.ymlの `texoptions`のデフォルト値を変更してLaTeX実行中に入力待ちにしないようにしました ([#1029])
+* LATEXBuilder: LaTeXなどのログメッセージを正常時には出力しないようにしました ([#1036])
+* MARKDOWNBuilder: サポートするコマンドを追加しました ([#881])
+* image_finder.rb: シンボリックリンクされたディレクトリをサポートしました ([#743])
+* Rakefileの依存関係にcatalog.ymlなどのファイルを追加しました ([#1060])
+
+## ドキュメント
+* `//graph` 命令の各外部ツールについての説明を追加しました ([#1008])
+* `@<w>`, `@<wb>` 命令の説明を追加しました ([#1007])
+* LaTeX から生成する PDF の圧縮レベルオプション指定 (-z 9、最大圧縮) を config.yml のサンプルに記載しました ([#935])
+
+## コントリビューターのみなさん
+* [@TeTiRoss](https://github.com/TeTiRoss)
+* [@kauplan](https://github.com/kauplan)
+* [@munepi](https://github.com/munepi)
+* [@m-shibata](https://github.com/m-shibata)
+
+[#635]: https://github.com/kmuto/review/issues/635
+[#655]: https://github.com/kmuto/review/issues/655
+[#743]: https://github.com/kmuto/review/issues/743
+[#792]: https://github.com/kmuto/review/issues/792
+[#808]: https://github.com/kmuto/review/issues/808
+[#812]: https://github.com/kmuto/review/issues/812
+[#829]: https://github.com/kmuto/review/issues/829
+[#848]: https://github.com/kmuto/review/issues/848
+[#879]: https://github.com/kmuto/review/issues/879
+[#881]: https://github.com/kmuto/review/issues/881
+[#916]: https://github.com/kmuto/review/issues/916
+[#920]: https://github.com/kmuto/review/issues/920
+[#938]: https://github.com/kmuto/review/issues/938
+[#935]: https://github.com/kmuto/review/issues/935
+[#943]: https://github.com/kmuto/review/issues/943
+[#950]: https://github.com/kmuto/review/issues/950
+[#957]: https://github.com/kmuto/review/issues/957
+[#962]: https://github.com/kmuto/review/issues/962
+[#968]: https://github.com/kmuto/review/issues/968
+[#975]: https://github.com/kmuto/review/issues/975
+[#993]: https://github.com/kmuto/review/issues/993
+[#1001]: https://github.com/kmuto/review/pull/1001
+[#1002]: https://github.com/kmuto/review/issues/1002
+[#1006]: https://github.com/kmuto/review/issues/1006
+[#1007]: https://github.com/kmuto/review/issues/1007
+[#1008]: https://github.com/kmuto/review/pull/1008
+[#1016]: https://github.com/kmuto/review/issues/1016
+[#1022]: https://github.com/kmuto/review/issues/1022
+[#1027]: https://github.com/kmuto/review/issues/1027
+[#1029]: https://github.com/kmuto/review/issues/1029
+[#1036]: https://github.com/kmuto/review/issues/1036
+[#1040]: https://github.com/kmuto/review/issues/1040
+[#1045]: https://github.com/kmuto/review/issues/1045
+[#1046]: https://github.com/kmuto/review/issues/1046
+[#1059]: https://github.com/kmuto/review/issues/1059
+[#1060]: https://github.com/kmuto/review/issues/1060
+[#1063]: https://github.com/kmuto/review/issues/1063
+
+# Version 2.5.0
+
+## 新機能
+* プレインテキストを出力する review-textmaker コマンドを用意しました ([#926])
+* LaTeX 向けに、図版の BoudingBox の採取手段を変更する `pdfmaker/bbox` パラメータを追加しました ([#947])
+* 新機能：空行を入れる命令 `//blankline` を追加しました ([#942])
+
+## 非互換の変更
+* `//include` 命令は不完全でユーザーの混乱を招くため、削除しました ([#887])
+* LaTeX において、見出しや図表キャプション内にある脚注は `\footnotemark` を暗黙に使うようにしました ([#841])
+* EPUB および WebMaker の大扉では、印刷所 (prt) の代わりに出版社 (pbl) を記載するようにしました ([#927])
+* PDFMaker における layout.tex.erb の `usepackage` パラメータは、`texstyle` パラメータに置き換えられました。書式も変更されているので、独自の layoute.tex.erb を使っている場合は書き換えが必要です ([#908])
+
+## バグ修正
+* column の終了が正しく動作しないのを修正しました ([#894])
+* `@<hd>` 命令の使用時に内部エラーが出ることがあるのを修正しました ([#896])
+* LaTeX において、キャプションが空のときに空行が入ってしまうのを修正しました ([#922])
+* `//graph` 命令内で gnuplot を使用したときにエラーが発生するのを修正しました ([#931])
+* Windows で review コマンドがエラーになるのを修正しました ([#940])
+* Windows で EPUB 生成時に一時作業ファイルの削除エラーが発生するのを修正しました ([#946])
+
+## 機能強化
+* `//note` などの囲み要素内で末尾に空行があるときに不要な空の段落が作成されるのを修正しました ([#882])
+* `@<chap>` などで catalog.yml に存在しない ID を指定したときのエラーメッセージをわかりやすいものにしました ([#891])
+* catalog.yml に UTF-8 BOM ヘッダがあっても正常に動作するようにしました ([#899])
+* LaTeX の奥付の罫線の長さを固定幅ではなく紙面幅にしました ([#907])
+* texstyle パラメータで配列による複数の TeX スタイルファイルの読み込みを許可するようにしました ([#908])
+* 独自の Rakefile を利用するための `lib/tasks` フォルダを `review-init` コマンドで作成するようにしました ([#921])
+* `review-init` コマンド実行時に、`doc` フォルダにドキュメントをコピーするようにしました ([#918])
+* `review` コマンドのヘルプメッセージを追加しました ([#933])
+* 存在しないあるいは壊れている YAML ファイルを読み込もうとしたときに妥当なエラーメッセージを出すようにしました ([#958])
+* `@<img>` や `@<table>` などのインライン命令で存在しない ID を指定したときのエラーメッセージをわかりやすいものに統一しました ([#954])
+* catalog.yml に存在しないファイルをコンパイルしようとしたときのエラーメッセージをわかりやすいものにしました ([#953])
+* LaTeX において、table, imgtable, image, indepimage から変換した TeX ソースコードにコメントで ID を記述するようにしました（`\begin{reviewimage}%%sampleimg` など）。フック処理での書き換えを簡易化するための修正であり、通常のLaTeX(PDF)の出力には影響ありませんが、独自のフック処理を使用していたプロジェクトでは修正が必要になるかもしれません ([#937])
+
+## ドキュメント
+* 画像ファイルの拡張子の探索順序を文書化しました ([#939])
+* review-textmaker の説明を追加しました ([#944])
+
+## コントリビューターのみなさん
+* [@kauplan](https://github.com/kauplan)
+* [@krororo](https://github.com/krororo)
+* [@mhidaka](https://github.com/mhidaka)
+* [@Pegasus204](https://github.com/Pegasus204)
+
+[#841]: https://github.com/kmuto/review/issues/841
+[#882]: https://github.com/kmuto/review/issues/882
+[#887]: https://github.com/kmuto/review/issues/887
+[#891]: https://github.com/kmuto/review/issues/891
+[#894]: https://github.com/kmuto/review/pull/894
+[#896]: https://github.com/kmuto/review/issues/896
+[#899]: https://github.com/kmuto/review/issues/899
+[#907]: https://github.com/kmuto/review/pull/907
+[#908]: https://github.com/kmuto/review/pull/908
+[#918]: https://github.com/kmuto/review/issues/918
+[#921]: https://github.com/kmuto/review/issues/921
+[#922]: https://github.com/kmuto/review/pull/922
+[#926]: https://github.com/kmuto/review/issues/926
+[#927]: https://github.com/kmuto/review/pull/927
+[#931]: https://github.com/kmuto/review/pull/931
+[#933]: https://github.com/kmuto/review/issues/933
+[#937]: https://github.com/kmuto/review/pull/937
+[#939]: https://github.com/kmuto/review/pull/939
+[#940]: https://github.com/kmuto/review/issues/940
+[#942]: https://github.com/kmuto/review/issues/942
+[#944]: https://github.com/kmuto/review/pull/944
+[#946]: https://github.com/kmuto/review/issues/946
+[#947]: https://github.com/kmuto/review/pull/947
+[#953]: https://github.com/kmuto/review/issues/953
+[#954]: https://github.com/kmuto/review/issues/954
+[#958]: https://github.com/kmuto/review/issues/958
+
 # Version 2.4.0
 
 ## 新機能

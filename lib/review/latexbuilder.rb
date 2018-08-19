@@ -1,6 +1,6 @@
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2017 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2018 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -52,7 +52,11 @@ module ReVIEW
       end
       return true unless @book.config['pdfmaker']['makeindex_mecab']
       begin
-        require 'MeCab'
+        begin
+          require 'MeCab'
+        rescue LoadError
+          require 'mecab'
+        end
         require 'nkf'
         @index_mecab = MeCab::Tagger.new(@book.config['pdfmaker']['makeindex_mecab_opts'])
       rescue LoadError
@@ -150,8 +154,11 @@ module ReVIEW
     end
 
     def nodisp_begin(level, _label, caption)
-      blank unless @output.pos == 0
-      puts macro('clearpage') if @output.pos == 0
+      if @output.pos != 0
+        blank
+      else
+        puts macro('clearpage')
+      end
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
       # FIXME: headings
     end
@@ -162,36 +169,62 @@ module ReVIEW
     def column_begin(level, label, caption)
       blank
       @doc_status[:column] = true
-      puts "\\begin{reviewcolumn}\n"
+
+      target = nil
       if label
-        puts "\\hypertarget{#{column_label(label)}}{}"
+        target = "\\hypertarget{#{column_label(label)}}{}"
       else
-        puts "\\hypertarget{#{column_label(caption)}}{}"
+        target = "\\hypertarget{#{column_label(caption)}}{}"
       end
+
       @doc_status[:caption] = true
-      puts macro('reviewcolumnhead', nil, compile_inline(caption))
+      if @book.config.check_version('2', exception: false)
+        puts '\\begin{reviewcolumn}'
+        puts target
+        puts macro('reviewcolumnhead', nil, compile_inline(caption))
+      else
+        # ver.3
+        print '\\begin{reviewcolumn}'
+        puts "[#{compile_inline(caption)}#{target}]"
+      end
       @doc_status[:caption] = nil
+
       if level <= @book.config['toclevel'].to_i
         puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
       end
     end
 
     def column_end(_level)
-      puts "\\end{reviewcolumn}\n"
+      puts '\\end{reviewcolumn}'
       blank
       @doc_status[:column] = nil
     end
 
-    def captionblock(_type, lines, caption)
-      puts "\\begin{reviewminicolumn}\n"
+    def captionblock(type, lines, caption)
+      if @book.config.check_version('2', exception: false)
+        type = 'minicolumn'
+      end
+
+      print "\\begin{review#{type}}"
+
       @doc_status[:caption] = true
-      puts "\\reviewminicolumntitle{#{compile_inline(caption)}}\n" if caption.present?
+      if @book.config.check_version('2', exception: false)
+        puts
+        if caption.present?
+          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
+        end
+      else
+        if caption.present?
+          print "[#{compile_inline(caption)}]"
+        end
+        puts
+      end
 
       @doc_status[:caption] = nil
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n\n")
 
-      puts "\\end{reviewminicolumn}\n"
+      puts "\\end{review#{type}}"
     end
 
     def box(lines, caption = nil)
@@ -332,6 +365,9 @@ module ReVIEW
 
     def common_code_block(id, lines, command, caption, _lang)
       @doc_status[:caption] = true
+      unless @book.config.check_version('2', exception: false)
+        puts '\\begin{reviewlistblock}'
+      end
       if caption.present?
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
           puts macro(command + 'caption', compile_inline(caption))
@@ -355,14 +391,17 @@ module ReVIEW
       puts macro('begin', command)
       print body
       puts macro('end', command)
+      unless @book.config.check_version('2', exception: false)
+        puts '\\end{reviewlistblock}'
+      end
       blank
     end
 
     def common_code_block_lst(_id, lines, command, title, caption, lang, first_line_num: 1)
-      if title == 'title' && caption.blank?
+      if title == 'title' && caption.blank? && @book.config.check_version('2', exception: false)
         print '\vspace{-1.5em}'
       end
-      body = lines.inject('') { |i, j| i + detab(unescape_latex(j)) + "\n" }
+      body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
       print body
@@ -372,7 +411,7 @@ module ReVIEW
 
     def make_code_block_args(title, caption, lang, first_line_num: 1)
       caption_str = compile_inline((caption || ''))
-      if title == 'title' && caption_str == ''
+      if title == 'title' && caption_str == '' && @book.config.check_version('2', exception: false)
         caption_str = '\relax' ## dummy charactor to remove lstname
       end
       lexer = if @book.config['highlight'] && @book.config['highlight']['lang']
@@ -381,9 +420,14 @@ module ReVIEW
                 ''
               end
       lexer = lang if lang.present?
-      args = %Q(#{title}={#{caption_str}},language={#{lexer}})
+      args = "language={#{lexer}}"
+      if title == 'title' && caption_str == ''
+        # ignore
+      else
+        args = "#{title}={#{caption_str}}," + args
+      end
       if first_line_num != 1
-        args += ",firstnumber=#{first_line_num}"
+        args << ",firstnumber=#{first_line_num}"
       end
       args
     end
@@ -413,7 +457,7 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric('latex', metric)
       # image is always bound here
-      puts '\begin{reviewimage}'
+      puts "\\begin{reviewimage}%%#{id}"
       if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
@@ -484,7 +528,7 @@ module ReVIEW
       metrics = parse_metric('latex', metric)
 
       if @chapter.image(id).path
-        puts '\begin{reviewimage}'
+        puts "\\begin{reviewimage}%%#{id}"
         if metrics.present?
           puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
         else
@@ -500,7 +544,10 @@ module ReVIEW
       end
 
       @doc_status[:caption] = true
-      puts macro('reviewindepimagecaption', %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})) if caption.present?
+      if caption.present?
+        puts macro('reviewindepimagecaption',
+                   %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}))
+      end
       @doc_status[:caption] = nil
 
       if @chapter.image(id).path
@@ -527,12 +574,12 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
       return if rows.empty?
-      table_begin rows.first.size
+      table_begin(rows.first.size)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
@@ -554,7 +601,11 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          if @book.config.check_version('2', exception: false)
+            puts "\\begin{table}[h]%%#{id}"
+          else
+            puts "\\begin{table}%%#{id}"
+          end
           puts macro('reviewtablecaption*', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -562,7 +613,11 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          if @book.config.check_version('2', exception: false)
+            puts "\\begin{table}[h]%%#{id}"
+          else
+            puts "\\begin{table}%%#{id}"
+          end
           puts macro('reviewtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -637,7 +692,7 @@ module ReVIEW
         if caption.present?
           @table_caption = true
           @doc_status[:caption] = true
-          puts '\begin{table}[h]'
+          puts "\\begin{table}[h]%%#{id}"
           puts macro('reviewimgtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -655,7 +710,7 @@ module ReVIEW
     def imgtable_image(id, _caption, metric)
       metrics = parse_metric('latex', metric)
       # image is always bound here
-      puts '\begin{reviewimage}'
+      puts "\\begin{reviewimage}%%#{id}"
       if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
@@ -682,7 +737,7 @@ module ReVIEW
       blank
       puts macro('begin', 'equation*')
       lines.each do |line|
-        puts unescape_latex(line)
+        puts unescape(line)
       end
       puts macro('end', 'equation*')
       blank
@@ -727,8 +782,8 @@ module ReVIEW
       puts '\pagebreak'
     end
 
-    def linebreak
-      puts '\\\\'
+    def blankline
+      puts '\vspace*{\baselineskip}'
     end
 
     def noindent
@@ -782,6 +837,8 @@ module ReVIEW
       else
         macro('reviewlistref', I18n.t('format_number', [get_chap(chapter), chapter.list(id).number]))
       end
+    rescue KeyError
+      error "unknown list: #{id}"
     end
 
     def inline_table(id)
@@ -791,6 +848,8 @@ module ReVIEW
       else
         macro('reviewtableref', I18n.t('format_number', [get_chap(chapter), chapter.table(id).number]), table_label(id, chapter))
       end
+    rescue KeyError
+      error "unknown table: #{id}"
     end
 
     def inline_img(id)
@@ -800,6 +859,8 @@ module ReVIEW
       else
         macro('reviewimageref', I18n.t('format_number', [get_chap(chapter), chapter.image(id).number]), image_label(id, chapter))
       end
+    rescue KeyError
+      error "unknown image: #{id}"
     end
 
     def footnote(id, content)
@@ -817,6 +878,8 @@ module ReVIEW
       else
         macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
       end
+    rescue KeyError
+      error "unknown footnote: #{id}"
     end
 
     BOUTEN = '・'.freeze
@@ -826,12 +889,16 @@ module ReVIEW
     end
 
     def compile_ruby(base, ruby)
-      macro('ruby', escape(base), escape(ruby))
+      macro('ruby', escape(base), escape(ruby).gsub('\\textbar{}', '|'))
     end
 
     # math
     def inline_m(str)
-      " $#{str}$ "
+      if @book.config.check_version('2', exception: false)
+        " $#{str}$ "
+      else
+        "$#{str}$"
+      end
     end
 
     # hidden index
@@ -841,7 +908,11 @@ module ReVIEW
 
     # index -> italic
     def inline_i(str)
-      macro('textit', escape(str))
+      if @book.config.check_version('2', exception: false)
+        macro('textit', escape(str))
+      else
+        macro('reviewit', escape(str))
+      end
     end
 
     # index
@@ -856,7 +927,11 @@ module ReVIEW
 
     # bold
     def inline_b(str)
-      macro('textbf', escape(str))
+      if @book.config.check_version('2', exception: false)
+        macro('textbf', escape(str))
+      else
+        macro('reviewbold', escape(str))
+      end
     end
 
     # line break
@@ -871,7 +946,11 @@ module ReVIEW
 
     ## @<code> is same as @<tt>
     def inline_code(str)
-      macro('texttt', escape(str))
+      if @book.config.check_version('2', exception: false)
+        macro('texttt', escape(str))
+      else
+        macro('reviewcode', escape(str))
+      end
     end
 
     def nofunc_text(str)
@@ -879,7 +958,11 @@ module ReVIEW
     end
 
     def inline_tt(str)
-      macro('texttt', escape(str))
+      if @book.config.check_version('2', exception: false)
+        macro('texttt', escape(str))
+      else
+        macro('reviewtt', escape(str))
+      end
     end
 
     def inline_del(str)
@@ -887,11 +970,19 @@ module ReVIEW
     end
 
     def inline_tti(str)
-      macro('texttt', macro('textit', escape(str)))
+      if @book.config.check_version('2', exception: false)
+        macro('texttt', macro('textit', escape(str)))
+      else
+        macro('reviewtti', escape(str))
+      end
     end
 
     def inline_ttb(str)
-      macro('texttt', macro('textbf', escape(str)))
+      if @book.config.check_version('2', exception: false)
+        macro('texttt', macro('textbf', escape(str)))
+      else
+        macro('reviewttb', escape(str))
+      end
     end
 
     def inline_bib(id)
@@ -917,6 +1008,8 @@ module ReVIEW
       macro('reviewcolumnref',
             I18n.t('column', compile_inline(chapter.column(id).caption)),
             column_label(id, chapter))
+    rescue KeyError
+      error "unknown column: #{id}"
     end
 
     def inline_raw(str)
@@ -957,8 +1050,13 @@ module ReVIEW
     end
 
     def inline_uchar(str)
-      # with otf package
-      macro('UTF', escape(str))
+      if @texcompiler && @texcompiler.start_with?('platex')
+        # with otf package
+        macro('UTF', escape(str))
+      else
+        # passthrough
+        [str.to_i(16)].pack('U')
+      end
     end
 
     def inline_comment(str)
@@ -971,6 +1069,10 @@ module ReVIEW
 
     def inline_tcy(str)
       macro('rensuji', escape(str))
+    end
+
+    def inline_balloon(str)
+      macro('reviewballoon', escape(str))
     end
 
     def bibpaper_header(id, caption)
@@ -988,10 +1090,10 @@ module ReVIEW
 
       sa.map! do |item|
         if @index_db[item]
-          escape_index(escape_latex(@index_db[item])) + '@' + escape_index(escape_latex(item))
+          escape_index(escape(@index_db[item])) + '@' + escape_index(escape(item))
         else
           if item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
-            esc_item = escape_index(escape_latex(item))
+            esc_item = escape_index(escape(item))
             if esc_item != item
               "#{escape_index(item)}@#{esc_item}"
             else
@@ -999,7 +1101,7 @@ module ReVIEW
             end
           else
             yomi = NKF.nkf('-w --hiragana', @index_mecab.parse(item).force_encoding('UTF-8').chomp)
-            escape_index(escape_latex(yomi)) + '@' + escape_index(escape_latex(item))
+            escape_index(escape(yomi)) + '@' + escape_index(escape(item))
           end
         end
       end

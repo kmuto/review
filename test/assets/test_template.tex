@@ -1,262 +1,132 @@
-\documentclass[dvipdfmx,uplatex,oneside]{jsbook}
-% %% fixes to LaTeX2e
-% \usepackage{fix-cm}[2006/09/13 v1.1m]
-% \usepackage{fixltx2e}[2006/09/13 v1.1m]
-
-\usepackage[deluxe,uplatex]{otf}
-\usepackage{caption}
-\usepackage{suffix}
-\usepackage[T1]{fontenc}\usepackage{textcomp}%T1/TS1
-\usepackage{lmodern}
-\usepackage[dvipdfmx]{graphicx}
-\usepackage[dvipdfmx,table]{xcolor}%requires colortbl, array
-\usepackage{framed}
-\usepackage{wrapfig}
-\definecolor{shadecolor}{gray}{0.9}
-\definecolor{shadecolorb}{gray}{0.1}
-\definecolor{reviewgreen}{rgb}{0,0.4,0}
-\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
-\definecolor{reviewred}{rgb}{0.7,0,0}
-\definecolor{reviewdarkred}{rgb}{0.3,0,0}
-\usepackage[utf8]{inputenc}
-\usepackage{ascmac}
-\usepackage{float}
-\usepackage{alltt}
-\usepackage{amsmath}
-
-%% if you use @<u>{} (underline), use jumoline.sty
-\IfFileExists{jumoline.sty}{
-\usepackage{jumoline}
-}
-
-\newenvironment{shadedb}{%
-  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
-  \MakeFramed {\FrameRestore}}%
- {\endMakeFramed}
-
-\usepackage[top=10zw,bottom=12zw,left=10zw,right=10zw]{geometry}
-%\usepackage[top=5zw,bottom=5zw,left=1zw,right=1zw]{geometry}
-
-\newcommand{\parasep}{\vspace*{3zh}}
-\setlength{\footskip}{30pt}
-
-%% Bookmarkの文字化け対策（日本語向け）
-\usepackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,colorlinks=true,%
-     pdftitle={Re:VIEW Sample Book},%
-     pdfauthor={}]{hyperref}
-\usepackage[dvipdfmx]{pxjahyper}
-
-
-
-\newenvironment{reviewimage}{%
-  \begin{figure}[H]
-    \begin{center}}{%
-    \end{center}
-  \end{figure}}
-
-\newenvironment{reviewdummyimage}{%
-  \begin{figure}[H]
-    \begin{center}\begin{alltt}}{%
-    \end{alltt}\end{center}
-  \end{figure}}
-
-\newenvironment{reviewemlist}{%
-  \medskip\small\begin{shaded}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
-  \end{alltt}\end{shaded}}
-
-\newenvironment{reviewlist}{%
-  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
-  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
-
-\newenvironment{reviewsource}{%
-  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
-  \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
-
-\newenvironment{reviewcmd}{%
-  \color{white}\medskip\small\begin{shadedb}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
-  \end{alltt}\end{shadedb}}
-
-\newenvironment{reviewbox}{%
-  \medskip\small\begin{framed}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
-  \end{alltt}\end{framed}}
-
-\newenvironment{reviewtable}[1]{%
-  \begin{center}\small\setlength{\baselineskip}{1.2zw}
-    \begin{tabular}{#1}}{%
-    \end{tabular}
-  \end{center}}
-
-\newenvironment{reviewcolumn}{%
-     \begin{framed}
-  }{%
-     \end{framed}
-  \vspace{2zw}}
-
-\newcommand{\reviewcolumnhead}[2]{%
-{\noindent\large ■コラム: #2}}
-
-\newcommand{\reviewtablecaption}[1]{%
-  \caption{#1}}
-
-\WithSuffix\newcommand\reviewtablecaption*[1]{%
-  \caption*{#1}}
-
-\newcommand{\reviewimgtablecaption}[1]{%
-  \caption{#1}\vspace{-3mm}}
-
-\newcommand{\reviewbackslash}[0]{%
-  \textbackslash{}}
-
-\newcommand{\reviewlistcaption}[1]{%
-  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
-
-\newcommand{\reviewemlistcaption}[1]{%
-  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
-
-\newcommand{\reviewsourcecaption}[1]{%
-  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
-
-\newcommand{\reviewcmdcaption}[1]{%
-  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
-
-\newcommand{\reviewindepimagecaption}[1]{%
-  \begin{center}#1\end{center}}
-
-\newcommand{\reviewboxcaption}[1]{%
-  \medskip{\small\noindent #1}\vspace*{-1.3zw}}
-
-\newcommand{\reviewimageref}[2]{図 #1}
-\newcommand{\reviewtableref}[2]{表 #1}
-\newcommand{\reviewlistref}[1]{リスト #1}
-\newcommand{\reviewbibref}[2]{#1}
-\newcommand{\reviewcolumnref}[2]{コラム #1}
-\newcommand{\reviewsecref}[2]{#1}
-
-\newcommand{\reviewminicolumntitle}[1]{%
-  {\large ■メモ: #1}\\}
-
-\renewcommand{\contentsname}{目次}
-
-\newenvironment{reviewminicolumn}{%
-  \vspace{1.5zw}\begin{screen}}{%
-  \end{screen}\vspace{2zw}}
-
-\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
-\newcommand{\reviewami}[1]{\mask{#1}{A}}
-\newcommand{\reviewem}[1]{\textbf{#1}}
-\newcommand{\reviewstrong}[1]{\textbf{#1}}
-\newcommand{\reviewunderline}{\Underline}
-
-%% @<del> is ignored in LaTeX with default style
-\newcommand{\reviewstrike}[1]{#1}
-
-%%%% for ulem.sty:
-%%\renewcommand{\reviewstrike}[1]{\sout{#1}}
-%%
-%%%% for jumoline.sty:
-%%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
-
-\newcommand{\reviewth}[1]{\textgt{#1}}
-\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
-\newcommand{\reviewmainfont}[0]{}
-\newcommand{\reviewcolophon}[0]{\clearpage}
-\newcommand{\reviewappendix}[0]{\appendix}
-
-\newcommand{\reviewprepartname}{第}
-\newcommand{\reviewpostpartname}{部}
-\newcommand{\reviewprechaptername}{第}
-\newcommand{\reviewpostchaptername}{章}
-\newcommand{\reviewfigurename}{図}
-\newcommand{\reviewtablename}{表}
-\newcommand{\reviewappendixname}{付録}
-
-\ifdefined\prepartname
-  \renewcommand{\prepartname}{\reviewprepartname}
-\fi
-\ifdefined\postpartname
-  \renewcommand{\postpartname}{\reviewpostpartname}
-\fi
-\ifdefined\prechaptername
-  \renewcommand{\prechaptername}{\reviewprechaptername}
-\fi
-\ifdefined\postchaptername
-  \renewcommand{\postchaptername}{\reviewpostchaptername}
-\fi
-\ifdefined\figurename
-  \renewcommand{\figurename}{\reviewfigurename}
-\fi
-\ifdefined\tablename
-  \renewcommand{\tablename}{\reviewtablename}
-\fi
-\ifdefined\appendixname
-  \renewcommand{\appendixname}{\reviewappendixname}
-\fi
-
-
+\documentclass[dvipdfmx,uplatex,twoside]{jsbook}
 \makeatletter
-%% maxwidth is the original width if it is less than linewidth
-%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
-\def\maxwidth{%
-  \ifdim\Gin@nat@width>\linewidth
-    \linewidth
-  \else
-    \Gin@nat@width
-  \fi
-}
+\def\review@texcompiler{uplatex}
+\def\review@documentclass{jsbook}
+\def\review@booktitlename{Re:VIEW Sample Book}
+\def\review@autnames{}
+\def\review@titlepageauthors{}
+\def\review@date{2011{-}01{-}01}
+\def\review@language{ja}
+\def\review@intn@list{リスト}
+\def\review@intn@columnhead{■コラム}
+\def\review@intn@image{図}
+\def\review@intn@table{表}
+\def\review@intn@columnname{コラム}
+\def\review@intn@memohead{■メモ}
+\def\review@intn@edition{版}
+\def\review@intn@publishedby{ 発行}
+\def\review@intn@captionprefix{ }
+\def\review@toctitle{目次}
+\def\review@prepartname{第}
+\def\review@postpartname{部}
+\def\review@prechaptername{第}
+\def\review@postchaptername{章}
+\def\review@figurename{図}
+\def\review@tablename{表}
+\def\review@appendixname{付録}
+\def\review@titlepage{true}
+
+\def\review@pubhistories{2011年1月1日　発行}
+\def\review@colophonnames{}
+
+\def\reviewprefacefiles{}
+\def\reviewchapterfiles{}
+\def\reviewappendixfiles{}
+\def\reviewpostdeffiles{}
+
 \makeatother
 
 
 \begin{document}
 
-\reviewmainfont
+%% coverpage
+\ifdefined\reviewcoverpagecont
+\reviewcoverpagecont
+\fi
 
-\begin{titlepage}
-\thispagestyle{empty}
-\begin{center}%
-  \mbox{} \vskip5zw
-   \reviewtitlefont%
-    {\Huge Re:VIEW Sample Book \par}%
-    \vskip 15em%
-    {\huge
-      \lineskip .75em
-      \begin{tabular}[t]{c}%
-        
-      \end{tabular}\par}%
-    \vfill
-    {\large 2011{-}01{-}01 版\hspace{2zw} 発行\par}%
-\vskip4zw\mbox{}
-  \end{center}%
-\end{titlepage}
+%% title page
+\ifdefined\reviewtitlepagecont
+\reviewtitlepagecont
+\fi
 
-\renewcommand{\chaptermark}[1]{{}}
-\frontmatter
+%% frontmatter hook
+\ifdefined\reviewfrontmatterhook
+\reviewfrontmatterhook
+\fi
 
-%%% originaltitle
+%% originaltitle
+\ifdefined\revieworiginaltitlepagecont
+\revieworiginaltitlepagecont
+\fi
 
-%%% credit
+%% credit
+\ifdefined\reviewcreditfilecont
+\reviewcreditfilecont
+\fi
 
 %% preface
+\ifdefined\reviewprefacefiles
+\reviewprefacefiles
+\fi
 
+%% toc
+\ifdefined\reviewtableofcontents
+\reviewtableofcontents
+\fi
 
+%% mainmatter hook
+\ifdefined\reviewmainmatterhook
+\reviewmainmatterhook
+\fi
 
-\renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~#1}{}}
-\mainmatter
+%% chapters body
+\ifdefined\reviewchapterfiles
+\reviewchapterfiles
+\fi
 
-\renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~#1}{}}
-\reviewappendix
+%% appendix hook
+\ifdefined\reviewappendixhook
+\reviewappendixhook
+\fi
 
+%% appendix body
+\ifdefined\reviewappendixfiles
+\reviewappendixfiles
+\fi
 
-%% backmatter begins
-\backmatter
+%% backmatter hook
+\ifdefined\reviewbackmatterhook
+\reviewbackmatterhook
+\fi
 
+%% postdef body
+\ifdefined\reviewpostdeffiles
+\reviewpostdeffiles
+\fi
 
+%% index page
+\ifdefined\reviewprintindex
+\reviewprintindex
+\fi
 
-%%% profile
+%% profile page
+\ifdefined\reviewprofilepagecont
+\reviewprofilepagecont
+\fi
 
-%%% advfile
+%% advfile page
+\ifdefined\reviewadvfilepagecont
+\reviewadvfilepagecont
+\fi
 
-%%% colophon
+%%% colophon page
+\ifdefined\reviewcolophonpagecont
+\reviewcolophonpagecont
+\fi
 
-%%% backcover
+%%% backcover page
+\ifdefined\reviewbackcovercont
+\reviewbackcovercont
+\fi
 
 \end{document}

@@ -1,4 +1,4 @@
-review_version: 2.0
+review_version: 3.0
 bookname: syntax-book
 language: ja
 booktitle: {name: "Re:VIEW文法使用例", file-as: "リビューブンポウシヨウレイ"}
@@ -22,7 +22,7 @@ epubmaker:
   htmlext: xhtml
 
 texstyle: reviewmacro
-# texdocumentclass: ["jsbook", "uplatex,oneside"]
+# texdocumentclass: ["jsbook", "uplatex,twoside"]
 # texcommand: "uplatex"
 # texoptions: null
 # dvicommand: "dvipdfmx"

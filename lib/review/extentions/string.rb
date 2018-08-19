@@ -4,6 +4,5 @@ if defined?(Encoding) && Encoding.respond_to?('default_external') &&
 end
 
 class String
-  alias_method :charsize, :size
   alias_method :each, :each_line
 end

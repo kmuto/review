@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -22,6 +22,7 @@ require 'review/yamlloader'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
+require 'review/epubmaker/reviewheaderlistener'
 
 module ReVIEW
   class EPUBMaker
@@ -44,23 +45,40 @@ module ReVIEW
       @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
     end
 
-    def log(s)
-      puts s if @config['debug'].present?
+    def log(msg)
+      @logger.debug(msg)
     end
 
     def load_yaml(yamlfile)
       loader = ReVIEW::YAMLLoader.new
-      @config = ReVIEW::Configure.values.deep_merge(loader.load_file(yamlfile))
+      @config = ReVIEW::Configure.values
+      begin
+        @config.deep_merge!(loader.load_file(yamlfile))
+      rescue => e
+        error "yaml error #{e.message}"
+      end
+
       @producer = Producer.new(@config)
       @producer.load(yamlfile)
       @config = @producer.config
       @config.maker = 'epubmaker'
+      update_log_level
+    end
+
+    def update_log_level
+      if @config['debug']
+        @logger.level = Logger::DEBUG
+      else
+        @logger.level = Logger::INFO
+      end
     end
 
     def build_path
       if @config['debug']
         path = File.expand_path("#{@config['bookname']}-epub", Dir.pwd)
-        FileUtils.rm_rf(path, secure: true) if File.exist?(path)
+        if File.exist?(path)
+          FileUtils.rm_rf(path, secure: true)
+        end
         Dir.mkdir(path)
         path
       else
@@ -71,7 +89,7 @@ module ReVIEW
     def produce(yamlfile, bookname = nil)
       load_yaml(yamlfile)
       I18n.setup(@config['language'])
-      bookname = @config['bookname'] if bookname.nil?
+      bookname ||= @config['bookname']
       booktmpname = "#{bookname}-epub"
 
       begin
@@ -82,9 +100,13 @@ module ReVIEW
       log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
 
       FileUtils.rm_f("#{bookname}.epub")
-      FileUtils.rm_rf(booktmpname) if @config['debug']
+      if @config['debug']
+        FileUtils.rm_rf(booktmpname)
+      end
       math_dir = "./#{@config['imagedir']}/_review_math"
-      FileUtils.rm_rf(math_dir) if @config['imgmath'] && Dir.exist?(math_dir)
+      if @config['imgmath'] && Dir.exist?(math_dir)
+        FileUtils.rm_rf(math_dir)
+      end
 
       basetmpdir = build_path
       begin
@@ -134,8 +156,11 @@ module ReVIEW
         log('Call ePUB producer.')
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
         log('Finished.')
+      rescue ApplicationError => e
+        raise if @config['debug']
+        error(e.message)
       ensure
-        FileUtils.remove_entry_secure basetmpdir unless @config['debug']
+        FileUtils.remove_entry_secure(basetmpdir) unless @config['debug']
       end
     end
 
@@ -153,17 +178,22 @@ module ReVIEW
 
     def verify_target_images(basetmpdir)
       @producer.contents.each do |content|
-        if content.media == 'application/xhtml+xml'
+        case content.media
+        when 'application/xhtml+xml'
           File.open("#{basetmpdir}/#{content.file}") do |f|
             Document.new(File.new(f)).each_element('//img') do |e|
               @config['epubmaker']['force_include_images'].push(e.attributes['src'])
-              content.properties.push('svg') if e.attributes['src'] =~ /svg\Z/i
+              if e.attributes['src'] =~ /svg\Z/i
+                content.properties.push('svg')
+              end
             end
           end
-        elsif content.media == 'text/css'
+        when 'text/css'
           File.open("#{basetmpdir}/#{content.file}") do |f|
             f.each_line do |l|
-              l.scan(/url\((.+?)\)/) { |_m| @config['epubmaker']['force_include_images'].push($1.strip) }
+              l.scan(/url\((.+?)\)/) do |_m|
+                @config['epubmaker']['force_include_images'].push($1.strip)
+              end
             end
           end
         end
@@ -173,12 +203,14 @@ module ReVIEW
 
     def copy_images(resdir, destdir, allow_exts = nil)
       return nil unless File.exist?(resdir)
-      allow_exts = @config['image_ext'] if allow_exts.nil?
+      allow_exts ||= @config['image_ext']
       FileUtils.mkdir_p(destdir)
       if @config['epubmaker']['verify_target_images'].present?
         @config['epubmaker']['force_include_images'].each do |file|
           unless File.exist?(file)
-            warn "#{file} is not found, skip." if file !~ /\Ahttp[s]?:/
+            if file !~ /\Ahttp[s]?:/
+              warn "#{file} is not found, skip."
+            end
             next
           end
           basedir = File.dirname(file)
@@ -193,7 +225,7 @@ module ReVIEW
 
     def copy_resources(resdir, destdir, allow_exts = nil)
       return nil unless File.exist?(resdir)
-      allow_exts = @config['image_ext'] if allow_exts.nil?
+      allow_exts ||= @config['image_ext']
       FileUtils.mkdir_p(destdir)
       recursive_copy_files(resdir, destdir, allow_exts)
     end
@@ -243,7 +275,9 @@ module ReVIEW
             htmlfile = "part_#{part.number}.#{@config['htmlext']}"
             build_part(part, basetmpdir, htmlfile)
             title = ReVIEW::I18n.t('part', part.number)
-            title += ReVIEW::I18n.t('chapter_postfix') + part.name.strip if part.name.strip.present?
+            if part.name.strip.present?
+              title += ReVIEW::I18n.t('chapter_postfix') + part.name.strip
+            end
             @htmltoc.add_item(0, htmlfile, title, chaptype: 'part')
             write_buildlogtxt(basetmpdir, htmlfile, '')
           end
@@ -300,7 +334,7 @@ module ReVIEW
           Pathname.new(chap.path).relative_path_from(base_path).to_s
         end
 
-      id = filename.sub(/\.re\Z/, '')
+      id = File.basename(filename).sub(/\.re\Z/, '')
 
       if @config['epubmaker']['rename_for_legacy'] && ispart.nil?
         if chap.on_predef?
@@ -364,20 +398,36 @@ module ReVIEW
     def write_info_body(basetmpdir, _id, filename, ispart = nil, chaptype = nil)
       headlines = []
       path = File.join(basetmpdir, filename)
-      Document.parse_stream(File.new(path), ReVIEWHeaderListener.new(headlines))
+      htmlio = File.new(path)
+      Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
       properties = detect_properties(path)
-      prop_str = ''
-      prop_str = ',properties=' + properties.join(' ') if properties.present?
+      if properties.present?
+        prop_str = ',properties=' + properties.join(' ')
+      else
+        prop_str = ''
+      end
       first = true
       headlines.each do |headline|
-        headline['level'] = 0 if ispart.present? && headline['level'] == 1
+        if ispart.present? && headline['level'] == 1
+          headline['level'] = 0
+        end
         if first.nil?
-          @htmltoc.add_item(headline['level'], filename + '#' + headline['id'], headline['title'], { chaptype: chaptype, notoc: headline['notoc'] })
+          @htmltoc.add_item(headline['level'],
+                            filename + '#' + headline['id'],
+                            headline['title'],
+                            { chaptype: chaptype,
+                              notoc: headline['notoc'] })
         else
-          @htmltoc.add_item(headline['level'], filename, headline['title'], { force_include: true, chaptype: chaptype + prop_str, notoc: headline['notoc'] })
+          @htmltoc.add_item(headline['level'],
+                            filename,
+                            headline['title'],
+                            { force_include: true,
+                              chaptype: chaptype + prop_str,
+                              notoc: headline['notoc'] })
           first = nil
         end
       end
+      htmlio.close
     end
 
     def push_contents(_basetmpdir)
@@ -385,10 +435,19 @@ module ReVIEW
         next if level.to_i > @config['toclevel'] && args[:force_include].nil?
         log("Push #{file} to ePUB contents.")
 
-        hash = { 'file' => file, 'level' => level.to_i, 'title' => title, 'chaptype' => args[:chaptype] }
-        hash['id'] = args[:id] if args[:id].present?
-        hash['properties'] = args[:properties].split(' ') if args[:properties].present?
-        hash['notoc'] = args[:notoc] if args[:notoc].present?
+        hash = { 'file' => file,
+                 'level' => level.to_i,
+                 'title' => title,
+                 'chaptype' => args[:chaptype] }
+        if args[:id].present?
+          hash['id'] = args[:id]
+        end
+        if args[:properties].present?
+          hash['properties'] = args[:properties].split(' ')
+        end
+        if args[:notoc].present?
+          hash['notoc'] = args[:notoc]
+        end
         @producer.contents.push(Content.new(hash))
       end
     end
@@ -402,25 +461,40 @@ module ReVIEW
     end
 
     def copy_frontmatter(basetmpdir)
-      FileUtils.cp(@config['cover'], "#{basetmpdir}/#{File.basename(@config['cover'])}") if @config['cover'].present? && File.exist?(@config['cover'])
+      if @config['cover'].present? && File.exist?(@config['cover'])
+        FileUtils.cp(@config['cover'],
+                     "#{basetmpdir}/#{File.basename(@config['cover'])}")
+      end
 
       if @config['titlepage']
         if @config['titlefile'].nil?
           build_titlepage(basetmpdir, "titlepage.#{@config['htmlext']}")
         else
-          FileUtils.cp(@config['titlefile'], "#{basetmpdir}/titlepage.#{@config['htmlext']}")
+          FileUtils.cp(@config['titlefile'],
+                       "#{basetmpdir}/titlepage.#{@config['htmlext']}")
         end
-        @htmltoc.add_item(1, "titlepage.#{@config['htmlext']}", @producer.res.v('titlepagetitle'), chaptype: 'pre')
+        @htmltoc.add_item(1,
+                          "titlepage.#{@config['htmlext']}",
+                          @producer.res.v('titlepagetitle'),
+                          chaptype: 'pre')
       end
 
       if @config['originaltitlefile'].present? && File.exist?(@config['originaltitlefile'])
-        FileUtils.cp(@config['originaltitlefile'], "#{basetmpdir}/#{File.basename(@config['originaltitlefile'])}")
-        @htmltoc.add_item(1, File.basename(@config['originaltitlefile']), @producer.res.v('originaltitle'), chaptype: 'pre')
+        FileUtils.cp(@config['originaltitlefile'],
+                     "#{basetmpdir}/#{File.basename(@config['originaltitlefile'])}")
+        @htmltoc.add_item(1,
+                          File.basename(@config['originaltitlefile']),
+                          @producer.res.v('originaltitle'),
+                          chaptype: 'pre')
       end
 
       if @config['creditfile'].present? && File.exist?(@config['creditfile'])
-        FileUtils.cp(@config['creditfile'], "#{basetmpdir}/#{File.basename(@config['creditfile'])}")
-        @htmltoc.add_item(1, File.basename(@config['creditfile']), @producer.res.v('credittitle'), chaptype: 'pre')
+        FileUtils.cp(@config['creditfile'],
+                     "#{basetmpdir}/#{File.basename(@config['creditfile'])}")
+        @htmltoc.add_item(1,
+                          File.basename(@config['creditfile']),
+                          @producer.res.v('credittitle'),
+                          chaptype: 'pre')
       end
 
       true
@@ -433,9 +507,15 @@ module ReVIEW
         @body = ''
         @body << %Q(<div class="titlepage">\n)
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>\n)
-        @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@config.name_of('subtitle'))}</h2>\n) if @config['subtitle']
-        @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n) if @config['aut']
-        @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n) if @config['pbl']
+        if @config['subtitle']
+          @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@config.name_of('subtitle'))}</h2>\n)
+        end
+        if @config['aut']
+          @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n)
+        end
+        if @config['pbl']
+          @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n)
+        end
         @body << '</div>'
 
         @language = @producer.config['language']
@@ -448,34 +528,55 @@ module ReVIEW
 
     def copy_backmatter(basetmpdir)
       if @config['profile']
-        FileUtils.cp(@config['profile'], "#{basetmpdir}/#{File.basename(@config['profile'])}")
-        @htmltoc.add_item(1, File.basename(@config['profile']), @producer.res.v('profiletitle'), chaptype: 'post')
+        FileUtils.cp(@config['profile'],
+                     "#{basetmpdir}/#{File.basename(@config['profile'])}")
+        @htmltoc.add_item(1,
+                          File.basename(@config['profile']),
+                          @producer.res.v('profiletitle'),
+                          chaptype: 'post')
       end
 
       if @config['advfile']
-        FileUtils.cp(@config['advfile'], "#{basetmpdir}/#{File.basename(@config['advfile'])}")
-        @htmltoc.add_item(1, File.basename(@config['advfile']), @producer.res.v('advtitle'), chaptype: 'post')
+        FileUtils.cp(@config['advfile'],
+                     "#{basetmpdir}/#{File.basename(@config['advfile'])}")
+        @htmltoc.add_item(1,
+                          File.basename(@config['advfile']),
+                          @producer.res.v('advtitle'),
+                          chaptype: 'post')
       end
 
       if @config['colophon']
         if @config['colophon'].is_a?(String) # FIXME: should let obsolete this style?
-          FileUtils.cp(@config['colophon'], "#{basetmpdir}/colophon.#{@config['htmlext']}")
+          FileUtils.cp(@config['colophon'],
+                       "#{basetmpdir}/colophon.#{@config['htmlext']}")
         else
-          File.open("#{basetmpdir}/colophon.#{@config['htmlext']}", 'w') { |f| @producer.colophon(f) }
+          filename = "#{basetmpdir}/colophon.#{@config['htmlext']}"
+          File.open(filename, 'w') do |f|
+            @producer.colophon(f)
+          end
         end
-        @htmltoc.add_item(1, "colophon.#{@config['htmlext']}", @producer.res.v('colophontitle'), chaptype: 'post')
+        @htmltoc.add_item(1,
+                          "colophon.#{@config['htmlext']}",
+                          @producer.res.v('colophontitle'),
+                          chaptype: 'post')
       end
 
       if @config['backcover']
-        FileUtils.cp(@config['backcover'], "#{basetmpdir}/#{File.basename(@config['backcover'])}")
-        @htmltoc.add_item(1, File.basename(@config['backcover']), @producer.res.v('backcovertitle'), chaptype: 'post')
+        FileUtils.cp(@config['backcover'],
+                     "#{basetmpdir}/#{File.basename(@config['backcover'])}")
+        @htmltoc.add_item(1,
+                          File.basename(@config['backcover']),
+                          @producer.res.v('backcovertitle'),
+                          chaptype: 'post')
       end
 
       true
     end
 
     def write_buildlogtxt(basetmpdir, htmlfile, reviewfile)
-      File.open("#{basetmpdir}/#{@buildlogtxt}", 'a') { |f| f.puts "#{htmlfile},#{reviewfile}" }
+      File.open("#{basetmpdir}/#{@buildlogtxt}", 'a') do |f|
+        f.puts "#{htmlfile},#{reviewfile}"
+      end
     end
 
     def check_image_size(basetmpdir, maxpixels, allow_exts = nil)
@@ -487,7 +588,8 @@ module ReVIEW
       require 'find'
       allow_exts ||= @config['image_ext']
 
-      extre = Regexp.new('\\.(' + allow_exts.delete_if { |t| %w[ttf woff otf].include?(t) }.join('|') + ')', Regexp::IGNORECASE)
+      pat = '\\.(' + allow_exts.delete_if { |t| %w[ttf woff otf].member?(t.downcase) }.join('|') + ')'
+      extre = Regexp.new(pat, Regexp::IGNORECASE)
       Find.find(basetmpdir) do |fname|
         next unless fname.match(extre)
         img = ImageSize.path(fname)
@@ -499,46 +601,6 @@ module ReVIEW
       end
 
       true
-    end
-
-    class ReVIEWHeaderListener
-      include REXML::StreamListener
-      def initialize(headlines)
-        @level = nil
-        @content = ''
-        @headlines = headlines
-      end
-
-      def tag_start(name, attrs)
-        if name =~ /\Ah(\d+)/
-          raise "#{name}, #{attrs}" if @level.present?
-          @level = $1.to_i
-          @id = attrs['id'] if attrs['id'].present?
-          @notoc = attrs['notoc'] if attrs['notoc'].present?
-        elsif !@level.nil?
-          if name == 'img' && attrs['alt'].present?
-            @content << attrs['alt']
-          elsif name == 'a' && attrs['id'].present?
-            @id = attrs['id']
-          end
-        end
-      end
-
-      def tag_end(name)
-        if name =~ /\Ah\d+/
-          @headlines.push({ 'level' => @level, 'id' => @id, 'title' => @content, 'notoc' => @notoc }) if @id.present?
-          @content = ''
-          @level = nil
-          @id = nil
-          @notoc = nil
-        end
-
-        true
-      end
-
-      def text(text)
-        @content << text.gsub("\t", '　') if @level.present?
-      end
     end
   end
 end

@@ -36,13 +36,18 @@ module EPUBMaker
       if @producer.config['coverimage']
         file = nil
         @producer.contents.each do |item|
-          next if !item.media.start_with?('image') || item.file !~ /#{@producer.config["coverimage"]}\Z/
+          if !item.media.start_with?('image') || item.file !~ /#{@producer.config["coverimage"]}\Z/
+            next
+          end
 
           s << %Q(    <meta name="cover" content="#{item.id}"/>\n)
           file = item.file
           break
         end
-        raise "coverimage #{@producer.config['coverimage']} not found. Abort." if file.nil?
+
+        if file.nil?
+          raise "coverimage #{@producer.config['coverimage']} not found. Abort."
+        end
       end
       s
     end
@@ -233,7 +238,9 @@ EOT
 
       @body << %Q(      <tr><th>ISBN</th><td>#{@producer.isbn_hyphen}</td></tr>\n) if @producer.isbn_hyphen
       @body << %Q(    </table>\n)
-      @body << %Q(    <p class="copyright">#{join_with_separator(@producer.config.names_of('rights').map { |m| CGI.escapeHTML(m) }, '<br />')}</p>\n) if @producer.config['rights'] && !@producer.config['rights'].empty?
+      if @producer.config['rights'] && !@producer.config['rights'].empty?
+        @body << %Q(    <p class="copyright">#{join_with_separator(@producer.config.names_of('rights').map { |m| CGI.escapeHTML(m) }, '<br />')}</p>\n)
+      end
       @body << %Q(  </div>\n)
 
       @language = @producer.config['language']

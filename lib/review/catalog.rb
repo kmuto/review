@@ -31,7 +31,22 @@ module ReVIEW
     def parts
       return '' unless @yaml['CHAPS']
 
-      @yaml['CHAPS'].map { |entry| entry.keys if entry.is_a?(Hash) }.flatten.compact.join("\n")
+      part_list = @yaml['CHAPS'].map do |entry|
+        if entry.is_a?(Hash)
+          entry.keys
+        end
+      end
+
+      part_list.flatten.compact.join("\n")
+    end
+
+    def replace_part(old_name, new_name)
+      @yaml['CHAPS'].map! do |e|
+        if e.is_a?(Hash) and (e.keys.first == old_name)
+          e = { new_name => e.values.first }
+        end
+        e
+      end
     end
 
     def parts_with_chaps
@@ -47,6 +62,41 @@ module ReVIEW
     def postdef
       return '' unless @yaml['POSTDEF']
       @yaml['POSTDEF'].join("\n")
+    end
+
+    def to_s
+      YAML.dump(@yaml).gsub(/\A---\n/, '') # remove yaml header
+    end
+
+    def validate!(config, basedir)
+      filenames = []
+      if predef.present?
+        filenames.concat(predef.split(/\n/))
+      end
+      parts_with_chaps.each do |chap|
+        if chap.is_a?(Hash)
+          chap.each_key do |part|
+            if File.extname(part) == '.re'
+              filenames.push(part)
+            end
+          end
+          filenames.concat(chap.values.flatten)
+        else
+          filenames.push(chap)
+        end
+      end
+      if appendix.present?
+        filenames.concat(appendix.split(/\n/))
+      end
+      if postdef.present?
+        filenames.concat(postdef.split(/\n/))
+      end
+      filenames.each do |filename|
+        refile = File.join(basedir, config['contentdir'], filename)
+        unless File.exist?(refile)
+          raise FileNotFound, "file not found in catalog.yml: #{refile}"
+        end
+      end
     end
   end
 end

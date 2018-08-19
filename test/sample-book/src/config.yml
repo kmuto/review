@@ -1,5 +1,5 @@
 ## config.yml for sample book
-
+review_version: 3.0
 bookname: book
 language: ja
 booktitle: Re:VIEWサンプル書籍
@@ -54,8 +54,8 @@ epubmaker:
 #  externallink: true
 
 pdfmaker:
-  texstyle: reviewmacro
-  # texdocumentclass: ["jsbook", "uplatex,oneside"]
+  texstyle: ["reviewmacro"]
+  # texdocumentclass: ["jsbook", "uplatex,twoside"]
   # texcommand: "uplatex"
   # texoptions: null
   # dvicommand: "dvipdfmx"

@@ -89,7 +89,9 @@ module ReVIEW
     end
 
     def print_part(part)
-      @out.puts li(part.title) if part.number
+      if part.number
+        @out.puts li(part.title)
+      end
       super
     end
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -165,7 +165,7 @@ module ReVIEW
 
     defsingle :footnote, 2
     defsingle :noindent, 0
-    defsingle :linebreak, 0
+    defsingle :blankline, 0
     defsingle :pagebreak, 0
     defsingle :hr, 0
     defsingle :parasep, 0
@@ -198,6 +198,7 @@ module ReVIEW
     definline :recipe
     definline :column
     definline :tcy
+    definline :balloon
 
     definline :abbr
     definline :acronym
@@ -228,9 +229,10 @@ module ReVIEW
     definline :hidx
     definline :comment
     definline :include
-    definline :tcy
     definline :embed
     definline :pageref
+    definline :w
+    definline :wb
 
     private
 
@@ -534,9 +536,17 @@ module ReVIEW
     def replace_fence(str)
       str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
         op = $1
-        arg = $3.gsub('@', "\x01").gsub('\\}') { '\\\\}' }.gsub('}') { '\}' }.sub(/(?:\\)+$/) { |m| '\\\\' * m.size }
-        "@<#{op}>{#{arg}}"
+        arg = $3
+        if arg =~ /[\x01\x02\x03\x04]/
+          error "invalid character in '#{str}'"
+        end
+        replaced = arg.gsub('@', "\x01").gsub('\\', "\x02").gsub('{', "\x03").gsub('}', "\x04")
+        "@<#{op}>{#{replaced}}"
       end
+    end
+
+    def revert_replace_fence(str)
+      str.gsub("\x01", '@').gsub("\x02", '\\').gsub("\x03", '{').gsub("\x04", '}')
     end
 
     def text(str)
@@ -547,12 +557,12 @@ module ReVIEW
           error "`@<xxx>' seen but is not valid inline op: #{w}"
         end
       end
-      result = @strategy.nofunc_text(words.shift)
+      result = @strategy.nofunc_text(revert_replace_fence(words.shift))
       until words.empty?
-        result << compile_inline(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\'))
-        result << @strategy.nofunc_text(words.shift)
+        result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
+        result << @strategy.nofunc_text(revert_replace_fence(words.shift))
       end
-      result.gsub("\x01", '@')
+      result
     rescue => err
       error err.message
     end

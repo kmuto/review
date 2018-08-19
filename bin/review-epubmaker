@@ -33,8 +33,13 @@ rescue OptionParser::ParseError => err
   exit 1
 end
 
-if ARGV.size < 1 || !File.exist?(ARGV[0])
+if ARGV.size < 1
   puts opts.help
+  exit 1
+end
+
+unless File.exist?(ARGV[0])
+  @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{ARGV[0]} not found."
   exit 1
 end
 

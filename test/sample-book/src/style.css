@@ -66,7 +66,7 @@ p {
     line-height: 1.6;
 }
 div.lead p {
-	color: #666;
+    color: #666;
     line-height: 1.6;
     font-size: 0.75em;
 }
@@ -248,6 +248,12 @@ strong{
 }
 em {
     font-style: italic;
+}
+span.balloon {
+    font-size: 0.9em;
+}
+span.balloon:before {
+    content: "←";
 }
 
 /**

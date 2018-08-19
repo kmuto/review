@@ -10,27 +10,13 @@ class BookTest < Test::Unit::TestCase
     assert_equal ex_path, re_path, *options
   end
 
-  def test_s_update_rubyenv
-    save_load_path = $LOAD_PATH.dup
-
-    Dir.mktmpdir do |dir|
-      Book.update_rubyenv(dir)
-      assert_equal save_load_path, $LOAD_PATH
-    end
-
-    Dir.mktmpdir do |dir|
-      local_lib_path = File.join(dir, 'lib')
-      Dir.mkdir(local_lib_path)
-      Book.update_rubyenv(dir)
-      assert_equal save_load_path, $LOAD_PATH
-    end
-
+  def test_update_rubyenv
     num = rand(99999)
     test_const = "ReVIEW__BOOK__TEST__#{num}"
     begin
       Dir.mktmpdir do |dir|
         File.open(File.join(dir, 'review-ext.rb'), 'w') { |o| o.puts "#{test_const} = #{num}" }
-        Book.update_rubyenv(dir)
+        Book::Base.load(dir)
         assert_equal num, (Object.class_eval { const_get(test_const) })
       end
     ensure
@@ -516,6 +502,17 @@ EOC
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
       assert_equal dir, book.basedir
+    end
+  end
+
+  def test_contentdir
+    mktmpbookdir('config.yml' => "contentdir: content\n", 'catalog.yml' => "CHAPS:\n - ch01.re\n") do |dir, _book, _files|
+      Dir.mkdir('content')
+      File.open('content/ch01.re', 'w') { |f| f.puts "foo\n" }
+      book = Book::Base.new(dir)
+      config_file = File.join(dir, 'config.yml')
+      book.load_config(config_file)
+      assert_equal "foo\n", book.chapters[0].content
     end
   end
 

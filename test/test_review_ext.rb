@@ -18,7 +18,6 @@ module ReVIEW
 end
     EOB
 
-    ReVIEW::Book::Base.clear_rubyenv ## to load review-ext.rb
     mktmpbookdir('CHAPS' => "ch01.re\n",
                  'ch01.re' => "= test\n\ntest.\n",
                  'review-ext.rb' => review_ext) do |_dir, _book, _files|

@@ -17,23 +17,9 @@ require 'review/book/volume'
 require 'review/book/index'
 
 module ReVIEW
-  @default_book = nil
-
-  def self.book
-    @default_book ||= Book::Base.load
-  end
-
   module Book
-    def self.load_default
-      Base.load_default
-    end
-
     def self.load(dir)
       Base.load dir
-    end
-
-    def self.update_rubyenv(dir)
-      Base.update_rubyenv dir
     end
   end
 end

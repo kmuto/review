@@ -35,8 +35,8 @@ EOB
       expect = <<-EOB
 <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
-<li><a href="./ch1.html">1 ch. 1</a></li>
-<li><a href="./ch2.html">2 ch. 2</a></li>
+<li><a href="ch1.html">1 ch. 1</a></li>
+<li><a href="ch2.html">2 ch. 2</a></li>
 </ul>
 EOB
       assert_equal expect, str
@@ -60,12 +60,12 @@ EOB
 <li><a href="index.html">TOP</a></li>
 <li>I part1
 <ul>
-<li><a href="./ch1.html">1 ch. 1</a></li>
+<li><a href="ch1.html">1 ch. 1</a></li>
 </ul>
 </li>
 <li>II part2
 <ul>
-<li><a href="./ch2.html">2 ch. 2</a></li>
+<li><a href="ch2.html">2 ch. 2</a></li>
 </ul>
 </li>
 </ul>
@@ -93,12 +93,12 @@ EOB
 <li><a href="index.html">TOP</a></li>
 <li><a href="p1.html">I This is PART1</a>
 <ul>
-<li><a href="./ch1.html">1 ch. 1</a></li>
+<li><a href="ch1.html">1 ch. 1</a></li>
 </ul>
 </li>
 <li><a href="p2.html">II This is PART2</a>
 <ul>
-<li><a href="./ch2.html">2 ch. 2</a></li>
+<li><a href="ch2.html">2 ch. 2</a></li>
 </ul>
 </li>
 </ul>
@@ -139,22 +139,22 @@ EOB
       expect = <<-EOB
 <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
-<li><a href="./pre1.html">PRE1</a></li>
-<li><a href="./pre2.html">PRE2</a></li>
+<li><a href="pre1.html">PRE1</a></li>
+<li><a href="pre2.html">PRE2</a></li>
 <li><a href="part1.html">I PART1</a>
 <ul>
-<li><a href="./ch1.html">1 ch. 1</a></li>
+<li><a href="ch1.html">1 ch. 1</a></li>
 </ul>
 </li>
 <li><a href="part2.html">II PART2</a>
 <ul>
-<li><a href="./ch2.html">2 ch. 2</a></li>
+<li><a href="ch2.html">2 ch. 2</a></li>
 </ul>
 </li>
-<li><a href="./app1.html">APP1</a></li>
-<li><a href="./app2.html">APP2</a></li>
-<li><a href="./post1.html">POST1</a></li>
-<li><a href="./post2.html">POST2</a></li>
+<li><a href="app1.html">APP1</a></li>
+<li><a href="app2.html">APP2</a></li>
+<li><a href="post1.html">POST1</a></li>
+<li><a href="post2.html">POST2</a></li>
 </ul>
 EOB
       assert_equal expect, str
