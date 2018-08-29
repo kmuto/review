@@ -249,11 +249,11 @@ module ReVIEW
       end
 
       def read_bib
-        File.read(File.join(@basedir, bib_file))
+        File.read(File.join(contentdir, bib_file))
       end
 
       def bib_exist?
-        File.exist?(File.join(@basedir, bib_file))
+        File.exist?(File.join(contentdir, bib_file))
       end
 
       def prefaces
