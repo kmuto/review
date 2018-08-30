@@ -1,3 +1,56 @@
+# Version 3.0.0 preview 2（未リリース）
+
+## 新機能
+* CSS 組版向けに EPUB ファイルを単一 HTML ファイルに変換する `review-epub2html` コマンドを追加しました ([#1098])
+
+## 非互換の変更
+* PDFMaker: `texcommand`、`dvicommmand`、`makeindex_command` に空白文字入りのパスを指定できるようにしました。これに伴い、これらのパラメータはコマンドオプションを取ることはできなくなりました。コマンドオプションは本来の `texoptions`、`dvioptions`、`makeindex_options` のパラメータに指定してください ([#1091])
+* PDFMaker: book.re というファイルで生じるビルドの失敗を修正しました。これまではベースファイルとして `book.tex` という名前のファイルを内部で作成していましたが、`__REVIEW_BOOK__.tex` という名前に変更しました ([#1081])
+* PDFMaker: jsbook ベーススタイルにおいて、geometry を読み込まないようにしました ([#912])
+* PDFMaker: jsbook ベーススタイルにおいて、ページ番号を見開きの左右に振るようにしました ([#1032])
+* `@<chapref>`、`@<hd>`、`@<column>` 命令の展開文字列をビルダ間で統一するとともに、`locale.yml` ファイルで変更できるようにしました。`@<chapref>` はデフォルトでは `第1章「FOO」` のようになります（`chapter_quote`、`chapter_quote_without_number` で変更可）。`chapter_quote` メッセージは2つの `%s` を取るようになりました。`@<hd>` は `「2.1 BAR」` のようになります（`hd_quote`、`hd_quote_without_number` で変更可）。`@<column>` は `コラム「BAZ」` のようになります（`column` で変更可） ([#886])
+
+## バグ修正
+* EPUBMaker: OPF ファイルの modified の時刻の表記を正しい UTC 値にしました ([#1094])
+* `contentdir` パラメータでサブフォルダを使用しているときに、参考文献ファイルがそのフォルダから読まれない問題を修正しました ([#1103])
+* PDFMaker: 索引辞書の読み込みなど、パラメータで指定したファイルのパスが解決されない問題を修正しました ([#1086])
+* preview 1 でのフェンス記法内のエスケープの不具合を修正しました ([#1083])
+* サンプル CSS 内の不要なタブ文字を除去しました ([#1084])
+
+## 機能強化
+* PDFMaker: tableとfigureでのフロート設定をマクロ `\floatplacement` で定義できるようにしました ([#1095])
+* EPUBMaker: エラーと警告の出力に logger 機能を利用するようにしました ([#1077])
+* PDFMaker: `dvicommand` パラメータが null の場合は、dvipdfmx などの変換コマンドを呼び出さないようにしました ([#1065])
+
+## ドキュメント
+* サンプルドキュメントを samples フォルダに移動しました ([#1073])
+* `config.yml.sample` に索引関連のフックおよびパラメータのコメントを追加しました ([#1097])
+* quickstart.md のタイプミスを修正しました ([#1079])
+
+## コントリビューターのみなさん
+* [@aiya000](https://github.com/aiya000)
+* [@sho-h](https://github.com/sho-h)
+* [@kateinoigakukun](https://github.com/kateinoigakukun)
+
+[#886]: https://github.com/kmuto/review/issues/886
+[#912]: https://github.com/kmuto/review/issues/912
+[#1032]: https://github.com/kmuto/review/issues/1032
+[#1065]: https://github.com/kmuto/review/pull/1065
+[#1073]: https://github.com/kmuto/review/issues/1073
+[#1077]: https://github.com/kmuto/review/pull/1077
+[#1079]: https://github.com/kmuto/review/pull/1079
+[#1080]: https://github.com/kmuto/review/issues/1080
+[#1081]: https://github.com/kmuto/review/pull/1081
+[#1083]: https://github.com/kmuto/review/issues/1083
+[#1084]: https://github.com/kmuto/review/pull/1084
+[#1086]: https://github.com/kmuto/review/issues/1086
+[#1091]: https://github.com/kmuto/review/pull/1091
+[#1094]: https://github.com/kmuto/review/pull/1094
+[#1095]: https://github.com/kmuto/review/pull/1095
+[#1097]: https://github.com/kmuto/review/pull/1097
+[#1098]: https://github.com/kmuto/review/pull/1098
+[#1103]: https://github.com/kmuto/review/pull/1103
+
 # Version 3.0.0 preview 1
 
 ## 新機能
@@ -79,6 +132,7 @@
 [#1006]: https://github.com/kmuto/review/issues/1006
 [#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
+[#1010]: https://github.com/kmuto/review/pull/1010
 [#1016]: https://github.com/kmuto/review/issues/1016
 [#1022]: https://github.com/kmuto/review/issues/1022
 [#1027]: https://github.com/kmuto/review/issues/1027
@@ -302,6 +356,7 @@
 [#785]: https://github.com/kmuto/review/issues/785
 [#787]: https://github.com/kmuto/review/issues/787
 [#788]: https://github.com/kmuto/review/issues/788
+[#794]: https://github.com/kmuto/review/issues/794
 [#795]: https://github.com/kmuto/review/issues/795
 
 
@@ -535,7 +590,7 @@
     * locale.yaml -> locale.yml
     * PageMetric.a5 -> PageMetric::A5
     * locale.yaml や layout.erb を使っているとエラーになります
-    * `prt` は `発行所` ではなく `印刷所` になります. `発行所` は `pbl` です.([#562, #593])
+    * `prt` は `発行所` ではなく `印刷所` になります. `発行所` は `pbl` です.([#562], [#593])
 * `appendix_format` を廃止しました ([#609])
 * inaobuilder を廃止しました (アップストリームで修正Markdownを使用することになったため) ([#573])
 * 古い epubmaker を削除しました
@@ -678,11 +733,16 @@
 * latexbuilderで`//list`がhighlitingなしのときにキャプションが表示されなくなっていたのを修正しました ([#465])
 * markdownbuilderでdefinition listを使うとエラーになるのを修正しました ([#473])
 
+[#465]: https://github.com/kmuto/review/issues/465
+[#473]: https://github.com/kmuto/review/issues/473
+
 # Version 1.7.1の主な変更点
 
 ## バグ修正
 * latexbuilderで`//listnum`のキャプションが2重に出力されるバグを修正しました ([#465])
 * review-initで生成される雛形を元にEPUB3のファイルを作成するとepubcheck 4.0.1でエラーになるバグを修正しました ([#456])
+
+[#456]: https://github.com/kmuto/review/issues/473
 
 # Version 1.7.0の主な変更点
 

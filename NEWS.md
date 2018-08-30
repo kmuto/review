@@ -1,3 +1,56 @@
+# Version 3.0.0 preview 2（Unreleased）
+
+## New Features
+* add `review-epub2html` to produce single HTML file from EPUB file for CSS typesetting ([#1098])
+
+## Breaking Changes
+* PDFMaker: allow a path with space character on `texcommand`, `dvicommmand`, and `makeindex_command`. Due to this change, these parameters no longer take command options. use `texoptions`, `dvioptions`, and `makeindex_options` to specify  options ([#1091])
+* PDFMaker: the file used internally has been changed from `book.tex` to `__REVIEW_BOOK__.tex` ([#1081])
+* PDFMaker: dropped geometry.sty from jsbook style ([#912])
+* PDFMaker: use twocolumn option for jsbook style ([#1032])
+* unified strings expanded by `@<chapref>`, `@<hd>`, and `@<column>` op between builders. you can customize it with `locale.yml`. `@<chapref>` will be expanded like `Chapter 1 "FOO"` (locale msgid: `chapter_quote` and `chapter_quote_without_number`). `chapter_quote` now takes two `%s`. `@<hd>` will be expanded like `"2.1 BAR"` (locale msgid: `hd_quote` and `hd_quote_without_number`). `@<column>` will be extended like `Column BAZ` (locale msgid: `column`) ([#886])
+
+## Bug Fixes
+* EPUBMaker: `modified` value of OPF file is now correct UTC time ([#1094])
+* fix an issue where bibliography file in `contentdir` could not be read ([#1103])
+* PDFMaker: fix an issue where the file specified by the parameter could not be found ([#1086])
+* fix a bug in the fence escaping that occurred in preview1 ([#1083])
+* remove unwanted tab character from sample CSS ([#1084])
+
+## Enhancements
+* PDFMaker: use `\floatplacement` to configure float settings of table and figure ([#1095])
+* EPUBMaker: use logger function to export error/warning ([#1077])
+* PDFMaker: do not use dvipdfmx when `dvicommand` parameter is null ([#1065])
+
+## Docs
+* Move sample documents to /samples folder ([#1073])
+* Add descriptions abount hooks and parameters of indexing into `config.yml.sample` ([#1097])
+* Fix typo in quickstart.md ([#1079])
+
+## Contributors
+* [@aiya000](https://github.com/aiya000)
+* [@sho-h](https://github.com/sho-h)
+* [@kateinoigakukun](https://github.com/kateinoigakukun)
+
+[#886]: https://github.com/kmuto/review/issues/886
+[#912]: https://github.com/kmuto/review/issues/912
+[#1032]: https://github.com/kmuto/review/issues/1032
+[#1065]: https://github.com/kmuto/review/pull/1065
+[#1073]: https://github.com/kmuto/review/issues/1073
+[#1077]: https://github.com/kmuto/review/pull/1077
+[#1079]: https://github.com/kmuto/review/pull/1079
+[#1081]: https://github.com/kmuto/review/pull/1081
+[#1080]: https://github.com/kmuto/review/issues/1080
+[#1083]: https://github.com/kmuto/review/issues/1083
+[#1084]: https://github.com/kmuto/review/pull/1084
+[#1086]: https://github.com/kmuto/review/issues/1086
+[#1091]: https://github.com/kmuto/review/pull/1091
+[#1094]: https://github.com/kmuto/review/pull/1094
+[#1095]: https://github.com/kmuto/review/pull/1095
+[#1097]: https://github.com/kmuto/review/pull/1097
+[#1098]: https://github.com/kmuto/review/pull/1098
+[#1103]: https://github.com/kmuto/review/pull/1103
+
 # Version 3.0.0 preview 1
 
 ## New Features
@@ -78,6 +131,7 @@
 [#1006]: https://github.com/kmuto/review/issues/1006
 [#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
+[#1010]: https://github.com/kmuto/review/pull/1010
 [#1016]: https://github.com/kmuto/review/issues/1016
 [#1022]: https://github.com/kmuto/review/issues/1022
 [#1027]: https://github.com/kmuto/review/issues/1027
@@ -87,6 +141,7 @@
 [#1045]: https://github.com/kmuto/review/issues/1045
 [#1046]: https://github.com/kmuto/review/issues/1046
 [#1059]: https://github.com/kmuto/review/issues/1059
+[#1060]: https://github.com/kmuto/review/issues/1060
 [#1063]: https://github.com/kmuto/review/issues/1063
 
 # Version 2.5.0
@@ -307,6 +362,7 @@
 [#785]: https://github.com/kmuto/review/issues/785
 [#787]: https://github.com/kmuto/review/issues/787
 [#788]: https://github.com/kmuto/review/issues/788
+[#794]: https://github.com/kmuto/review/issues/794
 [#795]: https://github.com/kmuto/review/issues/795
 
 
@@ -541,7 +597,7 @@
     * locale.yaml -> locale.yml
     * PageMetric.a5 -> PageMetric::A5
     * raise error when using locale.yaml and layout.erb
-    * `prt` is printer(`印刷所`), not publisher(`発行所`).  `発行所` is `pbl`.  ([#562, #593])
+    * `prt` is printer(`印刷所`), not publisher(`発行所`).  `発行所` is `pbl`.  ([#562], [#593])
 * Obsolete `appendix_format` ([#609])
 * Remove obsolete inaobuilder. (upstream changed their mind to use modified Markdown) ([#573])
 * Remove obsolete legacy epubmaker
@@ -684,11 +740,15 @@
 * Fix latexbuilder to show caption in `//list` without highliting ([#465])
 * Fix markdownbuilder to use definition list ([#473])
 
+[#465]: https://github.com/kmuto/review/issues/465
+[#473]: https://github.com/kmuto/review/issues/473
+
 # Version 1.7.1
 
 ## Bug Fix
 * Fix latexbuilder to display caption twice in `//listnum` ([#465])
 * Fix review-init to generate non-valid EPUB3 file with epubcheck 4.0.1 ([#456])
+[#456]: https://github.com/kmuto/review/issues/473
 
 # Version 1.7.0
 
