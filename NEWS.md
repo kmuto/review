@@ -1,3 +1,55 @@
+# Version 3.0.0 preview 2（Unreleased）
+
+## New Features
+* Add `review-epub2html` to produce single HTML file from EPUB file for CSS typesetting [#1098]
+
+## Breaking Changes
+* PDFMaker: `texcommand`、`dvicommmand`、`makeindex_command` に空白文字入りのパスを指定できるようにしました。これに伴い、これらのパラメータはコマンドオプションを取ることはできなくなりました。コマンドオプションは本来の `texoptions`、`dvioptions`、`makeindex_options` のパラメータに指定してください [#1091]
+* PDFMaker: book.re というファイルで生じるビルドの失敗を修正しました。これまではベースファイルとして `book.tex` という名前のファイルを内部で作成していましたが、`__REVIEW_BOOK__.tex` という名前に変更しました [#1081]
+* PDFMaker: jsbook ベーススタイルにおいて、geometry を読み込まないようにしました [#912]
+* PDFMaker: jsbook ベーススタイルにおいて、ページ番号を見開きの左右に振るようにしました [#1032]
+* `@<chapref>`、`@<hd>`、`@<column>` 命令の展開文字列をビルダ間で統一するとともに、`locale.yml` ファイルで変更できるようにしました。`@<chapref>` はデフォルトでは `第1章「FOO」` のようになります（`chapter_quote`、`chapter_quote_without_number` で変更可）。`chapter_quote` メッセージは2つの `%s` を取るようになりました。`@<hd>` は `「2.1 BAR」` のようになります（`hd_quote`、`hd_quote_without_number` で変更可）。`@<column>` は `コラム「BAZ」` のようになります（`column` で変更可） [#886]
+
+## Bug Fixes
+* EPUBMaker: OPF ファイルの modified の時刻の表記を正しい UTC 値にしました ([#1094])
+* `contentdir` パラメータでサブフォルダを使用しているときに、参考文献ファイルがそのフォルダから読まれない問題を修正しました ([#1103])
+* PDFMaker: 索引辞書の読み込みなど、パラメータで指定したファイルのパスが解決されない問題を修正しました ([#1086])
+* preview 1 でのフェンス記法内のエスケープの不具合を修正しました ([#1083])
+* サンプル CSS 内の不要なタブ文字を除去しました ([#1084])
+
+## Enhancements
+* PDFMaker: tableとfigureでのフロート設定をマクロ `\floatplacement` で定義できるようにしました ([#1095])
+* EPUBMaker: エラーと警告の出力に logger 機能を利用するようにしました ([#1077])
+* PDFMaker: `dvicommand` パラメータが null の場合は、dvipdfmx などの変換コマンドを呼び出さないようにしました ([#1065])
+
+## Docs
+* Move sample documents to /samples folder ([#1073])
+* Add descriptions abount hooks and parameters of indexing into `config.yml.sample` ([#1097])
+* Fix typo in quickstart.md ([#1079])
+
+## Contributors
+* [@aiya000](https://github.com/aiya000)
+* [@sho-h](https://github.com/sho-h)
+* [@kateinoigakukun](https://github.com/kateinoigakukun)
+
+[#886]: https://github.com/kmuto/review/issues/886
+[#912]: https://github.com/kmuto/review/issues/912
+[#1032]: https://github.com/kmuto/review/issues/1032
+[#1065]: https://github.com/kmuto/review/pull/1065
+[#1073]: https://github.com/kmuto/review/issues/1073
+[#1077]: https://github.com/kmuto/review/pull/1077
+[#1079]: https://github.com/kmuto/review/pull/1079
+[#1080]: https://github.com/kmuto/review/issues/1080
+[#1083]: https://github.com/kmuto/review/issues/1083
+[#1084]: https://github.com/kmuto/review/pull/1084
+[#1086]: https://github.com/kmuto/review/issues/1086
+[#1091]: https://github.com/kmuto/review/pull/1091
+[#1094]: https://github.com/kmuto/review/pull/1094
+[#1095]: https://github.com/kmuto/review/pull/1095
+[#1097]: https://github.com/kmuto/review/pull/1097
+[#1098]: https://github.com/kmuto/review/pull/1098
+[#1103]: https://github.com/kmuto/review/pull/1103
+
 # Version 3.0.0 preview 1
 
 ## New Features
