@@ -11,7 +11,7 @@ def assets_dir
 end
 
 def prepare_samplebook(srcdir)
-  samplebook_dir = File.expand_path('sample-book/src/', File.dirname(__FILE__))
+  samplebook_dir = File.expand_path('../samples/sample-book/src/', File.dirname(__FILE__))
   FileUtils.cp_r(Dir.glob(samplebook_dir + '/*'), srcdir)
   YAML.load(File.open(srcdir + '/config.yml'))
 end
