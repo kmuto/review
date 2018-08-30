@@ -382,7 +382,7 @@ test
 inside column
 
 next level
-this is test.
+this is コラム「test」.
 EOS
 
     assert_equal expected, column_helper(review)

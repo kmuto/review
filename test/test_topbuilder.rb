@@ -406,7 +406,7 @@ inside column
 ◆→終了:コラム←◆
 
 ■H3■next level
-this is test.
+this is コラム「test」.
 EOS
 
     assert_equal expected, column_helper(review)
