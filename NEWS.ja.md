@@ -132,6 +132,7 @@
 [#1006]: https://github.com/kmuto/review/issues/1006
 [#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
+[#1010]: https://github.com/kmuto/review/pull/1010
 [#1016]: https://github.com/kmuto/review/issues/1016
 [#1022]: https://github.com/kmuto/review/issues/1022
 [#1027]: https://github.com/kmuto/review/issues/1027
@@ -355,6 +356,7 @@
 [#785]: https://github.com/kmuto/review/issues/785
 [#787]: https://github.com/kmuto/review/issues/787
 [#788]: https://github.com/kmuto/review/issues/788
+[#794]: https://github.com/kmuto/review/issues/794
 [#795]: https://github.com/kmuto/review/issues/795
 
 
@@ -588,7 +590,7 @@
     * locale.yaml -> locale.yml
     * PageMetric.a5 -> PageMetric::A5
     * locale.yaml や layout.erb を使っているとエラーになります
-    * `prt` は `発行所` ではなく `印刷所` になります. `発行所` は `pbl` です.([#562, #593])
+    * `prt` は `発行所` ではなく `印刷所` になります. `発行所` は `pbl` です.([#562], [#593])
 * `appendix_format` を廃止しました ([#609])
 * inaobuilder を廃止しました (アップストリームで修正Markdownを使用することになったため) ([#573])
 * 古い epubmaker を削除しました
@@ -731,11 +733,16 @@
 * latexbuilderで`//list`がhighlitingなしのときにキャプションが表示されなくなっていたのを修正しました ([#465])
 * markdownbuilderでdefinition listを使うとエラーになるのを修正しました ([#473])
 
+[#465]: https://github.com/kmuto/review/issues/465
+[#473]: https://github.com/kmuto/review/issues/473
+
 # Version 1.7.1の主な変更点
 
 ## バグ修正
 * latexbuilderで`//listnum`のキャプションが2重に出力されるバグを修正しました ([#465])
 * review-initで生成される雛形を元にEPUB3のファイルを作成するとepubcheck 4.0.1でエラーになるバグを修正しました ([#456])
+
+[#456]: https://github.com/kmuto/review/issues/473
 
 # Version 1.7.0の主な変更点
 

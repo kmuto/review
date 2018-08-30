@@ -131,6 +131,7 @@
 [#1006]: https://github.com/kmuto/review/issues/1006
 [#1007]: https://github.com/kmuto/review/issues/1007
 [#1008]: https://github.com/kmuto/review/pull/1008
+[#1010]: https://github.com/kmuto/review/pull/1010
 [#1016]: https://github.com/kmuto/review/issues/1016
 [#1022]: https://github.com/kmuto/review/issues/1022
 [#1027]: https://github.com/kmuto/review/issues/1027
@@ -361,6 +362,7 @@
 [#785]: https://github.com/kmuto/review/issues/785
 [#787]: https://github.com/kmuto/review/issues/787
 [#788]: https://github.com/kmuto/review/issues/788
+[#794]: https://github.com/kmuto/review/issues/794
 [#795]: https://github.com/kmuto/review/issues/795
 
 
@@ -595,7 +597,7 @@
     * locale.yaml -> locale.yml
     * PageMetric.a5 -> PageMetric::A5
     * raise error when using locale.yaml and layout.erb
-    * `prt` is printer(`印刷所`), not publisher(`発行所`).  `発行所` is `pbl`.  ([#562, #593])
+    * `prt` is printer(`印刷所`), not publisher(`発行所`).  `発行所` is `pbl`.  ([#562], [#593])
 * Obsolete `appendix_format` ([#609])
 * Remove obsolete inaobuilder. (upstream changed their mind to use modified Markdown) ([#573])
 * Remove obsolete legacy epubmaker
@@ -738,11 +740,15 @@
 * Fix latexbuilder to show caption in `//list` without highliting ([#465])
 * Fix markdownbuilder to use definition list ([#473])
 
+[#465]: https://github.com/kmuto/review/issues/465
+[#473]: https://github.com/kmuto/review/issues/473
+
 # Version 1.7.1
 
 ## Bug Fix
 * Fix latexbuilder to display caption twice in `//listnum` ([#465])
 * Fix review-init to generate non-valid EPUB3 file with epubcheck 4.0.1 ([#456])
+[#456]: https://github.com/kmuto/review/issues/473
 
 # Version 1.7.0
 
