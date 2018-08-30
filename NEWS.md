@@ -140,6 +140,7 @@
 [#1045]: https://github.com/kmuto/review/issues/1045
 [#1046]: https://github.com/kmuto/review/issues/1046
 [#1059]: https://github.com/kmuto/review/issues/1059
+[#1060]: https://github.com/kmuto/review/issues/1060
 [#1063]: https://github.com/kmuto/review/issues/1063
 
 # Version 2.5.0
