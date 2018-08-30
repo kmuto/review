@@ -1,26 +1,26 @@
 # Version 3.0.0 preview 2（Unreleased）
 
 ## New Features
-* Add `review-epub2html` to produce single HTML file from EPUB file for CSS typesetting [#1098]
+* add `review-epub2html` to produce single HTML file from EPUB file for CSS typesetting ([#1098])
 
 ## Breaking Changes
-* PDFMaker: `texcommand`、`dvicommmand`、`makeindex_command` に空白文字入りのパスを指定できるようにしました。これに伴い、これらのパラメータはコマンドオプションを取ることはできなくなりました。コマンドオプションは本来の `texoptions`、`dvioptions`、`makeindex_options` のパラメータに指定してください [#1091]
-* PDFMaker: book.re というファイルで生じるビルドの失敗を修正しました。これまではベースファイルとして `book.tex` という名前のファイルを内部で作成していましたが、`__REVIEW_BOOK__.tex` という名前に変更しました [#1081]
-* PDFMaker: jsbook ベーススタイルにおいて、geometry を読み込まないようにしました [#912]
-* PDFMaker: jsbook ベーススタイルにおいて、ページ番号を見開きの左右に振るようにしました [#1032]
-* `@<chapref>`、`@<hd>`、`@<column>` 命令の展開文字列をビルダ間で統一するとともに、`locale.yml` ファイルで変更できるようにしました。`@<chapref>` はデフォルトでは `第1章「FOO」` のようになります（`chapter_quote`、`chapter_quote_without_number` で変更可）。`chapter_quote` メッセージは2つの `%s` を取るようになりました。`@<hd>` は `「2.1 BAR」` のようになります（`hd_quote`、`hd_quote_without_number` で変更可）。`@<column>` は `コラム「BAZ」` のようになります（`column` で変更可） [#886]
+* PDFMaker: allow a path with space character on `texcommand`, `dvicommmand`, and `makeindex_command`. Due to this change, these parameters no longer take command options. use `texoptions`, `dvioptions`, and `makeindex_options` to specify  options ([#1091])
+* PDFMaker: the file used internally has been changed from `book.tex` to `__REVIEW_BOOK__.tex` ([#1081])
+* PDFMaker: dropped geometry.sty from jsbook style ([#912])
+* PDFMaker: use twocolumn option for jsbook style ([#1032])
+* unified strings expanded by `@<chapref>`, `@<hd>`, and `@<column>` op between builders. you can customize it with `locale.yml`. `@<chapref>` will be expanded like `Chapter 1 "FOO"` (locale msgid: `chapter_quote` and `chapter_quote_without_number`). `chapter_quote` now takes two `%s`. `@<hd>` will be expanded like `"2.1 BAR"` (locale msgid: `hd_quote` and `hd_quote_without_number`). `@<column>` will be extended like `Column BAZ` (locale msgid: `column`) ([#886])
 
 ## Bug Fixes
-* EPUBMaker: OPF ファイルの modified の時刻の表記を正しい UTC 値にしました ([#1094])
-* `contentdir` パラメータでサブフォルダを使用しているときに、参考文献ファイルがそのフォルダから読まれない問題を修正しました ([#1103])
-* PDFMaker: 索引辞書の読み込みなど、パラメータで指定したファイルのパスが解決されない問題を修正しました ([#1086])
-* preview 1 でのフェンス記法内のエスケープの不具合を修正しました ([#1083])
-* サンプル CSS 内の不要なタブ文字を除去しました ([#1084])
+* EPUBMaker: `modified` value of OPF file is now correct UTC time ([#1094])
+* fix an issue where bibliography file in `contentdir` could not be read ([#1103])
+* PDFMaker: fix an issue where the file specified by the parameter could not be found ([#1086])
+* fix a bug in the fence escaping that occurred in preview1 ([#1083])
+* remove unwanted tab character from sample CSS ([#1084])
 
 ## Enhancements
-* PDFMaker: tableとfigureでのフロート設定をマクロ `\floatplacement` で定義できるようにしました ([#1095])
-* EPUBMaker: エラーと警告の出力に logger 機能を利用するようにしました ([#1077])
-* PDFMaker: `dvicommand` パラメータが null の場合は、dvipdfmx などの変換コマンドを呼び出さないようにしました ([#1065])
+* PDFMaker: use `\floatplacement` to configure float settings of table and figure ([#1095])
+* EPUBMaker: use logger function to export error/warning ([#1077])
+* PDFMaker: do not use dvipdfmx when `dvicommand` parameter is null ([#1065])
 
 ## Docs
 * Move sample documents to /samples folder ([#1073])
@@ -39,6 +39,7 @@
 [#1073]: https://github.com/kmuto/review/issues/1073
 [#1077]: https://github.com/kmuto/review/pull/1077
 [#1079]: https://github.com/kmuto/review/pull/1079
+[#1081]: https://github.com/kmuto/review/pull/1081
 [#1080]: https://github.com/kmuto/review/issues/1080
 [#1083]: https://github.com/kmuto/review/issues/1083
 [#1084]: https://github.com/kmuto/review/pull/1084

@@ -1,14 +1,14 @@
 # Version 3.0.0 preview 2（未リリース）
 
 ## 新機能
-* CSS 組版向けに EPUB ファイルを単一 HTML ファイルに変換する `review-epub2html` コマンドを追加しました [#1098]
+* CSS 組版向けに EPUB ファイルを単一 HTML ファイルに変換する `review-epub2html` コマンドを追加しました ([#1098])
 
 ## 非互換の変更
-* PDFMaker: `texcommand`、`dvicommmand`、`makeindex_command` に空白文字入りのパスを指定できるようにしました。これに伴い、これらのパラメータはコマンドオプションを取ることはできなくなりました。コマンドオプションは本来の `texoptions`、`dvioptions`、`makeindex_options` のパラメータに指定してください [#1091]
-* PDFMaker: book.re というファイルで生じるビルドの失敗を修正しました。これまではベースファイルとして `book.tex` という名前のファイルを内部で作成していましたが、`__REVIEW_BOOK__.tex` という名前に変更しました [#1081]
-* PDFMaker: jsbook ベーススタイルにおいて、geometry を読み込まないようにしました [#912]
-* PDFMaker: jsbook ベーススタイルにおいて、ページ番号を見開きの左右に振るようにしました [#1032]
-* `@<chapref>`、`@<hd>`、`@<column>` 命令の展開文字列をビルダ間で統一するとともに、`locale.yml` ファイルで変更できるようにしました。`@<chapref>` はデフォルトでは `第1章「FOO」` のようになります（`chapter_quote`、`chapter_quote_without_number` で変更可）。`chapter_quote` メッセージは2つの `%s` を取るようになりました。`@<hd>` は `「2.1 BAR」` のようになります（`hd_quote`、`hd_quote_without_number` で変更可）。`@<column>` は `コラム「BAZ」` のようになります（`column` で変更可） [#886]
+* PDFMaker: `texcommand`、`dvicommmand`、`makeindex_command` に空白文字入りのパスを指定できるようにしました。これに伴い、これらのパラメータはコマンドオプションを取ることはできなくなりました。コマンドオプションは本来の `texoptions`、`dvioptions`、`makeindex_options` のパラメータに指定してください ([#1091])
+* PDFMaker: book.re というファイルで生じるビルドの失敗を修正しました。これまではベースファイルとして `book.tex` という名前のファイルを内部で作成していましたが、`__REVIEW_BOOK__.tex` という名前に変更しました ([#1081])
+* PDFMaker: jsbook ベーススタイルにおいて、geometry を読み込まないようにしました ([#912])
+* PDFMaker: jsbook ベーススタイルにおいて、ページ番号を見開きの左右に振るようにしました ([#1032])
+* `@<chapref>`、`@<hd>`、`@<column>` 命令の展開文字列をビルダ間で統一するとともに、`locale.yml` ファイルで変更できるようにしました。`@<chapref>` はデフォルトでは `第1章「FOO」` のようになります（`chapter_quote`、`chapter_quote_without_number` で変更可）。`chapter_quote` メッセージは2つの `%s` を取るようになりました。`@<hd>` は `「2.1 BAR」` のようになります（`hd_quote`、`hd_quote_without_number` で変更可）。`@<column>` は `コラム「BAZ」` のようになります（`column` で変更可） ([#886])
 
 ## バグ修正
 * EPUBMaker: OPF ファイルの modified の時刻の表記を正しい UTC 値にしました ([#1094])
@@ -40,6 +40,7 @@
 [#1077]: https://github.com/kmuto/review/pull/1077
 [#1079]: https://github.com/kmuto/review/pull/1079
 [#1080]: https://github.com/kmuto/review/issues/1080
+[#1081]: https://github.com/kmuto/review/pull/1081
 [#1083]: https://github.com/kmuto/review/issues/1083
 [#1084]: https://github.com/kmuto/review/pull/1084
 [#1086]: https://github.com/kmuto/review/issues/1086
