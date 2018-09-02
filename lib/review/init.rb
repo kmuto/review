@@ -243,7 +243,7 @@ EOS
               next
             end
 
-            if fname =~ %r{\A/} || fname =~ %r{/\.\./} # simple fool proof
+            if fname =~ %r{\A/} || fname =~ /\.\./ # simple fool proof
               made = nil
               break
             end
