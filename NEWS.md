@@ -1,4 +1,4 @@
-# Version 3.0.0 preview 2（Unreleased）
+# Version 3.0.0 preview 2
 
 ## New Features
 * add `review-epub2html` to produce single HTML file from EPUB file for CSS typesetting ([#1098])
