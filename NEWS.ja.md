@@ -1,4 +1,4 @@
-# Version 3.0.0 preview 2（未リリース）
+# Version 3.0.0 preview 2
 
 ## 新機能
 * CSS 組版向けに EPUB ファイルを単一 HTML ファイルに変換する `review-epub2html` コマンドを追加しました ([#1098])
