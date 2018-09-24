@@ -50,6 +50,11 @@ some ad content
 
 \begin{document}
 
+%% begindocument hook
+\ifdefined\reviewbegindocumenthook
+\reviewbegindocumenthook
+\fi
+
 %% coverpage
 \ifdefined\reviewcoverpagecont
 \reviewcoverpagecont
@@ -138,6 +143,11 @@ some ad content
 %%% backcover page
 \ifdefined\reviewbackcovercont
 \reviewbackcovercont
+\fi
+
+%% enddocument hook
+\ifdefined\reviewenddocumenthook
+\reviewenddocumenthook
 \fi
 
 \end{document}
