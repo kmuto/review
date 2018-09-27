@@ -40,3 +40,26 @@ opf_meta: {"ibooks:binding": "false"}
 opf_prefix: {ebpaj: "http://www.ebpaj.jp/", ibooks: "http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/"}
 opf_meta: {"ebpaj:guide-version": "1.1.3", "ibooks:binding": "false"}
 ```
+
+## Amazon Kindle
+
+EPUB を作成したあと、mobi ファイルにする必要があります。これには Amazon が無料で配布している KindleGen を使用します。
+
+- https://www.amazon.com/gp/feature.html?ie=UTF8&docId=1000765211
+
+OS に合わせたインストーラでインストールした後、`kindlegen EPUBファイル` で mobi ファイルに変換できます。
+
+Kindle Previewer にも内包されています。
+
+- https://kdp.amazon.co.jp/ja_JP/help/topic/G202131170
+
+注意点として、KindleGen は論理目次だけだとエラーを報告します。物理目次ページを付けるために、次のように config.yml に設定します。
+
+```yaml
+epubmaker:
+  toc: true
+```
+
+CSS によっては、Kindle では表現できないことについての警告が表示されることがあります。「Amazon Kindle パブリッシング・ガイドライン」では、使用可能な文字・外部ハイパーリンクの制約・色の使い方・画像サイズなどが詳細に説明されています。
+
+- http://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines_JP.pdf
