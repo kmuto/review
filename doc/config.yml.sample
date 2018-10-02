@@ -281,10 +281,10 @@ epubmaker:
   # epubmaker:階層を使うものはここまで
 
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
-# texstyle: samplemacro
+# texstyle: ["reviewmacro"]
 #
 # LaTeX用のdocumentclassを指定する
-# texdocumentclass: ["jsbook", "uplatex,oneside"]
+# texdocumentclass: ["review-jsbook", "uplatex,twoside"]
 #
 # LaTeX用のコマンドを指定する
 # texcommand: "uplatex"

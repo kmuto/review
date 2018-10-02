@@ -385,8 +385,8 @@ module ReVIEW
     def erb_config
       @texcompiler = File.basename(@config['texcommand'], '.*')
       dclass = @config['texdocumentclass'] || []
-      @documentclass = dclass[0] || 'jsbook'
-      @documentclassoption = dclass[1] || 'uplatex,oneside'
+      @documentclass = dclass[0] || 'review-jsbook'
+      @documentclassoption = dclass[1] || 'uplatex,twoside'
       if @config['dvicommand'] =~ /dvipdfmx/ && @documentclassoption !~ /dvipdfmx/
         @documentclassoption = "dvipdfmx,#{@documentclassoption}".sub(/,\Z/, '')
       end
