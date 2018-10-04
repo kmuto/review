@@ -22,7 +22,7 @@ epubmaker:
   htmlext: xhtml
 
 texstyle: reviewmacro
-# texdocumentclass: ["review-jsbook", "uplatex,twoside"]
+# texdocumentclass: ["review-jsbook", "cameraready=print"]
 # texcommand: "uplatex"
 # texoptions: null
 # dvicommand: "dvipdfmx"

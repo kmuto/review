@@ -386,7 +386,7 @@ module ReVIEW
       @texcompiler = File.basename(@config['texcommand'], '.*')
       dclass = @config['texdocumentclass'] || []
       @documentclass = dclass[0] || 'review-jsbook'
-      @documentclassoption = dclass[1] || 'uplatex,twoside'
+      @documentclassoption = dclass[1] || ''
       if @config['dvicommand'] =~ /dvipdfmx/ && @documentclassoption !~ /dvipdfmx/
         @documentclassoption = "dvipdfmx,#{@documentclassoption}".sub(/,\Z/, '')
       end

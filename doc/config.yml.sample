@@ -284,7 +284,8 @@ epubmaker:
 # texstyle: ["reviewmacro"]
 #
 # LaTeX用のdocumentclassを指定する
-# texdocumentclass: ["review-jsbook", "uplatex,twoside"]
+# review-jsbook.clsのオプションについてはdoc/pdfmaker.ja.mdを参照
+# texdocumentclass: ["review-jsbook", "cameraready=print"]
 #
 # LaTeX用のコマンドを指定する
 # texcommand: "uplatex"

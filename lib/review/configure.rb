@@ -77,7 +77,7 @@ module ReVIEW
         'footnotetext' => nil,
         'texcommand' => 'uplatex',
         'texoptions' => '-interaction=nonstopmode -file-line-error',
-        'texdocumentclass' => ['review-jsbook', 'uplatex,twoside'],
+        'texdocumentclass' => ['review-jsbook', ''],
         'dvicommand' => 'dvipdfmx',
         'dvioptions' => '-d 5 -z 9',
         # for PDFMaker
