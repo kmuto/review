@@ -55,7 +55,7 @@
       \ClassError{recls}{The option #1 should have no value}{\@ehc}}%
     #2}}
 
-%% cameraready=print,pdf,preview
+%% cameraready=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
@@ -82,7 +82,7 @@
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse
   \PassOptionsToClass{tombo}{jsbook}
-\else\def\recls@tmp{pdf}\ifx\recls@cameraready\recls@tmp
+\else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue
 \else
   \recls@error{No such value of cameraready: \recls@cameraready}%
