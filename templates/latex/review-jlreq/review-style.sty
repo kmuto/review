@@ -1,3 +1,12 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{review-style}[2018/10/05]
+
+%% using Helvetica as sans-serif
+\renewcommand{\sfdefault}{phv}
+
+%% disable hyperlink color and border
+\hypersetup{hidelinks}
+
 % コードリスト用色
 \definecolor{shadecolor}{gray}{0.9}
 \definecolor{shadecolorb}{gray}{0.1}
@@ -20,9 +29,6 @@
 % ヘッダスタイル
 \ModifyPageStyle{headings}{nombre_position={top-fore_edge},running_head_position={top-fore_edge}}
 \pagestyle{headings}
-
-%% disable hyperlink color and border
-\hypersetup{hidelinks}
 
 % 図表フロートの配置
 \floatplacement{figure}{H}

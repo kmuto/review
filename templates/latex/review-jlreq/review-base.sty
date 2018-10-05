@@ -1,21 +1,15 @@
 % jlreq用基本設定
-\RequirePackage{needspace}
-\RequirePackage{alltt}
-\RequirePackage{float}
-\RequirePackage{upquote}
-\RequirePackage{bm}
-\RequirePackage[table]{xcolor}
-\RequirePackage{tcolorbox}
-\tcbuselibrary{xparse,hooks,skins,breakable}
-\RequirePackage{amsmath}
+\newcommand*\PDFDocumentInformation[1]{%
+  \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+\@onlypreamble\PDFDocumentInformation
 
-\IfFileExists{jumoline.sty}{
-\RequirePackage{jumoline}
+\PDFDocumentInformation{
+  /Title    (\review@booktitlename)
+  /Author   (\review@autnames)
+  % /Subject  ()
+  % /Keywords (,,)
+  /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
 }
-
-\RequirePackage[bookmarks=true,bookmarksnumbered=true,hidelinks,%
-     pdftitle={\review@booktitlename},%
-     pdfauthor={\review@autnames}]{hyperref}
 
 \RequirePackage{pxrubrica}
 \@ifpackagelater{pxrubrica}{2017/04/20}{% true
