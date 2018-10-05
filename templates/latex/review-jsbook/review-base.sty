@@ -1,4 +1,8 @@
 \RequirePackage{ifthen}
+\@ifundefined{Hy@Info}{% for jsbook.cls
+  \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
+  \RequirePackage[dvipdfmx]{pxjahyper}
+}{}
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
 \RequirePackage[deluxe,uplatex]{otf}%
 }{%
@@ -31,6 +35,13 @@
 
 \long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
 
+\if@pdftombo
+  \IfFileExists{gentombow.sty}{
+    %\PassOptionsToPackage{a4-tombo}{gentombow}
+    \RequirePackage[pdfbox]{gentombow}
+  }{}
+\fi
+
 \newenvironment{shadedb}{%
   \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
   \MakeFramed {\FrameRestore}}%
@@ -39,10 +50,18 @@
 \newcommand{\parasep}{\vspace*{3zh}}
 \setlength{\footskip}{30pt}
 
-\RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,hidelinks,%
-     pdftitle={\review@booktitlename},%
-     pdfauthor={\review@autnames}]{hyperref}
-\RequirePackage[dvipdfmx]{pxjahyper}
+\newcommand*\PDFDocumentInformation[1]{%
+  \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+\@onlypreamble\PDFDocumentInformation
+
+\PDFDocumentInformation{
+  /Title    (\review@booktitlename)
+  /Author   (\review@autnames)
+  % /Subject  ()
+  % /Keywords (,,)
+  /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
+}
+
 \RequirePackage{pxrubrica}
 \@ifpackagelater{pxrubrica}{2017/04/20}{%
 \rubysetup{J}}{%

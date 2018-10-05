@@ -13,7 +13,7 @@ To use the command, you need to set up LaTeX system.
 
 ## about upLaTeX
 
-In Re:VIEW 2.0 released at April 2016, default LaTeX compiler became upLaTeX from pLaTeX.  The upLaTeX support Unicode and you can use unicode characters such like ①②... and other characters without otf package.
+In Re:VIEW 2.0 released at April 2016, default LaTeX compiler became upLaTeX from pLaTeX.  The upLaTeX support Unicode and you can use unicode characters and other characters without otf package.
 
 Almost packages in pLaTeX can be supported in upLaTeX, but some package (such as jsbook class and otf package) need `uplatex` option.
 
@@ -22,7 +22,7 @@ Default settings of Re:VIEW is below:
 ```yaml
 texcommand: uplatex
 texoptions: "-interaction=nonstopmode -file-line-error"
-texdocumentclass: ["jsbook", "uplatex,oneside"]
+texdocumentclass: ["review-jsbook", "uplatex,twoside"]
 dvicommand: dvipdfmx
 dvioptions: "-d 5"
 ```
