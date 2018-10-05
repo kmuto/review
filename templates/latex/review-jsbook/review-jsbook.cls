@@ -58,6 +58,7 @@
 %% cameraready=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
+\newif\if@pdftombo \@pdftombofalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 
 %% 基本版面 QWLH、天、ノド
@@ -72,7 +73,7 @@
 \DeclareOptionX{headsep}[\z@]{\gdef\recls@headsep{#1}}
 \DeclareOptionX{footskip}[\z@]{\gdef\recls@footskip{#1}}
 
-\PassOptionsToClass{dvipdfmx,papersize}{jsbook}
+\PassOptionsToClass{dvipdfmx}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
 \ExecuteOptionsX{cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
@@ -80,8 +81,11 @@
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
   \@camerareadyfalse\@pdfhyperlinktrue
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
-  \@camerareadytrue\@pdfhyperlinkfalse
-  \PassOptionsToClass{tombo}{jsbook}
+  \@camerareadytrue\@pdfhyperlinkfalse\@pdftombotrue
+  \IfFileExists{gentobmow.sty}{}
+  {% 代替
+    \PassOptionsToClass{papersize,tombo}{jsbook}
+  }
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue
 \else
