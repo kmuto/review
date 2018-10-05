@@ -1,4 +1,8 @@
 \RequirePackage{ifthen}
+\@ifundefined{Hy@Info}{% for jsbook.cls
+  \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
+  \RequirePackage[dvipdfmx]{pxjahyper}
+}{}
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
 \RequirePackage[deluxe,uplatex]{otf}%
 }{%
