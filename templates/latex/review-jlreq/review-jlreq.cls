@@ -57,10 +57,12 @@ cls]
 \newif\if@pdftombo \@pdftombofalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
+\DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 
-\PassOptionsToClass{book}{jlreq}% クラスで必ず使うオプションの指定
+% jlreqのオプションについては https://github.com/abenori/jlreq/blob/master/README-ja.md を参照
+\PassOptionsToClass{book,paper=b5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをB5にしておく
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jlreq}}%
-\ExecuteOptionsX{cameraready,tombopaper}
+\ExecuteOptionsX{cameraready,tombopaper,bleed_margin}
 \ProcessOptionsX\relax
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
@@ -77,8 +79,7 @@ cls]
 
 % トンボ設定
 \if@pdftombo
-  % ★ほかのpackage設定もしたくなるか？ だいたいは\jlreqtrimmarkssetupで上書きできる
-  \RequirePackage[trimmarks_paper=\recls@tombopaper]{jlreq-trimmarks}
+  \RequirePackage[trimmarks_paper=\recls@tombopaper,bleed_margin=\recls@tombobleed]{jlreq-trimmarks}
 \fi
 
 % エンジンとドライバの情報。jlreq-trimmarksが定義されていればそっちから持ってくる。
