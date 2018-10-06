@@ -1,17 +1,31 @@
 \makeatletter
 \def\review@texcompiler{<%= @texcompiler %>}
 \def\review@documentclass{<%= @documentclass %>}
-\def\review@booktitlename{<%= escape_latex(@config.name_of('booktitle')) %>}
-<%- if @config['subtitle'] -%>
-\def\review@subtitlename{<%= escape_latex(@config.name_of('subtitle')) %>}
+
+<%- %w(booktitle subtitle).each do |item| -%>
+<%-   if @config[item] -%>\def\review@<%= item %>name{<%= escape_latex(@config.name_of(item)) %>}
+<%-   end -%>
 <%- end -%>
-\def\review@autnames{<%= escape_latex(@config.names_of('aut').join(I18n.t('names_splitter'))) %>}
+
+<%- %w(aut adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl).each do |item| %><%-   if @config[item] -%>\def\review@<%= item %>names{<%= escape_latex(@config.names_of(item).join(I18n.t('names_splitter'))) %>}
+<%-   end -%>
+<%- end -%>
+
 \def\review@titlepageauthors{<%= @authors %>}
 \def\review@date{<%= escape_latex(@config['date'].to_s) %>}
-<%- if @config['highlight'] && @config['highlight']['latex'] -%>
-\def\review@highlightlatex{<%= @config['highlight']['latex'] %>}
+
+<%- %w(bookname language urnid isbn).each do |item| -%><%-   if @config[item] -%>\def\review@<%= item %>{<%= escape_latex(@config[item]) %>}
+<%-   end -%>
 <%- end -%>
-\def\review@language{<%= @config['language'] %>}
+<%- %w(rights description subject type format source relation coverage).each do |item| -%>
+<%-   if @config[item] -%>
+<%-     a = [@config[item]].flatten -%>\def\review@<%= item %>{<%= a.map{|s| escape_latex(s)}.join('\\' + '\\') %>}
+<%-   end -%>
+<%- end -%>
+
+<%- if @config['highlight'] && @config['highlight']['latex'] -%>\def\review@highlightlatex{<%= @config['highlight']['latex'] %>}
+<%- end -%>
+
 \def\review@intn@list{<%= escape_latex(I18n.t('list')) %>}
 \def\review@intn@columnhead{<%= escape_latex(I18n.t('column_head')) %>}
 \def\review@intn@image{<%= escape_latex(I18n.t('image')) %>}
@@ -29,6 +43,7 @@
 \def\review@figurename{<%= escape_latex(I18n.t('image')) %>}
 \def\review@tablename{<%= escape_latex(I18n.t('table')) %>}
 \def\review@appendixname{<%= escape_latex(@locale_latex['preappendixname']) %>}
+
 <%- if @config['toc'] -%>
 \def\review@toc{true}
 \def\review@tocdepth{<%= @config['toclevel'] - 1 %>}
@@ -64,7 +79,7 @@
 \def\reviewbackcovercont{<%= @custom_backcoverpage %>}
 <%- end -%>
 
-<%- if @config['colophon'] && @config['colophon'] -%>
+<%- if @config['colophon'] -%>
 \def\review@colophon{true}
 <%-   if @custom_colophonpage -%>
 \def\review@colophonfile{<%= @custom_colophonpage %>}
@@ -72,9 +87,6 @@
 <%- end -%>
 \def\review@pubhistories{<%= @config['pubhistory'].to_s.gsub(/\n/){"\n\n\\noindent\n"} %>}
 \def\review@colophonnames{<%= @okuduke %>}
-<%- if @config['rights'] -%>
-\def\review@rights{<%= @config.names_of('rights').map{|s| escape_latex(s)}.join('\\' + '\\') %>}
-<%- end -%>
 
 \def\reviewprefacefiles{<%= @input_files['PREDEF'] %>}
 \def\reviewchapterfiles{<%= @input_files['CHAPS'] %>}
