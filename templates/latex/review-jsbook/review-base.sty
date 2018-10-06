@@ -310,9 +310,6 @@
 }
 
 % cover
-\ifdefined\review@cover
-  \def\reviewcoverpagecont{\review@coverfile}
-\fi
 \ifdefined\review@coverimage
   \def\reviewcoverpagecont{%
 \thispagestyle{empty}
@@ -321,6 +318,9 @@
 \end{center}
 \clearpage
   }
+\fi
+\ifdefined\review@coverfile
+  \def\reviewcoverpagecont{\review@coverfile}
 \fi
 
 % titlepage

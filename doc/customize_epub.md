@@ -45,3 +45,26 @@ If you have already some settings, merge them:
 opf_prefix: {ebpaj: "http://www.ebpaj.jp/", ibooks: "http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/"}
 opf_meta: {"ebpaj:guide-version": "1.1.3", "ibooks:binding": "false"}
 ```
+
+## Amazon Kindle
+
+For Kindle, you need to convert EPUB to mobi format using KindleGen, which Amazon distributes.
+
+- https://www.amazon.com/gp/feature.html?ie=UTF8&docId=1000765211
+
+After installation, you can convert EPUB with `kindlegen EPUB file`.
+
+KindleGen is also included in Kindle Previewer.
+
+- https://kdp.amazon.co.jp/ja_JP/help/topic/G202131170
+
+Note: if there is only a "logical" table of contents, KindleGen reports a strange error.  To include "physical" table of contents, set config.yml as follows.
+
+```yaml
+epubmaker:
+  toc: true
+```
+
+You may be warned about some CSS can't be handled in Kindle. "Amazon Kindle Publishing Guidelines" describes in detail the usable characters, restrictions on hyperlinks to the outside, usage of colors, image size, and so on.
+
+- http://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines_JP.pdf
