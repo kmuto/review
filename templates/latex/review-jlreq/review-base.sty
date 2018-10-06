@@ -194,7 +194,9 @@
 \fi
 
 % hooks
-\def\reviewbegindocumenthook{}
+\def\reviewbegindocumenthook{
+\pagenumbering{arabic}% pagesltsのために必要なダミー
+}
 
 \def\reviewenddocumenthook{}
 
@@ -218,6 +220,7 @@
 }
 
 % cover
+\if@reclscover
 \ifdefined\review@coverimage
   \def\reviewcoverpagecont{%
     \thispagestyle{empty}
@@ -226,11 +229,12 @@
       \expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
       \hss}\vss}}
     \vfill\null
-    \clearpage
+    \cleardoublepage% 大扉は通常奇数
   }
 \fi
 \ifdefined\review@coverfile
   \def\reviewcoverpagecont{\review@coverfile}
+\fi
 \fi
 
 % titlepage

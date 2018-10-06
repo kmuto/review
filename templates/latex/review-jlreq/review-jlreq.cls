@@ -55,6 +55,7 @@ cls]
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \newif\if@pdftombo \@pdftombofalse
+\newif\if@reclscover \@reclscovertrue
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
@@ -66,11 +67,13 @@ cls]
 \ProcessOptionsX\relax
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
-  \@camerareadyfalse\@pdfhyperlinktrue\@pdftombofalse
+  \@camerareadyfalse\@pdfhyperlinktrue\@pdftombofalse\@reclscovertrue
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
-  \@camerareadytrue\@pdfhyperlinkfalse\@pdftombotrue
+  \@camerareadytrue\@pdfhyperlinkfalse\@pdftombotrue\@reclscoverfalse
+\else\def\recls@tmp{print-cover}\ifx\recls@cameraready\recls@tmp
+  \@camerareadytrue\@pdfhyperlinkfalse\@pdftombotrue\@reclscovertrue
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
-  \@camerareadytrue\@pdfhyperlinktrue\@pdftombofalse
+  \@camerareadytrue\@pdfhyperlinktrue\@pdftombofalse\@reclscovertrue
 \else
   \recls@error{No such value of cameraready: \recls@cameraready}%
 \fi\fi\fi
@@ -107,6 +110,16 @@ cls]
   \fi
 \fi
 
+% jlreq-trimmarksを使わないとき(ebook)には紙面サイズを自前で指定する
+\if@pdftombo
+\else
+  \ifx luatex\recls@driver\else
+    \newdimen\pdfpaperwidth  \pdfpaperwidth\paperwidth
+    \newdimen\pdfpaperheight \pdfpaperheight\paperheight
+    \AtBeginDvi{\special{papersize=\the\pdfpaperwidth,\the\pdfpaperheight}}
+  \fi
+\fi
+
 \RequirePackage[\recls@driver]{graphicx}
 \RequirePackage[\recls@driver,table]{xcolor}
 
@@ -123,7 +136,7 @@ cls]
 \RequirePackage{float}
 \RequirePackage{upquote}
 \RequirePackage{bm}
-%\RequirePackage{pageslts}
+\RequirePackage{pageslts}
 \RequirePackage[table]{xcolor}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{xparse,hooks,skins,breakable}
