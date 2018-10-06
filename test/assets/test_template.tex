@@ -48,6 +48,11 @@
 
 \begin{document}
 
+%% begindocument hook
+\ifdefined\reviewbegindocumenthook
+\reviewbegindocumenthook
+\fi
+
 %% coverpage
 \ifdefined\reviewcoverpagecont
 \reviewcoverpagecont
@@ -136,6 +141,11 @@
 %%% backcover page
 \ifdefined\reviewbackcovercont
 \reviewbackcovercont
+\fi
+
+%% enddocument hook
+\ifdefined\reviewenddocumenthook
+\reviewenddocumenthook
 \fi
 
 \end{document}

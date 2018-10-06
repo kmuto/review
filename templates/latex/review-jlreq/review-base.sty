@@ -193,17 +193,11 @@
   \renewcommand{\appendixname}{\reviewappendixname}
 \fi
 
-% maxwidth is the original width if it is less than linewidth
-%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
-\def\maxwidth{%
-  \ifdim\Gin@nat@width>\linewidth
-    \linewidth
-  \else
-    \Gin@nat@width
-  \fi
-}
-
 % hooks
+\def\reviewbegindocumenthook{}
+
+\def\reviewenddocumenthook{}
+
 \def\reviewfrontmatterhook{%
   \renewcommand{\chaptermark}[1]{{}}
   \frontmatter
