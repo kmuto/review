@@ -424,9 +424,9 @@ module ReVIEW
 
       @coverimageoption =
         if @documentclass == 'ubook' || @documentclass == 'utbook'
-          'width=\\textheight,height=\\textwidth,keepaspectratio,angle=90'
+          'keepaspectratio,angle=90'
         else
-          'width=\\textwidth,height=\\textheight,keepaspectratio'
+          'keepaspectratio'
         end
 
       @locale_latex = {}
