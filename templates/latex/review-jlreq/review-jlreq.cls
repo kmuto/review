@@ -153,5 +153,54 @@ cls]
 ]{hyperref}
 \RequirePackage[\recls@driver]{pxjahyper}
 
+
+
+%% include fullpage graphics
+\edef\grnchry@head{\dimexpr\topmargin+1in+\headheight+\headsep}
+\edef\grnchry@gutter{\evensidemargin}
+\newcommand*\includefullpagegraphics{%
+  \clearpage
+  \@ifstar
+    {\@includefullpagegraphics}%
+    {\thispagestyle{empty}\@includefullpagegraphics}
+}
+
+\newcommand*\@includefullpagegraphics[2][]{%
+  \iftdir
+    \vbox to \hanmenwidth{%
+      \ifodd\c@page
+        \vskip-\dimexpr\evensidemargin - .5\topskip + 1in\relax
+      \else
+        \vskip-\dimexpr\oddsidemargin - .5\topskip + 1in\relax
+      \fi
+      \vbox to \paperwidth{\vss
+        \hbox to \hanmenheight{%
+          \hskip-\grnchry@head\relax
+          \hbox to \paperheight{\hss
+            \rotatebox{90}{\includegraphics[#1]{#2}}%
+          \hss}%
+        \hss}%
+      \vss}%
+    \vss}%
+  \else
+    \vbox to \textheight{%
+      \vskip-\grnchry@head
+      \vbox to \paperheight{\vss
+        \hbox to \textwidth{%
+          \ifodd\c@page
+            \hskip-\dimexpr\oddsidemargin + 1in\relax
+          \else
+            \hskip-\dimexpr\evensidemargin + 1in\relax
+          \fi
+          \hbox to \paperwidth{\hss
+            \includegraphics[#1]{#2}%
+          \hss}%
+        \hss}%
+      \vss}%
+    \vss}%
+  \fi
+  \clearpage
+}
+
 \listfiles
 \endinput
