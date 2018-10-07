@@ -26,6 +26,11 @@
 \ProvidesClass{review-jsbook}
   [2018/09/30 v3.0  Re:VIEW pLaTeX class modified for jsbook.cls]
 
+\def\recls@error{\ClassError{review-jsbook}}
+\def\recls@warning{\ClassWarning{review-jsbook}}
+\def\recls@warningnoline{\ClassWarningNoLine{review-jsbook}}
+\def\recls@info{\ClassInfo{review-jsbook}}
+
 %% fixes to LaTeX2e
 \RequirePackage{fix-cm}%%\RequirePackage{fix-cm,exscale}
 \IfFileExists{latexrelease.sty}{}{\RequirePackage{fixltx2e}}
@@ -55,11 +60,71 @@
       \ClassError{recls}{The option #1 should have no value}{\@ehc}}%
     #2}}
 
+%% define/set specific paper(s) for review-jsbook.cls
+\def\recls@define@paper#1#2{%
+  %% \paper@<papername>=> <size>:<width>x<height>+<cutoffset>
+  \@namedef{recls@paper@#1}{#1#2}%
+}
+
+\def\recls@set@paper#1{%
+  \@ifundefined{recls@paper@#1}{%
+    \recls@error{Not define such paper: #1}}\relax
+  \expandafter\expandafter\expandafter
+    \@recls@set@paper\expandafter\expandafter\expandafter
+      {\csname recls@paper@#1\endcsname}}
+\def\@recls@set@paper#1{%
+  \edef\recls@set@js@paper{#1}%
+  \PassOptionsToClass{\recls@set@js@paper}{jsbook}}
+
+\def\recls@disable@jsopt#1{%
+  \recls@DeclareOption{#1}{}}
+
+\recls@define@paper{a3}{paper}
+\recls@define@paper{a4}{paper}
+\recls@define@paper{a5}{paper}
+\recls@define@paper{a6}{paper}
+\recls@define@paper{b4}{paper}
+\recls@define@paper{b5}{paper}
+\recls@define@paper{b6}{paper}
+\recls@disable@jsopt{a4j}
+\recls@disable@jsopt{a5j}
+\recls@disable@jsopt{b4j}
+\recls@disable@jsopt{b5j}
+\recls@define@paper{a4var}{}
+\recls@define@paper{b5var}{}
+\recls@define@paper{letter}{paper}
+\recls@define@paper{legal}{paper}
+\recls@define@paper{executive}{paper}
+
+\recls@disable@jsopt{8pt}
+\recls@disable@jsopt{9pt}
+\recls@disable@jsopt{10pt}
+\recls@disable@jsopt{11pt}
+\recls@disable@jsopt{12pt}
+\recls@disable@jsopt{14pt}
+\recls@disable@jsopt{17pt}
+\recls@disable@jsopt{20pt}
+\recls@disable@jsopt{21pt}
+\recls@disable@jsopt{25pt}
+\recls@disable@jsopt{30pt}
+\recls@disable@jsopt{36pt}
+\recls@disable@jsopt{43pt}
+\recls@disable@jsopt{12Q}
+\recls@disable@jsopt{14Q}
+\recls@disable@jsopt{10ptj}
+\recls@disable@jsopt{10.5ptj}
+\recls@disable@jsopt{11ptj}
+\recls@disable@jsopt{12ptj}
+\recls@disable@jsopt{winjis}
+\recls@disable@jsopt{mingoth}
+
 %% cameraready=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 
+%% 用紙
+\DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
 %% 基本版面 QWLH、天、ノド
 \DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
 \DeclareOptionX{W}[35]{\gdef\recls@W{#1}}
@@ -67,15 +132,17 @@
 \DeclareOptionX{H}[22]{\gdef\recls@H{#1}}
 \DeclareOptionX{head}[\z@]{\gdef\recls@head{#1}}%[18mm]
 \DeclareOptionX{gutter}[\z@]{\gdef\recls@gutter{#1}}%[20mm]
-
+%% headheight,headsep,footskip
 \DeclareOptionX{headheight}[\z@]{\gdef\recls@headheight{#1}}
 \DeclareOptionX{headsep}[\z@]{\gdef\recls@headsep{#1}}
 \DeclareOptionX{footskip}[\z@]{\gdef\recls@footskip{#1}}
 
 \PassOptionsToClass{dvipdfmx,papersize}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
+\ExecuteOptionsX{paper,cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
+
+\recls@set@paper{\recls@paper}
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
   \@camerareadyfalse\@pdfhyperlinktrue
@@ -84,6 +151,7 @@
   \PassOptionsToClass{tombo}{jsbook}
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue
+  \PassOptionsToClass{papersize}{jsbook}%
 \else
   \recls@error{No such value of cameraready: \recls@cameraready}%
 \fi\fi\fi
@@ -96,7 +164,7 @@
   \PassOptionsToPackage{uplatex}{otf}
 \fi\fi
 
-\PassOptionsToClass{10pt}{jsbook}
+\PassOptionsToClass{10pt}{jsbook}%%<= forcely load 10pt
 \LoadClass{jsbook}
 
 \def\recls@JYn{\if@recls@uptex JY2\else JY1\fi}%
@@ -234,9 +302,9 @@
               \itemsep \parsep}}
 
 \renewcommand{\scriptsize}{\jsc@setfontsize\scriptsize
-  {\dimexpr\grnchry@Qnum\JQ - 3\JQ}{1.25\dimexpr\grnchry@Qnum H - 3H}}
+  {\dimexpr\recls@Qnum\JQ - 3\JQ}{1.25\dimexpr\recls@Qnum H - 3H}}
 \renewcommand{\tiny}{\jsc@setfontsize\tiny
-  {.5\dimexpr\grnchry@Qnum\JQ}{.5\dimexpr\grnchry@Qnum H + 2H}}
+  {.5\dimexpr\recls@Qnum\JQ}{.5\dimexpr\recls@Qnum H + 2H}}
 \if@twocolumn
   \renewcommand{\large}{\@setfontsize\large{18\JQ}{\n@baseline}}
 \else
@@ -285,6 +353,7 @@
 \else
 \setlength\topmargin\paperheight
 \addtolength\topmargin{-\textheight}
+\edef\recls@head{\dimexpr\topmargin+1in+\headheight+\headsep}
 \setlength\topmargin{.5\topmargin}
 \fi
 \addtolength\topmargin{-1in}
@@ -302,7 +371,7 @@
 % \def\itemautorefname{項目}%
 % \def\figureautorefname{図}%
 % \def\tableautorefname{表}%
-% \def\partautorefname{パート}%部
+% \def\partautorefname{部}%パート
 % \def\appendixautorefname{付録}%
 % \def\chapterautorefname{章}%チャプター
 % \def\sectionautorefname{節}%セクション
