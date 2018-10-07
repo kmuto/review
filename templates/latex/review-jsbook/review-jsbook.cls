@@ -83,7 +83,7 @@
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse
   \IfFileExists{gentombow.sty}{%
-    \AtEndOfClass{\RequirePackage[pdfbox]{gentombow}}%
+    \AtEndOfClass{\RequirePackage[pdfbox,tombo]{gentombow}}%
   }{%
     \PassOptionsToClass{tombo}{jsbook}%
   }%
