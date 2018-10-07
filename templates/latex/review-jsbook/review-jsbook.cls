@@ -101,7 +101,7 @@
   \PassOptionsToPackage{uplatex}{otf}
 \fi\fi
 
-\PassOptionsToClass{10pt,a5paper}{jsbook}
+\PassOptionsToClass{10pt}{jsbook}
 \LoadClass{jsbook}
 %%\typeout{!!! mag: \the\mag}%%=> 1000 -> OK
 
@@ -294,12 +294,6 @@
 \addtolength\topmargin{-1in}
 \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
 
-% \AtBeginDocument{%
-% }
-
-% \AtEndDocument{%
-% }
-
 %% load hyperref package
 \RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
   bookmarks=true,
@@ -324,12 +318,6 @@
 % \def\theoremautorefname{定理}%
 % \def\pageautorefname{ページ}%
 \RequirePackage[dvipdfmx]{pxjahyper}
-
-% \AtBeginDvi{%
-% }
-
-% \AtBeginShipout{%
-% }
 
 
 
