@@ -72,16 +72,21 @@
 \DeclareOptionX{headsep}[\z@]{\gdef\recls@headsep{#1}}
 \DeclareOptionX{footskip}[\z@]{\gdef\recls@footskip{#1}}
 
-\PassOptionsToClass{dvipdfmx,papersize}{jsbook}
+\PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
 \ExecuteOptionsX{cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
-  \@camerareadyfalse\@pdfhyperlinktrue
+%%FIXME: cameraready=preview の挙動は保留。例：フォント関係を仕込む
+  \@camerareadyfalse\@pdfhyperlinkfalse
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse
-  \PassOptionsToClass{tombo}{jsbook}
+  \IfFileExists{gentombow.sty}{%
+    \AtEndOfClass{\RequirePackage[pdfbox]{gentombow}}%
+  }{%
+    \PassOptionsToClass{tombo}{jsbook}%
+  }%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue
 \else
@@ -96,19 +101,15 @@
   \PassOptionsToPackage{uplatex}{otf}
 \fi\fi
 
-\PassOptionsToClass{10pt}{jsbook}
+\PassOptionsToClass{10pt,a5paper}{jsbook}
 \LoadClass{jsbook}
+%%\typeout{!!! mag: \the\mag}%%=> 1000 -> OK
 
 \def\recls@JYn{\if@recls@uptex JY2\else JY1\fi}%
 \def\recls@JTn{\if@recls@uptex JT2\else JT1\fi}%
 \def\recls@pfx@{\if@recls@uptex up\else \fi}%
 \def\recls@sfx@{\if@recls@uptex \else n\fi}%
 \def\recls@sc@le{\if@recls@uptex 0.924714\else 0.961026\fi}%
-\def\recls@jisrh{\if@recls@uptex upjisr-h\else jisn\fi}%
-\def\recls@jisgh{\if@recls@uptex upjisg-h\else jisgn\fi}%
-\def\recls@jisrv{\if@recls@uptex upjisr-v\else jisn-v\fi}%
-\def\recls@jisgv{\if@recls@uptex upjisg-v\else jisgn-v\fi}%
-
 \def\recls@jisrh{\recls@pfx@ jis\if@recls@uptex r-h\fi}%
 \def\recls@jisgh{\recls@pfx@ jisg\if@recls@uptex -h\fi}%
 \def\recls@jisrv{\recls@pfx@ jis\if@recls@uptex r\fi -v}%
@@ -199,6 +200,7 @@
 \setlength\Chs{\wd0}
 \setbox0=\box\voidb@x
 
+%%FIXME: 相対フォントサイズコマンドはいい加減にしていて。12Qから15Qまでぐらいであれば、それなりに大丈夫。\recls@@scale を利用するのもよい。
 \renewcommand{\small}{%
   \ifnarrowbaselines
     \jsc@setfontsize\small
@@ -277,6 +279,7 @@
 \setlength\oddsidemargin{.5\oddsidemargin}
 \addtolength\oddsidemargin{-1in}
 \setlength\evensidemargin\oddsidemargin
+\edef\recls@gutter{\evensidemargin}
 \fi
 
 %% 天、地
@@ -286,11 +289,18 @@
 \setlength\topmargin\paperheight
 \addtolength\topmargin{-\textheight}
 \setlength\topmargin{.5\topmargin}
+\edef\recls@head{\topmargin}
 \fi
 \addtolength\topmargin{-1in}
 \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
 
+% \AtBeginDocument{%
+% }
 
+% \AtEndDocument{%
+% }
+
+%% load hyperref package
 \RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
   bookmarks=true,
   bookmarksnumbered=true,
@@ -314,6 +324,12 @@
 % \def\theoremautorefname{定理}%
 % \def\pageautorefname{ページ}%
 \RequirePackage[dvipdfmx]{pxjahyper}
+
+% \AtBeginDvi{%
+% }
+
+% \AtBeginShipout{%
+% }
 
 \listfiles
 \endinput
