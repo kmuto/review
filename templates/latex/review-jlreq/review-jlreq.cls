@@ -166,23 +166,6 @@ cls]
 }
 
 \newcommand*\@includefullpagegraphics[2][]{%
-  \iftdir
-    \vbox to \hanmenwidth{%
-      \ifodd\c@page
-        \vskip-\dimexpr\evensidemargin - .5\topskip + 1in\relax
-      \else
-        \vskip-\dimexpr\oddsidemargin - .5\topskip + 1in\relax
-      \fi
-      \vbox to \paperwidth{\vss
-        \hbox to \hanmenheight{%
-          \hskip-\grnchry@head\relax
-          \hbox to \paperheight{\hss
-            \rotatebox{90}{\includegraphics[#1]{#2}}%
-          \hss}%
-        \hss}%
-      \vss}%
-    \vss}%
-  \else
     \vbox to \textheight{%
       \vskip-\grnchry@head
       \vbox to \paperheight{\vss
@@ -198,7 +181,6 @@ cls]
         \hss}%
       \vss}%
     \vss}%
-  \fi
   \clearpage
 }
 
