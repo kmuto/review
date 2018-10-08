@@ -128,6 +128,9 @@
 \DeclareOptionX{tombopaper}{%
   \gdef\recls@tombopaper{}%%default: auto-detect
   \ifx#1\@empty\else\gdef\recls@tombopaper{tombo-#1}\fi}
+%% カスタム用紙サイズ
+\DeclareOptionX{paperwidth}{\gdef\recls@paperwidth{#1}}
+\DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
 %% 基本版面 QWLH、天、ノド
 \DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
 \DeclareOptionX{W}[35]{\gdef\recls@W{#1}}
@@ -142,7 +145,8 @@
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{paper,tombopaper,cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
+\ExecuteOptionsX{cameraready,paper,tombopaper,paperwidth,paperheight,%
+  Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
 
 \recls@set@paper{\recls@paper}
@@ -179,6 +183,15 @@
 \PassOptionsToClass{10pt}{jsbook}%%<= forcely load 10pt
 \LoadClass{jsbook}
 %%\typeout{!!! mag: \the\mag}%%=> 1000 -> OK
+
+%% override papersize with custom papersize
+\ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
+  \setlength{\paperwidth}{\recls@paperwidth}
+  \setlength{\paperheight}{\recls@paperheight}
+  \def\recls@tmp{pdf}\ifx\recls@cameraready\recls@tmp
+    \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
+  \fi
+\fi\fi
 
 \def\recls@JYn{\if@recls@uptex JY2\else JY1\fi}%
 \def\recls@JTn{\if@recls@uptex JT2\else JT1\fi}%
