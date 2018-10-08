@@ -125,6 +125,12 @@
 
 %% 用紙
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
+\DeclareOptionX{tombopaper}{%
+  \gdef\recls@tombopaper{}%%default: auto-detect
+  \ifx#1\@empty\else\gdef\recls@tombopaper{tombo-#1}\fi}
+%% カスタム用紙サイズ
+\DeclareOptionX{paperwidth}{\gdef\recls@paperwidth{#1}}
+\DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
 %% 基本版面 QWLH、天、ノド
 \DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
 \DeclareOptionX{W}[35]{\gdef\recls@W{#1}}
@@ -139,19 +145,26 @@
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{paper,cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
+\ExecuteOptionsX{cameraready,paper,tombopaper,paperwidth,paperheight,%
+  Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
 
+%% set specific papersize
 \recls@set@paper{\recls@paper}
 
+%% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
 %%FIXME: cameraready=preview の挙動は保留。例：フォント関係を仕込む
   \@camerareadyfalse\@pdfhyperlinkfalse
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse
   \IfFileExists{gentombow.sty}{%
-    \AtEndOfClass{\RequirePackage[pdfbox,tombo]{gentombow}}%
+    \AtEndOfClass{\RequirePackage[pdfbox,tombo,\recls@tombopaper]{gentombow}}%
   }{%
+    \recls@warning{package gentombow: not installed}%
+    \ifx\recls@tombopaper\@empty\else
+      \recls@warning{option tombopaper: not available}%
+    \fi
     \PassOptionsToClass{tombo}{jsbook}%
   }%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
@@ -173,6 +186,15 @@
 \LoadClass{jsbook}
 %%\typeout{!!! mag: \the\mag}%%=> 1000 -> OK
 
+%% override papersize with custom papersize
+\ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
+  \setlength{\paperwidth}{\recls@paperwidth}
+  \setlength{\paperheight}{\recls@paperheight}
+  \def\recls@tmp{pdf}\ifx\recls@cameraready\recls@tmp
+    \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
+  \fi
+\fi\fi
+
 \def\recls@JYn{\if@recls@uptex JY2\else JY1\fi}%
 \def\recls@JTn{\if@recls@uptex JT2\else JT1\fi}%
 \def\recls@pfx@{\if@recls@uptex up\else \fi}%
@@ -193,7 +215,7 @@
 \@tempcnta=\strip@pt\@tempdima\relax
 \@tempcntb=\strip@pt\@tempdimb\relax
 \@tempdima=\dimexpr\@tempcntb\p@/\@tempcnta\relax
-\recls@get@p@{\@tempdima}{\recls@@scale}% \typeout{!!! \recls@@scale}%
+\recls@get@p@{\@tempdima}{\recls@fnt@scale}% \typeout{!!! \recls@fnt@scale}%
 
 \RequirePackage{lmodern}
 
@@ -268,7 +290,6 @@
 \setlength\Chs{\wd0}
 \setbox0=\box\voidb@x
 
-%%FIXME: 相対フォントサイズコマンドはいい加減にしていて。12Qから15Qまでぐらいであれば、それなりに大丈夫。\recls@@scale を利用するのもよい。
 \renewcommand{\small}{%
   \ifnarrowbaselines
     \jsc@setfontsize\small
@@ -308,15 +329,22 @@
 \renewcommand{\tiny}{\jsc@setfontsize\tiny
   {.5\dimexpr\recls@Qnum\JQ}{.5\dimexpr\recls@Qnum H + 2H}}
 \if@twocolumn
-  \renewcommand{\large}{\@setfontsize\large{18\JQ}{\n@baseline}}
+  \renewcommand{\large}{\@setfontsize\large
+    {\recls@fnt@scale\dimexpr 18\JQ}{\n@baseline}}
 \else
-  \renewcommand{\large}{\@setfontsize\large{18\JQ}{27H}}
+  \renewcommand{\large}{\@setfontsize\large
+    {\recls@fnt@scale\dimexpr 18\JQ}{\recls@fnt@scale\dimexpr 27H}}
 \fi
-\renewcommand{\Large}{\@setfontsize\Large{20\JQ}{30H}}
-\renewcommand{\LARGE}{\@setfontsize\LARGE{24\JQ}{36H}}
-\renewcommand{\huge}{\@setfontsize\huge{28\JQ}{42H}}
-\renewcommand{\Huge}{\@setfontsize\Huge{32\JQ}{48H}}
-\renewcommand{\HUGE}{\jsc@setfontsize\HUGE{36\JQ}{54H}}
+\renewcommand{\Large}{\@setfontsize\Large
+  {\recls@fnt@scale\dimexpr 20\JQ}{\recls@fnt@scale\dimexpr 30H}}
+\renewcommand{\LARGE}{\@setfontsize\LARGE
+  {\recls@fnt@scale\dimexpr 24\JQ}{\recls@fnt@scale\dimexpr 36H}}
+\renewcommand{\huge}{\@setfontsize\huge
+  {\recls@fnt@scale\dimexpr 28\JQ}{\recls@fnt@scale\dimexpr 42H}}
+\renewcommand{\Huge}{\@setfontsize\Huge
+  {\recls@fnt@scale\dimexpr 32\JQ}{\recls@fnt@scale\dimexpr 48H}}
+\renewcommand{\HUGE}{\jsc@setfontsize\HUGE
+  {\recls@fnt@scale\dimexpr 36\JQ}{\recls@fnt@scale\dimexpr 54H}}
 
 %% headheight, headsep, footskip
 \setlength\topskip{\Cht}
@@ -402,23 +430,6 @@
 }
 
 \newcommand*\@includefullpagegraphics[2][]{%
-  \iftdir
-    \vbox to \hanmenwidth{%
-      \ifodd\c@page
-        \vskip-\dimexpr\evensidemargin - .5\topskip + 1in\relax
-      \else
-        \vskip-\dimexpr\oddsidemargin - .5\topskip + 1in\relax
-      \fi
-      \vbox to \paperwidth{\vss
-        \hbox to \hanmenheight{%
-          \hskip-\grnchry@head\relax
-          \hbox to \paperheight{\hss
-            \rotatebox{90}{\includegraphics[#1]{#2}}%
-          \hss}%
-        \hss}%
-      \vss}%
-    \vss}%
-  \else
     \vbox to \textheight{%
       \vskip-\grnchry@head
       \vbox to \paperheight{\vss
@@ -434,7 +445,6 @@
         \hss}%
       \vss}%
     \vss}%
-  \fi
   \clearpage
 }
 
