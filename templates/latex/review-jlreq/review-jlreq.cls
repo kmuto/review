@@ -67,7 +67,7 @@ cls]
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 
 % jlreqのオプションについては https://github.com/abenori/jlreq/blob/master/README-ja.md を参照
-\PassOptionsToClass{book,paper=b5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをB5にしておく
+\PassOptionsToClass{book,paper=a5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをA5にしておく
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jlreq}}%
 \ExecuteOptionsX{cameraready,tombopaper,bleed_margin}
 \ProcessOptionsX\relax
