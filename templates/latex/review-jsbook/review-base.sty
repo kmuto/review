@@ -1,4 +1,8 @@
 \RequirePackage{ifthen}
+\@ifundefined{Hy@Info}{% for jsbook.cls
+  \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
+  \RequirePackage[dvipdfmx]{pxjahyper}
+}{}
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
 \RequirePackage[deluxe,uplatex]{otf}%
 }{%
@@ -37,12 +41,19 @@
  {\endMakeFramed}
 
 \newcommand{\parasep}{\vspace*{3zh}}
-\setlength{\footskip}{30pt}
 
-\RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,hidelinks,%
-     pdftitle={\review@booktitlename},%
-     pdfauthor={\review@autnames}]{hyperref}
-\RequirePackage[dvipdfmx]{pxjahyper}
+\newcommand*\PDFDocumentInformation[1]{%
+  \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+\@onlypreamble\PDFDocumentInformation
+
+\PDFDocumentInformation{
+  /Title    (\review@booktitlename)
+  /Author   (\review@autnames)
+  % /Subject  ()
+  % /Keywords (,,)
+  /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
+}
+
 \RequirePackage{pxrubrica}
 \@ifpackagelater{pxrubrica}{2017/04/20}{%
 \rubysetup{J}}{%

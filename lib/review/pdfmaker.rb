@@ -131,6 +131,7 @@ module ReVIEW
       rescue => e
         error "yaml error #{e.message}"
       end
+
       # YAML configs will be overridden by command line options.
       @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
@@ -140,6 +141,15 @@ module ReVIEW
         @config.check_version(ReVIEW::VERSION)
       rescue ReVIEW::ConfigError => e
         warn e.message
+      end
+
+      # version 2 compatibility
+      unless @config['texdocumentclass']
+        if @config.check_version(2, exception: false)
+          @config['texdocumentclass'] = ['jsbook', 'uplatex,oneside']
+        else
+          @config['texdocumentclass'] = @config['_texdocumentclass']
+        end
       end
 
       begin
@@ -385,8 +395,8 @@ module ReVIEW
     def erb_config
       @texcompiler = File.basename(@config['texcommand'], '.*')
       dclass = @config['texdocumentclass'] || []
-      @documentclass = dclass[0] || 'jsbook'
-      @documentclassoption = dclass[1] || 'uplatex,oneside'
+      @documentclass = dclass[0] || 'review-jsbook'
+      @documentclassoption = dclass[1] || ''
       if @config['dvicommand'] =~ /dvipdfmx/ && @documentclassoption !~ /dvipdfmx/
         @documentclassoption = "dvipdfmx,#{@documentclassoption}".sub(/,\Z/, '')
       end
