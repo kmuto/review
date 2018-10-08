@@ -31,6 +31,12 @@
 \def\recls@warningnoline{\ClassWarningNoLine{review-jsbook}}
 \def\recls@info{\ClassInfo{review-jsbook}}
 
+%% hook at end of reviewmacro
+\let\@endofreviewmacrohook\@empty
+\def\AtEndOfReVIEWMacro{%
+  \g@addto@macro\@endofreviewmacrohook}
+\@onlypreamble\AtEndOfReVIEWMacro
+
 %% fixes to LaTeX2e
 \RequirePackage{fix-cm}%%\RequirePackage{fix-cm,exscale}
 \IfFileExists{latexrelease.sty}{}{\RequirePackage{fixltx2e}}
