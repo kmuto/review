@@ -65,19 +65,19 @@ cls]
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
+\DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
+\DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr #1-1\relax}}
 
 % jlreqのオプションについては https://github.com/abenori/jlreq/blob/master/README-ja.md を参照
 \PassOptionsToClass{book,paper=a5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをA5にしておく
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jlreq}}%
-\ExecuteOptionsX{cameraready,tombopaper,bleed_margin}
+\ExecuteOptionsX{cameraready,tombopaper,bleed_margin,cover,startpage}
 \ProcessOptionsX\relax
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
   \@camerareadyfalse\@pdfhyperlinktrue\@pdftombofalse\@reclscovertrue
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse\@pdftombotrue\@reclscoverfalse
-\else\def\recls@tmp{print-cover}\ifx\recls@cameraready\recls@tmp
-  \@camerareadytrue\@pdfhyperlinkfalse\@pdftombotrue\@reclscovertrue
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue\@pdftombofalse\@reclscovertrue
 \else
@@ -85,6 +85,14 @@ cls]
 \fi\fi\fi
 
 \LoadClass{jlreq}
+
+% coverオプションによる表紙判定の上書き
+\def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp
+\@reclscovertrue
+\else\def\recls@tmp{false}\ifx\recls@forcecover\recls@tmp
+\@reclscoverfalse
+\else% それ以外の値は単に無視
+\fi\fi
 
 % トンボ設定
 \if@pdftombo
@@ -142,14 +150,10 @@ cls]
 \RequirePackage{float}
 \RequirePackage{upquote}
 \RequirePackage{bm}
-\RequirePackage{pageslts}
 \RequirePackage[table]{xcolor}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{xparse,hooks,skins,breakable}
-
-\IfFileExists{jumoline.sty}{
-\RequirePackage{jumoline}
-}
+\RequirePackage{ulem}
 
 \RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
   bookmarks=true,
@@ -158,8 +162,6 @@ cls]
   setpagesize=false,
 ]{hyperref}
 \RequirePackage[\recls@driver]{pxjahyper}
-
-
 
 %% include fullpage graphics
 \edef\grnchry@head{\dimexpr\topmargin+1in+\headheight+\headsep}

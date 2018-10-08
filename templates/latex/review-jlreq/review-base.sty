@@ -194,15 +194,14 @@
 \fi
 
 % hooks
-\def\reviewbegindocumenthook{
-\pagenumbering{arabic}% pagesltsのために必要なダミー
-}
+\def\reviewbegindocumenthook{}
 
 \def\reviewenddocumenthook{}
 
 \def\reviewfrontmatterhook{%
   \renewcommand{\chaptermark}[1]{{}}
   \frontmatter
+  \setcounter{page}{\the\recls@startpage}
 }
 
 \def\reviewmainmatterhook{%
