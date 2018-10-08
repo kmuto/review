@@ -323,11 +323,7 @@
 % cover
 \ifdefined\review@coverimage
   \def\reviewcoverpagecont{%
-\thispagestyle{empty}
-\begin{center}
 \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
-\end{center}
-\clearpage
   }
 \fi
 \ifdefined\review@coverfile
