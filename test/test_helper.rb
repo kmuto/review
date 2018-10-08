@@ -13,6 +13,9 @@ end
 def prepare_samplebook(srcdir)
   samplebook_dir = File.expand_path('../samples/sample-book/src/', File.dirname(__FILE__))
   FileUtils.cp_r(Dir.glob(samplebook_dir + '/*'), srcdir)
+  # copy from review-jsbook
+  template_dir = File.expand_path('../templates/latex/review-jsbook/', File.dirname(__FILE__))
+  FileUtils.cp(Dir.glob(template_dir + '/*'), File.join(srcdir, 'sty'))
   YAML.load(File.open(srcdir + '/config.yml'))
 end
 

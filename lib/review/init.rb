@@ -125,15 +125,18 @@ EOS
     def generate_cover_image(dir)
       FileUtils.cp(@review_dir + '/samples/sample-book/src/images/cover.jpg',
                    dir + '/images/')
+      FileUtils.cp(@review_dir + '/samples/sample-book/src/images/cover-a5.ai',
+                   dir + '/images/')
     end
 
     def generate_config(dir)
       today = Time.now.strftime('%Y-%m-%d')
       content = File.read(@review_dir + '/doc/config.yml.sample', encoding: 'utf-8')
       content.gsub!(/^#\s*coverimage:.*$/, 'coverimage: cover.jpg')
+      content.gsub!(/^  #\s*coverimage:.*$/, '  coverimage: cover-a5.ai')
       content.gsub!(/^#\s*date:.*$/, "date: #{today}")
       content.gsub!(/^#\s*history:.*$/, %Q(history: [["#{today}"]]))
-      content.gsub!(/^#\s*texstyle:.*$/, 'texstyle: reviewmacro')
+      content.gsub!(/^#\s*texstyle:.*$/, 'texstyle: ["reviewmacro"]')
       content.gsub!(/^(#\s*)?stylesheet:.*$/, %Q(stylesheet: ["style.css"]))
       if @epub_version.to_i == 2
         content.gsub!(/^#.*epubversion:.*$/, 'epubversion: 2')

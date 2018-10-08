@@ -284,8 +284,8 @@ epubmaker:
 # texstyle: ["reviewmacro"]
 #
 # LaTeX用のdocumentclassを指定する
-# review-jsbook.clsのオプションについてはdoc/pdfmaker.ja.mdを参照
-# texdocumentclass: ["review-jsbook", "cameraready=print"]
+# review-jsbook.clsのオプションについてはsty/README.mdを参照
+# texdocumentclass: ["review-jsbook", "cameraready=print,paper=a5"]
 #
 # LaTeX用のコマンドを指定する
 # texcommand: "uplatex"
@@ -307,6 +307,11 @@ epubmaker:
 # という構成にする必要がある(インデントさせる)
 #
 pdfmaker:
+  #
+  # TeX版で利用する表紙画像。
+  # 仕上がりサイズ+塗り足し3mmありのPDFまたはIllustratorファイル（PDF互換オプション付き）を推奨。
+  # 拡縮はされず「そのまま」貼り付けられる
+  # coverimage: cover-a5.ai
   #
   # TeXコンパイル前に実行するプログラム。変換後のTeXソースを調整したいときに使用する。
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ
