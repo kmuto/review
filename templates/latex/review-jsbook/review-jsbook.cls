@@ -149,8 +149,10 @@
   Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
 
+%% set specific papersize
 \recls@set@paper{\recls@paper}
 
+%% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
 %%FIXME: cameraready=preview の挙動は保留。例：フォント関係を仕込む
   \@camerareadyfalse\@pdfhyperlinkfalse
