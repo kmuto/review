@@ -125,6 +125,9 @@
 
 %% 用紙
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
+\DeclareOptionX{tombopaper}{%
+  \gdef\recls@tombopaper{}%%default: auto-detect
+  \ifx#1\@empty\else\gdef\recls@tombopaper{tombo-#1}\fi}
 %% 基本版面 QWLH、天、ノド
 \DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
 \DeclareOptionX{W}[35]{\gdef\recls@W{#1}}
@@ -139,7 +142,7 @@
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{paper,cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
+\ExecuteOptionsX{paper,tombopaper,cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
 
 \recls@set@paper{\recls@paper}
@@ -150,8 +153,12 @@
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse
   \IfFileExists{gentombow.sty}{%
-    \AtEndOfClass{\RequirePackage[pdfbox,tombo]{gentombow}}%
+    \AtEndOfClass{\RequirePackage[pdfbox,tombo,\recls@tombopaper]{gentombow}}%
   }{%
+    \recls@warning{package gentombow: not installed}%
+    \ifx\recls@tombopaper\@empty\else
+      \recls@warning{option tombopaper: not available}%
+    \fi
     \PassOptionsToClass{tombo}{jsbook}%
   }%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
