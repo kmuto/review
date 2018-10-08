@@ -23,6 +23,12 @@
 \ProvidesClass{review-jlreq}[2018/10/05 Re:VIEW pLaTeX class modified for jlreq.
 cls]
 
+%% hook at end of reviewmacro
+\let\@endofreviewmacrohook\@empty
+\def\AtEndOfReVIEWMacro{%
+  \g@addto@macro\@endofreviewmacrohook}
+\@onlypreamble\AtEndOfReVIEWMacro
+
 \RequirePackage{fix-cm}%%\RequirePackage{fix-cm,exscale}
 \IfFileExists{latexrelease.sty}{}{\RequirePackage{fixltx2e}}
 
