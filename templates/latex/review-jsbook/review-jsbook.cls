@@ -215,7 +215,7 @@
 \@tempcnta=\strip@pt\@tempdima\relax
 \@tempcntb=\strip@pt\@tempdimb\relax
 \@tempdima=\dimexpr\@tempcntb\p@/\@tempcnta\relax
-\recls@get@p@{\@tempdima}{\recls@@scale}% \typeout{!!! \recls@@scale}%
+\recls@get@p@{\@tempdima}{\recls@fnt@scale}% \typeout{!!! \recls@fnt@scale}%
 
 \RequirePackage{lmodern}
 
@@ -290,7 +290,6 @@
 \setlength\Chs{\wd0}
 \setbox0=\box\voidb@x
 
-%%FIXME: 相対フォントサイズコマンドはいい加減にしていて。12Qから15Qまでぐらいであれば、それなりに大丈夫。\recls@@scale を利用するのもよい。
 \renewcommand{\small}{%
   \ifnarrowbaselines
     \jsc@setfontsize\small
@@ -330,15 +329,22 @@
 \renewcommand{\tiny}{\jsc@setfontsize\tiny
   {.5\dimexpr\recls@Qnum\JQ}{.5\dimexpr\recls@Qnum H + 2H}}
 \if@twocolumn
-  \renewcommand{\large}{\@setfontsize\large{18\JQ}{\n@baseline}}
+  \renewcommand{\large}{\@setfontsize\large
+    {\recls@fnt@scale\dimexpr 18\JQ}{\n@baseline}}
 \else
-  \renewcommand{\large}{\@setfontsize\large{18\JQ}{27H}}
+  \renewcommand{\large}{\@setfontsize\large
+    {\recls@fnt@scale\dimexpr 18\JQ}{\recls@fnt@scale\dimexpr 27H}}
 \fi
-\renewcommand{\Large}{\@setfontsize\Large{20\JQ}{30H}}
-\renewcommand{\LARGE}{\@setfontsize\LARGE{24\JQ}{36H}}
-\renewcommand{\huge}{\@setfontsize\huge{28\JQ}{42H}}
-\renewcommand{\Huge}{\@setfontsize\Huge{32\JQ}{48H}}
-\renewcommand{\HUGE}{\jsc@setfontsize\HUGE{36\JQ}{54H}}
+\renewcommand{\Large}{\@setfontsize\Large
+  {\recls@fnt@scale\dimexpr 20\JQ}{\recls@fnt@scale\dimexpr 30H}}
+\renewcommand{\LARGE}{\@setfontsize\LARGE
+  {\recls@fnt@scale\dimexpr 24\JQ}{\recls@fnt@scale\dimexpr 36H}}
+\renewcommand{\huge}{\@setfontsize\huge
+  {\recls@fnt@scale\dimexpr 28\JQ}{\recls@fnt@scale\dimexpr 42H}}
+\renewcommand{\Huge}{\@setfontsize\Huge
+  {\recls@fnt@scale\dimexpr 32\JQ}{\recls@fnt@scale\dimexpr 48H}}
+\renewcommand{\HUGE}{\jsc@setfontsize\HUGE
+  {\recls@fnt@scale\dimexpr 36\JQ}{\recls@fnt@scale\dimexpr 54H}}
 
 %% headheight, headsep, footskip
 \setlength\topskip{\Cht}

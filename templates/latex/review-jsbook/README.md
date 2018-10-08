@@ -95,7 +95,7 @@ jsbook.clsで利用可能な特定の用紙サイズを指定できます。
 
  * jsbook.clsのクラスオプション `nomag`：用紙サイズや版面設計は、すべてreview-jsbook側で行います。
  * hyperrefパッケージ：あらかじめhyperrefパッケージを組み込んで、`cameraready`オプションにより用途別で挙動を制御しています。
- * 各種相対フォントサイズコマンド`\small`, `\footnotesize`, `\scriptsize`, `\tiny`, `\large`, `\Large`, `\LARGE`, `\huge`, `\Huge`, `\HUGE` は、級数ベースに書き換えています。あまりちゃんと実装せずに、いい加減に変えていますが、本文級数が12Qから15Qまでぐらいであれば、それなりに大丈夫と思います。
+ * 各種相対フォントサイズコマンド`\small`, `\footnotesize`, `\scriptsize`, `\tiny`, `\large`, `\Large`, `\LARGE`, `\huge`, `\Huge`, `\HUGE` は、級数ベースに書き換えています。あまりちゃんと実装せずに、いい加減に変えていますが、それなりに大丈夫と思います。
 
 
 ## おわりに
