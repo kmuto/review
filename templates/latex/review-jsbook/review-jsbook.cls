@@ -31,6 +31,12 @@
 \def\recls@warningnoline{\ClassWarningNoLine{review-jsbook}}
 \def\recls@info{\ClassInfo{review-jsbook}}
 
+%% hook at end of reviewmacro
+\let\@endofreviewmacrohook\@empty
+\def\AtEndOfReVIEWMacro{%
+  \g@addto@macro\@endofreviewmacrohook}
+\@onlypreamble\AtEndOfReVIEWMacro
+
 %% fixes to LaTeX2e
 \RequirePackage{fix-cm}%%\RequirePackage{fix-cm,exscale}
 \IfFileExists{latexrelease.sty}{}{\RequirePackage{fixltx2e}}
@@ -125,6 +131,12 @@
 
 %% 用紙
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
+\DeclareOptionX{tombopaper}{%
+  \gdef\recls@tombopaper{}%%default: auto-detect
+  \ifx#1\@empty\else\gdef\recls@tombopaper{tombo-#1}\fi}
+%% カスタム用紙サイズ
+\DeclareOptionX{paperwidth}{\gdef\recls@paperwidth{#1}}
+\DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
 %% 基本版面 QWLH、天、ノド
 \DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
 \DeclareOptionX{W}[35]{\gdef\recls@W{#1}}
@@ -137,18 +149,30 @@
 \DeclareOptionX{headsep}[\z@]{\gdef\recls@headsep{#1}}
 \DeclareOptionX{footskip}[\z@]{\gdef\recls@footskip{#1}}
 
-\PassOptionsToClass{dvipdfmx,papersize}{jsbook}
+\PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{paper,cameraready,Q,W,L,H,head,gutter,headheight,headsep,footskip}
+\ExecuteOptionsX{cameraready,paper,tombopaper,paperwidth,paperheight,%
+  Q,W,L,H,head,gutter,headheight,headsep,footskip}
 \ProcessOptionsX\relax
 
+%% set specific papersize
 \recls@set@paper{\recls@paper}
 
+%% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
-  \@camerareadyfalse\@pdfhyperlinktrue
+%%FIXME: cameraready=preview の挙動は保留。例：フォント関係を仕込む
+  \@camerareadyfalse\@pdfhyperlinkfalse
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse
-  \PassOptionsToClass{tombo}{jsbook}
+  \IfFileExists{gentombow.sty}{%
+    \AtEndOfClass{\RequirePackage[pdfbox,tombo,\recls@tombopaper]{gentombow}}%
+  }{%
+    \recls@warning{package gentombow: not installed}%
+    \ifx\recls@tombopaper\@empty\else
+      \recls@warning{option tombopaper: not available}%
+    \fi
+    \PassOptionsToClass{tombo}{jsbook}%
+  }%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue
   \PassOptionsToClass{papersize}{jsbook}%
@@ -166,17 +190,22 @@
 
 \PassOptionsToClass{10pt}{jsbook}%%<= forcely load 10pt
 \LoadClass{jsbook}
+%%\typeout{!!! mag: \the\mag}%%=> 1000 -> OK
+
+%% override papersize with custom papersize
+\ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
+  \setlength{\paperwidth}{\recls@paperwidth}
+  \setlength{\paperheight}{\recls@paperheight}
+  \def\recls@tmp{pdf}\ifx\recls@cameraready\recls@tmp
+    \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
+  \fi
+\fi\fi
 
 \def\recls@JYn{\if@recls@uptex JY2\else JY1\fi}%
 \def\recls@JTn{\if@recls@uptex JT2\else JT1\fi}%
 \def\recls@pfx@{\if@recls@uptex up\else \fi}%
 \def\recls@sfx@{\if@recls@uptex \else n\fi}%
 \def\recls@sc@le{\if@recls@uptex 0.924714\else 0.961026\fi}%
-\def\recls@jisrh{\if@recls@uptex upjisr-h\else jisn\fi}%
-\def\recls@jisgh{\if@recls@uptex upjisg-h\else jisgn\fi}%
-\def\recls@jisrv{\if@recls@uptex upjisr-v\else jisn-v\fi}%
-\def\recls@jisgv{\if@recls@uptex upjisg-v\else jisgn-v\fi}%
-
 \def\recls@jisrh{\recls@pfx@ jis\if@recls@uptex r-h\fi}%
 \def\recls@jisgh{\recls@pfx@ jisg\if@recls@uptex -h\fi}%
 \def\recls@jisrv{\recls@pfx@ jis\if@recls@uptex r\fi -v}%
@@ -192,7 +221,7 @@
 \@tempcnta=\strip@pt\@tempdima\relax
 \@tempcntb=\strip@pt\@tempdimb\relax
 \@tempdima=\dimexpr\@tempcntb\p@/\@tempcnta\relax
-\recls@get@p@{\@tempdima}{\recls@@scale}% \typeout{!!! \recls@@scale}%
+\recls@get@p@{\@tempdima}{\recls@fnt@scale}% \typeout{!!! \recls@fnt@scale}%
 
 \RequirePackage{lmodern}
 
@@ -306,15 +335,22 @@
 \renewcommand{\tiny}{\jsc@setfontsize\tiny
   {.5\dimexpr\recls@Qnum\JQ}{.5\dimexpr\recls@Qnum H + 2H}}
 \if@twocolumn
-  \renewcommand{\large}{\@setfontsize\large{18\JQ}{\n@baseline}}
+  \renewcommand{\large}{\@setfontsize\large
+    {\recls@fnt@scale\dimexpr 18\JQ}{\n@baseline}}
 \else
-  \renewcommand{\large}{\@setfontsize\large{18\JQ}{27H}}
+  \renewcommand{\large}{\@setfontsize\large
+    {\recls@fnt@scale\dimexpr 18\JQ}{\recls@fnt@scale\dimexpr 27H}}
 \fi
-\renewcommand{\Large}{\@setfontsize\Large{20\JQ}{30H}}
-\renewcommand{\LARGE}{\@setfontsize\LARGE{24\JQ}{36H}}
-\renewcommand{\huge}{\@setfontsize\huge{28\JQ}{42H}}
-\renewcommand{\Huge}{\@setfontsize\Huge{32\JQ}{48H}}
-\renewcommand{\HUGE}{\jsc@setfontsize\HUGE{36\JQ}{54H}}
+\renewcommand{\Large}{\@setfontsize\Large
+  {\recls@fnt@scale\dimexpr 20\JQ}{\recls@fnt@scale\dimexpr 30H}}
+\renewcommand{\LARGE}{\@setfontsize\LARGE
+  {\recls@fnt@scale\dimexpr 24\JQ}{\recls@fnt@scale\dimexpr 36H}}
+\renewcommand{\huge}{\@setfontsize\huge
+  {\recls@fnt@scale\dimexpr 28\JQ}{\recls@fnt@scale\dimexpr 42H}}
+\renewcommand{\Huge}{\@setfontsize\Huge
+  {\recls@fnt@scale\dimexpr 32\JQ}{\recls@fnt@scale\dimexpr 48H}}
+\renewcommand{\HUGE}{\jsc@setfontsize\HUGE
+  {\recls@fnt@scale\dimexpr 36\JQ}{\recls@fnt@scale\dimexpr 54H}}
 
 %% headheight, headsep, footskip
 \setlength\topskip{\Cht}
@@ -345,6 +381,7 @@
 \setlength\oddsidemargin{.5\oddsidemargin}
 \addtolength\oddsidemargin{-1in}
 \setlength\evensidemargin\oddsidemargin
+\edef\recls@gutter{\evensidemargin}
 \fi
 
 %% 天、地
@@ -359,7 +396,7 @@
 \addtolength\topmargin{-1in}
 \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
 
-
+%% load hyperref package
 \RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
   bookmarks=true,
   bookmarksnumbered=true,
@@ -383,6 +420,37 @@
 % \def\theoremautorefname{定理}%
 % \def\pageautorefname{ページ}%
 \RequirePackage[dvipdfmx]{pxjahyper}
+
+%% more useful macros
+%% ----------
+%% include fullpage graphics
+\let\grnchry@head\recls@head
+\let\grnchry@gutter\recls@gutter
+\newcommand*\includefullpagegraphics{%
+  \clearpage
+  \@ifstar
+    {\@includefullpagegraphics}%
+    {\thispagestyle{empty}\@includefullpagegraphics}
+}
+
+\newcommand*\@includefullpagegraphics[2][]{%
+    \vbox to \textheight{%
+      \vskip-\grnchry@head
+      \vbox to \paperheight{\vss
+        \hbox to \textwidth{%
+          \ifodd\c@page
+            \hskip-\dimexpr\oddsidemargin + 1in\relax
+          \else
+            \hskip-\dimexpr\evensidemargin + 1in\relax
+          \fi
+          \hbox to \paperwidth{\hss
+            \includegraphics[#1]{#2}%
+          \hss}%
+        \hss}%
+      \vss}%
+    \vss}%
+  \clearpage
+}
 
 \listfiles
 \endinput
