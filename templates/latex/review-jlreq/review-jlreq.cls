@@ -62,16 +62,18 @@ cls]
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \newif\if@pdftombo \@pdftombofalse
 \newif\if@reclscover \@reclscovertrue
+\newif\ifrecls@serialpage \recls@serialpagefalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
 \DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr #1-1\relax}}
+\DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage##1\endcsname}
 
 % jlreqのオプションについては https://github.com/abenori/jlreq/blob/master/README-ja.md を参照
 \PassOptionsToClass{book,paper=a5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをA5にしておく
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jlreq}}%
-\ExecuteOptionsX{cameraready,tombopaper,bleed_margin,cover,startpage}
+\ExecuteOptionsX{cameraready,tombopaper,bleed_margin,cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
@@ -190,6 +192,35 @@ cls]
       \vss}%
     \vss}%
   \clearpage
+}
+
+\renewcommand*{\frontmatter}{%
+  \cleardoublepage
+  \@mainmatterfalse
+  \let\jlreq@pagestyle@atmain\jlreq@current@pagestyle
+  \SaveHeading{chapter}{\jlreq@heading@chapter@atmain}%
+  \ModifyHeading{chapter}{label_format={},after_label_space=0pt}%
+  \pagestyle{plain}%
+  \ifrecls@serialpage
+    \pagenumbering{arabic}% 通しノンブル
+  \else
+    \pagenumbering{roman}
+  \fi
+  \setcounter{page}{\the\recls@startpage}
+}
+\renewcommand*{\mainmatter}{%
+  \cleardoublepage
+  \@mainmattertrue
+  \@ifundefined{jlreq@pagestyle@atmain}{}{%
+    \expandafter\pagestyle\expandafter{\jlreq@pagestyle@atmain}%
+  }%
+  \@ifundefined{jlreq@heading@chapter@atmain}{}{\jlreq@heading@chapter@atmain}
+%
+  \setcounter{chapter}{0}%
+  \ifrecls@serialpage% 通しノンブル
+  \else
+    \pagenumbering{arabic}
+  \fi
 }
 
 \listfiles
