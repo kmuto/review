@@ -62,12 +62,13 @@ cls]
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \newif\if@pdftombo \@pdftombofalse
 \newif\if@reclscover \@reclscovertrue
+\newif\ifrecls@serialpage \recls@serialpagefalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
 \DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr #1-1\relax}}
-\DeclareOptionX{serial_pagination}[false]{\gdef\recls@serialpage{#1}}
+\DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
 
 % jlreqのオプションについては https://github.com/abenori/jlreq/blob/master/README-ja.md を参照
 \PassOptionsToClass{book,paper=a5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをA5にしておく
@@ -194,8 +195,8 @@ cls]
 }
 
 % シンプルな通しノンブル
-\def\recls@tmp{true}\ifx\recls@serialpage\recls@tmp
-  \def\pagenumbering#1{%
+\ifrecls@serialpage
+\renewcommand*{\pagenumbering}[1]{%
   \gdef\thepage{\@arabic\c@page}}
 \fi
 
