@@ -1,4 +1,5 @@
-# review-jlreq テンプレート (実験版)
+review-jlreq.cls Users Guide (実験版)
+====================
 
 [jlreq](https://github.com/abenori/jlreq) は、 [日本語組版処理の要件](https://www.w3.org/TR/jlreq/ja/) の実装を試みた LaTeX クラスファイルです。
 

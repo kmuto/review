@@ -6,3 +6,10 @@
 
 % ユーザー固有の定義
 \usepackage{review-custom}
+
+%% run \@endofreviewmacrohook at the end of reviewmacro style
+\@ifundefined{@endofreviewmacrohook}{}{%
+\let\AtEndOfReVIEWMacro\@firstofone
+\@endofreviewmacrohook}
+
+\endinput
