@@ -47,6 +47,7 @@
 }{}
 
 \RequirePackage{xkeyval}
+\RequirePackage{etoolbox}
 
 %% useful helpers
 \newcommand\recls@get@p@[2]{%
@@ -478,27 +479,21 @@
 \fi
 
 % 開始ページを変更
-\let\recls@frontmatterorg\frontmatter
-\renewcommand*{\frontmatter}{
-  \recls@frontmatterorg
-  \setcounter{page}{\the\recls@startpage}
-}
+\g@addto@macro\frontmatter{\setcounter{page}{\the\recls@startpage}}
 
 % titlepageのsetcounterを使わない
-\renewenvironment{titlepage}{%
-    \cleardoublepage
-    \if@twocolumn
-      \@restonecoltrue\onecolumn
-    \else
-      \@restonecolfalse\newpage
-    \fi
-    \thispagestyle{empty}%
-%    \setcounter{page}\@ne
-  }%
-  {\if@restonecol\twocolumn \else \newpage \fi
-    \if@twoside\else
-%      \setcounter{page}\@ne
-    \fi}
+\patchcmd\titlepage
+  {\setcounter{page}\@ne}{\relax}%
+  {}{\recls@warning{titlepage}}
+\patchcmd\endtitlepage
+  {\setcounter{page}\@ne}{\relax}%
+  {}{\recls@warning{endtitlepage}}
+% \patchcmd\titlepage
+%   {\setcounter{page}{1}}{\relax}%
+%   {}{\recls@warning{titlepage}}
+% \patchcmd\endtitlepage
+%   {\setcounter{page}{1}}{\relax}%
+%   {}{\recls@warning{endtitlepage}}
 
 \listfiles
 \endinput
