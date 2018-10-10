@@ -1,5 +1,5 @@
 %#!ptex2pdf -l -u -ot '-synctex=1' test-rejsbk
-% Copyright (c) 2018 Munehiro Yamamoto.
+% Copyright (c) 2018 Munehiro Yamamoto, Kenshi Muto.
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
@@ -134,6 +134,7 @@
 \DeclareOptionX{tombopaper}{%
   \gdef\recls@tombopaper{}%%default: auto-detect
   \ifx#1\@empty\else\gdef\recls@tombopaper{tombo-#1}\fi}
+\DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 %% カスタム用紙サイズ
 \DeclareOptionX{paperwidth}{\gdef\recls@paperwidth{#1}}
 \DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
@@ -149,10 +150,19 @@
 \DeclareOptionX{headsep}[\z@]{\gdef\recls@headsep{#1}}
 \DeclareOptionX{footskip}[\z@]{\gdef\recls@footskip{#1}}
 
+%% 表紙・開始番号・通しノンブル
+\newif\if@reclscover \@reclscovertrue
+\newif\ifrecls@serialpage \recls@serialpagefalse
+\DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
+\DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr#1}}
+\DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
+
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{cameraready,paper,tombopaper,paperwidth,paperheight,%
-  Q,W,L,H,head,gutter,headheight,headsep,footskip}
+\ExecuteOptionsX{cameraready,paper,tombopaper,bleed_margin,%
+  paperwidth,paperheight,%
+  Q,W,L,H,head,gutter,headheight,headsep,footskip,%
+  cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
 
 %% set specific papersize
@@ -161,11 +171,12 @@
 %% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
 %%FIXME: cameraready=preview の挙動は保留。例：フォント関係を仕込む
-  \@camerareadyfalse\@pdfhyperlinkfalse
+  \@camerareadyfalse\@pdfhyperlinkfalse\@reclscovertrue
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
-  \@camerareadytrue\@pdfhyperlinkfalse
+  \@camerareadytrue\@pdfhyperlinkfalse\@reclscoverfalse
   \IfFileExists{gentombow.sty}{%
-    \AtEndOfClass{\RequirePackage[pdfbox,tombo,\recls@tombopaper]{gentombow}}%
+    \AtEndOfClass{\RequirePackage[pdfbox,tombo,\recls@tombopaper]{gentombow}%
+      \settombowbleed{\recls@tombobleed}}%
   }{%
     \recls@warning{package gentombow: not installed}%
     \ifx\recls@tombopaper\@empty\else
@@ -174,7 +185,7 @@
     \PassOptionsToClass{tombo}{jsbook}%
   }%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
-  \@camerareadytrue\@pdfhyperlinktrue
+  \@camerareadytrue\@pdfhyperlinktrue\@reclscovertrue
   \PassOptionsToClass{papersize}{jsbook}%
 \else
   \recls@error{No such value of cameraready: \recls@cameraready}%
@@ -451,6 +462,43 @@
     \vss}%
   \clearpage
 }
+
+% coverオプションによる表紙判定の上書き
+\def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp
+\@reclscovertrue
+\else\def\recls@tmp{false}\ifx\recls@forcecover\recls@tmp
+\@reclscoverfalse
+\else% それ以外の値は単に無視
+\fi\fi
+
+% シンプルな通しノンブル
+\ifrecls@serialpage
+\renewcommand*{\pagenumbering}[1]{%
+  \gdef\thepage{\@arabic\c@page}}
+\fi
+
+% 開始ページを変更
+\let\recls@frontmatterorg\frontmatter
+\renewcommand*{\frontmatter}{
+  \recls@frontmatterorg
+  \setcounter{page}{\the\recls@startpage}
+}
+
+% titlepageのsetcounterを使わない
+\renewenvironment{titlepage}{%
+    \cleardoublepage
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse\newpage
+    \fi
+    \thispagestyle{empty}%
+%    \setcounter{page}\@ne
+  }%
+  {\if@restonecol\twocolumn \else \newpage \fi
+    \if@twoside\else
+%      \setcounter{page}\@ne
+    \fi}
 
 \listfiles
 \endinput
