@@ -32,9 +32,15 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 印刷用 `print`、電子用 `ebook` のいずれかの用途名を指定します。
 
  * `print`［デフォルト］：印刷用 PDF ファイルを生成します。
-   * トンボあり、デジタルトンボあり（gentombow パッケージが利用可能な場合）、hyperref パッケージを `draft` モードで読み込み
+   * トンボあり、デジタルトンボあり（gentombow パッケージが利用可能な場合）、hyperref パッケージを `draft` モードで読み込み、表紙は入れない
  * `ebook`：電子用PDFファイルを生成します。
-   * トンボなし、hyperref パッケージを読み込み
+   * トンボなし、hyperref パッケージを読み込み、表紙を入れる
+
+### 表紙の挿入有無 `cover=<trueまたはfalse>`
+
+`cameraready` の値によって表紙（config.yml の coverimage に指定した画像）の配置の有無は自動で切り替わりますが、`cover=true` とすれば必ず表紙を入れるようになります。
+
+なお、config.yml の coverimage で指定する画像ファイルは、原寸を想定しています。
 
 ### 特定の用紙サイズ `paper=<用紙サイズ>`
 
@@ -53,10 +59,13 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
  * `legal`
  * `executive`
 
-### トンボ用紙サイズ `tombopaper=<用紙サイズ>`
+### トンボ用紙サイズ `tombopaper=<用紙サイズ>` および塗り足し幅 `bleed_margin=<幅>`
 
-トンボ用紙サイズを指定できます。
+`tombopaper` ではトンボ用紙サイズを指定できます。
 ［デフォルト］値は自動判定します。
+
+`bleed_margin` では塗り足し領域の幅を指定できます。
+［デフォルト］3mm になります。
 
 デジタルトンボを含め、gentombow パッケージが利用可能なときのみ有効です。
 
@@ -86,6 +95,19 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
  * paper=b5, Q=14, W=40, L=34, H=25.5, 
 
 さらに、ヘッダー、フッターに関する位置調整は、TeX のパラメータ `\headheight`, `\headsep`, `\footskip` に対応しており、それぞれ `headheight`, `headsep`, `footskip` を与えられます。
+
+## 開始ページ番号 `startpage=<ページ番号>`
+
+大扉からのページ開始番号を指定します。
+
+［デフォルト］は1です。表紙・表紙裏（表1・表2）のぶんを飛ばしたければ、`startpage=3` とします。
+
+## 通しページ番号（通しノンブル） `serial_pagination=<trueまたはfalse>`
+
+大扉からアラビア数字でページ番号を通すかどうかを指定します。
+
+ * `true`：大扉を開始ページとして、前付（catalog.yml で PREDEF に指定したもの）、さらに本文（catalog.yml で CHAPS に指定したもの）に連続したページ番号をアラビア数字で振ります（通しノンブルと言います）。
+ * `false`［デフォルト］：大扉を開始ページとして前付の終わり（通常は目次）までのページ番号をローマ数字で振ります。本文は 1 を開始ページとしてアラビア数字で振り直します（別ノンブルと言います）。
 
 ## 標準で review-jsbook.cls を実行したときの jsbook.cls との違い
 

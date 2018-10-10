@@ -131,6 +131,7 @@ secnolevel: 2
 # cover: null
 #
 # 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
+# PDFMaker 固有の表紙設定は pdfmaker セクション内で上書き可能
 # coverimage: null
 #
 # 表紙の後に大扉ページを作成するか。省略した場合はtrue (作成する)

@@ -321,14 +321,16 @@
 }
 
 % cover
-\ifdefined\review@coverimage
-  \def\reviewcoverpagecont{%
-    \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
-    \cleardoublepage
-  }
-\fi
-\ifdefined\review@coverfile
-  \def\reviewcoverpagecont{\review@coverfile}
+\if@reclscover
+  \ifdefined\review@coverimage
+    \def\reviewcoverpagecont{%
+      \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
+      \cleardoublepage
+    }
+  \fi
+  \ifdefined\review@coverfile
+    \def\reviewcoverpagecont{\review@coverfile}
+  \fi
 \fi
 
 % titlepage
