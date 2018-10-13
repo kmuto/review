@@ -89,6 +89,15 @@ module ReVIEW
           'makeindex_dic' => nil,
           'makeindex_mecab' => true,
           'makeindex_mecab_opts' => '-Oyomi'
+        },
+        'imgmath_options' => {
+          'format' => 'png',
+          'converter' => 'pdfcrop', # dvipng | pdfcrop
+          'pdfcrop_cmd' => 'pdfcrop --hires %i %o',
+          'preamble_file' => nil,
+          'fontsize' => 12,
+          'lineheight' => 12 * 1.2,
+          'pdfcrop_pixelize_cmd' => 'pdftocairo -png -f %p -l %p %i %o'
         }
       ]
       conf.maker = nil

@@ -549,14 +549,19 @@ module ReVIEW
       elsif @book.config['imgmath']
         math_str = "\\begin{equation*}\n" + unescape(lines.join("\n")) + "\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
-        math_dir = "./#{@book.config['imagedir']}/_review_math"
+        math_dir = File.join(@book.config['imagedir'], '_review_math')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
-        img_path = "./#{math_dir}/_gen_#{key}.png"
-        make_math_image(math_str, img_path)
-        puts %Q(<img src="#{img_path}" />)
+        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
+        if @book.config.check_version('2', exception: false)
+          make_math_image(math_str, img_path)
+          puts %Q(<img src="#{img_path}" />)
+        else
+          defer_math_image(math_str, img_path, key)
+          puts %Q(<img src="#{img_path}" alt="#{escape(lines.join(' '))}" />)
+        end
       else
         print '<pre>'
-        puts lines.join("\n")
+        puts escape(lines.join("\n"))
         puts '</pre>'
       end
       puts '</div>'
@@ -924,11 +929,16 @@ module ReVIEW
       elsif @book.config['imgmath']
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
-        math_dir = "./#{@book.config['imagedir']}/_review_math"
+        math_dir = File.join(@book.config['imagedir'], '_review_math')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
-        img_path = "./#{math_dir}/_gen_#{key}.png"
-        make_math_image(math_str, img_path)
-        %Q(<span class="equation"><img src="#{img_path}" /></span>)
+        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
+        if @book.config.check_version('2', exception: false)
+          make_math_image(math_str, img_path)
+          %Q(<span class="equation"><img src="#{img_path}" /></span>)
+        else
+          defer_math_image(math_str, img_path, key)
+          %Q(<span class="equation"><img src="#{img_path}" alt="#{escape(str)}" /></span>)
+        end
       else
         %Q(<span class="equation">#{escape(str)}</span>)
       end
@@ -1192,7 +1202,19 @@ module ReVIEW
       @ol_num = num.to_i
     end
 
+    def defer_math_image(str, path, key)
+      # for Re:VIEW >3
+      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.tex'), 'a+') do |f|
+        f.puts str
+        f.puts '\\clearpage'
+      end
+      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.map'), 'a+') do |f|
+        f.puts key
+      end
+    end
+
     def make_math_image(str, path, fontsize = 12)
+      # Re:VIEW 2 compatibility
       fontsize2 = (fontsize * 1.2).round.to_i
       texsrc = <<-EOB
 \\documentclass[12pt]{article}

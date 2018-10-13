@@ -123,10 +123,17 @@ module ReVIEW
       copy_resources(@config['fontdir'], "#{@path}/fonts", @config['font_ext'])
     end
 
+    def clean_mathdir
+      if @config['imgmath'] && File.exist?("#{@config['imagedir']}/_review_math")
+        FileUtils.rm_rf("#{@config['imagedir']}/_review_math")
+      end
+    end
+
     def build_body(basetmpdir, _yamlfile)
       base_path = Pathname.new(@basedir)
       builder = ReVIEW::HTMLBuilder.new
       @converter = ReVIEW::Converter.new(@book, builder)
+      clean_mathdir
       @book.parts.each do |part|
         if part.name.present?
           if part.file?
