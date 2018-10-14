@@ -697,6 +697,8 @@ If you want to use the `sips` command or the` magick` command, they can only pro
 imgmath: true
 imgmath_options:
   extract_singlepage: true
+  # use pdftk instead of default pdfjam (for Windows)
+  pdfextract_cmd: "pdftk A=%i cat A%p output %o"
   # use ImageMagick
   pdfcrop_pixelize_cmd: "magick -density 200x200 %i %o"
   # use sips

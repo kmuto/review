@@ -653,6 +653,8 @@ imgmath_options:
 imgmath: true
 imgmath_options:
   extract_singlepage: true
+  # pdfjamの代わりに外部ツールのpdftkを使う場合（Windowsなど）
+  pdfextract_cmd: "pdftk A=%i cat A%p output %o"
   # ImageMagickを利用する例
   pdfcrop_pixelize_cmd: "magick -density 200x200 %i %o"
   # sipsを利用する例
