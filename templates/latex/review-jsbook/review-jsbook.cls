@@ -127,6 +127,15 @@
 
 %% hiddenfolio=default
 \@namedef{@makehiddenfolio@default}{%
+  \ifodd\c@page
+    \llap{\thepage\hspace{\dimexpr\@tombowbleed}}%
+  \else
+    \rlap{\hspace{\dimexpr\paperwidth+\@tombowbleed}\thepage}%
+  \fi}
+
+%% hiddenfolio=marusho-ink
+\@namedef{@makehiddenfolio@marusho-ink}{%
+  \gdef\recls@tombobleed{5mm}%
   \def\recls@hiddfolio{%
     \edef\recls@tmp{\thepage}%
     \raise3.5mm\hbox{\vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
@@ -136,12 +145,6 @@
   \else
     \rlap{\hspace{\dimexpr\paperwidth+\@tombowbleed}\recls@hiddfolio}%
   \fi}
-
-%% hiddenfolio=marusho-ink
-\@namedef{@makehiddenfolio@marusho-ink}{%
-  \gdef\recls@tombobleed{5mm}%
-  \@nameuse{@makehiddenfolio@default}%
-}
 
 %% hiddenfolio=nikko-pc
 \@namedef{@makehiddenfolio@nikko-pc}{%
