@@ -112,7 +112,9 @@
 %% \recls@set@hiddenfolio{<preset>}
 %% <preset>: default, marusho-ink (丸正インキ), nikko-pc (日光企画), 
 %%    shippo (ねこのしっぽ)
-\def\recls@set@hiddenfolio#1{%
+\def\recls@set@hiddenfolio#1{\ifx#1\@empty\else
+  \@ifundefined{@makehiddenfolio@#1}{%
+    \recls@error{Not define such hiddenfolio: #1}}\relax
   %% set hiddenfolio preset
   \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
   %% redefine to output \@makehiddenfolio for every page
@@ -121,7 +123,7 @@
     {\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}\the\@bannertoken}
     {}{\recls@warning{Failed to setup hidden folio: \recls@hiddenfolio}}%
   \AddEverypageHook{\maketombowbox}%
-}
+\fi}
 
 \def\hiddenfolio@font{\reset@font\scriptsize\sffamily\baselineskip.8\baselineskip}
 
