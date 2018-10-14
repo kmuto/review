@@ -95,8 +95,8 @@ module ReVIEW
           'converter' => 'pdfcrop', # dvipng | pdfcrop
           'pdfcrop_cmd' => 'pdfcrop --hires %i %o',
           'preamble_file' => nil,
-          'fontsize' => 12,
-          'lineheight' => 12 * 1.2,
+          'fontsize' => 10,
+          'lineheight' => 10 * 1.2,
           'pdfcrop_pixelize_cmd' => 'pdftocairo -png -f %p -l %p %i %o'
         }
       ]
