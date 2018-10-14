@@ -46,8 +46,7 @@
 \PassOptionsToPackage{nosetpagesize}{graphicx}%%for TL16 or higher version
 }{}
 
-\RequirePackage{xkeyval}
-\RequirePackage{etoolbox}
+\RequirePackage{xkeyval,everypage}%%,etoolbox
 
 %% useful helpers
 \newcommand\recls@get@p@[2]{%
@@ -84,7 +83,7 @@
   \PassOptionsToClass{\recls@set@js@paper}{jsbook}}
 
 \def\recls@disable@jsopt#1{%
-  \recls@DeclareOption{#1}{}}
+  \recls@DeclareOption{#1}{\recls@error{option #1: not available}}}
 
 \recls@define@paper{a3}{paper}
 \recls@define@paper{a4}{paper}
@@ -93,37 +92,78 @@
 \recls@define@paper{b4}{paper}
 \recls@define@paper{b5}{paper}
 \recls@define@paper{b6}{paper}
-\recls@disable@jsopt{a4j}
-\recls@disable@jsopt{a5j}
-\recls@disable@jsopt{b4j}
-\recls@disable@jsopt{b5j}
 \recls@define@paper{a4var}{}
 \recls@define@paper{b5var}{}
 \recls@define@paper{letter}{paper}
 \recls@define@paper{legal}{paper}
 \recls@define@paper{executive}{paper}
 
-\recls@disable@jsopt{8pt}
-\recls@disable@jsopt{9pt}
-\recls@disable@jsopt{10pt}
-\recls@disable@jsopt{11pt}
-\recls@disable@jsopt{12pt}
-\recls@disable@jsopt{14pt}
-\recls@disable@jsopt{17pt}
-\recls@disable@jsopt{20pt}
-\recls@disable@jsopt{21pt}
-\recls@disable@jsopt{25pt}
-\recls@disable@jsopt{30pt}
-\recls@disable@jsopt{36pt}
-\recls@disable@jsopt{43pt}
-\recls@disable@jsopt{12Q}
-\recls@disable@jsopt{14Q}
-\recls@disable@jsopt{10ptj}
-\recls@disable@jsopt{10.5ptj}
-\recls@disable@jsopt{11ptj}
-\recls@disable@jsopt{12ptj}
-\recls@disable@jsopt{winjis}
-\recls@disable@jsopt{mingoth}
+%% disable some options of jsbook.cls
+\@for\recls@tmp:={%
+  a4j,a5j,b4j,b5j,%
+  8pt,9pt,10pt,11pt,12pt,14pt,17pt,20pt,21pt,25pt,30pt,36pt,43pt,12Q,14Q,%
+  10ptj,10.5ptj,11ptj,12ptj,winjis,mingoth}\do{%
+  \expandafter\recls@disable@jsopt\expandafter{\recls@tmp}}
+
+%% \recls@set@tombowpaper{<papersize>}
+\def\recls@set@tombowpaper#1{%
+  \xdef#1{\ifx\recls@hiddenfolio\@empty tombo,\fi#1}}
+
+%% \recls@set@hiddenfolio{<preset>}
+%% <preset>: default, marusho-ink (丸正インキ), nikko-pc (日光企画), 
+%%    shippo (ねこのしっぽ)
+\def\recls@set@hiddenfolio#1{\ifx#1\@empty\else
+  \@ifundefined{@makehiddenfolio@#1}{%
+    \recls@error{Not define such hiddenfolio: #1}}\relax
+  %% set hiddenfolio preset
+  \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
+  %% redefine to output \@makehiddenfolio for every page
+  \settombowbanner{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
+  \AddEverypageHook{\maketombowbox}%
+\fi}
+
+\def\hiddenfolio@font{\reset@font
+  \scriptsize\sffamily\baselineskip.8\baselineskip}
+
+%% hiddenfolio=default
+\@namedef{@makehiddenfolio@default}{%
+  \ifodd\c@page
+    \llap{\thepage\hspace{\dimexpr\@tombowbleed}}%
+  \else
+    \rlap{\hspace{\dimexpr\paperwidth+\@tombowbleed}\thepage}%
+  \fi}
+
+%% hiddenfolio=marusho-ink
+\@namedef{@makehiddenfolio@marusho-ink}{%
+  \gdef\recls@tombobleed{5mm}%
+  \def\recls@hiddfolio{%
+    \edef\recls@tmp{\thepage}%
+    \raise3.5mm\hbox{%
+      \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
+        \hbox to .5zw{\hss\recls@x\hss}}}}}%
+  \ifodd\c@page
+    \llap{\recls@hiddfolio\hspace{\dimexpr\@tombowbleed}}%
+  \else
+    \rlap{\hspace{\dimexpr\paperwidth+\@tombowbleed}\recls@hiddfolio}%
+  \fi}
+
+%% hiddenfolio=nikko-pc
+\@namedef{@makehiddenfolio@nikko-pc}{%
+  \def\recls@hiddfolio{%
+    \edef\recls@tmp{\thepage}%
+    \lower\dimexpr4pt+\@tombowbleed+.5\paperheight+5\p@\hbox{%
+      \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
+        \hbox to 1zw{\hss\recls@x\hss}}}}}%
+  \ifodd\c@page
+    \rlap{\recls@hiddfolio}%
+  \else
+    \llap{\recls@hiddfolio\hspace{-\paperwidth}}%
+  \fi}
+
+%% hiddenfolio=shippo
+\@namedef{@makehiddenfolio@shippo}{%
+  \@nameuse{@makehiddenfolio@nikko-pc}}
+
 
 %% cameraready=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
@@ -133,9 +173,11 @@
 %% 用紙
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
 \DeclareOptionX{tombopaper}{%
-  \gdef\recls@tombopaper{}%%default: auto-detect
-  \ifx#1\@empty\else\gdef\recls@tombopaper{tombo-#1}\fi}
+  \gdef\recls@tombowopts{}%%default: auto-detect
+  \ifx#1\@empty\else\gdef\recls@tombowopts{tombo-#1}\fi}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
+%% 隠しノンブルプリセット
+\DeclareOptionX{hiddenfolio}{\gdef\recls@hiddenfolio{#1}}%%default: (none)
 %% カスタム用紙サイズ
 \DeclareOptionX{paperwidth}{\gdef\recls@paperwidth{#1}}
 \DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
@@ -160,14 +202,15 @@
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{cameraready,paper,tombopaper,bleed_margin,%
-  paperwidth,paperheight,%
+\ExecuteOptionsX{cameraready,hiddenfolio,%
+  paper,tombopaper,bleed_margin,paperwidth,paperheight,%
   Q,W,L,H,head,gutter,headheight,headsep,footskip,%
   cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
 
 %% set specific papersize
 \recls@set@paper{\recls@paper}
+\recls@set@tombowpaper{\recls@tombowopts}
 
 %% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
@@ -176,13 +219,19 @@
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse\@reclscoverfalse
   \IfFileExists{gentombow.sty}{%
-    \AtEndOfClass{\RequirePackage[pdfbox,tombo,\recls@tombopaper]{gentombow}%
-      \settombowbleed{\recls@tombobleed}}%
+    \AtEndOfClass{%
+      \RequirePackage[pdfbox,\recls@tombowopts]{gentombow}%
+      \settombowbleed{\recls@tombobleed}%
+      \recls@set@hiddenfolio{\recls@hiddenfolio}}%
+    %%FIXME: gentombow upstreamでトンボ版スタイルコマンドが実装されたら、それに置き換えても良いかな。
+    % \AtEndOfClass{%
+    %   \PassOptionsToPackage{\recls@tombowopts}{gentombow}%
+    %   \RequirePackage[hiddenfolio=\recls@hiddenfolio,tombobleed=\recls@tombobleed]{gentombow-hiddenfolio}%
+    % }%
   }{%
-    \recls@warning{package gentombow: not installed}%
-    \ifx\recls@tombopaper\@empty\else
-      \recls@warning{option tombopaper: not available}%
-    \fi
+    \recls@warning{%
+      package gentombow: not installed^^J
+      option tombopaper: not available}%
     \PassOptionsToClass{tombo}{jsbook}%
   }%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
@@ -343,9 +392,9 @@
               \itemsep \parsep}}
 
 \renewcommand{\scriptsize}{\jsc@setfontsize\scriptsize
-  {\dimexpr\recls@Qnum\JQ - 3\JQ}{1.25\dimexpr\recls@Qnum H - 3H}}
+  {\dimexpr\recls@Q\JQ - 3\JQ}{1.25\dimexpr\recls@Q H - 3H}}
 \renewcommand{\tiny}{\jsc@setfontsize\tiny
-  {.5\dimexpr\recls@Qnum\JQ}{.5\dimexpr\recls@Qnum H + 2H}}
+  {.5\dimexpr\recls@Q\JQ}{.5\dimexpr\recls@Q H + 2H}}
 \if@twocolumn
   \renewcommand{\large}{\@setfontsize\large
     {\recls@fnt@scale\dimexpr 18\JQ}{\n@baseline}}
@@ -415,22 +464,6 @@
   hidelinks,
   setpagesize=false,
 ]{hyperref}
-% \def\equationautorefname{式}%
-% \def\footnoteautorefname{脚注}%
-% \def\itemautorefname{項目}%
-% \def\figureautorefname{図}%
-% \def\tableautorefname{表}%
-% \def\partautorefname{部}%パート
-% \def\appendixautorefname{付録}%
-% \def\chapterautorefname{章}%チャプター
-% \def\sectionautorefname{節}%セクション
-% \def\subsectionautorefname{小節}%小セクション
-% \def\subsubsectionautorefname{小々節}%小々セクション
-% \def\paragraphautorefname{段落}%パラグラフ
-% \def\subparagraphautorefname{小段落}%小パラグラフ
-% \def\FancyVerbLineautorefname{行}%
-% \def\theoremautorefname{定理}%
-% \def\pageautorefname{ページ}%
 \RequirePackage[dvipdfmx]{pxjahyper}
 
 %% more useful macros
@@ -482,18 +515,25 @@
 \g@addto@macro\frontmatter{\setcounter{page}{\the\recls@startpage}}
 
 % titlepageのsetcounterを使わない
-\patchcmd\titlepage
-  {\setcounter{page}\@ne}{\relax}%
-  {}{\recls@warning{titlepage}}
-\patchcmd\endtitlepage
-  {\setcounter{page}\@ne}{\relax}%
-  {}{\recls@warning{endtitlepage}}
-% \patchcmd\titlepage
-%   {\setcounter{page}{1}}{\relax}%
-%   {}{\recls@warning{titlepage}}
-% \patchcmd\endtitlepage
-%   {\setcounter{page}{1}}{\relax}%
-%   {}{\recls@warning{endtitlepage}}
+\renewenvironment{titlepage}{%
+    \clearpage
+    \if@twoside\ifodd\c@page\else
+      \hbox{}\thispagestyle{empty}\newpage
+      \if@twocolumn\hbox{}\newpage\fi
+    \fi\fi
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse\newpage
+    \fi
+    \thispagestyle{empty}%
+    \ifodd\c@page\relax%% \setcounter{page}\@ne
+      \else\setcounter{page}\z@\fi %% 2017-02-24
+  }%
+  {\if@restonecol\twocolumn \else \newpage \fi
+    \if@twoside\else
+      %% \setcounter{page}\@ne
+    \fi}
 
 \listfiles
 \endinput
