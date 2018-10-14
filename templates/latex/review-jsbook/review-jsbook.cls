@@ -143,6 +143,21 @@
 }
 
 %% hiddenfolio=nikko-pc
+\@namedef{@makehiddenfolio@nikko-pc}{%
+  \def\recls@hiddfolio{%
+    \edef\recls@tmp{\thepage}%
+    \lower\dimexpr4pt+\@tombowbleed+.5\paperheight+5\p@\hbox{%
+      \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
+      \hbox to 1zw{\hss\recls@x\hss}}}}}%
+  \ifodd\c@page
+    \rlap{\recls@hiddfolio}%
+  \else
+    \llap{\recls@hiddfolio\hspace{-\paperwidth}}%
+  \fi}
+
+%% hiddenfolio=shippo
+\@namedef{@makehiddenfolio@shippo}{%
+  \@nameuse{@makehiddenfolio@nikko-pc}}
 
 
 %% cameraready=print,ebook,preview
@@ -150,15 +165,14 @@
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 
-%% 隠しノンブルプリセット
-\DeclareOptionX{hiddenfolio}{\gdef\recls@hiddenfolio{#1}}%%default: (none)
-
 %% 用紙
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
 \DeclareOptionX{tombopaper}{%
   \gdef\recls@tombowopts{}%%default: auto-detect
   \ifx#1\@empty\else\gdef\recls@tombowopts{tombo-#1}\fi}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
+%% 隠しノンブルプリセット
+\DeclareOptionX{hiddenfolio}{\gdef\recls@hiddenfolio{#1}}%%default: (none)
 %% カスタム用紙サイズ
 \DeclareOptionX{paperwidth}{\gdef\recls@paperwidth{#1}}
 \DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
