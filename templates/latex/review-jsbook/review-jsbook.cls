@@ -46,7 +46,7 @@
 \PassOptionsToPackage{nosetpagesize}{graphicx}%%for TL16 or higher version
 }{}
 
-\RequirePackage{xkeyval,everypage,etoolbox}
+\RequirePackage{xkeyval,everypage}%%,etoolbox
 
 %% useful helpers
 \newcommand\recls@get@p@[2]{%
@@ -118,10 +118,12 @@
   %% set hiddenfolio preset
   \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
   %% redefine to output \@makehiddenfolio for every page
-  \patchcmd{\maketombowbox}%
-    {\the\@bannertoken}
-    {\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}\the\@bannertoken}
-    {}{\recls@warning{Failed to setup hidden folio: \recls@hiddenfolio}}%
+  % \patchcmd{\maketombowbox}%
+  %   {\the\@bannertoken}
+  %   {\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}\the\@bannertoken}
+  %   {}{\recls@warning{Failed to setup hidden folio: \recls@hiddenfolio}}%
+  \gdef\@bannerfont{%%[ad-hoc]
+    \hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
   \AddEverypageHook{\maketombowbox}%
 \fi}
 
@@ -535,18 +537,31 @@
 \g@addto@macro\frontmatter{\setcounter{page}{\the\recls@startpage}}
 
 % titlepageのsetcounterを使わない
-\patchcmd\titlepage
-  {\setcounter{page}\@ne}{\relax}%
-  {}{\recls@warning{titlepage}}
-\patchcmd\endtitlepage
-  {\setcounter{page}\@ne}{\relax}%
-  {}{\recls@warning{endtitlepage}}
 % \patchcmd\titlepage
-%   {\setcounter{page}{1}}{\relax}%
+%   {\setcounter{page}\@ne}{\relax}%
 %   {}{\recls@warning{titlepage}}
 % \patchcmd\endtitlepage
-%   {\setcounter{page}{1}}{\relax}%
+%   {\setcounter{page}\@ne}{\relax}%
 %   {}{\recls@warning{endtitlepage}}
+\renewenvironment{titlepage}{%
+    \clearpage
+    \if@twoside\ifodd\c@page\else
+      \hbox{}\thispagestyle{empty}\newpage
+      \if@twocolumn\hbox{}\newpage\fi
+    \fi\fi
+    \if@twocolumn
+      \@restonecoltrue\onecolumn
+    \else
+      \@restonecolfalse\newpage
+    \fi
+    \thispagestyle{empty}%
+    \ifodd\c@page\relax%% \setcounter{page}\@ne
+      \else\setcounter{page}\z@\fi %% 2017-02-24
+  }%
+  {\if@restonecol\twocolumn \else \newpage \fi
+    \if@twoside\else
+      %% \setcounter{page}\@ne
+    \fi}
 
 \listfiles
 \endinput
