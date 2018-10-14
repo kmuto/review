@@ -1,6 +1,7 @@
 # Version 3.0.0 preview 3
 ## New Features
 ★* PDFMaker: instead of using jsbook.cls as it is, review-jsbook.cls (based on jsbook.cls, default) and review-jlreq.cls (based on jlreq.cls) are introduced. These supports the creation both paper and electronic PDF books. ([#1032])
+★* EPUBMaker/WEBMaker: add imgmath function to image mathematical expressions ([#868])
 
 ## Breaking Changes
 * PDFMaker: the location of `\frontmatter` is moved from the back of the titlepage to the front ([#1128])
@@ -21,11 +22,13 @@
 * add a method of making Kindle e-book file to doc/customize_epub.ja.md ([#1114])
 ★* update examples of PDFMaker's default document options ([#1115])
 ★* clarify license of each file ([#1093])
+★* add note about `imgmath` feature to doc/format.ja.md ([#868])
 
 ## Contributors
 ★* [@munepi](https://github.com/munepi)
 
 [#812]: https://github.com/kmuto/review/issues/812
+[#868]: https://github.com/kmuto/review/issues/868
 [#912]: https://github.com/kmuto/review/issues/912
 [#1032]: https://github.com/kmuto/review/issues/1032
 [#1064]: https://github.com/kmuto/review/issues/1064

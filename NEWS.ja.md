@@ -1,6 +1,7 @@
 # Version 3.0.0 preview 3
 ## 新機能
 ★* PDFMaker: これまでの jsbook.cls クラスファイルをそのまま使用する方法に代わり、紙・電子双方の書籍制作に適するよう拡張した review-jsbook.cls (jsbook.cls 基盤、デフォルト)、および review-jlreq.cls (jlreq.cls 基盤) を導入しました ([#1032])
+★* EPUBMaker/WEBMaker: `@<m>` や `//texequation` で入れた数式を画像化する imgmath 機能を追加しました ([#868])
 
 ## 非互換の変更
 * PDFMaker: 前付の開始を宣言する LaTeX 命令 `\frontmatter` を、大扉（titlepage）の後ろから大扉の前に移動しました ([#1128])
@@ -21,11 +22,13 @@
 * Kindle 用の電子書籍ファイルを作る方法を doc/customize_epub.ja.md に追記しました ([#1114])
 ★* サンプルファイルなどにある PDFMaker のデフォルトのドキュメントオプションの例示を新しいクラスファイルに合わせました ([#1115])
 ★* `review-init` コマンドで展開されるファイルなど、扱いが明示されていなかったファイルについてライセンスを明記しました ([#1093])
+★* 数式を画像化する `imgmath` について、doc/format.ja.md に追記しました ([#868])
 
 ## コントリビューターのみなさん
 ★* [@munepi](https://github.com/munepi)
 
 [#812]: https://github.com/kmuto/review/issues/812
+[#868]: https://github.com/kmuto/review/issues/868
 [#912]: https://github.com/kmuto/review/issues/912
 [#1032]: https://github.com/kmuto/review/issues/1032
 [#1064]: https://github.com/kmuto/review/issues/1064
