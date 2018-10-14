@@ -1080,7 +1080,7 @@ EOS
       FileUtils.mkdir_p(File.join(dir, 'images'))
       expected = <<-EOB
 <div class=\"equation\">
-<img src=\"images/_review_math/_gen_XXX.png\" alt="p \\land \\bm{P} q" />
+<img src=\"images/_review_math/_gen_XXX.png\" class=\"math_gen_255609d0624d30ecd7b33bfbf069fa39965e221476aeb507f48766d9f216b9eb\" alt="p \\land \\bm{P} q" />
 </div>
       EOB
       tmpio = $stderr
