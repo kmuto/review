@@ -110,7 +110,8 @@
   \xdef#1{\ifx\recls@hiddenfolio\@empty tombo,\fi#1}}
 
 %% \recls@set@hiddenfolio{<preset>}
-%% <preset>: marusho-ink (default),
+%% <preset>: default, marusho-ink (丸正インキ), nikko-pc (日光企画), 
+%%    shippo (ねこのしっぽ)
 \def\recls@set@hiddenfolio#1{%
   %% set hiddenfolio preset
   \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
