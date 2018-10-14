@@ -94,10 +94,13 @@ module ReVIEW
           'format' => 'png',
           'converter' => 'pdfcrop', # dvipng | pdfcrop
           'pdfcrop_cmd' => 'pdfcrop --hires %i %o',
+          'extract_singlepage' => nil,
+          'pdfextract_cmd' => 'pdfjam -q --outfile %o %i %p',
           'preamble_file' => nil,
           'fontsize' => 10,
           'lineheight' => 10 * 1.2,
-          'pdfcrop_pixelize_cmd' => 'pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O'
+          'pdfcrop_pixelize_cmd' => 'pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O',
+          'dvipng_cmd' => 'dvipng -T tight -z 9 -p %p -l %p -o %o %i'
         }
       ]
       conf.maker = nil

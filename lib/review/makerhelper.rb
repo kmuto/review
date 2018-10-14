@@ -155,6 +155,19 @@ EOB
           end
         end
 
+        args = @config['imgmath_options']['pdfcrop_cmd'].shellsplit
+        args.map! do |m|
+          m.sub('%i', pdf_path).
+            sub('%o', '__IMGMATH__pdfcrop.pdf')
+        end
+        out, status = Open3.capture2e(*args)
+        unless status.success?
+          warn "error in pdfcrop. Error log:\n#{out}"
+          raise CompileError
+        end
+        pdf_path = '__IMGMATH__pdfcrop.pdf'
+        pdf_path2 = pdf_path
+
         File.open('__IMGMATH_BODY__.map') do |f|
           page = 0
           f.each_line do |key|
@@ -165,20 +178,28 @@ EOB
               next
             end
 
-            args = @config['imgmath_options']['pdfcrop_cmd'].shellsplit
-            args.map! do |m|
-              m.sub('%i', pdf_path).
-                sub('%o', '__IMGMATH__pdfcrop.pdf')
-            end
-            out, status = Open3.capture2e(*args)
-            unless status.success?
-              warn "error in pdfcrop. Error log:\n#{out}"
-              raise CompileError
+            if @config['imgmath_options']['extract_singlepage']
+              # if extract_singlepage = true, split each page
+              args = @config['imgmath_options']['pdfextract_cmd'].shellsplit
+
+              args.map! do |m|
+                m.sub('%i', pdf_path).
+                  sub('%o', "__IMGMATH__pdfcrop_p#{page}.pdf").
+                  sub('%O', "__IMGMATH__pdfcrop_p#{page}").
+                  sub('%p', page.to_s)
+              end
+              out, status = Open3.capture2e(*args)
+              unless status.success?
+                warn "error in pdf extracting. Error log:\n#{out}"
+                raise CompileError
+              end
+
+              pdf_path2 = "__IMGMATH__pdfcrop_p#{page}.pdf"
             end
 
             args = @config['imgmath_options']['pdfcrop_pixelize_cmd'].shellsplit
             args.map! do |m|
-              m.sub('%i', '__IMGMATH__pdfcrop.pdf').
+              m.sub('%i', pdf_path2).
                 sub('%o', File.join(math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
                 sub('%O', File.join(math_dir, "_gen_#{key}")).
                 sub('%p', page.to_s)
@@ -206,7 +227,14 @@ EOB
           f.each_line do |key|
             page += 1
             key.chomp!
-            out, status = Open3.capture2e('dvipng', '-T', 'tight', '-z', '9', '-p', page.to_s, '-l', page.to_s, '-o', File.join(math_dir, "_gen_#{key}.png"), dvi_path)
+            args = @config['imgmath_options']['dvipng_cmd'].shellsplit
+            args.map! do |m|
+              m.sub('%i', dvi_path).
+                sub('%o', File.join(math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
+                sub('%O', File.join(math_dir, "_gen_#{key}")).
+                sub('%p', page.to_s)
+            end
+            out, status = Open3.capture2e(*args)
             unless status.success?
               warn "error in dvipng. Error log:\n#{out}"
               raise CompileError

@@ -627,7 +627,13 @@ imgmath_options:
   # PDFから画像化するコマンドのコマンドライン。プレースホルダは
   # %i: 入力ファイル、%o: 出力ファイル、%O: 出力ファイルから拡張子を除いたもの
   # %p: 対象ページ番号
-  pdfcrop_pixelize_cmd: pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O"
+  pdfcrop_pixelize_cmd: "pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O"
+  # pdfcrop_pixelize_cmdが複数ページの処理に対応していない場合に単ページ化するか
+  extract_singlepage: null
+  # 単ページ化するコマンドのコマンドライン
+  pdfextract_cmd: "pdfjam -q --outfile %o %i %p"
+  # dvipngコマンドのコマンドライン
+  dvipng_cmd: "dvipng -T tight -z 9 -p %p -l %p -o %o %i"
 ```
 
 たとえば SVG を利用するには、次のようにします。
@@ -636,12 +642,22 @@ imgmath_options:
 imgmath: true
 imgmath_options:
   format: svg
-  pdfcrop_pixelize_cmd: pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
+  pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
 ```
 
-pdfcrop_pixelize_cmd に指定するコマンドは、1ページあたり1数式からなる複数ページの PDF のファイル名を `%i` プレースホルダで受け取り、`%p` プレースホルダのページ数に基づいて `%o`（拡張子あり）または `%O`（拡張子なし）の画像ファイルに書き出す、という仕組みになっています。
+デフォルトでは、pdfcrop_pixelize_cmd に指定するコマンドは、1ページあたり1数式からなる複数ページの PDF のファイル名を `%i` プレースホルダで受け取り、`%p` プレースホルダのページ数に基づいて `%o`（拡張子あり）または `%O`（拡張子なし）の画像ファイルに書き出す、という仕組みになっています。
 
-単一のページの処理を前提とする `sips` コマンドや `magick` コマンドを使う場合、入力 PDF から指定のページを抽出するラッパースクリプトを別途用意する必要があります。
+単一のページの処理を前提とする `sips` コマンドや `magick` コマンドを使う場合、入力 PDF から指定のページを抽出するように `extract_singlepage: true` として挙動を変更します。単一ページの抽出はデフォルトで TeXLive の `pdfjam` コマンドが使われます。
+
+```
+imgmath: true
+imgmath_options:
+  extract_singlepage: true
+  # ImageMagickを利用する例
+  pdfcrop_pixelize_cmd: "magick -density 200x200 %i %o"
+  # sipsを利用する例
+  pdfcrop_pixelize_cmd: "sips -s format png --out %o %i"
+```
 
 Re:VIEW 2 以前の dvipng の設定に合わせるには、次のようにします。
 
