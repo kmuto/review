@@ -118,12 +118,7 @@
   %% set hiddenfolio preset
   \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
   %% redefine to output \@makehiddenfolio for every page
-  % \patchcmd{\maketombowbox}%
-  %   {\the\@bannertoken}
-  %   {\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}\the\@bannertoken}
-  %   {}{\recls@warning{Failed to setup hidden folio: \recls@hiddenfolio}}%
-  \gdef\@bannerfont{%%[ad-hoc]
-    \hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
+  \settombowbanner{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
   \AddEverypageHook{\maketombowbox}%
 \fi}
 
@@ -226,9 +221,8 @@
   \IfFileExists{gentombow.sty}{%
     \AtEndOfClass{%
       \RequirePackage[pdfbox,\recls@tombowopts]{gentombow}%
-      \settombowbanner\relax
-      \settombowbleed{\recls@tombobleed}}%
-    \recls@set@hiddenfolio{\recls@hiddenfolio}%
+      \settombowbleed{\recls@tombobleed}%
+      \recls@set@hiddenfolio{\recls@hiddenfolio}}%
     %%FIXME: gentombow upstreamでトンボ版スタイルコマンドが実装されたら、それに置き換えても良いかな。
     % \AtEndOfClass{%
     %   \PassOptionsToPackage{\recls@tombowopts}{gentombow}%
@@ -470,22 +464,6 @@
   hidelinks,
   setpagesize=false,
 ]{hyperref}
-% \def\equationautorefname{式}%
-% \def\footnoteautorefname{脚注}%
-% \def\itemautorefname{項目}%
-% \def\figureautorefname{図}%
-% \def\tableautorefname{表}%
-% \def\partautorefname{部}%パート
-% \def\appendixautorefname{付録}%
-% \def\chapterautorefname{章}%チャプター
-% \def\sectionautorefname{節}%セクション
-% \def\subsectionautorefname{小節}%小セクション
-% \def\subsubsectionautorefname{小々節}%小々セクション
-% \def\paragraphautorefname{段落}%パラグラフ
-% \def\subparagraphautorefname{小段落}%小パラグラフ
-% \def\FancyVerbLineautorefname{行}%
-% \def\theoremautorefname{定理}%
-% \def\pageautorefname{ページ}%
 \RequirePackage[dvipdfmx]{pxjahyper}
 
 %% more useful macros
@@ -537,12 +515,6 @@
 \g@addto@macro\frontmatter{\setcounter{page}{\the\recls@startpage}}
 
 % titlepageのsetcounterを使わない
-% \patchcmd\titlepage
-%   {\setcounter{page}\@ne}{\relax}%
-%   {}{\recls@warning{titlepage}}
-% \patchcmd\endtitlepage
-%   {\setcounter{page}\@ne}{\relax}%
-%   {}{\recls@warning{endtitlepage}}
 \renewenvironment{titlepage}{%
     \clearpage
     \if@twoside\ifodd\c@page\else
