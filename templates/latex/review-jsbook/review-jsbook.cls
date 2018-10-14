@@ -225,6 +225,11 @@
       \settombowbanner\relax
       \settombowbleed{\recls@tombobleed}}%
     \recls@set@hiddenfolio{\recls@hiddenfolio}%
+    %%FIXME: gentombow upstreamでトンボ版スタイルコマンドが実装されたら、それに置き換えても良いかな。
+    % \AtEndOfClass{%
+    %   \PassOptionsToPackage{\recls@tombowopts}{gentombow}%
+    %   \RequirePackage[hiddenfolio=\recls@hiddenfolio,tombobleed=\recls@tombobleed]{gentombow-hiddenfolio}%
+    % }%
   }{%
     \recls@warning{%
       package gentombow: not installed^^J
