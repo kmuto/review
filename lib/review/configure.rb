@@ -97,7 +97,7 @@ module ReVIEW
           'preamble_file' => nil,
           'fontsize' => 10,
           'lineheight' => 10 * 1.2,
-          'pdfcrop_pixelize_cmd' => 'pdftocairo -png -f %p -l %p %i %o'
+          'pdfcrop_pixelize_cmd' => 'pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O'
         }
       ]
       conf.maker = nil

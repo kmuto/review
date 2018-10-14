@@ -125,6 +125,8 @@ EOB
             make_math_images_pdfcrop(tmpdir, tex_path, math_dir)
           when 'dvipng'
             make_math_images_dvipng(tmpdir, tex_path, math_dir)
+          else
+            error "unknown math converter error. imgmath_options/converter parameter should be 'pdfcrop' or 'dvipng'."
           end
         rescue CompileError
           FileUtils.cp([tex_path,

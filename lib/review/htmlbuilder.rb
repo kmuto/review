@@ -557,7 +557,7 @@ module ReVIEW
           puts %Q(<img src="#{img_path}" />)
         else
           defer_math_image(math_str, img_path, key)
-          puts %Q(<img src="#{img_path}" alt="#{escape(lines.join(' '))}" />)
+          puts %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(lines.join(' '))}" />)
         end
       else
         print '<pre>'
@@ -937,7 +937,7 @@ module ReVIEW
           %Q(<span class="equation"><img src="#{img_path}" /></span>)
         else
           defer_math_image(math_str, img_path, key)
-          %Q(<span class="equation"><img src="#{img_path}" alt="#{escape(str)}" /></span>)
+          %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(str)}" /></span>)
         end
       else
         %Q(<span class="equation">#{escape(str)}</span>)
