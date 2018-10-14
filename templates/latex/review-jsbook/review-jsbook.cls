@@ -125,7 +125,8 @@
   \AddEverypageHook{\maketombowbox}%
 \fi}
 
-\def\hiddenfolio@font{\reset@font\scriptsize\sffamily\baselineskip.8\baselineskip}
+\def\hiddenfolio@font{\reset@font
+  \scriptsize\sffamily\baselineskip.8\baselineskip}
 
 %% hiddenfolio=default
 \@namedef{@makehiddenfolio@default}{%
@@ -140,8 +141,9 @@
   \gdef\recls@tombobleed{5mm}%
   \def\recls@hiddfolio{%
     \edef\recls@tmp{\thepage}%
-    \raise3.5mm\hbox{\vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
-      \hbox to .5zw{\hss\recls@x\hss}}}}}%
+    \raise3.5mm\hbox{%
+      \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
+        \hbox to .5zw{\hss\recls@x\hss}}}}}%
   \ifodd\c@page
     \llap{\recls@hiddfolio\hspace{\dimexpr\@tombowbleed}}%
   \else
@@ -154,7 +156,7 @@
     \edef\recls@tmp{\thepage}%
     \lower\dimexpr4pt+\@tombowbleed+.5\paperheight+5\p@\hbox{%
       \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
-      \hbox to 1zw{\hss\recls@x\hss}}}}}%
+        \hbox to 1zw{\hss\recls@x\hss}}}}}%
   \ifodd\c@page
     \rlap{\recls@hiddfolio}%
   \else
