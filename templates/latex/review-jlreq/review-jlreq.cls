@@ -37,7 +37,7 @@ cls]
 \PassOptionsToPackage{nosetpagesize}{graphicx}%%for TL16 or higher version
 }{}
 
-\RequirePackage{xkeyval}
+\RequirePackage{xkeyval,everypage}
 
 %% useful helpers
 \newcommand\recls@get@p@[2]{%
@@ -57,6 +57,52 @@ cls]
       \ClassError{recls}{The option #1 should have no value}{\@ehc}}%
     #2}}
 
+%% \recls@set@hiddenfolio{<preset>}
+%% <preset>: default, marusho-ink (丸正インキ), nikko-pc (日光企画),
+%%    shippo (ねこのしっぽ)
+\def\recls@set@hiddenfolio#1{\ifx#1\@empty\else
+  \@ifundefined{@makehiddenfolio@#1}{%
+    \recls@error{Not define such hiddenfolio: #1}}\relax
+  %% set hiddenfolio preset
+  \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
+  %% redefine to output \@makehiddenfolio for every page
+  \@bannertoken{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
+  \AddEverypageHook{\maketombowbox}%
+\fi}
+
+\def\hiddenfolio@font{\reset@font
+  \scriptsize\sffamily\baselineskip.8\baselineskip}
+
+%% hiddenfolio=default
+\@namedef{@makehiddenfolio@default}{%
+  \ifodd\c@page
+    \llap{\thepage\hspace{\dimexpr\recls@tombobleed}}%
+  \else
+    \rlap{\hspace{\dimexpr\paperwidth+\recls@tombobleed}\thepage}%
+  \fi}
+
+%% hiddenfolio=marusho-ink
+\@namedef{@makehiddenfolio@marusho-ink}{%
+  \gdef\recls@tombobleed{5mm}%
+  \@nameuse{@makehiddenfolio@nikko-pc}}
+
+%% hiddenfolio=nikko-pc
+\@namedef{@makehiddenfolio@nikko-pc}{%
+  \def\recls@hiddfolio{%
+    \edef\recls@tmp{\thepage}%
+    \lower\dimexpr4pt+\recls@tombobleed+.5\paperheight+5\p@\hbox{%
+      \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
+        \hbox to 1zw{\hss\recls@x\hss}}}}}%
+  \ifodd\c@page
+    \rlap{\recls@hiddfolio}%
+  \else
+    \llap{\recls@hiddfolio\hspace{-\paperwidth}}%
+  \fi}
+
+%% hiddenfolio=shippo
+\@namedef{@makehiddenfolio@shippo}{%
+  \@nameuse{@makehiddenfolio@nikko-pc}}
+
 %% cameraready=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
@@ -70,10 +116,13 @@ cls]
 \DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr #1-1\relax}}
 \DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
 
+%% 隠しノンブルプリセット
+\DeclareOptionX{hiddenfolio}{\gdef\recls@hiddenfolio{#1}}%%default: (none)
+
 % jlreqのオプションについては https://github.com/abenori/jlreq/blob/master/README-ja.md を参照
 \PassOptionsToClass{book,paper=a5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをA5にしておく
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jlreq}}%
-\ExecuteOptionsX{cameraready,tombopaper,bleed_margin,cover,startpage,serial_pagination}
+\ExecuteOptionsX{cameraready,tombopaper,bleed_margin,cover,startpage,serial_pagination,hiddenfolio}
 \ProcessOptionsX\relax
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
@@ -99,6 +148,11 @@ cls]
 % トンボ設定
 \if@pdftombo
   \RequirePackage[trimmarks_paper=\recls@tombopaper,bleed_margin=\recls@tombobleed]{jlreq-trimmarks}
+  % https://github.com/abenori/jlreq/blob/master/jlreq-trimmarks-ja.md を参照
+  \jlreqtrimmarkssetup{banner={}}
+  % 隠しノンブル
+  \AtEndOfClass{%
+    \recls@set@hiddenfolio{\recls@hiddenfolio}}
 \fi
 
 % エンジンとドライバの情報。jlreq-trimmarksが定義されていればそっちから持ってくる。
