@@ -411,3 +411,42 @@
     \def\reviewcolophonpagecont{\review@colophonfile}
   }
 \fi
+
+%%
+% Page layout calculate macro
+%
+% You should call after settings of \textwidth, \textheight, \headheight, \headsep, and \footskip
+%
+% Usage:
+%
+%   \setlength{\textwidth}{40\Cwd}
+%   \setlength{\textheight}{32\Cwd}
+%   \setlength{\headheight}{2\Cvs}
+%   \setlength{\headsep}{1\Cvs}
+%   \setlength{\footskip}{1\Cvs}
+%   \calculatePageLayout
+%
+\newcommand{\calculatePageLayout}{%
+  \setlength{\marginparwidth}{0pt}
+  \setlength{\marginparsep}{0pt}
+  \setlength{\hoffset}{0pt}
+  \setlength{\voffset}{0pt}
+
+  % oddsidemargin = (paperwidth - textwidth)/2 - 1inch
+  \setlength{\oddsidemargin}{\paperwidth}      % oddsidemargin = paperwidth
+  \addtolength{\oddsidemargin}{-\textwidth}    % oddsidemargin -= textwidth
+  \setlength{\oddsidemargin}{.5\oddsidemargin} % oddsidemargin = 0.5 * oddsidemargin
+  \addtolength{\oddsidemargin}{-1in}           % oddsidemargin -= 1inch
+
+  % evensidemargin = oddsidemargin
+  \setlength{\evensidemargin}{\oddsidemargin}  % evensidemargin = oddsidemargin
+
+  % topmargin = (paperheight - textheight)/2 - 1inch - headheight - headsep
+  \setlength{\topmargin}{\paperheight}         % topmargin = paperheight
+  \addtolength{\topmargin}{-\textheight}       % topmargin -= textheight
+  \setlength{\topmargin}{.5\topmargin}         % topmargin = 0.5 * topmargin
+  \addtolength{\topmargin}{-1in}               % topmargin -= 1inch
+  \addtolength{\topmargin}{-\headheight}       % topmargin -= headheight
+  \addtolength{\topmargin}{-\headsep}          % topmargin -= headsep
+}
+
