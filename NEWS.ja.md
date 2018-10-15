@@ -36,6 +36,7 @@
 [#1090]: https://github.com/kmuto/review/issues/1090
 [#1093]: https://github.com/kmuto/review/issues/1093
 [#1111]: https://github.com/kmuto/review/pull/1111
+[#1112]: https://github.com/kmuto/review/pull/1112
 [#1114]: https://github.com/kmuto/review/pull/1114
 [#1115]: https://github.com/kmuto/review/issues/1115
 [#1116]: https://github.com/kmuto/review/pull/1116
