@@ -136,16 +136,7 @@
 %% hiddenfolio=marusho-ink
 \@namedef{@makehiddenfolio@marusho-ink}{%
   \gdef\recls@tombobleed{5mm}%
-  \def\recls@hiddfolio{%
-    \edef\recls@tmp{\thepage}%
-    \raise3.5mm\hbox{%
-      \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
-        \hbox to .5zw{\hss\recls@x\hss}}}}}%
-  \ifodd\c@page
-    \llap{\recls@hiddfolio\hspace{\dimexpr\@tombowbleed}}%
-  \else
-    \rlap{\hspace{\dimexpr\paperwidth+\@tombowbleed}\recls@hiddfolio}%
-  \fi}
+  \@nameuse{@makehiddenfolio@nikko-pc}}
 
 %% hiddenfolio=nikko-pc
 \@namedef{@makehiddenfolio@nikko-pc}{%
@@ -252,6 +243,15 @@
 \PassOptionsToClass{10pt}{jsbook}%%<= forcely load 10pt
 \LoadClass{jsbook}
 %%\typeout{!!! mag: \the\mag}%%=> 1000 -> OK
+
+\IfFileExists{platexrelease.sty}{}{%% is bundled in TL16 or higher release version
+\@ifundefined{jsc@setfontsize}{%%compatibility for TL13, TL14, TL15 frozen
+\newdimen\jsc@mpt
+\jsc@mpt=1\p@
+\def\jsc@setfontsize#1#2#3{%
+  \@setfontsize#1{#2\jsc@mpt}{#3\jsc@mpt}}
+}\relax
+}
 
 %% override papersize with custom papersize
 \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
