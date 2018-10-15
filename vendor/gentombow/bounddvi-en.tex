@@ -1,0 +1,135 @@
+%# -*- ascii characters only -*-
+
+% Package v1.0--v6.0: Koichi INOUE
+% Package v7.0--    : Hironobu Yamashita
+%   The package documentation (this file) was
+%   written by Hironobu Yamashita.
+
+\documentclass[a4paper]{article}
+\usepackage{doc}
+\usepackage{bounddvi}
+\GetFileInfo{bounddvi.sty}
+\title{Package \textsf{bounddvi} \fileversion}
+\author{Koichi Inoue \& Hironobu Yamashita}
+\date{\filedate}
+\begin{document}
+
+\maketitle
+
+Package \textsf{bounddvi} sets papersize special into DVI file.
+This package can be used in both tate (vertical) and yoko (horizontal)
+writing directions of Japanese p\LaTeX/up\LaTeX, and both
+\texttt{dvipdfmx} and \texttt{dvips} drivers are supported.
+The \texttt{tombow} option defined in Japanese p\LaTeX\ kernel is
+also supported. Of course, this package can be used also with the
+original \LaTeX\ in DVI output mode.
+
+This package (since v7.0) is part of \textsf{gentombow} bundle:
+\begin{verbatim}
+  https://github.com/aminophen/gentombow
+\end{verbatim}
+Originally it was part of \textsf{platex-tools} bundle,
+but it has been moved since March 2018.
+
+\section*{Usage}
+
+Load this package in preamble.
+\begin{verbatim}
+  \documentclass[a5paper]{article}
+  \usepackage{bounddvi}
+  ...
+\end{verbatim}
+Process the \texttt{.tex} file using \texttt{latex} +
+\texttt{dvips} chain or \texttt{latex} + \texttt{dvipdfmx} chain.
+
+\section*{Known limitations}
+
+\begin{enumerate}
+\item The compatibility with \textsf{geometry} package may not be
+perfect, as both \textsf{geometry} and \textsf{bounddvi} embeds
+papersize special into a DVI file. The loading order of these
+two packages may affect the actual size of output.
+\item This package supports ``\textsf{jsclasses}-like employment''
+of \verb+\mag+, because it's more widely used in Japan. This may
+be incompatible with some classes or packages which employ
+\verb+\mag+ in other ways.
+\end{enumerate}
+The details are described in the sections below.
+
+\subsection*{The behavior of multiple papersize specials}
+
+Sometimes multiple papersize specials may be embedded into a DVI
+file. Among these specials, the specification which appears
+\emph{at last} in DVI takes effect when \texttt{dvipdfmx} or
+\texttt{dvips} (\TeX\ Live 2017 or later) is used\footnote{%
+When \texttt{dvips} in \TeX\ Live 2016 or earlier is used,
+the specification which appears \emph{first} in DVI took effect,
+but the default behavior was changed in \TeX\ Live r42420 to
+be compatible with \texttt{dvipdfmx}. The new option \texttt{-L0}
+can be used to recover the old behavior.}. For example, when the
+following source is processed with \texttt{dvipdfmx},
+\begin{verbatim}
+  % latex + dvipdfmx
+  \documentclass{...}
+  \usepackage{bounddvi}
+  \usepackage[dvipdfm]{geometry}
+\end{verbatim}
+the specification by \textsf{geometry} wins.
+
+\section*{Note about \texttt{\char92mag} handling}
+
+Among the packages in CTAN, there are two types of implementation
+in terms of \verb+\mag+ employment. It seems that there is no
+(official or practical) ``standard'' in \verb+\mag+ treatment.
+
+When the output is going to the physical size of A4
+($210\,\mathrm{mm} \times 297\,\mathrm{mm}$) with the setting of
+\verb+\mag=2000+, there are two ways: some classes/packages can set
+\begin{quote}
+  \texttt{\char92mag=2000}\\
+  \texttt{\char92paperwidth=210mm} ($= 420\,\mathrm{truemm}$)\\
+  \texttt{\char92paperheight=297mm} ($= 594\,\mathrm{truemm}$)
+\end{quote}
+and others can set
+\begin{quote}
+  \texttt{\char92mag=2000}\\
+  \texttt{\char92paperwidth=105mm} ($= 210\,\mathrm{truemm}$)\\
+  \texttt{\char92paperheight=148.5mm} ($= 297\,\mathrm{truemm}$)
+\end{quote}
+The first way is adopted by \textsf{geometry} package etc, and it's
+(probably) based on the behavior of the \verb+papersize+ special of
+\texttt{dvips}. It does not handle true units properly, and accepts
+only non-true units and evaluates them as if they were true units.
+The second way is adopted by \textsf{jsclasses} document class etc,
+and is also suppoted by \verb+pdf:pagesize+ special of
+\texttt{dvipdfm(x)}. This can be more consistent with \LaTeX, since
+all other layout parameters (e.g. \verb+\textwidth+) are set
+according to the unit truemm.
+
+The \textsf{bounddvi} supports the latter, so some classes/packages
+which are based on the former may or may not work properly when
+using \textsf{bounddvi} package.
+
+\section*{References}
+
+\begin{itemize}
+\item Setting paper size using \texttt{dvips} \& \texttt{dvipdfm}
+  (description in Japanese)\\
+  \texttt{https://www.ma.ns.tcu.ac.jp/Pages/TeX/bounddvi.sty.html}
+\end{itemize}
+
+\section*{ChangeLog}
+
+\begin{itemize}
+  \item 2002/03/10 v1.0 (KI) First version
+  \item 2002/10/30 v2.0 (KI) Add \texttt{dvipdfm} \texttt{pdf:pagesize} special
+  \item 2003/03/22 v3.2 (KI) Compatibility with \textsf{hyperref}
+  \item 2004/05/08 v4.0 (KI) Support for $\mathtt{\char92mag} \ne 1000$
+  \item 2004/12/08 v5.2 (KI) Compatibility with \textsf{geometry}
+  \item 2004/12/15 v6.0 (KI) Not to use \texttt{dvipdfm(x)} \texttt{pdf:pagesize special}
+  \item 2016/10/25 v7.1 (HY) Support for p\LaTeXe\ tombow option,
+                             compatibility with \textsf{graphics}/\textsf{color} packages
+  \item 2016/12/28 v7.2 (HY) Documentation for the new \texttt{dvips} behavior
+\end{itemize}
+
+\end{document}

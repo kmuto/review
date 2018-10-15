@@ -1,0 +1,87 @@
+%
+% bounddvi.sty
+% 2016/12/28 v7.2-v7.0 h.y.acetaminophen@gmail.com
+% 2004/12/15 v6.0-v1.0 inoue@ma.ns.tcu.ac.jp
+%
+% This package, originally written by Koichi Inoue
+% and modified by Hironobu Yamashita, is distributed
+% as part of the gentombow bundle.
+% https://github.com/aminophen/gentombow
+%
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{bounddvi}[2016/12/28 v7.2 bounddvi]
+
+% catcode trick to hide \iftombow ... \else ... \fi
+% since \iftombow is defined only in pLaTeX.
+\ifx\pfmtname\@undefined
+  \catcode`\Q=14\relax
+\else
+  \catcode`\Q=9\relax
+\fi
+
+% Note: graphics/color drivers
+%  - dvips.def 2016/07/10 v3.1a or later
+%  - dvipdfmx.def 2016/07/10 v4.12 or later
+% emit papersize special _only_ when \Gin@setpagesizetrue
+% and \mag = 1000. When graphicx(s) or color is used with
+% setpagesize option (= default since 2016) and \mag equals
+% to 1000, we can exploit its routine.
+% (they are using \AtBeginDocument{\AtBeginDvi{...}})
+% However, these .def files do _not_ care about tombow by pLaTeX;
+% so, we set \stock{width,height} to invoke stock test in those
+% files (probably meant for memoir.cls).
+Q \iftombow
+Q   % if \stockwidth/\stockheight are not available,
+Q   % define them now
+Q   \ifx\stockwidth\@undefined \newdimen\stockwidth \fi
+Q   \ifx\stockheight\@undefined \newdimen\stockheight \fi
+Q   % if \stockwidth already has effective value, do nothing;
+Q   % otherwise assume pLaTeX-style tombow and set it to
+Q   % \paperwidth + 2in (similar for \stockheight)
+Q   \ifdim\stockwidth>\z@\else
+Q     \stockwidth\paperwidth \advance\stockwidth2in
+Q   \fi
+Q   \ifdim\stockheight>\z@\else
+Q     \stockheight\paperheight \advance\stockheight2in
+Q   \fi
+Q \fi
+
+% reset catcode trick
+\catcode`\Q=11\relax
+
+% following code is almost equivalent to
+%   \AtBeginDocument{\AtBeginDvi{...}}
+% however, we append the specification to the _beginning_ of
+% \@begindocumenthook; this ensures proper papersize when
+% dvips (TeX Live 2016 or earlier) is used.
+\begingroup
+\def\@prependto@begindocumenthook{\global\setbox\@begindvibox
+  \vbox{\csname yoko\endcsname\unvbox\@begindvibox
+    \begingroup
+      % if \stockwidth/\stockheight are defined & have effective
+      % values, copy them to \paperwidth/\paperheight
+      % for current group
+      \ifx\stockwidth\@undefined\else \ifdim\stockwidth>\z@
+        \paperwidth\stockwidth
+      \fi\fi
+      \ifx\stockheight\@undefined\else \ifdim\stockheight>\z@
+        \paperheight\stockheight
+      \fi\fi
+      % adjust for \mag and emit papersize special
+      \divide\paperwidth\@m\multiply\paperwidth\mag
+      \divide\paperheight\@m\multiply\paperheight\mag
+      \special{papersize=\the\paperwidth,\the\paperheight}%
+    \endgroup}}
+\toks@\expandafter\expandafter\expandafter
+  {\expandafter\@prependto@begindocumenthook\@begindocumenthook}
+\xdef\@begindocumenthook{\the\toks@}
+% append papersize special again to the _end_ of the
+% current \@begindocumenthook; this will be meaningful e.g. when
+% geometry is loaded before bounddvi.
+% (geometry adds \AtBeginDocument{\AtBeginDvi{...}} specification)
+\expandafter\g@addto@macro\expandafter\@begindocumenthook
+  \expandafter{\@prependto@begindocumenthook}
+\endgroup
+
+\endinput

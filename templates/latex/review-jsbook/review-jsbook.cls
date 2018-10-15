@@ -229,11 +229,17 @@
     %   \RequirePackage[hiddenfolio=\recls@hiddenfolio,tombobleed=\recls@tombobleed]{gentombow-hiddenfolio}%
     % }%
   }{%
-    \recls@warning{%
-      package gentombow: not installed^^J
-      option tombopaper: not available}%
-    \PassOptionsToClass{tombo}{jsbook}%
-  }%
+    \IfFileExists{gentombow09j.sty}{% from vendor/gentombow.
+      \AtEndOfClass{%
+        \RequirePackage[pdfbox,\recls@tombowopts]{gentombow09j}%
+        \settombowbleed{\recls@tombobleed}%
+        \recls@set@hiddenfolio{\recls@hiddenfolio}}%
+    }{%
+      \recls@warning{%
+        package gentombow: not installed^^J
+        option tombopaper: not available}%
+      \PassOptionsToClass{tombo}{jsbook}%
+    }}%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue\@reclscovertrue
   \PassOptionsToClass{papersize}{jsbook}%
