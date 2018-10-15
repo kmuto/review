@@ -1,0 +1,181 @@
+% TeXデータ吐き出しの検討ファイル (ver.2)
+\rdreviewversion{2.0}% review_version
+\rdbooktitle{Re:VIEWサンプル書籍}% 書籍名
+% ルビは難しいなぁ。別の定義が必要そう
+
+\begin{rdnames}{aut}% 著者名
+\item {青木峰郎\rdfileas{あお|き|みね|ろう}}
+\item {武藤健志\rdfileas{む|とう|けん|し}}
+\end{rdnames}
+
+\begin{rdnames}{trl}% 訳者名
+\item {角征典\rdfileas{かど|まさ|のり}}
+\end{rdnames}
+
+\begin{rdnames}{edt}% 編集者名
+\item {高橋征義\rdfileas{たか|はし|まさ|よし}}
+\end{rdnames}
+
+% csl: 監修者名
+% dsr: デザイナ名
+% ill: イラストレータ名
+
+\rdprt{印刷所名}
+\rdpbl{出版社名}
+% \rdpbl{出版社名\rdfileas{シュッパンシャメイ}} かrdnamesを使いたいケースはある?
+
+\rddate{2017-11-5}% 刊行日。大扉や奥付で使うことがある
+% ↓奥付のための履歴情報。実際には配列の配列
+\begin{rdhistory}
+\begin{rdedition}
+\item {2016年1月11日} % 初版1刷
+\item {2016年2月14日} % 初版2刷
+\end{rdedition}
+\begin{rdedition}
+\item {2016年12月24日} % 2版1刷
+\item {2017年11月5日} % 2版2刷
+\end{rdedition}
+\end{rdhistory}
+% いわゆるiiページに置きたいもの。TeXだと今は使ってないが…
+\begin{rdrights}
+権利表記文字列(TeX生?)
+\end{rdrights}
+
+\rdisbn{ISBN}% 指定があったら奥付に入れたい
+\rdtoclevel{3}% 目次掲載tocdepthの値+1相当。1=部および章のみ、2=節まで
+\rdsecnolevel{2}% これは渡さなくてもいいかも…。どの見出しレベルまで採番を付けるか。latexbuilderで*を付ける付けないを判断している
+\rdtoc{true}% \tableofcontentsを入れるかどうか。値はなんでもよくて定義ありなしで判断させるのがいい?
+\rdcoverpage{true}% 表紙を入れるかどうか
+\rdcoverfile{TeXファイルパス}% このファイル内容を表紙のTeX断片としてincludeする
+\rdcoverimage{画像ファイルパス}% このファイルを表紙の画像にする (coverfile指定がない場合)
+% 本当はfullpagegraphicsではっつけたほうがいいんだろうか…
+\rdtitlepage{true}% 大扉を入れるか
+\rdtitlefile{TeXファイルパス}% このファイル内容を大扉のTeX断片としてincludeする
+\rdoriginaltitlefile{TeXファイルパス}% このファイル内容を原書大扉のTeX断片としてincludeする
+\rdcreditfile{TeXファイルパス}% このファイル内容をクレジットページのTeX断片としてincludeする
+%% 表紙→大扉→原書大扉→クレジットページ→PREDEF→目次→CHAPS の順 (オライリーなどでは大扉と原書大扉の間に権利表記まわりが1pあったりするが…それは原書大扉カスタムファイルのほうで対処)
+\rdmakeindex}{true}% 索引を入れるかどうか
+\rdcolophonpage{true}% 奥付を入れるか。true/false
+\rdcolophonfile{TeXファイルパス}% このファイル内容を奥付のTeX断片としてincludeする
+\rdadvfile{TeXファイルパス}% % このファイル内容を広告のTeX断片としてincludeする
+\rdbackcover{TeXファイルパス}% このファイル内容を裏表紙のTeX断片としてincludeする
+%% CHAPS→APPENDIX→POSTDEF→索引→奥付→広告→裏表紙 の順
+% 
+% imagedir,fontdir,image_ext,font_extはなくていいかな
+\rdhighlight{plistings}% 使用するハイライト。定義がなければハイライトしない
+
+% documentclassに与えるべきオプションは、ここで定義せずにconfig.ymlで定義したほうがよいだろうか…わかっていないと難しいものがありそう
+% []内はjlreq.clsで定義されているもの
+%
+% twoside/oneside
+% 仕上がり用紙サイズ
+% 出力用紙サイズ
+% トンボ有無
+% 版面表示有無
+% ぬりたし領域幅
+% 紙(print)/電子(pdf)
+% hyperrefのオプション
+% 天から版面までのアキ(mmかzh) [head_space]
+% ノドから版面までのアキ(mmかzw) [gutter]
+% 行あたり文字数(zw) [line_length]
+% 行数 [number_of_lines]
+% 欧文基本Q、和文基本Q [fontsize, jafontsize]
+% 行送り [baselineskip]
+% ノンブル/柱の小口からの位置 [headfoot_sidemargin]
+% 
+% 以下は使用しない?
+% 傍注幅 [sidenote_length]
+% 行間 [linegap]
+% twocolumn時の段間アキ [column_gap]
+% 地アキ [foot_space]
+% 始め括弧位置 [open_bracket_pos]
+% JLREQ警告 [jlreq_notes]
+
+% 以下はgreencherryクラスでよくあるもの
+% 章の開始ページ左右位置: page,odd,even
+% 部の開始ページ左右位置: page,odd,even
+% 目次の開始ページ左右位置: page,odd,even
+% 索引の開始ページ左右位置: page,odd,even
+% 奥付の開始ページ左右位置: page,odd,even
+
+% includegprahicsのためのboxオプションはどうしよう
+
+% ver.2の定義例ここまで
+%-----------------------------------------------
+
+% TeXデータ吐き出しの検討ファイル (ver.1)
+% マクロ名\rdはReVIEW-Defineの意で、別にこの名前にこだわるわけではない(どっちにしろ自動生成だし)
+\rd{review_version}{2.0}% review_version
+% bookname, languageはいらなそう
+\rd{booktitle}{Re:VIEWサンプル書籍}
+% ↓元はbooktitleのfile-as属性。読みはいらない？ 商業誌だと奥付ルビに使うことがある。が、ルビの位置をこれだけから決めることは不可能なので、意味がないかも
+\rd{booktitle_fileas}{リビューサンプルショセキ}
+\rd{aut}{青木峰郎}
+\rd{aut_fileas}{アオキミネロウ}% 読みはいらない？ 商業誌だと奥付ルビに使うことがあるが、上記booktitle_fileasと同じ問題
+\rd{author}{武藤健志}
+\rd{author_fileas}{ムトウケンシ}
+% ↑FIXME:同じパラメータに複数の値が入るときは、どう渡すのが適切か
+\rd{trl}{翻訳者名}
+% 以下↓は奥付などで使うかなぁ…ほかにもいろいろdoc/config.yml.sample参照。同じパラメータに複数の値の可能性あり
+\rd{edt}{編集者名}
+\rd{csl}{監修者名}
+\rd{dsr}{デザイナ名}
+\rd{ill}{イラストレータ名}
+% ↑ここまで
+\rd{prt}{印刷所名}
+\rd{pbl}{出版社名}
+\rd{pbl_fileas}{シュッパンシャメイ}
+\rd{date}{2017-11-5}% 刊行日。大扉や奥付で使うことがある
+% ↓奥付のための履歴情報。実際には配列の配列で、
+%   [["初版第1刷の日付", "初版第2刷の日付"], ["第2版第1刷の日付"]]
+%  historyが空ならdateを初版1刷に使う。奥付テンプレートと絡んでくる
+%  TeXの変数定義で配列の配列 をなんとかするには…
+\rd{history}{2016-04-20}% FIXME
+% いわゆるiiページに置きたいもの。TeXだと今は使ってないが…
+\rd{rights}{権利表記文字列}
+\rd{isbn}{ISBN}% 指定があったら奥付に入れたい
+\rd{toclevel}{3}% 目次掲載tocdepthの値+1相当。1=部および章のみ、2=節まで
+\rd{secnolevel}{2}% これは渡さなくてもいいかも…。どの見出しレベルまで採番を付けるか。latexbuilderで*を付ける付けないを判断している
+\rd{toc}{true}% \tableofcontentsを入れるかどうか。FIXME: true/falseを指定するならどうするのが適正?
+\rd{coverpage}{true}% 表紙を入れるか。true/false (config.ymlのcover:はちょっとやり方がまずかったのでTeX変数での名前は変えた。)
+\rd{coverfile}{TeXファイルパス}% このファイル内容を表紙のTeX断片としてincludeする
+\rd{coverimage}{画像ファイルパス}% このファイルを表紙の画像にする (coverfile指定がない場合)
+% 本当はfullpagegraphicsではっつけたほうがいいんだろうか…
+\rd{titlepage}{true}% 大扉を入れるか。true/false
+\rd{titlefile}{TeXファイルパス}% このファイル内容を大扉のTeX断片としてincludeする
+\rd{originaltitlefile}{TeXファイルパス}% このファイル内容を原書大扉のTeX断片としてincludeする
+\rd{creditfile}{TeXファイルパス}% このファイル内容をクレジットページのTeX断片としてincludeする
+%% 表紙→大扉→原書大扉→クレジットページ→PREDEF→目次→CHAPS の順 (オライリーなどでは大扉と原書大扉の間に権利表記まわりが1pあったりするが…それは原書大扉カスタムファイルのほうで対処)
+\rd{makeindex}{true}% 索引を入れるか
+\rd{colophonpage}{true}% 奥付を入れるか。true/false (config.ymlのcolophon:はちょっとやり方がまずかったのでTeX変数での名前は変えた。)
+\rd{colophonfile}{TeXファイルパス}% このファイル内容を奥付のTeX断片としてincludeする
+\rd{advfile}{TeXファイルパス}% % このファイル内容を広告のTeX断片としてincludeする
+\rd{backcover}{TeXファイルパス}% このファイル内容を裏表紙のTeX断片としてincludeする
+%% CHAPS→APPENDIX→POSTDEF→索引→奥付→広告→裏表紙 の順
+% 
+% imagedir,fontdir,image_ext,font_extはなくていいかな
+\rd{highlight}{plistings}% 使用するハイライト。定義がなければハイライトしない
+\rd{page_metric}{用紙サイズ または行数などの配列}% geometryのものなので、jlreqベースだとこれじゃない別のもののほうがよさそう
+\rd{documentclass}{ドキュメントクラス名}
+\rd{documentclass_options}{オプション,オプション}% このへんはバラしたほうがいい?
+% ↓たぶんこういうのがいるかな的なものだと
+\rd{仕上がり用紙サイズ}{A5とか182mmx233mmとか}
+\rd{出力用紙サイズ}{A4とかB5Jとか}
+\rd{トンボ有無}{true/false}
+\rd{版面表示有無}{true/false}
+\rd{ぬりたし領域}{3mm}
+\rd{紙か電子か}{print or pdf}
+\rd{hyperrefのオプション}{...}% でもconfig.ymlからは指定しない?
+\rd{天}{24mm}
+\rd{行}{33}
+\rd{ノド}{17mm}
+\rd{字詰め}{38}
+%↑ とやるには、ベースのQと行送りを任意指定？ とすると全体のレイアウト調整にかかる?
+% 天・地・ノド・小口で指定するほうがいい、という人も多そう
+\rd{章の開始ページ左右位置}{page,odd,even}% 値名は適当
+\rd{部の開始ページ左右位置}{page,odd,even}
+\rd{目次の開始ページ左右位置}{page,odd,even}
+\rd{索引の開始ページ左右位置}{page,odd,even}
+\rd{奥付の開始ページ左右位置}{page,odd,even}
+\rd{includegprahicsのためのboxオプションはどうしよう}{}
+\rd{各スタイルの書体(和欧選定はどうする?)、Q数、行送り?}
