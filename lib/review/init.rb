@@ -214,15 +214,11 @@ EOS
           exit 1
         end
 
-        begin
-          f = Tempfile.new('reviewinit')
+        Tempfile.create('reviewinit') do |f|
           zipfilename = f.path
           f.write zipdata
-          f.close
 
           extract_archive(dir, zipfilename, filename)
-        ensure
-          f.unlink
         end
       else
         unless File.readable?(filename)
