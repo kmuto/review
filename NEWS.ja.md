@@ -17,6 +17,7 @@
 ★* PDFMaker: 新しいクラスファイルでは版面設計をドキュメントオプションで指定するようになったため、geometry.sty は不要になりました ([#912])
 ★* PDFMaker: 新しいクラスファイルで、大扉からの通しノンブルをサポートしました ([#1129])
 ★* `review-init` コマンドにネットワークダウンロードの機能を追加しました。`-p` オプションで zip ファイルの URL を指定すると、生成したプロジェクトフォルダに zip ファイルを展開して上書きします ([#812])
+★* PDFMaker: デジタルトンボや隠しノンブルを表現するために外部 TeX パッケージの gentombow パッケージを取り込み、プロジェクトフォルダの sty フォルダにコピーするようにしました ([#1136])
 
 ## ドキュメント
 * Kindle 用の電子書籍ファイルを作る方法を doc/customize_epub.ja.md に追記しました ([#1114])
@@ -41,6 +42,7 @@
 [#1121]: https://github.com/kmuto/review/pull/1121
 [#1128]: https://github.com/kmuto/review/issues/1128
 [#1129]: https://github.com/kmuto/review/pull/1129
+[#1136]: https://github.com/kmuto/review/issues/1136
 
 # Version 3.0.0 preview 2
 

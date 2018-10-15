@@ -17,6 +17,7 @@
 ★* PDFMaker: geometry.sty is no longer used, because the new class file can specify the paper design by document option ([#912])
 ★* PDFMaker: serial-pagination feature is supported in new class files ([#1129])
 ★* add network download function to `review-init` command. Specifying the URL of the zip file with `-p` option expands the zip file to the project folder ([#812])
+★* PDFMaker: For expressing digital trim-marks and hidden page numbers (kakushi-nombre), the gentombow package (the external TeX package) has been included in vendor folder. It will be copied to the sty folder of the project folder ([#1136])
 
 ## Docs
 * add a method of making Kindle e-book file to doc/customize_epub.ja.md ([#1114])
@@ -41,6 +42,7 @@
 [#1121]: https://github.com/kmuto/review/pull/1121
 [#1128]: https://github.com/kmuto/review/issues/1128
 [#1129]: https://github.com/kmuto/review/pull/1129
+[#1136]: https://github.com/kmuto/review/issues/1136
 
 # Version 3.0.0 preview 2
 
