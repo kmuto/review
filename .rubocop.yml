@@ -430,7 +430,7 @@ Metrics/AbcSize:
 ### shoud be < 25
 Metrics/BlockLength:
   CountComments: false  # count full line comments?
-  Max: 50
+  Max: 62
   Exclude:
     - 'Rakefile'
     - '**/*.rake'

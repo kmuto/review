@@ -573,9 +573,103 @@ LaTeX の式を挿入するには、`//texequation{ 〜 //}` を使います。
 //}
 ```
 
-インライン命令では `@<m>{〜}` を使います。インライン命令の式中に「}」を含む場合、`\}` とエスケープする必要があることに注意してください（`{` はエスケープ不要）。
+インライン命令では `@<m>{〜}` を使います。インライン命令の式中に「}」を含む場合、`\}` とエスケープする必要があることに注意してください（`{` はエスケープ不要）。「インライン命令のフェンス記法」も参照してください。
 
-LaTeX の数式が正常に整形されるかどうかは処理系に依存します。たとえば TeX PDF であれば問題なく利用できるでしょうが、EPUB では MathML 変換を有効にしても妥当な結果にならないことがあります。確実を期すならば、画像で表現するほうが適切です。
+LaTeX の数式が正常に整形されるかどうかは処理系に依存します。LaTeX を利用する PDFMaker では問題なく利用できます。
+
+EPUBMaker および WEBMaker では、MathML に変換する方法と、画像化する方法のどちらかを選べます。
+
+### MathML の場合
+MathML ライブラリをインストールしておきます（`gem install math_ml`）。
+
+さらに config.yml に以下のように指定します。
+
+```
+mathml: true
+```
+
+なお、MathML で正常に表現されるかどうかは、ビューアやブラウザに依存します。
+
+### 画像化の場合
+
+LaTeX を内部で呼び出し、外部ツールを使って画像化する方法です。画像化された数式は、`images/_review_math` フォルダに配置されます。
+
+TeXLive などの LaTeX 環境が必要です。必要に応じて config.yml の `texcommand`、`texoptions`、`dvicommand`、`dvioptions` のパラメータを調整します。
+
+さらに、画像化するための外部ツールも用意します。現在、以下の2つのやり方をサポートしています。
+
+- `pdfcrop`：TeXLive に収録されている `pdfcrop` コマンドを使用して数式部分を切り出し、さらに PDF から画像化します。デフォルトでは画像化には Poppler ライブラリに収録されている `pdftocairo` コマンドを使用します（コマンドラインで利用可能であれば、別のツールに変更することもできます）。
+- `dvipng`：[dvipng](https://ctan.org/pkg/dvipng) を使用します。OS のパッケージまたは `tlmgr install dvipng` でインストールできます。数式中に日本語は使えません。
+
+config.yml で以下のように設定すると、
+
+```
+imgmath: true
+```
+
+デフォルト値として以下が使われます。
+
+```
+imgmath_options:
+  # 使用する画像拡張子。通常は「png」か「svg」（svgの場合は、pdfcrop_pixelize_cmdの-pngも-svgにする）
+  format: png
+  # 変換手法。pdfcrop または dvipng
+  converter: pdfcrop
+  # プリアンブルの内容を上書きするファイルを指定する（デフォルトはupLaTeX+jsarticle.clsを前提とした、lib/review/makerhelper.rbのdefault_imgmath_preambleメソッドの内容）
+  preamble_file: null
+  # 基準のフォントサイズ
+  fontsize: 10
+  # 基準の行間
+  lineheight: 12
+  # pdfcropコマンドのコマンドライン。プレースホルダは
+  # %i: 入力ファイル、%o: 出力ファイル
+  pdfcrop_cmd: "pdfcrop --hires %i %o"
+  # PDFから画像化するコマンドのコマンドライン。プレースホルダは
+  # %i: 入力ファイル、%o: 出力ファイル、%O: 出力ファイルから拡張子を除いたもの
+  # %p: 対象ページ番号
+  pdfcrop_pixelize_cmd: "pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O"
+  # pdfcrop_pixelize_cmdが複数ページの処理に対応していない場合に単ページ化するか
+  extract_singlepage: null
+  # 単ページ化するコマンドのコマンドライン
+  pdfextract_cmd: "pdfjam -q --outfile %o %i %p"
+  # dvipngコマンドのコマンドライン
+  dvipng_cmd: "dvipng -T tight -z 9 -p %p -l %p -o %o %i"
+```
+
+たとえば SVG を利用するには、次のようにします。
+
+```
+imgmath: true
+imgmath_options:
+  format: svg
+  pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
+```
+
+デフォルトでは、pdfcrop_pixelize_cmd に指定するコマンドは、1ページあたり1数式からなる複数ページの PDF のファイル名を `%i` プレースホルダで受け取り、`%p` プレースホルダのページ数に基づいて `%o`（拡張子あり）または `%O`（拡張子なし）の画像ファイルに書き出す、という仕組みになっています。
+
+単一のページの処理を前提とする `sips` コマンドや `magick` コマンドを使う場合、入力 PDF から指定のページを抽出するように `extract_singlepage: true` として挙動を変更します。単一ページの抽出はデフォルトで TeXLive の `pdfjam` コマンドが使われます。
+
+```
+imgmath: true
+imgmath_options:
+  extract_singlepage: true
+  # pdfjamの代わりに外部ツールのpdftkを使う場合（Windowsなど）
+  pdfextract_cmd: "pdftk A=%i cat A%p output %o"
+  # ImageMagickを利用する例
+  pdfcrop_pixelize_cmd: "magick -density 200x200 %i %o"
+  # sipsを利用する例
+  pdfcrop_pixelize_cmd: "sips -s format png --out %o %i"
+```
+
+Re:VIEW 2 以前の dvipng の設定に合わせるには、次のようにします。
+
+```
+imgmath: true
+imgmath_options:
+  converter: dvipng
+  fontsize: 12
+  lineheight: 14.3
+```
 
 ## 字下げの制御
 
