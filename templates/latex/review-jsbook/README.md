@@ -32,7 +32,7 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 印刷用 `print`、電子用 `ebook` のいずれかの用途名を指定します。
 
  * `print`［デフォルト］：印刷用 PDF ファイルを生成します。
-   * トンボあり、デジタルトンボあり（gentombow パッケージが利用可能な場合）、hyperref パッケージを `draft` モードで読み込み、表紙は入れない
+   * トンボあり、デジタルトンボあり、hyperref パッケージを `draft` モードで読み込み、表紙は入れない
  * `ebook`：電子用PDFファイルを生成します。
    * トンボなし、hyperref パッケージを読み込み、表紙を入れる
 
@@ -66,8 +66,6 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 
 `bleed_margin` では塗り足し領域の幅を指定できます。
 ［デフォルト］3mm になります。
-
-デジタルトンボを含め、gentombow パッケージが利用可能なときのみ有効です。
 
 ### カスタム用紙サイズ `paperwidth=<用紙横幅>`, `paperheight=<用紙縦幅>`
 
@@ -109,19 +107,18 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
  * `true`：大扉を開始ページとして、前付（catalog.yml で PREDEF に指定したもの）、さらに本文（catalog.yml で CHAPS に指定したもの）に連続したページ番号をアラビア数字で振ります（通しノンブルと言います）。
  * `false`［デフォルト］：大扉を開始ページとして前付の終わり（通常は目次）までのページ番号をローマ数字で振ります。本文は 1 を開始ページとしてアラビア数字で振り直します（別ノンブルと言います）。
 
+### 隠しノンブル `hiddenfolio=<default|nikko-pc|shippo>`
+
+印刷所固有の要件に合わせて、ノドの目立たない位置に小さくノンブルを入れます。独自の設定を追加したいときには、review-jsbook.cls の実装を参照してください。
+
+ * `default`：トンボ左上（塗り足しの外）にページ番号を入れます。
+ * `nikko-pc`, `shippo`：ノド中央にページ番号を入れます。
+
+ページ番号は紙面に入れるものと同じものが入ります。アラビア数字で通したいときには、上記の `serial_pagination=true` も指定してください。
+
 ## 標準で review-jsbook.cls を実行したときの jsbook.cls との違い
 
  * jsbook.cls のクラスオプション `uplatex`：これまで texdocumentclass に指定が必要だった `uplatex` オプションは不要となっています。
  * jsbook.cls のクラスオプション `nomag`：用紙サイズや版面設計は、すべて review-jsbook.cls 側で行います。
  * hyperref パッケージ：あらかじめ hyperref パッケージを組み込んでおり、`cameraready` オプションにより用途別で挙動を制御します。
  * 各種相対フォントサイズコマンド `\small`, `\footnotesize`, `\scriptsize`, `\tiny`, `\large`, `\Large`, `\LARGE`, `\huge`, `\Huge`, `\HUGE` は、級数ベースに書き換えています。おおむね妥当な値になっているはずです。
-
-## gentombow パッケージについて
-
-デジタルトンボ、および tombopaper オプションを利用するには、外部 LaTeX マクロパッケージの gentombow パッケージ（`gentombow [2018/05/17 v0.9g Generate crop mark 'tombow']` 以上）が必要です。
-
-次のいずれかの操作で、gentombow パッケージを Re:VIEW から利用可能にしておく必要があります。
-
- * 最新の TeXLive をインストールする
- * `tlmgr install gentombow` で追加インストールする
- * [GitHub aminophen/gentombow](https://github.com/aminophen/gentombow) から `gentombow.sty` をダウンロードし、sty フォルダにコピーする
