@@ -1,0 +1,449 @@
+%# -*- coding: utf-8 -*-
+\ifx\epTeXinputencoding\undefined\else % defined in e-pTeX (> TL2016)
+  \epTeXinputencoding utf8    % ensure utf-8 encoding for platex
+\fi
+
+\documentclass[a4paper,dvipdfmx]{jsarticle}
+\usepackage{doc}
+\makeatletter
+%%% import from jltxdoc.cls
+\def\verb{\relax\ifmmode\hbox\else\leavevmode\vadjust{}\fi
+  \bgroup \let\do\do@noligs \verbatim@nolig@list
+    \ttfamily \verb@eol@error \let\do\@makeother \dospecials
+    \@ifstar{\@sverb}{\@vobeyspaces \frenchspacing \@sverb}}
+\xspcode"5C=3 %% \
+\xspcode"22=3 %% "
+%%% dangerous bend
+\font\man=manfnt at 10pt
+\def\dbend{\leavevmode\raise0pt\hbox{\man\char'177}}
+\newenvironment{dangerous}{%
+  \ifnum\@listdepth>\z@
+    \GenericError{}{Do not use `dangerous' environment inside any list}{}{}
+  \fi
+  \par\addvspace\medskipamount
+  \@tempdima=\dimexpr\textwidth-2zw\relax\small
+  \divide\@tempdima by\dimexpr1zw\relax\@tempcnta=\@tempdima
+  \leftskip=\dimexpr\textwidth-\@tempcnta zw\relax
+    \@totalleftmargin\dimexpr\leftskip+0zw
+    \linewidth=\dimexpr\@tempcnta zw-0zw
+  \parindent1zw\noindent\kern-\leftskip\hbox to\leftskip{\dbend\hss}%
+  \everypar{\everypar{}}\ignorespaces
+}{\par\addvspace\medskipamount}
+%%% logo
+\def\pTeX{p\kern-.15em\TeX}
+\def\epTeX{$\varepsilon$-\pTeX}
+%%% misc
+\newcommand{\Meta}[1]{$\langle$\mbox{}\textit{#1}\mbox{}$\rangle$}
+\newcommand{\jMeta}[1]{$\langle$\mbox{}\textsf{#1}\mbox{}$\rangle$}
+%%%
+\makeatother
+\usepackage{longtable}
+\usepackage[pdfbox]{gentombow}
+%\usepackage{bounddvi}
+\GetFileInfo{gentombow.sty}
+\title{Package \textsf{gentombow} \fileversion}
+\author{Hironobu Yamashita}
+\date{\filedate}
+\begin{document}
+
+\maketitle
+
+\begin{center}
+English version is available: see \textsf{gentombow.pdf}!
+\end{center}
+
+日本の出版では、たとえば仕上がり寸法がA4サイズの場合、一回り大きな
+B4サイズの用紙の中央にトンボ付きで印刷することがあるようです。
+このドキュメントは、実際にA4用紙をB4用紙の中央にトンボ付きで
+配置している事例です。
+
+\textsf{gentombow}パッケージは、クラスファイルなどが想定している用紙
+サイズ情報（\verb+\paperwidth+, \verb+\paperheight+）を検知し、
+それより一回り大きなサイズの用紙の中央にトンボ付きで出力するために
+必要な機能を提供します。使い方の例は
+\begin{verbatim}
+  \documentclass[a4j]{jarticle}
+  \usepackage{gentombow}
+  \usepackage{bounddvi}
+  \begin{document}
+  …本文…
+  \end{document}
+\end{verbatim}
+です。
+
+任意の\LaTeX フォーマットで利用可能です。具体的には
+\begin{itemize}
+\item p\LaTeX, up\LaTeX （縦組にも対応）
+\item Lua\LaTeX （Lua\TeX-ja使用の場合は縦組にも対応）
+\item pdf\LaTeX
+\item Xe\LaTeX
+\end{itemize}
+での動作を確認しています。また、\textsf{jsclasses}のような
+版面拡大(\verb+\mag+)が使われた場合にも対応しています。
+
+ただし、本パッケージは実際の出力サイズ指定を発行しませんので、
+以下のいずれかのパッケージと併用するとよいでしょう：
+\begin{itemize}
+\item \textsf{bounddvi}パッケージ（\textsf{gentombow}バンドル）
+\item \textsf{bxpapersize}パッケージ（ZRさん作）
+\item \textsf{graphicx}パッケージの2016年以降の版
+  （\texttt{setpagesize}機能つきのもの）
+\end{itemize}
+\textsf{bounddvi}パッケージは本パッケージと同じく
+\textsf{gentombow}バンドルに収録されていますが、
+名前のとおりDVIを経由する場合にしか利用できません。
+一方、\textsf{bxpapersize}パッケージは汎用で、Lua\TeX のような
+PDF直接出力の場合にも利用できます。また、\textsf{graphicx}パッケージ
+は画像挿入用のパッケージですが、2016年以降は自動的に出力サイズ指定も
+行うようです（$\verb+\mag+ \ne 1000$の場合には機能しません）。
+
+本パッケージは、\textsf{gentombow}バンドルの一部として
+配布されています：
+\begin{verbatim}
+  https://github.com/aminophen/gentombow
+\end{verbatim}
+2017年までは\textsf{platex-tools}バンドルの一部でしたが、
+2018年以降は独立させてあります。また、v0.9eまでは
+(u)p\LaTeX とLua\TeX-ja専用の\textsf{pxgentombow}パッケージを
+用意していましたが、v0.9f以降は\textsf{gentombow}に一本化しました。
+
+\section{簡単な使用法}
+
+はじめに、パッケージをオプション指定なしに使用する場合の機能を
+説明します。
+
+\subsection{用紙サイズの自動検知による出力サイズ決定}
+
+パッケージにはあらかじめA系列(\texttt{a0}--\texttt{a10})、
+B系列(\texttt{b0}--\texttt{b10})、C系列(\texttt{c0}--\texttt{c10})と
+\texttt{letter}, \texttt{legal}, \texttt{executive}の用紙サイズが
+定義されています。ここで、B系列はISOではなくJISです。
+また、変型版として\texttt{a4var}（\texttt{a4}の変型）と
+\texttt{b5var}（\texttt{b5}の変型）も定義されています。
+
+これらのうちいずれか（ただし\texttt{a0}, \texttt{b0}, \texttt{c0}を
+除く）の用紙サイズを検知すると、
+出力サイズが次の規則で自動的に決定されます\footnote{なお、
+C系列と\texttt{letter}, \texttt{legal}, \texttt{executive}については
+日本での慣習が不明の
+ため、現時点ではA系列のサイズで出力することにしています。}。
+\begin{itemize}
+\item 用紙サイズがA系列のとき：
+        出力サイズは一回り大きなB系列
+\item 用紙サイズがB, C系列または
+      \texttt{letter}, \texttt{legal}, \texttt{executive}のとき：
+        出力サイズは一回り大きなA系列
+\end{itemize}
+この場合、パッケージを読み込んだだけでトンボが付きます。
+なお、用紙サイズが横長の場合は自動的に出力も横長になり、
+縦長の場合は自動的に縦長になります。
+
+よく使われる用紙サイズの例を挙げます。
+\begin{longtable}[c]{cc}
+  \hline
+  用紙サイズ & 出力サイズ \\
+  \hline
+  a6 & b6 \\
+  b6 & a5 \\
+  a5 & b5 \\
+  b5 & a4 \\
+  a4 & b4 \\
+  b4 & a3 \\
+  a3 & b3 \\
+  b3 & a2 \\
+  \hline
+  c6 & a5 \\
+  c5 & a4 \\
+  c4 & a3 \\
+  c3 & a2 \\
+  \hline
+  letter    & a3 \\
+  legal     & a3 \\
+  executive & a4 \\
+  \hline
+\end{longtable}
+
+\subsection*{参考：用紙サイズの自動検知に失敗した場合の出力サイズ決定}
+
+仮に用紙サイズが定義済みのいずれとも異なる場合は、デフォルトでは
+用紙の天地左右に1インチずつのノビを付けたサイズで出力します。
+たとえば、幅$100\,\mathrm{mm}$、高さ$200\,\mathrm{mm}$の用紙の場合、
+出力サイズは幅$100\,\mathrm{mm}+2\,\mathrm{in}$、
+高さ$200\,\mathrm{mm}+2\,\mathrm{in}$になります。
+
+\subsection{トンボへのバナーの出力}
+
+デフォルトでは\makeatletter\texttt{\the\@bannertoken}\makeatother
+のような形式で、トンボにジョブ情報（処理ファイル名と日付）を示すバナーが
+出力されます。これは、\pLaTeX 向けの日本語クラスファイルの多くで
+利用可能な\verb+tombow+オプションと同様です。
+ただし、クラスオプションに\verb+tombo+（ジョブ情報を出力しない）または
+\verb+mentuke+（トンボの線を表示しない）が指定されている場合は、
+この設定が引き継がれます。
+
+\section{パッケージオプション}
+
+パッケージオプションによって、出力サイズやバナーのジョブ情報の有無を
+指定する方法を説明します。
+
+\subsection{出力サイズの明示指定}
+
+自動決定されるサイズと異なるサイズに出力したい場合、
+パッケージオプションで明示的に指定することができます。たとえば
+\begin{verbatim}
+  \documentclass[a4j]{jarticle}
+  \usepackage[tombow-a3]{gentombow}
+  \begin{document}
+  …本文…
+  \end{document}
+\end{verbatim}
+とすると、出力サイズは（自動決定のb4は無視されて）a3に変わります。
+指定可能なサイズは、定義済みの用紙サイズと同じものです。すなわち、
+A系列(\texttt{a0}--\texttt{a10})、
+B系列(\texttt{b0}--\texttt{b10})、
+C系列(\texttt{c0}--\texttt{c10})と
+\texttt{a4var}, \texttt{b5var},
+\texttt{letter}, \texttt{legal}, \texttt{executive}です。
+なお、ここでも用紙サイズが横長の場合は自動的に出力も横長になり、
+縦長の場合は自動的に縦長になります。
+
+オプションは\jMeta{トンボ形式}\texttt{-}\jMeta{出力サイズ}の書式で与えます。
+トンボ形式は、p\LaTeX の標準クラスと同じで
+\verb+tombow+, \verb+tombo+, \verb+mentuke+のいずれかを選びます
+（\verb+tombow+はジョブ情報を表示し、\verb+tombo+は表示しません。
+また、\verb+mentuke+はトンボの線を表示しません）。
+
+\subsection{トンボに表示するジョブ情報の有無}
+
+用紙サイズを明示的に指定する場合は、前節のようにトンボ形式と出力サイズを
+同時にオプションで与えることができます。
+逆に出力サイズを自動決定に任せつつ、ジョブ情報の有無だけを指定したい
+場合は、トンボへのバナー出力を抑制する\verb+notombowbanner+オプションを
+使用してください。
+
+\section{詳細なカスタマイズ}
+
+\textsf{gentombow}パッケージは、トンボの見た目やバナーの内容を
+カスタマイズする機能も提供します。
+
+\subsection{トンボに表示するバナーの内容}
+
+\verb+\settombowbanner+命令を用います。例えば\epTeX の
+\verb+\pdfcreationdate+プリミティブを使って
+\begin{verbatim}
+  \documentclass[a4j]{jarticle}
+  \usepackage{gentombow}
+  \settombowbanner{\jobname\space (\pdfcreationdate)}
+  \begin{document}
+  …本文…
+  \end{document}
+\end{verbatim}
+とすると、バナーの表示内容は
+{\settombowbanner{\jobname\space (\pdfcreationdate)}%
+ \makeatletter\texttt{\the\@bannertoken}\makeatother}になります。
+命令の引数には任意のトークン列を与えることができます。
+
+\subsection{バナーの文字のフォント}
+
+\verb+\settombowbannerfont+命令を用います。例えば
+\begin{verbatim}
+  \settombowbannerfont{cmss10 at 9pt}
+\end{verbatim}
+のような指定が可能です。内部的には\verb+\font+プリミティブを利用しており、
+使用している\TeX エンジンがサポートする任意のフォントを指定可能です
+\footnote{Lua\TeX やXe\TeX （\textsf{gentombow}パッケージの場合）では、
+OpenTypeフォントを直接利用することもできます。}。
+
+\subsection{トンボの線の太さ}
+
+デフォルトではトンボの線の太さは0.1~ptですが、
+\verb+\settombowwidth{1pt}+とすると1~ptになります。
+命令の引数には任意の寸法を与えることができますが、
+実用上は数pt以内が良いでしょう。
+
+\subsection{塗り足し（ドブ）の幅}
+
+デフォルトでは塗り足し（ドブ）の幅は3~mmですが、
+\verb+\settombowbleed{5mm}+とすると5~mmになります。
+命令の引数には任意の寸法を与えることができますが、実用上は数mmでしょう。
+
+\subsection{トンボの色}
+
+トンボの色を指定します。実際に色をつける場合は
+\textsf{xcolor}パッケージ（推奨）またはまたは\textsf{color}パッケージが必要です。
+\verb+\settombowcolor{\color[cmyk]{0,1,0,0}}+とするとマゼンタになります。
+CMYKの版ごとにトンボを作成する場合や、特色のトンボが必要な場合に便利です。
+
+\section{PDFのデジタルトンボ(page box)の設定}
+
+この機能はドライバに依存するため、オプション機能としています。
+\textsf{gentombow}パッケージ読み込み時に\verb+pdfbox+オプションを
+指定します。DVIを経由する場合は、さらにドライバオプションも必須です
+\footnote{例外として、\textsf{gentombow}が読み込まれた時点で
+\textsf{graphics}/\textsf{color}のいずれかが読み込まれていた
+場合は、そのドライバ設定を引き継ぐことができます。}。
+
+この機能を有効化すると、PDFに以下のバウンディングボックス情報
+（いわゆるデジタルトンボ）が書き込まれ、
+さらに用紙サイズ設定（\verb+/MediaBox+相当）も行われます。
+\begin{itemize}
+\item \verb+/TrimBox+: 仕上がり紙面サイズ。
+\item \verb+/BleedBox+: 裁ち落とし領域を含んだサイズ。
+\item \verb+/CropBox+, \verb+/ArtBox+: 明示しない。
+\end{itemize}
+
+\section{その他の注意点}
+
+特定のクラスファイルやパッケージと一緒に使用する場合、
+いくつかの注意点があります。
+
+\subsection{\textsf{jsclasses}で使用する場合の注意}
+
+奥村晴彦氏による\textsf{jsclasses}のクラス（2016年以降は日本語\TeX 開発
+コミュニティが管理）を使用していて、10pt以外のサイズオプションを
+指定する場合は、以下のいずれかの方法をとってください。
+\begin{itemize}
+\item クラスオプションに「トンボオプション」
+      （\verb+tombow+または\verb+tombo+）を追加する。
+\item クラスオプションに「\verb+\mag+を使わないオプション」
+      （\verb+nomag+または\verb+nomag*+）を追加する。
+\end{itemize}
+これは、\textsf{jsclasses}クラス内で行われる\verb+\oddsidemargin+と
+\verb+\topmargin+の計算の都合からくる制約です。たとえば
+\begin{verbatim}
+  \documentclass[a4j,14pt]{jsarticle}
+  \usepackage{gentombow}
+\end{verbatim}
+という使い方は\emph{誤り}です（このままでは誤った余白設定が
+適用されますので、安全のため\textsf{gentombow}パッケージ
+がエラーを出すようにしてあります）。代わりに
+\begin{verbatim}
+  \documentclass[a4j,14pt,tombow]{jsarticle}
+  \usepackage{gentombow}
+\end{verbatim}
+と書くようにしてください。
+
+また、塗り足しの幅などの寸法指定は\verb+true+付きの単位を
+使用してください。例えば
+\verb+\settombowbleed{3truemm}+と指定すれば、
+\verb+\mag+による版面拡大（縮小）後の塗り足し幅を3~mmにできます。
+
+同様に、ZR氏による\textsf{BXjscls}のクラスを使用していて、10pt以外の
+サイズオプションを指定する場合は
+\begin{itemize}
+\item クラスオプションに「\verb+\mag+を使わないオプション」
+      （\verb+nomag+または\verb+nomag*+）を追加する。
+\end{itemize}
+という対処が必要です（\textsf{BXjscls}クラスでは「トンボオプション」が
+機能しないダミーになっていることに注意）。
+
+\subsection{レイアウト設定の注意}
+
+余白などのレイアウト設定でありがちですが、
+\verb+\hoffset+や\verb+\voffset+の値を$0$以外に設定するのは
+避けてください。このような設定は\textsf{gentombow}パッケージの
+トンボ出力機能と衝突するため、正しい出力が得られません。
+レイアウト設定のために変更すべきなのはこれらの寸法ではなく、
+\verb+\oddsidemargin+や\verb+\topmargin+であることがほとんどです。
+したがって、それらを適切な値に設定するか、レイアウトの設定すべてを
+\textsf{geometry}パッケージに任せてしまうのも一つの方法です。
+
+\begin{dangerous}
+たとえば左右の余白を$25\,\mathrm{mm}$に、上下の余白を
+$30\,\mathrm{mm}$にしたいとき\footnote{ここでは「本文の領域以外」を
+余白と定義します。すなわち、ヘッダとフッタは余白の一部です。}、
+まず「\TeX の1インチ」を
+削除してから\verb+\oddsidemargin+や\verb+\topmargin+を変更すると、
+「見かけ上は」期待どおりの結果になることがあります。
+\begin{verbatim}
+  \setlength{\hoffset}{-1in}% <== NG
+  \setlength{\voffset}{-1in}% <== NG
+  \setlength{\oddsidemargin}{25mm}
+  \setlength{\topmargin}{30mm}
+  \setlength{\textwidth}{\paperwidth}
+  \addtolength{\textwidth}{-2\oddsidemargin}
+  \setlength{\textheight}{\paperheight}
+  \addtolength{\textheight}{-2\topmargin}
+  \addtolength{\topmargin}{-\headheight}
+  \addtolength{\topmargin}{-\headsep}
+\end{verbatim}
+しかし、この設定では\textsf{gentombow}パッケージがトンボを
+追加するとき、正しい余白を維持することができません。
+
+一方、\verb+\hoffset+や\verb+\voffset+は$0$のままで、以下のように
+\verb+\oddsidemargin+や\verb+\topmargin+を設定していれば問題ありません。
+\begin{verbatim}
+  \setlength{\oddsidemargin}{-0.4mm}% 25mm = 1inch - 0.4mm
+  \setlength{\topmargin}{4.6mm}%      30mm = 1inch + 4.6mm
+  \setlength{\textwidth}{\paperwidth}
+  \addtolength{\textwidth}{-50mm}
+  \addtolength{\topmargin}{-\headheight}
+  \addtolength{\topmargin}{-\headsep}
+  \setlength{\textheight}{\paperheight}
+  \addtolength{\textheight}{-60mm}
+\end{verbatim}
+これと同等のレイアウト設定は、以下のように\textsf{geometry}パッケージで
+行うのが簡単です。
+\begin{verbatim}
+  \usepackage[lmargin=25mm,rmargin=25mm,
+              tmargin=30mm,bmargin=30mm]{geometry}
+\end{verbatim}
+\end{dangerous}
+
+\section*{雑記}
+
+発端はこの話です。
+\begin{itemize}
+\item 齋藤修三郎 (@psi\_tau) on Twitter, 2017年2月9日\\
+  \texttt{https://twitter.com/psi\_tau/status/829873082911248386}
+\end{itemize}
+
+また、現在検討中の事項を挙げておきます。
+\begin{itemize}
+\item 現状では、用紙の横長・縦長がそのまま出力に反映されるので、
+  これを逆転させるオプションの実装。また、任意の出力サイズを
+  指定できるインタフェースの実現。
+\item 自動で決定できる出力サイズの拡張。現状では用紙サイズが
+  定義値に完全一致する場合のみ自動決定されるが、中間のサイズでも
+  その一回り大きなサイズに出力したい場合があるのではないか。
+\item 出版用途ではカラー印刷の場合に、CMYKの版ごとにトンボを作る
+  必要がある。\textsf{color}パッケージが利用可能な場合に、
+  オプション次第でCKなど必要な色を選べるようにするとよい
+  のではないか\footnote{ただし作者の本業は出版ではないので、
+  商用を含む実用には程遠いかもしれない。}。
+\item $\verb+\mag+ \ne 1000$の場合について、\textsf{jsclasses}以外での
+  動作は未確認。特に、\textsf{geometry}とは共存しない可能性が高い。
+\item \verb+\stockwidth+/\verb+\stockheight+が
+  \verb+\paperwidth+/\verb+\paperheight+より小さい場合の動作。
+  現在は警告を出すだけとしているが、さらに天地左右1inに
+  フォールバックしたほうが無難だろうか。
+\end{itemize}
+
+\section*{変更履歴}
+
+\begin{itemize}
+  \item 2017/02/10 v0.1 最初の公開版（\textsf{pxgentombow}として）
+  \item 2017/03/01 v0.4 トンボ形式の修正など
+  \item 2017/05/05 v0.5 \textsf{jsclasses}の$\verb+\mag+ \ne 1000$に対応、
+                        最初のCTANリリース版
+  \item 2017/05/06 v0.6 \textsf{jsclasses}との共存時のチェック強化、
+                        Lua\TeX-jaでの動作確認
+  \item 2017/07/23 v0.7 ドキュメント更新
+  \item 2017/12/17 v0.9 \textsf{gentombow}パッケージの新設
+  \item 2018/03/16 v0.9e クラスオプションの\verb+tombow+等の引き継ぎ、
+                        トンボ書式のカスタマイズ機能の追加
+                        （\verb+\settombowbanner+,
+                          \verb+\settombowbannerfont+,
+                          \verb+\settombowwidth+の各命令）
+  \item 2018/05/17 v0.9g \textsf{gentombow}に\textsf{pxgentombow}を統合、
+                         \verb+pdfbox+オプションの追加、
+                         \verb+\settombowbleed+, \verb+\settombowcolor+の追加
+  \item 2018/08/20 v0.9h 用紙サイズ検出に\texttt{hagaki}を追加、
+                         \textsf{pdfpages}対策の改良
+  \item 2018/08/30 v0.9j \textsf{jsclasses}の$\verb+\mag+ \ne 1000$でも
+                         \verb+pdfbox+オプションが正常動作するように改良、
+                         \verb+\settombowbleed+が\verb+/TrimBox+に反映されな
+                         かったバグの修正
+\end{itemize}
+
+\end{document}

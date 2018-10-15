@@ -3,12 +3,12 @@
 
 ## 注意
 * LaTeX の mendex コマンドの実装に依存しているため、 現時点では英語または日本語以外の挙動は不明です。
-* 形態素解析は、外部ソフトウェアの MeCab (http://taku910.github.io/mecab/)、その辞書である IPA 辞書、MeCab の Ruby バインドである mecab に依存しています。
+* 形態素解析は、外部ソフトウェアの MeCab (http://taku910.github.io/mecab/) 、その辞書である IPA 辞書、MeCab の Ruby バインドである mecab に依存しています。
 * LaTeX ビルダ以外のビルダでは、埋め込んだ索引を利用する手法を提供していません。後述のヒントを参照してください。
 * LaTeX ビルダでの索引生成機能は、デフォルトで無効にしています。設定 YAML ファイルで明示的に有効にする必要があります。
 
 ## MeCab のセットアップ
-形態素解析による自動読みを使用する場合、MeCab  (http://taku910.github.io/mecab/) およびその辞書、Ruby バインドライブラリの mecab をインストールしておく必要があります。
+形態素解析による自動読みを使用する場合、MeCab (http://taku910.github.io/mecab/) およびその辞書、Ruby バインドライブラリの mecab をインストールしておく必要があります。
 
 Debian GNU/Linux あるいは Ubuntu の環境では、次のようにパッケージをインストールします。
 

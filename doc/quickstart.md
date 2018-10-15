@@ -209,7 +209,7 @@ $ review-index --level <heading level> -a
 
 ## Copyright
 
-The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (2016/04).
+The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (September 2018).
 
 If you want to report bugs and patches, or to get more information, see:
 

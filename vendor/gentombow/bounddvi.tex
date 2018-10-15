@@ -1,0 +1,148 @@
+%# -*- coding: utf-8 -*-
+\ifx\epTeXinputencoding\undefined\else % defined in e-pTeX (> TL2016)
+  \epTeXinputencoding utf8    % ensure utf-8 encoding for platex
+\fi
+
+% パッケージ作者 (v1.0--v6.0)：東京都市大学（旧称・武蔵工業大学）井上浩一
+% 修正版 (v7.0--) および本ドキュメント：山下弘展 (Hironobu Yamashita)
+
+\documentclass[a4paper]{jsarticle}
+\usepackage{doc}
+\usepackage{bounddvi}
+\GetFileInfo{bounddvi.sty}
+\title{Package \textsf{bounddvi} \fileversion}
+\author{Koichi Inoue \& Hironobu Yamashita}
+\date{\filedate}
+\begin{document}
+
+\maketitle
+
+DVIファイルは用紙サイズ情報を含みませんが、PostScriptやPDFといった
+用紙サイズを規定するフォーマットへ変換するプログラム（\texttt{dvips}や
+\texttt{dvipdfmx}）は、\verb+\special+命令によってDVIファイルに埋め込ま
+れた用紙サイズ情報を解釈します。
+たとえば、幅100mm、高さ200mmの用紙に出力したい場合は
+\begin{verbatim}
+  \special{papersize=100mm,200mm}
+\end{verbatim}
+のように指定してやることができます。
+
+\textsf{bounddvi}パッケージは、クラスファイルなどが想定している用紙
+サイズ情報（\verb+\paperwidth+, \verb+\paperheight+）をDVIファイルに
+\verb+\special+命令として埋め込むことで、\texttt{dvips}や
+\texttt{dvipdfmx}の出力用紙サイズを指定する機能を提供します。
+\begin{verbatim}
+  \documentclass[a4j]{jarticle}
+  \usepackage{bounddvi}
+  \begin{document}
+  …本文…
+  \end{document}
+\end{verbatim}
+のように使います。p\LaTeX における横組と縦組の両方で使え、また
+版面拡大(\verb+\mag+)が使われた場合にも対応しています（詳細は付録
+を参照してください）。また、v7.0以降、p\LaTeX カーネルのトンボ
+オプションを使用した場合にも対応しており、p\LaTeX が仮定している
+「トンボのノビ(2in)を含めたサイズ」に設定します。
+
+本パッケージはv7.0以降、\textsf{gentombow}バンドルの一部として
+配布されています：
+\begin{verbatim}
+  https://github.com/aminophen/gentombow
+\end{verbatim}
+2017年までは\textsf{platex-tools}バンドルの一部でしたが、
+2018年以降は移転しました。
+
+\section*{他のパッケージとの互換性}
+
+用紙サイズ設定機能だけを提供する\textsf{bounddvi}パッケージのほかにも、
+パッケージの機能の一部として用紙サイズ設定を行うものがいくつかあります。
+\begin{itemize}
+\item 日本語環境でよく用いられる、p\LaTeX/up\LaTeX 用のクラスファイル
+      \textsf{jsclasses}（奥村さん作）の\texttt{papersize}オプション
+      との併用は問題ありません（ただし、このオプションを使用すれば用紙
+      サイズ設定には十分ですから、本\textsf{bounddvi}パッケージを併用
+      することにも特にメリットはありません）。
+\item 2016年以降の\textsf{graphics/graphicx}パッケージや
+      \textsf{color}パッケージには用紙サイズ設定機能
+      （\texttt{setpagesize}オプション：デフォルトで有効）が
+      ありますが、併用しても問題は起きないでしょう。
+\item \textsf{hyperref}パッケージも上と同様で、併用しても
+      問題は起きないでしょう。
+\item \textsf{geometry}パッケージと併用する場合は、
+      本\textsf{bounddvi}パッケージを\emph{後から}読み込むほうが
+      安全でしょう。特に、\texttt{dvipdfmx}を使用して変換する場合に
+      トンボを付けたいなら、\textsf{bounddvi}を後から読み込むことで
+      うまくいく可能性があります（付録を参照）。
+\end{itemize}
+
+\section*{付録：複数の用紙サイズ指定が発行された場合の挙動}
+
+一つのDVIファイルに複数の用紙サイズ指定\verb+\special+命令が
+埋め込まれる場合があります。このうち、\texttt{dvipdfmx}および
+\TeX\ Live 2017以降の\texttt{dvips}では、DVIファイルの\emph{最後}に
+指定されたものが有効になります\footnote{\TeX\ Live 2016以前の
+\texttt{dvips}では、DVIファイルの\emph{最初}に指定されたものが有効
+でしたが、\TeX\ Live r42420で挙動が変更されました。\texttt{-L0}オプ
+ションを指定すると従来の挙動に戻ります。}。たとえば\textsf{bounddvi}と
+\textsf{geometry}を併用したソース
+\begin{verbatim}
+  \documentclass{...}
+  \usepackage{bounddvi}
+  \usepackage[dvipdfm]{geometry}
+\end{verbatim}
+を\textsf{dvipdfmx}でPDFに変換すると、\textsf{geometry}パッケージの
+指定が優先されます。このとき、用紙サイズの設定が正しいかどうかは
+\textsf{geometry}パッケージに依存します。
+
+\section*{付録：\texttt{\char92mag}の扱いについて}
+
+本\textsf{bounddvi}パッケージは、日本で広く使われている奥村さんの
+\textsf{jsclasses}クラス流の\verb+\mag+の用法をサポートしています。
+しかし、\verb+\mag+の使い方はCTANにある多様なパッケージの中で統一
+されておらず、大きく分けて二通りの使い方があるようです。
+
+たとえば、版面を2倍に拡大 (\verb+\mag=2000+) して物理的なA4サイズ
+($210\,\mathrm{mm}\times297\,\mathrm{mm}$)の出力を得たい場合
+\begin{quote}
+  \texttt{\char92mag=2000}\\
+  \texttt{\char92paperwidth=210mm} ($= 420\,\mathrm{truemm}$)\\
+  \texttt{\char92paperheight=297mm} ($= 594\,\mathrm{truemm}$)
+\end{quote}
+と設定するものと
+\begin{quote}
+  \texttt{\char92mag=2000}\\
+  \texttt{\char92paperwidth=105mm} ($= 210\,\mathrm{truemm}$)\\
+  \texttt{\char92paperheight=148.5mm} ($= 297\,\mathrm{truemm}$)
+\end{quote}
+と設定するものとが存在します。
+前者は\textsf{geometry}パッケージなどの方式で、おそらく\texttt{dvips}の
+\verb+papersize+ specialの挙動（truedimenを正しく解釈せず、trueの付か
+ない単位だけを受け付けてあたかもtrue付であるかのように評価）に則った
+ものでしょう。後者は\textsf{jsclasses}クラスの方式で、これは
+\texttt{dvipdfm(x)}の\verb+pdf:pagesize+ specialとも同じです。
+この方式のほうが、truedimenで設定された\LaTeX のほかのレイアウト変数
+（\verb+\textwidth+など）に対して一貫性があると思われます。
+本\textsf{bounddvi}パッケージがサポートしているのは後者の方式です。
+
+\section*{参考}
+
+\begin{itemize}
+\item dvipsやdvipdfmなどで用紙サイズを出力\\
+  \texttt{https://www.ma.ns.tcu.ac.jp/Pages/TeX/bounddvi.sty.html}
+\end{itemize}
+
+\section*{変更履歴}
+
+\begin{itemize}
+  \item 2002/03/10 v1.0 (KI) 最初の公開版
+  \item 2002/10/30 v2.0 (KI) \texttt{dvipdfm}の\texttt{pdf:pagesize special}を使用
+  \item 2003/03/22 v3.2 (KI) \textsf{hyperref}との互換性を改良
+  \item 2004/05/08 v4.0 (KI) $\mathtt{\char92mag} \ne 1000$に対応
+  \item 2004/12/08 v5.2 (KI) \texttt{dvips}で\textsf{geometry}との互換性を改良
+  \item 2004/12/15 v6.0 (KI) \texttt{dvipdfm(x)}の\texttt{pdf:pagesize special}を不使用に
+  \item 2016/10/25 v7.1 (HY) p\LaTeXe{}のトンボサポート、
+                             2016年の新しい\textsf{graphics}/\textsf{color}に対応
+  \item 2016/12/28 v7.2 (HY) 新仕様の\texttt{dvips}をドキュメント化
+\end{itemize}
+
+\end{document}

@@ -20,10 +20,12 @@ require 'review/template'
 require 'review/tocprinter'
 require 'review/version'
 require 'erb'
+require 'review/makerhelper'
 
 module ReVIEW
   class WEBMaker
     include ERB::Util
+    include MakerHelper
 
     attr_accessor :config, :basedir
 
@@ -71,10 +73,7 @@ module ReVIEW
     end
 
     def remove_old_files(path)
-      math_dir = "./#{@config['imagedir']}/_review_math"
-      if @config['imgmath'] && Dir.exist?(math_dir)
-        FileUtils.rm_rf(math_dir)
-      end
+      cleanup_mathimg
       FileUtils.rm_rf(path)
     end
 
@@ -116,11 +115,22 @@ module ReVIEW
       build_body(@path, yamlfile)
       copy_backmatter(@path)
 
+      math_dir = "./#{@config['imagedir']}/_review_math"
+      if @config['imgmath'] && File.exist?("#{math_dir}/__IMGMATH_BODY__.tex")
+        make_math_images(math_dir)
+      end
+
       copy_images(@config['imagedir'], "#{@path}/#{@config['imagedir']}")
 
       copy_resources('covers', "#{@path}/#{@config['imagedir']}")
       copy_resources('adv', "#{@path}/#{@config['imagedir']}")
       copy_resources(@config['fontdir'], "#{@path}/fonts", @config['font_ext'])
+    end
+
+    def clean_mathdir
+      if @config['imgmath'] && File.exist?("#{@config['imagedir']}/_review_math")
+        FileUtils.rm_rf("#{@config['imagedir']}/_review_math")
+      end
     end
 
     def build_body(basetmpdir, _yamlfile)

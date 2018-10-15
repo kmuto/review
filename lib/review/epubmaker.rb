@@ -23,11 +23,13 @@ require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
 require 'review/epubmaker/reviewheaderlistener'
+require 'review/makerhelper'
 
 module ReVIEW
   class EPUBMaker
     include ::EPUBMaker
     include REXML
+    include MakerHelper
 
     def initialize
       @producer = nil
@@ -103,10 +105,8 @@ module ReVIEW
       if @config['debug']
         FileUtils.rm_rf(booktmpname)
       end
-      math_dir = "./#{@config['imagedir']}/_review_math"
-      if @config['imgmath'] && Dir.exist?(math_dir)
-        FileUtils.rm_rf(math_dir)
-      end
+
+      cleanup_mathimg
 
       basetmpdir = build_path
       begin
@@ -125,6 +125,11 @@ module ReVIEW
         call_hook('hook_afterbody', basetmpdir)
 
         copy_backmatter(basetmpdir)
+
+        math_dir = "./#{@config['imagedir']}/_review_math"
+        if @config['imgmath'] && File.exist?("#{math_dir}/__IMGMATH_BODY__.tex")
+          make_math_images(math_dir)
+        end
         call_hook('hook_afterbackmatter', basetmpdir)
 
         ## push contents in basetmpdir into @producer
@@ -267,6 +272,7 @@ module ReVIEW
       book.config = @config
       @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
       @compile_errors = nil
+
       book.parts.each do |part|
         if part.name.present?
           if part.file?

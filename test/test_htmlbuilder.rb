@@ -1080,7 +1080,7 @@ EOS
       FileUtils.mkdir_p(File.join(dir, 'images'))
       expected = <<-EOB
 <div class=\"equation\">
-<img src=\"././images/_review_math/_gen_XXX.png\" />
+<img src=\"images/_review_math/_gen_XXX.png\" class=\"math_gen_255609d0624d30ecd7b33bfbf069fa39965e221476aeb507f48766d9f216b9eb\" alt="p \\land \\bm{P} q" />
 </div>
       EOB
       tmpio = $stderr
@@ -1096,12 +1096,14 @@ EOS
   end
 
   def test_texequation_fail
+    # Re:VIEW 3 never fail on defer mode. This test is only for Re:VIEW 2.
     return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
     return true unless system('latex -version 1>/dev/null 2>/dev/null')
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
                  'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P}} q\n//}\n") do |dir, book, _files|
       @book = book
       @book.config = @config
+      @config['review_version'] = 2
       @config['imgmath'] = true
       @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
       location = Location.new(nil, nil)

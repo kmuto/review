@@ -1,129 +1,11 @@
-% コードリスト装飾のデフォルト
-\RequirePackage{tcolorbox}
-\tcbuselibrary{xparse,hooks,skins,breakable}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{review-style}[2018/10/05]
 
-\newenvironment{reviewemlist}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!10,colframe=black!10,boxrule=0mm,arc=0mm]\begin{alltt}}%
- {\end{alltt}\end{tcolorbox}}
+%% using Helvetica as sans-serif
+\renewcommand{\sfdefault}{phv}
 
-\newenvironment{reviewlist}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\begin{alltt}}%
- {\end{alltt}\end{tcolorbox}}
-
-\newenvironment{reviewsource}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\begin{alltt}}%
- {\end{alltt}\end{tcolorbox}}
-
-\newenvironment{reviewcmd}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!99,colframe=black!99,boxrule=0mm,arc=0mm]\begin{alltt}\begingroup\color{white}\ignorespaces}%
- {\endgroup\end{alltt}\end{tcolorbox}}
-
-% 囲み記事
-\newenvironment{reviewnote}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries NOTE #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-\newenvironment{reviewmemo}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries MEMO #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-\newenvironment{reviewtip}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries Tips #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-\newenvironment{reviewinfo}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries INFORMATION #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-\newenvironment{reviewwarning}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries WARNING! #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-\newenvironment{reviewimportant}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries IMPORTANT! #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-\newenvironment{reviewcaution}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries CAUTION! #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-\newenvironment{reviewnotice}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries NOTICE #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
- {\end{tcolorbox}}
-
-% コラム
-\newenvironment{reviewcolumn}[1][COLUMN]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,boxrule=0.2mm,arc=2mm,colback=white,colframe=black!100!white,title={\sffamily\bfseries #1}]\par}
- {\end{tcolorbox}}
-
-\renewcommand{\@makecaption}[2]{{% %本当はl,c,rを[]で指定したい
-  \reset@font\small
-  \vskip\abovecaptionskip
-  \jlreq@ifempty{#1}{%
-    \sbox\@tempboxa{{\jlreq@@makecaption@font #2}}}{%
-    \sbox\@tempboxa{{\jlreq@@makecaption@label@font #1}\review@intn@captionprefix{\jlreq@@makecaption@font #2}}}
-  \ifdim \wd\@tempboxa >\hsize
-  \jlreq@ifempty{#1}{%
-    {\jlreq@@makecaption@font #2}}{%
-    {\jlreq@@makecaption@label@font #1}\review@intn@captionprefix{\jlreq@@makecaption@font #2}}\relax\par
-  \else
-    \global\@minipagefalse
-    \hbox to\hsize{\box\@tempboxa\hfil}% キャプションLeft
-%    \hbox to\hsize{\hfil\box\@tempboxa\hfil}% キャプションCenter
-%    \hbox to\hsize{\hfil\box\@tempboxa}% キャプションRight
-  \fi
-  \vskip\belowcaptionskip}}
-
-\newcommand{\review@commoncaption}[2]{\@makecaption{#1}{#2}}
-\newcommand{\reviewlistcaption}[1]{\review@commoncaption{}{#1}}
-\newcommand{\reviewemlistcaption}[1]{\review@commoncaption{}{#1}}
-\newcommand{\reviewsourcecaption}[1]{\review@commoncaption{}{#1}}
-\newcommand{\reviewcmdcaption}[1]{\review@commoncaption{}{#1}}
-\newenvironment{reviewlistblock}{\list{}{\topsep.5\baselineskip \leftmargin\z@ \itemindent\z@}\item\relax}{\endlist}% 上下アキ0.5
-
-\newenvironment{reviewimage}[1]{%
-  \begin{figure}[#1]\begin{center}}{\end{center}\end{figure}}
-
-\newenvironment{reviewdummyimage}[1]{%
-  \begin{reviewimage}[#1]}{\end{reviewimage}}
-
-\newcommand{\reviewindepimagecaption[2]}{\@makecaption{}{#2}}
-
-% 表
-\newenvironment{reviewtablesetup}{%
-}{}
-\newcommand{\reviewth}[1]{\cellcolor{black!70}\textcolor{white}{\bfseries #1}}
-\newcommand\reviewtablecaption[1]{\caption{#1}\vskip\abovecaptionskip}% アキをより広げる
-% \reviewtablecaption* を定義する(suffixパッケージ効果)
-%\WithSuffix\newcommand\reviewtablecaption*[1]{\@makecaption{}{#1}\vskip\abovecaptionskip}% アキをより広げる
-\newenvironment{reviewtable}[1]{%
-\begin{reviewtablesetup}\begin{tabular}{#1}}%
-{\end{tabular}\end{reviewtablesetup}}
-
-\newcommand*\reviewimgtablecaption[1]{\caption{#1}}
-
-\newcommand{\reviewimageref}[2]{\review@intn@image #1}
-\newcommand{\reviewtableref}[2]{\review@intn@table #1}
-\newcommand{\reviewlistref}[1]{\review@intn@list #1}
-\newcommand{\reviewbibref}[2]{#1}
-\newcommand{\reviewcolumnref}[2]{\review@intn@columnname #1}
-\newcommand{\reviewsecref}[2]{#1}
-
-% 書体
-\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
-\newcommand{\reviewami}[1]{#1}% FIXME
-\newcommand{\reviewballoon}[1]{←{#1}}
-\newcommand{\reviewem}[1]{\textbf{#1}}
-\newcommand{\reviewstrong}[1]{\textbf{#1}}
-\newcommand{\reviewunderline}[1]{\underline{#1}}% FIXME
-\newcommand{\reviewit}[1]{\textit{#1}}
-\newcommand{\reviewbold}[1]{\textbf{#1}}
-\newcommand{\reviewcode}[1]{\texttt{#1}}
-\newcommand{\reviewtt}[1]{\texttt{#1}}
-\newcommand{\reviewtti}[1]{\texttt{\textit{#1}}}
-\newcommand{\reviewttb}[1]{\texttt{\textbf{#1}}}
-
-\newcommand{\reviewbackslash}[0]{\textbackslash{}}
+%% disable hyperlink color and border
+\hypersetup{hidelinks}
 
 % コードリスト用色
 \definecolor{shadecolor}{gray}{0.9}
@@ -150,4 +32,10 @@
 
 % 図表フロートの配置
 \floatplacement{figure}{H}
-\floatplacement{table}{htp}
+\floatplacement{table}{H}
+
+% トンボ情報
+\if@pdftombo
+% https://github.com/abenori/jlreq/blob/master/jlreq-trimmarks-ja.md を参照
+\jlreqtrimmarkssetup{banner={}}
+\fi

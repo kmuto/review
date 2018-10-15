@@ -1,12 +1,20 @@
-\documentclass[dvipdfmx,uplatex,twoside]{jsbook}
+\documentclass[dvipdfmx]{review-jsbook}
 \makeatletter
+\def\review@reviewversion{3.0.0.preview2}
 \def\review@texcompiler{uplatex}
-\def\review@documentclass{jsbook}
+\def\review@documentclass{review-jsbook}
+
 \def\review@booktitlename{Re:VIEW Sample Book}
-\def\review@autnames{}
+
+
 \def\review@titlepageauthors{}
 \def\review@date{2011{-}01{-}01}
+
+\def\review@bookname{sample}
 \def\review@language{ja}
+\def\review@urnid{http://example.jp/}
+
+
 \def\review@intn@list{リスト}
 \def\review@intn@columnhead{■コラム}
 \def\review@intn@image{図}
@@ -24,6 +32,7 @@
 \def\review@figurename{図}
 \def\review@tablename{表}
 \def\review@appendixname{付録}
+
 \def\review@titlepage{true}
 \def\reviewprofilepagecont{\thispagestyle{empty}\chapter*{Profile}
 some profile
@@ -50,19 +59,24 @@ some ad content
 
 \begin{document}
 
+%% begindocument hook
+\ifdefined\reviewbegindocumenthook
+\reviewbegindocumenthook
+\fi
+
 %% coverpage
 \ifdefined\reviewcoverpagecont
 \reviewcoverpagecont
 \fi
 
-%% title page
-\ifdefined\reviewtitlepagecont
-\reviewtitlepagecont
-\fi
-
 %% frontmatter hook
 \ifdefined\reviewfrontmatterhook
 \reviewfrontmatterhook
+\fi
+
+%% title page
+\ifdefined\reviewtitlepagecont
+\reviewtitlepagecont
 \fi
 
 %% originaltitle
@@ -138,6 +152,11 @@ some ad content
 %%% backcover page
 \ifdefined\reviewbackcovercont
 \reviewbackcovercont
+\fi
+
+%% enddocument hook
+\ifdefined\reviewenddocumenthook
+\reviewenddocumenthook
 \fi
 
 \end{document}
