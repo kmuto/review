@@ -304,6 +304,9 @@ Layout/DotPosition:
 Layout/EmptyLines:
   Enabled: true
 
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
 Layout/EmptyLinesAroundAccessModifier:
   Enabled: true
 
@@ -441,6 +444,9 @@ Naming/AccessorMethodName:
 # When defining the == operator, name its argument other.
 #Style/BinaryOperatorParameterName:
 #  Enabled: true
+
+Naming/FileName:
+  Enabled: false
 
 Naming/HeredocDelimiterNaming:
   Enabled: false
