@@ -1,0 +1,298 @@
+%# -*- ascii characters only -*-
+
+\documentclass[a4paper]{article}
+\usepackage{doc}
+\makeatletter
+%%% dangerous bend
+\font\man=manfnt at 10pt
+\def\dbend{\leavevmode\raise0pt\hbox{\man\char'177}}
+\newenvironment{dangerous}{%
+  \ifnum\@listdepth>\z@
+    \GenericError{}{Do not use `dangerous' environment inside any list}{}{}
+  \fi
+  \par\addvspace\medskipamount
+  \@tempdima=\dimexpr\textwidth-2zw\relax\small
+  \divide\@tempdima by\dimexpr1zw\relax\@tempcnta=\@tempdima
+  \leftskip=\dimexpr\textwidth-\@tempcnta zw\relax
+    \@totalleftmargin\dimexpr\leftskip+0zw
+    \linewidth=\dimexpr\@tempcnta zw-0zw
+  \parindent1zw\noindent\kern-\leftskip\hbox to\leftskip{\dbend\hss}%
+  \everypar{\everypar{}}\ignorespaces
+}{\par\addvspace\medskipamount}
+%%% misc
+\newcommand{\Meta}[1]{$\langle$\mbox{}\textit{#1}\mbox{}$\rangle$}
+%%%
+\makeatother
+\usepackage{longtable}
+\usepackage[pdfbox]{gentombow}
+%\usepackage{bxpapersize}
+\GetFileInfo{gentombow.sty}
+\title{Package \textsf{gentombow} \fileversion}
+\author{Hironobu Yamashita}
+\date{\filedate}
+\begin{document}
+
+\maketitle
+
+It is convenient to print documents for final smaller paper sizes
+on paper of the printer's standard physical paper size;
+it allows printing close to the logical paper edge
+and even outside the logical page.
+
+This package \textsf{gentombow} provides a Japanese-style
+crop marks (called `tombow' in Japanese) for trimming paper stacks,
+and place the document page at the center of a larger physical
+paper sheet. It automatically detects the page size
+(\verb+\paperwidth+, \verb+\paperheight+) which is
+going to be set by document class.
+This document itself is a demonstration of this package,
+with final A4 paper printed on B4 (JIS B4; not ISO B4!) paper.
+
+A basic usage:
+\begin{verbatim}
+  \documentclass[a4paper]{article}
+  \usepackage{gentombow}
+  \usepackage{graphicx}
+  \begin{document}
+  The content
+  \end{document}
+\end{verbatim}
+
+Note that this package does nothing about output paper size
+specification; use one of the followings to do it.
+\begin{itemize}
+\item \textsf{graphicx} package
+  with \texttt{setpagesize} feature added in 2016
+  (supports all engines)
+\item \textsf{bxpapersize} package
+  (supports all engines; by Takayuki YATO)
+\item \textsf{bounddvi} package
+  (supports only DVI output mode; part of \textsf{gentombow} bundle)
+\end{itemize}
+
+This package is part of \textsf{gentombow} bundle:
+\begin{verbatim}
+  https://github.com/aminophen/gentombow
+\end{verbatim}
+Originally it was part of \textsf{platex-tools} bundle,
+but it has been moved since March 2018.
+
+\section{Basic Functions}
+
+First, I introduce some basic functions of \textsf{gentombow} package.
+
+\subsection{Automatic Determination of Output Size}
+
+In this package,
+the following printer's standard physical paper sizes are predefined;
+A series (\texttt{a0}--\texttt{a10}),
+B series (\texttt{b0}--\texttt{b10}),
+C series (\texttt{c0}--\texttt{c10}),
+\texttt{letter}, \texttt{legal} and \texttt{executive}.
+In the current release, `B series' is JIS standard,
+not ISO standard (this might be changed in the near future).
+Also, some variations \texttt{a4var} and \texttt{b5var} are predefined.
+
+When one of the above sizes (except \texttt{a0}, \texttt{b0}
+and \texttt{c0}) is detected, the output size is
+automatically determined along with the following rule:
+\begin{itemize}
+\item When A series detected:
+        the output is going to be larger B series
+\item When B/C series or
+      \texttt{letter}, \texttt{legal}, \texttt{executive} detected:
+        the output is going to be larger A series
+\end{itemize}
+The crop marks are automatically added.
+The orientation (landscape/portrait) of the input paper is
+also preserved.
+
+The following list shows common examples:
+\begin{longtable}[c]{cc}
+  \hline
+  Detected page size & Output size \\
+  \hline
+  a6 & b6 \\
+  b6 & a5 \\
+  a5 & b5 \\
+  b5 & a4 \\
+  a4 & b4 \\
+  b4 & a3 \\
+  a3 & b3 \\
+  b3 & a2 \\
+  \hline
+  c6 & a5 \\
+  c5 & a4 \\
+  c4 & a3 \\
+  c3 & a2 \\
+  \hline
+  letter    & a3 \\
+  legal     & a3 \\
+  executive & a4 \\
+  \hline
+\end{longtable}
+
+\subsection*{When Automatic Determination Failed}
+
+When the page size is different from any of the predefined sizes,
+the page is placed with the surrounding 1~inch margins.
+For example, when the page has $100\,\mathrm{mm}$ width and
+$200\,\mathrm{mm}$ height, the output size is going to be
+$100\,\mathrm{mm}+2\,\mathrm{in}$ width and
+$200\,\mathrm{mm}+2\,\mathrm{in}$ height.
+
+\subsection{Job Info Printing}
+
+By default, the crop marks are printed with a banner, which shows
+a job info like \makeatletter\texttt{\the\@bannertoken}\makeatother.
+The format is similar to \verb+tombow+ option, which is
+available in most of the common Japanese classes.
+The default also reacts to \verb+tombo+ (without a job info) or
+\verb+mentuke+ (do not print actual crop marks) class options.
+
+\section{Package Options}
+
+You can specify output size and/or disable job info printing
+using package options.
+
+\subsection{Explicit Specification of Output Size}
+
+You can also force the output size using package option.
+For example,
+\begin{verbatim}
+  \documentclass[a4paper]{article}
+  \usepackage[tombow-a4]{gentombow}
+  \begin{document}
+  The content
+  \end{document}
+\end{verbatim}
+forces the output size to be a3 (the automatic determination
+`b4' is discarded). Available sizes are the same as
+the predefined sizes, that is,
+A series (\texttt{a0}--\texttt{a10}),
+B series (\texttt{b0}--\texttt{b10}),
+C series (\texttt{c0}--\texttt{c10}) and
+\texttt{a4var}, \texttt{b5var},
+\texttt{letter}, \texttt{legal}, \texttt{executive}.
+The orientation (landscape/portrait) of the input paper is
+also preserved again.
+
+The option format is:
+\Meta{crop mark format}\texttt{-}\Meta{output size}.
+The crop mark format is one of the following:
+\verb+tombow+ (default), \verb+tombo+ (without a job info),
+\verb+mentuke+ (do not print actual crop marks).
+
+\subsection{Disabling Job Info Printing}
+
+When you specify the output size explicitly, the crop mark format
+can be given at the same time, as described previously.
+When the output size is automatically determined, you can disable
+job info printing by \verb+notombowbanner+ option.
+
+\section{Customization of Crop Mark}
+
+The \textsf{pxgentombow} package provides some commands to
+customize crop mark format.
+
+\subsection{Banner content}
+
+Using \verb+\settombowbanner+, you can set the banner content.
+An example using \verb+\pdfcreationdate+ (pdf\TeX\ primitive)
+\begin{verbatim}
+  \documentclass[a4paper]{article}
+  \usepackage{gentombow}
+  \settombowbanner{\jobname\space (\pdfcreationdate)}
+  \begin{document}
+  The content
+  \end{document}
+\end{verbatim}
+will result in
+{\settombowbanner{\jobname\space (\pdfcreationdate)}%
+ \makeatletter\texttt{\the\@bannertoken}\makeatother}.
+The argument is an arbitrary token list.
+
+\subsection{Banner font}
+
+Using \verb+\settombowbannerfont+, you can change the font
+with which the banner is printed.
+\begin{verbatim}
+  \settombowbannerfont{cmss10 at 9pt}
+\end{verbatim}
+This feature internally calls the \TeX\ primitive \verb+\font+,
+and accepts all fonts supported by the engine. When Lua\TeX\ or
+Xe\TeX\ is used, a native OpenType font can also be given.
+
+\subsection{Crop mark line width}
+
+By default, the line width of crop marks is 0.1~pt.
+This can be change to 1~pt by \verb+\settombowwidth{1pt}+.
+The argument is an arbitrary dimension.
+
+\subsection{Bleed margin width}
+
+By default, the bleed margin width is 3~mm.
+This can be change to 5~mm by \verb+\settombowwidth{5mm}+.
+The argument is an arbitrary dimension.
+
+\subsection{Crop mark color}
+
+Set the color of crop marks. Package \textsf{xcolor} (recommended) or
+\textsf{xcolor} is required.
+For example, \verb+\settombowcolor{\color[cmyk]{0,1,0,0}}+ sets magenta.
+
+\section{Setting PDF page box (``digital tombow'')}
+
+This is an optional driver-dependent feature.
+When \textsf{gentombow} is required with the option \verb+pdfbox+,
+following page boxes are emitted to the output PDF file.
+The paper size (\verb+/MediaBox+) is also corrected.
+\begin{itemize}
+\item \verb+/TrimBox+: final paper size.
+\item \verb+/BleedBox+: paper size plus bleed margin.
+\item \verb+/CropBox+ and \verb+/ArtBox+ are not set.
+\end{itemize}
+
+\section{Additional Notes}
+
+Here is some additional notes for use with several classes/packages.
+
+\subsection{Note for \textsf{BXjscls} users}
+
+When using \textsf{BXjscls} (by Takayuki YATO) with size option
+other than 10pt, please add \verb+nomag+ or \verb+nomag*+ to the
+class option. For example,
+\begin{verbatim}
+  \documentclass[a4paper,14pt]{bxjsarticle}
+  \usepackage{gentombow}
+\end{verbatim}
+will not work as expected (\textsf{gentombow} throws an error
+for safety).
+
+\subsection{Note about Layout Settings}
+
+You should not change \verb+\hoffset+ or \verb+\voffset+ to non-zero
+value, for the purpose of layout settings. Such settings will
+conflict with the feature of \textsf{gentombow} package.
+To set page layout correctly, you should adjust \verb+\oddsidemargin+
+or \verb+\topmargin+, or leave it to \textsf{geometry} package.
+
+\section*{Change History}
+
+\begin{itemize}
+  \item 2017/12/17 v0.9 First CTAN release
+  \item 2018/03/16 v0.9e Add \verb+\settombowbanner+,
+                         \verb+\settombowbannerfont+ and
+                         \verb+\settombowwidth+.
+  \item 2018/05/17 v0.9g Add \verb+pdfbox+ option,
+                         \verb+\settombowbleed+ and
+                         \verb+\settombowcolor+.
+  \item 2018/08/20 v0.9h Add \texttt{hagaki} size for paper detection,
+                         improve patches for \textsf{pdfpages}.
+  \item 2018/08/30 v0.9j Support \textsf{jsclasses}-style \verb+\mag+ employment
+                         also with \verb+pdfbox+ option.
+                         Fix a bug that \verb+\settombowbleed+ is not
+                         considered by \verb+/TrimBox+.
+\end{itemize}
+
+\end{document}

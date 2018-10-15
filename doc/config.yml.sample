@@ -131,6 +131,7 @@ secnolevel: 2
 # cover: null
 #
 # 表紙に配置し、書籍の影絵にも利用する画像ファイル。省略した場合はnull (画像を使わない)。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
+# PDFMaker 固有の表紙設定は pdfmaker セクション内で上書き可能
 # coverimage: null
 #
 # 表紙の後に大扉ページを作成するか。省略した場合はtrue (作成する)
@@ -281,10 +282,11 @@ epubmaker:
   # epubmaker:階層を使うものはここまで
 
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
-# texstyle: samplemacro
+# texstyle: ["reviewmacro"]
 #
 # LaTeX用のdocumentclassを指定する
-# texdocumentclass: ["jsbook", "uplatex,oneside"]
+# review-jsbook.clsのオプションについてはsty/README.mdを参照
+# texdocumentclass: ["review-jsbook", "cameraready=print,paper=a5"]
 #
 # LaTeX用のコマンドを指定する
 # texcommand: "uplatex"
@@ -306,6 +308,11 @@ epubmaker:
 # という構成にする必要がある(インデントさせる)
 #
 pdfmaker:
+  #
+  # TeX版で利用する表紙画像。
+  # 仕上がりサイズ+塗り足し3mmありのPDFまたはIllustratorファイル（PDF互換オプション付き）を推奨。
+  # 拡縮はされず「そのまま」貼り付けられる
+  # coverimage: cover-a5.ai
   #
   # TeXコンパイル前に実行するプログラム。変換後のTeXソースを調整したいときに使用する。
   # 渡される引数1=作業用展開ディレクトリ、引数2=呼び出しを実行したディレクトリ

@@ -1,4 +1,8 @@
 \RequirePackage{ifthen}
+\@ifundefined{Hy@Info}{% for jsbook.cls
+  \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
+  \RequirePackage[dvipdfmx]{pxjahyper}
+}{}
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
 \RequirePackage[deluxe,uplatex]{otf}%
 }{%
@@ -37,12 +41,19 @@
  {\endMakeFramed}
 
 \newcommand{\parasep}{\vspace*{3zh}}
-\setlength{\footskip}{30pt}
 
-\RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true,hidelinks,%
-     pdftitle={\review@booktitlename},%
-     pdfauthor={\review@autnames}]{hyperref}
-\RequirePackage[dvipdfmx]{pxjahyper}
+\newcommand*\PDFDocumentInformation[1]{%
+  \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+\@onlypreamble\PDFDocumentInformation
+
+\PDFDocumentInformation{
+  /Title    (\review@booktitlename)
+  /Author   (\review@autnames)
+  % /Subject  ()
+  % /Keywords (,,)
+  /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
+}
+
 \RequirePackage{pxrubrica}
 \@ifpackagelater{pxrubrica}{2017/04/20}{%
 \rubysetup{J}}{%
@@ -310,17 +321,16 @@
 }
 
 % cover
-\ifdefined\review@coverimage
-  \def\reviewcoverpagecont{%
-\thispagestyle{empty}
-\begin{center}
-\expandafter\includegraphics\expandafter[\review@coverimageoption]{\review@coverimage}% includefullpagegraphicsを導入すべき?
-\end{center}
-\clearpage
-  }
-\fi
-\ifdefined\review@coverfile
-  \def\reviewcoverpagecont{\review@coverfile}
+\if@reclscover
+  \ifdefined\review@coverimage
+    \def\reviewcoverpagecont{%
+      \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
+      \cleardoublepage
+    }
+  \fi
+  \ifdefined\review@coverfile
+    \def\reviewcoverpagecont{\review@coverfile}
+  \fi
 \fi
 
 % titlepage
@@ -340,8 +350,8 @@
        \vskip 15em%
        {\huge
        \lineskip .75em
-       \begin{tabular}[t]{c}%
-       \review@titlepageauthors
+       \begin{tabular}[t]{p{\textwidth}}%
+       \centering\review@titlepageauthors
        \end{tabular}\par}%
        \vfill
        {\large\review@date \review@intn@edition\hspace{2zw}\review@intn@publishedby\par}%
@@ -381,7 +391,6 @@
 \reviewcolophon
 \thispagestyle{empty}
 \vspace*{\fill}
-\typeout{\review@booktitlename}
 {\noindent\reviewtitlefont\Large\review@booktitlename}\\
 \ifdefined\review@subtitlename
 {\noindent\reviewtitlefont\large\review@subtitlename} \\
@@ -389,7 +398,7 @@
 \rule[8pt]{\textwidth}{1pt} \\
 {\noindent\review@pubhistories}
 
-\begin{tabular}{ll}
+\begin{tabular}{p{3em}p{\dimexpr\textwidth-6em}}
 \review@colophonnames
 \end{tabular}
 　\\

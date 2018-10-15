@@ -18,7 +18,7 @@ toc: true
 
 toclevel: 2
 secnolevel: 3
-cover: cover.html
+# cover: cover.html
 coverimage: cover.jpg
 # titlepage: null
 # titlefile: null
@@ -54,8 +54,9 @@ epubmaker:
 #  externallink: true
 
 pdfmaker:
+  coverimage: cover-a5.ai
   texstyle: ["reviewmacro"]
-  # texdocumentclass: ["jsbook", "uplatex,twoside"]
+  # texdocumentclass: ["review-jsbook", "cameraready=print,paper=a5"]
   # texcommand: "uplatex"
   # texoptions: null
   # dvicommand: "dvipdfmx"
