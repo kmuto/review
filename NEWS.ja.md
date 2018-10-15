@@ -1,32 +1,32 @@
 # Version 3.0.0 preview 3
 ## 新機能
-★* PDFMaker: これまでの jsbook.cls クラスファイルをそのまま使用する方法に代わり、紙・電子双方の書籍制作に適するよう拡張した review-jsbook.cls (jsbook.cls 基盤、デフォルト)、および review-jlreq.cls (jlreq.cls 基盤) を導入しました ([#1032])
-★* EPUBMaker/WEBMaker: `@<m>` や `//texequation` で入れた数式を画像化する imgmath 機能を追加しました ([#868])
+* PDFMaker: これまでの jsbook.cls クラスファイルをそのまま使用する方法に代わり、紙・電子双方の書籍制作に適するよう拡張した review-jsbook.cls (jsbook.cls 基盤、デフォルト)、および review-jlreq.cls (jlreq.cls 基盤) を導入しました ([#1032],[#1117])
+* EPUBMaker/WEBMaker: `@<m>` や `//texequation` で入れた数式を画像化する imgmath 機能を追加しました ([#868],[#1138])
 
 ## 非互換の変更
 * PDFMaker: 前付の開始を宣言する LaTeX 命令 `\frontmatter` を、大扉（titlepage）の後ろから大扉の前に移動しました ([#1128])
-★* PDFMaker: coverimage の表紙の貼り付けは、実寸で中央に配置されるようになりました ([#1064])
+* PDFMaker: coverimage の表紙の貼り付けは、実寸で中央に配置されるようになりました ([#1064],[#1117])
 
 ## バグ修正
 * PDFMaker: cover パラメータの扱いの誤りを修正しました ([#1116])
-★* PDFMaker: 新しいクラスファイルで、preview 2 で発生していた紙面の偏りを修正しました ([#1090])
+* PDFMaker: 新しいクラスファイルで、preview 2 で発生していた紙面の偏りを修正しました ([#1090],[#1117])
 
 ## 機能強化
 * PDFMaker: LaTeX に渡す `config.yml` の設定パラメータを増やしました ([#1121])
 * PDFMaker: LaTeX 命令 `\begin{document}` の直後に実行されるフックマクロ `\reviewbegindocumenthook`、`\end{document}` の直前に実行されるフックマクロ `\reviewenddocumenthook` を追加しました ([#1111])
-★* PDFMaker: 新しいクラスファイルでは版面設計をドキュメントオプションで指定するようになったため、geometry.sty は不要になりました ([#912])
-★* PDFMaker: 新しいクラスファイルで、大扉からの通しノンブルをサポートしました ([#1129])
-★* `review-init` コマンドにネットワークダウンロードの機能を追加しました。`-p` オプションで zip ファイルの URL を指定すると、生成したプロジェクトフォルダに zip ファイルを展開して上書きします ([#812])
-★* PDFMaker: デジタルトンボや隠しノンブルを表現するために外部 TeX パッケージの gentombow パッケージを取り込み、プロジェクトフォルダの sty フォルダにコピーするようにしました ([#1136])
+* PDFMaker: 新しいクラスファイルでは版面設計をドキュメントオプションで指定するようになったため、geometry.sty は不要になりました ([#912])
+* PDFMaker: 新しいクラスファイルで、大扉からの通しノンブルをサポートしました ([#1129])
+* `review-init` コマンドにネットワークダウンロードの機能を追加しました。`-p` オプションで zip ファイルの URL を指定すると、生成したプロジェクトフォルダに zip ファイルを展開して上書きします ([#812])
+* PDFMaker: デジタルトンボや隠しノンブルを表現するために外部 TeX パッケージの gentombow パッケージを取り込み、プロジェクトフォルダの sty フォルダにコピーするようにしました ([#1136])
 
 ## ドキュメント
 * Kindle 用の電子書籍ファイルを作る方法を doc/customize_epub.ja.md に追記しました ([#1114])
-★* サンプルファイルなどにある PDFMaker のデフォルトのドキュメントオプションの例示を新しいクラスファイルに合わせました ([#1115])
-★* `review-init` コマンドで展開されるファイルなど、扱いが明示されていなかったファイルについてライセンスを明記しました ([#1093])
-★* 数式を画像化する `imgmath` について、doc/format.ja.md に追記しました ([#868])
+* サンプルファイルなどにある PDFMaker のデフォルトのドキュメントオプションの例示を新しいクラスファイルに合わせました ([#1115])
+* `review-init` コマンドで展開されるファイルなど、扱いが明示されていなかったファイルについてライセンスを明記しました ([#1093],[#1112])
+* 数式を画像化する `imgmath` について、doc/format.ja.md に追記しました ([#868])
 
 ## コントリビューターのみなさん
-★* [@munepi](https://github.com/munepi)
+* [@munepi](https://github.com/munepi)
 
 [#812]: https://github.com/kmuto/review/issues/812
 [#868]: https://github.com/kmuto/review/issues/868
@@ -39,10 +39,12 @@
 [#1114]: https://github.com/kmuto/review/pull/1114
 [#1115]: https://github.com/kmuto/review/issues/1115
 [#1116]: https://github.com/kmuto/review/pull/1116
+[#1117]: https://github.com/kmuto/review/pull/1117
 [#1121]: https://github.com/kmuto/review/pull/1121
 [#1128]: https://github.com/kmuto/review/issues/1128
 [#1129]: https://github.com/kmuto/review/pull/1129
 [#1136]: https://github.com/kmuto/review/issues/1136
+[#1138]: https://github.com/kmuto/review/issues/1138
 
 # Version 3.0.0 preview 2
 
