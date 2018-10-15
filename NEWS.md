@@ -1,3 +1,52 @@
+# Version 3.0.0 preview 3
+## New Features
+* PDFMaker: instead of using jsbook.cls as it is, review-jsbook.cls (based on jsbook.cls, default) and review-jlreq.cls (based on jlreq.cls) are introduced. These supports the creation both paper and electronic PDF books. ([#1032],[#1117])
+* EPUBMaker/WEBMaker: add imgmath function to image mathematical expressions ([#868],[#1138])
+
+## Breaking Changes
+* PDFMaker: the location of `\frontmatter` is moved from the back of the titlepage to the front ([#1128])
+* PDFMaker: the cover image specified by `coverimage` is placed in the actual size and in the center ([#1064],[#1117])
+
+## Bug Fixes
+* PDFMaker: fix an errror handling of `cover` parameter ([#1116])
+* PDFMaker: fix position misalignment in preview 2 ([#1090],[#1117])
+
+## Enhancements
+* PDFMaker: increase the number of `config.yml` configuration parameters to LaTeX macros ([#1121])
+* PDFMaker: add hook `\reviewbegindocumenthook` just after `\begin{document}`, and add hook `\reviewenddocumenthook` just before `\end{document}` ([#1111])
+* PDFMaker: geometry.sty is no longer used, because the new class file can specify the paper design by document option ([#912])
+* PDFMaker: serial-pagination feature is supported in new class files ([#1129])
+* add network download function to `review-init` command. Specifying the URL of the zip file with `-p` option expands the zip file to the project folder ([#812])
+* PDFMaker: For expressing digital trim-marks and hidden page numbers (kakushi-nombre), the gentombow package (the external TeX package) has been included in vendor folder. It will be copied to the sty folder of the project folder ([#1136])
+
+## Docs
+* add a method of making Kindle e-book file to doc/customize_epub.ja.md ([#1114])
+* update examples of PDFMaker's default document options ([#1115])
+* clarify license of each file ([#1093],[#1112])
+* add note about `imgmath` feature to doc/format.ja.md ([#868])
+
+## Contributors
+* [@munepi](https://github.com/munepi)
+
+[#812]: https://github.com/kmuto/review/issues/812
+[#868]: https://github.com/kmuto/review/issues/868
+[#912]: https://github.com/kmuto/review/issues/912
+[#1032]: https://github.com/kmuto/review/issues/1032
+[#1064]: https://github.com/kmuto/review/issues/1064
+[#1090]: https://github.com/kmuto/review/issues/1090
+[#1093]: https://github.com/kmuto/review/issues/1093
+[#1111]: https://github.com/kmuto/review/pull/1111
+[#1112]: https://github.com/kmuto/review/pull/1112
+[#1114]: https://github.com/kmuto/review/pull/1114
+[#1115]: https://github.com/kmuto/review/issues/1115
+[#1116]: https://github.com/kmuto/review/pull/1116
+[#1117]: https://github.com/kmuto/review/pull/1117
+[#1121]: https://github.com/kmuto/review/pull/1121
+[#1128]: https://github.com/kmuto/review/issues/1128
+[#1129]: https://github.com/kmuto/review/pull/1129
+[#1136]: https://github.com/kmuto/review/issues/1136
+[#1138]: https://github.com/kmuto/review/issues/1138
+
 # Version 3.0.0 preview 2
 
 ## New Features
