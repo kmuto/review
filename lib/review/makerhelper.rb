@@ -95,14 +95,37 @@ module ReVIEW
     EOB
     end
 
+    def equation_block_style(f,h)
+      <<-EOB
+\\newenvironment{block_equation}
+{
+\\fontsize{#{f}}{#{h}}\\selectfont
+}
+{
+}
+      EOB
+    end
+
     def make_math_images(math_dir)
       fontsize = @config['imgmath_options']['fontsize'].to_f
       lineheight = @config['imgmath_options']['lineheight'].to_f
 
+      block_fontsize = fontsize
+      block_lineheight = lineheight
+      if @config['imgmath_options']['block_fontsize']
+        block_fontsize = @config['imgmath_options']['block_fontsize']
+      end
+      if @config['imgmath_options']['block_lineheight']
+        block_lineheight = @config['imgmath_options']['block_lineheight']
+      end
+
       texsrc = default_imgmath_preamble
+
       if @config['imgmath_options']['preamble_file'] && File.readable?(@config['imgmath_options']['preamble_file'])
         texsrc = File.read(@config['imgmath_options']['preamble_file'])
       end
+
+      texsrc << equation_block_style(block_fontsize, block_lineheight)
 
       texsrc << <<-EOB
 \\begin{document}

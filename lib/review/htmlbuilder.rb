@@ -547,7 +547,9 @@ module ReVIEW
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         puts p.parse(unescape(lines.join("\n")), true)
       elsif @book.config['imgmath']
-        math_str = "\\begin{equation*}\n" + unescape(lines.join("\n")) + "\n\\end{equation*}\n"
+        math_str = "\\begin{equation*}\n" + "\\begin{block_equation}\n" +
+        unescape(lines.join("\n")) +
+        "\n\\end{block_equation}\n" + "\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = File.join(@book.config['imagedir'], '_review_math')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
