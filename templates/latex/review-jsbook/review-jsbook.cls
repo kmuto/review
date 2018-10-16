@@ -82,8 +82,8 @@
   \edef\recls@set@js@paper{#1}%
   \PassOptionsToClass{\recls@set@js@paper}{jsbook}}
 
-\def\recls@disable@jsopt#1{%
-  \recls@DeclareOption{#1}{\recls@error{option #1: not available}}}
+\def\recls@disable@jsopt#1#2{%
+  \recls@DeclareOption{#1}{\recls@error{** Document class option #1: not available on review-jsbook.cls.#2 **}}}
 
 \recls@define@paper{a3}{paper}
 \recls@define@paper{a4}{paper}
@@ -100,10 +100,15 @@
 
 %% disable some options of jsbook.cls
 \@for\recls@tmp:={%
-  a4j,a5j,b4j,b5j,%
+  a4j,a5j,b4j,b5j}\do{%
+  \expandafter\recls@disable@jsopt\expandafter{\recls@tmp}{ Use paper=<val> option.}}
+\@for\recls@tmp:={%
   8pt,9pt,10pt,11pt,12pt,14pt,17pt,20pt,21pt,25pt,30pt,36pt,43pt,12Q,14Q,%
-  10ptj,10.5ptj,11ptj,12ptj,winjis,mingoth}\do{%
-  \expandafter\recls@disable@jsopt\expandafter{\recls@tmp}}
+  10ptj,10.5ptj,11ptj,12ptj}\do{%
+  \expandafter\recls@disable@jsopt\expandafter{\recls@tmp}{ Use Q=<val> or pt=<val> option.}}
+\@for\recls@tmp:={%
+  winjis,mingoth}\do{%
+  \expandafter\recls@disable@jsopt\expandafter{\recls@tmp}{}}
 
 %% \recls@set@tombowpaper{<papersize>}
 \def\recls@set@tombowpaper#1{%
