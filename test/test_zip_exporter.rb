@@ -8,10 +8,10 @@ class ZipExporterTest < Test::Unit::TestCase
 
   def setup
     @tmpdir = Dir.mktmpdir
-    @epubdir = "#{@tmpdir}/epubdir"
-    FileUtils.mkdir_p("#{@epubdir}/META-INF")
-    FileUtils.mkdir_p("#{@epubdir}/OEBPS")
-    File.write("#{@epubdir}/mimetype", 'application/epub+zip')
+    @epubdir = File.join(@tmpdir, 'epubdir')
+    FileUtils.mkdir_p(File.join(@epubdir, 'META-INF'))
+    FileUtils.mkdir_p(File.join(@epubdir, 'OEBPS'))
+    File.write(File.join(@epubdir, 'mimetype'), 'application/epub+zip')
 
     container_xml = <<-EOB
     <?xml version="1.0" encoding="UTF-8"?>
@@ -54,9 +54,9 @@ class ZipExporterTest < Test::Unit::TestCase
 </html>
     EOB
 
-    File.write("#{@epubdir}/META-INF/container.xml", container_xml)
-    File.write("#{@epubdir}/OEBPS/book.opf", book_opf)
-    File.write("#{@epubdir}/OEBPS/ch1.xhtml", ch1_xhtml)
+    File.write(File.join(@epubdir, 'META-INF/container.xml'), container_xml)
+    File.write(File.join(@epubdir, 'OEBPS/book.opf'), book_opf)
+    File.write(File.join(@epubdir, 'OEBPS/ch1.xhtml'), ch1_xhtml)
   end
 
   def test_export_zipcmd

@@ -24,7 +24,7 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
   def test_epubmaker_cmd
     if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
       config = prepare_samplebook(@tmpdir1)
-      builddir = @tmpdir1 + '/' + config['bookname'] + '-epub'
+      builddir = File.join(@tmpdir1, config['bookname'] + '-epub')
       assert !File.exist?(builddir)
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name']) + RbConfig::CONFIG['EXEEXT']
