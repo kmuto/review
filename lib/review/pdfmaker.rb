@@ -429,6 +429,15 @@ module ReVIEW
           'keepaspectratio'
         end
 
+      if @config.check_version('2', exception: false)
+        @coverimageoption =
+          if @documentclass == 'ubook' || @documentclass == 'utbook'
+            'width=\\textheight,height=\\textwidth,keepaspectratio,angle=90'
+          else
+            'width=\\textwidth,height=\\textheight,keepaspectratio'
+          end
+      end
+
       @locale_latex = {}
       part_tuple = I18n.get('part').split(/\%[A-Za-z]{1,3}/, 2)
       chapter_tuple = I18n.get('chapter').split(/\%[A-Za-z]{1,3}/, 2)
