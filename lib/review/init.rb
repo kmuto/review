@@ -176,7 +176,7 @@ end
 EOS
       end
 
-      FileUtils.cp(@review_dir + '/samples/sample-book/src/Rakefile',
+      FileUtils.cp(@review_dir + '/samples/sample-book/src/lib/tasks/review.rake',
                    dir + '/lib/tasks/review.rake')
     end
 
