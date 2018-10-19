@@ -1067,20 +1067,30 @@ module ReVIEW
     end
 
     def inline_chapref(id)
-      chs = ['', '「', '」']
-      if @book.config['chapref']
-        chs2 = @book.config['chapref'].split(',')
-        if chs2.size != 3
-          error '--chapsplitter must have exactly 3 parameters with comma.'
-        else
-          chs = chs2
+      if @book.config.check_version('2', exception: false)
+        # backward compatibility
+        chs = ['', '「', '」']
+        if @book.config['chapref']
+          chs2 = @book.config['chapref'].split(',')
+          if chs2.size != 3
+            error '--chapsplitter must have exactly 3 parameters with comma.'
+          else
+            chs = chs2
+          end
         end
-      end
-      s = "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
-      if @book.config['chapterlink']
-        %Q(<link href="#{id}">#{s}</link>)
+        s = "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
+        if @book.config['chapterlink']
+          %Q(<link href="#{id}">#{s}</link>)
+        else
+          s
+        end
       else
-        s
+        title = super
+        if @book.config['chapterlink']
+          %Q(<link href="#{id}">#{title}</link>)
+        else
+          title
+        end
       end
     rescue KeyError
       error "unknown chapter: #{id}"
