@@ -31,6 +31,9 @@ module ReVIEW
     DVI_COMMAND = 'dvipdfmx'
     DVI_OPTIONS = '-d 5 -z 9'
 
+    attr_reader :config_ymls, :locale_ymls, :catalog_ymls, :tex_ymls, :epub_ymls
+    attr_accessor :force, :specified_template
+
     def initialize
       @template = nil
       @specified_template = nil
@@ -44,7 +47,6 @@ module ReVIEW
       @epub_ymls = []
 
       @backup = true
-      @ownlayout_tex = nil
     end
 
     def execute(*args)
@@ -58,13 +60,14 @@ module ReVIEW
 
       if @config_ymls.empty?
         @logger.error _("!! No *.yml file with 'review_version' was found. Aborted. !!")
-        exit 1
+        raise ApplicationError
       end
 
       check_own_files(dir)
       update_version
       update_rakefile(dir)
       update_epub_version
+      update_locale
       update_tex_parameters
       if @template
         update_tex_stys(@template, dir)
@@ -73,6 +76,8 @@ module ReVIEW
       update_dvi_command
 
       puts _('Finished.')
+    rescue ApplicationError
+      exit 1
     end
 
     def _(message, args = [])
@@ -84,12 +89,12 @@ module ReVIEW
 
     def confirm(message, args = [], default = true)
       if @force
-        print _(message, args)
+        @logger.info _(message, args)
         if default
-          puts ' yes'
+          @logger.info ' yes'
           return true
         else
-          puts 'no'
+          @logger.info 'no'
           return nil
         end
       end
@@ -114,7 +119,7 @@ module ReVIEW
 
     def rewrite_yml(yml, key, val)
       content = File.read(yml)
-      content.gsub!(/^#{key}:.*$/, "#{key}: #{val}")
+      content.gsub!(/^(\s*)#{key}:.*$/, '\1' + "#{key}: #{val}")
       if @backup
         FileUtils.mv yml, "#{yml}-old"
       end
@@ -141,14 +146,14 @@ module ReVIEW
       rescue OptionParser::ParseError => err
         @logger.error err.message
         $stderr.puts opts.help
-        exit 1
+        raise ApplicationError
       end
 
       if @specified_template
         tdir = File.join(@review_dir, 'templates/latex', @specified_template)
         unless File.exist?(tdir)
           @logger.error "!! #{tdir} not found. Aborted. !!"
-          exit 1
+          raise ApplicationError
         end
       end
     end
@@ -156,7 +161,7 @@ module ReVIEW
     def parse_ymls(dir)
       language = 'ja'
 
-      Dir.glob(File.join(dir, '*.yml')) do |yml|
+      Dir.glob(File.join(dir, '*.yml')).sort.each do |yml|
         begin
           config = YAML.load_file(yml)
           if config['language'].present?
@@ -209,7 +214,7 @@ module ReVIEW
 
       unless files.empty?
         @logger.error _("!! %s file(s) is obsoleted. Run 'review-catalog-converter' to convert to 'catalog.yml' and remove old files. Aborted. !!", files.join(', '))
-        exit 1
+        raise ApplicationError
       end
     end
 
@@ -220,12 +225,12 @@ module ReVIEW
     def check_own_files(dir)
       if File.exist?(File.join(dir, 'layouts/layout.tex.erb'))
         unless confirm('** There is custom layouts/layout.tex.erb file. Updating may break to make PDF until you fix layout.tex.erb. Do you really proceed to update? **', [], nil)
-          exit 1
+          raise ApplicationError
         end
       end
 
       if File.exist?(File.join(dir, 'review-ext.rb'))
-        puts _('** There is review-ext.rb file. You need to update it by yourself. **')
+        @logger.info _('** There is review-ext.rb file. You need to update it by yourself. **')
       end
     end
 
@@ -280,15 +285,28 @@ module ReVIEW
       @epub_ymls.each do |yml|
         config = YAML.load_file(yml)
         if config['epubversion'].present? && config['epubversion'].to_f < EPUB_VERSION.to_f
-          if confirm("%s: Update 'epubversion' to '%s'?", [File.basename(yml), EPUB_VERSION])
+          if confirm("%s: Update 'epubversion' to '%s' from '%s'?", [File.basename(yml), EPUB_VERSION, config['epubversion']])
             rewrite_yml(yml, 'epubversion', EPUB_VERSION)
           end
         end
         if !config['htmlversion'].present? || config['htmlversion'].to_f >= HTML_VERSION.to_f
           next
         end
-        if confirm("%s: Update 'htmlversion' to '%s'?", [File.basename(yml), HTML_VERSION])
+        if confirm("%s: Update 'htmlversion' to '%s' from '%s'?", [File.basename(yml), HTML_VERSION, config['htmlversion']])
           rewrite_yml(yml, 'htmlversion', HTML_VERSION)
+        end
+      end
+    end
+
+    def update_locale
+      @locale_ymls.each do |yml|
+        config = YAML.load_file(yml)
+        if !config['chapter_quote'].present? || config['chapter_quote'].scan('%s') != 1
+          next
+        end
+        v = config['chapter_quote'].sub('%s', '%s %s')
+        if confirm("%s: 'chapter_quote' now takes 2 values. Update '%s' to '%s'?", [File.basename(yml), config['chapter_quote'], v])
+          rewrite_yml(yml, 'chapter_quote', v)
         end
       end
     end
