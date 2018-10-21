@@ -28,6 +28,8 @@ module ReVIEW
     TEX_DOCUMENTCLASS_OPTS = 'cameraready=print,paper=a5'
     TEX_COMMAND = 'uplatex'
     TEX_OPTIONS = '-interaction=nonstopmode -file-line-error'
+    DVI_COMMAND = 'dvipdfmx'
+    DVI_OPTIONS = '-d 5 -z 9'
 
     def initialize
       @template = nil
@@ -61,12 +63,16 @@ module ReVIEW
 
       check_own_files(dir)
       update_version
-      update_rakefile
+      update_rakefile(dir)
       update_epub_version
       update_tex_parameters
       if @template
         update_tex_stys(@template, dir)
       end
+      update_tex_command
+      update_dvi_command
+
+      puts _('Finished.')
     end
 
     def _(message, args = [])
@@ -101,7 +107,7 @@ module ReVIEW
         when 'no', 'n'
           return nil
         when ''
-          default
+          return default
         end
       end
     end
@@ -180,7 +186,7 @@ module ReVIEW
             @catalog_ymls.push(yml)
           end
         rescue Psych::SyntaxError
-          puts "!! #{yml} is broken. Ignored. !!"
+          @logger.error "!! #{yml} is broken. Ignored. !!"
         end
       end
       I18n.setup(language)
@@ -242,20 +248,31 @@ module ReVIEW
         FileUtils.mkdir_p taskdir
       end
 
-      masterrakefile = File.join(@review_dir, 'samples/sample-book/src/Rakefile')
-      if Digest::SHA256.hexdigest(File.join(dir, 'Rakefile')) != Digest::SHA256.hexdigest(masterrakefile)
-        if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['Rakefile', masterrakefile])
-          FileUtils.mv File.join(dir, 'Rakefile'), File.join(dir, 'Rakefile-old')
-          FileUtils.cp materrakefile, File.join(dir, 'Rakefile')
+      master_rakefile = File.join(@review_dir, 'samples/sample-book/src/Rakefile')
+
+      target_rakefile = File.join(dir, 'Rakefile')
+      if File.exist?(target_rakefile)
+        if Digest::SHA256.hexdigest(File.read(target_rakefile)) != Digest::SHA256.hexdigest(File.read(master_rakefile))
+          if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['Rakefile', master_rakefile])
+            FileUtils.mv target_rakefile, "#{target_rakefile}-old"
+            FileUtils.cp master_rakefile, target_rakefile
+          end
         end
+      else
+        FileUtils.cp master_rakefile, target_rakefile
       end
 
-      masterrakefile = File.join(@review_dir, 'samples/sample-book/src/lib/tasks/review.rake')
-      if Digest::SHA256.hexdigest(File.join(taskdir, 'review.rake')) != Digest::SHA256.hexdigest(masterrakefile)
-        if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['lib/tasks/review.rake', masterrakefile])
-          FileUtils.mv File.join(taskdir, 'review.rake'), File.join(taskdir, 'review.rake-old')
-          FileUtils.cp materrakefile, File.join(taskdir, 'review.rake')
+      master_rakefile = File.join(@review_dir, 'samples/sample-book/src/lib/tasks/review.rake')
+      target_rakefile = File.join(taskdir, 'review.rake')
+      if File.exist?(target_rakefile)
+        if Digest::SHA256.hexdigest(File.read(target_rakefile)) != Digest::SHA256.hexdigest(File.read(master_rakefile))
+          if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['lib/tasks/review.rake', master_rakefile])
+            FileUtils.mv target_rakefile, "#{target_rakefile}-old"
+            FileUtils.cp master_rakefile, target_rakefile
+          end
         end
+      else
+        FileUtils.cp master_rakefile, target_rakefile
       end
     end
 
@@ -284,10 +301,12 @@ module ReVIEW
         end
 
         if TEX_DOCUMENTCLASS.include?(config['texdocumentclass'][0])
-          if config['texdocumentclass'][0] != @specified_template
+          if @specified_template.present? && config['texdocumentclass'][0] != @specified_template
             # want to use other template?
-            # FIXME
+            @logger.error _("%s: !! 'texdocumentclass' uses new class '%s' already, but you specified '%s'. This tool can't handle such migration. Ignored. !!", [File.basename(yml), config['texdocumentclass'][0], @specified_template])
+            @template = nil
           end
+          next
         else
           @template = config['texdocumentclass'][0]
         end
@@ -295,7 +314,7 @@ module ReVIEW
         if TEX_DOCUMENTCLASS_BAD.include?(config['texdocumentclass'][0])
           cno = TEX_DOCUMENTCLASS_BAD.index(config['texdocumentclass'][0])
 
-          if @specified_template != TEX_DOCUMENTCLASS[cno]
+          if @specified_template && @specified_template != TEX_DOCUMENTCLASS[cno]
             # not default, manually selected
             unless confirm("%s: 'texdocumentclass' uses the old class '%s'. By default it is migrated to '%s', but you specify '%s'. Do you really migrate 'texdocumentclass' to '%s'?",
                            [File.basename(yml), TEX_DOCUMENTCLASS_BAD[cno],
@@ -324,7 +343,7 @@ module ReVIEW
             end
           end
 
-          rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modfied_opts}"]))
+          rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modified_opts}"]))
         else
           @template = nil
           @logger.error _("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass']])
@@ -405,24 +424,27 @@ module ReVIEW
       end
 
       tdir = File.join(@review_dir, 'templates/latex', template)
-      Dir.glob(File.join(tdir, '*.*')).each do |fname|
-        if fname == 'review-custom.sty'
-          next
-        end
-        unless File.exist?(File.join(texmacrodir, fname))
-          # just copy
-          FileUtils.cp File.join(tdir, fname), texmacrodir
+      Dir.glob(File.join(tdir, '*.*')).each do |master_styfile|
+        if Dir.basename(master_styfile) == 'review-custom.sty'
           next
         end
 
-        if Digest::SHA256.hexdigest(File.join(tdir, fname)) == Digest::SHA256.hexdigest(File.join(texmacrodir, fname))
+        target_styfile = File.join(texmacrodir, Dir.basename(master_styfile))
+
+        unless File.exist?(target_styfile)
+          # just copy
+          FileUtils.cp master_styfile, target_styfile
+          next
+        end
+
+        if Digest::SHA256.hexdigest(File.read(target_styfile)) == Digest::SHA256.hexdigest(File.read(master_styfile))
           # same
           next
         end
 
-        if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', [File.join('sty', fname), File.join(tdir, fname)])
-          FileUtils.mv File.join(texmacrodir, fname), File.join(texmacrodir, "#{fname}-old")
-          FileUtils.cp File.join(tdir, fname), texmacrodir
+        if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', [target_styfile, master_styfile])
+          FileUtils.mv target_styfile, "#{target_styfile}-old"
+          FileUtils.cp master_styfile, target_styfile
         end
       end
 
@@ -430,6 +452,56 @@ module ReVIEW
         # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
         unless File.exist?(File.join(texmacrodir, 'gentombow09j.sty'))
           FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow09j.sty')
+        end
+      end
+    end
+
+    def update_tex_command
+      @tex_ymls.each do |yml|
+        config = YAML.load_file(yml)
+        if !config['texcommand'] || config['texcommand'] !~ /\s+\-/
+          next
+        end
+
+        # option should be moved to texoptions
+        cmd, opts = config['texcommand'].split(/\s+\-/, 2)
+        opts = "-#{opts}"
+
+        unless confirm("%s: 'texcommand' has options ('%s'). Move it to 'texoptions'?", [File.basename(yml), opts])
+          next
+        end
+
+        if config['texoptions'].present?
+          config['texoptions'] += " #{opts}"
+          rewrite_yml(yml, 'texcommand', cmd)
+          rewrite_yml(yml, 'texoptions', config['texoptions'])
+        else
+          rewrite_yml(yml, 'texcommand', %Q(#{cmd}\ntexoptions: "#{TEX_OPTIONS} #{opts}"))
+        end
+      end
+    end
+
+    def update_dvi_command
+      @tex_ymls.each do |yml|
+        config = YAML.load_file(yml)
+        if !config['dvicommand'] || config['dvicommand'] !~ /\s+\-/
+          next
+        end
+
+        # option should be moved to dvioptions
+        cmd, opts = config['dvicommand'].split(/\s+\-/, 2)
+        opts = "-#{opts}"
+
+        unless confirm("%s: 'dvicommand' has options ('%s'). Move it to 'dvioptions'?", [File.basename(yml), opts])
+          next
+        end
+
+        if config['dvioptions'].present?
+          config['dvioptions'] += " #{opts}"
+          rewrite_yml(yml, 'dvicommand', cmd)
+          rewrite_yml(yml, 'dvioptions', config['dvioptions'])
+        else
+          rewrite_yml(yml, 'dvicommand', %Q(#{cmd}\ndvioptions: "#{DVI_OPTIONS} #{opts}"))
         end
       end
     end
