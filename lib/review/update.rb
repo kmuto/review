@@ -69,14 +69,14 @@ module ReVIEW
       end
     end
 
-    def _(message, args=[])
+    def _(message, args = [])
       unless I18n.get(message)
         I18n.set(message, message) # just copy
       end
       I18n.t(message, args)
     end
 
-    def confirm(message, args = [], default=true)
+    def confirm(message, args = [], default = true)
       if @force
         print _(message, args)
         if default
@@ -194,10 +194,10 @@ module ReVIEW
 
     def check_old_catalogs(dir)
       files = Dir.glob(File.join(dir, '*')).map do |fname|
-        if %w(PREDEF CHAPS POSTDEF PART).include?(File.basename(fname))
+        if %w[PREDEF CHAPS POSTDEF PART].include?(File.basename(fname))
           File.basename(fname)
         else
-          nil
+          return nil
         end
       end.compact
 
@@ -208,7 +208,7 @@ module ReVIEW
     end
 
     def show_version
-      puts _("** review-update updates your project to %s **", ReVIEW::VERSION)
+      puts _('** review-update updates your project to %s **', ReVIEW::VERSION)
     end
 
     def check_own_files(dir)
@@ -226,10 +226,12 @@ module ReVIEW
     def update_version
       @config_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if config['review_version'].to_f < TARGET_VERSION.to_f
-          if confirm("%s: Update 'review_version' to '%s'?", [File.basename(yml), TARGET_VERSION])
-            rewrite_yml(yml, 'review_version', TARGET_VERSION)
-          end
+        if config['review_version'].to_f >= TARGET_VERSION.to_f
+          next
+        end
+
+        if confirm("%s: Update 'review_version' to '%s'?", [File.basename(yml), TARGET_VERSION])
+          rewrite_yml(yml, 'review_version', TARGET_VERSION)
         end
       end
     end
@@ -265,10 +267,11 @@ module ReVIEW
             rewrite_yml(yml, 'epubversion', EPUB_VERSION)
           end
         end
-        if config['htmlversion'].present? && config['htmlversion'].to_f < HTML_VERSION.to_f
-          if confirm("%s: Update 'htmlversion' to '%s'?", [File.basename(yml), HTML_VERSION])
-            rewrite_yml(yml, 'htmlversion', HTML_VERSION)
-          end
+        if !config['htmlversion'].present? || config['htmlversion'].to_f >= HTML_VERSION.to_f
+          next
+        end
+        if confirm("%s: Update 'htmlversion' to '%s'?", [File.basename(yml), HTML_VERSION])
+          rewrite_yml(yml, 'htmlversion', HTML_VERSION)
         end
       end
     end
@@ -276,50 +279,55 @@ module ReVIEW
     def update_tex_parameters
       @tex_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if config['texdocumentclass']
-          if TEX_DOCUMENTCLASS.include?(config['texdocumentclass'][0])
-            if config['texdocumentclass'][0] != @specified_template
-              # want to use other template?
-              # FIXME
+        unless config['texdocumentclass']
+          next
+        end
+
+        if TEX_DOCUMENTCLASS.include?(config['texdocumentclass'][0])
+          if config['texdocumentclass'][0] != @specified_template
+            # want to use other template?
+            # FIXME
+          end
+        else
+          @template = config['texdocumentclass'][0]
+        end
+
+        if TEX_DOCUMENTCLASS_BAD.include?(config['texdocumentclass'][0])
+          cno = TEX_DOCUMENTCLASS_BAD.index(config['texdocumentclass'][0])
+
+          if @specified_template != TEX_DOCUMENTCLASS[cno]
+            # not default, manually selected
+            unless confirm("%s: 'texdocumentclass' uses the old class '%s'. By default it is migrated to '%s', but you specify '%s'. Do you really migrate 'texdocumentclass' to '%s'?",
+                           [File.basename(yml), TEX_DOCUMENTCLASS_BAD[cno],
+                            TEX_DOCUMENTCLASS[cno],
+                            @specified_template, @specified_template])
+              @template = nil
+              next
             end
+            @template = @specified_template
           else
-            @template = config['texdocumentclass'][0]
+            # default migration
+            @template = TEX_DOCUMENTCLASS[cno]
+            unless confirm("%s: 'texdocumentclass' uses the old class '%s'. By default it is migrated to '%s'. Do you really migrate 'texdocumentclass' to '%s'?", [File.basename(yml), TEX_DOCUMENTCLASS_BAD[cno], @template, @template])
+              @template = nil
+              next
+            end
           end
 
-          if TEX_DOCUMENTCLASS_BAD.include?(config['texdocumentclass'][0])
-            cno = TEX_DOCUMENTCLASS_BAD.index(config['texdocumentclass'][0])
-
-            if @specified_template != TEX_DOCUMENTCLASS[cno]
-              # not default, manually selected
-              unless confirm("%s: 'texdocumentclass' uses the old class '%s'. By default it is migrated to '%s', but you specify '%s'. Do you really migrate 'texdocumentclass' to '%s'?", [File.basename(yml), TEX_DOCUMENTCLASS_BAD[cno], TEX_DOCUMENTCLASS[cno], @specified_template, @specified_template])
-                @template = nil
-                next
-              end
-              @template = @specified_template
-            else
-              # default migration
-              @template = TEX_DOCUMENTCLASS[cno]
-              unless confirm("%s: 'texdocumentclass' uses the old class '%s'. By default it is migrated to '%s'. Do you really migrate 'texdocumentclass' to '%s'?", [File.basename(yml), TEX_DOCUMENTCLASS_BAD[cno], @template, @template])
-                @template = nil
-                next
-              end
+          flag, modified_opts = convert_documentclass_opts(yml, @template, config['texdocumentclass'][1])
+          if flag # successfully converted
+            puts _("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), config['texdocumentclass'][1], modified_opts])
+          else # something wrong
+            unless confirm("%s: previous 'texdocumentclass' option '%s' couldn't be converted fully. '%s' is suggested. Do you really proceed?", [File.basename(yml), config['texdocumentclass'][1], modified_opts], nil)
+              @template = nil
+              next
             end
-
-            flag, modified_opts = convert_documentclass_opts(yml, @template, config['texdocumentclass'][1])
-            if flag # successfully converted
-              puts _("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), config['texdocumentclass'][1], modified_opts])
-            else # something wrong
-              unless confirm("%s: previous 'texdocumentclass' option '%s' couldn't be converted fully. '%s' is suggested. Do you really proceed?", [File.basename(yml), config['texdocumentclass'][1], modified_opts], nil)
-                @template = nil
-                next
-              end
-            end
-
-            rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modfied_opts}"]))
-          else
-            @template = nil
-            @logger.error _("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass']])
           end
+
+          rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modfied_opts}"]))
+        else
+          @template = nil
+          @logger.error _("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass']])
         end
       end
     end
@@ -342,11 +350,16 @@ module ReVIEW
             opts << "Q=#{q}"
           when /[\d.]+Q/
             opts << "Q=#{v.sub('Q', '')}"
-          when 'landscape', 'oneside', 'twoside', 'vartwoside', 'onecolumn', 'twocolumn', 'titlepage', 'notitlepage', 'openright', 'openany', 'leqno', 'fleqn', 'disablejfam', 'draft', 'final', 'mingoth', 'winjis', 'jis', 'papersize', 'english', 'report', 'jslogo', 'nojslogo'
+          when 'landscape', 'oneside', 'twoside', 'vartwoside', 'onecolumn',
+               'twocolumn', 'titlepage', 'notitlepage', 'openright',
+               'openany', 'leqno', 'fleqn', 'disablejfam', 'draft', 'final',
+               'mingoth', 'winjis', 'jis', 'papersize', 'english', 'report',
+               'jslogo', 'nojslogo'
             # pass-through
             opts << v
           when 'uplatex', 'nomag', 'usemag', 'nomag*', 'tombow', 'tombo', 'mentuke', 'autodetect-engine'
             # can be ignored
+            next
           else
             flag = nil
           end
@@ -365,11 +378,12 @@ module ReVIEW
             opts << "fontsize=#{v}"
           when /[\d.]+Q/
             opts << "fontsize=#{v}"
-          when 'landscape', 'oneside', 'twoside', 'onecolumn', 'twocolumn', 'titlepage', 'notitlepage', 'openright', 'openany', 'leqno', 'fleqn',  'draft', 'final', 'report'
+          when 'landscape', 'oneside', 'twoside', 'onecolumn', 'twocolumn', 'titlepage', 'notitlepage', 'openright', 'openany', 'leqno', 'fleqn', 'draft', 'final', 'report'
             # pass-through
             opts << v
           when 'uplatex', 'nomag', 'usemag', 'nomag*', 'tombow', 'tombo', 'mentuke', 'autodetect-engine'
             # can be ignored
+            next
           else
             # 'vartwoside', 'disablejfam', 'mingoth', 'winjis', 'jis', 'papersize', 'english', 'jslogo', 'nojslogo'
             flag = nil
@@ -406,7 +420,7 @@ module ReVIEW
           next
         end
 
-        if confirm("%s will be overridden with Re:VIEW version (%s). Do you really proceed?", [File.join('sty', fname), File.join(tdir, fname)])
+        if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', [File.join('sty', fname), File.join(tdir, fname)])
           FileUtils.mv File.join(texmacrodir, fname), File.join(texmacrodir, "#{fname}-old")
           FileUtils.cp File.join(tdir, fname), texmacrodir
         end
