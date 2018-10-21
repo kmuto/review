@@ -170,7 +170,7 @@ EOS
 
       File.open(dir + '/Rakefile', 'w') do |file|
         file.write <<-EOS
-Dir.glob('lib/tasks/*.rake').each do |file|
+Dir.glob('lib/tasks/*.rake').sort.each do |file|
   load(file)
 end
 EOS
