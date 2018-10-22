@@ -183,6 +183,9 @@
 \DeclareOptionX{headheight}[\z@]{\gdef\recls@headheight{#1}}
 \DeclareOptionX{headsep}[\z@]{\gdef\recls@headsep{#1}}
 \DeclareOptionX{footskip}[\z@]{\gdef\recls@footskip{#1}}
+% 他の単位で指定
+\DeclareOptionX{fontsize}{\gdef\recls@fontsize{#1}}
+\DeclareOptionX{lineheight}{\gdef\recls@lineheight{#1}}
 
 %% 表紙・開始番号・通しノンブル
 \newif\if@reclscover \@reclscovertrue
@@ -196,8 +199,20 @@
 \ExecuteOptionsX{cameraready,hiddenfolio,%
   paper,tombopaper,bleed_margin,paperwidth,paperheight,%
   Q,W,L,H,head,gutter,headheight,headsep,footskip,%
+  fontsize,lineheight,%
   cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
+
+% override Q and H
+% 1.405678942929435 ? (1Q/1pt)
+\ifx\recls@fontsize\@empty\else
+  \@tempdima=1.2998575405530142\dimexpr\recls@fontsize\relax % any->JQ
+  \def\recls@Q{\strip@pt\@tempdima}
+\fi
+\ifx\recls@lineheight\@empty\else
+  \@tempdima=1.2998575405530142\dimexpr\recls@lineheight\relax % any->JQ
+  \def\recls@H{\strip@pt\@tempdima}
+\fi
 
 %% set specific papersize
 \recls@set@paper{\recls@paper}
