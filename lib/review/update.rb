@@ -137,9 +137,6 @@ module ReVIEW
       opts.on('--latex-template name', 'specify LaTeX template name. (default: review-jsbook)') do |tname|
         @specified_template = tname
       end
-      opts.on('-y', '--yes', 'override files without asking.') do
-        @force = true
-      end
 
       begin
         opts.parse!(args)

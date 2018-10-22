@@ -57,6 +57,19 @@ EOT
     assert_equal 1, @u.epub_ymls.size
   end
 
+  def test_check_old_catalogs
+    %w[PREDEF CHAPS POSTDEF PART].each do |fname|
+      File.write(File.join(@tmpdir, fname), '')
+
+      io = StringIO.new
+      @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+      assert_raise(ApplicationError) { @u.check_old_catalogs(@tmpdir) }
+      assert_match(/review\-catalog\-converter/, io.string)
+
+      File.unlink(File.join(@tmpdir, fname))
+    end
+  end
+
   def test_check_own_files_layout
     Dir.mkdir(File.join(@tmpdir, 'layouts'))
     File.write(File.join(@tmpdir, 'layouts/layout.tex.erb'), '')
