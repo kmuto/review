@@ -25,6 +25,19 @@ class UpdateTest < Test::Unit::TestCase
     assert_match(/test\.yml is broken\. Ignored\./, io.string)
   end
 
+  def test_rewrite_yml
+    File.write(File.join(@tmpdir, 'test.yml'), "key: foo1\n  key: foo2\n\t\t  key: foo3\nakey: foo3\nkeya: foo4\n")
+    @u.rewrite_yml(File.join(@tmpdir, 'test.yml'), 'key', 'val')
+    cont = <<EOT
+key: val
+  key: val
+		  key: val
+akey: foo3
+keya: foo4
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'test.yml'))
+  end
+
   def test_yml_variation
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 2.0\nlanguage: en\n")
     File.write(File.join(@tmpdir, 'tex1.yml'), %Q(review_version: 2.0\ntexdocumentclass: ["jsbook", "uplatex,twoside"]\n))
@@ -63,7 +76,7 @@ class UpdateTest < Test::Unit::TestCase
     assert_match(/There is review\-ext\.rb file/, io.string)
   end
 
-  def test_update_version_2
+  def test_update_version_older
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 2.0\n")
 
     io = StringIO.new
@@ -74,7 +87,7 @@ class UpdateTest < Test::Unit::TestCase
     assert_equal 'review_version: 3.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
   end
 
-  def test_update_version_3
+  def test_update_version_current
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 3.0\n")
 
     io = StringIO.new
@@ -85,7 +98,7 @@ class UpdateTest < Test::Unit::TestCase
     assert_equal 'review_version: 3.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
   end
 
-  def test_update_version_99
+  def test_update_version_newer
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 99.0\n")
 
     io = StringIO.new
@@ -126,5 +139,217 @@ class UpdateTest < Test::Unit::TestCase
     assert_match(%r{lib/tasks/review\.rake will be overridden}, io.string)
     assert_equal true, File.exist?(File.join(@tmpdir, 'Rakefile'))
     assert_equal true, File.exist?(File.join(@tmpdir, 'lib/tasks/review.rake'))
+  end
+
+  def test_update_epub_version_older
+    File.write(File.join(@tmpdir, 'config.yml'), "epubversion: 2\nhtmlversion: 4\n")
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_epub_version
+    assert_match(/Update 'epubversion'/, io.string)
+    assert_match(/Update 'htmlversion'/, io.string)
+    cont = <<EOT
+epubversion: 3
+htmlversion: 5
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_epub_version_current
+    File.write(File.join(@tmpdir, 'config.yml'), "epubversion: 3\nhtmlversion: 5\n")
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_epub_version
+    assert_equal '', io.string
+    cont = <<EOT
+epubversion: 3
+htmlversion: 5
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_epub_version_newer
+    File.write(File.join(@tmpdir, 'config.yml'), "epubversion: 99\nhtmlversion: 99\n")
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_epub_version
+    assert_equal '', io.string
+    cont = <<EOT
+epubversion: 99
+htmlversion: 99
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_locale_older
+    File.write(File.join(@tmpdir, 'locale.yml'), %Q(locale: en\nchapter_quote: "'%s'"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_locale
+    assert_match(/'chapter_quote' now takes 2 values/, io.string)
+    cont = <<EOT
+locale: en
+chapter_quote: '%s %s'
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'locale.yml'))
+  end
+
+  def test_update_locale_current
+    File.write(File.join(@tmpdir, 'locale.yml'), %Q(locale: en\nchapter_quote: "'%s...%s'"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_locale
+    assert_equal '', io.string
+    cont = <<EOT
+locale: en
+chapter_quote: "'%s...%s'"
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'locale.yml'))
+  end
+
+  def test_update_tex_parameters_jsbook_to_review_jsbook
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", "a5j,11pt,landscape,oneside,twoside,vartwoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,disablejfam,draft,final,mingoth,winjis,jis,papersize,english,report,jslogo,nojslogo,uplatex,nomag,usemag,nomag*,tombow,tombo,mentuke,autodetect-engine"]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_parameters
+    assert_match(/By default it is migrated to/, io.string)
+    assert_match(/is safely replaced/, io.string)
+    cont = <<EOT
+texdocumentclass: ["review-jsbook", "paper=a5,Q=15.46,landscape,oneside,twoside,vartwoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,disablejfam,draft,final,mingoth,winjis,jis,papersize,english,report,jslogo,nojslogo,cameraready=print,cover=false"]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_jsbook_to_review_jsbook_invalid
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", "a5paper,invalid"]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_parameters
+    assert_match(/couldn't be converted fully/, io.string)
+    assert_match("'paper=a5,cameraready=print,cover=false' is suggested", io.string)
+    cont = <<EOT
+texdocumentclass: ["jsbook", "a5paper,invalid"]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_review_jsbook
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jsbook", ""]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_parameters
+    assert_equal '', io.string
+    cont = <<EOT
+texdocumentclass: ["review-jsbook", ""]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_review_jlreq
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jlreq", ""]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_parameters
+    assert_equal '', io.string
+    cont = <<EOT
+texdocumentclass: ["review-jlreq", ""]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_review_jsbook_review_jlreq
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jsbook", ""]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.specified_template = 'review-jlreq'
+    @u.update_tex_parameters
+    assert_match(/already, but you specified/, io.string)
+    cont = <<EOT
+texdocumentclass: ["review-jsbook", ""]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_unknownclass
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["unknown", ""]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_parameters
+    assert_match(/unknown class/, io.string)
+    cont = <<EOT
+texdocumentclass: ["unknown", ""]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_jsbook_unknownclass
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", ""]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.specified_template = 'unknown'
+    @u.update_tex_parameters
+    assert_match(/unknown class/, io.string)
+    cont = <<EOT
+texdocumentclass: ["jsbook", ""]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_jsbook_to_review_jlreq
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", "a5j,11pt,landscape,oneside,twoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,draft,final,report,uplatex,nomag,usemag,nomag*,tombow,tombo,mentuke,autodetect-engine"]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.specified_template = 'review-jlreq'
+    @u.update_tex_parameters
+    assert_match(/By default it is migrated to/, io.string)
+    assert_match(/is safely replaced/, io.string)
+    cont = <<EOT
+texdocumentclass: ["review-jlreq", "paper=a5,fontsize=11pt,landscape,oneside,twoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,draft,final,report,cameraready=print,cover=false"]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_stys_new
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.update_tex_stys('review-jsbook', @tmpdir)
+    assert_equal '', io.string
+    assert_equal true, File.exist?(File.join(@tmpdir, 'sty/review-base.sty'))
+    assert_equal true, File.exist?(File.join(@tmpdir, 'sty/gentombow09j.sty'))
+  end
+
+  def test_update_stys_new_custom
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.update_tex_stys('review-jsbook', @tmpdir)
+    File.write(File.join(@tmpdir, 'sty/review-custom.sty'), "% MY CUSTOM\n")
+    @u.update_tex_stys('review-jsbook', @tmpdir)
+    assert_equal '', io.string
+    assert_equal "% MY CUSTOM\n", File.read(File.join(@tmpdir, 'sty/review-custom.sty'))
+  end
+
+  def test_update_stys_modified
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.update_tex_stys('review-jsbook', @tmpdir)
+    cont = File.read(File.join(@tmpdir, 'sty/review-base.sty'))
+
+    File.write(File.join(@tmpdir, 'sty/review-base.sty'), "% MODIFIED\n")
+    @u.update_tex_stys('review-jsbook', @tmpdir)
+    assert_match(/review\-base\.sty will be overridden/, io.string)
+    assert_equal cont, File.read(File.join(@tmpdir, 'sty/review-base.sty'))
   end
 end

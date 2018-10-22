@@ -301,7 +301,7 @@ module ReVIEW
     def update_locale
       @locale_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if !config['chapter_quote'].present? || config['chapter_quote'].scan('%s') != 1
+        if !config['chapter_quote'].present? || config['chapter_quote'].scan('%s').size != 1
           next
         end
         v = config['chapter_quote'].sub('%s', '%s %s')
@@ -353,7 +353,7 @@ module ReVIEW
 
           flag, modified_opts = convert_documentclass_opts(yml, @template, config['texdocumentclass'][1])
           if flag # successfully converted
-            puts _("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), config['texdocumentclass'][1], modified_opts])
+            @logger.info _("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), config['texdocumentclass'][1], modified_opts])
           else # something wrong
             unless confirm("%s: previous 'texdocumentclass' option '%s' couldn't be converted fully. '%s' is suggested. Do you really proceed?", [File.basename(yml), config['texdocumentclass'][1], modified_opts], nil)
               @template = nil
@@ -443,15 +443,14 @@ module ReVIEW
 
       tdir = File.join(@review_dir, 'templates/latex', template)
       Dir.glob(File.join(tdir, '*.*')).each do |master_styfile|
-        if Dir.basename(master_styfile) == 'review-custom.sty'
-          next
-        end
-
-        target_styfile = File.join(texmacrodir, Dir.basename(master_styfile))
+        target_styfile = File.join(texmacrodir, File.basename(master_styfile))
 
         unless File.exist?(target_styfile)
           # just copy
           FileUtils.cp master_styfile, target_styfile
+          next
+        end
+        if File.basename(target_styfile) == 'review-custom.sty'
           next
         end
 
