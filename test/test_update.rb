@@ -352,4 +352,86 @@ EOT
     assert_match(/review\-base\.sty will be overridden/, io.string)
     assert_equal cont, File.read(File.join(@tmpdir, 'sty/review-base.sty'))
   end
+
+  def test_update_tex_command
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texcommand: "/Program Files/up-latex --shell-escape -v"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_command
+    assert_match(/has options/, io.string)
+    cont = <<EOT
+texcommand: "/Program Files/up-latex"
+texoptions: "-interaction=nonstopmode -file-line-error --shell-escape -v"
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_command_noopt
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texcommand: "/Program Files/up-latex"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_command
+    assert_equal '', io.string
+    cont = <<EOT
+texcommand: "/Program Files/up-latex"
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_command_withopt
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texcommand: "/Program Files/up-latex --shell-escape -v"\ntexoptions: "-myopt"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_command
+    assert_match(/has options/, io.string)
+    cont = <<EOT
+texcommand: "/Program Files/up-latex"
+texoptions: "-myopt --shell-escape -v"
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_dvi_command
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(dvicommand: "/Program Files/dvi-pdfmx -q --quiet"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_dvi_command
+    assert_match(/has options/, io.string)
+    cont = <<EOT
+dvicommand: "/Program Files/dvi-pdfmx"
+dvioptions: "-d 5 -z 9 -q --quiet"
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_dvi_command_noopt
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(dvicommand: "/Program Files/dvi-pdfmx"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_dvi_command
+    assert_equal '', io.string
+    cont = <<EOT
+dvicommand: "/Program Files/dvi-pdfmx"
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_dvi_command_withopt
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(dvicommand: "/Program Files/dvi-pdfmx -q --quiet"\ndvioptions: "-myopt"\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_dvi_command
+    assert_match(/has options/, io.string)
+    cont = <<EOT
+dvicommand: "/Program Files/dvi-pdfmx"
+dvioptions: "-myopt -q --quiet"
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
 end

@@ -479,7 +479,6 @@ module ReVIEW
         if !config['texcommand'] || config['texcommand'] !~ /\s+\-/
           next
         end
-
         # option should be moved to texoptions
         cmd, opts = config['texcommand'].split(/\s+\-/, 2)
         opts = "-#{opts}"
@@ -490,10 +489,10 @@ module ReVIEW
 
         if config['texoptions'].present?
           config['texoptions'] += " #{opts}"
-          rewrite_yml(yml, 'texcommand', cmd)
-          rewrite_yml(yml, 'texoptions', config['texoptions'])
+          rewrite_yml(yml, 'texcommand', %Q("#{cmd}"))
+          rewrite_yml(yml, 'texoptions', %Q("#{config['texoptions']}"))
         else
-          rewrite_yml(yml, 'texcommand', %Q(#{cmd}\ntexoptions: "#{TEX_OPTIONS} #{opts}"))
+          rewrite_yml(yml, 'texcommand', %Q("#{cmd}"\ntexoptions: "#{TEX_OPTIONS} #{opts}"))
         end
       end
     end
@@ -515,10 +514,10 @@ module ReVIEW
 
         if config['dvioptions'].present?
           config['dvioptions'] += " #{opts}"
-          rewrite_yml(yml, 'dvicommand', cmd)
-          rewrite_yml(yml, 'dvioptions', config['dvioptions'])
+          rewrite_yml(yml, 'dvicommand', %Q("#{cmd}"))
+          rewrite_yml(yml, 'dvioptions', %Q("#{config['dvioptions']}"))
         else
-          rewrite_yml(yml, 'dvicommand', %Q(#{cmd}\ndvioptions: "#{DVI_OPTIONS} #{opts}"))
+          rewrite_yml(yml, 'dvicommand', %Q("#{cmd}"\ndvioptions: "#{DVI_OPTIONS} #{opts}"))
         end
       end
     end
