@@ -186,9 +186,9 @@
 
 % 他の単位で指定
 \DeclareOptionX{fontsize}{\gdef\recls@fontsize{#1}}% 単位付き文字サイズ。単位なしQに変換される
-\DeclareOptionX{lineheight}{\gdef\recls@lineheight{#1}}% 単位付き行高。単位なしHに変換される
-\DeclareOptionX{tail}{\gdef\recls@tail{#1}}%地。Lを無視する
-\DeclareOptionX{frontedge}{\gdef\recls@frontedge{#1}}%小口。Wを無視する
+\DeclareOptionX{baselineskip}{\gdef\recls@lineheight{#1}}% 単位付き行高。単位なしHに変換される
+\DeclareOptionX{foot_space}{\gdef\recls@tail{#1}}%地。Lを無視する
+\DeclareOptionX{fore_edge}{\gdef\recls@foreedge{#1}}%小口。Wを無視する
 
 %% 表紙・開始番号・通しノンブル
 \newif\if@reclscover \@reclscovertrue
@@ -202,7 +202,7 @@
 \ExecuteOptionsX{cameraready,hiddenfolio,%
   paper,tombopaper,bleed_margin,paperwidth,paperheight,%
   Q,W,L,H,head,gutter,headheight,headsep,footskip,%
-  fontsize,lineheight,tail,frontedge,%
+  fontsize,baselineskip,foot_space,fore_edge,%
   cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
 
@@ -451,8 +451,8 @@
 \addtolength\textheight{1H}%.5H
 
 %% 小口、地が指定されているときの上書き(FIXME)
-\ifx\recls@frontedge\@empty\else
-  \setlength\textwidth{\dimexpr\paperwidth-\recls@gutter-\recls@frontedge\relax}
+\ifx\recls@foreedge\@empty\else
+  \setlength\textwidth{\dimexpr\paperwidth-\recls@gutter-\recls@foreedge\relax}
 \fi
 \ifx\recls@tail\@empty\else
   \setlength\textheight{\dimexpr\paperheight-\recls@head-\recls@tail\relax}
