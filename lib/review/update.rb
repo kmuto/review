@@ -156,7 +156,7 @@ module ReVIEW
     end
 
     def parse_ymls(dir)
-      language = 'ja'
+      language = 'en'
 
       Dir.glob(File.join(dir, '*.yml')).sort.each do |yml|
         begin
@@ -243,7 +243,7 @@ module ReVIEW
           flag = nil
         end
 
-        if confirm("%s: Update 'review_version' to '%s'?", [File.basename(yml), TARGET_VERSION], flag)
+        if confirm("%s: Update '%s' to '%s'?", [File.basename(yml), 'review_version', TARGET_VERSION], flag)
           rewrite_yml(yml, 'review_version', TARGET_VERSION)
         end
       end
@@ -287,14 +287,14 @@ module ReVIEW
       @epub_ymls.each do |yml|
         config = YAML.load_file(yml)
         if config['epubversion'].present? && config['epubversion'].to_f < EPUB_VERSION.to_f
-          if confirm("%s: Update 'epubversion' to '%s' from '%s'?", [File.basename(yml), EPUB_VERSION, config['epubversion']])
+          if confirm("%s: Update '%s' to '%s' from '%s'?", [File.basename(yml), 'epubversion', EPUB_VERSION, config['epubversion']])
             rewrite_yml(yml, 'epubversion', EPUB_VERSION)
           end
         end
         if !config['htmlversion'].present? || config['htmlversion'].to_f >= HTML_VERSION.to_f
           next
         end
-        if confirm("%s: Update 'htmlversion' to '%s' from '%s'?", [File.basename(yml), HTML_VERSION, config['htmlversion']])
+        if confirm("%s: Update '%s' to '%s' from '%s'?", [File.basename(yml), 'htmlversion', HTML_VERSION, config['htmlversion']])
           rewrite_yml(yml, 'htmlversion', HTML_VERSION)
         end
       end
