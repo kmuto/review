@@ -450,6 +450,14 @@
 \addtolength\textheight{-\Cvs}\addtolength\textheight{\Cwd}
 \addtolength\textheight{1H}%.5H
 
+%% 小口、地が指定されているときの上書き(FIXME)
+\ifx\recls@frontedge\@empty\else
+  \setlength\textwidth{\dimexpr\paperwidth-\recls@gutter-\recls@frontedge\relax}
+\fi
+\ifx\recls@tail\@empty\else
+  \setlength\textheight{\dimexpr\paperheight-\recls@head-\recls@tail\relax}
+\fi
+
 \setlength\fullwidth{\textwidth}
 
 %% ノド、小口
