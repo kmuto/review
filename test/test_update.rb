@@ -118,7 +118,7 @@ EOT
     @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
-    assert_equal '', io.string
+    assert_match(/Update 'review_version' to '3.0'/, io.string)
     assert_equal 'review_version: 99.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
   end
 

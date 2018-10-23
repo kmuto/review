@@ -59,7 +59,7 @@ module ReVIEW
       show_version
 
       if @config_ymls.empty?
-        @logger.error _("!! No *.yml file with 'review_version' was found. Aborted. !!")
+        @logger.error t("!! No *.yml file with 'review_version' was found. Aborted. !!")
         raise ApplicationError
       end
 
@@ -75,12 +75,12 @@ module ReVIEW
       update_tex_command
       update_dvi_command
 
-      puts _('Finished.')
+      puts t('Finished.')
     rescue ApplicationError
       exit 1
     end
 
-    def _(message, args = [])
+    def t(message, args = [])
       unless I18n.get(message)
         I18n.set(message, message) # just copy
       end
@@ -89,7 +89,7 @@ module ReVIEW
 
     def confirm(message, args = [], default = true)
       if @force
-        @logger.info _(message, args)
+        @logger.info t(message, args)
         if default
           @logger.info ' yes'
           return true
@@ -100,7 +100,7 @@ module ReVIEW
       end
 
       loop do
-        print _(message, args)
+        print t(message, args)
         if default
           print ' [y]/n '
         else
@@ -123,7 +123,7 @@ module ReVIEW
       if @backup
         FileUtils.mv yml, "#{yml}-old"
       end
-      File.open(yml, 'w') { |f| f.write(content) }
+      File.write(yml, content)
     end
 
     def parse_options(args)
@@ -210,13 +210,13 @@ module ReVIEW
       end.compact
 
       unless files.empty?
-        @logger.error _("!! %s file(s) is obsoleted. Run 'review-catalog-converter' to convert to 'catalog.yml' and remove old files. Aborted. !!", files.join(', '))
+        @logger.error t("!! %s file(s) is obsoleted. Run 'review-catalog-converter' to convert to 'catalog.yml' and remove old files. Aborted. !!", files.join(', '))
         raise ApplicationError
       end
     end
 
     def show_version
-      puts _('** review-update updates your project to %s **', ReVIEW::VERSION)
+      puts t('** review-update updates your project to %s **', ReVIEW::VERSION)
     end
 
     def check_own_files(dir)
@@ -227,18 +227,23 @@ module ReVIEW
       end
 
       if File.exist?(File.join(dir, 'review-ext.rb'))
-        @logger.info _('** There is review-ext.rb file. You need to update it by yourself. **')
+        @logger.info t('** There is review-ext.rb file. You need to update it by yourself. **')
       end
     end
 
     def update_version
       @config_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if config['review_version'].to_f >= TARGET_VERSION.to_f
+        if config['review_version'].to_f == TARGET_VERSION.to_f
           next
         end
 
-        if confirm("%s: Update 'review_version' to '%s'?", [File.basename(yml), TARGET_VERSION])
+        flag = true
+        if config['review_version'].to_f > TARGET_VERSION.to_f
+          flag = nil
+        end
+
+        if confirm("%s: Update 'review_version' to '%s'?", [File.basename(yml), TARGET_VERSION], flag)
           rewrite_yml(yml, 'review_version', TARGET_VERSION)
         end
       end
@@ -318,7 +323,7 @@ module ReVIEW
         if TEX_DOCUMENTCLASS.include?(config['texdocumentclass'][0])
           if @specified_template.present? && config['texdocumentclass'][0] != @specified_template
             # want to use other template?
-            @logger.error _("%s: !! 'texdocumentclass' uses new class '%s' already, but you specified '%s'. This tool can't handle such migration. Ignored. !!", [File.basename(yml), config['texdocumentclass'][0], @specified_template])
+            @logger.error t("%s: !! 'texdocumentclass' uses new class '%s' already, but you specified '%s'. This tool can't handle such migration. Ignored. !!", [File.basename(yml), config['texdocumentclass'][0], @specified_template])
             @template = nil
           end
           next
@@ -350,7 +355,7 @@ module ReVIEW
 
           flag, modified_opts = convert_documentclass_opts(yml, @template, config['texdocumentclass'][1])
           if flag # successfully converted
-            @logger.info _("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), config['texdocumentclass'][1], modified_opts])
+            @logger.info t("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), config['texdocumentclass'][1], modified_opts])
           else # something wrong
             unless confirm("%s: previous 'texdocumentclass' option '%s' couldn't be converted fully. '%s' is suggested. Do you really proceed?", [File.basename(yml), config['texdocumentclass'][1], modified_opts], nil)
               @template = nil
@@ -361,7 +366,7 @@ module ReVIEW
           rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modified_opts}"]))
         else
           @template = nil
-          @logger.error _("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass']])
+          @logger.error t("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass']])
         end
       end
     end
@@ -427,7 +432,7 @@ module ReVIEW
         opts << 'cover=false'
       else
         flag = nil
-        @logger.error _("%s: ** '%s' is unknown class. Ignored. **", [File.basename(yml), cls])
+        @logger.error t("%s: ** '%s' is unknown class. Ignored. **", [File.basename(yml), cls])
       end
       return flag, opts.join(',')
     end
