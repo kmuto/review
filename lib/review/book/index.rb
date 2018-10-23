@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -125,6 +125,12 @@ module ReVIEW
     class TableIndex < Index
       def self.item_type
         '(table|imgtable)'
+      end
+    end
+
+    class EquationIndex < Index
+      def self.item_type
+        '(texequation)'
       end
     end
 

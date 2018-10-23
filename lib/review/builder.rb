@@ -248,13 +248,23 @@ module ReVIEW
     end
 
     def inline_list(id)
-      "#{I18n.t('list')}#{@chapter.list(id).number}"
+      chapter, id = extract_chapter_id(id)
+      if get_chap(chapter)
+        %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])})
+      else
+        %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(id).number])})
+      end
     rescue KeyError
       error "unknown list: #{id}"
     end
 
     def inline_img(id)
-      "#{I18n.t('image')}#{@chapter.image(id).number}"
+      chapter, id = extract_chapter_id(id)
+      if get_chap(chapter)
+        %Q(#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(id).number])})
+      else
+        %Q(#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(id).number])})
+      end
     rescue KeyError
       error "unknown image: #{id}"
     end
@@ -270,9 +280,25 @@ module ReVIEW
     end
 
     def inline_table(id)
-      "#{I18n.t('table')}#{@chapter.table(id).number}"
+      chapter, id = extract_chapter_id(id)
+      if get_chap(chapter)
+        %Q(#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(id).number])})
+      else
+        %Q(#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(id).number])})
+      end
     rescue KeyError
       error "unknown table: #{id}"
+    end
+
+    def inline_eq(id)
+      chapter, id = extract_chapter_id(id)
+      if get_chap(chapter)
+        %Q(#{I18n.t('equation')}#{I18n.t('format_number', [get_chap(chapter), chapter.equation(id).number])})
+      else
+        %Q(#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [chapter.equation(id).number])})
+      end
+    rescue KeyError
+      error "unknown equation: #{id}"
     end
 
     def inline_fn(id)

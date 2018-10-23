@@ -733,13 +733,28 @@ module ReVIEW
       latex_block 'flushright', lines
     end
 
-    def texequation(lines)
+    def texequation(lines, id = nil, caption = nil)
       blank
+
+      if id
+        puts macro('begin', 'reviewequationblock')
+        if get_chap.nil?
+          puts macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+        else
+          puts macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+        end
+      end
+
       puts macro('begin', 'equation*')
       lines.each do |line|
         puts unescape(line)
       end
       puts macro('end', 'equation*')
+
+      if id
+        puts macro('end', 'reviewequationblock')
+      end
+
       blank
     end
 
@@ -861,6 +876,17 @@ module ReVIEW
       end
     rescue KeyError
       error "unknown image: #{id}"
+    end
+
+    def inline_equation(id)
+      chapter, id = extract_chapter_id(id)
+      if get_chap(chapter).nil?
+        macro('reviewequationref', I18n.t('format_number_without_chapter', [chapter.equation(id).number]))
+      else
+        macro('reviewequationref', I18n.t('format_number', [get_chap(chapter), chapter.equation(id).number]))
+      end
+    rescue KeyError
+      error "unknown equation: #{id}"
     end
 
     def footnote(id, content)
