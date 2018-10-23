@@ -75,7 +75,7 @@ module ReVIEW
 
     def default_imgmath_preamble
       <<-EOB
-\\documentclass[uplatex]{jsarticle}
+\\documentclass[uplatex,a3paper,landscape]{jsarticle}
 \\usepackage[deluxe,uplatex]{otf}
 \\usepackage[T1]{fontenc}
 \\usepackage{textcomp}
@@ -92,6 +92,7 @@ module ReVIEW
 \\usepackage{anyfontsize}
 \\usepackage{bm}
 \\pagestyle{empty}
+% \\setpaperwidth{1000mm}
     EOB
     end
 
