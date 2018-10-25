@@ -878,7 +878,7 @@ module ReVIEW
       error "unknown image: #{id}"
     end
 
-    def inline_equation(id)
+    def inline_eq(id)
       chapter, id = extract_chapter_id(id)
       if get_chap(chapter).nil?
         macro('reviewequationref', I18n.t('format_number_without_chapter', [chapter.equation(id).number]))

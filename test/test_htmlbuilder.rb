@@ -1778,4 +1778,42 @@ EOB
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end
+
+  def test_texequation_plain
+    src = <<-EOS
+//texequation{
+e=mc^2
+//}
+EOS
+    expected = <<-EOS
+<div class="equation">
+<pre>e=mc^2
+</pre>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_with_caption
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = <<-EOS
+<p><span class="eqref">式1.1</span></p>
+<div id="emc2" class="caption-equation">
+<p class="caption">式1.1: The Equivalence of Mass <i>and</i> Energy</p>
+<div class="equation">
+<pre>e=mc^2
+</pre>
+</div>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end

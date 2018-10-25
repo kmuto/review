@@ -552,7 +552,7 @@ module ReVIEW
     end
 
     def texequation_header(id, caption)
-      puts %Q(<div id="#{normalize_id(id)}" class="caption-equation")
+      puts %Q(<div id="#{normalize_id(id)}" class="caption-equation">)
       if get_chap
         puts %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
       else

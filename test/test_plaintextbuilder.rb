@@ -387,4 +387,23 @@ EOS
 
     assert_equal expected, column_helper(review)
   end
+
+  def test_texequation_with_caption
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = <<-EOS
+式1.1
+
+式1.1　The Equivalence of Mass and Energy
+e=mc^2
+
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end
