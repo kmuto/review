@@ -423,7 +423,7 @@ module ReVIEW
       end
     end
 
-    def texequation(lines, id = nil, caption = nil)
+    def texequation(lines, id = nil, caption = '')
       @texblockequation += 1
       if id
         puts '<equationblock>'

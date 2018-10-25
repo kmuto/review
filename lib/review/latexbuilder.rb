@@ -733,7 +733,7 @@ module ReVIEW
       latex_block 'flushright', lines
     end
 
-    def texequation(lines, id = nil, caption = nil)
+    def texequation(lines, id = nil, caption = '')
       blank
 
       if id

@@ -170,7 +170,7 @@ module ReVIEW
       blank
     end
 
-    def texequation(lines, id = nil, caption = nil)
+    def texequation(lines, id = nil, caption = '')
       blank
       puts "◆→開始:#{@titles['texequation']}←◆"
       if id

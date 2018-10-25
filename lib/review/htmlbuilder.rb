@@ -539,7 +539,7 @@ module ReVIEW
       puts '</div>'
     end
 
-    def texequation(lines, id = nil, caption = nil)
+    def texequation(lines, id = nil, caption = '')
       if id
         texequation_header id, caption
       end

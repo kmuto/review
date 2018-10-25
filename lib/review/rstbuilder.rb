@@ -297,7 +297,7 @@ module ReVIEW
       blank
     end
 
-    def texequation(lines, id = nil, caption = nil)
+    def texequation(lines, id = nil, caption = '')
       if id
         puts ".. _#{id}:"
       end
