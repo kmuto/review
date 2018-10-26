@@ -2,6 +2,7 @@ ja:
   image: 図
   table: 表
   list: リスト
+  equation: 式
   column: "コラム「%s」"
   columnname: "コラム"
   column_head: "■コラム"
@@ -67,6 +68,7 @@ en:
   image: "Figure "
   table: "Table "
   list: "List "
+  equation: "Equation "
   column: "Column %s"
   columnname: "Column"
   column_head: "Column"
@@ -131,7 +133,8 @@ en:
 zh-TW:
   image: 圖
   table: 表
-  list: List
+  list: "List "
+  equation: "Equation "
   column: "Column %s"
   columnname: "Column"
   column_head: "Column"

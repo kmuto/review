@@ -170,8 +170,16 @@ module ReVIEW
       blank
     end
 
-    def texequation(lines)
+    def texequation(lines, id = nil, caption = '')
+      blank
       puts "◆→開始:#{@titles['texequation']}←◆"
+      if id
+        if get_chap
+          puts "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        else
+          puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        end
+      end
       puts lines.join("\n")
       puts "◆→終了:#{@titles['texequation']}←◆"
       blank

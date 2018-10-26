@@ -82,6 +82,15 @@ module ReVIEW
         @table_index
       end
 
+      def equation(id)
+        equation_index[id]
+      end
+
+      def equation_index
+        @equation_index ||= EquationIndex.parse(lines)
+        @equation_index
+      end
+
       def footnote(id)
         footnote_index[id]
       end

@@ -141,7 +141,7 @@ module ReVIEW
     defblock :bibpaper, 2..3, true
     defblock :doorquote, 1
     defblock :talk, 0
-    defblock :texequation, 0
+    defblock :texequation, 0..2
     defblock :graph, 1..3
     defblock :indepimage, 1..3, true
     defblock :numberlessimage, 1..3, true
@@ -184,6 +184,7 @@ module ReVIEW
     definline :icon
     definline :list
     definline :table
+    definline :eq
     definline :fn
     definline :kw
     definline :ruby

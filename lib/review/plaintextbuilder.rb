@@ -137,17 +137,6 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def inline_list(id)
-      chapter, id = extract_chapter_id(id)
-      if get_chap(chapter)
-        %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])})
-      else
-        %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(id).number])})
-      end
-    rescue KeyError
-      error "unknown list: #{id}"
-    end
-
     def list_header(id, caption, _lang)
       blank
       if get_chap
@@ -207,28 +196,6 @@ module ReVIEW
       base_parablock 'quote', lines, nil
     end
 
-    def inline_table(id)
-      chapter, id = extract_chapter_id(id)
-      if get_chap(chapter)
-        "#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(id).number])}"
-      else
-        "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(id).number])}"
-      end
-    rescue KeyError
-      error "unknown table: #{id}"
-    end
-
-    def inline_img(id)
-      chapter, id = extract_chapter_id(id)
-      if get_chap(chapter)
-        "#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(id).number])}"
-      else
-        "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(id).number])}"
-      end
-    rescue KeyError
-      error "unknown image: #{id}"
-    end
-
     def image(_lines, id, caption, _metric = nil)
       blank
       if get_chap
@@ -239,7 +206,16 @@ module ReVIEW
       blank
     end
 
-    def texequation(lines)
+    def texequation(lines, id = nil, caption = '')
+      if id
+        blank
+        if get_chap
+          puts "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        else
+          puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        end
+      end
+
       puts lines.join("\n")
       blank
     end

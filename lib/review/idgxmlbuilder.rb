@@ -264,14 +264,7 @@ module ReVIEW
     end
 
     def inline_list(id)
-      chapter, id = extract_chapter_id(id)
-      if get_chap(chapter).nil?
-        "<span type='list'>#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(id).number])}</span>"
-      else
-        "<span type='list'>#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])}</span>"
-      end
-    rescue KeyError
-      error "unknown list: #{id}"
+      "<span type='list'>#{super(id)}</span>"
     end
 
     def list_header(id, caption, _lang)
@@ -369,25 +362,15 @@ module ReVIEW
     end
 
     def inline_table(id)
-      chapter, id = extract_chapter_id(id)
-      if get_chap(chapter).nil?
-        "<span type='table'>#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(id).number])}</span>"
-      else
-        "<span type='table'>#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(id).number])}</span>"
-      end
-    rescue KeyError
-      error "unknown table: #{id}"
+      "<span type='table'>#{super(id)}</span>"
     end
 
     def inline_img(id)
-      chapter, id = extract_chapter_id(id)
-      if get_chap(chapter).nil?
-        "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(id).number])}</span>"
-      else
-        "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(id).number])}</span>"
-      end
-    rescue KeyError
-      error "unknown image: #{id}"
+      "<span type='image'>#{super(id)}</span>"
+    end
+
+    def inline_eq(id)
+      "<span type='eq'>#{super(id)}</span>"
     end
 
     def inline_imgref(id)
@@ -440,13 +423,26 @@ module ReVIEW
       end
     end
 
-    def texequation(lines)
+    def texequation(lines, id = nil, caption = '')
       @texblockequation += 1
+      if id
+        puts '<equationblock>'
+        if get_chap.nil?
+          puts %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+        else
+          puts %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+        end
+      end
+
       puts %Q(<replace idref="texblock-#{@texblockequation}">)
       puts '<pre>'
       puts lines.join("\n")
       puts '</pre>'
       puts '</replace>'
+
+      if id
+        puts '</equationblock>'
+      end
     end
 
     def table(lines, id = nil, caption = nil)
