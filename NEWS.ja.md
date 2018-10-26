@@ -1,7 +1,7 @@
 # Version 3.0.0 preview 4 (Release Candidate or Version 3.0.0 release)
 ## 新機能
 * ★旧バージョンのプロジェクトを新しいバージョンに合わせたものに更新する `review-update` コマンドを導入しました ([#1144])
-* ★式を表す `//texequation` に ID の指定による採番およびキャプションを付けられるようにし、`@<eq>` 命令でその参照もできるようにしました ([#1167])
+* 式を表す `//texequation` に ID の指定による採番およびキャプションを付けられるようにし、`@<eq>` 命令でその参照もできるようにしました ([#1167])
 
 ## 非互換の変更
 * IDGXMLBuilder、PlaintextBuilder、TextBuilder において `@<chapref>` の展開結果を独自に作成していたのを止め、ほかのビルダと同様に `chapter_quote` のロケール文字列を使うようにしました ([#1160])

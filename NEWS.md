@@ -1,7 +1,7 @@
 # Version 3.0.0 preview 4 (Release Candidate or Version 3.0.0 release)
 ## New Features
 * ★new command `review-update` is added, which updates the setting of the project files to the new version ([#1144])
-* ★`texequation` representing an expression can now be numbered and captioned.  To reference this you can use the `@<eq>` operator ([#1167])
+* `texequation` representing an expression can now be numbered and captioned.  To reference this you can use the `@<eq>` operator ([#1167])
 
 ## Breaking Changes
 * In IDGXMLBuilder, PlaintextBuilder, and TextBuilder, the expansion result of `@<chapref>` is no longer created in a unique way. Like other builders, it uses the `chapter_quote` locale string ([#1160])
