@@ -207,13 +207,12 @@
 \ProcessOptionsX\relax
 
 % override Q and H
-% or 1.405678942929435 ? (1Q/1pt)
 \ifx\recls@fontsize\@empty\else
-  \@tempdima=1.2998575405530142\dimexpr\recls@fontsize\relax % any->JQ
+  \@tempdima=1.411764705882353\dimexpr\recls@fontsize\relax % any(pt)->JQ
   \edef\recls@Q{\strip@pt\@tempdima}
 \fi
 \ifx\recls@lineheight\@empty\else
-  \@tempdima=1.2998575405530142\dimexpr\recls@lineheight\relax % any->JQ
+  \@tempdima=1.411764705882353\dimexpr\recls@lineheight\relax % any(pt)->JQ
   \edef\recls@H{\strip@pt\@tempdima}
 \fi
 
