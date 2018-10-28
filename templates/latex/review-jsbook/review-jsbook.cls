@@ -383,10 +383,12 @@
 \renewcommand{\small}{%
   \ifnarrowbaselines
     \jsc@setfontsize\small
-      {\dimexpr\recls@Q\JQ - 1\JQ}{1.5\dimexpr\recls@Q H - 3H}%
+%      {\dimexpr\recls@Q\JQ - 1\JQ}{1.5\dimexpr\recls@Q H - 3H}%
+      {\recls@fnt@scale\dimexpr 11.7\JQ}{\recls@fnt@scale\dimexpr 14.3H}%
   \else
     \jsc@setfontsize\small
-      {\dimexpr\recls@Q\JQ - 1\JQ}{1.5\dimexpr\recls@Q H - 1H}%
+%      {\dimexpr\recls@Q\JQ - 1\JQ}{1.5\dimexpr\recls@Q H - 1H}%
+      {\recls@fnt@scale\dimexpr 11.7\JQ}{\recls@fnt@scale\dimexpr 16.9H}%
   \fi
   \abovedisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
   \abovedisplayshortskip  \z@ \@plus3\jsc@mpt
@@ -400,10 +402,12 @@
 \renewcommand{\footnotesize}{%
   \ifnarrowbaselines
     \jsc@setfontsize\footnotesize
-      {\dimexpr\recls@Q\JQ - 2\JQ}{1.5\dimexpr\recls@Q H - 3H}%
+%      {\dimexpr\recls@Q\JQ - 2\JQ}{1.5\dimexpr\recls@Q H - 3H}%
+      {\recls@fnt@scale\dimexpr 10.4\JQ}{\recls@fnt@scale\dimexpr 12.35H}%
   \else
     \jsc@setfontsize\footnotesize
-      {\dimexpr\recls@Q\JQ - 2\JQ}{1.5\dimexpr\recls@Q H - 2H}%
+%      {\dimexpr\recls@Q\JQ - 2\JQ}{1.5\dimexpr\recls@Q H - 2H}%
+      {\recls@fnt@scale\dimexpr 10.4\JQ}{\recls@fnt@scale\dimexpr 14.3H}%
   \fi
   \abovedisplayskip 6\jsc@mpt \@plus2\jsc@mpt \@minus3\jsc@mpt
   \abovedisplayshortskip  \z@ \@plus2\jsc@mpt
@@ -415,26 +419,35 @@
               \itemsep \parsep}}
 
 \renewcommand{\scriptsize}{\jsc@setfontsize\scriptsize
-  {\dimexpr\recls@Q\JQ - 3\JQ}{1.25\dimexpr\recls@Q H - 3H}}
+%  {\dimexpr\recls@Q\JQ - 3\JQ}{1.25\dimexpr\recls@Q H - 3H}}
+  {\recls@fnt@scale\dimexpr 9.1\JQ}{\recls@fnt@scale\dimexpr 10.4H}}
 \renewcommand{\tiny}{\jsc@setfontsize\tiny
-  {.5\dimexpr\recls@Q\JQ}{.5\dimexpr\recls@Q H + 2H}}
+%  {.5\dimexpr\recls@Q\JQ}{.5\dimexpr\recls@Q H + 2H}}
+  {\recls@fnt@scale\dimexpr 6.5\JQ}{\recls@fnt@scale\dimexpr 7.8H}}
 \if@twocolumn
   \renewcommand{\large}{\@setfontsize\large
-    {\recls@fnt@scale\dimexpr 18\JQ}{\n@baseline}}
+%    {\recls@fnt@scale\dimexpr 18\JQ}{\n@baseline}}
+    {\recls@fnt@scale\dimexpr 15.6\JQ}{\n@baseline}}
 \else
   \renewcommand{\large}{\@setfontsize\large
-    {\recls@fnt@scale\dimexpr 18\JQ}{\recls@fnt@scale\dimexpr 27H}}
+    % {\recls@fnt@scale\dimexpr 18\JQ}{\recls@fnt@scale\dimexpr 27H}}
+    {\recls@fnt@scale\dimexpr 15.6\JQ}{\recls@fnt@scale\dimexpr 22.1H}}
 \fi
 \renewcommand{\Large}{\@setfontsize\Large
-  {\recls@fnt@scale\dimexpr 20\JQ}{\recls@fnt@scale\dimexpr 30H}}
+%  {\recls@fnt@scale\dimexpr 20\JQ}{\recls@fnt@scale\dimexpr 30H}}
+  {\recls@fnt@scale\dimexpr 18.2\JQ}{\recls@fnt@scale\dimexpr 27.3H}}
 \renewcommand{\LARGE}{\@setfontsize\LARGE
-  {\recls@fnt@scale\dimexpr 24\JQ}{\recls@fnt@scale\dimexpr 36H}}
+%  {\recls@fnt@scale\dimexpr 24\JQ}{\recls@fnt@scale\dimexpr 36H}}
+  {\recls@fnt@scale\dimexpr 22.1\JQ}{\recls@fnt@scale\dimexpr 32.5H}}
 \renewcommand{\huge}{\@setfontsize\huge
-  {\recls@fnt@scale\dimexpr 28\JQ}{\recls@fnt@scale\dimexpr 42H}}
+%  {\recls@fnt@scale\dimexpr 28\JQ}{\recls@fnt@scale\dimexpr 42H}}
+  {\recls@fnt@scale\dimexpr 26\JQ}{\recls@fnt@scale\dimexpr 36.4H}}
 \renewcommand{\Huge}{\@setfontsize\Huge
-  {\recls@fnt@scale\dimexpr 32\JQ}{\recls@fnt@scale\dimexpr 48H}}
+%  {\recls@fnt@scale\dimexpr 32\JQ}{\recls@fnt@scale\dimexpr 48H}}
+  {\recls@fnt@scale\dimexpr 32.5\JQ}{\recls@fnt@scale\dimexpr 42.9H}}
 \renewcommand{\HUGE}{\jsc@setfontsize\HUGE
-  {\recls@fnt@scale\dimexpr 36\JQ}{\recls@fnt@scale\dimexpr 54H}}
+%  {\recls@fnt@scale\dimexpr 36\JQ}{\recls@fnt@scale\dimexpr 54H}}
+  {\recls@fnt@scale\dimexpr 39\JQ}{\recls@fnt@scale\dimexpr 52H}}
 
 %% headheight, headsep, footskip
 \setlength\topskip{\Cht}
