@@ -735,4 +735,28 @@ EOS
     actual = compile_inline('test @<comment>{コメント} test2')
     assert_equal 'test <msg>コメント</msg> test2', actual
   end
+
+  def test_texequation
+    src = <<-EOS
+//texequation{
+e=mc^2
+//}
+EOS
+    expected = %Q(<replace idref="texblock-1"><pre>e=mc^2</pre></replace>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_with_caption
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><replace idref="texblock-1"><pre>e=mc^2</pre></replace></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end

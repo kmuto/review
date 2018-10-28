@@ -40,6 +40,7 @@ module ReVIEW
         end
         @list_index = nil
         @table_index = nil
+        @equation_index = nil
         @footnote_index = nil
         @image_index = nil
         @icon_index = nil

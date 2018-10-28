@@ -297,11 +297,19 @@ module ReVIEW
       blank
     end
 
-    def texequation(lines)
+    def texequation(lines, id = nil, caption = '')
+      if id
+        puts ".. _#{id}:"
+      end
+
       puts '.. math::'
       blank
       puts lines.map { |line| "   #{line}" }.join
       blank
+      if caption.present?
+        puts "   #{caption}"
+        blank
+      end
     end
 
     def table_header(id, caption)

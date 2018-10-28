@@ -25,10 +25,12 @@ usage: review <command> [<args>]
 
 Re:VIEW commands are:
   init      : generate Re:VIEW project directory.
+  update    : update Re:VIEW project to newest environment.
   preproc   : preprocess Re:VIEW document file.
   compile   : convert Re:VIEW document file.
   epubmaker : build EPUB.
   webmaker  : build web pages.
+  epub2html : convert EPUB to single HTML.
   pdfmaker  : build PDF with LaTeX.
   textmaker : build text files.
   vol       : show volume of Re:VIEW document.
