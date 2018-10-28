@@ -3,7 +3,12 @@
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
   \RequirePackage[dvipdfmx]{pxjahyper}
   \newif\if@reclscover \@reclscovertrue
-  \newcommand{\includefullpagegraphics}{\includegraphics}
+  \newcommand{\includefullpagegraphics}[2][]{%
+    \thispagestyle{empty}%
+    \begin{center}%
+      \includegraphics[#1]{#2}%
+    \end{center}}
+  \def\review@coverimageoption{width=\textwidth,height=\textheight,keepaspectratio}
 }{}
 \ifthenelse{\equal{\review@texcompiler}{uplatex}}{%
 \RequirePackage[deluxe,uplatex]{otf}%
