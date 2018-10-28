@@ -165,7 +165,7 @@
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
 \DeclareOptionX{tombopaper}{%
   \gdef\recls@tombowopts{}%%default: auto-detect
-  \ifx#1\@empty\else\gdef\recls@tombowopts{tombo-#1}\fi}
+  \ifx#1\@empty\else\gdef\recls@tombowopts{tombow-#1}\fi}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 %% 隠しノンブルプリセット
 \DeclareOptionX{hiddenfolio}{\gdef\recls@hiddenfolio{#1}}%%default: (none)
