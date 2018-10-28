@@ -263,7 +263,7 @@
 \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
   \setlength{\paperwidth}{\recls@paperwidth}
   \setlength{\paperheight}{\recls@paperheight}
-  \def\recls@tmp{pdf}\ifx\recls@cameraready\recls@tmp
+  \def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
     \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
   \fi
 \fi\fi
