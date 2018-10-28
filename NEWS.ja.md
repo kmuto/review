@@ -1,3 +1,29 @@
+# Version 3.0.0 preview 4
+## 新機能
+* 旧バージョンのプロジェクトを新しいバージョンに合わせたものに更新する `review-update` コマンドを導入しました ([#1144])
+* 式を表す `//texequation` に ID の指定による採番およびキャプションを付けられるようにし、`@<eq>` 命令でその参照もできるようにしました ([#1167])
+
+## 非互換の変更
+* IDGXMLBuilder、PlaintextBuilder、TextBuilder において `@<chapref>` の展開結果を独自に作成していたのを止め、ほかのビルダと同様に `chapter_quote` のロケール文字列を使うようにしました ([#1160])
+
+## バグ修正
+* samples フォルダ内のサンプル集は preview3 でそのままでは PDF を生成できませんでしたが、`rake pdf` だけで動作するように修正しました ([#1156])
+
+## 機能強化
+* PDFMaker: review-jlreq.cls クラスファイルでも hiddenfolio パラメータを利用できるようにしました ([#1147])
+* EPUBMaker/WEBMaker: imgmath 機能を有効にしたときに、各 `//texequation` に対してフォントサイズを明示して渡すようにしました ([#1146])
+
+## ドキュメント
+
+## コントリビューターのみなさん
+
+[#1144]: https://github.com/kmuto/review/issues/1144
+[#1146]: https://github.com/kmuto/review/issues/1146
+[#1147]: https://github.com/kmuto/review/issues/1147
+[#1156]: https://github.com/kmuto/review/issues/1156
+[#1160]: https://github.com/kmuto/review/issues/1160
+[#1167]: https://github.com/kmuto/review/issues/1167
+
 # Version 3.0.0 preview 3
 ## 新機能
 * PDFMaker: これまでの jsbook.cls クラスファイルをそのまま使用する方法に代わり、紙・電子双方の書籍制作に適するよう拡張した review-jsbook.cls (jsbook.cls 基盤、デフォルト)、および review-jlreq.cls (jlreq.cls 基盤) を導入しました ([#1032],[#1117])
