@@ -1,4 +1,4 @@
-# Version 3.0.0 preview 4 (Release Candidate or Version 3.0.0 release)
+# Version 3.0.0 preview 4
 ## 新機能
 * 旧バージョンのプロジェクトを新しいバージョンに合わせたものに更新する `review-update` コマンドを導入しました ([#1144])
 * 式を表す `//texequation` に ID の指定による採番およびキャプションを付けられるようにし、`@<eq>` 命令でその参照もできるようにしました ([#1167])
@@ -12,7 +12,6 @@
 ## 機能強化
 * PDFMaker: review-jlreq.cls クラスファイルでも hiddenfolio パラメータを利用できるようにしました ([#1147])
 * EPUBMaker/WEBMaker: imgmath 機能を有効にしたときに、各 `//texequation` に対してフォントサイズを明示して渡すようにしました ([#1146])
-* ★PDFMaker: review-jsbook.cls クラス利用時、文字サイズは Q パラメータ、行の高さは H パラメータで単位はそれぞれ Q（級）、H（歯）の数値のみを採っていましたが、fontsize パラメータおよび baselineskip パラメータで単位付き（pt や mm など）を指定できるようにしました ([#1151])
 
 ## ドキュメント
 
@@ -21,7 +20,6 @@
 [#1144]: https://github.com/kmuto/review/issues/1144
 [#1146]: https://github.com/kmuto/review/issues/1146
 [#1147]: https://github.com/kmuto/review/issues/1147
-[#1151]: https://github.com/kmuto/review/issues/1151
 [#1156]: https://github.com/kmuto/review/issues/1156
 [#1160]: https://github.com/kmuto/review/issues/1160
 [#1167]: https://github.com/kmuto/review/issues/1167

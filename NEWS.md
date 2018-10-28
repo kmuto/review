@@ -1,4 +1,4 @@
-# Version 3.0.0 preview 4 (Release Candidate or Version 3.0.0 release)
+# Version 3.0.0 preview 4
 ## New Features
 * new command `review-update` is added, which updates the setting of the project files to the new version ([#1144])
 * `texequation` representing an expression can now be numbered and captioned.  To reference this you can use the `@<eq>` operator ([#1167])
@@ -12,7 +12,6 @@
 ## Enhancements
 * PDFMaker: support hiddenfolio parameter with review-jlreq.cls ([#1147])
 * EPUBMaker/WEBMaker: when imgmath function is enabled, font size is passed to each `//texequation` ([#1146])
-* ★PDFMaker: review-jsbook.cls supports fontsize and baselineskip parameter to allow values with units such as pt, mm ([#1151])
 
 ## Docs
 
@@ -21,7 +20,6 @@
 [#1144]: https://github.com/kmuto/review/issues/1144
 [#1146]: https://github.com/kmuto/review/issues/1146
 [#1147]: https://github.com/kmuto/review/issues/1147
-[#1151]: https://github.com/kmuto/review/issues/1151
 [#1156]: https://github.com/kmuto/review/issues/1156
 [#1160]: https://github.com/kmuto/review/issues/1160
 [#1167]: https://github.com/kmuto/review/issues/1167
