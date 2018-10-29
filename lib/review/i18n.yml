@@ -2,6 +2,7 @@ ja:
   image: 図
   table: 表
   list: リスト
+  equation: 式
   column: "コラム「%s」"
   columnname: "コラム"
   column_head: "■コラム"
@@ -62,11 +63,30 @@ ja:
   advtitle: "広告"
   profiletitle: "著者紹介"
   backcovertitle: "裏表紙"
+  "!! No *.yml file with 'review_version' was found. Aborted. !!": "!! 'review_version' を持つ *.yml ファイルが見つかりませんでした。中止します。 !!"
+  "!! %s file(s) is obsoleted. Run 'review-catalog-converter' to convert to 'catalog.yml' and remove old files. Aborted. !!": "!! %s ファイルはもう使われません。'review-catalog-converter' を実行して 'catalog.yml' に変換し、古いファイルは削除してください。中止します。 !!"
+  "** review-update updates your project to %s **": "** review-update はプロジェクトを %s に更新します **"
+  "** There is custom layouts/layout.tex.erb file. Updating  may break to make PDF until you fix layout.tex.erb. Do you really proceed to update? **": "** 固有の layouts/layout.tex.erb ファイルが存在します。プロジェクトを更新した後、このファイルを修正しないと、PDF の生成に問題が生じるかもしれません。本当に進めますか? **"
+  "** There is review-ext.rb file. You need to update it by yourself. **": "** review-ext.rb ファイルが存在します。このファイルはご自身で更新してください。 **"
+  "%s: Update '%s' to '%s'?": "%s: '%s' を '%s' に更新しますか?"
+  "%s will be overridden with Re:VIEW version (%s). Do you really proceed?": "%s は Re:VIEW バージョンのもの (%s) で置き換えられます。本当に進めますか?"
+  "%s: 'chapter_quote' now takes 2 values. Update '%s' to '%s'?": "%s: 'chapter_quote' は2つの値を取るようになりました。'%s' を '%s' に更新しますか?"
+  "%s: !! 'texdocumentclass' uses new class '%s' already, but you specified '%s'. This tool can't handle such migration. Ignored. !!": "%s: !! 'texdocumentclass' は新クラス '%s' をすでに使うようになっていますが、'%s' が指定されました。このツールはそのような移行には対応していません。無視します。 !!"
+  "%s: 'texdocumentclass' uses the old class '%s'. By default it is migrated to '%s', but you specify '%s'. Do you really migrate 'texdocumentclass' to '%s'?": "%s: 'texdocumentclass' は旧クラス '%s' を使っています。デフォルトの移行先は '%s' ですが、'%s' が指定されました。本当に 'texdocumentclass' を '%s' に移行しますか?"
+  "%s: 'texdocumentclass' uses the old class '%s'. By default it is migrated to '%s'. Do you really migrate 'texdocumentclass' to '%s'?": "%s: 'texdocumentclass' は旧クラス '%s' を使っています。デフォルトの移行先は '%s' です。本当に 'texdocumentclass' を '%s' に移行しますか?"
+  "%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.": "%s: 'texdocumentclass' の古いオプション '%s' は '%s' に安全に置き換えられました。"
+  "%s: previous 'texdocumentclass' option '%s' couldn't be converted fully. '%s' is suggested. Do you really proceed?": "%s: 'texdocumentclass' の古いオプション '%s' は完全には置き換えできませんでした。'%s' を提案します。本当に進めますか?"
+  "%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **": "%s: ** 'texdocumentclass' はクラス '%s' を指定しています。このツールには未知のクラスなので、もし動作しないようであればご自身で更新する必要があります。 **"
+  "%s: ** '%s' is unknown class. Ignored. **": "%s: ** '%s' は未知のクラスです。無視します。 **"
+  "%s: 'texcommand' has options ('%s'). Move it to 'texoptions'?": "%s: 'texcommand' にオプションがあります ('%s')。'texoptions' に移動しますか?"
+  "%s: 'dvicommand' has options ('%s'). Move it to 'dvioptions'?": "%s: 'dvicommand' にオプションがあります ('%s')。'dvioptions' に移動しますか?"
+  "Finished.": "完了しました。"
 
 en:
   image: "Figure "
   table: "Table "
   list: "List "
+  equation: "Equation "
   column: "Column %s"
   columnname: "Column"
   column_head: "Column"
@@ -131,7 +151,8 @@ en:
 zh-TW:
   image: 圖
   table: 表
-  list: List
+  list: "List "
+  equation: "Equation "
   column: "Column %s"
   columnname: "Column"
   column_head: "Column"

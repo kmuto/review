@@ -59,6 +59,10 @@ module ReVIEW
       @i18n.get(word, locale)
     end
 
+    def self.set(word, str)
+      @i18n.set(word, str)
+    end
+
     attr_accessor :locale
 
     def initialize(locale = nil)
@@ -110,6 +114,10 @@ module ReVIEW
     def get(word, locale = nil)
       locale ||= @locale
       @store[locale][word]
+    end
+
+    def set(word, str)
+      @store[@locale][word] = str
     end
 
     def t(str, args = nil)

@@ -617,6 +617,16 @@ Usage:
 //}
 ```
 
+If you'd like to assign a number like 'Equation 1.1`, specify the identifier and caption.
+
+```
+//texequationl[emc][The Equivalence of Mass and Energy]{
+\sum_{i=1}^nf_n(x)
+//}
+```
+
+To reference this, use the inline command `@<eq>`.
+
 There is `@<m>{ ... }` for inline (see "Fence notation for inline commands" section also).
 
 Whether LaTeX formula is correctly displayed or not depends on the processing system. PDFMaker uses LaTeX internally, so there is no problem.
@@ -961,6 +971,7 @@ this is a special line.
 @<list>{program}:: `List 1.5`
 @<img>{unixhistory}:: `Figure 1.3`
 @<table>{ascii}:: `Table 1.2`
+@<eq>{emc2}:: `Equation 1.1`
 @<hd>{advanced|Other Topics}:: `7-3. Other Topics`
 @<column>{another-column}:: reference of column.
 ```
@@ -1100,4 +1111,3 @@ Sample layout file(layout.html.erb):
   </body>
 </html>
 ```
-

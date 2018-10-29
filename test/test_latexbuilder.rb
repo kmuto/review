@@ -1120,4 +1120,43 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_texequation
+    src = <<-EOS
+//texequation{
+e=mc^2
+//}
+EOS
+    expected = <<-EOS
+
+\\begin{equation*}
+e=mc^2
+\\end{equation*}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_with_caption
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = <<-EOS
+
+\\reviewequationref{1.1}
+
+\\begin{reviewequationblock}
+\\reviewequationcaption{式1.1: The Equivalence of Mass \\reviewit{and} Energy}
+\\begin{equation*}
+e=mc^2
+\\end{equation*}
+\\end{reviewequationblock}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end

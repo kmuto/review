@@ -539,7 +539,28 @@ module ReVIEW
       puts '</div>'
     end
 
-    def texequation(lines)
+    def texequation(lines, id = nil, caption = '')
+      if id
+        texequation_header id, caption
+      end
+
+      texequation_body(lines)
+
+      if id
+        puts '</div>'
+      end
+    end
+
+    def texequation_header(id, caption)
+      puts %Q(<div id="#{normalize_id(id)}" class="caption-equation">)
+      if get_chap
+        puts %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
+      else
+        puts %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
+      end
+    end
+
+    def texequation_body(lines)
       puts %Q(<div class="equation">)
       if @book.config['mathml']
         require 'math_ml'
@@ -547,7 +568,9 @@ module ReVIEW
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         puts p.parse(unescape(lines.join("\n")), true)
       elsif @book.config['imgmath']
-        math_str = "\\begin{equation*}\n" + unescape(lines.join("\n")) + "\n\\end{equation*}\n"
+        fontsize = @book.config['imgmath_options']['fontsize'].to_f
+        lineheight = @book.config['imgmath_options']['lineheight'].to_f
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{unescape(lines.join("\n"))}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = File.join(@book.config['imagedir'], '_review_math')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
@@ -1006,54 +1029,43 @@ module ReVIEW
     end
 
     def inline_list(id)
+      str = super(id)
       chapter, id = extract_chapter_id(id)
-      str =
-        if get_chap(chapter)
-          "#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(id).number])}"
-        else
-          "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(id).number])}"
-        end
       if @book.config['chapterlink']
-        %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
+        %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
       else
         %Q(<span class="listref">#{str}</span>)
       end
-    rescue KeyError
-      error "unknown list: #{id}"
     end
 
     def inline_table(id)
+      str = super(id)
       chapter, id = extract_chapter_id(id)
-      str =
-        if get_chap(chapter)
-          "#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(id).number])}"
-        else
-          "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(id).number])}"
-        end
       if @book.config['chapterlink']
-        %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{id}">#{str}</a></span>)
+        %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
       else
         %Q(<span class="tableref">#{str}</span>)
       end
-    rescue KeyError
-      error "unknown table: #{id}"
     end
 
     def inline_img(id)
+      str = super(id)
       chapter, id = extract_chapter_id(id)
-      str =
-        if get_chap(chapter)
-          "#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(id).number])}"
-        else
-          "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(id).number])}"
-        end
       if @book.config['chapterlink']
         %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
       else
         %Q(<span class="imgref">#{str}</span>)
       end
-    rescue KeyError
-      error "unknown image: #{id}"
+    end
+
+    def inline_eq(id)
+      str = super(id)
+      chapter, id = extract_chapter_id(id)
+      if @book.config['chapterlink']
+        %Q(<span class="eqref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
+      else
+        %Q(<span class="eqref">#{str}</span>)
+      end
     end
 
     def inline_asis(str, tag)

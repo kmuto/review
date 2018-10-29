@@ -1080,7 +1080,7 @@ EOS
       FileUtils.mkdir_p(File.join(dir, 'images'))
       expected = <<-EOB
 <div class=\"equation\">
-<img src=\"images/_review_math/_gen_XXX.png\" class=\"math_gen_255609d0624d30ecd7b33bfbf069fa39965e221476aeb507f48766d9f216b9eb\" alt="p \\land \\bm{P} q" />
+<img src=\"images/_review_math/_gen_XXX.png\" class=\"math_gen_84291054a12d278ea05694c20fbbc8e974ec66fc13be801c01dca764faeecccb\" alt="p \\land \\bm{P} q" />
 </div>
       EOB
       tmpio = $stderr
@@ -1777,5 +1777,43 @@ EOB
       e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
       assert_equal ':1: error: key not found: "n"', e.message
     end
+  end
+
+  def test_texequation_plain
+    src = <<-EOS
+//texequation{
+e=mc^2
+//}
+EOS
+    expected = <<-EOS
+<div class="equation">
+<pre>e=mc^2
+</pre>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_with_caption
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = <<-EOS
+<p><span class="eqref">式1.1</span></p>
+<div id="emc2" class="caption-equation">
+<p class="caption">式1.1: The Equivalence of Mass <i>and</i> Energy</p>
+<div class="equation">
+<pre>e=mc^2
+</pre>
+</div>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 end

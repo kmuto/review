@@ -170,13 +170,13 @@ EOS
 
       File.open(File.join(dir, 'Rakefile'), 'w') do |file|
         file.write <<-EOS
-Dir.glob('lib/tasks/*.rake').each do |file|
+Dir.glob('lib/tasks/*.rake').sort.each do |file|
   load(file)
 end
 EOS
       end
 
-      FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/Rakefile'),
+      FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/lib/tasks/review.rake'),
                    File.join(dir, 'lib/tasks/review.rake'))
     end
 

@@ -165,7 +165,7 @@
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
 \DeclareOptionX{tombopaper}{%
   \gdef\recls@tombowopts{}%%default: auto-detect
-  \ifx#1\@empty\else\gdef\recls@tombowopts{tombo-#1}\fi}
+  \ifx#1\@empty\else\gdef\recls@tombowopts{tombow-#1}\fi}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 %% 隠しノンブルプリセット
 \DeclareOptionX{hiddenfolio}{\gdef\recls@hiddenfolio{#1}}%%default: (none)
@@ -263,7 +263,7 @@
 \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
   \setlength{\paperwidth}{\recls@paperwidth}
   \setlength{\paperheight}{\recls@paperheight}
-  \def\recls@tmp{pdf}\ifx\recls@cameraready\recls@tmp
+  \def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
     \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
   \fi
 \fi\fi
@@ -502,6 +502,16 @@
     \vss}%
   \clearpage
 }
+
+% 空ページ
+\newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
+  \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
+
+% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
+\let\cleardoublepage@right\cleardoublepage
+\def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
+  \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\let\clearoddpage\cleardoublepage@left
 
 % coverオプションによる表紙判定の上書き
 \def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp
