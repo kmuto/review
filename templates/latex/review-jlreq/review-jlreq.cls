@@ -248,6 +248,16 @@ cls]
   \clearpage
 }
 
+% 空ページ
+\newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
+  \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
+
+% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
+\let\cleardoublepage@right\cleardoublepage
+\def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
+  \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\let\clearoddpage\cleardoublepage@left
+
 % シンプルな通しノンブル
 \ifrecls@serialpage
 \renewcommand*{\pagenumbering}[1]{%
