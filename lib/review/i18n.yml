@@ -81,6 +81,7 @@ ja:
   "%s: 'texcommand' has options ('%s'). Move it to 'texoptions'?": "%s: 'texcommand' にオプションがあります ('%s')。'texoptions' に移動しますか?"
   "%s: 'dvicommand' has options ('%s'). Move it to 'dvioptions'?": "%s: 'dvicommand' にオプションがあります ('%s')。'dvioptions' に移動しますか?"
   "Finished.": "完了しました。"
+  "new file %s is created.": "新しいファイル %s が作成されました。"
 
 en:
   image: "Figure "
