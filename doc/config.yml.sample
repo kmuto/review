@@ -286,7 +286,7 @@ epubmaker:
 #
 # LaTeX用のdocumentclassを指定する
 # review-jsbook.clsのオプションについてはsty/README.mdを参照
-# texdocumentclass: ["review-jsbook", "cameraready=print,paper=a5"]
+# texdocumentclass: ["review-jsbook", "media=print,paper=a5"]
 #
 # LaTeX用のコマンドを指定する
 # texcommand: "uplatex"

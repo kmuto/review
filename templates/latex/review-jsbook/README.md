@@ -7,7 +7,7 @@ review-jsbook.cls Users Guide
 
 ## 特徴
 
- * クラスオプション `cameraready` により、「印刷用」「電子用」の用途を明示的な意思表示として与えることで、用途に応じた PDF ファイル生成を行えます。
+ * クラスオプション `media` により、「印刷用」「電子用」の用途を明示的な意思表示として与えることで、用途に応じた PDF ファイル生成を行えます。
  * （基本的に）クラスオプションを `<key>=<value>` で与えられます。
  * クラスオプション内で、用紙サイズや基本版面を自由に設計できます。
 
@@ -27,7 +27,7 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 
 ## 利用可能なクラスオプションたち
 
-### 用途別 PDF データ作成 `cameraready=<用途名>`
+### 用途別 PDF データ作成 `media=<用途名>`
 
 印刷用 `print`、電子用 `ebook` のいずれかの用途名を指定します。
 
@@ -38,7 +38,7 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 
 ### 表紙の挿入有無 `cover=<trueまたはfalse>`
 
-`cameraready` の値によって表紙（config.yml の coverimage に指定した画像）の配置の有無は自動で切り替わりますが、`cover=true` とすれば必ず表紙を入れるようになります。
+`media` の値によって表紙（config.yml の coverimage に指定した画像）の配置の有無は自動で切り替わりますが、`cover=true` とすれば必ず表紙を入れるようになります。
 
 なお、config.yml の coverimage で指定する画像ファイルは、原寸を想定しています。
 
@@ -125,5 +125,5 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 
  * jsbook.cls のクラスオプション `uplatex`：これまで texdocumentclass に指定が必要だった `uplatex` オプションは不要となっています。
  * jsbook.cls のクラスオプション `nomag`：用紙サイズや版面設計は、すべて review-jsbook.cls 側で行います。
- * hyperref パッケージ：あらかじめ hyperref パッケージを組み込んでおり、`cameraready` オプションにより用途別で挙動を制御します。
+ * hyperref パッケージ：あらかじめ hyperref パッケージを組み込んでおり、`media` オプションにより用途別で挙動を制御します。
  * 各種相対フォントサイズコマンド `\small`, `\footnotesize`, `\scriptsize`, `\tiny`, `\large`, `\Large`, `\LARGE`, `\huge`, `\Huge`, `\HUGE` は、級数ベースに書き換えています。おおむね妥当な値になっているはずです。

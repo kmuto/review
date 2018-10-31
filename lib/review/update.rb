@@ -25,7 +25,7 @@ module ReVIEW
     HTML_VERSION = '5'
     TEX_DOCUMENTCLASS = ['review-jsbook', 'review-jlreq']
     TEX_DOCUMENTCLASS_BAD = ['jsbook', nil]
-    TEX_DOCUMENTCLASS_OPTS = 'cameraready=print,paper=a5'
+    TEX_DOCUMENTCLASS_OPTS = 'media=print,paper=a5'
     TEX_COMMAND = 'uplatex'
     TEX_OPTIONS = '-interaction=nonstopmode -file-line-error'
     DVI_COMMAND = 'dvipdfmx'
@@ -403,7 +403,7 @@ module ReVIEW
             flag = nil
           end
         end
-        opts << 'cameraready=print'
+        opts << 'media=print'
         opts << 'cover=false'
       when 'review-jlreq'
         # at this time, only think about jsbook->jlreq
@@ -428,7 +428,7 @@ module ReVIEW
             flag = nil
           end
         end
-        opts << 'cameraready=print'
+        opts << 'media=print'
         opts << 'cover=false'
       else
         flag = nil

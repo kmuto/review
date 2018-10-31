@@ -156,10 +156,11 @@
   \@nameuse{@makehiddenfolio@nikko-pc}}
 
 
-%% cameraready=print,ebook,preview
+%% media=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
+\DeclareOptionX{media}[print]{\gdef\recls@cameraready{#1}}
 
 %% 用紙
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
@@ -193,7 +194,7 @@
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{cameraready,hiddenfolio,%
+\ExecuteOptionsX{media,cameraready,hiddenfolio,%
   paper,tombopaper,bleed_margin,paperwidth,paperheight,%
   Q,W,L,H,head,gutter,headheight,headsep,footskip,%
   cover,startpage,serial_pagination}
@@ -205,7 +206,7 @@
 
 %% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
-%%FIXME: cameraready=preview の挙動は保留。例：フォント関係を仕込む
+%%FIXME: media=preview の挙動は保留。例：フォント関係を仕込む
   \@camerareadyfalse\@pdfhyperlinkfalse\@reclscovertrue
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse\@reclscoverfalse
@@ -235,7 +236,7 @@
   \@camerareadytrue\@pdfhyperlinktrue\@reclscovertrue
   \PassOptionsToClass{papersize}{jsbook}%
 \else
-  \recls@error{No such value of cameraready: \recls@cameraready}%
+  \recls@error{No such value of media: \recls@cameraready}%
 \fi\fi\fi
 
 %% 内部Unicode動作の時だけupTeXとみなす
