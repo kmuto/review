@@ -348,6 +348,7 @@ EOT
     io = StringIO.new
     @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
     @u.update_tex_stys('review-jsbook', @tmpdir)
+    assert_equal '', io.string
     File.write(File.join(@tmpdir, 'sty/review-custom.sty'), "% MY CUSTOM\n")
     @u.update_tex_stys('review-jsbook', @tmpdir)
     assert_equal '', io.string

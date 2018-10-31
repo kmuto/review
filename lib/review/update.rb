@@ -30,12 +30,14 @@ module ReVIEW
     TEX_OPTIONS = '-interaction=nonstopmode -file-line-error'
     DVI_COMMAND = 'dvipdfmx'
     DVI_OPTIONS = '-d 5 -z 9'
+    # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
+    GENTOMBOWSTY = 'gentombow09j.sty'
 
     attr_reader :config_ymls, :locale_ymls, :catalog_ymls, :tex_ymls, :epub_ymls
     attr_accessor :force, :specified_template
 
     def initialize
-      @template = nil
+      @template = '__DEFAULT__'
       @specified_template = nil
       @force = nil
       @logger = ReVIEW.logger
@@ -69,9 +71,14 @@ module ReVIEW
       update_epub_version
       update_locale
       update_tex_parameters
+
       if @template
+        if @template == '__DEFAULT__'
+          @template = TEX_DOCUMENTCLASS[0]
+        end
         update_tex_stys(@template, dir)
       end
+
       update_tex_command
       update_dvi_command
 
@@ -266,6 +273,7 @@ module ReVIEW
           end
         end
       else
+        @logger.info t('new file %s is created.', [target_rakefile]) unless @force
         FileUtils.cp master_rakefile, target_rakefile
       end
 
@@ -279,6 +287,7 @@ module ReVIEW
           end
         end
       else
+        @logger.info t('new file %s is created.', [target_rakefile]) unless @force
         FileUtils.cp master_rakefile, target_rakefile
       end
     end
@@ -325,10 +334,12 @@ module ReVIEW
             # want to use other template?
             @logger.error t("%s: !! 'texdocumentclass' uses new class '%s' already, but you specified '%s'. This tool can't handle such migration. Ignored. !!", [File.basename(yml), config['texdocumentclass'][0], @specified_template])
             @template = nil
+          else
+            @template = config['texdocumentclass'][0]
           end
+
+          # no need to update
           next
-        else
-          @template = config['texdocumentclass'][0]
         end
 
         if TEX_DOCUMENTCLASS_BAD.include?(config['texdocumentclass'][0])
@@ -366,7 +377,7 @@ module ReVIEW
           rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modified_opts}"]))
         else
           @template = nil
-          @logger.error t("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass']])
+          @logger.error t("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass'][0]])
         end
       end
     end
@@ -449,6 +460,7 @@ module ReVIEW
 
         unless File.exist?(target_styfile)
           # just copy
+          @logger.info t('new file %s is created.', [target_styfile]) unless @force
           FileUtils.cp master_styfile, target_styfile
           next
         end
@@ -468,9 +480,9 @@ module ReVIEW
       end
 
       if template == 'review-jsbook'
-        # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
-        unless File.exist?(File.join(texmacrodir, 'gentombow09j.sty'))
-          FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow09j.sty')
+        unless File.exist?(File.join(texmacrodir, GENTOMBOWSTY))
+          @logger.info t('new file %s is created.', [File.join(texmacrodir, GENTOMBOWSTY)]) unless @force
+          FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, GENTOMBOWSTY)
         end
       end
     end
