@@ -234,7 +234,7 @@ EOT
     assert_match(/By default it is migrated to/, io.string)
     assert_match(/is safely replaced/, io.string)
     cont = <<EOT
-texdocumentclass: ["review-jsbook", "paper=a5,Q=15.46,landscape,oneside,twoside,vartwoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,disablejfam,draft,final,mingoth,winjis,jis,papersize,english,report,jslogo,nojslogo,cameraready=print,cover=false"]
+texdocumentclass: ["review-jsbook", "paper=a5,Q=15.46,landscape,oneside,twoside,vartwoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,disablejfam,draft,final,mingoth,winjis,jis,papersize,english,report,jslogo,nojslogo,media=print,cover=false"]
 EOT
     assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
   end
@@ -246,7 +246,7 @@ EOT
     @u.parse_ymls(@tmpdir)
     @u.update_tex_parameters
     assert_match(/couldn't be converted fully/, io.string)
-    assert_match("'paper=a5,cameraready=print,cover=false' is suggested", io.string)
+    assert_match("'paper=a5,media=print,cover=false' is suggested", io.string)
     cont = <<EOT
 texdocumentclass: ["jsbook", "a5paper,invalid"]
 EOT
@@ -330,7 +330,7 @@ EOT
     assert_match(/By default it is migrated to/, io.string)
     assert_match(/is safely replaced/, io.string)
     cont = <<EOT
-texdocumentclass: ["review-jlreq", "paper=a5,fontsize=11pt,landscape,oneside,twoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,draft,final,report,cameraready=print,cover=false"]
+texdocumentclass: ["review-jlreq", "paper=a5,fontsize=11pt,landscape,oneside,twoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,draft,final,report,media=print,cover=false"]
 EOT
     assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
   end
