@@ -1,17 +1,17 @@
 # Version 3.0.0 release candidate
 ## Breaking Changes
-* ★PDFMaker: review-jsbook の見出しの文字サイズを、オリジナルの jsbook に準拠しました ([#1152])
+* ★PDFMaker: heading character size of review-jsbook becomes the same as the original jsbook ([#1152])
 
 ## Bug Fixes
-* PDFMaker: review-jsbook クラスファイルで hiddenfolio パラメータと tombopaper パラメータを同時に使用すると hiddenfolio パラメータが無視される問題を修正しました ([#1158])
-* PDFMaker: review-jsbook クラスファイルで paperwidth, paperheight パラメータが効かない問題を修正しました ([#1171])
-* review-update で sty フォルダの更新が無視されることがあるのを修正しました ([#1183])
+* PDFMaker: fixes an issue that hiddenfolio parameter was ignored when using both hiddenfolio and tombopaper in review-jsbook ([#1158])
+* PDFMaker: fixes a problem that the paperwidth and paperheight parameters of review-jsbook didn't work ([#1171])
+* fixes an issue that review-update ignored update of sty folder ([#1183])
 
 ## Enhancements
-* ★PDFMaker: review-jsbook において、fontsize パラメータで標準の文字サイズ、baselineskip パラメータで標準の行の高さを pt や mm などの単位付きで指定できるようにしました ([#1151])
-* PDFMaker: 何らかの事情でオリジナルの jsbook.cls クラスファイルを使い続けたいユーザー向けに、review-jsbook セットのスタイルファイルを流用可能にしました ([#1177])
-* PDFMaker: ユーザーが任意のスタイルや `//embed` 命令で利用できるよう、review-jsbook および review-jlreq に空ページを作成する `\oneblankpage`、現在のページが奇数だったときに限り改ページして次のページが偶数ページになるようにする `\clearoddpage` のマクロを追加しました ([#1175],[#1182])
-* PDFMaker: review-jsbook および review-jlreq クラスファイルのドキュメントオプションパラメータに、生成 PDF の種類を指定する `media` を追加しました。3.0.0 preview3 で導入した `cameraready` パラメータと同じ意味です（どちらを使ってもかまいません）（[#1181]）
+* ★PDFMaker: in review-jsbook, you can specify the font size with `fontsize` parameter and the line height with `baselineskip` parameter with units such as pt and mm ([#1151])
+* PDFMaker: users who want to continue using the original jsbook.cls class file for some reason can use sty files of review-jsbook set ([#1177])
+* PDFMaker: add useful macros to review-jsbook and review-jlreq for users. `\oneblankpage` creates an empty page. `\clearoddpage` breaks page as necessary so that the next page is always an even page ([#1175],[#1182])
+* PDFMaker: add `media` parameter that specifies the type of PDF to review-jsbook and review-jlreq. This has the same meaning as `cameraready` ([#1181])
 
 ## Docs
 
