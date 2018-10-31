@@ -1,3 +1,32 @@
+# Version 3.0.0 release candidate
+## Breaking Changes
+* ★PDFMaker: review-jsbook の見出しの文字サイズを、オリジナルの jsbook に準拠しました ([#1152])
+
+## Bug Fixes
+* PDFMaker: review-jsbook クラスファイルで hiddenfolio パラメータと tombopaper パラメータを同時に使用すると hiddenfolio パラメータが無視される問題を修正しました ([#1158])
+* PDFMaker: review-jsbook クラスファイルで paperwidth, paperheight パラメータが効かない問題を修正しました ([#1171])
+* review-update で sty フォルダの更新が無視されることがあるのを修正しました ([#1183])
+
+## Enhancements
+* ★PDFMaker: review-jsbook において、fontsize パラメータで標準の文字サイズ、baselineskip パラメータで標準の行の高さを pt や mm などの単位付きで指定できるようにしました ([#1151])
+* PDFMaker: 何らかの事情でオリジナルの jsbook.cls クラスファイルを使い続けたいユーザー向けに、review-jsbook セットのスタイルファイルを流用可能にしました ([#1177])
+* PDFMaker: ユーザーが任意のスタイルや `//embed` 命令で利用できるよう、review-jsbook および review-jlreq に空ページを作成する `\oneblankpage`、現在のページが奇数だったときに限り改ページして次のページが偶数ページになるようにする `\clearoddpage` のマクロを追加しました ([#1175],[#1182])
+* PDFMaker: review-jsbook および review-jlreq クラスファイルのドキュメントオプションパラメータに、生成 PDF の種類を指定する `media` を追加しました。3.0.0 preview3 で導入した `cameraready` パラメータと同じ意味です（どちらを使ってもかまいません）（[#1181]）
+
+## Docs
+
+## Contributors
+
+[#1151]: https://github.com/kmuto/review/issues/1151
+[#1152]: https://github.com/kmuto/review/issues/1152
+[#1158]: https://github.com/kmuto/review/issues/1158
+[#1171]: https://github.com/kmuto/review/issues/1171
+[#1175]: https://github.com/kmuto/review/pull/1175
+[#1177]: https://github.com/kmuto/review/pull/1177
+[#1181]: https://github.com/kmuto/review/issues/1181
+[#1182]: https://github.com/kmuto/review/pull/1182
+[#1183]: https://github.com/kmuto/review/issues/1183
+
 # Version 3.0.0 preview 4
 ## New Features
 * new command `review-update` is added, which updates the setting of the project files to the new version ([#1144])
@@ -12,10 +41,6 @@
 ## Enhancements
 * PDFMaker: support hiddenfolio parameter with review-jlreq.cls ([#1147])
 * EPUBMaker/WEBMaker: when imgmath function is enabled, font size is passed to each `//texequation` ([#1146])
-
-## Docs
-
-## Contributors
 
 [#1144]: https://github.com/kmuto/review/issues/1144
 [#1146]: https://github.com/kmuto/review/issues/1146
