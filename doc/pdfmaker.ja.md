@@ -24,7 +24,7 @@ Re:VIEW 3.0 より、デフォルトのクラスファイルを jsbook.cls か�
 
 これまでは `layout.tex.erb` の中で config.yml の値などの判定を Ruby の埋め込みコードで処理していましたが、config.yml の値はまず TeX のマクロに文字列として格納され、そのマクロをクラスファイルやスタイルファイルで参照して使用します。これにより、（TeX の知識はより必要になりますが）upLaTeX 以外の別のコンパイラを使用したり、独自のクラスファイルやスタイルファイルを作ったりすることが容易になります。
 
-config.yml から TeX マクロへの転換は、Re:VIEW プログラムの `templatex/latex/config.erb` で実装されています。この結果、新しい `layout.tex.erb` における Ruby の埋め込みコードは以下のプリアンブルの箇所のみとなります。
+config.yml から TeX マクロへの転換は、Re:VIEW プログラムの `templates/latex/config.erb` で実装されています。この結果、新しい `layout.tex.erb` における Ruby の埋め込みコードは以下のプリアンブルの箇所のみとなります。
 
 ```
 \documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
@@ -74,7 +74,7 @@ config.yml から TeX マクロへの転換は、Re:VIEW プログラムの `tem
 * `gentombow09j.sty` : トンボを表現する支援パッケージです。
 * `reviewmacro.sty` : 以下のスタイルファイルを取り込むスタイルファイルです。このファイルを config.yml の texstyle パラメータで指定すれば、すべてのスタイルファイルが取り込まれます。
 * `review-base.sty` : Re:VIEW固有のマクロ名と TeX のマクロとを結び付けるスタイルファイルです。また、`layout.tex.erb` の各マクロの実体を定義します。
-* `review-style.sty` : 基本的な見映えに加えての見た目の調整を定義するスタイルファイルです。review-jsbook.cls が提供するこのファイルは、従来のバージョンとの互換性を持たせたもので、華やかさを追求したものではありません。
+* `review-style.sty` : 基本的な見映えに加えて見た目の調整を定義するスタイルファイルです。review-jsbook.cls が提供するこのファイルは、従来のバージョンとの互換性を持たせたもので、華やかさを追求したものではありません。
 * `review-custom.sty` : このファイルは空の内容で、ユーザーが任意でマクロを追加したり既存のマクロを上書きしたりすることを想定したスタイルファイルです。
 
 review-jsbook.cls は従来の jsbook.cls を包み、以下の機能を提供します。

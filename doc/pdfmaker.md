@@ -4,6 +4,90 @@ The command `review-pdfmaker` in Re:VIEW use [LaTeX](https://en.wikipedia.org/wi
 
 To use the command, you need to set up LaTeX system.
 
+## About new layout file and review-jsbook.cls
+
+Since Re:VIEW 3.0, review-jsbook.cls becomes the default class file.
+
+If `texdocumentclass` isn't specified, the layout file is switched based on the value of review_version in config.yml. If `review_version` is 2.0, older layout files and jsbook.cls are used for compatibility.
+
+### Changes in layout file `layout.tex.erb`
+
+The new layout file `layout.tex.erb` is incompatible with the Re:VIEW 2 version's.
+
+The values of config.yml are converted to a TeX macro, and they are used for class files and style files. This makes it easier (although knowledge of TeX is necessary) to use another compiler other than upLaTeX, or to create your own class files and style files.
+
+Conversion from config.yml to TeX macro is executed in `templates/latex/config.erb` of Re:VIEW. As a result, the embedded code of Ruby in `layout.tex.erb` exists only in the following preamble.
+
+```
+\documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
+<%= latex_config %>
+<%- if @config['texstyle'] -%>
+<%-   [@config['texstyle']].flatten.each do |x| -%>
+\usepackage{<%= x %>}
+<%-   end -%>
+<%- end -%>
+
+\begin{document}
+
+```
+
+In the new `layout.tex.erb`, content is constructed by defining or changing the following macros.
+
+* `\reviewbegindocumenthook` : hook begining the document
+* `\reviewcoverpagecont` : cover contents
+* `\reviewfrontmatterhook` : hook before frontmatter
+* `\reviewtitlepagecont` : titlepage contents
+* `\revieworiginaltitlepagecont` : original titlepage contents (in the case of a translation)
+* `\reviewcreditfilecont` : credit contents
+* `\reviewprefacefiles` : frontmatter contents (PREDEF)
+* `\reviewtableofcontents` : table of contents
+* `\reviewmainmatterhook` : hook before mainmatter
+* `\reviewchapterfiles` : mainmatter contents (CHAPS)
+* `\reviewappendixhook` : hook before appendix
+* `\reviewappendixfiles` : appendix contents (APPENDIX)
+* `\reviewbackmatterhook` : hook before backmatter
+* `\reviewpostdeffiles` : backmatter contents (POSTDEF)
+* `\reviewprintindex` : index
+* `\reviewprofilepagecont` : profile contents
+* `\reviewadvfilepagecont` : advertisement contents
+* `\reviewcolophonpagecont` : colophon contents
+* `\reviewbackcovercont` : backcover contents
+* `\reviewenddocumenthook` : hook before ending the document
+
+It is also possible to continue using your `layouts/layout.tex.erb`.
+
+### structure of review-jsbook.cls set
+
+When creating a new document folder with the `review-init` command, the following files are created in `sty` folder.
+
+* `review-jsbook.cls` : provides a basic design of paper representation.
+* `plistings.sty` : provides highlight expressions of program code.
+* `jumoline.sty` : expresses underlining.
+* `gentombow09j.sty` : makes bleed box.
+* `reviewmacro.sty` : imports the following style file. By specifying this file with `texstyle` parameter of config.yml, all style files are imported.
+* `review-base.sty` : associates Re:VIEW macro name and TeX macro. Also defines the entity of each macros of `layout.tex.erb`.
+* `review-style.sty` :defines visual decorations.
+* `review-custom.sty` : is empty file. It is assumed that the user adds macros or overwrites existing macros arbitrarily.
+
+Default value of texdocumentclass are as follows.
+
+```
+texdocumentclass: ["review-jsbook", "media=print,paper=a5,cover=false"]
+
+texdocumentclass: ["review-jsbook", ""] (same effort)
+
+texdocumentclass: ["review-jsbook", "media=print,paper=a5,cover=false,Q=13,W=35,L=32,H=22"] (same effort)
+```
+
+### About review-jlreq.cls
+
+Since Re:VIEW 3.0, review-jlreq.cls is also provided. This class file extends jlreq.cls which makes paper design based on "Requirements for Japanese Text Layout" ( https://www.w3.org/TR/2012/NOTE-jlreq-20120403/ ).
+
+`review-init --latex-template=review-jlreq` command copies the review-jlreq.cls set to `sty` folder. You need to change config.yml as follows.
+
+```
+texdocumentclass: ["review-jlreq", "media=print,paper=a5,cover=false"]
+```
 
 ## Important Changes about LaTeX in Re:VIEW 2.0
 
