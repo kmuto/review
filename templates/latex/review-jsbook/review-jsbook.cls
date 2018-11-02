@@ -435,16 +435,16 @@
 \fi
 \renewcommand{\Large}{\@setfontsize\Large
 %  {\recls@fnt@scale\dimexpr 20\JQ}{\recls@fnt@scale\dimexpr 30H}}
-  {\recls@fnt@scale\dimexpr 18.2\JQ}{\recls@fnt@scale\dimexpr 27.3H}}
+  {\recls@fnt@scale\dimexpr 18.72\JQ}{\recls@fnt@scale\dimexpr 27.3H}}
 \renewcommand{\LARGE}{\@setfontsize\LARGE
 %  {\recls@fnt@scale\dimexpr 24\JQ}{\recls@fnt@scale\dimexpr 36H}}
-  {\recls@fnt@scale\dimexpr 22.1\JQ}{\recls@fnt@scale\dimexpr 32.5H}}
+  {\recls@fnt@scale\dimexpr 22.464\JQ}{\recls@fnt@scale\dimexpr 32.5H}}
 \renewcommand{\huge}{\@setfontsize\huge
 %  {\recls@fnt@scale\dimexpr 28\JQ}{\recls@fnt@scale\dimexpr 42H}}
-  {\recls@fnt@scale\dimexpr 26\JQ}{\recls@fnt@scale\dimexpr 36.4H}}
+  {\recls@fnt@scale\dimexpr 26.962\JQ}{\recls@fnt@scale\dimexpr 36.4H}}
 \renewcommand{\Huge}{\@setfontsize\Huge
 %  {\recls@fnt@scale\dimexpr 32\JQ}{\recls@fnt@scale\dimexpr 48H}}
-  {\recls@fnt@scale\dimexpr 32.5\JQ}{\recls@fnt@scale\dimexpr 42.9H}}
+  {\recls@fnt@scale\dimexpr 32.344\JQ}{\recls@fnt@scale\dimexpr 42.9H}}
 \renewcommand{\HUGE}{\jsc@setfontsize\HUGE
 %  {\recls@fnt@scale\dimexpr 36\JQ}{\recls@fnt@scale\dimexpr 54H}}
   {\recls@fnt@scale\dimexpr 39\JQ}{\recls@fnt@scale\dimexpr 52H}}
