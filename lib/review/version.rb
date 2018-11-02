@@ -1,3 +1,3 @@
 module ReVIEW
-  VERSION = '3.0.0.preview3'.freeze
+  VERSION = '3.0.0.preview4'.freeze
 end

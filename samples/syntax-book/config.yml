@@ -22,9 +22,9 @@ epubmaker:
   htmlext: xhtml
 
 texstyle: ["reviewmacro"]
-#texdocumentclass: ["review-jsbook", "cameraready=print,paper=b5"]
-texdocumentclass: ["review-jsbook", "cameraready=ebook,paper=b5"]
-#texdocumentclass: ["review-jsbook", "cameraready=print,paper=b5,bleed_margin=3mm,cover=true,Q=14,startpage=3,serial_pagination=true,hiddenfolio=nikko-pc"]
+#texdocumentclass: ["review-jsbook", "media=print,paper=b5"]
+texdocumentclass: ["review-jsbook", "media=ebook,paper=b5"]
+#texdocumentclass: ["review-jsbook", "media=print,paper=b5,bleed_margin=3mm,cover=true,Q=14,startpage=3,serial_pagination=true,hiddenfolio=nikko-pc"]
 # texcommand: "uplatex"
 # texoptions: null
 # dvicommand: "dvipdfmx"

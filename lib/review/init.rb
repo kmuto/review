@@ -100,16 +100,16 @@ module ReVIEW
 
     def generate_sample(dir)
       unless @force
-        File.write("#{dir}/#{File.basename(dir)}.re", '= ')
+        File.write(File.join(dir, "#{File.basename(dir)}.re"), '= ')
       end
     end
 
     def generate_layout(dir)
-      FileUtils.mkdir_p dir + '/layouts'
+      FileUtils.mkdir_p File.join(dir, 'layouts')
     end
 
     def generate_catalog_file(dir)
-      File.open(dir + '/catalog.yml', 'w') do |file|
+      File.open(File.join(dir, 'catalog.yml'), 'w') do |file|
         file.write <<-EOS
 PREDEF:
 
@@ -125,19 +125,19 @@ EOS
     end
 
     def generate_images_dir(dir)
-      FileUtils.mkdir_p(dir + '/images')
+      FileUtils.mkdir_p(File.join(dir, 'images'))
     end
 
     def generate_cover_image(dir)
-      FileUtils.cp(@review_dir + '/samples/sample-book/src/images/cover.jpg',
-                   dir + '/images/')
-      FileUtils.cp(@review_dir + '/samples/sample-book/src/images/cover-a5.ai',
-                   dir + '/images/')
+      FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/images/cover.jpg'),
+                   File.join(dir, 'images'))
+      FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/images/cover-a5.ai'),
+                   File.join(dir, 'images'))
     end
 
     def generate_config(dir)
       today = Time.now.strftime('%Y-%m-%d')
-      content = File.read(@review_dir + '/doc/config.yml.sample', encoding: 'utf-8')
+      content = File.read(File.join(@review_dir, 'doc/config.yml.sample'), encoding: 'utf-8')
       content.gsub!(/^#\s*coverimage:.*$/, 'coverimage: cover.jpg')
       content.gsub!(/^  #\s*coverimage:.*$/, '  coverimage: cover-a5.ai')
       content.gsub!(/^#\s*date:.*$/, "date: #{today}")
@@ -152,23 +152,23 @@ EOS
     end
 
     def generate_style(dir)
-      FileUtils.cp @review_dir + '/samples/sample-book/src/style.css', dir
+      FileUtils.cp File.join(@review_dir, 'samples/sample-book/src/style.css'), dir
     end
 
     def generate_texmacro(dir)
-      texmacrodir = dir + '/sty'
+      texmacrodir = File.join(dir, 'sty')
       FileUtils.mkdir_p texmacrodir
-      tdir = File.join(@review_dir, '/templates/latex', @template)
+      tdir = File.join(@review_dir, 'templates/latex', @template)
       @logger.error "#{tdir} not found." unless File.exist?(tdir)
-      FileUtils.cp Dir.glob(tdir + '/*.*'), texmacrodir
+      FileUtils.cp Dir.glob(File.join(tdir, '*.*')), texmacrodir
       # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
-      FileUtils.cp File.join(@review_dir, '/vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow09j.sty')
+      FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow09j.sty')
     end
 
     def generate_rakefile(dir)
-      FileUtils.mkdir_p dir + '/lib/tasks'
+      FileUtils.mkdir_p File.join(dir, 'lib/tasks')
 
-      File.open(dir + '/Rakefile', 'w') do |file|
+      File.open(File.join(dir, 'Rakefile'), 'w') do |file|
         file.write <<-EOS
 Dir.glob('lib/tasks/*.rake').sort.each do |file|
   load(file)
@@ -176,16 +176,16 @@ end
 EOS
       end
 
-      FileUtils.cp(@review_dir + '/samples/sample-book/src/lib/tasks/review.rake',
-                   dir + '/lib/tasks/review.rake')
+      FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/lib/tasks/review.rake'),
+                   File.join(dir, 'lib/tasks/review.rake'))
     end
 
     def generate_locale(dir)
-      FileUtils.cp @review_dir + '/lib/review/i18n.yml', dir + '/locale.yml'
+      FileUtils.cp File.join(@review_dir, 'lib/review/i18n.yml'), File.join(dir, 'locale.yml')
     end
 
     def generate_gemfile(dir)
-      File.open(dir + '/Gemfile', 'w') do |file|
+      File.open(File.join(dir, 'Gemfile'), 'w') do |file|
         file.write <<-EOS
 source 'https://rubygems.org'
 
@@ -196,9 +196,9 @@ EOS
     end
 
     def generate_doc(dir)
-      docdir = dir + '/doc'
+      docdir = File.join(dir, 'doc')
       FileUtils.mkdir_p docdir
-      md_files = Dir.glob(@review_dir + '/doc/*.md').map.to_a
+      md_files = Dir.glob(File.join(@review_dir, 'doc/*.md')).map.to_a
       FileUtils.cp md_files, docdir
     end
 

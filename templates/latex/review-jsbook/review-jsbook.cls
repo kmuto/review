@@ -156,16 +156,17 @@
   \@nameuse{@makehiddenfolio@nikko-pc}}
 
 
-%% cameraready=print,ebook,preview
+%% media=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
+\DeclareOptionX{media}[print]{\gdef\recls@cameraready{#1}}
 
 %% 用紙
 \DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
 \DeclareOptionX{tombopaper}{%
   \gdef\recls@tombowopts{}%%default: auto-detect
-  \ifx#1\@empty\else\gdef\recls@tombowopts{tombo-#1}\fi}
+  \ifx#1\@empty\else\gdef\recls@tombowopts{tombow-#1}\fi}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 %% 隠しノンブルプリセット
 \DeclareOptionX{hiddenfolio}{\gdef\recls@hiddenfolio{#1}}%%default: (none)
@@ -199,7 +200,7 @@
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{cameraready,hiddenfolio,%
+\ExecuteOptionsX{media,cameraready,hiddenfolio,%
   paper,tombopaper,bleed_margin,paperwidth,paperheight,%
   Q,W,L,H,head,gutter,headheight,headsep,footskip,%
   fontsize,baselineskip,foot_space,fore_edge,%
@@ -222,7 +223,7 @@
 
 %% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
-%%FIXME: cameraready=preview の挙動は保留。例：フォント関係を仕込む
+%%FIXME: media=preview の挙動は保留。例：フォント関係を仕込む
   \@camerareadyfalse\@pdfhyperlinkfalse\@reclscovertrue
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse\@reclscoverfalse
@@ -252,7 +253,7 @@
   \@camerareadytrue\@pdfhyperlinktrue\@reclscovertrue
   \PassOptionsToClass{papersize}{jsbook}%
 \else
-  \recls@error{No such value of cameraready: \recls@cameraready}%
+  \recls@error{No such value of media: \recls@cameraready}%
 \fi\fi\fi
 
 %% 内部Unicode動作の時だけupTeXとみなす
@@ -280,7 +281,7 @@
 \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
   \setlength{\paperwidth}{\recls@paperwidth}
   \setlength{\paperheight}{\recls@paperheight}
-  \def\recls@tmp{pdf}\ifx\recls@cameraready\recls@tmp
+  \def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
     \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
   \fi
 \fi\fi
@@ -540,6 +541,16 @@
     \vss}%
   \clearpage
 }
+
+% 空ページ
+\newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
+  \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
+
+% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
+\let\cleardoublepage@right\cleardoublepage
+\def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
+  \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\let\clearoddpage\cleardoublepage@left
 
 % coverオプションによる表紙判定の上書き
 \def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp

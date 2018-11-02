@@ -103,13 +103,14 @@ cls]
 \@namedef{@makehiddenfolio@shippo}{%
   \@nameuse{@makehiddenfolio@nikko-pc}}
 
-%% cameraready=print,ebook,preview
+%% media=print,ebook,preview
 \newif\if@cameraready \@camerareadyfalse
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \newif\if@pdftombo \@pdftombofalse
 \newif\if@reclscover \@reclscovertrue
 \newif\ifrecls@serialpage \recls@serialpagefalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
+\DeclareOptionX{media}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
@@ -122,7 +123,7 @@ cls]
 % jlreqのオプションについては https://github.com/abenori/jlreq/blob/master/README-ja.md を参照
 \PassOptionsToClass{book,paper=a5}{jlreq}% クラスで必ず使うオプションの指定。デフォルトをA5にしておく
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jlreq}}%
-\ExecuteOptionsX{cameraready,tombopaper,bleed_margin,cover,startpage,serial_pagination,hiddenfolio}
+\ExecuteOptionsX{media,cameraready,tombopaper,bleed_margin,cover,startpage,serial_pagination,hiddenfolio}
 \ProcessOptionsX\relax
 
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
@@ -132,7 +133,7 @@ cls]
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue\@pdftombofalse\@reclscovertrue
 \else
-  \recls@error{No such value of cameraready: \recls@cameraready}%
+  \recls@error{No such value of media: \recls@cameraready}%
 \fi\fi\fi
 
 \LoadClass{jlreq}
@@ -247,6 +248,16 @@ cls]
     \vss}%
   \clearpage
 }
+
+% 空ページ
+\newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
+  \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
+
+% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
+\let\cleardoublepage@right\cleardoublepage
+\def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
+  \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\let\clearoddpage\cleardoublepage@left
 
 % シンプルな通しノンブル
 \ifrecls@serialpage

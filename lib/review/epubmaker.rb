@@ -127,7 +127,7 @@ module ReVIEW
         copy_backmatter(basetmpdir)
 
         math_dir = "./#{@config['imagedir']}/_review_math"
-        if @config['imgmath'] && File.exist?("#{math_dir}/__IMGMATH_BODY__.tex")
+        if @config['imgmath'] && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.tex'))
           make_math_images(math_dir)
         end
         call_hook('hook_afterbackmatter', basetmpdir)
@@ -139,23 +139,23 @@ module ReVIEW
           verify_target_images(basetmpdir)
           copy_images(@config['imagedir'], basetmpdir)
         else
-          copy_images(@config['imagedir'], "#{basetmpdir}/#{@config['imagedir']}")
+          copy_images(@config['imagedir'], File.join(basetmpdir, @config['imagedir']))
         end
 
-        copy_resources('covers', "#{basetmpdir}/#{@config['imagedir']}")
-        copy_resources('adv', "#{basetmpdir}/#{@config['imagedir']}")
-        copy_resources(@config['fontdir'], "#{basetmpdir}/fonts", @config['font_ext'])
+        copy_resources('covers', File.join(basetmpdir, @config['imagedir']))
+        copy_resources('adv', File.join(basetmpdir, @config['imagedir']))
+        copy_resources(@config['fontdir'], File.join(basetmpdir, 'fonts'), @config['font_ext'])
 
         call_hook('hook_aftercopyimage', basetmpdir)
 
-        @producer.import_imageinfo("#{basetmpdir}/#{@config['imagedir']}", basetmpdir)
-        @producer.import_imageinfo("#{basetmpdir}/fonts", basetmpdir, @config['font_ext'])
+        @producer.import_imageinfo(File.join(basetmpdir, @config['imagedir']), basetmpdir)
+        @producer.import_imageinfo(File.join(basetmpdir, 'fonts'), basetmpdir, @config['font_ext'])
 
         check_image_size(basetmpdir, @config['image_maxpixels'], @config['image_ext'])
 
         epubtmpdir = nil
         if @config['debug'].present?
-          epubtmpdir = "#{basetmpdir}/#{booktmpname}"
+          epubtmpdir = File.join(basetmpdir, booktmpname)
           Dir.mkdir(epubtmpdir)
         end
         log('Call ePUB producer.')
@@ -194,7 +194,7 @@ module ReVIEW
             end
           end
         when 'text/css'
-          File.open("#{basetmpdir}/#{content.file}") do |f|
+          File.open(File.join(basetmpdir, content.file)) do |f|
             f.each_line do |l|
               l.scan(/url\((.+?)\)/) do |_m|
                 @config['epubmaker']['force_include_images'].push($1.strip)
@@ -219,9 +219,9 @@ module ReVIEW
             next
           end
           basedir = File.dirname(file)
-          FileUtils.mkdir_p("#{destdir}/#{basedir}")
+          FileUtils.mkdir_p(File.join(destdir, basedir))
           log("Copy #{file} to the temporary directory.")
-          FileUtils.cp(file, "#{destdir}/#{basedir}")
+          FileUtils.cp(file, File.join(destdir, basedir))
         end
       else
         recursive_copy_files(resdir, destdir, allow_exts)
@@ -239,12 +239,12 @@ module ReVIEW
       Dir.open(resdir) do |dir|
         dir.each do |fname|
           next if fname.start_with?('.')
-          if FileTest.directory?("#{resdir}/#{fname}")
-            recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
+          if FileTest.directory?(File.join(resdir, fname))
+            recursive_copy_files(File.join(resdir, fname), File.join(destdir, fname), allow_exts)
           elsif fname =~ /\.(#{allow_exts.join('|')})\Z/i
             FileUtils.mkdir_p(destdir)
             log("Copy #{resdir}/#{fname} to the temporary directory.")
-            FileUtils.cp("#{resdir}/#{fname}", destdir)
+            FileUtils.cp(File.join(resdir, fname), destdir)
           end
         end
       end
@@ -298,7 +298,7 @@ module ReVIEW
 
     def build_part(part, basetmpdir, htmlfile)
       log("Create #{htmlfile} from a template.")
-      File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
+      File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @body = ''
         @body << %Q(<div class="part">\n)
         @body << %Q(<h1 class="part-number">#{CGI.escapeHTML(ReVIEW::I18n.t('part', part.number))}</h1>\n)
@@ -377,7 +377,7 @@ module ReVIEW
     end
 
     def remove_hidden_title(basetmpdir, htmlfile)
-      File.open("#{basetmpdir}/#{htmlfile}", 'r+') do |f|
+      File.open(File.join(basetmpdir, htmlfile), 'r+') do |f|
         body = f.read.
                gsub(%r{<h\d .*?hidden=['"]true['"].*?>.*?</h\d>\n}, '').
                gsub(%r{(<h\d .*?)\s*notoc=['"]true['"]\s*(.*?>.*?</h\d>\n)}, '\1\2')
@@ -469,7 +469,7 @@ module ReVIEW
     def copy_frontmatter(basetmpdir)
       if @config['cover'].present? && File.exist?(@config['cover'])
         FileUtils.cp(@config['cover'],
-                     "#{basetmpdir}/#{File.basename(@config['cover'])}")
+                     File.join(basetmpdir, File.basename(@config['cover'])))
       end
 
       if @config['titlepage']
@@ -477,7 +477,7 @@ module ReVIEW
           build_titlepage(basetmpdir, "titlepage.#{@config['htmlext']}")
         else
           FileUtils.cp(@config['titlefile'],
-                       "#{basetmpdir}/titlepage.#{@config['htmlext']}")
+                       File.join(basetmpdir, "titlepage.#{@config['htmlext']}"))
         end
         @htmltoc.add_item(1,
                           "titlepage.#{@config['htmlext']}",
@@ -487,7 +487,7 @@ module ReVIEW
 
       if @config['originaltitlefile'].present? && File.exist?(@config['originaltitlefile'])
         FileUtils.cp(@config['originaltitlefile'],
-                     "#{basetmpdir}/#{File.basename(@config['originaltitlefile'])}")
+                     File.join(basetmpdir, File.basename(@config['originaltitlefile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['originaltitlefile']),
                           @producer.res.v('originaltitle'),
@@ -496,7 +496,7 @@ module ReVIEW
 
       if @config['creditfile'].present? && File.exist?(@config['creditfile'])
         FileUtils.cp(@config['creditfile'],
-                     "#{basetmpdir}/#{File.basename(@config['creditfile'])}")
+                     File.join(basetmpdir, File.basename(@config['creditfile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['creditfile']),
                           @producer.res.v('credittitle'),
@@ -509,7 +509,7 @@ module ReVIEW
     def build_titlepage(basetmpdir, htmlfile)
       # TODO: should be created via epubcommon
       @title = CGI.escapeHTML(@config.name_of('booktitle'))
-      File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
+      File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @body = ''
         @body << %Q(<div class="titlepage">\n)
         @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>\n)
@@ -535,7 +535,7 @@ module ReVIEW
     def copy_backmatter(basetmpdir)
       if @config['profile']
         FileUtils.cp(@config['profile'],
-                     "#{basetmpdir}/#{File.basename(@config['profile'])}")
+                     File.join(basetmpdir, File.basename(@config['profile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['profile']),
                           @producer.res.v('profiletitle'),
@@ -544,7 +544,7 @@ module ReVIEW
 
       if @config['advfile']
         FileUtils.cp(@config['advfile'],
-                     "#{basetmpdir}/#{File.basename(@config['advfile'])}")
+                     File.join(basetmpdir, File.basename(@config['advfile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['advfile']),
                           @producer.res.v('advtitle'),
@@ -554,9 +554,9 @@ module ReVIEW
       if @config['colophon']
         if @config['colophon'].is_a?(String) # FIXME: should let obsolete this style?
           FileUtils.cp(@config['colophon'],
-                       "#{basetmpdir}/colophon.#{@config['htmlext']}")
+                       File.join(basetmpdir, "colophon.#{@config['htmlext']}"))
         else
-          filename = "#{basetmpdir}/colophon.#{@config['htmlext']}"
+          filename = File.join(basetmpdir, "colophon.#{@config['htmlext']}")
           File.open(filename, 'w') do |f|
             @producer.colophon(f)
           end
@@ -569,7 +569,7 @@ module ReVIEW
 
       if @config['backcover']
         FileUtils.cp(@config['backcover'],
-                     "#{basetmpdir}/#{File.basename(@config['backcover'])}")
+                     File.join(basetmpdir, File.basename(@config['backcover'])))
         @htmltoc.add_item(1,
                           File.basename(@config['backcover']),
                           @producer.res.v('backcovertitle'),
@@ -580,7 +580,7 @@ module ReVIEW
     end
 
     def write_buildlogtxt(basetmpdir, htmlfile, reviewfile)
-      File.open("#{basetmpdir}/#{@buildlogtxt}", 'a') do |f|
+      File.open(File.join(basetmpdir, @buildlogtxt), 'a') do |f|
         f.puts "#{htmlfile},#{reviewfile}"
       end
     end

@@ -56,9 +56,9 @@ epubmaker:
 pdfmaker:
   coverimage: cover-a5.ai
   texstyle: ["reviewmacro"]
-  texdocumentclass: ["review-jsbook", "cameraready=print,paper=a5"]
-  # texdocumentclass: ["review-jsbook", "cameraready=ebook,paper=a5"]
-  # texdocumentclass: ["review-jsbook", "cameraready=print,paper=a5,tombopaper=a4,bleed_margin=3mm,cover=true,Q=14,startpage=3,serial_pagination=true,hiddenfolio=nikko-pc"]
+  texdocumentclass: ["review-jsbook", "media=print,paper=a5"]
+  # texdocumentclass: ["review-jsbook", "media=ebook,paper=a5"]
+  # texdocumentclass: ["review-jsbook", "media=print,paper=a5,tombopaper=a4,bleed_margin=3mm,cover=true,Q=14,startpage=3,serial_pagination=true,hiddenfolio=nikko-pc"]
   # texcommand: "uplatex"
   # texoptions: null
   # dvicommand: "dvipdfmx"

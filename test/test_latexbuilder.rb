@@ -257,7 +257,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       return true
     end
     tmpdir = Dir.mktmpdir
-    File.write("#{tmpdir}/sample.dic", "強運\tはーどらっく\n")
+    File.write(File.join(tmpdir, 'sample.dic'), "強運\tはーどらっく\n")
     @book.config['pdfmaker']['makeindex'] = true
     @book.config['pdfmaker']['makeindex_dic'] = "#{tmpdir}/sample.dic"
     @builder.setup_index
