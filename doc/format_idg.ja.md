@@ -40,7 +40,7 @@ Re:VIEW フォーマットから、Adobe 社の DTP ソフトウェア「InDesig
 `@<dtp>{ 〜 }` で「`<? dtp 〜 ?>`」という XML インストラクションを埋め込みます。処理系に渡す任意の文字列を指定できますが、次のような文字列を特殊文字指定できます。
 
 * maru : 番号リストの各段落先頭で使い、このリスト段落の番号は丸数字であることを示す
-* return  改行記号文字
+* return : 改行記号文字
 * autopagenumber : 現ページ番号
 * nextpageunmber : 次ページ番号
 * previouspagenumber : 前ページ番号
@@ -91,7 +91,7 @@ Re:VIEW フォーマットから、Adobe 社の DTP ソフトウェア「InDesig
 
 ## 表セル幅の指定
 
-`//tsize[|latex|1列目の幅,2列目の幅,...]` で、続く `//table` の表の列幅を指定します（単位mm）。これを利用するときには、`review compile --target=idgxml` を実行する際、オプション`--table=表幅` を付ける必要があります（表幅の単位は mm）。列幅指定の個数が実際の列数に満たない場合、残りの列は均等分割したものとなります。列幅の合計が表幅を超えると警告が表示されます。
+`//tsize[|idgxml|1列目の幅,2列目の幅,...]` で、続く `//table` の表の列幅を指定します（単位mm）。これを利用するときには、`review compile --target=idgxml` を実行する際、オプション`--table=表幅` を付ける必要があります（表幅の単位は mm）。列幅指定の個数が実際の列数に満たない場合、残りの列は均等分割したものとなります。列幅の合計が表幅を超えると警告が表示されます。
 
 ## 表セルの結合やスタイル指定
 `@<dtp>{table 表オプション}` を各セルに入れることで、そのセルの挙動を制御します。
@@ -102,3 +102,7 @@ Re:VIEW フォーマットから、Adobe 社の DTP ソフトウェア「InDesig
 * `rowspan=行数` : 下方向に結合
 * `type=名前` : セルの種類の指定
 * `align=位置` : セル内の内容の位置。通常の用途では left|center|right のいずれか
+
+実際には、スクリプトで判断して後処理することを想定しています。
+
+* 例: https://github.com/kmuto/reviewindesignbook/blob/master/book-IDGXML/book-IDGXML-02modifyTable.jsx
