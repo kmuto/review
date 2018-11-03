@@ -177,7 +177,7 @@
 \DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
 \DeclareOptionX{W}{\gdef\recls@W{#1}}
 \DeclareOptionX{L}{\gdef\recls@L{#1}}
-\DeclareOptionX{H}[22]{\gdef\recls@H{#1}}
+\DeclareOptionX{H}[22.4]{\gdef\recls@H{#1}}
 \DeclareOptionX{head}[\z@]{\gdef\recls@head{#1}}%[18mm]
 \DeclareOptionX{gutter}[\z@]{\gdef\recls@gutter{#1}}%[20mm]
 %% headheight,headsep,footskip
