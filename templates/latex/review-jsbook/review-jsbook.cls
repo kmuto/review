@@ -211,7 +211,7 @@
 \ifx\recls@W\@empty
   \def\recls@W{35}% A5デフォルト
   \def\recls@tmp{b5}\ifx\recls@paper\recls@tmp\def\recls@W{40}\fi
-  \def\recls@tmp{a4}\ifx\recls@paper\recls@tmp\def\recls@W{40}\fi
+  \def\recls@tmp{a4}\ifx\recls@paper\recls@tmp\def\recls@W{44}\fi
 \fi
 \ifx\recls@L\@empty
   \def\recls@L{32}% A5デフォルト
