@@ -175,8 +175,8 @@
 \DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
 %% 基本版面 QWLH、天、ノド
 \DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
-\DeclareOptionX{W}[35]{\gdef\recls@W{#1}}
-\DeclareOptionX{L}[32]{\gdef\recls@L{#1}}
+\DeclareOptionX{W}{\gdef\recls@W{#1}}
+\DeclareOptionX{L}{\gdef\recls@L{#1}}
 \DeclareOptionX{H}[22]{\gdef\recls@H{#1}}
 \DeclareOptionX{head}[\z@]{\gdef\recls@head{#1}}%[18mm]
 \DeclareOptionX{gutter}[\z@]{\gdef\recls@gutter{#1}}%[20mm]
@@ -206,6 +206,18 @@
   fontsize,baselineskip,foot_space,fore_edge,%
   cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
+
+% 紙サイズに合わせてWとLを調整
+\ifx\recls@W\@empty
+  \def\recls@W{35}% A5デフォルト
+  \def\recls@tmp{b5}\ifx\recls@paper\recls@tmp\def\recls@W{40}\fi
+  \def\recls@tmp{a4}\ifx\recls@paper\recls@tmp\def\recls@W{40}\fi
+\fi
+\ifx\recls@L\@empty
+  \def\recls@L{32}% A5デフォルト
+  \def\recls@tmp{b5}\ifx\recls@paper\recls@tmp\def\recls@L{36}\fi
+  \def\recls@tmp{a4}\ifx\recls@paper\recls@tmp\def\recls@L{42}\fi
+\fi
 
 % override Q and H
 \ifx\recls@fontsize\@empty\else
