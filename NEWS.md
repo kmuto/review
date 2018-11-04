@@ -12,7 +12,7 @@
 * PDFMaker: users who want to continue using the original jsbook.cls class file for some reason can use sty files of review-jsbook set ([#1177])
 * PDFMaker: add useful macros to review-jsbook and review-jlreq for users. `\oneblankpage` creates an empty page. `\clearoddpage` breaks page as necessary so that the next page is always an even page ([#1175],[#1182])
 * PDFMaker: add `media` parameter that specifies the type of PDF to review-jsbook and review-jlreq. This has the same meaning as `cameraready` ([#1181])
-* ★PDFMaker: sections are now allowed in part ([#1195])
+* PDFMaker: sections are now allowed in part ([#1195])
 
 ## Docs
 * update IDGXML document `format_idg.ja.md` ([#1188])

@@ -12,7 +12,7 @@
 * PDFMaker: 何らかの事情でオリジナルの jsbook.cls クラスファイルを使い続けたいユーザー向けに、review-jsbook セットのスタイルファイルを流用可能にしました ([#1177])
 * PDFMaker: ユーザーが任意のスタイルや `//embed` 命令で利用できるよう、review-jsbook および review-jlreq に空ページを作成する `\oneblankpage`、必要に応じて改ページすることで次のページが必ず偶数ページになるようにする `\clearoddpage` のマクロを追加しました ([#1175],[#1182])
 * PDFMaker: review-jsbook および review-jlreq クラスファイルのドキュメントオプションパラメータに、生成 PDF の種類を指定する `media` を追加しました。3.0.0 preview3 で導入した `cameraready` パラメータと同じ意味です（どちらを使ってもかまいません）([#1181])
-* ★PDFMaker: 部の中で節などの下位見出しを利用できるようになりました ([#1195])
+* PDFMaker: 部の中で節などの下位見出しを利用できるようになりました ([#1195])
 
 ## ドキュメント
 * IDGXML のドキュメント format_idg.ja.md を更新しました ([#1188])
