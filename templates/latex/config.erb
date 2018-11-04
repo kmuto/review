@@ -94,5 +94,8 @@
 \def\reviewchapterfiles{<%= @input_files['CHAPS'] %>}
 \def\reviewappendixfiles{<%= @input_files['APPENDIX'] %>}
 \def\reviewpostdeffiles{<%= @input_files['POSTDEF'] %>}
+<%- if @config['use_part'] -%>
+\def\reviewusepart{true}
+<%- end -%>
 
 \makeatother
