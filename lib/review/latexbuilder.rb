@@ -96,6 +96,13 @@ module ReVIEW
     end
     private :puts
 
+    def result
+      if @chapter.is_a?(ReVIEW::Book::Part) && !@book.config.check_version('2', exception: false)
+        puts '\end{reviewpart}'
+      end
+      @output.string
+    end
+
     HEADLINE = {
       1 => 'chapter',
       2 => 'section',
@@ -108,8 +115,13 @@ module ReVIEW
     def headline(level, label, caption)
       _, anchor = headline_prefix(level)
       headline_name = HEADLINE[level]
-      if @chapter.is_a? ReVIEW::Book::Part
-        headline_name = 'part'
+      if @chapter.is_a?(ReVIEW::Book::Part)
+        if @book.config.check_version('2', exception: false)
+          headline_name = 'part'
+        elsif level == 1
+          headline_name = 'part'
+          puts '\begin{reviewpart}'
+        end
       end
       prefix = ''
       if level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)

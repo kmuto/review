@@ -106,6 +106,10 @@
 
 \renewcommand{\contentsname}{\review@toctitle}
 
+\newenvironment{reviewpart}{%
+\renewcommand{\thesection}{\thepart.\@arabic\c@section}%
+}{}
+
 % 囲み記事
 \newenvironment{reviewnote}[1][]{%
   \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries NOTE #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
