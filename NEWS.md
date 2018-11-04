@@ -12,8 +12,13 @@
 * PDFMaker: users who want to continue using the original jsbook.cls class file for some reason can use sty files of review-jsbook set ([#1177])
 * PDFMaker: add useful macros to review-jsbook and review-jlreq for users. `\oneblankpage` creates an empty page. `\clearoddpage` breaks page as necessary so that the next page is always an even page ([#1175],[#1182])
 * PDFMaker: add `media` parameter that specifies the type of PDF to review-jsbook and review-jlreq. This has the same meaning as `cameraready` ([#1181])
+* ★PDFMaker: sections are now allowed in part ([#1195])
 
 ## Docs
+* update IDGXML document `format_idg.ja.md` ([#1188])
+* add note about review-update command to quickstart guide `quickstart.ja.md` ([#1189])
+* update comments of sample configuration file `config.yml.sample` ([#1190])
+* update PDFMaker document `pdfmaker.ja.md` ([#1191])
 
 ## Contributors
 
@@ -26,6 +31,11 @@
 [#1181]: https://github.com/kmuto/review/issues/1181
 [#1182]: https://github.com/kmuto/review/pull/1182
 [#1183]: https://github.com/kmuto/review/issues/1183
+[#1188]: https://github.com/kmuto/review/pull/1188
+[#1189]: https://github.com/kmuto/review/pull/1189
+[#1190]: https://github.com/kmuto/review/pull/1190
+[#1191]: https://github.com/kmuto/review/pull/1191
+[#1195]: https://github.com/kmuto/review/issues/1195
 
 # Version 3.0.0 preview 4
 ## New Features
