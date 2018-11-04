@@ -1,7 +1,7 @@
 # simple sample of config.yml
 review_version: 3.0
 
-debug: true
+# debug: true
 
 ## inherited configuratons
 
@@ -20,9 +20,9 @@ aut: ["Masayoshi Takahashi"]
 # edt: null
 pbl: "Re:VIEW Publishing inc."
 prt: "Re:VIEW Printing inc."
-date: 2016-05-03
-history: [["2012-01-30"],["2016-04-20","2016-05-03"]]
-rights: (C) 2016 Re:VIEW Commiters, some rights reserved.
+date: 2018-11-11
+history: [["2012-01-30"],["2016-04-20","2016-05-03"],["2018-11-11"]]
+rights: (C) 2016-2018 Re:VIEW Commiters, some rights reserved.
 description: sample config.yml file for Re:VIEW book
 urnid: urn:uid:http://reviewml.org/review-sample-book
 # isbn: null
@@ -68,10 +68,11 @@ epubmaker:
 
 ## for LaTeX
 
-texstyle: reviewmacro
-texdocumentclass: ["jsbook", "uplatex,oneside"]
+texstyle: ["reviewmacro"]
+texdocumentclass: ["review-jsbook", "media=print,paper=a5,cover=false"]
 
 ## for PDFMaker
 
 pdfmaker:
   colophon: true
+  # coverimage: cover-a5.ai

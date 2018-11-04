@@ -7,16 +7,122 @@ Re:VIEW の review-pdfmaker は、フリーソフトウェアの簡易 DTP シ�
 * https://texwiki.texjp.org/?TeX入手法
 
 ## Re:VIEW バージョンによる変化についての注意
-* Re:VIEW 3.0 より、使用するデフォルトのクラスファイルを jsbook.cls から review-jsbook.cls に変更しました。以下の「review-jsbook.cls について」を参照してください。
+* Re:VIEW 3.0 より、使用するデフォルトのクラスファイルを jsbook.cls から review-jsbook.cls に変更しました。また、別のクラスファイルとして review-jlreq.cls も提供しています。以下の「新しいレイアウトファイルおよび review-jsbook.cls について」を参照してください。
 * Re:VIEW 2.0 より、LaTeX コンパイラのデフォルトが pLaTeX から upLaTeX になりました。以下の「upLaTeX について」を参照してください。
 * Re:VIEW 2.0 より、image タグに `scale` オプションを使って倍率数値を定義していた場合の挙動が変わりました。以下の「scale オプションの挙動について」を参照してください。
 * Re:VIEW 2.0 より、config.yml 等の設定ファイルで使われる `prt` のデフォルトが「発行所」ではなく「印刷所」になりました。「発行所」には `pbl` のほうをお使いください。
 
-## review-jsbook.cls について
+## 新しいレイアウトファイルおよび review-jsbook.cls について
 
-★TBD
+Re:VIEW 3.0 より、デフォルトのクラスファイルを jsbook.cls から review-jsbook.cls に切り替えました。
 
-`texdocumentclass` で明示的な設定をしていない場合は、config.yml の `review_version` の値に基づいて切り替えられ、2.0 の場合は従来の jsbook.cls が使われるようになっています。
+`texdocumentclass` で明示的な設定をしていない場合は、config.yml の `review_version` の値に基づいて切り替えられます。`review_version` が 2.0 の場合は、互換性保持のために従来のレイアウトファイルおよび jsbook.cls が使われるようになっています。
+
+### レイアウトファイル `layout.tex.erb` の変更
+
+レイアウトファイル  `layout.tex.erb` は Re:VIEW 2 バージョンのものから一新され、互換性はなくなりました。
+
+これまでは `layout.tex.erb` の中で config.yml の値などの判定を Ruby の埋め込みコードで処理していましたが、config.yml の値はまず TeX のマクロに文字列として格納され、そのマクロをクラスファイルやスタイルファイルで参照して使用します。これにより、（TeX の知識はより必要になりますが）upLaTeX 以外の別のコンパイラを使用したり、独自のクラスファイルやスタイルファイルを作ったりすることが容易になります。
+
+config.yml から TeX マクロへの転換は、Re:VIEW プログラムの `templates/latex/config.erb` で実装されています。この結果、新しい `layout.tex.erb` における Ruby の埋め込みコードは以下のプリアンブルの箇所のみとなります。
+
+```
+\documentclass[<%= @documentclassoption %>]{<%= @documentclass %>}
+<%= latex_config %>
+<%- if @config['texstyle'] -%>
+<%-   [@config['texstyle']].flatten.each do |x| -%>
+\usepackage{<%= x %>}
+<%-   end -%>
+<%- end -%>
+
+\begin{document}
+
+```
+
+新しい `layout.tex.erb` では、以下のようなマクロを定義あるいは変更することで書籍を構成します。
+
+* `\reviewbegindocumenthook` : ドキュメント開始直後のフック
+* `\reviewcoverpagecont` : 表紙
+* `\reviewfrontmatterhook` : 前付の前のフック
+* `\reviewtitlepagecont` : 大扉
+* `\revieworiginaltitlepagecont` : 翻訳書における原書大扉
+* `\reviewcreditfilecont` : クレジット情報
+* `\reviewprefacefiles` : 前付（PREDEF）
+* `\reviewtableofcontents` : 目次
+* `\reviewmainmatterhook` : 本文の前のフック
+* `\reviewchapterfiles` : 本文（CHAPS）
+* `\reviewappendixhook` : 付録の前のフック
+* `\reviewappendixfiles` : 付録（APPENDIX）
+* `\reviewbackmatterhook` : 後付の前のフック
+* `\reviewpostdeffiles` : 後付（POSTDEF）
+* `\reviewprintindex` : 索引
+* `\reviewprofilepagecont` : 著者紹介
+* `\reviewadvfilepagecont` : 広告
+* `\reviewcolophonpagecont` : 奥付
+* `\reviewbackcovercont` : 裏表紙
+* `\reviewenddocumenthook` : ドキュメント終了直前のフック
+
+過去のバージョンのように全面的に Ruby の埋め込みコードで各種の処理をしたいときには、任意の `layouts/layout.tex.erb` を使用し続けることも可能です。
+
+### review-jsbook.cls の構成
+
+`review-init` コマンドで新たなドキュメントフォルダを作成すると sty フォルダに以下のファイルが展開されます。
+
+* `review-jsbook.cls` : 紙面表現の基本的な設計を提供するクラスファイルです。
+* `plistings.sty` : プログラムコードのハイライト表現を行う支援パッケージです。
+* `jumoline.sty` : 下線を表現する支援パッケージです。
+* `gentombow09j.sty` : トンボを表現する支援パッケージです。
+* `reviewmacro.sty` : 以下のスタイルファイルを取り込むスタイルファイルです。このファイルを config.yml の texstyle パラメータで指定すれば、すべてのスタイルファイルが取り込まれます。
+* `review-base.sty` : Re:VIEW固有のマクロ名と TeX のマクロとを結び付けるスタイルファイルです。また、`layout.tex.erb` の各マクロの実体を定義します。
+* `review-style.sty` : 基本的な見映えに加えて見た目の調整を定義するスタイルファイルです。review-jsbook.cls が提供するこのファイルは、従来のバージョンとの互換性を持たせたもので、華やかさを追求したものではありません。
+* `review-custom.sty` : このファイルは空の内容で、ユーザーが任意でマクロを追加したり既存のマクロを上書きしたりすることを想定したスタイルファイルです。
+
+review-jsbook.cls は従来の jsbook.cls を包み、以下の機能を提供します。
+
+* ドキュメントクラスオプションでほとんどの紙面設計を設定できます。
+* クラスオプション `media=print` （デフォルト）で印刷用に適した紙面、`media=ebook` で電子PDF媒体に適した紙面を作成します。印刷用ではデジタルトンボおよび紙面上トンボを配置し、表紙は付けません。電子用ではトンボなしの仕上がりサイズで、表紙を付けます。明示的に表紙の有無を指定することも可能です（`cover=trueまたはfalse`）。
+* クラスオプション `paper=紙サイズ` で用紙サイズを指定できます。
+* クラスオプション `Q=基本級数`、`W=1行の文字数`、`L=行数`、`H=基本行送り歯`、`head=天`、`guter=ノド` による基本版面設計が可能です。
+* クラスオプション `startpage=ページ番号` で大扉のページ開始番号を指定できます。
+* クラスオプション `serial_pagination=trueまたはfalse` でページ番号を大扉からアラビア数字で通すことができます。
+* クラスオプション `hiddenfolio=プリセット` でノドに隠しノンブルを入れることができます（プリセットは `nikko-pc` など）。
+
+texdocumentclass パラメータに何も指定をしなければ、以下のようになります。
+
+* 印刷用（`media=print`）。トンボあり
+* 表紙なし
+* 用紙はA5（`paper=a5`）
+* 表紙なし（`cover=false`）
+* 13級、35文字×32行、行送り22歯。天・地・ノド・小口は中央合わせ
+* 隠しノンブルなし
+
+config.yml で定義すると以下のようになります。
+
+```
+texdocumentclass: ["review-jsbook", "media=print,paper=a5,cover=false,Q=13,W=35,L=32,H=22"]
+```
+
+実際にはこれはデフォルト値なので、texdocumentclass の定義なし、あるいは以下でも同じです。
+
+```
+texdocumentclass: ["review-jsbook", ""]
+```
+
+その他の詳細な設定については、sty フォルダにある README.md を参照してください。
+
+既存のドキュメントフォルダを Re:VIEW 3.0 （およびより新しいバージョン）に更新するには、ドキュメントフォルダ内で review-update コマンドを実行します。これで、スタイルファイルのコピーや、config.yml 等の既存のパラメータを解析して妥当なオプション指定に移行するといった処理が行われます。
+
+### review-jlreq.cls の構成
+
+Re:VIEW 3.0 から review-jlreq.cls という別のクラスファイルも用意しています。review-jlreq.cls は「日本語組版処理の要件」( https://www.w3.org/TR/jlreq/ja/ ) に基づく紙面設計を採用している jlreq.cls を包んだクラスファイルです。
+
+`review-init --latex-template=review-jlreq` コマンドで、このクラスファイルを使うように sty フォルダへファイルが展開されます。ただし、config.yml ではまだこのクラスファイルを使うように設定されていないので、以下のように変更します。
+
+```
+texdocumentclass: ["review-jlreq", "media=print,paper=a5,cover=false"]
+```
+
+その他の詳細な設定については、sty フォルダにある README.md を参照してください。
 
 ## Re:VIEW 2.0 以前の情報
 

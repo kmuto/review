@@ -8,11 +8,11 @@ Re:VIEW は GNU Lesser General Public License Version 2.1 に基づいて配布�
 
 このドキュメントでは、Re:VIEW のセットアップから変換の例までを簡単に説明します。
 
-このドキュメントは、Re:VIEW 2.0 に基づいています。
+このドキュメントは、Re:VIEW 3.0 に基づいています。
 
 ## セットアップ
 
-Re:VIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。Mac OS X および Windows Cygwin でも動作可能です。Ruby gem あるいは Git のいずれかを使ってダウンロード・展開します。
+Re:VIEW は Ruby 言語で記述されており、Linux/Unix 互換システムで動作します。macOS および Windows Cygwin でも動作可能です。Ruby gem あるいは Git のいずれかを使ってダウンロード・展開します。
 
 なお、Re:VIEW フォーマット自体は文字で表現されたタグが付いている以外は単なるテキストファイルなので、エディタ、OS については UTF-8 文字エンコーディングさえ使用できれば制限はありません。
 
@@ -77,6 +77,8 @@ $ review-init ドキュメント名
  * layouts : レイアウトファイルの配置フォルダ
  * style.css : サンプルスタイルシート
  * sty : スタイルファイル配置フォルダ（TeX 用）
+ * doc : 本ドキュメントを含む使い方のドキュメント
+ * lib : 主に rake コマンドの詳細ルールファイル
 
 review-init コマンドによらず、独自に作業フォルダを作成してもかまいません。
 
@@ -204,9 +206,30 @@ $ review-vol
 $ review-index --level 掘り下げる見出しレベル数 -a
 ```
 
+## ドキュメントフォルダを新しい Re:VIEW バージョンに追従する方法
+
+Re:VIEW は定期的に更新されています。おおむね後方互換性を保持していますが、新しいバージョン固有の機能を利用したいときには、ドキュメントフォルダを新しいバージョンに更新する review-update コマンドを利用します。
+
+```bash
+$ review-update
+** review-update はプロジェクトを 3.0.0 に更新します **
+config.yml: 'review_version' を '3.0' に更新しますか? [y]/n ←Enterで実行
+Rakefile は Re:VIEW バージョンのもの (/.../review/samples/sample-book/src/Rakefile) で置き換えられます。本当に進めますか? [y]/n
+lib/tasks/review.rake は Re:VIEW バージョンのもの (/.../review/samples/sample-book/src/lib/tasks/review.rake) で置き換えられます。本当に進めますか? [y]/n
+INFO: 新しいファイル /.../sty/plistings.sty が作成されました。
+/.../sty/reviewmacro.sty は Re:VIEW バージョンのもの (/.../review/templates/latex/review-jsbook/reviewmacro.sty) で置き換えられます。本当に進めますか? [y]/n
+INFO: 新しいファイル /.../sty/README.md が作成されました。
+INFO: 新しいファイル /.../sty/review-custom.sty が作成されました。
+INFO: 新しいファイル /.../sty/review-jsbook.cls が作成されました。
+INFO: 新しいファイル /.../sty/review-style.sty が作成されました。
+INFO: 新しいファイル /.../sty/review-base.sty が作成されました。
+INFO: 新しいファイル /.../sty/gentombow09j.sty が作成されました。
+完了しました。
+```
+
 ## クレジット
 
-Re:VIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2018年9月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
+Re:VIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2018年11月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
 
 バグ・パッチの報告、開発者用メーリングリストなどについての情報は、
 

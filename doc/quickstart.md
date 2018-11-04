@@ -9,11 +9,11 @@ Re:VIEW is free software under the terms of the GNU Lesser General Public Licens
 
 This article describes how to setup Re:VIEW and use it.
 
-The supported version of the article is Re:VIEW 2.0.
+The supported version of the article is Re:VIEW 3.0.
 
 ## Set up Re:VIEW
 
-Re:VIEW is a software in Ruby and worked in Linux/Unix, Mac OS X, and Windows. You can install Re:VIEW with RubyGems or Git.
+Re:VIEW is a software in Ruby and worked in Linux/Unix, macOS, and Windows. You can install Re:VIEW with RubyGems or Git.
 
 Note that Re:VIEW format is plain texts with simple markups in UTF-8, so you can write it on any editors and OSes.
 
@@ -82,7 +82,8 @@ In `hello` directory, many files are generated.
 * layouts : forlder for layout files
 * style.css : sample stylesheet
 * sty : style files for LaTeX
-
+* doc : various documents (including this document)
+* lib : detailed rule files of rake command and etc.
 
 ### writing Re:VIEW documents and converting them
 
@@ -205,6 +206,27 @@ You can also use `review-index` command to generate header list.
 
 ```bash
 $ review-index --level <heading level> -a
+```
+
+## how to update the document folder to the new Re:VIEW version
+
+Re:VIEW is updated regularly. We Re:VIEW team watch the backward compatibility carefully, but if you want to use the features in the new version, you can use review-update command to update the document folder.
+
+```bash
+$ review-update
+** review-update updates your project to 3.0.0 **
+config.yml: Update 'review_version' to '3.0'? [y]/n
+Rakefile will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/Rakefile). Do you really proceed? [y]/n
+lib/tasks/review.rake will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/lib/tasks/review.rake). Do you really proceed? [y]/n
+INFO: new file /.../sty/plistings.sty is created.
+/.../sty/reviewmacro.sty will be overridden with Re:VIEW version (/.../review/templates/latex/review-jsbook/reviewmacro.sty). Do you really proceed? [y]/n
+INFO: new file /.../sty/README.md is created.
+INFO: new file /.../sty/review-custom.sty is created.
+INFO: new file /.../sty/review-jsbook.cls is created.
+INFO: new file /.../sty/review-style.sty is created.
+INFO: new file /.../sty/review-base.sty is created.
+INFO: new file /.../sty/gentombow09j.sty is created.
+Finished.
 ```
 
 ## Copyright
