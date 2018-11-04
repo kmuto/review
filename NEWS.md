@@ -15,10 +15,11 @@
 * PDFMaker: sections are now allowed in part ([#1195])
 
 ## Docs
-* update IDGXML document `format_idg.ja.md` ([#1188])
+* update `format_idg.ja.md` ([#1188])
 * add note about review-update command to quickstart guide `quickstart.ja.md` ([#1189])
-* update comments of sample configuration file `config.yml.sample` ([#1190])
-* update PDFMaker document `pdfmaker.ja.md` ([#1191])
+* update comments of `config.yml.sample` ([#1190])
+* update `pdfmaker.ja.md` ([#1191])
+* update `writing_vertical.ja.md`  ([#1198])
 
 ## Contributors
 
@@ -36,6 +37,7 @@
 [#1190]: https://github.com/kmuto/review/pull/1190
 [#1191]: https://github.com/kmuto/review/pull/1191
 [#1195]: https://github.com/kmuto/review/issues/1195
+[#1198]: https://github.com/kmuto/review/pull/1198
 
 # Version 3.0.0 preview 4
 ## New Features

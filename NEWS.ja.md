@@ -19,6 +19,7 @@
 * クイックスタートガイド quickstart.ja.md に review-update について説明を追加しました ([#1189])
 * サンプル設定ファイル config.yml.sample のコメント類を更新しました ([#1190])
 * PDFMaker のドキュメント pdfmaker.ja.md を更新しました ([#1191])
+* 縦書きについてのドキュメント writing_vertical.ja.md を更新しました ([#1198])
 
 ## コントリビューターのみなさん
 
@@ -36,6 +37,7 @@
 [#1190]: https://github.com/kmuto/review/pull/1190
 [#1191]: https://github.com/kmuto/review/pull/1191
 [#1195]: https://github.com/kmuto/review/issues/1195
+[#1198]: https://github.com/kmuto/review/pull/1198
 
 # Version 3.0.0 preview 4
 ## 新機能
