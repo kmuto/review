@@ -197,6 +197,10 @@
 \newcommand{\reviewcolumnref}[2]{\review@intn@columnname #1}
 \newcommand{\reviewsecref}[2]{#1}
 
+\newenvironment{reviewpart}{%
+\renewcommand{\thesection}{\thepart.\@arabic\c@section}%
+}{}
+
 \newcommand{\reviewminicolumntitle}[1]{%
 \review@ifempty{#1}{}{%
   {\large \review@intn@memohead{}: #1}\\}}
