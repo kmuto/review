@@ -13,6 +13,7 @@
 * PDFMaker: ユーザーが任意のスタイルや `//embed` 命令で利用できるよう、review-jsbook および review-jlreq に空ページを作成する `\oneblankpage`、必要に応じて改ページすることで次のページが必ず偶数ページになるようにする `\clearoddpage` のマクロを追加しました ([#1175],[#1182])
 * PDFMaker: review-jsbook および review-jlreq クラスファイルのドキュメントオプションパラメータに、生成 PDF の種類を指定する `media` を追加しました。3.0.0 preview3 で導入した `cameraready` パラメータと同じ意味です（どちらを使ってもかまいません）([#1181])
 * PDFMaker: 部の中で節などの下位見出しを利用できるようになりました ([#1195])
+* PDFMaker: 部があるときには `\reviewusepart` というマクロを定義するようにしました ([#1199])
 
 ## ドキュメント
 * IDGXML のドキュメント format_idg.ja.md を更新しました ([#1188])
@@ -38,6 +39,7 @@
 [#1191]: https://github.com/kmuto/review/pull/1191
 [#1195]: https://github.com/kmuto/review/issues/1195
 [#1198]: https://github.com/kmuto/review/pull/1198
+[#1199]: https://github.com/kmuto/review/pull/1199
 
 # Version 3.0.0 preview 4
 ## 新機能
