@@ -94,18 +94,41 @@
 
 %% define/set specific fontsize
 \def\recls@define@fontsize#1{%
-  \@namedef{recls@fontsize@#1}{#1}%
-}
+  \@namedef{recls@fontsize@#1}{#1}}
 
 \def\recls@set@fontsize#1{%
   \@ifundefined{recls@fontsize@#1}{%
-    \recls@error{Not define such fontsize: #1}}\relax
-  \expandafter\expandafter\expandafter
-    \@recls@set@fontsize\expandafter\expandafter\expandafter
-      {\csname recls@fontsize@#1\endcsname}}
+    \recls@set@customfontsize{#1}}{\@recls@set@fontsize{#1}}}
 \def\@recls@set@fontsize#1{%
-  \edef\recls@set@js@fontsize{#1}%
-  \PassOptionsToClass{\recls@set@js@fontsize}{jsbook}}
+  \expandafter\expandafter\expandafter
+    \@@recls@set@fontsize\expandafter\expandafter\expandafter
+      {\csname recls@fontsize@#1\endcsname}}
+\def\@@recls@set@fontsize#1{%
+  \edef\recls@jsfontsize{#1}%
+  \ifdim\recls@jsfontsize=\recls@fontsize\else
+    \recls@warning{jsbook.cls has no such fontsize '\recls@fontsize'.^^J
+      pass through '\recls@jsfontsize' option to jsbook.cls}%
+  \fi
+  \PassOptionsToClass{\recls@jsfontsize}{jsbook}}
+
+%% NOTE: カスタムフォントサイズの対応は、事実上、止めることにしました。
+\def\recls@set@customfontsize#1{%
+  \setlength{\@tempdima}{#1}%
+  \ifdim\@tempdima<8.5pt\recls@set@fontsize{8pt}%
+  \else\ifdim\@tempdima<9.5pt\recls@set@fontsize{9pt}%
+  \else\ifdim\@tempdima<10.5pt\recls@set@fontsize{10pt}%
+  \else\ifdim\@tempdima<11.5pt\recls@set@fontsize{11pt}%
+  \else\ifdim\@tempdima<12.5pt\recls@set@fontsize{12pt}%
+  \else\ifdim\@tempdima<13pt\recls@set@fontsize{14pt}%
+  \else\ifdim\@tempdima<18.5pt\recls@set@fontsize{17pt}%
+  \else\ifdim\@tempdima<20.5pt\recls@set@fontsize{20pt}%
+  \else\ifdim\@tempdima<23pt\recls@set@fontsize{21pt}%
+  \else\ifdim\@tempdima<27.5pt\recls@set@fontsize{25pt}%
+  \else\ifdim\@tempdima<33pt\recls@set@fontsize{30pt}%
+  \else\ifdim\@tempdima<39.5pt\recls@set@fontsize{36pt}%
+  \else\recls@set@fontsize{43pt}%
+  \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+}
 
 \@for\recls@tmp:={%
   8pt,9pt,10pt,11pt,12pt,14pt,17pt,20pt,21pt,25pt,30pt,36pt,43pt,12Q,14Q,%
