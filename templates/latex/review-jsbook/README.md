@@ -9,7 +9,7 @@ review-jsbook.cls Users Guide
 
  * クラスオプション `media` により、「印刷用」「電子用」の用途を明示的な意思表示として与えることで、用途に応じた PDF ファイル生成を行えます。
  * （基本的に）クラスオプションを `<key>=<value>` で与えられます。
- * クラスオプション内で、用紙サイズや基本版面を自由に設計できます。
+ * クラスオプション内で、用紙サイズや基本版面を設計できます。
 
 ここで、クラスオプションとは、親 LaTeX 文章ファイルにおいて、以下のような位置にカンマ（,）区切りで記述するオプションです。
 
@@ -47,8 +47,8 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 利用可能な特定の用紙サイズを指定できます。
 
  * `a3` 
- * `a4` 
- * `a5`［デフォルト］
+ * `a4` ［デフォルト］
+ * `a5`
  * `a6` 
  * `b4`：JIS B4 
  * `b5`：JIS B5
@@ -73,24 +73,23 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 
 たとえば、B5変形 `paperwidth=182mm`, `paperheight=235mm`。
 
-### 基本版面設計 `Q=<級数>`, `W=<字詰>`, `L=<行数>`, `H=<行送り>` , `head=<天>`, `gutter=<ノド>`
+### 基本版面設計 `fontsize=<文字サイズ>`, `baselineskip=<行送り>`, `line_length=<字詰>`, `number_of_lines=<行数>`, `head_space=<天>`, `gutter=<ノド>`, `linegap=<幅>`, `headheight=<幅>`, `headsep=<幅>`, `footskip=<幅>`
 
-基本版面 QWLH, 天、ノドを与えます。
+基本版面情報を与えます。
 天、ノドをそれぞれ与えない場合、それぞれ天地、左右中央になります。
 
- * `Q=13`［デフォルト］：文字サイズを級数（1Q = 1H = 0.25mm）で与えます。
- * `W=35`［デフォルト］：1行字詰めを与えます。
- * `L=32`［デフォルト］：行数を与えます。
- * `H=22`［デフォルト］：行送り（1Q = 1H = 0.25mm）を与えます。
- * `head=<幅>`：天を与えます。［デフォルト］は天地中央です。
+ * `fontsize=10pt`［デフォルト］：標準の文字（normalfontsize）の文字サイズを与えます。pt のほか、Q や mm といった単位も指定可能です。ただし、文字サイズは jsbook の挙動に合わせるために 8pt, 9pt, 10pt, 11pt, 12pt, 14pt, 17pt, 20pt, 21pt, 25pt, 30pt, 36pt, 43pt のいずれか近いサイズに丸められます。
+ * `baselineskip=16pt`［デフォルト］：行送りを与えます。
+ * `line_length=<字詰め幅>`：1行字詰めを与えます。字詰め幅には単位を付ける必要があります。文字数であれば「zw」を使うとよいでしょう（例：35zw＝35文字）。デフォルトでは jsbook の挙動に従い、紙サイズに基いて決定します。
+ * `number_of_lines=<行数>`：行数を与えます。デフォルトでは jsbook の挙動に従い、紙サイズに基いて決定します。
+ * `head_space=<幅>`：天を与えます。［デフォルト］は天地中央です。
  * `gutter=<幅>`：ノドを与えます。［デフォルト］は左右中央です。
+ * `linegap=<幅>`：行送りを baselineskip で指定する代わりに、通常の文字の高さにこのオプションで指定する幅を加えたものを行送りとします。
 
 例をいくつか挙げます。
 
- * `paper=a5, Q=13, W=35, L=32, H=22,`
- * `paper=a5, Q=14, W=38, L=34, H=20.5, head=20mm, gutter=20mm,`
- * `paper=b5, Q=13, W=43, L=35, H=24,` 
- * `paper=b5, Q=14, W=40, L=34, H=25.5,` 
+ * `paper=a5, fontsize=10pt, line_length=35zw, number_of_lines=32, baselineskip=16pt,`
+ * `paper=b5, fontsize=13Q, baselineskip=20.5H, head_space=20mm, gutter=20mm,`
 
 さらに、ヘッダー、フッターに関する位置調整は、TeX のパラメータ `\headheight`, `\headsep`, `\footskip` に対応しており、それぞれ `headheight`, `headsep`, `footskip` を与えられます。
 
@@ -124,6 +123,5 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 ## 標準で review-jsbook.cls を実行したときの jsbook.cls との違い
 
  * jsbook.cls のクラスオプション `uplatex`：これまで texdocumentclass に指定が必要だった `uplatex` オプションは不要となっています。
- * jsbook.cls のクラスオプション `nomag`：用紙サイズや版面設計は、すべて review-jsbook.cls 側で行います。
+ * jsbook.cls のクラスオプション `nomag`：用紙サイズや版面設計は、review-jsbook.cls 側で行います。
  * hyperref パッケージ：あらかじめ hyperref パッケージを組み込んでおり、`media` オプションにより用途別で挙動を制御します。
- * 各種相対フォントサイズコマンド `\small`, `\footnotesize`, `\scriptsize`, `\tiny`, `\large`, `\Large`, `\LARGE`, `\huge`, `\Huge`, `\HUGE` は、級数ベースに書き換えています。おおむね妥当な値になっているはずです。
