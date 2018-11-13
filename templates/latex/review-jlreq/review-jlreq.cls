@@ -114,7 +114,7 @@ cls]
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
-\DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr #1-1\relax}}
+\DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr #1\relax}}
 \DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
 
 %% 隠しノンブルプリセット
@@ -261,8 +261,7 @@ cls]
 
 % シンプルな通しノンブル
 \ifrecls@serialpage
-\renewcommand*{\pagenumbering}[1]{%
-  \gdef\thepage{\@arabic\c@page}}
+  \jlreqsetup{frontmatter_pagination=continuous}
 \fi
 
 % 開始ページを変更
@@ -270,6 +269,18 @@ cls]
 \renewcommand*{\frontmatter}{
   \recls@frontmatterorg
   \setcounter{page}{\the\recls@startpage}
+}
+
+% titlepageのsetcounterを使わない
+\renewenvironment{titlepage}{%
+  \if@twocolumn
+    \@restonecoltrue\onecolumn
+  \else
+    \@restonecolfalse\newpage
+  \fi
+  \thispagestyle{empty}%
+}{%
+  \if@restonecol\twocolumn\else\newpage\fi
 }
 
 \listfiles
