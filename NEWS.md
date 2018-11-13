@@ -1,6 +1,7 @@
 # Version 3.0.0 release candidate
 ## Breaking Changes
 * ★PDFMaker: heading character size of review-jsbook becomes the same as the original jsbook ([#1152])
+* ★PDFMaker: Q, W, L, H parameters of review-jsbook are withdrawn. Projects created in the past preview version can be updated with the review-update command ([#1151],[#1201])
 
 ## Bug Fixes
 * PDFMaker: fixes an issue that hiddenfolio parameter was ignored when using both hiddenfolio and tombopaper in review-jsbook ([#1158])
@@ -14,6 +15,10 @@
 * PDFMaker: add `media` parameter that specifies the type of PDF to review-jsbook and review-jlreq. This has the same meaning as `cameraready` ([#1181])
 * PDFMaker: sections are now allowed in part ([#1195])
 * PDFMaker: `\reviewusepart` macro is defined when theare is a part ([#1199])
+* ★`texdocumentclass` parameter is explicit (not a comment) when creating config.yml by review-init ([#1202])
+
+## Bug Fixes
+* PDFMaker: fix serial_pagination and startpage were not working in review-jlreq class ([#1204])
 
 ## Docs
 * update `format_idg.ja.md` ([#1188])
@@ -21,6 +26,8 @@
 * update comments of `config.yml.sample` ([#1190])
 * update `pdfmaker.ja.md` ([#1191])
 * update `writing_vertical.ja.md`  ([#1198])
+* update document of review-jsbook ([#1203])
+* update document of review-jlreq ([#1204])
 
 ## Contributors
 
@@ -40,6 +47,10 @@
 [#1195]: https://github.com/kmuto/review/issues/1195
 [#1198]: https://github.com/kmuto/review/pull/1198
 [#1199]: https://github.com/kmuto/review/pull/1199
+[#1201]: https://github.com/kmuto/review/pull/1201
+[#1202]: https://github.com/kmuto/review/pull/1202
+[#1203]: https://github.com/kmuto/review/pull/1203
+[#1204]: https://github.com/kmuto/review/pull/1204
 
 # Version 3.0.0 preview 4
 ## New Features

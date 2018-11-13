@@ -1,6 +1,7 @@
 # Version 3.0.0 release candidate
 ## 非互換の変更
 * ★PDFMaker: review-jsbook の見出しの文字サイズを、オリジナルの jsbook に準拠しました ([#1152])
+* ★PDFMaker: review-jsbook において、3.0.0 preview 4 までの Q,W,L,H で指定する方法をやめ、fontsize などの単位付きパラメータを使うようにしました。3.0.0 preview 3 〜 3.0.0 preview 4 で作成したプロジェクトに対しては、review-update コマンドで新しいパラメータに移行できます ([#1151],[#1201])
 
 ## バグ修正
 * PDFMaker: review-jsbook クラスファイルで hiddenfolio パラメータと tombopaper パラメータを同時に使用すると hiddenfolio パラメータが無視される問題を修正しました ([#1158])
@@ -8,12 +9,16 @@
 * review-update で sty フォルダの更新が無視されることがあるのを修正しました ([#1183])
 
 ## 機能強化
-* ★PDFMaker: review-jsbook において、fontsize パラメータで標準の文字サイズ、baselineskip パラメータで標準の行の高さを pt や mm などの単位付きで指定できるようにしました ([#1151])
+* ★PDFMaker: review-jsbook において、fontsize パラメータで標準の文字サイズ、baselineskip パラメータで標準の行の高さを pt や Q、mm などの単位付きで指定できるようにしました ([#1151])
 * PDFMaker: 何らかの事情でオリジナルの jsbook.cls クラスファイルを使い続けたいユーザー向けに、review-jsbook セットのスタイルファイルを流用可能にしました ([#1177])
 * PDFMaker: ユーザーが任意のスタイルや `//embed` 命令で利用できるよう、review-jsbook および review-jlreq に空ページを作成する `\oneblankpage`、必要に応じて改ページすることで次のページが必ず偶数ページになるようにする `\clearoddpage` のマクロを追加しました ([#1175],[#1182])
 * PDFMaker: review-jsbook および review-jlreq クラスファイルのドキュメントオプションパラメータに、生成 PDF の種類を指定する `media` を追加しました。3.0.0 preview3 で導入した `cameraready` パラメータと同じ意味です（どちらを使ってもかまいません）([#1181])
 * PDFMaker: 部の中で節などの下位見出しを利用できるようになりました ([#1195])
 * PDFMaker: 部があるときには `\reviewusepart` というマクロを定義するようにしました ([#1199])
+* ★review-init が生成する config.yml ファイルで、`texdocumentclass` パラメータをコメントアウトされた状態ではなく明示指定するようにしました ([#1202])
+
+## バグ修正
+* PDFMaker: review-jlreq クラスファイルで serial_pagination および startpage が動作していなかったのを修正しました ([#1204])
 
 ## ドキュメント
 * IDGXML のドキュメント format_idg.ja.md を更新しました ([#1188])
@@ -21,6 +26,8 @@
 * サンプル設定ファイル config.yml.sample のコメント類を更新しました ([#1190])
 * PDFMaker のドキュメント pdfmaker.ja.md を更新しました ([#1191])
 * 縦書きについてのドキュメント writing_vertical.ja.md を更新しました ([#1198])
+* review-jsbook のドキュメントを更新しました ([#1203])
+* review-jlreq のドキュメントを更新しました ([#1204])
 
 ## コントリビューターのみなさん
 
@@ -40,6 +47,10 @@
 [#1195]: https://github.com/kmuto/review/issues/1195
 [#1198]: https://github.com/kmuto/review/pull/1198
 [#1199]: https://github.com/kmuto/review/pull/1199
+[#1201]: https://github.com/kmuto/review/pull/1201
+[#1202]: https://github.com/kmuto/review/pull/1202
+[#1203]: https://github.com/kmuto/review/pull/1203
+[#1204]: https://github.com/kmuto/review/pull/1204
 
 # Version 3.0.0 preview 4
 ## 新機能
