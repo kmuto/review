@@ -33,6 +33,7 @@ module ReVIEW
       @latex_tsize = nil
       @tsize = nil
       @table_caption = nil
+      @cellwidth = nil
       @ol_num = nil
       @first_line_num = nil
       @sec_counter = SecCounter.new(5, @chapter)
@@ -594,15 +595,28 @@ module ReVIEW
       table_begin(rows.first.size)
       if sepidx
         sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
+          cno = -1
+          tr(rows.shift.map do |s|
+               cno += 1
+               th(s, @cellwidth[cno])
+             end)
         end
         rows.each do |cols|
-          tr(cols.map { |s| td(s) })
+          cno = -1
+          tr(cols.map do |s|
+               cno += 1
+               td(s, @cellwidth[cno])
+             end)
         end
       else
         rows.each do |cols|
           h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
+          cno = 0
+          tr([th(h, @cellwidth[0])] +
+             cs.map do |s|
+               cno += 1
+               td(s, @cellwidth[cno])
+             end)
         end
       end
       table_end
@@ -639,39 +653,87 @@ module ReVIEW
 
     def table_begin(ncols)
       if @latex_tsize
-        puts macro('begin', 'reviewtable', @latex_tsize)
-      elsif @tsize
+        @tsize = @latex_tsize
+      end
+
+      if @tsize
         if @tsize =~ /\A[\d., ]+\Z/
-          cellwidth = @tsize.split(/\s*,\s*/)
-          puts macro('begin', 'reviewtable', '|' + cellwidth.collect { |i| "p{#{i}mm}" }.join('|') + '|')
+          @cellwidth = @tsize.split(/\s*,\s*/)
+          @cellwidth.collect! { |i| "p{#{i}mm}" }
+          puts macro('begin', 'reviewtable', '|' + @cellwidth.join('|') + '|')
         else
+          @cellwidth = separate_tsize(@tsize)
           puts macro('begin', 'reviewtable', @tsize)
         end
       else
         puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
+        @cellwidth = ['l'] * (ncols + 1)
       end
-      puts '\hline'
-      @tsize = nil
-      @latex_tsize = nil
+      puts '\\hline'
+    end
+
+    def separate_tsize(size)
+      ret = []
+      s = ''
+      brace = nil
+      size.split('').each do |ch|
+        case ch
+        when '|'
+          next
+        when '{'
+          brace = true
+          s << ch
+        when '}'
+          brace = nil
+          s << ch
+          ret << s
+          s = ''
+        else
+          if brace
+            s << ch
+          else
+            if s.empty?
+              s << ch
+            else
+              ret << s
+              s = ch
+            end
+          end
+        end
+      end
+
+      unless s.empty?
+        ret << s
+      end
+
+      ret
     end
 
     def table_separator
       # puts '\hline'
     end
 
-    def th(s)
-      ## use shortstack for @<br>
+    def th(s, cellwidth = 'l')
       if /\\\\/ =~ s
-        macro('reviewth', macro('shortstack[l]', s))
+        if !@book.config.check_version('2', exception: false) && cellwidth =~ /\{/
+          macro('reviewth', s.gsub("\\\\\n", '\\newline{}'))
+        else
+          ## use shortstack for @<br>
+          macro('reviewth', macro('shortstack[l]', s))
+        end
       else
         macro('reviewth', s)
       end
     end
 
-    def td(s)
-      ## use shortstack for @<br>
+    def td(s, cellwidth = 'l')
       if /\\\\/ =~ s
-        macro('shortstack[l]', s)
+        if !@book.config.check_version('2', exception: false) && cellwidth =~ /\{/
+          s.gsub("\\\\\n", '\\newline{}')
+        else
+          ## use shortstack for @<br>
+          macro('shortstack[l]', s)
+        end
       else
         s
       end
@@ -686,6 +748,9 @@ module ReVIEW
       puts macro('end', 'reviewtable')
       puts '\end{table}' if @table_caption
       @table_caption = nil
+      @tsize = nil
+      @latex_tsize = nil
+      @cellwidth = nil
       blank
     end
 
