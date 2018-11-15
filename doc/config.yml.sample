@@ -312,7 +312,8 @@ epubmaker:
 # texstyle: ["reviewmacro"]
 #
 # LaTeX用のdocumentclassを指定する
-# review-jsbook.clsのオプションについてはsty/README.mdを参照
+# オプションについてはsty/README.mdを参照
+# デフォルトは印刷用。電子配布版を作るには media=ebook とする
 # texdocumentclass: ["review-jsbook", "media=print,paper=a5"]
 #
 # LaTeX用のコマンドを指定する

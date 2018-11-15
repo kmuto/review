@@ -18,6 +18,11 @@ module ReVIEW
       new.execute(*args)
     end
 
+    TEX_DOCUMENTCLASS_OPTS = {
+      'review-jsbook' => 'media=print,paper=a5',
+      'review-jlreq' => 'media=print,paper=a5'
+    }
+
     def initialize
       @template = 'review-jsbook'
       @logger = ReVIEW.logger
@@ -148,6 +153,11 @@ EOS
         content.gsub!(/^#.*epubversion:.*$/, 'epubversion: 2')
         content.gsub!(/^#.*htmlversion:.*$/, 'htmlversion: 4')
       end
+
+      if TEX_DOCUMENTCLASS_OPTS[@template]
+        content.gsub!(/^#\s*texdocumentclass:.*$/, %Q(texdocumentclass: ["#{@template}", "#{TEX_DOCUMENTCLASS_OPTS[@template]}"]))
+      end
+
       File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write(content) }
     end
 
