@@ -236,7 +236,7 @@
 \ExecuteOptionsX{cameraready,media,hiddenfolio,%
   paper,tombopaper,bleed_margin,paperwidth,paperheight,%
   fontsize,line_length,number_of_lines,baselineskip,linegap,head_space,%
-  gutter,headheight,headsep,,footskip,%
+  gutter,headheight,headsep,footskip,%
   cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
 
@@ -324,13 +324,22 @@
 \fi
 
 %% ノド、小口
+%% gutterがあればそれに基づいて設定。
+%% line_lengthが指定されていればtextwidth基準にして設定。
+%% どちらも指定がなければjsbookをそのまま使用。
 \ifx\recls@gutter\@empty
-  \setlength\oddsidemargin\paperwidth
-  \addtolength\oddsidemargin{-\fullwidth}%%line_lengthを与えたとき\textwidth
-  \setlength\oddsidemargin{.5\oddsidemargin}
-  \addtolength\oddsidemargin{-1in}
-  \setlength\evensidemargin\oddsidemargin
-  \edef\recls@gutter{\evensidemargin}
+  \ifx\recls@line@length\@empty\else
+    \setlength\oddsidemargin{\paperwidth}
+    \addtolength\oddsidemargin{-\fullwidth}%%line_lengthを与えたとき\textwidth
+    \setlength\oddsidemargin{.5\oddsidemargin}
+    \addtolength\oddsidemargin{-1in}
+    \setlength\evensidemargin{\oddsidemargin}
+    \setlength\evensidemargin{\paperwidth}
+    \addtolength\evensidemargin{-2in}
+    \addtolength\evensidemargin{-\oddsidemargin}
+    \addtolength\evensidemargin{-\textwidth}
+    \edef\recls@gutter{\evensidemargin}
+  \fi
 \else
   \setlength\oddsidemargin{\recls@gutter}%ノド
   \addtolength\oddsidemargin{-1in}
@@ -342,15 +351,16 @@
 
 %% 天、地
 \ifx\recls@head@space\@empty
-  \setlength\topmargin\paperheight
-  \addtolength\topmargin{-\textheight}
-  \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
-  \setlength\topmargin{.5\topmargin}
+%% センター合わせにするなら
+%  \setlength\topmargin\paperheight
+%  \addtolength\topmargin{-\textheight}
+%  \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
+%  \setlength\topmargin{.5\topmargin}
 \else
   \setlength\topmargin{\recls@head@space}%天
+  \addtolength\topmargin{-1in}
+  \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
 \fi
-\addtolength\topmargin{-1in}
-\addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
 
 %% load hyperref package
 \RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
@@ -392,17 +402,17 @@
   \clearpage
 }
 
-% 空ページ
+%% 空ページ
 \newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
   \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
 
-% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
+%% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
 \let\cleardoublepage@right\cleardoublepage
 \def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
   \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 \let\clearoddpage\cleardoublepage@left
 
-% coverオプションによる表紙判定の上書き
+%% coverオプションによる表紙判定の上書き
 \def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp
 \@reclscovertrue
 \else\def\recls@tmp{false}\ifx\recls@forcecover\recls@tmp
@@ -410,16 +420,16 @@
 \else% それ以外の値は単に無視
 \fi\fi
 
-% シンプルな通しノンブル
+%% シンプルな通しノンブル
 \ifrecls@serialpage
 \renewcommand*{\pagenumbering}[1]{%
   \gdef\thepage{\@arabic\c@page}}
 \fi
 
-% 開始ページを変更
+%% 開始ページを変更
 \g@addto@macro\frontmatter{\setcounter{page}{\the\recls@startpage}}
 
-% titlepageのsetcounterを使わない
+%% titlepageのsetcounterを使わない
 \renewenvironment{titlepage}{%
     \clearpage
     \if@twoside\ifodd\c@page\else
