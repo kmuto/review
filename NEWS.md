@@ -1,7 +1,7 @@
 # Version 3.0.0 release candidate
 ## Breaking Changes
-* ★PDFMaker: heading character size of review-jsbook becomes the same as the original jsbook ([#1152])
-* ★PDFMaker: Q, W, L, H parameters of review-jsbook are withdrawn. Projects created in the past preview version can be updated with the review-update command ([#1151],[#1201])
+* PDFMaker: heading character size of review-jsbook becomes the same as the original jsbook ([#1152])
+* PDFMaker: Q, W, L, H parameters of review-jsbook are withdrawn. Projects created in the past preview version can be updated with the review-update command ([#1151],[#1201])
 
 ## Bug Fixes
 * PDFMaker: fixes an issue that hiddenfolio parameter was ignored when using both hiddenfolio and tombopaper in review-jsbook ([#1158])
@@ -9,13 +9,13 @@
 * fixes an issue that review-update ignored update of sty folder ([#1183])
 
 ## Enhancements
-* ★PDFMaker: in review-jsbook, you can specify the font size with `fontsize` parameter and the line height with `baselineskip` parameter with units such as pt and mm ([#1151])
+* PDFMaker: in review-jsbook, you can specify the font size with `fontsize` parameter and the line height with `baselineskip` parameter with units such as pt and mm ([#1151])
 * PDFMaker: users who want to continue using the original jsbook.cls class file for some reason can use sty files of review-jsbook set ([#1177])
 * PDFMaker: add useful macros to review-jsbook and review-jlreq for users. `\oneblankpage` creates an empty page. `\clearoddpage` breaks page as necessary so that the next page is always an even page ([#1175],[#1182])
 * PDFMaker: add `media` parameter that specifies the type of PDF to review-jsbook and review-jlreq. This has the same meaning as `cameraready` ([#1181])
 * PDFMaker: sections are now allowed in part ([#1195])
 * PDFMaker: `\reviewusepart` macro is defined when theare is a part ([#1199])
-* ★`texdocumentclass` parameter is explicit (not a comment) when creating config.yml by review-init ([#1202])
+* `texdocumentclass` parameter is explicit (not a comment) when creating config.yml by review-init ([#1202])
 
 ## Bug Fixes
 * PDFMaker: fix serial_pagination and startpage were not working in review-jlreq class ([#1204])
