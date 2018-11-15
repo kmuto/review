@@ -297,11 +297,36 @@
 \fi\fi
 
 %% baseline
+%% TL15のjsbook.clsまで面倒みないことでOK？
+% \@ifundefined{jsc@setfontsize}{%
+%   \newdimen\jsc@mpt
+%   \newdimen\jsc@mmm
+%   \def\jsc@setfontsize#1#2#3{%
+%     \@setfontsize#1{#2\jsc@mpt}{#3\jsc@mpt}}
+%   \jsc@mpt=\jsc@magscale\p@
+%   \jsc@mmm=\jsc@magscale mm
+% }\relax
 \ifx\recls@linegap\@empty\else
   \setlength{\baselineskip}{\dimexpr\Cwd+\recls@linegap}
+  \renewcommand{\normalsize}{%
+    \jsc@setfontsize\normalsize\@xpt\baselineskip% \@xiipt
+    \abovedisplayskip 11\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \abovedisplayshortskip \z@ \@plus3\jsc@mpt
+    \belowdisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \belowdisplayshortskip \belowdisplayskip
+    \let\@listi\@listI}
+  \normalsize
 \fi
 \ifx\recls@baselineskip\@empty\else
   \setlength{\baselineskip}{\recls@baselineskip}
+  \renewcommand{\normalsize}{%
+    \jsc@setfontsize\normalsize\@xpt\baselineskip% \@xiipt
+    \abovedisplayskip 11\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \abovedisplayshortskip \z@ \@plus3\jsc@mpt
+    \belowdisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \belowdisplayshortskip \belowdisplayskip
+    \let\@listi\@listI}
+  \normalsize
 \fi
 \setlength{\Cvs}{\baselineskip}
 
@@ -335,10 +360,6 @@
     \setlength\oddsidemargin{.5\oddsidemargin}
     \addtolength\oddsidemargin{-1in}
     \setlength\evensidemargin{\oddsidemargin}
-    \setlength\evensidemargin{\paperwidth}
-    \addtolength\evensidemargin{-2in}
-    \addtolength\evensidemargin{-\oddsidemargin}
-    \addtolength\evensidemargin{-\textwidth}
     \edef\recls@gutter{\evensidemargin}
   \fi
 \else
@@ -352,11 +373,22 @@
 
 %% 天、地
 \ifx\recls@head@space\@empty
-%% センター合わせにするなら
-%  \setlength\topmargin\paperheight
-%  \addtolength\topmargin{-\textheight}
-%  \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
-%  \setlength\topmargin{.5\topmargin}
+  \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
+    \setlength\topmargin\paperheight
+    \addtolength\topmargin{-\textheight}
+    \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
+    \setlength\topmargin{.5\topmargin}
+    \addtolength\topmargin{-1in}
+    \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
+  \fi\fi
+  \ifx\recls@number@of@lines\@empty\else
+    \setlength\topmargin\paperheight
+    \addtolength\topmargin{-\textheight}
+    \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
+    \setlength\topmargin{.5\topmargin}
+    \addtolength\topmargin{-1in}
+    \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
+  \fi
 \else
   \setlength\topmargin{\recls@head@space}%天
   \addtolength\topmargin{-1in}
