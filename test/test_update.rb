@@ -353,7 +353,8 @@ EOT
     @u.update_tex_stys('review-jsbook', @tmpdir)
     assert_equal '', io.string
     assert_equal true, File.exist?(File.join(@tmpdir, 'sty/review-base.sty'))
-    assert_equal true, File.exist?(File.join(@tmpdir, 'sty/gentombow09j.sty'))
+    assert_equal true, File.exist?(File.join(@tmpdir, 'sty/gentombow.sty'))
+    assert_equal true, File.exist?(File.join(@tmpdir, 'sty/jsbook.cls'))
   end
 
   def test_update_stys_new_custom

@@ -30,8 +30,6 @@ module ReVIEW
     TEX_OPTIONS = '-interaction=nonstopmode -file-line-error'
     DVI_COMMAND = 'dvipdfmx'
     DVI_OPTIONS = '-d 5 -z 9'
-    # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
-    GENTOMBOWSTY = 'gentombow09j.sty'
 
     attr_reader :config_ymls, :locale_ymls, :catalog_ymls, :tex_ymls, :epub_ymls
     attr_accessor :force, :specified_template
@@ -500,9 +498,14 @@ module ReVIEW
       end
 
       if template == 'review-jsbook'
-        unless File.exist?(File.join(texmacrodir, GENTOMBOWSTY))
-          @logger.info t('new file %s is created.', [File.join(texmacrodir, GENTOMBOWSTY)]) unless @force
-          FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, GENTOMBOWSTY)
+        unless File.exist?(File.join(texmacrodir, 'jsbook.cls'))
+          @logger.info t('new file %s is created.', [File.join(texmacrodir, 'jsbook.cls')]) unless @force
+          FileUtils.cp File.join(@review_dir, 'vendor/jsclasses/jsbook.cls'), File.join(texmacrodir, 'jsbook.cls')
+        end
+
+        unless File.exist?(File.join(texmacrodir, 'gentombow.sty'))
+          @logger.info t('new file %s is created.', [File.join(texmacrodir, 'gentombow.sty')]) unless @force
+          FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty')
         end
       end
     end

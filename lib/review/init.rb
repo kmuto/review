@@ -171,8 +171,10 @@ EOS
       tdir = File.join(@review_dir, 'templates/latex', @template)
       @logger.error "#{tdir} not found." unless File.exist?(tdir)
       FileUtils.cp Dir.glob(File.join(tdir, '*.*')), texmacrodir
+      # provide jsbook from vendor/. current version is 2018/06/23
+      FileUtils.cp File.join(@review_dir, 'vendor/jsclasses/jsbook.cls'), File.join(texmacrodir, 'jsbook.cls')
       # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
-      FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow09j.sty')
+      FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty')
     end
 
     def generate_rakefile(dir)
