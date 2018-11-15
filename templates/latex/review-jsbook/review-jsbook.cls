@@ -377,7 +377,6 @@
   \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
     \setlength\topmargin\paperheight
     \addtolength\topmargin{-\textheight}
-    \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
     \setlength\topmargin{.5\topmargin}
     \addtolength\topmargin{-1in}
     \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
@@ -385,11 +384,11 @@
   \ifx\recls@number@of@lines\@empty\else
     \setlength\topmargin\paperheight
     \addtolength\topmargin{-\textheight}
-    \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
     \setlength\topmargin{.5\topmargin}
     \addtolength\topmargin{-1in}
     \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
   \fi
+  \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
 \else
   \setlength\topmargin{\recls@head@space}%天
   \addtolength\topmargin{-1in}
