@@ -248,6 +248,7 @@
 %% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
   \@camerareadyfalse\@pdfhyperlinkfalse\@reclscovertrue
+  \PassOptionsToClass{papersize}{jsbook}%
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse\@reclscoverfalse
   \IfFileExists{gentombow.sty}{%
