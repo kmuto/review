@@ -1,0 +1,254 @@
+% ^^A -*- japanese-latex -*-
+%
+% \ifx\epTeXinputencoding\undefined\else
+%   \epTeXinputencoding utf8 % ^^A added (2017-10-04)
+% \fi
+%
+% \iffalse
+%
+%<*driver>
+\ifx\epTeXinputencoding\undefined\else
+  \epTeXinputencoding utf8
+\fi
+%</driver>
+%
+%  okuverb.dtx
+%  verb/verbatim 関係マクロ
+%  奥村晴彦 <okumura@okumuralab.org>
+%  http://oku.edu.mie-u.ac.jp/~okumura/
+%
+%<okuverb>\NeedsTeXFormat{pLaTeX2e}
+%<okuverb>\ProvidesFile{okuverb.sty}[2003/09/03 okumura]
+%<*driver>
+\documentclass{jsarticle}
+\usepackage{doc}
+\xspcode"5C=1 %% \
+\xspcode"22=1 %% "
+\usepackage{okumacro}
+\usepackage{okuverb}
+\addtolength{\textwidth}{-1in}
+\addtolength{\evensidemargin}{1in}
+\addtolength{\oddsidemargin}{1in}
+\addtolength{\marginparwidth}{1in}
+\setlength\marginparsep{5pt}
+\setlength\marginparpush{0pt}
+% \OnlyDescription
+\CodelineNumbered
+\DisableCrossrefs
+\setcounter{StandardModuleDepth}{1}
+\GetFileInfo{okuverb.sty}
+\begin{document}
+  \DocInput{okuverb.dtx}
+\end{document}
+%</driver>
+%
+% \fi
+%
+% \title{\pLaTeXe 用 \texttt{verb...} 関係マクロ}
+% \author{奥村晴彦}
+% \date{\filedate}
+% \maketitle
+%
+% \StopEventually{}
+%
+% \MakeShortVerb{\|}
+%
+% |okuverb| は\LaTeX の |\verb| 命令と |verbatim| 環境を拡張したものです。
+% 今では |okuverb| を大幅に書き直した |jsverb| もあります。
+%
+% [2002-12-19] いろいろなものに収録していただく際にライセンスを明確にする
+% 必要が生じてきました。アスキーのものが最近はmodified BSDライセンスになっ
+% ていますので，私のものもそれに準じてmodified BSDとすることにします。
+%
+% まずオプションの宣言です。
+% \begin{macro}{\if@yen}
+% |\verb|，|verbatim| 等で |\| を円印にするかどうかのスイッチです。
+% これはデフォールトで偽ですが，|yen| オプションで真になります。
+%    \begin{macrocode}
+%<*okuverb>
+\newif\if@yen \@yenfalse
+\DeclareOption{yen}{\@yentrue}
+\ProcessOptions\relax
+%    \end{macrocode}
+% \end{macro}
+%
+% |\verb|, |verbatim| の変更です。
+% |ltmiscen.dtx| をご参照ください。
+%
+% \begin{macro}{\yen}
+% \begin{macro}{\ttyen}
+%
+% 円記号の定義です。
+%
+%    \begin{macrocode}
+\DeclareRobustCommand{\yen}{{\ooalign{Y\crcr\hss=\hss}}}
+\def\y@n{Y\llap=}
+\def\ttyen{{\ttfamily\y@n}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\ttbslash}
+%
+% タイプライタフォントのバックスラッシュです。
+%
+%    \begin{macrocode}
+\def\ttbslash{{\ttfamily\char`\\}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\BS}
+%
+% タイプライタフォントの円記号かバックスラッシュのどちらかになります。
+%
+%    \begin{macrocode}
+\if@yen
+  \let\BS=\ttyen
+\else
+  \let\BS=\ttbslash
+\fi
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\verbh@@k}
+%
+% |\verb|，|verbatim| 等で使うフックです。
+%
+%    \begin{macrocode}
+\if@yen
+  \begingroup
+    \catcode`\|=0  \catcode`\\=13
+    |gdef|verbh@@k{|catcode`|\=13 |let\=|y@n}
+  |endgroup
+\else
+  \let\verbh@@k=\relax
+\fi
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\verbatim@font}
+%
+% これは |latex.ltx| に |\normalfont\ttfamily|
+% と定義されていますが，|\bfseries\verb...| といった使い方もしたいので，
+% |\normalfont| は削除してしまいました。
+%
+%    \begin{macrocode}
+\def\verbatim@font{\ttfamily}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\verb}
+%
+% 元は数式モードだけで |\hbox| に入れるようになっていましたが，
+% |\noautoxspacing| の効果を得るため，|\hbox| に入れるようにしました。
+%
+%    \begin{macrocode}
+\def\verb{%
+  \leavevmode\hbox % changed
+  \bgroup
+    \verb@eol@error \let\do\@makeother \dospecials
+    \verbatim@font\@noligs
+    \noautoxspacing % added
+    \verbh@@k % added
+    \@ifstar\@sverb\@verb}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@xverbatim}
+% \begin{macro}{\@sxverbatim}
+%
+% |\| の |\catcode| を12から13に変えました。
+%
+%    \begin{macrocode}
+\if@yen
+\begingroup \catcode `|=0 \catcode `[= 1
+\catcode`]=2 \catcode `\{=12 \catcode `\}=12
+\catcode`\\=13 |gdef|@xverbatim#1\end{verbatim}[#1|end[verbatim]]
+|gdef|@sxverbatim#1\end{verbatim*}[#1|end[verbatim*]]
+|endgroup
+\fi
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\verbatimleftmargin}
+%
+% |verbatim| 環境の余分な左マージンです。
+%
+%    \begin{macrocode}
+\newdimen\verbatimleftmargin
+\verbatimleftmargin=2zw
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\verbatimsize}
+%
+% |verbatim| 環境のフォントサイズです。
+%
+%    \begin{macrocode}
+% \def\verbatimsize{\small\narrowbaselines}
+\def\verbatimsize{\fontsize{9}{11pt}\selectfont}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@verbatim}
+%
+% |verbatim| 環境で使うフォントの行送りとサイズ（|\f@size|）が
+% 本文と違うと，前後の間隔が違ってしまいます。それを補正します。
+%
+%    \begin{macrocode}
+\def\@verbatim{%
+  \trivlist \item\relax
+  \if@minipage
+%   追加はじめ
+    \verbatimsize
+%   追加おわり
+  \else
+%   追加はじめ
+    \vskip\baselineskip
+    \vskip-\f@size pt
+    \verbatimsize
+    \vskip-\baselineskip
+    \vskip\f@size pt
+%   追加おわり
+    \vskip\parskip
+  \fi
+  \leftskip\@totalleftmargin
+% 追加はじめ
+  \if@minipage \else
+    \advance \leftskip \verbatimleftmargin
+  \fi
+% 追加おわり
+  \rightskip\z@skip
+  \parindent\z@
+  \parfillskip\@flushglue
+  \parskip\z@skip
+  \@@par
+  \@tempswafalse
+  \def\par{%
+    \if@tempswa
+      \leavevmode \null \@@par\penalty\interlinepenalty
+    \else
+      \@tempswatrue
+      \ifhmode\@@par\penalty\interlinepenalty\fi
+    \fi}%
+  \let\do\@makeother \dospecials
+  \obeylines \verbatim@font
+% 追加はじめ
+  \noautoxspacing \verbh@@k
+% 追加おわり
+  \@noligs
+  \hyphenchar\font\m@ne
+  \everypar \expandafter{\the\everypar \unpenalty}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% 以上で終わりです。
+%
+%    \begin{macrocode}
+%</okuverb>
+\endinput
+%    \end{macrocode}
+%
+% \Finale

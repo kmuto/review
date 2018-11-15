@@ -1,0 +1,87 @@
+% winjis support (separated from jsclasses)
+%
+% requires:
+% * winjis.zip
+%   (winjis.tfm etc. for pLaTeX processing)
+% * utfsrc.zip (old UTF package)
+%   (cidm1-h.tfm etc. for DVI -> view/PS/PDF)
+% both from http://psitau.kitunebi.com/utf.html by psitau
+%
+\NeedsTeXFormat{pLaTeX2e}
+\ProvidesPackage{winjis}[2018/02/04 okumura, texjporg]
+%
+% if upLaTeX detected, abort loading this package
+\ifnum \ifx\ucs\@undefined\z@\else\ucs"3000 \fi ="3000 % upTeX
+  \PackageError{winjis}{This package is not required on upLaTeX}
+    {Package `winjis' is meant for using platform-dependent
+     characters\MessageBreak on pLaTeX for Windows;
+     upTeX can handle these characters natively,\MessageBreak
+     so you don't need me.}
+  \expandafter\endinput
+\fi
+%
+% if jsclasses (<= 2017) loaded, winjis option is available;
+% abort loading this package
+\ifx\winjistrue\@undefined\else
+  \PackageWarning{winjis}{%
+    Your version of jsclasses should have\MessageBreak
+    `winjis' option; use it instead}
+  \expandafter\endinput
+\fi
+%
+% "fake" jsarticle
+\expandafter\def\csname ver@jsarticle.cls\endcsname{}
+%
+% use winjis; force jsclasses-style scaling
+\@for\@tempa:=5,6,7,8,9,10,10.95,12,14.4,17.28,20.74,24.88\do{%
+  \expandafter\let\csname JY1/mc/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JY1/gt/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JT1/mc/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JT1/gt/m/n/\@tempa\endcsname\relax
+}
+\expandafter\ifx\csname ver@jspf.cls\endcsname\@undefined
+  % others
+  \def\Cjascale{0.924690}
+  \DeclareFontShape{JY1}{mc}{m}{n}{<-> s * [0.961] winjis}{}
+  \DeclareFontShape{JY1}{gt}{m}{n}{<-> s * [0.961] winjisg}{}
+  \DeclareFontShape{JT1}{mc}{m}{n}{<-> s * [0.961] winjis-v}{}
+  \DeclareFontShape{JT1}{gt}{m}{n}{<-> s * [0.961] winjisg-v}{}
+\else
+  % for jspf.cls
+  \def\Cjascale{0.903375}
+  \DeclareFontShape{JY1}{mc}{m}{n}{<-> s * [0.93885] winjis}{}
+  \DeclareFontShape{JY1}{gt}{m}{n}{<-> s * [0.93885] winjisg}{}
+  \DeclareFontShape{JT1}{mc}{m}{n}{<-> s * [0.93885] winjis-v}{}
+  \DeclareFontShape{JT1}{gt}{m}{n}{<-> s * [0.93885] winjisg-v}{}
+\fi
+%
+% if jsclasses loaded, the rest of this package is already done;
+% exit now
+\ifx\@jsc@uplatextrue\@undefined\else
+  \normalsize
+  \expandafter\endinput
+\fi
+%
+% \@setfontsize with \parindent and \(x)kanjiskip settings
+\def\@setfontsize#1#2#3{\@nomath#1%
+  \ifx\protect\@typeset@protect
+    \let\@currsize#1%
+  \fi
+  \fontsize{#2}{#3}\selectfont
+  \ifdim\parindent>\z@ \parindent=1zw \fi
+  \kanjiskip=0zw plus .1zw minus .01zw
+  \xkanjiskip=0.25em plus 0.15em minus 0.06em}
+%
+% ad-hoc "relation font"
+\DeclareRobustCommand\rmfamily
+        {\not@math@alphabet\rmfamily\mathrm
+         \romanfamily\rmdefault\kanjifamily\mcdefault\selectfont}
+\DeclareRobustCommand\sffamily
+        {\not@math@alphabet\sffamily\mathsf
+         \romanfamily\sfdefault\kanjifamily\gtdefault\selectfont}
+\DeclareRobustCommand\ttfamily
+        {\not@math@alphabet\ttfamily\mathtt
+         \romanfamily\ttdefault\kanjifamily\gtdefault\selectfont}
+\normalsize
+%
+\endinput

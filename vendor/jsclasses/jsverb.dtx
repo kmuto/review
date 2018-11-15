@@ -1,0 +1,333 @@
+% ^^A -*- japanese-latex -*-
+%
+% \ifx\epTeXinputencoding\undefined\else
+%   \epTeXinputencoding utf8 % ^^A added (2017-10-04)
+% \fi
+%
+% \iffalse
+%
+%<*driver>
+\ifx\epTeXinputencoding\undefined\else
+  \epTeXinputencoding utf8
+\fi
+%</driver>
+%
+%  jsverb.dtx
+%  verb/verbatim 関係マクロ (煮ても焼いてもかまいません)
+%  奥村晴彦 <okumura@okumuralab.org>
+%  http://oku.edu.mie-u.ac.jp/~okumura/
+%
+%  「煮ても焼いてもかまいません」で困る場合はmodified BSDということでお願いします。
+%
+%<jsverb>\NeedsTeXFormat{pLaTeX2e}
+%<jsverb>\ProvidesFile{jsverb.sty}[2007/01/28 okumura]
+%<*driver>
+\documentclass{jsarticle}
+\usepackage{doc}
+\xspcode"5C=1 %% \
+\xspcode"22=1 %% "
+\usepackage{okumacro}
+\usepackage{jsverb}
+\addtolength{\textwidth}{-1in}
+\addtolength{\evensidemargin}{1in}
+\addtolength{\oddsidemargin}{1in}
+\addtolength{\marginparwidth}{1in}
+\setlength\marginparsep{5pt}
+\setlength\marginparpush{0pt}
+% \OnlyDescription
+\CodelineNumbered
+\DisableCrossrefs
+\setcounter{StandardModuleDepth}{1}
+\GetFileInfo{jsverb.sty}
+\begin{document}
+  \DocInput{jsverb.dtx}
+\end{document}
+%</driver>
+%
+% \fi
+%
+% \title{\pLaTeXe 用 \texttt{verb...} 関係マクロ}
+% \author{奥村晴彦}
+% \date{\filedate}
+% \maketitle
+%
+% \StopEventually{}
+%
+% \MakeShortVerb{\|}
+%
+% 旧 |okuverb| は\LaTeX の |\verb| 命令と |verbatim| 環境を拡張したもので，
+% |yen| オプションを付けると \ttbslash\ が \ttyen\ になるほか，|verbatim| 環境の
+% 組み方を簡単にカスタマイズできるようにしたものです。
+%
+% 一方，\TeX ではASCII |0x60|の |`| と|0x27|の |'| を入力すると
+% それぞれ \texttt{`} と \texttt{'} になります。
+% これらは文字としてはそれぞれ
+% U+2018 LEFT SINGLE QUOTATION MARK，
+% U+2019 RIGHT SINGLE QUOTATION MARKですので，
+% dvipdfmxでPDFに変換して日本語テキストにコピー＆ペーストすると，
+% 全角文字になってしまいます。
+% |\verb| や |verbatim| はプログラムリストによく用いるので，
+% 意図としてはそれぞれU+0060 GRAVE ACCENT，U+0027 APOSTROPHEに
+% なってほしいと思います。
+% そこで，ZRさんのご助言
+% \begin{itemize}
+% \item |http://oku.edu.mie-u.ac.jp/~okumura/texfaq/qa/46673.html|
+% \item |http://oku.edu.mie-u.ac.jp/~okumura/texfaq/qa/46688.html|
+% \end{itemize}
+% にしたがって旧 |okuverb| を大幅に書き直したものがこの |jsverb| です。
+% 
+% なお，\ttyen\ をコピー＆ペーストした場合は，
+% OT1エンコーディングで使えば Y= という2文字に，
+% T1エンコーディングで使えばU+00A5 YEN SIGNになります。
+% バックスラッシュ（U+005C REVERSE SOLIDUS）にしたい場合は \ttbslash\
+% のほうをお使いください。
+% 
+% なお，|doc.sty| が提供する |macrocode| 環境は書き換えていませんので，
+% 以下のリストでは |` '| が \texttt{` '} になっています。
+% 
+% [2008-01-05] |http://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html|
+% が参考になります。|upquote.sty| というものもありました。
+%
+% 以下は内部の解説です。
+% 
+% まずオプションの宣言です。
+%
+% \begin{macro}{\if@yen}
+%
+% |\verb|，|verbatim| 等で |\| を円印 \ttyen\ にするかどうかのスイッチです。
+% これはデフォールトで偽ですが，|yen| オプションで真になります。
+%
+%    \begin{macrocode}
+%<*jsverb>
+\newif\if@yen \@yenfalse
+\DeclareOption{yen}{\@yentrue}
+\ProcessOptions\relax
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% T1を使うのにTS1がない場合の対処です。
+% |textcomp.sty| は副作用があるので |ts1enc.def|
+% を読み込むだけにしています（これは複数回読み込んでも
+% 問題なさそうです）。
+%
+%    \begin{macrocode}
+\AtBeginDocument{%
+  \expandafter\ifx\csname T@T1\endcsname\relax \else
+    \expandafter\ifx\csname T@TS1\endcsname\relax
+      \input{ts1enc.def}%
+  \fi\fi
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\y@n}
+% \begin{macro}{\ttyen}
+%
+% 簡単な円記号の定義です。後でT1エンコーディングの場合は再定義します。
+%
+%    \begin{macrocode}
+\def\y@n{Y\llap=}
+\def\ttyen{{\ttfamily\y@n}}
+%    \end{macrocode}
+%
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\ttbslash}
+%
+% タイプライタフォントのバックスラッシュです。
+%
+%    \begin{macrocode}
+\def\ttbslash{{\ttfamily\char`\\}}
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\BS}
+%
+% タイプライタフォントの円記号かバックスラッシュのどちらかになります。
+%
+%    \begin{macrocode}
+\if@yen
+  \let\BS=\ttyen
+\else
+  \let\BS=\ttbslash
+\fi
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\verbh@@k}
+%
+% |\verb|，|verbatim| 等で使うフックです。
+%
+%    \begin{macrocode}
+\if@yen
+  \begingroup
+    \catcode`\|=0  \catcode`\\=13
+    |gdef|verbh@@k{|catcode`|\=13 |let\=|y@n}
+  |endgroup
+\else
+  \let\verbh@@k=\relax
+\fi
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\verbh@@@k}
+% \begin{macro}{\verbh@@@k@}
+%
+% さらなるフックです。
+%
+%    \begin{macrocode}
+\begingroup
+  \catcode`\'=13
+  \catcode`\`=13
+  \gdef\verbh@@@k{\catcode39=13 \let'=\@rq \catcode96=13 \let`=\@lq}
+\endgroup
+\def\@OTone{OT1}
+\def\@Tone{T1}
+\def\verbh@@@k@{%
+  \ifx\f@encoding\@OTone
+    \chardef\@lq=18
+    \chardef\@rq=13
+    \verbh@@@k
+  \else
+    \ifx\f@encoding\@Tone
+      \chardef\@lq=0
+      \def\@rq{{\fontencoding{TS1}\selectfont\textquotesingle}}%
+      \def\y@n{{\fontencoding{TS1}\selectfont\textyen}}%
+      \verbh@@@k
+    \fi
+  \fi
+}
+%    \end{macrocode}
+%
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\verbatim@font}
+%
+% これは |latex.ltx| に |\normalfont\ttfamily|
+% と定義されていますが，|\bfseries| |\verb...| といった使い方もしたいので，
+% |\normalfont| は削除してしまいました。
+%
+%    \begin{macrocode}
+\def\verbatim@font{\ttfamily}
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\verb}
+%
+% 元は数式モード時だけ |\hbox| に入るようになっていましたが，
+% |\noautoxspacing| の効果を得るため，常に |\hbox| に入るようにしました。
+%
+%    \begin{macrocode}
+\def\verb{%
+  \leavevmode\hbox
+  \bgroup
+    \verb@eol@error \let\do\@makeother \dospecials
+    \verbatim@font\@noligs
+    \noautoxspacing
+    \verbh@@k \verbh@@@k@
+    \@ifstar\@sverb\@verb}
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\@xverbatim}
+% \begin{macro}{\@sxverbatim}
+%
+% |\| の |\catcode| を12から13に変えました。
+%
+%    \begin{macrocode}
+\if@yen
+\begingroup \catcode `|=0 \catcode `[= 1
+\catcode`]=2 \catcode `\{=12 \catcode `\}=12
+\catcode`\\=13 |gdef|@xverbatim#1\end{verbatim}[#1|end[verbatim]]
+|gdef|@sxverbatim#1\end{verbatim*}[#1|end[verbatim*]]
+|endgroup
+\fi
+%    \end{macrocode}
+%
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\verbatimleftmargin}
+%
+% |verbatim| 環境の余分な左マージンです。
+% 文書ファイル中などで自由に再定義してください。
+%
+%    \begin{macrocode}
+\newdimen\verbatimleftmargin
+\verbatimleftmargin=2zw
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\verbatimsize}
+%
+% |verbatim| 環境のフォントサイズです。
+% 文書ファイル中などで自由に再定義してください。
+%
+%    \begin{macrocode}
+\def\verbatimsize{\fontsize{9}{11pt}\selectfont}
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\@verbatim}
+%
+% |verbatim| 環境で使うフォントの行送りとサイズ（|\f@size|）が
+% 本文と違うと，前後の間隔が違ってしまいます。それを補正します。
+%
+%    \begin{macrocode}
+\def\@verbatim{%
+  \trivlist \item\relax
+  \if@minipage
+    \verbatimsize
+  \else
+    \vskip\baselineskip
+    \vskip-\f@size pt
+    \verbatimsize
+    \vskip-\baselineskip
+    \vskip\f@size pt
+    \vskip\parskip
+  \fi
+  \leftskip\@totalleftmargin
+  \if@minipage \else
+    \advance \leftskip \verbatimleftmargin
+  \fi
+  \rightskip\z@skip
+  \parindent\z@
+  \parfillskip\@flushglue
+  \parskip\z@skip
+  \@@par
+  \@tempswafalse
+  \def\par{%
+    \if@tempswa
+      \leavevmode \null \@@par\penalty\interlinepenalty
+    \else
+      \@tempswatrue
+      \ifhmode\@@par\penalty\interlinepenalty\fi
+    \fi}%
+  \let\do\@makeother \dospecials
+  \obeylines \verbatim@font \@noligs
+  \noautoxspacing
+  \verbh@@k \verbh@@@k@
+  \hyphenchar\font\m@ne
+  \everypar \expandafter{\the\everypar \unpenalty}%
+}
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% 以上で終わりです。
+%
+%    \begin{macrocode}
+%</jsverb>
+\endinput
+%    \end{macrocode}
+%
+% \Finale

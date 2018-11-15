@@ -1,0 +1,128 @@
+%%
+%% This is file `jsverb.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% jsverb.dtx  (with options: `jsverb')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from jsverb.sty.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file jsverb.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+\NeedsTeXFormat{pLaTeX2e}
+\ProvidesFile{jsverb.sty}[2007/01/28 okumura]
+\newif\if@yen \@yenfalse
+\DeclareOption{yen}{\@yentrue}
+\ProcessOptions\relax
+\AtBeginDocument{%
+  \expandafter\ifx\csname T@T1\endcsname\relax \else
+    \expandafter\ifx\csname T@TS1\endcsname\relax
+      \input{ts1enc.def}%
+  \fi\fi
+}
+\def\y@n{Y\llap=}
+\def\ttyen{{\ttfamily\y@n}}
+\def\ttbslash{{\ttfamily\char`\\}}
+\if@yen
+  \let\BS=\ttyen
+\else
+  \let\BS=\ttbslash
+\fi
+\if@yen
+  \begingroup
+    \catcode`\|=0  \catcode`\\=13
+    |gdef|verbh@@k{|catcode`|\=13 |let\=|y@n}
+  |endgroup
+\else
+  \let\verbh@@k=\relax
+\fi
+\begingroup
+  \catcode`\'=13
+  \catcode`\`=13
+  \gdef\verbh@@@k{\catcode39=13 \let'=\@rq \catcode96=13 \let`=\@lq}
+\endgroup
+\def\@OTone{OT1}
+\def\@Tone{T1}
+\def\verbh@@@k@{%
+  \ifx\f@encoding\@OTone
+    \chardef\@lq=18
+    \chardef\@rq=13
+    \verbh@@@k
+  \else
+    \ifx\f@encoding\@Tone
+      \chardef\@lq=0
+      \def\@rq{{\fontencoding{TS1}\selectfont\textquotesingle}}%
+      \def\y@n{{\fontencoding{TS1}\selectfont\textyen}}%
+      \verbh@@@k
+    \fi
+  \fi
+}
+\def\verbatim@font{\ttfamily}
+\def\verb{%
+  \leavevmode\hbox
+  \bgroup
+    \verb@eol@error \let\do\@makeother \dospecials
+    \verbatim@font\@noligs
+    \noautoxspacing
+    \verbh@@k \verbh@@@k@
+    \@ifstar\@sverb\@verb}
+\if@yen
+\begingroup \catcode `|=0 \catcode `[= 1
+\catcode`]=2 \catcode `\{=12 \catcode `\}=12
+\catcode`\\=13 |gdef|@xverbatim#1\end{verbatim}[#1|end[verbatim]]
+|gdef|@sxverbatim#1\end{verbatim*}[#1|end[verbatim*]]
+|endgroup
+\fi
+\newdimen\verbatimleftmargin
+\verbatimleftmargin=2zw
+\def\verbatimsize{\fontsize{9}{11pt}\selectfont}
+\def\@verbatim{%
+  \trivlist \item\relax
+  \if@minipage
+    \verbatimsize
+  \else
+    \vskip\baselineskip
+    \vskip-\f@size pt
+    \verbatimsize
+    \vskip-\baselineskip
+    \vskip\f@size pt
+    \vskip\parskip
+  \fi
+  \leftskip\@totalleftmargin
+  \if@minipage \else
+    \advance \leftskip \verbatimleftmargin
+  \fi
+  \rightskip\z@skip
+  \parindent\z@
+  \parfillskip\@flushglue
+  \parskip\z@skip
+  \@@par
+  \@tempswafalse
+  \def\par{%
+    \if@tempswa
+      \leavevmode \null \@@par\penalty\interlinepenalty
+    \else
+      \@tempswatrue
+      \ifhmode\@@par\penalty\interlinepenalty\fi
+    \fi}%
+  \let\do\@makeother \dospecials
+  \obeylines \verbatim@font \@noligs
+  \noautoxspacing
+  \verbh@@k \verbh@@@k@
+  \hyphenchar\font\m@ne
+  \everypar \expandafter{\the\everypar \unpenalty}%
+}
+\endinput
+%%
+%% End of file `jsverb.sty'.

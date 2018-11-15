@@ -1,0 +1,424 @@
+% ^^A -*- japanese-latex -*-
+%
+% \ifx\epTeXinputencoding\undefined\else
+%   \epTeXinputencoding utf8 % ^^A added (2017-10-04)
+% \fi
+%
+% \iffalse meta-comment
+%
+%<*driver>
+\ifx\epTeXinputencoding\undefined\else
+  \epTeXinputencoding utf8
+\fi
+%</driver>
+%
+%  LaTeX 関連のロゴ（pLaTeX2ε新ドキュメントクラス付録）
+%
+%  Copyright 1999-2016 Haruhiko Okumura
+%  Copyright 2016-2017 Japanese TeX Development Community
+%
+% \fi
+%
+% \iffalse
+%
+%    \begin{macrocode}
+%<package>\NeedsTeXFormat{LaTeX2e}
+%<package>\ProvidesPackage{jslogo}
+%<*driver>
+\ProvidesFile{jslogo.dtx}
+%</driver>
+  [2017/02/24 okumura, texjporg]
+%<*driver>
+\documentclass{jsarticle}
+\usepackage{doc}
+\xspcode"5C=1 %% \
+\xspcode"22=1 %% "
+\addtolength{\textwidth}{-1in}
+\addtolength{\evensidemargin}{1in}
+\addtolength{\oddsidemargin}{1in}
+\addtolength{\marginparwidth}{1in}
+\setlength\marginparpush{0pt}
+% \OnlyDescription
+\CodelineNumbered
+\DisableCrossrefs
+\setcounter{StandardModuleDepth}{1}
+\GetFileInfo{jslogo.dtx}
+\begin{document}
+  \DocInput{jslogo.dtx}
+\end{document}
+%</driver>
+%    \end{macrocode}
+%
+% \fi
+%
+% \title{\pLaTeXe 新ドキュメントクラス付録 ロゴパッケージ}
+% \author{奥村晴彦，日本語\TeX 開発コミュニティ}
+% \date{\filedate}
+% \maketitle
+%
+% \MakeShortVerb{\|}
+%
+% \section{はじめに}
+%
+% これはもともと奥村晴彦氏による\texttt{jsclasses.dtx}で定義され
+% ていた\LaTeX 関連のロゴを，独立のパッケージに抽出したものです。
+% \texttt{jsclasses}ではデフォルトで読み込まれます。
+% 現在は日本語\TeX 開発コミュニティによりGitHubで管理されています。
+% \begin{quote}
+% |https://github.com/texjporg/jsclasses|
+% \end{quote}
+% ライセンスはmodified BSDです。
+%
+% \StopEventually{}
+%
+% 以下では実際のコードに即して説明します。
+%
+%
+% \section{いろいろなロゴ}
+%
+% \LaTeX 関連のロゴを作り直します。
+%
+% \begin{macro}{\jslg@small}
+% \begin{macro}{\jslg@uppersmall}
+%
+% 文字を小さめに出したり上寄りに小さめに出したりする命令です。
+%
+%    \begin{macrocode}
+\def\jslg@small#1{\hbox{$\m@th$%
+  \csname S@\f@size\endcsname
+  \fontsize\sf@size\z@
+  \math@fontsfalse\selectfont
+  #1}}
+\def\jslg@uppersmall#1{{\sbox\z@ T\vbox to\ht0{\jslg@small{#1}\vss}}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\TeX}
+% \begin{macro}{\LaTeX}
+%
+% これらは \texttt{ltlogos.dtx} で定義されていますが，
+% TimesやHelveticaでも見栄えがするように若干変更しました。
+%
+% Computer Modern Romanです（ファミリ名\texttt{cmr}）。
+% 元の定義に最も近いので，特別に定義しない場合に用います。
+%
+%    \begin{macrocode}
+\def\cmrTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.25em\lower.5ex\hbox{E}\kern-.125emX\@
+  \else
+    T\kern-.1667em\lower.5ex\hbox{E}\kern-.125emX\@
+  \fi}
+\def\cmrLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.32em\jslg@uppersmall{A}\kern-.22em\cmrTeX
+  \else
+    L\kern-.36em\jslg@uppersmall{A}\kern-.15em\cmrTeX
+  \fi}
+%    \end{macrocode}
+%
+% Computer Modern Sans Serif（ファミリ名\texttt{cmss}）や
+% Helvetica（ファミリ名\texttt{phv}）などのサンセリフ体です。
+%
+%    \begin{macrocode}
+\def\sfTeX{T\kern-.1em\lower.4ex\hbox{E}\kern-.07emX\@}
+\def\sfLaTeX{L\kern-.25em\jslg@uppersmall{A}\kern-.08em\sfTeX}
+%    \end{macrocode}
+%
+% Timesです（ファミリ名\texttt{ptm}）。
+% TXフォント（ファミリ名\texttt{txr}）でも用います。
+%
+%    \begin{macrocode}
+\def\ptmTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.12em\lower.37ex\hbox{E}\kern-.02emX\@
+  \else
+    T\kern-.07em\lower.37ex\hbox{E}\kern-.05emX\@
+  \fi}
+\def\ptmLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.2em\jslg@uppersmall{A}\kern-.1em\ptmTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.1em\ptmTeX
+  \fi}
+%    \end{macrocode}
+%
+% New Century Schoolbookです（ファミリ名\texttt{pnc}）。
+%
+%    \begin{macrocode}
+\def\pncTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.2em\lower.5ex\hbox{E}\kern-.08emX\@
+  \else
+    T\kern-.13em\lower.5ex\hbox{E}\kern-.13emX\@
+  \fi}
+\def\pncLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.3em\jslg@uppersmall{A}\kern-.1em\pncTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.1em\pncTeX
+  \fi}
+%    \end{macrocode}
+%
+% Palatinoです（ファミリ名\texttt{ppl}）。
+% PXフォント（ファミリ名\texttt{pxr}）でも用います。
+%
+%    \begin{macrocode}
+\def\pplTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.17em\lower.32ex\hbox{E}\kern-.15emX\@
+  \else
+    T\kern-.12em\lower.34ex\hbox{E}\kern-.1emX\@
+  \fi}
+\def\pplLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.27em\jslg@uppersmall{A}\kern-.12em\pplTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.15em\pplTeX
+  \fi}
+%    \end{macrocode}
+%
+% URW Garamondです（ファミリ名\texttt{ugm}）。
+%
+%    \begin{macrocode}
+\def\ugmTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.1em\lower.32ex\hbox{E}\kern-.06emX\@
+  \else
+    T\kern-.12em\lower.34ex\hbox{E}\kern-.1emX\@
+  \fi}
+\def\ugmLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.2em\jslg@uppersmall{A}\kern-.13em\ugmTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.13em\ugmTeX
+  \fi}
+%    \end{macrocode}
+%
+% 以上の定義を，ファミリによって使い分けます。
+%
+% [2003-06-12] Palatinoも加えました（要調整）。
+%
+%    \begin{macrocode}
+\DeclareRobustCommand{\TeX}{%
+  \def\@tempa{cmss}%
+  \ifx\f@family\@tempa\sfTeX
+  \else
+  \def\@tempa{phv}%
+  \ifx\f@family\@tempa\sfTeX
+  \else
+  \def\@tempa{qhv}%
+  \ifx\f@family\@tempa\sfTeX
+  \else
+    \def\@tempa{ptm}%
+    \ifx\f@family\@tempa\ptmTeX
+    \else
+    \def\@tempa{qtm}%
+    \ifx\f@family\@tempa\ptmTeX
+    \else
+      \def\@tempa{txr}%
+      \ifx\f@family\@tempa\ptmTeX
+      \else
+      \def\@tempa{ntxtlf}%
+      \ifx\f@family\@tempa\ptmTeX
+      \else
+        \def\@tempa{pnc}%
+        \ifx\f@family\@tempa\pncTeX
+        \else
+          \def\@tempa{ppl}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+          \def\@tempa{qpl}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+          \def\@tempa{pplx}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+          \def\@tempa{pplj}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+            \def\@tempa{pxr}%
+            \ifx\f@family\@tempa\pplTeX
+            \else
+            \def\@tempa{zpltlf}%
+            \ifx\f@family\@tempa\pplTeX
+            \else
+              \def\@tempa{ugm}%
+              \ifx\f@family\@tempa\ugmTeX
+              \else\cmrTeX
+              \fi
+            \fi\fi
+          \fi\fi\fi\fi
+        \fi
+      \fi\fi
+    \fi\fi
+  \fi\fi\fi}
+\DeclareRobustCommand{\LaTeX}{%
+  \def\@tempa{cmss}%
+  \ifx\f@family\@tempa\sfLaTeX
+  \else
+  \def\@tempa{phv}%
+  \ifx\f@family\@tempa\sfLaTeX
+  \else
+  \def\@tempa{qhv}%
+  \ifx\f@family\@tempa\sfLaTeX
+  \else
+    \def\@tempa{ptm}%
+    \ifx\f@family\@tempa\ptmLaTeX
+    \else
+    \def\@tempa{qtm}%
+    \ifx\f@family\@tempa\ptmLaTeX
+    \else
+      \def\@tempa{txr}%
+      \ifx\f@family\@tempa\ptmLaTeX
+      \else
+      \def\@tempa{ntxtlf}%
+      \ifx\f@family\@tempa\ptmLaTeX
+      \else
+        \def\@tempa{pnc}%
+        \ifx\f@family\@tempa\pncLaTeX
+        \else
+          \def\@tempa{ppl}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+          \def\@tempa{qpl}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+          \def\@tempa{pplx}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+          \def\@tempa{pplj}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+            \def\@tempa{pxr}%
+            \ifx\f@family\@tempa\pplLaTeX
+            \else
+            \def\@tempa{zpltlf}%
+            \ifx\f@family\@tempa\pplLaTeX
+            \else
+              \def\@tempa{ugm}%
+              \ifx\f@family\@tempa\ugmLaTeX
+              \else\cmrLaTeX
+              \fi
+            \fi\fi
+          \fi\fi\fi\fi
+        \fi
+      \fi\fi
+    \fi\fi
+  \fi\fi\fi}
+%    \end{macrocode}
+%
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\LaTeXe}
+%
+% |\LaTeXe| コマンドの |\mbox{\m@th ...| で始まる新しい定義では
+% 直後の和文との間に |\xkanjiskip| が入りません。また，
+% |mathptmx| パッケージなどと併用すると，最後の $\varepsilon$ が
+% 下がりすぎてしまいます。そのため，ちょっと手を加えました。
+%
+%    \begin{macrocode}
+\DeclareRobustCommand{\LaTeXe}{$\mbox{%
+  \if b\expandafter\@car\f@series\@nil\boldmath\fi
+  \LaTeX\kern.15em2\raisebox{-.37ex}{$\textstyle\varepsilon$}}$}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\pTeX}
+% \begin{macro}{\pLaTeX}
+% \begin{macro}{\pLaTeXe}
+%
+% \pTeX ，\pLaTeXe のロゴを出す命令です。
+%
+%    \begin{macrocode}
+\def\pTeX{p\kern-.05em\TeX}
+\def\pLaTeX{p\LaTeX}
+\def\pLaTeXe{p\LaTeXe}
+%    \end{macrocode}
+%
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\upTeX}
+% \begin{macro}{\upLaTeX}
+% \begin{macro}{\upLaTeXe}
+%
+% [2016-07-14] \upTeX ，\upLaTeXe のロゴを出す命令も定義します。
+%
+%    \begin{macrocode}
+\def\upTeX{u\pTeX}
+\def\upLaTeX{u\pLaTeX}
+\def\upLaTeXe{u\pLaTeXe}
+%    \end{macrocode}
+%
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\AmSTeX}
+%
+% \texttt{amstex.sty} で定義されています。
+%
+%    \begin{macrocode}
+\def\AmSTeX{\protect\AmS-\protect\TeX{}}
+%    \end{macrocode}
+%
+% \end{macro}
+%
+% \begin{macro}{\BibTeX}
+% \begin{macro}{\SliTeX}
+%
+% これらは \texttt{doc.dtx} から取ったものです。
+% ただし，|\BibTeX| だけはちょっと修正しました。
+%
+%    \begin{macrocode}
+% \@ifundefined{BibTeX}
+%    {\def\BibTeX{{\rmfamily B\kern-.05em%
+%     \textsc{i\kern-.025em b}\kern-.08em%
+%     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}}{}
+\DeclareRobustCommand{\BibTeX}{B\kern-.05em\jslg@small{I\kern-.025em B}%
+  \ifx\f@family\cmr\kern-.08em\else\kern-.15em\fi\TeX}
+\DeclareRobustCommand{\SliTeX}{%
+  S\kern-.06emL\kern-.18em\jslg@uppersmall{I}\kern -.03em\TeX}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+%
+% \section{PDF文字列中でロゴが使われた場合への対策}
+%
+% 以上でロゴの定義は終わりですが，|hyperref|を読み込んだ状態で |jslogo| の命令を
+% PDF文字列として解釈される箇所（例 |\section| など）で使うと警告が出てしまいます。
+%\begin{verbatim}
+%  Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+%  (hyperref)                \kern -0.50003pt
+%  (hyperref)                removed on input line 5.
+%\end{verbatim}
+% そこで，この警告が出ないように対策します(Issue \#51)。
+%
+% まず，|\pdfstringdefPreHook| を（なければ）用意します。
+%    \begin{macrocode}
+\providecommand*\pdfstringdefPreHook{}
+%    \end{macrocode}
+%
+% そして，警告が出てしまうロゴに対するPDF文字列中での定義を追加します。
+%    \begin{macrocode}
+\g@addto@macro\pdfstringdefPreHook{%
+  \def\pTeX{p\TeX}%
+  \def\AmS{AMS}%
+  \def\SliTeX{Sli\TeX}%
+  \def\BibTeX{Bib\TeX}%
+}
+%    \end{macrocode}
+%
+% |hyperref| 読込時に |\pdfstringdefPreHook| が定義済ならそれはそのまま保持され，
+% 警告が出なくなります。
+%
+% 以上です。
+%
+% \Finale
+%
+\endinput
