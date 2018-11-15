@@ -284,6 +284,7 @@
 \fi\fi
 
 \LoadClass{jsbook}
+
 % \typeout{!!! magscale: \jsc@magscale}
 % \typeout{!!! mag: \the\mag}%%=> 1000 -> OK
 
@@ -331,11 +332,11 @@
 \setlength{\Cvs}{\baselineskip}
 
 %% headheight, headsep, footskip
-\setlength\topskip{\Cht}
+% \setlength\topskip{\Cht}%%<= カスタムにしても、jsbook.clsのままにしとく
 \ifx\recls@headheight\@empty\else\setlength\headheight{\recls@headheight}\fi
 \ifx\recls@headsep\@empty\else\setlength\headsep{\recls@headsep}\fi
 \ifx\recls@footskip\@empty\else\setlength\footskip{\recls@footskip}\fi
-\setlength\maxdepth{.5\topskip}
+% \setlength\maxdepth{.5\topskip}%%<= カスタムにしても、jsbook.clsのままにしとく
 
 %% 字詰め数、行数
 \ifx\recls@line@length\@empty\else
