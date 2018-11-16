@@ -164,6 +164,7 @@ module ReVIEW
       input_files = Hash.new { |h, key| h[key] = '' }
       book.parts.each do |part|
         if part.name.present?
+          @config['use_part'] = true
           if part.file?
             output_chaps(part.name, yamlfile)
             input_files['CHAPS'] << %Q(\\input{#{part.name}.tex}\n)

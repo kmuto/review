@@ -2,7 +2,7 @@
 
 Re:VIEW 2.0 より、縦書きの実験的なサポートを含めています。このドキュメントでその利用方法を説明します。
 
-このドキュメントは、Re:VIEW 2.0 に基づいています。
+このドキュメントは、Re:VIEW 3.0 に基づいています。
 
 ## Re:VIEW フォーマットテキストファイルでの利用
 縦書きのドキュメントをサポートするため、次のような機能を提供します。
@@ -52,4 +52,21 @@ review-pdfmaker のバックエンドとなっている TeX で縦書きを利�
 texdocumentclass: ["utbook", "oneside"]
 ```
 
-utbook クラスは uplatex に合わせた縦書きの紙面デザインを提供します（platex を使用する場合は tbook クラスを使います）。マクロや追加パッケージが縦書きに対応していない場合、エラーあるいは予想外の結果になることがあります。
+utbook クラスは upLaTeX に合わせた縦書きの紙面デザインを提供します。マクロや追加パッケージが縦書きに対応していない場合、エラーあるいは予想外の結果になることがあります。
+
+また、表紙・大扉・奥付のように主題とまったく異なる紙面表現の箇所は、TeX のマクロで表現しようとするよりも、Adobe InDesign や Microsoft Word などの別のツールを使って作成した原寸の PDF を用意し、それを貼り付けたほうが思いどおりの結果になるでしょう。`review-custom.sty` に記述する例を以下に示します（各 PDF は `images` フォルダに置いているものとします）。
+
+```
+% 縦書きのため各貼り付けPDFは90度回転させる
+\def\reviewcoverpagecont{% 表紙
+\includefullpagegraphics[angle=90]{images/cover.pdf}
+}
+
+\def\reviewtitlepagecont{% 大扉
+  \includefullpagegraphics[angle=90]{images/titlepage.pdf}
+}
+
+\def\reviewcolophonpagecont{% 奥付
+  \includefullpagegraphics[angle=90]{images/colophon.pdf}
+}
+```
