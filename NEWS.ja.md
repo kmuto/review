@@ -16,6 +16,9 @@
 * PDFMaker: 部の中で節などの下位見出しを利用できるようになりました ([#1195])
 * PDFMaker: 部があるときには `\reviewusepart` というマクロを定義するようにしました ([#1199])
 * review-init が生成する config.yml ファイルで、`texdocumentclass` パラメータをコメントアウトされた状態ではなく明示指定するようにしました ([#1202])
+* ★PDFMaker: `//tsize` 命令で幅が明示指定されている場合には、表中の改行（`@<br>`）を `\newline` マクロで表現するようにしました ([#1206])
+* ★PDFMaker: TeX における表の列幅の表現として、`L{幅}`（左寄せ・均等配置なし）, `C{幅}`（中央寄せ）, `R{幅}`（右寄せ） を利用できるようにしました ([#1208])
+* ★PDFMaker: バージョン間の実装差異を避けるため、スナップショットの jsbook.cls (2018/06/23) および gentombow.sty (2018/08/30 v0.9j) を sty フォルダにコピーしてそれを利用するようにしました ([#1211])
 
 ## バグ修正
 * PDFMaker: review-jlreq クラスファイルで serial_pagination および startpage が動作していなかったのを修正しました ([#1204])
@@ -30,6 +33,7 @@
 * review-jlreq のドキュメントを更新しました ([#1204])
 
 ## コントリビューターのみなさん
+* [@munepi](https://github.com/munepi)
 
 [#1151]: https://github.com/kmuto/review/issues/1151
 [#1152]: https://github.com/kmuto/review/issues/1152
@@ -51,6 +55,9 @@
 [#1202]: https://github.com/kmuto/review/pull/1202
 [#1203]: https://github.com/kmuto/review/pull/1203
 [#1204]: https://github.com/kmuto/review/pull/1204
+[#1206]: https://github.com/kmuto/review/issues/1206
+[#1208]: https://github.com/kmuto/review/pull/1208
+[#1211]: https://github.com/kmuto/review/pull/1211
 
 # Version 3.0.0 preview 4
 ## 新機能
