@@ -234,7 +234,7 @@ EOT
     assert_match(/By default it is migrated to/, io.string)
     assert_match(/is safely replaced/, io.string)
     cont = <<EOT
-texdocumentclass: ["review-jsbook", "paper=a5,Q=15.46,landscape,oneside,twoside,vartwoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,disablejfam,draft,final,mingoth,winjis,jis,papersize,english,report,jslogo,nojslogo,media=print,cover=false"]
+texdocumentclass: ["review-jsbook", "paper=a5,fontsize=11pt,landscape,oneside,twoside,vartwoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,disablejfam,draft,final,mingoth,winjis,jis,papersize,english,report,jslogo,nojslogo,media=print,cover=false"]
 EOT
     assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
   end
@@ -262,6 +262,18 @@ EOT
     assert_equal '', io.string
     cont = <<EOT
 texdocumentclass: ["review-jsbook", ""]
+EOT
+    assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
+  end
+
+  def test_update_tex_parameters_review_jsbook_obsoletekey
+    File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jsbook", "Q=13.5, H=20, W=40, L=34, head=20mm, gutter=20mm"]\n))
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_tex_parameters
+    cont = <<EOT
+texdocumentclass: ["review-jsbook", "fontsize=13.5Q, baselineskip=20H, line_length=40zw, number_of_lines=34, head_space=20mm, gutter=20mm"]
 EOT
     assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
   end

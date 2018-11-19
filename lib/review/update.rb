@@ -336,6 +336,10 @@ module ReVIEW
             @template = nil
           else
             @template = config['texdocumentclass'][0]
+
+            if @template == 'review-jsbook'
+              update_review_jsbook_opts(yml, config['texdocumentclass'][1])
+            end
           end
 
           # no need to update
@@ -365,21 +369,39 @@ module ReVIEW
           end
 
           flag, modified_opts = convert_documentclass_opts(yml, @template, config['texdocumentclass'][1])
-          if flag # successfully converted
-            @logger.info t("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), config['texdocumentclass'][1], modified_opts])
-          else # something wrong
-            unless confirm("%s: previous 'texdocumentclass' option '%s' couldn't be converted fully. '%s' is suggested. Do you really proceed?", [File.basename(yml), config['texdocumentclass'][1], modified_opts], nil)
-              @template = nil
-              next
-            end
-          end
-
-          rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modified_opts}"]))
+          rewrite_documentclass_opts_by_flag(flag, yml, config['texdocumentclass'][1], modified_opts)
         else
           @template = nil
           @logger.error t("%s: ** 'texdocumentclass' specifies '%s'. Because this is unknown class for this tool, you need to update it by yourself if it won't work. **", [File.basename(yml), config['texdocumentclass'][0]])
         end
       end
+    end
+
+    def rewrite_documentclass_opts_by_flag(flag, yml, old_opts, modified_opts)
+      if flag # successfully converted
+        @logger.info t("%s: previous 'texdocumentclass' option '%s' is safely replaced with '%s'.", [File.basename(yml), old_opts, modified_opts])
+      else # something wrong
+        unless confirm("%s: previous 'texdocumentclass' option '%s' couldn't be converted fully. '%s' is suggested. Do you really proceed?", [File.basename(yml), old_opts, modified_opts], nil)
+          @template = nil
+          return nil
+        end
+      end
+
+      rewrite_yml(yml, 'texdocumentclass', %Q(["#{@template}", "#{modified_opts}"]))
+    end
+
+    def update_review_jsbook_opts(yml, old_opts)
+      modified_opts = old_opts.gsub(/Q=([^,]+)/, 'fontsize=\1Q').
+                      gsub(/W=([^,]+)/, 'line_length=\1zw').
+                      gsub(/L=([^,]+)/, 'number_of_lines=\1').
+                      gsub(/H=([^,]+)/, 'baselineskip=\1H').
+                      gsub(/head=([^,]+)/, 'head_space=\1')
+
+      if modified_opts == old_opts
+        return nil
+      end
+
+      rewrite_documentclass_opts_by_flag(true, yml, old_opts, modified_opts)
     end
 
     def convert_documentclass_opts(yml, cls, prev_opts)
@@ -393,13 +415,11 @@ module ReVIEW
           when 'a4j', 'a5j', 'b4j', 'b5j', 'a3paper', 'a4paper', 'a5paper', 'a6paper', 'b4paper', 'b5paper', 'b6paper', 'letterpaper', 'legalpaper', 'executivepaper'
             opts << "paper=#{v.sub('j', '').sub('paper', '')}"
           when /[\d.]+ptj/ # not cared...
-            q = sprintf('%.2f', v.sub('pt', '').to_f * 1.4056)
-            opts << "Q=#{q}"
+            opts << "fontsize=#{v.sub('j', '')}"
           when /[\d.]+pt/
-            q = sprintf('%.2f', v.sub('pt', '').to_f * 1.4056)
-            opts << "Q=#{q}"
+            opts << "fontsize=#{v}"
           when /[\d.]+Q/
-            opts << "Q=#{v.sub('Q', '')}"
+            opts << "fontsize=#{v}"
           when 'landscape', 'oneside', 'twoside', 'vartwoside', 'onecolumn',
                'twocolumn', 'titlepage', 'notitlepage', 'openright',
                'openany', 'leqno', 'fleqn', 'disablejfam', 'draft', 'final',

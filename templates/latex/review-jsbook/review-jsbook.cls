@@ -19,9 +19,6 @@
 % OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 % THE SOFTWARE.
 
-\ifx\epTeXinputencoding\undefined\else
-  \epTeXinputencoding utf8
-\fi
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{review-jsbook}
   [2018/09/30 v3.0  Re:VIEW pLaTeX class modified for jsbook.cls]
@@ -82,9 +79,6 @@
   \edef\recls@set@js@paper{#1}%
   \PassOptionsToClass{\recls@set@js@paper}{jsbook}}
 
-\def\recls@disable@jsopt#1{%
-  \recls@DeclareOption{#1}{\recls@error{option #1: not available}}}
-
 \recls@define@paper{a3}{paper}
 \recls@define@paper{a4}{paper}
 \recls@define@paper{a5}{paper}
@@ -98,11 +92,55 @@
 \recls@define@paper{legal}{paper}
 \recls@define@paper{executive}{paper}
 
-%% disable some options of jsbook.cls
+%% define/set specific fontsize
+\def\recls@define@fontsize#1{%
+  \@namedef{recls@fontsize@#1}{#1}}
+
+\def\recls@set@fontsize#1{%
+  \@ifundefined{recls@fontsize@#1}{%
+    \recls@set@customfontsize{#1}}{\@recls@set@fontsize{#1}}}
+\def\@recls@set@fontsize#1{%
+  \expandafter\expandafter\expandafter
+    \@@recls@set@fontsize\expandafter\expandafter\expandafter
+      {\csname recls@fontsize@#1\endcsname}}
+\def\@@recls@set@fontsize#1{%
+  \edef\recls@jsfontsize{#1}%
+  \ifdim\recls@jsfontsize=\recls@fontsize\else
+    \recls@warning{jsbook.cls has no such fontsize '\recls@fontsize'.^^J
+      pass through '\recls@jsfontsize' option to jsbook.cls}%
+  \fi
+  \PassOptionsToClass{\recls@jsfontsize}{jsbook}}
+
+%% NOTE: カスタムフォントサイズの対応は、事実上、止めることにしました。
+\def\recls@set@customfontsize#1{%
+  \setlength{\@tempdima}{#1}%
+  \ifdim\@tempdima<8.5pt\recls@set@fontsize{8pt}%
+  \else\ifdim\@tempdima<9.5pt\recls@set@fontsize{9pt}%
+  \else\ifdim\@tempdima<10.5pt\recls@set@fontsize{10pt}%
+  \else\ifdim\@tempdima<11.5pt\recls@set@fontsize{11pt}%
+  \else\ifdim\@tempdima<12.5pt\recls@set@fontsize{12pt}%
+  \else\ifdim\@tempdima<13pt\recls@set@fontsize{14pt}%
+  \else\ifdim\@tempdima<18.5pt\recls@set@fontsize{17pt}%
+  \else\ifdim\@tempdima<20.5pt\recls@set@fontsize{20pt}%
+  \else\ifdim\@tempdima<23pt\recls@set@fontsize{21pt}%
+  \else\ifdim\@tempdima<27.5pt\recls@set@fontsize{25pt}%
+  \else\ifdim\@tempdima<33pt\recls@set@fontsize{30pt}%
+  \else\ifdim\@tempdima<39.5pt\recls@set@fontsize{36pt}%
+  \else\recls@set@fontsize{43pt}%
+  \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi
+}
+
 \@for\recls@tmp:={%
-  a4j,a5j,b4j,b5j,%
   8pt,9pt,10pt,11pt,12pt,14pt,17pt,20pt,21pt,25pt,30pt,36pt,43pt,12Q,14Q,%
-  10ptj,10.5ptj,11ptj,12ptj,winjis,mingoth}\do{%
+  10ptj,10.5ptj,11ptj,12ptj}\do{%
+  \expandafter\recls@define@fontsize\expandafter{\recls@tmp}}
+
+%% disable some options of jsbook.cls
+\def\recls@disable@jsopt#1{%
+  \recls@DeclareOption{#1}{\recls@error{option #1: not available}}}
+
+\@for\recls@tmp:={%
+  a4j,a5j,b4j,b5j,winjis,mingoth}\do{%
   \expandafter\recls@disable@jsopt\expandafter{\recls@tmp}}
 
 %% \recls@set@tombowpaper{<papersize>}
@@ -163,7 +201,7 @@
 \DeclareOptionX{media}[print]{\gdef\recls@cameraready{#1}}
 
 %% 用紙
-\DeclareOptionX{paper}[a5]{\gdef\recls@paper{#1}}
+\DeclareOptionX{paper}[a4]{\gdef\recls@paper{#1}}
 \DeclareOptionX{tombopaper}{%
   \gdef\recls@tombowopts{}%%default: auto-detect
   \ifx#1\@empty\else\gdef\recls@tombowopts{tombow-#1}\fi}
@@ -173,17 +211,18 @@
 %% カスタム用紙サイズ
 \DeclareOptionX{paperwidth}{\gdef\recls@paperwidth{#1}}
 \DeclareOptionX{paperheight}{\gdef\recls@paperheight{#1}}
-%% 基本版面 QWLH、天、ノド
-\DeclareOptionX{Q}[13]{\gdef\recls@Q{#1}}
-\DeclareOptionX{W}[35]{\gdef\recls@W{#1}}
-\DeclareOptionX{L}[32]{\gdef\recls@L{#1}}
-\DeclareOptionX{H}[22]{\gdef\recls@H{#1}}
-\DeclareOptionX{head}[\z@]{\gdef\recls@head{#1}}%[18mm]
-\DeclareOptionX{gutter}[\z@]{\gdef\recls@gutter{#1}}%[20mm]
+%% 基本版面、天、ノド
+\DeclareOptionX{fontsize}[10pt]{\gdef\recls@fontsize{#1}}
+\DeclareOptionX{line_length}{\gdef\recls@line@length{#1}}%%ベタ組みになるように調整
+\DeclareOptionX{number_of_lines}{\gdef\recls@number@of@lines{#1}}
+\DeclareOptionX{baselineskip}{\def\recls@baselineskip{#1}}
+\DeclareOptionX{linegap}{\def\recls@linegap{#1}}
+\DeclareOptionX{head_space}{\gdef\recls@head@space{#1}}
+\DeclareOptionX{gutter}{\gdef\recls@gutter{#1}}
 %% headheight,headsep,footskip
-\DeclareOptionX{headheight}[\z@]{\gdef\recls@headheight{#1}}
-\DeclareOptionX{headsep}[\z@]{\gdef\recls@headsep{#1}}
-\DeclareOptionX{footskip}[\z@]{\gdef\recls@footskip{#1}}
+\DeclareOptionX{headheight}{\gdef\recls@headheight{#1}}
+\DeclareOptionX{headsep}{\gdef\recls@headsep{#1}}
+\DeclareOptionX{footskip}{\gdef\recls@footskip{#1}}
 
 %% 表紙・開始番号・通しノンブル
 \newif\if@reclscover \@reclscovertrue
@@ -194,20 +233,22 @@
 
 \PassOptionsToClass{dvipdfmx,nomag}{jsbook}
 \DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{jsbook}}%
-\ExecuteOptionsX{media,cameraready,hiddenfolio,%
+\ExecuteOptionsX{cameraready,media,hiddenfolio,%
   paper,tombopaper,bleed_margin,paperwidth,paperheight,%
-  Q,W,L,H,head,gutter,headheight,headsep,footskip,%
+  fontsize,line_length,number_of_lines,baselineskip,linegap,head_space,%
+  gutter,headheight,headsep,footskip,%
   cover,startpage,serial_pagination}
 \ProcessOptionsX\relax
 
-%% set specific papersize
+%% set specific papersize, fontsize
 \recls@set@paper{\recls@paper}
 \recls@set@tombowpaper{\recls@tombowopts}
+\recls@set@fontsize{\recls@fontsize}
 
 %% camera-ready PDF file preparation for each print, ebook
 \def\recls@tmp{preview}\ifx\recls@cameraready\recls@tmp
-%%FIXME: media=preview の挙動は保留。例：フォント関係を仕込む
   \@camerareadyfalse\@pdfhyperlinkfalse\@reclscovertrue
+  \PassOptionsToClass{papersize}{jsbook}%
 \else\def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinkfalse\@reclscoverfalse
   \IfFileExists{gentombow.sty}{%
@@ -215,11 +256,6 @@
       \RequirePackage[pdfbox,\recls@tombowopts]{gentombow}%
       \settombowbleed{\recls@tombobleed}%
       \recls@set@hiddenfolio{\recls@hiddenfolio}}%
-    %%FIXME: gentombow upstreamでトンボ版スタイルコマンドが実装されたら、それに置き換えても良いかな。
-    % \AtEndOfClass{%
-    %   \PassOptionsToPackage{\recls@tombowopts}{gentombow}%
-    %   \RequirePackage[hiddenfolio=\recls@hiddenfolio,tombobleed=\recls@tombobleed]{gentombow-hiddenfolio}%
-    % }%
   }{%
     \IfFileExists{gentombow09j.sty}{% from vendor/gentombow.
       \AtEndOfClass{%
@@ -247,222 +283,117 @@
   \PassOptionsToPackage{uplatex}{otf}
 \fi\fi
 
-\PassOptionsToClass{10pt}{jsbook}%%<= forcely load 10pt
 \LoadClass{jsbook}
-%%\typeout{!!! mag: \the\mag}%%=> 1000 -> OK
 
-\IfFileExists{platexrelease.sty}{}{%% is bundled in TL16 or higher release version
-\@ifundefined{jsc@setfontsize}{%%compatibility for TL13, TL14, TL15 frozen
-\newdimen\jsc@mpt
-\jsc@mpt=1\p@
-\def\jsc@setfontsize#1#2#3{%
-  \@setfontsize#1{#2\jsc@mpt}{#3\jsc@mpt}}
-}\relax
-}
+% \typeout{!!! magscale: \jsc@magscale}
+% \typeout{!!! mag: \the\mag}%%=> 1000 -> OK
 
 %% override papersize with custom papersize
 \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
   \setlength{\paperwidth}{\recls@paperwidth}
   \setlength{\paperheight}{\recls@paperheight}
-  \def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
+  \def\recls@tmp{print}\ifx\recls@cameraready\recls@tmp\else
     \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
   \fi
 \fi\fi
 
-\def\recls@JYn{\if@recls@uptex JY2\else JY1\fi}%
-\def\recls@JTn{\if@recls@uptex JT2\else JT1\fi}%
-\def\recls@pfx@{\if@recls@uptex up\else \fi}%
-\def\recls@sfx@{\if@recls@uptex \else n\fi}%
-\def\recls@sc@le{\if@recls@uptex 0.924714\else 0.961026\fi}%
-\def\recls@jisrh{\recls@pfx@ jis\if@recls@uptex r-h\fi}%
-\def\recls@jisgh{\recls@pfx@ jisg\if@recls@uptex -h\fi}%
-\def\recls@jisrv{\recls@pfx@ jis\if@recls@uptex r\fi -v}%
-\def\recls@jisgv{\recls@pfx@ jisg-v}%
-
-\expandafter\let\csname\recls@JYn/mc/m/n/10\endcsname\relax
-\expandafter\let\csname\recls@JYn/gt/m/n/10\endcsname\relax
-
-%% calculate font size scaler
-\@tempdima=13\dimexpr 13\p@\relax
-\@tempdimb=\recls@Q\dimexpr\recls@Q\p@\relax
-\@settopoint\@tempdima \@settopoint\@tempdimb
-\@tempcnta=\strip@pt\@tempdima\relax
-\@tempcntb=\strip@pt\@tempdimb\relax
-\@tempdima=\dimexpr\@tempcntb\p@/\@tempcnta\relax
-\recls@get@p@{\@tempdima}{\recls@fnt@scale}% \typeout{!!! \recls@fnt@scale}%
-
-\RequirePackage{lmodern}
-
-\newdimen\JQ \JQ=1.08141Q\relax
-
-%% declare relative font definitions
-%% <family>: mc (reserved), gt (reserved), mgt?
-%% <series>: m (reserved), bx (reserved), eb?
-%% <shape>: n (reserved)
-%% JYn
-\DeclareFontShape{\recls@JYn}{mc}{m}{n}{%
-  <-> s * [\recls@sc@le] \recls@jisrh
-}{}
-\DeclareFontShape{\recls@JYn}{gt}{m}{n}{%
-  <-> s * [\recls@sc@le] \recls@jisgh
-}{}
-\DeclareFontShape{\recls@JYn}{mc}{bx}{n}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JYn}{gt}{bx}{n}{<->ssub*gt/m/n}{}
-%% JTn
-\DeclareFontShape{\recls@JTn}{mc}{m}{n}{%
-  <-> s * [\recls@sc@le] \recls@jisrv
-}{}
-\DeclareFontShape{\recls@JTn}{gt}{m}{n}{%
-  <-> s * [\recls@sc@le] \recls@jisgv
-}{}
-\DeclareFontShape{\recls@JTn}{mc}{bx}{n}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JTn}{gt}{bx}{n}{<->ssub*gt/m/n}{}
-%% it
-\DeclareFontShape{\recls@JYn}{mc}{m}{it}{<->ssub*mc/m/n}{}
-\DeclareFontShape{\recls@JYn}{mc}{bx}{it}{<->ssub*mc/bx/n}{}
-\DeclareFontShape{\recls@JYn}{gt}{m}{it}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JYn}{gt}{bx}{it}{<->ssub*gt/bx/n}{}
-\DeclareFontShape{\recls@JTn}{mc}{m}{it}{<->ssub*mc/m/n}{}
-\DeclareFontShape{\recls@JTn}{mc}{bx}{it}{<->ssub*mc/bx/n}{}
-\DeclareFontShape{\recls@JTn}{gt}{m}{it}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JTn}{gt}{bx}{it}{<->ssub*gt/bx/n}{}
-%% sl
-\DeclareFontShape{\recls@JYn}{mc}{m}{sl}{<->ssub*mc/m/n}{}
-\DeclareFontShape{\recls@JYn}{mc}{bx}{sl}{<->ssub*mc/bx/n}{}
-\DeclareFontShape{\recls@JYn}{gt}{m}{sl}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JYn}{gt}{bx}{sl}{<->ssub*gt/bx/n}{}
-\DeclareFontShape{\recls@JTn}{mc}{m}{sl}{<->ssub*mc/m/n}{}
-\DeclareFontShape{\recls@JTn}{mc}{bx}{sl}{<->ssub*mc/bx/n}{}
-\DeclareFontShape{\recls@JTn}{gt}{m}{sl}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JTn}{gt}{bx}{sl}{<->ssub*gt/bx/n}{}
-%% sc
-\DeclareFontShape{\recls@JYn}{mc}{m}{sc}{<->ssub*mc/m/n}{}
-\DeclareFontShape{\recls@JYn}{mc}{bx}{sc}{<->ssub*mc/bx/n}{}
-\DeclareFontShape{\recls@JYn}{gt}{m}{sc}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JYn}{gt}{bx}{sc}{<->ssub*gt/bx/n}{}
-\DeclareFontShape{\recls@JTn}{mc}{m}{sc}{<->ssub*mc/m/n}{}
-\DeclareFontShape{\recls@JTn}{mc}{bx}{sc}{<->ssub*mc/bx/n}{}
-\DeclareFontShape{\recls@JTn}{gt}{m}{sc}{<->ssub*gt/m/n}{}
-\DeclareFontShape{\recls@JTn}{gt}{bx}{sc}{<->ssub*gt/bx/n}{}
-
-\renewcommand{\normalsize}{%
-  \jsc@setfontsize\normalsize{\recls@Q\JQ}{\recls@H H}
-  \abovedisplayskip 11\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
-  \abovedisplayshortskip \z@ \@plus3\jsc@mpt
-  \belowdisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
-  \belowdisplayshortskip \belowdisplayskip
-  \let\@listi\@listI}
-\hyphenpenalty\@M\relax
-\exhyphenpenalty\@M\relax
-\normalsize
-
-\setbox0\hbox{\char\jis"3441}%"
-\setlength\Cht{\ht0}
-\setlength\Cdp{\dp0}
-\setlength\Cwd{\wd0}
-\setlength\Cvs{\baselineskip}
-\setlength\Chs{\wd0}
-\setbox0=\box\voidb@x
-
-\renewcommand{\small}{%
-  \ifnarrowbaselines
-    \jsc@setfontsize\small
-      {\dimexpr\recls@Q\JQ - 1\JQ}{1.5\dimexpr\recls@Q H - 3H}%
-  \else
-    \jsc@setfontsize\small
-      {\dimexpr\recls@Q\JQ - 1\JQ}{1.5\dimexpr\recls@Q H - 1H}%
-  \fi
-  \abovedisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
-  \abovedisplayshortskip  \z@ \@plus3\jsc@mpt
-  \belowdisplayskip \abovedisplayskip
-  \belowdisplayshortskip \belowdisplayskip
-  \def\@listi{\leftmargin\leftmargini
-              \topsep \z@
-              \parsep \z@
-              \itemsep \parsep}}
-
-\renewcommand{\footnotesize}{%
-  \ifnarrowbaselines
-    \jsc@setfontsize\footnotesize
-      {\dimexpr\recls@Q\JQ - 2\JQ}{1.5\dimexpr\recls@Q H - 3H}%
-  \else
-    \jsc@setfontsize\footnotesize
-      {\dimexpr\recls@Q\JQ - 2\JQ}{1.5\dimexpr\recls@Q H - 2H}%
-  \fi
-  \abovedisplayskip 6\jsc@mpt \@plus2\jsc@mpt \@minus3\jsc@mpt
-  \abovedisplayshortskip  \z@ \@plus2\jsc@mpt
-  \belowdisplayskip \abovedisplayskip
-  \belowdisplayshortskip \belowdisplayskip
-  \def\@listi{\leftmargin\leftmargini
-              \topsep \z@
-              \parsep \z@
-              \itemsep \parsep}}
-
-\renewcommand{\scriptsize}{\jsc@setfontsize\scriptsize
-  {\dimexpr\recls@Q\JQ - 3\JQ}{1.25\dimexpr\recls@Q H - 3H}}
-\renewcommand{\tiny}{\jsc@setfontsize\tiny
-  {.5\dimexpr\recls@Q\JQ}{.5\dimexpr\recls@Q H + 2H}}
-\if@twocolumn
-  \renewcommand{\large}{\@setfontsize\large
-    {\recls@fnt@scale\dimexpr 18\JQ}{\n@baseline}}
-\else
-  \renewcommand{\large}{\@setfontsize\large
-    {\recls@fnt@scale\dimexpr 18\JQ}{\recls@fnt@scale\dimexpr 27H}}
+%% baseline
+%% TL15のjsbook.clsまで面倒みないことでOK？
+% \@ifundefined{jsc@setfontsize}{%
+%   \newdimen\jsc@mpt
+%   \newdimen\jsc@mmm
+%   \def\jsc@setfontsize#1#2#3{%
+%     \@setfontsize#1{#2\jsc@mpt}{#3\jsc@mpt}}
+%   \jsc@mpt=\jsc@magscale\p@
+%   \jsc@mmm=\jsc@magscale mm
+% }\relax
+\ifx\recls@linegap\@empty\else
+  \setlength{\baselineskip}{\dimexpr\Cwd+\recls@linegap}
+  \renewcommand{\normalsize}{%
+    \jsc@setfontsize\normalsize\@xpt\baselineskip% \@xiipt
+    \abovedisplayskip 11\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \abovedisplayshortskip \z@ \@plus3\jsc@mpt
+    \belowdisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \belowdisplayshortskip \belowdisplayskip
+    \let\@listi\@listI}
+  \normalsize
 \fi
-\renewcommand{\Large}{\@setfontsize\Large
-  {\recls@fnt@scale\dimexpr 20\JQ}{\recls@fnt@scale\dimexpr 30H}}
-\renewcommand{\LARGE}{\@setfontsize\LARGE
-  {\recls@fnt@scale\dimexpr 24\JQ}{\recls@fnt@scale\dimexpr 36H}}
-\renewcommand{\huge}{\@setfontsize\huge
-  {\recls@fnt@scale\dimexpr 28\JQ}{\recls@fnt@scale\dimexpr 42H}}
-\renewcommand{\Huge}{\@setfontsize\Huge
-  {\recls@fnt@scale\dimexpr 32\JQ}{\recls@fnt@scale\dimexpr 48H}}
-\renewcommand{\HUGE}{\jsc@setfontsize\HUGE
-  {\recls@fnt@scale\dimexpr 36\JQ}{\recls@fnt@scale\dimexpr 54H}}
+\ifx\recls@baselineskip\@empty\else
+  \setlength{\baselineskip}{\recls@baselineskip}
+  \renewcommand{\normalsize}{%
+    \jsc@setfontsize\normalsize\@xpt\baselineskip% \@xiipt
+    \abovedisplayskip 11\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \abovedisplayshortskip \z@ \@plus3\jsc@mpt
+    \belowdisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
+    \belowdisplayshortskip \belowdisplayskip
+    \let\@listi\@listI}
+  \normalsize
+\fi
+\setlength{\Cvs}{\baselineskip}
 
 %% headheight, headsep, footskip
-\setlength\topskip{\Cht}
-\ifdim\recls@headheight>\z@\relax\setlength\headheight{\recls@headheight}\fi
-\ifdim\recls@headsep>\z@\relax\setlength\headsep{\recls@headsep}\fi
-\ifdim\recls@footskip>\z@\relax\setlength\footskip{\recls@footskip}\fi
-\setlength\maxdepth{.5\topskip}
+% \setlength\topskip{\Cht}%%<= カスタムにしても、jsbook.clsのままにしとく
+\ifx\recls@headheight\@empty\else\setlength\headheight{\recls@headheight}\fi
+\ifx\recls@headsep\@empty\else\setlength\headsep{\recls@headsep}\fi
+\ifx\recls@footskip\@empty\else\setlength\footskip{\recls@footskip}\fi
+% \setlength\maxdepth{.5\topskip}%%<= カスタムにしても、jsbook.clsのままにしとく
 
 %% 字詰め数、行数
-\setlength\textwidth{\recls@W\Cwd}
-\setlength\textheight{\recls@L\Cvs}
-\addtolength\textheight{-\Cvs}\addtolength\textheight{\Cwd}
-\addtolength\textheight{1H}%.5H
-
-\setlength\fullwidth{\textwidth}
+\ifx\recls@line@length\@empty\else
+  \@tempcnta\dimexpr\recls@line@length/\Cwd\relax
+  \setlength\textwidth{\@tempcnta\Cwd}
+  \setlength\fullwidth{\textwidth}
+\fi
+\ifx\recls@number@of@lines\@empty\else
+  \setlength\textheight{\recls@number@of@lines\Cvs}
+  \addtolength\textheight{-\Cvs}\addtolength\textheight{\Cwd}
+  \addtolength\textheight{1H}
+\fi
 
 %% ノド、小口
-\ifdim\recls@gutter>\z@
-\setlength\oddsidemargin{\recls@gutter}%ノド
-\addtolength\oddsidemargin{-1in}
-\setlength\evensidemargin{\paperwidth}
-\addtolength\evensidemargin{-2in}
-\addtolength\evensidemargin{-\oddsidemargin}
-\addtolength\evensidemargin{-\textwidth}
+%% gutterがあればそれに基づいて設定。
+%% line_lengthが指定されていればtextwidth基準にして設定。
+%% どちらも指定がなければjsbookをそのまま使用。
+\ifx\recls@gutter\@empty
+  \ifx\recls@line@length\@empty\else
+    \setlength\oddsidemargin{\paperwidth}
+    \addtolength\oddsidemargin{-\fullwidth}%%line_lengthを与えたとき\textwidth
+    \setlength\oddsidemargin{.5\oddsidemargin}
+    \addtolength\oddsidemargin{-1in}
+    \setlength\evensidemargin{\oddsidemargin}
+    \edef\recls@gutter{\evensidemargin}
+  \fi
 \else
-\setlength\oddsidemargin\paperwidth
-\addtolength\oddsidemargin{-\textwidth}
-\setlength\oddsidemargin{.5\oddsidemargin}
-\addtolength\oddsidemargin{-1in}
-\setlength\evensidemargin\oddsidemargin
-\edef\recls@gutter{\evensidemargin}
+  \setlength\oddsidemargin{\recls@gutter}%ノド
+  \addtolength\oddsidemargin{-1in}
+  \setlength\evensidemargin{\paperwidth}
+  \addtolength\evensidemargin{-2in}
+  \addtolength\evensidemargin{-\oddsidemargin}
+  \addtolength\evensidemargin{-\textwidth}
 \fi
 
 %% 天、地
-\ifdim\recls@head>\z@
-\setlength\topmargin{\recls@head}%天
+\ifx\recls@head@space\@empty
+  \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
+    \setlength\topmargin\paperheight
+    \addtolength\topmargin{-\textheight}
+    \setlength\topmargin{.5\topmargin}
+    \addtolength\topmargin{-1in}
+    \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
+  \fi\fi
+  \ifx\recls@number@of@lines\@empty\else
+    \setlength\topmargin\paperheight
+    \addtolength\topmargin{-\textheight}
+    \setlength\topmargin{.5\topmargin}
+    \addtolength\topmargin{-1in}
+    \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
+  \fi
+  \edef\recls@head@space{\dimexpr\topmargin+1in+\headheight+\headsep}
 \else
-\setlength\topmargin\paperheight
-\addtolength\topmargin{-\textheight}
-\edef\recls@head{\dimexpr\topmargin+1in+\headheight+\headsep}
-\setlength\topmargin{.5\topmargin}
+  \setlength\topmargin{\recls@head@space}%天
+  \addtolength\topmargin{-1in}
+  \addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
 \fi
-\addtolength\topmargin{-1in}
-\addtolength\topmargin{-\headheight}\addtolength\topmargin{-\headsep}
 
 %% load hyperref package
 \RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
@@ -476,7 +407,7 @@
 %% more useful macros
 %% ----------
 %% include fullpage graphics
-\let\grnchry@head\recls@head
+\let\grnchry@head\recls@head@space
 \let\grnchry@gutter\recls@gutter
 \newcommand*\includefullpagegraphics{%
   \clearpage
@@ -504,17 +435,17 @@
   \clearpage
 }
 
-% 空ページ
+%% 空ページ
 \newcommand\oneblankpage{\clearpage\thispagestyle{empty}%
   \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi}
 
-% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
+%% 横書き向けの、奇数ページまでの改丁(\cleardoublepage)・偶数ページまでの改丁(\clearoddpage)
 \let\cleardoublepage@right\cleardoublepage
 \def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
   \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 \let\clearoddpage\cleardoublepage@left
 
-% coverオプションによる表紙判定の上書き
+%% coverオプションによる表紙判定の上書き
 \def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp
 \@reclscovertrue
 \else\def\recls@tmp{false}\ifx\recls@forcecover\recls@tmp
@@ -522,16 +453,16 @@
 \else% それ以外の値は単に無視
 \fi\fi
 
-% シンプルな通しノンブル
+%% シンプルな通しノンブル
 \ifrecls@serialpage
 \renewcommand*{\pagenumbering}[1]{%
   \gdef\thepage{\@arabic\c@page}}
 \fi
 
-% 開始ページを変更
+%% 開始ページを変更
 \g@addto@macro\frontmatter{\setcounter{page}{\the\recls@startpage}}
 
-% titlepageのsetcounterを使わない
+%% titlepageのsetcounterを使わない
 \renewenvironment{titlepage}{%
     \clearpage
     \if@twoside\ifodd\c@page\else
