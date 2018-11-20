@@ -591,6 +591,25 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(\\begin{reviewtable}{|p{5mm}|cr|}\n\\hline\n\\reviewth{A} & B & C \\\\  \\hline\n\\end{reviewtable}\n), actual
   end
 
+  def test_separate_tsize
+    actual = @builder.separate_tsize('|l|c|r|p{1cm}lp{1.5cm}|p{5mm}').join(',')
+    assert_equal 'l,c,r,p{1cm},l,p{1.5cm},p{5mm}', actual
+
+    actual = @builder.separate_tsize('|lcr').join(',')
+    assert_equal 'l,c,r', actual
+
+    actual = @builder.separate_tsize('{p}p{').join(',')
+    assert_equal '{p},p{', actual
+  end
+
+  def test_break_tablecell
+    actual = compile_block("//tsize[|latex||p{10mm}|cp{10mm}|]\n//table{\nA@<br>{}A\tB@<br>{}B\tC@<br>{}C\n//}\n")
+    assert_equal %Q(\\begin{reviewtable}{|p{10mm}|cp{10mm}|}\n\\hline\n\\reviewth{A\\newline{}A} & \\shortstack[l]{B\\\\\nB} & C\\newline{}C \\\\  \\hline\n\\end{reviewtable}\n), actual
+
+    actual = compile_block("//tsize[|latex||p{10mm}|cp{10mm}|]\n//table{\n1@<br>{}1\t2@<br>{}2\t3\n------------\nA@<br>{}A\tB@<br>{}B\tC@<br>{}C\n//}\n")
+    assert_equal %Q(\\begin{reviewtable}{|p{10mm}|cp{10mm}|}\n\\hline\n\\reviewth{1\\newline{}1} & \\reviewth{\\shortstack[l]{2\\\\\n2}} & \\reviewth{3} \\\\  \\hline\nA\\newline{}A & \\shortstack[l]{B\\\\\nB} & C\\newline{}C \\\\  \\hline\n\\end{reviewtable}\n), actual
+  end
+
   def test_emtable
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal "\\begin{table}%%\n\\reviewtablecaption*{foo}\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n\\end{table}\n\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n",
