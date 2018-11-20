@@ -667,7 +667,7 @@ module ReVIEW
         end
       else
         puts macro('begin', 'reviewtable', (['|'] * (ncols + 1)).join('l'))
-        @cellwidth = ['l'] * (ncols + 1)
+        @cellwidth = ['l'] * ncols
       end
       puts '\\hline'
     end
