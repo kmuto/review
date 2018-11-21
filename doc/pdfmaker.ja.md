@@ -82,7 +82,7 @@ review-jsbook.cls は従来の jsbook.cls を包み、以下の機能を提供�
 * ドキュメントクラスオプションでほとんどの紙面設計を設定できます。
 * クラスオプション `media=print` （デフォルト）で印刷用に適した紙面、`media=ebook` で電子PDF媒体に適した紙面を作成します。印刷用ではデジタルトンボおよび紙面上トンボを配置し、表紙は付けません。電子用ではトンボなしの仕上がりサイズで、表紙を付けます。明示的に表紙の有無を指定することも可能です（`cover=trueまたはfalse`）。
 * クラスオプション `paper=紙サイズ` で用紙サイズを指定できます。
-* クラスオプション `Q=基本級数`、`W=1行の文字数`、`L=行数`、`H=基本行送り歯`、`head=天`、`guter=ノド` による基本版面設計が可能です。
+* クラスオプション `fontsize=基本文字サイズ`、`baselineskip=基本行送り`、`line_length=1行の字詰め`、`number_of_lines=行数`、`head_space=天`、`guter=ノド` による基本版面設計が可能です。
 * クラスオプション `startpage=ページ番号` で大扉のページ開始番号を指定できます。
 * クラスオプション `serial_pagination=trueまたはfalse` でページ番号を大扉からアラビア数字で通すことができます。
 * クラスオプション `hiddenfolio=プリセット` でノドに隠しノンブルを入れることができます（プリセットは `nikko-pc` など）。
@@ -91,22 +91,10 @@ texdocumentclass パラメータに何も指定をしなければ、以下のよ
 
 * 印刷用（`media=print`）。トンボあり
 * 表紙なし
-* 用紙はA5（`paper=a5`）
+* 用紙はA4（`paper=a4`）
 * 表紙なし（`cover=false`）
-* 13級、35文字×32行、行送り22歯。天・地・ノド・小口は中央合わせ
+* 基本版面の基本文字サイズは 10pt、ほかは jsbook を継承
 * 隠しノンブルなし
-
-config.yml で定義すると以下のようになります。
-
-```
-texdocumentclass: ["review-jsbook", "media=print,paper=a5,cover=false,Q=13,W=35,L=32,H=22"]
-```
-
-実際にはこれはデフォルト値なので、texdocumentclass の定義なし、あるいは以下でも同じです。
-
-```
-texdocumentclass: ["review-jsbook", ""]
-```
 
 その他の詳細な設定については、sty フォルダにある README.md を参照してください。
 
@@ -116,11 +104,7 @@ texdocumentclass: ["review-jsbook", ""]
 
 Re:VIEW 3.0 から review-jlreq.cls という別のクラスファイルも用意しています。review-jlreq.cls は「日本語組版処理の要件」( https://www.w3.org/TR/jlreq/ja/ ) に基づく紙面設計を採用している jlreq.cls を包んだクラスファイルです。
 
-`review-init --latex-template=review-jlreq` コマンドで、このクラスファイルを使うように sty フォルダへファイルが展開されます。ただし、config.yml ではまだこのクラスファイルを使うように設定されていないので、以下のように変更します。
-
-```
-texdocumentclass: ["review-jlreq", "media=print,paper=a5,cover=false"]
-```
+`review-init --latex-template=review-jlreq` コマンドで、このクラスファイルを使うように sty フォルダへファイルが展開されます。
 
 その他の詳細な設定については、sty フォルダにある README.md を参照してください。
 
