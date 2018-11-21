@@ -61,9 +61,10 @@ It is also possible to continue using your `layouts/layout.tex.erb`.
 When creating a new document folder with the `review-init` command, the following files are created in `sty` folder.
 
 * `review-jsbook.cls` : provides a basic design of paper representation.
+* `jsbook.cls` : is a copy of the upstream jsbook. To avoid differences in version on TeX distribution, Re:VIEW provides a snapshot of `jsbook.cls`.
 * `plistings.sty` : provides highlight expressions of program code.
 * `jumoline.sty` : expresses underlining.
-* `gentombow09j.sty` : makes bleed box.
+* `gentombow.sty` : makes bleed box.
 * `reviewmacro.sty` : imports the following style file. By specifying this file with `texstyle` parameter of config.yml, all style files are imported.
 * `review-base.sty` : associates Re:VIEW macro name and TeX macro. Also defines the entity of each macros of `layout.tex.erb`.
 * `review-style.sty` :defines visual decorations.
