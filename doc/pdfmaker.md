@@ -72,22 +72,16 @@ When creating a new document folder with the `review-init` command, the followin
 Default value of texdocumentclass are as follows.
 
 ```
-texdocumentclass: ["review-jsbook", "media=print,paper=a5,cover=false"]
+texdocumentclass: ["review-jsbook", "media=print,paper=a4,cover=false"]
 
 texdocumentclass: ["review-jsbook", ""] (same effort)
-
-texdocumentclass: ["review-jsbook", "media=print,paper=a5,cover=false,Q=13,W=35,L=32,H=22"] (same effort)
 ```
 
 ### About review-jlreq.cls
 
 Since Re:VIEW 3.0, review-jlreq.cls is also provided. This class file extends jlreq.cls which makes paper design based on "Requirements for Japanese Text Layout" ( https://www.w3.org/TR/2012/NOTE-jlreq-20120403/ ).
 
-`review-init --latex-template=review-jlreq` command copies the review-jlreq.cls set to `sty` folder. You need to change config.yml as follows.
-
-```
-texdocumentclass: ["review-jlreq", "media=print,paper=a5,cover=false"]
-```
+`review-init --latex-template=review-jlreq` command copies the review-jlreq.cls set to `sty` folder.
 
 ## Important Changes about LaTeX in Re:VIEW 2.0
 
