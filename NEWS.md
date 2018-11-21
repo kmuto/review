@@ -18,7 +18,7 @@
 * `texdocumentclass` parameter is explicit (not a comment) when creating config.yml by review-init ([#1202])
 * PDFMaker: line feed (`@<br>`) in the table is now represented by `\newline` macro when the width is explicity specified with `//tsize` ([#1206])
 * PDFMaker: enable to use `L{width}` (left justified), `C{width}` (centering), `R{width}` (right justified) as representation of the table column width ([#1208])
-* ★PDFMaker: to avoid implementation differences between versions, the snapshots jsbook.cls (2018/06/23) and gentombow.sty (2018/08/30 v0.9j) are copied to the `sty` folder ([#1210])
+* PDFMaker: to avoid implementation differences between versions, the snapshots jsbook.cls (2018/06/23) and gentombow.sty (2018/08/30 v0.9j) are copied to the `sty` folder ([#1210])
 
 ## Bug Fixes
 * PDFMaker: fix serial_pagination and startpage were not working in review-jlreq class ([#1204])
