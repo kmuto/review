@@ -1,3 +1,64 @@
+# Version 3.0.0 release candidate
+## Breaking Changes
+* PDFMaker: heading character size of review-jsbook becomes the same as the original jsbook ([#1152])
+* PDFMaker: Q, W, L, H parameters of review-jsbook are withdrawn. Projects created in the past preview version can be updated with the review-update command ([#1151],[#1201])
+
+## Bug Fixes
+* PDFMaker: fixes an issue that hiddenfolio parameter was ignored when using both hiddenfolio and tombopaper in review-jsbook ([#1158])
+* PDFMaker: fixes a problem that the paperwidth and paperheight parameters of review-jsbook didn't work ([#1171])
+* fixes an issue that review-update ignored update of sty folder ([#1183])
+
+## Enhancements
+* PDFMaker: in review-jsbook, you can specify the font size with `fontsize` parameter and the line height with `baselineskip` parameter with units such as pt and mm ([#1151])
+* PDFMaker: users who want to continue using the original jsbook.cls class file for some reason can use sty files of review-jsbook set ([#1177])
+* PDFMaker: add useful macros to review-jsbook and review-jlreq for users. `\oneblankpage` creates an empty page. `\clearoddpage` breaks page as necessary so that the next page is always an even page ([#1175],[#1182])
+* PDFMaker: add `media` parameter that specifies the type of PDF to review-jsbook and review-jlreq. This has the same meaning as `cameraready` ([#1181])
+* PDFMaker: sections are now allowed in part ([#1195])
+* PDFMaker: `\reviewusepart` macro is defined when theare is a part ([#1199])
+* `texdocumentclass` parameter is explicit (not a comment) when creating config.yml by review-init ([#1202])
+* PDFMaker: line feed (`@<br>`) in the table is now represented by `\newline` macro when the width is explicity specified with `//tsize` ([#1206])
+* PDFMaker: enable to use `L{width}` (left justified), `C{width}` (centering), `R{width}` (right justified) as representation of the table column width ([#1208])
+* PDFMaker: to avoid implementation differences between versions, the snapshots jsbook.cls (2018/06/23) and gentombow.sty (2018/08/30 v0.9j) are copied to the `sty` folder ([#1210])
+
+## Bug Fixes
+* PDFMaker: fix serial_pagination and startpage were not working in review-jlreq class ([#1204])
+
+## Docs
+* update `format_idg.ja.md` ([#1188])
+* add note about review-update command to quickstart guide `quickstart.ja.md` ([#1189])
+* update comments of `config.yml.sample` ([#1190])
+* update `pdfmaker.ja.md` ([#1191])
+* update `writing_vertical.ja.md`  ([#1198])
+* update document of review-jsbook ([#1203])
+* update document of review-jlreq ([#1204])
+
+## Contributors
+* [@munepi](https://github.com/munepi)
+
+[#1151]: https://github.com/kmuto/review/issues/1151
+[#1152]: https://github.com/kmuto/review/issues/1152
+[#1158]: https://github.com/kmuto/review/issues/1158
+[#1171]: https://github.com/kmuto/review/issues/1171
+[#1175]: https://github.com/kmuto/review/pull/1175
+[#1177]: https://github.com/kmuto/review/pull/1177
+[#1181]: https://github.com/kmuto/review/issues/1181
+[#1182]: https://github.com/kmuto/review/pull/1182
+[#1183]: https://github.com/kmuto/review/issues/1183
+[#1188]: https://github.com/kmuto/review/pull/1188
+[#1189]: https://github.com/kmuto/review/pull/1189
+[#1190]: https://github.com/kmuto/review/pull/1190
+[#1191]: https://github.com/kmuto/review/pull/1191
+[#1195]: https://github.com/kmuto/review/issues/1195
+[#1198]: https://github.com/kmuto/review/pull/1198
+[#1199]: https://github.com/kmuto/review/pull/1199
+[#1201]: https://github.com/kmuto/review/pull/1201
+[#1202]: https://github.com/kmuto/review/pull/1202
+[#1203]: https://github.com/kmuto/review/pull/1203
+[#1204]: https://github.com/kmuto/review/pull/1204
+[#1206]: https://github.com/kmuto/review/issues/1206
+[#1208]: https://github.com/kmuto/review/pull/1208
+[#1210]: https://github.com/kmuto/review/issues/1210
+
 # Version 3.0.0 preview 4
 ## New Features
 * new command `review-update` is added, which updates the setting of the project files to the new version ([#1144])
@@ -12,10 +73,6 @@
 ## Enhancements
 * PDFMaker: support hiddenfolio parameter with review-jlreq.cls ([#1147])
 * EPUBMaker/WEBMaker: when imgmath function is enabled, font size is passed to each `//texequation` ([#1146])
-
-## Docs
-
-## Contributors
 
 [#1144]: https://github.com/kmuto/review/issues/1144
 [#1146]: https://github.com/kmuto/review/issues/1146

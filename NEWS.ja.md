@@ -1,3 +1,64 @@
+# Version 3.0.0 release candidate
+## 非互換の変更
+* PDFMaker: review-jsbook の見出しの文字サイズを、オリジナルの jsbook に準拠しました ([#1152])
+* PDFMaker: review-jsbook において、3.0.0 preview 4 までの Q,W,L,H で指定する方法をやめ、fontsize などの単位付きパラメータを使うようにしました。3.0.0 preview 3 〜 3.0.0 preview 4 で作成したプロジェクトに対しては、review-update コマンドで新しいパラメータに移行できます ([#1151],[#1201])
+
+## バグ修正
+* PDFMaker: review-jsbook クラスファイルで hiddenfolio パラメータと tombopaper パラメータを同時に使用すると hiddenfolio パラメータが無視される問題を修正しました ([#1158])
+* PDFMaker: review-jsbook クラスファイルで paperwidth, paperheight パラメータが効かない問題を修正しました ([#1171])
+* review-update で sty フォルダの更新が無視されることがあるのを修正しました ([#1183])
+
+## 機能強化
+* PDFMaker: review-jsbook において、fontsize パラメータで標準の文字サイズ、baselineskip パラメータで標準の行の高さを pt や Q、mm などの単位付きで指定できるようにしました ([#1151])
+* PDFMaker: 何らかの事情でオリジナルの jsbook.cls クラスファイルを使い続けたいユーザー向けに、review-jsbook セットのスタイルファイルを流用可能にしました ([#1177])
+* PDFMaker: ユーザーが任意のスタイルや `//embed` 命令で利用できるよう、review-jsbook および review-jlreq に空ページを作成する `\oneblankpage`、必要に応じて改ページすることで次のページが必ず偶数ページになるようにする `\clearoddpage` のマクロを追加しました ([#1175],[#1182])
+* PDFMaker: review-jsbook および review-jlreq クラスファイルのドキュメントオプションパラメータに、生成 PDF の種類を指定する `media` を追加しました。3.0.0 preview3 で導入した `cameraready` パラメータと同じ意味です（どちらを使ってもかまいません）([#1181])
+* PDFMaker: 部の中で節などの下位見出しを利用できるようになりました ([#1195])
+* PDFMaker: 部があるときには `\reviewusepart` というマクロを定義するようにしました ([#1199])
+* review-init が生成する config.yml ファイルで、`texdocumentclass` パラメータをコメントアウトされた状態ではなく明示指定するようにしました ([#1202])
+* PDFMaker: `//tsize` 命令で幅が明示指定されている場合には、表中の改行（`@<br>`）を `\newline` マクロで表現するようにしました ([#1206])
+* PDFMaker: TeX における表の列幅の表現として、`L{幅}`（左寄せ・均等配置なし）, `C{幅}`（中央寄せ）, `R{幅}`（右寄せ） を利用できるようにしました ([#1208])
+* PDFMaker: バージョン間の実装差異を避けるため、スナップショットの jsbook.cls (2018/06/23) および gentombow.sty (2018/08/30 v0.9j) を sty フォルダにコピーしてそれを利用するようにしました ([#1210])
+
+## バグ修正
+* PDFMaker: review-jlreq クラスファイルで serial_pagination および startpage が動作していなかったのを修正しました ([#1204])
+
+## ドキュメント
+* IDGXML のドキュメント format_idg.ja.md を更新しました ([#1188])
+* クイックスタートガイド quickstart.ja.md に review-update について説明を追加しました ([#1189])
+* サンプル設定ファイル config.yml.sample のコメント類を更新しました ([#1190])
+* PDFMaker のドキュメント pdfmaker.ja.md を更新しました ([#1191])
+* 縦書きについてのドキュメント writing_vertical.ja.md を更新しました ([#1198])
+* review-jsbook のドキュメントを更新しました ([#1203])
+* review-jlreq のドキュメントを更新しました ([#1204])
+
+## コントリビューターのみなさん
+* [@munepi](https://github.com/munepi)
+
+[#1151]: https://github.com/kmuto/review/issues/1151
+[#1152]: https://github.com/kmuto/review/issues/1152
+[#1158]: https://github.com/kmuto/review/issues/1158
+[#1171]: https://github.com/kmuto/review/issues/1171
+[#1175]: https://github.com/kmuto/review/pull/1175
+[#1177]: https://github.com/kmuto/review/pull/1177
+[#1181]: https://github.com/kmuto/review/issues/1181
+[#1182]: https://github.com/kmuto/review/pull/1182
+[#1183]: https://github.com/kmuto/review/issues/1183
+[#1188]: https://github.com/kmuto/review/pull/1188
+[#1189]: https://github.com/kmuto/review/pull/1189
+[#1190]: https://github.com/kmuto/review/pull/1190
+[#1191]: https://github.com/kmuto/review/pull/1191
+[#1195]: https://github.com/kmuto/review/issues/1195
+[#1198]: https://github.com/kmuto/review/pull/1198
+[#1199]: https://github.com/kmuto/review/pull/1199
+[#1201]: https://github.com/kmuto/review/pull/1201
+[#1202]: https://github.com/kmuto/review/pull/1202
+[#1203]: https://github.com/kmuto/review/pull/1203
+[#1204]: https://github.com/kmuto/review/pull/1204
+[#1206]: https://github.com/kmuto/review/issues/1206
+[#1208]: https://github.com/kmuto/review/pull/1208
+[#1210]: https://github.com/kmuto/review/issues/1210
+
 # Version 3.0.0 preview 4
 ## 新機能
 * 旧バージョンのプロジェクトを新しいバージョンに合わせたものに更新する `review-update` コマンドを導入しました ([#1144])
@@ -12,10 +73,6 @@
 ## 機能強化
 * PDFMaker: review-jlreq.cls クラスファイルでも hiddenfolio パラメータを利用できるようにしました ([#1147])
 * EPUBMaker/WEBMaker: imgmath 機能を有効にしたときに、各 `//texequation` に対してフォントサイズを明示して渡すようにしました ([#1146])
-
-## ドキュメント
-
-## コントリビューターのみなさん
 
 [#1144]: https://github.com/kmuto/review/issues/1144
 [#1146]: https://github.com/kmuto/review/issues/1146
