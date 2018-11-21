@@ -1,0 +1,102 @@
+%%
+%% This is file `okuverb.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% okuverb.dtx  (with options: `okuverb')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from okuverb.sty.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file okuverb.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+\NeedsTeXFormat{pLaTeX2e}
+\ProvidesFile{okuverb.sty}[2003/09/03 okumura]
+\newif\if@yen \@yenfalse
+\DeclareOption{yen}{\@yentrue}
+\ProcessOptions\relax
+\DeclareRobustCommand{\yen}{{\ooalign{Y\crcr\hss=\hss}}}
+\def\y@n{Y\llap=}
+\def\ttyen{{\ttfamily\y@n}}
+\def\ttbslash{{\ttfamily\char`\\}}
+\if@yen
+  \let\BS=\ttyen
+\else
+  \let\BS=\ttbslash
+\fi
+\if@yen
+  \begingroup
+    \catcode`\|=0  \catcode`\\=13
+    |gdef|verbh@@k{|catcode`|\=13 |let\=|y@n}
+  |endgroup
+\else
+  \let\verbh@@k=\relax
+\fi
+\def\verbatim@font{\ttfamily}
+\def\verb{%
+  \leavevmode\hbox % changed
+  \bgroup
+    \verb@eol@error \let\do\@makeother \dospecials
+    \verbatim@font\@noligs
+    \noautoxspacing % added
+    \verbh@@k % added
+    \@ifstar\@sverb\@verb}
+\if@yen
+\begingroup \catcode `|=0 \catcode `[= 1
+\catcode`]=2 \catcode `\{=12 \catcode `\}=12
+\catcode`\\=13 |gdef|@xverbatim#1\end{verbatim}[#1|end[verbatim]]
+|gdef|@sxverbatim#1\end{verbatim*}[#1|end[verbatim*]]
+|endgroup
+\fi
+\newdimen\verbatimleftmargin
+\verbatimleftmargin=2zw
+\def\verbatimsize{\fontsize{9}{11pt}\selectfont}
+\def\@verbatim{%
+  \trivlist \item\relax
+  \if@minipage
+    \verbatimsize
+  \else
+    \vskip\baselineskip
+    \vskip-\f@size pt
+    \verbatimsize
+    \vskip-\baselineskip
+    \vskip\f@size pt
+    \vskip\parskip
+  \fi
+  \leftskip\@totalleftmargin
+  \if@minipage \else
+    \advance \leftskip \verbatimleftmargin
+  \fi
+  \rightskip\z@skip
+  \parindent\z@
+  \parfillskip\@flushglue
+  \parskip\z@skip
+  \@@par
+  \@tempswafalse
+  \def\par{%
+    \if@tempswa
+      \leavevmode \null \@@par\penalty\interlinepenalty
+    \else
+      \@tempswatrue
+      \ifhmode\@@par\penalty\interlinepenalty\fi
+    \fi}%
+  \let\do\@makeother \dospecials
+  \obeylines \verbatim@font
+  \noautoxspacing \verbh@@k
+  \@noligs
+  \hyphenchar\font\m@ne
+  \everypar \expandafter{\the\everypar \unpenalty}%
+}
+\endinput
+%%
+%% End of file `okuverb.sty'.

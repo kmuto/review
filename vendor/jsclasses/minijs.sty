@@ -1,0 +1,52 @@
+% minimal jsarticle-like fonts
+%
+\NeedsTeXFormat{pLaTeX2e}
+\ProvidesPackage{minijs}[2018/02/04 okumura, texjporg]
+%
+% if jsclasses loaded, abort loading this package
+\ifx\@jsc@uplatextrue\@undefined\else
+  \PackageInfo{minijs}{jsclasses does not need minijs, exiting}
+  \expandafter\endinput
+\fi
+%
+% "fake" jsarticle
+\expandafter\def\csname ver@jsarticle.cls\endcsname{}
+%
+% min/goth -> jis/jisg (for pLaTeX only)
+\ifx\ucs\@undefined
+\@for\@tempa:=5,6,7,8,9,10,10.95,12,14.4,17.28,20.74,24.88\do{%
+  \expandafter\let\csname JY1/mc/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JY1/gt/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JT1/mc/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JT1/gt/m/n/\@tempa\endcsname\relax
+}
+\def\Cjascale{0.924690}
+\DeclareFontShape{JY1}{mc}{m}{n}{<-> s * [0.961] jis}{}
+\DeclareFontShape{JY1}{gt}{m}{n}{<-> s * [0.961] jisg}{}
+\DeclareFontShape{JT1}{mc}{m}{n}{<-> s * [0.961] tmin10}{}
+\DeclareFontShape{JT1}{gt}{m}{n}{<-> s * [0.961] tgoth10}{}
+\fi
+%
+% \@setfontsize with \parindent and \(x)kanjiskip settings
+\def\@setfontsize#1#2#3{\@nomath#1%
+  \ifx\protect\@typeset@protect
+    \let\@currsize#1%
+  \fi
+  \fontsize{#2}{#3}\selectfont
+  \ifdim\parindent>\z@ \parindent=1zw \fi
+  \kanjiskip=0zw plus .1zw minus .01zw
+  \xkanjiskip=0.25em plus 0.15em minus 0.06em}
+%
+% ad-hoc "relation font"
+\DeclareRobustCommand\rmfamily
+        {\not@math@alphabet\rmfamily\mathrm
+         \romanfamily\rmdefault\kanjifamily\mcdefault\selectfont}
+\DeclareRobustCommand\sffamily
+        {\not@math@alphabet\sffamily\mathsf
+         \romanfamily\sfdefault\kanjifamily\gtdefault\selectfont}
+\DeclareRobustCommand\ttfamily
+        {\not@math@alphabet\ttfamily\mathtt
+         \romanfamily\ttdefault\kanjifamily\gtdefault\selectfont}
+\normalsize
+%
+\endinput

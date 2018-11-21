@@ -1,0 +1,223 @@
+%%
+%% This is file `jslogo.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% jslogo.dtx  (with options: `package')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from jslogo.sty.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file jslogo.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{jslogo}
+  [2017/02/24 okumura, texjporg]
+\def\jslg@small#1{\hbox{$\m@th$%
+  \csname S@\f@size\endcsname
+  \fontsize\sf@size\z@
+  \math@fontsfalse\selectfont
+  #1}}
+\def\jslg@uppersmall#1{{\sbox\z@ T\vbox to\ht0{\jslg@small{#1}\vss}}}
+\def\cmrTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.25em\lower.5ex\hbox{E}\kern-.125emX\@
+  \else
+    T\kern-.1667em\lower.5ex\hbox{E}\kern-.125emX\@
+  \fi}
+\def\cmrLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.32em\jslg@uppersmall{A}\kern-.22em\cmrTeX
+  \else
+    L\kern-.36em\jslg@uppersmall{A}\kern-.15em\cmrTeX
+  \fi}
+\def\sfTeX{T\kern-.1em\lower.4ex\hbox{E}\kern-.07emX\@}
+\def\sfLaTeX{L\kern-.25em\jslg@uppersmall{A}\kern-.08em\sfTeX}
+\def\ptmTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.12em\lower.37ex\hbox{E}\kern-.02emX\@
+  \else
+    T\kern-.07em\lower.37ex\hbox{E}\kern-.05emX\@
+  \fi}
+\def\ptmLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.2em\jslg@uppersmall{A}\kern-.1em\ptmTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.1em\ptmTeX
+  \fi}
+\def\pncTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.2em\lower.5ex\hbox{E}\kern-.08emX\@
+  \else
+    T\kern-.13em\lower.5ex\hbox{E}\kern-.13emX\@
+  \fi}
+\def\pncLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.3em\jslg@uppersmall{A}\kern-.1em\pncTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.1em\pncTeX
+  \fi}
+\def\pplTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.17em\lower.32ex\hbox{E}\kern-.15emX\@
+  \else
+    T\kern-.12em\lower.34ex\hbox{E}\kern-.1emX\@
+  \fi}
+\def\pplLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.27em\jslg@uppersmall{A}\kern-.12em\pplTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.15em\pplTeX
+  \fi}
+\def\ugmTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    T\kern-.1em\lower.32ex\hbox{E}\kern-.06emX\@
+  \else
+    T\kern-.12em\lower.34ex\hbox{E}\kern-.1emX\@
+  \fi}
+\def\ugmLaTeX{%
+  \ifdim \fontdimen\@ne\font >\z@
+    L\kern-.2em\jslg@uppersmall{A}\kern-.13em\ugmTeX
+  \else
+    L\kern-.3em\jslg@uppersmall{A}\kern-.13em\ugmTeX
+  \fi}
+\DeclareRobustCommand{\TeX}{%
+  \def\@tempa{cmss}%
+  \ifx\f@family\@tempa\sfTeX
+  \else
+  \def\@tempa{phv}%
+  \ifx\f@family\@tempa\sfTeX
+  \else
+  \def\@tempa{qhv}%
+  \ifx\f@family\@tempa\sfTeX
+  \else
+    \def\@tempa{ptm}%
+    \ifx\f@family\@tempa\ptmTeX
+    \else
+    \def\@tempa{qtm}%
+    \ifx\f@family\@tempa\ptmTeX
+    \else
+      \def\@tempa{txr}%
+      \ifx\f@family\@tempa\ptmTeX
+      \else
+      \def\@tempa{ntxtlf}%
+      \ifx\f@family\@tempa\ptmTeX
+      \else
+        \def\@tempa{pnc}%
+        \ifx\f@family\@tempa\pncTeX
+        \else
+          \def\@tempa{ppl}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+          \def\@tempa{qpl}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+          \def\@tempa{pplx}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+          \def\@tempa{pplj}%
+          \ifx\f@family\@tempa\pplTeX
+          \else
+            \def\@tempa{pxr}%
+            \ifx\f@family\@tempa\pplTeX
+            \else
+            \def\@tempa{zpltlf}%
+            \ifx\f@family\@tempa\pplTeX
+            \else
+              \def\@tempa{ugm}%
+              \ifx\f@family\@tempa\ugmTeX
+              \else\cmrTeX
+              \fi
+            \fi\fi
+          \fi\fi\fi\fi
+        \fi
+      \fi\fi
+    \fi\fi
+  \fi\fi\fi}
+\DeclareRobustCommand{\LaTeX}{%
+  \def\@tempa{cmss}%
+  \ifx\f@family\@tempa\sfLaTeX
+  \else
+  \def\@tempa{phv}%
+  \ifx\f@family\@tempa\sfLaTeX
+  \else
+  \def\@tempa{qhv}%
+  \ifx\f@family\@tempa\sfLaTeX
+  \else
+    \def\@tempa{ptm}%
+    \ifx\f@family\@tempa\ptmLaTeX
+    \else
+    \def\@tempa{qtm}%
+    \ifx\f@family\@tempa\ptmLaTeX
+    \else
+      \def\@tempa{txr}%
+      \ifx\f@family\@tempa\ptmLaTeX
+      \else
+      \def\@tempa{ntxtlf}%
+      \ifx\f@family\@tempa\ptmLaTeX
+      \else
+        \def\@tempa{pnc}%
+        \ifx\f@family\@tempa\pncLaTeX
+        \else
+          \def\@tempa{ppl}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+          \def\@tempa{qpl}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+          \def\@tempa{pplx}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+          \def\@tempa{pplj}%
+          \ifx\f@family\@tempa\pplLaTeX
+          \else
+            \def\@tempa{pxr}%
+            \ifx\f@family\@tempa\pplLaTeX
+            \else
+            \def\@tempa{zpltlf}%
+            \ifx\f@family\@tempa\pplLaTeX
+            \else
+              \def\@tempa{ugm}%
+              \ifx\f@family\@tempa\ugmLaTeX
+              \else\cmrLaTeX
+              \fi
+            \fi\fi
+          \fi\fi\fi\fi
+        \fi
+      \fi\fi
+    \fi\fi
+  \fi\fi\fi}
+\DeclareRobustCommand{\LaTeXe}{$\mbox{%
+  \if b\expandafter\@car\f@series\@nil\boldmath\fi
+  \LaTeX\kern.15em2\raisebox{-.37ex}{$\textstyle\varepsilon$}}$}
+\def\pTeX{p\kern-.05em\TeX}
+\def\pLaTeX{p\LaTeX}
+\def\pLaTeXe{p\LaTeXe}
+\def\upTeX{u\pTeX}
+\def\upLaTeX{u\pLaTeX}
+\def\upLaTeXe{u\pLaTeXe}
+\def\AmSTeX{\protect\AmS-\protect\TeX{}}
+\DeclareRobustCommand{\BibTeX}{B\kern-.05em\jslg@small{I\kern-.025em B}%
+  \ifx\f@family\cmr\kern-.08em\else\kern-.15em\fi\TeX}
+\DeclareRobustCommand{\SliTeX}{%
+  S\kern-.06emL\kern-.18em\jslg@uppersmall{I}\kern -.03em\TeX}
+\providecommand*\pdfstringdefPreHook{}
+\g@addto@macro\pdfstringdefPreHook{%
+  \def\pTeX{p\TeX}%
+  \def\AmS{AMS}%
+  \def\SliTeX{Sli\TeX}%
+  \def\BibTeX{Bib\TeX}%
+}
+\endinput
+%%
+%% End of file `jslogo.sty'.
