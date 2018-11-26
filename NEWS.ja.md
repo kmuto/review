@@ -1,3 +1,13 @@
+# Version 3.0.0
+
+## バグ修正
+* PDFMaker: review-jsbook の外部ファイル読み込みを調整しました ([#1217])
+
+## コントリビューターのみなさん
+* [@munepi](https://github.com/munepi)
+
+[#1151]: https://github.com/kmuto/review/pull/1217
+
 # Version 3.0.0 release candidate
 ## 非互換の変更
 * PDFMaker: review-jsbook の見出しの文字サイズを、オリジナルの jsbook に準拠しました ([#1152])
@@ -7,6 +17,7 @@
 * PDFMaker: review-jsbook クラスファイルで hiddenfolio パラメータと tombopaper パラメータを同時に使用すると hiddenfolio パラメータが無視される問題を修正しました ([#1158])
 * PDFMaker: review-jsbook クラスファイルで paperwidth, paperheight パラメータが効かない問題を修正しました ([#1171])
 * review-update で sty フォルダの更新が無視されることがあるのを修正しました ([#1183])
+* PDFMaker: review-jlreq クラスファイルで serial_pagination および startpage が動作していなかったのを修正しました ([#1204])
 
 ## 機能強化
 * PDFMaker: review-jsbook において、fontsize パラメータで標準の文字サイズ、baselineskip パラメータで標準の行の高さを pt や Q、mm などの単位付きで指定できるようにしました ([#1151])
@@ -19,9 +30,6 @@
 * PDFMaker: `//tsize` 命令で幅が明示指定されている場合には、表中の改行（`@<br>`）を `\newline` マクロで表現するようにしました ([#1206])
 * PDFMaker: TeX における表の列幅の表現として、`L{幅}`（左寄せ・均等配置なし）, `C{幅}`（中央寄せ）, `R{幅}`（右寄せ） を利用できるようにしました ([#1208])
 * PDFMaker: バージョン間の実装差異を避けるため、スナップショットの jsbook.cls (2018/06/23) および gentombow.sty (2018/08/30 v0.9j) を sty フォルダにコピーしてそれを利用するようにしました ([#1210])
-
-## バグ修正
-* PDFMaker: review-jlreq クラスファイルで serial_pagination および startpage が動作していなかったのを修正しました ([#1204])
 
 ## ドキュメント
 * IDGXML のドキュメント format_idg.ja.md を更新しました ([#1188])
