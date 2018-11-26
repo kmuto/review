@@ -256,18 +256,11 @@
       \RequirePackage[pdfbox,\recls@tombowopts]{gentombow}%
       \settombowbleed{\recls@tombobleed}%
       \recls@set@hiddenfolio{\recls@hiddenfolio}}%
-  }{%
-    \IfFileExists{gentombow09j.sty}{% from vendor/gentombow.
-      \AtEndOfClass{%
-        \RequirePackage[pdfbox,\recls@tombowopts]{gentombow09j}%
-        \settombowbleed{\recls@tombobleed}%
-        \recls@set@hiddenfolio{\recls@hiddenfolio}}%
-    }{%
-      \recls@warning{%
-        package gentombow: not installed^^J
-        option tombopaper: not available}%
-      \PassOptionsToClass{tombo}{jsbook}%
-    }}%
+  }{\recls@warning{%
+      package gentombow: not installed^^J
+      option tombopaper: not available}%
+    \PassOptionsToClass{tombo}{jsbook}%
+  }%
 \else\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
   \@camerareadytrue\@pdfhyperlinktrue\@reclscovertrue
   \PassOptionsToClass{papersize}{jsbook}%
@@ -298,15 +291,6 @@
 \fi\fi
 
 %% baseline
-%% TL15のjsbook.clsまで面倒みないことでOK？
-% \@ifundefined{jsc@setfontsize}{%
-%   \newdimen\jsc@mpt
-%   \newdimen\jsc@mmm
-%   \def\jsc@setfontsize#1#2#3{%
-%     \@setfontsize#1{#2\jsc@mpt}{#3\jsc@mpt}}
-%   \jsc@mpt=\jsc@magscale\p@
-%   \jsc@mmm=\jsc@magscale mm
-% }\relax
 \ifx\recls@linegap\@empty\else
   \setlength{\baselineskip}{\dimexpr\Cwd+\recls@linegap}
   \renewcommand{\normalsize}{%
