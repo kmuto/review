@@ -6,7 +6,7 @@
 ## Contributors
 * [@munepi](https://github.com/munepi)
 
-[#1151]: https://github.com/kmuto/review/pull/1217
+[#1217]: https://github.com/kmuto/review/pull/1217
 
 # Version 3.0.0 release candidate
 ## Breaking Changes
