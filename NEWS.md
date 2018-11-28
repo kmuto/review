@@ -1,3 +1,13 @@
+# Version 3.0.0
+
+## Bug Fixes
+* PDFMaker: adjust the loading of external files in review-jsbook.cls ([#1217])
+
+## Contributors
+* [@munepi](https://github.com/munepi)
+
+[#1217]: https://github.com/kmuto/review/pull/1217
+
 # Version 3.0.0 release candidate
 ## Breaking Changes
 * PDFMaker: heading character size of review-jsbook becomes the same as the original jsbook ([#1152])
@@ -7,6 +17,7 @@
 * PDFMaker: fixes an issue that hiddenfolio parameter was ignored when using both hiddenfolio and tombopaper in review-jsbook ([#1158])
 * PDFMaker: fixes a problem that the paperwidth and paperheight parameters of review-jsbook didn't work ([#1171])
 * fixes an issue that review-update ignored update of sty folder ([#1183])
+* PDFMaker: fix serial_pagination and startpage were not working in review-jlreq class ([#1204])
 
 ## Enhancements
 * PDFMaker: in review-jsbook, you can specify the font size with `fontsize` parameter and the line height with `baselineskip` parameter with units such as pt and mm ([#1151])
@@ -19,9 +30,6 @@
 * PDFMaker: line feed (`@<br>`) in the table is now represented by `\newline` macro when the width is explicity specified with `//tsize` ([#1206])
 * PDFMaker: enable to use `L{width}` (left justified), `C{width}` (centering), `R{width}` (right justified) as representation of the table column width ([#1208])
 * PDFMaker: to avoid implementation differences between versions, the snapshots jsbook.cls (2018/06/23) and gentombow.sty (2018/08/30 v0.9j) are copied to the `sty` folder ([#1210])
-
-## Bug Fixes
-* PDFMaker: fix serial_pagination and startpage were not working in review-jlreq class ([#1204])
 
 ## Docs
 * update `format_idg.ja.md` ([#1188])
