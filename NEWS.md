@@ -3,9 +3,13 @@
 ## Bug Fixes
 * PDFMaker: fix a problem that the section number of the part continues the section number in the previous chapter ([#1225],[#1226])
 
+## Enhancements
+* PDFMaker: load amssymb, amsthm, and bm packages which are often used as extension of mathematical expression ([#1224])
+
 ## Contributors
 * [@doublemarket](https://github.com/doublemarket)
 
+[#1224]: https://github.com/kmuto/review/issues/1224
 [#1225]: https://github.com/kmuto/review/pull/1225
 [#1226]: https://github.com/kmuto/review/pull/1226
 

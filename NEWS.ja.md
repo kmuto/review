@@ -3,9 +3,13 @@
 ## バグ修正
 * PDFMaker: 部の中の節番号が前の章の節番号を継続してしまう問題を修正しました ([#1225],[#1226])
 
+## 機能強化
+* PDFMaker: 数式表現の拡張としてよく使われる amssymb, amsthm, bm パッケージを標準で読み込むようにしました ([#1224])
+
 ## コントリビューターのみなさん
 * [@doublemarket](https://github.com/doublemarket)
 
+[#1224]: https://github.com/kmuto/review/issues/1224
 [#1225]: https://github.com/kmuto/review/pull/1225
 [#1226]: https://github.com/kmuto/review/pull/1226
 
