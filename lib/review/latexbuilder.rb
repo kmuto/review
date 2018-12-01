@@ -122,6 +122,7 @@ module ReVIEW
         elsif level == 1
           headline_name = 'part'
           puts '\begin{reviewpart}'
+          puts '\setcounter{section}{0}'
         end
       end
       prefix = ''
