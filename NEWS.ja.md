@@ -1,3 +1,14 @@
+# Version 3.1.0
+
+## バグ修正
+* PDFMaker: 部の中の節番号が前の章の節番号を継続してしまう問題を修正しました ([#1225],[#1226])
+
+## コントリビューターのみなさん
+* [@doublemarket](https://github.com/doublemarket)
+
+[#1225]: https://github.com/kmuto/review/pull/1225
+[#1226]: https://github.com/kmuto/review/pull/1226
+
 # Version 3.0.0
 
 ## バグ修正
