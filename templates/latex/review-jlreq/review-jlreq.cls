@@ -202,6 +202,7 @@ cls]
 \RequirePackage{multirow}
 \RequirePackage{amsmath}
 \RequirePackage{amssymb}
+\RequirePackage{amsthm}
 \RequirePackage{needspace}
 \RequirePackage{alltt}
 \RequirePackage{float}
