@@ -757,7 +757,12 @@ module ReVIEW
 
     def footnote(id, str)
       if @book.config['epubversion'].to_i == 3
-        puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[*#{@chapter.footnote(id).number}] #{compile_inline(str)}</p></div>)
+        back = ''
+        if @book.config['epubmaker'] && @book.config['epubmaker']['back_footnote']
+          back = %Q(<a href="#fnb-#{normalize_id(id)}">#{I18n.t('html_footnote_backmark')}</a>)
+        end
+        # XXX: back link must be located at first of p for Kindle.
+        puts %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">#{back}#{I18n.t('html_footnote_textmark', @chapter.footnote(id).number)}#{compile_inline(str)}</p></div>)
       else
         puts %Q(<div class="footnote" id="fn-#{normalize_id(id)}"><p class="footnote">[<a href="#fnb-#{normalize_id(id)}">*#{@chapter.footnote(id).number}</a>] #{compile_inline(str)}</p></div>)
       end
@@ -862,7 +867,7 @@ module ReVIEW
 
     def inline_fn(id)
       if @book.config['epubversion'].to_i == 3
-        %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref" epub:type="noteref">*#{@chapter.footnote(id).number}</a>)
+        %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', @chapter.footnote(id).number)}</a>)
       else
         %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref">*#{@chapter.footnote(id).number}</a>)
       end
