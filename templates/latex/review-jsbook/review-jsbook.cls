@@ -331,7 +331,7 @@
 \ifx\recls@number@of@lines\@empty\else
   \setlength\textheight{\recls@number@of@lines\Cvs}
   \addtolength\textheight{-\Cvs}\addtolength\textheight{\Cwd}
-  \addtolength\textheight{1H}
+  \addtolength\textheight{\dimexpr\topskip-\Cht}%%adjustment for jsbook.cls's \topskip
 \fi
 
 %% ノド、小口
