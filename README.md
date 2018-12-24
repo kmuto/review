@@ -108,7 +108,7 @@ Exception:
 * jumoline.sty, vendor/jumoline: The LaTeX Project Public License. See [LPPL](https://github.com/kmuto/review/blob/master/vendor/jumoline/lppl.txt) file.
 * plistings.sty, vendor/plistings: MIT License. See [LICENSE](https://github.com/kmuto/review/blob/master/vendor/plistings/LICENSE) file.
 * gentombow.sty, vendor/gentombow: BSD License. See [LICENSE](https://github.com/kmuto/review/blob/master/vendor/gentombow/LICENSE) file.
-* jsbook.sty, vendor/jsclasses: BSD License. See [LICENSE](https://github.com/kmuto/review/blob/master/vendor/jsclasses/LICENSE) file.
+* jsbook.cls, vendor/jsclasses: BSD License. See [LICENSE](https://github.com/kmuto/review/blob/master/vendor/jsclasses/LICENSE) file.
 
 ## Copyright
 
