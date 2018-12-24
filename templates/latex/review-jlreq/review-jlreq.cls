@@ -260,6 +260,25 @@ cls]
   \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 \let\clearoddpage\cleardoublepage@left
 
+%% 行のサンプル。\makelines{行数} で「■□■□…」からなる行を指定行数配置する
+\def\makelines#1{%
+  \@tempcnta\z@\relax
+  \def\@makeline@f@size{\f@size}%
+  \@whilenum\@tempcnta<#1\do{%
+    \advance\@tempcnta\@ne\relax
+    \noindent\rlap{\the\@tempcnta}\nobreak
+    \makelines@neline\par}%
+}
+\def\makelines@unit@#10#2\relax{%
+  \ifx!#2!\relax □\else\relax ■\fi}%
+\newcounter{makelines@unit}
+\def\makelines@neline{%
+  \c@makelines@unit\@ne
+  \@whilenum\c@makelines@unit<\dimexpr(\textwidth + \Cwd)/\Cwd\do{%
+    \expandafter\makelines@unit@\the\c@makelines@unit0\relax
+  \advance\c@makelines@unit\@ne}%
+}
+
 % シンプルな通しノンブル
 \ifrecls@serialpage
   \jlreqsetup{frontmatter_pagination=continuous}
