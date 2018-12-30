@@ -161,7 +161,7 @@ cls]
 \def\recls@engine{}
 \def\recls@driver{}
 \ifdefined\jlreq@trimmarks@engine
-  \ifx l\jlreq@trimmarks@engine\def\recls@engine{lualatex}\fi
+  \ifx l\jlreq@trimmarks@engine\def\recls@engine{lualatex}\def\recls@driver{luatex}\fi
   \ifx u\jlreq@trimmarks@engine\def\recls@engine{uplatex}\fi
   \ifx p\jlreq@trimmarks@engine\def\recls@engine{platex}\fi
 \else% jlreqから持ってくる
@@ -194,9 +194,16 @@ cls]
 \RequirePackage[\recls@driver]{graphicx}
 \RequirePackage[\recls@driver,table]{xcolor}
 
-\RequirePackage[T1]{fontenc}
+% luatex固有
+\def\recls@tmp{luatex}\ifx\recls@tmp\recls@driver
+  \DeclareGraphicsRule{.ai}{pdf}{.ai}{}
+  \usepackage[no-math]{fontspec}
+\else
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage{lmodern}%\ttdefault: lmtt
+\fi
+
 \RequirePackage{textcomp}%T1/TS1
-\RequirePackage{lmodern}%\ttdefault: lmtt
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 \RequirePackage{multirow}
@@ -213,13 +220,17 @@ cls]
 \tcbuselibrary{xparse,hooks,skins,breakable}
 \RequirePackage{ulem}
 
-\RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
+\RequirePackage[\recls@driver, \if@pdfhyperlink\else draft,\fi
+  \ifx luatex\recls@driver unicode,\fi
   bookmarks=true,
   bookmarksnumbered=true,
   hidelinks,
   setpagesize=false,
 ]{hyperref}
-\RequirePackage[\recls@driver]{pxjahyper}
+
+\def\recls@tmp{uplatex}\ifx\recls@tmp\recls@driver
+  \RequirePackage[\recls@driver]{pxjahyper}
+\fi
 
 %% include fullpage graphics
 \edef\grnchry@head{\dimexpr\topmargin+1in+\headheight+\headsep}
