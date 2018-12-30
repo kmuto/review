@@ -220,8 +220,9 @@ cls]
 \tcbuselibrary{xparse,hooks,skins,breakable}
 \RequirePackage{ulem}
 
+\def\recls@tmp{luatex}
 \RequirePackage[\recls@driver, \if@pdfhyperlink\else draft,\fi
-  \ifx luatex\recls@driver unicode,\fi
+  \ifx\recls@tmp\recls@driver unicode,\fi
   bookmarks=true,
   bookmarksnumbered=true,
   hidelinks,
