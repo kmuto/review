@@ -1,5 +1,5 @@
 %#!ptex2pdf -l -u -ot '-synctex=1' test-rejlreqbk
-% Copyright (c) 2018 Kenshi Muto.
+% Copyright (c) 2018-2019 Kenshi Muto.
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
 % THE SOFTWARE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2018/10/05 Re:VIEW pLaTeX class modified for jlreq.
+\ProvidesClass{review-jlreq}[2019/01/01 Re:VIEW pLaTeX class modified for jlreq.
 cls]
 
 %% hook at end of reviewmacro
@@ -229,7 +229,7 @@ cls]
   setpagesize=false,
 ]{hyperref}
 
-\def\recls@tmp{uplatex}\ifx\recls@tmp\recls@driver
+\def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
   \RequirePackage[\recls@driver]{pxjahyper}
 \fi
 
@@ -314,6 +314,24 @@ cls]
 }{%
   \if@restonecol\twocolumn\else\newpage\fi
 }
+
+% pdfpagesのトンボずれへの対処
+\if@pdftombo
+  \def\recls@patch@pdfpages{%
+    \patchcmd{\AM@output}{%
+      \setlength{\@tempdima}{\AM@xmargin}%
+      \edef\AM@xmargin{\the\@tempdima}%
+      \setlength{\@tempdima}{\AM@ymargin}%
+      \edef\AM@ymargin{\the\@tempdima}%
+    }{%
+      \setlength{\@tempdima}{\AM@xmargin+1in}%
+      \edef\AM@xmargin{\the\@tempdima}%
+      \setlength{\@tempdima}{\AM@ymargin-1in}%
+      \edef\AM@ymargin{\the\@tempdima}%
+    }%
+  }{\message{patch for pdfpages applied}}{}
+  \AtBeginDocument{\@ifpackageloaded{pdfpages}{\recls@patch@pdfpages}{}}
+\fi
 
 \listfiles
 \endinput
