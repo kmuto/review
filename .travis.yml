@@ -11,7 +11,16 @@ addons:
       - dvipng
 
 before_install:
-  - gem install bundler
+  - |-
+    RUBY_VER=`ruby -e "print RUBY_VERSION"`
+    if [ "$RUBY_VER" = "2.1.10" ]; then
+      gem install bundler -v '< 2'
+    elif [ "$RUBY_VER" = "2.2.10" ]; then
+      gem install bundler -v '< 2'
+    else
+      gem update --system
+      gem install bundler
+    fi
 
 rvm:
   - 2.1
