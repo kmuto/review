@@ -107,7 +107,7 @@ module ReVIEW
         when /\A\#@mapfile/
           direc = parse_directive(line, 1, 'eval')
           path = expand(direc.arg)
-          @leave_content = File.extname(path) == '.re' ? true : nil
+          @leave_content = File.extname(path) == '.re'
           if direc['eval']
             ent = evaluate(path, ent)
           else
@@ -118,7 +118,7 @@ module ReVIEW
         when /\A\#@map(?:range)?/
           direc = parse_directive(line, 2, 'unindent')
           path = expand(direc.args[0])
-          @leave_content = File.extname(path) == '.re' ? true : nil
+          @leave_content = File.extname(path) == '.re'
           ent = @repository.fetch_range(path, direc.args[1]) or
             error "unknown range: #{path}: #{direc.args[1]}"
           ent = (direc['unindent'] ? unindent(ent, direc['unindent']) : ent)
@@ -362,7 +362,7 @@ module ReVIEW
     private
 
     def file_descripter(fname)
-      @leave_content = File.extname(fname) == '.re' ? true : nil
+      @leave_content = File.extname(fname) == '.re'
       return @repository[fname] if @repository[fname]
 
       @repository[fname] = git?(fname) ? parse_git_blob(fname) : parse_file(fname)
