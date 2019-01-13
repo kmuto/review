@@ -63,7 +63,7 @@
 
 % コラム
 \newenvironment{reviewcolumn}[1][COLUMN]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,boxrule=0.2mm,arc=2mm,colback=white,colframe=black!100!white,title={\sffamily\bfseries #1}]\par}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,boxrule=0.2mm,arc=2mm,colback=white,colframe=black!100!white,before upper={\parindent1\zw},title={\sffamily\bfseries #1}]\par}
  {\end{tcolorbox}}
 
 \newcommand{\reviewbackslash}[0]{\textbackslash{}}
@@ -247,11 +247,7 @@
        \thispagestyle{empty}
        \begin{center}%
        \mbox{}%
-       \ifx\review@jlreq@driver\review@jlreq@driver@luatex
-         \vskip5\zw
-       \else
-         \vskip5zw
-       \fi
+       \vskip5\zw
        \reviewtitlefont%
        {\Huge\review@booktitlename\par}%
        \ifdefined\review@subtitlename
@@ -266,11 +262,7 @@
        \end{tabular}\par}%
        \vfill
        {\large\review@date \review@intn@edition%
-         \ifx\review@jlreq@driver\review@jlreq@driver@luatex
-           \hspace{2\zw}%
-         \else
-           \hspace{2zw}%
-         \fi
+         \hspace{2\zw}%
          \review@intn@publishedby\par}%
        \vskip4\zw\mbox{}
        \end{center}%

@@ -92,7 +92,7 @@ cls]
     \edef\recls@tmp{\thepage}%
     \lower\dimexpr4pt+\recls@tombobleed+.5\paperheight+5\p@\hbox{%
       \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
-        \hbox to 1zw{\hss\recls@x\hss}}}}}%
+        \hbox to 1\zw{\hss\recls@x\hss}}}}}%
   \ifodd\c@page
     \rlap{\recls@hiddfolio}%
   \else
