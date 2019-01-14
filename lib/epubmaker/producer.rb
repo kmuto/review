@@ -269,7 +269,8 @@ module EPUBMaker
           'rename_for_legacy' => nil,
           'verify_target_images' => nil,
           'force_include_images' => [],
-          'cover_linear' => nil
+          'cover_linear' => nil,
+          'back_footnote' => nil
         },
         'externallink' => true,
         'contentdir' => '.',
