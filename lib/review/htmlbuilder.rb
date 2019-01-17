@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -463,9 +463,11 @@ module ReVIEW
       class_names.push("language-#{lang}") unless lang.blank?
       class_names.push('highlight') if highlight?
       print %Q(<pre class="#{class_names.join(' ')}">)
+      esc_array = []
+      lines.map! {|l| compile_inline(l, esc_array) }
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = lang
-      puts highlight(body: body, lexer: lexer, format: 'html')
+      puts highlight(body: body, lexer: lexer, format: 'html', esc_array)
       puts '</pre>'
       puts '</div>'
     end

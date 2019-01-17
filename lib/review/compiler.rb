@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -445,7 +445,10 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
-      ignore_inline = (name == :embed)
+      ignore_inline = nil
+      if %i[embed list emlist source cmd].include?(name)
+        ignore_inline = true
+      end
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
       @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
@@ -550,7 +553,7 @@ module ReVIEW
       str.gsub("\x01", '@').gsub("\x02", '\\').gsub("\x03", '{').gsub("\x04", '}')
     end
 
-    def text(str)
+    def text(str, esc_array=nil)
       return '' if str.empty?
       words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
       words.each do |w|
@@ -560,7 +563,12 @@ module ReVIEW
       end
       result = @strategy.nofunc_text(revert_replace_fence(words.shift))
       until words.empty?
-        result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
+        if esc_array
+          esc_array << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
+          result << "\x01"
+        else
+          result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
+        end
         result << @strategy.nofunc_text(revert_replace_fence(words.shift))
       end
       result
