@@ -397,8 +397,10 @@ module ReVIEW
       class_names.push("language-#{lexer}") unless lexer.blank?
       class_names.push('highlight') if highlight?
       print %Q(<pre class="#{class_names.join(' ')}">)
+      esc_array = []
+      lines.map! {|l| compile_inline(l, esc_array) }
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-      puts highlight(body: body, lexer: lexer, format: 'html')
+      puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
     end
 
@@ -417,9 +419,11 @@ module ReVIEW
 
     def source_body(_id, lines, lang)
       print %Q(<pre class="source">)
+      esc_array = []
+      lines.map! {|l| compile_inline(l, esc_array) }
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = lang
-      puts highlight(body: body, lexer: lexer, format: 'html')
+      puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
     end
 
@@ -467,7 +471,7 @@ module ReVIEW
       lines.map! {|l| compile_inline(l, esc_array) }
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = lang
-      puts highlight(body: body, lexer: lexer, format: 'html', esc_array)
+      puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
       puts '</div>'
     end
@@ -505,9 +509,11 @@ module ReVIEW
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       print %Q(<pre class="cmd">)
+      esc_array = []
+      lines.map! {|l| compile_inline(l, esc_array) }
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = 'shell-session'
-      puts highlight(body: body, lexer: lexer, format: 'html')
+      puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
       puts '</div>'
     end
@@ -1219,6 +1225,11 @@ module ReVIEW
 
     def olnum(num)
       @ol_num = num.to_i
+    end
+
+    def revert_escape(s, esc_array)
+      s.gsub("<span class=\"err\">\x01</span>", "\x01").
+        gsub("\x01") { esc_array.shift }
     end
 
     def defer_math_image(str, path, key)
