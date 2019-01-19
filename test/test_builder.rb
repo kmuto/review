@@ -4,7 +4,7 @@ require 'review/builder'
 require 'review/book'
 
 class MockCompiler
-  def text(s)
+  def text(s, _array = nil)
     [:text, s]
   end
 end

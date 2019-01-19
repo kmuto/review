@@ -398,8 +398,8 @@ module ReVIEW
       class_names.push('highlight') if highlight?
       print %Q(<pre class="#{class_names.join(' ')}">)
       esc_array = []
-      lines.map! {|l| compile_inline(l, esc_array) }
-      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      lines.map! { |l| compile_inline(l, esc_array) }
+      body = lines.inject('') { |i, j| i + detab(j) }
       puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
     end
@@ -420,8 +420,8 @@ module ReVIEW
     def source_body(_id, lines, lang)
       print %Q(<pre class="source">)
       esc_array = []
-      lines.map! {|l| compile_inline(l, esc_array) }
-      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      lines.map! { |l| compile_inline(l, esc_array) }
+      body = lines.inject('') { |i, j| i + detab(j) }
       lexer = lang
       puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
@@ -468,8 +468,8 @@ module ReVIEW
       class_names.push('highlight') if highlight?
       print %Q(<pre class="#{class_names.join(' ')}">)
       esc_array = []
-      lines.map! {|l| compile_inline(l, esc_array) }
-      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      lines.map! { |l| compile_inline(l, esc_array) }
+      body = lines.inject('') { |i, j| i + detab(j) }
       lexer = lang
       puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
@@ -510,8 +510,8 @@ module ReVIEW
       end
       print %Q(<pre class="cmd">)
       esc_array = []
-      lines.map! {|l| compile_inline(l, esc_array) }
-      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      lines.map! { |l| compile_inline(l, esc_array) }
+      body = lines.inject('') { |i, j| i + detab(j) }
       lexer = 'shell-session'
       puts revert_escape(highlight(body: body, lexer: lexer, format: 'html'), esc_array)
       puts '</pre>'
@@ -1229,6 +1229,7 @@ module ReVIEW
 
     def revert_escape(s, esc_array)
       s.gsub("<span class=\"err\">\x01</span>", "\x01").
+        gsub("<span style=\"border: 1px solid #FF0000\">\x01</span>", "\x01").
         gsub("\x01") { esc_array.shift }
     end
 

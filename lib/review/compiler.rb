@@ -553,7 +553,7 @@ module ReVIEW
       str.gsub("\x01", '@').gsub("\x02", '\\').gsub("\x03", '{').gsub("\x04", '}')
     end
 
-    def text(str, esc_array=nil)
+    def text(str, esc_array = nil)
       return '' if str.empty?
       words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
       words.each do |w|

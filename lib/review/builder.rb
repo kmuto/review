@@ -225,7 +225,7 @@ module ReVIEW
       puts ''
     end
 
-    def compile_inline(s, esc_array=nil)
+    def compile_inline(s, esc_array = nil)
       @compiler.text(s, esc_array)
     end
 

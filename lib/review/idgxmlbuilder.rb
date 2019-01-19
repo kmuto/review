@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -340,6 +340,8 @@ module ReVIEW
       puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" if caption.present?
       print '<pre>'
       no = 1
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each do |line|
         if @book.config['listinfo']
           print %Q(<listinfo line="#{no}")
@@ -347,7 +349,7 @@ module ReVIEW
           print %Q( end="#{no}") if no == lines.size
           print '>'
         end
-        print detab(line)
+        print revert_escape(detab(line), esc_array)
         print "\n"
         print '</listinfo>' if @book.config['listinfo']
         no += 1
@@ -1168,6 +1170,10 @@ module ReVIEW
 
     def image_ext
       'eps'
+    end
+
+    def revert_escape(s, esc_array)
+      s.gsub("\x01") { esc_array.shift }
     end
   end
 end # module ReVIEW
