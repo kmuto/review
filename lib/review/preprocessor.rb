@@ -130,6 +130,9 @@ module ReVIEW
         when /\A\#@/
           op = line.slice(/@(\w+)/, 1)
           warn "unknown directive: #{line.strip}" unless known_directive?(op)
+          if op == 'warn'
+            warn line.strip.sub(/\#@warn\((.+)\)/, '\1')
+          end
           @f.print line
 
         when /\A\s*\z/ # empty line
