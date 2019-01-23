@@ -1003,7 +1003,6 @@ by the author.
 ```
 #@#:: Comments. All texts in this line are ignored.
 #@warn(...):: Warning messages. The messages are showed when pre-process.
-#@require, #@provide:: Define dependency with keywords.
 #@mapfile(filename) ... #@end:: Insert all content of files.
 #@maprange(filename, range name) ... #@end:: Insert some area in content of files.
 #@mapoutput(command) ... #@end:: Execute command and insert their output.

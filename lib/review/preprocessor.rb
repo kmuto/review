@@ -140,7 +140,7 @@ module ReVIEW
       end
     end
 
-    KNOWN_DIRECTIVES = %w[require provide warn ok].freeze
+    KNOWN_DIRECTIVES = %w[warn ok].freeze
 
     def known_directive?(op)
       KNOWN_DIRECTIVES.index(op)
