@@ -853,13 +853,13 @@ module ReVIEW
     end
 
     def comment(lines, comment = nil)
+      return true unless @book.config['draft']
       lines ||= []
       unless comment.blank?
-        lines.unshift comment
+        lines.unshift escape(comment)
       end
-      return true unless @book.config['draft']
       str = lines.join('\par ')
-      puts macro('pdfcomment', escape(str))
+      puts macro('pdfcomment', str)
     end
 
     def hr

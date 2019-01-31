@@ -1758,8 +1758,10 @@ EOS
 
   def test_comment_for_draft
     @config['draft'] = true
-    actual = compile_block('//comment[コメント]')
-    assert_equal %Q(<div class="draft-comment">コメント</div>\n), actual
+    actual = compile_block('//comment[コメント<]')
+    assert_equal %Q(<div class="draft-comment">コメント&lt;</div>\n), actual
+    actual = compile_block("//comment{\nA<>\nB&\n//}")
+    assert_equal %Q(<div class="draft-comment">A&lt;&gt;<br />B&amp;</div>\n), actual
   end
 
   def test_inline_comment

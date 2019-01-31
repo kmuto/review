@@ -993,8 +993,10 @@ EOS
 
   def test_comment_for_draft
     @config['draft'] = true
-    actual = compile_block('//comment[コメント]')
-    assert_equal %Q(\\pdfcomment{コメント}\n), actual
+    actual = compile_block('//comment[コメント<]')
+    assert_equal %Q(\\pdfcomment{コメント\\textless{}}\n), actual
+    actual = compile_block("//comment{\nA<>\nB&\n//}")
+    assert_equal %Q(\\pdfcomment{A\\textless{}\\textgreater{}\\par B\\&}\n), actual
   end
 
   def test_inline_comment

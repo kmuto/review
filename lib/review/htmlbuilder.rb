@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -748,11 +748,11 @@ module ReVIEW
     end
 
     def comment(lines, comment = nil)
-      lines ||= []
-      lines.unshift comment unless comment.blank?
       return unless @book.config['draft']
+      lines ||= []
+      lines.unshift escape(comment) unless comment.blank?
       str = lines.join('<br />')
-      puts %Q(<div class="draft-comment">#{escape(str)}</div>)
+      puts %Q(<div class="draft-comment">#{str}</div>)
     end
 
     def footnote(id, str)
