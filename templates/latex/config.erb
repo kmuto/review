@@ -98,4 +98,10 @@
 \def\reviewusepart{true}
 <%- end -%>
 
+\def\reviewbackcompatibilityhook{
+  \@ifundefined{reviewimagecaption}{% for 3.0.0 compatibility
+    \newcommand{\reviewimagecaption}[1]{\caption{##1}}
+  }
+}
+
 \makeatother
