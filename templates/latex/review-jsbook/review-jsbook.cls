@@ -331,7 +331,7 @@
 \ifx\recls@number@of@lines\@empty\else
   \setlength\textheight{\recls@number@of@lines\Cvs}
   \addtolength\textheight{-\Cvs}\addtolength\textheight{\Cwd}
-  \addtolength\textheight{1H}
+  \addtolength\textheight{\dimexpr\topskip-\Cht}%%adjustment for jsbook.cls's \topskip
 \fi
 
 %% ノド、小口
@@ -428,6 +428,25 @@
 \def\cleardoublepage@left{\clearpage\if@twoside\ifodd\c@page
   \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 \let\clearoddpage\cleardoublepage@left
+
+%% 行のサンプル。\makelines{行数} で「■□■□…」からなる行を指定行数配置する
+\def\makelines#1{%
+  \@tempcnta\z@\relax
+  \def\@makeline@f@size{\f@size}%
+  \@whilenum\@tempcnta<#1\do{%
+    \advance\@tempcnta\@ne\relax
+    \noindent\rlap{\the\@tempcnta}\nobreak
+    \makelines@neline\par}%
+}
+\def\makelines@unit@#10#2\relax{%
+  \ifx!#2!\relax □\else\relax ■\fi}%
+\newcounter{makelines@unit}
+\def\makelines@neline{%
+  \c@makelines@unit\@ne
+  \@whilenum\c@makelines@unit<\dimexpr(\textwidth + \Cwd)/\Cwd\do{%
+    \expandafter\makelines@unit@\the\c@makelines@unit0\relax
+  \advance\c@makelines@unit\@ne}%
+}
 
 %% coverオプションによる表紙判定の上書き
 \def\recls@tmp{true}\ifx\recls@forcecover\recls@tmp

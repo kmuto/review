@@ -9,9 +9,9 @@ task :copy_sty do
   Dir.glob(File.join(jsbook_dir, 'review-*.sty')) do |file|
     FileUtils.cp file, 'sty'
   end
-  FileUtils.cp File.join(gentombow_dir, 'gentombow.sty'), 'sty/gentombow09j.sty'
+  FileUtils.cp File.join(gentombow_dir, 'gentombow.sty'), 'sty/gentombow.sty'
 end
 
-CLEAN.include([Dir.glob('sty/review-*.sty'), 'sty/review-jsbook.cls', 'sty/gentombow09j.sty'])
+CLEAN.include([Dir.glob('sty/review-*.sty'), 'sty/review-jsbook.cls', 'sty/gentombow.sty'])
 
 Rake::Task[BOOK_PDF].enhance([:copy_sty])

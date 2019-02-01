@@ -1,5 +1,5 @@
 %#!ptex2pdf -l -u -ot '-synctex=1' test-rejlreqbk
-% Copyright (c) 2018 Kenshi Muto.
+% Copyright (c) 2018-2019 Kenshi Muto.
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
 % THE SOFTWARE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2018/10/05 Re:VIEW pLaTeX class modified for jlreq.
+\ProvidesClass{review-jlreq}[2019/01/01 Re:VIEW pLaTeX class modified for jlreq.
 cls]
 
 %% hook at end of reviewmacro
@@ -92,7 +92,7 @@ cls]
     \edef\recls@tmp{\thepage}%
     \lower\dimexpr4pt+\recls@tombobleed+.5\paperheight+5\p@\hbox{%
       \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
-        \hbox to 1zw{\hss\recls@x\hss}}}}}%
+        \hbox to 1\zw{\hss\recls@x\hss}}}}}%
   \ifodd\c@page
     \rlap{\recls@hiddfolio}%
   \else
@@ -161,7 +161,7 @@ cls]
 \def\recls@engine{}
 \def\recls@driver{}
 \ifdefined\jlreq@trimmarks@engine
-  \ifx l\jlreq@trimmarks@engine\def\recls@engine{lualatex}\fi
+  \ifx l\jlreq@trimmarks@engine\def\recls@engine{lualatex}\def\recls@driver{luatex}\fi
   \ifx u\jlreq@trimmarks@engine\def\recls@engine{uplatex}\fi
   \ifx p\jlreq@trimmarks@engine\def\recls@engine{platex}\fi
 \else% jlreqから持ってくる
@@ -194,14 +194,22 @@ cls]
 \RequirePackage[\recls@driver]{graphicx}
 \RequirePackage[\recls@driver,table]{xcolor}
 
-\RequirePackage[T1]{fontenc}
+% luatex固有
+\def\recls@tmp{luatex}\ifx\recls@tmp\recls@driver
+  \DeclareGraphicsRule{.ai}{pdf}{.ai}{}
+  \usepackage[no-math]{fontspec}
+\else
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage{lmodern}%\ttdefault: lmtt
+\fi
+
 \RequirePackage{textcomp}%T1/TS1
-\RequirePackage{lmodern}%\ttdefault: lmtt
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 \RequirePackage{multirow}
 \RequirePackage{amsmath}
 \RequirePackage{amssymb}
+\RequirePackage{amsthm}
 \RequirePackage{needspace}
 \RequirePackage{alltt}
 \RequirePackage{float}
@@ -211,14 +219,20 @@ cls]
 \RequirePackage{tcolorbox}
 \tcbuselibrary{xparse,hooks,skins,breakable}
 \RequirePackage{ulem}
+\RequirePackage{tabularx}
 
-\RequirePackage[dvipdfmx, \if@pdfhyperlink\else draft,\fi
+\def\recls@tmp{luatex}
+\RequirePackage[\recls@driver, \if@pdfhyperlink\else draft,\fi
+  \ifx\recls@tmp\recls@driver unicode,\fi
   bookmarks=true,
   bookmarksnumbered=true,
   hidelinks,
   setpagesize=false,
 ]{hyperref}
-\RequirePackage[\recls@driver]{pxjahyper}
+
+\def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
+  \RequirePackage[\recls@driver]{pxjahyper}
+\fi
 
 %% include fullpage graphics
 \edef\grnchry@head{\dimexpr\topmargin+1in+\headheight+\headsep}
@@ -259,6 +273,25 @@ cls]
   \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
 \let\clearoddpage\cleardoublepage@left
 
+%% 行のサンプル。\makelines{行数} で「■□■□…」からなる行を指定行数配置する
+\def\makelines#1{%
+  \@tempcnta\z@\relax
+  \def\@makeline@f@size{\f@size}%
+  \@whilenum\@tempcnta<#1\do{%
+    \advance\@tempcnta\@ne\relax
+    \noindent\rlap{\the\@tempcnta}\nobreak
+    \makelines@neline\par}%
+}
+\def\makelines@unit@#10#2\relax{%
+  \ifx!#2!\relax □\else\relax ■\fi}%
+\newcounter{makelines@unit}
+\def\makelines@neline{%
+  \c@makelines@unit\@ne
+  \@whilenum\c@makelines@unit<\dimexpr(\textwidth + \Cwd)/\Cwd\do{%
+    \expandafter\makelines@unit@\the\c@makelines@unit0\relax
+  \advance\c@makelines@unit\@ne}%
+}
+
 % シンプルな通しノンブル
 \ifrecls@serialpage
   \jlreqsetup{frontmatter_pagination=continuous}
@@ -282,6 +315,24 @@ cls]
 }{%
   \if@restonecol\twocolumn\else\newpage\fi
 }
+
+% pdfpagesのトンボずれへの対処
+\if@pdftombo
+  \def\recls@patch@pdfpages{%
+    \patchcmd{\AM@output}{%
+      \setlength{\@tempdima}{\AM@xmargin}%
+      \edef\AM@xmargin{\the\@tempdima}%
+      \setlength{\@tempdima}{\AM@ymargin}%
+      \edef\AM@ymargin{\the\@tempdima}%
+    }{%
+      \setlength{\@tempdima}{\AM@xmargin+1in}%
+      \edef\AM@xmargin{\the\@tempdima}%
+      \setlength{\@tempdima}{\AM@ymargin-1in}%
+      \edef\AM@ymargin{\the\@tempdima}%
+    }%
+  }{\message{patch for pdfpages applied}}{}
+  \AtBeginDocument{\@ifpackageloaded{pdfpages}{\recls@patch@pdfpages}{}}
+\fi
 
 \listfiles
 \endinput
