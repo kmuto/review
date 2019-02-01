@@ -225,13 +225,13 @@ INFO: new file /.../sty/review-custom.sty is created.
 INFO: new file /.../sty/review-jsbook.cls is created.
 INFO: new file /.../sty/review-style.sty is created.
 INFO: new file /.../sty/review-base.sty is created.
-INFO: new file /.../sty/gentombow09j.sty is created.
+INFO: new file /.../sty/gentombow.sty is created.
 Finished.
 ```
 
 ## Copyright
 
-The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (September 2018).
+The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (February 2019).
 
 If you want to report bugs and patches, or to get more information, see:
 
