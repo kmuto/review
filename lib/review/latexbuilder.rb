@@ -1,6 +1,6 @@
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2018 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2019 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -477,7 +477,12 @@ module ReVIEW
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       @doc_status[:caption] = true
-      puts macro('caption', compile_inline(caption)) if caption.present?
+
+      if @book.config.check_version('2', exception: false)
+        puts macro('caption', compile_inline(caption)) if caption.present?
+      else
+        puts macro('reviewimagecaption', compile_inline(caption)) if caption.present?
+      end
       @doc_status[:caption] = nil
       puts macro('label', image_label(id))
       puts '\end{reviewimage}'
@@ -493,7 +498,11 @@ module ReVIEW
       end
       puts macro('label', image_label(id))
       @doc_status[:caption] = true
-      puts macro('caption', compile_inline(caption)) if caption.present?
+      if @book.config.check_version('2', exception: false)
+        puts macro('caption', compile_inline(caption)) if caption.present?
+      else
+        puts macro('reviewimagecaption', compile_inline(caption)) if caption.present?
+      end
       @doc_status[:caption] = nil
       puts '\end{reviewdummyimage}'
     end

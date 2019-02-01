@@ -450,7 +450,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewimagecaption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric
@@ -461,7 +461,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2]{./images/chap1-sampleimg.png}\n\\reviewimagecaption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric_width
@@ -473,7 +473,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     @config['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=1.2\\maxwidth]{./images/chap1-sampleimg.png}\n\\reviewimagecaption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric2
@@ -484,7 +484,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[scale=1.2,ignore=params]{./images/chap1-sampleimg.png}\n\\reviewimagecaption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_image_with_metric2_width
@@ -496,7 +496,7 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
     @config['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=1.2\\maxwidth,ignore=params]{./images/chap1-sampleimg.png}\n\\caption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
+    assert_equal %Q(\\begin{reviewimage}%%sampleimg\n\\includegraphics[width=1.2\\maxwidth,ignore=params]{./images/chap1-sampleimg.png}\n\\reviewimagecaption{sample photo}\n\\label{image:chap1:sampleimg}\n\\end{reviewimage}\n), actual
   end
 
   def test_indepimage
@@ -1132,7 +1132,7 @@ EOS
 
 \\begin{reviewimage}%%sampleimg
 \\includegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
-\\caption{FOO}
+\\reviewimagecaption{FOO}
 \\label{image:chap1:sampleimg}
 \\end{reviewimage}
 EOS
