@@ -1,17 +1,53 @@
 # Version 3.1.0
+## Breaking Changes
+* PDFMaker: introduce `\reviewimagecaption` macro for the caption of figure ([#1254]). Please update your review-base.sty by `review-update` command on your  Re:VIEW 3 project.
+* remove `--strip` option which is undocumented and doesn't work correctly from `review-preproc command` ([#1257])
 
 ## Bug Fixes
 * PDFMaker: fix a problem that the section number of the part continues the section number in the previous chapter ([#1225],[#1226])
+* fix copying of gentombow.sty in samples folder ([#1229])
+* PDFMaker: fix that the number of lines specified by `number_of_lines` document option decrease by 1 line than originally on review-jsbook ([#1235])
+* PDFMaker: fix review-jlreq to work with LuaLaTeX ([#1243])
+* EPUBMaker: fix a problem that the hierachy of the table of contents become strange when there is a part ([#1262])
+* fix escaping of `//comment` ([#1264])
+* PDFMaker: fix overflowing when the left column of colophon is long ([#1252])
 
 ## Enhancements
 * PDFMaker: load amssymb, amsthm, and bm packages which are often used as extension of mathematical expression ([#1224])
+* HTMLBuilder: `emlist` and `listnum` now always pass `highlight` method as well as others ([#1231])
+* EPUBMaker: implement a back-link to the text from the footnote ([#1233])
+* PDFMaker: add `\makelines` macro to create a dummy line ([#1240])
+* implement `#@warn` correctly ([#1258])
+* `#@mapfile` now imports as is (keep tabs etc.) when imported file has `.re` extension ([#1247])
+* add Ruby 2.6 for the test coverage ([#1242])
+* PDFMaker: replace `zw` with `\zw` in review-jlreq. add a indent to paragraphs in the column ([#1250])
+
+## ドキュメント
+* README.md: fix the filename of jsbook.cls ([#1239])
 
 ## Contributors
 * [@doublemarket](https://github.com/doublemarket)
+* [@munepi](https://github.com/munepi)
 
 [#1224]: https://github.com/kmuto/review/issues/1224
 [#1225]: https://github.com/kmuto/review/pull/1225
 [#1226]: https://github.com/kmuto/review/pull/1226
+[#1229]: https://github.com/kmuto/review/pull/1229
+[#1231]: https://github.com/kmuto/review/issues/1231
+[#1233]: https://github.com/kmuto/review/issues/1233
+[#1235]: https://github.com/kmuto/review/issues/1235
+[#1239]: https://github.com/kmuto/review/pull/1239
+[#1240]: https://github.com/kmuto/review/pull/1240
+[#1242]: https://github.com/kmuto/review/pull/1242
+[#1243]: https://github.com/kmuto/review/issues/1243
+[#1247]: https://github.com/kmuto/review/issues/1247
+[#1250]: https://github.com/kmuto/review/pull/1250
+[#1252]: https://github.com/kmuto/review/issues/1252
+[#1254]: https://github.com/kmuto/review/issues/1254
+[#1257]: https://github.com/kmuto/review/issues/1257
+[#1258]: https://github.com/kmuto/review/issues/1258
+[#1262]: https://github.com/kmuto/review/issues/1262
+[#1264]: https://github.com/kmuto/review/issues/1264
 
 # Version 3.0.0
 

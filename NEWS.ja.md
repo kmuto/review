@@ -1,17 +1,54 @@
 # Version 3.1.0
 
+## 非互換の変更
+* PDFMaker: 図版のキャプションとして `\reviewimagecaption` マクロを導入しました ([#1254])。Re:VIEW 3 を使っているプロジェクトでは、`review-update` コマンドを実行して review-base.sty ファイルを更新してください。
+* `review-preproc` コマンドから、文書化されておらず正しく動作しない `--strip` オプションを除去しました ([#1257])
+
 ## バグ修正
 * PDFMaker: 部の中の節番号が前の章の節番号を継続してしまう問題を修正しました ([#1225],[#1226])
+* samples 内で gentombow.sty ファイルのコピーが正しくできていないのを修正しました ([#1229])
+* PDFMaker: review-jsbook 利用時、numer_of_lines ドキュメントオプションで指定した行数より1行減ってしまうのを修正しました ([#1235])
+* PDFMaker: review-jlreq が LuaLaTeX で動作するように修正しました ([#1243])
+* EPUBMaker: 部があるときに目次の階層がおかしくなる問題を修正しました ([#1262])
+* `//comment` の内容が正しくエスケープされないことがある問題を修正しました ([#1264])
+* PDFMaker: 奥付の左列が長いときにあふれるのを修正しました ([#1252])
 
 ## 機能強化
 * PDFMaker: 数式表現の拡張としてよく使われる amssymb, amsthm, bm パッケージを標準で読み込むようにしました ([#1224])
+* HTMLBuilder: emlist, listnum 命令の挙動をほかのコードリスト命令に合わせ、highlight メソッドを必ず経由するようにしました ([#1231])
+* EPUBMaker: 脚注から本文に戻るリンクを表現できるようにしました ([#1233])。`epubmaker` パラメータの `back_footnote` サブパラメータを true にすると利用できます。
+* PDFMaker: ダミーの行を作成する `\makelines` マクロを追加しました ([#1240])
+* `#@warn` 命令を正しく実装しました ([#1258])
+* `#@mapfile` 命令に re 拡張子のファイルが指定されたときにはタブなどを整形せずそのまま取り込むようにしました ([#1247])
+* Ruby 2.6 をテスト対象にしました ([#1242])
+* PDFMaker: review-jlreq で `zw` を使っている箇所を `\zw` に置き換えました。コラム内の段落は字下げするようにしました ([#1250])
+
+## ドキュメント
+* README.md: jsbook.cls のファイル名が誤っていたのを修正しました ([#1239])
 
 ## コントリビューターのみなさん
 * [@doublemarket](https://github.com/doublemarket)
+* [@munepi](https://github.com/munepi)
 
 [#1224]: https://github.com/kmuto/review/issues/1224
 [#1225]: https://github.com/kmuto/review/pull/1225
 [#1226]: https://github.com/kmuto/review/pull/1226
+[#1229]: https://github.com/kmuto/review/pull/1229
+[#1231]: https://github.com/kmuto/review/issues/1231
+[#1233]: https://github.com/kmuto/review/issues/1233
+[#1235]: https://github.com/kmuto/review/issues/1235
+[#1239]: https://github.com/kmuto/review/pull/1239
+[#1240]: https://github.com/kmuto/review/pull/1240
+[#1242]: https://github.com/kmuto/review/pull/1242
+[#1243]: https://github.com/kmuto/review/issues/1243
+[#1247]: https://github.com/kmuto/review/issues/1247
+[#1250]: https://github.com/kmuto/review/pull/1250
+[#1252]: https://github.com/kmuto/review/issues/1252
+[#1254]: https://github.com/kmuto/review/issues/1254
+[#1257]: https://github.com/kmuto/review/issues/1257
+[#1258]: https://github.com/kmuto/review/issues/1258
+[#1262]: https://github.com/kmuto/review/issues/1262
+[#1264]: https://github.com/kmuto/review/issues/1264
 
 # Version 3.0.0
 
