@@ -25,6 +25,7 @@
 
 ## ドキュメント
 * README.md: jsbook.cls のファイル名が誤っていたのを修正しました ([#1239])
+* config.yml.sample に back_footnote の説明を追加し、その他いくつかドキュメントに些末な更新を行いました ([#1268])
 
 ## コントリビューターのみなさん
 * [@doublemarket](https://github.com/doublemarket)
@@ -49,6 +50,7 @@
 [#1258]: https://github.com/kmuto/review/issues/1258
 [#1262]: https://github.com/kmuto/review/issues/1262
 [#1264]: https://github.com/kmuto/review/issues/1264
+[#1268]: https://github.com/kmuto/review/issues/1268
 
 # Version 3.0.0
 

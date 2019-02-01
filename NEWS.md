@@ -22,8 +22,9 @@
 * add Ruby 2.6 for the test coverage ([#1242])
 * PDFMaker: replace `zw` with `\zw` in review-jlreq. add a indent to paragraphs in the column ([#1250])
 
-## ドキュメント
+## Docs
 * README.md: fix the filename of jsbook.cls ([#1239])
+* add the note about `back_footnote` into config.yml.sample and update documents a little ([#1268])
 
 ## Contributors
 * [@doublemarket](https://github.com/doublemarket)
@@ -48,6 +49,7 @@
 [#1258]: https://github.com/kmuto/review/issues/1258
 [#1262]: https://github.com/kmuto/review/issues/1262
 [#1264]: https://github.com/kmuto/review/issues/1264
+[#1268]: https://github.com/kmuto/review/issues/1268
 
 # Version 3.0.0
 
