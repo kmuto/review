@@ -21,6 +21,7 @@
 * `#@mapfile` now imports as is (keep tabs etc.) when imported file has `.re` extension ([#1247])
 * add Ruby 2.6 for the test coverage ([#1242])
 * PDFMaker: replace `zw` with `\zw` in review-jlreq. add a indent to paragraphs in the column ([#1250])
+* PDFMaker: when `\reviewimagecaption` is undefined (implemented in [#1254]), define it ([#1267])
 
 ## Docs
 * README.md: fix the filename of jsbook.cls ([#1239])
@@ -49,6 +50,7 @@
 [#1258]: https://github.com/kmuto/review/issues/1258
 [#1262]: https://github.com/kmuto/review/issues/1262
 [#1264]: https://github.com/kmuto/review/issues/1264
+[#1267]: https://github.com/kmuto/review/issues/1267
 [#1268]: https://github.com/kmuto/review/issues/1268
 
 # Version 3.0.0

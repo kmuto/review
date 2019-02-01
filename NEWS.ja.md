@@ -1,7 +1,7 @@
 # Version 3.1.0
 
 ## 非互換の変更
-* PDFMaker: 図版のキャプションとして `\reviewimagecaption` マクロを導入しました ([#1254])。Re:VIEW 3 を使っているプロジェクトでは、`review-update` コマンドを実行して review-base.sty ファイルを更新してください。
+* PDFMaker: 図版のキャプションとして `\reviewimagecaption` マクロを導入しました ([#1254])。Re:VIEW 3 を使っているプロジェクトでは、`review-update` コマンドを実行して review-base.sty ファイルを更新することを推奨します。
 * `review-preproc` コマンドから、文書化されておらず正しく動作しない `--strip` オプションを除去しました ([#1257])
 
 ## バグ修正
@@ -22,6 +22,7 @@
 * `#@mapfile` 命令に re 拡張子のファイルが指定されたときにはタブなどを整形せずそのまま取り込むようにしました ([#1247])
 * Ruby 2.6 をテスト対象にしました ([#1242])
 * PDFMaker: review-jlreq で `zw` を使っている箇所を `\zw` に置き換えました。コラム内の段落は字下げするようにしました ([#1250])
+* PDFMaker: [#1254] で導入した `\reviewimagecaption` が定義されていないときにはデフォルトのマクロを提供するようにしました ([#1267])
 
 ## ドキュメント
 * README.md: jsbook.cls のファイル名が誤っていたのを修正しました ([#1239])
@@ -50,6 +51,7 @@
 [#1258]: https://github.com/kmuto/review/issues/1258
 [#1262]: https://github.com/kmuto/review/issues/1262
 [#1264]: https://github.com/kmuto/review/issues/1264
+[#1267]: https://github.com/kmuto/review/issues/1267
 [#1268]: https://github.com/kmuto/review/issues/1268
 
 # Version 3.0.0
