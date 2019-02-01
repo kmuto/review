@@ -330,6 +330,8 @@ module ReVIEW
       elsif chap.on_predef?
         chaptype = 'pre'
       elsif chap.on_appendix?
+        chaptype = 'appendix'
+      elsif chap.on_postdef?
         chaptype = 'post'
       end
 
