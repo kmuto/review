@@ -439,20 +439,20 @@ module ReVIEW
     end
 
     def listnum_body(lines, lang)
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      lexer = lang
+      first_line_number = line_num
+      hs = highlight(body: body, lexer: lexer, format: 'html', linenum: true,
+                     options: { linenostart: first_line_number })
+
       if highlight?
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-        lexer = lang
-        first_line_number = line_num
-        puts highlight(body: body, lexer: lexer, format: 'html', linenum: true,
-                       options: { linenostart: first_line_number })
+        puts hs
       else
         class_names = ['list']
         class_names.push("language-#{lang}") unless lang.blank?
-        class_names.push('highlight') if highlight?
         print %Q(<pre class="#{class_names.join(' ')}">)
-        first_line_num = line_num
-        lines.each_with_index do |line, i|
-          puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line)
+        hs.split("\n").each_with_index do |line, i|
+          puts detab((i + first_line_number).to_s.rjust(2) + ': ' + line)
         end
         puts '</pre>'
       end
@@ -482,20 +482,20 @@ module ReVIEW
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      lexer = lang
+      first_line_number = line_num
+      hs = highlight(body: body, lexer: lexer, format: 'html', linenum: true,
+                     options: { linenostart: first_line_number })
       if highlight?
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-        lexer = lang
-        first_line_number = line_num
-        puts highlight(body: body, lexer: lexer, format: 'html', linenum: true,
-                       options: { linenostart: first_line_number })
+        puts hs
       else
         class_names = ['emlist']
         class_names.push("language-#{lang}") unless lang.blank?
         class_names.push('highlight') if highlight?
         print %Q(<pre class="#{class_names.join(' ')}">)
-        first_line_num = line_num
-        lines.each_with_index do |line, i|
-          puts detab((i + first_line_num).to_s.rjust(2) + ': ' + line)
+        hs.split("\n").each_with_index do |line, i|
+          puts detab((i + first_line_number).to_s.rjust(2) + ': ' + line)
         end
         puts '</pre>'
       end
@@ -756,11 +756,11 @@ module ReVIEW
     end
 
     def comment(lines, comment = nil)
-      lines ||= []
-      lines.unshift comment unless comment.blank?
       return unless @book.config['draft']
+      lines ||= []
+      lines.unshift escape(comment) unless comment.blank?
       str = lines.join('<br />')
-      puts %Q(<div class="draft-comment">#{escape(str)}</div>)
+      puts %Q(<div class="draft-comment">#{str}</div>)
     end
 
     def footnote(id, str)

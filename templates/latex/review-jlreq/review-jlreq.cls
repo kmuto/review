@@ -219,6 +219,7 @@ cls]
 \RequirePackage{tcolorbox}
 \tcbuselibrary{xparse,hooks,skins,breakable}
 \RequirePackage{ulem}
+\RequirePackage{tabularx}
 
 \def\recls@tmp{luatex}
 \RequirePackage[\recls@driver, \if@pdfhyperlink\else draft,\fi

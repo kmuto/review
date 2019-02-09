@@ -1,6 +1,6 @@
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2019 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -327,8 +327,14 @@ EOT
 
       if has_part
         @producer.contents.each do |item|
-          item.level += 1 if item.chaptype == 'part' || item.chaptype == 'body'
-          item.notoc = true if (item.chaptype == 'pre' || item.chaptype == 'post') && !item.level.nil? && (item.level + 1 == toclevel) # FIXME: part processing
+          if item.chaptype == 'part' && item.level > 0
+            # sections in part
+            item.level -= 1
+          end
+          # down level for part and chaps. pre, appendix, post are preserved
+          if item.chaptype == 'part' || item.chaptype == 'body'
+            item.level += 1
+          end
         end
         toclevel += 1
       end

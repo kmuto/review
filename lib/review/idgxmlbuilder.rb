@@ -583,11 +583,11 @@ module ReVIEW
     end
 
     def comment(lines, comment = nil)
-      return true unless @book.config['draft']
+      return unless @book.config['draft']
       lines ||= []
-      lines.unshift comment unless comment.blank?
+      lines.unshift escape(comment) unless comment.blank?
       str = lines.join("\n")
-      print "<msg>#{escape(str)}</msg>"
+      print "<msg>#{str}</msg>"
     end
 
     def inline_comment(str)

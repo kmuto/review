@@ -182,8 +182,10 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_comment_for_draft
     @config['draft'] = true
-    actual = compile_block('//comment[コメント]')
-    assert_equal %Q(◆→コメント←◆\n), actual
+    actual = compile_block('//comment[コメント<]')
+    assert_equal %Q(◆→コメント<←◆\n), actual
+    actual = compile_block("//comment{\nA<>\nB&\n//}")
+    assert_equal %Q(◆→A<>\nB&←◆\n), actual
   end
 
   def test_list

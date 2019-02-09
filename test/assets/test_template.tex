@@ -44,8 +44,17 @@
 \def\reviewappendixfiles{}
 \def\reviewpostdeffiles{}
 
+\def\reviewbackcompatibilityhook{
+  \@ifundefined{reviewimagecaption}{% for 3.0.0 compatibility
+    \newcommand{\reviewimagecaption}[1]{\caption{##1}}
+  }
+}
+
 \makeatother
 
+
+%% backward compatibility (defined in config.erb)
+\reviewbackcompatibilityhook
 
 \begin{document}
 

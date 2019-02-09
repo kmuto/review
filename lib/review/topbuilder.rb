@@ -240,7 +240,7 @@ module ReVIEW
       unless comment.blank?
         lines.unshift comment
       end
-      str = lines.join
+      str = lines.join("\n")
       puts "◆→#{str}←◆"
     end
 
