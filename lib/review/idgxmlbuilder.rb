@@ -1187,9 +1187,5 @@ module ReVIEW
     def image_ext
       'eps'
     end
-
-    def revert_escape(s, esc_array)
-      s.gsub("\x01") { esc_array.shift }
-    end
   end
 end # module ReVIEW

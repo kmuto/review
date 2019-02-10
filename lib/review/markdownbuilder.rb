@@ -1,3 +1,5 @@
+# Copyright (c) 2013-2019 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+#
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
@@ -74,8 +76,10 @@ module ReVIEW
     end
 
     def list_body(_id, lines, _lang)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each do |line|
-        puts detab(line)
+        puts revert_escape(detab(line), esc_array)
       end
       puts '```'
     end
@@ -126,6 +130,8 @@ module ReVIEW
     end
 
     def emlist(lines, caption = nil, lang = nil)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       blank
       if caption
         puts caption
@@ -134,7 +140,7 @@ module ReVIEW
       lang ||= ''
       puts "```#{lang}"
       lines.each do |line|
-        puts detab(line)
+        puts revert_escape(detab(line), esc_array)
       end
       puts '```'
       blank
@@ -230,9 +236,11 @@ module ReVIEW
     end
 
     def cmd(lines)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       puts '```shell-session'
       lines.each do |line|
-        puts detab(line)
+        puts revert_escape(detab(line), esc_array)
       end
       puts '```'
     end

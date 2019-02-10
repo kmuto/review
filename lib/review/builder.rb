@@ -632,5 +632,9 @@ EOTGNUPLOT
     def unescape(str)
       str
     end
+
+    def revert_escape(s, esc_array)
+      s.gsub("\x01") { esc_array.shift }
+    end
   end
 end # module ReVIEW

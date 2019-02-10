@@ -1258,9 +1258,5 @@ module ReVIEW
     def olnum(num)
       @ol_num = num.to_i
     end
-
-    def revert_escape(s, esc_array)
-      s.gsub("\x01") { esc_array.shift }
-    end
   end
 end

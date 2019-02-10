@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -103,18 +103,22 @@ module ReVIEW
     end
 
     def list_body(_id, lines, _lang)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each do |line|
-        puts detab(line)
+        puts revert_escape(detab(line), esc_array)
       end
       puts "◆→終了:#{@titles['list']}←◆"
       blank
     end
 
     def base_block(type, lines, caption = nil)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       blank
       puts "◆→開始:#{@titles[type]}←◆"
       puts "■#{compile_inline(caption)}" if caption.present?
-      puts lines.join("\n")
+      puts revert_escape(lines.join, esc_array)
       puts "◆→終了:#{@titles[type]}←◆"
       blank
     end
@@ -132,16 +136,20 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles['emlist']}←◆"
       puts "■#{compile_inline(caption)}" if caption.present?
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each_with_index do |line, i|
-        puts((i + 1).to_s.rjust(2) + ": #{line}")
+        puts((i + 1).to_s.rjust(2) + ": #{revert_escape(line, esc_array)}")
       end
       puts "◆→終了:#{@titles['emlist']}←◆"
       blank
     end
 
     def listnum_body(lines, _lang)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each_with_index do |line, i|
-        puts((i + 1).to_s.rjust(2) + ": #{line}")
+        puts((i + 1).to_s.rjust(2) + ": #{revert_escape(line, esc_array)}")
       end
       puts "◆→終了:#{@titles['list']}←◆"
       blank
