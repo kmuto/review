@@ -279,6 +279,8 @@ module ReVIEW
 
     def codelines_body(lines)
       no = 1
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each do |line|
         if @book.config['listinfo']
           print %Q(<listinfo line="#{no}")
@@ -286,7 +288,7 @@ module ReVIEW
           print %Q( end="#{no}") if no == lines.size
           print '>'
         end
-        print detab(line)
+        print revert_escape(detab(line), esc_array)
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
@@ -303,12 +305,26 @@ module ReVIEW
     end
 
     def emlistnum(lines, caption = nil, _lang = nil)
-      lines2 = []
+      print %Q(<list type='emlistnum'>)
+      puts "<caption aid:pstyle='emlistnum-title'>#{compile_inline(caption)}</caption>" if caption.present?
+      print '<pre>'
+      no = 1
       first_line_num = line_num
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each_with_index do |line, i|
-        lines2 << detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
+        if @book.config['listinfo']
+          print %Q(<listinfo line="#{no}")
+          print %Q( begin="1") if no == 1
+          print %Q( end="#{no}") if no == lines.size
+          print '>'
+        end
+        print revert_escape(detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line), esc_array)
+
+        print '</listinfo>' if @book.config['listinfo']
+        no += 1
       end
-      quotedlist lines2, 'emlistnum', caption
+      puts '</pre></list>'
     end
 
     def listnum_body(lines, _lang)
@@ -324,10 +340,7 @@ module ReVIEW
           print %Q( end="#{no}") if no == lines.size
           print '>'
         end
-        print revert_escape(
-                detab(%Q(<span type='lineno'>) +
-                      (i + first_line_num).to_s.rjust(2) + ': </span>' + line),
-                esc_array)
+        print revert_escape(detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line), esc_array)
 
         print '</listinfo>' if @book.config['listinfo']
         no += 1

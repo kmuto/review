@@ -400,7 +400,7 @@ module ReVIEW
       body = ''
 
       esc_array = []
-      lines.map! {|l| compile_inline(l, esc_array) }
+      lines.map! { |l| compile_inline(l, esc_array) }
 
       lines.each_with_index do |line, idx|
         body.concat(yield(line, idx))
@@ -418,10 +418,12 @@ module ReVIEW
       if title == 'title' && caption.blank? && @book.config.check_version('2', exception: false)
         print '\vspace{-1.5em}'
       end
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       body = lines.inject('') { |i, j| i + detab(unescape(j)) }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
-      print body
+      print revert_escape(body, esc_array)
       puts %Q(\\end{#{command}})
       blank
     end
