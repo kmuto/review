@@ -287,7 +287,6 @@ module ReVIEW
           print '>'
         end
         print detab(line)
-        print "\n"
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
@@ -316,6 +315,8 @@ module ReVIEW
       print '<pre>'
       no = 1
       first_line_num = line_num
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each_with_index do |line, i|
         if @book.config['listinfo']
           print %Q(<listinfo line="#{no}")
@@ -323,8 +324,11 @@ module ReVIEW
           print %Q( end="#{no}") if no == lines.size
           print '>'
         end
-        print detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
-        print "\n"
+        print revert_escape(
+                detab(%Q(<span type='lineno'>) +
+                      (i + first_line_num).to_s.rjust(2) + ': </span>' + line),
+                esc_array)
+
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
@@ -350,7 +354,6 @@ module ReVIEW
           print '>'
         end
         print revert_escape(detab(line), esc_array)
-        print "\n"
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end

@@ -439,19 +439,21 @@ module ReVIEW
     end
 
     def listnum_body(lines, lang)
-      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
+      body = lines.inject('') { |i, j| i + detab(j) }
       lexer = lang
       first_line_number = line_num
       hs = highlight(body: body, lexer: lexer, format: 'html', linenum: true,
                      options: { linenostart: first_line_number })
 
       if highlight?
-        puts hs
+        puts revert_escape(hs, esc_array)
       else
         class_names = ['list']
         class_names.push("language-#{lang}") unless lang.blank?
         print %Q(<pre class="#{class_names.join(' ')}">)
-        hs.split("\n").each_with_index do |line, i|
+        revert_escape(hs, esc_array).split("\n").each_with_index do |line, i|
           puts detab((i + first_line_number).to_s.rjust(2) + ': ' + line)
         end
         puts '</pre>'
@@ -482,19 +484,21 @@ module ReVIEW
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
-      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
+      body = lines.inject('') { |i, j| i + detab(j) }
       lexer = lang
       first_line_number = line_num
       hs = highlight(body: body, lexer: lexer, format: 'html', linenum: true,
                      options: { linenostart: first_line_number })
       if highlight?
-        puts hs
+        puts revert_escape(hs, esc_array)
       else
         class_names = ['emlist']
         class_names.push("language-#{lang}") unless lang.blank?
         class_names.push('highlight') if highlight?
         print %Q(<pre class="#{class_names.join(' ')}">)
-        hs.split("\n").each_with_index do |line, i|
+        revert_escape(hs, esc_array).split("\n").each_with_index do |line, i|
           puts detab((i + first_line_number).to_s.rjust(2) + ': ' + line)
         end
         puts '</pre>'

@@ -446,7 +446,7 @@ module ReVIEW
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
       ignore_inline = nil
-      if %i[embed list emlist source cmd].include?(name)
+      if %i[embed list emlist source cmd listnum emlistnum].include?(name)
         ignore_inline = true
       end
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
