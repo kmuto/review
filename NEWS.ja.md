@@ -12,6 +12,7 @@
 * EPUBMaker: 部があるときに目次の階層がおかしくなる問題を修正しました ([#1262])
 * `//comment` の内容が正しくエスケープされないことがある問題を修正しました ([#1264])
 * PDFMaker: 奥付の左列が長いときにあふれるのを修正しました ([#1252])
+* CHAPS: が空のときにエラーになるのを修正しました ([#1273])
 
 ## 機能強化
 * PDFMaker: 数式表現の拡張としてよく使われる amssymb, amsthm, bm パッケージを標準で読み込むようにしました ([#1224])
@@ -53,6 +54,7 @@
 [#1264]: https://github.com/kmuto/review/issues/1264
 [#1267]: https://github.com/kmuto/review/issues/1267
 [#1268]: https://github.com/kmuto/review/issues/1268
+[#1273]: https://github.com/kmuto/review/issues/1273
 
 # Version 3.0.0
 

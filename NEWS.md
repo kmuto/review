@@ -11,6 +11,7 @@
 * EPUBMaker: fix a problem that the hierachy of the table of contents become strange when there is a part ([#1262])
 * fix escaping of `//comment` ([#1264])
 * PDFMaker: fix overflowing when the left column of colophon is long ([#1252])
+* fix an error when CHAPS: is empty ([#1273])
 
 ## Enhancements
 * PDFMaker: load amssymb, amsthm, and bm packages which are often used as extension of mathematical expression ([#1224])
@@ -52,6 +53,7 @@
 [#1264]: https://github.com/kmuto/review/issues/1264
 [#1267]: https://github.com/kmuto/review/issues/1267
 [#1268]: https://github.com/kmuto/review/issues/1268
+[#1273]: https://github.com/kmuto/review/issues/1273
 
 # Version 3.0.0
 
