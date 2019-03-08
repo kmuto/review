@@ -64,6 +64,11 @@ part2.re
     assert_equal('', sut.parts)
   end
 
+  def test_empty_parts
+    sut = Catalog.new(StringIO.new)
+    assert_equal([], sut.parts_with_chaps)
+  end
+
   def test_parts2
     sut = Catalog.new(yaml_with_parts)
     assert_equal(['ch01.re',
