@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012-2018 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2012-2019 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -65,6 +65,7 @@ module ReVIEW
         'words_file' => nil,
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
         'externallink' => true,
+        'keepcodespace' => nil,
         # for IDGXML
         'tableopt' => nil,
         'listinfo' => nil,

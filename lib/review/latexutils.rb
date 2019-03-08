@@ -85,6 +85,14 @@ module ReVIEW
       str.gsub(/[\#%]/) { |s| '\\' + s }
     end
 
+    def keep_space(str)
+      if @book.config['keepcodespace']
+        str.gsub(' ', '~')
+      else
+        str
+      end
+    end
+
     def macro(name, *args)
       "\\#{name}" + args.map { |a| "{#{a}}" }.join
     end

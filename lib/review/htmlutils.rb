@@ -40,6 +40,14 @@ module ReVIEW
       str.gsub('-', '&#45;')
     end
 
+    def keep_space(str)
+      if @book.config['keepcodespace']
+        str.gsub(' ', '&nbsp;')
+      else
+        str
+      end
+    end
+
     def highlight?
       @book.config['highlight'] &&
         @book.config['highlight']['html']

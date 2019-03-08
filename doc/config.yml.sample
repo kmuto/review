@@ -167,6 +167,9 @@ secnolevel: 2
 #   html: "rouge"
 #   latex: "listings"
 
+# @<tt>, @<code>内のスペースを入れたとおりに保持する。省略した場合はPDFMaker、EPUBMakerにおいて複数のスペースは1つに縮約される。trueにすると縮約しない
+# keepcodespace: null
+
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
 

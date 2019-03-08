@@ -910,7 +910,7 @@ module ReVIEW
 
     def inline_tti(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt"><i>#{escape(str)}</i></code>)
+        %Q(<code class="tt"><i>#{keep_space(escape(str))}</i></code>)
       else
         %Q(<tt><i>#{escape(str)}</i></tt>)
       end
@@ -918,7 +918,7 @@ module ReVIEW
 
     def inline_ttb(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt"><b>#{escape(str)}</b></code>)
+        %Q(<code class="tt"><b>#{keep_space(escape(str))}</b></code>)
       else
         %Q(<tt><b>#{escape(str)}</b></tt>)
       end
@@ -930,7 +930,7 @@ module ReVIEW
 
     def inline_code(str)
       if @book.htmlversion == 5
-        %Q(<code class="inline-code tt">#{escape(str)}</code>)
+        %Q(<code class="inline-code tt">#{keep_space(escape(str))}</code>)
       else
         %Q(<tt class="inline-code">#{escape(str)}</tt>)
       end
@@ -1131,7 +1131,7 @@ module ReVIEW
 
     def inline_tt(str)
       if @book.htmlversion == 5
-        %Q(<code class="tt">#{escape(str)}</code>)
+        %Q(<code class="tt">#{keep_space(escape(str))}</code>)
       else
         %Q(<tt>#{escape(str)}</tt>)
       end

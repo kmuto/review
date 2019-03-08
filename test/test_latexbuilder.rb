@@ -197,6 +197,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal 'test \\reviewtt{inline test} test2', actual
   end
 
+  def test_inline_tt_keepspace
+    @config['keepcodespace'] = true
+    actual = compile_inline('@<tt>{a b  c   d} @<tti>{a b  c   d} @<ttb>{a b  c   d}')
+    assert_equal '\\reviewtt{a~b~~c~~~d} \\reviewtti{a~b~~c~~~d} \\reviewttb{a~b~~c~~~d}', actual
+  end
+
   def test_inline_tt_endash
     actual = compile_inline('test @<tt>{in-line --test ---foo ----bar -----buz} --test2')
     assert_equal 'test \\reviewtt{in{-}line {-}{-}test {-}{-}{-}foo {-}{-}{-}{-}bar {-}{-}{-}{-}{-}buz} {-}{-}test2', actual

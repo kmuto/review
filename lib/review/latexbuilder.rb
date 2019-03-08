@@ -1061,7 +1061,7 @@ module ReVIEW
       if @book.config.check_version('2', exception: false)
         macro('texttt', escape(str))
       else
-        macro('reviewcode', escape(str))
+        macro('reviewcode', keep_space(escape(str)))
       end
     end
 
@@ -1073,7 +1073,7 @@ module ReVIEW
       if @book.config.check_version('2', exception: false)
         macro('texttt', escape(str))
       else
-        macro('reviewtt', escape(str))
+        macro('reviewtt', keep_space(escape(str)))
       end
     end
 
@@ -1085,7 +1085,7 @@ module ReVIEW
       if @book.config.check_version('2', exception: false)
         macro('texttt', macro('textit', escape(str)))
       else
-        macro('reviewtti', escape(str))
+        macro('reviewtti', keep_space(escape(str)))
       end
     end
 
@@ -1093,7 +1093,7 @@ module ReVIEW
       if @book.config.check_version('2', exception: false)
         macro('texttt', macro('textbf', escape(str)))
       else
-        macro('reviewttb', escape(str))
+        macro('reviewttb', keep_space(escape(str)))
       end
     end
 

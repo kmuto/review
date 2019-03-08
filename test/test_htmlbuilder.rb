@@ -224,6 +224,12 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(test <code class="tt">inline test</code> test2), actual
   end
 
+  def test_inline_tt_keepspace
+    @config['keepcodespace'] = true
+    actual = compile_inline('@<tt>{a b  c   d} @<tti>{a b  c   d} @<ttb>{a b  c   d}')
+    assert_equal '<code class="tt">a&nbsp;b&nbsp;&nbsp;c&nbsp;&nbsp;&nbsp;d</code> <code class="tt"><i>a&nbsp;b&nbsp;&nbsp;c&nbsp;&nbsp;&nbsp;d</i></code> <code class="tt"><b>a&nbsp;b&nbsp;&nbsp;c&nbsp;&nbsp;&nbsp;d</b></code>', actual
+  end
+
   def test_inline_tti
     actual = compile_inline('test @<tti>{inline test} test2')
     assert_equal %Q(test <code class="tt"><i>inline test</i></code> test2), actual
