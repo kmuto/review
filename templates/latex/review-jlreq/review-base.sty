@@ -146,27 +146,26 @@
  {\end{tcolorbox}}
 
 % 書体
-\newcommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
-\newcommand{\reviewami}[1]{#1}% FIXME
-\newcommand{\reviewballoon}[1]{←{#1}}
-\newcommand{\reviewem}[1]{\textbf{#1}}
-\newcommand{\reviewstrong}[1]{\textbf{#1}}
-\newcommand{\reviewunderline}[1]{\underline{#1}}% ulemかjumolineで上書き。デフォルトはulemにしている
-\newcommand{\reviewit}[1]{\textit{#1}}
-\newcommand{\reviewbold}[1]{\textbf{#1}}
-\newcommand{\reviewcode}[1]{\texttt{#1}}
-\newcommand{\reviewtt}[1]{\texttt{#1}}
-\newcommand{\reviewtti}[1]{\texttt{\textit{#1}}}
-\newcommand{\reviewttb}[1]{\texttt{\textbf{#1}}}
+\DeclareRobustCommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\DeclareRobustCommand{\reviewami}[1]{#1}% FIXME
+\DeclareRobustCommand{\reviewballoon}[1]{←{#1}}
+\DeclareRobustCommand{\reviewem}[1]{\textbf{#1}}
+\DeclareRobustCommand{\reviewstrong}[1]{\textbf{#1}}
+\DeclareRobustCommand{\reviewunderline}[1]{\underline{#1}}% ulemかjumolineで上書き。デフォルトはulemにしている
+\DeclareRobustCommand{\reviewit}[1]{\textit{#1}}
+\DeclareRobustCommand{\reviewbold}[1]{\textbf{#1}}
+\DeclareRobustCommand{\reviewcode}[1]{\texttt{#1}}
+\DeclareRobustCommand{\reviewtt}[1]{\texttt{#1}}
+\DeclareRobustCommand{\reviewtti}[1]{\texttt{\textit{#1}}}
+\DeclareRobustCommand{\reviewttb}[1]{\texttt{\textbf{#1}}}
 
 %% @<del> is ignored in LaTeX with default style
-\newcommand{\reviewstrike}[1]{#1}
-
+%% \DeclareRobustCommand{\reviewstrike}[1]{#1}
 %%%% for ulem.sty:
-\renewcommand{\reviewstrike}[1]{\sout{#1}}
+\DeclareRobustCommand{\reviewstrike}[1]{\sout{#1}}
 %%
 %%%% for jumoline.sty:
-%%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
+%%\DeclareRobustCommand{\reviewstrike}[1]{\Middleline{#1}}
 
 \newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
 \newcommand{\reviewmainfont}[0]{}
