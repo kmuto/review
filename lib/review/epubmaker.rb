@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2019 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -64,7 +64,45 @@ module ReVIEW
       @producer.load(yamlfile)
       @config = @producer.config
       @config.maker = 'epubmaker'
+    end
+
+    def self.execute(*args)
+      self.new.execute(*args)
+    end
+
+    def parse_opts(args)
+      cmd_config = {}
+      opts = OptionParser.new
+
+      opts.banner = 'Usage: review-epubmaker [options] configfile [export_filename]'
+      opts.version = ReVIEW::VERSION
+      opts.on('--help', 'Prints this message and quit.') do
+        puts opts.help
+        exit 0
+      end
+      opts.on('--[no-]debug', 'Keep temporary files.') { |debug| cmd_config['debug'] = debug }
+
+      opts.parse!(args)
+      if args.size < 1 || args.size > 2
+        puts opts.help
+        exit 0
+      end
+
+      [cmd_config, args[0], args[1]]
+    end
+
+    def execute(*args)
+      @config = ReVIEW::Configure.values
+      @config.maker = 'epubmaker'
+      cmd_config, yamlfile, exportfile = parse_opts(args)
+      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+
+      load_yaml(yamlfile)
+      @config.deep_merge!(cmd_config)
       update_log_level
+      log("Loaded yaml file (#{yamlfile}).")
+
+      produce(yamlfile, exportfile)
     end
 
     def update_log_level
@@ -89,7 +127,6 @@ module ReVIEW
     end
 
     def produce(yamlfile, bookname = nil)
-      load_yaml(yamlfile)
       I18n.setup(@config['language'])
       bookname ||= @config['bookname']
       booktmpname = "#{bookname}-epub"
@@ -99,7 +136,7 @@ module ReVIEW
       rescue ReVIEW::ConfigError => e
         warn e.message
       end
-      log("Loaded yaml file (#{yamlfile}). I will produce #{bookname}.epub.")
+      log("#{bookname}.epub will be created.")
 
       FileUtils.rm_f("#{bookname}.epub")
       if @config['debug']
