@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018 Kenshi Muto
+# Copyright (c) 2018-2019 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -9,6 +9,8 @@
 require 'zip'
 require 'rexml/document'
 require 'cgi'
+require 'optparse'
+require 'review/version'
 
 module ReVIEW
   class Epub2Html
@@ -17,13 +19,26 @@ module ReVIEW
     end
 
     def execute(*args)
-      if args[0].nil? || !File.exist?(args[0])
-        STDERR.puts <<EOT
-Usage: #{File.basename($PROGRAM_NAME)} EPUBfile [file_for_head_and_foot] > HTMLfile
+      opts = OptionParser.new
+
+      opts.banner = <<EOT
+Usage: review-epub2html [options] EPUBfile [file_for_head_and_foot] > HTMLfile
        file_for_head_and_foot: HTML file to extract header and footer area.
                                This file must be contained in the EPUB.
                                If omitted, the first found file is used.
+
 EOT
+      opts.version = ReVIEW::VERSION
+      opts.on('--help', 'Prints this message and quit.') do
+        puts opts.help
+        exit 0
+      end
+      opts.on('--inline-footnote', 'Embed footnote blocks in paragraph.') { @inline_footnote = true }
+
+      opts.parse!(args)
+
+      if args[0].nil? || !File.exist?(args[0])
+        puts opts.help
         exit 1
       end
 
@@ -36,6 +51,7 @@ EOT
       @htmls = {}
       @head = nil
       @tail = nil
+      @inline_footnote = nil
     end
 
     def parse_epub(epubname)
@@ -97,6 +113,23 @@ EOT
         end
 
         e.attributes['href'] = "##{anc}"
+      end
+
+      if @inline_footnote
+        # move footnotes to inline as same as LaTeX.
+        footnotes = {}
+
+        doc.each_element("//div[@class='footnote']") do |e|
+          e.name = 'span'
+          e.attributes.delete('epub:type')
+          footnotes[e.attributes['id']] = e
+          e.remove
+        end
+
+        doc.each_element("//a[@class='noteref']") do |e|
+          e.parent.insert_after(e, footnotes[e.attributes['href'].sub('#', '')])
+          e.remove
+        end
       end
 
       doc.to_s.
