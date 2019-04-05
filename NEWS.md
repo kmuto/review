@@ -1,3 +1,28 @@
+# Version 3.2.0
+
+## New Features
+## Breaking Changes
+
+## Bug Fixes
+* reference to IDs of non-existent chapter now return standard key error (instead of internal error) ([#1284])
+* fixed the value in the error message of review-compile ([#1286])
+
+## Enhancements
+* added test when `CHAPS:` is empty ([#1275])
+* PDFMaker: for safety, inline typeface commands such as `\reviewtt` are defined with RobustCommand ([#1280])
+* ★EPUBMaker: added `--debug` option to execute in debug mode ([#1281])
+* review-epub2html: added `--inline-footnote` option to represent footnotes as inline ([#1283])
+
+## Docs
+## Contributors
+
+[#1275]: https://github.com/kmuto/review/pull/1275
+[#1280]: https://github.com/kmuto/review/pull/1280
+[#1281]: https://github.com/kmuto/review/issues/1281
+[#1283]: https://github.com/kmuto/review/pull/1283
+[#1284]: https://github.com/kmuto/review/issues/1284
+[#1286]: https://github.com/kmuto/review/pull/1286
+
 # Version 3.1.0
 ## Breaking Changes
 * PDFMaker: introduce `\reviewimagecaption` macro for the caption of figure ([#1254]). Please update your review-base.sty by `review-update` command on your  Re:VIEW 3 project.

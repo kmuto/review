@@ -1,3 +1,28 @@
+# Version 3.2.0
+
+## 新機能
+## 非互換の変更
+
+## バグ修正
+* 別の章の図表やリストを参照する際に章が存在しないとき、内部エラーではなく標準のキーエラーを返すようにしました ([#1284])
+* review-compile のエラーメッセージで提示する値の誤りを修正しました ([#1286])
+
+## 機能強化
+* `CHAPS:` が空のときのテストを追加しました ([#1275])
+* PDFMaker: 安全のため、reviewtt などのインライン書体命令を RobustCommand マクロで定義するようにしました ([#1280])
+* ★EPUBMaker: デバッグモードで実行する `--debug` オプションを追加しました ([#1281])
+* review-epub2html: 脚注をインラインで表現する `--inline-footnote` オプションを追加しました ([#1283])
+
+## ドキュメント
+## コントリビューターのみなさん
+
+[#1275]: https://github.com/kmuto/review/pull/1275
+[#1280]: https://github.com/kmuto/review/pull/1280
+[#1281]: https://github.com/kmuto/review/issues/1281
+[#1283]: https://github.com/kmuto/review/pull/1283
+[#1284]: https://github.com/kmuto/review/issues/1284
+[#1286]: https://github.com/kmuto/review/pull/1286
+
 # Version 3.1.0
 
 ## 非互換の変更
