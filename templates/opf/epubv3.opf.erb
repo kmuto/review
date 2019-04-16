@@ -2,6 +2,7 @@
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="<%= @producer.config['language'] %>"<%= @package_attrs %>>
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
 <%= @opf_metainfo %>
+<%= @opf_coverimage %>
   </metadata>
 <%= @opf_manifest %>
 <%= @opf_toc %>
