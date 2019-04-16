@@ -345,7 +345,7 @@ module ReVIEW
             end
           end
 
-          if %w[notoc nodisp].include?(m[2])
+          if %w[nonum notoc nodisp].include?(m[2])
             headlines[index] = m[3].present? ? m[3].strip : m[4].strip
             items.push Item.new(headlines.join('|'), nil, m[4].strip)
           else

@@ -217,6 +217,8 @@ class IndexTest < Test::Unit::TestCase
 == sec1
 ===[nodisp] sec1-0
 === sec1-1
+==[nonum] sec03
+== sec04
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil)
@@ -226,5 +228,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [1], index['sec1'].number
     assert_equal nil, index['sec1-0'].number
     assert_equal [1, 1], index['sec1-1'].number
+    assert_equal nil, index['sec03'].number
+    assert_equal [2], index['sec04'].number
   end
 end
