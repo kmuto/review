@@ -125,6 +125,14 @@ module EPUBMaker
         end
       end
 
+      if @producer.config['coverimage']
+        @producer.contents.each do |item|
+          next if !item.media.start_with?('image') || File.basename(item.file) != @producer.config['coverimage']
+          s << %Q(    <meta name="cover" content="cover-#{item.id}"/>\n)
+          break
+        end
+      end
+
       ## add custom <meta> element
       if @producer.config['opf_meta'].present?
         @producer.config['opf_meta'].each do |k, v|
