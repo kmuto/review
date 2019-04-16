@@ -208,4 +208,23 @@ class IndexTest < Test::Unit::TestCase
     index = Book::HeadlineIndex.parse(src, chap)
     assert_equal [1, 1, 1], index['sec1-1-1'].number
   end
+
+  def test_headeline_index11
+    src = <<-EOB
+= chap1
+==[nodisp] sec01
+==[notoc] sec02
+== sec1
+===[nodisp] sec1-0
+=== sec1-1
+    EOB
+    book = Book::Base.load
+    chap = Book::Chapter.new(book, 1, '-', nil)
+    index = Book::HeadlineIndex.parse(src, chap)
+    assert_equal nil, index['sec01'].number
+    assert_equal nil, index['sec02'].number
+    assert_equal [1], index['sec1'].number
+    assert_equal nil, index['sec1-0'].number
+    assert_equal [1, 1], index['sec1-1'].number
+  end
 end
