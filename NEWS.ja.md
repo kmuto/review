@@ -13,9 +13,11 @@
 * PDFMaker: 安全のため、reviewtt などのインライン書体命令を RobustCommand マクロで定義するようにしました ([#1280])
 * ★EPUBMaker: デバッグモードで実行する `--debug` オプションを追加しました ([#1281])
 * review-epub2html: 脚注をインラインで表現する `--inline-footnote` オプションを追加しました ([#1283])
+* EPUBMaker: iBooks 向けに、EPUB3 においても表紙画像のメタデータを入れるようにしました ([#1293])
 
 ## ドキュメント
 ## コントリビューターのみなさん
+* [@uetchy](https://github.com/uetchy)
 
 [#1275]: https://github.com/kmuto/review/pull/1275
 [#1280]: https://github.com/kmuto/review/pull/1280
@@ -24,6 +26,7 @@
 [#1284]: https://github.com/kmuto/review/issues/1284
 [#1286]: https://github.com/kmuto/review/pull/1286
 [#1288]: https://github.com/kmuto/review/issues/1288
+[#1293]: https://github.com/kmuto/review/pull/1293
 
 # Version 3.1.0
 
