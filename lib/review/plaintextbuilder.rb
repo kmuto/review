@@ -364,13 +364,13 @@ module ReVIEW
     end
 
     def inline_hd_chap(chap, id)
-      if chap.number
-        n = chap.headline_index.number(id)
-        if @book.config['secnolevel'] >= n.split('.').size
-          return I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
-        end
+      n = chap.headline_index.number(id)
+      if n and chap.number and over_secnolevel?(n)
+        str = I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
+      else
+        str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
       end
-      I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
+      str
     rescue KeyError
       error "unknown headline: #{id}"
     end
