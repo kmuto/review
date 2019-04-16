@@ -1148,7 +1148,7 @@ module ReVIEW
     def inline_hd_chap(chap, id)
       if chap.number
         n = chap.headline_index.number(id)
-        if @book.config['secnolevel'] >= n.split('.').size
+        if @book.config['secnolevel'] >= n.split('.').size && n.present?
           return I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
         end
       end
