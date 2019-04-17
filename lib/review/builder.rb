@@ -616,6 +616,10 @@ EOTGNUPLOT
       end
     end
 
+    def over_secnolevel?(n)
+      @book.config['secnolevel'] >= n.to_s.split('.').size
+    end
+
     ## override TextUtils::detab
     def detab(str, num = nil)
       if num

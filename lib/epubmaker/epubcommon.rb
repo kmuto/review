@@ -36,10 +36,9 @@ module EPUBMaker
       if @producer.config['coverimage']
         file = nil
         @producer.contents.each do |item|
-          if !item.media.start_with?('image') || item.file !~ /#{@producer.config["coverimage"]}\Z/
+          if !item.media.start_with?('image') || item.file !~ /#{@producer.config['coverimage']}\Z/
             next
           end
-
           s << %Q(    <meta name="cover" content="#{item.id}"/>\n)
           file = item.file
           break
