@@ -336,7 +336,9 @@ module ReVIEW
 
           next unless index >= 0
           if indexs.size > (index + 1)
-            indexs = indexs.take(index + 1)
+            unless %w[nonum notoc nodisp].include?(m[2])
+              indexs = indexs.take(index + 1)
+            end
             headlines = headlines.take(index + 1)
           end
           if indexs[index].nil?
