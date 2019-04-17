@@ -7,6 +7,7 @@
 * 別の章の図表やリストを参照する際に章が存在しないとき、内部エラーではなく標準のキーエラーを返すようにしました ([#1284])
 * review-compile のエラーメッセージで提示する値の誤りを修正しました ([#1286])
 * PDFMaker: review-jsbook において、serial_pagination=true を設定しているとき、PDF のページ番号のメタ情報がおかしくなるのを修正しました ([#1288])
+* notoc, nodisp, nonum を含む見出しを `@<hd>` で参照したときに番号が付いてしまうこと、およびその後の見出しの番号がおかしくなることを修正しました ([#1294])
 
 ## 機能強化
 * `CHAPS:` が空のときのテストを追加しました ([#1275])
@@ -27,6 +28,7 @@
 [#1286]: https://github.com/kmuto/review/pull/1286
 [#1288]: https://github.com/kmuto/review/issues/1288
 [#1293]: https://github.com/kmuto/review/pull/1293
+[#1294]: https://github.com/kmuto/review/issues/1294
 
 # Version 3.1.0
 

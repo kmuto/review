@@ -7,6 +7,7 @@
 * reference to IDs of non-existent chapter now return standard key error (instead of internal error) ([#1284])
 * fixed the value in the error message of review-compile ([#1286])
 * PDFMaker: fixed the metadata of PDF page number was wrong when using review-jsbook with serial_pagination = true ([#1288])
+* fixed a bug when using `@<hd>` to refer to headings with notoc, nodisp, or nonum ([#1294])
 
 ## Enhancements
 * added test when `CHAPS:` is empty ([#1275])
@@ -27,6 +28,7 @@
 [#1286]: https://github.com/kmuto/review/pull/1286
 [#1288]: https://github.com/kmuto/review/issues/1288
 [#1293]: https://github.com/kmuto/review/pull/1293
+[#1294]: https://github.com/kmuto/review/issues/1294
 
 # Version 3.1.0
 ## Breaking Changes
