@@ -1002,7 +1002,7 @@ module ReVIEW
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
-      if n and chap.number and over_secnolevel?(n)
+      if n.present? && chap.number && over_secnolevel?(n)
         str = I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
       else
         str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
