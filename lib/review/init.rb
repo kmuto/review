@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2018-2019 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -78,8 +78,8 @@ module ReVIEW
 
       begin
         opts.parse!(args)
-      rescue OptionParser::ParseError => err
-        @logger.error err.message
+      rescue OptionParser::ParseError => e
+        @logger.error e.message
         $stderr.puts opts.help
         exit 1
       end
@@ -226,8 +226,8 @@ EOS
         begin
           @logger.info "Downloading from #{filename}"
           zipdata = Net::HTTP.get(URI.parse(filename))
-        rescue StandardError => err
-          @logger.error "Failed to download #{filename}: #{err.message}"
+        rescue StandardError => e
+          @logger.error "Failed to download #{filename}: #{e.message}"
           exit 1
         end
 
@@ -267,8 +267,8 @@ EOS
           made = true
         end
         raise Zip::Error unless made
-      rescue Zip::Error => err
-        @logger.error "#{originalfilename} seems invalid or broken zip file: #{err.message}"
+      rescue Zip::Error => e
+        @logger.error "#{originalfilename} seems invalid or broken zip file: #{e.message}"
       end
     end
   end
