@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2014-2017 Masanori Kado, Kenshi Muto
+# Copyright (c) 2014-2019 Masanori Kado, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -30,8 +30,8 @@ def main
 
   begin
     opts.parse!
-  rescue OptionParser::ParseError => err
-    @logger.error err.message
+  rescue OptionParser::ParseError => e
+    @logger.error e.message
     $stderr.puts opts.help
     exit 1
   end

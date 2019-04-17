@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               1999-2007 Minero Aoki
 #
 # This program is free software.
@@ -69,8 +69,8 @@ def _main
   end
   begin
     opts.parse!
-  rescue OptionParser::ParseError => err
-    @logger.error err.message
+  rescue OptionParser::ParseError => e
+    @logger.error e.message
     $stderr.puts opts.help
     exit 1
   end
@@ -92,9 +92,9 @@ def _main
     else
       printer.print_book source
     end
-  rescue ReVIEW::Error, Errno::ENOENT => err
+  rescue ReVIEW::Error, Errno::ENOENT => e
     raise if $DEBUG
-    error_exit err.message
+    error_exit e.message
   end
 end
 
