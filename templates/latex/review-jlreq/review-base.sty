@@ -99,10 +99,10 @@
 \newcommand{\reviewemlistcaption}[1]{\review@commoncaption{}{#1}}
 \newcommand{\reviewsourcecaption}[1]{\review@commoncaption{}{#1}}
 \newcommand{\reviewcmdcaption}[1]{\review@commoncaption{}{#1}}
-\newenvironment{reviewlistblock}{\list{}{\topsep.5\baselineskip \leftmargin\z@ \itemindent\z@}\item\relax}{\endlist}% 上下アキ0.5
+\newenvironment{reviewlistblock}{\list{}{\topsep.5\baselineskip \leftmargin\z@ \itemindent\z@}\item\needspace{4\Cvs}\relax}{\endlist}% 上下アキ0.5
 
 \newcommand{\reviewequationcaption}[1]{\review@commoncaption{}{#1}}
-\newenvironment{reviewequationblock}{}{}
+\newenvironment{reviewequationblock}{\needspace{2\Cvs}}{}
 
 \newcommand{\reviewimageref}[2]{\review@intn@image #1}
 \newcommand{\reviewtableref}[2]{\review@intn@table #1}
