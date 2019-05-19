@@ -8,15 +8,21 @@
 * fixed the value in the error message of review-compile ([#1286])
 * PDFMaker: fixed the metadata of PDF page number was wrong when using review-jsbook with serial_pagination = true ([#1288])
 * fixed a bug when using `@<hd>` to refer to headings with notoc, nodisp, or nonum ([#1294])
+* PDFMaker: fixed an error in review-jlreq when using jlreq.cls version 0401 ([#1298])
 
 ## Enhancements
 * added test when `CHAPS:` is empty ([#1275])
 * PDFMaker: for safety, inline typeface commands such as `\reviewtt` are defined with RobustCommand ([#1280])
-* ★EPUBMaker: added `--debug` option to execute in debug mode ([#1281])
+* EPUBMaker: added `--debug` option to execute in debug mode ([#1281])
 * review-epub2html: added `--inline-footnote` option to represent footnotes as inline ([#1283])
 * EPUBMaker: added metadata of the cover image on EPUB3 for iBooks ([#1293])
+* PDFMaker: suppressed the unexptected page break after the caption of code list or equation in review-jsbook and review-jlreq ([#1299])
 
 ## Docs
+
+## Others
+* reformatted the codes using rubocop 0.67.2 ([#1297])
+
 ## Contributors
 * [@uetchy](https://github.com/uetchy)
 
@@ -29,6 +35,9 @@
 [#1288]: https://github.com/kmuto/review/issues/1288
 [#1293]: https://github.com/kmuto/review/pull/1293
 [#1294]: https://github.com/kmuto/review/issues/1294
+[#1297]: https://github.com/kmuto/review/pull/1297
+[#1298]: https://github.com/kmuto/review/pull/1298
+[#1299]: https://github.com/kmuto/review/pull/1299
 
 # Version 3.1.0
 ## Breaking Changes

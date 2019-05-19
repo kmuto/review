@@ -8,15 +8,21 @@
 * review-compile のエラーメッセージで提示する値の誤りを修正しました ([#1286])
 * PDFMaker: review-jsbook において、serial_pagination=true を設定しているとき、PDF のページ番号のメタ情報がおかしくなるのを修正しました ([#1288])
 * notoc, nodisp, nonum を含む見出しを `@<hd>` で参照したときに番号が付いてしまうこと、およびその後の見出しの番号がおかしくなることを修正しました ([#1294])
+* PDFMaker: jlreq.cls 0401 版利用時に review-jlreq.cls でエラーが出るのを修正しました ([#1298])
 
 ## 機能強化
 * `CHAPS:` が空のときのテストを追加しました ([#1275])
 * PDFMaker: 安全のため、reviewtt などのインライン書体命令を RobustCommand マクロで定義するようにしました ([#1280])
-* ★EPUBMaker: デバッグモードで実行する `--debug` オプションを追加しました ([#1281])
+* EPUBMaker: デバッグモードで実行する `--debug` オプションを追加しました ([#1281])
 * review-epub2html: 脚注をインラインで表現する `--inline-footnote` オプションを追加しました ([#1283])
 * EPUBMaker: iBooks 向けに、EPUB3 においても表紙画像のメタデータを入れるようにしました ([#1293])
+* PDFMaker: review-jsbook および review-jlreq において、コードリストや数式のキャプションの直後に改ページされる現象を程度抑制するようにしました ([#1299])
 
 ## ドキュメント
+
+## その他
+* rubocop 0.67.2 に基づいてコードを整形しました ([#1297])
+
 ## コントリビューターのみなさん
 * [@uetchy](https://github.com/uetchy)
 
@@ -29,6 +35,9 @@
 [#1288]: https://github.com/kmuto/review/issues/1288
 [#1293]: https://github.com/kmuto/review/pull/1293
 [#1294]: https://github.com/kmuto/review/issues/1294
+[#1297]: https://github.com/kmuto/review/pull/1297
+[#1298]: https://github.com/kmuto/review/pull/1298
+[#1299]: https://github.com/kmuto/review/pull/1299
 
 # Version 3.1.0
 
