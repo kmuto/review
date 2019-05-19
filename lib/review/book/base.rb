@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto
 #               2002-2008 Minero Aoki
 #
 # This program is free software.
@@ -266,8 +266,8 @@ module ReVIEW
           if File.file?(predef_file)
             mkpart_from_namelistfile(predef_file)
           end
-        rescue FileNotFound => err
-          raise FileNotFound, "preface #{err.message}"
+        rescue FileNotFound => e
+          raise FileNotFound, "preface #{e.message}"
         end
       end
 
@@ -283,8 +283,8 @@ module ReVIEW
           if File.file?(postdef_file)
             mkpart_from_namelistfile(postdef_file)
           end
-        rescue FileNotFound => err
-          raise FileNotFound, "postscript #{err.message}"
+        rescue FileNotFound => e
+          raise FileNotFound, "postscript #{e.message}"
         end
       end
 

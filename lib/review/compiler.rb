@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -501,8 +501,8 @@ module ReVIEW
       end
       begin
         syntax.check_args args
-      rescue CompileError => err
-        error err.message
+      rescue CompileError => e
+        error e.message
         args = ['(NoArgument)'] * syntax.min_argc
       end
       if syntax.block_allowed?
@@ -564,8 +564,8 @@ module ReVIEW
         result << @strategy.nofunc_text(revert_replace_fence(words.shift))
       end
       result
-    rescue => err
-      error err.message
+    rescue => e
+      error e.message
     end
     public :text # called from strategy
 
@@ -578,8 +578,8 @@ module ReVIEW
         raise "strategy does not support inline op: @<#{op}>"
       end
       @strategy.__send__("inline_#{op}", arg)
-    rescue => err
-      error err.message
+    rescue => e
+      error e.message
       @strategy.nofunc_text(str)
     end
 

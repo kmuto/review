@@ -59,8 +59,8 @@ def main
   end
   begin
     opts.parse!
-  rescue OptionParser::ParseError => err
-    @logger.error err.message
+  rescue OptionParser::ParseError => e
+    @logger.error e.message
     $stderr.puts opts.help
     exit 1
   end
@@ -91,9 +91,9 @@ def main
       raise "must not happen: #{mode}"
     end
   end
-rescue ReVIEW::Error => err
+rescue ReVIEW::Error => e
   raise if $DEBUG
-  @logger.error err.message
+  @logger.error e.message
   exit 1
 end
 

@@ -237,7 +237,7 @@ EOC
         "part1_chapter1.re\n",
         '',
         [
-          '', # XXX: OK?
+          '' # XXX: OK?
         ]
       ],
       [
