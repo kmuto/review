@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -316,6 +316,7 @@ module ReVIEW
           if m.nil? || m[1].size > 10 # Ignore too deep index
             next
           end
+
           index = m[1].size - 2
 
           # column
@@ -335,7 +336,9 @@ module ReVIEW
 
           next unless index >= 0
           if indexs.size > (index + 1)
-            indexs = indexs.take(index + 1)
+            unless %w[nonum notoc nodisp].include?(m[2])
+              indexs = indexs.take(index + 1)
+            end
             headlines = headlines.take(index + 1)
           end
           if indexs[index].nil?
@@ -343,9 +346,15 @@ module ReVIEW
               indexs[i] ||= 0
             end
           end
-          indexs[index] += 1
-          headlines[index] = m[3].present? ? m[3].strip : m[4].strip
-          items.push Item.new(headlines.join('|'), indexs.dup, m[4].strip)
+
+          if %w[nonum notoc nodisp].include?(m[2])
+            headlines[index] = m[3].present? ? m[3].strip : m[4].strip
+            items.push Item.new(headlines.join('|'), nil, m[4].strip)
+          else
+            indexs[index] += 1
+            headlines[index] = m[3].present? ? m[3].strip : m[4].strip
+            items.push Item.new(headlines.join('|'), indexs.dup, m[4].strip)
+          end
         end
         new(items, chap)
       end
@@ -364,6 +373,10 @@ module ReVIEW
       end
 
       def number(id)
+        unless self[id].number
+          # when notoc
+          return ''
+        end
         n = @chap.number
         # XXX: remove magic number (move to lib/review/book/chapter.rb)
         if @chap.on_appendix? && @chap.number > 0 && @chap.number < 28

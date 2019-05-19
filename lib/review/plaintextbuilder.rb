@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Kenshi Muto
+# Copyright (c) 2018-2019 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -364,13 +364,12 @@ module ReVIEW
     end
 
     def inline_hd_chap(chap, id)
-      if chap.number
-        n = chap.headline_index.number(id)
-        if @book.config['secnolevel'] >= n.split('.').size
-          return I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
-        end
+      n = chap.headline_index.number(id)
+      if n.present? && chap.number && over_secnolevel?(n)
+        I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
+      else
+        I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
       end
-      I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
     rescue KeyError
       error "unknown headline: #{id}"
     end

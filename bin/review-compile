@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2008-2018 Kenshi Muto, Masayoshi Takahashi, KADO Masanori, Minero Aoki
+# Copyright (c) 2008-2019 Kenshi Muto, Masayoshi Takahashi, KADO Masanori, Minero Aoki
 # Copyright (c) 1999-2007 Minero Aoki
 #
 # This program is free software.
@@ -50,7 +50,7 @@ def _main
   begin
     loader = ReVIEW::YAMLLoader.new
     if @config['yaml']
-      error "#{config['yaml']} not found." unless File.exist?(@config['yaml'])
+      error "#{@config['yaml']} not found." unless File.exist?(@config['yaml'])
       begin
         @config.deep_merge!(loader.load_file(@config['yaml']))
       rescue => e
@@ -109,8 +109,8 @@ def _main
     else
       raise "must not happen: #{@mode}"
     end
-  rescue ReVIEW::ApplicationError => err
-    error(err.message)
+  rescue ReVIEW::ApplicationError => e
+    error(e.message)
   end
 end
 
@@ -162,8 +162,8 @@ def parse_opts
         raise OptionParser::ParseError, 'no target given'
       end
     end
-  rescue OptionParser::ParseError => err
-    warn(err.message)
+  rescue OptionParser::ParseError => e
+    warn(e.message)
     $stderr.puts opts.help
     exit 1
   end

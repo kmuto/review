@@ -69,16 +69,23 @@
 
 \newcommand{\reviewbackslash}[0]{\textbackslash{}}
 
+% 古いjlreq.clsへの互換(当面のad-hoc対応)
+\ifdefined\jlreq@@makecaption@font@setting
+\else
+\let\jlreq@@makecaption@font@setting\jlreq@@makecaption@font
+\let\jlreq@@makecaption@label@@font@setting\jlreq@@makecaption@label@font@setting
+\fi
+
 \renewcommand{\@makecaption}[2]{{% %本当はl,c,rを[]で指定したい
   \reset@font\small
   \vskip\abovecaptionskip
   \jlreq@ifempty{#1}{%
-    \sbox\@tempboxa{{\jlreq@@makecaption@font #2}}}{%
-    \sbox\@tempboxa{{\jlreq@@makecaption@label@font #1}\review@intn@captionprefix{\jlreq@@makecaption@font #2}}}
+    \sbox\@tempboxa{{\jlreq@@makecaption@font@setting #2}}}{%
+    \sbox\@tempboxa{{\jlreq@@makecaption@label@font@setting #1}\review@intn@captionprefix{\jlreq@@makecaption@font@setting #2}}}
   \ifdim \wd\@tempboxa >\hsize
   \jlreq@ifempty{#1}{%
-    {\jlreq@@makecaption@font #2}}{%
-    {\jlreq@@makecaption@label@font #1}\review@intn@captionprefix{\jlreq@@makecaption@font #2}}\relax\par
+    {\jlreq@@makecaption@font@setting #2}}{%
+    {\jlreq@@makecaption@label@font@setting #1}\review@intn@captionprefix{\jlreq@@makecaption@font@setting #2}}\relax\par
   \else
     \global\@minipagefalse
     \hbox to\hsize{\box\@tempboxa\hfil}% キャプションLeft
@@ -92,10 +99,10 @@
 \newcommand{\reviewemlistcaption}[1]{\review@commoncaption{}{#1}}
 \newcommand{\reviewsourcecaption}[1]{\review@commoncaption{}{#1}}
 \newcommand{\reviewcmdcaption}[1]{\review@commoncaption{}{#1}}
-\newenvironment{reviewlistblock}{\list{}{\topsep.5\baselineskip \leftmargin\z@ \itemindent\z@}\item\relax}{\endlist}% 上下アキ0.5
+\newenvironment{reviewlistblock}{\list{}{\topsep.5\baselineskip \leftmargin\z@ \itemindent\z@}\item\needspace{4\Cvs}\relax}{\endlist}% 上下アキ0.5
 
 \newcommand{\reviewequationcaption}[1]{\review@commoncaption{}{#1}}
-\newenvironment{reviewequationblock}{}{}
+\newenvironment{reviewequationblock}{\needspace{2\Cvs}}{}
 
 \newcommand{\reviewimageref}[2]{\review@intn@image #1}
 \newcommand{\reviewtableref}[2]{\review@intn@table #1}

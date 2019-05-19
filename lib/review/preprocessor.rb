@@ -77,8 +77,8 @@ module ReVIEW
       @f = outf
       begin
         preproc inf
-      rescue Errno::ENOENT => err
-        error err.message
+      rescue Errno::ENOENT => e
+        error e.message
       end
     end
 

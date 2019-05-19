@@ -1,5 +1,5 @@
 %#!ptex2pdf -l -u -ot '-synctex=1' test-rejsbk
-% Copyright (c) 2018 Munehiro Yamamoto, Kenshi Muto.
+% Copyright (c) 2018-2019 Munehiro Yamamoto, Kenshi Muto.
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
@@ -458,8 +458,8 @@
 
 %% シンプルな通しノンブル
 \ifrecls@serialpage
-\renewcommand*{\pagenumbering}[1]{%
-  \gdef\thepage{\@arabic\c@page}}
+\def\pagenumbering#1{%
+  \gdef\thepage{\csname @arabic\endcsname\c@page}}
 \fi
 
 %% 開始ページを変更

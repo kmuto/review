@@ -26,6 +26,7 @@ module EPUBMaker
     # Return opf file content.
     def opf
       @opf_metainfo = opf_metainfo
+      @opf_coverimage = opf_coverimage
       @opf_manifest = opf_manifest
       @opf_toc = opf_tocx
       @package_attrs = ''

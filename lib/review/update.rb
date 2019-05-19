@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018 Kenshi Muto
+# Copyright (c) 2018-2019 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -145,8 +145,8 @@ module ReVIEW
 
       begin
         opts.parse!(args)
-      rescue OptionParser::ParseError => err
-        @logger.error err.message
+      rescue OptionParser::ParseError => e
+        @logger.error e.message
         $stderr.puts opts.help
         raise ApplicationError
       end

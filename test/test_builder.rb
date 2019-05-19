@@ -80,6 +80,22 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal [:text, text], @b.compile_inline(text)
   end
 
+  def test_inline_missing_ref
+    b = Builder.new
+    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, 1, 'chap1', nil, StringIO.new)
+    b.bind(nil, chapter, nil)
+    e = assert_raises(ReVIEW::ApplicationError) { b.inline_list('unknown|list1') }
+    assert_equal ': error: unknown list: unknown|list1', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { b.inline_table('unknown|table1') }
+    assert_equal ': error: unknown table: unknown|table1', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { b.inline_img('unknown|img1') }
+    assert_equal ': error: unknown image: unknown|img1', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { b.inline_column('unknown|column1') }
+    assert_equal ': error: unknown column: unknown|column1', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { b.inline_fn('unknown|footnote1') }
+    assert_equal ': error: unknown footnote: unknown|footnote1', e.message
+  end
+
   class XBuilder < Builder
     def list_header(id, caption)
     end

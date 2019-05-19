@@ -16,6 +16,7 @@
 \RequirePackage[deluxe]{otf}%
 }
 \RequirePackage{caption}
+\RequirePackage{needspace}
 \RequirePackage{suffix}
 \RequirePackage[T1]{fontenc}\RequirePackage{textcomp}%T1/TS1
 \RequirePackage{lmodern}
@@ -123,9 +124,9 @@
 
 \newcommand{\reviewequationcaption}[1]{%
   \medskip{\small\noindent #1}}
-\newenvironment{reviewequationblock}{}{}
+\newenvironment{reviewequationblock}{\needspace{2\Cvs}}{}
 
-\newenvironment{reviewlistblock}{}{}
+\newenvironment{reviewlistblock}{\needspace{2\Cvs}}{}
 
 \newenvironment{reviewemlist}{%
   \medskip\small\begin{shaded}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
