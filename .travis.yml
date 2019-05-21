@@ -2,6 +2,10 @@ language: ruby
 sudo: false
 dist: trusty
 
+os:
+  - linux
+  - osx
+
 addons:
   apt:
     packages:
@@ -21,6 +25,12 @@ before_install:
       gem update --system
       gem install bundler
     fi
+    gem install epubcheck-ruby
+
+script:
+  - ruby bin/review-init hello && cd hello && ruby ../bin/review-epubmaker config.yml && epubcheck book.epub
+  - cd ..
+  - ruby bin/review-init hello2 --epub-version 2 && cd hello2 && ruby ../bin/review-epubmaker config.yml && epubcheck book.epub
 
 rvm:
   - 2.1

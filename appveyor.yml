@@ -8,6 +8,20 @@ build_script:
   - bundle exec rake test --trace --verbose
   - bundle exec rubocop
 
+before_test:
+  - gem install -N epubcheck-ruby
+
+test_script:
+  - ruby bin/review-init hello
+  - cd hello
+  - ruby ../bin/review-epubmaker config.yml
+  - epubcheck book.epub
+  - cd ..
+  - ruby bin/review-init hello2 --epub-version 2
+  - cd hello2
+  - ruby ../bin/review-epubmaker config.yml
+  - epubcheck book.epub
+
 branches:
   only:
     - master
@@ -16,3 +30,9 @@ environment:
   matrix:
     - ruby_version: "23"
     - ruby_version: "23-x64"
+    - ruby_version: "24"
+    - ruby_version: "24-x64"
+    - ruby_version: "25"
+    - ruby_version: "25-x64"
+    - ruby_version: "26"
+    - ruby_version: "26-x64"
