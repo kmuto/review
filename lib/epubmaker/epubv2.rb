@@ -39,7 +39,7 @@ module EPUBMaker
         if @producer.config[item].is_a?(Array)
           s << @producer.config.names_of(item).map { |i| %Q(    <dc:#{item}>#{CGI.escapeHTML(i)}</dc:#{item}>\n) }.join
         else
-          s << %Q(    <dc:#{item}>#{CGI.escapeHTML(@producer.config.name_of(item))}</dc:#{item}>\n)
+          s << %Q(    <dc:#{item}>#{CGI.escapeHTML(@producer.config.name_of(item).to_s)}</dc:#{item}>\n)
         end
       end
 
