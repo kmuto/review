@@ -9,6 +9,8 @@
 * PDFMaker: fixed the metadata of PDF page number was wrong when using review-jsbook with serial_pagination = true ([#1288])
 * fixed a bug when using `@<hd>` to refer to headings with notoc, nodisp, or nonum ([#1294])
 * PDFMaker: fixed an error in review-jlreq when using jlreq.cls version 0401 ([#1298])
+* EPUBMaker: fixed a error of building EPUB2 ([#1301])
+* EPUBMaker: added a workaround for a temporary folder deletion failure on Windows ([#1011])
 
 ## Enhancements
 * added test when `CHAPS:` is empty ([#1275])
@@ -25,7 +27,9 @@
 
 ## Contributors
 * [@uetchy](https://github.com/uetchy)
+* [@mitsuo0114](https://github.com/mitsuo0114)
 
+[#1011]: https://github.com/kmuto/review/issues/1011
 [#1275]: https://github.com/kmuto/review/pull/1275
 [#1280]: https://github.com/kmuto/review/pull/1280
 [#1281]: https://github.com/kmuto/review/issues/1281
@@ -38,6 +42,7 @@
 [#1297]: https://github.com/kmuto/review/pull/1297
 [#1298]: https://github.com/kmuto/review/pull/1298
 [#1299]: https://github.com/kmuto/review/pull/1299
+[#1301]: https://github.com/kmuto/review/pull/1301
 
 # Version 3.1.0
 ## Breaking Changes
