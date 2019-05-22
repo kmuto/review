@@ -192,7 +192,8 @@ module EPUBMaker
       current = Dir.pwd
       basedir ||= current
 
-      new_tmpdir = tmpdir.nil? ? Dir.mktmpdir : tmpdir
+      # use Dir to solve a path for Windows (see #1011)
+      new_tmpdir = Dir[File.join(tmpdir.nil? ? Dir.mktmpdir : tmpdir)][0]
       if epubfile !~ %r{\A/}
         epubfile = "#{current}/#{epubfile}"
       end
