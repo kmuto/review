@@ -15,12 +15,7 @@ module ReVIEW
       loaded_files = {}
       yaml = {}
 
-      loop do
-        # Check exit condition
-        if file_queue.empty?
-          return yaml
-        end
-
+      while file_queue.present?
         current_file = file_queue.shift
         current_yaml = YAML.load_file(current_file)
         yaml = current_yaml.deep_merge(yaml)
@@ -30,6 +25,8 @@ module ReVIEW
           file_queue = inherit_files + file_queue
         end
       end
+
+      yaml
     end
 
     def parse_inherit(yaml, yamlfile, loaded_files)
