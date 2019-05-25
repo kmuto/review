@@ -1035,7 +1035,7 @@ EOB
 foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\reviewbold{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
 EOS
       assert_equal expected, actual
-      assert_match(/WARN -- : :1: word not bound: N/, io.string)
+      assert_match(/WARN --: :1: word not bound: N/, io.string)
     end
   end
 

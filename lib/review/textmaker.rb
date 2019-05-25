@@ -27,12 +27,12 @@ module ReVIEW
     end
 
     def error(msg)
-      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      @logger.error msg
       exit 1
     end
 
     def warn(msg)
-      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      @logger.warn msg
     end
 
     def self.execute(*args)

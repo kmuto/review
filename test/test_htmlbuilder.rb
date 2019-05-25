@@ -1793,7 +1793,7 @@ EOB
       @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       assert_equal %Q(<p>foo bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ} <b>bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ}</b> [missing word: N]</p>\n), actual
-      assert_match(/WARN -- : :1: word not bound: N/, io.string)
+      assert_match(/WARN --: :1: word not bound: N/, io.string)
     end
   end
 
