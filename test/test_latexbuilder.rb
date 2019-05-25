@@ -169,6 +169,11 @@ class LATEXBuidlerTest < Test::Unit::TestCase
     assert_equal 'abc\\reviewunderline{def}ghi', actual
   end
 
+  def test_inline_bou
+    actual = compile_inline('傍点の@<bou>{テスト}です。')
+    assert_equal '傍点の\\reviewbou{テスト}です。', actual
+  end
+
   def test_inline_m
     @config['review_version'] = '3.0'
     actual = compile_inline('abc@<m>{\\alpha^n = \\inf < 2}ghi')

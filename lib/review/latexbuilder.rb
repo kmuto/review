@@ -997,7 +997,7 @@ module ReVIEW
     BOUTEN = '・'.freeze
 
     def inline_bou(str)
-      str.split(//).map { |c| macro('ruby', escape(c), macro('textgt', BOUTEN)) }.join('\allowbreak')
+      macro('reviewbou', escape(str))
     end
 
     def compile_ruby(base, ruby)
