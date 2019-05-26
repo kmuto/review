@@ -11,6 +11,7 @@
 * PDFMaker: jlreq.cls 0401 版利用時に review-jlreq.cls でエラーが出るのを修正しました ([#1298])
 * EPUBMaker: EPUB2 の生成に失敗するのを修正しました ([#1301])
 * EPUBMaker: Windows で一時フォルダの削除にときどき失敗する現象に対処しました ([#1011])
+* PDFMaker: `@<bou>` をサポートしました ([#1220])
 
 ## 機能強化
 * `CHAPS:` が空のときのテストを追加しました ([#1275])
@@ -19,17 +20,22 @@
 * review-epub2html: 脚注をインラインで表現する `--inline-footnote` オプションを追加しました ([#1283])
 * EPUBMaker: iBooks 向けに、EPUB3 においても表紙画像のメタデータを入れるようにしました ([#1293])
 * PDFMaker: review-jsbook および review-jlreq において、コードリストや数式のキャプションの直後に改ページされる現象を程度抑制するようにしました ([#1299])
+* rubocop 0.67.2 に基づいてコードを整形しました ([#1297])
+* EPUB 作成のテストを追加しました ([#1300])
+* テスト対象の Ruby バージョンを 2.4.6, 2.5.5, 2.6.3 としました ([#1303])
+* YAMLLoader のコードを改良しました ([#1304])
 
 ## ドキュメント
 
 ## その他
-* rubocop 0.67.2 に基づいてコードを整形しました ([#1297])
+* もう使われていない ReVIEW::Preprocessor::Strip を削除しました ([#1305])
 
 ## コントリビューターのみなさん
 * [@uetchy](https://github.com/uetchy)
 * [@mitsuo0114](https://github.com/mitsuo0114)
 
 [#1011]: https://github.com/kmuto/review/issues/1011
+[#1220]: https://github.com/kmuto/review/issues/1220
 [#1275]: https://github.com/kmuto/review/pull/1275
 [#1280]: https://github.com/kmuto/review/pull/1280
 [#1281]: https://github.com/kmuto/review/issues/1281
@@ -42,7 +48,11 @@
 [#1297]: https://github.com/kmuto/review/pull/1297
 [#1298]: https://github.com/kmuto/review/pull/1298
 [#1299]: https://github.com/kmuto/review/pull/1299
+[#1300]: https://github.com/kmuto/review/pull/1300
 [#1301]: https://github.com/kmuto/review/pull/1301
+[#1303]: https://github.com/kmuto/review/pull/1303
+[#1304]: https://github.com/kmuto/review/pull/1304
+[#1305]: https://github.com/kmuto/review/pull/1305
 
 # Version 3.1.0
 

@@ -11,6 +11,7 @@
 * PDFMaker: fixed an error in review-jlreq when using jlreq.cls version 0401 ([#1298])
 * EPUBMaker: fixed a error of building EPUB2 ([#1301])
 * EPUBMaker: added a workaround for a temporary folder deletion failure on Windows ([#1011])
+* PDFMaker: support `@<bou>` ([#1220])
 
 ## Enhancements
 * added test when `CHAPS:` is empty ([#1275])
@@ -19,17 +20,22 @@
 * review-epub2html: added `--inline-footnote` option to represent footnotes as inline ([#1283])
 * EPUBMaker: added metadata of the cover image on EPUB3 for iBooks ([#1293])
 * PDFMaker: suppressed the unexptected page break after the caption of code list or equation in review-jsbook and review-jlreq ([#1299])
+* reformatted the codes using rubocop 0.67.2 ([#1297])
+* added a test of building EPUB ([#1300])
+* updated Ruby versions of test target to 2.4.6, 2.5.5, and 2.6.3 ([#1303])
+* improved the code of YAMLLoader ([#1304])
 
 ## Docs
 
 ## Others
-* reformatted the codes using rubocop 0.67.2 ([#1297])
+* removed ReVIEW::Preprocessor::Strip due to it is no longer used ([#1305])
 
 ## Contributors
 * [@uetchy](https://github.com/uetchy)
 * [@mitsuo0114](https://github.com/mitsuo0114)
 
 [#1011]: https://github.com/kmuto/review/issues/1011
+[#1220]: https://github.com/kmuto/review/issues/1220
 [#1275]: https://github.com/kmuto/review/pull/1275
 [#1280]: https://github.com/kmuto/review/pull/1280
 [#1281]: https://github.com/kmuto/review/issues/1281
@@ -42,7 +48,11 @@
 [#1297]: https://github.com/kmuto/review/pull/1297
 [#1298]: https://github.com/kmuto/review/pull/1298
 [#1299]: https://github.com/kmuto/review/pull/1299
+[#1300]: https://github.com/kmuto/review/pull/1300
 [#1301]: https://github.com/kmuto/review/pull/1301
+[#1303]: https://github.com/kmuto/review/pull/1303
+[#1304]: https://github.com/kmuto/review/pull/1304
+[#1305]: https://github.com/kmuto/review/pull/1305
 
 # Version 3.1.0
 ## Breaking Changes
