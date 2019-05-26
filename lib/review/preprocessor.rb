@@ -43,28 +43,6 @@ module ReVIEW
   class Preprocessor
     include ErrorUtils
 
-    class Strip
-      def initialize(f)
-        @f = f
-      end
-
-      def path
-        @f.path
-      end
-
-      def lineno
-        @f.lineno
-      end
-
-      def gets
-        @f.each_line do |line|
-          return "\#@\#\n" if /\A\#@/ =~ line
-          return line
-        end
-        nil
-      end
-    end
-
     def initialize(repo, param)
       @repository = repo
       @config = param

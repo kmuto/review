@@ -2,6 +2,10 @@ language: ruby
 sudo: false
 dist: trusty
 
+os:
+  - linux
+  - osx
+
 addons:
   apt:
     packages:
@@ -12,23 +16,20 @@ addons:
 
 before_install:
   - |-
-    RUBY_VER=`ruby -e "print RUBY_VERSION"`
-    if [ "$RUBY_VER" = "2.1.10" ]; then
-      gem install bundler -v '< 2'
-    elif [ "$RUBY_VER" = "2.2.10" ]; then
-      gem install bundler -v '< 2'
-    else
-      gem update --system
-      gem install bundler
-    fi
+    gem update --system
+    gem install bundler
+    gem install epubcheck-ruby
+
+script:
+  - bundle exec rake
+  - ruby bin/review-init hello && cd hello && ruby ../bin/review-epubmaker config.yml && epubcheck book.epub
+  - cd ..
+  - ruby bin/review-init hello2 --epub-version 2 && cd hello2 && ruby ../bin/review-epubmaker config.yml && epubcheck book.epub
 
 rvm:
-  - 2.1
-  - 2.2.10
-  - 2.3.8
-  - 2.4.5
-  - 2.5.3
-  - 2.6.0
+  - 2.4.6
+  - 2.5.5
+  - 2.6.3
 ##  - ruby-head
 
 branches:

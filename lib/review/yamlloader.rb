@@ -15,31 +15,38 @@ module ReVIEW
       loaded_files = {}
       yaml = {}
 
-      loop do
-        # Check exit condition
-        return yaml if file_queue.empty?
-
+      while file_queue.present?
         current_file = file_queue.shift
         current_yaml = YAML.load_file(current_file)
         yaml = current_yaml.deep_merge(yaml)
 
-        next unless yaml.key?('inherit')
-
-        buf = []
-        yaml['inherit'].reverse_each do |item|
-          inherit_file = File.expand_path(item, File.dirname(yamlfile))
-
-          # Check loop
-          if loaded_files[inherit_file]
-            raise "Found circular YAML inheritance '#{inherit_file}' in #{yamlfile}."
-          end
-
-          loaded_files[inherit_file] = true
-          buf << inherit_file
+        if yaml.key?('inherit')
+          inherit_files = parse_inherit(yaml, yamlfile, loaded_files)
+          file_queue = inherit_files + file_queue
         end
-        yaml.delete('inherit')
-        file_queue = buf + file_queue
       end
+
+      yaml
+    end
+
+    def parse_inherit(yaml, yamlfile, loaded_files)
+      files = []
+
+      yaml['inherit'].reverse_each do |item|
+        inherit_file = File.expand_path(item, File.dirname(yamlfile))
+
+        # Check loop
+        if loaded_files[inherit_file]
+          raise "Found circular YAML inheritance '#{inherit_file}' in #{yamlfile}."
+        end
+
+        loaded_files[inherit_file] = true
+        files << inherit_file
+      end
+
+      yaml.delete('inherit')
+
+      files
     end
   end
 end
