@@ -9,32 +9,10 @@
 require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
+require 'review/location'
 require 'strscan'
 
 module ReVIEW
-  class Location
-    def initialize(filename, f)
-      @filename = filename
-      @f = f
-    end
-
-    attr_reader :filename
-
-    def lineno
-      @f.lineno
-    end
-
-    def string
-      begin
-        "#{@filename}:#{@f.lineno}"
-      rescue
-        "#{@filename}:nil"
-      end
-    end
-
-    alias_method :to_s, :string
-  end
-
   class Compiler
     def initialize(strategy)
       @strategy = strategy
