@@ -384,10 +384,6 @@ module ReVIEW
             error 'too many *.'
           end
           level = current_level
-          (1..(level_diff - 1)).to_a.reverse_each do |i|
-            @strategy.ul_begin { i }
-            @strategy.ul_item_begin []
-          end
           @strategy.ul_begin { level }
           @strategy.ul_item_begin buf
         elsif level > current_level # up
