@@ -10,7 +10,7 @@ inherit_from: .rubocop_todo.yml
 #### Lint
 
 Lint/EmptyWhen:
-  Enabled: true
+  Enabled: false
 
 Lint/NestedMethodDefinition:
   Exclude:
