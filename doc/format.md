@@ -24,7 +24,7 @@ Two empty lines or more are same as one empty line.
 
 ## Chapter, Section, Subsection (headings)
 
-Chapters, sections, subsections, subsubsections use `=`, `==`, `===`, `====`, `=====`.
+Chapters, sections, subsections, subsubsections use `=`, `==`, `===`, `====`, `=====`, and `======`.
 You should add one or more spaces after `=`.
 
 Usage:
@@ -39,6 +39,8 @@ Usage:
 ==== 4th level
 
 ===== 5th level
+
+====== 6th level
 ```
 
 Headings should not have any spaces before title; if line head has space, it is as paragraph.
