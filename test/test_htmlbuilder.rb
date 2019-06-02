@@ -1342,25 +1342,10 @@ EOS
     src = <<-EOS
   ** AAA
   * AA
-  * BBB
-  ** BB
 EOS
 
-    expected = <<-EOS
-<ul>
-<li><ul>
-<li>AAA</li>
-</ul>
-</li>
-<li>AA</li>
-<li>BBB<ul>
-<li>BB</li>
-</ul>
-</li>
-</ul>
-EOS
-    actual = compile_block(src)
-    assert_equal expected, actual
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':1: error: too many *.', e.message
   end
 
   def test_ul_nest4
@@ -1377,37 +1362,6 @@ EOS
 <li>A<ul>
 <li>AA<ul>
 <li>AAA</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>B<ul>
-<li>BB</li>
-</ul>
-</li>
-</ul>
-EOS
-    actual = compile_block(src)
-    assert_equal expected, actual
-  end
-
-  def test_ul_nest5
-    src = <<-EOS
-  * A
-  ** AA
-  **** AAAA
-  * B
-  ** BB
-EOS
-
-    expected = <<-EOS
-<ul>
-<li>A<ul>
-<li>AA<ul>
-<li><ul>
-<li>AAAA</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

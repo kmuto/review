@@ -577,15 +577,10 @@ EOS
     src = <<-EOS
   ** AAA
   * AA
-  * BBB
-  ** BB
 EOS
 
-    expected = <<-EOS.chomp
-<ul><li aid:pstyle="ul-item"><ul2><li aid:pstyle="ul-item">AAA</li></ul2></li><li aid:pstyle="ul-item">AA</li><li aid:pstyle="ul-item">BBB<ul2><li aid:pstyle="ul-item">BB</li></ul2></li></ul>
-EOS
-    actual = compile_block(src)
-    assert_equal expected, actual
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':1: error: too many *.', e.message
   end
 
   def test_ul_nest4
