@@ -24,8 +24,11 @@
 * added a test of building EPUB ([#1300])
 * updated Ruby versions of test target to 2.4.6, 2.5.5, and 2.6.3 ([#1303])
 * improved the code of YAMLLoader ([#1304])
+* raise an error when invalid level is used in bullet ([#1313])
+* extracted ReVIEW::Location class ([#1308])
 
 ## Docs
+* fixed the description about header levels ([#1309])
 
 ## Others
 * removed ReVIEW::Preprocessor::Strip due to it is no longer used ([#1305])
@@ -53,6 +56,9 @@
 [#1303]: https://github.com/kmuto/review/pull/1303
 [#1304]: https://github.com/kmuto/review/pull/1304
 [#1305]: https://github.com/kmuto/review/pull/1305
+[#1308]: https://github.com/kmuto/review/pull/1308
+[#1309]: https://github.com/kmuto/review/issues/1309
+[#1313]: https://github.com/kmuto/review/issues/1313
 
 # Version 3.1.0
 ## Breaking Changes

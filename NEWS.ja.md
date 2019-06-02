@@ -24,8 +24,11 @@
 * EPUB 作成のテストを追加しました ([#1300])
 * テスト対象の Ruby バージョンを 2.4.6, 2.5.5, 2.6.3 としました ([#1303])
 * YAMLLoader のコードを改良しました ([#1304])
+* `*` の箇条書きで、`**` から始めたり、`*` のあとに `***` を使ったりといった不正なレベル指定をエラーにしました ([#1313])
+* ReVIEW::Location クラスを分離しました ([#1308])
 
 ## ドキュメント
+* 見出しのレベルの説明の誤りを修正しました ([#1309])
 
 ## その他
 * もう使われていない ReVIEW::Preprocessor::Strip を削除しました ([#1305])
@@ -53,6 +56,9 @@
 [#1303]: https://github.com/kmuto/review/pull/1303
 [#1304]: https://github.com/kmuto/review/pull/1304
 [#1305]: https://github.com/kmuto/review/pull/1305
+[#1308]: https://github.com/kmuto/review/pull/1308
+[#1309]: https://github.com/kmuto/review/issues/1309
+[#1313]: https://github.com/kmuto/review/issues/1313
 
 # Version 3.1.0
 
