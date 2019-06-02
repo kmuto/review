@@ -334,7 +334,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistlst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, _idx| detab(line) }
       end
     end
 
@@ -344,7 +344,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistnumlst', 'title', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) }
       end
     end
 
@@ -353,7 +353,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistlst', 'caption', caption, lang)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, _idx| detab(line) }
       end
     end
 
@@ -363,7 +363,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) }
       end
     end
 
@@ -372,7 +372,7 @@ module ReVIEW
         common_code_block_lst(nil, lines, 'reviewcmdlst', 'title', caption, lang)
       else
         blank
-        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, _idx| detab(line) }
       end
     end
 
@@ -398,11 +398,15 @@ module ReVIEW
       end
       @doc_status[:caption] = nil
       body = ''
+
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
+
       lines.each_with_index do |line, idx|
         body.concat(yield(line, idx))
       end
       puts macro('begin', command)
-      print body
+      print revert_escape(body, esc_array)
       puts macro('end', command)
       unless @book.config.check_version('2', exception: false)
         puts '\\end{reviewlistblock}'
@@ -414,10 +418,12 @@ module ReVIEW
       if title == 'title' && caption.blank? && @book.config.check_version('2', exception: false)
         print '\vspace{-1.5em}'
       end
-      body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
+      body = lines.inject('') { |i, j| i + detab(unescape(j)) }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
-      print body
+      print revert_escape(body, esc_array)
       puts %Q(\\end{#{command}})
       blank
     end
@@ -449,7 +455,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewsourcelst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, _idx| detab(line) }
       end
     end
 

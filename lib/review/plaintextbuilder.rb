@@ -148,16 +148,20 @@ module ReVIEW
     end
 
     def list_body(_id, lines, _lang)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       lines.each do |line|
-        puts detab(line)
+        puts revert_escape(detab(line), esc_array)
       end
       blank
     end
 
     def base_block(_type, lines, caption = nil)
+      esc_array = []
+      lines.map! { |l| compile_inline(l, esc_array) }
       blank
       puts compile_inline(caption) if caption.present?
-      puts lines.join("\n")
+      puts revert_escape(lines.join, esc_array)
       blank
     end
 

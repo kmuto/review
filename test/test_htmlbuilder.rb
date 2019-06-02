@@ -630,7 +630,7 @@ EOS
 <pre class="list highlight">test1
 test1.5
 
-test&lt;i&gt;2&lt;/i&gt;
+test<i>2</i>
 </pre>
 </div>
     EOS
@@ -706,7 +706,7 @@ end
     @book.config['highlight']['html'] = 'rouge'
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
-    assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n), actual
+    assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n), actual
   end
 
   def test_list_rouge_lang

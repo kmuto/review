@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2019 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -225,8 +225,8 @@ module ReVIEW
       puts ''
     end
 
-    def compile_inline(s)
-      @compiler.text(s)
+    def compile_inline(s, esc_array = nil)
+      @compiler.text(s, esc_array)
     end
 
     def inline_chapref(id)
@@ -637,6 +637,10 @@ EOTGNUPLOT
 
     def unescape(str)
       str
+    end
+
+    def revert_escape(s, esc_array)
+      s.gsub("\x01") { esc_array.shift }
     end
   end
 end # module ReVIEW
