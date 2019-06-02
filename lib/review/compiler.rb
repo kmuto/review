@@ -381,7 +381,7 @@ module ReVIEW
         elsif level < current_level # down
           level_diff = current_level - level
           if level_diff != 1
-            error "too many *."
+            error 'too many *.'
           end
           level = current_level
           (1..(level_diff - 1)).to_a.reverse_each do |i|
