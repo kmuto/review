@@ -146,6 +146,7 @@ module ReVIEW
 
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) if @secttags
+      when 6 # rubocop:disable Lint/EmptyWhen
       else
         raise "caption level too deep or unsupported: #{level}"
       end
