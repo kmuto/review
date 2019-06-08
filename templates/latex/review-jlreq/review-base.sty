@@ -73,7 +73,10 @@
 \ifdefined\jlreq@@makecaption@font@setting
 \else
 \let\jlreq@@makecaption@font@setting\jlreq@@makecaption@font
-\let\jlreq@@makecaption@label@@font@setting\jlreq@@makecaption@label@font@setting
+\fi
+\ifdefined\jlreq@@makecaption@label@@font@setting
+\else
+\let\jlreq@@makecaption@label@font@setting\jlreq@@makecaption@label@font
 \fi
 
 \renewcommand{\@makecaption}[2]{{% %本当はl,c,rを[]で指定したい
@@ -209,6 +212,16 @@
 \ifdefined\appendixname
   \renewcommand{\appendixname}{\reviewappendixname}
 \fi
+
+% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\def\maxwidth{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
 
 % hooks
 \def\reviewbegindocumenthook{}
