@@ -188,6 +188,17 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     assert_equal %Q(リスト1.1　this is test<&>_\n\nfoo\nbar\n\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+foo
+bar
+
+リスト1.1　this is test<&>_
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -196,11 +207,91 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     assert_equal %Q(リスト1.1　this is test<&>_\n\n 1: foo\n 2: bar\n\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+ 1: foo
+ 2: bar
+
+リスト1.1　this is test<&>_
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     assert_equal %Q(this is test<&>_\n 1: foo\n 2: bar\n\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+ 1: foo
+ 2: bar
+
+this is test<&>_
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_other_lists
+    src = <<-EOS
+//cmd[CMD]{
+foo
+//}
+
+//emlist[EMLIST]{
+foo
+//}
+
+//box[BOX]{
+foo
+//}
+
+//source[SOURCE]{
+foo
+//}
+EOS
+    actual = compile_block(src)
+    expected = <<-EOS
+CMD
+foo
+
+EMLIST
+foo
+
+BOX
+foo
+
+SOURCE
+foo
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block(src)
+    expected = <<-EOS
+foo
+
+CMD
+
+foo
+
+EMLIST
+
+foo
+
+BOX
+
+foo
+
+SOURCE
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_bib
@@ -215,6 +306,27 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(aaa\tbbb\nccc\tddd<>&\n\n),
                  actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+表1.1　FOO
+
+aaa\tbbb
+ccc\tddd<>&
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+aaa\tbbb
+ccc\tddd<>&
+
+表1.1　FOO
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_table
@@ -228,6 +340,11 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
   def test_emtable
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(foo\n\naaa\tbbb\nccc\tddd<>&\n\naaa\tbbb\nccc\tddd<>&\n\n),
+                 actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal %Q(aaa\tbbb\nccc\tddd<>&\n\nfoo\n\naaa\tbbb\nccc\tddd<>&\n\n),
                  actual
   end
 
@@ -272,6 +389,10 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
       item
     end
 
+    actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
+    assert_equal %Q(図1.1　sample photo\n\n), actual
+
+    @config['caption_position']['image'] = 'top'
     actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
     assert_equal %Q(図1.1　sample photo\n\n), actual
   end
@@ -401,6 +522,17 @@ EOS
 
 式1.1　The Equivalence of Mass and Energy
 e=mc^2
+
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = <<-EOS
+式1.1
+
+e=mc^2
+式1.1　The Equivalence of Mass and Energy
 
 EOS
     actual = compile_block(src)

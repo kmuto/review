@@ -373,6 +373,11 @@ EOS
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(◆→開始:表←◆\nfoo\n\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n),
                  actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    assert_equal %Q(◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n\nfoo\n◆→終了:表←◆\n\n◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n),
+                 actual
   end
 
   def test_major_blocks

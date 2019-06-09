@@ -167,6 +167,7 @@ module ReVIEW
       puts lines.join("\n")
 
       if !cap_top?('list') && caption.present?
+        blank
         puts compile_inline(caption)
       end
       blank
@@ -192,6 +193,7 @@ module ReVIEW
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
       if !cap_top?('list') && caption.present?
+        blank
         puts compile_inline(caption)
       end
       blank
