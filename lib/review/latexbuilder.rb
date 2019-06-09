@@ -494,14 +494,14 @@ module ReVIEW
     end
 
     def image_image(id, caption, metric)
+      metrics = parse_metric('latex', metric)
+      # image is always bound here
+      puts "\\begin{reviewimage}%%#{id}"
       if cap_top?('image')
         output_caption(caption, 'reviewimagecaption')
         puts macro('label', image_label(id))
       end
 
-      metrics = parse_metric('latex', metric)
-      # image is always bound here
-      puts "\\begin{reviewimage}%%#{id}"
       if metrics.present?
         puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
       else
@@ -671,7 +671,7 @@ module ReVIEW
           end
         end
 
-        table_end
+        table_end(id)
       rescue KeyError
         error "no such table: #{id}"
       end
@@ -687,10 +687,10 @@ module ReVIEW
         end
         if cap_top?('table')
           output_caption(caption, 'reviewtablecaption')
+          if id
+            puts macro('label', table_label(id))
+          end
         end
-      end
-      if id
-        puts macro('label', table_label(id))
       end
     end
 
@@ -787,12 +787,15 @@ module ReVIEW
       puts ' \\\\  \hline'
     end
 
-    def table_end
+    def table_end(id = nil)
       puts macro('end', 'reviewtable')
 
       if @table_caption
         unless cap_top?('table')
           output_caption(@table_caption, 'reviewtablecaption')
+          if id
+            puts macro('label', table_label(id))
+          end
         end
 
         puts '\end{table}'
@@ -823,9 +826,9 @@ module ReVIEW
 
           if cap_top?('table')
             output_caption(caption, 'reviewimgtablecaption')
+            puts macro('label', table_label(id))
           end
         end
-        puts macro('label', table_label(id))
       rescue ReVIEW::KeyError
         error "no such table: #{id}"
       end
@@ -834,6 +837,7 @@ module ReVIEW
       if @table_caption
         unless cap_top?('table')
           output_caption(caption, 'reviewimgtablecaption')
+          puts macro('label', table_label(id))
         end
 
         puts '\end{table}'
