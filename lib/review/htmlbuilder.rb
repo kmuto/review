@@ -288,14 +288,19 @@ module ReVIEW
 
     def box(lines, caption = nil)
       puts %Q(<div class="syntax">)
-      if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
+
       print %Q(<pre class="syntax">)
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
+
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       puts '</div>'
     end
 
@@ -375,11 +380,16 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="caption-code">)
       begin
-        list_header id, caption, lang
+        if @book.config['caption_position']['list'] != 'bottom'
+          list_header id, caption, lang
+        end
+        list_body id, lines, lang
+        if @book.config['caption_position']['list'] == 'bottom'
+          list_header id, caption, lang
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
       puts '</div>'
     end
 
@@ -404,8 +414,7 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts %Q(<div class="source-code">)
-      source_header caption
-      source_body caption, lines, lang
+      super(lines, caption, lang)
       puts '</div>'
     end
 
@@ -456,9 +465,10 @@ module ReVIEW
 
     def emlist(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlist-code">)
-      if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
+
       class_names = ['emlist']
       class_names.push("language-#{lang}") unless lang.blank?
       class_names.push('highlight') if highlight?
@@ -467,12 +477,16 @@ module ReVIEW
       lexer = lang
       puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
+
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       puts '</div>'
     end
 
     def emlistnum(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlistnum-code">)
-      if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
@@ -494,19 +508,27 @@ module ReVIEW
         puts '</pre>'
       end
 
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       puts '</div>'
     end
 
     def cmd(lines, caption = nil)
       puts %Q(<div class="cmd-code">)
-      if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
+
       print %Q(<pre class="cmd">)
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = 'shell-session'
       puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
+
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       puts '</div>'
     end
 
@@ -540,24 +562,32 @@ module ReVIEW
     end
 
     def texequation(lines, id = nil, caption = '')
+      caption_str = nil
       if id
+        if get_chap
+          caption_str = %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
+        else
+          caption_str = %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
+        end
+
         texequation_header id, caption
+        if @book.config['caption_position']['equation'] != 'bottom'
+          puts caption_str
+        end
       end
 
       texequation_body(lines)
 
       if id
+        if @book.config['caption_position']['equation'] == 'bottom'
+          puts caption_str
+        end
         puts '</div>'
       end
     end
 
-    def texequation_header(id, caption)
+    def texequation_header(id, _caption)
       puts %Q(<div id="#{normalize_id(id)}" class="caption-equation">)
-      if get_chap
-        puts %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
-      else
-        puts %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}</p>)
-      end
     end
 
     def texequation_body(lines)
@@ -615,20 +645,34 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      if @book.config['caption_position']['image'] != 'bottom'
+        image_header id, caption
+      end
+
       puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      image_header id, caption
+
+      if @book.config['caption_position']['image'] == 'bottom'
+        image_header id, caption
+      end
       puts '</div>'
     end
 
     def image_dummy(id, caption, lines)
       warn "image not bound: #{id}"
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      if @book.config['caption_position']['image'] != 'bottom'
+        image_header id, caption
+      end
+
       puts %Q(<pre class="dummyimage">)
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
-      image_header id, caption
+
+      if @book.config['caption_position']['image'] == 'bottom'
+        image_header id, caption
+      end
       puts '</div>'
     end
 
@@ -662,28 +706,31 @@ module ReVIEW
         puts %Q(<div class="table">)
       end
       begin
-        if caption.present?
+        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+          table_header id, caption
+        end
+        table_begin rows.first.size
+        if sepidx
+          sepidx.times do
+            tr(rows.shift.map { |s| th(s) })
+          end
+          rows.each do |cols|
+            tr(cols.map { |s| td(s) })
+          end
+        else
+          rows.each do |cols|
+            h, *cs = *cols
+            tr([th(h)] + cs.map { |s| td(s) })
+          end
+        end
+        table_end
+
+        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
           table_header id, caption
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
-      return if rows.empty?
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
-      end
-      table_end
       puts '</div>'
     end
 
@@ -726,15 +773,18 @@ module ReVIEW
 
       puts %Q(<div id="#{normalize_id(id)}" class="imgtable image">)
       begin
-        if caption.present?
+        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+          table_header id, caption
+        end
+
+        imgtable_image(id, caption, metric)
+
+        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
           table_header id, caption
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-
-      imgtable_image(id, caption, metric)
-
       puts '</div>'
     end
 
@@ -772,6 +822,12 @@ module ReVIEW
       metrics = parse_metric('html', metric)
       caption = '' unless caption.present?
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      if @book.config['caption_position']['image'] != 'bottom' && caption.present?
+        puts %Q(<p class="caption">)
+        puts %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})
+        puts '</p>'
+      end
+
       begin
         puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
       rescue
@@ -785,7 +841,7 @@ module ReVIEW
         end
       end
 
-      if caption.present?
+      if @book.config['caption_position']['image'] == 'bottom' && caption.present?
         puts %Q(<p class="caption">)
         puts %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})
         puts '</p>'

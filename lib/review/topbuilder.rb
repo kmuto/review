@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -91,30 +91,53 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def list_header(id, caption, _lang)
+    def list(lines, id, caption, lang = nil)
       blank
       puts "◆→開始:#{@titles['list']}←◆"
+      begin
+        if @book.config['caption_position']['list'] != 'bottom'
+          list_header id, caption, lang
+          blank
+        end
+        list_body id, lines, lang
+        if @book.config['caption_position']['list'] == 'bottom'
+          blank
+          list_header id, caption, lang
+        end
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      puts "◆→終了:#{@titles['list']}←◆"
+      blank
+    end
+
+    def list_header(id, caption, _lang)
       if get_chap
         puts %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)})
       else
         puts %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)})
       end
-      blank
     end
 
     def list_body(_id, lines, _lang)
       lines.each do |line|
         puts detab(line)
       end
-      puts "◆→終了:#{@titles['list']}←◆"
-      blank
     end
 
     def base_block(type, lines, caption = nil)
       blank
       puts "◆→開始:#{@titles[type]}←◆"
-      puts "■#{compile_inline(caption)}" if caption.present?
+      blank
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+        puts "■#{compile_inline(caption)}"
+      end
+
       puts lines.join("\n")
+
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts "■#{compile_inline(caption)}"
+      end
       puts "◆→終了:#{@titles[type]}←◆"
       blank
     end
@@ -128,12 +151,35 @@ module ReVIEW
       blank
     end
 
+    def listnum(lines, id, caption, lang = nil)
+      puts "◆→開始:#{@titles['list']}←◆"
+
+      begin
+        if @book.config['caption_position']['list'] != 'bottom'
+          list_header id, caption, lang
+          blank
+        end
+        listnum_body lines, lang
+        if @book.config['caption_position']['list'] == 'bottom'
+          blank
+          list_header id, caption, lang
+        end
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+    end
+
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
       puts "◆→開始:#{@titles['emlist']}←◆"
-      puts "■#{compile_inline(caption)}" if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+        puts "■#{compile_inline(caption)}"
+      end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
+      end
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts "■#{compile_inline(caption)}"
       end
       puts "◆→終了:#{@titles['emlist']}←◆"
       blank
@@ -152,12 +198,17 @@ module ReVIEW
       metrics = " #{metrics}" if metrics.present?
       blank
       puts "◆→開始:#{@titles['image']}←◆"
+      caption_str = nil
       if get_chap
-        puts "#{I18n.t('image')}#{I18n.t('format_number', [get_chap, @chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        caption_str = "#{I18n.t('image')}#{I18n.t('format_number', [get_chap, @chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
       else
-        puts "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        caption_str = "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
       end
-      blank
+
+      if @book.config['caption_position']['image'] != 'bottom'
+        puts caption_str
+        blank
+      end
       if @chapter.image(id).bound?
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
@@ -166,6 +217,10 @@ module ReVIEW
           puts line
         end
       end
+      if @book.config['caption_position']['image'] == 'bottom'
+        blank
+        puts caption_str
+      end
       puts "◆→終了:#{@titles['image']}←◆"
       blank
     end
@@ -173,14 +228,22 @@ module ReVIEW
     def texequation(lines, id = nil, caption = '')
       blank
       puts "◆→開始:#{@titles['texequation']}←◆"
+      caption_str = nil
       if id
         if get_chap
-          puts "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+          caption_str = "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         else
-          puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+          caption_str = "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        end
+        if @book.config['caption_position']['equation'] != 'bottom'
+          puts caption_str
         end
       end
       puts lines.join("\n")
+
+      if @book.config['caption_position']['equation'] == 'bottom' && caption_str
+        puts caption_str
+      end
       puts "◆→終了:#{@titles['texequation']}←◆"
       blank
     end
@@ -203,25 +266,33 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header id, caption if caption.present?
+        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+          table_header id, caption
+          blank
+        end
+        return if rows.empty?
+        table_begin rows.first.size
+        if sepidx
+          sepidx.times do
+            tr(rows.shift.map { |s| th(s) })
+          end
+          rows.each do |cols|
+            tr(cols.map { |s| td(s) })
+          end
+        else
+          rows.each do |cols|
+            h, *cs = *cols
+            tr([th(h)] + cs.map { |s| td(s) })
+          end
+        end
+        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+          blank
+          table_header id, caption
+        end
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
-      table_begin rows.first.size
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
-      end
+
       table_end
     end
 

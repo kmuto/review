@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -338,7 +338,9 @@ module ReVIEW
 
     def quotedlist(lines, css_class, caption)
       print %Q(<list type='#{css_class}'>)
-      puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+        puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>"
+      end
       print '<pre>'
       no = 1
       lines.each do |line|
@@ -353,7 +355,11 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
-      puts '</pre></list>'
+      print '</pre>'
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>"
+      end
+      puts '</list>'
     end
     private :quotedlist
 
@@ -397,20 +403,30 @@ module ReVIEW
     def image_image(id, caption, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
+      if @book.config['caption_position']['image'] != 'bottom'
+        image_header id, caption
+      end
       puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} />)
-      image_header id, caption
+      if @book.config['caption_position']['image'] == 'bottom'
+        image_header id, caption
+      end
       puts '</img>'
     end
 
     def image_dummy(id, caption, lines)
       puts '<img>'
+      if @book.config['caption_position']['image'] != 'bottom'
+        image_header id, caption
+      end
       print %Q(<pre aid:pstyle="dummyimage">)
       lines.each do |line|
         print detab(line)
         print "\n"
       end
       print '</pre>'
-      image_header id, caption
+      if @book.config['caption_position']['image'] == 'bottom'
+        image_header id, caption
+      end
       puts '</img>'
       warn "image not bound: #{id}"
     end
@@ -426,12 +442,17 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       @texblockequation += 1
+      caption_str = nil
       if id
         puts '<equationblock>'
         if get_chap.nil?
-          puts %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+          caption_str = %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
         else
-          puts %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+          caption_str = %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+        end
+
+        if @book.config['caption_position']['equation'] != 'bottom'
+          puts caption_str
         end
       end
 
@@ -442,6 +463,9 @@ module ReVIEW
       puts '</replace>'
 
       if id
+        if @book.config['caption_position']['equation'] == 'bottom'
+          puts caption_str
+        end
         puts '</equationblock>'
       end
     end
@@ -488,33 +512,40 @@ module ReVIEW
       end
 
       begin
-        table_header id, caption if caption.present?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      return if rows.empty?
+        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+          table_header id, caption
+        end
+        return if rows.empty?
 
-      if tablewidth.nil?
-        print '<tbody>'
-      else
-        print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{col}">)
-      end
+        if tablewidth.nil?
+          print '<tbody>'
+        else
+          print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{col}">)
+        end
 
-      if sepidx
-        sepidx.times do |y|
-          if tablewidth.nil?
-            puts %Q(<tr type="header">#{rows.shift}</tr>)
-          else
-            i = 0
-            rows.shift.split("\t").each_with_index do |cell, x|
-              print %Q(<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
-              i += 1
+        if sepidx
+          sepidx.times do |y|
+            if tablewidth.nil?
+              puts %Q(<tr type="header">#{rows.shift}</tr>)
+            else
+              i = 0
+              rows.shift.split("\t").each_with_index do |cell, x|
+                print %Q(<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
+                i += 1
+              end
             end
           end
         end
+        trputs(tablewidth, rows, cellwidth, sepidx)
+        print '</tbody>'
+        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+          table_header id, caption
+        end
+        puts '</table>'
+      rescue KeyError
+        error "no such table: #{id}"
       end
-      trputs(tablewidth, rows, cellwidth, sepidx)
-      puts '</tbody></table>'
+
       @tsize = nil
     end
 
@@ -572,8 +603,13 @@ module ReVIEW
       if @chapter.image(id).bound?
         metrics = parse_metric('idgxml', metric)
         puts '<table>'
-        table_header id, caption if caption.present?
+        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+          table_header id, caption
+        end
         puts %Q(<imgtable><Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} /></imgtable>)
+        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+          table_header id, caption
+        end
         puts '</table>'
       else
         warn "image not bound: #{id}" if @strict
@@ -971,6 +1007,8 @@ module ReVIEW
     end
 
     def syntaxblock(type, lines, caption)
+      titleopentag = nil
+      titleclosetag = nil
       if caption.present?
         titleopentag = %Q(caption aid:pstyle="#{type}-title")
         titleclosetag = 'caption'
@@ -978,6 +1016,9 @@ module ReVIEW
           titleopentag = %Q(floattitle type="insn")
           titleclosetag = 'floattitle'
         end
+      end
+
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
         puts %Q(<#{type}><#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
       else
         puts "<#{type}>"
@@ -996,6 +1037,10 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
+
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts %Q(<#{type}><#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
+      end
       puts "</#{type}>"
     end
 
@@ -1010,12 +1055,19 @@ module ReVIEW
     def indepimage(_lines, id, caption = nil, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
+      if @book.config['caption_position']['image'] != 'bottom' && caption.present?
+        puts %Q(<caption>#{compile_inline(caption)}</caption>)
+      end
+
       begin
         puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}"#{metrics} />)
       rescue
         warn %Q(image not bound: #{id})
       end
-      puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+
+      if @book.config['caption_position']['image'] == 'bottom' && caption.present?
+        puts %Q(<caption>#{compile_inline(caption)}</caption>)
+      end
       puts '</img>'
     end
 

@@ -147,17 +147,28 @@ module ReVIEW
       blank
     end
 
+    def list(lines, id, caption, lang = nil)
+      super(lines, id, caption, lang)
+      blank
+    end
+
     def list_body(_id, lines, _lang)
       lines.each do |line|
         puts detab(line)
       end
-      blank
     end
 
     def base_block(_type, lines, caption = nil)
       blank
-      puts compile_inline(caption) if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+        puts compile_inline(caption)
+      end
+
       puts lines.join("\n")
+
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts compile_inline(caption)
+      end
       blank
     end
 
@@ -174,9 +185,14 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
-      puts compile_inline(caption) if caption.present?
+      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+        puts compile_inline(caption)
+      end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
+      end
+      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+        puts compile_inline(caption)
       end
       blank
     end
@@ -207,16 +223,23 @@ module ReVIEW
     end
 
     def texequation(lines, id = nil, caption = '')
+      caption_str = nil
       if id
         blank
         if get_chap
-          puts "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+          caption_str = "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         else
-          puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+          caption_str = "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        end
+        if @book.config['caption_position']['equation'] != 'bottom'
+          puts caption_str
         end
       end
 
       puts lines.join("\n")
+      if @book.config['caption_position']['equation'] == 'bottom' && id
+        puts caption_str
+      end
       blank
     end
 
@@ -236,24 +259,32 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        table_header(id, caption) if caption.present?
+        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+          table_header(id, caption)
+          blank
+        end
+        return if rows.empty?
+        table_begin rows.first.size
+        if sepidx
+          sepidx.times do
+            tr(rows.shift.map { |s| th(s) })
+          end
+          rows.each do |cols|
+            tr(cols.map { |s| td(s) })
+          end
+        else
+          rows.each do |cols|
+            h, *cs = *cols
+            tr([th(h)] + cs.map { |s| td(s) })
+          end
+        end
+
+        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+          blank
+          table_header(id, caption)
+        end
       rescue KeyError
         error "no such table: #{id}"
-      end
-      return if rows.empty?
-      table_begin rows.first.size
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
       end
       table_end
     end
@@ -266,7 +297,6 @@ module ReVIEW
       else
         puts "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [@chapter.table(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
       end
-      blank
     end
 
     def table_begin(_ncols)
