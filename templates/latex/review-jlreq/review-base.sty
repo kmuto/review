@@ -47,6 +47,9 @@
 
 \newcommand{\reviewindepimagecaption[2]}{\@makecaption{}{#2}}
 
+\DeclareRobustCommand{\reviewincludegraphics}[2][]{%
+  \includegraphics[#1]{#2}}
+
 % 表
 \newenvironment{reviewtablesetup}{%
 }{}
