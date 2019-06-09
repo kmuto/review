@@ -95,12 +95,12 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles['list']}←◆"
       begin
-        if @book.config['caption_position']['list'] != 'bottom'
+        if cap_top?('list')
           list_header id, caption, lang
           blank
         end
         list_body id, lines, lang
-        if @book.config['caption_position']['list'] == 'bottom'
+        unless cap_top?('list')
           blank
           list_header id, caption, lang
         end
@@ -129,13 +129,13 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles[type]}←◆"
       blank
-      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+      if cap_top?('list') && caption.present?
         puts "■#{compile_inline(caption)}"
       end
 
       puts lines.join("\n")
 
-      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+      if !cap_top?('list') && caption.present?
         puts "■#{compile_inline(caption)}"
       end
       puts "◆→終了:#{@titles[type]}←◆"
@@ -155,12 +155,12 @@ module ReVIEW
       puts "◆→開始:#{@titles['list']}←◆"
 
       begin
-        if @book.config['caption_position']['list'] != 'bottom'
+        if cap_top?('list')
           list_header id, caption, lang
           blank
         end
         listnum_body lines, lang
-        if @book.config['caption_position']['list'] == 'bottom'
+        unless cap_top?('list')
           blank
           list_header id, caption, lang
         end
@@ -172,13 +172,13 @@ module ReVIEW
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
       puts "◆→開始:#{@titles['emlist']}←◆"
-      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+      if cap_top?('list') && caption.present?
         puts "■#{compile_inline(caption)}"
       end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
-      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+      if !cap_top?('list') && caption.present?
         puts "■#{compile_inline(caption)}"
       end
       puts "◆→終了:#{@titles['emlist']}←◆"
@@ -205,7 +205,7 @@ module ReVIEW
         caption_str = "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
       end
 
-      if @book.config['caption_position']['image'] != 'bottom'
+      if cap_top?('image')
         puts caption_str
         blank
       end
@@ -217,7 +217,7 @@ module ReVIEW
           puts line
         end
       end
-      if @book.config['caption_position']['image'] == 'bottom'
+      unless cap_top?('image')
         blank
         puts caption_str
       end
@@ -235,13 +235,13 @@ module ReVIEW
         else
           caption_str = "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         end
-        if @book.config['caption_position']['equation'] != 'bottom'
+        if cap_top?('equation')
           puts caption_str
         end
       end
       puts lines.join("\n")
 
-      if @book.config['caption_position']['equation'] == 'bottom' && caption_str
+      if !cap_top?('equation') && caption_str
         puts caption_str
       end
       puts "◆→終了:#{@titles['texequation']}←◆"
@@ -266,7 +266,7 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+        if cap_top?('table') && caption.present?
           table_header id, caption
           blank
         end
@@ -285,7 +285,7 @@ module ReVIEW
             tr([th(h)] + cs.map { |s| td(s) })
           end
         end
-        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+        if !cap_top?('table') && caption.present?
           blank
           table_header id, caption
         end

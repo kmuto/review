@@ -400,7 +400,7 @@ module ReVIEW
         @doc_status[:caption] = nil
       end
 
-      if @book.config['caption_position']['list'] != 'bottom' && caption_str
+      if cap_top?('list') && caption_str
         puts caption_str
       end
 
@@ -412,7 +412,7 @@ module ReVIEW
       print body
       puts macro('end', command)
 
-      if @book.config['caption_position']['list'] == 'bottom' && caption_str
+      if !cap_top?('list') && caption_str
         puts caption_str
       end
 
@@ -494,7 +494,7 @@ module ReVIEW
     end
 
     def image_image(id, caption, metric)
-      if @book.config['caption_position']['image'] != 'bottom'
+      if cap_top?('image')
         output_caption(caption, 'reviewimagecaption')
         puts macro('label', image_label(id))
       end
@@ -508,7 +508,7 @@ module ReVIEW
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
 
-      if @book.config['caption_position']['image'] == 'bottom'
+      unless cap_top?('image')
         output_caption(caption, 'reviewimagecaption')
         puts macro('label', image_label(id))
       end
@@ -517,7 +517,7 @@ module ReVIEW
 
     def image_dummy(id, caption, lines)
       warn "image not bound: #{id}"
-      if @book.config['caption_position']['image'] != 'bottom'
+      if cap_top?('image')
         output_caption(caption, 'reviewimagecaption')
         puts macro('label', image_label(id))
       end
@@ -529,7 +529,7 @@ module ReVIEW
         puts detab(line.rstrip)
       end
 
-      if @book.config['caption_position']['image'] == 'bottom'
+      unless cap_top?('image')
         output_caption(caption, 'reviewimagecaption')
         puts macro('label', image_label(id))
       end
@@ -589,7 +589,7 @@ module ReVIEW
       if @chapter.image(id).path
         puts "\\begin{reviewimage}%%#{id}"
 
-        if @book.config['caption_position']['image'] != 'bottom' && caption_str
+        if cap_top?('image') && caption_str
           puts caption_str
         end
 
@@ -602,7 +602,7 @@ module ReVIEW
         warn "image not bound: #{id}"
         puts '\begin{reviewdummyimage}'
 
-        if @book.config['caption_position']['image'] != 'bottom' && caption_str
+        if cap_top?('image') && caption_str
           puts caption_str
         end
 
@@ -612,7 +612,7 @@ module ReVIEW
         end
       end
 
-      if @book.config['caption_position']['image'] == 'bottom' && caption_str
+      if !cap_top?('image') && caption_str
         puts caption_str
       end
 
@@ -685,7 +685,7 @@ module ReVIEW
         else
           puts "\\begin{table}%%#{id}"
         end
-        if @book.config['caption_position']['table'] != 'bottom'
+        if cap_top?('table')
           output_caption(caption, 'reviewtablecaption')
         end
       end
@@ -791,7 +791,7 @@ module ReVIEW
       puts macro('end', 'reviewtable')
 
       if @table_caption
-        if @book.config['caption_position']['table'] == 'bottom'
+        unless cap_top?('table')
           output_caption(@table_caption, 'reviewtablecaption')
         end
 
@@ -821,7 +821,7 @@ module ReVIEW
           @table_caption = caption
           puts "\\begin{table}[h]%%#{id}"
 
-          if @book.config['caption_position']['table'] != 'bottom'
+          if cap_top?('table')
             output_caption(caption, 'reviewimgtablecaption')
           end
         end
@@ -832,7 +832,7 @@ module ReVIEW
       imgtable_image(id, caption, metric)
 
       if @table_caption
-        if @book.config['caption_position']['table'] == 'bottom'
+        unless cap_top?('table')
           output_caption(caption, 'reviewimgtablecaption')
         end
 
@@ -881,7 +881,7 @@ module ReVIEW
         end
       end
 
-      if @book.config['caption_position']['equation'] != 'bottom' && caption_str
+      if cap_top?('equation') && caption_str
         puts caption_str
       end
 
@@ -892,7 +892,7 @@ module ReVIEW
       puts macro('end', 'equation*')
 
       if id
-        if @book.config['caption_position']['equation'] == 'bottom' && caption_str
+        if !cap_top?('equation') && caption_str
           puts caption_str
         end
         puts macro('end', 'reviewequationblock')

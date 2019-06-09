@@ -160,13 +160,13 @@ module ReVIEW
 
     def base_block(_type, lines, caption = nil)
       blank
-      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+      if cap_top?('list') && caption.present?
         puts compile_inline(caption)
       end
 
       puts lines.join("\n")
 
-      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+      if !cap_top?('list') && caption.present?
         puts compile_inline(caption)
       end
       blank
@@ -185,13 +185,13 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
-      if @book.config['caption_position']['list'] != 'bottom' && caption.present?
+      if cap_top?('list') && caption.present?
         puts compile_inline(caption)
       end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
-      if @book.config['caption_position']['list'] == 'bottom' && caption.present?
+      if !cap_top?('list') && caption.present?
         puts compile_inline(caption)
       end
       blank
@@ -231,13 +231,13 @@ module ReVIEW
         else
           caption_str = "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         end
-        if @book.config['caption_position']['equation'] != 'bottom'
+        if cap_top?('equation')
           puts caption_str
         end
       end
 
       puts lines.join("\n")
-      if @book.config['caption_position']['equation'] == 'bottom' && id
+      if !cap_top?('equation') && caption_str
         puts caption_str
       end
       blank
@@ -259,7 +259,7 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+        if cap_top?('table') && caption.present?
           table_header(id, caption)
           blank
         end
@@ -279,7 +279,7 @@ module ReVIEW
           end
         end
 
-        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+        if !cap_top?('table') && caption.present?
           blank
           table_header(id, caption)
         end

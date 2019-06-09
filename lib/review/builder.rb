@@ -99,6 +99,10 @@ module ReVIEW
       end
     end
 
+    def cap_top?(type)
+      @book.config['caption_position'][type] != 'bottom'
+    end
+
     def headline_prefix(level)
       @sec_counter.inc(level)
       anchor = @sec_counter.anchor(level)
@@ -122,11 +126,11 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        if @book.config['caption_position']['list'] != 'bottom'
+        if cap_top?('list')
           list_header id, caption, lang
         end
         list_body id, lines, lang
-        if @book.config['caption_position']['list'] == 'bottom'
+        unless cap_top?('list')
           list_header id, caption, lang
         end
       rescue KeyError
@@ -136,11 +140,11 @@ module ReVIEW
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        if @book.config['caption_position']['list'] != 'bottom'
+        if cap_top?('list')
           list_header id, caption, lang
         end
         listnum_body lines, lang
-        if @book.config['caption_position']['list'] == 'bottom'
+        unless cap_top?('list')
           list_header id, caption, lang
         end
       rescue KeyError
@@ -149,11 +153,11 @@ module ReVIEW
     end
 
     def source(lines, caption, lang = nil)
-      if @book.config['caption_position']['list'] != 'bottom'
+      if cap_top?('list')
         source_header caption
       end
       source_body lines, lang
-      if @book.config['caption_position']['list'] == 'bottom'
+      unless cap_top?('list')
         source_header caption
       end
     end
@@ -182,7 +186,7 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
+        if cap_top?('table') && caption.present?
           table_header id, caption
         end
 
@@ -202,7 +206,7 @@ module ReVIEW
           end
         end
 
-        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+        if !cap_top?('table') && caption.present?
           table_header id, caption
         end
 
