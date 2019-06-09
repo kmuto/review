@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2019 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -122,25 +122,40 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        list_header id, caption, lang
+        if @book.config['caption_position']['list'] != 'bottom'
+          list_header id, caption, lang
+        end
+        list_body id, lines, lang
+        if @book.config['caption_position']['list'] == 'bottom'
+          list_header id, caption, lang
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
     end
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        list_header id, caption, lang
+        if @book.config['caption_position']['list'] != 'bottom'
+          list_header id, caption, lang
+        end
+        listnum_body lines, lang
+        if @book.config['caption_position']['list'] == 'bottom'
+          list_header id, caption, lang
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
     end
 
     def source(lines, caption, lang = nil)
-      source_header caption
+      if @book.config['caption_position']['list'] != 'bottom'
+        source_header caption
+      end
       source_body lines, lang
+      if @book.config['caption_position']['list'] == 'bottom'
+        source_header caption
+      end
     end
 
     def image(lines, id, caption, metric = nil)
@@ -167,28 +182,34 @@ module ReVIEW
       rows = adjust_n_cols(rows)
 
       begin
-        if caption.present?
+        if @book.config['caption_position']['table'] != 'bottom' && caption.present?
           table_header id, caption
         end
+
+        return if rows.empty?
+        table_begin rows.first.size
+        if sepidx
+          sepidx.times do
+            tr(rows.shift.map { |s| th(s) })
+          end
+          rows.each do |cols|
+            tr(cols.map { |s| td(s) })
+          end
+        else
+          rows.each do |cols|
+            h, *cs = *cols
+            tr([th(h)] + cs.map { |s| td(s) })
+          end
+        end
+
+        if @book.config['caption_position']['table'] == 'bottom' && caption.present?
+          table_header id, caption
+        end
+
+        table_end
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
-      table_begin rows.first.size
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
-      end
-      table_end
     end
 
     def adjust_n_cols(rows)

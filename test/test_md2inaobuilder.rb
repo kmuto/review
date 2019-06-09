@@ -9,10 +9,7 @@ class MD2INAOBuilderTest < Test::Unit::TestCase
 
   def setup
     @builder = MD2INAOBuilder.new
-    @config = {
-      'secnolevel' => 2,
-      'stylesheet' => nil
-    }
+    @config = ReVIEW::Configure.values
     @book = Book::Base.new('.')
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)

@@ -377,26 +377,33 @@ module ReVIEW
     end
 
     def common_code_block(id, lines, command, caption, _lang)
-      @doc_status[:caption] = true
       unless @book.config.check_version('2', exception: false)
         puts '\\begin{reviewlistblock}'
       end
+
+      caption_str = nil
       if caption.present?
+        @doc_status[:caption] = true
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
-          puts macro(command + 'caption', compile_inline(caption))
+          caption_str = macro(command + 'caption', compile_inline(caption))
         else
           begin
             if get_chap.nil?
-              puts macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+              caption_str = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
             else
-              puts macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+              caption_str = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
             end
           rescue KeyError
             error "no such list: #{id}"
           end
         end
+        @doc_status[:caption] = nil
       end
-      @doc_status[:caption] = nil
+
+      if @book.config['caption_position']['list'] != 'bottom' && caption_str
+        puts caption_str
+      end
+
       body = ''
       lines.each_with_index do |line, idx|
         body.concat(yield(line, idx))
@@ -404,6 +411,11 @@ module ReVIEW
       puts macro('begin', command)
       print body
       puts macro('end', command)
+
+      if @book.config['caption_position']['list'] == 'bottom' && caption_str
+        puts caption_str
+      end
+
       unless @book.config.check_version('2', exception: false)
         puts '\\end{reviewlistblock}'
       end
@@ -467,7 +479,26 @@ module ReVIEW
       array.join(',')
     end
 
+    def output_caption(caption, tag)
+      return nil unless caption.present?
+
+      @doc_status[:caption] = true
+      caption_str = nil
+      if @book.config.check_version('2', exception: false) && !%w[reviewtablecaption reviewimgtablecaption].include?(tag)
+        caption_str = macro('caption', compile_inline(caption)) if caption.present?
+      else
+        caption_str = macro(tag, compile_inline(caption)) if caption.present?
+      end
+      @doc_status[:caption] = nil
+      puts caption_str
+    end
+
     def image_image(id, caption, metric)
+      if @book.config['caption_position']['image'] != 'bottom'
+        output_caption(caption, 'reviewimagecaption')
+        puts macro('label', image_label(id))
+      end
+
       metrics = parse_metric('latex', metric)
       # image is always bound here
       puts "\\begin{reviewimage}%%#{id}"
@@ -476,34 +507,33 @@ module ReVIEW
       else
         puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
-      @doc_status[:caption] = true
 
-      if @book.config.check_version('2', exception: false)
-        puts macro('caption', compile_inline(caption)) if caption.present?
-      else
-        puts macro('reviewimagecaption', compile_inline(caption)) if caption.present?
+      if @book.config['caption_position']['image'] == 'bottom'
+        output_caption(caption, 'reviewimagecaption')
+        puts macro('label', image_label(id))
       end
-      @doc_status[:caption] = nil
-      puts macro('label', image_label(id))
       puts '\end{reviewimage}'
     end
 
     def image_dummy(id, caption, lines)
       warn "image not bound: #{id}"
+      if @book.config['caption_position']['image'] != 'bottom'
+        output_caption(caption, 'reviewimagecaption')
+        puts macro('label', image_label(id))
+      end
+
       puts '\begin{reviewdummyimage}'
       # path = @chapter.image(id).path
       puts "--[[path = #{id} (#{existence(id)})]]--"
       lines.each do |line|
         puts detab(line.rstrip)
       end
-      puts macro('label', image_label(id))
-      @doc_status[:caption] = true
-      if @book.config.check_version('2', exception: false)
-        puts macro('caption', compile_inline(caption)) if caption.present?
-      else
-        puts macro('reviewimagecaption', compile_inline(caption)) if caption.present?
+
+      if @book.config['caption_position']['image'] == 'bottom'
+        output_caption(caption, 'reviewimagecaption')
+        puts macro('label', image_label(id))
       end
-      @doc_status[:caption] = nil
+
       puts '\end{reviewdummyimage}'
     end
 
@@ -547,10 +577,22 @@ module ReVIEW
     private :column_label
 
     def indepimage(lines, id, caption = nil, metric = nil)
+      caption_str = nil
+      if caption.present?
+        @doc_status[:caption] = true
+        caption_str = macro('reviewindepimagecaption', %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}))
+        @doc_status[:caption] = nil
+      end
+
       metrics = parse_metric('latex', metric)
 
       if @chapter.image(id).path
         puts "\\begin{reviewimage}%%#{id}"
+
+        if @book.config['caption_position']['image'] != 'bottom' && caption_str
+          puts caption_str
+        end
+
         if metrics.present?
           puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
         else
@@ -559,18 +601,20 @@ module ReVIEW
       else
         warn "image not bound: #{id}"
         puts '\begin{reviewdummyimage}'
+
+        if @book.config['caption_position']['image'] != 'bottom' && caption_str
+          puts caption_str
+        end
+
         puts "--[[path = #{id} (#{existence(id)})]]--"
         lines.each do |line|
           puts detab(line.rstrip)
         end
       end
 
-      @doc_status[:caption] = true
-      if caption.present?
-        puts macro('reviewindepimagecaption',
-                   %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}))
+      if @book.config['caption_position']['image'] == 'bottom' && caption_str
+        puts caption_str
       end
-      @doc_status[:caption] = nil
 
       if @chapter.image(id).path
         puts '\end{reviewimage}'
@@ -597,65 +641,55 @@ module ReVIEW
 
       begin
         table_header(id, caption) if caption.present?
+
+        return if rows.empty?
+        table_begin(rows.first.size)
+        if sepidx
+          sepidx.times do
+            cno = -1
+            tr(rows.shift.map do |s|
+                 cno += 1
+                 th(s, @cellwidth[cno])
+               end)
+          end
+          rows.each do |cols|
+            cno = -1
+            tr(cols.map do |s|
+                 cno += 1
+                 td(s, @cellwidth[cno])
+               end)
+          end
+        else
+          rows.each do |cols|
+            h, *cs = *cols
+            cno = 0
+            tr([th(h, @cellwidth[0])] +
+               cs.map do |s|
+                 cno += 1
+                 td(s, @cellwidth[cno])
+               end)
+          end
+        end
+
+        table_end
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
-      table_begin(rows.first.size)
-      if sepidx
-        sepidx.times do
-          cno = -1
-          tr(rows.shift.map do |s|
-               cno += 1
-               th(s, @cellwidth[cno])
-             end)
-        end
-        rows.each do |cols|
-          cno = -1
-          tr(cols.map do |s|
-               cno += 1
-               td(s, @cellwidth[cno])
-             end)
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          cno = 0
-          tr([th(h, @cellwidth[0])] +
-             cs.map do |s|
-               cno += 1
-               td(s, @cellwidth[cno])
-             end)
-        end
-      end
-      table_end
     end
 
     def table_header(id, caption)
-      if id.nil?
-        if caption.present?
-          @table_caption = true
-          @doc_status[:caption] = true
-          if @book.config.check_version('2', exception: false)
-            puts "\\begin{table}[h]%%#{id}"
-          else
-            puts "\\begin{table}%%#{id}"
-          end
-          puts macro('reviewtablecaption*', compile_inline(caption))
-          @doc_status[:caption] = nil
+      if caption.present?
+        @table_caption = caption
+        if @book.config.check_version('2', exception: false)
+          puts "\\begin{table}[h]%%#{id}"
+        else
+          puts "\\begin{table}%%#{id}"
         end
-      else
-        if caption.present?
-          @table_caption = true
-          @doc_status[:caption] = true
-          if @book.config.check_version('2', exception: false)
-            puts "\\begin{table}[h]%%#{id}"
-          else
-            puts "\\begin{table}%%#{id}"
-          end
-          puts macro('reviewtablecaption', compile_inline(caption))
-          @doc_status[:caption] = nil
+        if @book.config['caption_position']['table'] != 'bottom'
+          output_caption(caption, 'reviewtablecaption')
         end
+      end
+      if id
         puts macro('label', table_label(id))
       end
     end
@@ -755,7 +789,15 @@ module ReVIEW
 
     def table_end
       puts macro('end', 'reviewtable')
-      puts '\end{table}' if @table_caption
+
+      if @table_caption
+        if @book.config['caption_position']['table'] == 'bottom'
+          output_caption(@table_caption, 'reviewtablecaption')
+        end
+
+        puts '\end{table}'
+      end
+
       @table_caption = nil
       @tsize = nil
       @latex_tsize = nil
@@ -776,11 +818,12 @@ module ReVIEW
 
       begin
         if caption.present?
-          @table_caption = true
-          @doc_status[:caption] = true
+          @table_caption = caption
           puts "\\begin{table}[h]%%#{id}"
-          puts macro('reviewimgtablecaption', compile_inline(caption))
-          @doc_status[:caption] = nil
+
+          if @book.config['caption_position']['table'] != 'bottom'
+            output_caption(caption, 'reviewimgtablecaption')
+          end
         end
         puts macro('label', table_label(id))
       rescue ReVIEW::KeyError
@@ -788,7 +831,14 @@ module ReVIEW
       end
       imgtable_image(id, caption, metric)
 
-      puts '\end{table}' if @table_caption
+      if @table_caption
+        if @book.config['caption_position']['table'] == 'bottom'
+          output_caption(caption, 'reviewimgtablecaption')
+        end
+
+        puts '\end{table}'
+      end
+
       @table_caption = nil
       blank
     end
@@ -821,14 +871,18 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       blank
-
+      caption_str = nil
       if id
         puts macro('begin', 'reviewequationblock')
         if get_chap.nil?
-          puts macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+          caption_str = macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
         else
-          puts macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+          caption_str = macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
         end
+      end
+
+      if @book.config['caption_position']['equation'] != 'bottom' && caption_str
+        puts caption_str
       end
 
       puts macro('begin', 'equation*')
@@ -838,6 +892,9 @@ module ReVIEW
       puts macro('end', 'equation*')
 
       if id
+        if @book.config['caption_position']['equation'] == 'bottom' && caption_str
+          puts caption_str
+        end
         puts macro('end', 'reviewequationblock')
       end
 

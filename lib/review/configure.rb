@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012-2018 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2012-2019 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -101,6 +101,12 @@ module ReVIEW
           'lineheight' => 10 * 1.2,
           'pdfcrop_pixelize_cmd' => 'pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O',
           'dvipng_cmd' => 'dvipng -T tight -z 9 -p %p -l %p -o %o %i'
+        },
+        'caption_position' => {
+          'list' => 'top',
+          'image' => 'bottom',
+          'table' => 'top',
+          'equation' => 'top'
         }
       ]
       conf.maker = nil

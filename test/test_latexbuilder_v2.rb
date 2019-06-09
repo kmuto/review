@@ -567,7 +567,7 @@ class LATEXBuidlerV2Test < Test::Unit::TestCase
 
   def test_emtable
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal "\\begin{table}[h]%%\n\\reviewtablecaption*{foo}\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n\\end{table}\n\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n",
+    assert_equal "\\begin{table}[h]%%\n\\reviewtablecaption{foo}\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n\\end{table}\n\n\\begin{reviewtable}{|l|l|}\n\\hline\n\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline\nccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline\n\\end{reviewtable}\n",
                  actual
   end
 

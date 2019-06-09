@@ -9,10 +9,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
 
   def setup
     @builder = MARKDOWNBuilder.new
-    @config = {
-      'secnolevel' => 2,
-      'stylesheet' => nil
-    }
+    @config = ReVIEW::Configure.values
     @book = Book::Base.new('.')
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -171,6 +168,6 @@ BBB
 
   def test_ruby
     actual = compile_block('@<ruby>{謳,うた}い文句')
-    assert_equal "<ruby><rb>謳</rb><rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句\n\n", actual
+    assert_equal "<ruby>謳<rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句\n\n", actual
   end
 end
