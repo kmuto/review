@@ -472,15 +472,15 @@ module ReVIEW
       # image is always bound here
       puts "\\begin{reviewimage}%%#{id}"
 
-      tag = 'reviewincludegraphics'
+      command = 'reviewincludegraphics'
       if @book.config.check_version('2', exception: false)
-        tag = 'includegraphics'
+        command = 'includegraphics'
       end
 
       if metrics.present?
-        puts "\\#{tag}[#{metrics}]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[#{metrics}]{#{@chapter.image(id).path}}"
       else
-        puts "\\#{tag}[width=\\maxwidth]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       @doc_status[:caption] = true
 
@@ -558,15 +558,15 @@ module ReVIEW
       if @chapter.image(id).path
         puts "\\begin{reviewimage}%%#{id}"
 
-        tag = 'reviewincludegraphics'
+        command = 'reviewincludegraphics'
         if @book.config.check_version('2', exception: false)
-          tag = 'includegraphics'
+          command = 'includegraphics'
         end
 
         if metrics.present?
-          puts "\\#{tag}[#{metrics}]{#{@chapter.image(id).path}}"
+          puts "\\#{command}[#{metrics}]{#{@chapter.image(id).path}}"
         else
-          puts "\\#{tag}[width=\\maxwidth]{#{@chapter.image(id).path}}"
+          puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
         end
       else
         warn "image not bound: #{id}"
@@ -810,15 +810,15 @@ module ReVIEW
       # image is always bound here
       puts "\\begin{reviewimage}%%#{id}"
 
-      tag = 'reviewincludegraphics'
+      command = 'reviewincludegraphics'
       if @book.config.check_version('2', exception: false)
-        tag = 'includegraphics'
+        command = 'includegraphics'
       end
 
       if metrics.present?
-        puts "\\#{tag}[#{metrics}]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[#{metrics}]{#{@chapter.image(id).path}}"
       else
-        puts "\\#{tag}[width=\\maxwidth]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       puts '\end{reviewimage}'
     end
@@ -1172,11 +1172,11 @@ module ReVIEW
 
     def inline_icon(id)
       if @chapter.image(id).path
-        tag = 'reviewincludegraphics'
+        command = 'reviewincludegraphics'
         if @book.config.check_version('2', exception: false)
-          tag = 'includegraphics'
+          command = 'includegraphics'
         end
-        macro(tag, @chapter.image(id).path)
+        macro(command, @chapter.image(id).path)
       else
         warn "image not bound: #{id}"
         "\\verb|--[[path = #{id} (#{existence(id)})]]--|"
