@@ -280,12 +280,12 @@ class LATEXBuidlerTest < Test::Unit::TestCase
 
   def test_dlist
     actual = compile_block(": foo\n  foo.\n  bar.\n")
-    assert_equal %Q(\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.bar.\n\\end{description}\n), actual
+    assert_equal %Q(\n\\begin{description}\n\\item[foo] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n), actual
   end
 
   def test_dlist_with_bracket
     actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
-    assert_equal %Q(\n\\begin{description}\n\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\\nfoo.bar.\n\\end{description}\n), actual
+    assert_equal %Q(\n\\begin{description}\n\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\\nfoo.\nbar.\n\\end{description}\n), actual
   end
 
   def test_dlist_beforeulol
@@ -783,8 +783,10 @@ EOS
     expected = <<-EOS
 
 \\begin{itemize}
-\\item AAA{-}AA
-\\item BBB{-}BB
+\\item AAA
+{-}AA
+\\item BBB
+{-}BB
 \\end{itemize}
 EOS
     actual = compile_block(src)
