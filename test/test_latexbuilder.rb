@@ -301,6 +301,21 @@ class LATEXBuidlerTest < Test::Unit::TestCase
   def test_cmd_caption
     actual = compile_block("//cmd[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(\n\\begin{reviewlistblock}\n\\reviewcmdcaption{cap1}\n\\begin{reviewcmd}\nfoo\nbar\n\nbuz\n\\end{reviewcmd}\n\\end{reviewlistblock}\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//cmd[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistblock}
+\\begin{reviewcmd}
+foo
+bar
+
+buz
+\\end{reviewcmd}
+\\reviewcmdcaption{cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd_lst
