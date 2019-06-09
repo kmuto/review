@@ -246,7 +246,6 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      blank
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -259,13 +258,15 @@ module ReVIEW
         rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
+      return if rows.empty?
+
+      blank
 
       begin
         if cap_top?('table') && caption.present?
           table_header(id, caption)
           blank
         end
-        return if rows.empty?
         table_begin rows.first.size
         if sepidx
           sepidx.times do
