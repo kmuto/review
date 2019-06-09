@@ -194,6 +194,19 @@ class TOPBuidlerTest < Test::Unit::TestCase
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     assert_equal %Q(◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:リスト←◆
+foo
+bar
+
+リスト1.1　this is ★test☆<&>_
+◆→終了:リスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -202,11 +215,37 @@ class TOPBuidlerTest < Test::Unit::TestCase
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     assert_equal %Q(◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:リスト←◆
+ 1: foo
+ 2: bar
+
+リスト1.1　this is ★test☆<&>_
+◆→終了:リスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     assert_equal %Q(◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+ 1: foo
+ 2: bar
+
+■this is ★test☆<&>_
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_bib
@@ -221,6 +260,31 @@ class TOPBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n),
                  actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+表1.1　FOO
+
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+
+表1.1　FOO
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_table
@@ -280,6 +344,18 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
     actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
     assert_equal %Q(◆→開始:図←◆\n◆→./images/chap1-sampleimg.png←◆\n\n図1.1　sample photo\n◆→終了:図←◆\n\n), actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
+    expected = <<-EOS
+◆→開始:図←◆
+図1.1　sample photo
+
+◆→./images/chap1-sampleimg.png←◆
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -429,6 +505,19 @@ EOS
 式1.1　The Equivalence of Mass ▲and☆ Energy
 e=mc^2
 ◆→終了:TeX式←◆
+
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = <<-EOS
+式1.1
+
+◆→開始:TeX式←◆
+e=mc^2
+◆→終了:TeX式←◆
+式1.1　The Equivalence of Mass ▲and☆ Energy
 
 EOS
     actual = compile_block(src)

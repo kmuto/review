@@ -152,8 +152,8 @@ module ReVIEW
     end
 
     def listnum(lines, id, caption, lang = nil)
+      blank
       puts "◆→開始:#{@titles['list']}←◆"
-
       begin
         if cap_top?('list')
           list_header id, caption, lang
@@ -167,6 +167,8 @@ module ReVIEW
       rescue KeyError
         error "no such list: #{id}"
       end
+      puts "◆→終了:#{@titles['list']}←◆"
+      blank
     end
 
     def emlistnum(lines, caption = nil, _lang = nil)
@@ -179,6 +181,7 @@ module ReVIEW
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
       if !cap_top?('list') && caption.present?
+        blank
         puts "■#{compile_inline(caption)}"
       end
       puts "◆→終了:#{@titles['emlist']}←◆"
@@ -189,8 +192,6 @@ module ReVIEW
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
-      puts "◆→終了:#{@titles['list']}←◆"
-      blank
     end
 
     def image(lines, id, caption, metric = nil)
@@ -241,10 +242,10 @@ module ReVIEW
       end
       puts lines.join("\n")
 
+      puts "◆→終了:#{@titles['texequation']}←◆"
       if !cap_top?('equation') && caption_str
         puts caption_str
       end
-      puts "◆→終了:#{@titles['texequation']}←◆"
       blank
     end
 
