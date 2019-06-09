@@ -268,9 +268,13 @@ module ReVIEW
       "<span type='list'>#{super(id)}</span>"
     end
 
-    def list_header(id, caption, _lang)
+    def list(lines, id, caption, lang = nil)
       puts '<codelist>'
-      return true unless caption.present?
+      super(lines, id, caption, lang)
+      puts '</codelist>'
+    end
+
+    def list_header(id, caption, _lang)
       if get_chap.nil?
         puts %Q(<caption>#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
       else
@@ -297,7 +301,13 @@ module ReVIEW
     def list_body(_id, lines, _lang)
       print '<pre>'
       codelines_body(lines)
-      puts '</pre></codelist>'
+      puts '</pre>'
+    end
+
+    def listnum(lines, id, caption, lang = nil)
+      puts '<codelist>'
+      super(lines, id, caption, lang)
+      puts '</codelist>'
     end
 
     def emlist(lines, caption = nil, _lang = nil)
@@ -329,7 +339,7 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
-      puts '</pre></codelist>'
+      puts '</pre>'
     end
 
     def cmd(lines, caption = nil)
@@ -1039,7 +1049,7 @@ module ReVIEW
       end
 
       if !cap_top?('list') && caption.present?
-        puts %Q(<#{type}><#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
+        puts %Q(<#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
       end
       puts "</#{type}>"
     end
@@ -1166,15 +1176,26 @@ module ReVIEW
       error "unknown chapter: #{id}"
     end
 
-    def source_header(caption)
+    def source(lines, caption, lang = nil)
       puts '<source>'
+      if cap_top?('list')
+        source_header caption
+      end
+      source_body lines, lang
+      unless cap_top?('list')
+        source_header caption
+      end
+      puts '</source>'
+    end
+
+    def source_header(caption)
       puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
     end
 
     def source_body(lines, _lang)
       puts '<pre>'
       codelines_body(lines)
-      puts '</pre></source>'
+      puts '</pre>'
     end
 
     def bibpaper(lines, id, caption)

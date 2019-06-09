@@ -136,6 +136,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_emtable
     actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
     assert_equal %Q(<table><caption>foo</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody><caption>foo</caption></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
   end
 
   def test_inline_br
@@ -256,11 +260,18 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_emlist
     actual = compile_block("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></list>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<list type='emlist'><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption></list>), actual
   end
 
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<list type='emlistnum'><caption aid:pstyle='emlistnum-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre></list>), actual
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<list type='emlistnum'><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre><caption aid:pstyle='emlistnum-title'>this is <b>test</b>&lt;&amp;&gt;_</caption></list>), actual
   end
 
   def test_emlist_listinfo
@@ -286,6 +297,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></codelist>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<codelist><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>), actual
   end
 
   def test_listnum
@@ -294,6 +309,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     end
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre></codelist>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<codelist><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>), actual
   end
 
   def test_listnum_linenum
@@ -317,18 +336,54 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @config['listinfo'] = true
     actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<insn><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></insn>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<insn><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle></insn>), actual
   end
 
   def test_box
     @config['listinfo'] = true
     actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></box>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<box><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption></box>), actual
   end
 
   def test_box_non_listinfo
     @config['listinfo'] = nil
     actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption>test1\ntest1.5\n\ntest<i>2</i>\n</box>), actual
+  end
+
+  def test_other_lists
+    src = <<-EOS
+//cmd[CMD]{
+foo
+//}
+
+//source[SOURCE]{
+foo
+//}
+EOS
+    actual = compile_block(src)
+    expected = <<-EOS.chomp
+<list type='cmd'><caption aid:pstyle='cmd-title'>CMD</caption><pre>foo
+</pre></list><source><caption>SOURCE</caption><pre>foo
+</pre></source>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block(src)
+    expected = <<-EOS.chomp
+<list type='cmd'><pre>foo
+</pre><caption aid:pstyle='cmd-title'>CMD</caption></list><source><pre>foo
+</pre><caption>SOURCE</caption></source>
+EOS
+    assert_equal expected, actual
   end
 
   def test_flushright
@@ -360,6 +415,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
     actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
     assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" /><caption>図1.1　sample photo</caption></img>), actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
+    assert_equal %Q(<img><caption>図1.1　sample photo</caption><Image href="file://images/chap1-sampleimg.png" /></img>), actual
   end
 
   def test_image_with_metric
@@ -393,6 +452,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
     assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" /><caption>sample photo</caption></img>), actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    assert_equal %Q(<img><caption>sample photo</caption><Image href="file://images/chap1-sampleimg.png" /></img>), actual
   end
 
   def test_indepimage_without_caption
@@ -753,6 +816,11 @@ e=mc^2
 //}
 EOS
     expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><replace idref="texblock-1"><pre>e=mc^2</pre></replace></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><replace idref="texblock-1"><pre>e=mc^2</pre></replace><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
     actual = compile_block(src)
     assert_equal expected, actual
   end
