@@ -128,7 +128,6 @@ module ReVIEW
     def base_block(type, lines, caption = nil)
       blank
       puts "◆→開始:#{@titles[type]}←◆"
-      blank
       if cap_top?('list') && caption.present?
         puts "■#{compile_inline(caption)}"
       end
@@ -136,6 +135,7 @@ module ReVIEW
       puts lines.join("\n")
 
       if !cap_top?('list') && caption.present?
+        blank
         puts "■#{compile_inline(caption)}"
       end
       puts "◆→終了:#{@titles[type]}←◆"

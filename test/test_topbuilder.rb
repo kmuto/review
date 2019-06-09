@@ -248,6 +248,80 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_other_lists
+    src = <<-EOS
+//cmd[CMD]{
+foo
+//}
+
+//emlist[EMLIST]{
+foo
+//}
+
+//box[BOX]{
+foo
+//}
+
+//source[SOURCE]{
+foo
+//}
+EOS
+    actual = compile_block(src)
+    expected = <<-EOS
+◆→開始:コマンド←◆
+■CMD
+foo
+◆→終了:コマンド←◆
+
+◆→開始:インラインリスト←◆
+■EMLIST
+foo
+◆→終了:インラインリスト←◆
+
+◆→開始:書式←◆
+■BOX
+foo
+◆→終了:書式←◆
+
+◆→開始:ソースコードリスト←◆
+■SOURCE
+foo
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block(src)
+    expected = <<-EOS
+◆→開始:コマンド←◆
+foo
+
+■CMD
+◆→終了:コマンド←◆
+
+◆→開始:インラインリスト←◆
+foo
+
+■EMLIST
+◆→終了:インラインリスト←◆
+
+◆→開始:書式←◆
+foo
+
+■BOX
+◆→終了:書式←◆
+
+◆→開始:ソースコードリスト←◆
+foo
+
+■SOURCE
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
   def test_bib
     def @chapter.bibpaper(_id)
       Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
