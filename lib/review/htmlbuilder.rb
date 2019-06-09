@@ -424,7 +424,7 @@ module ReVIEW
       end
     end
 
-    def source_body(_id, lines, lang)
+    def source_body(lines, lang)
       print %Q(<pre class="source">)
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = lang
@@ -435,11 +435,16 @@ module ReVIEW
     def listnum(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="code">)
       begin
-        list_header id, caption, lang
+        if cap_top?('list')
+          list_header id, caption, lang
+        end
+        listnum_body lines, lang
+        unless cap_top?('list')
+          list_header id, caption, lang
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
       puts '</div>'
     end
 

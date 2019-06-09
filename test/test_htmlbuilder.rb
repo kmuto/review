@@ -467,6 +467,10 @@ EOS
 
     actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
     assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n), actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
+    assert_equal %Q(<div id="sampleimg" class="image">\n<p class="caption">\n図1.1: sample photo\n</p>\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n</div>\n), actual
   end
 
   def test_image_with_metric
@@ -511,6 +515,10 @@ EOS
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
     assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n), actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    assert_equal %Q(<div id="sampleimg" class="image">\n<p class="caption">\n図: sample photo\n</p>\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n</div>\n), actual
   end
 
   def test_indepimage_without_caption
@@ -584,6 +592,10 @@ EOS
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<div id="samplelist" class="caption-code">\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n</div>\n), actual
   end
 
   def test_inline_list
@@ -707,6 +719,11 @@ end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
     assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+
+    assert_equal %Q(<div id="samplelist" class="caption-code">\n<pre class="list highlight">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n</div>\n), actual
   end
 
   def test_list_rouge_lang
@@ -807,6 +824,30 @@ EOS
 102:   return true
 103: end
 </pre>
+</div>
+EOS
+
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block(<<-EOS)
+//firstlinenum[100]
+//listnum[samplelist][this is @<b>{test}<&>_][ruby]{
+def foo(a1, a2=:test)
+  (1..3).times{|i| a.include?(:foo)}
+  return true
+end
+//}
+EOS
+
+    expected = <<-EOS
+<div id="samplelist" class="code">
+<pre class="list language-ruby">100: def foo(a1, a2=:test)
+101:   (1..3).times{|i| a.include?(:foo)}
+102:   return true
+103: end
+</pre>
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 </div>
 EOS
 
@@ -991,6 +1032,10 @@ EOB
   def test_emlist_caption
     actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
     assert_equal %Q(<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
+    assert_equal %Q(<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n<p class="caption">cap1</p>\n</div>\n), actual
   end
 
   def test_emlist_with_tab
@@ -1037,6 +1082,18 @@ EOS
 </div>
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//firstlinenum[1000]\n//emlistnum[cap][text]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+<div class="emlistnum-code">
+<pre class="emlist language-text">1000: lineA
+1001: lineB
+</pre>
+<p class="caption">cap</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_with_4tab
@@ -1065,6 +1122,52 @@ EOS
   def test_cmd_caption
     actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
     assert_equal %Q(<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    assert_equal %Q(<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n<p class="caption">cap1</p>\n</div>\n), actual
+  end
+
+  def test_other_lists
+    src = <<-EOS
+//box[BOX]{
+foo
+//}
+
+//source[SOURCE]{
+foo
+//}
+EOS
+    actual = compile_block(src)
+    expected = <<-EOS
+<div class="syntax">
+<p class="caption">BOX</p>
+<pre class="syntax">foo
+</pre>
+</div>
+<div class="source-code">
+<p class="caption">SOURCE</p>
+<pre class="source">foo
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block(src)
+    expected = <<-EOS
+<div class="syntax">
+<pre class="syntax">foo
+</pre>
+<p class="caption">BOX</p>
+</div>
+<div class="source-code">
+<pre class="source">foo
+</pre>
+<p class="caption">SOURCE</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_texequation
@@ -1643,6 +1746,31 @@ EOS
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n),
                  actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+<div id="foo" class="table">
+<p class="caption">表1.1: FOO</p>
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+<div id="foo" class="table">
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+<p class="caption">表1.1: FOO</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_table
@@ -1657,6 +1785,19 @@ EOS
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     assert_equal %Q(<div class="table">\n<p class="caption">foo</p>\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n),
                  actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+<p class="caption">foo</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_imgtable
@@ -1668,6 +1809,11 @@ EOS
 
     actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
     expected = %Q(<div id="sampleimg" class="imgtable image">\n<p class="caption">表1.1: test for imgtable</p>\n<img src="images/chap1-sampleimg.png" alt="test for imgtable" />\n</div>\n)
+    assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
+    expected = %Q(<div id="sampleimg" class="imgtable image">\n<img src="images/chap1-sampleimg.png" alt="test for imgtable" />\n<p class="caption">表1.1: test for imgtable</p>\n</div>\n)
     assert_equal expected, actual
   end
 
@@ -1800,6 +1946,20 @@ EOS
 <pre>e=mc^2
 </pre>
 </div>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = <<-EOS
+<p><span class="eqref">式1.1</span></p>
+<div id="emc2" class="caption-equation">
+<div class="equation">
+<pre>e=mc^2
+</pre>
+</div>
+<p class="caption">式1.1: The Equivalence of Mass <i>and</i> Energy</p>
 </div>
 EOS
     actual = compile_block(src)
