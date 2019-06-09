@@ -176,6 +176,9 @@ secnolevel: 2
 # @<w>命令で使用する単語ファイルのパス
 # words_file: words.csv
 
+# 内容に対してキャプションを置く位置 (top=内容の上、bottom=内容の下)。TeXなどのスタイルはデフォルトの設定を前提にしており、変更した場合はスタイルを調整する必要があるかもしれないことに注意
+# caption_position: {image: bottom, table: top, list: top, equation: top}
+
 # review-vol向けのヒント情報
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)
 # page_metric: A5
