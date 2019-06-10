@@ -142,12 +142,36 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_inline_in_table
     actual = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
-    assert_equal %Q(◆→開始:表←◆\n★★1☆☆\t★▲2☆☆\n★3☆\t▲4☆<>&\n◆→終了:表←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:表←◆
+★★1☆☆\t★▲2☆☆
+★3☆\t▲4☆<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_beforeulol
     actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
-    assert_equal %Q(★foo☆\n\tfoo.\n\npara\n\n★foo☆\n\tfoo.\n\n1\tbar\n\n★foo☆\n\tfoo.\n\n●\tbar\n\n), actual
+    expected = <<-EOS
+★foo☆
+\tfoo.
+
+para
+
+★foo☆
+\tfoo.
+
+1\tbar
+
+★foo☆
+\tfoo.
+
+●\tbar
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_paragraph
@@ -162,7 +186,14 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(◆→開始:右寄せ←◆\nfoobar\nbuz\n◆→終了:右寄せ←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:右寄せ←◆
+foobar
+buz
+◆→終了:右寄せ←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_blankline
@@ -172,7 +203,12 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q(◆→DTP連絡:次の1行インデントなし←◆\nfoobar\nfoo2bar2\n), actual
+    expected = <<-EOS
+◆→DTP連絡:次の1行インデントなし←◆
+foobar
+foo2bar2
+EOS
+    assert_equal expected, actual
   end
 
   def test_comment
@@ -193,7 +229,16 @@ class TOPBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('test', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\nfoo\nbar\n◆→終了:リスト←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:リスト←◆
+リスト1.1　this is ★test☆<&>_
+
+foo
+bar
+◆→終了:リスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -201,12 +246,129 @@ class TOPBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(◆→開始:リスト←◆\nリスト1.1　this is ★test☆<&>_\n\n 1: foo\n 2: bar\n◆→終了:リスト←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:リスト←◆
+リスト1.1　this is ★test☆<&>_
+
+ 1: foo
+ 2: bar
+◆→終了:リスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+◆→開始:ソースコードリスト←◆
+■foo/bar/test.rb
+foo
+bar
+
+buz
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+◆→開始:ソースコードリスト←◆
+foo
+bar
+
+buz
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_box
+    actual = compile_block("//box{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:書式←◆
+foo
+bar
+◆→終了:書式←◆
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//box[FOO]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:書式←◆
+■FOO
+foo
+bar
+◆→終了:書式←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_cmd
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:コマンド←◆
+lineA
+lineB
+◆→終了:コマンド←◆
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:コマンド←◆
+■cap1
+lineA
+lineB
+◆→終了:コマンド←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist
+    actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+lineA
+lineB
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist_caption
+    actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+■cap1
+lineA
+lineB
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(◆→開始:インラインリスト←◆\n■this is ★test☆<&>_\n 1: foo\n 2: bar\n◆→終了:インラインリスト←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+■this is ★test☆<&>_
+ 1: foo
+ 2: bar
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_bib
@@ -219,8 +381,26 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal %Q(◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n),
-                 actual
+    expected = <<-EOS
+◆→開始:表←◆
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+表1.1　FOO
+
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_empty_table
@@ -240,41 +420,142 @@ class TOPBuidlerTest < Test::Unit::TestCase
 
   def test_emtable
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal %Q(◆→開始:表←◆\nfoo\n\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n◆→開始:表←◆\n★aaa☆\t★bbb☆\nccc\tddd<>&\n◆→終了:表←◆\n\n),
-                 actual
+    expected = <<-EOS
+◆→開始:表←◆
+foo
+
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+◆→終了:表←◆
+
+◆→開始:表←◆
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
-    expected = %Q(◆→開始:ノート←◆\nA\nB\n◆→終了:ノート←◆\n\n◆→開始:ノート←◆\n■caption\nA\n◆→終了:ノート←◆\n\n)
+    expected = <<-EOS
+◆→開始:ノート←◆
+A
+B
+◆→終了:ノート←◆
+
+◆→開始:ノート←◆
+■caption
+A
+◆→終了:ノート←◆
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
-    expected = %Q(◆→開始:メモ←◆\nA\nB\n◆→終了:メモ←◆\n\n◆→開始:メモ←◆\n■caption\nA\n◆→終了:メモ←◆\n\n)
+    expected = <<-EOS
+◆→開始:メモ←◆
+A
+B
+◆→終了:メモ←◆
+
+◆→開始:メモ←◆
+■caption
+A
+◆→終了:メモ←◆
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
-    expected = %Q(◆→開始:情報←◆\nA\nB\n◆→終了:情報←◆\n\n◆→開始:情報←◆\n■caption\nA\n◆→終了:情報←◆\n\n)
+    expected = <<-EOS
+◆→開始:情報←◆
+A
+B
+◆→終了:情報←◆
+
+◆→開始:情報←◆
+■caption
+A
+◆→終了:情報←◆
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
-    expected = %Q(◆→開始:重要←◆\nA\nB\n◆→終了:重要←◆\n\n◆→開始:重要←◆\n■caption\nA\n◆→終了:重要←◆\n\n)
+    expected = <<-EOS
+◆→開始:重要←◆
+A
+B
+◆→終了:重要←◆
+
+◆→開始:重要←◆
+■caption
+A
+◆→終了:重要←◆
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
-    expected = %Q(◆→開始:警告←◆\nA\nB\n◆→終了:警告←◆\n\n◆→開始:警告←◆\n■caption\nA\n◆→終了:警告←◆\n\n)
+    expected = <<-EOS
+◆→開始:警告←◆
+A
+B
+◆→終了:警告←◆
+
+◆→開始:警告←◆
+■caption
+A
+◆→終了:警告←◆
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
-    expected = %Q(◆→開始:注意←◆\nA\nB\n◆→終了:注意←◆\n\n◆→開始:注意←◆\n■caption\nA\n◆→終了:注意←◆\n\n)
+    expected = <<-EOS
+◆→開始:注意←◆
+A
+B
+◆→終了:注意←◆
+
+◆→開始:注意←◆
+■caption
+A
+◆→終了:注意←◆
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
-    expected = %Q(◆→開始:危険←◆\nA\nB\n◆→終了:危険←◆\n\n◆→開始:危険←◆\n■caption\nA\n◆→終了:危険←◆\n\n)
+    expected = <<-EOS
+◆→開始:危険←◆
+A
+B
+◆→終了:危険←◆
+
+◆→開始:危険←◆
+■caption
+A
+◆→終了:危険←◆
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
-    expected = %Q(◆→開始:TIP←◆\nA\nB\n◆→終了:TIP←◆\n\n◆→開始:TIP←◆\n■caption\nA\n◆→終了:TIP←◆\n\n)
+    expected = <<-EOS
+◆→開始:TIP←◆
+A
+B
+◆→終了:TIP←◆
+
+◆→開始:TIP←◆
+■caption
+A
+◆→終了:TIP←◆
+
+EOS
     assert_equal expected, actual
   end
 
@@ -286,7 +567,15 @@ class TOPBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
-    assert_equal %Q(◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png←◆\n◆→終了:図←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:図←◆
+図1.1　sample photo
+
+◆→./images/chap1-sampleimg.png←◆
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -297,12 +586,27 @@ class TOPBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\nfoo\n//}\n")
-    assert_equal %Q(◆→開始:図←◆\n図1.1　sample photo\n\n◆→./images/chap1-sampleimg.png scale=1.2←◆\n◆→終了:図←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:図←◆
+図1.1　sample photo
+
+◆→./images/chap1-sampleimg.png scale=1.2←◆
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_texequation
     actual = compile_block("//texequation{\n\\sin\n1^{2}\n//}\n")
-    assert_equal %Q(◆→開始:TeX式←◆\n\\sin\n1^{2}\n◆→終了:TeX式←◆\n\n), actual
+    expected = <<-EOS
+◆→開始:TeX式←◆
+\\sin
+1^{2}
+◆→終了:TeX式←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_w
