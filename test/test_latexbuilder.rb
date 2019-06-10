@@ -579,6 +579,13 @@ class LATEXBuidlerTest < Test::Unit::TestCase
                  actual
   end
 
+  def test_empty_table
+    actual = compile_block("//table{\n//}\n")
+    assert_equal '', actual
+    actual = compile_block("//table{\n------------\n//}\n")
+    assert_equal '', actual
+  end
+
   def test_customize_cellwidth
     actual = compile_block("//tsize[2,3,5]\n//table{\nA\tB\tC\n//}\n")
     assert_equal %Q(\\begin{reviewtable}{|p{2mm}|p{3mm}|p{5mm}|}\n\\hline\n\\reviewth{A} & B & C \\\\  \\hline\n\\end{reviewtable}\n), actual

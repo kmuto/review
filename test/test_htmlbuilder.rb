@@ -1645,6 +1645,13 @@ EOS
                  actual
   end
 
+  def test_empty_table
+    actual = compile_block("//table{\n//}\n")
+    assert_equal '', actual
+    actual = compile_block("//table{\n------------\n//}\n")
+    assert_equal '', actual
+  end
+
   def test_inline_table
     def @chapter.table(_id)
       Book::TableIndex::Item.new('sampletable', 1)
