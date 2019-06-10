@@ -384,6 +384,10 @@ Layout/SpaceInsideStringInterpolation:
 Layout/TrailingBlankLines:
   Enabled: true
 
+Layout/TrailingWhitespace:
+  Enabled: true
+  AllowInHeredoc: true
+
 #### Metrics
 
 Metrics/BlockNesting:
