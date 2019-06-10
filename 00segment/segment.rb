@@ -2,11 +2,26 @@
 require 'rubygems'
 require 'unicode/eaw'
 
-def add_space?(line1, line2, lang)
+def add_space?(line1, line2, lang, lazy = nil)
   # https://drafts.csswg.org/css-text-3/#line-break-transform
-  # 1. If the character immediately before or immediately after the segment break is the zero-width space character (U+200B), then the break is removed, leaving behind the zero-width space.
-  # 2. Otherwise, if the East Asian Width property [UAX11] of both the character before and after the segment break is Fullwidth, Wide, or Halfwidth (not Ambiguous), and neither side is Hangul, then the segment break is removed.
-  # 3. Otherwise, if the writing system of the segment break is Chinese, Japanese, or Yi, and the character before or after the segment break is punctuation or a symbol (Unicode general category P* or S*) and has an East Asian Width property of Ambiguous, and the character on the other side of the segment break is Fullwidth, Wide, or Halfwidth, and not Hangul, then the segment break is removed.
+
+  # 1. If the character immediately before or immediately after the
+  # segment break is the zero-width space character (U+200B), then the
+  # break is removed, leaving behind the zero-width space.
+
+  # 2. Otherwise, if the East Asian Width property [UAX11] of both the
+  # character before and after the segment break is Fullwidth, Wide,
+  # or Halfwidth (not Ambiguous), and neither side is Hangul, then the
+  # segment break is removed.
+
+  # 3. Otherwise, if the writing system of the segment break is
+  # Chinese, Japanese, or Yi, and the character before or after the
+  # segment break is punctuation or a symbol (Unicode general category
+  # P* or S*) and has an East Asian Width property of Ambiguous, and
+  # the character on the other side of the segment break is Fullwidth,
+  # Wide, or Halfwidth, and not Hangul, then the segment break is
+  # removed.
+
   # 4. Otherwise, the segment break is converted to a space (U+0020).
   tail = line1[-1]
   head = line2[0]
@@ -25,19 +40,21 @@ def add_space?(line1, line2, lang)
       space = nil
     end
 
-    # 条件3だとabc→あい みたいなのが「abc あい」になる。FWHな文字→何か または 何か→FWHな文字 なら原則つなげるほうがよいのではないか？
-    # if (%i[F W H].include?(Unicode::Eaw.width(tail)) && tail !~ /\p{Hangul}/) ||
-    # (%i[F W H].include?(Unicode::Eaw.width(head)) && head !~ /\p{Hangul}/)
-    #   space = nil
-    # end
+    # lazyなやり方。
+    # 条件3だとabc→あい みたいなのが「abc あい」になる。FWHな文字→何か または 何か→FWHな文字 なら原則つなげるほうがよいのではないかという考え方
+    if lazy &&
+       (%i[F W H].include?(Unicode::Eaw.width(tail)) && tail !~ /\p{Hangul}/) ||
+       (%i[F W H].include?(Unicode::Eaw.width(head)) && head !~ /\p{Hangul}/)
+      space = nil
+    end
   end
   space
 end
 
-def create_paragraph(src, lang)
+def create_paragraph(src, lang, lazy = nil)
   lines = src.split("\n")
   0.upto(lines.size - 2) do |n|
-    if add_space?(lines[n], lines[n + 1], lang)
+    if add_space?(lines[n], lines[n + 1], lang, lazy)
       lines[n] += ' '
     end
   end
@@ -53,13 +70,17 @@ Here is an English paragraph
 that I know.
 Yes.
 EOS
-puts create_paragraph(src, 'ja')
+puts '期待 : Here is an English paragraph that I know. Yes.'
+puts '結果1: ' + create_paragraph(src, 'ja')
+puts '結果2: ' + create_paragraph(src, 'ja', true)
 
 src = <<-EOS
 Here is an English paragraphあα조선
 글いthat
 EOS
-puts create_paragraph(src, 'ja')
+puts '期待 : Here is an English paragraphあα조선 글いthat'
+puts '結果1: ' + create_paragraph(src, 'ja')
+puts '結果2: ' + create_paragraph(src, 'ja', true)
 
 src = <<-EOS
 Here is an English paragraphあα
@@ -68,14 +89,18 @@ Here is an English paragraphあα
 あ>
 れ
 EOS
-puts create_paragraph(src, 'ja')
+puts '期待 : Here is an English paragraphあαいthat.お_あ>れ (でいいんだろうか?)'
+puts '結果1: ' + create_paragraph(src, 'ja')
+puts '結果2: ' + create_paragraph(src, 'ja', true)
 
 src = <<-EOS
 这个段落是呢么长，
 在一行写不行。最好
 用三行写。
 EOS
-puts create_paragraph(src, 'ja')
+puts '期待 : 这个段落是呢么长，在一行写不行。最好用三行写。'
+puts '結果1: ' + create_paragraph(src, 'ja')
+puts '結果2: ' + create_paragraph(src, 'ja', true)
 
 src = <<-EOS
 段落abc
@@ -84,9 +109,13 @@ def?
 む1
 に
 EOS
-puts create_paragraph(src, 'ja')
+puts '期待 : 段落abcうーん？def?む1に (abcのあとにスペースが正しい?)'
+puts '結果1: ' + create_paragraph(src, 'ja')
+puts '結果2: ' + create_paragraph(src, 'ja', true)
 
 src = <<-EOS
+<b>日</b>
+<i>本語</i>
 段落<b>日本語</b>
 段落<b>English</b>
 <i>Man</i>
@@ -100,6 +129,9 @@ src = <<-EOS
 あ
 ★Alphabet☆
 dice
+★日☆
+★本語☆
 EOS
-puts create_paragraph(src, 'ja')
-
+puts '期待 : <b>日</b><i>本語</i>段落<b>日本語</b>段落<b>English</b> <i>Man</i>うーん\\textbf{日本語}あ\\textbf{English} \\textbf{That} 1個★Alphabet☆ ★Alphabet☆あ★Alphabet☆ dice★日☆★本語☆ (スペース位置悩み)'
+puts '結果1: ' + create_paragraph(src, 'ja')
+puts '結果2: ' + create_paragraph(src, 'ja', true)
