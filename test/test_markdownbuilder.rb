@@ -216,6 +216,17 @@ BBB
 
 EOS
     assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
+    expected = <<-EOS
+表1.1: FOO
+
+|testA|testB|
+|:--|:--|
+|contentA|contentB|
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_ruby

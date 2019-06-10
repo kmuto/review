@@ -978,6 +978,20 @@ ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
 \\end{reviewtable}
 EOS
     assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+\\begin{table}%%foo
+\\reviewtablecaption{FOO}
+\\label{table:chap1:foo}
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
+\\end{table}
+EOS
+    assert_equal expected, actual
   end
 
   def test_customize_cellwidth

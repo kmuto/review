@@ -1137,9 +1137,68 @@ EOB
     assert_equal expected, actual
   end
 
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+<div class="source-code">
+<p class="caption">foo/bar/test.rb</p>
+<pre class="source">foo
+bar
+
+buz
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+<div class="source-code">
+<pre class="source">foo
+bar
+
+buz
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_box
+    actual = compile_block("//box{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+<div class="syntax">
+<pre class="syntax">foo
+bar
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//box[FOO]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+<div class="syntax">
+<p class="caption">FOO</p>
+<pre class="syntax">foo
+bar
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_emlist
     actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
-    assert_equal %Q(<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="emlist-code">
+<pre class="emlist">lineA
+lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_pygments_lang
@@ -1887,6 +1946,18 @@ EOS
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
 <div class="table">
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+<div id="foo" class="table">
+<p class="caption">表1.1: FOO</p>
 <table>
 <tr><th>aaa</th><th>bbb</th></tr>
 <tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>

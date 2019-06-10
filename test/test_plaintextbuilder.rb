@@ -243,6 +243,90 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+foo/bar/test.rb
+foo
+bar
+
+buz
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+foo
+bar
+
+buz
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_box
+    actual = compile_block("//box{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+foo
+bar
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//box[FOO]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+FOO
+foo
+bar
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_cmd
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+lineA
+lineB
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+cap1
+lineA
+lineB
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist
+    actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+lineA
+lineB
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist_caption
+    actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+cap1
+lineA
+lineB
+
+EOS
+    assert_equal expected, actual
+  end
+
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     expected = <<-EOS
@@ -265,6 +349,16 @@ EOS
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
+aaa\tbbb
+ccc\tddd<>&
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+表1.1　FOO
+
 aaa\tbbb
 ccc\tddd<>&
 

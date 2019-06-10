@@ -258,6 +258,106 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+◆→開始:ソースコードリスト←◆
+■foo/bar/test.rb
+foo
+bar
+
+buz
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+◆→開始:ソースコードリスト←◆
+foo
+bar
+
+buz
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_box
+    actual = compile_block("//box{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:書式←◆
+foo
+bar
+◆→終了:書式←◆
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//box[FOO]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:書式←◆
+■FOO
+foo
+bar
+◆→終了:書式←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_cmd
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:コマンド←◆
+lineA
+lineB
+◆→終了:コマンド←◆
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:コマンド←◆
+■cap1
+lineA
+lineB
+◆→終了:コマンド←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist
+    actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+lineA
+lineB
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist_caption
+    actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+■cap1
+lineA
+lineB
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     expected = <<-EOS
@@ -283,6 +383,18 @@ EOS
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
 ◆→開始:表←◆
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+表1.1　FOO
+
 ★aaa☆\t★bbb☆
 ccc\tddd<>&
 ◆→終了:表←◆
