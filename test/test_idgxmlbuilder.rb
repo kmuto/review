@@ -362,6 +362,48 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_cmd
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS.chomp
+<list type='cmd'><pre>lineA
+lineB
+</pre></list>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS.chomp
+<list type='cmd'><caption aid:pstyle='cmd-title'>cap1</caption><pre>lineA
+lineB
+</pre></list>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><caption>foo/bar/test.rb</caption><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_insn
     @config['listinfo'] = true
     actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
