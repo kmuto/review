@@ -30,29 +30,66 @@ class RSTBuidlerTest < Test::Unit::TestCase
 
   def test_headline_level1
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q(.. _test:\n\n==========================\nthis is test.\n==========================\n\n), actual
+    expected = <<-EOS
+.. _test:
+
+==========================
+this is test.
+==========================
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_headline_level1_without_secno
     @config['secnolevel'] = 0
     actual = compile_block("={test} this is test.\n")
-    assert_equal %Q(.. _test:\n\n==========================\nthis is test.\n==========================\n\n), actual
+    expected = <<-EOS
+.. _test:
+
+==========================
+this is test.
+==========================
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_headline_level2
     actual = compile_block("=={test} this is test.\n")
-    assert_equal %Q(.. _test:\n\nthis is test.\n==========================\n\n), actual
+    expected = <<-EOS
+.. _test:
+
+this is test.
+==========================
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_headline_level3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q(.. _test:\n\nthis is test.\n--------------------------\n\n), actual
+    expected = <<-EOS
+.. _test:
+
+this is test.
+--------------------------
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_headline_level3_with_secno
     @config['secnolevel'] = 3
     actual = compile_block("==={test} this is test.\n")
-    assert_equal %Q(.. _test:\n\nthis is test.\n--------------------------\n\n), actual
+    expected = <<-EOS
+.. _test:
+
+this is test.
+--------------------------
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_href
@@ -143,12 +180,28 @@ class RSTBuidlerTest < Test::Unit::TestCase
 
   def test_inline_in_table
     actual = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
-    assert_equal %Q(   * - ★1☆\n     - ▲2☆\n   * - ★3☆\n     - ▲4☆<>&\n\n), actual
+    expected = <<-EOS
+   * - ★1☆
+     - ▲2☆
+   * - ★3☆
+     - ▲4☆<>&
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emtable
     actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
-    assert_equal %Q(.. list-table:: foo\n   :header-rows: 1\n\n   * - A\n\n   * - A\n\n), actual
+    expected = <<-EOS
+.. list-table:: foo
+   :header-rows: 1
+
+   * - A
+
+   * - A
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_paragraph
@@ -163,12 +216,25 @@ class RSTBuidlerTest < Test::Unit::TestCase
 
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(.. flushright::\n\n   foobar\nbuz\n\n), actual
+    expected = <<-EOS
+.. flushright::
+
+   foobar
+buz
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q(foobar\n\nfoo2bar2\n\n), actual
+    expected = <<-EOS
+foobar
+
+foo2bar2
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_comment
@@ -187,7 +253,13 @@ class RSTBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('test', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(.. _samplelist:\n\n-foo\n-bar\n), actual
+    expected = <<-EOS
+.. _samplelist:
+
+-foo
+-bar
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -195,45 +267,150 @@ class RSTBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(.. _test:\n\n1\n2\n\n), actual
+    expected = <<-EOS
+.. _test:
+
+1
+2
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(this is @<b>{test}<&>_\n\n.. code-block:: none\n   :linenos:\n\n   foo\n   bar\n\n), actual
+    expected = <<-EOS
+this is @<b>{test}<&>_
+
+.. code-block:: none
+   :linenos:
+
+   foo
+   bar
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
-    expected = %Q(.. note::\n\n   A\nB\n\n.. note::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. note::
+
+   A
+B
+
+.. note::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
-    expected = %Q(.. memo::\n\n   A\nB\n\n.. memo::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. memo::
+
+   A
+B
+
+.. memo::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
-    expected = %Q(.. info::\n\n   A\nB\n\n.. info::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. info::
+
+   A
+B
+
+.. info::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
-    expected = %Q(.. important::\n\n   A\nB\n\n.. important::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. important::
+
+   A
+B
+
+.. important::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
-    expected = %Q(.. caution::\n\n   A\nB\n\n.. caution::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. caution::
+
+   A
+B
+
+.. caution::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
-    expected = %Q(.. notice::\n\n   A\nB\n\n.. notice::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. notice::
+
+   A
+B
+
+.. notice::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
-    expected = %Q(.. warning::\n\n   A\nB\n\n.. warning::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. warning::
+
+   A
+B
+
+.. warning::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
-    expected = %Q(.. tip::\n\n   A\nB\n\n.. tip::\n\n   caption\n   A\n\n)
+    expected = <<-EOS
+.. tip::
+
+   A
+B
+
+.. tip::
+
+   caption
+   A
+
+EOS
     assert_equal expected, actual
   end
 
@@ -245,7 +422,15 @@ class RSTBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
-    assert_equal %Q(.. _sampleimg:\n\n.. figure:: images/-/sampleimg.png\n\n   sample photo\n\n), actual
+    expected = <<-EOS
+.. _sampleimg:
+
+.. figure:: images/-/sampleimg.png
+
+   sample photo
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -256,7 +441,16 @@ class RSTBuidlerTest < Test::Unit::TestCase
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\nfoo\n//}\n")
-    assert_equal %Q(.. _sampleimg:\n\n.. figure:: images/-/sampleimg.png\n   :scale:120.0%\n\n   sample photo\n\n), actual
+    expected = <<-EOS
+.. _sampleimg:
+
+.. figure:: images/-/sampleimg.png
+   :scale:120.0%
+
+   sample photo
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_texequation

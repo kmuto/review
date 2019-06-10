@@ -143,12 +143,34 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
 
   def test_inline_in_table
     actual = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
-    assert_equal %Q(★1☆\t▲2☆\n★3☆\t▲4☆<>&\n\n), actual
+    expected = <<-EOS
+★1☆\t▲2☆
+★3☆\t▲4☆<>&
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_beforeulol
     actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
-    assert_equal %Q(foo\nfoo.\n\npara\n\nfoo\nfoo.\n\n1　bar\n\nfoo\nfoo.\n\nbar\n\n), actual
+    expected = <<-EOS
+foo
+foo.
+
+para
+
+foo
+foo.
+
+1　bar
+
+foo
+foo.
+
+bar
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_paragraph
@@ -163,12 +185,21 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
 
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(foobar\nbuz\n\n), actual
+    expected = <<-EOS
+foobar
+buz
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q(foobar\nfoo2bar2\n), actual
+    expected = <<-EOS
+foobar
+foo2bar2
+EOS
+    assert_equal expected, actual
   end
 
   def test_comment
@@ -187,7 +218,14 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('test', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(リスト1.1　this is test<&>_\n\nfoo\nbar\n\n), actual
+    expected = <<-EOS
+リスト1.1　this is test<&>_
+
+foo
+bar
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -195,12 +233,25 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(リスト1.1　this is test<&>_\n\n 1: foo\n 2: bar\n\n), actual
+    expected = <<-EOS
+リスト1.1　this is test<&>_
+
+ 1: foo
+ 2: bar
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
-    assert_equal %Q(this is test<&>_\n 1: foo\n 2: bar\n\n), actual
+    expected = <<-EOS
+this is test<&>_
+ 1: foo
+ 2: bar
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_bib
@@ -213,8 +264,12 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
 
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal %Q(aaa\tbbb\nccc\tddd<>&\n\n),
-                 actual
+    expected = <<-EOS
+aaa\tbbb
+ccc\tddd<>&
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_table
@@ -227,41 +282,106 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
 
   def test_emtable
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal %Q(foo\n\naaa\tbbb\nccc\tddd<>&\n\naaa\tbbb\nccc\tddd<>&\n\n),
-                 actual
+    expected = <<-EOS
+foo
+
+aaa\tbbb
+ccc\tddd<>&
+
+aaa\tbbb
+ccc\tddd<>&
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
-    expected = %Q(A\nB\n\ncaption\nA\n\n)
+    expected = <<-EOS
+A
+B
+
+caption
+A
+
+EOS
     assert_equal expected, actual
   end
 
