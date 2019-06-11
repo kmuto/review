@@ -198,7 +198,7 @@ module ReVIEW
         rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
-      return if rows.empty?
+      error 'no rows in the table' if rows.empty?
 
       blank
       puts "◆→開始:#{@titles['table']}←◆"

@@ -367,10 +367,11 @@ EOS
   end
 
   def test_empty_table
-    actual = compile_block("//table{\n//}\n")
-    assert_equal '', actual
-    actual = compile_block("//table{\n------------\n//}\n")
-    assert_equal '', actual
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    assert_equal ':2: error: no rows in the table', e.message
+
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    assert_equal ':3: error: no rows in the table', e.message
   end
 
   def test_inline_table

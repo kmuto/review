@@ -465,7 +465,7 @@ module ReVIEW
         col2 = rows[rows.length - 1].split(/\t/).length
         col = col2 if col2 > col
       end
-      return if rows.empty?
+      error 'no rows in the table' if rows.empty?
 
       puts '<table>'
 
