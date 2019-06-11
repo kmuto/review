@@ -250,6 +250,7 @@ module ReVIEW
         rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
+      error 'no rows in the table' if rows.empty?
 
       begin
         table_header id, caption unless caption.nil?
@@ -257,7 +258,6 @@ module ReVIEW
         error "no such table: #{id}"
       end
       table_begin rows.first.size
-      return if rows.empty?
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })

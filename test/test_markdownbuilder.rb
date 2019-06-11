@@ -9,10 +9,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
 
   def setup
     @builder = MARKDOWNBuilder.new
-    @config = {
-      'secnolevel' => 2,
-      'stylesheet' => nil
-    }
+    @config = ReVIEW::Configure.values
     @book = Book::Base.new('.')
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -23,17 +20,37 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
 
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(\n> foobar\n> \n> buz\n\n), actual
+    expected = <<-EOS
+
+> foobar
+> 
+> buz
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_memo
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<div class="memo">\n<p class="caption">this is **test**<&>_</p>\ntest1\ntest*2*\n</div>\n), actual
+    expected = <<-EOS
+<div class="memo">
+<p class="caption">this is **test**<&>_</p>
+test1
+test*2*
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q(<p class="noindent">foobar</p>\n\nfoo2bar2\n\n), actual
+    expected = <<-EOS
+<p class="noindent">foobar</p>
+
+foo2bar2
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_em
@@ -78,23 +95,49 @@ EOS
 
   def test_cmd
     actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal "```shell-session\nlineA\nlineB\n```\n", actual
+    expected = <<-EOS
+```shell-session
+lineA
+lineB
+```
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist
     actual = compile_block(": foo\n  foo.\n  bar.\n")
-    assert_equal %Q(<dl>\n<dt>foo</dt>\n<dd>foo.bar.</dd>\n</dl>\n), actual
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo.bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_bracket
     actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
-    assert_equal %Q(<dl>\n<dt>foo[bar]</dt>\n<dd>foo.bar.</dd>\n</dl>\n), actual
+    expected = <<-EOS
+<dl>
+<dt>foo[bar]</dt>
+<dd>foo.bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_comment
     source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
     actual = compile_block(source)
-    assert_equal %Q(<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n), actual
+    expected = <<-EOS
+<dl>
+<dt>title</dt>
+<dd>body</dd>
+<dt>title2</dt>
+<dd>body2</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_comment
@@ -166,11 +209,28 @@ BBB
 
   def test_table
     actual = compile_block("//table{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
-    assert_equal "|testA|testB|\n|:--|:--|\n|contentA|contentB|\n\n", actual
+    expected = <<-EOS
+|testA|testB|
+|:--|:--|
+|contentA|contentB|
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\ntestA\ttestB\n------------\ncontentA\tcontentB\n//}\n")
+    expected = <<-EOS
+表1.1: FOO
+
+|testA|testB|
+|:--|:--|
+|contentA|contentB|
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_ruby
     actual = compile_block('@<ruby>{謳,うた}い文句')
-    assert_equal "<ruby><rb>謳</rb><rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句\n\n", actual
+    assert_equal "<ruby>謳<rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句\n\n", actual
   end
 end

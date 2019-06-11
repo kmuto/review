@@ -9,10 +9,7 @@ class MD2INAOBuilderTest < Test::Unit::TestCase
 
   def setup
     @builder = MD2INAOBuilder.new
-    @config = {
-      'secnolevel' => 2,
-      'stylesheet' => nil
-    }
+    @config = ReVIEW::Configure.values
     @book = Book::Base.new('.')
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -24,17 +21,33 @@ class MD2INAOBuilderTest < Test::Unit::TestCase
 
   def test_paragraph
     actual = compile_block('Hello, world!')
-    assert_equal "　Hello, world!\n\n", actual
+    expected = <<-EOS
+　Hello, world!
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd
     actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal "!!! cmd\nlineA\nlineB\n\n", actual
+    expected = <<-EOS
+!!! cmd
+lineA
+lineB
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist
     actual = compile_block(": foo\n  foo.\n  bar.\n")
-    assert_equal "<dl>\n<dt>foo</dt>\n<dd>foo.bar.</dd>\n</dl>\n", actual
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo.bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_list

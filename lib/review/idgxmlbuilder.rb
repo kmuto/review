@@ -450,7 +450,6 @@ module ReVIEW
       tablewidth = @book.config['tableopt'] ? @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f : nil
       col = 0
 
-      puts '<table>'
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -466,6 +465,9 @@ module ReVIEW
         col2 = rows[rows.length - 1].split(/\t/).length
         col = col2 if col2 > col
       end
+      error 'no rows in the table' if rows.empty?
+
+      puts '<table>'
 
       cellwidth = []
       if tablewidth
@@ -492,7 +494,6 @@ module ReVIEW
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
 
       if tablewidth.nil?
         print '<tbody>'
