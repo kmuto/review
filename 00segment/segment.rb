@@ -29,22 +29,22 @@ def add_space?(line1, line2, lang, lazy = nil)
 
   # 条件1はstripされているので無視できるものとする
   # 条件2
-  if %i[F W H].include?(Unicode::Eaw.width(tail)) && %i[F W H].include?(Unicode::Eaw.width(head)) && tail !~ /\p{Hangul}/ && head !~ /\p{Hangul}/
+  if %i[F W H].include?(Unicode::Eaw.property(tail)) && %i[F W H].include?(Unicode::Eaw.property(head)) && tail !~ /\p{Hangul}/ && head !~ /\p{Hangul}/
     space = nil
   end
 
   if %w[ja zh zh_CN zh_TW yi].include?(lang)
     # 条件3
-    if (%i[F W H].include?(Unicode::Eaw.width(tail)) && tail !~ /\p{Hangul}/ && (head =~ /\p{P}/ || head =~ /\p{S}/ || Unicode::Eaw.width(head) == :A)) ||
-       (%i[F W H].include?(Unicode::Eaw.width(head)) && head !~ /\p{Hangul}/ && (tail =~ /\p{P}/ || head =~ /\p{S}/ || Unicode::Eaw.width(tail) == :A))
+    if (%i[F W H].include?(Unicode::Eaw.property(tail)) && tail !~ /\p{Hangul}/ && (head =~ /\p{P}/ || head =~ /\p{S}/ || Unicode::Eaw.property(head) == :A)) ||
+       (%i[F W H].include?(Unicode::Eaw.property(head)) && head !~ /\p{Hangul}/ && (tail =~ /\p{P}/ || head =~ /\p{S}/ || Unicode::Eaw.property(tail) == :A))
       space = nil
     end
 
     # lazyなやり方。
     # 条件3だとabc→あい みたいなのが「abc あい」になる。FWHな文字→何か または 何か→FWHな文字 なら原則つなげるほうがよいのではないかという考え方
     if lazy &&
-       (%i[F W H].include?(Unicode::Eaw.width(tail)) && tail !~ /\p{Hangul}/) ||
-       (%i[F W H].include?(Unicode::Eaw.width(head)) && head !~ /\p{Hangul}/)
+       (%i[F W H].include?(Unicode::Eaw.property(tail)) && tail !~ /\p{Hangul}/) ||
+       (%i[F W H].include?(Unicode::Eaw.property(head)) && head !~ /\p{Hangul}/)
       space = nil
     end
   end
