@@ -2,6 +2,7 @@
 
 ## 新機能
 ## 非互換の変更
+* PDFMaker: `//image` 命令などで画像を配置するときに `\includegraphics` ではなく、それを抽象化した `\reviewincludegraphics` を使うようにしました ([#1318])
 
 ## バグ修正
 * 別の章の図表やリストを参照する際に章が存在しないとき、内部エラーではなく標準のキーエラーを返すようにしました ([#1284])
@@ -12,6 +13,7 @@
 * EPUBMaker: EPUB2 の生成に失敗するのを修正しました ([#1301])
 * EPUBMaker: Windows で一時フォルダの削除にときどき失敗する現象に対処しました ([#1011])
 * PDFMaker: `@<bou>` をサポートしました ([#1220])
+* PDFMaker: jlreq.cls の古いバージョンでも動くように対処しました ([#1317])
 
 ## 機能強化
 * `CHAPS:` が空のときのテストを追加しました ([#1275])
@@ -26,6 +28,9 @@
 * YAMLLoader のコードを改良しました ([#1304])
 * `*` の箇条書きで、`**` から始めたり、`*` のあとに `***` を使ったりといった不正なレベル指定をエラーにしました ([#1313])
 * ReVIEW::Location クラスを分離しました ([#1308])
+* 箇条書きや文献リストで複数行の英単語が連結されてしまうのを回避しました (ただし PDFMaker のみ) ([#1312])
+* 空の表があったときにエラーを出すようにしました ([#1325])
+* いくつかのテスト対象を追加しました ([#1327], [#1328])
 
 ## ドキュメント
 * 見出しのレベルの説明の誤りを修正しました ([#1309])
@@ -58,7 +63,13 @@
 [#1305]: https://github.com/kmuto/review/pull/1305
 [#1308]: https://github.com/kmuto/review/pull/1308
 [#1309]: https://github.com/kmuto/review/issues/1309
+[#1312]: https://github.com/kmuto/review/issues/1312
 [#1313]: https://github.com/kmuto/review/issues/1313
+[#1317]: https://github.com/kmuto/review/pull/1317
+[#1318]: https://github.com/kmuto/review/issues/1318
+[#1325]: https://github.com/kmuto/review/issues/1325
+[#1327]: https://github.com/kmuto/review/issues/1327
+[#1328]: https://github.com/kmuto/review/pull/1328
 
 # Version 3.1.0
 

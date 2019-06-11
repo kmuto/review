@@ -2,6 +2,7 @@
 
 ## New Features
 ## Breaking Changes
+* PDFMaker: changed to use the abstract name `\reviewincludegraphics` instead of `\includegraphics` for image placements (such as `//image`) ([#1318])
 
 ## Bug Fixes
 * reference to IDs of non-existent chapter now return standard key error (instead of internal error) ([#1284])
@@ -12,6 +13,7 @@
 * EPUBMaker: fixed a error of building EPUB2 ([#1301])
 * EPUBMaker: added a workaround for a temporary folder deletion failure on Windows ([#1011])
 * PDFMaker: support `@<bou>` ([#1220])
+* PDFMaker: support old jlreq.cls ([#1317])
 
 ## Enhancements
 * added test when `CHAPS:` is empty ([#1275])
@@ -26,6 +28,9 @@
 * improved the code of YAMLLoader ([#1304])
 * raise an error when invalid level is used in bullet ([#1313])
 * extracted ReVIEW::Location class ([#1308])
+* avoid multi-lined English words being combined without a space in bullets and bibliographic list (only in PDFMaker, at this time) ([#1312])
+* raise an error when table is empty ([#1325])
+* add some tests ([#1327], [#1328])
 
 ## Docs
 * fixed the description about header levels ([#1309])
@@ -58,7 +63,13 @@
 [#1305]: https://github.com/kmuto/review/pull/1305
 [#1308]: https://github.com/kmuto/review/pull/1308
 [#1309]: https://github.com/kmuto/review/issues/1309
+[#1312]: https://github.com/kmuto/review/issues/1312
 [#1313]: https://github.com/kmuto/review/issues/1313
+[#1317]: https://github.com/kmuto/review/pull/1317
+[#1318]: https://github.com/kmuto/review/issues/1318
+[#1325]: https://github.com/kmuto/review/issues/1325
+[#1327]: https://github.com/kmuto/review/issues/1327
+[#1328]: https://github.com/kmuto/review/pull/1328
 
 # Version 3.1.0
 ## Breaking Changes
