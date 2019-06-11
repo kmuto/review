@@ -9,32 +9,10 @@
 require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
+require 'review/location'
 require 'strscan'
 
 module ReVIEW
-  class Location
-    def initialize(filename, f)
-      @filename = filename
-      @f = f
-    end
-
-    attr_reader :filename
-
-    def lineno
-      @f.lineno
-    end
-
-    def string
-      begin
-        "#{@filename}:#{@f.lineno}"
-      rescue
-        "#{@filename}:nil"
-      end
-    end
-
-    alias_method :to_s, :string
-  end
-
   class Compiler
     def initialize(strategy)
       @strategy = strategy
@@ -380,11 +358,10 @@ module ReVIEW
           @strategy.ul_item_begin buf
         elsif level < current_level # down
           level_diff = current_level - level
-          level = current_level
-          (1..(level_diff - 1)).to_a.reverse_each do |i|
-            @strategy.ul_begin { i }
-            @strategy.ul_item_begin []
+          if level_diff != 1
+            error 'too many *.'
           end
+          level = current_level
           @strategy.ul_begin { level }
           @strategy.ul_item_begin buf
         elsif level > current_level # up

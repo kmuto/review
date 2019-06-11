@@ -133,6 +133,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>), actual
   end
 
+  def test_empty_table
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    assert_equal ':2: error: no rows in the table', e.message
+
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    assert_equal ':3: error: no rows in the table', e.message
+  end
+
   def test_emtable
     actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
     assert_equal %Q(<table><caption>foo</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
@@ -266,18 +274,39 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_emlist_listinfo
     @config['listinfo'] = true
     actual = compile_block("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></list>), actual
+    expected = <<-EOS.chomp
+<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></pre></list>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_with_tab
     actual = compile_block("//emlist[this is @<b>{test}<&>_]{\n\ttest1\n\t\ttest1.5\n\n\ttest@<i>{2}\n//}\n")
-    assert_equal %Q(<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>        test1\n                test1.5\n\n        test<i>2</i>\n</pre></list>), actual
+    expected = <<-EOS.chomp
+<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>        test1
+                test1.5
+
+        test<i>2</i>
+</pre></list>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_with_4tab
     @config['tabwidth'] = 4
     actual = compile_block("//emlist[this is @<b>{test}<&>_]{\n\ttest1\n\t\ttest1.5\n\n\ttest@<i>{2}\n//}\n")
-    assert_equal %Q(<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>    test1\n        test1.5\n\n    test<i>2</i>\n</pre></list>), actual
+    expected = <<-EOS.chomp
+<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>    test1
+        test1.5
+
+    test<i>2</i>
+</pre></list>
+EOS
+    assert_equal expected, actual
   end
 
   def test_list
@@ -285,7 +314,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('samplelist', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></codelist>), actual
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1
+test1.5
+
+test<i>2</i>
+</pre></codelist>
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -293,7 +329,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('samplelist', 1)
     end
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre></codelist>), actual
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1
+<span type='lineno'> 2: </span>test1.5
+<span type='lineno'> 3: </span>
+<span type='lineno'> 4: </span>test<i>2</i>
+</pre></codelist>
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum_linenum
@@ -301,7 +344,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
       Book::ListIndex::Item.new('samplelist', 1)
     end
     actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'>100: </span>test1\n<span type='lineno'>101: </span>test1.5\n<span type='lineno'>102: </span>\n<span type='lineno'>103: </span>test<i>2</i>\n</pre></codelist>), actual
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'>100: </span>test1
+<span type='lineno'>101: </span>test1.5
+<span type='lineno'>102: </span>
+<span type='lineno'>103: </span>test<i>2</i>
+</pre></codelist>
+EOS
+    assert_equal expected, actual
   end
 
   def test_list_listinfo
@@ -310,25 +360,95 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     end
     @config['listinfo'] = true
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></pre></codelist>), actual
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></pre></codelist>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_cmd
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS.chomp
+<list type='cmd'><pre>lineA
+lineB
+</pre></list>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS.chomp
+<list type='cmd'><caption aid:pstyle='cmd-title'>cap1</caption><pre>lineA
+lineB
+</pre></list>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><caption>foo/bar/test.rb</caption><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
   end
 
   def test_insn
     @config['listinfo'] = true
     actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<insn><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></insn>), actual
+    expected = <<-EOS.chomp
+<insn><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></insn>
+EOS
+    assert_equal expected, actual
   end
 
   def test_box
     @config['listinfo'] = true
     actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1\n</listinfo><listinfo line="2">test1.5\n</listinfo><listinfo line="3">\n</listinfo><listinfo line="4" end="4">test<i>2</i>\n</listinfo></box>), actual
+    expected = <<-EOS.chomp
+<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></box>
+EOS
+    assert_equal expected, actual
   end
 
   def test_box_non_listinfo
     @config['listinfo'] = nil
     actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption>test1\ntest1.5\n\ntest<i>2</i>\n</box>), actual
+    expected = <<-EOS.chomp
+<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption>test1
+test1.5
+
+test<i>2</i>
+</box>
+EOS
+    assert_equal expected, actual
   end
 
   def test_flushright
@@ -577,15 +697,10 @@ EOS
     src = <<-EOS
   ** AAA
   * AA
-  * BBB
-  ** BB
 EOS
 
-    expected = <<-EOS.chomp
-<ul><li aid:pstyle="ul-item"><ul2><li aid:pstyle="ul-item">AAA</li></ul2></li><li aid:pstyle="ul-item">AA</li><li aid:pstyle="ul-item">BBB<ul2><li aid:pstyle="ul-item">BB</li></ul2></li></ul>
-EOS
-    actual = compile_block(src)
-    assert_equal expected, actual
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':1: error: too many *.', e.message
   end
 
   def test_ul_nest4

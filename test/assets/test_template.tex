@@ -48,6 +48,10 @@
   \@ifundefined{reviewimagecaption}{% for 3.0.0 compatibility
     \newcommand{\reviewimagecaption}[1]{\caption{##1}}
   }
+  \@ifundefined{reviewincludegraphics}{% for 3.2.0 compatibility
+    \DeclareRobustCommand{\reviewincludegraphics}[2][]{%
+      \includegraphics[##1]{##2}}
+  }
 }
 
 \makeatother

@@ -257,7 +257,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      str = lines.join
+      str = lines.join("\n")
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -276,7 +276,7 @@ module ReVIEW
     end
 
     def ol_item(lines, _num)
-      str = lines.join
+      str = lines.join("\n")
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -298,7 +298,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts lines.join
+      puts lines.join("\n")
     end
 
     def dl_end
@@ -471,10 +471,16 @@ module ReVIEW
       metrics = parse_metric('latex', metric)
       # image is always bound here
       puts "\\begin{reviewimage}%%#{id}"
+
+      command = 'reviewincludegraphics'
+      if @book.config.check_version('2', exception: false)
+        command = 'includegraphics'
+      end
+
       if metrics.present?
-        puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[#{metrics}]{#{@chapter.image(id).path}}"
       else
-        puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       @doc_status[:caption] = true
 
@@ -551,10 +557,16 @@ module ReVIEW
 
       if @chapter.image(id).path
         puts "\\begin{reviewimage}%%#{id}"
+
+        command = 'reviewincludegraphics'
+        if @book.config.check_version('2', exception: false)
+          command = 'includegraphics'
+        end
+
         if metrics.present?
-          puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
+          puts "\\#{command}[#{metrics}]{#{@chapter.image(id).path}}"
         else
-          puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
+          puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
         end
       else
         warn "image not bound: #{id}"
@@ -594,13 +606,13 @@ module ReVIEW
         rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
+      error 'no rows in the table' if rows.empty?
 
       begin
         table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
       table_begin(rows.first.size)
       if sepidx
         sepidx.times do
@@ -797,10 +809,16 @@ module ReVIEW
       metrics = parse_metric('latex', metric)
       # image is always bound here
       puts "\\begin{reviewimage}%%#{id}"
+
+      command = 'reviewincludegraphics'
+      if @book.config.check_version('2', exception: false)
+        command = 'includegraphics'
+      end
+
       if metrics.present?
-        puts "\\includegraphics[#{metrics}]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[#{metrics}]{#{@chapter.image(id).path}}"
       else
-        puts "\\includegraphics[width=\\maxwidth]{#{@chapter.image(id).path}}"
+        puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
       puts '\end{reviewimage}'
     end
@@ -1154,7 +1172,11 @@ module ReVIEW
 
     def inline_icon(id)
       if @chapter.image(id).path
-        macro('includegraphics', @chapter.image(id).path)
+        command = 'reviewincludegraphics'
+        if @book.config.check_version('2', exception: false)
+          command = 'includegraphics'
+        end
+        macro(command, @chapter.image(id).path)
       else
         warn "image not bound: #{id}"
         "\\verb|--[[path = #{id} (#{existence(id)})]]--|"
@@ -1193,7 +1215,7 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(_id, _caption, lines)
-      print split_paragraph(lines).join
+      print split_paragraph(lines).join("\n")
       puts ''
     end
 

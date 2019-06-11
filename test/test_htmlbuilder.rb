@@ -191,7 +191,15 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def test_inline_in_table
     actual = compile_block("//table{\n@<b>{1}\t@<i>{2}\n------------\n@<b>{3}\t@<i>{4}<>&\n//}\n")
-    assert_equal %Q(<div class="table">\n<table>\n<tr><th><b>1</b></th><th><i>2</i></th></tr>\n<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n), actual
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th><b>1</b></th><th><i>2</i></th></tr>
+<tr><td><b>3</b></td><td><i>4</i>&lt;&gt;&amp;</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_br
@@ -430,32 +438,59 @@ EOS
 
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(<blockquote><p>foobar</p>\n<p>buz</p></blockquote>\n), actual
+    expected = <<-EOS
+<blockquote><p>foobar</p>
+<p>buz</p></blockquote>
+EOS
+    assert_equal expected, actual
   end
 
   def test_memo
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<div class="memo">\n<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>\n<p>test1</p>\n<p>test<i>2</i></p>\n</div>\n), actual
+    expected = <<-EOS
+<div class="memo">
+<p class="caption">this is <b>test</b>&lt;&amp;&gt;_</p>
+<p>test1</p>
+<p>test<i>2</i></p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_blankline
     actual = compile_block("//blankline\nfoo\n")
-    assert_equal %Q(<p><br /></p>\n<p>foo</p>\n), actual
+    expected = <<-EOS
+<p><br /></p>
+<p>foo</p>
+EOS
+    assert_equal expected, actual
   end
 
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
-    assert_equal %Q(<p class="noindent">foobar</p>\n<p>foo2bar2</p>\n), actual
+    expected = <<-EOS
+<p class="noindent">foobar</p>
+<p>foo2bar2</p>
+EOS
+    assert_equal expected, actual
   end
 
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(<p class="flushright">foobar</p>\n<p class="flushright">buz</p>\n), actual
+    expected = <<-EOS
+<p class="flushright">foobar</p>
+<p class="flushright">buz</p>
+EOS
+    assert_equal expected, actual
   end
 
   def test_centering
     actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
-    assert_equal %Q(<p class="center">foobar</p>\n<p class="center">buz</p>\n), actual
+    expected = <<-EOS
+<p class="center">foobar</p>
+<p class="center">buz</p>
+EOS
+    assert_equal expected, actual
   end
 
   def test_image
@@ -466,7 +501,15 @@ EOS
     end
 
     actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="sample photo" />
+<p class="caption">
+図1.1: sample photo
+</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -477,7 +520,15 @@ EOS
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />
+<p class="caption">
+図1.1: sample photo
+</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_metric2
@@ -488,7 +539,15 @@ EOS
     end
 
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />
+<p class="caption">
+図1.1: sample photo
+</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_tricky_id
@@ -499,7 +558,15 @@ EOS
     end
 
     actual = compile_block("//image[123 あ_;][sample photo]{\n//}\n")
-    assert_equal %Q(<div id="id_123-_E3_81_82___3B" class="image">\n<img src="images/chap1-123 あ_;.png" alt="sample photo" />\n<p class="caption">\n図1.1: sample photo\n</p>\n</div>\n), actual
+    expected = <<-EOS
+<div id="id_123-_E3_81_82___3B" class="image">
+<img src="images/chap1-123 あ_;.png" alt="sample photo" />
+<p class="caption">
+図1.1: sample photo
+</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_indepimage
@@ -510,7 +577,15 @@ EOS
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="sample photo" />
+<p class="caption">
+図: sample photo
+</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_indepimage_without_caption
@@ -521,7 +596,12 @@ EOS
     end
 
     actual = compile_block("//indepimage[sampleimg]\n")
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="" />\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="" />
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_indepimage_with_metric
@@ -532,7 +612,15 @@ EOS
     end
 
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per" />
+<p class="caption">
+図: sample photo
+</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_indepimage_with_metric2
@@ -543,7 +631,15 @@ EOS
     end
 
     actual = compile_block(%Q(//indepimage[sampleimg][sample photo][scale=1.2, html::class="sample",latex::ignore=params]\n))
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />\n<p class="caption">\n図: sample photo\n</p>\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="sample photo" class="width-120per sample" />
+<p class="caption">
+図: sample photo
+</p>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -554,28 +650,74 @@ EOS
     end
 
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
-    assert_equal %Q(<div id="sampleimg" class="image">\n<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />\n</div>\n), actual
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="" class="width-120per" />
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist
     actual = compile_block(": foo\n  foo.\n  bar.\n")
-    assert_equal %Q(<dl>\n<dt>foo</dt>\n<dd>foo.bar.</dd>\n</dl>\n), actual
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo.bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_bracket
     actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
-    assert_equal %Q(<dl>\n<dt>foo[bar]</dt>\n<dd>foo.bar.</dd>\n</dl>\n), actual
+    expected = <<-EOS
+<dl>
+<dt>foo[bar]</dt>
+<dd>foo.bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_comment
     source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
     actual = compile_block(source)
-    assert_equal %Q(<dl>\n<dt>title</dt>\n<dd>body</dd>\n<dt>title2</dt>\n<dd>body2</dd>\n</dl>\n), actual
+    expected = <<-EOS
+<dl>
+<dt>title</dt>
+<dd>body</dd>
+<dt>title2</dt>
+<dd>body2</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_beforeulol
     actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
-    assert_equal %Q(<dl>\n<dt>foo</dt>\n<dd>foo.</dd>\n</dl>\n<p>para</p>\n<dl>\n<dt>foo</dt>\n<dd>foo.</dd>\n</dl>\n<ol>\n<li>bar</li>\n</ol>\n<dl>\n<dt>foo</dt>\n<dd>foo.</dd>\n</dl>\n<ul>\n<li>bar</li>\n</ul>\n), actual
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo.</dd>
+</dl>
+<p>para</p>
+<dl>
+<dt>foo</dt>
+<dd>foo.</dd>
+</dl>
+<ol>
+<li>bar</li>
+</ol>
+<dl>
+<dt>foo</dt>
+<dd>foo.</dd>
+</dl>
+<ul>
+<li>bar</li>
+</ul>
+EOS
+    assert_equal expected, actual
   end
 
   def test_list
@@ -583,7 +725,17 @@ EOS
       Book::ListIndex::Item.new('samplelist', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
-    assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list">test1\ntest1.5\n\ntest<i>2</i>\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div id="samplelist" class="caption-code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<pre class="list">test1
+test1.5
+
+test<i>2</i>
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_list
@@ -706,7 +858,17 @@ end
     @book.config['highlight']['html'] = 'rouge'
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
 
-    assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">test1\ntest1.5\n\ntest&lt;i&gt;2&lt;/i&gt;\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div id="samplelist" class="caption-code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<pre class="list highlight">test1
+test1.5
+
+test&lt;i&gt;2&lt;/i&gt;
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_list_rouge_lang
@@ -751,7 +913,18 @@ EOS
     @book.config['highlight']['html'] = 'rouge'
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_][]{\ndef foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n//}\n")
 
-    assert_equal %Q(<div id="samplelist" class="caption-code">\n<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>\n<pre class="list highlight">def foo(a1, a2=:test)\n  (1..3).times{|i| a.include?(:foo)}\n  return true\nend\n\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div id="samplelist" class="caption-code">
+<p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
+<pre class="list highlight">def foo(a1, a2=:test)
+  (1..3).times{|i| a.include?(:foo)}
+  return true
+end
+
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -964,9 +1137,68 @@ EOB
     assert_equal expected, actual
   end
 
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+<div class="source-code">
+<p class="caption">foo/bar/test.rb</p>
+<pre class="source">foo
+bar
+
+buz
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+<div class="source-code">
+<pre class="source">foo
+bar
+
+buz
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_box
+    actual = compile_block("//box{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+<div class="syntax">
+<pre class="syntax">foo
+bar
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//box[FOO]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+<div class="syntax">
+<p class="caption">FOO</p>
+<pre class="syntax">foo
+bar
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_emlist
     actual = compile_block("//emlist{\nlineA\nlineB\n//}\n")
-    assert_equal %Q(<div class="emlist-code">\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="emlist-code">
+<pre class="emlist">lineA
+lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_pygments_lang
@@ -990,12 +1222,28 @@ EOB
 
   def test_emlist_caption
     actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
-    assert_equal %Q(<div class="emlist-code">\n<p class="caption">cap1</p>\n<pre class="emlist">lineA\nlineB\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="emlist-code">
+<p class="caption">cap1</p>
+<pre class="emlist">lineA
+lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_with_tab
     actual = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
-    assert_equal %Q(<div class="emlist-code">\n<pre class="emlist">        lineA\n                lineB\n        lineC\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="emlist-code">
+<pre class="emlist">        lineA
+                lineB
+        lineC
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
@@ -1042,12 +1290,27 @@ EOS
   def test_emlist_with_4tab
     @config['tabwidth'] = 4
     actual = compile_block("//emlist{\n\tlineA\n\t\tlineB\n\tlineC\n//}\n")
-    assert_equal %Q(<div class="emlist-code">\n<pre class="emlist">    lineA\n        lineB\n    lineC\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="emlist-code">
+<pre class="emlist">    lineA
+        lineB
+    lineC
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd
     actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal %Q(<div class="cmd-code">\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="cmd-code">
+<pre class="cmd">lineA
+lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd_pygments
@@ -1059,12 +1322,27 @@ EOS
     @book.config['highlight'] = {}
     @book.config['highlight']['html'] = 'pygments'
     actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
-    assert_equal %Q(<div class="cmd-code">\n<pre class="cmd"><span style="color: #888888">lineA</span>\n<span style="color: #888888">lineB</span>\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="cmd-code">
+<pre class="cmd"><span style="color: #888888">lineA</span>
+<span style="color: #888888">lineB</span>
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd_caption
     actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
-    assert_equal %Q(<div class="cmd-code">\n<p class="caption">cap1</p>\n<pre class="cmd">lineA\nlineB\n</pre>\n</div>\n), actual
+    expected = <<-EOS
+<div class="cmd-code">
+<p class="caption">cap1</p>
+<pre class="cmd">lineA
+lineB
+</pre>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_texequation
@@ -1153,7 +1431,12 @@ EOS
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q(<div class="bibpaper">\n<a id="bib-samplebib">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n), actual
+    expected = <<-EOS
+<div class="bibpaper">
+<a id="bib-samplebib">[1]</a> sample bib <b>bold</b>
+<p>ab</p></div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_bibpaper_normalized
@@ -1162,7 +1445,12 @@ EOS
     end
 
     actual = compile_block("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
-    assert_equal %Q(<div class="bibpaper">\n<a id="bib-id_sample_3Dbib">[1]</a> sample bib <b>bold</b>\n<p>ab</p></div>\n), actual
+    expected = <<-EOS
+<div class="bibpaper">
+<a id="bib-id_sample_3Dbib">[1]</a> sample bib <b>bold</b>
+<p>ab</p></div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_bibpaper_with_anchor
@@ -1171,7 +1459,12 @@ EOS
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
-    assert_equal %Q(<div class="bibpaper">\n<a id="bib-samplebib">[1]</a> sample bib <a href="http://example.jp" class="link">http://example.jp</a>\n<p>ab</p></div>\n), actual
+    expected = <<-EOS
+<div class="bibpaper">
+<a id="bib-samplebib">[1]</a> sample bib <a href="http://example.jp" class="link">http://example.jp</a>
+<p>ab</p></div>
+EOS
+    assert_equal expected, actual
   end
 
   def column_helper(review)
@@ -1279,7 +1572,12 @@ EOS
   * AAA
   * BBB
 EOS
-    expected = "<ul>\n<li>AAA</li>\n<li>BBB</li>\n</ul>\n"
+    expected = <<-EOS
+<ul>
+<li>AAA</li>
+<li>BBB</li>
+</ul>
+EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
@@ -1291,7 +1589,12 @@ EOS
   * BBB
     -BB
 EOS
-    expected = "<ul>\n<li>AAA-AA</li>\n<li>BBB-BB</li>\n</ul>\n"
+    expected = <<-EOS
+<ul>
+<li>AAA-AA</li>
+<li>BBB-BB</li>
+</ul>
+EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
@@ -1342,25 +1645,10 @@ EOS
     src = <<-EOS
   ** AAA
   * AA
-  * BBB
-  ** BB
 EOS
 
-    expected = <<-EOS
-<ul>
-<li><ul>
-<li>AAA</li>
-</ul>
-</li>
-<li>AA</li>
-<li>BBB<ul>
-<li>BB</li>
-</ul>
-</li>
-</ul>
-EOS
-    actual = compile_block(src)
-    assert_equal expected, actual
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':1: error: too many *.', e.message
   end
 
   def test_ul_nest4
@@ -1377,37 +1665,6 @@ EOS
 <li>A<ul>
 <li>AA<ul>
 <li>AAA</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>B<ul>
-<li>BB</li>
-</ul>
-</li>
-</ul>
-EOS
-    actual = compile_block(src)
-    assert_equal expected, actual
-  end
-
-  def test_ul_nest5
-    src = <<-EOS
-  * A
-  ** AA
-  **** AAAA
-  * B
-  ** BB
-EOS
-
-    expected = <<-EOS
-<ul>
-<li>A<ul>
-<li>AA<ul>
-<li><ul>
-<li>AAAA</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -1687,8 +1944,35 @@ EOS
 
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal %Q(<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n),
-                 actual
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+<div id="foo" class="table">
+<p class="caption">表1.1: FOO</p>
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_empty_table
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    assert_equal ':2: error: no rows in the table', e.message
+
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    assert_equal ':3: error: no rows in the table', e.message
   end
 
   def test_inline_table
@@ -1701,8 +1985,22 @@ EOS
 
   def test_emtable
     actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
-    assert_equal %Q(<div class="table">\n<p class="caption">foo</p>\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n<div class="table">\n<table>\n<tr><th>aaa</th><th>bbb</th></tr>\n<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>\n</table>\n</div>\n),
-                 actual
+    expected = <<-EOS
+<div class="table">
+<p class="caption">foo</p>
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+</div>
+<div class="table">
+<table>
+<tr><th>aaa</th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd&lt;&gt;&amp;</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_imgtable
@@ -1713,41 +2011,118 @@ EOS
     end
 
     actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
-    expected = %Q(<div id="sampleimg" class="imgtable image">\n<p class="caption">表1.1: test for imgtable</p>\n<img src="images/chap1-sampleimg.png" alt="test for imgtable" />\n</div>\n)
+    expected = <<-EOS
+<div id="sampleimg" class="imgtable image">
+<p class="caption">表1.1: test for imgtable</p>
+<img src="images/chap1-sampleimg.png" alt="test for imgtable" />
+</div>
+EOS
     assert_equal expected, actual
   end
 
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
-    expected = %Q(<div class="note">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="note">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="note">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="note">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
-    expected = %Q(<div class="memo">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="memo">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="memo">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="memo">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
-    expected = %Q(<div class="info">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="info">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="info">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="info">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
-    expected = %Q(<div class="important">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="important">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="important">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="important">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
-    expected = %Q(<div class="caution">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="caution">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="caution">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="caution">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
-    expected = %Q(<div class="notice">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="notice">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="notice">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="notice">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
-    expected = %Q(<div class="warning">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="warning">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="warning">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="warning">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
 
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
-    expected = %Q(<div class="tip">\n<p>A</p>\n<p>B</p>\n</div>\n<div class="tip">\n<p class="caption">caption</p>\n<p>A</p>\n</div>\n)
+    expected = <<-EOS
+<div class="tip">
+<p>A</p>
+<p>B</p>
+</div>
+<div class="tip">
+<p class="caption">caption</p>
+<p>A</p>
+</div>
+EOS
     assert_equal expected, actual
   end
 
