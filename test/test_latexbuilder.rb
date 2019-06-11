@@ -994,6 +994,14 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_empty_table
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    assert_equal ':2: error: no rows in the table', e.message
+
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    assert_equal ':3: error: no rows in the table', e.message
+  end
+
   def test_customize_cellwidth
     actual = compile_block("//tsize[2,3,5]\n//table{\nA\tB\tC\n//}\n")
     expected = <<-EOS

@@ -186,9 +186,6 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      blank
-      puts "◆→開始:#{@titles['table']}←◆"
-
       rows = []
       sepidx = nil
       lines.each_with_index do |line, idx|
@@ -201,13 +198,16 @@ module ReVIEW
         rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
+      error 'no rows in the table' if rows.empty?
+
+      blank
+      puts "◆→開始:#{@titles['table']}←◆"
 
       begin
         table_header id, caption if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
       table_begin rows.first.size
       if sepidx
         sepidx.times do

@@ -606,13 +606,13 @@ module ReVIEW
         rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
+      error 'no rows in the table' if rows.empty?
 
       begin
         table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
-      return if rows.empty?
       table_begin(rows.first.size)
       if sepidx
         sepidx.times do

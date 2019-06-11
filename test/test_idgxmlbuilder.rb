@@ -133,6 +133,14 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>), actual
   end
 
+  def test_empty_table
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    assert_equal ':2: error: no rows in the table', e.message
+
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    assert_equal ':3: error: no rows in the table', e.message
+  end
+
   def test_emtable
     actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
     assert_equal %Q(<table><caption>foo</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
