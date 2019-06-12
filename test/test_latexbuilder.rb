@@ -1289,6 +1289,27 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_cont_with_br
+    src = <<-EOS
+  * AAA@<br>{}
+    -AA
+  * BBB@<br>{}1@<br>{}
+    -BB
+EOS
+    expected = <<-EOS
+
+\\begin{itemize}
+\\item AAA\\\\
+{-}AA
+\\item BBB\\\\
+1\\\\
+{-}BB
+\\end{itemize}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
   def test_ul_nest1
     src = <<-EOS
   * AAA

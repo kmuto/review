@@ -257,7 +257,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      str = lines.join("\n")
+      str = lines.map(&:chomp).join("\n")
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -276,7 +276,7 @@ module ReVIEW
     end
 
     def ol_item(lines, _num)
-      str = lines.join("\n")
+      str = lines.map(&:chomp).join("\n")
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -298,7 +298,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts lines.join("\n")
+      puts lines.map(&:chomp).join("\n")
     end
 
     def dl_end
@@ -1215,7 +1215,7 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(_id, _caption, lines)
-      print split_paragraph(lines).join("\n")
+      print split_paragraph(lines).map(&:chomp).join("\n")
       puts ''
     end
 
