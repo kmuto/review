@@ -1,3 +1,76 @@
+# Version 3.2.0
+
+## 新機能
+## 非互換の変更
+* PDFMaker: `//image` 命令などで画像を配置するときに `\includegraphics` ではなく、それを抽象化した `\reviewincludegraphics` を使うようにしました ([#1318])
+
+## バグ修正
+* 別の章の図表やリストを参照する際に章が存在しないとき、内部エラーではなく標準のキーエラーを返すようにしました ([#1284])
+* review-compile のエラーメッセージで提示する値の誤りを修正しました ([#1286])
+* PDFMaker: review-jsbook において、serial_pagination=true を設定しているとき、PDF のページ番号のメタ情報がおかしくなるのを修正しました ([#1288])
+* notoc, nodisp, nonum を含む見出しを `@<hd>` で参照したときに番号が付いてしまうこと、およびその後の見出しの番号がおかしくなることを修正しました ([#1294])
+* PDFMaker: jlreq.cls 0401 版利用時に review-jlreq.cls でエラーが出るのを修正しました ([#1298])
+* EPUBMaker: EPUB2 の生成に失敗するのを修正しました ([#1301])
+* EPUBMaker: Windows で一時フォルダの削除にときどき失敗する現象に対処しました ([#1011])
+* PDFMaker: `@<bou>` をサポートしました ([#1220])
+* PDFMaker: jlreq.cls の古いバージョンでも動くように対処しました ([#1317])
+
+## 機能強化
+* `CHAPS:` が空のときのテストを追加しました ([#1275])
+* PDFMaker: 安全のため、reviewtt などのインライン書体命令を RobustCommand マクロで定義するようにしました ([#1280])
+* EPUBMaker: デバッグモードで実行する `--debug` オプションを追加しました ([#1281])
+* review-epub2html: 脚注をインラインで表現する `--inline-footnote` オプションを追加しました ([#1283])
+* EPUBMaker: iBooks 向けに、EPUB3 においても表紙画像のメタデータを入れるようにしました ([#1293])
+* PDFMaker: review-jsbook および review-jlreq において、コードリストや数式のキャプションの直後に改ページされる現象を程度抑制するようにしました ([#1299])
+* rubocop 0.67.2 に基づいてコードを整形しました ([#1297])
+* EPUB 作成のテストを追加しました ([#1300])
+* テスト対象の Ruby バージョンを 2.4.6, 2.5.5, 2.6.3 としました ([#1303])
+* YAMLLoader のコードを改良しました ([#1304])
+* `*` の箇条書きで、`**` から始めたり、`*` のあとに `***` を使ったりといった不正なレベル指定をエラーにしました ([#1313])
+* ReVIEW::Location クラスを分離しました ([#1308])
+* 箇条書きや文献リストで複数行の英単語が連結されてしまうのを回避しました (ただし PDFMaker のみ) ([#1312])
+* 空の表があったときにエラーを出すようにしました ([#1325])
+* いくつかのテスト対象を追加しました ([#1327], [#1328])
+
+## ドキュメント
+* 見出しのレベルの説明の誤りを修正しました ([#1309])
+
+## その他
+* もう使われていない ReVIEW::Preprocessor::Strip を削除しました ([#1305])
+
+## コントリビューターのみなさん
+* [@uetchy](https://github.com/uetchy)
+* [@mitsuo0114](https://github.com/mitsuo0114)
+
+[#1011]: https://github.com/kmuto/review/issues/1011
+[#1220]: https://github.com/kmuto/review/issues/1220
+[#1275]: https://github.com/kmuto/review/pull/1275
+[#1280]: https://github.com/kmuto/review/pull/1280
+[#1281]: https://github.com/kmuto/review/issues/1281
+[#1283]: https://github.com/kmuto/review/pull/1283
+[#1284]: https://github.com/kmuto/review/issues/1284
+[#1286]: https://github.com/kmuto/review/pull/1286
+[#1288]: https://github.com/kmuto/review/issues/1288
+[#1293]: https://github.com/kmuto/review/pull/1293
+[#1294]: https://github.com/kmuto/review/issues/1294
+[#1297]: https://github.com/kmuto/review/pull/1297
+[#1298]: https://github.com/kmuto/review/pull/1298
+[#1299]: https://github.com/kmuto/review/pull/1299
+[#1300]: https://github.com/kmuto/review/pull/1300
+[#1301]: https://github.com/kmuto/review/pull/1301
+[#1303]: https://github.com/kmuto/review/pull/1303
+[#1304]: https://github.com/kmuto/review/pull/1304
+[#1305]: https://github.com/kmuto/review/pull/1305
+[#1308]: https://github.com/kmuto/review/pull/1308
+[#1309]: https://github.com/kmuto/review/issues/1309
+[#1312]: https://github.com/kmuto/review/issues/1312
+[#1313]: https://github.com/kmuto/review/issues/1313
+[#1317]: https://github.com/kmuto/review/pull/1317
+[#1318]: https://github.com/kmuto/review/issues/1318
+[#1325]: https://github.com/kmuto/review/issues/1325
+[#1327]: https://github.com/kmuto/review/issues/1327
+[#1328]: https://github.com/kmuto/review/pull/1328
+
 # Version 3.1.0
 
 ## 非互換の変更

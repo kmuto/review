@@ -1,3 +1,76 @@
+# Version 3.2.0
+
+## New Features
+## Breaking Changes
+* PDFMaker: changed to use the abstract name `\reviewincludegraphics` instead of `\includegraphics` for image placements (such as `//image`) ([#1318])
+
+## Bug Fixes
+* reference to IDs of non-existent chapter now return standard key error (instead of internal error) ([#1284])
+* fixed the value in the error message of review-compile ([#1286])
+* PDFMaker: fixed the metadata of PDF page number was wrong when using review-jsbook with serial_pagination = true ([#1288])
+* fixed a bug when using `@<hd>` to refer to headings with notoc, nodisp, or nonum ([#1294])
+* PDFMaker: fixed an error in review-jlreq when using jlreq.cls version 0401 ([#1298])
+* EPUBMaker: fixed a error of building EPUB2 ([#1301])
+* EPUBMaker: added a workaround for a temporary folder deletion failure on Windows ([#1011])
+* PDFMaker: support `@<bou>` ([#1220])
+* PDFMaker: support old jlreq.cls ([#1317])
+
+## Enhancements
+* added test when `CHAPS:` is empty ([#1275])
+* PDFMaker: for safety, inline typeface commands such as `\reviewtt` are defined with RobustCommand ([#1280])
+* EPUBMaker: added `--debug` option to execute in debug mode ([#1281])
+* review-epub2html: added `--inline-footnote` option to represent footnotes as inline ([#1283])
+* EPUBMaker: added metadata of the cover image on EPUB3 for iBooks ([#1293])
+* PDFMaker: suppressed the unexptected page break after the caption of code list or equation in review-jsbook and review-jlreq ([#1299])
+* reformatted the codes using rubocop 0.67.2 ([#1297])
+* added a test of building EPUB ([#1300])
+* updated Ruby versions of test target to 2.4.6, 2.5.5, and 2.6.3 ([#1303])
+* improved the code of YAMLLoader ([#1304])
+* raise an error when invalid level is used in bullet ([#1313])
+* extracted ReVIEW::Location class ([#1308])
+* avoid multi-lined English words being combined without a space in bullets and bibliographic list (only in PDFMaker, at this time) ([#1312])
+* raise an error when table is empty ([#1325])
+* add some tests ([#1327], [#1328])
+
+## Docs
+* fixed the description about header levels ([#1309])
+
+## Others
+* removed ReVIEW::Preprocessor::Strip due to it is no longer used ([#1305])
+
+## Contributors
+* [@uetchy](https://github.com/uetchy)
+* [@mitsuo0114](https://github.com/mitsuo0114)
+
+[#1011]: https://github.com/kmuto/review/issues/1011
+[#1220]: https://github.com/kmuto/review/issues/1220
+[#1275]: https://github.com/kmuto/review/pull/1275
+[#1280]: https://github.com/kmuto/review/pull/1280
+[#1281]: https://github.com/kmuto/review/issues/1281
+[#1283]: https://github.com/kmuto/review/pull/1283
+[#1284]: https://github.com/kmuto/review/issues/1284
+[#1286]: https://github.com/kmuto/review/pull/1286
+[#1288]: https://github.com/kmuto/review/issues/1288
+[#1293]: https://github.com/kmuto/review/pull/1293
+[#1294]: https://github.com/kmuto/review/issues/1294
+[#1297]: https://github.com/kmuto/review/pull/1297
+[#1298]: https://github.com/kmuto/review/pull/1298
+[#1299]: https://github.com/kmuto/review/pull/1299
+[#1300]: https://github.com/kmuto/review/pull/1300
+[#1301]: https://github.com/kmuto/review/pull/1301
+[#1303]: https://github.com/kmuto/review/pull/1303
+[#1304]: https://github.com/kmuto/review/pull/1304
+[#1305]: https://github.com/kmuto/review/pull/1305
+[#1308]: https://github.com/kmuto/review/pull/1308
+[#1309]: https://github.com/kmuto/review/issues/1309
+[#1312]: https://github.com/kmuto/review/issues/1312
+[#1313]: https://github.com/kmuto/review/issues/1313
+[#1317]: https://github.com/kmuto/review/pull/1317
+[#1318]: https://github.com/kmuto/review/issues/1318
+[#1325]: https://github.com/kmuto/review/issues/1325
+[#1327]: https://github.com/kmuto/review/issues/1327
+[#1328]: https://github.com/kmuto/review/pull/1328
+
 # Version 3.1.0
 ## Breaking Changes
 * PDFMaker: introduce `\reviewimagecaption` macro for the caption of figure ([#1254]). Please update your review-base.sty by `review-update` command on your  Re:VIEW 3 project.
