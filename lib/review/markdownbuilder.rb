@@ -80,6 +80,13 @@ module ReVIEW
       puts '```'
     end
 
+    def listnum_body(lines, _lang)
+      lines.each_with_index do |line, i|
+        puts((i + 1).to_s.rjust(2) + ": #{detab(line)}")
+      end
+      puts '```'
+    end
+
     def ul_begin
       blank if @ul_indent == 0
       @ul_indent += 1

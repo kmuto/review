@@ -187,6 +187,23 @@ BBB
     EOS
   end
 
+  def test_listnum
+    def @chapter.list(_id)
+      Book::ListIndex::Item.new('test', 1)
+    end
+    actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n\tbuz\n//}\n")
+    expected = <<-EOS
+リスト1.1 this is **test**<&>_
+
+```
+ 1: foo
+ 2: bar
+ 3:         buz
+```
+EOS
+    assert_equal expected, actual
+  end
+
   def test_emlist_lang
     actual = compile_block(<<-EOS)
 //emlist[caption][ruby]{
