@@ -31,6 +31,7 @@
 * avoid multi-lined English words being combined without a space in bullets and bibliographic list (only in PDFMaker, at this time) ([#1312])
 * raise an error when table is empty ([#1325])
 * add some tests ([#1327], [#1328])
+* MARKDOWNBilder: support `//listnum` ([#1336])
 
 ## Docs
 * fixed the description about header levels ([#1309])
@@ -70,6 +71,7 @@
 [#1325]: https://github.com/kmuto/review/issues/1325
 [#1327]: https://github.com/kmuto/review/issues/1327
 [#1328]: https://github.com/kmuto/review/pull/1328
+[#1336]: https://github.com/kmuto/review/pull/1336
 
 # Version 3.1.0
 ## Breaking Changes

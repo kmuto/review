@@ -31,6 +31,7 @@
 * 箇条書きや文献リストで複数行の英単語が連結されてしまうのを回避しました (ただし PDFMaker のみ) ([#1312])
 * 空の表があったときにエラーを出すようにしました ([#1325])
 * いくつかのテスト対象を追加しました ([#1327], [#1328])
+* MARKDOWNBuilder: ``//listnum``に対応しました ([#1336])
 
 ## ドキュメント
 * 見出しのレベルの説明の誤りを修正しました ([#1309])
@@ -70,6 +71,7 @@
 [#1325]: https://github.com/kmuto/review/issues/1325
 [#1327]: https://github.com/kmuto/review/issues/1327
 [#1328]: https://github.com/kmuto/review/pull/1328
+[#1336]: https://github.com/kmuto/review/pull/1336
 
 # Version 3.1.0
 
