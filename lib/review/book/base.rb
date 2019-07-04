@@ -190,7 +190,7 @@ module ReVIEW
 
         catalogfile_path = filename_join(@basedir, config['catalogfile'])
         if File.file? catalogfile_path
-          @catalog = File.open(catalogfile_path, 'r:BOM|utf-8') { |f| Catalog.new(f) }
+          @catalog = File.open(catalogfile_path, 'rt:BOM|utf-8') { |f| Catalog.new(f) }
         end
         if @catalog
           @catalog.validate!(@config, basedir)
@@ -352,7 +352,7 @@ module ReVIEW
 
       def mkpart_from_namelistfile(path)
         chaps = []
-        File.read(path, mode: 'r:BOM|utf-8').split.each_with_index do |name, idx|
+        File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, idx|
           if path =~ /PREDEF/
             chaps << mkchap(name)
           else
@@ -394,7 +394,7 @@ module ReVIEW
           end
         end
         res = ''
-        File.open(filename_join(@basedir, filename), 'r:BOM|utf-8') do |f|
+        File.open(filename_join(@basedir, filename), 'rt:BOM|utf-8') do |f|
           f.each_line do |line|
             next if /\A#/ =~ line
             line.gsub!(/#.*\Z/, '')
