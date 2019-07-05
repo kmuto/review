@@ -361,7 +361,7 @@ module ReVIEW
     end
 
     def parse_file(fname)
-      File.open(fname, 'r:BOM|utf-8') do |f|
+      File.open(fname, 'rt:BOM|utf-8') do |f|
         init_errorutils f
         return _parse_file(f)
       end

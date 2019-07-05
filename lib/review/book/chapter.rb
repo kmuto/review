@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto
 #               2002-2008 Minero Aoki
 #
 # This program is free software.
@@ -35,7 +35,7 @@ module ReVIEW
           @content = nil
         end
         if !@content && @path && File.exist?(@path)
-          @content = File.read(@path, mode: 'r:BOM|utf-8')
+          @content = File.read(@path, mode: 'rt:BOM|utf-8')
           @number = nil if %w[nonum nodisp notoc].include?(find_first_header_option)
         end
         @list_index = nil

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -15,7 +15,7 @@ require 'review/textbuilder'
 module ReVIEW
   class TOCParser
     def self.parse(chap)
-      stream = StringIO.new(chap.content, 'r:BOM|utf-8')
+      stream = StringIO.new(chap.content, 'rt:BOM|utf-8')
       new.parse(stream, chap).map do |root|
         root.number = chap.number
         root

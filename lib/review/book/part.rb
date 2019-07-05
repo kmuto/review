@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto
 #               2002-2008 Minero Aoki
 #
 # This program is free software.
@@ -25,7 +25,7 @@ module ReVIEW
         if io
           @content = io.read
         elsif @path.present? && File.exist?(File.join(@book.config['contentdir'], @path))
-          @content = File.read(File.join(@book.config['contentdir'], @path), mode: 'r:BOM|utf-8')
+          @content = File.read(File.join(@book.config['contentdir'], @path), mode: 'rt:BOM|utf-8')
           @name = File.basename(@name, '.re')
         end
         if file?
