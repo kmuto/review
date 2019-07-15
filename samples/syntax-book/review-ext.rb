@@ -11,4 +11,16 @@ module ReVIEW
       %Q(←#{escape(str)})
     end
   end
+  class IDGXMLBuilder
+    Compiler.definline(:strong)
+    Compiler.definline(:em)
+
+    def inline_strong(str)
+      str
+    end
+
+    def inline_em(str)
+      str
+    end
+  end
 end
