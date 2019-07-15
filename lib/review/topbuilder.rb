@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -180,7 +180,21 @@ module ReVIEW
           puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         end
       end
-      puts lines.join("\n")
+
+      if @book.config['textmaker'] && @book.config['textmaker']['imgmath']
+        fontsize = @book.config['imgmath_options']['fontsize'].to_f
+        lineheight = @book.config['imgmath_options']['lineheight'].to_f
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{unescape(lines.join("\n"))}\n\\end{equation*}\n"
+        key = Digest::SHA256.hexdigest(math_str)
+        math_dir = File.join(@book.config['imagedir'], '_review_math_text')
+        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
+        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
+        defer_math_image(math_str, img_path, key)
+        puts "◆→math:#{File.basename(img_path)}←◆"
+      else
+        puts lines.join("\n")
+      end
+
       puts "◆→終了:#{@titles['texequation']}←◆"
       blank
     end
@@ -359,7 +373,17 @@ module ReVIEW
     end
 
     def inline_m(str)
-      %Q(◆→TeX式ここから←◆#{str}◆→TeX式ここまで←◆)
+      if @book.config['textmaker'] && @book.config['textmaker']['imgmath']
+        math_str = '$' + str + '$'
+        key = Digest::SHA256.hexdigest(str)
+        math_dir = File.join(@book.config['imagedir'], '_review_math_text')
+        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
+        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
+        defer_math_image(math_str, img_path, key)
+        %Q(◆→TeX式ここから←◆◆→math:#{File.basename(img_path)}←◆◆→TeX式ここまで←◆)
+      else
+        %Q(◆→TeX式ここから←◆#{str}◆→TeX式ここまで←◆)
+      end
     end
 
     def bibpaper_header(id, caption)

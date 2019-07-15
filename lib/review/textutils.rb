@@ -1,4 +1,5 @@
 require 'nkf'
+require 'digest'
 
 module ReVIEW
   module TextUtils
@@ -30,6 +31,17 @@ module ReVIEW
         blocked_lines.map! { |i| [pre] + i + [post] }
       end
       blocked_lines.map(&:join)
+    end
+
+    def defer_math_image(str, path, key)
+      # for Re:VIEW >3
+      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.tex'), 'a+') do |f|
+        f.puts str
+        f.puts '\\clearpage'
+      end
+      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.map'), 'a+') do |f|
+        f.puts key
+      end
     end
 
     private

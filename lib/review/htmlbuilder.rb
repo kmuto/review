@@ -12,7 +12,6 @@ require 'review/htmlutils'
 require 'review/template'
 require 'review/textutils'
 require 'review/webtocprinter'
-require 'digest'
 require 'tmpdir'
 require 'open3'
 
@@ -1217,17 +1216,6 @@ module ReVIEW
 
     def olnum(num)
       @ol_num = num.to_i
-    end
-
-    def defer_math_image(str, path, key)
-      # for Re:VIEW >3
-      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.tex'), 'a+') do |f|
-        f.puts str
-        f.puts '\\clearpage'
-      end
-      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.map'), 'a+') do |f|
-        f.puts key
-      end
     end
 
     def make_math_image(str, path, fontsize = 12)

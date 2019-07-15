@@ -389,3 +389,7 @@ pdfmaker:
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
   colophon: true
   # pdfmaker:階層を使うものはここまで
+# textmaker:
+  # TeXの数式を画像化するか。省略した場合はnull (作成しない)
+  # imgmath: null
+  # textmaker:階層を使うものはここまで
