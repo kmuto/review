@@ -167,8 +167,11 @@
 \DeclareRobustCommand{\reviewunderline}[1]{\underline{#1}}% ulemかjumolineで上書き。デフォルトはulemにしている
 \DeclareRobustCommand{\reviewit}[1]{\textit{#1}}
 \DeclareRobustCommand{\reviewbold}[1]{\textbf{#1}}
-\DeclareRobustCommand{\reviewcode}[1]{\texttt{#1}}
-\DeclareRobustCommand{\reviewtt}[1]{\texttt{#1}}
+\let\reviewcode\texttt
+\let\reviewtt\texttt
+% below macro removes a space in an argument unexpectedly
+%\DeclareRobustCommand{\reviewcode}[1]{\texttt{#1}}
+%\DeclareRobustCommand{\reviewtt}[1]{\texttt{#1}}
 \DeclareRobustCommand{\reviewtti}[1]{\texttt{\textit{#1}}}
 \DeclareRobustCommand{\reviewttb}[1]{\texttt{\textbf{#1}}}
 \DeclareRobustCommand{\reviewbou}[1]{\kenten{#1}}
