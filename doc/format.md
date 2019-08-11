@@ -682,8 +682,8 @@ imgmath_options:
   pdfcrop_cmd: "pdfcrop --hires %i %o"
   # imaging command.
   # %i: filename for input %o: filename for output %O: filename for output without the extension
-  # %p: page number
-  pdfcrop_pixelize_cmd: "pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O"
+  # %p: page number, %t: format
+  pdfcrop_pixelize_cmd: "pdftocairo -%t -r 90 -f %p -l %p -singlefile %i %O"
   # whether to generate a single PDF page for pdfcrop_pixelize_cmd.
   extract_singlepage: null
   # command line to generate a single PDF page file.
@@ -715,6 +715,17 @@ imgmath_options:
   pdfcrop_pixelize_cmd: "magick -density 200x200 %i %o"
   # use sips
   pdfcrop_pixelize_cmd: "sips -s format png --out %o %i"
+```
+
+To create PDF math images:
+
+```
+imgmath: true
+imgmath_options:
+  format: pdf
+  extract_singlepage: true
+  pdfextract_cmd: "pdftk A=%i cat A%p output %o"
+  pdfcrop_pixelize_cmd: "mv %i %o"
 ```
 
 To set the same setting as Re:VIEW 2:
