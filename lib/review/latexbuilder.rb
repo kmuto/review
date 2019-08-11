@@ -594,26 +594,18 @@ module ReVIEW
     alias_method :numberlessimage, :indepimage
 
     def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\{\-\}]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
-        end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
-      end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
-
+      sepidx, rows = parse_table_rows(lines)
       begin
         table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin(rows.first.size)
+      table_begin rows.first.size
+      table_tr sepidx, rows
+      table_end
+    end
+
+    def table_tr(sepidx, rows)
       if sepidx
         sepidx.times do
           cno = -1
@@ -640,7 +632,6 @@ module ReVIEW
              end)
         end
       end
-      table_end
     end
 
     def table_header(id, caption)
