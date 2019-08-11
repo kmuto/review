@@ -66,8 +66,8 @@ module ReVIEW
     end
     module_function :copy_images_to_dir
 
-    def cleanup_mathimg
-      math_dir = "./#{@config['imagedir']}/_review_math"
+    def cleanup_mathimg(path = '_review_math')
+      math_dir = "./#{@config['imagedir']}/#{path}"
       if @config['imgmath'] && Dir.exist?(math_dir)
         FileUtils.rm_rf(math_dir)
       end
@@ -141,6 +141,7 @@ EOB
     end
 
     def make_math_images_pdfcrop(dir, tex_path, math_dir)
+      # rubocop:disable Metrics/BlockLength
       Dir.chdir(dir) do
         dvi_path = '__IMGMATH__.dvi'
         pdf_path = '__IMGMATH__.pdf'
@@ -155,7 +156,6 @@ EOB
             raise CompileError
           end
         end
-
         args = @config['imgmath_options']['pdfcrop_cmd'].shellsplit
         args.map! do |m|
           m.sub('%i', pdf_path).
@@ -201,6 +201,7 @@ EOB
             args = @config['imgmath_options']['pdfcrop_pixelize_cmd'].shellsplit
             args.map! do |m|
               m.sub('%i', pdf_path2).
+                sub('%t', @config['imgmath_options']['format']).
                 sub('%o', File.join(math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
                 sub('%O', File.join(math_dir, "_gen_#{key}")).
                 sub('%p', page.to_s)
@@ -213,6 +214,7 @@ EOB
           end
         end
       end
+      # rubocop:enable Metrics/BlockLength
     end
 
     def make_math_images_dvipng(dir, tex_path, math_dir)

@@ -184,7 +184,7 @@ secnolevel: 2
 # 各数字の意味は、順にリストの行数、リストの1行字数、テキストの行数、テキストの1行字数、1kバイトごとのページ数
 # page_metric: [40,80,40,80,2]
 
-# EPUBおよびWeb生成における数式の画像化指定
+# EPUB・Web、およびテキスト生成時における数式の画像化指定
 # TeXの数式を画像化するか。省略した場合はnull (作成しない)
 # imgmath: true
 
@@ -211,14 +211,20 @@ secnolevel: 2
   # pdfcrop_cmd: "pdfcrop --hires %i %o"
   # PDFから画像化するコマンドのコマンドライン。プレースホルダは
   # %i: 入力ファイル、%o: 出力ファイル、%O: 出力ファイルから拡張子を除いたもの
-  # %p: 対象ページ番号
-  # pdfcrop_pixelize_cmd: "pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O"
+  # %p: 対象ページ番号、%t: フォーマット
+  # pdfcrop_pixelize_cmd: "pdftocairo -%t -r 90 -f %p -l %p -singlefile %i %O"
   # pdfcrop_pixelize_cmdが複数ページの処理に対応していない場合に単ページ化するか
   # extract_singlepage: null
   # extract_singlepageがtrueの場合に単ページ化するコマンドのコマンドライン
   # pdfextract_cmd: "pdfjam -q --outfile %o %i %p"
   # converterにdvipngを指定したときのdvipngコマンドのコマンドライン
   # dvipng_cmd: "dvipng -T tight -z 9 -p %p -l %p -o %o %i"
+  #
+  # PDFで保存したいときにはたとえば以下のようにする
+  # format: pdf
+  # extract_singlepage: true
+  # pdfextract_cmd: "pdftk A=%i cat A%p output %o"
+  # pdfcrop_pixelize_cmd: "mv %i %o"
 
 # EPUBにおけるページ送りの送り方向、page-progression-directionの値("ltr"|"rtl"|"default")
 # direction: "ltr"

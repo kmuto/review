@@ -638,8 +638,8 @@ imgmath_options:
   pdfcrop_cmd: "pdfcrop --hires %i %o"
   # PDFから画像化するコマンドのコマンドライン。プレースホルダは
   # %i: 入力ファイル、%o: 出力ファイル、%O: 出力ファイルから拡張子を除いたもの
-  # %p: 対象ページ番号
-  pdfcrop_pixelize_cmd: "pdftocairo -png -r 90 -f %p -l %p -singlefile %i %O"
+  # %p: 対象ページ番号、%t: フォーマット
+  pdfcrop_pixelize_cmd: "pdftocairo -%t -r 90 -f %p -l %p -singlefile %i %O"
   # pdfcrop_pixelize_cmdが複数ページの処理に対応していない場合に単ページ化するか
   extract_singlepage: null
   # 単ページ化するコマンドのコマンドライン
@@ -671,6 +671,17 @@ imgmath_options:
   pdfcrop_pixelize_cmd: "magick -density 200x200 %i %o"
   # sipsを利用する例
   pdfcrop_pixelize_cmd: "sips -s format png --out %o %i"
+```
+
+textmaker 向けに PDF 形式の数式ファイルを作成したいときには、たとえば以下のように設定します（ページの抽出には pdftk を利用）。
+
+```
+imgmath: true
+imgmath_options:
+  format: pdf
+  extract_singlepage: true
+  pdfextract_cmd: "pdftk A=%i cat A%p output %o"
+  pdfcrop_pixelize_cmd: "mv %i %o"
 ```
 
 Re:VIEW 2 以前の dvipng の設定に合わせるには、次のようにします。

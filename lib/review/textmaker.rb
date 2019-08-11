@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Kenshi Muto
+# Copyright (c) 2018-2019 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -15,9 +15,12 @@ require 'review/book'
 require 'review/yamlloader'
 require 'review/topbuilder'
 require 'review/version'
+require 'review/makerhelper'
 
 module ReVIEW
   class TEXTMaker
+    include MakerHelper
+
     attr_accessor :config, :basedir
 
     def initialize
@@ -65,6 +68,7 @@ module ReVIEW
     end
 
     def remove_old_files(path)
+      cleanup_mathimg('_review_math_text')
       FileUtils.rm_rf(path)
     end
 
@@ -80,6 +84,7 @@ module ReVIEW
       rescue => e
         error "yaml error #{e.message}"
       end
+
       # YAML configs will be overridden by command line options.
       @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
@@ -88,6 +93,11 @@ module ReVIEW
       rescue ApplicationError => e
         raise if @config['debug']
         error(e.message)
+      end
+
+      math_dir = "./#{@config['imagedir']}/_review_math_text"
+      if @config['imgmath'] && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.tex'))
+        make_math_images(math_dir)
       end
     end
 

@@ -121,4 +121,4 @@ file IDGXMLROOT => SRC do
   FileUtils.rm_rf [IDGXMLROOT]
 end
 
-CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT, 'images/_review_math', TEXTROOT, IDGXMLROOT])
+CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT, 'images/_review_math', 'images/_review_math_text', TEXTROOT, IDGXMLROOT])
