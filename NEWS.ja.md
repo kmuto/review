@@ -1,6 +1,36 @@
+# Version 3.3.0
+## 新機能
+* IDGXML ファイルをまとめて生成する、review-idgxmlmaker を導入しました ([#1337])
+* review-textmaker は、imgmath パラメータが有効になっている場合に、数式を画像化するようになりました ([#1338])
+
+## 非互換の変更
+* 通常の利用では使われることがないので、review-init の実行時に空の layouts フォルダを作成するのをやめました ([#1340])
+* PDFMaker: `@<code>`、`@<tt>`、`@<tti>`、`@<ttb>` で空白文字が消えてしまう問題を修正しました。および利便性のために、文字列が版面からあふれるときに途中で改行するようにもしました ([#1348])
+
+## バグ修正
+* review-jlreq がタイプミスのために一部の jlreq.cls バージョンで正しく動作しないのを修正しました ([#1350])
+* re ファイルが改行コード CR で記述されたときに不正な結果になるのを修正しました ([#1341])
+
+## 機能強化
+* IDGXML ビルダで `@<em>` および `@<strong>` をサポートしました ([#1353])
+
+## ドキュメント
+* sample-book の README.md を更新しました ([#1354])
+
+## コントリビューターのみなさん
+* [@m-shibata](https://github.com/m-shibata)
+
+[#1337]: https://github.com/kmuto/review/issues/1337
+[#1338]: https://github.com/kmuto/review/issues/1338
+[#1340]: https://github.com/kmuto/review/issues/1340
+[#1341]: https://github.com/kmuto/review/issues/1341
+[#1348]: https://github.com/kmuto/review/issues/1348
+[#1350]: https://github.com/kmuto/review/issues/1350
+[#1353]: https://github.com/kmuto/review/pull/1353
+[#1354]: https://github.com/kmuto/review/pull/1354
+
 # Version 3.2.0
 
-## 新機能
 ## 非互換の変更
 * PDFMaker: `//image` 命令などで画像を配置するときに `\includegraphics` ではなく、それを抽象化した `\reviewincludegraphics` を使うようにしました ([#1318])
 

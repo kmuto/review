@@ -1,6 +1,36 @@
+# Version 3.3.0
+## New Features
+* introduce review-idgxmlmaker which generates IDGXML files at once ([#1337])
+* review-textmaker converts the math in the document to image files when `imgmath` parameter has `true` ([#1338])
+
+## Breaking Changes
+* review-init no longer creates empty `layouts` folder ([#1340])
+* PDFMaker: fix a problem that white space characters disappeared in `@<code>`, `@<tt>`, `@<tti>`, and `@<ttb>`. Also the string is automatically wrapped ([#1348])
+
+## Bug Fixes
+* fix a typo in review-jlreq ([#1350])
+* fix incorrect result when `re` file uses CR for line-feed code ([#1341])
+
+## Enhancements
+* support `@<em>` and `@<strong>` in IDGXMLBuilder ([#1353])
+
+## Docs
+* update sample-book/README.md ([#1354])
+
+## Contributors
+* [@m-shibata](https://github.com/m-shibata)
+
+[#1337]: https://github.com/kmuto/review/issues/1337
+[#1338]: https://github.com/kmuto/review/issues/1338
+[#1340]: https://github.com/kmuto/review/issues/1340
+[#1341]: https://github.com/kmuto/review/issues/1341
+[#1348]: https://github.com/kmuto/review/issues/1348
+[#1350]: https://github.com/kmuto/review/issues/1350
+[#1353]: https://github.com/kmuto/review/pull/1353
+[#1354]: https://github.com/kmuto/review/pull/1354
+
 # Version 3.2.0
 
-## New Features
 ## Breaking Changes
 * PDFMaker: changed to use the abstract name `\reviewincludegraphics` instead of `\includegraphics` for image placements (such as `//image`) ([#1318])
 
