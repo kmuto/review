@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -16,7 +16,9 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    %i[ttbold hint maru keytop labelref ref].each { |e| Compiler.definline(e) }
+    %i[ttbold hint maru keytop labelref ref strong em].each do |e|
+      Compiler.definline(e)
+    end
     Compiler.defsingle(:dtp, 1)
 
     Compiler.defblock(:insn, 0..1)
@@ -689,6 +691,14 @@ module ReVIEW
 
     def inline_b(str)
       %Q(<b>#{escape(str)}</b>)
+    end
+
+    def inline_em(str)
+      %Q(<em>#{escape(str)}</em>)
+    end
+
+    def inline_strong(str)
+      %Q(<strong>#{escape(str)}</strong>)
     end
 
     def inline_tt(str)
