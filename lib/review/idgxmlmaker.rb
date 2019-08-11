@@ -45,7 +45,7 @@ module ReVIEW
       @table = nil
       @filter = nil
 
-      opts.banner = 'Usage: review-idgxmlmaker configfile'
+      opts.banner = 'Usage: review-idgxmlmaker [options] configfile'
       opts.version = ReVIEW::VERSION
       opts.on('-w', '--width widthoftypepage', 'Specify the width of type page for layouting tables (mm).') { |v| @table = v }
       opts.on('-f', '--filter filterprogrampath', 'Specify the filter path.') { |v| @filter = v }
