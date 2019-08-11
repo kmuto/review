@@ -37,7 +37,6 @@ module ReVIEW
         generate_sample(dir)
         generate_images_dir(dir)
         generate_cover_image(dir)
-        generate_layout(dir)
         generate_style(dir)
         generate_texmacro(dir)
         generate_config(dir)
@@ -107,10 +106,6 @@ module ReVIEW
       unless @force
         File.write(File.join(dir, "#{File.basename(dir)}.re"), '= ')
       end
-    end
-
-    def generate_layout(dir)
-      FileUtils.mkdir_p File.join(dir, 'layouts')
     end
 
     def generate_catalog_file(dir)
