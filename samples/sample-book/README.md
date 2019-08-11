@@ -2,4 +2,11 @@
 
 Re:VIEW ( http://github.com/kmuto/review )で書籍データを作るためのサンプルファイルです。
 
-必要なファイルはsrc/ディレクトリ内にあります。srcディレクトリで「rake pdf」を実行すればPDFが、「rake epub」を実行すればEPUBが生成されます (PDFの生成にはupLaTeXとdvipdfmxが必要です)。また、「rake html_all」を実行すればHTMLが生成されます。
+必要なファイルはsrcディレクトリ内にあります。srcディレクトリで以下のようにして各形式のファイルを生成できます。
+
+- rake pdf: PDF (upLaTeXとdvipdfmxが必要です)
+- rake epub: EPUB
+- rake web: HTML Webページ
+- rake text: テキストファイル
+- rake plaintext: テキストファイル (装飾なし)
+- rake idgxml: InDesign用XMLファイル
