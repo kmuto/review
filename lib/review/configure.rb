@@ -90,10 +90,6 @@ module ReVIEW
           'makeindex_mecab' => true,
           'makeindex_mecab_opts' => '-Oyomi'
         },
-        # for TextMaker
-        'textmaker' => {
-          'imgmath' => nil
-        },
         'imgmath_options' => {
           'format' => 'png',
           'converter' => 'pdfcrop', # dvipng | pdfcrop
