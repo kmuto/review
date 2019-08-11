@@ -1,3 +1,11 @@
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+#                         KADO Masanori
+#               2002-2007 Minero Aoki
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+#
 require 'nkf'
 require 'digest'
 
