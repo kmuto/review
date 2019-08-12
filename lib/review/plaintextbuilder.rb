@@ -137,21 +137,30 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def list_header(id, caption, _lang)
+    def list(lines, id, caption, lang = nil)
       blank
+      begin
+        list_header id, caption, lang
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      blank
+      list_body id, lines, lang
+      blank
+    end
+
+    def list_header(id, caption, _lang)
       if get_chap
         puts %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)})
       else
         puts %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)})
       end
-      blank
     end
 
     def list_body(_id, lines, _lang)
       lines.each do |line|
         puts detab(line)
       end
-      blank
     end
 
     def base_block(_type, lines, caption = nil)
@@ -181,11 +190,22 @@ module ReVIEW
       blank
     end
 
+    def listnum(lines, id, caption, lang = nil)
+      blank
+      begin
+        list_header id, caption, lang
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      blank
+      listnum_body lines, lang
+      blank
+    end
+
     def listnum_body(lines, _lang)
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
-      blank
     end
 
     def cmd(lines, caption = nil)
@@ -207,17 +227,20 @@ module ReVIEW
     end
 
     def texequation(lines, id = nil, caption = '')
+      blank
+      texequation_header id, caption
+      puts lines.join("\n")
+      blank
+    end
+
+    def texequation_header(id, caption)
       if id
-        blank
         if get_chap
           puts "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         else
           puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         end
       end
-
-      puts lines.join("\n")
-      blank
     end
 
     def table(lines, id = nil, caption = nil)

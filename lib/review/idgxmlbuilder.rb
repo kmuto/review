@@ -271,7 +271,6 @@ module ReVIEW
     end
 
     def list_header(id, caption, _lang)
-      puts '<codelist>'
       return true unless caption.present?
       if get_chap.nil?
         puts %Q(<caption>#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
@@ -296,10 +295,21 @@ module ReVIEW
       end
     end
 
+    def list(lines, id, caption, lang = nil)
+      puts '<codelist>'
+      begin
+        list_header id, caption, lang
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      list_body id, lines, lang
+      puts '</codelist>'
+    end
+
     def list_body(_id, lines, _lang)
       print '<pre>'
       codelines_body(lines)
-      puts '</pre></codelist>'
+      print '</pre>'
     end
 
     def emlist(lines, caption = nil, _lang = nil)
@@ -313,6 +323,17 @@ module ReVIEW
         lines2 << detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
       end
       quotedlist lines2, 'emlistnum', caption
+    end
+
+    def listnum(lines, id, caption, lang = nil)
+      puts '<codelist>'
+      begin
+        list_header id, caption, lang
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      listnum_body lines, lang
+      puts '</codelist>'
     end
 
     def listnum_body(lines, _lang)
@@ -331,7 +352,7 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
-      puts '</pre></codelist>'
+      print '</pre>'
     end
 
     def cmd(lines, caption = nil)
@@ -1134,25 +1155,31 @@ module ReVIEW
       error "unknown chapter: #{id}"
     end
 
-    def source_header(caption)
+    def source(lines, caption, lang = nil)
       puts '<source>'
+      source_header caption
+      source_body lines, lang
+      puts '</source>'
+    end
+
+    def source_header(caption)
       puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
     end
 
     def source_body(lines, _lang)
       puts '<pre>'
       codelines_body(lines)
-      puts '</pre></source>'
+      print '</pre>'
     end
 
     def bibpaper(lines, id, caption)
+      puts %Q(<bibitem id="bib-#{id}">)
       bibpaper_header id, caption
       bibpaper_bibpaper id, caption, lines unless lines.empty?
       puts '</bibitem>'
     end
 
     def bibpaper_header(id, caption)
-      puts %Q(<bibitem id="bib-#{id}">)
       puts "<caption><span type='bibno'>[#{@chapter.bibpaper(id).number}] </span>#{compile_inline(caption)}</caption>" if caption.present?
     end
 
