@@ -348,7 +348,7 @@ module ReVIEW
         @stylesheets = @producer.config['stylesheet']
         tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
         tmpl = ReVIEW::Template.load(tmplfile)
-        f.write(tmpl.result(binding))
+        f.write tmpl.result(binding)
       end
     end
 
@@ -567,7 +567,7 @@ module ReVIEW
         @stylesheets = @producer.config['stylesheet']
         tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
         tmpl = ReVIEW::Template.load(tmplfile)
-        f.write(tmpl.result(binding))
+        f.write tmpl.result(binding)
       end
     end
 

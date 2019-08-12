@@ -189,7 +189,7 @@ module ReVIEW
     def build_pdf
       template = template_content
       Dir.chdir(@path) do
-        File.open("./#{@mastertex}.tex", 'wb') { |f| f.write(template) }
+        File.open("./#{@mastertex}.tex", 'wb') { |f| f.write template }
 
         call_hook('hook_beforetexcompile')
 

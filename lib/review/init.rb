@@ -110,7 +110,7 @@ module ReVIEW
 
     def generate_catalog_file(dir)
       File.open(File.join(dir, 'catalog.yml'), 'w') do |file|
-        file.write(<<-EOS)
+        file.write <<-EOS
 PREDEF:
 
 CHAPS:
@@ -153,7 +153,7 @@ EOS
         content.gsub!(/^#\s*texdocumentclass:.*$/, %Q(texdocumentclass: ["#{@template}", "#{TEX_DOCUMENTCLASS_OPTS[@template]}"]))
       end
 
-      File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write(content) }
+      File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write content }
     end
 
     def generate_style(dir)
@@ -176,7 +176,7 @@ EOS
       FileUtils.mkdir_p(File.join(dir, 'lib/tasks'))
 
       File.open(File.join(dir, 'Rakefile'), 'w') do |file|
-        file.write(<<-EOS)
+        file.write <<-EOS
 Dir.glob('lib/tasks/*.rake').sort.each do |file|
   load(file)
 end
@@ -193,7 +193,7 @@ EOS
 
     def generate_gemfile(dir)
       File.open(File.join(dir, 'Gemfile'), 'w') do |file|
-        file.write(<<-EOS)
+        file.write <<-EOS
 source 'https://rubygems.org'
 
 gem 'rake'
@@ -228,7 +228,7 @@ EOS
 
         Tempfile.create('reviewinit') do |f|
           zipfilename = f.path
-          f.write(zipdata)
+          f.write zipdata
 
           extract_archive(dir, zipfilename, filename)
         end

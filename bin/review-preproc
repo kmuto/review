@@ -104,7 +104,7 @@ def preproc(pp, path)
 end
 
 def File.write(path, str)
-  File.open(path, 'w') { |f| f.write(str) }
+  File.open(path, 'w') { |f| f.write str }
 end
 
 sigmain

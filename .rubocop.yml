@@ -205,6 +205,7 @@ Style/MethodCallWithArgsParentheses:
     - 'exit'
     - 'print'
     - 'puts'
+    - 'write'
     - 'warn'
     - 'error'
     - 'raise'
