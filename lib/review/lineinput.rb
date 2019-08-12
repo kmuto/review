@@ -6,7 +6,7 @@ module ReVIEW
       n = 0
       while line = gets
         unless line.strip =~ /\A\#@/
-          ungets line
+          ungets(line)
           return n
         end
         n += 1

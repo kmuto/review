@@ -66,11 +66,11 @@ module ReVIEW
     SYNTAX = {}
 
     def self.defblock(name, argc, optional = false, &block)
-      defsyntax name, (optional ? :optional : :block), argc, &block
+      defsyntax(name, (optional ? :optional : :block), argc, &block)
     end
 
     def self.defsingle(name, argc, &block)
-      defsyntax name, :line, argc, &block
+      defsyntax(name, :line, argc, &block)
     end
 
     def self.defsyntax(name, type, argc, &block)
@@ -217,20 +217,20 @@ module ReVIEW
 
     def do_compile
       f = LineInput.new(StringIO.new(@chapter.content))
-      @strategy.bind self, @chapter, Location.new(@chapter.basename, f)
+      @strategy.bind(self, @chapter, Location.new(@chapter.basename, f))
       tagged_section_init
       while f.next?
         case f.peek
         when /\A\#@/
           f.gets # Nothing to do
         when /\A=+[\[\s\{]/
-          compile_headline f.gets
+          compile_headline(f.gets)
         when /\A\s+\*/
-          compile_ulist f
+          compile_ulist(f)
         when /\A\s+\d+\./
-          compile_olist f
+          compile_olist(f)
         when /\A\s*:\s/
-          compile_dlist f
+          compile_dlist(f)
         when %r{\A//\}}
           f.gets
           error 'block end seen but not opened'
@@ -239,10 +239,10 @@ module ReVIEW
           syntax = syntax_descriptor(name)
           unless syntax
             error "unknown command: //#{name}"
-            compile_unknown_command args, lines
+            compile_unknown_command(args, lines)
             next
           end
-          compile_command syntax, args, lines
+          compile_command(syntax, args, lines)
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -255,7 +255,7 @@ module ReVIEW
             f.gets
             next
           end
-          compile_paragraph f
+          compile_paragraph(f)
         end
       end
       close_all_tagged_section
@@ -296,7 +296,7 @@ module ReVIEW
         end
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-        @strategy.headline level, label, caption
+        @strategy.headline(level, label, caption)
       end
     end
 
@@ -307,7 +307,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
-      @strategy.headline level, label, caption
+      @strategy.headline(level, label, caption)
     end
 
     def tagged_section_init
@@ -318,17 +318,17 @@ module ReVIEW
       mid = "#{tag}_begin"
       unless @strategy.respond_to?(mid)
         error "strategy does not support tagged section: #{tag}"
-        headline level, label, caption
+        headline(level, label, caption)
         return
       end
-      @tagged_section.push [tag, level]
-      @strategy.__send__ mid, level, label, caption
+      @tagged_section.push([tag, level])
+      @strategy.__send__(mid, level, label, caption)
     end
 
     def close_tagged_section(tag, level)
       mid = "#{tag}_end"
       if @strategy.respond_to?(mid)
-        @strategy.__send__ mid, level
+        @strategy.__send__(mid, level)
       else
         error "strategy does not support block op: #{mid}"
       end
@@ -347,7 +347,7 @@ module ReVIEW
 
         buf = [text(line.sub(/\*+/, '').strip)]
         f.while_match(/\A\s+(?!\*)\S/) do |cont|
-          buf.push text(cont.strip)
+          buf.push(text(cont.strip))
         end
 
         line =~ /\A\s+(\*+)/
@@ -355,7 +355,7 @@ module ReVIEW
         if level == current_level
           @strategy.ul_item_end
           # body
-          @strategy.ul_item_begin buf
+          @strategy.ul_item_begin(buf)
         elsif level < current_level # down
           level_diff = current_level - level
           if level_diff != 1
@@ -363,7 +363,7 @@ module ReVIEW
           end
           level = current_level
           @strategy.ul_begin { level }
-          @strategy.ul_item_begin buf
+          @strategy.ul_item_begin(buf)
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
@@ -373,7 +373,7 @@ module ReVIEW
           end
           @strategy.ul_item_end
           # body
-          @strategy.ul_item_begin buf
+          @strategy.ul_item_begin(buf)
         end
       end
 
@@ -391,9 +391,9 @@ module ReVIEW
         num = line.match(/(\d+)\./)[1]
         buf = [text(line.sub(/\d+\./, '').strip)]
         f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-          buf.push text(cont.strip)
+          buf.push(text(cont.strip))
         end
-        @strategy.ol_item buf, num
+        @strategy.ol_item(buf, num)
       end
       @strategy.ol_end
     end
@@ -401,7 +401,7 @@ module ReVIEW
     def compile_dlist(f)
       @strategy.dl_begin
       while /\A\s*:/ =~ f.peek
-        @strategy.dt text(f.gets.sub(/\A\s*:/, '').strip)
+        @strategy.dt(text(f.gets.sub(/\A\s*:/, '').strip))
         desc = f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) }
         @strategy.dd(desc)
         f.skip_blank_lines
@@ -414,9 +414,9 @@ module ReVIEW
       buf = []
       f.until_match(%r{\A//|\A\#@}) do |line|
         break if line.strip.empty?
-        buf.push text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t"))
+        buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
       end
-      @strategy.paragraph buf
+      @strategy.paragraph(buf)
     end
 
     def read_command(f)
@@ -439,9 +439,9 @@ module ReVIEW
       buf = []
       f.until_match(%r{\A//\}}) do |line|
         if ignore_inline
-          buf.push line
+          buf.push(line)
         elsif line !~ /\A\#@/
-          buf.push text(line.rstrip)
+          buf.push(text(line.rstrip))
         end
       end
       unless %r{\A//\}} =~ f.peek
@@ -473,27 +473,27 @@ module ReVIEW
     def compile_command(syntax, args, lines)
       unless @strategy.respond_to?(syntax.name)
         error "strategy does not support command: //#{syntax.name}"
-        compile_unknown_command args, lines
+        compile_unknown_command(args, lines)
         return
       end
       begin
-        syntax.check_args args
+        syntax.check_args(args)
       rescue CompileError => e
         error e.message
         args = ['(NoArgument)'] * syntax.min_argc
       end
       if syntax.block_allowed?
-        compile_block syntax, args, lines
+        compile_block(syntax, args, lines)
       else
         if lines
           error "block is not allowed for command //#{syntax.name}; ignore"
         end
-        compile_single syntax, args
+        compile_single(syntax, args)
       end
     end
 
     def compile_unknown_command(args, lines)
-      @strategy.unknown_command args, lines
+      @strategy.unknown_command(args, lines)
     end
 
     def compile_block(syntax, args, lines)

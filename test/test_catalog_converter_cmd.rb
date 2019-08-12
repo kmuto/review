@@ -4,7 +4,7 @@ require 'fileutils'
 require 'yaml'
 require 'rbconfig'
 
-load File.expand_path('../bin/review-catalog-converter', File.dirname(__FILE__))
+load(File.expand_path('../bin/review-catalog-converter', File.dirname(__FILE__)))
 
 class CatalogConverterCmdTest < Test::Unit::TestCase
   def test_parse_chaps

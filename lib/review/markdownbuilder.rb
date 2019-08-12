@@ -260,16 +260,16 @@ module ReVIEW
       error 'no rows in the table' if rows.empty?
 
       begin
-        table_header id, caption unless caption.nil?
+        table_header(id, caption) unless caption.nil?
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
+      table_begin(rows.first.size)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
         end
-        table_border rows.first.size
+        table_border(rows.first.size)
         rows.each do |cols|
           tr(cols.map { |s| td(s) })
         end
@@ -355,7 +355,7 @@ module ReVIEW
       return unless @book.config['draft']
       lines ||= []
       unless comment.blank?
-        lines.unshift comment
+        lines.unshift(comment)
       end
       str = lines.join('<br />')
       puts %Q(<div class="red">#{escape(str)}</div>)

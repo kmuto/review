@@ -61,7 +61,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nappendix: 付録%pR") }
+        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pR" }
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -82,7 +82,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nappendix: 付録%pA") }
+        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pA" }
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -261,7 +261,7 @@ EOS
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nappendix: 付録%pR") }
+        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pR" }
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -284,7 +284,7 @@ EOS
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write("locale: ja\nappendix: 付録%pA") }
+        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pA" }
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -348,7 +348,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<img>{sampleimg}\n"
+    actual = compile_block("@<img>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span></p>\n)
     assert_equal expected, actual
   end
@@ -360,7 +360,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}\n"
+    actual = compile_block("@<imgref>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span>「sample photo」</p>\n)
     assert_equal expected, actual
   end
@@ -372,7 +372,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}\n"
+    actual = compile_block("@<imgref>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span></p>\n)
     assert_equal expected, actual
   end
@@ -386,11 +386,11 @@ EOS
         re1 = File.join(dir, 'sample1.re')
         cat = File.join(dir, 'catalog.yml')
         FileUtils.mkdir_p(File.join(dir, 'images'))
-        File.open(file1, 'w') { |f| f.write('') }
-        File.open(filet1, 'w') { |f| f.write('') }
-        File.open(file2, 'w') { |f| f.write('') }
-        File.open(cat, 'w') { |f| f.write("CHAPS:\n  - sample1.re\n") }
-        File.open(re1, 'w') { |f| f.write(<<EOF) }
+        File.open(file1, 'w') { |f| f.write '' }
+        File.open(filet1, 'w') { |f| f.write '' }
+        File.open(file2, 'w') { |f| f.write '' }
+        File.open(cat, 'w') { |f| f.write "CHAPS:\n  - sample1.re\n" }
+        File.open(re1, 'w') { |f| f.write <<EOF }
 = test
 
 tbl1 is @<table>{tbl1}.

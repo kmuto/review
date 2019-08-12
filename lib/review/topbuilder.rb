@@ -218,11 +218,11 @@ module ReVIEW
       puts "◆→開始:#{@titles['table']}←◆"
 
       begin
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
+      table_begin(rows.first.size)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
@@ -252,7 +252,7 @@ module ReVIEW
       return unless @book.config['draft']
       lines ||= []
       unless comment.blank?
-        lines.unshift comment
+        lines.unshift(comment)
       end
       str = lines.join("\n")
       puts "◆→#{str}←◆"
