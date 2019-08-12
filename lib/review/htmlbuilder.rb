@@ -374,11 +374,11 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="caption-code">)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
+      list_body(id, lines, lang)
       puts '</div>'
     end
 
@@ -403,8 +403,8 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts %Q(<div class="source-code">)
-      source_header caption
-      source_body caption, lines, lang
+      source_header(caption)
+      source_body(caption, lines, lang)
       puts '</div>'
     end
 
@@ -425,11 +425,11 @@ module ReVIEW
     def listnum(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="code">)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
+      listnum_body(lines, lang)
       puts '</div>'
     end
 
@@ -541,7 +541,7 @@ module ReVIEW
     def texequation(lines, id = nil, caption = '')
       if id
         puts %Q(<div id="#{normalize_id(id)}" class="caption-equation">)
-        texequation_header id, caption
+        texequation_header(id, caption)
       end
 
       texequation_body(lines)
@@ -615,7 +615,7 @@ module ReVIEW
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
       puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      image_header id, caption
+      image_header(id, caption)
       puts '</div>'
     end
 
@@ -627,7 +627,7 @@ module ReVIEW
         puts detab(line)
       end
       puts '</pre>'
-      image_header id, caption
+      image_header(id, caption)
       puts '</div>'
     end
 
@@ -650,12 +650,12 @@ module ReVIEW
       end
       begin
         if caption.present?
-          table_header id, caption
+          table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
+      table_begin(rows.first.size)
       table_tr(sepidx, rows)
       table_end
       puts '</div>'
@@ -694,14 +694,14 @@ module ReVIEW
     def imgtable(lines, id, caption = nil, metric = nil)
       unless @chapter.image(id).bound?
         warn "image not bound: #{id}"
-        image_dummy id, caption, lines
+        image_dummy(id, caption, lines)
         return
       end
 
       puts %Q(<div id="#{normalize_id(id)}" class="imgtable image">)
       begin
         if caption.present?
-          table_header id, caption
+          table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
@@ -724,7 +724,7 @@ module ReVIEW
     def comment(lines, comment = nil)
       return unless @book.config['draft']
       lines ||= []
-      lines.unshift escape(comment) unless comment.blank?
+      lines.unshift(escape(comment)) unless comment.blank?
       str = lines.join('<br />')
       puts %Q(<div class="draft-comment">#{str}</div>)
     end
@@ -952,8 +952,8 @@ module ReVIEW
 
     def bibpaper(lines, id, caption)
       puts %Q(<div class="bibpaper">)
-      bibpaper_header id, caption
-      bibpaper_bibpaper id, caption, lines unless lines.empty?
+      bibpaper_header(id, caption)
+      bibpaper_bibpaper(id, caption, lines) unless lines.empty?
       puts '</div>'
     end
 

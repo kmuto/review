@@ -298,11 +298,11 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       puts '<codelist>'
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
+      list_body(id, lines, lang)
       puts '</codelist>'
     end
 
@@ -313,7 +313,7 @@ module ReVIEW
     end
 
     def emlist(lines, caption = nil, _lang = nil)
-      quotedlist lines, 'emlist', caption
+      quotedlist(lines, 'emlist', caption)
     end
 
     def emlistnum(lines, caption = nil, _lang = nil)
@@ -322,17 +322,17 @@ module ReVIEW
       lines.each_with_index do |line, i|
         lines2 << detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
       end
-      quotedlist lines2, 'emlistnum', caption
+      quotedlist(lines2, 'emlistnum', caption)
     end
 
     def listnum(lines, id, caption, lang = nil)
       puts '<codelist>'
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
+      listnum_body(lines, lang)
       puts '</codelist>'
     end
 
@@ -356,7 +356,7 @@ module ReVIEW
     end
 
     def cmd(lines, caption = nil)
-      quotedlist lines, 'cmd', caption
+      quotedlist(lines, 'cmd', caption)
     end
 
     def quotedlist(lines, css_class, caption)
@@ -421,7 +421,7 @@ module ReVIEW
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
       puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} />)
-      image_header id, caption
+      image_header(id, caption)
       puts '</img>'
     end
 
@@ -433,7 +433,7 @@ module ReVIEW
         print "\n"
       end
       print '</pre>'
-      image_header id, caption
+      image_header(id, caption)
       puts '</img>'
       warn "image not bound: #{id}"
     end
@@ -480,7 +480,7 @@ module ReVIEW
       puts '<table>'
 
       begin
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
@@ -490,7 +490,7 @@ module ReVIEW
       else
         print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{@col}">)
       end
-      table_tr sepidx, rows
+      table_tr(sepidx, rows)
       puts '</tbody></table>'
       @tsize = nil
     end
@@ -605,19 +605,19 @@ module ReVIEW
       if @chapter.image(id).bound?
         metrics = parse_metric('idgxml', metric)
         puts '<table>'
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
         puts %Q(<imgtable><Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} /></imgtable>)
         puts '</table>'
       else
         warn "image not bound: #{id}" if @strict
-        image_dummy id, caption, lines
+        image_dummy(id, caption, lines)
       end
     end
 
     def comment(lines, comment = nil)
       return unless @book.config['draft']
       lines ||= []
-      lines.unshift escape(comment) unless comment.blank?
+      lines.unshift(escape(comment)) unless comment.blank?
       str = lines.join("\n")
       print "<msg>#{str}</msg>"
     end
@@ -1157,8 +1157,8 @@ module ReVIEW
 
     def source(lines, caption, lang = nil)
       puts '<source>'
-      source_header caption
-      source_body lines, lang
+      source_header(caption)
+      source_body(lines, lang)
       puts '</source>'
     end
 
@@ -1174,8 +1174,8 @@ module ReVIEW
 
     def bibpaper(lines, id, caption)
       puts %Q(<bibitem id="bib-#{id}">)
-      bibpaper_header id, caption
-      bibpaper_bibpaper id, caption, lines unless lines.empty?
+      bibpaper_header(id, caption)
+      bibpaper_bibpaper(id, caption, lines) unless lines.empty?
       puts '</bibitem>'
     end
 

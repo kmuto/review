@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Copyright (c) 2010-2017 Kenshi Muto
+# Copyright (c) 2010-2019 Kenshi Muto
 #
 # This program is free software
 # You can distribute or modify this program under the terms of
@@ -48,7 +48,7 @@ ARGF.each do |line|
       @logger.warn "#{ln}: found '*' without the head space. Is it correct?"
     end
   elsif line =~ /\A\s+(\d+\.)\s+/ && line =~ /\A\s+\*\s+/
-    unless Tw[list emlist listnum emlistnum cmd image table].include?(block)
+    unless %w[list emlist listnum emlistnum cmd image table].include?(block)
       @logger.warn "#{ln}: found itemized list or numbered list in #{block}. Is it correct?"
     end
   elsif block == 'table'

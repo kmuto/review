@@ -6,7 +6,7 @@ class TextUtilsTest < Test::Unit::TestCase
 
   def setup
     @tu_nil = Object.new
-    @tu_nil.extend ReVIEW::TextUtils
+    @tu_nil.extend(ReVIEW::TextUtils)
     def @tu_nil.pre_paragraph
       nil
     end
@@ -16,7 +16,7 @@ class TextUtilsTest < Test::Unit::TestCase
     end
 
     @tu_p = Object.new
-    @tu_p.extend ReVIEW::TextUtils
+    @tu_p.extend(ReVIEW::TextUtils)
     def @tu_p.pre_paragraph
       '<p>'
     end

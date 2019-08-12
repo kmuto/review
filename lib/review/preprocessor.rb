@@ -51,10 +51,10 @@ module ReVIEW
     end
 
     def process(inf, outf)
-      init_errorutils inf
+      init_errorutils(inf)
       @f = outf
       begin
-        preproc inf
+        preproc(inf)
       rescue Errno::ENOENT => e
         error e.message
       end
@@ -80,7 +80,7 @@ module ReVIEW
           direc = parse_directive(line, 1, 'stderr')
           @f.print line
           get_output(expand(direc.arg), direc['stderr']).each { |out| @f.print out.string }
-          skip_list f
+          skip_list(f)
 
         when /\A\#@mapfile/
           direc = parse_directive(line, 1, 'eval')
@@ -131,15 +131,15 @@ module ReVIEW
       @f.print directive_line
       newlines.each do |line|
         if with_lineno
-          print_number line.number
+          print_number(line.number)
         end
         @f.print line.string
       end
-      skip_list f
+      skip_list(f)
     end
 
     def print_number(num)
-      @f.printf '%4s  ', (num ? num.to_s : '')
+      @f.printf('%4s  ', (num ? num.to_s : ''))
     end
 
     def skip_list(f)
@@ -279,7 +279,7 @@ module ReVIEW
       Open3.popen3(cmd) do |_stdin, stdout, stderr|
         out = stdout.readlines
         if use_stderr
-          out.concat stderr.readlines
+          out.concat(stderr.readlines)
         else
           err = stderr.readlines
         end
@@ -403,14 +403,14 @@ module ReVIEW
             error "begin x2: #{key}"
           end
           (repo[type] ||= {})[spec] = curr[key] = []
-          opened.push [type, spec]
+          opened.push([type, spec])
 
         when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\}}
           type = check_type($1)
           spec = check_spec($2)
           curr.delete("#{type}/#{spec}") or
             error "end before begin: #{type}/#{spec}"
-          opened.delete "#{type}/#{spec}"
+          opened.delete("#{type}/#{spec}")
 
         when /(?:\A\#@|\#@@)\}/
           type, spec = opened.last
@@ -423,17 +423,17 @@ module ReVIEW
 
         when /\A\#@-/ # does not increment line number.
           line = canonical($')
-          curr.each_value { |list| list.push Line.new(nil, line) }
+          curr.each_value { |list| list.push(Line.new(nil, line)) }
 
         else
           next if yacchack and line.strip == ';'
           line = canonical(line)
-          curr.each_value { |list| list.push Line.new(lineno, line) }
+          curr.each_value { |list| list.push(Line.new(lineno, line)) }
           lineno += 1
         end
       end
       if curr.size > 1
-        curr.delete 'WHOLE'
+        curr.delete('WHOLE')
         curr.each { |range, lines| @logger.warn "#{filename}: unclosed range: #{range} (begin @#{lines.first.number})" }
         raise ApplicationError, 'ERROR'
       end

@@ -19,7 +19,7 @@ require 'review/book/index'
 module ReVIEW
   module Book
     def self.load(dir)
-      Base.load dir
+      Base.load(dir)
     end
   end
 end

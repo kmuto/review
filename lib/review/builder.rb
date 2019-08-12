@@ -122,33 +122,33 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
+      list_body(id, lines, lang)
     end
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
+      listnum_body(lines, lang)
     end
 
     def source(lines, caption, lang = nil)
-      source_header caption
-      source_body lines, lang
+      source_header(caption)
+      source_body(lines, lang)
     end
 
     def image(lines, id, caption, metric = nil)
       if @chapter.image(id).bound?
-        image_image id, caption, metric
+        image_image(id, caption, metric)
       else
         warn "image not bound: #{id}" if @strict
-        image_dummy id, caption, lines
+        image_dummy(id, caption, lines)
       end
     end
 
@@ -156,13 +156,13 @@ module ReVIEW
       sepidx, rows = parse_table_rows(lines)
       begin
         if caption.present?
-          table_header id, caption
+          table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
-      table_tr sepidx, rows
+      table_begin(rows.first.size)
+      table_tr(sepidx, rows)
       table_end
     end
 
@@ -205,7 +205,7 @@ module ReVIEW
       end
       n_maxcols = rows.map(&:size).max
       rows.each do |cols|
-        cols.concat [''] * (n_maxcols - cols.size)
+        cols.concat([''] * (n_maxcols - cols.size))
       end
       rows
     end
@@ -236,7 +236,7 @@ module ReVIEW
     end
 
     def inline_chapref(id)
-      compile_inline @book.chapter_index.display_string(id)
+      compile_inline(@book.chapter_index.display_string(id))
     rescue KeyError
       error "unknown chapter: #{id}"
     end
@@ -248,7 +248,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      compile_inline @book.chapter_index.title(id)
+      compile_inline(@book.chapter_index.title(id))
     rescue KeyError
       error "unknown chapter: #{id}"
     end
@@ -347,10 +347,10 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
-      bibpaper_header id, caption
+      bibpaper_header(id, caption)
       unless lines.empty?
         puts
-        bibpaper_bibpaper id, caption, lines
+        bibpaper_bibpaper(id, caption, lines)
       end
       puts
     end
@@ -564,7 +564,7 @@ EOTGNUPLOT
         file_path.sub!(/\.pdf\Z/, '.eps')
       end
       system_graph(id, 'java', '-jar', 'plantuml.jar', "-t#{ext}", '-charset', 'UTF-8', tf_path)
-      FileUtils.mv "#{tf_path}.#{ext}", file_path
+      FileUtils.mv("#{tf_path}.#{ext}", file_path)
       file_path
     end
 
@@ -573,7 +573,7 @@ EOTGNUPLOT
     end
 
     def inline_include(file_name)
-      compile_inline File.read(file_name, mode: 'rt:BOM|utf-8').chomp
+      compile_inline(File.read(file_name, mode: 'rt:BOM|utf-8').chomp)
     end
 
     def ul_item_begin(lines)

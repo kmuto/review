@@ -32,8 +32,8 @@ module ReVIEW
 
     def print_chapter(chap)
       chap_node = TOCParser.chapter_node(chap)
-      print_node 1, chap_node
-      print_children chap_node
+      print_node(1, chap_node)
+      print_children(chap_node)
     end
 
     def print?(level)
@@ -48,8 +48,8 @@ module ReVIEW
       return unless print?(node.level + 1)
       node.each_section_with_index do |section, idx|
         unless section.blank?
-          print_node idx + 1, section
-          print_children section
+          print_node(idx + 1, section)
+          print_children(section)
         end
       end
     end
@@ -57,14 +57,14 @@ module ReVIEW
     def print_node(number, node)
       if node.chapter?
         vol = node.volume
-        @out.printf "%3s %3dKB %6dC %5dL  %s (%s)\n",
+        @out.printf("%3s %3dKB %6dC %5dL  %s (%s)\n",
                     chapnumstr(node.number),
                     vol.kbytes, vol.chars, vol.lines,
-                    node.label, node.chapter_id
+                    node.label, node.chapter_id)
       else ## for section node
-        @out.printf "%17s %5dL  %s\n",
+        @out.printf("%17s %5dL  %s\n",
                     '', node.estimated_lines,
-                    "  #{'   ' * (node.level - 1)}#{number} #{node.label}"
+                    "  #{'   ' * (node.level - 1)}#{number} #{node.label}")
       end
     end
 

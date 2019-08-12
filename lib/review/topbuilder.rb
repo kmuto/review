@@ -95,12 +95,12 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles['list']}←◆"
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
       blank
-      list_body id, lines, lang
+      list_body(id, lines, lang)
       puts "◆→終了:#{@titles['list']}←◆"
       blank
     end
@@ -152,12 +152,12 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles['list']}←◆"
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
       blank
-      listnum_body lines, lang
+      listnum_body(lines, lang)
       puts "◆→終了:#{@titles['list']}←◆"
       blank
     end
@@ -173,7 +173,7 @@ module ReVIEW
       metrics = " #{metrics}" if metrics.present?
       blank
       puts "◆→開始:#{@titles['image']}←◆"
-      image_header id, caption
+      image_header(id, caption)
       blank
       if @chapter.image(id).bound?
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
@@ -198,7 +198,7 @@ module ReVIEW
     def texequation(lines, id = nil, caption = '')
       blank
       puts "◆→開始:#{@titles['texequation']}←◆"
-      texequation_header id, caption
+      texequation_header(id, caption)
 
       if @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
@@ -234,12 +234,12 @@ module ReVIEW
       puts "◆→開始:#{@titles['table']}←◆"
 
       begin
-        table_header id, caption if caption.present?
+        table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
-      table_tr sepidx, rows
+      table_begin(rows.first.size)
+      table_tr(sepidx, rows)
       table_end
 
       puts "◆→終了:#{@titles['table']}←◆"
@@ -257,7 +257,7 @@ module ReVIEW
       return unless @book.config['draft']
       lines ||= []
       unless comment.blank?
-        lines.unshift comment
+        lines.unshift(comment)
       end
       str = lines.join("\n")
       puts "◆→#{str}←◆"

@@ -39,7 +39,7 @@ def main
     if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
       @logger.warn 'review-preproc-ext.rb is prohibited in safe mode. ignored.'
     else
-      Kernel.load File.expand_path('review-preproc-ext.rb')
+      Kernel.load(File.expand_path('review-preproc-ext.rb'))
     end
   end
 
@@ -71,21 +71,21 @@ def main
     current_file = path
     case mode
     when :output
-      File.open(path) { |f| pp.process f, $stdout }
+      File.open(path) { |f| pp.process(f, $stdout) }
     when :replace
-      File.write "#{path}.pptmp", preproc(pp, path)
-      File.rename "#{path}.pptmp", path
+      File.write("#{path}.pptmp", preproc(pp, path))
+      File.rename("#{path}.pptmp", path)
     when :diff, :check
       tmp = '/tmp/review.pptmp'
       begin
-        File.write tmp, preproc(pp, path)
+        File.write(tmp, preproc(pp, path))
         if mode == :check
-          system "diff -qu #{path} #{tmp} >/dev/null || echo #{path}"
+          system("diff -qu #{path} #{tmp} >/dev/null || echo #{path}")
         else
-          system "diff -u #{path} #{tmp}"
+          system("diff -u #{path} #{tmp}")
         end
       ensure
-        FileUtils.rm_f tmp
+        FileUtils.rm_f(tmp)
       end
     else
       raise "must not happen: #{mode}"
@@ -99,7 +99,7 @@ end
 
 def preproc(pp, path)
   buf = StringIO.new
-  File.open(path) { |f| pp.process f, buf }
+  File.open(path) { |f| pp.process(f, buf) }
   buf.string
 end
 

@@ -140,12 +140,12 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       blank
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
       blank
-      list_body id, lines, lang
+      list_body(id, lines, lang)
       blank
     end
 
@@ -178,7 +178,7 @@ module ReVIEW
     end
 
     def emlist(lines, caption = nil, _lang = nil)
-      base_block 'emlist', lines, caption
+      base_block('emlist', lines, caption)
     end
 
     def emlistnum(lines, caption = nil, _lang = nil)
@@ -193,12 +193,12 @@ module ReVIEW
     def listnum(lines, id, caption, lang = nil)
       blank
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
       blank
-      listnum_body lines, lang
+      listnum_body(lines, lang)
       blank
     end
 
@@ -209,11 +209,11 @@ module ReVIEW
     end
 
     def cmd(lines, caption = nil)
-      base_block 'cmd', lines, caption
+      base_block('cmd', lines, caption)
     end
 
     def quote(lines)
-      base_parablock 'quote', lines, nil
+      base_parablock('quote', lines, nil)
     end
 
     def image(_lines, id, caption, _metric = nil)
@@ -228,7 +228,7 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       blank
-      texequation_header id, caption
+      texequation_header(id, caption)
       puts lines.join("\n")
       blank
     end
@@ -252,8 +252,8 @@ module ReVIEW
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
-      table_tr sepidx, rows
+      table_begin(rows.first.size)
+      table_tr(sepidx, rows)
       table_end
     end
 
@@ -343,8 +343,8 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
-      bibpaper_header id, caption
-      bibpaper_bibpaper id, caption, lines unless lines.empty?
+      bibpaper_header(id, caption)
+      bibpaper_bibpaper(id, caption, lines) unless lines.empty?
     end
 
     def bibpaper_header(id, caption)
@@ -470,87 +470,87 @@ module ReVIEW
     end
 
     def flushright(lines)
-      base_parablock 'flushright', lines, nil
+      base_parablock('flushright', lines, nil)
     end
 
     def centering(lines)
-      base_parablock 'centering', lines, nil
+      base_parablock('centering', lines, nil)
     end
 
     def note(lines, caption = nil)
-      base_parablock 'note', lines, caption
+      base_parablock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
-      base_parablock 'memo', lines, caption
+      base_parablock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
-      base_parablock 'tip', lines, caption
+      base_parablock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
-      base_parablock 'info', lines, caption
+      base_parablock('info', lines, caption)
     end
 
     def planning(lines, caption = nil)
-      base_parablock 'planning', lines, caption
+      base_parablock('planning', lines, caption)
     end
 
     def best(lines, caption = nil)
-      base_parablock 'best', lines, caption
+      base_parablock('best', lines, caption)
     end
 
     def important(lines, caption = nil)
-      base_parablock 'important', lines, caption
+      base_parablock('important', lines, caption)
     end
 
     def security(lines, caption = nil)
-      base_parablock 'security', lines, caption
+      base_parablock('security', lines, caption)
     end
 
     def caution(lines, caption = nil)
-      base_parablock 'caution', lines, caption
+      base_parablock('caution', lines, caption)
     end
 
     def term(lines)
-      base_parablock 'term', lines, nil
+      base_parablock('term', lines, nil)
     end
 
     def link(lines, caption = nil)
-      base_parablock 'link', lines, caption
+      base_parablock('link', lines, caption)
     end
 
     def notice(lines, caption = nil)
-      base_parablock 'notice', lines, caption
+      base_parablock('notice', lines, caption)
     end
 
     def point(lines, caption = nil)
-      base_parablock 'point', lines, caption
+      base_parablock('point', lines, caption)
     end
 
     def shoot(lines, caption = nil)
-      base_parablock 'shoot', lines, caption
+      base_parablock('shoot', lines, caption)
     end
 
     def reference(lines)
-      base_parablock 'reference', lines, nil
+      base_parablock('reference', lines, nil)
     end
 
     def practice(lines)
-      base_parablock 'practice', lines, nil
+      base_parablock('practice', lines, nil)
     end
 
     def expert(lines)
-      base_parablock 'expert', lines, nil
+      base_parablock('expert', lines, nil)
     end
 
     def insn(lines, caption = nil)
-      base_block 'insn', lines, caption
+      base_block('insn', lines, caption)
     end
 
     def warning(lines, caption = nil)
-      base_parablock 'warning', lines, caption
+      base_parablock('warning', lines, caption)
     end
 
     alias_method :box, :insn
@@ -571,7 +571,7 @@ module ReVIEW
     end
 
     def bpo(lines)
-      base_block 'bpo', lines, nil
+      base_block('bpo', lines, nil)
     end
 
     def inline_dtp(_str)
@@ -621,7 +621,7 @@ module ReVIEW
     end
 
     def source(lines, caption = nil, _lang = nil)
-      base_block 'source', lines, caption
+      base_block('source', lines, caption)
     end
 
     def inline_labelref(_idref)
