@@ -164,7 +164,7 @@ module ReVIEW
         @language = @config['language']
         @stylesheets = @config['stylesheet']
         tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write(ReVIEW::Template.load(tmplfile).result(binding))
       end
     end
 
@@ -269,7 +269,7 @@ module ReVIEW
         @next = @book.chapters[0]
         @next_title = @next ? @next.title : ''
         tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write(ReVIEW::Template.load(tmplfile).result(binding))
       end
     end
 
@@ -289,7 +289,7 @@ module ReVIEW
         @language = @config['language']
         @stylesheets = @config['stylesheet']
         tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write(ReVIEW::Template.load(tmplfile).result(binding))
       end
     end
 

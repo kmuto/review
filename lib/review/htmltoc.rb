@@ -8,7 +8,7 @@ module ReVIEW
     def add_item(level, filename, title, args)
       args_str = encode_args(args)
       line = [level, filename, title, args_str].join("\t")
-      File.open(tocfilename, 'a') { |f| f.write "#{line}\n" }
+      File.open(tocfilename, 'a') { |f| f.write("#{line}\n") }
     end
 
     def each_item

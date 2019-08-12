@@ -3,7 +3,7 @@ require 'yaml'
 module ReVIEW
   class Catalog
     def initialize(file)
-      if file.respond_to? :read
+      if file.respond_to?(:read)
         @yaml = YAML.load(file.read)
       else ## as Object
         @yaml = file

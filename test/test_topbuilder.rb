@@ -613,7 +613,7 @@ EOS
   def test_inline_w
     Dir.mktmpdir do |dir|
       File.open(File.join(dir, 'words.csv'), 'w') do |f|
-        f.write <<EOB
+        f.write(<<EOB)
 "F","foo"
 "B","bar""\\<>_@<b>{BAZ}"
 EOB

@@ -193,6 +193,27 @@ Style/LineEndConcatenation:
 Style/MethodCallWithoutArgsParentheses:
   Enabled: true
 
+Style/MethodCallWithArgsParentheses:
+  IgnoredMethods:
+    - 'require'
+    - 'include'
+    - 'file'
+    - 'task'
+    - 'desc'
+    - 'info'
+    - 'gem'
+    - 'exit'
+    - 'print'
+    - 'puts'
+    - 'warn'
+    - 'error'
+    - 'raise'
+    - 'yield'
+    - 'source'
+    - 'assert'
+    - 'assert_equal'
+  Enabled: true
+
 Style/MixinUsage:
   Enabled: false
 

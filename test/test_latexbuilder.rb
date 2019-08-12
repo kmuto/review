@@ -1535,7 +1535,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}\n"
+    actual = compile_block("@<imgref>{sampleimg}\n")
     expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}「sample photo」\n"
     assert_equal expected, actual
   end
@@ -1547,7 +1547,7 @@ EOS
       item
     end
 
-    actual = compile_block "@<imgref>{sampleimg}\n"
+    actual = compile_block("@<imgref>{sampleimg}\n")
     expected = "\n\\reviewimageref{1.1}{image:chap1:sampleimg}\n"
     assert_equal expected, actual
   end
@@ -1616,7 +1616,7 @@ EOS
   def test_inline_w
     Dir.mktmpdir do |dir|
       File.open(File.join(dir, 'words.csv'), 'w') do |f|
-        f.write <<EOB
+        f.write(<<EOB)
 "F","foo"
 "B","bar""\\<>_@<b>{BAZ}"
 EOB

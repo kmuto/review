@@ -98,7 +98,7 @@ module ReVIEW
         @logger.error "#{dir} already exists."
         exit 1
       end
-      FileUtils.mkdir_p dir
+      FileUtils.mkdir_p(dir)
       yield dir
     end
 
@@ -110,7 +110,7 @@ module ReVIEW
 
     def generate_catalog_file(dir)
       File.open(File.join(dir, 'catalog.yml'), 'w') do |file|
-        file.write <<-EOS
+        file.write(<<-EOS)
 PREDEF:
 
 CHAPS:
@@ -157,26 +157,26 @@ EOS
     end
 
     def generate_style(dir)
-      FileUtils.cp File.join(@review_dir, 'samples/sample-book/src/style.css'), dir
+      FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/style.css'), dir)
     end
 
     def generate_texmacro(dir)
       texmacrodir = File.join(dir, 'sty')
-      FileUtils.mkdir_p texmacrodir
+      FileUtils.mkdir_p(texmacrodir)
       tdir = File.join(@review_dir, 'templates/latex', @template)
       @logger.error "#{tdir} not found." unless File.exist?(tdir)
-      FileUtils.cp Dir.glob(File.join(tdir, '*.*')), texmacrodir
+      FileUtils.cp(Dir.glob(File.join(tdir, '*.*')), texmacrodir)
       # provide jsbook from vendor/. current version is 2018/06/23
-      FileUtils.cp File.join(@review_dir, 'vendor/jsclasses/jsbook.cls'), File.join(texmacrodir, 'jsbook.cls')
+      FileUtils.cp(File.join(@review_dir, 'vendor/jsclasses/jsbook.cls'), File.join(texmacrodir, 'jsbook.cls'))
       # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
-      FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty')
+      FileUtils.cp(File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty'))
     end
 
     def generate_rakefile(dir)
-      FileUtils.mkdir_p File.join(dir, 'lib/tasks')
+      FileUtils.mkdir_p(File.join(dir, 'lib/tasks'))
 
       File.open(File.join(dir, 'Rakefile'), 'w') do |file|
-        file.write <<-EOS
+        file.write(<<-EOS)
 Dir.glob('lib/tasks/*.rake').sort.each do |file|
   load(file)
 end
@@ -188,12 +188,12 @@ EOS
     end
 
     def generate_locale(dir)
-      FileUtils.cp File.join(@review_dir, 'lib/review/i18n.yml'), File.join(dir, 'locale.yml')
+      FileUtils.cp(File.join(@review_dir, 'lib/review/i18n.yml'), File.join(dir, 'locale.yml'))
     end
 
     def generate_gemfile(dir)
       File.open(File.join(dir, 'Gemfile'), 'w') do |file|
-        file.write <<-EOS
+        file.write(<<-EOS)
 source 'https://rubygems.org'
 
 gem 'rake'
@@ -204,9 +204,9 @@ EOS
 
     def generate_doc(dir)
       docdir = File.join(dir, 'doc')
-      FileUtils.mkdir_p docdir
+      FileUtils.mkdir_p(docdir)
       md_files = Dir.glob(File.join(@review_dir, 'doc/*.md')).map.to_a
-      FileUtils.cp md_files, docdir
+      FileUtils.cp(md_files, docdir)
     end
 
     def download_and_extract_archive(dir, filename)
@@ -228,7 +228,7 @@ EOS
 
         Tempfile.create('reviewinit') do |f|
           zipfilename = f.path
-          f.write zipdata
+          f.write(zipdata)
 
           extract_archive(dir, zipfilename, filename)
         end

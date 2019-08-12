@@ -157,23 +157,23 @@ class I18nTest < Test::Unit::TestCase
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
 
-        File.open(file, 'w') { |f| f.write %Q(locale: ja\nformat_number_header: "%s-%pA:") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nformat_number_header: "%s-%pA:")) }
         I18n.setup('ja')
         assert_equal '1-B:', I18n.t('format_number_header', [1, 2])
 
-        File.open(file, 'w') { |f| f.write %Q(locale: ja\nformat_number_header: "%s.%pa:") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nformat_number_header: "%s.%pa:")) }
         I18n.setup('ja')
         assert_equal '2.c:', I18n.t('format_number_header', [2, 3])
 
-        File.open(file, 'w') { |f| f.write %Q(locale: ja\nformat_number_header: "%pA,%pAW:") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nformat_number_header: "%pA,%pAW:")) }
         I18n.setup('ja')
         assert_equal 'C,Ｄ:', I18n.t('format_number_header', [3, 4])
 
-        File.open(file, 'w') { |f| f.write %Q(locale: ja\nformat_number_header: "%pJ・%pJ:") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nformat_number_header: "%pJ・%pJ:")) }
         I18n.setup('ja')
         assert_equal '十二・二十六:', I18n.t('format_number_header', [12, 26])
 
-        File.open(file, 'w') { |f| f.write %Q(locale: ja\nformat_number_header: "%pdW―%pdW:") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nformat_number_header: "%pdW―%pdW:")) }
         I18n.setup('ja')
         assert_equal '３―12:', I18n.t('format_number_header', [3, 12])
       end
@@ -185,11 +185,11 @@ class I18nTest < Test::Unit::TestCase
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
 
-        File.open(file, 'w') { |f| f.write %Q(locale: ja\nformat_number_header: "%2$d") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nformat_number_header: "%2$d")) }
         I18n.setup('ja')
         assert_equal '10', I18n.t('format_number_header', [1, 10])
 
-        File.open(file, 'w') { |f| f.write %Q(locale: ja\nformat_number_header: "%2$d-%1$d") }
+        File.open(file, 'w') { |f| f.write(%Q(locale: ja\nformat_number_header: "%2$d-%1$d")) }
         I18n.setup('ja')
         # ERROR: returns raw format
         assert_equal '%2$d-%1$d', I18n.t('format_number_header', [1])
@@ -215,7 +215,7 @@ class I18nTest < Test::Unit::TestCase
   end
 
   def test_en
-    I18n.setup 'en'
+    I18n.setup('en')
     assert_equal 'Figure ', I18n.t('image')
     assert_equal 'Table ', I18n.t('table')
     assert_equal 'Chapter 1', I18n.t('chapter', 1)
@@ -223,7 +223,7 @@ class I18nTest < Test::Unit::TestCase
   end
 
   def test_nil
-    I18n.setup 'nil'
+    I18n.setup('nil')
     assert_equal 'image', I18n.t('image')
     assert_equal 'table', I18n.t('table')
     assert_equal 'etc', I18n.t('etc')
@@ -236,7 +236,7 @@ class I18nTest < Test::Unit::TestCase
   end
 
   def _setup_htmlbuilder
-    I18n.setup 'en'
+    I18n.setup('en')
     @builder = HTMLBuilder.new
     @config = ReVIEW::Configure[
       'secnolevel' => 2, # for IDGXMLBuilder, HTMLBuilder
@@ -295,6 +295,6 @@ class I18nTest < Test::Unit::TestCase
   end
 
   def teardown
-    I18n.setup 'ja'
+    I18n.setup('ja')
   end
 end
