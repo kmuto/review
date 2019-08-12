@@ -570,9 +570,9 @@ EOS
     actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
     expected = <<-EOS
 ◆→開始:図←◆
-図1.1　sample photo
-
 ◆→./images/chap1-sampleimg.png←◆
+
+図1.1　sample photo
 ◆→終了:図←◆
 
 EOS
@@ -589,9 +589,9 @@ EOS
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\nfoo\n//}\n")
     expected = <<-EOS
 ◆→開始:図←◆
-図1.1　sample photo
-
 ◆→./images/chap1-sampleimg.png scale=1.2←◆
+
+図1.1　sample photo
 ◆→終了:図←◆
 
 EOS

@@ -252,18 +252,6 @@ module ReVIEW
       puts '```'
     end
 
-    def table(lines, id = nil, caption = nil)
-      sepidx, rows = parse_table_rows(lines)
-      begin
-        table_header(id, caption) unless caption.nil?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin(rows.first.size)
-      table_tr(sepidx, rows)
-      table_end
-    end
-
     def table_tr(sepidx, rows)
       if sepidx
         sepidx.times do

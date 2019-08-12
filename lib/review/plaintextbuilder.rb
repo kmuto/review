@@ -140,12 +140,18 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       blank
       begin
-        list_header(id, caption, lang)
+        if top?('list')
+          list_header(id, caption, lang)
+          blank
+        end
+        list_body(id, lines, lang)
+        unless top?('list')
+          list_header(id, caption, lang)
+          blank
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      blank
-      list_body(id, lines, lang)
       blank
     end
 
@@ -165,8 +171,13 @@ module ReVIEW
 
     def base_block(_type, lines, caption = nil)
       blank
-      puts compile_inline(caption) if caption.present?
+      if top?(['list']) && caption.present?
+        puts compile_inline(caption)
+      end
       puts lines.join("\n")
+      if !top?(['list']) && caption.present?
+        puts compile_inline(caption)
+      end
       blank
     end
 
@@ -193,12 +204,18 @@ module ReVIEW
     def listnum(lines, id, caption, lang = nil)
       blank
       begin
-        list_header(id, caption, lang)
+        if top?('list')
+          list_header(id, caption, lang)
+          blank
+        end
+        listnum_body(lines, lang)
+        unless top?('list')
+          blank
+          list_header(id, caption, lang)
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      blank
-      listnum_body(lines, lang)
       blank
     end
 
@@ -228,8 +245,9 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       blank
-      texequation_header(id, caption)
+      texequation_header(id, caption) if top?('equation')
       puts lines.join("\n")
+      texequation_header(id, caption) unless top?('equation')
       blank
     end
 
@@ -246,15 +264,20 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       sepidx, rows = parse_table_rows(lines)
       blank
-
       begin
-        table_header(id, caption) if caption.present?
+        if top?('table') && caption.present?
+          table_header(id, caption)
+        end
+        table_begin(rows.first.size)
+        table_tr(sepidx, rows)
+        table_end
+        if !top?('table') && caption.present?
+          table_header(id, caption)
+        end
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin(rows.first.size)
-      table_tr(sepidx, rows)
-      table_end
+      blank
     end
 
     def table_header(id, caption)

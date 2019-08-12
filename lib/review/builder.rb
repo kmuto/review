@@ -122,25 +122,28 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang)
+        list_header(id, caption, lang) if top?('list')
+        list_body(id, lines, lang)
+        list_header(id, caption, lang) unless top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body(id, lines, lang)
     end
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang)
+        list_header(id, caption, lang) if top?('list')
+        listnum_body(lines, lang)
+        list_header(id, caption, lang) unless top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body(lines, lang)
     end
 
     def source(lines, caption, lang = nil)
-      source_header(caption)
+      source_header(caption) if top?('list')
       source_body(lines, lang)
+      source_header(caption) unless top?('list')
     end
 
     def image(lines, id, caption, metric = nil)
@@ -155,15 +158,18 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       sepidx, rows = parse_table_rows(lines)
       begin
-        if caption.present?
+        if top?('table') && caption.present?
+          table_header(id, caption)
+        end
+        table_begin(rows.first.size)
+        table_tr(sepidx, rows)
+        table_end
+        if !top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin(rows.first.size)
-      table_tr(sepidx, rows)
-      table_end
     end
 
     def parse_table_rows(lines)
@@ -643,6 +649,10 @@ EOTGNUPLOT
 
     def unescape(str)
       str
+    end
+
+    def top?(type)
+      @book.config['caption_position'][type] != 'bottom'
     end
   end
 end # module ReVIEW
