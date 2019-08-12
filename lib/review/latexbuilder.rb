@@ -319,7 +319,7 @@ module ReVIEW
     end
 
     def read(lines)
-      latex_block 'quotation', lines
+      latex_block('quotation', lines)
     end
 
     alias_method :lead, :read
@@ -600,8 +600,8 @@ module ReVIEW
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin rows.first.size
-      table_tr sepidx, rows
+      table_begin(rows.first.size)
+      table_tr(sepidx, rows)
       table_end
     end
 
@@ -773,7 +773,7 @@ module ReVIEW
     def imgtable(lines, id, caption = nil, metric = nil)
       unless @chapter.image(id).bound?
         warn "image not bound: #{id}"
-        image_dummy id, caption, lines
+        image_dummy(id, caption, lines)
         return
       end
 
@@ -815,17 +815,17 @@ module ReVIEW
     end
 
     def quote(lines)
-      latex_block 'quote', lines
+      latex_block('quote', lines)
     end
 
     def center(lines)
-      latex_block 'center', lines
+      latex_block('center', lines)
     end
 
     alias_method :centering, :center
 
     def flushright(lines)
-      latex_block 'flushright', lines
+      latex_block('flushright', lines)
     end
 
     def texequation(lines, id = nil, caption = '')
@@ -874,7 +874,7 @@ module ReVIEW
       return true unless @book.config['draft']
       lines ||= []
       unless comment.blank?
-        lines.unshift escape(comment)
+        lines.unshift(escape(comment))
       end
       str = lines.join('\par ')
       puts macro('pdfcomment', str)

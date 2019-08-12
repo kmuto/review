@@ -21,7 +21,7 @@ module ReVIEW
         seq = 1
         src.grep(%r{\A//#{item_type}}) do |line|
           if id = line.slice(/\[(.*?)\]/, 1)
-            items.push item_class.new(id, seq)
+            items.push(item_class.new(id, seq))
             seq += 1
             if id.empty?
               ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
@@ -144,7 +144,7 @@ module ReVIEW
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
             m1 = m[1].gsub(/\\(\])/) { $1 }
             m2 = m[2].gsub(/\\(\])/) { $1 }
-            items.push Item.new(m1, seq, m2)
+            items.push(Item.new(m1, seq, m2))
           end
           seq += 1
         end
@@ -161,9 +161,9 @@ module ReVIEW
           elements = line.split(/\[(.*?)\]/)
           if elements[1].present?
             if line =~ %r{\A//imgtable}
-              items.push item_class.new(elements[1], 0, elements[3])
+              items.push(item_class.new(elements[1], 0, elements[3]))
             else ## %r<\A//(image|graph)>
-              items.push item_class.new(elements[1], seq, elements[3])
+              items.push(item_class.new(elements[1], seq, elements[3]))
               seq += 1
             end
             if elements[1] == ''
@@ -203,7 +203,7 @@ module ReVIEW
       attr_reader :image_finder
 
       def initialize(items, chapid, basedir, types, builder)
-        super items
+        super(items)
         items.each do |i|
           i.index = self
         end
@@ -237,7 +237,7 @@ module ReVIEW
         seq = 1
         src.grep(/@<icon>/) do |line|
           line.gsub(/@<icon>\{(.+?)\}/) do
-            items.push item_class.new($1, seq)
+            items.push(item_class.new($1, seq))
             seq += 1
           end
         end
@@ -255,7 +255,7 @@ module ReVIEW
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
             m1 = m[1].gsub(/\\(.)/) { $1 }
             m2 = m[2].gsub(/\\(.)/) { $1 }
-            items.push Item.new(m1, seq, m2)
+            items.push(Item.new(m1, seq, m2))
           end
           seq += 1
         end
@@ -349,11 +349,11 @@ module ReVIEW
 
           if %w[nonum notoc nodisp].include?(m[2])
             headlines[index] = m[3].present? ? m[3].strip : m[4].strip
-            items.push Item.new(headlines.join('|'), nil, m[4].strip)
+            items.push(Item.new(headlines.join('|'), nil, m[4].strip))
           else
             indexs[index] += 1
             headlines[index] = m[3].present? ? m[3].strip : m[4].strip
-            items.push Item.new(headlines.join('|'), indexs.dup, m[4].strip)
+            items.push(Item.new(headlines.join('|'), indexs.dup, m[4].strip))
           end
         end
         new(items, chap)
@@ -401,7 +401,7 @@ module ReVIEW
           caption = m[3].strip
           id = caption if id.nil? || id.empty?
 
-          items.push item_class.new(id, seq, caption)
+          items.push(item_class.new(id, seq, caption))
           seq += 1
         end
         new(items)

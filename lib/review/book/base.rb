@@ -189,7 +189,7 @@ module ReVIEW
         return @catalog if @catalog.present?
 
         catalogfile_path = filename_join(@basedir, config['catalogfile'])
-        if File.file? catalogfile_path
+        if File.file?(catalogfile_path)
           @catalog = File.open(catalogfile_path, 'rt:BOM|utf-8') { |f| Catalog.new(f) }
         end
         if @catalog
@@ -300,13 +300,13 @@ module ReVIEW
         list = parse_chapters
         # NOTE: keep this = style to work this logic.
         if pre = prefaces
-          list.unshift pre
+          list.unshift(pre)
         end
         if app = appendix
-          list.push app
+          list.push(app)
         end
         if post = postscripts
-          list.push post
+          list.push(post)
         end
         list
       end

@@ -69,7 +69,7 @@ def main
     end
   end
   puts '============================='
-  print_volume book.volume # puts "Total #{book.volume}"
+  print_volume(book.volume) # puts "Total #{book.volume}"
 rescue ReVIEW::ApplicationError, Errno::ENOENT => e
   raise if $DEBUG
   @logger.error "#{File.basename($PROGRAM_NAME)}: #{e.message}"
@@ -79,13 +79,13 @@ end
 def print_chapter_volume(chap)
   vol = chap.volume
   title = chap.title
-  printf "%s %3dKB %6dC %5dL %3dP %s %-s\n",
+  printf("%s %3dKB %6dC %5dL %3dP %s %-s\n",
          chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines, vol.page,
-         "#{chap.name} ".ljust(25, '.'), title
+         "#{chap.name} ".ljust(25, '.'), title)
 end
 
 def print_volume(vol)
-  printf "    %3dKB %6dC %5dL %3dP\n", vol.kbytes, vol.chars, vol.lines, vol.page
+  printf("    %3dKB %6dC %5dL %3dP\n", vol.kbytes, vol.chars, vol.lines, vol.page)
 end
 
 def chapnumstr(n)
