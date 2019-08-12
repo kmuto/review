@@ -17,6 +17,10 @@
 ## ドキュメント
 * sample-book の README.md を更新しました ([#1354])
 
+## その他
+
+* メソッド引数のコーディングルールを統一しました ([#1360])
+
 ## コントリビューターのみなさん
 * [@m-shibata](https://github.com/m-shibata)
 
@@ -28,6 +32,7 @@
 [#1350]: https://github.com/kmuto/review/issues/1350
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
+[#1360]: https://github.com/kmuto/review/pull/1360
 
 # Version 3.2.0
 

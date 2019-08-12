@@ -20,6 +20,9 @@
 ## Contributors
 * [@m-shibata](https://github.com/m-shibata)
 
+## Others
+* unify styles of a method with arguments ([#1360])
+
 [#1337]: https://github.com/kmuto/review/issues/1337
 [#1338]: https://github.com/kmuto/review/issues/1338
 [#1340]: https://github.com/kmuto/review/issues/1340
@@ -28,6 +31,7 @@
 [#1350]: https://github.com/kmuto/review/issues/1350
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
+[#1360]: https://github.com/kmuto/review/pull/1360
 
 # Version 3.2.0
 
