@@ -50,11 +50,11 @@ module ReVIEW
 
     def paragraph(lines)
       if @noindent
-        puts %Q(<p class="noindent">#{lines.join}</p>)
+        puts %Q(<p class="noindent">#{join_lines_to_paragraph(lines)}</p>)
         puts "\n"
         @noindent = nil
       else
-        puts lines.join
+        puts join_lines_to_paragraph(lines)
         puts "\n"
       end
     end
@@ -93,7 +93,7 @@ module ReVIEW
     end
 
     def ul_item_begin(lines)
-      puts '  ' * (@ul_indent - 1) + '* ' + lines.join
+      puts '  ' * (@ul_indent - 1) + '* ' + join_lines_to_paragraph(lines)
     end
 
     def ul_item_end
@@ -109,7 +109,7 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts "#{num}. #{lines.join}"
+      puts "#{num}. #{join_lines_to_paragraph(lines)}"
     end
 
     def ol_end
@@ -125,7 +125,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join}</dd>"
+      puts "<dd>#{join_lines_to_paragraph(lines)}</dd>"
     end
 
     def dl_end
@@ -380,7 +380,7 @@ module ReVIEW
 
     def flushright(lines)
       puts %Q(<div class="flushright">)
-      puts lines.join
+      puts split_paragraph(lines).join("\n")
       puts %Q(</div>)
     end
   end

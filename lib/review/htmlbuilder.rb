@@ -307,7 +307,7 @@ module ReVIEW
     end
 
     def ul_item_begin(lines)
-      print "<li>#{lines.join}"
+      print "<li>#{join_lines_to_paragraph(lines)}"
     end
 
     def ul_item_end
@@ -328,7 +328,7 @@ module ReVIEW
     end
 
     def ol_item(lines, _num)
-      puts "<li>#{lines.join}</li>"
+      puts "<li>#{join_lines_to_paragraph(lines)}</li>"
     end
 
     def ol_end
@@ -344,7 +344,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join}</dd>"
+      puts "<dd>#{join_lines_to_paragraph(lines)}</dd>"
     end
 
     def dl_end
@@ -353,10 +353,10 @@ module ReVIEW
 
     def paragraph(lines)
       if @noindent
-        puts %Q(<p class="noindent">#{lines.join}</p>)
+        puts %Q(<p class="noindent">#{join_lines_to_paragraph(lines)}</p>)
         @noindent = nil
       else
-        puts "<p>#{lines.join}</p>"
+        puts "<p>#{join_lines_to_paragraph(lines)}</p>"
       end
     end
 
