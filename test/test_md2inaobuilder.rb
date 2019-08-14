@@ -44,7 +44,7 @@ EOS
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
-<dd>foo.bar.</dd>
+<dd>foo. bar.</dd>
 </dl>
 EOS
     assert_equal expected, actual

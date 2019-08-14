@@ -439,7 +439,7 @@ EOS
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
-<blockquote><p>foobar</p>
+<blockquote><p>foo bar</p>
 <p>buz</p></blockquote>
 EOS
     assert_equal expected, actual
@@ -469,8 +469,8 @@ EOS
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     expected = <<-EOS
-<p class="noindent">foobar</p>
-<p>foo2bar2</p>
+<p class="noindent">foo bar</p>
+<p>foo2 bar2</p>
 EOS
     assert_equal expected, actual
   end
@@ -478,7 +478,7 @@ EOS
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
-<p class="flushright">foobar</p>
+<p class="flushright">foo bar</p>
 <p class="flushright">buz</p>
 EOS
     assert_equal expected, actual
@@ -487,7 +487,7 @@ EOS
   def test_centering
     actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
-<p class="center">foobar</p>
+<p class="center">foo bar</p>
 <p class="center">buz</p>
 EOS
     assert_equal expected, actual
@@ -663,7 +663,7 @@ EOS
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
-<dd>foo.bar.</dd>
+<dd>foo. bar.</dd>
 </dl>
 EOS
     assert_equal expected, actual
@@ -674,7 +674,7 @@ EOS
     expected = <<-EOS
 <dl>
 <dt>foo[bar]</dt>
-<dd>foo.bar.</dd>
+<dd>foo. bar.</dd>
 </dl>
 EOS
     assert_equal expected, actual
@@ -1434,7 +1434,7 @@ EOS
     expected = <<-EOS
 <div class="bibpaper">
 <a id="bib-samplebib">[1]</a> sample bib <b>bold</b>
-<p>ab</p></div>
+<p>a b</p></div>
 EOS
     assert_equal expected, actual
   end
@@ -1448,7 +1448,7 @@ EOS
     expected = <<-EOS
 <div class="bibpaper">
 <a id="bib-id_sample_3Dbib">[1]</a> sample bib <b>bold</b>
-<p>ab</p></div>
+<p>a b</p></div>
 EOS
     assert_equal expected, actual
   end
@@ -1462,7 +1462,7 @@ EOS
     expected = <<-EOS
 <div class="bibpaper">
 <a id="bib-samplebib">[1]</a> sample bib <a href="http://example.jp" class="link">http://example.jp</a>
-<p>ab</p></div>
+<p>a b</p></div>
 EOS
     assert_equal expected, actual
   end
@@ -1591,8 +1591,8 @@ EOS
 EOS
     expected = <<-EOS
 <ul>
-<li>AAA-AA</li>
-<li>BBB-BB</li>
+<li>AAA -AA</li>
+<li>BBB -BB</li>
 </ul>
 EOS
     actual = compile_block(src)

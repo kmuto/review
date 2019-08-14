@@ -22,7 +22,7 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
 
-> foobar
+> foo bar
 > 
 > buz
 
@@ -45,9 +45,9 @@ EOS
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     expected = <<-EOS
-<p class="noindent">foobar</p>
+<p class="noindent">foo bar</p>
 
-foo2bar2
+foo2 bar2
 
 EOS
     assert_equal expected, actual
@@ -109,7 +109,7 @@ EOS
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
-<dd>foo.bar.</dd>
+<dd>foo. bar.</dd>
 </dl>
 EOS
     assert_equal expected, actual
@@ -120,7 +120,7 @@ EOS
     expected = <<-EOS
 <dl>
 <dt>foo[bar]</dt>
-<dd>foo.bar.</dd>
+<dd>foo. bar.</dd>
 </dl>
 EOS
     assert_equal expected, actual

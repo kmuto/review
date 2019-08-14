@@ -86,7 +86,7 @@ module ReVIEW
 
     def join_lines_to_paragraph(lines)
       lazy = true
-      lang = @book.config['language'] || 'ja'
+      lang = 'ja'
       0.upto(lines.size - 2) do |n|
         if add_space?(lines[n], lines[n + 1], lang, lazy)
           lines[n] += ' '
