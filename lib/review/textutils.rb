@@ -37,10 +37,13 @@ module ReVIEW
         end
       end
 
+      blocked_lines.map! { |i| join_lines_to_paragraph(i) }
+
       if pre && post
-        blocked_lines.map! { |i| [pre] + i + [post] }
+        blocked_lines.map! { |i| pre + i + post }
       end
-      blocked_lines.map { |i| join_lines_to_paragraph(i) }
+
+      blocked_lines
     end
 
     def add_space?(line1, line2, lang, lazy = nil)
