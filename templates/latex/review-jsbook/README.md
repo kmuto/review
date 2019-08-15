@@ -146,11 +146,13 @@ review-jsbook.cls は jsbook.cls を包んでおり、一部の jsbook.cls の�
  * `jslogo`: 「LaTeX」等のロゴを置き換えます (デフォルト)。
  * `nojslogo`: ロゴを置き換えません。
  * `report`: oneside と openany の両方と同じ効果を持ちます。
+ * `landscape`: 用紙を横長で使います。review-jsbook.cls のクラスオプションで基本版面設計をやり直す必要があることに注意してください。
 
 jsbook.cls の以下のクラスオプションは挙動が異なります。代わりに review-jsbook.cls のクラスオプションを利用してください。
 
  * `8pt`・`9pt`・`10pt`・`11pt`・`12pt`・`14pt`・`17pt`・`20pt`・`21pt`・`25pt`・`30pt`・`36pt`・`43pt`・`12Q`・`14Q`・`10ptj`・`10.5ptj`・`11ptj`・`12ptj`: 基本文字のサイズを指定します。そのまま review-jsbook.cls の fontsize に渡されますが、上記の fontsize クラスオプションの説明にあるとおり丸められます。
  * `tombow`・`tombo`・`mentuke`: トンボや塗り足しを作成しますが、これらは PDF 入稿に求められる正しいデジタルトンボ情報を入れないので使用してはなりません。review-jsbook.cls の `media=print` を使ってください。
+ * `a4paper`・`a5paper`・`b5paper`・`b4paper`・`letterpaper`: 紙サイズを指定します。誤りではありませんが、review-jsbook.cls の paper クラスオプションを使うほうが妥当です。
 
 jsbook.cls の以下のクラスオプションは無視またはエラーになります。
 
