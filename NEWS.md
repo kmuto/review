@@ -10,12 +10,16 @@
 ## Bug Fixes
 * fix a typo in review-jlreq ([#1350])
 * fix incorrect result when `re` file uses CR for line-feed code ([#1341])
+* PDFMaker: fix foreground color of `//cmd` with review-jlreq after page breaking ([#1363])
+* PDFMaker: fix duplicate 'column' label for `@<column>` ([#1367])
 
 ## Enhancements
 * support `@<em>` and `@<strong>` in IDGXMLBuilder ([#1353])
+* PDFMaker: extract `code_line` and `code_line_num` from code blocks for ease handling each line ([#1368])
 
 ## Docs
 * update sample-book/README.md ([#1354])
+* add descriptions about options of jsbook.cls to review-jsbook/README.md ([#1365])
 
 ## Contributors
 * [@m-shibata](https://github.com/m-shibata)
@@ -32,6 +36,10 @@
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
 [#1360]: https://github.com/kmuto/review/pull/1360
+[#1363]: https://github.com/kmuto/review/issues/1363
+[#1365]: https://github.com/kmuto/review/pull/1365
+[#1367]: https://github.com/kmuto/review/issues/1367
+[#1368]: https://github.com/kmuto/review/issues/1368
 
 # Version 3.2.0
 
