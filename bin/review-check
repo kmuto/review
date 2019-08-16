@@ -50,7 +50,7 @@ def main
   end
   opts.on('--text', 'Check text.') do
     modes ||= []
-    modes.push :text
+    modes.push(:text)
   end
   opts.on('--help', 'print this message and quit.') do
     puts opts.help
@@ -72,7 +72,7 @@ def main
   modes.each do |mode|
     case mode
     when :text
-      check_text files
+      check_text(files)
     else
       raise 'must not happen'
     end
@@ -122,9 +122,9 @@ def words_re(rc)
     next if line[0, 1] == '#'
     if / !/ =~ line
       line, n = *line.split('!', 2)
-      nega.push n.strip
+      nega.push(n.strip)
     end
-    words.push line.strip
+    words.push(line.strip)
   end
   return Regexp.compile(words.join('|')),
          nega.empty? ? nil : Regexp.compile(nega.join('|'))
@@ -157,7 +157,7 @@ def each_paragraph(f)
         break if line.strip.empty?
         break if %r{\A(?:=|//[\w\}])} =~ line
         next if /\A\#@/ =~ line
-        buf.push line.strip
+        buf.push(line.strip)
       end
       yield buf, lineno
       @review_utils_word_ok = nil

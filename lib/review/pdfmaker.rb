@@ -189,7 +189,7 @@ module ReVIEW
     def build_pdf
       template = template_content
       Dir.chdir(@path) do
-        File.open("./#{@mastertex}.tex", 'wb') { |f| f.write(template) }
+        File.open("./#{@mastertex}.tex", 'wb') { |f| f.write template }
 
         call_hook('hook_beforetexcompile')
 
@@ -281,7 +281,7 @@ module ReVIEW
 
         FileUtils.cp(File.join(@path, "#{@mastertex}.pdf"), pdf_filepath)
       ensure
-        remove_entry_secure @path unless @config['debug']
+        remove_entry_secure(@path) unless @config['debug']
       end
     end
 
@@ -454,7 +454,7 @@ module ReVIEW
     def erb_content(file)
       @texcompiler = File.basename(@config['texcommand'], '.*')
       erb = ReVIEW::Template.load(file, '-')
-      @logger.debug "erb processes #{File.basename(file)}" if @config['debug']
+      @logger.debug("erb processes #{File.basename(file)}") if @config['debug']
       erb.result(binding)
     end
 
@@ -489,7 +489,7 @@ module ReVIEW
               f.print erb_content(File.join(dirname, fname))
             end
           else
-            FileUtils.cp File.join(dirname, fname), copybase
+            FileUtils.cp(File.join(dirname, fname), copybase)
           end
         end
       end

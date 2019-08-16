@@ -319,7 +319,7 @@ module ReVIEW
     end
 
     def read(lines)
-      latex_block 'quotation', lines
+      latex_block('quotation', lines)
     end
 
     alias_method :lead, :read
@@ -329,12 +329,20 @@ module ReVIEW
     end
     private :highlight_listings?
 
+    def code_line(_type, line, _idx, _id, _caption, _lang)
+      detab(line) + "\n"
+    end
+
+    def code_line_num(_type, line, first_line_num, idx, _id, _caption, _lang)
+      detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n"
+    end
+
     def emlist(lines, caption = nil, lang = nil)
       blank
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistlst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| code_line('emlist', line, idx, nil, caption, lang) }
       end
     end
 
@@ -344,7 +352,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistnumlst', 'title', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| code_line_num('emlistnum', line, first_line_num, idx, nil, caption, lang) }
       end
     end
 
@@ -353,7 +361,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistlst', 'caption', caption, lang)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| code_line('list', line, idx, id, caption, lang) }
       end
     end
 
@@ -363,7 +371,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| code_line_num('listnum', line, first_line_num, idx, id, caption, lang) }
       end
     end
 
@@ -372,7 +380,7 @@ module ReVIEW
         common_code_block_lst(nil, lines, 'reviewcmdlst', 'title', caption, lang)
       else
         blank
-        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, idx| code_line('cmd', line, idx, nil, caption, lang) }
       end
     end
 
@@ -449,7 +457,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewsourcelst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, idx| code_line('source', line, idx, nil, caption, lang) }
       end
     end
 
@@ -782,7 +790,7 @@ module ReVIEW
     def imgtable(lines, id, caption = nil, metric = nil)
       unless @chapter.image(id).bound?
         warn "image not bound: #{id}"
-        image_dummy id, caption, lines
+        image_dummy(id, caption, lines)
         return
       end
 
@@ -824,17 +832,17 @@ module ReVIEW
     end
 
     def quote(lines)
-      latex_block 'quote', lines
+      latex_block('quote', lines)
     end
 
     def center(lines)
-      latex_block 'center', lines
+      latex_block('center', lines)
     end
 
     alias_method :centering, :center
 
     def flushright(lines)
-      latex_block 'flushright', lines
+      latex_block('flushright', lines)
     end
 
     def texequation(lines, id = nil, caption = '')
@@ -883,7 +891,7 @@ module ReVIEW
       return true unless @book.config['draft']
       lines ||= []
       unless comment.blank?
-        lines.unshift escape(comment)
+        lines.unshift(escape(comment))
       end
       str = lines.join('\par ')
       puts macro('pdfcomment', str)

@@ -154,7 +154,7 @@ ch02.re
   private
 
   def yaml
-    StringIO.new <<-EOS
+    StringIO.new(<<-EOS)
 
 PREDEF:
   - pre01.re
@@ -182,7 +182,7 @@ POSTDEF:
   end
 
   def yaml_with_parts
-    StringIO.new <<-EOS
+    StringIO.new(<<-EOS)
 CHAPS:
   - ch01.re
   - part1.re:

@@ -125,3 +125,42 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
  * jsbook.cls のクラスオプション `uplatex`：これまで texdocumentclass に指定が必要だった `uplatex` オプションは不要となっています。
  * jsbook.cls のクラスオプション `nomag`：用紙サイズや版面設計は、review-jsbook.cls 側で行います。
  * hyperref パッケージ：あらかじめ hyperref パッケージを組み込んでおり、`media` オプションにより用途別で挙動を制御します。
+
+### 既存の jsbook.cls のオプションの扱い
+
+review-jsbook.cls は jsbook.cls を包んでおり、一部の jsbook.cls のクラスオプションはそのまま指定可能です。
+
+ * `oneside`: 奇数ページ・偶数ページで柱やページ番号などを同じ体裁にします。review-jsbook.cls にも有効ですが、review-style.sty でこれを打ち消し奇数・偶数で別の見た目にするデザイン (fancyhdr) が定義されているので、review-style.sty も調整する必要があります。
+ * `twoside`: 奇数ページ・偶数ページで柱やページ番号などを別の体裁にします (デフォルト)。
+ * `vartwoside`: twoside とおおむね同じですが、傍注が小口ではなく常に右側になります。Re:VIEW のデフォルトでは傍注は使用していないので、効果は通常表れません。
+ * `onecolumn`: 1段組の体裁にします (デフォルト)。
+ * `twocolumn`: 2段組の体裁にします。
+ * `openright`: 章の始まりを右ページ (奇数ページ) にします (デフォルト)。前の章が右ページで終わった場合には、白紙のページが1ページ挿入されます。
+ * `openleft`: 章の始まりを左ページ (偶数ページ) にします。前の章が左ページで終わった場合には、白紙のページが1ページ挿入されます。
+ * `openany`: 章の始まりを左右どちらのページからでも始めます。
+ * `draft`: 確認作業のために、overfull box が起きた箇所の行末に罫線を引き、画像は実際に貼り付けずにボックスとファイル名だけを表記するようにします。
+ * `final`: 上記の draft の処理を行いません (デフォルト)。
+ * `leqno`: 数式の番号を右ではなく左側に置きます。ただし Re:VIEW では LaTeX のやり方での採番付き数式を作っていないので、効果は通常表れません。
+ * `fleqn`: 数式をデフォルトの左右中央ではなく、左側に配置します。
+ * `english`: 英語ドキュメント向けに、字下げをなくしたり、「章」や「目次」などの定型の文字列を英語化します。しかし、Re:VIEW では定型文字列はロケールファイルで処理しており、ほとんどは無視されます。
+ * `jslogo`: 「LaTeX」等のロゴを置き換えます (デフォルト)。
+ * `nojslogo`: ロゴを置き換えません。
+ * `report`: oneside と openany の両方と同じ効果を持ちます。
+ * `landscape`: 用紙を横長で使います。review-jsbook.cls のクラスオプションで基本版面設計をやり直す必要があることに注意してください。
+
+jsbook.cls の以下のクラスオプションは挙動が異なります。代わりに review-jsbook.cls のクラスオプションを利用してください。
+
+ * `8pt`・`9pt`・`10pt`・`11pt`・`12pt`・`14pt`・`17pt`・`20pt`・`21pt`・`25pt`・`30pt`・`36pt`・`43pt`・`12Q`・`14Q`・`10ptj`・`10.5ptj`・`11ptj`・`12ptj`: 基本文字のサイズを指定します。そのまま review-jsbook.cls の fontsize に渡されますが、上記の fontsize クラスオプションの説明にあるとおり丸められます。
+ * `tombow`・`tombo`・`mentuke`: トンボや塗り足しを作成しますが、これらは PDF 入稿に求められる正しいデジタルトンボ情報を入れないので使用してはなりません。review-jsbook.cls の `media=print` を使ってください。
+ * `a4paper`・`a5paper`・`b5paper`・`b4paper`・`letterpaper`: 紙サイズを指定します。誤りではありませんが、review-jsbook.cls の paper クラスオプションを使うほうが妥当です。
+
+jsbook.cls の以下のクラスオプションは無視またはエラーになります。
+
+ * `uplatex`: 暗黙に指定されるので無視されます。
+ * `autodetect-engine`: pLaTeX/upLaTeX を自動判別するオプションですが、Re:VIEW では review-jsbook 利用時に upLaTeX を暗黙に前提としているので無視されます。
+ * `papersize`: dvips などに紙サイズ情報を与えるオプションですが、Re:VIEW ではこれを利用しないので、結果的に無視されます。
+ * `titlepage`・`notitlepage`: 表題の独立ページ化の有無ですが、Re:VIEW では表題を利用していないため、結果的に無視されます。
+ * `usemag`・`nomag`・`nomag*`: 用紙サイズと版面設計は review-jsbook.cls のクラスオプションを使うため、無視されます。
+ * `a4j`・`a5j`・`b4j`・`b5j`・`winjis`・`mingoth`: これらは無効としており、エラーになります。review-jsbook.cls のクラスオプションを利用してください。
+ * `jis`: jis フォントメトリックスを使う指定ですが、通常の環境ではコンパイルエラーになります。
+ * `disablejfam`: 数式内の利用フォント数を増やすために、数式内の日本語文字を使わないようにする指定ですが、Re:VIEW を利用する上では単にエラーを誘発するだけでしょう。
