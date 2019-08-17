@@ -408,7 +408,12 @@ module ReVIEW
     end
 
     def inline_wb(s)
-      inline_b(unescape(inline_w(s)))
+      translated = @dictionary[s]
+      if translated
+        inline_b(translated)
+      else
+        inline_b("[missing word: #{s}]")
+      end
     end
 
     def raw(str)
@@ -508,13 +513,13 @@ module ReVIEW
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
-      line = self.unescape(lines.join("\n"))
+      content = lines.join("\n") + "\n"
 
       tf = Tempfile.new('review_graph')
-      tf.puts line
+      tf.puts content
       tf.close
       begin
-        file_path = send("graph_#{command}".to_sym, id, file_path, line, tf.path)
+        file_path = send("graph_#{command}".to_sym, id, file_path, content, tf.path)
       ensure
         tf.unlink
       end
@@ -636,10 +641,6 @@ EOTGNUPLOT
     end
 
     def escape(str)
-      str
-    end
-
-    def unescape(str)
       str
     end
   end

@@ -422,7 +422,7 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
-      ignore_inline = (name == :embed) || (name == :texequation)
+      ignore_inline = %i[embed texequation graph].include?(name)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
       @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
