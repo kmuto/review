@@ -864,7 +864,7 @@ module ReVIEW
 
       puts macro('begin', 'equation*')
       lines.each do |line|
-        puts unescape(line)
+        puts line
       end
       puts macro('end', 'equation*')
 

@@ -427,9 +427,9 @@ module ReVIEW
       if arg
         builders = arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
         c = target_name
-        print lines.join if builders.include?(c)
+        print lines.join("\n") + "\n" if builders.include?(c)
       else
-        print lines.join
+        print lines.join("\n") + "\n"
       end
     end
 

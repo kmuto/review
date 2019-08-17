@@ -565,11 +565,11 @@ module ReVIEW
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
-        puts p.parse(unescape(lines.join("\n")), true)
+        print p.parse(lines.join("\n") + "\n", true)
       elsif @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
-        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{unescape(lines.join("\n"))}\n\\end{equation*}\n"
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = File.join(@book.config['imagedir'], '_review_math')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)

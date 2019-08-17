@@ -184,7 +184,7 @@ module ReVIEW
       if @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
-        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{unescape(lines.join("\n"))}\n\\end{equation*}\n"
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = File.join(@book.config['imagedir'], '_review_math_text')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)

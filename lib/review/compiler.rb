@@ -422,7 +422,7 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
-      ignore_inline = (name == :embed)
+      ignore_inline = (name == :embed) || (name == :texequation)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
       @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
@@ -439,7 +439,7 @@ module ReVIEW
       buf = []
       f.until_match(%r{\A//\}}) do |line|
         if ignore_inline
-          buf.push(line)
+          buf.push(line.chomp)
         elsif line !~ /\A\#@/
           buf.push(text(line.rstrip))
         end
