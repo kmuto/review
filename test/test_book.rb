@@ -248,15 +248,15 @@ EOC
           ''
         ]
       ]
-    ].each do |n_parts, chaps_text, parts_text, part_names|
+    ].each do |n_parts, chaps, parts, part_names|
       n_test += 1
       Dir.mktmpdir do |dir|
         book = Book::Base.new(dir)
         chaps_path = File.join(dir, 'CHAPS')
-        File.open(chaps_path, 'w') { |o| o.print chaps_text }
-        if parts_text
+        File.open(chaps_path, 'w') { |o| o.print chaps }
+        if parts
           parts_path = File.join(dir, 'PART')
-          File.open(parts_path, 'w') { |o| o.print parts_text }
+          File.open(parts_path, 'w') { |o| o.print parts }
         end
 
         parts = book.instance_eval { parse_chapters }

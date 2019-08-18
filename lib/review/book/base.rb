@@ -200,7 +200,7 @@ module ReVIEW
 
       def read_chaps
         if catalog
-          catalog.chaps
+          catalog.chaps.join("\n")
         else
           read_file(config['chapter_file'])
         end
@@ -208,7 +208,7 @@ module ReVIEW
 
       def read_predef
         if catalog
-          catalog.predef
+          catalog.predef.join("\n")
         else
           read_file(config['predef_file'])
         end
@@ -216,7 +216,7 @@ module ReVIEW
 
       def read_appendix
         if catalog
-          catalog.appendix
+          catalog.appendix.join("\n")
         else
           read_file(config['postdef_file']) # for backward compatibility
         end
@@ -224,7 +224,7 @@ module ReVIEW
 
       def read_postdef
         if catalog
-          catalog.postdef
+          catalog.postdef.join("\n")
         else
           ''
         end
@@ -234,7 +234,7 @@ module ReVIEW
         return @read_part if @read_part
 
         if catalog
-          @read_part = catalog.parts
+          @read_part = catalog.parts.join("\n")
         else
           @read_part = File.read(File.join(@basedir, config['part_file']))
         end
@@ -258,7 +258,7 @@ module ReVIEW
 
       def prefaces
         if catalog
-          return mkpart_from_namelist(catalog.predef.split("\n"))
+          return mkpart_from_namelist(catalog.predef)
         end
 
         begin
@@ -273,7 +273,7 @@ module ReVIEW
 
       def appendix
         if catalog
-          names = catalog.appendix.split("\n")
+          names = catalog.appendix
           chaps = names.each_with_index.map { |n, idx| mkchap_ifexist(n, idx) }.compact
           return mkpart(chaps)
         end
@@ -290,7 +290,7 @@ module ReVIEW
 
       def postscripts
         if catalog
-          mkpart_from_namelist(catalog.postdef.split("\n"))
+          mkpart_from_namelist(catalog.postdef)
         end
       end
 
