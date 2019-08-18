@@ -16,6 +16,9 @@ module ReVIEW
   class Compiler
     def initialize(strategy)
       @strategy = strategy
+
+      ## commands which do not parse block lines in compiler
+      @non_parsed_commands = %i[embed texequation graph]
     end
 
     attr_reader :strategy
@@ -422,7 +425,7 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
-      ignore_inline = %i[embed texequation graph].include?(name)
+      ignore_inline = @non_parsed_commands.include?(name)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
       @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
