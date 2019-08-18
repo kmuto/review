@@ -71,6 +71,10 @@ module ReVIEW
     end
     private :builder_init_file
 
+    def highlight?
+      false
+    end
+
     def result
       @output.string
     end
