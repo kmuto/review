@@ -427,7 +427,7 @@ module ReVIEW
       if title == 'title' && caption.blank? && @book.config.check_version('2', exception: false)
         print '\vspace{-1.5em}'
       end
-      body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
       print body

@@ -82,7 +82,7 @@ module ReVIEW
       begin
         require 'pygments'
         begin
-          Pygments.highlight(unescape(body),
+          Pygments.highlight(body,
                              options: options,
                              formatter: format,
                              lexer: lexer)
@@ -128,7 +128,7 @@ module ReVIEW
         return body
       end
 
-      text = unescape(body)
+      text = body
       formatter.format(lexer.lex(text))
     end
 
