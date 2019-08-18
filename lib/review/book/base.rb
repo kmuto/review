@@ -29,7 +29,6 @@ module ReVIEW
         @chapter_index = nil
         @config = ReVIEW::Configure.values
         @catalog = nil
-        @read_part = nil
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
         @basedir_seen = {}
         update_rubyenv
@@ -200,43 +199,41 @@ module ReVIEW
 
       def read_chaps
         if catalog
-          catalog.chaps.join("\n")
+          catalog.chaps
         else
-          read_file(config['chapter_file'])
+          read_file(config['chapter_file']).split("\n")
         end
       end
 
       def read_predef
         if catalog
-          catalog.predef.join("\n")
+          catalog.predef
         else
-          read_file(config['predef_file'])
+          read_file(config['predef_file']).split("\n")
         end
       end
 
       def read_appendix
         if catalog
-          catalog.appendix.join("\n")
+          catalog.appendix
         else
-          read_file(config['postdef_file']) # for backward compatibility
+          read_file(config['postdef_file']).split("\n") # for backward compatibility
         end
       end
 
       def read_postdef
         if catalog
-          catalog.postdef.join("\n")
+          catalog.postdef
         else
-          ''
+          []
         end
       end
 
       def read_part
-        return @read_part if @read_part
-
         if catalog
-          @read_part = catalog.parts.join("\n")
+          catalog.parts
         else
-          @read_part = File.read(File.join(@basedir, config['part_file']))
+          File.read(File.join(@basedir, config['part_file'])).split("\n")
         end
       end
 
@@ -324,7 +321,7 @@ module ReVIEW
                 chap = Chapter.new(self, num += 1, chap, File.join(contentdir, chap))
                 chap
               end
-              Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
+              Part.new(self, part += 1, chaps, read_part[part - 1])
             else
               chap = Chapter.new(self, num += 1, entry, File.join(contentdir, entry))
               if chap.number
@@ -337,12 +334,11 @@ module ReVIEW
           end
         end
 
-        chap = read_chaps.
-               strip.lines.map(&:strip).join("\n").split(/\n{2,}/).
+        chap = read_chaps.map(&:strip).join("\n").split(/\n{2,}/).
                map do |part_chunk|
           chaps = part_chunk.split.map { |chapid| Chapter.new(self, num += 1, chapid, File.join(contentdir, chapid)) }
-          if part_exist? && read_part.split("\n").size > part
-            Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
+          if part_exist? && read_part.size > part
+            Part.new(self, part += 1, chaps, read_part[part - 1])
           else
             Part.new(self, nil, chaps)
           end
