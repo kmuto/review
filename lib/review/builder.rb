@@ -162,7 +162,7 @@ module ReVIEW
         error "no such table: #{id}"
       end
       table_begin(rows.first.size)
-      table_tr(sepidx, rows)
+      table_rows(sepidx, rows)
       table_end
     end
 
@@ -181,7 +181,7 @@ module ReVIEW
       [sepidx, rows]
     end
 
-    def table_tr(sepidx, rows)
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })

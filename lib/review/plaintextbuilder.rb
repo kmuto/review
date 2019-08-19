@@ -230,7 +230,7 @@ module ReVIEW
         error "no such table: #{id}"
       end
       table_begin(rows.first.size)
-      table_tr(sepidx, rows)
+      table_rows(sepidx, rows)
       table_end
     end
 
