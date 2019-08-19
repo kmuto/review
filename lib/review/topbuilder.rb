@@ -200,18 +200,9 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      sepidx, rows = parse_table_rows(lines)
       blank
       puts "◆→開始:#{@titles['table']}←◆"
-
-      begin
-        table_header(id, caption) if caption.present?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin(rows.first.size)
-      table_rows(sepidx, rows)
-      table_end
+      super(lines, id, caption, true)
     end
 
     def th(str)

@@ -642,22 +642,12 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      sepidx, rows = parse_table_rows(lines)
       if id
         puts %Q(<div id="#{normalize_id(id)}" class="table">)
       else
         puts %Q(<div class="table">)
       end
-      begin
-        if caption.present?
-          table_header(id, caption)
-        end
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin(rows.first.size)
-      table_rows(sepidx, rows)
-      table_end
+      super(lines, id, caption)
       puts '</div>'
     end
 

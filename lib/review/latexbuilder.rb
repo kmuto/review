@@ -593,18 +593,6 @@ module ReVIEW
 
     alias_method :numberlessimage, :indepimage
 
-    def table(lines, id = nil, caption = nil)
-      sepidx, rows = parse_table_rows(lines)
-      begin
-        table_header(id, caption) if caption.present?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin(rows.first.size)
-      table_rows(sepidx, rows)
-      table_end
-    end
-
     def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
