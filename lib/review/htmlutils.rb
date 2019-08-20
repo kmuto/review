@@ -128,8 +128,7 @@ module ReVIEW
         return body
       end
 
-      text = body
-      formatter.format(lexer.lex(text))
+      formatter.format(lexer.lex(body))
     end
 
     def normalize_id(id)
