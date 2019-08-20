@@ -7,6 +7,7 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 require 'review/textutils'
+require 'review/index_builder'
 
 module ReVIEW
   module Book
@@ -27,16 +28,26 @@ module ReVIEW
         end
       end
 
+      def make_indexes
+        index_builder = ReVIEW::IndexBuilder.new
+        compiler = ReVIEW::Compiler.new(index_builder)
+        compiler.compile(self)
+        index_builder
+      end
+
       def generate_indexes
         return unless content
 
         @lines = content.lines
-        @list_index = ListIndex.parse(lines)
-        @table_index = TableIndex.parse(lines)
-        @equation_index = EquationIndex.parse(lines)
-        @footnote_index = FootnoteIndex.parse(lines)
-        @headline_index = HeadlineIndex.parse(lines, self)
-        @column_index = ColumnIndex.parse(lines)
+
+        @indexes = make_indexes
+
+        @list_index = @indexes.list_index
+        @table_index = @indexes.table_index
+        @equation_index = @indexes.equation_index
+        @footnote_index = @indexes.footnote_index
+        @headline_index = @indexes.headline_index
+        @column_index = @indexes.column_index
       end
 
       def dirname

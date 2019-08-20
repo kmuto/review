@@ -49,6 +49,14 @@ module ReVIEW
         end
       end
 
+      def make_indexes
+        return unless @catalog
+
+        parts.each do |part|
+          part.chapters.each(&:make_indexes)
+        end
+      end
+
       def bib_file
         config['bib_file']
       end

@@ -44,6 +44,10 @@ module ReVIEW
         @image_finder = nil
       end
 
+      def size
+        @index.size
+      end
+
       def add_item(item)
         if @index[item.id] && self.class != ReVIEW::Book::IconIndex
           @logger.warn "warning: duplicate ID: #{item.id} (#{item.inspect})"
