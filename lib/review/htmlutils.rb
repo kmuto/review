@@ -41,7 +41,7 @@ module ReVIEW
     end
 
     def highlight?
-      @book.config['highlight'] &&
+      @book && @book.config['highlight'] &&
         @book.config['highlight']['html']
     end
 
