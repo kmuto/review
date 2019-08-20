@@ -439,7 +439,7 @@ module ReVIEW
 
       puts %Q(<replace idref="texblock-#{@texblockequation}">)
       puts '<pre>'
-      puts lines.join("\n")
+      print lines.join("\n")
       puts '</pre>'
       puts '</replace>'
 
