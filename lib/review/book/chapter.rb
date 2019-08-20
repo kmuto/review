@@ -29,7 +29,6 @@ module ReVIEW
         name += book.ext if File.extname(name).empty?
         path = File.join(book.contentdir, name)
         if File.file?(path)
-          number += 1 if number
           Chapter.new(book, number, name, path)
         end
       end
