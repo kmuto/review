@@ -25,12 +25,12 @@ module ReVIEW
         Chapter.new(book, number, name, path)
       end
 
-      def self.mkchap_ifexist(book, name, idx = nil)
+      def self.mkchap_ifexist(book, name, number = nil)
         name += book.ext if File.extname(name).empty?
         path = File.join(book.contentdir, name)
         if File.file?(path)
-          idx += 1 if idx
-          Chapter.new(book, idx, name, path)
+          number += 1 if number
+          Chapter.new(book, number, name, path)
         end
       end
 

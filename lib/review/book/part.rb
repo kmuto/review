@@ -15,11 +15,11 @@ module ReVIEW
 
       def self.mkpart_from_namelistfile(book, path)
         chaps = []
-        File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, idx|
+        File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, number|
           if path =~ /PREDEF/
             chaps << Chapter.mkchap(book, name)
           else
-            chaps << Chapter.mkchap(book, name, idx + 1)
+            chaps << Chapter.mkchap(book, name, number + 1)
           end
         end
         Part.mkpart(chaps)
