@@ -16,7 +16,7 @@ def prepare_samplebook(srcdir)
   # copy from review-jsbook
   template_dir = File.expand_path('../templates/latex/review-jsbook/', File.dirname(__FILE__))
   FileUtils.cp(Dir.glob(File.join(template_dir, '*')), File.join(srcdir, 'sty'))
-  YAML.load(File.open(File.join(srcdir, 'config.yml')))
+  YAML.safe_load(File.open(File.join(srcdir, 'config.yml')), [Date])
 end
 
 def compile_inline(text)
