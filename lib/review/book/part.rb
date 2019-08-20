@@ -13,6 +13,26 @@ module ReVIEW
     class Part
       include Compilable
 
+      def self.mkpart_from_namelistfile(book, path)
+        chaps = []
+        File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, idx|
+          if path =~ /PREDEF/
+            chaps << Chapter.mkchap(book, name)
+          else
+            chaps << Chapter.mkchap(book, name, idx + 1)
+          end
+        end
+        Part.mkpart(chaps)
+      end
+
+      def self.mkpart_from_namelist(book, names)
+        Part.mkpart(names.map { |n| Chapter.mkchap_ifexist(book, n) }.compact)
+      end
+
+      def self.mkpart(chaps)
+        chaps.empty? ? nil : Part.new(self, nil, chaps)
+      end
+
       # if Part is dummy, `number` is nil.
       #
       def initialize(book, number, chapters, name = '', io = nil)
