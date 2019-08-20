@@ -1,3 +1,5 @@
+# Copyright (c) 2013-2019 KADO Masanori, Masayoshi Takahashi, Kenshi Muto
+#
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
@@ -244,27 +246,7 @@ module ReVIEW
       puts '```'
     end
 
-    def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
-        end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
-      end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
-
-      begin
-        table_header(id, caption) unless caption.nil?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin(rows.first.size)
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
@@ -279,7 +261,6 @@ module ReVIEW
           tr([th(h)] + cs.map { |s| td(s) })
         end
       end
-      table_end
     end
 
     def table_header(id, caption)

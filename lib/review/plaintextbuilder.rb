@@ -220,43 +220,11 @@ module ReVIEW
       blank
     end
 
-    def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
-        end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
+    def table(lines, id = nil, caption = nil, noblank = nil)
+      unless noblank
+        blank
       end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
-
-      blank
-
-      begin
-        table_header(id, caption) if caption.present?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin(rows.first.size)
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
-      end
-      table_end
+      super(lines, id, caption)
     end
 
     def table_header(id, caption)

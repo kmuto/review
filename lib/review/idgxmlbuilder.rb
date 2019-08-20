@@ -449,47 +449,14 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      tablewidth = @book.config['tableopt'] ? @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f : nil
-      col = 0
-
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          sepidx ||= idx
-          next
-        end
-        if tablewidth
-          rows.push(line.gsub(/\t\.\t/, "\tDUMMYCELLSPLITTER\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\tDUMMYCELLSPLITTER").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
-        else
-          rows.push(line.gsub(/\t\.\t/, "\t\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\t").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
-        end
-        col2 = rows[rows.length - 1].split(/\t/).length
-        col = col2 if col2 > col
+      @tablewidth = nil
+      if @book.config['tableopt']
+        @tablewidth = @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f
       end
-      error 'no rows in the table' if rows.empty?
+      @col = 0
 
+      sepidx, rows = parse_table_rows(lines)
       puts '<table>'
-
-      cellwidth = []
-      if tablewidth
-        if @tsize.nil?
-          col.times { |n| cellwidth[n] = tablewidth / col }
-        else
-          cellwidth = @tsize.split(/\s*,\s*/)
-          totallength = 0
-          cellwidth.size.times do |n|
-            cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
-            totallength += cellwidth[n]
-            warn "total length exceeds limit for table: #{id}" if totallength > tablewidth
-          end
-          if cellwidth.size < col
-            cw = (tablewidth - totallength) / (col - cellwidth.size)
-            warn "auto cell sizing exceeds limit for table: #{id}" if cw <= 0
-            (cellwidth.size..(col - 1)).each { |i| cellwidth[i] = cw }
-          end
-        end
-      end
 
       begin
         table_header(id, caption) if caption.present?
@@ -497,15 +464,60 @@ module ReVIEW
         error "no such table: #{id}"
       end
 
-      if tablewidth.nil?
+      if @tablewidth.nil?
         print '<tbody>'
       else
-        print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{col}">)
+        print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{@col}">)
+      end
+      table_rows(sepidx, rows)
+      puts '</tbody></table>'
+      @tsize = nil
+    end
+
+    def parse_table_rows(lines)
+      sepidx = nil
+      rows = []
+      lines.each_with_index do |line, idx|
+        if /\A[\=\-]{12}/ =~ line
+          sepidx ||= idx
+          next
+        end
+        if @tablewidth
+          rows.push(line.gsub(/\t\.\t/, "\tDUMMYCELLSPLITTER\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\tDUMMYCELLSPLITTER").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
+        else
+          rows.push(line.gsub(/\t\.\t/, "\t\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\t").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
+        end
+        col2 = rows[rows.length - 1].split(/\t/).length
+        @col = col2 if col2 > @col
+      end
+      error 'no rows in the table' if rows.empty?
+      [sepidx, rows]
+    end
+
+    def table_rows(sepidx, rows)
+      cellwidth = []
+      if @tablewidth
+        if @tsize.nil?
+          @col.times { |n| cellwidth[n] = @tablewidth / @col }
+        else
+          cellwidth = @tsize.split(/\s*,\s*/)
+          totallength = 0
+          cellwidth.size.times do |n|
+            cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
+            totallength += cellwidth[n]
+            warn "total length exceeds limit for table: #{id}" if totallength > @tablewidth
+          end
+          if cellwidth.size < @col
+            cw = (@tablewidth - totallength) / (@col - cellwidth.size)
+            warn "auto cell sizing exceeds limit for table: #{id}" if cw <= 0
+            (cellwidth.size..(@col - 1)).each { |i| cellwidth[i] = cw }
+          end
+        end
       end
 
       if sepidx
         sepidx.times do |y|
-          if tablewidth.nil?
+          if @tablewidth.nil?
             puts %Q(<tr type="header">#{rows.shift}</tr>)
           else
             i = 0
@@ -516,9 +528,7 @@ module ReVIEW
           end
         end
       end
-      trputs(tablewidth, rows, cellwidth, sepidx)
-      puts '</tbody></table>'
-      @tsize = nil
+      trputs(@tablewidth, rows, cellwidth, sepidx)
     end
 
     def trputs(tablewidth, rows, cellwidth, sepidx)
@@ -564,7 +574,6 @@ module ReVIEW
     end
 
     def table_end
-      print '<?dtp tablerow last?>'
     end
 
     def emtable(lines, caption = nil)
