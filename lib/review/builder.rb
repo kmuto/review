@@ -71,6 +71,10 @@ module ReVIEW
     end
     private :builder_init_file
 
+    def highlight?
+      false
+    end
+
     def result
       @output.string
     end
@@ -162,7 +166,7 @@ module ReVIEW
         error "no such table: #{id}"
       end
       table_begin(rows.first.size)
-      table_tr(sepidx, rows)
+      table_rows(sepidx, rows)
       table_end
     end
 
@@ -181,7 +185,7 @@ module ReVIEW
       [sepidx, rows]
     end
 
-    def table_tr(sepidx, rows)
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
@@ -410,7 +414,12 @@ module ReVIEW
     end
 
     def inline_wb(s)
-      inline_b(unescape(inline_w(s)))
+      translated = @dictionary[s]
+      if translated
+        inline_b(translated)
+      else
+        inline_b("[missing word: #{s}]")
+      end
     end
 
     def raw(str)
@@ -429,9 +438,9 @@ module ReVIEW
       if arg
         builders = arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
         c = target_name
-        print lines.join if builders.include?(c)
+        print lines.join("\n") + "\n" if builders.include?(c)
       else
-        print lines.join
+        print lines.join("\n") + "\n"
       end
     end
 
@@ -510,13 +519,13 @@ module ReVIEW
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
-      line = self.unescape(lines.join("\n"))
+      content = lines.join("\n") + "\n"
 
       tf = Tempfile.new('review_graph')
-      tf.puts line
+      tf.puts content
       tf.close
       begin
-        file_path = send("graph_#{command}".to_sym, id, file_path, line, tf.path)
+        file_path = send("graph_#{command}".to_sym, id, file_path, content, tf.path)
       ensure
         tf.unlink
       end
@@ -638,10 +647,6 @@ EOTGNUPLOT
     end
 
     def escape(str)
-      str
-    end
-
-    def unescape(str)
       str
     end
   end

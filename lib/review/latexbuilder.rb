@@ -323,17 +323,30 @@ module ReVIEW
 
     alias_method :lead, :read
 
+    def highlight?
+      @book.config['highlight'] &&
+        @book.config['highlight']['latex']
+    end
+
     def highlight_listings?
       @book.config['highlight'] && @book.config['highlight']['latex'] == 'listings'
     end
     private :highlight_listings?
+
+    def code_line(_type, line, _idx, _id, _caption, _lang)
+      detab(line) + "\n"
+    end
+
+    def code_line_num(_type, line, first_line_num, idx, _id, _caption, _lang)
+      detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n"
+    end
 
     def emlist(lines, caption = nil, lang = nil)
       blank
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistlst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| code_line('emlist', line, idx, nil, caption, lang) }
       end
     end
 
@@ -343,7 +356,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistnumlst', 'title', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| code_line_num('emlistnum', line, first_line_num, idx, nil, caption, lang) }
       end
     end
 
@@ -352,7 +365,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistlst', 'caption', caption, lang)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| code_line('list', line, idx, id, caption, lang) }
       end
     end
 
@@ -362,7 +375,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| code_line_num('listnum', line, first_line_num, idx, id, caption, lang) }
       end
     end
 
@@ -371,7 +384,7 @@ module ReVIEW
         common_code_block_lst(nil, lines, 'reviewcmdlst', 'title', caption, lang)
       else
         blank
-        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, idx| code_line('cmd', line, idx, nil, caption, lang) }
       end
     end
 
@@ -413,7 +426,7 @@ module ReVIEW
       if title == 'title' && caption.blank? && @book.config.check_version('2', exception: false)
         print '\vspace{-1.5em}'
       end
-      body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
       print body
@@ -448,7 +461,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewsourcelst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, idx| code_line('source', line, idx, nil, caption, lang) }
       end
     end
 
@@ -608,7 +621,7 @@ module ReVIEW
         error "no such table: #{id}"
       end
       table_begin(rows.first.size)
-      table_tr(sepidx, rows)
+      table_rows(sepidx, rows)
       table_end
       if caption.present?
         puts '\end{table}'
@@ -616,7 +629,7 @@ module ReVIEW
       blank
     end
 
-    def table_tr(sepidx, rows)
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           cno = -1
@@ -838,7 +851,7 @@ module ReVIEW
 
       puts macro('begin', 'equation*')
       lines.each do |line|
-        puts unescape(line)
+        puts line
       end
       puts macro('end', 'equation*')
 
