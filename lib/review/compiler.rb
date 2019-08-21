@@ -28,13 +28,6 @@ module ReVIEW
 
     def compile(chap)
       @chapter = chap
-      @non_parsed_commands = %i[embed texequation graph]
-      if @strategy.highlight?
-        @non_escaped_commands = %i[list emlist listnum emlistnum cmd]
-      else
-        @non_escaped_commands = []
-      end
-      @command_name_stack = []
       do_compile
       @strategy.result
     end
@@ -231,6 +224,15 @@ module ReVIEW
     def do_compile
       f = LineInput.new(StringIO.new(@chapter.content))
       @strategy.bind(self, @chapter, Location.new(@chapter.basename, f))
+
+      @non_parsed_commands = %i[embed texequation graph]
+      if @strategy.highlight?
+        @non_escaped_commands = %i[list emlist listnum emlistnum cmd]
+      else
+        @non_escaped_commands = []
+      end
+      @command_name_stack = []
+
       tagged_section_init
       while f.next?
         case f.peek

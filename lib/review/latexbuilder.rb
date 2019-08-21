@@ -325,7 +325,7 @@ module ReVIEW
     alias_method :lead, :read
 
     def highlight?
-      @book.config['highlight'] &&
+      @book && @book.config['highlight'] &&
         @book.config['highlight']['latex']
     end
 
