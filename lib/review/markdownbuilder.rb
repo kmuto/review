@@ -252,7 +252,7 @@ module ReVIEW
       puts '```'
     end
 
-    def table_tr(sepidx, rows)
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })

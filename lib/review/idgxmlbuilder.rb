@@ -460,7 +460,7 @@ module ReVIEW
 
       puts %Q(<replace idref="texblock-#{@texblockequation}">)
       puts '<pre>'
-      puts lines.join("\n")
+      print lines.join("\n")
       puts '</pre>'
       puts '</replace>'
 
@@ -490,7 +490,7 @@ module ReVIEW
         else
           print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{@col}">)
         end
-        table_tr(sepidx, rows)
+        table_rows(sepidx, rows)
         puts '</tbody>'
 
         if !top?('table') && caption.present?
@@ -499,7 +499,6 @@ module ReVIEW
       rescue KeyError
         error "no such table: #{id}"
       end
-
       puts '</table>'
       @tsize = nil
     end
@@ -524,7 +523,7 @@ module ReVIEW
       [sepidx, rows]
     end
 
-    def table_tr(sepidx, rows)
+    def table_rows(sepidx, rows)
       cellwidth = []
       if @tablewidth
         if @tsize.nil?

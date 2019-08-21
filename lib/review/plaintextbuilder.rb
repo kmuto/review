@@ -261,22 +261,11 @@ module ReVIEW
       end
     end
 
-    def table(lines, id = nil, caption = nil)
-      sepidx, rows = parse_table_rows(lines)
-      blank
-      begin
-        if top?('table') && caption.present?
-          table_header(id, caption)
-        end
-        table_begin(rows.first.size)
-        table_tr(sepidx, rows)
-        table_end
-        if !top?('table') && caption.present?
-          table_header(id, caption)
-        end
-      rescue KeyError
-        error "no such table: #{id}"
+    def table(lines, id = nil, caption = nil, noblank = nil)
+      unless noblank
+        blank
       end
+      super(lines, id, caption)
       blank
     end
 

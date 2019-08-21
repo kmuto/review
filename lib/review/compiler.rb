@@ -16,12 +16,25 @@ module ReVIEW
   class Compiler
     def initialize(strategy)
       @strategy = strategy
+
+      ## commands which do not parse block lines in compiler
+      @non_parsed_commands = %i[embed texequation graph]
+
+      ## to decide escaping/non-escaping for text
+      @command_name_stack = []
     end
 
     attr_reader :strategy
 
     def compile(chap)
       @chapter = chap
+      @non_parsed_commands = %i[embed texequation graph]
+      if @strategy.highlight?
+        @non_escaped_commands = %i[list emlist listnum emlistnum cmd]
+      else
+        @non_escaped_commands = []
+      end
+      @command_name_stack = []
       do_compile
       @strategy.result
     end
@@ -235,14 +248,17 @@ module ReVIEW
           f.gets
           error 'block end seen but not opened'
         when %r{\A//[a-z]+}
+          # @command_name_stack.push(name) ## <- move into read_command() to use name
           name, args, lines = read_command(f)
           syntax = syntax_descriptor(name)
           unless syntax
             error "unknown command: //#{name}"
             compile_unknown_command(args, lines)
+            @command_name_stack.pop
             next
           end
           compile_command(syntax, args, lines)
+          @command_name_stack.pop
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -422,7 +438,8 @@ module ReVIEW
     def read_command(f)
       line = f.gets
       name = line.slice(/[a-z]+/).to_sym
-      ignore_inline = (name == :embed)
+      ignore_inline = @non_parsed_commands.include?(name)
+      @command_name_stack.push(name)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
       @strategy.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
@@ -439,9 +456,9 @@ module ReVIEW
       buf = []
       f.until_match(%r{\A//\}}) do |line|
         if ignore_inline
-          buf.push(line)
+          buf.push(line.chomp)
         elsif line !~ /\A\#@/
-          buf.push(text(line.rstrip))
+          buf.push(text(line.rstrip, true))
         end
       end
       unless %r{\A//\}} =~ f.peek
@@ -527,7 +544,12 @@ module ReVIEW
       str.gsub("\x01", '@').gsub("\x02", '\\').gsub("\x03", '{').gsub("\x04", '}')
     end
 
-    def text(str)
+    def in_non_escaped_command?
+      current_command = @command_name_stack.last
+      current_command && @non_escaped_commands.include?(current_command)
+    end
+
+    def text(str, block_mode = false)
       return '' if str.empty?
       words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
       words.each do |w|
@@ -535,10 +557,15 @@ module ReVIEW
           error "`@<xxx>' seen but is not valid inline op: #{w}"
         end
       end
-      result = @strategy.nofunc_text(revert_replace_fence(words.shift))
+      result = ''
       until words.empty?
+        if in_non_escaped_command? && block_mode
+          result << revert_replace_fence(words.shift)
+        else
+          result << @strategy.nofunc_text(revert_replace_fence(words.shift))
+        end
+        break if words.empty?
         result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
-        result << @strategy.nofunc_text(revert_replace_fence(words.shift))
       end
       result
     rescue => e
