@@ -389,7 +389,7 @@ EOT
     assert_match(/has options/, io.string)
     cont = <<EOT
 texcommand: "/Program Files/up-latex"
-texoptions: "-interaction=nonstopmode -file-line-error --shell-escape -v"
+texoptions: "-interaction=nonstopmode -file-line-error -halt-on-error --shell-escape -v"
 EOT
     assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
   end
