@@ -100,7 +100,7 @@ Default settings of Re:VIEW is below:
 
 ```yaml
 texcommand: uplatex
-texoptions: "-interaction=nonstopmode -file-line-error"
+texoptions: "-interaction=nonstopmode -file-line-error -halt-on-error"
 texdocumentclass: ["review-jsbook", "uplatex,twoside"]
 dvicommand: dvipdfmx
 dvioptions: "-d 5"
