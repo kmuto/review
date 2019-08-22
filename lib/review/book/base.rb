@@ -271,7 +271,7 @@ module ReVIEW
       def appendix
         if catalog
           names = catalog.appendix
-          chaps = names.each_with_index.map { |n, number| Chapter.mkchap_ifexist(self, n, number + 1) }.compact
+          chaps = names.each_with_index.map { |name, number| Chapter.mkchap_ifexist(self, name, number + 1) }.compact
           return Part.mkpart(chaps)
         end
 
