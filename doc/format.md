@@ -546,9 +546,10 @@ You should get and install it before reading the book.
 `@<fn>{site}` in source are replaced by footnote marks, and the phrase "support site of .."
 is in footnotes.
 
-Note that In LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in columns and tables.
+Note that in LATEXBuilder, it is highly recommended to place `//footnote` after the end line of column (`==[/column]`) to avoid problems when using third party's style file.
 
 ### `footnotetext` option
+Note that in LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in `//note` or other short column blocks.
 
 By adding `footnotetext:true` in config.yml, you can use footnote in tables and short notes.
 
