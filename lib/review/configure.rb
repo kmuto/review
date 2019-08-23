@@ -76,7 +76,7 @@ module ReVIEW
         'image_scale2width' => true,
         'footnotetext' => nil,
         'texcommand' => 'uplatex',
-        'texoptions' => '-interaction=nonstopmode -file-line-error',
+        'texoptions' => '-interaction=nonstopmode -file-line-error -halt-on-error',
         '_texdocumentclass' => ['review-jsbook', ''],
         'dvicommand' => 'dvipdfmx',
         'dvioptions' => '-d 5 -z 9',

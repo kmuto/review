@@ -14,7 +14,7 @@ class UpdateTest < Test::Unit::TestCase
   end
 
   def teardown
-    FileUtils.rm_rf @tmpdir
+    FileUtils.rm_rf(@tmpdir)
   end
 
   def test_broken_yml
@@ -143,7 +143,7 @@ EOT
 
   def test_update_rakefile_different
     File.write(File.join(@tmpdir, 'Rakefile'), '')
-    FileUtils.mkdir_p File.join(@tmpdir, 'lib/tasks')
+    FileUtils.mkdir_p(File.join(@tmpdir, 'lib/tasks'))
     File.write(File.join(@tmpdir, 'lib/tasks/review.rake'), '')
     io = StringIO.new
     @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
@@ -389,7 +389,7 @@ EOT
     assert_match(/has options/, io.string)
     cont = <<EOT
 texcommand: "/Program Files/up-latex"
-texoptions: "-interaction=nonstopmode -file-line-error --shell-escape -v"
+texoptions: "-interaction=nonstopmode -file-line-error -halt-on-error --shell-escape -v"
 EOT
     assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
   end

@@ -29,7 +29,6 @@ module ReVIEW
         @chapter_index = nil
         @config = ReVIEW::Configure.values
         @catalog = nil
-        @read_part = nil
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
         @basedir_seen = {}
         update_rubyenv
@@ -189,7 +188,7 @@ module ReVIEW
         return @catalog if @catalog.present?
 
         catalogfile_path = filename_join(@basedir, config['catalogfile'])
-        if File.file? catalogfile_path
+        if File.file?(catalogfile_path)
           @catalog = File.open(catalogfile_path, 'rt:BOM|utf-8') { |f| Catalog.new(f) }
         end
         if @catalog
@@ -202,7 +201,7 @@ module ReVIEW
         if catalog
           catalog.chaps
         else
-          read_file(config['chapter_file'])
+          read_file(config['chapter_file']).split("\n")
         end
       end
 
@@ -210,7 +209,7 @@ module ReVIEW
         if catalog
           catalog.predef
         else
-          read_file(config['predef_file'])
+          read_file(config['predef_file']).split("\n")
         end
       end
 
@@ -218,7 +217,7 @@ module ReVIEW
         if catalog
           catalog.appendix
         else
-          read_file(config['postdef_file']) # for backward compatibility
+          read_file(config['postdef_file']).split("\n") # for backward compatibility
         end
       end
 
@@ -226,17 +225,15 @@ module ReVIEW
         if catalog
           catalog.postdef
         else
-          ''
+          []
         end
       end
 
       def read_part
-        return @read_part if @read_part
-
         if catalog
-          @read_part = catalog.parts
+          catalog.parts
         else
-          @read_part = File.read(File.join(@basedir, config['part_file']))
+          File.read(File.join(@basedir, config['part_file'])).split("\n")
         end
       end
 
@@ -258,7 +255,7 @@ module ReVIEW
 
       def prefaces
         if catalog
-          return mkpart_from_namelist(catalog.predef.split("\n"))
+          return mkpart_from_namelist(catalog.predef)
         end
 
         begin
@@ -273,7 +270,7 @@ module ReVIEW
 
       def appendix
         if catalog
-          names = catalog.appendix.split("\n")
+          names = catalog.appendix
           chaps = names.each_with_index.map { |n, idx| mkchap_ifexist(n, idx) }.compact
           return mkpart(chaps)
         end
@@ -290,7 +287,7 @@ module ReVIEW
 
       def postscripts
         if catalog
-          mkpart_from_namelist(catalog.postdef.split("\n"))
+          mkpart_from_namelist(catalog.postdef)
         end
       end
 
@@ -300,13 +297,13 @@ module ReVIEW
         list = parse_chapters
         # NOTE: keep this = style to work this logic.
         if pre = prefaces
-          list.unshift pre
+          list.unshift(pre)
         end
         if app = appendix
-          list.push app
+          list.push(app)
         end
         if post = postscripts
-          list.push post
+          list.push(post)
         end
         list
       end
@@ -324,7 +321,7 @@ module ReVIEW
                 chap = Chapter.new(self, num += 1, chap, File.join(contentdir, chap))
                 chap
               end
-              Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
+              Part.new(self, part += 1, chaps, read_part[part - 1])
             else
               chap = Chapter.new(self, num += 1, entry, File.join(contentdir, entry))
               if chap.number
@@ -337,12 +334,11 @@ module ReVIEW
           end
         end
 
-        chap = read_chaps.
-               strip.lines.map(&:strip).join("\n").split(/\n{2,}/).
+        chap = read_chaps.map(&:strip).join("\n").split(/\n{2,}/).
                map do |part_chunk|
           chaps = part_chunk.split.map { |chapid| Chapter.new(self, num += 1, chapid, File.join(contentdir, chapid)) }
-          if part_exist? && read_part.split("\n").size > part
-            Part.new(self, part += 1, chaps, read_part.split("\n")[part - 1])
+          if part_exist? && read_part.size > part
+            Part.new(self, part += 1, chaps, read_part[part - 1])
           else
             Part.new(self, nil, chaps)
           end

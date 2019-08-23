@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2019 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -71,6 +71,10 @@ module ReVIEW
     end
     private :builder_init_file
 
+    def highlight?
+      false
+    end
+
     def result
       @output.string
     end
@@ -122,43 +126,55 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
+      list_body(id, lines, lang)
     end
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
+      listnum_body(lines, lang)
     end
 
     def source(lines, caption, lang = nil)
-      source_header caption
-      source_body lines, lang
+      source_header(caption)
+      source_body(lines, lang)
     end
 
     def image(lines, id, caption, metric = nil)
       if @chapter.image(id).bound?
-        image_image id, caption, metric
+        image_image(id, caption, metric)
       else
         warn "image not bound: #{id}" if @strict
-        image_dummy id, caption, lines
+        image_dummy(id, caption, lines)
       end
     end
 
     def table(lines, id = nil, caption = nil)
-      rows = []
+      sepidx, rows = parse_table_rows(lines)
+      begin
+        if caption.present?
+          table_header(id, caption)
+        end
+      rescue KeyError
+        error "no such table: #{id}"
+      end
+      table_begin(rows.first.size)
+      table_rows(sepidx, rows)
+      table_end
+    end
+
+    def parse_table_rows(lines)
       sepidx = nil
+      rows = []
       lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
+        if /\A[\=\-]{12}/ =~ line || /\A[\=\{\-\}]{12}/ =~ line
           sepidx ||= idx
           next
         end
@@ -166,15 +182,10 @@ module ReVIEW
       end
       rows = adjust_n_cols(rows)
       error 'no rows in the table' if rows.empty?
+      [sepidx, rows]
+    end
 
-      begin
-        if caption.present?
-          table_header id, caption
-        end
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin rows.first.size
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
@@ -188,7 +199,6 @@ module ReVIEW
           tr([th(h)] + cs.map { |s| td(s) })
         end
       end
-      table_end
     end
 
     def adjust_n_cols(rows)
@@ -199,7 +209,7 @@ module ReVIEW
       end
       n_maxcols = rows.map(&:size).max
       rows.each do |cols|
-        cols.concat [''] * (n_maxcols - cols.size)
+        cols.concat([''] * (n_maxcols - cols.size))
       end
       rows
     end
@@ -230,7 +240,7 @@ module ReVIEW
     end
 
     def inline_chapref(id)
-      compile_inline @book.chapter_index.display_string(id)
+      compile_inline(@book.chapter_index.display_string(id))
     rescue KeyError
       error "unknown chapter: #{id}"
     end
@@ -242,7 +252,7 @@ module ReVIEW
     end
 
     def inline_title(id)
-      compile_inline @book.chapter_index.title(id)
+      compile_inline(@book.chapter_index.title(id))
     rescue KeyError
       error "unknown chapter: #{id}"
     end
@@ -341,10 +351,10 @@ module ReVIEW
     end
 
     def bibpaper(lines, id, caption)
-      bibpaper_header id, caption
+      bibpaper_header(id, caption)
       unless lines.empty?
         puts
-        bibpaper_bibpaper id, caption, lines
+        bibpaper_bibpaper(id, caption, lines)
       end
       puts
     end
@@ -404,7 +414,12 @@ module ReVIEW
     end
 
     def inline_wb(s)
-      inline_b(unescape(inline_w(s)))
+      translated = @dictionary[s]
+      if translated
+        inline_b(translated)
+      else
+        inline_b("[missing word: #{s}]")
+      end
     end
 
     def raw(str)
@@ -423,9 +438,9 @@ module ReVIEW
       if arg
         builders = arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
         c = target_name
-        print lines.join if builders.include?(c)
+        print lines.join("\n") + "\n" if builders.include?(c)
       else
-        print lines.join
+        print lines.join("\n") + "\n"
       end
     end
 
@@ -504,13 +519,13 @@ module ReVIEW
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
-      line = self.unescape(lines.join("\n"))
+      content = lines.join("\n") + "\n"
 
       tf = Tempfile.new('review_graph')
-      tf.puts line
+      tf.puts content
       tf.close
       begin
-        file_path = send("graph_#{command}".to_sym, id, file_path, line, tf.path)
+        file_path = send("graph_#{command}".to_sym, id, file_path, content, tf.path)
       ensure
         tf.unlink
       end
@@ -558,7 +573,7 @@ EOTGNUPLOT
         file_path.sub!(/\.pdf\Z/, '.eps')
       end
       system_graph(id, 'java', '-jar', 'plantuml.jar', "-t#{ext}", '-charset', 'UTF-8', tf_path)
-      FileUtils.mv "#{tf_path}.#{ext}", file_path
+      FileUtils.mv("#{tf_path}.#{ext}", file_path)
       file_path
     end
 
@@ -567,7 +582,7 @@ EOTGNUPLOT
     end
 
     def inline_include(file_name)
-      compile_inline File.read(file_name, mode: 'rt:BOM|utf-8').chomp
+      compile_inline(File.read(file_name, mode: 'rt:BOM|utf-8').chomp)
     end
 
     def ul_item_begin(lines)
@@ -632,10 +647,6 @@ EOTGNUPLOT
     end
 
     def escape(str)
-      str
-    end
-
-    def unescape(str)
       str
     end
   end

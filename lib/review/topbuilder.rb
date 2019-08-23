@@ -184,7 +184,7 @@ module ReVIEW
       if @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
-        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{unescape(lines.join("\n"))}\n\\end{equation*}\n"
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = File.join(@book.config['imagedir'], '_review_math_text')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
@@ -200,43 +200,9 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
-        end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
-      end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
-
       blank
       puts "◆→開始:#{@titles['table']}←◆"
-
-      begin
-        table_header id, caption if caption.present?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin rows.first.size
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
-      end
-      table_end
+      super(lines, id, caption, true)
     end
 
     def th(str)
@@ -252,7 +218,7 @@ module ReVIEW
       return unless @book.config['draft']
       lines ||= []
       unless comment.blank?
-        lines.unshift comment
+        lines.unshift(comment)
       end
       str = lines.join("\n")
       puts "◆→#{str}←◆"

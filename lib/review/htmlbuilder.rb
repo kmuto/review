@@ -374,11 +374,11 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="caption-code">)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body id, lines, lang
+      list_body(id, lines, lang)
       puts '</div>'
     end
 
@@ -403,8 +403,8 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts %Q(<div class="source-code">)
-      source_header caption
-      source_body caption, lines, lang
+      source_header(caption)
+      source_body(caption, lines, lang)
       puts '</div>'
     end
 
@@ -425,11 +425,11 @@ module ReVIEW
     def listnum(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="code">)
       begin
-        list_header id, caption, lang
+        list_header(id, caption, lang)
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body lines, lang
+      listnum_body(lines, lang)
       puts '</div>'
     end
 
@@ -540,7 +540,7 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       if id
-        texequation_header id, caption
+        texequation_header(id, caption)
       end
 
       texequation_body(lines)
@@ -565,11 +565,11 @@ module ReVIEW
         require 'math_ml'
         require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
-        puts p.parse(unescape(lines.join("\n")), true)
+        print p.parse(lines.join("\n") + "\n", true)
       elsif @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
-        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{unescape(lines.join("\n"))}\n\\end{equation*}\n"
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = File.join(@book.config['imagedir'], '_review_math')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
@@ -615,7 +615,7 @@ module ReVIEW
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
       puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      image_header id, caption
+      image_header(id, caption)
       puts '</div>'
     end
 
@@ -627,7 +627,7 @@ module ReVIEW
         puts detab(line)
       end
       puts '</pre>'
-      image_header id, caption
+      image_header(id, caption)
       puts '</div>'
     end
 
@@ -642,47 +642,12 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
-        end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
-      end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
-
       if id
         puts %Q(<div id="#{normalize_id(id)}" class="table">)
       else
         puts %Q(<div class="table">)
       end
-      begin
-        if caption.present?
-          table_header id, caption
-        end
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin rows.first.size
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
-      end
-      table_end
+      super(lines, id, caption)
       puts '</div>'
     end
 
@@ -719,14 +684,14 @@ module ReVIEW
     def imgtable(lines, id, caption = nil, metric = nil)
       unless @chapter.image(id).bound?
         warn "image not bound: #{id}"
-        image_dummy id, caption, lines
+        image_dummy(id, caption, lines)
         return
       end
 
       puts %Q(<div id="#{normalize_id(id)}" class="imgtable image">)
       begin
         if caption.present?
-          table_header id, caption
+          table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
@@ -749,7 +714,7 @@ module ReVIEW
     def comment(lines, comment = nil)
       return unless @book.config['draft']
       lines ||= []
-      lines.unshift escape(comment) unless comment.blank?
+      lines.unshift(escape(comment)) unless comment.blank?
       str = lines.join('<br />')
       puts %Q(<div class="draft-comment">#{str}</div>)
     end
@@ -977,8 +942,8 @@ module ReVIEW
 
     def bibpaper(lines, id, caption)
       puts %Q(<div class="bibpaper">)
-      bibpaper_header id, caption
-      bibpaper_bibpaper id, caption, lines unless lines.empty?
+      bibpaper_header(id, caption)
+      bibpaper_bibpaper(id, caption, lines) unless lines.empty?
       puts '</div>'
     end
 

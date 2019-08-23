@@ -7,61 +7,43 @@ class CatalogTest < Test::Unit::TestCase
 
   def test_predef
     sut = Catalog.new(yaml)
-    exp = <<-EOS
-pre01.re
-pre02.re
-    EOS
-    assert_equal(exp.chomp, sut.predef)
+    exp = %w[pre01.re pre02.re]
+    assert_equal(exp, sut.predef)
   end
 
   def test_chaps
     sut = Catalog.new(yaml)
-    exp = <<-EOS
-ch01.re
-ch02.re
-    EOS
-    assert_equal(exp.chomp, sut.chaps)
+    exp = %w[ch01.re ch02.re]
+    assert_equal(exp, sut.chaps)
   end
 
   def test_chaps_empty
     yaml = StringIO.new
     sut = Catalog.new(yaml)
-    assert_equal('', sut.chaps)
+    assert_equal([], sut.chaps)
   end
 
   def test_appendix
     sut = Catalog.new(yaml)
-    exp = <<-EOS
-post01.re
-post02.re
-    EOS
-    assert_equal(exp.chomp, sut.appendix)
+    exp = %w[post01.re post02.re]
+    assert_equal(exp, sut.appendix)
   end
 
   def test_chaps_with_parts
     sut = Catalog.new(yaml_with_parts)
-    exp = <<-EOS
-ch01.re
-ch02.re
-ch03.re
-ch04.re
-ch05.re
-    EOS
-    assert_equal(exp.chomp, sut.chaps)
+    exp = %w[ch01.re ch02.re ch03.re ch04.re ch05.re]
+    assert_equal(exp, sut.chaps)
   end
 
   def test_parts
     sut = Catalog.new(yaml_with_parts)
-    exp = <<-EOS
-part1.re
-part2.re
-    EOS
-    assert_equal(exp.chomp, sut.parts)
+    exp = %w[part1.re part2.re]
+    assert_equal(exp, sut.parts)
   end
 
   def test_parts_with_empty
     sut = Catalog.new(yaml)
-    assert_equal('', sut.parts)
+    assert_equal([], sut.parts)
   end
 
   def test_empty_parts
@@ -80,20 +62,14 @@ part2.re
 
   def test_postdef
     sut = Catalog.new(yaml)
-    exp = <<-EOS
-back01.re
-back02.re
-    EOS
-    assert_equal(exp.chomp, sut.postdef)
+    exp = %w[back01.re back02.re]
+    assert_equal(exp, sut.postdef)
   end
 
   def test_from_object
     sut = Catalog.new(yaml_hash)
-    exp = <<-EOS
-ch01.re
-ch02.re
-    EOS
-    assert_equal(exp.chomp, sut.chaps)
+    exp = %w[ch01.re ch02.re]
+    assert_equal(exp, sut.chaps)
   end
 
   def test_validate
@@ -154,7 +130,7 @@ ch02.re
   private
 
   def yaml
-    StringIO.new <<-EOS
+    StringIO.new(<<-EOS)
 
 PREDEF:
   - pre01.re
@@ -182,7 +158,7 @@ POSTDEF:
   end
 
   def yaml_with_parts
-    StringIO.new <<-EOS
+    StringIO.new(<<-EOS)
 CHAPS:
   - ch01.re
   - part1.re:

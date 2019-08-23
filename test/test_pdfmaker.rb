@@ -49,7 +49,7 @@ class PDFMakerTest < Test::Unit::TestCase
     begin
       assert_equal(path, 'sample-pdf')
     ensure
-      FileUtils.remove_entry_secure path
+      FileUtils.remove_entry_secure(path)
     end
   end
 

@@ -27,7 +27,7 @@ module ReVIEW
     TEX_DOCUMENTCLASS_BAD = ['jsbook', nil]
     TEX_DOCUMENTCLASS_OPTS = 'media=print,paper=a5'
     TEX_COMMAND = 'uplatex'
-    TEX_OPTIONS = '-interaction=nonstopmode -file-line-error'
+    TEX_OPTIONS = '-interaction=nonstopmode -file-line-error -halt-on-error'
     DVI_COMMAND = 'dvipdfmx'
     DVI_OPTIONS = '-d 5 -z 9'
 
@@ -126,7 +126,7 @@ module ReVIEW
       content = File.read(yml)
       content.gsub!(/^(\s*)#{key}:.*$/, '\1' + "#{key}: #{val}")
       if @backup
-        FileUtils.mv yml, "#{yml}-old"
+        FileUtils.mv(yml, "#{yml}-old")
       end
       File.write(yml, content)
     end
@@ -257,7 +257,7 @@ module ReVIEW
     def update_rakefile(dir)
       taskdir = File.join(dir, 'lib/tasks')
       unless File.exist?(taskdir)
-        FileUtils.mkdir_p taskdir
+        FileUtils.mkdir_p(taskdir)
       end
 
       master_rakefile = File.join(@review_dir, 'samples/sample-book/src/Rakefile')
@@ -266,13 +266,13 @@ module ReVIEW
       if File.exist?(target_rakefile)
         if Digest::SHA256.hexdigest(File.read(target_rakefile)) != Digest::SHA256.hexdigest(File.read(master_rakefile))
           if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['Rakefile', master_rakefile])
-            FileUtils.mv target_rakefile, "#{target_rakefile}-old"
-            FileUtils.cp master_rakefile, target_rakefile
+            FileUtils.mv(target_rakefile, "#{target_rakefile}-old")
+            FileUtils.cp(master_rakefile, target_rakefile)
           end
         end
       else
         @logger.info t('new file %s is created.', [target_rakefile]) unless @force
-        FileUtils.cp master_rakefile, target_rakefile
+        FileUtils.cp(master_rakefile, target_rakefile)
       end
 
       master_rakefile = File.join(@review_dir, 'samples/sample-book/src/lib/tasks/review.rake')
@@ -280,13 +280,13 @@ module ReVIEW
       if File.exist?(target_rakefile)
         if Digest::SHA256.hexdigest(File.read(target_rakefile)) != Digest::SHA256.hexdigest(File.read(master_rakefile))
           if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['lib/tasks/review.rake', master_rakefile])
-            FileUtils.mv target_rakefile, "#{target_rakefile}-old"
-            FileUtils.cp master_rakefile, target_rakefile
+            FileUtils.mv(target_rakefile, "#{target_rakefile}-old")
+            FileUtils.cp(master_rakefile, target_rakefile)
           end
         end
       else
         @logger.info t('new file %s is created.', [target_rakefile]) unless @force
-        FileUtils.cp master_rakefile, target_rakefile
+        FileUtils.cp(master_rakefile, target_rakefile)
       end
     end
 
@@ -469,7 +469,7 @@ module ReVIEW
     def update_tex_stys(template, dir)
       texmacrodir = File.join(dir, 'sty')
       unless File.exist?(texmacrodir)
-        FileUtils.mkdir texmacrodir
+        FileUtils.mkdir(texmacrodir)
       end
 
       tdir = File.join(@review_dir, 'templates/latex', template)
@@ -479,7 +479,7 @@ module ReVIEW
         unless File.exist?(target_styfile)
           # just copy
           @logger.info t('new file %s is created.', [target_styfile]) unless @force
-          FileUtils.cp master_styfile, target_styfile
+          FileUtils.cp(master_styfile, target_styfile)
           next
         end
         if File.basename(target_styfile) == 'review-custom.sty'
@@ -492,20 +492,20 @@ module ReVIEW
         end
 
         if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', [target_styfile, master_styfile])
-          FileUtils.mv target_styfile, "#{target_styfile}-old"
-          FileUtils.cp master_styfile, target_styfile
+          FileUtils.mv(target_styfile, "#{target_styfile}-old")
+          FileUtils.cp(master_styfile, target_styfile)
         end
       end
 
       if template == 'review-jsbook'
         unless File.exist?(File.join(texmacrodir, 'jsbook.cls'))
           @logger.info t('new file %s is created.', [File.join(texmacrodir, 'jsbook.cls')]) unless @force
-          FileUtils.cp File.join(@review_dir, 'vendor/jsclasses/jsbook.cls'), File.join(texmacrodir, 'jsbook.cls')
+          FileUtils.cp(File.join(@review_dir, 'vendor/jsclasses/jsbook.cls'), File.join(texmacrodir, 'jsbook.cls'))
         end
 
         unless File.exist?(File.join(texmacrodir, 'gentombow.sty'))
           @logger.info t('new file %s is created.', [File.join(texmacrodir, 'gentombow.sty')]) unless @force
-          FileUtils.cp File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty')
+          FileUtils.cp(File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty'))
         end
       end
     end

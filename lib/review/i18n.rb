@@ -90,7 +90,7 @@ module ReVIEW
         end
       else
         user_i18n.each do |key, values|
-          raise KeyError, "Invalid locale file: #{path}" unless values.is_a? Hash
+          raise KeyError, "Invalid locale file: #{path}" unless values.is_a?(Hash)
           @store[key].merge!(values)
         end
       end
@@ -165,7 +165,7 @@ module ReVIEW
         end
       end
       remove_args.reverse_each do |idx|
-        args.delete_at idx
+        args.delete_at(idx)
       end
       args_matched = (frmt.count('%') <= args.size)
       frmt.gsub!('##', '%%')

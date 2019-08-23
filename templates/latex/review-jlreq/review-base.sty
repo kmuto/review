@@ -32,8 +32,8 @@
  {\end{alltt}\end{tcolorbox}}
 
 \newenvironment{reviewcmd}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!99,colframe=black!99,boxrule=0mm,arc=0mm]\begin{alltt}\begingroup\color{white}\ignorespaces}%
- {\endgroup\end{alltt}\end{tcolorbox}}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!99,coltext=white,colframe=black!99,boxrule=0mm,arc=0mm]\begin{alltt}}%
+ {\end{alltt}\end{tcolorbox}}
 
 % 図
 \newenvironment{reviewimage}{%
@@ -115,7 +115,7 @@
 \newcommand{\reviewlistref}[1]{\review@intn@list #1}
 \newcommand{\reviewequationref}[1]{\review@intn@equation #1}
 \newcommand{\reviewbibref}[2]{#1}
-\newcommand{\reviewcolumnref}[2]{\review@intn@columnname #1}
+\newcommand{\reviewcolumnref}[2]{#1}
 \newcommand{\reviewsecref}[2]{#1}
 
 \renewcommand{\contentsname}{\review@toctitle}

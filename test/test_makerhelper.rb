@@ -12,8 +12,8 @@ class MakerHelperTest < Test::Unit::TestCase
   end
 
   def teardown
-    FileUtils.rm_rf @tmpdir1
-    FileUtils.rm_rf @tmpdir2
+    FileUtils.rm_rf(@tmpdir1)
+    FileUtils.rm_rf(@tmpdir2)
   end
 
   def test_copy_images_to_dir
@@ -34,7 +34,7 @@ class MakerHelperTest < Test::Unit::TestCase
 
   def test_copy_images_to_dir_convert
     if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM && (`convert -version` rescue nil) && (`gs --version` rescue nil)
-      FileUtils.cp File.join(assets_dir, 'black.eps'), File.join(@tmpdir1, 'foo.eps')
+      FileUtils.cp(File.join(assets_dir, 'black.eps'), File.join(@tmpdir1, 'foo.eps'))
 
       image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2,
                                                    convert: { eps: :png })

@@ -15,7 +15,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   end
 
   def teardown
-    FileUtils.rm_rf @tmpdir1
+    FileUtils.rm_rf(@tmpdir1)
     ENV['RUBYLIB'] = @old_rubylib
   end
 

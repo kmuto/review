@@ -140,7 +140,7 @@ end
 def replace_old_style_part(dir)
   catalog = ReVIEW::Catalog.new(File.open("#{dir}/catalog.yml"))
   Array.new(catalog.parts.split("\n")).each_with_index do |part, part_idx|
-    next if part.end_with? '.re'
+    next if part.end_with?('.re')
 
     allow_overwrite = true
     part_name = sprintf('part%d.re', part_idx + 1)

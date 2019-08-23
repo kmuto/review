@@ -19,7 +19,7 @@ class ImageFinderTest < Test::Unit::TestCase
       finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
       assert_equal(path, finder.find_path('foo'))
     ensure
-      FileUtils.remove_entry_secure dir
+      FileUtils.remove_entry_secure(dir)
     end
   end
 
@@ -33,7 +33,7 @@ class ImageFinderTest < Test::Unit::TestCase
       finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
       assert_equal(path, finder.find_path('foo'))
     ensure
-      FileUtils.remove_entry_secure dir
+      FileUtils.remove_entry_secure(dir)
     end
   end
 
@@ -47,7 +47,7 @@ class ImageFinderTest < Test::Unit::TestCase
       finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
       assert_equal(path, finder.find_path('foo'))
     ensure
-      FileUtils.remove_entry_secure dir
+      FileUtils.remove_entry_secure(dir)
     end
   end
 
@@ -61,7 +61,7 @@ class ImageFinderTest < Test::Unit::TestCase
       finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
       assert_equal(path, finder.find_path('foo'))
     ensure
-      FileUtils.remove_entry_secure dir
+      FileUtils.remove_entry_secure(dir)
     end
   end
 
@@ -75,7 +75,7 @@ class ImageFinderTest < Test::Unit::TestCase
       finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
       assert_equal(path, finder.find_path('foo'))
     ensure
-      FileUtils.remove_entry_secure dir
+      FileUtils.remove_entry_secure(dir)
     end
   end
 
@@ -93,7 +93,7 @@ class ImageFinderTest < Test::Unit::TestCase
       finder = ReVIEW::Book::ImageFinder.new(dir, 'ch01', 'builder', ['.jpg'])
       assert_equal(path_dstimg, finder.find_path('foo'))
     ensure
-      FileUtils.remove_entry_secure dir
+      FileUtils.remove_entry_secure(dir)
     end
   end
 end

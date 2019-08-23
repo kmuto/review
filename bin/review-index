@@ -45,13 +45,13 @@ def _main
   opts.on('-a', '--all', 'print all chapters.') { source = book }
   opts.on('-p', '--part N', 'list only part N.') do |n|
     source = book.part(Integer(n)) or
-      error_exit "part #{n} does not exist in this book"
+      error_exit("part #{n} does not exist in this book")
   end
   opts.on('-c', '--chapter C', 'list only chapter C.') do |c|
     begin
       source = ReVIEW::Book::Part.new(nil, 1, [book.chapter(c)])
     rescue
-      error_exit "chapter #{c} does not exist in this book"
+      error_exit("chapter #{c} does not exist in this book")
     end
   end
   opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') do |n|
@@ -79,7 +79,7 @@ def _main
   book.load_config(yamlfile) if yamlfile
 
   if source
-    error_exit '-a/-s option and file arguments are exclusive' unless ARGV.empty?
+    error_exit('-a/-s option and file arguments are exclusive') unless ARGV.empty?
   else
     puts opts.help
     exit 0
@@ -88,13 +88,13 @@ def _main
   begin
     printer = printer_class.new(upper, param)
     if source.is_a?(ReVIEW::Book::Part)
-      printer.print_part source
+      printer.print_part(source)
     else
-      printer.print_book source
+      printer.print_book(source)
     end
   rescue ReVIEW::Error, Errno::ENOENT => e
     raise if $DEBUG
-    error_exit e.message
+    error_exit(e.message)
   end
 end
 

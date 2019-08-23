@@ -43,40 +43,40 @@ module ReVIEW
         when /\A(={2,})[\[\s\{]/
           lev = $1.size
           if lev > 5
-            error! filename, f.lineno, "section level too deep: #{lev}"
+            error!(filename, f.lineno, "section level too deep: #{lev}")
           end
           label = get_label(line)
           if node_stack.empty?
             # missing chapter label
             dummy_chapter = Chapter.new(label, chap)
-            node_stack.push dummy_chapter
-            roots.push dummy_chapter
+            node_stack.push(dummy_chapter)
+            roots.push(dummy_chapter)
           end
           next if label =~ %r{\A\[/} # ex) "[/column]"
           sec = Section.new(lev, label.gsub(/\A\{.*?\}\s?/, ''))
           node_stack.pop until node_stack.last.level < sec.level
-          node_stack.last.add_child sec
-          node_stack.push sec
+          node_stack.last.add_child(sec)
+          node_stack.push(sec)
 
         when /\A=[^=]/
           label = get_label(line)
           node_stack.clear
           new_chapter = Chapter.new(label, chap)
-          node_stack.push new_chapter
-          roots.push new_chapter
+          node_stack.push(new_chapter)
+          roots.push(new_chapter)
 
         when %r{\A//\w+(?:\[.*?\])*\{\s*\z}
           if node_stack.empty?
-            error! filename, f.lineno, 'list found before section label'
+            error!(filename, f.lineno, 'list found before section label')
           end
           node_stack.last.add_child(list = List.new)
           beg = f.lineno
-          list.add line
+          list.add(line)
           while line = f.gets
             break if %r{\A//\}} =~ line
-            list.add line
+            list.add(line)
           end
-          error! filename, beg, 'unterminated list' unless line
+          error!(filename, beg, 'unterminated list') unless line
 
         when %r{\A//\w}
           # do nothing
@@ -87,10 +87,10 @@ module ReVIEW
           # end
           next if node_stack.empty?
           node_stack.last.add_child(par = Paragraph.new(chap))
-          par.add line
+          par.add(line)
           while line = f.gets
             break if /\A\s*\z/ =~ line
-            par.add line
+            par.add(line)
           end
         end
       end
@@ -124,7 +124,7 @@ module ReVIEW
       attr_reader :children
 
       def add_child(c)
-        @children.push c
+        @children.push(c)
       end
 
       def each_node(&block)
@@ -196,7 +196,7 @@ module ReVIEW
 
     class Chapter < Section
       def initialize(label, chap)
-        super 1, label, chap.path
+        super(1, label, chap.path)
         @chapter = chap
         @chapter_id = chap.id
         @path = chap.path

@@ -28,7 +28,7 @@ def main
         @unprovided[kw] = location
       end
     when /\A\#@provide\((.*)\)/
-      provide $1
+      provide($1)
     else
       line.scan(/@<kw>\{(.*?)[,\}]/) { provide $1 }
     end

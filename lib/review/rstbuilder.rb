@@ -103,13 +103,13 @@ module ReVIEW
           blank
         end
         puts '=' * caption.size * 2
-      when 2 then
+      when 2
         p = '='
-      when 3 then
+      when 3
         p = '-'
-      when 4 then
+      when 4
         p = '`'
-      when 5 then
+      when 5
         p = '~'
       end
 
@@ -575,87 +575,87 @@ module ReVIEW
     end
 
     def flushright(lines)
-      base_parablock 'flushright', lines, nil
+      base_parablock('flushright', lines, nil)
     end
 
     def centering(lines)
-      base_parablock 'centering', lines, nil
+      base_parablock('centering', lines, nil)
     end
 
     def note(lines, caption = nil)
-      base_parablock 'note', lines, caption
+      base_parablock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
-      base_parablock 'memo', lines, caption
+      base_parablock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
-      base_parablock 'tip', lines, caption
+      base_parablock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
-      base_parablock 'info', lines, caption
+      base_parablock('info', lines, caption)
     end
 
     def planning(lines, caption = nil)
-      base_parablock 'planning', lines, caption
+      base_parablock('planning', lines, caption)
     end
 
     def best(lines, caption = nil)
-      base_parablock 'best', lines, caption
+      base_parablock('best', lines, caption)
     end
 
     def important(lines, caption = nil)
-      base_parablock 'important', lines, caption
+      base_parablock('important', lines, caption)
     end
 
     def security(lines, caption = nil)
-      base_parablock 'security', lines, caption
+      base_parablock('security', lines, caption)
     end
 
     def caution(lines, caption = nil)
-      base_parablock 'caution', lines, caption
+      base_parablock('caution', lines, caption)
     end
 
     def term(lines)
-      base_parablock 'term', lines, nil
+      base_parablock('term', lines, nil)
     end
 
     def link(lines, caption = nil)
-      base_parablock 'link', lines, caption
+      base_parablock('link', lines, caption)
     end
 
     def notice(lines, caption = nil)
-      base_parablock 'notice', lines, caption
+      base_parablock('notice', lines, caption)
     end
 
     def point(lines, caption = nil)
-      base_parablock 'point', lines, caption
+      base_parablock('point', lines, caption)
     end
 
     def shoot(lines, caption = nil)
-      base_parablock 'shoot', lines, caption
+      base_parablock('shoot', lines, caption)
     end
 
     def reference(lines)
-      base_parablock 'reference', lines, nil
+      base_parablock('reference', lines, nil)
     end
 
     def practice(lines)
-      base_parablock 'practice', lines, nil
+      base_parablock('practice', lines, nil)
     end
 
     def expert(lines)
-      base_parablock 'expert', lines, nil
+      base_parablock('expert', lines, nil)
     end
 
     def insn(lines, caption = nil)
-      base_block 'insn', lines, caption
+      base_block('insn', lines, caption)
     end
 
     def warning(lines, caption = nil)
-      base_parablock 'warning', lines, caption
+      base_parablock('warning', lines, caption)
     end
 
     alias_method :box, :insn
@@ -682,7 +682,7 @@ module ReVIEW
     end
 
     def bpo(lines)
-      base_block 'bpo', lines, nil
+      base_block('bpo', lines, nil)
     end
 
     def inline_dtp(_str)
@@ -714,7 +714,7 @@ module ReVIEW
     end
 
     def source(lines, caption = nil, _lang = nil)
-      base_block 'source', lines, caption
+      base_block('source', lines, caption)
     end
 
     def inline_ttibold(str)
