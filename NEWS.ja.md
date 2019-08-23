@@ -6,6 +6,7 @@
 ## 非互換の変更
 * 通常の利用では使われることがないので、review-init の実行時に空の layouts フォルダを作成するのをやめました ([#1340])
 * PDFMaker: `@<code>`、`@<tt>`、`@<tti>`、`@<ttb>` で空白文字が消えてしまう問題を修正しました。および利便性のために、文字列が版面からあふれるときに途中で改行するようにもしました ([#1348])
+* `//texequation`、`//embed`、`//graph` はもともとインライン命令を許容しないので、内容のエスケープもしないようにしました。また、末尾に余計な空行が加わるのも防ぐようにしました ([#1371], [#1374])
 
 ## バグ修正
 * review-jlreq がタイプミスのために一部の jlreq.cls バージョンで正しく動作しないのを修正しました ([#1350])
@@ -16,14 +17,18 @@
 ## 機能強化
 * IDGXML ビルダで `@<em>` および `@<strong>` をサポートしました ([#1353])
 * PDFMaker: コードブロックの各行の処理を `code_line`, `code_line_num` のメソッドに切り出しました ([#1368])
+* PDFMaker: デフォルトのコンパイルオプションに `-halt-on-error` を追加しました。TeX のコンパイルエラーが発生したときに即終了することで問題が把握しやすくなります ([#1378])
 
 ## ドキュメント
 * sample-book の README.md を更新しました ([#1354])
 * review-jsbook の README.md に jsbook.cls のオプションの説明を追加しました ([#1365])
 
 ## その他
-
 * メソッド引数のコーディングルールを統一しました ([#1360])
+* `Catalog#{chaps,parts,predef,postdef,appendix}` は String ではなく Array を返すようにしました ([#1372])
+* YAML ファイルの読み込みに `safe_load` を使うようにしました ([#1375])
+* `table` メソッドをリファクタリングし、ビルダ個々の処理を簡略化しました ([#1356])
+* `Builder#highlight?` メソッドを HTMLBuilder 以外でも利用できるようにしました ([#1373])
 
 ## コントリビューターのみなさん
 * [@m-shibata](https://github.com/m-shibata)
@@ -36,11 +41,18 @@
 [#1350]: https://github.com/kmuto/review/issues/1350
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
+[#1356]: https://github.com/kmuto/review/pull/1356
 [#1360]: https://github.com/kmuto/review/pull/1360
 [#1363]: https://github.com/kmuto/review/issues/1363
 [#1365]: https://github.com/kmuto/review/pull/1365
 [#1367]: https://github.com/kmuto/review/issues/1367
 [#1368]: https://github.com/kmuto/review/issues/1368
+[#1371]: https://github.com/kmuto/review/pull/1371
+[#1372]: https://github.com/kmuto/review/pull/1372
+[#1373]: https://github.com/kmuto/review/pull/1373
+[#1374]: https://github.com/kmuto/review/pull/1374
+[#1375]: https://github.com/kmuto/review/pull/1375
+[#1378]: https://github.com/kmuto/review/pull/1378
 
 # Version 3.2.0
 

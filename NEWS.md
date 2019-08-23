@@ -6,6 +6,7 @@
 ## Breaking Changes
 * review-init no longer creates empty `layouts` folder ([#1340])
 * PDFMaker: fix a problem that white space characters disappeared in `@<code>`, `@<tt>`, `@<tti>`, and `@<ttb>`. Also the string is automatically wrapped ([#1348])
+* `//texequation`、`//embed` and `//graph` that don't allow inline op no longer escape inline op in strings. And don't put extra line break ([#1371], [#1374])
 
 ## Bug Fixes
 * fix a typo in review-jlreq ([#1350])
@@ -16,16 +17,21 @@
 ## Enhancements
 * support `@<em>` and `@<strong>` in IDGXMLBuilder ([#1353])
 * PDFMaker: extract `code_line` and `code_line_num` from code blocks for ease handling each line ([#1368])
+* PDFMaker: add new compile option `-halt-on-error` to make it easier to find the problem when an error occurs ([#1378])
 
 ## Docs
 * update sample-book/README.md ([#1354])
 * add descriptions about options of jsbook.cls to review-jsbook/README.md ([#1365])
 
-## Contributors
-* [@m-shibata](https://github.com/m-shibata)
-
 ## Others
 * unify styles of a method with arguments ([#1360])
+* `Catalog#{chaps,parts,predef,postdef,appendix}` should return Array, not String ([#1372])
+* use `safe_load` for loading YAML ([#1375])
+* refactor `table` method to simplify each builder ([#1356])
+* enable `Builder#highlight?` method on each builder ([#1373])
+
+## Contributors
+* [@m-shibata](https://github.com/m-shibata)
 
 [#1337]: https://github.com/kmuto/review/issues/1337
 [#1338]: https://github.com/kmuto/review/issues/1338
@@ -35,11 +41,18 @@
 [#1350]: https://github.com/kmuto/review/issues/1350
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
+[#1356]: https://github.com/kmuto/review/pull/1356
 [#1360]: https://github.com/kmuto/review/pull/1360
 [#1363]: https://github.com/kmuto/review/issues/1363
 [#1365]: https://github.com/kmuto/review/pull/1365
 [#1367]: https://github.com/kmuto/review/issues/1367
 [#1368]: https://github.com/kmuto/review/issues/1368
+[#1371]: https://github.com/kmuto/review/pull/1371
+[#1372]: https://github.com/kmuto/review/pull/1372
+[#1373]: https://github.com/kmuto/review/pull/1373
+[#1374]: https://github.com/kmuto/review/pull/1374
+[#1375]: https://github.com/kmuto/review/pull/1375
+[#1378]: https://github.com/kmuto/review/pull/1378
 
 # Version 3.2.0
 
