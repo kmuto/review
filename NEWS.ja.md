@@ -10,12 +10,16 @@
 ## バグ修正
 * review-jlreq がタイプミスのために一部の jlreq.cls バージョンで正しく動作しないのを修正しました ([#1350])
 * re ファイルが改行コード CR で記述されたときに不正な結果になるのを修正しました ([#1341])
+* PDFMaker: review-jlreq において `//cmd` のブロックがページをまたいだときに文字色が黒になって見えなくなってしまうのを修正しました ([#1363])
+* PDFMaker: `@<column>` で「コラム」ラベルが重複して出力されるのを修正しました ([#1367])
 
 ## 機能強化
 * IDGXML ビルダで `@<em>` および `@<strong>` をサポートしました ([#1353])
+* PDFMaker: コードブロックの各行の処理を `code_line`, `code_line_num` のメソッドに切り出しました ([#1368])
 
 ## ドキュメント
 * sample-book の README.md を更新しました ([#1354])
+* review-jsbook の README.md に jsbook.cls のオプションの説明を追加しました ([#1365])
 
 ## その他
 
@@ -33,6 +37,10 @@
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
 [#1360]: https://github.com/kmuto/review/pull/1360
+[#1363]: https://github.com/kmuto/review/issues/1363
+[#1365]: https://github.com/kmuto/review/pull/1365
+[#1367]: https://github.com/kmuto/review/issues/1367
+[#1368]: https://github.com/kmuto/review/issues/1368
 
 # Version 3.2.0
 
