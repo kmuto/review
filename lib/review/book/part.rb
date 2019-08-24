@@ -26,7 +26,7 @@ module ReVIEW
       end
 
       def self.mkpart_from_namelist(book, names)
-        Part.mkpart(names.map { |n| Chapter.mkchap_ifexist(book, n) }.compact)
+        Part.mkpart(names.map { |name| Chapter.mkchap_ifexist(book, name) }.compact)
       end
 
       def self.mkpart(chaps)
