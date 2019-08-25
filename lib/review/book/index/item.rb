@@ -31,10 +31,6 @@ module ReVIEW
 
         alias_method :content, :caption
 
-        def bound?
-          path
-        end
-
         def path
           @path ||= @index.find_path(id)
         end

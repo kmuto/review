@@ -526,7 +526,7 @@ module ReVIEW
     end
 
     def existence(id)
-      @chapter.image(id).bound? ? 'exist' : 'not exist'
+      @chapter.image_bound?(id) ? 'exist' : 'not exist'
     end
     private :existence
 
@@ -780,7 +780,7 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
-      unless @chapter.image(id).bound?
+      unless @chapter.image_bound?(id)
         warn "image not bound: #{id}"
         image_dummy(id, caption, lines)
         return
