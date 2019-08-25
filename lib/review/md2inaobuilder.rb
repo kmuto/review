@@ -11,9 +11,7 @@ module ReVIEW
       puts "\n"
     end
 
-    def list_header(id, caption, lang)
-      lang ||= ''
-      puts "```#{lang}"
+    def list_header(id, caption, _lang)
       print %Q(●リスト#{@chapter.list(id).number}::#{compile_inline(caption)}\n\n)
     end
 

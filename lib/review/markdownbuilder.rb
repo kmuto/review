@@ -65,24 +65,26 @@ module ReVIEW
       @noindent = true
     end
 
-    def list_header(id, caption, lang)
+    def list_header(id, caption, _lang)
       if get_chap.nil?
         print %Q(リスト#{@chapter.list(id).number} #{compile_inline(caption)}\n\n)
       else
         print %Q(リスト#{get_chap}.#{@chapter.list(id).number} #{compile_inline(caption)}\n\n)
       end
-      lang ||= ''
-      puts "```#{lang}"
     end
 
-    def list_body(_id, lines, _lang)
+    def list_body(_id, lines, lang)
+      lang ||= ''
+      puts "```#{lang}"
       lines.each do |line|
         puts detab(line)
       end
       puts '```'
     end
 
-    def listnum_body(lines, _lang)
+    def listnum_body(lines, lang)
+      lang ||= ''
+      puts "```#{lang}"
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{detab(line)}")
       end
@@ -136,9 +138,9 @@ module ReVIEW
 
     def emlist(lines, caption = nil, lang = nil)
       blank
-      if caption
+      if caption.present?
         puts caption
-        print "\n"
+        blank
       end
       lang ||= ''
       puts "```#{lang}"
@@ -238,7 +240,11 @@ module ReVIEW
       'jpg'
     end
 
-    def cmd(lines)
+    def cmd(lines, caption = nil)
+      if caption.present?
+        puts caption
+        blank
+      end
       puts '```shell-session'
       lines.each do |line|
         puts detab(line)
