@@ -995,6 +995,9 @@ module ReVIEW
 
     def footnote(id, content)
       if @book.config['footnotetext'] || @foottext[id]
+        if @doc_status[:column]
+          warn "//footnote[#{id}] is in the column block. It is recommended to move out of the column block."
+        end
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       end
     end
