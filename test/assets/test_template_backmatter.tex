@@ -1,13 +1,14 @@
 \documentclass[dvipdfmx]{review-jsbook}
 \makeatletter
-\def\review@reviewversion{3.0.0.preview3}
+\def\review@reviewversion{3.2.0}
 \def\review@texcompiler{uplatex}
 \def\review@documentclass{review-jsbook}
 
 \def\review@booktitlename{Re:VIEW Sample Book}
 
+\def\review@autnames{anonymous}
 
-\def\review@titlepageauthors{}
+\def\review@titlepageauthors{anonymous　著}
 \def\review@date{2011{-}01{-}01}
 
 \def\review@bookname{sample}
@@ -48,7 +49,8 @@ some ad content
 \null}
 
 \def\review@pubhistories{2011年1月1日　発行}
-\def\review@colophonnames{}
+\def\review@colophonnames{著　者 & anonymous \\
+}
 
 \def\reviewprefacefiles{}
 \def\reviewchapterfiles{}
@@ -67,6 +69,7 @@ some ad content
 
 \makeatother
 
+\usepackage{reviewmacro}
 
 %% backward compatibility (defined in config.erb)
 \reviewbackcompatibilityhook
