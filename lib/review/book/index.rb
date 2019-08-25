@@ -12,6 +12,7 @@ require 'review/exception'
 require 'review/book/image_finder'
 require 'review/i18n'
 require 'review/logger'
+require 'review/book/index/item'
 
 module ReVIEW
   module Book
@@ -31,10 +32,8 @@ module ReVIEW
         new(items, *args)
       end
 
-      Item = Struct.new(:id, :number)
-
       def self.item_class
-        self::Item
+        ReVIEW::Book::Index::Item
       end
 
       include Enumerable
@@ -135,8 +134,6 @@ module ReVIEW
     end
 
     class FootnoteIndex < Index
-      Item = Struct.new(:id, :number, :content)
-
       def self.parse(src)
         items = []
         seq = 1
@@ -176,28 +173,6 @@ module ReVIEW
 
       def self.item_type
         '(image|graph|imgtable)'
-      end
-
-      class Item
-        def initialize(id, number, caption = nil)
-          @id = id
-          @number = number
-          @caption = caption
-          @path = nil
-        end
-
-        attr_reader :id
-        attr_reader :number
-        attr_reader :caption
-        attr_writer :index # internal use only
-
-        def bound?
-          path
-        end
-
-        def path
-          @path ||= @index.find_path(id)
-        end
       end
 
       attr_reader :image_finder
@@ -246,8 +221,6 @@ module ReVIEW
     end
 
     class BibpaperIndex < Index
-      Item = Struct.new(:id, :number, :caption)
-
       def self.parse(src)
         items = []
         seq = 1
@@ -268,18 +241,12 @@ module ReVIEW
         'numberlessimage'
       end
 
-      class Item < ImageIndex::Item
-      end
-
       def number(_id)
         ''
       end
     end
 
     class IndepImageIndex < ImageIndex
-      class Item < ImageIndex::Item
-      end
-
       def self.item_type
         '(indepimage|imgtable)'
       end
@@ -291,7 +258,6 @@ module ReVIEW
 
     class HeadlineIndex < Index
       HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
-      Item = Struct.new(:id, :number, :caption)
       attr_reader :items
 
       def self.parse(src, chap)
@@ -388,7 +354,6 @@ module ReVIEW
 
     class ColumnIndex < Index
       COLUMN_PATTERN = /\A(=+)\[column\](?:\{(.+?)\})?(.*)/
-      Item = Struct.new(:id, :number, :caption)
 
       def self.parse(src, *_args)
         items = []

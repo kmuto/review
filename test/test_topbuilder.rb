@@ -226,7 +226,7 @@ EOS
 
   def test_list
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('test', 1)
+      Book::Index::Item.new('test', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     expected = <<-EOS
@@ -243,7 +243,7 @@ EOS
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('test', 1)
+      Book::Index::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     expected = <<-EOS
@@ -373,7 +373,7 @@ EOS
 
   def test_bib
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     assert_equal '[1]', compile_inline('@<bib>{samplebib}')
@@ -413,7 +413,7 @@ EOS
 
   def test_inline_table
     def @chapter.table(_id)
-      Book::TableIndex::Item.new('sampletable', 1)
+      Book::Index::Item.new('sampletable', 1)
     end
     actual = compile_block("@<table>{sampletest}\n")
     assert_equal "表1.1\n", actual
@@ -562,7 +562,7 @@ EOS
 
   def test_image
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -581,7 +581,7 @@ EOS
 
   def test_image_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
