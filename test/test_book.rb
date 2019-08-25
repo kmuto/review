@@ -413,6 +413,51 @@ EOC
     end
   end
 
+  def test_parts_in_file
+    mktmpbookdir do |_dir, book, _files|
+      assert book.parts_in_file.empty?
+      assert !book.part(0)
+      assert !book.part(1)
+
+      tmp = []
+      book.each_part { tmp << true }
+      assert tmp.empty?
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
+                 'PART' => "foo\nbar\n",
+                 'ch1.re' => "= ch1\n\n", 'ch2.re' => "= ch2\n\n",
+                 'ch3.re' => "= ch3\n\n" do |_dir, book, _files|
+      parts = book.parts_in_file
+      assert_equal 0, parts.size
+      assert !book.part(0)
+      assert_equal 'foo', book.part(1).name
+      assert_equal 'bar', book.part(2).name
+      assert !book.part(3)
+
+      tmp = []
+      book.each_part { |p| tmp << p.number }
+      assert_equal [1, 2], tmp
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
+                 'PART' => "foo.re\nbar.re\n",
+                 'foo.re' => "= part1\n\n", 'bar.re' => "= part2\n\n",
+                 'ch1.re' => "= ch1\n\n", 'ch2.re' => "= ch2\n\n",
+                 'ch3.re' => "= ch3\n\n" do |_dir, book, _files|
+      parts = book.parts_in_file
+      assert_equal 2, parts.size
+      assert !book.part(0)
+      assert_equal 'foo', book.part(1).name
+      assert_equal 'bar', book.part(2).name
+      assert !book.part(3)
+
+      tmp = []
+      book.each_part { |p| tmp << p.number }
+      assert_equal [1, 2], tmp
+    end
+  end
+
   def test_chapters
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3" do |_dir, book, _files|
       chapters = book.chapters
