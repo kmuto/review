@@ -22,7 +22,7 @@ module ReVIEW
         seq = 1
         src.grep(%r{\A//#{item_type}}) do |line|
           if id = line.slice(/\[(.*?)\]/, 1)
-            items.push(item_class.new(id, seq))
+            items.push(ReVIEW::Book::Index::Item.new(id, seq))
             seq += 1
             if id.empty?
               ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
@@ -30,10 +30,6 @@ module ReVIEW
           end
         end
         new(items, *args)
-      end
-
-      def self.item_class
-        ReVIEW::Book::Index::Item
       end
 
       include Enumerable
@@ -158,9 +154,9 @@ module ReVIEW
           elements = line.split(/\[(.*?)\]/)
           if elements[1].present?
             if line =~ %r{\A//imgtable}
-              items.push(item_class.new(elements[1], 0, elements[3]))
+              items.push(ReVIEW::Book::Index::Item.new(elements[1], 0, elements[3]))
             else ## %r<\A//(image|graph)>
-              items.push(item_class.new(elements[1], seq, elements[3]))
+              items.push(ReVIEW::Book::Index::Item.new(elements[1], seq, elements[3]))
               seq += 1
             end
             if elements[1] == ''
@@ -212,7 +208,7 @@ module ReVIEW
         seq = 1
         src.grep(/@<icon>/) do |line|
           line.gsub(/@<icon>\{(.+?)\}/) do
-            items.push(item_class.new($1, seq))
+            items.push(ReVIEW::Book::Index::Item.new($1, seq))
             seq += 1
           end
         end
@@ -366,7 +362,7 @@ module ReVIEW
           caption = m[3].strip
           id = caption if id.nil? || id.empty?
 
-          items.push(item_class.new(id, seq, caption))
+          items.push(ReVIEW::Book::Index::Item.new(id, seq, caption))
           seq += 1
         end
         new(items)
