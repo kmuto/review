@@ -32,7 +32,7 @@ module ReVIEW
         'rights' => nil, # Copyright messages
         'description' => nil, # Description
         'urnid' => "urn:uid:#{SecureRandom.uuid}", # Identifier
-        'stylesheet' => ['style.css'], # stylesheet file
+        'stylesheet' => [], # stylesheet file
         'coverfile' => nil, # content file of body of cover page
         'mytoc' => nil, # whether make own table of contents or not
         'params' => '', # specify review2html parameters
