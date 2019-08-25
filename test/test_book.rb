@@ -32,7 +32,7 @@ class BookTest < Test::Unit::TestCase
   def test_read_chaps
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
-      assert_equal '', book.read_chaps
+      assert_equal [], book.read_chaps
 
       chaps_path = File.join(dir, 'CHAPS')
       re1_path = File.join(dir, "123#{book.ext}")
@@ -42,16 +42,16 @@ class BookTest < Test::Unit::TestCase
       File.open(re1_path, 'w') { |o| o.print "123\n" }
       File.open(re2_path, 'w') { |o| o.print "456\n" }
 
-      assert_equal "abc\n", book.read_chaps
+      assert_equal ['abc'], book.read_chaps
 
       File.unlink(chaps_path)
-      assert_equal "#{re1_path}\n#{re2_path}", book.read_chaps
+      assert_equal [re1_path, re2_path], book.read_chaps
 
       File.unlink(re1_path)
-      assert_equal re2_path, book.read_chaps
+      assert_equal [re2_path], book.read_chaps
 
       File.unlink(re2_path)
-      assert_equal '', book.read_chaps
+      assert_equal [], book.read_chaps
     end
   end
 
@@ -68,17 +68,18 @@ class BookTest < Test::Unit::TestCase
       File.open(chaps_path, 'w') { |o| o.print chaps_content }
 
       assert book.part_exist?
-      assert_equal chaps_content, book.read_part
+      assert_equal %w[abc], book.read_part
 
+      ## do not cache PART data
       File.open(chaps_path, 'w') { |o| o.print "XYZ\n" }
-      assert_equal chaps_content, book.read_part
+      assert_equal %w[XYZ], book.read_part
     end
   end
 
   def test_read_appendix
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
-      assert_equal '', book.read_appendix
+      assert_equal [], book.read_appendix
 
       post_path = File.join(dir, 'POSTDEF')
       re1_path = File.join(dir, "123#{book.ext}")
@@ -88,23 +89,23 @@ class BookTest < Test::Unit::TestCase
       File.open(re1_path, 'w') { |o| o.print "123\n" }
       File.open(re2_path, 'w') { |o| o.print "456\n" }
 
-      assert_equal "abc\n", book.read_appendix
+      assert_equal ['abc'], book.read_appendix
 
       File.unlink(post_path)
-      assert_equal "#{re1_path}\n#{re2_path}", book.read_appendix
+      assert_equal [re1_path, re2_path], book.read_appendix
 
       File.unlink(re1_path)
-      assert_equal re2_path, book.read_appendix
+      assert_equal [re2_path], book.read_appendix
 
       File.unlink(re2_path)
-      assert_equal '', book.read_appendix
+      assert_equal [], book.read_appendix
     end
   end
 
   def test_read_postdef
     Dir.mktmpdir do |dir|
       book = Book::Base.new(dir)
-      assert_equal '', book.read_postdef
+      assert_equal [], book.read_postdef
 
       post_path = File.join(dir, 'POSTDEF')
       re1_path = File.join(dir, "123#{book.ext}")
@@ -114,10 +115,10 @@ class BookTest < Test::Unit::TestCase
       File.open(re1_path, 'w') { |o| o.print "123\n" }
       File.open(re2_path, 'w') { |o| o.print "456\n" }
 
-      assert_equal '', book.read_postdef
+      assert_equal [], book.read_postdef
 
       File.unlink(post_path)
-      assert_equal '', book.read_postdef
+      assert_equal [], book.read_postdef
     end
   end
 
@@ -248,15 +249,15 @@ EOC
           ''
         ]
       ]
-    ].each do |n_parts, chaps_text, parts_text, part_names|
+    ].each do |n_parts, chaps, parts, part_names|
       n_test += 1
       Dir.mktmpdir do |dir|
         book = Book::Base.new(dir)
         chaps_path = File.join(dir, 'CHAPS')
-        File.open(chaps_path, 'w') { |o| o.print chaps_text }
-        if parts_text
+        File.open(chaps_path, 'w') { |o| o.print chaps }
+        if parts
           parts_path = File.join(dir, 'PART')
-          File.open(parts_path, 'w') { |o| o.print parts_text }
+          File.open(parts_path, 'w') { |o| o.print parts }
         end
 
         parts = book.instance_eval { parse_chapters }
@@ -400,6 +401,51 @@ EOC
 
     mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3", 'PART' => "foo\nbar\n" do |_dir, book, _files|
       parts = book.parts
+      assert_equal 2, parts.size
+      assert !book.part(0)
+      assert_equal 'foo', book.part(1).name
+      assert_equal 'bar', book.part(2).name
+      assert !book.part(3)
+
+      tmp = []
+      book.each_part { |p| tmp << p.number }
+      assert_equal [1, 2], tmp
+    end
+  end
+
+  def test_parts_in_file
+    mktmpbookdir do |_dir, book, _files|
+      assert book.parts_in_file.empty?
+      assert !book.part(0)
+      assert !book.part(1)
+
+      tmp = []
+      book.each_part { tmp << true }
+      assert tmp.empty?
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
+                 'PART' => "foo\nbar\n",
+                 'ch1.re' => "= ch1\n\n", 'ch2.re' => "= ch2\n\n",
+                 'ch3.re' => "= ch3\n\n" do |_dir, book, _files|
+      parts = book.parts_in_file
+      assert_equal 0, parts.size
+      assert !book.part(0)
+      assert_equal 'foo', book.part(1).name
+      assert_equal 'bar', book.part(2).name
+      assert !book.part(3)
+
+      tmp = []
+      book.each_part { |p| tmp << p.number }
+      assert_equal [1, 2], tmp
+    end
+
+    mktmpbookdir 'CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
+                 'PART' => "foo.re\nbar.re\n",
+                 'foo.re' => "= part1\n\n", 'bar.re' => "= part2\n\n",
+                 'ch1.re' => "= ch1\n\n", 'ch2.re' => "= ch2\n\n",
+                 'ch3.re' => "= ch3\n\n" do |_dir, book, _files|
+      parts = book.parts_in_file
       assert_equal 2, parts.size
       assert !book.part(0)
       assert_equal 'foo', book.part(1).name

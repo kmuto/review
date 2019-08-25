@@ -502,8 +502,5 @@ Naming/VariableNumber:
 
 #### Security
 
-# we use Date object in config.yml so should use YAML.load :-/
 Security/YAMLLoad:
-  Exclude:
-    - 'lib/review/catalog.rb'
-    - 'test/test_helper.rb'
+  Enabled: true

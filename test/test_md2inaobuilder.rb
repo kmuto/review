@@ -59,9 +59,9 @@ BBB
     EOS
 
     assert_equal <<-EOS, actual
-```
 ●リスト1::caption
 
+```
 AAA
 BBB
 ```

@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2018 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2019 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -70,6 +70,10 @@ module ReVIEW
       @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
+
+    def highlight?
+      false
+    end
 
     def result
       @output.string
@@ -153,20 +157,7 @@ module ReVIEW
     end
 
     def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
-        end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
-      end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
-
+      sepidx, rows = parse_table_rows(lines)
       begin
         if caption.present?
           table_header(id, caption)
@@ -175,6 +166,26 @@ module ReVIEW
         error "no such table: #{id}"
       end
       table_begin(rows.first.size)
+      table_rows(sepidx, rows)
+      table_end
+    end
+
+    def parse_table_rows(lines)
+      sepidx = nil
+      rows = []
+      lines.each_with_index do |line, idx|
+        if /\A[\=\-]{12}/ =~ line || /\A[\=\{\-\}]{12}/ =~ line
+          sepidx ||= idx
+          next
+        end
+        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
+      end
+      rows = adjust_n_cols(rows)
+      error 'no rows in the table' if rows.empty?
+      [sepidx, rows]
+    end
+
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           tr(rows.shift.map { |s| th(s) })
@@ -188,7 +199,6 @@ module ReVIEW
           tr([th(h)] + cs.map { |s| td(s) })
         end
       end
-      table_end
     end
 
     def adjust_n_cols(rows)
@@ -404,7 +414,12 @@ module ReVIEW
     end
 
     def inline_wb(s)
-      inline_b(unescape(inline_w(s)))
+      translated = @dictionary[s]
+      if translated
+        inline_b(translated)
+      else
+        inline_b("[missing word: #{s}]")
+      end
     end
 
     def raw(str)
@@ -423,9 +438,9 @@ module ReVIEW
       if arg
         builders = arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
         c = target_name
-        print lines.join if builders.include?(c)
+        print lines.join("\n") + "\n" if builders.include?(c)
       else
-        print lines.join
+        print lines.join("\n") + "\n"
       end
     end
 
@@ -504,13 +519,13 @@ module ReVIEW
       file = "#{id}.#{image_ext}"
       file_path = File.join(dir, file)
 
-      line = self.unescape(lines.join("\n"))
+      content = lines.join("\n") + "\n"
 
       tf = Tempfile.new('review_graph')
-      tf.puts line
+      tf.puts content
       tf.close
       begin
-        file_path = send("graph_#{command}".to_sym, id, file_path, line, tf.path)
+        file_path = send("graph_#{command}".to_sym, id, file_path, content, tf.path)
       ensure
         tf.unlink
       end
@@ -632,10 +647,6 @@ EOTGNUPLOT
     end
 
     def escape(str)
-      str
-    end
-
-    def unescape(str)
       str
     end
   end

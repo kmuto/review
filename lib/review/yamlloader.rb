@@ -18,6 +18,9 @@ module ReVIEW
       while file_queue.present?
         current_file = file_queue.shift
         current_yaml = YAML.load_file(current_file)
+        if current_yaml.class == FalseClass
+          raise "#{File.basename(current_file)} is malformed."
+        end
         yaml = current_yaml.deep_merge(yaml)
 
         if yaml.key?('inherit')

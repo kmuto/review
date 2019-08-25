@@ -4,7 +4,7 @@ module ReVIEW
   class Catalog
     def initialize(file)
       if file.respond_to?(:read)
-        @yaml = YAML.load(file.read)
+        @yaml = YAML.safe_load(file.read, [Date])
       else ## as Object
         @yaml = file
       end
@@ -12,12 +12,11 @@ module ReVIEW
     end
 
     def predef
-      return '' unless @yaml['PREDEF']
-      @yaml['PREDEF'].join("\n")
+      @yaml['PREDEF'] || []
     end
 
     def chaps
-      return '' unless @yaml['CHAPS']
+      return [] unless @yaml['CHAPS']
 
       @yaml['CHAPS'].map do |entry|
         if entry.is_a?(String)
@@ -25,11 +24,11 @@ module ReVIEW
         elsif entry.is_a?(Hash)
           entry.values # chaps in a part
         end
-      end.flatten.join("\n")
+      end.flatten
     end
 
     def parts
-      return '' unless @yaml['CHAPS']
+      return [] unless @yaml['CHAPS']
 
       part_list = @yaml['CHAPS'].map do |entry|
         if entry.is_a?(Hash)
@@ -37,7 +36,7 @@ module ReVIEW
         end
       end
 
-      part_list.flatten.compact.join("\n")
+      part_list.flatten.compact
     end
 
     def replace_part(old_name, new_name)
@@ -55,13 +54,11 @@ module ReVIEW
     end
 
     def appendix
-      return '' unless @yaml['APPENDIX']
-      @yaml['APPENDIX'].join("\n")
+      @yaml['APPENDIX'] || []
     end
 
     def postdef
-      return '' unless @yaml['POSTDEF']
-      @yaml['POSTDEF'].join("\n")
+      @yaml['POSTDEF'] || []
     end
 
     def to_s
@@ -71,7 +68,7 @@ module ReVIEW
     def validate!(config, basedir)
       filenames = []
       if predef.present?
-        filenames.concat(predef.split(/\n/))
+        filenames.concat(predef)
       end
       parts_with_chaps.each do |chap|
         if chap.is_a?(Hash)
@@ -86,10 +83,10 @@ module ReVIEW
         end
       end
       if appendix.present?
-        filenames.concat(appendix.split(/\n/))
+        filenames.concat(appendix)
       end
       if postdef.present?
-        filenames.concat(postdef.split(/\n/))
+        filenames.concat(postdef)
       end
       filenames.each do |filename|
         refile = File.join(basedir, config['contentdir'], filename)

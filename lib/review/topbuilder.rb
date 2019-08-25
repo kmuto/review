@@ -91,23 +91,32 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def list_header(id, caption, _lang)
+    def list(lines, id, caption, lang = nil)
       blank
       puts "◆→開始:#{@titles['list']}←◆"
+      begin
+        list_header(id, caption, lang)
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      blank
+      list_body(id, lines, lang)
+      puts "◆→終了:#{@titles['list']}←◆"
+      blank
+    end
+
+    def list_header(id, caption, _lang)
       if get_chap
         puts %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)})
       else
         puts %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)})
       end
-      blank
     end
 
     def list_body(_id, lines, _lang)
       lines.each do |line|
         puts detab(line)
       end
-      puts "◆→終了:#{@titles['list']}←◆"
-      blank
     end
 
     def base_block(type, lines, caption = nil)
@@ -139,12 +148,24 @@ module ReVIEW
       blank
     end
 
+    def listnum(lines, id, caption, lang = nil)
+      blank
+      puts "◆→開始:#{@titles['list']}←◆"
+      begin
+        list_header(id, caption, lang)
+      rescue KeyError
+        error "no such list: #{id}"
+      end
+      blank
+      listnum_body(lines, lang)
+      puts "◆→終了:#{@titles['list']}←◆"
+      blank
+    end
+
     def listnum_body(lines, _lang)
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
-      puts "◆→終了:#{@titles['list']}←◆"
-      blank
     end
 
     def image(lines, id, caption, metric = nil)
@@ -152,11 +173,7 @@ module ReVIEW
       metrics = " #{metrics}" if metrics.present?
       blank
       puts "◆→開始:#{@titles['image']}←◆"
-      if get_chap
-        puts "#{I18n.t('image')}#{I18n.t('format_number', [get_chap, @chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
-      else
-        puts "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
-      end
+      image_header(id, caption)
       blank
       if @chapter.image(id).bound?
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
@@ -170,21 +187,23 @@ module ReVIEW
       blank
     end
 
+    def image_header(id, caption)
+      if get_chap
+        puts "#{I18n.t('image')}#{I18n.t('format_number', [get_chap, @chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+      else
+        puts "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+      end
+    end
+
     def texequation(lines, id = nil, caption = '')
       blank
       puts "◆→開始:#{@titles['texequation']}←◆"
-      if id
-        if get_chap
-          puts "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
-        else
-          puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
-        end
-      end
+      texequation_header(id, caption)
 
       if @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
-        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{unescape(lines.join("\n"))}\n\\end{equation*}\n"
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         math_dir = File.join(@book.config['imagedir'], '_review_math_text')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
@@ -199,44 +218,22 @@ module ReVIEW
       blank
     end
 
-    def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
+    def texequation_header(id, caption)
+      if id
+        if get_chap
+          puts "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+        else
+          puts "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
         end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
+    end
 
+    def table(lines, id = nil, caption = nil)
       blank
       puts "◆→開始:#{@titles['table']}←◆"
-
-      begin
-        table_header(id, caption) if caption.present?
-      rescue KeyError
-        error "no such table: #{id}"
-      end
-      table_begin(rows.first.size)
-      if sepidx
-        sepidx.times do
-          tr(rows.shift.map { |s| th(s) })
-        end
-        rows.each do |cols|
-          tr(cols.map { |s| td(s) })
-        end
-      else
-        rows.each do |cols|
-          h, *cs = *cols
-          tr([th(h)] + cs.map { |s| td(s) })
-        end
-      end
-      table_end
+      super(lines, id, caption, true)
+      puts "◆→終了:#{@titles['table']}←◆"
+      blank
     end
 
     def th(str)
@@ -244,8 +241,6 @@ module ReVIEW
     end
 
     def table_end
-      puts "◆→終了:#{@titles['table']}←◆"
-      blank
     end
 
     def comment(lines, comment = nil)

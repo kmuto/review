@@ -32,7 +32,6 @@ module ReVIEW
       @blank_needed = false
       @latex_tsize = nil
       @tsize = nil
-      @table_caption = nil
       @cellwidth = nil
       @ol_num = nil
       @first_line_num = nil
@@ -322,17 +321,30 @@ module ReVIEW
 
     alias_method :lead, :read
 
+    def highlight?
+      @book.config['highlight'] &&
+        @book.config['highlight']['latex']
+    end
+
     def highlight_listings?
       @book.config['highlight'] && @book.config['highlight']['latex'] == 'listings'
     end
     private :highlight_listings?
+
+    def code_line(_type, line, _idx, _id, _caption, _lang)
+      detab(line) + "\n"
+    end
+
+    def code_line_num(_type, line, first_line_num, idx, _id, _caption, _lang)
+      detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n"
+    end
 
     def emlist(lines, caption = nil, lang = nil)
       blank
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistlst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| code_line('emlist', line, idx, nil, caption, lang) }
       end
     end
 
@@ -342,7 +354,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewemlistnumlst', 'title', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(nil, lines, 'reviewemlist', caption, lang) { |line, idx| code_line_num('emlistnum', line, first_line_num, idx, nil, caption, lang) }
       end
     end
 
@@ -351,7 +363,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistlst', 'caption', caption, lang)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| code_line('list', line, idx, id, caption, lang) }
       end
     end
 
@@ -361,7 +373,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(id, lines, 'reviewlistnumlst', 'caption', caption, lang, first_line_num: first_line_num)
       else
-        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| detab((idx + first_line_num).to_s.rjust(2) + ': ' + line) + "\n" }
+        common_code_block(id, lines, 'reviewlist', caption, lang) { |line, idx| code_line_num('listnum', line, first_line_num, idx, id, caption, lang) }
       end
     end
 
@@ -370,7 +382,7 @@ module ReVIEW
         common_code_block_lst(nil, lines, 'reviewcmdlst', 'title', caption, lang)
       else
         blank
-        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewcmd', caption, lang) { |line, idx| code_line('cmd', line, idx, nil, caption, lang) }
       end
     end
 
@@ -412,7 +424,7 @@ module ReVIEW
       if title == 'title' && caption.blank? && @book.config.check_version('2', exception: false)
         print '\vspace{-1.5em}'
       end
-      body = lines.inject('') { |i, j| i + detab(unescape(j)) + "\n" }
+      body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       args = make_code_block_args(title, caption, lang, first_line_num: first_line_num)
       puts %Q(\\begin{#{command}}[#{args}])
       print body
@@ -447,7 +459,7 @@ module ReVIEW
       if highlight_listings?
         common_code_block_lst(nil, lines, 'reviewsourcelst', 'title', caption, lang)
       else
-        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, _idx| detab(line) + "\n" }
+        common_code_block(nil, lines, 'reviewsource', caption, lang) { |line, idx| code_line('source', line, idx, nil, caption, lang) }
       end
     end
 
@@ -592,26 +604,30 @@ module ReVIEW
     alias_method :numberlessimage, :indepimage
 
     def table(lines, id = nil, caption = nil)
-      rows = []
-      sepidx = nil
-      lines.each_with_index do |line, idx|
-        if /\A[\=\{\-\}]{12}/ =~ line
-          # just ignore
-          # error "too many table separator" if sepidx
-          sepidx ||= idx
-          next
+      if caption.present?
+        if @book.config.check_version('2', exception: false)
+          puts "\\begin{table}[h]%%#{id}"
+        else
+          puts "\\begin{table}%%#{id}"
         end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
       end
-      rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
 
+      sepidx, rows = parse_table_rows(lines)
       begin
         table_header(id, caption) if caption.present?
       rescue KeyError
         error "no such table: #{id}"
       end
       table_begin(rows.first.size)
+      table_rows(sepidx, rows)
+      table_end
+      if caption.present?
+        puts '\end{table}'
+      end
+      blank
+    end
+
+    def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
           cno = -1
@@ -638,31 +654,18 @@ module ReVIEW
              end)
         end
       end
-      table_end
     end
 
     def table_header(id, caption)
       if id.nil?
         if caption.present?
-          @table_caption = true
           @doc_status[:caption] = true
-          if @book.config.check_version('2', exception: false)
-            puts "\\begin{table}[h]%%#{id}"
-          else
-            puts "\\begin{table}%%#{id}"
-          end
           puts macro('reviewtablecaption*', compile_inline(caption))
           @doc_status[:caption] = nil
         end
       else
         if caption.present?
-          @table_caption = true
           @doc_status[:caption] = true
-          if @book.config.check_version('2', exception: false)
-            puts "\\begin{table}[h]%%#{id}"
-          else
-            puts "\\begin{table}%%#{id}"
-          end
           puts macro('reviewtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -765,12 +768,9 @@ module ReVIEW
 
     def table_end
       puts macro('end', 'reviewtable')
-      puts '\end{table}' if @table_caption
-      @table_caption = nil
       @tsize = nil
       @latex_tsize = nil
       @cellwidth = nil
-      blank
     end
 
     def emtable(lines, caption = nil)
@@ -786,9 +786,8 @@ module ReVIEW
 
       begin
         if caption.present?
-          @table_caption = true
-          @doc_status[:caption] = true
           puts "\\begin{table}[h]%%#{id}"
+          @doc_status[:caption] = true
           puts macro('reviewimgtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -798,8 +797,9 @@ module ReVIEW
       end
       imgtable_image(id, caption, metric)
 
-      puts '\end{table}' if @table_caption
-      @table_caption = nil
+      if caption.present?
+        puts '\end{table}'
+      end
       blank
     end
 
@@ -849,7 +849,7 @@ module ReVIEW
 
       puts macro('begin', 'equation*')
       lines.each do |line|
-        puts unescape(line)
+        puts line
       end
       puts macro('end', 'equation*')
 
@@ -993,6 +993,9 @@ module ReVIEW
 
     def footnote(id, content)
       if @book.config['footnotetext'] || @foottext[id]
+        if @doc_status[:column]
+          warn "//footnote[#{id}] is in the column block. It is recommended to move out of the column block."
+        end
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       end
     end

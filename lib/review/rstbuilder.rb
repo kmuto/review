@@ -103,13 +103,13 @@ module ReVIEW
           blank
         end
         puts '=' * caption.size * 2
-      when 2 then
+      when 2
         p = '='
-      when 3 then
+      when 3
         p = '-'
-      when 4 then
+      when 4
         p = '`'
-      when 5 then
+      when 5
         p = '~'
       end
 

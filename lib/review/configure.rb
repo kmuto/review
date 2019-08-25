@@ -15,10 +15,10 @@ module ReVIEW
     def self.values
       conf = Configure[
         # These parameters can be overridden by YAML file.
-        'bookname' => 'example', # it defines epub file name also
+        'bookname' => 'book', # it defines epub file name also
         'booktitle' => 'Re:VIEW Sample Book',
         'title' => nil,
-        'aut' => nil, # author
+        'aut' => ['anonymous'], # author
         'prt' => nil, # printer(publisher)
         'asn' => nil, # associated name
         'ant' => nil, # bibliographic antecedent
@@ -32,7 +32,7 @@ module ReVIEW
         'rights' => nil, # Copyright messages
         'description' => nil, # Description
         'urnid' => "urn:uid:#{SecureRandom.uuid}", # Identifier
-        'stylesheet' => 'stylesheet.css', # stylesheet file
+        'stylesheet' => [], # stylesheet file
         'coverfile' => nil, # content file of body of cover page
         'mytoc' => nil, # whether make own table of contents or not
         'params' => '', # specify review2html parameters
@@ -76,8 +76,9 @@ module ReVIEW
         'image_scale2width' => true,
         'footnotetext' => nil,
         'texcommand' => 'uplatex',
-        'texoptions' => '-interaction=nonstopmode -file-line-error',
+        'texoptions' => '-interaction=nonstopmode -file-line-error -halt-on-error',
         '_texdocumentclass' => ['review-jsbook', ''],
+        'texstyle' => ['reviewmacro'],
         'dvicommand' => 'dvipdfmx',
         'dvioptions' => '-d 5 -z 9',
         # for PDFMaker

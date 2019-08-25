@@ -27,7 +27,7 @@ module ReVIEW
     TEX_DOCUMENTCLASS_BAD = ['jsbook', nil]
     TEX_DOCUMENTCLASS_OPTS = 'media=print,paper=a5'
     TEX_COMMAND = 'uplatex'
-    TEX_OPTIONS = '-interaction=nonstopmode -file-line-error'
+    TEX_OPTIONS = '-interaction=nonstopmode -file-line-error -halt-on-error'
     DVI_COMMAND = 'dvipdfmx'
     DVI_OPTIONS = '-d 5 -z 9'
 

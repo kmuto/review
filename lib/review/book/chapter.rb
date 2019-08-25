@@ -18,6 +18,21 @@ module ReVIEW
 
       attr_reader :number, :book
 
+      def self.mkchap(book, name, number = nil)
+        name += book.ext if File.extname(name).empty?
+        path = File.join(book.contentdir, name)
+        raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
+        Chapter.new(book, number, name, path)
+      end
+
+      def self.mkchap_ifexist(book, name, number = nil)
+        name += book.ext if File.extname(name).empty?
+        path = File.join(book.contentdir, name)
+        if File.file?(path)
+          Chapter.new(book, number, name, path)
+        end
+      end
+
       def initialize(book, number, name, path, io = nil)
         @book = book
         @number = number
@@ -125,7 +140,7 @@ module ReVIEW
       private
 
       def on_file?(contents)
-        contents.lines.map(&:strip).include?("#{id}#{@book.ext}")
+        contents.map(&:strip).include?("#{id}#{@book.ext}")
       end
 
       # backward compatibility
