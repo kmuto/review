@@ -42,11 +42,11 @@ module ReVIEW
         @items = items
         @index = {}
         @logger = ReVIEW.logger
-        items.each do |i|
-          if @index[i.id]
-            @logger.warn "warning: duplicate ID: #{i.id} (#{i})"
+        items.each do |item|
+          if @index[item.id]
+            @logger.warn "warning: duplicate ID: #{item.id} (#{item})"
           end
-          @index[i.id] = i
+          @index[item.id] = item
         end
         @image_finder = nil
       end
@@ -60,9 +60,9 @@ module ReVIEW
           raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
         end
 
-        @items.each do |i|
-          if i.id.split('|').include?(id)
-            return i
+        @items.each do |item|
+          if item.id.split('|').include?(id)
+            return item
           end
         end
         raise KeyError, "not found key '#{id}' for #{self.class}"
@@ -175,8 +175,8 @@ module ReVIEW
 
       def initialize(items, chapid, basedir, types, builder)
         super(items)
-        items.each do |i|
-          i.index = self
+        items.each do |item|
+          item.index = self
         end
         @chapid = chapid
         @basedir = basedir
@@ -194,8 +194,8 @@ module ReVIEW
       def initialize(items, chapid, basedir, types, builder)
         @items = items
         @index = {}
-        items.each { |i| @index[i.id] = i }
-        items.each { |i| i.index = self }
+        items.each { |item| @index[item.id] = item }
+        items.each { |item| item.index = self }
         @chapid = chapid
         @basedir = basedir
         @types = types
@@ -326,11 +326,11 @@ module ReVIEW
         @chap = chap
         @index = {}
         @logger = ReVIEW.logger
-        items.each do |i|
-          if @index[i.id]
-            @logger.warn "warning: duplicate ID: #{i.id}"
+        items.each do |item|
+          if @index[item.id]
+            @logger.warn "warning: duplicate ID: #{item.id}"
           end
-          @index[i.id] = i
+          @index[item.id] = item
         end
       end
 
