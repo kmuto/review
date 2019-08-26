@@ -1,0 +1,6 @@
+# call me by 'REVIEW_TEMPLATE=review-jlreq REVIEW_CONFIG_FILE=config-jlreq.yml rake pdf'
+inherit: ["config.yml"]
+pdfmaker:
+  texdocumentclass: ["review-jlreq", "media=print,paper=a5"]
+  # texdocumentclass: ["review-jlreq", "media=ebook,paper=a5"]
+  # texdocumentclass: ["review-jlreq", "media=print,paper=a5,tombopaper=a4,bleed_margin=3mm,cover=true,Q=14,startpage=3,serial_pagination=true,hiddenfolio=nikko-pc"]
