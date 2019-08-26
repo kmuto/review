@@ -682,7 +682,7 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
-      unless @chapter.image(id).bound?
+      unless @chapter.image_bound?(id)
         warn "image not bound: #{id}"
         image_dummy(id, caption, lines)
         return

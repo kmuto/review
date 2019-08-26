@@ -189,7 +189,7 @@ BBB
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('test', 1)
+      Book::Index::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n\tbuz\n//}\n")
     expected = <<-EOS
