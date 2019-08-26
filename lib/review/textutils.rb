@@ -8,8 +8,6 @@
 #
 require 'nkf'
 require 'digest'
-require 'rubygems'
-require 'unicode/eaw'
 
 module ReVIEW
   module TextUtils
@@ -85,6 +83,9 @@ module ReVIEW
     end
 
     def join_lines_to_paragraph(lines)
+      unless @book.config['join_lines_by_lang']
+        return lines.join
+      end
       lazy = true
       lang = 'ja'
       0.upto(lines.size - 2) do |n|

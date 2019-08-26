@@ -257,6 +257,10 @@ module ReVIEW
 
     def ul_item(lines)
       str = join_lines_to_paragraph(lines)
+      unless @book.config['join_lines_by_lang']
+        str = lines.map(&:chomp).join("\n")
+      end
+
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -276,6 +280,10 @@ module ReVIEW
 
     def ol_item(lines, _num)
       str = join_lines_to_paragraph(lines)
+      unless @book.config['join_lines_by_lang']
+        str = lines.map(&:chomp).join("\n")
+      end
+
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -297,7 +305,11 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts join_lines_to_paragraph(lines)
+      if @book.config['join_lines_by_lang']
+        puts join_lines_to_paragraph(lines)
+      else
+        puts lines.map(&:chomp).join("\n")
+      end
     end
 
     def dl_end
@@ -307,7 +319,11 @@ module ReVIEW
 
     def paragraph(lines)
       blank
-      puts join_lines_to_paragraph(lines)
+      if @book.config['join_lines_by_lang']
+        puts join_lines_to_paragraph(lines)
+      else
+        lines.each { |line| puts line }
+      end
       blank
     end
 
@@ -1216,7 +1232,12 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(_id, _caption, lines)
-      print split_paragraph(lines).join("\n\n")
+      if @book.config['join_lines_by_lang']
+        print split_paragraph(lines).join("\n\n")
+      else
+        print split_paragraph(lines).map(&:chomp).join("\n")
+      end
+
       puts ''
     end
 

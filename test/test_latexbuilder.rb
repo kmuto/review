@@ -312,6 +312,18 @@ EOS
 
 \\begin{description}
 \\item[foo] \\mbox{} \\\\
+foo.
+bar.
+\\end{description}
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    expected = <<-EOS
+
+\\begin{description}
+\\item[foo] \\mbox{} \\\\
 foo. bar.
 \\end{description}
 EOS
@@ -319,6 +331,18 @@ EOS
   end
 
   def test_dlist_with_bracket
+    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    expected = <<-EOS
+
+\\begin{description}
+\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\
+foo.
+bar.
+\\end{description}
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
     actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
     expected = <<-EOS
 
@@ -702,6 +726,18 @@ EOS
     expected = <<-EOS
 
 \\begin{quote}
+foobar
+
+buz
+\\end{quote}
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{quote}
 foo bar
 
 buz
@@ -727,6 +763,18 @@ EOS
     expected = <<-EOS
 
 \\begin{flushright}
+foobar
+
+buz
+\\end{flushright}
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{flushright}
 foo bar
 
 buz
@@ -736,6 +784,18 @@ EOS
   end
 
   def test_centering
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{center}
+foobar
+
+buz
+\\end{center}
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
     actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
 
@@ -759,6 +819,18 @@ EOS
   end
 
   def test_noindent
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    expected = <<-EOS
+\\noindent
+foo
+bar
+
+foo2
+bar2
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     expected = <<-EOS
 \\noindent
@@ -1140,6 +1212,17 @@ EOS
 [1] sample bib \\reviewbold{bold}
 \\label{bib:samplebib}
 
+ab
+
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    expected = <<-EOS
+[1] sample bib \\reviewbold{bold}
+\\label{bib:samplebib}
+
 a b
 
 EOS
@@ -1275,6 +1358,19 @@ EOS
     expected = <<-EOS
 
 \\begin{itemize}
+\\item AAA
+{-}AA
+\\item BBB
+{-}BB
+\\end{itemize}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    expected = <<-EOS
+
+\\begin{itemize}
 \\item AAA {-}AA
 \\item BBB {-}BB
 \\end{itemize}
@@ -1290,6 +1386,20 @@ EOS
   * BBB@<br>{}1@<br>{}
     -BB
 EOS
+    expected = <<-EOS
+
+\\begin{itemize}
+\\item AAA\\\\
+{-}AA
+\\item BBB\\\\
+1\\\\
+{-}BB
+\\end{itemize}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
     expected = <<-EOS
 
 \\begin{itemize}

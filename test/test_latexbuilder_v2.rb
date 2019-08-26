@@ -281,7 +281,8 @@ EOS
 
 \\begin{description}
 \\item[foo] \\mbox{} \\\\
-foo. bar.
+foo.
+bar.
 \\end{description}
 EOS
     assert_equal expected, actual
@@ -293,7 +294,8 @@ EOS
 
 \\begin{description}
 \\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\
-foo. bar.
+foo.
+bar.
 \\end{description}
 EOS
     assert_equal expected, actual
@@ -645,7 +647,7 @@ EOS
     expected = <<-EOS
 
 \\begin{quote}
-foo bar
+foobar
 
 buz
 \\end{quote}
@@ -671,7 +673,7 @@ EOS
     expected = <<-EOS
 
 \\begin{flushright}
-foo bar
+foobar
 
 buz
 \\end{flushright}
@@ -684,7 +686,7 @@ EOS
     expected = <<-EOS
 
 \\begin{center}
-foo bar
+foobar
 
 buz
 \\end{center}
@@ -706,9 +708,11 @@ EOS
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     expected = <<-EOS
 \\noindent
-foo bar
+foo
+bar
 
-foo2 bar2
+foo2
+bar2
 EOS
     assert_equal expected, actual
   end
@@ -1041,7 +1045,7 @@ EOS
 [1] sample bib \\textbf{bold}
 \\label{bib:samplebib}
 
-a b
+ab
 
 EOS
     assert_equal expected, actual
@@ -1182,8 +1186,10 @@ EOS
     expected = <<-EOS
 
 \\begin{itemize}
-\\item AAA {-}AA
-\\item BBB {-}BB
+\\item AAA
+{-}AA
+\\item BBB
+{-}BB
 \\end{itemize}
 EOS
     actual = compile_block(src)

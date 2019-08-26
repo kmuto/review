@@ -176,15 +176,34 @@ EOS
 
   def test_paragraph
     actual = compile_block("foo\nbar\n")
+    assert_equal %Q(foobar\n), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("foo\nbar\n")
     assert_equal %Q(foo bar\n), actual
   end
 
   def test_tabbed_paragraph
     actual = compile_block("\tfoo\nbar\n")
+    assert_equal %Q(\tfoobar\n), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("\tfoo\nbar\n")
     assert_equal %Q(\tfoo bar\n), actual
   end
 
   def test_flushright
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+◆→開始:右寄せ←◆
+foobar
+buz
+◆→終了:右寄せ←◆
+
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
 ◆→開始:右寄せ←◆
@@ -202,6 +221,15 @@ EOS
   end
 
   def test_noindent
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    expected = <<-EOS
+◆→DTP連絡:次の1行インデントなし←◆
+foobar
+foo2bar2
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     expected = <<-EOS
 ◆→DTP連絡:次の1行インデントなし←◆

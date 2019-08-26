@@ -65,6 +65,7 @@ module ReVIEW
         'words_file' => nil,
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
         'externallink' => true,
+        'join_lines_by_lang' => nil, # experimental. default should be nil
         # for IDGXML
         'tableopt' => nil,
         'listinfo' => nil,
