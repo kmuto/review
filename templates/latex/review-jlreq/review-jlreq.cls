@@ -66,7 +66,9 @@ cls]
   %% set hiddenfolio preset
   \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
   %% redefine to output \@makehiddenfolio for every page
+  %% TODO: would better to use \jlreqtrimmarkssetup
   \@bannertoken{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
+  \def\jlreq@trimmarks@banner@even@yoko@top@left{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
   \AddEverypageHook{\maketombowbox}%
 \fi}
 
