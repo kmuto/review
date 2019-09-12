@@ -244,8 +244,10 @@ module ReVIEW
           compile_ulist(f)
         when /\A\s+\d+\./
           compile_olist(f)
-        when /\A\s*:\s/
+        when /\A\s+:\s/
           compile_dlist(f)
+        when /\A\s*:\s/
+          warn "Definition list starts with ` : `."
         when %r{\A//\}}
           f.gets
           error 'block end seen but not opened'
