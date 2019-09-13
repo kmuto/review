@@ -276,7 +276,7 @@ EOS
   end
 
   def test_dlist
-    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
     expected = <<-EOS
 
 \\begin{description}
@@ -289,7 +289,7 @@ EOS
   end
 
   def test_dlist_with_bracket
-    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
     expected = <<-EOS
 
 \\begin{description}
