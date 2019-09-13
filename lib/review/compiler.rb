@@ -247,7 +247,7 @@ module ReVIEW
         when /\A\s+:\s/
           compile_dlist(f)
         when /\A\s*:\s/
-          warn 'Definition list starting with `:` would be obsoleted. It should start with ` : `.'
+          warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
         when %r{\A//\}}
           f.gets
