@@ -132,23 +132,23 @@
 \newenvironment{reviewlistblock}{\needspace{2\Cvs}}{}
 
 \newenvironment{reviewemlist}{%
-  \medskip\small\begin{shaded}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \medskip\small\begin{shaded}\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
   \end{alltt}\end{shaded}}
 
 \newenvironment{reviewlist}{%
-  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \begin{shaded}\small\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
   \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
 
 \newenvironment{reviewsource}{%
-  \begin{shaded}\small\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \begin{shaded}\small\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
   \end{alltt}\end{shaded}\par\vspace*{0.5zw}}
 
 \newenvironment{reviewcmd}{%
-  \color{white}\medskip\small\begin{shadedb}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \color{white}\medskip\small\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\begin{shadedb}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
   \end{alltt}\end{shadedb}}
 
 \newenvironment{reviewbox}{%
-  \medskip\small\begin{framed}\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
+  \medskip\small\begin{framed}\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\setlength{\baselineskip}{1.3zw}\begin{alltt}}{%
   \end{alltt}\end{framed}}
 
 \newenvironment{reviewtable}[1]{%

@@ -27,19 +27,19 @@
 
 % コードリスト装飾のデフォルト
 \newenvironment{reviewemlist}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!10,colframe=black!10,boxrule=0mm,arc=0mm]\begin{alltt}}%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!10,colframe=black!10,boxrule=0mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\begin{alltt}}%
  {\end{alltt}\end{tcolorbox}}
 
 \newenvironment{reviewlist}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\begin{alltt}}%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\begin{alltt}}%
  {\end{alltt}\end{tcolorbox}}
 
 \newenvironment{reviewsource}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\begin{alltt}}%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\begin{alltt}}%
  {\end{alltt}\end{tcolorbox}}
 
 \newenvironment{reviewcmd}{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!99,coltext=white,colframe=black!99,boxrule=0mm,arc=0mm]\begin{alltt}}%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!99,coltext=white,colframe=black!99,boxrule=0mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\xkanjiskip=\reviewlistxkanjiskip\fi\begin{alltt}}%
  {\end{alltt}\end{tcolorbox}}
 
 % 図
