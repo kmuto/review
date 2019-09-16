@@ -18,12 +18,12 @@ module ReVIEW
       new.execute(*args)
     end
 
-    TEX_DOCUMENTCLASS_OPTS = {
-      'review-jsbook' => 'media=print,paper=a5',
-      'review-jlreq' => 'media=print,paper=a5'
-    }
-
     def initialize
+      @tex_documentclass_opts = {
+        'review-jsbook' => 'media=print,paper=a5',
+        'review-jlreq' => 'media=print,paper=a5'
+      }
+
       @template = 'review-jsbook'
       @logger = ReVIEW.logger
       @review_dir = File.dirname(File.expand_path('..', __dir__))
@@ -31,6 +31,16 @@ module ReVIEW
 
     def execute(*args)
       initdir = parse_options(args)
+
+      if @webui
+        start_webui
+        unless @web_result
+          @logger.error 'Aborted.'
+          exit 1
+        end
+        @template = @web_result[0]
+        @tex_documentclass_opts[@template] = @web_result[1]
+      end
 
       generate_dir(initdir) do |dir|
         generate_catalog_file(dir)
@@ -49,6 +59,9 @@ module ReVIEW
     end
 
     def parse_options(args)
+      @port = 18000
+      @bind = '127.0.0.1'
+
       opts = OptionParser.new
       opts.version = ReVIEW::VERSION
       opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [option] dirname"
@@ -73,6 +86,15 @@ module ReVIEW
       end
       opts.on('-p', '--package archivefile', 'extract from local or network archive.') do |archive|
         @archive = archive
+      end
+      opts.on('-w', '--wizard', 'launch Web based layout configuration.') do
+        @webui = true
+      end
+      opts.on('', '--port port', 'port to use for Web based layout configuration. (default: 18000)') do |port|
+        @port = port
+      end
+      opts.on('', '--bind bindaddress', 'address to use for Web based layout configuration. (default: 127.0.0.1)') do |bind|
+        @bind = bind
       end
 
       begin
@@ -149,11 +171,22 @@ EOS
         content.gsub!(/^#.*htmlversion:.*$/, 'htmlversion: 4')
       end
 
-      if TEX_DOCUMENTCLASS_OPTS[@template]
-        content.gsub!(/^#\s*texdocumentclass:.*$/, %Q(texdocumentclass: ["#{@template}", "#{TEX_DOCUMENTCLASS_OPTS[@template]}"]))
+      if @tex_documentclass_opts[@template]
+        content.gsub!(/^#\s*texdocumentclass:.*$/, %Q(texdocumentclass: ["#{@template}", "#{@tex_documentclass_opts[@template]}"]))
       end
 
       File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write content }
+      if @webui && !@web_result[2].empty?
+        File.open(File.join(dir, 'config-ebook.yml'), 'w') do |f|
+          f.puts <<EOT
+# for ebook PDF
+# REVIEW_CONFIG_FILE=config.yml rake pdf
+inherit: ["config.yml"]
+# bookname: book-ebook
+texdocumentclass: ["#{@web_result[0]}", "#{@web_result[2]}"]
+EOT
+        end
+      end
     end
 
     def generate_style(dir)
@@ -267,6 +300,47 @@ EOS
         raise Zip::Error unless made
       rescue Zip::Error => e
         @logger.error "#{originalfilename} seems invalid or broken zip file: #{e.message}"
+      end
+    end
+
+    def start_webui
+      require 'webrick'
+      web_config = {
+        BindAddress: @bind,
+        Port: @port,
+        HTTPVersion: WEBrick::HTTPVersion.new('1.1'),
+        AccessLog: [[File.open(IO::NULL, 'w'), '']]
+      }
+
+      puts "Please access http://#{web_config[:BindAddress]}:#{web_config[:Port]} from Web browser."
+      begin
+        @web_server = WEBrick::HTTPServer.new(web_config)
+      rescue StandardError => e
+        @logger.error "Error: #{e}"
+        exit 1
+      end
+
+      @web_result = nil
+      web_mounts
+
+      trap(:INT) { @web_server.shutdown }
+      @web_server.start
+    end
+
+    def web_mounts
+      htmldir = File.join(@review_dir, 'lib', 'review', 'init-web')
+      @web_server.mount_proc('/') do |_req, res|
+        res.body = File.read(File.join(htmldir, 'index.html'))
+      end
+
+      @web_server.mount_proc('/review-layout-design.js') do |_req, res|
+        res.body = File.read(File.join(htmldir, 'review-layout-design.js'))
+      end
+
+      @web_server.mount_proc('/finish') do |req, res|
+        @web_result = [req.query['cls'], req.query['result_print'], req.query['result_ebook']]
+        res.body = File.read(File.join(htmldir, 'finish.html'))
+        @web_server.shutdown
       end
     end
   end

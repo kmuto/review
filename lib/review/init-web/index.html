@@ -1,0 +1,90 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Re:VIEWレイアウトデザイナ</title>
+<script src="https://code.createjs.com/1.0.0/easeljs.min.js" charset="UTF-8"></script>
+<script src="review-layout-design.js" charset="UTF-8"></script>
+</head>
+<body onload="init();">
+<form method="post" name="reviewform" action="/finish">
+クラス
+<select id="cls" name="cls" onchange="change_cls();">
+<option value="review-jsbook" selected>review-jsbook (jsbook派生)</option>
+<option value="review-jlreq">review-jlreq (jlreq派生)</option>
+</select>
+
+<br />
+
+紙のサイズ
+<select id="papersize" name="papersize" onchange="change_paper();">
+<option value="a5" selected>A5 (148mm×210mm)</option>
+<option value="b5">B5 (182mm×257mm)</option>
+<option value="a4">A4 (210mm×297mm)</option>
+</select>
+
+<input type="button" id="reset" name="reset" value="初期値に戻す" onclick="reset_all();">
+&nbsp;
+
+<hr/>
+
+基本文字サイズ <input type="number" id="fontsize" name="fontsize" style="width: 5em;" min="0" max="100" step="any" onchange="change_fontsize();"> pt &nbsp;
+行送り <input type="number" id="baselineskip" name="baselineskip" style="width: 5em;" min="0" max="100" step="any" onchange="change_baselineskip();"> pt
+&nbsp;
+(<span id="fontsize_q"></span>)
+<hr/>
+
+<input type="number" id="line_length" name="line_length" min="1" max="400" step="1" style="width: 3em;" onchange="change_line_length();"> 文字 ×
+<input type="number" id="number_of_lines" name="number_of_lines" min="1" max="400" step="1" style="width: 3em;" onchange="change_number_of_lines();"> 行
+
+<hr/>
+
+ノド <input type="number" id="gutter" name="gutter" style="width: 4em;" min="0" max="1000" step="any" onchange="change_gutter();"> mm &nbsp;
+小口 <input type="number" id="edge" name="edge" style="width: 4em;" min="0" max="1000" step="any" disabled> mm
+<br/>
+
+天 <input type="number" id="head_space" name="head_space" style="width: 5em;" min="0" max="1000" step="any" onchange="change_head_space();"> mm
+&nbsp;
+地 <input type="number" id="bottom_space" name="bottom_space" style="width: 5em;" min="0" max="1000" step="any" disabled> mm
+&nbsp;
+(版面 <span id="hanmen"></span>)
+<hr />
+
+ヘッダ下/本文上間隔 <input type="number" id="headsep" name="headsep" style="width: 4em;" min="-1000" max="1000" step="any" onchange="change_headsep();"> mm &nbsp;
+/本文下/フッタ下間隔 <input type="number" id="footskip" name="footskip" style="width: 4em;" min="-1000" max="1000" step="any" onchange="change_footskip();"> mm &nbsp;
+<hr />
+
+<input type="button" id="showdetails" name="showdatails" value="詳細設定を表示" onclick="show_details();">
+<input type="button" id="fordoujin" name="fordoujin" value="技術同人誌印刷の準標準設定" onclick="set_doujin();"><br />
+<div id="details">
+<input type="checkbox" id="ebook" name="ebook" checked="true"> 電子版の設定ファイル (config-ebook.yml) も作成<br />
+<input type="checkbox" id="openany" name="openany">章や目次が左右どちらのページからも始まることを許可する<br/>
+<input type="checkbox" id="fleqno" name="fleqno">数式を左寄せにする<br/>
+最初のページのページ番号 <input type="number" id="startpage" name="startpage" style="width: 3em;" value="1" min="1" max="999"><br/>
+<input type="checkbox" id="serial_pagination" name="serial_pagination">最初からページ番号にアラビア数字を使う<br/>
+<input type="checkbox" id="hiddenfolio" name="hiddenfolio">ノドへの隠しノンブルの設置 (日光企画等)<br/>
+トンボ付きの紙サイズ
+<select id="tombopaper" name="tombopaper" onchange="change_tombopaper();">
+<option value="auto">自動</option>
+<option value="b5">B5</option>
+<option value="a4">A4</option>
+<option value="b4">B4</option>
+<option value="a3">A3</option>
+</select>
+<br />
+塗り足し幅 <input type="number" id="bleed_margin" name="bleed_margin" style="width: 3em;" value="3" min="1" max="8"> mm<br/>
+</div>
+
+<div id="result" style="display: none;">
+print: <input type="text" id="result_print" name="result_print" value="" size="128"><br/>
+ebook: <input type="text" id="result_ebook" name="result_ebook" value="" size="128">
+</div>
+
+<hr />
+<input type="button" value="作成" onclick="update_result();">
+</form>
+<hr/>
+
+<canvas id="mainCanvas"></canvas>
+<br />
+</body>
+</html>
