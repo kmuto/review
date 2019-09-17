@@ -60,7 +60,7 @@ module ReVIEW
 
     def parse_options(args)
       @port = 18000
-      @bind = '127.0.0.1'
+      @bind = '0'
 
       opts = OptionParser.new
       opts.version = ReVIEW::VERSION
@@ -93,7 +93,7 @@ module ReVIEW
       opts.on('', '--port port', 'port to use for Web based layout configuration. (default: 18000)') do |port|
         @port = port
       end
-      opts.on('', '--bind bindaddress', 'address to use for Web based layout configuration. (default: 127.0.0.1)') do |bind|
+      opts.on('', '--bind bindaddress', 'address to use for Web based layout configuration. (default: 0 (any))') do |bind|
         @bind = bind
       end
 
@@ -312,7 +312,8 @@ EOS
         AccessLog: [[File.open(IO::NULL, 'w'), '']]
       }
 
-      puts "Please access http://#{web_config[:BindAddress]}:#{web_config[:Port]} from Web browser."
+      bind_address = (@bind == '0') ? '<thishost>' : @bind
+      puts "Please access http://#{bind_address}:#{web_config[:Port]} from Web browser."
       begin
         @web_server = WEBrick::HTTPServer.new(web_config)
       rescue StandardError => e
@@ -325,20 +326,26 @@ EOS
 
       trap(:INT) { @web_server.shutdown }
       @web_server.start
+
+      # validation
+      if @web_result
+        @web_result.each do |s|
+          if s !~ /\A[a-z0-9=_,\.-]*\Z/i
+            @web_result = nil
+            return
+          end
+        end
+      end
     end
 
     def web_mounts
       htmldir = File.join(@review_dir, 'lib', 'review', 'init-web')
-      @web_server.mount_proc('/') do |_req, res|
-        res.body = File.read(File.join(htmldir, 'index.html'))
-      end
-
-      @web_server.mount_proc('/review-layout-design.js') do |_req, res|
-        res.body = File.read(File.join(htmldir, 'review-layout-design.js'))
-      end
+      @web_server.mount('/', WEBrick::HTTPServlet::FileHandler, File.join(htmldir, 'index.html'))
+      @web_server.mount('/review-layout-design.js', WEBrick::HTTPServlet::FileHandler, File.join(htmldir, 'review-layout-design.js'))
 
       @web_server.mount_proc('/finish') do |req, res|
         @web_result = [req.query['cls'], req.query['result_print'], req.query['result_ebook']]
+        res.content_type = 'text/html'
         res.body = File.read(File.join(htmldir, 'finish.html'))
         @web_server.shutdown
       end
