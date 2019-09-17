@@ -332,7 +332,7 @@ EOS
         @web_result.each do |s|
           if s !~ /\A[a-z0-9=_,\.-]*\Z/i
             @web_result = nil
-            return
+            break
           end
         end
       end
