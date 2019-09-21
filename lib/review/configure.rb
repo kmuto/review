@@ -89,7 +89,8 @@ module ReVIEW
           'makeindex_sty' => nil,
           'makeindex_dic' => nil,
           'makeindex_mecab' => true,
-          'makeindex_mecab_opts' => '-Oyomi'
+          'makeindex_mecab_opts' => '-Oyomi',
+          'use_cover_nmbl' => true
         },
         'imgmath_options' => {
           'format' => 'png',

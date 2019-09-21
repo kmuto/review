@@ -59,6 +59,9 @@
 \def\review@coverimage{./<%= @config['imagedir'] %>/<%= @config['coverimage'] %>}
 \def\review@coverimageoption{<%= @coverimageoption%>}
 <%- end -%>
+<%- if @config['pdfmaker']['use_cover_nmbl'] -%>
+\def\review@usecovernmbl{true}
+<%- end -%>
 <%- if @config['titlepage'] -%>
 \def\review@titlepage{true}
 <%-   if @config['titlefile'] -%>

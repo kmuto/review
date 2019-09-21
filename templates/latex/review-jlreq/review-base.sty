@@ -309,8 +309,10 @@
 \if@reclscover
   \ifdefined\review@coverimage
     \def\reviewcoverpagecont{%
-      \renewcommand{\thepage}{cover}% set page name to 'cover'
-      \setcounter{page}{2}% force to even page, to avoid empty page
+      \ifdefined\review@usecovernmbl%
+        \renewcommand{\thepage}{cover}% set page name to 'cover'
+        \setcounter{page}{2}% force to even page, to avoid empty page
+      \fi
       \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
       \cleardoublepage
     }
