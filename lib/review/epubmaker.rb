@@ -500,6 +500,9 @@ module ReVIEW
     def copy_stylesheet(basetmpdir)
       return if @config['stylesheet'].empty?
       @config['stylesheet'].each do |sfile|
+        unless File.exist?(sfile)
+          error "#{sfile} is not found."
+        end
         FileUtils.cp(sfile, basetmpdir)
         @producer.contents.push(Content.new('file' => sfile))
       end

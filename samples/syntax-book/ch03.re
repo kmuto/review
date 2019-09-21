@@ -18,16 +18,13 @@
 puts "Re:VIEW is #{impression}."
 //}
 
-@<raw>{/}/image[img3-1][適当に作ったコラム内画像]{
-はTeXでは現状、エラーになります。
+//image[img3-1][適当に作ったコラム内画像]{
+//}
 
 //indepimage[img3-1][適当に作ったコラム内画像]{
 //}
 
-@<raw>{/}/table[tab3-1][コラム表]{
-もだめですね。
-
-//table{
+//table[tab3-1][コラム表]{
 A	B
 ---------------------
 C	D

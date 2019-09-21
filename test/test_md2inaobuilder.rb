@@ -40,7 +40,7 @@ EOS
   end
 
   def test_dlist
-    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
@@ -59,9 +59,9 @@ BBB
     EOS
 
     assert_equal <<-EOS, actual
-```
 ●リスト1::caption
 
+```
 AAA
 BBB
 ```

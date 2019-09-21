@@ -32,7 +32,6 @@ module ReVIEW
       @blank_needed = false
       @latex_tsize = nil
       @tsize = nil
-      @table_caption = nil
       @cellwidth = nil
       @ol_num = nil
       @first_line_num = nil
@@ -527,7 +526,7 @@ module ReVIEW
     end
 
     def existence(id)
-      @chapter.image(id).bound? ? 'exist' : 'not exist'
+      @chapter.image_bound?(id) ? 'exist' : 'not exist'
     end
     private :existence
 
@@ -606,6 +605,30 @@ module ReVIEW
 
     alias_method :numberlessimage, :indepimage
 
+    def table(lines, id = nil, caption = nil)
+      if caption.present?
+        if @book.config.check_version('2', exception: false)
+          puts "\\begin{table}[h]%%#{id}"
+        else
+          puts "\\begin{table}%%#{id}"
+        end
+      end
+
+      sepidx, rows = parse_table_rows(lines)
+      begin
+        table_header(id, caption) if caption.present?
+      rescue KeyError
+        error "no such table: #{id}"
+      end
+      table_begin(rows.first.size)
+      table_rows(sepidx, rows)
+      table_end
+      if caption.present?
+        puts '\end{table}'
+      end
+      blank
+    end
+
     def table_rows(sepidx, rows)
       if sepidx
         sepidx.times do
@@ -638,25 +661,13 @@ module ReVIEW
     def table_header(id, caption)
       if id.nil?
         if caption.present?
-          @table_caption = true
           @doc_status[:caption] = true
-          if @book.config.check_version('2', exception: false)
-            puts "\\begin{table}[h]%%#{id}"
-          else
-            puts "\\begin{table}%%#{id}"
-          end
           puts macro('reviewtablecaption*', compile_inline(caption))
           @doc_status[:caption] = nil
         end
       else
         if caption.present?
-          @table_caption = true
           @doc_status[:caption] = true
-          if @book.config.check_version('2', exception: false)
-            puts "\\begin{table}[h]%%#{id}"
-          else
-            puts "\\begin{table}%%#{id}"
-          end
           puts macro('reviewtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -759,12 +770,9 @@ module ReVIEW
 
     def table_end
       puts macro('end', 'reviewtable')
-      puts '\end{table}' if @table_caption
-      @table_caption = nil
       @tsize = nil
       @latex_tsize = nil
       @cellwidth = nil
-      blank
     end
 
     def emtable(lines, caption = nil)
@@ -772,7 +780,7 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
-      unless @chapter.image(id).bound?
+      unless @chapter.image_bound?(id)
         warn "image not bound: #{id}"
         image_dummy(id, caption, lines)
         return
@@ -780,9 +788,8 @@ module ReVIEW
 
       begin
         if caption.present?
-          @table_caption = true
-          @doc_status[:caption] = true
           puts "\\begin{table}[h]%%#{id}"
+          @doc_status[:caption] = true
           puts macro('reviewimgtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
         end
@@ -792,8 +799,9 @@ module ReVIEW
       end
       imgtable_image(id, caption, metric)
 
-      puts '\end{table}' if @table_caption
-      @table_caption = nil
+      if caption.present?
+        puts '\end{table}'
+      end
       blank
     end
 
@@ -987,6 +995,9 @@ module ReVIEW
 
     def footnote(id, content)
       if @book.config['footnotetext'] || @foottext[id]
+        if @doc_status[:column]
+          warn "//footnote[#{id}] is in the column block. It is recommended to move out of the column block."
+        end
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       end
     end
