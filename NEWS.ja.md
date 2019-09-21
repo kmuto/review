@@ -1,4 +1,4 @@
-# Version 3.3.0
+# Version 4.0.0
 ## 新機能
 * IDGXML ファイルをまとめて生成する、review-idgxmlmaker を導入しました ([#1337])
 * review-textmaker は、imgmath パラメータが有効になっている場合に、数式を画像化するようになりました ([#1338])
@@ -7,17 +7,23 @@
 * 通常の利用では使われることがないので、review-init の実行時に空の layouts フォルダを作成するのをやめました ([#1340])
 * PDFMaker: `@<code>`、`@<tt>`、`@<tti>`、`@<ttb>` で空白文字が消えてしまう問題を修正しました。および利便性のために、文字列が版面からあふれるときに途中で改行するようにもしました ([#1348])
 * `//texequation`、`//embed`、`//graph` はもともとインライン命令を許容しないので、内容のエスケープもしないようにしました。また、末尾に余計な空行が加わるのも防ぐようにしました ([#1371], [#1374])
+* PDFMaker: コラム内での使用を考えて、表の配置のデフォルトを htp (指定位置→ページ上→独立ページの順に試行) から H (絶対に指定位置) にしました (review-style.sty の `\floatplacement{table}` の値) [#1385]
 
 ## バグ修正
 * review-jlreq がタイプミスのために一部の jlreq.cls バージョンで正しく動作しないのを修正しました ([#1350])
 * re ファイルが改行コード CR で記述されたときに不正な結果になるのを修正しました ([#1341])
 * PDFMaker: review-jlreq において `//cmd` のブロックがページをまたいだときに文字色が黒になって見えなくなってしまうのを修正しました ([#1363])
 * PDFMaker: `@<column>` で「コラム」ラベルが重複して出力されるのを修正しました ([#1367])
+* PDFMaker: gentombow.sty と jsbook.cls は review-jsbook の場合のみコピーするようにしました ([#1381])
+* PDFMaker: LuaLaTeX で review-jlreq を使ったときに壊れた PDFDocumentInformation ができる問題を修正しました ([#1392])
+* PDFMaker: review-jlreq で偶数ページに隠しノンブルが入らなかったのを修正しました ([#1395])
 
 ## 機能強化
 * IDGXML ビルダで `@<em>` および `@<strong>` をサポートしました ([#1353])
 * PDFMaker: コードブロックの各行の処理を `code_line`, `code_line_num` のメソッドに切り出しました ([#1368])
 * PDFMaker: デフォルトのコンパイルオプションに `-halt-on-error` を追加しました。TeX のコンパイルエラーが発生したときに即終了することで問題が把握しやすくなります ([#1378])
+* PDFMaker: コラム内に脚注 (`@<fn>`) があるときの挙動がコラムの実装手段によって異なり、番号がずれるなどの問題を起こすことがあるため、脚注の文章 (`//footnote`) はコラムの後に置くことを推奨します。コラム内に脚注文章が存在する場合は警告するようにしました ([#1379])
+* YAML ファイルのエラーチェックを強化しました ([#1386])
 
 ## ドキュメント
 * sample-book の README.md を更新しました ([#1354])
@@ -28,7 +34,13 @@
 * `Catalog#{chaps,parts,predef,postdef,appendix}` は String ではなく Array を返すようにしました ([#1372])
 * YAML ファイルの読み込みに `safe_load` を使うようにしました ([#1375])
 * `table` メソッドをリファクタリングし、ビルダ個々の処理を簡略化しました ([#1356])
+* `XXX_header` と `XXX_body` まわりをリファクタリングしました ([#1359])
 * `Builder#highlight?` メソッドを HTMLBuilder 以外でも利用できるようにしました ([#1373])
+* mkdchap* to mkpart* まわりをリファクタリングしました ([#1383])
+* Travis CI で rubygems を更新しないようにしました ([#1389])
+* Index まわりをリファクタリングしました ([#1390])
+* samples フォルダのサンプルドキュメントに review-jlreq のための設定を追加しました ([#1391])
+* 用語リストは `:` の前にスペースを入れることを強く推奨するようにしました。スペースがない場合、警告されます ([#1398])
 
 ## コントリビューターのみなさん
 * [@m-shibata](https://github.com/m-shibata)
@@ -42,6 +54,7 @@
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
 [#1356]: https://github.com/kmuto/review/pull/1356
+[#1359]: https://github.com/kmuto/review/pull/1359
 [#1360]: https://github.com/kmuto/review/pull/1360
 [#1363]: https://github.com/kmuto/review/issues/1363
 [#1365]: https://github.com/kmuto/review/pull/1365
@@ -53,6 +66,17 @@
 [#1374]: https://github.com/kmuto/review/pull/1374
 [#1375]: https://github.com/kmuto/review/pull/1375
 [#1378]: https://github.com/kmuto/review/pull/1378
+[#1379]: https://github.com/kmuto/review/issues/1379
+[#1381]: https://github.com/kmuto/review/issues/1381
+[#1383]: https://github.com/kmuto/review/issues/1383
+[#1385]: https://github.com/kmuto/review/issues/1385
+[#1386]: https://github.com/kmuto/review/pull/1386
+[#1389]: https://github.com/kmuto/review/pull/1389
+[#1390]: https://github.com/kmuto/review/pull/1390
+[#1391]: https://github.com/kmuto/review/pull/1391
+[#1392]: https://github.com/kmuto/review/issues/1392
+[#1395]: https://github.com/kmuto/review/issues/1395
+[#1398]: https://github.com/kmuto/review/issues/1398
 
 # Version 3.2.0
 

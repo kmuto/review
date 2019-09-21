@@ -1,4 +1,4 @@
-# Version 3.3.0
+# Version 4.0.0
 ## New Features
 * introduce review-idgxmlmaker which generates IDGXML files at once ([#1337])
 * review-textmaker converts the math in the document to image files when `imgmath` parameter has `true` ([#1338])
@@ -7,17 +7,23 @@
 * review-init no longer creates empty `layouts` folder ([#1340])
 * PDFMaker: fix a problem that white space characters disappeared in `@<code>`, `@<tt>`, `@<tti>`, and `@<ttb>`. Also the string is automatically wrapped ([#1348])
 * `//texequation`、`//embed` and `//graph` that don't allow inline op no longer escape inline op in strings. And don't put extra line break ([#1371], [#1374])
+* PDFMaker: change the default table placement from `htp` to `H` for use in columns (`\floatplacement{table}` value in review-style.sty) [#1385]
 
 ## Bug Fixes
 * fix a typo in review-jlreq ([#1350])
 * fix incorrect result when `re` file uses CR for line-feed code ([#1341])
 * PDFMaker: fix foreground color of `//cmd` with review-jlreq after page breaking ([#1363])
 * PDFMaker: fix duplicate 'column' label for `@<column>` ([#1367])
+* PDFMaker: copy gentombow.sty and jsbook.cls only for review-jsbook ([#1381])
+* PDFMaker: fix invalid PDFDocumentInformation on review-jlreq with LuaLaTeX ([#1392])
+* PDFMaker: fix missing hiddenfolio information at even pages on review-jlreq ([#1395])
 
 ## Enhancements
 * support `@<em>` and `@<strong>` in IDGXMLBuilder ([#1353])
 * PDFMaker: extract `code_line` and `code_line_num` from code blocks for ease handling each line ([#1368])
 * PDFMaker: add new compile option `-halt-on-error` to make it easier to find the problem when an error occurs ([#1378])
+* PDFMaker: when there is a footnote text (`//footnote`) in the column block, it may cuse problems such as numbering. So warn it if there is. ([#1379])
+* improve error checking for yaml files ([#1386])
 
 ## Docs
 * update sample-book/README.md ([#1354])
@@ -28,7 +34,13 @@
 * `Catalog#{chaps,parts,predef,postdef,appendix}` should return Array, not String ([#1372])
 * use `safe_load` for loading YAML ([#1375])
 * refactor `table` method to simplify each builder ([#1356])
+* refactor `XXX_header` and `XXX_body` ([#1359])
 * enable `Builder#highlight?` method on each builder ([#1373])
+* refactor mkdchap* and mkpart* ([#1383])
+* don't update rubygems in Travis CI ([#1389])
+* refactor around Index ([#1390])
+* add configration for review-jlreq to sample documents ([#1391])
+* definition list should start with spaces ([#1398])
 
 ## Contributors
 * [@m-shibata](https://github.com/m-shibata)
@@ -42,6 +54,7 @@
 [#1353]: https://github.com/kmuto/review/pull/1353
 [#1354]: https://github.com/kmuto/review/pull/1354
 [#1356]: https://github.com/kmuto/review/pull/1356
+[#1359]: https://github.com/kmuto/review/pull/1359
 [#1360]: https://github.com/kmuto/review/pull/1360
 [#1363]: https://github.com/kmuto/review/issues/1363
 [#1365]: https://github.com/kmuto/review/pull/1365
@@ -53,6 +66,17 @@
 [#1374]: https://github.com/kmuto/review/pull/1374
 [#1375]: https://github.com/kmuto/review/pull/1375
 [#1378]: https://github.com/kmuto/review/pull/1378
+[#1379]: https://github.com/kmuto/review/issues/1379
+[#1381]: https://github.com/kmuto/review/issues/1381
+[#1383]: https://github.com/kmuto/review/issues/1383
+[#1385]: https://github.com/kmuto/review/issues/1385
+[#1386]: https://github.com/kmuto/review/pull/1386
+[#1389]: https://github.com/kmuto/review/pull/1389
+[#1390]: https://github.com/kmuto/review/pull/1390
+[#1391]: https://github.com/kmuto/review/pull/1391
+[#1392]: https://github.com/kmuto/review/issues/1392
+[#1395]: https://github.com/kmuto/review/issues/1395
+[#1398]: https://github.com/kmuto/review/issues/1398
 
 # Version 3.2.0
 
