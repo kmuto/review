@@ -55,6 +55,9 @@
     \DeclareRobustCommand{\reviewincludegraphics}[2][]{%
       \includegraphics[##1]{##2}}
   }
+  \@ifundefined{covermatter}{% for 4.0.0 compatibility
+    \def\covermatter{}
+  }
 }
 
 \makeatother
