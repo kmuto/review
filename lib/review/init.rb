@@ -40,6 +40,7 @@ module ReVIEW
         generate_style(dir)
         generate_texmacro(dir)
         generate_config(dir)
+        generate_gitignore(dir)
         generate_locale(dir) if @locale
         generate_rakefile(dir)
         generate_gemfile(dir)
@@ -154,6 +155,10 @@ EOS
       end
 
       File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write content }
+    end
+
+    def generate_gitignore(dir)
+      FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/.gitignore'), dir)
     end
 
     def generate_style(dir)
