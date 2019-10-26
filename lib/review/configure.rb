@@ -90,7 +90,7 @@ module ReVIEW
           'makeindex_dic' => nil,
           'makeindex_mecab' => true,
           'makeindex_mecab_opts' => '-Oyomi',
-          'use_cover_nmbl' => true
+          'use_cover_nombre' => true
         },
         'imgmath_options' => {
           'format' => 'png',
