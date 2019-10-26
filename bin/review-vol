@@ -72,7 +72,7 @@ def main
   print_volume(book.volume) # puts "Total #{book.volume}"
 rescue ReVIEW::ApplicationError, Errno::ENOENT => e
   raise if $DEBUG
-  @logger.error "#{File.basename($PROGRAM_NAME)}: #{e.message}"
+  @logger.error e.message
   exit 1
 end
 
