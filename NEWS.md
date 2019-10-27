@@ -2,12 +2,15 @@
 ## New Features
 * introduce review-idgxmlmaker which generates IDGXML files at once ([#1337])
 * review-textmaker converts the math in the document to image files when `imgmath` parameter has `true` ([#1338])
+* introduce wizard mode to layout of LaTeX on Web browser. Add `-w` option to review-init. This feature is experimental and may be replaced in the future ([#1403])
 
 ## Breaking Changes
 * review-init no longer creates empty `layouts` folder ([#1340])
 * PDFMaker: fix a problem that white space characters disappeared in `@<code>`, `@<tt>`, `@<tti>`, and `@<ttb>`. Also the string is automatically wrapped ([#1348])
 * `//texequation`、`//embed` and `//graph` that don't allow inline op no longer escape inline op in strings. And don't put extra line break ([#1371], [#1374])
 * PDFMaker: change the default table placement from `htp` to `H` for use in columns (`\floatplacement{table}` value in review-style.sty) [#1385]
+* PDFMaker: the space between Japanese/Western characters in the code lists is changed to 0 from 1/4 character ([#1401])
+* change the default value of `toc` parameter from null (false, don't create a table of contents) to true (create a table of contents) ([#1405])
 
 ## Bug Fixes
 * fix a typo in review-jlreq ([#1350])
@@ -24,6 +27,9 @@
 * PDFMaker: add new compile option `-halt-on-error` to make it easier to find the problem when an error occurs ([#1378])
 * PDFMaker: when there is a footnote text (`//footnote`) in the column block, it may cuse problems such as numbering. So warn it if there is. ([#1379])
 * improve error checking for yaml files ([#1386])
+* PDFMaker: the cover page becomes even number (p.0) and is named "cover" ([#1402])
+* PDFMaker: refactor `generate_pdf` method ([#1404])
+* create `.gitignore` for new project ([#1407])
 
 ## Docs
 * update sample-book/README.md ([#1354])
@@ -44,6 +50,7 @@
 
 ## Contributors
 * [@m-shibata](https://github.com/m-shibata)
+* [@masarakki](https://github.com/masarakki)
 
 [#1337]: https://github.com/kmuto/review/issues/1337
 [#1338]: https://github.com/kmuto/review/issues/1338
@@ -77,6 +84,12 @@
 [#1392]: https://github.com/kmuto/review/issues/1392
 [#1395]: https://github.com/kmuto/review/issues/1395
 [#1398]: https://github.com/kmuto/review/issues/1398
+[#1401]: https://github.com/kmuto/review/pull/1401
+[#1402]: https://github.com/kmuto/review/pull/1402
+[#1403]: https://github.com/kmuto/review/pull/1403
+[#1404]: https://github.com/kmuto/review/pull/1404
+[#1405]: https://github.com/kmuto/review/pull/1405
+[#1407]: https://github.com/kmuto/review/pull/1407
 
 # Version 3.2.0
 

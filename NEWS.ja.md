@@ -2,12 +2,15 @@
 ## 新機能
 * IDGXML ファイルをまとめて生成する、review-idgxmlmaker を導入しました ([#1337])
 * review-textmaker は、imgmath パラメータが有効になっている場合に、数式を画像化するようになりました ([#1338])
+* review-init に `-w` オプションを指定することで、Web ブラウザ上で TeX のレイアウトができるウィザードモードを用意しました。なお、この機能は実験的であり、将来別のものに置き換える可能性もあります ([#1403])
 
 ## 非互換の変更
 * 通常の利用では使われることがないので、review-init の実行時に空の layouts フォルダを作成するのをやめました ([#1340])
 * PDFMaker: `@<code>`、`@<tt>`、`@<tti>`、`@<ttb>` で空白文字が消えてしまう問題を修正しました。および利便性のために、文字列が版面からあふれるときに途中で改行するようにもしました ([#1348])
 * `//texequation`、`//embed`、`//graph` はもともとインライン命令を許容しないので、内容のエスケープもしないようにしました。また、末尾に余計な空行が加わるのも防ぐようにしました ([#1371], [#1374])
 * PDFMaker: コラム内での使用を考えて、表の配置のデフォルトを htp (指定位置→ページ上→独立ページの順に試行) から H (絶対に指定位置) にしました (review-style.sty の `\floatplacement{table}` の値) [#1385]
+* PDFMaker: コードリスト内では和文欧文間の空きを 1/4 文字ではなく 0 にするようにしました ([#1401])
+* config.yml の目次を制御する toc パラメータの値は、これまで null (false、目次は作らない) でしたが、一般的な利用方法を鑑みて、デフォルトを true (目次を作る) に切り替えました ([#1405])
 
 ## バグ修正
 * review-jlreq がタイプミスのために一部の jlreq.cls バージョンで正しく動作しないのを修正しました ([#1350])
@@ -24,6 +27,9 @@
 * PDFMaker: デフォルトのコンパイルオプションに `-halt-on-error` を追加しました。TeX のコンパイルエラーが発生したときに即終了することで問題が把握しやすくなります ([#1378])
 * PDFMaker: コラム内に脚注 (`@<fn>`) があるときの挙動がコラムの実装手段によって異なり、番号がずれるなどの問題を起こすことがあるため、脚注の文章 (`//footnote`) はコラムの後に置くことを推奨します。コラム内に脚注文章が存在する場合は警告するようにしました ([#1379])
 * YAML ファイルのエラーチェックを強化しました ([#1386])
+* PDFMaker: 電子版の作成時に、表紙のページ番号を偶数とし、名前を「cover」にするようにしました ([#1402])
+* PDFMaker: `generate_pdf` メソッドのリファクタリングを行いました ([#1404])
+* プロジェクトの新規作成時に登録除外ファイル一覧の .gitignore ファイルを置くようにしました ([#1407])
 
 ## ドキュメント
 * sample-book の README.md を更新しました ([#1354])
@@ -44,6 +50,7 @@
 
 ## コントリビューターのみなさん
 * [@m-shibata](https://github.com/m-shibata)
+* [@masarakki](https://github.com/masarakki)
 
 [#1337]: https://github.com/kmuto/review/issues/1337
 [#1338]: https://github.com/kmuto/review/issues/1338
@@ -77,6 +84,12 @@
 [#1392]: https://github.com/kmuto/review/issues/1392
 [#1395]: https://github.com/kmuto/review/issues/1395
 [#1398]: https://github.com/kmuto/review/issues/1398
+[#1401]: https://github.com/kmuto/review/pull/1401
+[#1402]: https://github.com/kmuto/review/pull/1402
+[#1403]: https://github.com/kmuto/review/pull/1403
+[#1404]: https://github.com/kmuto/review/pull/1404
+[#1405]: https://github.com/kmuto/review/pull/1405
+[#1407]: https://github.com/kmuto/review/pull/1407
 
 # Version 3.2.0
 
