@@ -336,5 +336,9 @@ cls]
   \AtBeginDocument{\@ifpackageloaded{pdfpages}{\recls@patch@pdfpages}{}}
 \fi
 
+%% 表紙のノンブル
+\def\coverpagezero#1{\expandafter\@coverpagezero\csname c@#1\endcsname}
+\def\@coverpagezero#1{cover}
+
 \listfiles
 \endinput

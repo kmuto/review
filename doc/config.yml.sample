@@ -111,7 +111,7 @@ toclevel: 3
 secnolevel: 2
 
 # 本文中に目次ページを作成するか。省略した場合はnull (作成しない)
-# toc: true
+toc: true
 
 # EPUB2標準の目次(NCX)以外に物理目次ファイルを作成するか。省略した場合はnull (作成しない)
 # ePUB3においてはこの設定によらず必ず作成される
@@ -394,4 +394,6 @@ pdfmaker:
   # makeindex_mecab_opts: "-Oyomi"
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
   colophon: true
+  # 表紙挿入時に表紙のページ番号名を「cover」とし、偶数ページ扱いにして大扉前に白ページが入るのを防ぐ。デフォルトはtrue
+  # use_cover_nombre: true
   # pdfmaker:階層を使うものはここまで

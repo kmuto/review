@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Re:VIEWレイアウトデザイナ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https://code.createjs.com/1.0.0/easeljs.min.js" charset="UTF-8"></script>
+  <script src="review-layout-design.js" charset="UTF-8"></script>
+</head>
+<body onload="init();">
+<div class="container">
+<form method="post" name="reviewform" action="/finish">
+<div class="form-group row">
+  <div class="col-auto">
+    <label for="cls" data-toggle="tooltip" data-placement="bottom" title="文書基本テンプレート。jsbookはよく使われているクラス。jlreqは紙面をカスタマイズしやすい新しいクラス">クラス</label>
+    <select id="cls" name="cls" class="btn btn-outline-dark" onchange="change_cls();">
+      <option value="review-jsbook" selected="true">review-jsbook (jsbook派生)</option>
+      <option value="review-jlreq">review-jlreq (jlreq派生)</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <label for="papersize" data-toggle="tooltip" data-placement="bottom" title="仕上がりサイズ。他のサイズ指定はsty/README.md参照">紙のサイズ</label>
+    <select id="papersize" name="papersize" class="btn btn-outline-dark" onchange="change_paper();">
+      <option value="a5" selected="true">A5 (148mm×210mm)</option>
+      <option value="b5">B5 (182mm×257mm)</option>
+      <option value="a4">A4 (210mm×297mm)</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <input type="button" id="reset" name="reset" class="btn btn-danger" value="初期値に戻す" onclick="reset_all();" data-toggle="tooltip" data-placement="bottom" title="クラスおよび紙に基づく初期値に復帰" />
+  </div>
+</div>
+<hr />
+
+<div class="form-group row">
+  <div class="col-auto" style="padding-right: 0;">
+    <label for="fontsize" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="基本の文字の大きさ。review-jsbookでは8,9,10,11,12,14,17,20,21,25,30,36,43のみ">文字サイズ</label>
+  </div>
+  <div class="col-auto">
+    <input type="number" id="fontsize" name="fontsize" class="form-control" style="width: 4em;" min="0" max="100" step="any" onchange="change_fontsize();" />
+  </div>
+  <label for="fontsize" class="col-form-label">pt　</label>
+  <label for="baselineskip" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="行のベースライン間の幅">行送り</label>
+  <div class="col-auto">
+    <input type="number" id="baselineskip" name="baselineskip" class="form-control" style="width: 4em;" min="0" max="100" step="any" onchange="change_baselineskip();" />
+  </div>
+  <label for="baselineskip" class="col-form-label">pt</label>
+  <div class="col-auto">
+    <label class="col-form-label">(<span id="fontsize_q" data-toggle="tooltip" data-placement="bottom" title="1Q=1H=0.25mm。1pt=0.35146mm(英米ポイント)"></span>)</label>
+  </div>
+</div>
+
+<div class="form-group row">
+  <div class="col-auto">
+    <input type="number" id="line_length" name="line_length" class="form-control" min="1" max="400" step="1" style="width: 4em;" onchange="change_line_length();" />
+  </div>
+  <label for="line_length" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="和文字での1行あたりの文字数">文字 ×</label>
+  <div class="col-auto">
+    <input type="number" id="number_of_lines" name="number_of_lines" class="form-control" min="1" max="400" step="1" style="width: 4em;" onchange="change_number_of_lines();" />
+  </div>
+  <label for="number_of_lines" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="ページあたりの行の数">行</label>
+  <div class="col-auto">
+    <label class="col-form-label">(版面 <span id="hanmen" data-toggle="tooltip" data-placement="bottom" title="主となるコンテンツの入る領域。下画面の方眼の箇所"></span>)</label>
+  </div>
+</div>
+
+<hr/>
+
+<div class="form-group row">
+  <div class="col-auto" style="padding-right: 0;">
+    <label for="gutter" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="ページ内側から版面までの余白">ノド</label>
+  </div>
+  <div class="col-auto">
+    <input type="number" id="gutter" name="gutter" class="form-control" style="width: 5em;" min="0" max="1000" step="any" onchange="change_gutter();" />
+  </div>
+  <label for="gutter" class="col-form-label">mm　</label>
+  <label for="edge" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="ページ外側から版面までの余白。ノドと版面横幅から導出">小口</label>
+  <div class="col-auto">
+    <input type="number" id="edge" name="edge" class="form-control" style="width: 5em;" min="0" max="1000" step="any" readonly="true" />
+  </div>
+  <label for="edge" class="col-form-label">mm　</label>
+
+  <label for="head_space" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="ページ上側から版面までの余白">天　</label>
+  <div class="col-auto">
+  <input type="number" id="head_space" name="head_space" class="form-control" style="width: 5em;" min="0" max="1000" step="any" onchange="change_head_space();" />
+  </div>
+  <label for="head_space" class="col-form-label">mm　</label>
+  <label for="bottom_space" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="ページ下側から版面までの余白。天と版面縦幅から導出">地　</label>
+  <div class="col-auto">
+    <input type="number" id="bottom_space" name="bottom_space" class="form-control" style="width: 5em;" min="0" max="1000" step="any" readonly="true" />
+  </div>
+  <label for="bottom_space" class="col-form-label">mm</label>
+</div>
+
+<div class="form-group row">
+  <div class="col-auto" style="padding-right: 0;">
+    <label for="headsep" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="ヘッダ領域下部と版面上との間隔">ヘッダ下/本文上間隔</label>
+  </div>
+  <div class="col-auto">
+    <input type="number" id="headsep" name="headsep" class="form-control" style="width: 4em;" min="-1000" max="1000" step="any" onchange="change_headsep();" />
+  </div>
+  <label for="headsep" class="col-form-label">mm　</label>
+  <label for="footskip" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="フッタ領域下部と版面下との間隔">本文下/フッタ下間隔</label>
+  <div class="col-auto">
+    <input type="number" id="footskip" name="footskip" class="form-control" style="width: 4em;" min="-1000" max="1000" step="any" onchange="change_footskip();" />
+  </div>
+  <label for="footskip" class="col-form-label">mm</label>
+</div>
+<hr/>
+
+<div class="form-group row">
+  <div class="col-auto">
+    <input type="button" id="showdetails" name="showdatails" class="btn btn-secondary"  value="詳細設定を表示" onclick="show_details();" data-toggle="tooltip" data-placement="bottom" title="版面設計以外の設定" />
+  </div>
+  <div class="col-auto">
+    <input type="button" id="fordoujin" name="fordoujin" class="btn btn-secondary"  value="技術系同人誌印刷の設定" onclick="set_doujin();" data-toggle="tooltip" data-placement="bottom" title="技術系同人誌の印刷所でよく使われる設定をマーク" />
+  </div>
+</div>
+
+<div id="details">
+  <div class="form-group form-check">
+    <input type="checkbox" id="ebook" name="ebook" class="form-check-input" checked="true" />
+    <label for="ebook" class="form-check-label" data-toggle="tooltip" data-placement="bottom" title="表紙あり・トンボなしの電子配布版のための設定ファイルを準備">電子版の設定ファイル (config-ebook.yml) も作成</label>
+  </div>
+
+  <div class="form-group form-check">
+    <input type="checkbox" id="openany" name="openany" class="form-check-input" />
+    <label for="openany" data-toggle="tooltip" data-placement="bottom" title="標準では章や目次は常に奇数(右)ページ開始">章や目次が左右どちらのページからも始まることを許可する</label>
+  </div>
+  <div class="form-group form-check">
+    <input type="checkbox" id="fleqno" name="fleqno" class="form-check-input" />
+    <label for="fleqno" class="form-check-label" data-toggle="tooltip" data-placement="bottom" title="標準では式は左右中央揃え">数式を左寄せにする</label>
+  </div>
+  <div class="form-group row">
+    <div class="col-auto">
+      <label for="startpage" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="通常は1(本文から数えたい場合)または3(表紙から数えたい場合)">冒頭ページ番号</label>
+    </div>
+    <div class="col-auto">
+      <input type="number" id="startpage" name="startpage" class="form-control" style="width: 4em;" value="1" min="1" max="999" />
+    </div>
+  </div>
+  <div class="form-group form-check">
+    <input type="checkbox" id="serial_pagination" name="serial_pagination" class="form-check-input" />
+    <label for="serial_pagination" class="form-check-label" data-toggle="tooltip" data-placement="bottom" title="標準では前付け(PREDEF)部分はローマ数字">最初からページ番号にアラビア数字を使う</label>
+  </div>
+  <div class="form-group form-check">
+    <input type="checkbox" id="hiddenfolio" name="hiddenfolio" class="form-check-input" />
+    <label for="hiddenfolio" class="form-check-label" data-toggle="tooltip" data-placement="bottom" title="ノドのきわにページ番号を埋め込む。印刷所によっては隠しノンブルは不要">ノドへの隠しノンブルの設置 (日光企画等)</label>
+  </div>
+  <div class="form-group row">
+    <div class="col-auto">
+      <label for="tombopaper" class="form-check-label" data-toggle="tooltip" data-placement="bottom" title="「自動」の場合は仕上がりのひとまわり大きな紙が選ばれる">トンボ付きの紙サイズ</label>
+    </div>
+    <div class="col-auto">
+      <select id="tombopaper" name="tombopaper" class="btn btn-outline-dark" onchange="change_tombopaper();">
+        <option value="auto">自動</option>
+        <option value="b5">B5</option>
+        <option value="a4">A4</option>
+        <option value="b4">B4</option>
+        <option value="a3">A3</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-auto">
+      <label for="bleed_margin" class="col-form-label" data-toggle="tooltip" data-placement="bottom" title="通常は3。印刷所によって異なることがある">塗り足し幅(mm)</label>
+    </div>
+    <div class="col-auto">
+      <input type="number" id="bleed_margin" name="bleed_margin" style="width: 4em;" value="3" min="1" max="8" class="form-control" />
+    </div>
+  </div>
+</div>
+
+<div id="result" style="display: none;">
+  print: <input type="text" id="result_print" name="result_print" value="" size="80" /><br/>
+  ebook: <input type="text" id="result_ebook" name="result_ebook" value="" size="80" />
+</div>
+
+<hr/>
+<input type="button" class="btn btn-success" value="作成" onclick="update_result();" data-toggle="tooltip" data-placement="bottom" title="入力に基づいて設定ファイルを作成"/>
+</form>
+<hr/>
+<canvas id="mainCanvas"></canvas>
+</div>
+</body>
+</html>

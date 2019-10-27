@@ -99,7 +99,7 @@ def _main
 end
 
 def error_exit(msg)
-  @logger.error "#{File.basename($PROGRAM_NAME)}: #{msg}"
+  @logger.error msg
   exit 1
 end
 
