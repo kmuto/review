@@ -20,7 +20,7 @@ module ReVIEW
     end
 
     # should be
-    TARGET_VERSION = '3.0'
+    TARGET_VERSION = '4.0'
     EPUB_VERSION = '3'
     HTML_VERSION = '5'
     TEX_DOCUMENTCLASS = ['review-jsbook', 'review-jlreq']
