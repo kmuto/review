@@ -26,6 +26,7 @@
 * PDFMaker: extract `code_line` and `code_line_num` from code blocks for ease handling each line ([#1368])
 * PDFMaker: add new compile option `-halt-on-error` to make it easier to find the problem when an error occurs ([#1378])
 * PDFMaker: when there is a footnote text (`//footnote`) in the column block, it may cuse problems such as numbering. So warn it if there is. ([#1379])
+* Logger: progname should be add in logger, not in message arguments ([#1388])
 * improve error checking for yaml files ([#1386])
 * PDFMaker: the cover page becomes even number (p.0) and is named "cover" ([#1402])
 * PDFMaker: refactor `generate_pdf` method ([#1404])
@@ -78,6 +79,7 @@
 [#1383]: https://github.com/kmuto/review/issues/1383
 [#1385]: https://github.com/kmuto/review/issues/1385
 [#1386]: https://github.com/kmuto/review/pull/1386
+[#1388]: https://github.com/kmuto/review/pull/1388
 [#1389]: https://github.com/kmuto/review/pull/1389
 [#1390]: https://github.com/kmuto/review/pull/1390
 [#1391]: https://github.com/kmuto/review/pull/1391
