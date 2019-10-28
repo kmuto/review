@@ -23,11 +23,11 @@ Gem::Specification.new do |gem|
   gem.add_dependency('image_size')
   gem.add_dependency('rouge')
   gem.add_dependency('rubyzip')
-  gem.add_dependency('unicode-eaw') # at this moment
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
   gem.add_development_dependency('rubocop', '~> 0.72.0')
   gem.add_development_dependency('rubocop-performance')
   gem.add_development_dependency('simplecov')
   gem.add_development_dependency('test-unit')
+  gem.add_development_dependency('unicode-eaw')
 end
