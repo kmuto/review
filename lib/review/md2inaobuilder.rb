@@ -7,7 +7,7 @@ require 'review/markdownbuilder'
 module ReVIEW
   class MD2INAOBuilder < MARKDOWNBuilder
     def paragraph(lines)
-      puts '　' + lines.join
+      puts '　' + join_lines_to_paragraph(lines)
       puts "\n"
     end
 
@@ -33,7 +33,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join}</dd>"
+      puts "<dd>#{join_lines_to_paragraph(lines)}</dd>"
     end
 
     def dl_end

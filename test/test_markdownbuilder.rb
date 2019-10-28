@@ -28,6 +28,17 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
 
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+> foo bar
+> 
+> buz
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_memo
@@ -48,6 +59,16 @@ EOS
 <p class="noindent">foobar</p>
 
 foo2bar2
+
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    expected = <<-EOS
+<p class="noindent">foo bar</p>
+
+foo2 bar2
 
 EOS
     assert_equal expected, actual
@@ -113,6 +134,16 @@ EOS
 </dl>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo. bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_bracket
@@ -121,6 +152,16 @@ EOS
 <dl>
 <dt>foo[bar]</dt>
 <dd>foo.bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    expected = <<-EOS
+<dl>
+<dt>foo[bar]</dt>
+<dd>foo. bar.</dd>
 </dl>
 EOS
     assert_equal expected, actual

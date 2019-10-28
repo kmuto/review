@@ -199,16 +199,28 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_paragraph
     actual = compile_block("foo\nbar\n")
     assert_equal '<p>foobar</p>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("foo\nbar\n")
+    assert_equal '<p>foo bar</p>', actual
   end
 
   def test_tabbed_paragraph
     actual = compile_block("\tfoo\nbar\n")
     assert_equal %Q(<p inlist="1">foobar</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("\tfoo\nbar\n")
+    assert_equal %Q(<p inlist="1">foo bar</p>), actual
   end
 
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal '<quote><p>foobar</p><p>buz</p></quote>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal '<quote><p>foo bar</p><p>buz</p></quote>', actual
   end
 
   def test_major_blocks
@@ -249,16 +261,28 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_term
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal '<term><p>test1test1.5</p><p>test<i>2</i></p></term>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<term><p>test1 test1.5</p><p>test<i>2</i></p></term>', actual
   end
 
   def test_point
     actual = compile_block("//point[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<point-t><title aid:pstyle='point-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></point-t>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//point[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<point-t><title aid:pstyle='point-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1 test1.5</p><p>test<i>2</i></p></point-t>), actual
   end
 
   def test_point_without_caption
     actual = compile_block("//point{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal '<point><p>test1test1.5</p><p>test<i>2</i></p></point>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//point{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<point><p>test1 test1.5</p><p>test<i>2</i></p></point>', actual
   end
 
   def test_emlist
@@ -454,11 +478,19 @@ EOS
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(<p align='right'>foobar</p><p align='right'>buz</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='right'>foo bar</p><p align='right'>buz</p>), actual
   end
 
   def test_centering
     actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(<p align='center'>foobar</p><p align='center'>buz</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='center'>foo bar</p><p align='center'>buz</p>), actual
   end
 
   def test_blankline
@@ -469,6 +501,10 @@ EOS
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(<p aid:pstyle="noindent" noindent='1'>foobar</p><p>foo2bar2</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    assert_equal %Q(<p aid:pstyle="noindent" noindent='1'>foo bar</p><p>foo2 bar2</p>), actual
   end
 
   def test_image
@@ -657,9 +693,15 @@ EOS
   * BBB
     -BB
 EOS
-
     expected = <<-EOS.chomp
 <ul><li aid:pstyle="ul-item">AAA-AA</li><li aid:pstyle="ul-item">BBB-BB</li></ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">AAA -AA</li><li aid:pstyle="ul-item">BBB -BB</li></ul>
 EOS
     actual = compile_block(src)
     assert_equal expected, actual

@@ -167,7 +167,7 @@ module ReVIEW
     end
 
     def ul_item_begin(lines)
-      print %Q(<li aid:pstyle="ul-item">#{lines.join.chomp})
+      print %Q(<li aid:pstyle="ul-item">#{join_lines_to_paragraph(lines).chomp})
     end
 
     def ul_item_end
@@ -202,7 +202,7 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts %Q(<li aid:pstyle="ol-item" olnum="#{@ol_num}" num="#{num}">#{lines.join.chomp}</li>)
+      puts %Q(<li aid:pstyle="ol-item" olnum="#{@ol_num}" num="#{num}">#{join_lines_to_paragraph(lines).chomp}</li>)
       @ol_num += 1
     end
 
@@ -224,7 +224,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join.chomp}</dd>"
+      puts "<dd>#{join_lines_to_paragraph(lines).chomp}</dd>"
     end
 
     def dl_end
@@ -234,12 +234,12 @@ module ReVIEW
     def paragraph(lines)
       if @noindent.nil?
         if lines[0] =~ /\A(\t+)/
-          puts %Q(<p inlist="#{$1.size}">#{lines.join.sub(/\A\t+/, '')}</p>)
+          puts %Q(<p inlist="#{$1.size}">#{join_lines_to_paragraph(lines).sub(/\A\t+/, '')}</p>)
         else
-          puts "<p>#{lines.join}</p>"
+          puts "<p>#{join_lines_to_paragraph(lines)}</p>"
         end
       else
-        puts %Q(<p aid:pstyle="noindent" noindent='1'>#{lines.join}</p>)
+        puts %Q(<p aid:pstyle="noindent" noindent='1'>#{join_lines_to_paragraph(lines)}</p>)
         @noindent = nil
       end
     end

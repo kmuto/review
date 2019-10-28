@@ -87,7 +87,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts lines.join
+      puts join_lines_to_paragraph(lines)
     end
 
     def ul_end
@@ -100,7 +100,7 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts "#{num}　#{lines.join}"
+      puts "#{num}　#{join_lines_to_paragraph(lines)}"
     end
 
     def ol_end
@@ -127,7 +127,7 @@ module ReVIEW
     end
 
     def paragraph(lines)
-      puts lines.join
+      puts join_lines_to_paragraph(lines)
     end
 
     def read(lines)
@@ -346,7 +346,7 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(_id, _caption, lines)
-      print split_paragraph(lines).join
+      puts split_paragraph(lines).join("\n")
     end
 
     def inline_bib(id)

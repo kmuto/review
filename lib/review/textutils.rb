@@ -35,10 +35,65 @@ module ReVIEW
         end
       end
 
+      blocked_lines.map! { |i| join_lines_to_paragraph(i) }
+
       if pre && post
-        blocked_lines.map! { |i| [pre] + i + [post] }
+        blocked_lines.map! { |i| pre + i + post }
       end
-      blocked_lines.map(&:join)
+
+      blocked_lines
+    end
+
+    def add_space?(line1, line2, lang, lazy = nil)
+      # https://drafts.csswg.org/css-text-3/#line-break-transform
+      tail = line1[-1]
+      head = line2[0]
+      if tail.nil? || head.nil?
+        return nil
+      end
+      space = true
+      # rule 2
+      if %i[F W H].include?(Unicode::Eaw.property(tail)) &&
+         %i[F W H].include?(Unicode::Eaw.property(head)) &&
+         tail !~ /\p{Hangul}/ && head !~ /\p{Hangul}/
+        space = nil
+      end
+
+      if %w[ja zh zh_CN zh_TW yi].include?(lang)
+        # rule 3
+        if (%i[F W H].include?(Unicode::Eaw.property(tail)) &&
+            tail !~ /\p{Hangul}/ &&
+            (head =~ /\p{P}/ || head =~ /\p{S}/ || Unicode::Eaw.property(head) == :A)) ||
+           (%i[F W H].include?(Unicode::Eaw.property(head)) &&
+            head !~ /\p{Hangul}/ &&
+            (tail =~ /\p{P}/ || head =~ /\p{S}/ || Unicode::Eaw.property(tail) == :A))
+          space = nil
+        end
+
+        # lazy than rule 3, but it looks better
+        if lazy &&
+           (%i[F W H].include?(Unicode::Eaw.property(tail)) &&
+            tail !~ /\p{Hangul}/) ||
+           (%i[F W H].include?(Unicode::Eaw.property(head)) &&
+            head !~ /\p{Hangul}/)
+          space = nil
+        end
+      end
+      space
+    end
+
+    def join_lines_to_paragraph(lines)
+      unless @book.config['join_lines_by_lang']
+        return lines.join
+      end
+      lazy = true
+      lang = 'ja'
+      0.upto(lines.size - 2) do |n|
+        if add_space?(lines[n], lines[n + 1], lang, lazy)
+          lines[n] += ' '
+        end
+      end
+      lines.join
     end
 
     def defer_math_image(str, path, key)

@@ -62,6 +62,15 @@ module ReVIEW
         if @book.config['tabwidth']
           @tabwidth = @book.config['tabwidth']
         end
+
+        if @book.config['join_lines_by_lang']
+          begin
+            require 'unicode/eaw'
+          rescue LoadError
+            warn 'not found unicode/eaw. disabled join_lines_by_lang feature.'
+            @book.config['join_lines_by_lang'] = nil
+          end
+        end
       end
       builder_init_file
     end

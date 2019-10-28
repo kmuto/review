@@ -29,4 +29,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('rubocop-performance')
   gem.add_development_dependency('simplecov')
   gem.add_development_dependency('test-unit')
+  gem.add_development_dependency('unicode-eaw')
 end
