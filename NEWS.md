@@ -3,6 +3,7 @@
 * introduce review-idgxmlmaker which generates IDGXML files at once ([#1337])
 * review-textmaker converts the math in the document to image files when `imgmath` parameter has `true` ([#1338])
 * introduce wizard mode to layout of LaTeX on Web browser. Add `-w` option to review-init. This feature is experimental and may be replaced in the future ([#1403])
+* experimental feature: introduce the feature to insert whitespace based on character when combining lines into a paragraph. To enable this, install unicode-eaw gem and add `join_lines_by_lang: true` into config.yml [#1362]
 
 ## Breaking Changes
 * review-init no longer creates empty `layouts` folder ([#1340])
@@ -64,6 +65,7 @@
 [#1356]: https://github.com/kmuto/review/pull/1356
 [#1359]: https://github.com/kmuto/review/pull/1359
 [#1360]: https://github.com/kmuto/review/pull/1360
+[#1362]: https://github.com/kmuto/review/pull/1362
 [#1363]: https://github.com/kmuto/review/issues/1363
 [#1365]: https://github.com/kmuto/review/pull/1365
 [#1367]: https://github.com/kmuto/review/issues/1367

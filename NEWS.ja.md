@@ -3,6 +3,7 @@
 * IDGXML ファイルをまとめて生成する、review-idgxmlmaker を導入しました ([#1337])
 * review-textmaker は、imgmath パラメータが有効になっている場合に、数式を画像化するようになりました ([#1338])
 * review-init に `-w` オプションを指定することで、Web ブラウザ上で TeX のレイアウトができるウィザードモードを用意しました。なお、この機能は実験的であり、将来別のものに置き換える可能性もあります ([#1403])
+* 実験的実装として、複数行から段落を結合する際に、前後の文字の種類に基づいて空白文字の挿入を行う機能を追加しました。この機能を利用するには、unicode-eaw gem をインストールした上で、config.yml に `join_lines_by_lang: true` を追加してください [#1362]
 
 ## 非互換の変更
 * 通常の利用では使われることがないので、review-init の実行時に空の layouts フォルダを作成するのをやめました ([#1340])
@@ -27,7 +28,7 @@
 * PDFMaker: デフォルトのコンパイルオプションに `-halt-on-error` を追加しました。TeX のコンパイルエラーが発生したときに即終了することで問題が把握しやすくなります ([#1378])
 * PDFMaker: コラム内に脚注 (`@<fn>`) があるときの挙動がコラムの実装手段によって異なり、番号がずれるなどの問題を起こすことがあるため、脚注の文章 (`//footnote`) はコラムの後に置くことを推奨します。コラム内に脚注文章が存在する場合は警告するようにしました ([#1379])
 * YAML ファイルのエラーチェックを強化しました ([#1386])
-* Logger での表示時に標準の progrname を使うようにしました ([#1388])
+* Logger での表示時に標準の progname を使うようにしました ([#1388])
 * PDFMaker: 電子版の作成時に、表紙のページ番号を偶数とし、名前を「cover」にするようにしました ([#1402])
 * PDFMaker: `generate_pdf` メソッドのリファクタリングを行いました ([#1404])
 * プロジェクトの新規作成時に登録除外ファイル一覧の .gitignore ファイルを置くようにしました ([#1407])
@@ -64,6 +65,7 @@
 [#1356]: https://github.com/kmuto/review/pull/1356
 [#1359]: https://github.com/kmuto/review/pull/1359
 [#1360]: https://github.com/kmuto/review/pull/1360
+[#1362]: https://github.com/kmuto/review/pull/1362
 [#1363]: https://github.com/kmuto/review/issues/1363
 [#1365]: https://github.com/kmuto/review/pull/1365
 [#1367]: https://github.com/kmuto/review/issues/1367
