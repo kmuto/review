@@ -244,7 +244,10 @@ module ReVIEW
           compile_ulist(f)
         when /\A\s+\d+\./
           compile_olist(f)
+        when /\A\s+:\s/
+          compile_dlist(f)
         when /\A\s*:\s/
+          warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
         when %r{\A//\}}
           f.gets

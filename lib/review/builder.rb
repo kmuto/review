@@ -157,7 +157,7 @@ module ReVIEW
     end
 
     def image(lines, id, caption, metric = nil)
-      if @chapter.image(id).bound?
+      if @chapter.image_bound?(id)
         image_image(id, caption, metric)
       else
         warn "image not bound: #{id}" if @strict

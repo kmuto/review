@@ -335,7 +335,7 @@ EOS
 
   def test_list
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS.chomp
@@ -350,7 +350,7 @@ EOS
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS.chomp
@@ -365,7 +365,7 @@ EOS
 
   def test_listnum_linenum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS.chomp
@@ -380,7 +380,7 @@ EOS
 
   def test_list_listinfo
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     @config['listinfo'] = true
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
@@ -509,7 +509,7 @@ EOS
 
   def test_image
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -520,7 +520,7 @@ EOS
 
   def test_image_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -531,7 +531,7 @@ EOS
 
   def test_image_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -542,7 +542,7 @@ EOS
 
   def test_indepimage
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -553,7 +553,7 @@ EOS
 
   def test_indepimage_without_caption
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -564,7 +564,7 @@ EOS
 
   def test_indepimage_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -575,7 +575,7 @@ EOS
 
   def test_indepimage_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -586,7 +586,7 @@ EOS
 
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -664,7 +664,7 @@ EOS
 
   def test_column_in_aother_chapter_ref
     def @chapter.column_index
-      items = [Book::ColumnIndex::Item.new('chap1|column', 1, 'column_cap')]
+      items = [Book::Index::Item.new('chap1|column', 1, 'column_cap')]
       Book::ColumnIndex.new(items)
     end
 
@@ -819,7 +819,7 @@ EOS
 
   def test_inline_imgref
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1, 'sample photo')
+      item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -831,7 +831,7 @@ EOS
 
   def test_inline_imgref2
     def @chapter.image(_id)
-      item = Book::NumberlessImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end

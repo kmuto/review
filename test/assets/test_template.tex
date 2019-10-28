@@ -35,6 +35,7 @@
 \def\review@tablename{表}
 \def\review@appendixname{付録}
 
+\def\review@usecovernombre{true}
 \def\review@titlepage{true}
 
 \def\review@pubhistories{2011年1月1日　発行}
@@ -54,6 +55,9 @@
     \DeclareRobustCommand{\reviewincludegraphics}[2][]{%
       \includegraphics[##1]{##2}}
   }
+  \@ifundefined{covermatter}{% for 4.0.0 compatibility
+    \def\covermatter{}
+  }
 }
 
 \makeatother
@@ -72,6 +76,7 @@
 
 %% coverpage
 \ifdefined\reviewcoverpagecont
+\covermatter
 \reviewcoverpagecont
 \fi
 

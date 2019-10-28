@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2019 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -54,12 +54,12 @@ module ReVIEW
     end
 
     def error(msg)
-      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      @logger.error msg
       exit 1
     end
 
     def warn(msg)
-      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      @logger.warn msg
     end
 
     def pdf_filepath
@@ -153,20 +153,20 @@ module ReVIEW
       end
 
       begin
-        generate_pdf(yamlfile)
+        generate_pdf
       rescue ApplicationError => e
         raise if @config['debug']
         error(e.message)
       end
     end
 
-    def make_input_files(book, yamlfile)
+    def make_input_files(book)
       input_files = Hash.new { |h, key| h[key] = '' }
       book.parts.each do |part|
         if part.name.present?
           @config['use_part'] = true
           if part.file?
-            output_chaps(part.name, yamlfile)
+            output_chaps(part.name)
             input_files['CHAPS'] << %Q(\\input{#{part.name}.tex}\n)
           else
             input_files['CHAPS'] << %Q(\\part{#{part.name}}\n)
@@ -175,7 +175,7 @@ module ReVIEW
 
         part.chapters.each do |chap|
           filename = File.basename(chap.path, '.*')
-          output_chaps(filename, yamlfile)
+          output_chaps(filename)
           input_files['PREDEF'] << "\\input{#{filename}.tex}\n" if chap.on_predef?
           input_files['CHAPS'] << "\\input{#{filename}.tex}\n" if chap.on_chaps?
           input_files['APPENDIX'] << "\\input{#{filename}.tex}\n" if chap.on_appendix?
@@ -250,18 +250,18 @@ module ReVIEW
       end
     end
 
-    def generate_pdf(yamlfile)
+    def generate_pdf
       remove_old_file
       erb_config
       @path = build_path
       begin
         @compile_errors = nil
 
-        book = ReVIEW::Book.load(File.dirname(yamlfile))
+        book = ReVIEW::Book.load(@basedir)
         book.config = @config
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
 
-        @input_files = make_input_files(book, yamlfile)
+        @input_files = make_input_files(book)
 
         check_compile_status(@config['ignore-errors'])
 
@@ -285,7 +285,7 @@ module ReVIEW
       end
     end
 
-    def output_chaps(filename, _yamlfile)
+    def output_chaps(filename)
       @logger.info "compiling #{filename}.tex"
       begin
         @converter.convert(filename + '.re', File.join(@path, filename + '.tex'))

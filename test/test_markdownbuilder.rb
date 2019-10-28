@@ -126,7 +126,7 @@ EOS
   end
 
   def test_dlist
-    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
@@ -147,7 +147,7 @@ EOS
   end
 
   def test_dlist_with_bracket
-    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo[bar]</dt>
@@ -168,7 +168,7 @@ EOS
   end
 
   def test_dlist_with_comment
-    source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
+    source = " : title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
     actual = compile_block(source)
     expected = <<-EOS
 <dl>
@@ -230,7 +230,7 @@ BBB
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('test', 1)
+      Book::Index::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n\tbuz\n//}\n")
     expected = <<-EOS

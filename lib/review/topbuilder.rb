@@ -175,7 +175,7 @@ module ReVIEW
       puts "◆→開始:#{@titles['image']}←◆"
       image_header(id, caption)
       blank
-      if @chapter.image(id).bound?
+      if @chapter.image_bound?(id)
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
         warn "image not bound: #{id}"
