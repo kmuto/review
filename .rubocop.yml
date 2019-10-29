@@ -213,6 +213,9 @@ Style/MethodCallWithArgsParentheses:
     - 'source'
     - 'assert'
     - 'assert_equal'
+    - 'sh'
+    - 'mv'
+    - 'rm_rf'
   Enabled: true
 
 Style/MixinUsage:
