@@ -48,16 +48,16 @@
 \def\reviewpostdeffiles{}
 
 \def\reviewbackcompatibilityhook{
-  \@ifundefined{reviewimagecaption}{% for 3.0.0 compatibility
+  \ifdefined\reviewimagecaption\else% for 3.0.0 compatibility
     \newcommand{\reviewimagecaption}[1]{\caption{##1}}
-  }
-  \@ifundefined{reviewincludegraphics}{% for 3.2.0 compatibility
+  \fi
+  \ifdefined\reviewincludegraphics\else% for 3.2.0 compatibility
     \DeclareRobustCommand{\reviewincludegraphics}[2][]{%
       \includegraphics[##1]{##2}}
-  }
-  \@ifundefined{covermatter}{% for 4.0.0 compatibility
+  \fi
+  \ifdefined\covermatter\else% for 4.0.0 compatibility
     \def\covermatter{}
-  }
+  \fi
 }
 
 \makeatother
