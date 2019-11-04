@@ -20,7 +20,7 @@
 % THE SOFTWARE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2019/01/01 Re:VIEW pLaTeX class modified for jlreq.
+\ProvidesClass{review-jlreq}[2019/09/22 Re:VIEW pLaTeX class modified for jlreq.
 cls]
 
 %% hook at end of reviewmacro
