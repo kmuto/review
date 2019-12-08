@@ -153,7 +153,7 @@ module ReVIEW
           # ex. ["//image", "id", "", "caption"]
           elements = line.split(/\[(.*?)\]/)
           if elements[1].present?
-            if line =~ %r{\A//imgtable}
+            if line.start_with?('//imgtable')
               items.push(ReVIEW::Book::Index::Item.new(elements[1], 0, elements[3]))
             else ## %r<\A//(image|graph)>
               items.push(ReVIEW::Book::Index::Item.new(elements[1], seq, elements[3]))
@@ -267,7 +267,7 @@ module ReVIEW
           if line =~ %r{\A//[a-z]+.*\{\Z}
             inside_block = true
             next
-          elsif line =~ %r{\A//\}}
+          elsif line.start_with?('//}')
             inside_block = nil
             next
           elsif inside_block
