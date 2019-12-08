@@ -30,7 +30,7 @@ ARGF.each do |line|
       @logger.warn "#{ln}: block #{new_block} started, but previous block #{block} didn't close yet."
     end
     block = new_block
-  elsif line =~ %r{\A//\}}
+  elsif line.start_with?('//}')
     if block.nil?
       @logger.warn "#{ln}: block ended, but not opened."
     end
