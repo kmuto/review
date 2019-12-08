@@ -466,7 +466,7 @@ module ReVIEW
           buf.push(text(line.rstrip, true))
         end
       end
-      unless %r{\A//\}} =~ f.peek
+      unless f.peek.to_s.start_with?('//}')
         error "unexpected EOF (block begins at: #{head})"
         return buf
       end

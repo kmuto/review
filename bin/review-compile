@@ -35,7 +35,7 @@ def _main
   @logger = ReVIEW.logger
   @mode = :files
   @basedir = nil
-  if /\Areview2/ =~ File.basename($PROGRAM_NAME)
+  if File.basename($PROGRAM_NAME).start_with?('review2')
     @target = File.basename($PROGRAM_NAME, '.rb').sub('review2', '')
   else
     @target = nil

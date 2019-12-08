@@ -356,7 +356,7 @@ module ReVIEW
         res = ''
         File.open(filename_join(@basedir, filename), 'rt:BOM|utf-8') do |f|
           f.each_line do |line|
-            next if /\A#/ =~ line
+            next if line.start_with?('#')
             line.gsub!(/#.*\Z/, '')
             res << line
           end
