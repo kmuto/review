@@ -176,6 +176,9 @@ toc: true
 # @<w>命令で使用する単語ファイルのパス
 # words_file: words.csv
 
+# //table命令における列の区切り文字 (Rubyの正規表現)。''で囲むこと
+# table_split_regexp: '\t+'
+
 # review-vol向けのヒント情報
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)
 # page_metric: A5

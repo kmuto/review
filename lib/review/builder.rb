@@ -179,6 +179,14 @@ module ReVIEW
       table_end
     end
 
+    def table_split_regexp
+      begin
+        Regexp.new(@book.config['table_split_regexp'])
+      rescue RegexpError
+        error "invalid regular expression in 'table_split_regexp' parameter."
+      end
+    end
+
     def parse_table_rows(lines)
       sepidx = nil
       rows = []
@@ -187,7 +195,7 @@ module ReVIEW
           sepidx ||= idx
           next
         end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
+        rows.push(line.strip.split(table_split_regexp).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
       error 'no rows in the table' if rows.empty?

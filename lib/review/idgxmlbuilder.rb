@@ -508,7 +508,7 @@ module ReVIEW
         else
           rows.push(line.gsub(/\t\.\t/, "\t\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\t").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
         end
-        col2 = rows[rows.length - 1].split(/\t/).length
+        col2 = rows[rows.length - 1].split(table_split_regexp).length
         @col = col2 if col2 > @col
       end
       error 'no rows in the table' if rows.empty?
@@ -516,6 +516,11 @@ module ReVIEW
     end
 
     def table_rows(sepidx, rows)
+      begin
+        table_split_regexp = Regexp.new(@book.config['table_split_regexp'])
+      rescue RegexpError
+        error "invalid regular expression in 'table_split_regexp' parameter."
+      end
       cellwidth = []
       if @tablewidth
         if @tsize.nil?
@@ -542,7 +547,7 @@ module ReVIEW
             puts %Q(<tr type="header">#{rows.shift}</tr>)
           else
             i = 0
-            rows.shift.split("\t").each_with_index do |cell, x|
+            rows.shift.split(table_split_regexp).each_with_index do |cell, x|
               print %Q(<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
               i += 1
             end
@@ -557,7 +562,7 @@ module ReVIEW
       if tablewidth
         rows.each_with_index do |row, y|
           i = 0
-          row.split("\t").each_with_index do |cell, x|
+          row.split(table_split_regexp).each_with_index do |cell, x|
             print %Q(<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
             i += 1
           end

@@ -2109,6 +2109,48 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_table_split_regexp
+    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>1</th><th>2</th><th>3  4,5</th></tr>
+<tr><td>a b</td><td>c  d,e</td><td></td></tr>
+</table>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '\s+'
+    actual = compile_block(src)
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>1</th><th>2</th><th>3</th><th>4,5</th></tr>
+<tr><td>a</td><td>b</td><td>c</td><td>d,e</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = ','
+    actual = compile_block(src)
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>1\t2\t\t3  4</th><th>5</th></tr>
+<tr><td>a b\tc  d</td><td>e</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '['
+    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
+    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
+  end
+
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = <<-EOS
