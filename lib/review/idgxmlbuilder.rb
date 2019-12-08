@@ -516,11 +516,6 @@ module ReVIEW
     end
 
     def table_rows(sepidx, rows)
-      begin
-        table_split_regexp = Regexp.new(@book.config['table_split_regexp'])
-      rescue RegexpError
-        error "invalid regular expression in 'table_split_regexp' parameter."
-      end
       cellwidth = []
       if @tablewidth
         if @tsize.nil?
