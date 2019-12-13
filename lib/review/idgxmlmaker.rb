@@ -44,11 +44,13 @@ module ReVIEW
       opts = OptionParser.new
       @table = nil
       @filter = nil
+      @buildonly = nil
 
       opts.banner = 'Usage: review-idgxmlmaker [options] configfile'
       opts.version = ReVIEW::VERSION
       opts.on('-w', '--width widthoftypepage', 'Specify the width of type page for layouting tables (mm).') { |v| @table = v }
       opts.on('-f', '--filter filterprogrampath', 'Specify the filter path.') { |v| @filter = v }
+      opts.on('-y', '--only file1,file2,...', 'Build only specified files.') { |v| @buildonly = v.split(/\s*,\s*/).map { |m| m.strip.sub(/\.re\Z/, '') } }
       opts.on('--help', 'Prints this message and quit.') do
         puts opts.help
         exit 0
@@ -169,6 +171,10 @@ module ReVIEW
         filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
       end
       id = File.basename(filename).sub(/\.re\Z/, '')
+      if @buildonly && !@buildonly.include?(id)
+        warn "skip #{id}.re"
+        return
+      end
 
       xmlfile = "#{id}.xml"
 
