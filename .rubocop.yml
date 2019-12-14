@@ -40,6 +40,9 @@ Lint/UnusedMethodArgument:
 Lint/UselessAssignment:
   Enabled: true
 
+Lint/ErbNewArguments:
+  Enabled: false
+
 #### Performance
 
 Performance/RegexpMatch:
