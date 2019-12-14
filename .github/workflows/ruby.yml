@@ -18,5 +18,6 @@ jobs:
     - name: Build and test with Rake
       run: |
         gem install bundler --no-document
+        sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
         bundle install --retry 3
         bundle exec rake
