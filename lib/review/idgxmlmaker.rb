@@ -121,10 +121,10 @@ module ReVIEW
         if s.success?
           File.write(xmlfile, o) # override
         else
-          warn("filter error for #{xmlfile}: #{e.message}")
+          warn("filter error for #{xmlfile}: #{e}")
         end
       rescue => e
-        warn("filter error for #{xmlfile}: #{e}")
+        warn("filter error for #{xmlfile}: #{e.message}")
       end
     end
 
