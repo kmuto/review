@@ -67,13 +67,13 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def print(s)
+    def print(*s)
       @blank_seen = false
       super
     end
     private :print
 
-    def puts(s)
+    def puts(*s)
       @blank_seen = false
       super
     end
