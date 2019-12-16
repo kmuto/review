@@ -3,6 +3,7 @@ require 'tmpdir'
 require 'fileutils'
 require 'yaml'
 require 'rbconfig'
+require 'open3'
 
 REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
 
@@ -19,18 +20,100 @@ class PDFMakerCmdTest < Test::Unit::TestCase
     ENV['RUBYLIB'] = @old_rubylib
   end
 
-  def test_pdfmaker_cmd
+  def common_buildpdf(bookdir, templatedir, configfile, targetpdffile)
     if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
-      config = prepare_samplebook(@tmpdir1)
+      config = prepare_samplebook(@tmpdir1, bookdir, templatedir, configfile)
       builddir = File.join(@tmpdir1, config['bookname'] + '-pdf')
-      # assert !File.exist?(builddir)
+      assert !File.exist?(builddir)
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
       Dir.chdir(@tmpdir1) do
-        system("#{ruby_cmd} -S #{REVIEW_PDFMAKER} config.yml 1>/dev/null 2>/dev/null")
+        out, status = Open3.capture2e("#{ruby_cmd} -S #{REVIEW_PDFMAKER} #{configfile}")
+        unless status.success?
+          $stderr.puts out
+        end
       end
-
-      assert File.exist?(builddir)
+      assert File.exist?(File.join(@tmpdir1, targetpdffile))
     end
+  end
+
+  def test_pdfmaker_cmd_sample_jsbook_print
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_sample_jsbook_print'
+      return true
+    end
+    common_buildpdf('sample-book/src', 'review-jsbook', 'config.yml', 'book.pdf')
+  end
+
+  def test_pdfmaker_cmd_sample_jsbook_ebook
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_sample_jsbook_ebook'
+      return true
+    end
+    common_buildpdf('sample-book/src', 'review-jsbook', 'config-ebook.yml', 'book.pdf')
+  end
+
+  def test_pdfmaker_cmd_sample_jlreq_print
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_sample_jlreq_print'
+      return true
+    end
+    common_buildpdf('sample-book/src', 'review-jlreq', 'config-jlreq.yml', 'book.pdf')
+  end
+
+  def test_pdfmaker_cmd_sample_jlreq_ebook
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_sample_jlreq_ebook'
+      return true
+    end
+    common_buildpdf('sample-book/src', 'review-jlreq', 'config-jlreq-ebook.yml', 'book.pdf')
+  end
+
+  def test_pdfmaker_cmd_syntax_jsbook_print
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_syntax_jsbook_print'
+      return true
+    end
+    common_buildpdf('syntax-book', 'review-jsbook', 'config-print.yml', 'syntax-book.pdf')
+  end
+
+  def test_pdfmaker_cmd_syntax_jsbook_ebook
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_syntax_jsbook_ebook'
+      return true
+    end
+    common_buildpdf('sample-book/src', 'review-jsbook', 'config.yml', 'book.pdf')
+  end
+
+  def test_pdfmaker_cmd_syntax_jlreq_ebook
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_syntax_jlreq_ebook'
+      return true
+    end
+    common_buildpdf('syntax-book', 'review-jlreq', 'config-jlreq.yml', 'syntax-book.pdf')
+  end
+
+  def test_pdfmaker_cmd_syntax_jlreq_ebook_lualatex
+    begin
+      `lualatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_syntax_jlreq_ebook_lualatex'
+      return true
+    end
+    common_buildpdf('syntax-book', 'review-jlreq', 'config-jlreq-lualatex.yml', 'syntax-book.pdf')
   end
 end
