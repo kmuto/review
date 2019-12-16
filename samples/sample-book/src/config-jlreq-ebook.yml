@@ -1,0 +1,4 @@
+# call me by 'REVIEW_TEMPLATE=review-jlreq REVIEW_CONFIG_FILE=config-jlreq-ebook.yml rake pdf'
+inherit: ["config.yml"]
+pdfmaker:
+  texdocumentclass: ["review-jlreq", "media=ebook,paper=a5"]

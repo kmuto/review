@@ -1,0 +1,4 @@
+# call me by 'REVIEW_CONFIG_FILE=config-ebook.yml rake pdf'
+inherit: ["config.yml"]
+pdfmaker:
+  texdocumentclass: ["review-jsbook", "media=ebook,paper=a5"]
