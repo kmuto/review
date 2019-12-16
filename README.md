@@ -1,7 +1,7 @@
 # Re:VIEW
 
 [![Gem Version](https://badge.fury.io/rb/review.svg)](http://badge.fury.io/rb/review)
-[![Build Status](https://secure.travis-ci.org/kmuto/review.svg)](http://travis-ci.org/kmuto/review)
+[![Build Status](https://github.com/kmuto/review/workflows/Test/badge.svg)](https://github.com/kmuto/review/actions)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/kmuto/review?svg=true)](https://ci.appveyor.com/project/kmuto/review)
 
 Re:VIEW is an easy-to-use digital publishing system for paper books and ebooks.
