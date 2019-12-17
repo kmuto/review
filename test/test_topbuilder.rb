@@ -466,6 +466,45 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_table_split_regexp
+    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+    expected = <<-EOS
+◆→開始:表←◆
+★1☆\t★2☆\t★3  4,5☆
+a b\tc  d,e\t
+◆→終了:表←◆
+
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '\s+'
+    actual = compile_block(src)
+    expected = <<-EOS
+◆→開始:表←◆
+★1☆\t★2☆\t★3☆\t★4,5☆
+a\tb\tc\td,e
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = ','
+    actual = compile_block(src)
+    expected = <<-EOS
+◆→開始:表←◆
+★1\t2\t\t3  4☆\t★5☆
+a b\tc  d\te
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '['
+    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
+    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
+  end
+
   def test_major_blocks
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = <<-EOS
