@@ -490,6 +490,7 @@ module ReVIEW
       else
         print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{@col}">)
       end
+      @table_id = id
       table_rows(sepidx, rows)
       puts '</tbody></table>'
       @tsize = nil
@@ -526,11 +527,11 @@ module ReVIEW
           cellwidth.size.times do |n|
             cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
             totallength += cellwidth[n]
-            warn "total length exceeds limit for table: #{id}" if totallength > @tablewidth
+            warn "total length exceeds limit for table: #{@table_id}" if totallength > @tablewidth
           end
           if cellwidth.size < @col
             cw = (@tablewidth - totallength) / (@col - cellwidth.size)
-            warn "auto cell sizing exceeds limit for table: #{id}" if cw <= 0
+            warn "auto cell sizing exceeds limit for table: #{@table_id}" if cw <= 0
             (cellwidth.size..(@col - 1)).each { |i| cellwidth[i] = cw }
           end
         end

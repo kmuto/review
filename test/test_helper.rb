@@ -10,13 +10,16 @@ def assets_dir
   File.join(File.dirname(__FILE__), 'assets')
 end
 
-def prepare_samplebook(srcdir)
-  samplebook_dir = File.expand_path('../samples/sample-book/src/', File.dirname(__FILE__))
+def prepare_samplebook(srcdir, bookdir, latextemplatedir, configfile)
+  samplebook_dir = File.expand_path("../samples/#{bookdir}/", File.dirname(__FILE__))
   FileUtils.cp_r(Dir.glob(File.join(samplebook_dir, '*')), srcdir)
-  # copy from review-jsbook
-  template_dir = File.expand_path('../templates/latex/review-jsbook/', File.dirname(__FILE__))
-  FileUtils.cp(Dir.glob(File.join(template_dir, '*')), File.join(srcdir, 'sty'))
-  YAML.safe_load(File.open(File.join(srcdir, 'config.yml')), [Date])
+  if latextemplatedir
+    # copy from review-jsbook or review-jlreq
+    template_dir = File.expand_path("../templates/latex/#{latextemplatedir}/", File.dirname(__FILE__))
+    FileUtils.cp(Dir.glob(File.join(template_dir, '*')), File.join(srcdir, 'sty'))
+  end
+  loader = ReVIEW::YAMLLoader.new
+  loader.load_file(File.open(File.join(srcdir, configfile)))
 end
 
 def compile_inline(text)

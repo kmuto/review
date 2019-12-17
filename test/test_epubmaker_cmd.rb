@@ -21,18 +21,25 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
     ENV['RUBYLIB'] = @old_rubylib
   end
 
-  def test_epubmaker_cmd
+  def common_buildepub(bookdir, configfile, targetepubfile)
     if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
-      config = prepare_samplebook(@tmpdir1)
+      config = prepare_samplebook(@tmpdir1, bookdir, nil, configfile)
       builddir = File.join(@tmpdir1, config['bookname'] + '-epub')
       assert !File.exist?(builddir)
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name']) + RbConfig::CONFIG['EXEEXT']
       Dir.chdir(@tmpdir1) do
-        system("#{ruby_cmd} -S #{REVIEW_EPUBMAKER} config.yml 1>/dev/null 2>/dev/null")
+        system("#{ruby_cmd} -S #{REVIEW_EPUBMAKER} #{configfile} 1>/dev/null 2>/dev/null")
       end
-
-      assert File.exist?(builddir)
+      assert File.exist?(File.join(@tmpdir1, targetepubfile))
     end
+  end
+
+  def test_epubmaker_cmd_samplebook
+    common_buildepub('sample-book/src', 'config.yml', 'book.epub')
+  end
+
+  def test_epubmaker_cmd_syntaxbook
+    common_buildepub('syntax-book', 'config.yml', 'syntax-book.epub')
   end
 end

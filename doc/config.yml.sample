@@ -64,6 +64,8 @@ aut: ["青木峰郎", "武藤健志", "高橋征義", "角征典"]
 # a-trc, trc: 筆記・タイプ作業者
 # a-trl, trl: 翻訳者
 
+# contact: 連絡先
+
 # 刊行日(省略した場合は実行時の日付)
 # date: 2018-11-11
 # 発行年月。YYYY-MM-DD形式による配列指定。省略した場合はdateを使用する
@@ -137,7 +139,10 @@ toc: true
 # creditfile: null
 
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
+# デフォルトの奥付における各項目の名前（「著　者」など）を変えたいときにはlocale.ymlで文字列を設定する（詳細はdoc/format.ja.mdを参照）
 # colophon: null
+# デフォルトの奥付における、各項目の記載順序
+# colophon_order: ["aut", "csl", "trl", "dsr", "ill", "cov", "edt", "pbl", "contact", "prt"]
 
 # 裏表紙データファイル (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # backcover: null
