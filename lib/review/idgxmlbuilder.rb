@@ -322,12 +322,7 @@ module ReVIEW
 
     def listnum(lines, id, caption, lang = nil)
       puts '<codelist>'
-      begin
-        list_header(id, caption, lang)
-      rescue KeyError
-        error "no such list: #{id}"
-      end
-      listnum_body(lines, lang)
+      super(lines, id, caption, lang)
       puts '</codelist>'
     end
 
