@@ -62,6 +62,15 @@ module ReVIEW
         if @book.config['tabwidth']
           @tabwidth = @book.config['tabwidth']
         end
+
+        if @book.config['join_lines_by_lang']
+          begin
+            require 'unicode/eaw'
+          rescue LoadError
+            warn 'not found unicode/eaw. disabled join_lines_by_lang feature.'
+            @book.config['join_lines_by_lang'] = nil
+          end
+        end
       end
       builder_init_file
     end
@@ -151,7 +160,7 @@ module ReVIEW
     end
 
     def image(lines, id, caption, metric = nil)
-      if @chapter.image(id).bound?
+      if @chapter.image_bound?(id)
         image_image(id, caption, metric)
       else
         warn "image not bound: #{id}" if @strict
@@ -176,6 +185,14 @@ module ReVIEW
       end
     end
 
+    def table_split_regexp
+      begin
+        Regexp.new(@book.config['table_split_regexp'])
+      rescue RegexpError
+        error "invalid regular expression in 'table_split_regexp' parameter."
+      end
+    end
+
     def parse_table_rows(lines)
       sepidx = nil
       rows = []
@@ -184,7 +201,7 @@ module ReVIEW
           sepidx ||= idx
           next
         end
-        rows.push(line.strip.split(/\t+/).map { |s| s.sub(/\A\./, '') })
+        rows.push(line.strip.split(table_split_regexp).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
       error 'no rows in the table' if rows.empty?

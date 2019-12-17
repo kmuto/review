@@ -121,7 +121,7 @@ LaTeX コンパイラコマンドおよびオプションについて、Re:VIEW 
 
 ```yaml
 texcommand: uplatex
-texoptions: "-interaction=nonstopmode -file-line-error"
+texoptions: "-interaction=nonstopmode -file-line-error -halt-on-error"
 texdocumentclass: ["jsbook", "uplatex,oneside"]
 dvicommand: dvipdfmx
 dvioptions: "-d 5"

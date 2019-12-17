@@ -244,7 +244,7 @@ EOS
 
   def test_inline_hd_chap
     def @chapter.headline_index
-      items = [Book::HeadlineIndex::Item.new('chap1|test', [1, 1], 'te_st')]
+      items = [Book::Index::Item.new('chap1|test', [1, 1], 'te_st')]
       Book::HeadlineIndex.new(items, self)
     end
 
@@ -270,7 +270,7 @@ EOS
         end
 
         def @chapter.headline_index
-          items = [Book::HeadlineIndex::Item.new('test', [1], 'te_st')]
+          items = [Book::Index::Item.new('test', [1], 'te_st')]
           Book::HeadlineIndex.new(items, self)
         end
 
@@ -293,7 +293,7 @@ EOS
         end
 
         def @chapter.headline_index
-          items = [Book::HeadlineIndex::Item.new('test', [1], 'te_st')]
+          items = [Book::Index::Item.new('test', [1], 'te_st')]
           Book::HeadlineIndex.new(items, self)
         end
 
@@ -343,7 +343,7 @@ EOS
 
   def test_inline_img
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1, 'sample photo')
+      item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -355,7 +355,7 @@ EOS
 
   def test_inline_imgref
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1, 'sample photo')
+      item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -367,7 +367,7 @@ EOS
 
   def test_inline_imgref2
     def @chapter.image(_id)
-      item = Book::NumberlessImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -443,6 +443,14 @@ EOS
 <p>buz</p></blockquote>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+<blockquote><p>foo bar</p>
+<p>buz</p></blockquote>
+EOS
+    assert_equal expected, actual
   end
 
   def test_memo
@@ -473,12 +481,28 @@ EOS
 <p>foo2bar2</p>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    expected = <<-EOS
+<p class="noindent">foo bar</p>
+<p>foo2 bar2</p>
+EOS
+    assert_equal expected, actual
   end
 
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
 <p class="flushright">foobar</p>
+<p class="flushright">buz</p>
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+<p class="flushright">foo bar</p>
 <p class="flushright">buz</p>
 EOS
     assert_equal expected, actual
@@ -491,11 +515,19 @@ EOS
 <p class="center">buz</p>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+<p class="center">foo bar</p>
+<p class="center">buz</p>
+EOS
+    assert_equal expected, actual
   end
 
   def test_image
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -514,7 +546,7 @@ EOS
 
   def test_image_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -533,7 +565,7 @@ EOS
 
   def test_image_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -552,7 +584,7 @@ EOS
 
   def test_image_with_tricky_id
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('123 あ_;', 1)
+      item = Book::Index::Item.new('123 あ_;', 1)
       item.instance_eval { @path = './images/chap1-123 あ_;.png' }
       item
     end
@@ -571,7 +603,7 @@ EOS
 
   def test_indepimage
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -590,7 +622,7 @@ EOS
 
   def test_indepimage_without_caption
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -606,7 +638,7 @@ EOS
 
   def test_indepimage_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -625,7 +657,7 @@ EOS
 
   def test_indepimage_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -644,7 +676,7 @@ EOS
 
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -659,7 +691,7 @@ EOS
   end
 
   def test_dlist
-    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
@@ -667,10 +699,20 @@ EOS
 </dl>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo. bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_bracket
-    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo[bar]</dt>
@@ -678,10 +720,20 @@ EOS
 </dl>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
+    expected = <<-EOS
+<dl>
+<dt>foo[bar]</dt>
+<dd>foo. bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_comment
-    source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
+    source = " : title\n  body\n\#@ comment\n\#@ comment\n : title2\n  body2\n"
     actual = compile_block(source)
     expected = <<-EOS
 <dl>
@@ -722,7 +774,7 @@ EOS
 
   def test_list
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS
@@ -740,7 +792,7 @@ EOS
 
   def test_inline_list
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("@<list>{sampletest}\n")
     assert_equal %Q(<p><span class="listref">リスト1.1</span></p>\n), actual
@@ -764,7 +816,7 @@ EOS
 
   def test_list_pygments
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     begin
       require 'pygments'
@@ -791,7 +843,7 @@ test&lt;i&gt;2&lt;/i&gt;
 
   def test_list_pygments_lang
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     begin
       require 'pygments'
@@ -819,7 +871,7 @@ EOS
 
   def test_list_pygments_nulllang
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     begin
       require 'pygments'
@@ -852,7 +904,7 @@ end
       return true
     end
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     @book.config['highlight'] = {}
     @book.config['highlight']['html'] = 'rouge'
@@ -879,7 +931,7 @@ EOS
       return true
     end
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     @book.config['highlight'] = {}
     @book.config['highlight']['html'] = 'rouge'
@@ -907,7 +959,7 @@ EOS
       return true
     end
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     @book.config['highlight'] = {}
     @book.config['highlight']['html'] = 'rouge'
@@ -929,7 +981,7 @@ EOS
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
 
     @book.config['highlight'] = false
@@ -958,7 +1010,7 @@ EOS
 
   def test_listnum_linenum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
 
     @book.config['highlight'] = false
@@ -988,7 +1040,7 @@ EOS
 
   def test_listnum_pygments_lang
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     begin
       require 'pygments'
@@ -1015,7 +1067,7 @@ EOS
 
   def test_listnum_pygments_lang_linenum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     begin
       require 'pygments'
@@ -1043,7 +1095,7 @@ EOS
 
   def test_listnum_pygments_lang_without_lang
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     begin
       require 'pygments'
@@ -1077,7 +1129,7 @@ EOS
       return true
     end
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     @book.config['highlight'] = {}
     @book.config['highlight']['html'] = 'rouge'
@@ -1111,7 +1163,7 @@ EOS
       return true
     end
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     @book.config['highlight'] = {}
     @book.config['highlight']['html'] = 'rouge'
@@ -1402,7 +1454,7 @@ EOS
 
   def test_bib
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     assert_equal %Q(<a href="bib.html#bib-samplebib">[1]</a>), compile_inline('@<bib>{samplebib}')
@@ -1410,7 +1462,7 @@ EOS
 
   def test_bib_noramlized
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('sampleb=ib', 1, 'sample bib')
+      Book::Index::Item.new('sampleb=ib', 1, 'sample bib')
     end
 
     assert_equal %Q(<a href="bib.html#bib-id_sample_3Dbib">[1]</a>), compile_inline('@<bib>{sample=bib}')
@@ -1418,7 +1470,7 @@ EOS
 
   def test_bib_htmlext
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     @config['htmlext'] = 'xhtml'
@@ -1427,7 +1479,7 @@ EOS
 
   def test_bibpaper
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
@@ -1437,11 +1489,20 @@ EOS
 <p>ab</p></div>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    expected = <<-EOS
+<div class="bibpaper">
+<a id="bib-samplebib">[1]</a> sample bib <b>bold</b>
+<p>a b</p></div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_bibpaper_normalized
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('sample=bib', 1, 'sample bib')
+      Book::Index::Item.new('sample=bib', 1, 'sample bib')
     end
 
     actual = compile_block("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
@@ -1451,11 +1512,20 @@ EOS
 <p>ab</p></div>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//bibpaper[sample=bib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    expected = <<-EOS
+<div class="bibpaper">
+<a id="bib-id_sample_3Dbib">[1]</a> sample bib <b>bold</b>
+<p>a b</p></div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_bibpaper_with_anchor
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
@@ -1463,6 +1533,15 @@ EOS
 <div class="bibpaper">
 <a id="bib-samplebib">[1]</a> sample bib <a href="http://example.jp" class="link">http://example.jp</a>
 <p>ab</p></div>
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//bibpaper[samplebib][sample bib @<href>{http://example.jp}]{\na\nb\n//}\n")
+    expected = <<-EOS
+<div class="bibpaper">
+<a id="bib-samplebib">[1]</a> sample bib <a href="http://example.jp" class="link">http://example.jp</a>
+<p>a b</p></div>
 EOS
     assert_equal expected, actual
   end
@@ -1558,7 +1637,7 @@ EOS
 
   def test_column_in_aother_chapter_ref
     def @chapter.column_index
-      items = [Book::ColumnIndex::Item.new('chap1|column', 1, 'column_cap')]
+      items = [Book::Index::Item.new('chap1|column', 1, 'column_cap')]
       Book::ColumnIndex.new(items)
     end
 
@@ -1593,6 +1672,16 @@ EOS
 <ul>
 <li>AAA-AA</li>
 <li>BBB-BB</li>
+</ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    expected = <<-EOS
+<ul>
+<li>AAA -AA</li>
+<li>BBB -BB</li>
 </ul>
 EOS
     actual = compile_block(src)
@@ -1977,7 +2066,7 @@ EOS
 
   def test_inline_table
     def @chapter.table(_id)
-      Book::TableIndex::Item.new('sampletable', 1)
+      Book::Index::Item.new('sampletable', 1)
     end
     actual = compile_block("@<table>{sampletest}\n")
     assert_equal %Q(<p><span class="tableref">表1.1</span></p>\n), actual
@@ -2005,7 +2094,7 @@ EOS
 
   def test_imgtable
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1, 'sample img')
+      item = Book::Index::Item.new('sampleimg', 1, 'sample img')
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -2018,6 +2107,48 @@ EOS
 </div>
 EOS
     assert_equal expected, actual
+  end
+
+  def test_table_split_regexp
+    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>1</th><th>2</th><th>3  4,5</th></tr>
+<tr><td>a b</td><td>c  d,e</td><td></td></tr>
+</table>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '\s+'
+    actual = compile_block(src)
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>1</th><th>2</th><th>3</th><th>4,5</th></tr>
+<tr><td>a</td><td>b</td><td>c</td><td>d,e</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = ','
+    actual = compile_block(src)
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>1\t2\t\t3  4</th><th>5</th></tr>
+<tr><td>a b\tc  d</td><td>e</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '['
+    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
+    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
   end
 
   def test_major_blocks
@@ -2168,7 +2299,7 @@ EOB
       @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       assert_equal %Q(<p>foo bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ} <b>bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ}</b> [missing word: N]</p>\n), actual
-      assert_match(/WARN -- : :1: word not bound: N/, io.string)
+      assert_match(/WARN --: :1: word not bound: N/, io.string)
     end
   end
 

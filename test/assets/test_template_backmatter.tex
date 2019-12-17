@@ -1,13 +1,14 @@
 \documentclass[dvipdfmx]{review-jsbook}
 \makeatletter
-\def\review@reviewversion{3.0.0.preview3}
+\def\review@reviewversion{3.2.0}
 \def\review@texcompiler{uplatex}
 \def\review@documentclass{review-jsbook}
 
 \def\review@booktitlename{Re:VIEW Sample Book}
 
+\def\review@autnames{anonymous}
 
-\def\review@titlepageauthors{}
+\def\review@titlepageauthors{anonymous　著}
 \def\review@date{2011{-}01{-}01}
 
 \def\review@bookname{sample}
@@ -34,6 +35,7 @@
 \def\review@tablename{表}
 \def\review@appendixname{付録}
 
+\def\review@usecovernombre{true}
 \def\review@titlepage{true}
 \def\reviewprofilepagecont{\thispagestyle{empty}\chapter*{Profile}
 some profile
@@ -48,7 +50,8 @@ some ad content
 \null}
 
 \def\review@pubhistories{2011年1月1日　発行}
-\def\review@colophonnames{}
+\def\review@colophonnames{著　者 & anonymous \\
+}
 
 \def\reviewprefacefiles{}
 \def\reviewchapterfiles{}
@@ -56,17 +59,21 @@ some ad content
 \def\reviewpostdeffiles{}
 
 \def\reviewbackcompatibilityhook{
-  \@ifundefined{reviewimagecaption}{% for 3.0.0 compatibility
+  \ifdefined\reviewimagecaption\else% for 3.0.0 compatibility
     \newcommand{\reviewimagecaption}[1]{\caption{##1}}
-  }
-  \@ifundefined{reviewincludegraphics}{% for 3.2.0 compatibility
+  \fi
+  \ifdefined\reviewincludegraphics\else% for 3.2.0 compatibility
     \DeclareRobustCommand{\reviewincludegraphics}[2][]{%
       \includegraphics[##1]{##2}}
-  }
+  \fi
+  \ifdefined\covermatter\else% for 4.0.0 compatibility
+    \def\covermatter{}
+  \fi
 }
 
 \makeatother
 
+\usepackage{reviewmacro}
 
 %% backward compatibility (defined in config.erb)
 \reviewbackcompatibilityhook
@@ -80,6 +87,7 @@ some ad content
 
 %% coverpage
 \ifdefined\reviewcoverpagecont
+\covermatter
 \reviewcoverpagecont
 \fi
 

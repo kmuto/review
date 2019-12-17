@@ -20,14 +20,14 @@ module ReVIEW
     end
 
     # should be
-    TARGET_VERSION = '3.0'
+    TARGET_VERSION = '4.0'
     EPUB_VERSION = '3'
     HTML_VERSION = '5'
     TEX_DOCUMENTCLASS = ['review-jsbook', 'review-jlreq']
     TEX_DOCUMENTCLASS_BAD = ['jsbook', nil]
     TEX_DOCUMENTCLASS_OPTS = 'media=print,paper=a5'
     TEX_COMMAND = 'uplatex'
-    TEX_OPTIONS = '-interaction=nonstopmode -file-line-error'
+    TEX_OPTIONS = '-interaction=nonstopmode -file-line-error -halt-on-error'
     DVI_COMMAND = 'dvipdfmx'
     DVI_OPTIONS = '-d 5 -z 9'
 

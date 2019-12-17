@@ -98,11 +98,11 @@ Nested itemize is like ` **`, ` ***`.
 Usage:
 
 ```
-* 1st item
-** nested 1st item
-* 2nd item
-** nested 2nd item
-* 3rd item
+ * 1st item
+ ** nested 1st item
+ * 2nd item
+ ** nested 2nd item
+ * 3rd item
 ```
 
 In itemize, you must write one more space character at line head.
@@ -118,34 +118,34 @@ They aren't nested.
 Usage:
 
 ```
-1. 1st condition
-2. 2nd condition
-3. 3rd condition
+ 1. 1st condition
+ 2. 2nd condition
+ 3. 3rd condition
 ```
 
 The value of Number is ignored.
 
 ```
-1. 1st condition
-1. 2nd condition
-1. 3rd condition
+ 1. 1st condition
+ 1. 2nd condition
+ 1. 3rd condition
 ```
 
 You must write one more space character at line head like itemize.
 
 ## Definition List
 
-Definition list (dl in HTML) use `:` and indented lines.
+Definition list (dl in HTML) uses ` : ` and indented lines.
 
 Usage:
 
 ```review
-: Alpha
+ : Alpha
     RISC CPU made by DEC.
-: POWER
+ : POWER
     RSIC CPU made by IBM and Motolora.
     POWER PC is delivered from this.
-: SPARC
+ : SPARC
     RISC CPU made by SUN.
 ```
 
@@ -546,9 +546,10 @@ You should get and install it before reading the book.
 `@<fn>{site}` in source are replaced by footnote marks, and the phrase "support site of .."
 is in footnotes.
 
-Note that In LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in columns and tables.
+Note that in LATEXBuilder, it is highly recommended to place `//footnote` after the end line of column (`==[/column]`) to avoid problems when using third party's style file.
 
 ### `footnotetext` option
+Note that in LATEXBuilder, you should use `footnotetext` option to use `@<fn>{...}` in `//note` or other short column blocks.
 
 By adding `footnotetext:true` in config.yml, you can use footnote in tables and short notes.
 

@@ -12,6 +12,7 @@ require 'review/exception'
 require 'review/book/image_finder'
 require 'review/i18n'
 require 'review/logger'
+require 'review/book/index/item'
 
 module ReVIEW
   module Book
@@ -21,7 +22,7 @@ module ReVIEW
         seq = 1
         src.grep(%r{\A//#{item_type}}) do |line|
           if id = line.slice(/\[(.*?)\]/, 1)
-            items.push(item_class.new(id, seq))
+            items.push(ReVIEW::Book::Index::Item.new(id, seq))
             seq += 1
             if id.empty?
               ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
@@ -29,12 +30,6 @@ module ReVIEW
           end
         end
         new(items, *args)
-      end
-
-      Item = Struct.new(:id, :number)
-
-      def self.item_class
-        self::Item
       end
 
       include Enumerable
@@ -47,11 +42,11 @@ module ReVIEW
         @items = items
         @index = {}
         @logger = ReVIEW.logger
-        items.each do |i|
-          if @index[i.id]
-            @logger.warn "warning: duplicate ID: #{i.id} (#{i})"
+        items.each do |item|
+          if @index[item.id]
+            @logger.warn "warning: duplicate ID: #{item.id} (#{item})"
           end
-          @index[i.id] = i
+          @index[item.id] = item
         end
         @image_finder = nil
       end
@@ -65,9 +60,9 @@ module ReVIEW
           raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
         end
 
-        @items.each do |i|
-          if i.id.split('|').include?(id)
-            return i
+        @items.each do |item|
+          if item.id.split('|').include?(id)
+            return item
           end
         end
         raise KeyError, "not found key '#{id}' for #{self.class}"
@@ -135,8 +130,6 @@ module ReVIEW
     end
 
     class FootnoteIndex < Index
-      Item = Struct.new(:id, :number, :content)
-
       def self.parse(src)
         items = []
         seq = 1
@@ -160,10 +153,10 @@ module ReVIEW
           # ex. ["//image", "id", "", "caption"]
           elements = line.split(/\[(.*?)\]/)
           if elements[1].present?
-            if line =~ %r{\A//imgtable}
-              items.push(item_class.new(elements[1], 0, elements[3]))
+            if line.start_with?('//imgtable')
+              items.push(ReVIEW::Book::Index::Item.new(elements[1], 0, elements[3]))
             else ## %r<\A//(image|graph)>
-              items.push(item_class.new(elements[1], seq, elements[3]))
+              items.push(ReVIEW::Book::Index::Item.new(elements[1], seq, elements[3]))
               seq += 1
             end
             if elements[1] == ''
@@ -178,34 +171,12 @@ module ReVIEW
         '(image|graph|imgtable)'
       end
 
-      class Item
-        def initialize(id, number, caption = nil)
-          @id = id
-          @number = number
-          @caption = caption
-          @path = nil
-        end
-
-        attr_reader :id
-        attr_reader :number
-        attr_reader :caption
-        attr_writer :index # internal use only
-
-        def bound?
-          path
-        end
-
-        def path
-          @path ||= @index.find_path(id)
-        end
-      end
-
       attr_reader :image_finder
 
       def initialize(items, chapid, basedir, types, builder)
         super(items)
-        items.each do |i|
-          i.index = self
+        items.each do |item|
+          item.index = self
         end
         @chapid = chapid
         @basedir = basedir
@@ -223,8 +194,8 @@ module ReVIEW
       def initialize(items, chapid, basedir, types, builder)
         @items = items
         @index = {}
-        items.each { |i| @index[i.id] = i }
-        items.each { |i| i.index = self }
+        items.each { |item| @index[item.id] = item }
+        items.each { |item| item.index = self }
         @chapid = chapid
         @basedir = basedir
         @types = types
@@ -237,7 +208,7 @@ module ReVIEW
         seq = 1
         src.grep(/@<icon>/) do |line|
           line.gsub(/@<icon>\{(.+?)\}/) do
-            items.push(item_class.new($1, seq))
+            items.push(ReVIEW::Book::Index::Item.new($1, seq))
             seq += 1
           end
         end
@@ -246,8 +217,6 @@ module ReVIEW
     end
 
     class BibpaperIndex < Index
-      Item = Struct.new(:id, :number, :caption)
-
       def self.parse(src)
         items = []
         seq = 1
@@ -268,18 +237,12 @@ module ReVIEW
         'numberlessimage'
       end
 
-      class Item < ImageIndex::Item
-      end
-
       def number(_id)
         ''
       end
     end
 
     class IndepImageIndex < ImageIndex
-      class Item < ImageIndex::Item
-      end
-
       def self.item_type
         '(indepimage|imgtable)'
       end
@@ -291,7 +254,6 @@ module ReVIEW
 
     class HeadlineIndex < Index
       HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
-      Item = Struct.new(:id, :number, :caption)
       attr_reader :items
 
       def self.parse(src, chap)
@@ -305,7 +267,7 @@ module ReVIEW
           if line =~ %r{\A//[a-z]+.*\{\Z}
             inside_block = true
             next
-          elsif line =~ %r{\A//\}}
+          elsif line.start_with?('//}')
             inside_block = nil
             next
           elsif inside_block
@@ -364,11 +326,11 @@ module ReVIEW
         @chap = chap
         @index = {}
         @logger = ReVIEW.logger
-        items.each do |i|
-          if @index[i.id]
-            @logger.warn "warning: duplicate ID: #{i.id}"
+        items.each do |item|
+          if @index[item.id]
+            @logger.warn "warning: duplicate ID: #{item.id}"
           end
-          @index[i.id] = i
+          @index[item.id] = item
         end
       end
 
@@ -388,7 +350,6 @@ module ReVIEW
 
     class ColumnIndex < Index
       COLUMN_PATTERN = /\A(=+)\[column\](?:\{(.+?)\})?(.*)/
-      Item = Struct.new(:id, :number, :caption)
 
       def self.parse(src, *_args)
         items = []
@@ -401,7 +362,7 @@ module ReVIEW
           caption = m[3].strip
           id = caption if id.nil? || id.empty?
 
-          items.push(item_class.new(id, seq, caption))
+          items.push(ReVIEW::Book::Index::Item.new(id, seq, caption))
           seq += 1
         end
         new(items)

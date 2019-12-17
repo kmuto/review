@@ -146,6 +146,33 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<table><caption>foo</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
   end
 
+  def test_table_split_regexp
+    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+    expected = <<-EOS.chomp
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="3"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">3  4,5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">c  d,e</td></tbody></table>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '\s+'
+    actual = compile_block(src)
+    expected = <<-EOS.chomp
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="4"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">3</td><td xyh="4,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">4,5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">a</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">b</td><td xyh="3,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">c</td><td xyh="4,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">d,e</td></tbody></table>
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = ','
+    actual = compile_block(src)
+    expected = <<-EOS.chomp
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">1\t2\t\t3  4</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">a b\tc  d</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">e</td></tbody></table>
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '['
+    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
+    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
+  end
+
   def test_inline_br
     actual = compile_inline('@<br>{}')
     assert_equal "\n", actual
@@ -199,16 +226,28 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_paragraph
     actual = compile_block("foo\nbar\n")
     assert_equal '<p>foobar</p>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("foo\nbar\n")
+    assert_equal '<p>foo bar</p>', actual
   end
 
   def test_tabbed_paragraph
     actual = compile_block("\tfoo\nbar\n")
     assert_equal %Q(<p inlist="1">foobar</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("\tfoo\nbar\n")
+    assert_equal %Q(<p inlist="1">foo bar</p>), actual
   end
 
   def test_quote
     actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal '<quote><p>foobar</p><p>buz</p></quote>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal '<quote><p>foo bar</p><p>buz</p></quote>', actual
   end
 
   def test_major_blocks
@@ -249,16 +288,28 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_term
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal '<term><p>test1test1.5</p><p>test<i>2</i></p></term>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<term><p>test1 test1.5</p><p>test<i>2</i></p></term>', actual
   end
 
   def test_point
     actual = compile_block("//point[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<point-t><title aid:pstyle='point-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></point-t>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//point[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<point-t><title aid:pstyle='point-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1 test1.5</p><p>test<i>2</i></p></point-t>), actual
   end
 
   def test_point_without_caption
     actual = compile_block("//point{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal '<point><p>test1test1.5</p><p>test<i>2</i></p></point>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//point{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<point><p>test1 test1.5</p><p>test<i>2</i></p></point>', actual
   end
 
   def test_emlist
@@ -311,7 +362,7 @@ EOS
 
   def test_list
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS.chomp
@@ -326,7 +377,7 @@ EOS
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS.chomp
@@ -341,7 +392,7 @@ EOS
 
   def test_listnum_linenum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS.chomp
@@ -356,7 +407,7 @@ EOS
 
   def test_list_listinfo
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('samplelist', 1)
+      Book::Index::Item.new('samplelist', 1)
     end
     @config['listinfo'] = true
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
@@ -454,11 +505,19 @@ EOS
   def test_flushright
     actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(<p align='right'>foobar</p><p align='right'>buz</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='right'>foo bar</p><p align='right'>buz</p>), actual
   end
 
   def test_centering
     actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
     assert_equal %Q(<p align='center'>foobar</p><p align='center'>buz</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='center'>foo bar</p><p align='center'>buz</p>), actual
   end
 
   def test_blankline
@@ -469,11 +528,15 @@ EOS
   def test_noindent
     actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
     assert_equal %Q(<p aid:pstyle="noindent" noindent='1'>foobar</p><p>foo2bar2</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    assert_equal %Q(<p aid:pstyle="noindent" noindent='1'>foo bar</p><p>foo2 bar2</p>), actual
   end
 
   def test_image
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -484,7 +547,7 @@ EOS
 
   def test_image_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -495,7 +558,7 @@ EOS
 
   def test_image_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -506,7 +569,7 @@ EOS
 
   def test_indepimage
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -517,7 +580,7 @@ EOS
 
   def test_indepimage_without_caption
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -528,7 +591,7 @@ EOS
 
   def test_indepimage_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -539,7 +602,7 @@ EOS
 
   def test_indepimage_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -550,7 +613,7 @@ EOS
 
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -628,7 +691,7 @@ EOS
 
   def test_column_in_aother_chapter_ref
     def @chapter.column_index
-      items = [Book::ColumnIndex::Item.new('chap1|column', 1, 'column_cap')]
+      items = [Book::Index::Item.new('chap1|column', 1, 'column_cap')]
       Book::ColumnIndex.new(items)
     end
 
@@ -657,9 +720,15 @@ EOS
   * BBB
     -BB
 EOS
-
     expected = <<-EOS.chomp
 <ul><li aid:pstyle="ul-item">AAA-AA</li><li aid:pstyle="ul-item">BBB-BB</li></ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">AAA -AA</li><li aid:pstyle="ul-item">BBB -BB</li></ul>
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
@@ -777,7 +846,7 @@ EOS
 
   def test_inline_imgref
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1, 'sample photo')
+      item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -789,7 +858,7 @@ EOS
 
   def test_inline_imgref2
     def @chapter.image(_id)
-      item = Book::NumberlessImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end

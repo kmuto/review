@@ -40,6 +40,9 @@ Lint/UnusedMethodArgument:
 Lint/UselessAssignment:
   Enabled: true
 
+Lint/ErbNewArguments:
+  Enabled: false
+
 #### Performance
 
 Performance/RegexpMatch:
@@ -141,7 +144,7 @@ Style/MutableConstant:
 #Style/MultipleComparison:
 #  Enabled: true
 
-Style/UnneededInterpolation:
+Style/RedundantInterpolation:
   Enabled: true
 
 Performance/RedundantMerge:
@@ -213,6 +216,9 @@ Style/MethodCallWithArgsParentheses:
     - 'source'
     - 'assert'
     - 'assert_equal'
+    - 'sh'
+    - 'mv'
+    - 'rm_rf'
   Enabled: true
 
 Style/MixinUsage:
@@ -298,7 +304,7 @@ Style/TrailingCommaInHashLiteral:
 Style/WordArray:
   MinSize: 10
 
-Style/UnneededPercentQ:
+Style/RedundantPercentQ:
   Enabled: false
 
 Style/WhileUntilModifier:
@@ -313,7 +319,7 @@ Layout/BlockAlignment:
   Enabled: true
 
 Layout/EndAlignment:
-  Enabled: AlignWith
+  Enabled: true
 
 Layout/MultilineMethodCallBraceLayout:
   Enabled: true
@@ -359,10 +365,10 @@ Layout/IndentationConsistency:
 Layout/IndentationWidth:
   Enabled: true
 
-Layout/IndentFirstHashElement:
+Layout/FirstHashElementIndentation:
   Enabled: true
 
-Layout/IndentHeredoc:
+Layout/HeredocIndentation:
   Enabled: false
 
 Layout/LeadingCommentSpace:
@@ -409,7 +415,7 @@ Layout/SpaceInsideStringInterpolation:
   EnforcedStyle: no_space
   Enabled: true
 
-Layout/TrailingBlankLines:
+Layout/TrailingEmptyLines:
   Enabled: true
 
 Layout/TrailingWhitespace:
@@ -489,7 +495,7 @@ Naming/MemoizedInstanceVariableName:
 Naming/MethodName:
   Enabled: true
 
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
   Enabled: false
 
 # Use snake_case for variable names.
@@ -502,8 +508,5 @@ Naming/VariableNumber:
 
 #### Security
 
-# we use Date object in config.yml so should use YAML.load :-/
 Security/YAMLLoad:
-  Exclude:
-    - 'lib/review/catalog.rb'
-    - 'test/test_helper.rb'
+  Enabled: true

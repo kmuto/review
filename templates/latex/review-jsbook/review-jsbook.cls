@@ -21,7 +21,7 @@
 
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{review-jsbook}
-  [2018/09/30 v3.0  Re:VIEW pLaTeX class modified for jsbook.cls]
+  [2019/09/22 v4.0  Re:VIEW pLaTeX class modified for jsbook.cls]
 
 \def\recls@error{\ClassError{review-jsbook}}
 \def\recls@warning{\ClassWarning{review-jsbook}}
@@ -485,6 +485,10 @@
     \if@twoside\else
       %% \setcounter{page}\@ne
     \fi}
+
+%% 表紙のノンブル
+\def\coverpagezero#1{\expandafter\@coverpagezero\csname c@#1\endcsname}
+\def\@coverpagezero#1{cover}
 
 \listfiles
 \endinput

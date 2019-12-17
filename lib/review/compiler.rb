@@ -28,13 +28,6 @@ module ReVIEW
 
     def compile(chap)
       @chapter = chap
-      @non_parsed_commands = %i[embed texequation graph]
-      if @strategy.highlight?
-        @non_escaped_commands = %i[list emlist listnum emlistnum cmd]
-      else
-        @non_escaped_commands = []
-      end
-      @command_name_stack = []
       do_compile
       @strategy.result
     end
@@ -231,6 +224,15 @@ module ReVIEW
     def do_compile
       f = LineInput.new(StringIO.new(@chapter.content))
       @strategy.bind(self, @chapter, Location.new(@chapter.basename, f))
+
+      @non_parsed_commands = %i[embed texequation graph]
+      if @strategy.highlight?
+        @non_escaped_commands = %i[list emlist listnum emlistnum cmd]
+      else
+        @non_escaped_commands = []
+      end
+      @command_name_stack = []
+
       tagged_section_init
       while f.next?
         case f.peek
@@ -242,7 +244,10 @@ module ReVIEW
           compile_ulist(f)
         when /\A\s+\d+\./
           compile_olist(f)
+        when /\A\s+:\s/
+          compile_dlist(f)
         when /\A\s*:\s/
+          warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
         when %r{\A//\}}
           f.gets
@@ -461,7 +466,7 @@ module ReVIEW
           buf.push(text(line.rstrip, true))
         end
       end
-      unless %r{\A//\}} =~ f.peek
+      unless f.peek.to_s.start_with?('//}')
         error "unexpected EOF (block begins at: #{head})"
         return buf
       end

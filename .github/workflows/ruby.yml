@@ -1,0 +1,27 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ '2.6.x', '2.5.x', '2.4.x' ]
+        os: [ubuntu-latest, macOS-latest]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+    - name: fix ImageMagick policy.xml on Linux
+      if: runner.os == 'Linux'
+      run: sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
+    - name: Build and test with Rake
+      run: |
+        gem install bundler --no-document
+        bundle install --retry 3
+        bundle exec rake

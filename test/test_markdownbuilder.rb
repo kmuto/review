@@ -28,6 +28,17 @@ class MARKDOWNBuilderTest < Test::Unit::TestCase
 
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+> foo bar
+> 
+> buz
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_memo
@@ -48,6 +59,16 @@ EOS
 <p class="noindent">foobar</p>
 
 foo2bar2
+
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    expected = <<-EOS
+<p class="noindent">foo bar</p>
+
+foo2 bar2
 
 EOS
     assert_equal expected, actual
@@ -105,7 +126,7 @@ EOS
   end
 
   def test_dlist
-    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
@@ -113,10 +134,20 @@ EOS
 </dl>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo. bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_bracket
-    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo[bar]</dt>
@@ -124,10 +155,20 @@ EOS
 </dl>
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
+    expected = <<-EOS
+<dl>
+<dt>foo[bar]</dt>
+<dd>foo. bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_comment
-    source = ": title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
+    source = " : title\n  body\n\#@ comment\n\#@ comment\n: title2\n  body2\n"
     actual = compile_block(source)
     expected = <<-EOS
 <dl>
@@ -189,7 +230,7 @@ BBB
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('test', 1)
+      Book::Index::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n\tbuz\n//}\n")
     expected = <<-EOS

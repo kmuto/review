@@ -184,4 +184,17 @@ EOB
                    yaml)
     end
   end
+
+  def test_empty_file
+    Dir.mktmpdir do |dir|
+      yaml_file = File.join(dir, 'test.yml')
+      File.open(yaml_file, 'w') do |f|
+        f.write <<EOB
+#
+EOB
+      end
+      e = assert_raise(RuntimeError) { @loader.load_file(yaml_file) }
+      assert_match('test.yml is malformed.', e.message)
+    end
+  end
 end

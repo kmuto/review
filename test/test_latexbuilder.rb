@@ -247,7 +247,7 @@ EOS
 
   def test_inline_hd_chap
     def @chapter.headline_index
-      items = [Book::HeadlineIndex::Item.new('chap1|test', [1, 1], 'te_st')]
+      items = [Book::Index::Item.new('chap1|test', [1, 1], 'te_st')]
       Book::HeadlineIndex.new(items, self)
     end
 
@@ -307,7 +307,7 @@ EOS
   end
 
   def test_dlist
-    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
     expected = <<-EOS
 
 \\begin{description}
@@ -317,16 +317,38 @@ bar.
 \\end{description}
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
+    expected = <<-EOS
+
+\\begin{description}
+\\item[foo] \\mbox{} \\\\
+foo. bar.
+\\end{description}
+EOS
+    assert_equal expected, actual
   end
 
   def test_dlist_with_bracket
-    actual = compile_block(": foo[bar]\n    foo.\n    bar.\n")
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
     expected = <<-EOS
 
 \\begin{description}
 \\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\
 foo.
 bar.
+\\end{description}
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(" : foo[bar]\n    foo.\n    bar.\n")
+    expected = <<-EOS
+
+\\begin{description}
+\\item[foo\\lbrack{}bar\\rbrack{}] \\mbox{} \\\\
+foo. bar.
 \\end{description}
 EOS
     assert_equal expected, actual
@@ -710,6 +732,18 @@ buz
 \\end{quote}
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//quote{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{quote}
+foo bar
+
+buz
+\\end{quote}
+EOS
+    assert_equal expected, actual
   end
 
   def test_memo
@@ -735,6 +769,18 @@ buz
 \\end{flushright}
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{flushright}
+foo bar
+
+buz
+\\end{flushright}
+EOS
+    assert_equal expected, actual
   end
 
   def test_centering
@@ -743,6 +789,18 @@ EOS
 
 \\begin{center}
 foobar
+
+buz
+\\end{center}
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{center}
+foo bar
 
 buz
 \\end{center}
@@ -771,11 +829,21 @@ foo2
 bar2
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    expected = <<-EOS
+\\noindent
+foo bar
+
+foo2 bar2
+EOS
+    assert_equal expected, actual
   end
 
   def test_image
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -793,7 +861,7 @@ EOS
 
   def test_image_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -811,7 +879,7 @@ EOS
 
   def test_image_with_metric_width
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -830,7 +898,7 @@ EOS
 
   def test_image_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -848,7 +916,7 @@ EOS
 
   def test_image_with_metric2_width
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -867,7 +935,7 @@ EOS
 
   def test_indepimage
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -884,7 +952,7 @@ EOS
 
   def test_indepimage_without_caption
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -901,7 +969,7 @@ EOS
 
   def test_indepimage_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -918,7 +986,7 @@ EOS
 
   def test_indepimage_with_metric_width
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -936,7 +1004,7 @@ EOS
 
   def test_indepimage_with_metric2
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -953,7 +1021,7 @@ EOS
 
   def test_indepimage_without_caption_but_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -1107,7 +1175,7 @@ EOS
 
   def test_imgtable
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1, 'sample img')
+      item = Book::Index::Item.new('sampleimg', 1, 'sample img')
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -1126,9 +1194,48 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_table_split_regexp
+    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+    expected = <<-EOS
+\\begin{reviewtable}{|l|l|l|}
+\\hline
+\\reviewth{1} & \\reviewth{2} & \\reviewth{3  4,5} \\\\  \\hline
+a b & c  d,e &  \\\\  \\\hline
+\\end{reviewtable}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '\s+'
+    actual = compile_block(src)
+    expected = <<-EOS
+\\begin{reviewtable}{|l|l|l|l|}
+\\hline
+\\reviewth{1} & \\reviewth{2} & \\reviewth{3} & \\reviewth{4,5} \\\\  \\hline
+a & b & c & d,e \\\\  \\hline
+\\end{reviewtable}
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = ','
+    actual = compile_block(src)
+    expected = <<-EOS
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{1\t2\t\t3  4} & \\reviewth{5} \\\\  \\hline
+a b\tc  d & e \\\\  \\hline
+\\end{reviewtable}
+EOS
+    assert_equal expected, actual
+
+    @config['table_split_regexp'] = '['
+    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
+    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
+  end
+
   def test_bib
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     assert_equal '\\reviewbibref{[1]}{bib:samplebib}', compile_inline('@<bib>{samplebib}')
@@ -1136,7 +1243,7 @@ EOS
 
   def test_bibpaper
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
@@ -1148,11 +1255,22 @@ ab
 
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//bibpaper[samplebib][sample bib @<b>{bold}]{\na\nb\n//}\n")
+    expected = <<-EOS
+[1] sample bib \\reviewbold{bold}
+\\label{bib:samplebib}
+
+a b
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_bibpaper_without_body
     def @chapter.bibpaper(_id)
-      Book::BibpaperIndex::Item.new('samplebib', 1, 'sample bib')
+      Book::Index::Item.new('samplebib', 1, 'sample bib')
     end
 
     actual = compile_block("//bibpaper[samplebib][sample bib]\n")
@@ -1287,6 +1405,17 @@ EOS
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    expected = <<-EOS
+
+\\begin{itemize}
+\\item AAA {-}AA
+\\item BBB {-}BB
+\\end{itemize}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
   end
 
   def test_cont_with_br
@@ -1304,6 +1433,20 @@ EOS
 \\item BBB\\\\
 1\\\\
 {-}BB
+\\end{itemize}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    expected = <<-EOS
+
+\\begin{itemize}
+\\item AAA\\\\
+ {-}AA
+\\item BBB\\\\
+1\\\\
+ {-}BB
 \\end{itemize}
 EOS
     actual = compile_block(src)
@@ -1530,7 +1673,7 @@ EOS
 
   def test_inline_imgref
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1, 'sample photo')
+      item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -1542,7 +1685,7 @@ EOS
 
   def test_inline_imgref2
     def @chapter.image(_id)
-      item = Book::NumberlessImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -1631,7 +1774,7 @@ EOB
 foo bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\} \\reviewbold{bar"\\reviewbackslash{}\\textless{}\\textgreater{}\\textunderscore{}@\\textless{}b\\textgreater{}\\{BAZ\\}} [missing word: N]
 EOS
       assert_equal expected, actual
-      assert_match(/WARN -- : :1: word not bound: N/, io.string)
+      assert_match(/WARN --: :1: word not bound: N/, io.string)
     end
   end
 
@@ -1714,7 +1857,7 @@ EOS
     end
 
     def @chapter.image(_id)
-      item = Book::NumberlessImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end

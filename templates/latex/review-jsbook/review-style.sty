@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{review-style}[2018/07/01]
+\ProvidesPackage{review-style}[2019/09/16]
 
 \RequirePackage{fancyhdr}
 \pagestyle{fancy}
@@ -43,4 +43,7 @@
 \hypersetup{hidelinks}
 
 \floatplacement{figure}{H}
-\floatplacement{table}{htp}
+\floatplacement{table}{H}
+
+% space between English/Japanese characters in list environments (\z@ means 0, no space. You can comment out below line for backward compatibility.)
+\def\reviewlistxkanjiskip{\z@}

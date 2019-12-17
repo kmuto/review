@@ -39,12 +39,12 @@ module ReVIEW
     end
 
     def error(msg)
-      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      @logger.error msg
       exit 1
     end
 
     def warn(msg)
-      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+      @logger.warn msg
     end
 
     def log(msg)
@@ -500,6 +500,9 @@ module ReVIEW
     def copy_stylesheet(basetmpdir)
       return if @config['stylesheet'].empty?
       @config['stylesheet'].each do |sfile|
+        unless File.exist?(sfile)
+          error "#{sfile} is not found."
+        end
         FileUtils.cp(sfile, basetmpdir)
         @producer.contents.push(Content.new('file' => sfile))
       end

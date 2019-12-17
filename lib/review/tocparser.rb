@@ -52,7 +52,7 @@ module ReVIEW
             node_stack.push(dummy_chapter)
             roots.push(dummy_chapter)
           end
-          next if label =~ %r{\A\[/} # ex) "[/column]"
+          next if label.start_with?('[/') # ex) "[/column]"
           sec = Section.new(lev, label.gsub(/\A\{.*?\}\s?/, ''))
           node_stack.pop until node_stack.last.level < sec.level
           node_stack.last.add_child(sec)
@@ -73,7 +73,7 @@ module ReVIEW
           beg = f.lineno
           list.add(line)
           while line = f.gets
-            break if %r{\A//\}} =~ line
+            break if line.start_with?('//}')
             list.add(line)
           end
           error!(filename, beg, 'unterminated list') unless line

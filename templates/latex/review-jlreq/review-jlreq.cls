@@ -20,7 +20,7 @@
 % THE SOFTWARE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2019/01/01 Re:VIEW pLaTeX class modified for jlreq.
+\ProvidesClass{review-jlreq}[2019/11/11 Re:VIEW pLaTeX class modified for jlreq.
 cls]
 
 %% hook at end of reviewmacro
@@ -66,7 +66,9 @@ cls]
   %% set hiddenfolio preset
   \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
   %% redefine to output \@makehiddenfolio for every page
+  %% TODO: would better to use \jlreqtrimmarkssetup
   \@bannertoken{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
+  \def\jlreq@trimmarks@banner@even@yoko@top@left{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
   \AddEverypageHook{\maketombowbox}%
 \fi}
 
@@ -333,6 +335,19 @@ cls]
   }{\message{patch for pdfpages applied}}{}
   \AtBeginDocument{\@ifpackageloaded{pdfpages}{\recls@patch@pdfpages}{}}
 \fi
+
+%% 表紙のノンブル
+\def\coverpagezero#1{\expandafter\@coverpagezero\csname c@#1\endcsname}
+\def\@coverpagezero#1{cover}
+
+%% xkanjiskip抽象化
+\newcommand*\setxkanjiskip[1]{%
+  \def\recls@tmp{lualatex}\ifx\recls@tmp\recls@engine
+    \ltjsetparameter{xkanjiskip={#1}}
+  \else
+    \xkanjiskip=#1\relax
+  \fi
+}
 
 \listfiles
 \endinput

@@ -35,7 +35,7 @@ def _main
   @logger = ReVIEW.logger
   @mode = :files
   @basedir = nil
-  if /\Areview2/ =~ File.basename($PROGRAM_NAME)
+  if File.basename($PROGRAM_NAME).start_with?('review2')
     @target = File.basename($PROGRAM_NAME, '.rb').sub('review2', '')
   else
     @target = nil
@@ -170,12 +170,12 @@ def parse_opts
 end
 
 def error(msg)
-  @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+  @logger.error msg
   exit 1
 end
 
 def warn(msg)
-  @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
+  @logger.warn msg
 end
 
 def load_strategy_class(target, strict)

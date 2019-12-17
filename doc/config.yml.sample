@@ -5,7 +5,7 @@
 # このファイルはUTF-8エンコーディングで記述してください。
 
 # この設定ファイルでサポートするRe:VIEWのバージョン番号。
-review_version: 3.0
+review_version: 4.0
 
 # ほかの設定ファイルの継承を指定できる。同じパラメータに異なる値がある場合は、
 # 呼び出し元の値が優先される。
@@ -64,6 +64,8 @@ aut: ["青木峰郎", "武藤健志", "高橋征義", "角征典"]
 # a-trc, trc: 筆記・タイプ作業者
 # a-trl, trl: 翻訳者
 
+# contact: 連絡先
+
 # 刊行日(省略した場合は実行時の日付)
 # date: 2018-11-11
 # 発行年月。YYYY-MM-DD形式による配列指定。省略した場合はdateを使用する
@@ -111,7 +113,7 @@ toclevel: 3
 secnolevel: 2
 
 # 本文中に目次ページを作成するか。省略した場合はnull (作成しない)
-# toc: true
+toc: true
 
 # EPUB2標準の目次(NCX)以外に物理目次ファイルを作成するか。省略した場合はnull (作成しない)
 # ePUB3においてはこの設定によらず必ず作成される
@@ -137,7 +139,10 @@ secnolevel: 2
 # creditfile: null
 
 # 奥付を作成するか。デフォルトでは作成されない。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
+# デフォルトの奥付における各項目の名前（「著　者」など）を変えたいときにはlocale.ymlで文字列を設定する（詳細はdoc/format.ja.mdを参照）
 # colophon: null
+# デフォルトの奥付における、各項目の記載順序
+# colophon_order: ["aut", "csl", "trl", "dsr", "ill", "cov", "edt", "pbl", "contact", "prt"]
 
 # 裏表紙データファイル (PDFMaker向けにはLaTeXソース断片、EPUBMaker向けにはHTMLファイル)
 # backcover: null
@@ -175,6 +180,9 @@ secnolevel: 2
 
 # @<w>命令で使用する単語ファイルのパス
 # words_file: words.csv
+
+# //table命令における列の区切り文字 (Rubyの正規表現)。''で囲むこと
+# table_split_regexp: '\t+'
 
 # review-vol向けのヒント情報
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)
@@ -328,7 +336,7 @@ epubmaker:
 # texcommand: "uplatex"
 #
 # LaTeXのコマンドに渡すオプションを指定する
-# texoptions: "-interaction=nonstopmode -file-line-error"
+# texoptions: "-interaction=nonstopmode -file-line-error -halt-on-error"
 #
 # LaTeX用のdvi変換コマンドを指定する(dvipdfmx)
 # dvicommand: "dvipdfmx"
@@ -394,4 +402,6 @@ pdfmaker:
   # makeindex_mecab_opts: "-Oyomi"
   # 奥付を作成するか。trueを指定するとデフォルトの奥付、ファイル名を指定するとそれがcolophon.htmlとしてコピーされる
   colophon: true
+  # 表紙挿入時に表紙のページ番号名を「cover」とし、偶数ページ扱いにして大扉前に白ページが入るのを防ぐ。デフォルトはtrue
+  # use_cover_nombre: true
   # pdfmaker:階層を使うものはここまで

@@ -207,11 +207,19 @@ EOS
   def test_paragraph
     actual = compile_block("foo\nbar\n")
     assert_equal %Q(foobar\n\n), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("foo\nbar\n")
+    assert_equal %Q(foo bar\n\n), actual
   end
 
   def test_tabbed_paragraph
     actual = compile_block("\tfoo\nbar\n")
     assert_equal %Q(\tfoobar\n\n), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("\tfoo\nbar\n")
+    assert_equal %Q(\tfoo bar\n\n), actual
   end
 
   def test_flushright
@@ -224,6 +232,17 @@ buz
 
 EOS
     assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+.. flushright::
+
+   foo bar
+buz
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_noindent
@@ -232,6 +251,16 @@ EOS
 foobar
 
 foo2bar2
+
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//noindent\nfoo\nbar\n\nfoo2\nbar2\n")
+    expected = <<-EOS
+foo bar
+
+foo2 bar2
 
 EOS
     assert_equal expected, actual
@@ -250,7 +279,7 @@ EOS
 
   def test_list
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('test', 1)
+      Book::Index::Item.new('test', 1)
     end
     actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     expected = <<-EOS
@@ -264,7 +293,7 @@ EOS
 
   def test_listnum
     def @chapter.list(_id)
-      Book::ListIndex::Item.new('test', 1)
+      Book::Index::Item.new('test', 1)
     end
     actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
     expected = <<-EOS
@@ -416,7 +445,7 @@ EOS
 
   def test_image
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end
@@ -435,7 +464,7 @@ EOS
 
   def test_image_with_metric
     def @chapter.image(_id)
-      item = Book::ImageIndex::Item.new('sampleimg', 1)
+      item = Book::Index::Item.new('sampleimg', 1)
       item.instance_eval { @path = './images/chap1-sampleimg.png' }
       item
     end

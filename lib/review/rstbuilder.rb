@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -67,13 +67,13 @@ module ReVIEW
     end
     private :builder_init_file
 
-    def print(s)
+    def print(*s)
       @blank_seen = false
       super
     end
     private :print
 
-    def puts(s)
+    def puts(*s)
       @blank_seen = false
       super
     end
@@ -124,7 +124,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts '  ' * (@ul_indent - 1) + "* #{lines.join}"
+      puts '  ' * (@ul_indent - 1) + "* #{join_lines_to_paragraph(lines)}"
     end
 
     def ul_end
@@ -138,7 +138,7 @@ module ReVIEW
     end
 
     def ol_item(lines, _num)
-      puts '  ' * (@ol_indent - 1) + "#. #{lines.join}"
+      puts '  ' * (@ol_indent - 1) + "#. #{join_lines_to_paragraph(lines)}"
     end
 
     def ol_end
@@ -167,7 +167,7 @@ module ReVIEW
       if @in_role
         pre = '   '
       end
-      puts pre + lines.join
+      puts pre + join_lines_to_paragraph(lines)
       puts "\n"
     end
 

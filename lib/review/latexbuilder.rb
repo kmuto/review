@@ -256,7 +256,11 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      str = lines.map(&:chomp).join("\n")
+      str = join_lines_to_paragraph(lines)
+      unless @book.config['join_lines_by_lang']
+        str = lines.map(&:chomp).join("\n")
+      end
+
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -275,7 +279,11 @@ module ReVIEW
     end
 
     def ol_item(lines, _num)
-      str = lines.map(&:chomp).join("\n")
+      str = join_lines_to_paragraph(lines)
+      unless @book.config['join_lines_by_lang']
+        str = lines.map(&:chomp).join("\n")
+      end
+
       str.sub!(/\A(\[)/) { '\lbrack{}' }
       puts '\item ' + str
     end
@@ -297,7 +305,11 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts lines.map(&:chomp).join("\n")
+      if @book.config['join_lines_by_lang']
+        puts join_lines_to_paragraph(lines)
+      else
+        puts lines.map(&:chomp).join("\n")
+      end
     end
 
     def dl_end
@@ -307,8 +319,10 @@ module ReVIEW
 
     def paragraph(lines)
       blank
-      lines.each do |line|
-        puts line
+      if @book.config['join_lines_by_lang']
+        puts join_lines_to_paragraph(lines)
+      else
+        lines.each { |line| puts line }
       end
       blank
     end
@@ -526,7 +540,7 @@ module ReVIEW
     end
 
     def existence(id)
-      @chapter.image(id).bound? ? 'exist' : 'not exist'
+      @chapter.image_bound?(id) ? 'exist' : 'not exist'
     end
     private :existence
 
@@ -780,7 +794,7 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
-      unless @chapter.image(id).bound?
+      unless @chapter.image_bound?(id)
         warn "image not bound: #{id}"
         image_dummy(id, caption, lines)
         return
@@ -995,6 +1009,9 @@ module ReVIEW
 
     def footnote(id, content)
       if @book.config['footnotetext'] || @foottext[id]
+        if @doc_status[:column]
+          warn "//footnote[#{id}] is in the column block. It is recommended to move out of the column block."
+        end
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       end
     end
@@ -1215,7 +1232,12 @@ module ReVIEW
     end
 
     def bibpaper_bibpaper(_id, _caption, lines)
-      print split_paragraph(lines).map(&:chomp).join("\n")
+      if @book.config['join_lines_by_lang']
+        print split_paragraph(lines).join("\n\n")
+      else
+        print split_paragraph(lines).map(&:chomp).join("\n")
+      end
+
       puts ''
     end
 

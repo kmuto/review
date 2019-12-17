@@ -1,0 +1,3 @@
+# call me by 'REVIEW_CONFIG_FILE=config-print.yml rake pdf'
+inherit: ["config.yml"]
+texdocumentclass: ["review-jsbook", "media=print,paper=b5"]

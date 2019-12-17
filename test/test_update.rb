@@ -96,19 +96,28 @@ EOT
     @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
-    assert_match(/Update 'review_version' to '3.0'/, io.string)
-    assert_equal 'review_version: 3.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
-  end
+    assert_match(/Update 'review_version' to '4.0'/, io.string)
+    assert_equal 'review_version: 4.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
 
-  def test_update_version_current
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 3.0\n")
 
     io = StringIO.new
     @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
+    assert_match(/Update 'review_version' to '4.0'/, io.string)
+    assert_equal 'review_version: 4.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
+  end
+
+  def test_update_version_current
+    File.write(File.join(@tmpdir, 'config.yml'), "review_version: 4.0\n")
+
+    io = StringIO.new
+    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.parse_ymls(@tmpdir)
+    @u.update_version
     assert_equal '', io.string
-    assert_equal 'review_version: 3.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
+    assert_equal 'review_version: 4.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
   end
 
   def test_update_version_newer
@@ -118,7 +127,7 @@ EOT
     @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
-    assert_match(/Update 'review_version' to '3.0'/, io.string)
+    assert_match(/Update 'review_version' to '4.0'/, io.string)
     assert_equal 'review_version: 99.0', File.read(File.join(@tmpdir, 'config.yml')).match(/review_version:.*$/).to_s
   end
 
@@ -389,7 +398,7 @@ EOT
     assert_match(/has options/, io.string)
     cont = <<EOT
 texcommand: "/Program Files/up-latex"
-texoptions: "-interaction=nonstopmode -file-line-error --shell-escape -v"
+texoptions: "-interaction=nonstopmode -file-line-error -halt-on-error --shell-escape -v"
 EOT
     assert_equal cont, File.read(File.join(@tmpdir, 'config.yml'))
   end

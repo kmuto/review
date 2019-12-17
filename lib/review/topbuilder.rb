@@ -65,11 +65,11 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts "●\t#{lines.join}"
+      puts "●\t#{join_lines_to_paragraph(lines)}"
     end
 
     def ol_item(lines, num)
-      puts "#{num}\t#{lines.join}"
+      puts "#{num}\t#{join_lines_to_paragraph(lines)}"
     end
 
     def dt(line)
@@ -199,7 +199,7 @@ module ReVIEW
         image_header(id, caption)
         blank
       end
-      if @chapter.image(id).bound?
+      if @chapter.image_bound?(id)
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
         warn "image not bound: #{id}"

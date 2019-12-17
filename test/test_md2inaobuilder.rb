@@ -40,11 +40,21 @@ EOS
   end
 
   def test_dlist
-    actual = compile_block(": foo\n  foo.\n  bar.\n")
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
     expected = <<-EOS
 <dl>
 <dt>foo</dt>
 <dd>foo.bar.</dd>
+</dl>
+EOS
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block(" : foo\n  foo.\n  bar.\n")
+    expected = <<-EOS
+<dl>
+<dt>foo</dt>
+<dd>foo. bar.</dd>
 </dl>
 EOS
     assert_equal expected, actual

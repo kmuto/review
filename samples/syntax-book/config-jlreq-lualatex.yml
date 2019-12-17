@@ -1,0 +1,4 @@
+# call me by 'REVIEW_TEMPLATE=review-jlreq REVIEW_CONFIG_FILE=config-jlreq-lualatex.yml rake pdf'
+inherit: ["config-jlreq.yml"]
+texcommand: "lualatex"
+dvicommand: null

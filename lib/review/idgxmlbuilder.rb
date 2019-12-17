@@ -167,7 +167,7 @@ module ReVIEW
     end
 
     def ul_item_begin(lines)
-      print %Q(<li aid:pstyle="ul-item">#{lines.join.chomp})
+      print %Q(<li aid:pstyle="ul-item">#{join_lines_to_paragraph(lines).chomp})
     end
 
     def ul_item_end
@@ -202,7 +202,7 @@ module ReVIEW
     end
 
     def ol_item(lines, num)
-      puts %Q(<li aid:pstyle="ol-item" olnum="#{@ol_num}" num="#{num}">#{lines.join.chomp}</li>)
+      puts %Q(<li aid:pstyle="ol-item" olnum="#{@ol_num}" num="#{num}">#{join_lines_to_paragraph(lines).chomp}</li>)
       @ol_num += 1
     end
 
@@ -224,7 +224,7 @@ module ReVIEW
     end
 
     def dd(lines)
-      puts "<dd>#{lines.join.chomp}</dd>"
+      puts "<dd>#{join_lines_to_paragraph(lines).chomp}</dd>"
     end
 
     def dl_end
@@ -234,12 +234,12 @@ module ReVIEW
     def paragraph(lines)
       if @noindent.nil?
         if lines[0] =~ /\A(\t+)/
-          puts %Q(<p inlist="#{$1.size}">#{lines.join.sub(/\A\t+/, '')}</p>)
+          puts %Q(<p inlist="#{$1.size}">#{join_lines_to_paragraph(lines).sub(/\A\t+/, '')}</p>)
         else
-          puts "<p>#{lines.join}</p>"
+          puts "<p>#{join_lines_to_paragraph(lines)}</p>"
         end
       else
-        puts %Q(<p aid:pstyle="noindent" noindent='1'>#{lines.join}</p>)
+        puts %Q(<p aid:pstyle="noindent" noindent='1'>#{join_lines_to_paragraph(lines)}</p>)
         @noindent = nil
       end
     end
@@ -490,6 +490,7 @@ module ReVIEW
         else
           print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{@col}">)
         end
+        @table_id = id
         table_rows(sepidx, rows)
         puts '</tbody>'
 
@@ -516,7 +517,7 @@ module ReVIEW
         else
           rows.push(line.gsub(/\t\.\t/, "\t\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\t").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
         end
-        col2 = rows[rows.length - 1].split(/\t/).length
+        col2 = rows[rows.length - 1].split(table_split_regexp).length
         @col = col2 if col2 > @col
       end
       error 'no rows in the table' if rows.empty?
@@ -534,11 +535,11 @@ module ReVIEW
           cellwidth.size.times do |n|
             cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
             totallength += cellwidth[n]
-            warn "total length exceeds limit for table: #{id}" if totallength > @tablewidth
+            warn "total length exceeds limit for table: #{@table_id}" if totallength > @tablewidth
           end
           if cellwidth.size < @col
             cw = (@tablewidth - totallength) / (@col - cellwidth.size)
-            warn "auto cell sizing exceeds limit for table: #{id}" if cw <= 0
+            warn "auto cell sizing exceeds limit for table: #{@table_id}" if cw <= 0
             (cellwidth.size..(@col - 1)).each { |i| cellwidth[i] = cw }
           end
         end
@@ -550,7 +551,7 @@ module ReVIEW
             puts %Q(<tr type="header">#{rows.shift}</tr>)
           else
             i = 0
-            rows.shift.split("\t").each_with_index do |cell, x|
+            rows.shift.split(table_split_regexp).each_with_index do |cell, x|
               print %Q(<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
               i += 1
             end
@@ -565,7 +566,7 @@ module ReVIEW
       if tablewidth
         rows.each_with_index do |row, y|
           i = 0
-          row.split("\t").each_with_index do |cell, x|
+          row.split(table_split_regexp).each_with_index do |cell, x|
             print %Q(<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
             i += 1
           end

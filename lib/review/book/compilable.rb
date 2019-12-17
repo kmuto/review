@@ -168,6 +168,11 @@ module ReVIEW
       def prev_chapter
         book.prev_chapter(self)
       end
+
+      def image_bound?(item_id)
+        item = self.image(item_id)
+        item.path
+      end
     end
   end
 end

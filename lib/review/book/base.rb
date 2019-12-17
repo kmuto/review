@@ -255,13 +255,13 @@ module ReVIEW
 
       def prefaces
         if catalog
-          return mkpart_from_namelist(catalog.predef)
+          return Part.mkpart_from_namelist(self, catalog.predef)
         end
 
         begin
           predef_file = filename_join(@basedir, config['predef_file'])
           if File.file?(predef_file)
-            mkpart_from_namelistfile(predef_file)
+            Part.mkpart_from_namelistfile(self, predef_file)
           end
         rescue FileNotFound => e
           raise FileNotFound, "preface #{e.message}"
@@ -271,14 +271,14 @@ module ReVIEW
       def appendix
         if catalog
           names = catalog.appendix
-          chaps = names.each_with_index.map { |n, idx| mkchap_ifexist(n, idx) }.compact
-          return mkpart(chaps)
+          chaps = names.each_with_index.map { |name, number| Chapter.mkchap_ifexist(self, name, number + 1) }.compact
+          return Part.mkpart(chaps)
         end
 
         begin
           postdef_file = filename_join(@basedir, config['postdef_file'])
           if File.file?(postdef_file)
-            mkpart_from_namelistfile(postdef_file)
+            Part.mkpart_from_namelistfile(self, postdef_file)
           end
         rescue FileNotFound => e
           raise FileNotFound, "postscript #{e.message}"
@@ -287,7 +287,7 @@ module ReVIEW
 
       def postscripts
         if catalog
-          mkpart_from_namelist(catalog.postdef)
+          Part.mkpart_from_namelist(self, catalog.postdef)
         end
       end
 
@@ -346,42 +346,6 @@ module ReVIEW
         chap
       end
 
-      def mkpart_from_namelistfile(path)
-        chaps = []
-        File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, idx|
-          if path =~ /PREDEF/
-            chaps << mkchap(name)
-          else
-            chaps << mkchap(name, idx + 1)
-          end
-        end
-        mkpart(chaps)
-      end
-
-      def mkpart_from_namelist(names)
-        mkpart(names.map { |n| mkchap_ifexist(n) }.compact)
-      end
-
-      def mkpart(chaps)
-        chaps.empty? ? nil : Part.new(self, nil, chaps)
-      end
-
-      def mkchap(name, number = nil)
-        name += ext if File.extname(name).empty?
-        path = File.join(contentdir, name)
-        raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
-        Chapter.new(self, number, name, path)
-      end
-
-      def mkchap_ifexist(name, idx = nil)
-        name += ext if File.extname(name).empty?
-        path = File.join(contentdir, name)
-        if File.file?(path)
-          idx += 1 if idx
-          Chapter.new(self, idx, name, path)
-        end
-      end
-
       def read_file(filename)
         unless @warn_old_files[filename]
           @warn_old_files[filename] = true
@@ -392,7 +356,7 @@ module ReVIEW
         res = ''
         File.open(filename_join(@basedir, filename), 'rt:BOM|utf-8') do |f|
           f.each_line do |line|
-            next if /\A#/ =~ line
+            next if line.start_with?('#')
             line.gsub!(/#.*\Z/, '')
             res << line
           end
