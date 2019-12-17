@@ -297,12 +297,7 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       puts '<codelist>'
-      begin
-        list_header(id, caption, lang)
-      rescue KeyError
-        error "no such list: #{id}"
-      end
-      list_body(id, lines, lang)
+      super(lines, id, caption, lang)
       puts '</codelist>'
     end
 

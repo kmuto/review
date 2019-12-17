@@ -373,12 +373,7 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="caption-code">)
-      begin
-        list_header(id, caption, lang)
-      rescue KeyError
-        error "no such list: #{id}"
-      end
-      list_body(id, lines, lang)
+      super(lines, id, caption, lang)
       puts '</div>'
     end
 
@@ -403,8 +398,7 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts %Q(<div class="source-code">)
-      source_header(caption)
-      source_body(caption, lines, lang)
+      super(lines, caption, lang)
       puts '</div>'
     end
 
@@ -414,7 +408,7 @@ module ReVIEW
       end
     end
 
-    def source_body(_id, lines, lang)
+    def source_body(lines, lang)
       print %Q(<pre class="source">)
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = lang
@@ -424,12 +418,7 @@ module ReVIEW
 
     def listnum(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="code">)
-      begin
-        list_header(id, caption, lang)
-      rescue KeyError
-        error "no such list: #{id}"
-      end
-      listnum_body(lines, lang)
+      super(lines, id, caption, lang)
       puts '</div>'
     end
 
