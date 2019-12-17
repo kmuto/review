@@ -266,7 +266,6 @@ module ReVIEW
         blank
       end
       super(lines, id, caption)
-      blank
     end
 
     def table_header(id, caption)
