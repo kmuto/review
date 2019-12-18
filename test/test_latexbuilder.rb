@@ -1194,43 +1194,50 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_table_split_regexp
-    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+  def test_table_splitter
+    src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS
 \\begin{reviewtable}{|l|l|l|}
 \\hline
-\\reviewth{1} & \\reviewth{2} & \\reviewth{3  4,5} \\\\  \\hline
-a b & c  d,e &  \\\\  \\\hline
+\\reviewth{1} & \\reviewth{2} & \\reviewth{3  4\\textbar{} 5} \\\\  \\hline
+a b & c  d   \\textbar{}e &  \\\\  \\hline
 \\end{reviewtable}
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = '\s+'
+    @config['table_splitter'] = 'singletab'
     actual = compile_block(src)
     expected = <<-EOS
 \\begin{reviewtable}{|l|l|l|l|}
 \\hline
-\\reviewth{1} & \\reviewth{2} & \\reviewth{3} & \\reviewth{4,5} \\\\  \\hline
-a & b & c & d,e \\\\  \\hline
+\\reviewth{1} & \\reviewth{2} & \\reviewth{} & \\reviewth{3  4\\textbar{} 5} \\\\  \\hline
+a b & c  d   \\textbar{}e &  &  \\\\  \\hline
 \\end{reviewtable}
 EOS
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = ','
+    @config['table_splitter'] = 'spaces'
+    actual = compile_block(src)
+    expected = <<-EOS
+\\begin{reviewtable}{|l|l|l|l|l|}
+\\hline
+\\reviewth{1} & \\reviewth{2} & \\reviewth{3} & \\reviewth{4\\textbar{}} & \\reviewth{5} \\\\  \\hline
+a & b & c & d & \\textbar{}e \\\\  \\hline
+\\end{reviewtable}
+EOS
+    assert_equal expected, actual
+
+    @config['table_splitter'] = 'verticalbar'
     actual = compile_block(src)
     expected = <<-EOS
 \\begin{reviewtable}{|l|l|}
 \\hline
-\\reviewth{1\t2\t\t3  4} & \\reviewth{5} \\\\  \\hline
-a b\tc  d & e \\\\  \\hline
+\\reviewth{1	2		3  4} & \\reviewth{5} \\\\  \\hline
+a b	c  d & e \\\\  \\hline
 \\end{reviewtable}
 EOS
     assert_equal expected, actual
-
-    @config['table_split_regexp'] = '['
-    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
-    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
   end
 
   def test_bib
