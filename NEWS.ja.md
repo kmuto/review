@@ -1,3 +1,53 @@
+# Version 4.1.0
+## 新機能
+* 表のセル区切りの文字を `table_split_regexp` パラメータに正規表現を指定して変更できるようにしました ([#1420]) ※実装は#1440のtable_splitterの固定値に変更の可能性※
+* IDGXMLMaker: 全ファイルでなく変換対象ファイルを指定するための `-y`（または`--only`）オプションを追加しました ([#1428])
+
+## バグ修正
+* PDFMaker: Re:VIEW 3 系のプロジェクトとの後方互換処理の誤りを修正しました ([#1414])
+* PDFMaker: review-jlreq を LuaLaTeX でコンパイルしたときのエラーを修正しました ([#1416])
+* PDFMaker: 索引が目次に含まれない問題を修正しました ([#1418])
+* RSTBuilder: メソッドの引数の誤りで変換に失敗する問題を修正しました ([#1426])
+* IDGXMLBuilder: 表に関する警告を出すときの誤りを修正しました ([#1427])
+* IDGXMLMaker: フィルタプログラムにエラーが発生したときの処理の誤りを修正しました ([#1429])
+* PDFMaker: `media=ebook` のときに、見出し等に `@<code>` や `@<tt>` のようなコード書体の命令を使うとビルドに失敗する問題を修正しました ([#1432])
+
+## 機能強化
+* PDFMaker: 問題報告の解析に役立つよう、提供する cls、sty ファイルについてバージョンを付けるようにしました ([#1163])
+* Dockerfile を更新しました ([#1412])
+
+## ドキュメント
+* 奥付に関係する `contact` （連絡先）および `colophon_order` （項目の掲載順序）についてのドキュメントを設定ファイルサンプル `config.yml.sample` に追加しました ([#1425])
+
+## その他
+* Rubocop 0.78.0 の指摘に対応しました ([#1424], [#1430])
+* LaTeX の実行環境がある場合、PDF のビルドテストをより厳密に実行するようにしました ([#1433])
+* ビルドテストを Travis CI から GitHub Actions に切り替えました ([#1431], [#1436])
+* IDGXMLBuilder のコードリストの処理をリファクタリングしました ([#1438], [#1439])
+
+## コントリビューターのみなさん
+* [@turky](https://github.com/turky)
+
+[#1163]: https://github.com/kmuto/review/issues/1163
+[#1412]: https://github.com/kmuto/review/pull/1412
+[#1414]: https://github.com/kmuto/review/issues/1414
+[#1416]: https://github.com/kmuto/review/issues/1416
+[#1418]: https://github.com/kmuto/review/issues/1418
+[#1420]: https://github.com/kmuto/review/issues/1420
+[#1424]: https://github.com/kmuto/review/pull/1424
+[#1425]: https://github.com/kmuto/review/pull/1425
+[#1426]: https://github.com/kmuto/review/pull/1426
+[#1427]: https://github.com/kmuto/review/pull/1427
+[#1428]: https://github.com/kmuto/review/pull/1428
+[#1429]: https://github.com/kmuto/review/pull/1429
+[#1430]: https://github.com/kmuto/review/pull/1430
+[#1431]: https://github.com/kmuto/review/pull/1431
+[#1432]: https://github.com/kmuto/review/issues/1432
+[#1433]: https://github.com/kmuto/review/pull/1433
+[#1438]: https://github.com/kmuto/review/pull/1436
+[#1438]: https://github.com/kmuto/review/pull/1438
+[#1439]: https://github.com/kmuto/review/pull/1439
+
 # Version 4.0.0
 ## 新機能
 * IDGXML ファイルをまとめて生成する、review-idgxmlmaker を導入しました ([#1337])

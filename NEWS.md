@@ -1,3 +1,53 @@
+# Version 4.1.0
+## New Features
+* 表のセル区切りの文字を `table_split_regexp` パラメータに正規表現を指定して変更できるようにしました ([#1420]) ※実装は#1440のtable_splitterの固定値に変更の可能性※
+* IDGXMLMaker: add `-y` (`--only`) option to specify the files to convert instead of all files ([#1428])
+
+## Bug Fixes
+* PDFMaker: fix backward compatibility error with Re:VIEW 3 ([#1414])
+* PDFMaker: fix an error when compiling review-jlreq with LuaLaTeX ([#1416])
+* PDFMaker: fix index not being included in the table of contents ([#1418])
+* RSTBuilder: fix conversion failure due to incorrect method argument handling ([#1426])
+* IDGXMLBuilder: there was an error in the warning handling for the table ([#1427])
+* IDGXMLMaker: there was an error in the processing when an error occurred in the filter program ([#1429])
+* PDFMaker: fix a build failure when using inline operators such as `@<code>` or `@<tt>` for heading with `media=ebook` mode ([#1432])
+
+## Enhancements
+* PDFMaker: add version to .cls/.sty files ([#1163])
+* update Dockerfile ([#1412])
+
+## Docs
+* add description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
+
+## Others
+* refactor codes with Rubocop 0.78.0 ([#1424], [#1430])
+* run PDF build test more strictly when there is LaTeX runtime environment ([#1433])
+* switch the build test suite from Travis CI to GitHub Actions ([#1431], [#1436])
+* IDGXMLBuilder: refactor code list methods ([#1438], [#1439])
+
+## Contributors
+* [@turky](https://github.com/turky)
+
+[#1163]: https://github.com/kmuto/review/issues/1163
+[#1412]: https://github.com/kmuto/review/pull/1412
+[#1414]: https://github.com/kmuto/review/issues/1414
+[#1416]: https://github.com/kmuto/review/issues/1416
+[#1418]: https://github.com/kmuto/review/issues/1418
+[#1420]: https://github.com/kmuto/review/issues/1420
+[#1424]: https://github.com/kmuto/review/pull/1424
+[#1425]: https://github.com/kmuto/review/pull/1425
+[#1426]: https://github.com/kmuto/review/pull/1426
+[#1427]: https://github.com/kmuto/review/pull/1427
+[#1428]: https://github.com/kmuto/review/pull/1428
+[#1429]: https://github.com/kmuto/review/pull/1429
+[#1430]: https://github.com/kmuto/review/pull/1430
+[#1431]: https://github.com/kmuto/review/pull/1431
+[#1432]: https://github.com/kmuto/review/issues/1432
+[#1433]: https://github.com/kmuto/review/pull/1433
+[#1438]: https://github.com/kmuto/review/pull/1436
+[#1438]: https://github.com/kmuto/review/pull/1438
+[#1439]: https://github.com/kmuto/review/pull/1439
+
 # Version 4.0.0
 ## New Features
 * introduce review-idgxmlmaker which generates IDGXML files at once ([#1337])
