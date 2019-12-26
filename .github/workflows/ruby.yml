@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ '2.6.x', '2.5.x', '2.4.x' ]
+        ruby: [ '2.7.x', '2.6.x', '2.5.x', '2.4.x' ]
         os: [ubuntu-latest, macOS-latest]
     steps:
     - uses: actions/checkout@v1
