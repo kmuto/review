@@ -60,7 +60,7 @@ module ReVIEW
         require 'nkf'
         @index_mecab = MeCab::Tagger.new(@book.config['pdfmaker']['makeindex_mecab_opts'])
       rescue LoadError
-        error 'not found MeCab'
+        warn 'not found MeCab'
       end
     end
 
