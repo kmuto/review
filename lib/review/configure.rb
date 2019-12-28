@@ -66,7 +66,7 @@ module ReVIEW
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
         'externallink' => true,
         'join_lines_by_lang' => nil, # experimental. default should be nil
-        'table_split_regexp' => '\t+',
+        'table_splitter' => 'tabs',
         # for IDGXML
         'tableopt' => nil,
         'listinfo' => nil,

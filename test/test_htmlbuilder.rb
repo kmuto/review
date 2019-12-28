@@ -2109,46 +2109,54 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_table_split_regexp
-    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+  def test_table_splitter
+    src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS
 <div class="table">
 <table>
-<tr><th>1</th><th>2</th><th>3  4,5</th></tr>
-<tr><td>a b</td><td>c  d,e</td><td></td></tr>
+<tr><th>1</th><th>2</th><th>3  4| 5</th></tr>
+<tr><td>a b</td><td>c  d   |e</td><td></td></tr>
 </table>
 </div>
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = '\s+'
+    @config['table_splitter'] = 'singletab'
     actual = compile_block(src)
     expected = <<-EOS
 <div class="table">
 <table>
-<tr><th>1</th><th>2</th><th>3</th><th>4,5</th></tr>
-<tr><td>a</td><td>b</td><td>c</td><td>d,e</td></tr>
+<tr><th>1</th><th>2</th><th></th><th>3  4| 5</th></tr>
+<tr><td>a b</td><td>c  d   |e</td><td></td><td></td></tr>
 </table>
 </div>
 EOS
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = ','
+    @config['table_splitter'] = 'spaces'
     actual = compile_block(src)
     expected = <<-EOS
 <div class="table">
 <table>
-<tr><th>1\t2\t\t3  4</th><th>5</th></tr>
-<tr><td>a b\tc  d</td><td>e</td></tr>
+<tr><th>1</th><th>2</th><th>3</th><th>4|</th><th>5</th></tr>
+<tr><td>a</td><td>b</td><td>c</td><td>d</td><td>|e</td></tr>
 </table>
 </div>
 EOS
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = '['
-    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
-    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
+    @config['table_splitter'] = 'verticalbar'
+    actual = compile_block(src)
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th>1	2		3  4</th><th>5</th></tr>
+<tr><td>a b	c  d</td><td>e</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
   end
 
   def test_major_blocks

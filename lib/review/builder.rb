@@ -180,10 +180,17 @@ module ReVIEW
     end
 
     def table_split_regexp
-      begin
-        Regexp.new(@book.config['table_split_regexp'])
-      rescue RegexpError
-        error "invalid regular expression in 'table_split_regexp' parameter."
+      case @book.config['table_splitter']
+      when 'tabs'
+        Regexp.new('\t+')
+      when 'singletab'
+        Regexp.new('\t')
+      when 'spaces'
+        Regexp.new('\s+')
+      when 'verticalbar'
+        Regexp.new('\s*\\' + escape('|') + '\s*')
+      else
+        error "Unknown value for 'table_splitter', shold be: tabs, singletab, spaces, verticalbar"
       end
     end
 
