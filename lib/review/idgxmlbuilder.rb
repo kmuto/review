@@ -1146,7 +1146,7 @@ module ReVIEW
       error "unknown chapter: #{id}"
     end
 
-    def source(lines, caption, lang = nil)
+    def source(lines, caption = nil, lang = nil)
       puts '<source>'
       source_header(caption)
       source_body(lines, lang)

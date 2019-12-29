@@ -151,7 +151,7 @@ module ReVIEW
       listnum_body(lines, lang)
     end
 
-    def source(lines, caption, lang = nil)
+    def source(lines, caption = nil, lang = nil)
       source_header(caption)
       source_body(lines, lang)
     end
