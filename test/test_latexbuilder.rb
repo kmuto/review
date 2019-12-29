@@ -1194,7 +1194,7 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_table_rows_splitter
+  def test_table_row_separator
     src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS
 \\begin{reviewtable}{|l|l|l|}
@@ -1206,7 +1206,7 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
 
-    @config['table_rows_splitter'] = 'singletab'
+    @config['table_row_separator'] = 'singletab'
     actual = compile_block(src)
     expected = <<-EOS
 \\begin{reviewtable}{|l|l|l|l|}
@@ -1217,7 +1217,7 @@ a b & c  d   \\textbar{}e &  &  \\\\  \\hline
 EOS
     assert_equal expected, actual
 
-    @config['table_rows_splitter'] = 'spaces'
+    @config['table_row_separator'] = 'spaces'
     actual = compile_block(src)
     expected = <<-EOS
 \\begin{reviewtable}{|l|l|l|l|l|}
@@ -1228,7 +1228,7 @@ a & b & c & d & \\textbar{}e \\\\  \\hline
 EOS
     assert_equal expected, actual
 
-    @config['table_rows_splitter'] = 'verticalbar'
+    @config['table_row_separator'] = 'verticalbar'
     actual = compile_block(src)
     expected = <<-EOS
 \\begin{reviewtable}{|l|l|}
