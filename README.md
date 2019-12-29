@@ -22,15 +22,17 @@ Re:VIEW uses its original format('Re:VIEW format') as source files.  See doc/for
 
 ## Commands
 
-There are two commands generate files directly.
+There are commands generate files directly.
 
 * review-epubmaker: generate EPUB file.
 * review-pdfmaker: generate PDF file using LaTeX (TeXLive).
 * review-textmaker: generate text files.
 * review-webmaker: generate Web pages.
+* review-idgxmlmaker: generate InDesign XML files.
 
 And some useful commands.
 
+* review-init: create a project.
 * review-compile: compile Re:VIEW format files.
 * review-vol: figure out size of Re:VIEW files.
 * review-index: generate index with various format.
@@ -60,10 +62,11 @@ $ echo "export PATH=PATH_OF_REVIEW/bin:$PATH" >> ~/.profile
 $ review-init hello
 $ cd hello
 $ (... add and edit *.re file, config.yml and catalog.yml ...)
-$ rake epub  ## generating EPUB
-$ rake pdf   ## generating PDF (Requirement TeXLive)
-$ rake text  ## generating texts
-$ rake web   ## generating Web pages
+$ rake epub    ## generating EPUB
+$ rake pdf     ## generating PDF (Requirement TeXLive)
+$ rake text    ## generating texts
+$ rake web     ## generating Web pages
+$ rake idgxml  ## generating InDesign XML files
 ```
 
 For further information, see [doc/quickstart.md](https://github.com/kmuto/review/blob/master/doc/quickstart.md)
