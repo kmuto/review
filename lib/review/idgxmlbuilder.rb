@@ -593,7 +593,7 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
-      if @chapter.image(id).bound?
+      if @chapter.image_bound?(id)
         metrics = parse_metric('idgxml', metric)
         puts '<table>'
         table_header(id, caption) if caption.present?
