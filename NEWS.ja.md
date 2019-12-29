@@ -1,7 +1,8 @@
 # Version 4.1.0
 ## 新機能
-* 表のセル区切りの文字を `table_split_regexp` パラメータに正規表現を指定して変更できるようにしました ([#1420]) ※実装は#1440のtable_splitterの固定値に変更の可能性※
+* 表のセル区切りの文字を `table_row_separator` パラメータで変更できるようにしました。指定可能な値は tabs (1個以上のタブ、デフォルト)、singletab (1文字のタブ文字区切り)、spaces (1文字以上のスペースまたはタブ文字の区切り)、 verticalbar ("0個以上の空白 | 0個以上の空白" の区切り) です ([#1420])
 * IDGXMLMaker: 全ファイルでなく変換対象ファイルを指定するための `-y`（または`--only`）オプションを追加しました ([#1428])
+* config.yml のコメント行を含めないようにする `--without-config-comment` オプションを review-init に追加しました ([#1453])
 
 ## バグ修正
 * PDFMaker: Re:VIEW 3 系のプロジェクトとの後方互換処理の誤りを修正しました ([#1414])
@@ -11,19 +12,28 @@
 * IDGXMLBuilder: 表に関する警告を出すときの誤りを修正しました ([#1427])
 * IDGXMLMaker: フィルタプログラムにエラーが発生したときの処理の誤りを修正しました ([#1429])
 * PDFMaker: `media=ebook` のときに、見出し等に `@<code>` や `@<tt>` のようなコード書体の命令を使うとビルドに失敗する問題を修正しました ([#1432])
+* PDFMaker: MeCab がインストールされていないときにエラーになるのを警告に変更しました ([#1445])
+* IDGXMLBuilder: `//imgtable` が正しく動作しなかったのを修正しました ([#1448])
 
 ## 機能強化
 * PDFMaker: 問題報告の解析に役立つよう、提供する cls、sty ファイルについてバージョンを付けるようにしました ([#1163])
 * Dockerfile を更新しました ([#1412])
+* IDGXMLMaker: フィルタプログラムの標準エラー出力を警告扱いで出力するようにしました ([#1443])
+* .gitignore ファイルに 〜-idgxml フォルダ を追加しました ([#1448])
+* `//source` 命令は全ビルダでオプションを省略できるようになりました ([#1447])
 
 ## ドキュメント
 * 奥付に関係する `contact` （連絡先）および `colophon_order` （項目の掲載順序）についてのドキュメントを設定ファイルサンプル `config.yml.sample` に追加しました ([#1425])
+* quickstart.ja.md, quickstart.md を Re:VIEW 4 の内容に更新しました ([#1442])
+* サンプル syntax-book を更新しました ([#1448], [#1449])
 
 ## その他
 * Rubocop 0.78.0 の指摘に対応しました ([#1424], [#1430])
 * LaTeX の実行環境がある場合、PDF のビルドテストをより厳密に実行するようにしました ([#1433])
 * ビルドテストを Travis CI から GitHub Actions に切り替えました ([#1431], [#1436])
 * IDGXMLBuilder のコードリストの処理をリファクタリングしました ([#1438], [#1439])
+* サンプル syntax-book に入っていた review-ext.rb はもう不要なので削除しました ([#1446])
+* IDGXMLMaker, TextMaker のテストを追加しました ([#1448])
 
 ## コントリビューターのみなさん
 * [@turky](https://github.com/turky)
@@ -44,9 +54,17 @@
 [#1431]: https://github.com/kmuto/review/pull/1431
 [#1432]: https://github.com/kmuto/review/issues/1432
 [#1433]: https://github.com/kmuto/review/pull/1433
-[#1438]: https://github.com/kmuto/review/pull/1436
+[#1436]: https://github.com/kmuto/review/pull/1436
 [#1438]: https://github.com/kmuto/review/pull/1438
 [#1439]: https://github.com/kmuto/review/pull/1439
+[#1442]: https://github.com/kmuto/review/issues/1442
+[#1443]: https://github.com/kmuto/review/pull/1443
+[#1445]: https://github.com/kmuto/review/pull/1445
+[#1446]: https://github.com/kmuto/review/pull/1446
+[#1447]: https://github.com/kmuto/review/issues/1447
+[#1448]: https://github.com/kmuto/review/pull/1448
+[#1449]: https://github.com/kmuto/review/pull/1449
+[#1453]: https://github.com/kmuto/review/pull/1453
 
 # Version 4.0.0
 ## 新機能

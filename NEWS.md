@@ -1,7 +1,8 @@
 # Version 4.1.0
 ## New Features
-* 表のセル区切りの文字を `table_split_regexp` パラメータに正規表現を指定して変更できるようにしました ([#1420]) ※実装は#1440のtable_splitterの固定値に変更の可能性※
+* add `table_row_separator` to specify a separator that separates table rows. Accceptable value: tabs (means `\t+`, default), `singletab` (means `\t`), spaces (means `\s+`), verticalbar (means `\s*\|\s*`) ([#1420])
 * IDGXMLMaker: add `-y` (`--only`) option to specify the files to convert instead of all files ([#1428])
+* add `--without-config-comment` option to review-init command to exclude comments from config.yml ([#1453])
 
 ## Bug Fixes
 * PDFMaker: fix backward compatibility error with Re:VIEW 3 ([#1414])
@@ -11,19 +12,28 @@
 * IDGXMLBuilder: there was an error in the warning handling for the table ([#1427])
 * IDGXMLMaker: there was an error in the processing when an error occurred in the filter program ([#1429])
 * PDFMaker: fix a build failure when using inline operators such as `@<code>` or `@<tt>` for heading with `media=ebook` mode ([#1432])
+* PDFMaker: raise just warning instead of error, when MeCab isn't installed ([#1445])
+* IDGXMLBuilder: fix `//imgtable` to work correctly ([#1448])
 
 ## Enhancements
 * PDFMaker: add version to .cls/.sty files ([#1163])
 * update Dockerfile ([#1412])
+* IDGXMLMaker: show the contents of stderr from the filter program ([#1443])
+* add *-idgxml folder entry to .gitignore ([#1448])
+* `//source` can now omit options in all builders ([#1447])
 
 ## Docs
 * add description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
+* update quickstart.ja.md and quickstart.md to Re:VIEW 4 ([#1442])
+* update syntax-book sample document ([#1448], [#1449])
 
 ## Others
 * refactor codes with Rubocop 0.78.0 ([#1424], [#1430])
 * run PDF build test more strictly when there is LaTeX runtime environment ([#1433])
 * switch the build test suite from Travis CI to GitHub Actions ([#1431], [#1436])
 * IDGXMLBuilder: refactor code list methods ([#1438], [#1439])
+* remove unnecessary review-ext.rb from syntax-book ([#1446])
+* add tests for IDGXMLMaker and TextMaker ([#1448])
 
 ## Contributors
 * [@turky](https://github.com/turky)
@@ -44,9 +54,17 @@
 [#1431]: https://github.com/kmuto/review/pull/1431
 [#1432]: https://github.com/kmuto/review/issues/1432
 [#1433]: https://github.com/kmuto/review/pull/1433
-[#1438]: https://github.com/kmuto/review/pull/1436
+[#1436]: https://github.com/kmuto/review/pull/1436
 [#1438]: https://github.com/kmuto/review/pull/1438
 [#1439]: https://github.com/kmuto/review/pull/1439
+[#1442]: https://github.com/kmuto/review/issues/1442
+[#1443]: https://github.com/kmuto/review/pull/1443
+[#1445]: https://github.com/kmuto/review/pull/1445
+[#1446]: https://github.com/kmuto/review/pull/1446
+[#1447]: https://github.com/kmuto/review/issues/1447
+[#1448]: https://github.com/kmuto/review/pull/1448
+[#1449]: https://github.com/kmuto/review/pull/1449
+[#1453]: https://github.com/kmuto/review/pull/1453
 
 # Version 4.0.0
 ## New Features
