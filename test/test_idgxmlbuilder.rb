@@ -466,6 +466,18 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_source_nil_caption
+    actual = compile_block("//source{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_insn
     @config['listinfo'] = true
     actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
