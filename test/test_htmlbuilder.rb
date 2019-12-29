@@ -2109,7 +2109,7 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_table_splitter
+  def test_table_rows_splitter
     src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS
 <div class="table">
@@ -2122,7 +2122,7 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
 
-    @config['table_splitter'] = 'singletab'
+    @config['table_rows_splitter'] = 'singletab'
     actual = compile_block(src)
     expected = <<-EOS
 <div class="table">
@@ -2134,7 +2134,7 @@ EOS
 EOS
     assert_equal expected, actual
 
-    @config['table_splitter'] = 'spaces'
+    @config['table_rows_splitter'] = 'spaces'
     actual = compile_block(src)
     expected = <<-EOS
 <div class="table">
@@ -2146,7 +2146,7 @@ EOS
 EOS
     assert_equal expected, actual
 
-    @config['table_splitter'] = 'verticalbar'
+    @config['table_rows_splitter'] = 'verticalbar'
     actual = compile_block(src)
     expected = <<-EOS
 <div class="table">
