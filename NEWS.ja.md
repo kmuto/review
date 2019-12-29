@@ -26,6 +26,7 @@
 * 奥付に関係する `contact` （連絡先）および `colophon_order` （項目の掲載順序）についてのドキュメントを設定ファイルサンプル `config.yml.sample` に追加しました ([#1425])
 * quickstart.ja.md, quickstart.md を Re:VIEW 4 の内容に更新しました ([#1442])
 * サンプル syntax-book を更新しました ([#1448], [#1449])
+* README.md を更新しました ([#1455])
 
 ## その他
 * Rubocop 0.78.0 の指摘に対応しました ([#1424], [#1430])
@@ -65,6 +66,7 @@
 [#1448]: https://github.com/kmuto/review/pull/1448
 [#1449]: https://github.com/kmuto/review/pull/1449
 [#1453]: https://github.com/kmuto/review/pull/1453
+[#1455]: https://github.com/kmuto/review/pull/1455
 
 # Version 4.0.0
 ## 新機能

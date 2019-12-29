@@ -26,6 +26,7 @@
 * add description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
 * update quickstart.ja.md and quickstart.md to Re:VIEW 4 ([#1442])
 * update syntax-book sample document ([#1448], [#1449])
+* update README.md ([#1455])
 
 ## Others
 * refactor codes with Rubocop 0.78.0 ([#1424], [#1430])
@@ -65,6 +66,7 @@
 [#1448]: https://github.com/kmuto/review/pull/1448
 [#1449]: https://github.com/kmuto/review/pull/1449
 [#1453]: https://github.com/kmuto/review/pull/1453
+[#1455]: https://github.com/kmuto/review/pull/1455
 
 # Version 4.0.0
 ## New Features
