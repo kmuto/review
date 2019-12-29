@@ -324,7 +324,8 @@ a_{m1} & \cdots & a_{mn}
 網カケ@<ami>{amiアミ}    @<balloon>{ふきだし説明}
 //}
 
-=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<u>{UNDERLINE},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI}
+=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI}
+#@# @<u>はmedia=ebookにおいてはダメ
 
 ==={crossref} 参照
 #@# FIXME:任意ラベルを使うと、EPUBチェックエラーになることがある？
