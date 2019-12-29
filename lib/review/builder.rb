@@ -179,8 +179,8 @@ module ReVIEW
       table_end
     end
 
-    def table_rows_split_regexp
-      case @book.config['table_rows_splitter']
+    def table_row_separator_regexp
+      case @book.config['table_row_separator']
       when 'tabs'
         Regexp.new('\t+')
       when 'singletab'
@@ -190,7 +190,7 @@ module ReVIEW
       when 'verticalbar'
         Regexp.new('\s*\\' + escape('|') + '\s*')
       else
-        error "Unknown value for 'table_rows_splitter', shold be: tabs, singletab, spaces, verticalbar"
+        error "Unknown value for 'table_row_separator', shold be: tabs, singletab, spaces, verticalbar"
       end
     end
 
@@ -202,7 +202,7 @@ module ReVIEW
           sepidx ||= idx
           next
         end
-        rows.push(line.strip.split(table_rows_split_regexp).map { |s| s.sub(/\A\./, '') })
+        rows.push(line.strip.split(table_row_separator_regexp).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
       error 'no rows in the table' if rows.empty?

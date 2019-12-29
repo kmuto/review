@@ -182,7 +182,7 @@ toc: true
 # words_file: words.csv
 
 # //table命令における列の区切り文字。tabs (1文字以上のタブ文字区切り。デフォルト), singletab (1文字のタブ文字区切り), spaces (1文字以上のスペースまたはタブ文字の区切り), verticalbar ("0個以上の空白 | 0個以上の空白"の区切り)
-# table_rows_splitter: tabs
+# table_row_separator: tabs
 
 # review-vol向けのヒント情報
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)
