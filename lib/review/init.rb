@@ -82,6 +82,9 @@ module ReVIEW
       opts.on('', '--epub-version VERSION', 'define EPUB version.') do |version|
         @epub_version = version
       end
+      opts.on('', '--without-config-comment', "don't include comments in config.yml.") do
+        @without_config_comment = true
+      end
       opts.on('', '--without-doc', "don't generate doc files.") do
         @without_doc = true
       end
@@ -174,6 +177,10 @@ EOS
 
       if @tex_documentclass_opts[@template]
         content.gsub!(/^#\s*texdocumentclass:.*$/, %Q(texdocumentclass: ["#{@template}", "#{@tex_documentclass_opts[@template]}"]))
+      end
+
+      if @without_config_comment
+        content = content.split("\n").delete_if { |l| l.strip.start_with?('#') || l.strip.empty? }.join("\n")
       end
 
       File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write content }

@@ -118,10 +118,11 @@ module ReVIEW
       ENV['REVIEW_FNAME'] = File.basename(xmlfile).sub(/.xml\Z/, '.re')
       begin
         o, e, s = Open3.capture3(@filter, stdin_data: File.read(xmlfile))
+        unless e.empty?
+          warn("filter error for #{xmlfile}: #{e}")
+        end
         if s.success?
           File.write(xmlfile, o) # override
-        else
-          warn("filter error for #{xmlfile}: #{e}")
         end
       rescue => e
         warn("filter error for #{xmlfile}: #{e.message}")

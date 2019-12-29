@@ -146,31 +146,34 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<table><caption>foo</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
   end
 
-  def test_table_split_regexp
-    src = "//table{\n1\t2\t\t3  4,5\n------------\na b\tc  d,e\n//}\n"
+  def test_table_row_separator
+    src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS.chomp
-<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="3"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">3  4,5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">c  d,e</td></tbody></table>
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="3"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">3  4| 5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">c  d   |e</td></tbody></table>
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = '\s+'
+    @config['table_row_separator'] = 'singletab'
     actual = compile_block(src)
     expected = <<-EOS.chomp
-<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="4"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">3</td><td xyh="4,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">4,5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">a</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">b</td><td xyh="3,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">c</td><td xyh="4,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">d,e</td></tbody></table>
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="4"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086"></td><td xyh="4,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">3  4| 5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">c  d   |e</td></tbody></table>
 EOS
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = ','
+    @config['table_row_separator'] = 'spaces'
     actual = compile_block(src)
     expected = <<-EOS.chomp
-<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">1\t2\t\t3  4</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">a b\tc  d</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">e</td></tbody></table>
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="5"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">3</td><td xyh="4,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">4|</td><td xyh="5,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">a</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">b</td><td xyh="3,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">c</td><td xyh="4,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">d</td><td xyh="5,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">|e</td></tbody></table>
 EOS
     assert_equal expected, actual
 
-    @config['table_split_regexp'] = '['
-    e = assert_raises(ReVIEW::ApplicationError) { actual = compile_block(src) }
-    assert_equal ":5: error: invalid regular expression in 'table_split_regexp' parameter.", e.message
+    @config['table_row_separator'] = 'verticalbar'
+    actual = compile_block(src)
+    expected = <<-EOS.chomp
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">1	2		3  4</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">a b	c  d</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">e</td></tbody></table>
+EOS
+    assert_equal expected, actual
   end
 
   def test_inline_br
@@ -453,6 +456,18 @@ EOS
 
   def test_source_empty_caption
     actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_nil_caption
+    actual = compile_block("//source{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS.chomp
 <source><pre>foo
 bar
