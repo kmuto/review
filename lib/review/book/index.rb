@@ -18,7 +18,7 @@ module ReVIEW
   module Book
     class Index
       def self.parse(src, *args)
-        index = new(*args)
+        index = self.new(*args)
         seq = 1
         src.grep(%r{\A//#{item_type}}) do |line|
           if id = line.slice(/\[(.*?)\]/, 1)
@@ -38,7 +38,7 @@ module ReVIEW
         self.class.item_type
       end
 
-      def initialize()
+      def initialize
         @index = {}
         @logger = ReVIEW.logger
         @image_finder = nil
@@ -50,7 +50,7 @@ module ReVIEW
         end
         @index[item.id] = item
         if item.class != ReVIEW::Book::Chapter
-           item.index = self
+          item.index = self
         end
       end
 
@@ -135,7 +135,7 @@ module ReVIEW
 
     class FootnoteIndex < Index
       def self.parse(src)
-        index = new()
+        index = self.new
         seq = 1
         src.grep(%r{\A//footnote}) do |line|
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
@@ -151,7 +151,7 @@ module ReVIEW
 
     class ImageIndex < Index
       def self.parse(src, *args)
-        index = new(*args)
+        index = self.new(*args)
         seq = 1
         src.grep(%r{\A//#{item_type}}) do |line|
           # ex. ["//image", "id", "", "caption"]
@@ -204,7 +204,7 @@ module ReVIEW
       end
 
       def self.parse(src, *args)
-        index = new(*args)
+        index = self.new(*args)
         seq = 1
         src.grep(/@<icon>/) do |line|
           line.gsub(/@<icon>\{(.+?)\}/) do
@@ -218,7 +218,7 @@ module ReVIEW
 
     class BibpaperIndex < Index
       def self.parse(src)
-        index = new()
+        index = self.new
         seq = 1
         src.grep(%r{\A//bibpaper}) do |line|
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
@@ -256,7 +256,7 @@ module ReVIEW
       HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
 
       def self.parse(src, chap)
-        headline_index = new(chap)
+        headline_index = self.new(chap)
         indexs = []
         headlines = []
         inside_column = false
@@ -346,7 +346,7 @@ module ReVIEW
       COLUMN_PATTERN = /\A(=+)\[column\](?:\{(.+?)\})?(.*)/
 
       def self.parse(src, *_args)
-        index = new()
+        index = self.new
         seq = 1
         src.each do |line|
           m = COLUMN_PATTERN.match(line)

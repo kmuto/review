@@ -1644,7 +1644,7 @@ EOS
   def test_column_in_aother_chapter_ref
     def @chapter.column_index
       item = Book::Index::Item.new('chap1|column', 1, 'column_cap')
-      idx = Book::ColumnIndex.new()
+      idx = Book::ColumnIndex.new
       idx.add_item(item)
       idx
     end

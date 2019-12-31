@@ -136,7 +136,7 @@ module ReVIEW
 
       def chapter_index
         return @chapter_index if @chapter_index
-        @chapter_index = ChapterIndex.new()
+        @chapter_index = ChapterIndex.new
         each_chapter do |chap|
           @chapter_index.add_item(Index::Item.new(chap.id, chap.number, chap))
         end
