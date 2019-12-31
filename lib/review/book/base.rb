@@ -139,7 +139,6 @@ module ReVIEW
         chapter_items = chapters.map do |chap|
           Index::Item.new(chap.id, chap.number, chap)
         end
-        # TODO: contents += parts.find_all { |prt| prt.id.present? }
         part_items = parts.select{ |prt| prt.id.present? }.map{ |prt| Index::Item.new(prt.id, prt.number, prt) }
         @chapter_index = ChapterIndex.new(chapter_items + part_items)
       end
