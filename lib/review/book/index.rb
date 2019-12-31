@@ -88,8 +88,9 @@ module ReVIEW
       end
 
       def number(id)
-        chapter = @index.fetch(id)
+        chapter_item = @index.fetch(id)
         begin
+          chapter = chapter_item.content
           chapter.format_number
         rescue # part
           I18n.t('part', chapter.number)
@@ -97,9 +98,9 @@ module ReVIEW
       end
 
       def title(id)
-        @index.fetch(id).title
+        @index.fetch(id).content.title
       rescue # non-file part
-        @index.fetch(id).name
+        @index.fetch(id).content.name
       end
 
       def display_string(id)
