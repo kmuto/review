@@ -1,7 +1,15 @@
 require 'book_test_helper'
+require 'fileutils'
 
 class BookTest < Test::Unit::TestCase
   include BookTestHelper
+
+  def setup
+    if ENV['GITHUB_WORKSPACE']
+      ENV['TMPDIR'] = File.join(ENV['GITHUB_WORKSPACE'], 'tmp_review')
+      FileUtils.mkdir_p(ENV['TMPDIR'])
+    end
+  end
 
   def assert_same_path(expected, result, *options)
     require 'pathname'
