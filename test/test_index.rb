@@ -54,7 +54,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
@@ -71,7 +71,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines, chap)
     assert_equal [3, 1], index['sec1-3|sec1-3-1'].number
     assert_equal '1.3.1', index.number('sec1-3|sec1-3-1')
   end
@@ -89,7 +89,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
 
@@ -108,7 +108,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
@@ -124,7 +124,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [2, 2], index['sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2-2')
   end
@@ -139,7 +139,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [1, 1], index['target'].number
     assert_equal '1.1.1', index.number('target')
   end
@@ -157,7 +157,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
 
     assert_raise ReVIEW::KeyError do
       assert_equal [1, 1], index['target'].number
@@ -174,7 +174,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal '1.1.1', index.number('sec1-1')
   end
 
@@ -190,7 +190,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [1, 1, 1], index['sec1-1-1'].number
   end
 
@@ -205,7 +205,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [1, 1, 1], index['sec1-1-1'].number
   end
 
@@ -222,7 +222,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal nil, index['sec01'].number
     assert_equal nil, index['sec02'].number
     assert_equal [1], index['sec1'].number
@@ -242,7 +242,7 @@ class IndexTest < Test::Unit::TestCase
     EOB
     book = Book::Base.load
     chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src, chap)
+    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
     assert_equal [1], index['A'].number
     assert_equal [1, 1], index['A2'].number
     assert_equal nil, index['B'].number
