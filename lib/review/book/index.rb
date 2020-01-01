@@ -18,18 +18,18 @@ module ReVIEW
   module Book
     class Index
       def self.parse(src, *args)
-        items = []
+        index = self.new(*args)
         seq = 1
         src.grep(%r{\A//#{item_type}}) do |line|
           if id = line.slice(/\[(.*?)\]/, 1)
-            items.push(ReVIEW::Book::Index::Item.new(id, seq))
+            index.add_item(ReVIEW::Book::Index::Item.new(id, seq))
             seq += 1
             if id.empty?
               ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
             end
           end
         end
-        new(items, *args)
+        index
       end
 
       include Enumerable
@@ -38,17 +38,20 @@ module ReVIEW
         self.class.item_type
       end
 
-      def initialize(items)
-        @items = items
+      def initialize
         @index = {}
         @logger = ReVIEW.logger
-        items.each do |item|
-          if @index[item.id]
-            @logger.warn "warning: duplicate ID: #{item.id} (#{item})"
-          end
-          @index[item.id] = item
-        end
         @image_finder = nil
+      end
+
+      def add_item(item)
+        if @index[item.id]
+          @logger.warn "warning: duplicate ID: #{item.id} (#{item})"
+        end
+        @index[item.id] = item
+        if item.class != ReVIEW::Book::Chapter
+          item.index = self
+        end
       end
 
       def [](id)
@@ -60,7 +63,7 @@ module ReVIEW
           raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
         end
 
-        @items.each do |item|
+        @index.values.each do |item|
           if item.id.split('|').include?(id)
             return item
           end
@@ -73,7 +76,7 @@ module ReVIEW
       end
 
       def each(&block)
-        @items.each(&block)
+        @index.values.each(&block)
       end
 
       def key?(id)
@@ -132,32 +135,32 @@ module ReVIEW
 
     class FootnoteIndex < Index
       def self.parse(src)
-        items = []
+        index = self.new
         seq = 1
         src.grep(%r{\A//footnote}) do |line|
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
             m1 = m[1].gsub(/\\(\])/) { $1 }
             m2 = m[2].gsub(/\\(\])/) { $1 }
-            items.push(Item.new(m1, seq, m2))
+            index.add_item(Item.new(m1, seq, m2))
           end
           seq += 1
         end
-        new(items)
+        index
       end
     end
 
     class ImageIndex < Index
       def self.parse(src, *args)
-        items = []
+        index = self.new(*args)
         seq = 1
         src.grep(%r{\A//#{item_type}}) do |line|
           # ex. ["//image", "id", "", "caption"]
           elements = line.split(/\[(.*?)\]/)
           if elements[1].present?
             if line.start_with?('//imgtable')
-              items.push(ReVIEW::Book::Index::Item.new(elements[1], 0, elements[3]))
+              index.add_item(ReVIEW::Book::Index::Item.new(elements[1], 0, elements[3]))
             else ## %r<\A//(image|graph)>
-              items.push(ReVIEW::Book::Index::Item.new(elements[1], seq, elements[3]))
+              index.add_item(ReVIEW::Book::Index::Item.new(elements[1], seq, elements[3]))
               seq += 1
             end
             if elements[1] == ''
@@ -165,7 +168,7 @@ module ReVIEW
             end
           end
         end
-        new(items, *args)
+        index
       end
 
       def self.item_type
@@ -174,14 +177,12 @@ module ReVIEW
 
       attr_reader :image_finder
 
-      def initialize(items, chapid, basedir, types, builder)
-        super(items)
-        items.each do |item|
-          item.index = self
-        end
+      def initialize(chapid, basedir, types, builder)
+        super()
         @chapid = chapid
         @basedir = basedir
         @types = types
+        @logger = ReVIEW.logger
 
         @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid, builder, types)
       end
@@ -192,44 +193,42 @@ module ReVIEW
     end
 
     class IconIndex < ImageIndex
-      def initialize(items, chapid, basedir, types, builder)
-        @items = items
+      def initialize(chapid, basedir, types, builder)
         @index = {}
-        items.each { |item| @index[item.id] = item }
-        items.each { |item| item.index = self }
         @chapid = chapid
         @basedir = basedir
         @types = types
+        @logger = ReVIEW.logger
 
         @image_finder = ImageFinder.new(basedir, chapid, builder, types)
       end
 
       def self.parse(src, *args)
-        items = []
+        index = self.new(*args)
         seq = 1
         src.grep(/@<icon>/) do |line|
           line.gsub(/@<icon>\{(.+?)\}/) do
-            items.push(ReVIEW::Book::Index::Item.new($1, seq))
+            index.add_item(ReVIEW::Book::Index::Item.new($1, seq))
             seq += 1
           end
         end
-        new(items, *args)
+        index
       end
     end
 
     class BibpaperIndex < Index
       def self.parse(src)
-        items = []
+        index = self.new
         seq = 1
         src.grep(%r{\A//bibpaper}) do |line|
           if m = /\[(.*?)\]\[(.*)\]/.match(line)
             m1 = m[1].gsub(/\\(.)/) { $1 }
             m2 = m[2].gsub(/\\(.)/) { $1 }
-            items.push(Item.new(m1, seq, m2))
+            index.add_item(Item.new(m1, seq, m2))
           end
           seq += 1
         end
-        new(items)
+        index
       end
     end
 
@@ -255,10 +254,9 @@ module ReVIEW
 
     class HeadlineIndex < Index
       HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
-      attr_reader :items
 
       def self.parse(src, chap)
-        items = []
+        headline_index = self.new(chap)
         indexs = []
         headlines = []
         inside_column = false
@@ -312,27 +310,22 @@ module ReVIEW
 
           if %w[nonum notoc nodisp].include?(m[2])
             headlines[index] = m[3].present? ? m[3].strip : m[4].strip
-            items.push(Item.new(headlines.join('|'), nil, m[4].strip))
+            item_id = headlines.join('|')
+            headline_index.add_item(Item.new(item_id, nil, m[4].strip))
           else
             indexs[index] += 1
             headlines[index] = m[3].present? ? m[3].strip : m[4].strip
-            items.push(Item.new(headlines.join('|'), indexs.dup, m[4].strip))
+            item_id = headlines.join('|')
+            headline_index.add_item(Item.new(item_id, indexs.dup, m[4].strip))
           end
         end
-        new(items, chap)
+        headline_index
       end
 
-      def initialize(items, chap)
-        @items = items
+      def initialize(chap)
         @chap = chap
         @index = {}
         @logger = ReVIEW.logger
-        items.each do |item|
-          if @index[item.id]
-            @logger.warn "warning: duplicate ID: #{item.id}"
-          end
-          @index[item.id] = item
-        end
       end
 
       def number(id)
@@ -353,7 +346,7 @@ module ReVIEW
       COLUMN_PATTERN = /\A(=+)\[column\](?:\{(.+?)\})?(.*)/
 
       def self.parse(src, *_args)
-        items = []
+        index = self.new
         seq = 1
         src.each do |line|
           m = COLUMN_PATTERN.match(line)
@@ -363,10 +356,10 @@ module ReVIEW
           caption = m[3].strip
           id = caption if id.nil? || id.empty?
 
-          items.push(ReVIEW::Book::Index::Item.new(id, seq, caption))
+          index.add_item(ReVIEW::Book::Index::Item.new(id, seq, caption))
           seq += 1
         end
-        new(items)
+        index
       end
     end
   end

@@ -27,7 +27,7 @@ module ReVIEW
         attr_reader :id
         attr_reader :number
         attr_reader :caption
-        attr_writer :index # internal use only
+        attr_accessor :index # internal use only
 
         alias_method :content, :caption
 

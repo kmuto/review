@@ -247,8 +247,10 @@ EOS
 
   def test_inline_hd_chap
     def @chapter.headline_index
-      items = [Book::Index::Item.new('chap1|test', [1, 1], 'te_st')]
-      Book::HeadlineIndex.new(items, self)
+      item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st')
+      idx = Book::HeadlineIndex.new(self)
+      idx.add_item(item)
+      idx
     end
 
     @config['secnolevel'] = 3
