@@ -288,7 +288,7 @@ EOS
     begin
       require 'MeCab'
     rescue LoadError
-      assert_true(true, 'skip test_inline_idx_yomi (cannot find MeCab)')
+      $stderr.puts 'skip test_inline_idx_yomi (cannot find MeCab)'
       return true
     end
     tmpdir = Dir.mktmpdir
