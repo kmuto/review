@@ -284,9 +284,9 @@ EOS
   end
 
   def test_inline_idx_yomi
+    require 'nkf'
     begin
       require 'MeCab'
-      require 'nkf'
     rescue LoadError
       $stderr.puts 'skip test_inline_idx_yomi (cannot find MeCab)'
       return true
