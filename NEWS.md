@@ -3,6 +3,10 @@
 * add `table_row_separator` to specify a separator that separates table rows. Accceptable value: tabs (means `\t+`, default), `singletab` (means `\t`), spaces (means `\s+`), verticalbar (means `\s*\|\s*`) ([#1420])
 * IDGXMLMaker: add `-y` (`--only`) option to specify the files to convert instead of all files ([#1428])
 * add `--without-config-comment` option to review-init command to exclude comments from config.yml ([#1453])
+* PDFMaker: add `use_original_image_size` in `pdfmaker` section. If this parameter is set to true, images in `//image`, `//indepimage`, and `//imgtable` will be placed in actual size, not textwidth ([#1461])
+
+## Breaking Changes
+* PDFMaker: `image_scale2width` parameter has been moved under `pdfmaker` section ([#1462])
 
 ## Bug Fixes
 * PDFMaker: fix backward compatibility error with Re:VIEW 3 ([#1414])
@@ -26,15 +30,16 @@
 * add description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
 * update quickstart.ja.md and quickstart.md to Re:VIEW 4 ([#1442])
 * update syntax-book sample document ([#1448], [#1449])
-* update README.md ([#1455])
+* update README.md ([#1455], [#1458])
 
 ## Others
 * refactor codes with Rubocop 0.78.0 ([#1424], [#1430])
 * run PDF build test more strictly when there is LaTeX runtime environment ([#1433])
-* switch the build test suite from Travis CI to GitHub Actions ([#1431], [#1436])
+* switch the build test suite from Travis CI to GitHub Actions ([#1431], [#1436], [#1437])
 * IDGXMLBuilder: refactor code list methods ([#1438], [#1439])
 * remove unnecessary review-ext.rb from syntax-book ([#1446])
 * add tests for IDGXMLMaker and TextMaker ([#1448])
+* refactor around Index ([#1456], [#1457], [#1459])
 
 ## Contributors
 * [@turky](https://github.com/turky)
@@ -56,6 +61,7 @@
 [#1432]: https://github.com/kmuto/review/issues/1432
 [#1433]: https://github.com/kmuto/review/pull/1433
 [#1436]: https://github.com/kmuto/review/pull/1436
+[#1437]: https://github.com/kmuto/review/issues/1437
 [#1438]: https://github.com/kmuto/review/pull/1438
 [#1439]: https://github.com/kmuto/review/pull/1439
 [#1442]: https://github.com/kmuto/review/issues/1442
@@ -67,6 +73,12 @@
 [#1449]: https://github.com/kmuto/review/pull/1449
 [#1453]: https://github.com/kmuto/review/pull/1453
 [#1455]: https://github.com/kmuto/review/pull/1455
+[#1456]: https://github.com/kmuto/review/pull/1456
+[#1457]: https://github.com/kmuto/review/pull/1457
+[#1458]: https://github.com/kmuto/review/pull/1458
+[#1459]: https://github.com/kmuto/review/pull/1459
+[#1461]: https://github.com/kmuto/review/issues/1461
+[#1462]: https://github.com/kmuto/review/issues/1462
 
 # Version 4.0.0
 ## New Features
@@ -78,7 +90,7 @@
 ## Breaking Changes
 * review-init no longer creates empty `layouts` folder ([#1340])
 * PDFMaker: fix a problem that white space characters disappeared in `@<code>`, `@<tt>`, `@<tti>`, and `@<ttb>`. Also the string is automatically wrapped ([#1348])
-* `//texequation`、`//embed` and `//graph` that don't allow inline op no longer escape inline op in strings. And don't put extra line break ([#1371], [#1374])
+* `//texequation`, `//embed` and `//graph` that don't allow inline op no longer escape inline op in strings. And don't put extra line break ([#1371], [#1374])
 * PDFMaker: change the default table placement from `htp` to `H` for use in columns (`\floatplacement{table}` value in review-style.sty) [#1385]
 * PDFMaker: the space between Japanese/Western characters in the code lists is changed to 0 from 1/4 character ([#1401])
 * change the default value of `toc` parameter from null (false, don't create a table of contents) to true (create a table of contents) ([#1405])
@@ -692,7 +704,7 @@
 
 ## Enhancements
 
-* allow block `{ 〜 //}` in `//indepimage`. ([#802])
+* allow block `{ ... //}` in `//indepimage`. ([#802])
 * warn when images are not found in `//indepimage`([#803])
 * LATEXBuilder: allow caption in `//source` ([#834])
 
