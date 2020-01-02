@@ -14,10 +14,10 @@ class LATEXBuidlerTest < Test::Unit::TestCase
       'secnolevel' => 2, # for IDGXMLBuilder, EPUBBuilder
       'toclevel' => 2,
       'stylesheet' => nil, # for EPUBBuilder
-      'image_scale2width' => false,
       'texcommand' => 'uplatex',
-      'review_version' => '3'
+      'review_version' => '4'
     )
+    @config['pdfmaker']['image_scale2width'] = nil
     @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -247,8 +247,10 @@ EOS
 
   def test_inline_hd_chap
     def @chapter.headline_index
-      items = [Book::Index::Item.new('chap1|test', [1, 1], 'te_st')]
-      Book::HeadlineIndex.new(items, self)
+      item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st')
+      idx = Book::HeadlineIndex.new(self)
+      idx.add_item(item)
+      idx
     end
 
     @config['secnolevel'] = 3
@@ -282,9 +284,9 @@ EOS
   end
 
   def test_inline_idx_yomi
+    require 'nkf'
     begin
       require 'MeCab'
-      require 'nkf'
     rescue LoadError
       $stderr.puts 'skip test_inline_idx_yomi (cannot find MeCab)'
       return true
@@ -857,6 +859,20 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
+    expected = <<-EOS
+\\begin{reviewimage}%%sampleimg
+\\reviewincludegraphics[ ]{./images/chap1-sampleimg.png}
+\\reviewimagecaption{sample photo}
+\\label{image:chap1:sampleimg}
+\\end{reviewimage}
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//image[sampleimg][sample photo][]{\n//}\n")
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -875,6 +891,10 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
+    assert_equal expected, actual
   end
 
   def test_image_with_metric_width
@@ -884,7 +904,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
@@ -893,6 +913,10 @@ EOS
 \\label{image:chap1:sampleimg}
 \\end{reviewimage}
 EOS
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
     assert_equal expected, actual
   end
 
@@ -912,6 +936,10 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
+    assert_equal expected, actual
   end
 
   def test_image_with_metric2_width
@@ -921,7 +949,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
@@ -930,6 +958,10 @@ EOS
 \\label{image:chap1:sampleimg}
 \\end{reviewimage}
 EOS
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
     assert_equal expected, actual
   end
 
@@ -947,6 +979,19 @@ EOS
 \\reviewindepimagecaption{図: sample photo}
 \\end{reviewimage}
 EOS
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    expected = <<-EOS
+\\begin{reviewimage}%%sampleimg
+\\reviewincludegraphics[ ]{./images/chap1-sampleimg.png}
+\\reviewindepimagecaption{図: sample photo}
+\\end{reviewimage}
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//indepimage[sampleimg][sample photo][]\n")
     assert_equal expected, actual
   end
 
@@ -982,6 +1027,10 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
+    assert_equal expected, actual
   end
 
   def test_indepimage_with_metric_width
@@ -991,7 +1040,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
@@ -999,6 +1048,10 @@ EOS
 \\reviewindepimagecaption{図: sample photo}
 \\end{reviewimage}
 EOS
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
     assert_equal expected, actual
   end
 
@@ -1017,6 +1070,10 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block(%Q(//indepimage[sampleimg][sample photo][scale=1.2, html::class="sample",latex::ignore=params]\n))
+    assert_equal expected, actual
   end
 
   def test_indepimage_without_caption_but_with_metric
@@ -1033,6 +1090,10 @@ EOS
 \\reviewincludegraphics[scale=1.2]{./images/chap1-sampleimg.png}
 \\end{reviewimage}
 EOS
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
     assert_equal expected, actual
   end
 
@@ -1191,6 +1252,47 @@ EOS
 \\end{reviewimage}
 \\end{table}
 EOS
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
+
+    expected = <<-EOS
+\\begin{table}[h]%%sampleimg
+\\reviewimgtablecaption{test for imgtable}
+\\label{table:chap1:sampleimg}
+\\begin{reviewimage}%%sampleimg
+\\reviewincludegraphics[ ]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+\\end{table}
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//imgtable[sampleimg][test for imgtable][]{\n//}\n")
+    assert_equal expected, actual
+  end
+
+  def test_imgtable_with_metrics
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1, 'sample img')
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("//imgtable[sampleimg][test for imgtable][scale=1.2]{\n//}\n")
+    expected = <<-EOS
+\\begin{table}[h]%%sampleimg
+\\reviewimgtablecaption{test for imgtable}
+\\label{table:chap1:sampleimg}
+\\begin{reviewimage}%%sampleimg
+\\reviewincludegraphics[scale=1.2]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+\\end{table}
+EOS
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = true
+    actual = compile_block("//imgtable[sampleimg][test for imgtable][scale=1.2]{\n//}\n")
     assert_equal expected, actual
   end
 

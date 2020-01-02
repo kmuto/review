@@ -244,8 +244,10 @@ EOS
 
   def test_inline_hd_chap
     def @chapter.headline_index
-      items = [Book::Index::Item.new('chap1|test', [1, 1], 'te_st')]
-      Book::HeadlineIndex.new(items, self)
+      item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st')
+      idx = Book::HeadlineIndex.new(self)
+      idx.add_item(item)
+      idx
     end
 
     @config['secnolevel'] = 2
@@ -270,8 +272,10 @@ EOS
         end
 
         def @chapter.headline_index
-          items = [Book::Index::Item.new('test', [1], 'te_st')]
-          Book::HeadlineIndex.new(items, self)
+          item = Book::Index::Item.new('test', [1], 'te_st')
+          idx = Book::HeadlineIndex.new(self)
+          idx.add_item(item)
+          idx
         end
 
         actual = compile_inline('test @<hd>{test} test2')
@@ -293,8 +297,10 @@ EOS
         end
 
         def @chapter.headline_index
-          items = [Book::Index::Item.new('test', [1], 'te_st')]
-          Book::HeadlineIndex.new(items, self)
+          item = Book::Index::Item.new('test', [1], 'te_st')
+          idx = Book::HeadlineIndex.new(self)
+          idx.add_item(item)
+          idx
         end
 
         actual = compile_inline('test @<hd>{test} test2')
@@ -1637,8 +1643,10 @@ EOS
 
   def test_column_in_aother_chapter_ref
     def @chapter.column_index
-      items = [Book::Index::Item.new('chap1|column', 1, 'column_cap')]
-      Book::ColumnIndex.new(items)
+      item = Book::Index::Item.new('chap1|column', 1, 'column_cap')
+      idx = Book::ColumnIndex.new
+      idx.add_item(item)
+      idx
     end
 
     actual = compile_inline('test @<column>{chap1|column} test2')

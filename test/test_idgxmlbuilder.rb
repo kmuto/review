@@ -706,8 +706,10 @@ EOS
 
   def test_column_in_aother_chapter_ref
     def @chapter.column_index
-      items = [Book::Index::Item.new('chap1|column', 1, 'column_cap')]
-      Book::ColumnIndex.new(items)
+      item = Book::Index::Item.new('chap1|column', 1, 'column_cap')
+      idx = Book::ColumnIndex.new
+      idx.add_item(item)
+      idx
     end
 
     actual = compile_inline('test @<column>{chap1|column} test2')

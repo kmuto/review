@@ -381,6 +381,9 @@ pdfmaker:
   # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換する
   # image_scale2width: true
   #
+  # 画像のデフォルトのサイズを、版面横幅合わせではなく、原寸をそのまま利用する
+  # use_original_image_size: null
+  #
   # PDFやIllustratorファイル(.ai)の画像のBoudingBoxの抽出に指定のボックスを採用する
   # cropbox(デフォルト), mediabox, artbox, trimbox, bleedboxから選択する。
   # Illustrator CC以降のIllustratorファイルに対してはmediaboxを指定する必要がある

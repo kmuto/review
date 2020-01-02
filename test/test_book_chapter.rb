@@ -37,11 +37,13 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_size
     ch = Book::Chapter.new(nil, nil, nil, __FILE__, :io)
-    assert_equal File.size(__FILE__), ch.size
+    filesize = IO.read(__FILE__, mode: 'rt:BOM|utf-8').size
+    assert_equal filesize, ch.size
 
     File.open(__FILE__, 'r') do |i|
       ch = Book::Chapter.new(nil, nil, nil, nil, i)
-      assert_equal File.size(__FILE__), ch.size
+      filesize = IO.read(__FILE__, mode: 'rt:BOM|utf-8').size
+      assert_equal filesize, ch.size
     end
   end
 

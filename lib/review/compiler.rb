@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2020 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -115,7 +115,7 @@ module ReVIEW
     defblock :emlist, 0..2
     defblock :cmd, 0..1
     defblock :table, 0..2
-    defblock :imgtable, 0..2
+    defblock :imgtable, 0..3
     defblock :emtable, 0..1
     defblock :quote, 0
     defblock :image, 2..3, true

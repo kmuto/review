@@ -1,0 +1,39 @@
+name: TestWin
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ '2.6.x', '2.5.x', '2.4.x' ]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+    - name: Build and test with Rake
+      shell: bash
+      run: |
+        gem install bundler --no-document
+        bundle install --retry 3
+        bundle exec ruby test/run_test.rb --max-diff-target-string-size=10000 --verbose=v
+    - name: Test with epubcheck-ruby
+      shell: bash
+      run: |
+        gem install -N epubcheck-ruby
+        ruby bin/review-init hello
+        cd hello
+        ruby ../bin/review-epubmaker config.yml
+        epubcheck book.epub
+        cd ..
+        ruby bin/review-init hello2 --epub-version 2
+        cd hello2
+        ruby ../bin/review-epubmaker config.yml
+        epubcheck book.epub
+        cd ..
