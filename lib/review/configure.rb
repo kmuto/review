@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012-2019 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2012-2020 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -92,7 +92,8 @@ module ReVIEW
           'makeindex_dic' => nil,
           'makeindex_mecab' => true,
           'makeindex_mecab_opts' => '-Oyomi',
-          'use_cover_nombre' => true
+          'use_cover_nombre' => true,
+          'use_original_image_size' => nil
         },
         'imgmath_options' => {
           'format' => 'png',
