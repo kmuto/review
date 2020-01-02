@@ -75,7 +75,6 @@ module ReVIEW
         'structuredxml' => nil,
         'pt_to_mm_unit' => 0.3528, # DTP: 1pt = 0.3528mm, JIS: 1pt = 0.3514mm
         # for LaTeX
-        'image_scale2width' => true,
         'footnotetext' => nil,
         'texcommand' => 'uplatex',
         'texoptions' => '-interaction=nonstopmode -file-line-error -halt-on-error',
@@ -85,6 +84,7 @@ module ReVIEW
         'dvioptions' => '-d 5 -z 9',
         # for PDFMaker
         'pdfmaker' => {
+          'image_scale2width' => true,
           'makeindex' => nil, # Make index page
           'makeindex_command' => 'mendex', # works only when makeindex is true
           'makeindex_options' => '-f -r -I utf8',

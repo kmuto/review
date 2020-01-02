@@ -491,7 +491,7 @@ module ReVIEW
     end
 
     def handle_metric(str)
-      if @book.config['image_scale2width'] && str =~ /\Ascale=([\d.]+)\Z/
+      if @book.config['pdfmaker']['image_scale2width'] && str =~ /\Ascale=([\d.]+)\Z/
         return "width=#{$1}\\maxwidth"
       end
       str
