@@ -870,6 +870,9 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    actual = compile_block("//image[sampleimg][sample photo][]{\n//}\n")
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -986,6 +989,9 @@ EOS
 \\reviewindepimagecaption{図: sample photo}
 \\end{reviewimage}
 EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//indepimage[sampleimg][sample photo][]\n")
     assert_equal expected, actual
   end
 
@@ -1260,6 +1266,9 @@ EOS
 \\end{reviewimage}
 \\end{table}
 EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//imgtable[sampleimg][test for imgtable][]{\n//}\n")
     assert_equal expected, actual
   end
 

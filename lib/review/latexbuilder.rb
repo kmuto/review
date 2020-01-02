@@ -484,7 +484,7 @@ module ReVIEW
 
     def parse_metric(type, metric)
       s = super(type, metric)
-      if @book.config['pdfmaker']['use_original_image_size'] && s.empty? && metric.nil?
+      if @book.config['pdfmaker']['use_original_image_size'] && s.empty? && !metric.present?
         return ' ' # pass empty to \reviewincludegraphics
       end
       s
