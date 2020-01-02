@@ -14,10 +14,10 @@ class LATEXBuidlerV2Test < Test::Unit::TestCase
       'secnolevel' => 2, # for IDGXMLBuilder, EPUBBuilder
       'toclevel' => 2,
       'stylesheet' => nil, # for EPUBBuilder
-      'image_scale2width' => false,
       'texcommand' => 'uplatex',
       'review_version' => '2.0'
     )
+    @config['pdfmaker']['image_scale2width'] = nil
     @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -762,7 +762,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
@@ -799,7 +799,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
@@ -869,7 +869,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
