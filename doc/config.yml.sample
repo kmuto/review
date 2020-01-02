@@ -181,8 +181,8 @@ toc: true
 # @<w>命令で使用する単語ファイルのパス
 # words_file: words.csv
 
-# //table命令における列の区切り文字 (Rubyの正規表現)。''で囲むこと
-# table_split_regexp: '\t+'
+# //table命令における列の区切り文字。tabs (1文字以上のタブ文字区切り。デフォルト), singletab (1文字のタブ文字区切り), spaces (1文字以上のスペースまたはタブ文字の区切り), verticalbar ("0個以上の空白 | 0個以上の空白"の区切り)
+# table_row_separator: tabs
 
 # review-vol向けのヒント情報
 # 1ページの行数文字数と1kbごとのページ数を用紙サイズで指定する(A5 or B5)
@@ -380,6 +380,9 @@ pdfmaker:
   #
   # 画像のscale=X.Xという指定を画像拡大縮小率からページ最大幅の相対倍率に変換する
   # image_scale2width: true
+  #
+  # 画像のデフォルトのサイズを、版面横幅合わせではなく、原寸をそのまま利用する
+  # use_original_image_size: null
   #
   # PDFやIllustratorファイル(.ai)の画像のBoudingBoxの抽出に指定のボックスを採用する
   # cropbox(デフォルト), mediabox, artbox, trimbox, bleedboxから選択する。

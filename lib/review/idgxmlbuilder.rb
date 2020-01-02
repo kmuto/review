@@ -517,7 +517,7 @@ module ReVIEW
         else
           rows.push(line.gsub(/\t\.\t/, "\t\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\t").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
         end
-        col2 = rows[rows.length - 1].split(table_split_regexp).length
+        col2 = rows[rows.length - 1].split(table_row_separator_regexp).length
         @col = col2 if col2 > @col
       end
       error 'no rows in the table' if rows.empty?
@@ -551,7 +551,7 @@ module ReVIEW
             puts %Q(<tr type="header">#{rows.shift}</tr>)
           else
             i = 0
-            rows.shift.split(table_split_regexp).each_with_index do |cell, x|
+            rows.shift.split(table_row_separator_regexp).each_with_index do |cell, x|
               print %Q(<td xyh="#{x + 1},#{y + 1},#{sepidx}" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
               i += 1
             end
@@ -566,7 +566,7 @@ module ReVIEW
       if tablewidth
         rows.each_with_index do |row, y|
           i = 0
-          row.split(table_split_regexp).each_with_index do |cell, x|
+          row.split(table_row_separator_regexp).each_with_index do |cell, x|
             print %Q(<td xyh="#{x + 1},#{y + 1 + sepidx},#{sepidx}" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="#{sprintf('%.3f', cellwidth[i])}">#{cell.sub('DUMMYCELLSPLITTER', '')}</td>)
             i += 1
           end
@@ -611,7 +611,7 @@ module ReVIEW
     end
 
     def imgtable(lines, id, caption = nil, metric = nil)
-      if @chapter.image(id).bound?
+      if @chapter.image_bound?(id)
         metrics = parse_metric('idgxml', metric)
         puts '<table>'
         if top?(['table']) && caption.present?
@@ -1169,7 +1169,7 @@ module ReVIEW
       error "unknown chapter: #{id}"
     end
 
-    def source(lines, caption, lang = nil)
+    def source(lines, caption = nil, lang = nil)
       puts '<source>'
       source_header(caption)
       source_body(lines, lang)

@@ -1,6 +1,6 @@
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2019 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2020 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -60,7 +60,7 @@ module ReVIEW
         require 'nkf'
         @index_mecab = MeCab::Tagger.new(@book.config['pdfmaker']['makeindex_mecab_opts'])
       rescue LoadError
-        error 'not found MeCab'
+        warn 'not found MeCab'
       end
     end
 
@@ -482,8 +482,16 @@ module ReVIEW
     def image_header(id, caption)
     end
 
+    def parse_metric(type, metric)
+      s = super(type, metric)
+      if @book.config['pdfmaker']['use_original_image_size'] && s.empty? && !metric.present?
+        return ' ' # pass empty to \reviewincludegraphics
+      end
+      s
+    end
+
     def handle_metric(str)
-      if @book.config['image_scale2width'] && str =~ /\Ascale=([\d.]+)\Z/
+      if @book.config['pdfmaker']['image_scale2width'] && str =~ /\Ascale=([\d.]+)\Z/
         return "width=#{$1}\\maxwidth"
       end
       str

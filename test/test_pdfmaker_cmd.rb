@@ -28,10 +28,11 @@ class PDFMakerCmdTest < Test::Unit::TestCase
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
       Dir.chdir(@tmpdir1) do
-        out, status = Open3.capture2e("#{ruby_cmd} -S #{REVIEW_PDFMAKER} #{configfile}")
-        unless status.success?
-          $stderr.puts out
+        _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_PDFMAKER} #{configfile}")
+        if !e.empty? && !s.success?
+          STDERR.puts e
         end
+        assert s.success?
       end
       assert File.exist?(File.join(@tmpdir1, targetpdffile))
     end
@@ -94,7 +95,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
       $stderr.puts 'skip test_pdfmaker_cmd_syntax_jsbook_ebook'
       return true
     end
-    common_buildpdf('sample-book/src', 'review-jsbook', 'config.yml', 'book.pdf')
+    common_buildpdf('syntax-book', 'review-jsbook', 'config.yml', 'syntax-book.pdf')
   end
 
   def test_pdfmaker_cmd_syntax_jlreq_ebook

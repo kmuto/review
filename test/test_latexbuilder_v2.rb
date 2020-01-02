@@ -14,10 +14,10 @@ class LATEXBuidlerV2Test < Test::Unit::TestCase
       'secnolevel' => 2, # for IDGXMLBuilder, EPUBBuilder
       'toclevel' => 2,
       'stylesheet' => nil, # for EPUBBuilder
-      'image_scale2width' => false,
       'texcommand' => 'uplatex',
       'review_version' => '2.0'
     )
+    @config['pdfmaker']['image_scale2width'] = nil
     @book = Book::Base.new
     @book.config = @config
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -221,8 +221,10 @@ EOS
 
   def test_inline_hd_chap
     def @chapter.headline_index
-      items = [Book::Index::Item.new('chap1|test', [1, 1], 'te_st')]
-      Book::HeadlineIndex.new(items, self)
+      item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st')
+      idx = Book::HeadlineIndex.new(self)
+      idx.add_item(item)
+      idx
     end
 
     @config['secnolevel'] = 3
@@ -251,9 +253,9 @@ EOS
   end
 
   def test_inline_idx_yomi
+    require 'nkf'
     begin
       require 'MeCab'
-      require 'nkf'
     rescue LoadError
       $stderr.puts 'skip test_inline_idx_yomi (cannot find MeCab)'
       return true
@@ -760,7 +762,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\n//}\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
@@ -797,7 +799,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2,html::class=sample,latex::ignore=params]{\n//}\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg
@@ -867,7 +869,7 @@ EOS
       item
     end
 
-    @config['image_scale2width'] = true
+    @config['pdfmaker']['image_scale2width'] = true
     actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
     expected = <<-EOS
 \\begin{reviewimage}%%sampleimg

@@ -1,6 +1,8 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
 require 'test/unit'
 require 'fileutils'
+require 'review/yamlloader'
+require 'review/extentions'
 
 def touch_file(path)
   FileUtils.touch(path)
