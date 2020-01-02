@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2019/12/16]
+\ProvidesClass{review-base}[2020/01/02]
 % jlreq用基本設定
 \def\recls@tmp{luatex}\ifx\recls@tmp\recls@driver
   \hypersetup{
@@ -178,8 +178,14 @@
 
 % allow break line in tt
 % contributed by @zr_tex8r
-\g@addto@macro\pdfstringdefPreHook{%
-  \def\reviewbreakall#1{#1}}
+\g@addto@macro\pdfstringdefPreHook{% for PDF bookmarks
+  \def\reviewami#1{#1}
+  \def\reviewbreakall#1{#1}
+  \def\reviewballoon#1{#1}
+  \def\reviewbou#1{#1}
+  \def\reviewstrike#1{#1}
+  \def\reviewunderline#1{#1}
+}
 \newif\ifreview@ba@break
 \def\review@ba@end{\review@ba@end@}
 \DeclareRobustCommand{\reviewbreakall}[1]{%
