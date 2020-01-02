@@ -316,7 +316,7 @@ a_{m1} & \cdots & a_{mn}
 網カケ@<ami>{amiアミ}    @<balloon>{ふきだし説明}
 //}
 
-=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI},@<u>{UNDERLINE},@<ami>{AMI},@<bou>{BOU},@<kw}{KW},@<bou>{BOU}
+=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI},@<ami>{AMI},@<bou>{BOU},@<kw>{KW},@<u>{UNDERLINE}
 
 ==={crossref} 参照
 #@# FIXME:任意ラベルを使うと、EPUBチェックエラーになることがある？
