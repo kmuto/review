@@ -49,9 +49,9 @@ print('hello');
 puts 'Hello'
 //}
 
-#@# //source{
-#@# //}
-#@# FIXME:キャプションなしはLaTeXだとエラーになることがわかった。Re:VIEW側修正予定
+//source{
+puts 'Hello'
+//}
 
 実行例を示すとき用にはcmdを用意しています。いずれにせよ、商業書籍レベルでは必要なので用意しているものの、原稿レベルで書き手が使うコードブロックはほどほどの数に留めておいたほうがいいのではないかと思います。TeX版の紙面ではデフォルトは黒アミ。印刷によってはベタ黒塗りはちょっと怖いかもなので、あまり長々したものには使わないほうがいいですね。
 
@@ -62,12 +62,7 @@ $ @<b>{ls /}
 === 図
 採番・キャプション付きの図の貼り付けはimageを使用します（@<img>{ball}）。図版ファイルは識別子とビルダが対応しているフォーマットから先着順に探索されます。詳細については@<href>{https://github.com/kmuto/review/wiki/ImagePath, ImagePath}のドキュメントを参照してください。
 
-@<fn>{madebygimp}
-本当はimageのキャプションにfootnoteを付けたいのですが、TeXではエラーになりますね。厳しい……。
-#@# FIXME:TeXのキャプションfootnote問題
-
-#@# //image[ball][ボール@<fn>{madebygimp}]{
-//image[ball][ボール]{
+//image[ball][ボール@<fn>{madebygimp}]{
 //}
 
 //footnote[madebygimp][GIMPのフィルタで作成。@<br>{}footnote内改行]
@@ -86,11 +81,8 @@ $ @<b>{ls /}
 === 表
 表はtableを使います。@<table>{tab2-1}
 
-tableもキャプション・セル内含めてTeXでは脚注できないですね…
-本当は→@<fn>{tabalign}はキャプション内。TeXだとセル内の脚注は脚注文書が消えています。
-
-#@# //table[tab2-1][表の@<b>{例}@<fn>{tabalign}]{
-//table[tab2-1][表の@<b>{例}]{
+//table[tab2-1][表の@<b>{例}@<fn>{tabalign}]{
+#@#//table[tab2-1][表の@<b>{例}]{
 A	B	C
 ----------------------------------
 D	E@<b>{太字bold}@<i>{italicイタ}@<tt>{等幅code}	F@<br>{}G
@@ -111,7 +103,7 @@ D	E@<b>{太字bold}@<i>{italicイタ}@<tt>{等幅code}	F@<br>{}G
 H	I	長いセルの折り返し■□■□■□■□■□■□■□■□■□■□■□■□■□■□■□■□■□■□■□■□■□
 //}
 
-TeXの普通のクラスファイルだと、列指定はl,c,r,p（幅指定+左均等）しかないので、幅指定+左寄せ（均等なし）、幅指定+中寄せ、幅指定+右寄せの指定ができると嬉しそうです。
+TeXの普通のクラスファイルだと、列指定はl,c,r,p（幅指定+左均等）しかないのですが、Re:VIEWのスタイルファイルでL（幅指定+左寄せ，均等なし）、C（幅指定+中寄せ）、R（幅指定+右寄せ）を指定可能です。
 
 あとは縦に長い表がTeXだとそのままはみ出してしまうのでlongtableがあるけれどもそれはまた問題がいろいろあり……。
 
@@ -324,7 +316,7 @@ a_{m1} & \cdots & a_{mn}
 網カケ@<ami>{amiアミ}    @<balloon>{ふきだし説明}
 //}
 
-=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<u>{UNDERLINE},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI}
+=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI},@<ami>{AMI},@<bou>{BOU},@<kw>{KW},@<u>{UNDERLINE}
 
 ==={crossref} 参照
 #@# FIXME:任意ラベルを使うと、EPUBチェックエラーになることがある？
@@ -332,7 +324,6 @@ a_{m1} & \cdots & a_{mn}
  * 章番号：@<chap>{ch01}、@<chap>{appA}、@<chap>{part2}、@<chap>{bib}
  * 章題：@<title>{ch01}、@<title>{part2}、@<title>{appA}、@<title>{bib}
  * 章番号+題：@<chapref>{ch02}、@<chapref>{part2}、@<chapref>{appA}、@<chapref>{bib}
-#@# FIXME:TeXで、部が実際のページではIIなのに参照では2になっているのはおかしい→i18n.ymlがおかしいせいか
 
 節や項への参照はhdを使います。
 

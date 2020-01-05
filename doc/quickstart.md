@@ -9,7 +9,7 @@ Re:VIEW is free software under the terms of the GNU Lesser General Public Licens
 
 This article describes how to setup Re:VIEW and use it.
 
-The supported version of the article is Re:VIEW 3.0.
+The supported version of the article is Re:VIEW 4.0.
 
 ## Set up Re:VIEW
 
@@ -59,7 +59,7 @@ $ git pull
 
 ## Writing Re:VIEW Document
 
-### Generating template fiels
+### Generating template files
 
 After setup, you can use `review-init` command to generate Re:VIEW project directory.
 
@@ -72,14 +72,23 @@ $ ls hello
 Rakefile     catalog.yml  config.yml   hello.re     images/      layouts/     sty/         style.css
 ```
 
+If your purpose is to create a PDF using TeX, it is a good idea to use the wizard mode for basic layouting in a web browser. Add `-w` option to review-init.
+
+(notice: currently wizard UI supports only Japanese language)
+
+```bash
+$ review-init -w hello
+(access http://localhost:18000 on Web browser)
+```
+
 In `hello` directory, many files are generated.
 
 * `*.re` : Re:VIEW format file.
 * config.yml : configuration file
+* config-ebook.yml : configuration file for ebook (when using the wizard mode)
 * catalog.yml : catalog file (for TOC)
 * Rakefile : rule file for `rake` command
 * images : folder for images
-* layouts : forlder for layout files
 * style.css : sample stylesheet
 * sty : style files for LaTeX
 * doc : various documents (including this document)
@@ -116,29 +125,38 @@ The web site of Re:VIEW is @<tt>{https://reviewml.org/}.
 
 You should use UTF-8 as encodings in text files.
 
-### generating PDF, EPUB, and plain-text
+### generating PDF, EPUB, plain-text, and InDesign XML
 
-You can generate a PDF file with `review-pdfmaker` command.  Also you can generate an EPUB file with `review-epubmaker` command, and can generate an plain-text file with 'review-textmaker' command.
+To convert files in the project, use review-*maker command.
 
-To generate PDF, you should install TeXLive 2012 or later.  To generate EPUB, you should install zip command.
+- review-pdfmaker: generate PDF
+- review-epubmaker: generate EPUB
+- review-textmaker: genrate plaintext
+- review-idgxmlmaker: genrate InDesign XML
+
+To generate PDF, you should install TeXLive 2012 or later. To generate EPUB, you should install zip command.
 When you want to use MathML, you should install [MathML library](http://www.hinet.mydns.jp/?mathml.rb)
 
-Each maker need `config.yml`, configuration YAML files.  `review-init` command generates `config.yml` in default.
+Each maker need `config.yml`, configuration YAML files. `review-init` command generates `config.yml` in default.
 
 ```bash
-$ review-pdfmaker config.yml     ## generate PDF
-$ review-epubmaker config.yml    ## generate EPUB
-$ review-textmaker config.yml    ## generate text with decoration
-$ review-textmaker -n config.yml ## generate text without decoration
+$ review-pdfmaker config.yml       ## generate PDF
+$ review-pdfmaker config-ebook.yml ## generate PDF (for ebook)
+$ review-epubmaker config.yml      ## generate EPUB
+$ review-textmaker config.yml      ## generate text with decoration
+$ review-textmaker -n config.yml   ## generate text without decoration
+$ review-idgxmlmaker config.yml    ## generate InDesign XML
 ```
 
 You also can generate them with Rake.
 
 ```bash
 $ rake pdf       ## generate PDF
+$ REVIEW_CONFIG_FILE=config-ebook.yml rake pdf       ## generate PDF (for ebook)
 $ rake epub      ## generate EPUB
 $ rake text      ## generate text with decoration
 $ rake plaintext ## generate text without decoration
+$ rake idgxml    ## generate InDesign XML
 ```
 
 There is a sample YAML file [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) in the same directory of this document.
@@ -210,12 +228,12 @@ $ review-index --level <heading level> -a
 
 ## how to update the document folder to the new Re:VIEW version
 
-Re:VIEW is updated regularly. We Re:VIEW team watch the backward compatibility carefully, but if you want to use the features in the new version, you can use review-update command to update the document folder.
+Re:VIEW is updated regularly. We Re:VIEW team watch the backward compatibility carefully, but if you want to use the features in the new version, you can use review-update command to update the project folder.
 
 ```bash
 $ review-update
-** review-update updates your project to 3.0.0 **
-config.yml: Update 'review_version' to '3.0'? [y]/n
+** review-update updates your project to 4.0.0 **
+config.yml: Update 'review_version' to '4.0'? [y]/n
 Rakefile will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/Rakefile). Do you really proceed? [y]/n
 lib/tasks/review.rake will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/lib/tasks/review.rake). Do you really proceed? [y]/n
 INFO: new file /.../sty/plistings.sty is created.
@@ -231,7 +249,7 @@ Finished.
 
 ## Copyright
 
-The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (February 2019).
+The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (December 2019).
 
 If you want to report bugs and patches, or to get more information, see:
 

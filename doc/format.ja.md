@@ -264,11 +264,23 @@ puts "hello world!"
 
 ```review
 //source[/hello/world.rb]{
-puts "hello world!"
+puts "hello world!" # キャプションあり
+//}
+
+//source{
+puts "hello world!" # キャプションなし
+//}
+
+//source[/hello/world.rb][ruby]{
+puts "hello world!" # キャプションあり、ハイライトあり
+//}
+
+//source[][ruby]{
+puts "hello world!" # キャプションなし、ハイライトあり
 //}
 ```
 
-ソースコードの引用は、キャプションを付けた `//emlist` とほぼ同じです。HTML の CSS などでは区別した表現ができます。
+ソースコードの引用は、`//emlist` とほぼ同じです。HTML の CSS などでは区別した表現ができます。
 
 ## 本文中でのソースコード引用
 

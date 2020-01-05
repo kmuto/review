@@ -136,19 +136,20 @@ module ReVIEW
 
       def chapter_index
         return @chapter_index if @chapter_index
-
-        contents = chapters
-        # TODO: contents += parts.find_all { |prt| prt.id.present? }
+        @chapter_index = ChapterIndex.new
+        each_chapter do |chap|
+          @chapter_index.add_item(Index::Item.new(chap.id, chap.number, chap))
+        end
         parts.each do |prt|
           if prt.id.present?
-            contents << prt
+            @chapter_index.add_item(Index::Item.new(prt.id, prt.number, prt))
           end
         end
-        @chapter_index = ChapterIndex.new(contents)
+        @chapter_index
       end
 
       def chapter(id)
-        chapter_index[id]
+        chapter_index[id].content
       end
 
       def next_chapter(chapter)

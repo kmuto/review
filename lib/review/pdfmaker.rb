@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2019 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2020 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -150,6 +150,12 @@ module ReVIEW
         else
           @config['texdocumentclass'] = @config['_texdocumentclass']
         end
+      end
+
+      # version 4.0 compatibility
+      if @config['image_scale2width']
+        warn 'image_scale2width parameter is moved to under pdfmaker section'
+        @config['pdfmaker']['image_scale2width'] = @config['image_scale2width']
       end
 
       begin
