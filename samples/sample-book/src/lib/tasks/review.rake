@@ -34,6 +34,7 @@ PDF_OPTIONS = ENV['REVIEW_PDF_OPTIONS'] || ''
 EPUB_OPTIONS = ENV['REVIEW_EPUB_OPTIONS'] || ''
 WEB_OPTIONS = ENV['REVIEW_WEB_OPTIONS'] || ''
 IDGXML_OPTIONS = ENV['REVIEW_IDGXML_OPTIONS'] || ''
+TEXT_OPTIONS = ENV['REVIEW_TEXT_OPTIONS'] || ''
 
 def build(mode, chapter)
   sh("review-compile --target=#{mode} --footnotetext --stylesheet=style.css #{chapter} > tmp")
@@ -79,12 +80,12 @@ task web: WEBROOT
 
 desc 'generate text file (without decoration)'
 task plaintext: TEXTROOT do
-  sh "review-textmaker -n #{CONFIG_FILE}"
+  sh "review-textmaker #{TEXT_OPTIONS} -n #{CONFIG_FILE}"
 end
 
 desc 'generate (decorated) text file'
 task text: TOPROOT do
-  sh "review-textmaker #{CONFIG_FILE}"
+  sh "review-textmaker #{TEXT_OPTIONS} #{CONFIG_FILE}"
 end
 
 desc 'generate IDGXML file'

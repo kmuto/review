@@ -20,7 +20,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
     ENV['RUBYLIB'] = @old_rubylib
   end
 
-  def common_buildpdf(bookdir, templatedir, configfile, targetpdffile)
+  def common_buildpdf(bookdir, templatedir, configfile, targetpdffile, option = nil)
     if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
       config = prepare_samplebook(@tmpdir1, bookdir, templatedir, configfile)
       builddir = File.join(@tmpdir1, config['bookname'] + '-pdf')
@@ -28,7 +28,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
       Dir.chdir(@tmpdir1) do
-        _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_PDFMAKER} #{configfile}")
+        _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_PDFMAKER} #{option} #{configfile}")
         if !e.empty? && !s.success?
           STDERR.puts e
         end
@@ -86,6 +86,16 @@ class PDFMakerCmdTest < Test::Unit::TestCase
       return true
     end
     common_buildpdf('syntax-book', 'review-jsbook', 'config-print.yml', 'syntax-book.pdf')
+  end
+
+  def test_pdfmaker_cmd_syntax_jsbook_print_buildonly
+    begin
+      `uplatex -v`
+    rescue
+      $stderr.puts 'skip test_pdfmaker_cmd_syntax_jsbook_print_buildonly'
+      return true
+    end
+    common_buildpdf('syntax-book', 'review-jsbook', 'config-print.yml', 'syntax-book.pdf', '-y ch01')
   end
 
   def test_pdfmaker_cmd_syntax_jsbook_ebook
