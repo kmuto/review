@@ -241,7 +241,7 @@ module ReVIEW
         end
 
         call_hook('hook_beforemakeindex')
-        if @config['pdfmaker']['makeindex'] && File.exist?("#{@mastertex}.idx")
+        if @config['pdfmaker']['makeindex'] && File.exist?("#{@mastertex}.idx") && !File.zero?("#{@mastertex}.idx")
           system_or_raise(*[makeindex_command, makeindex_options, @mastertex].flatten.compact)
           system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
