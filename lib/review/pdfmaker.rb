@@ -175,6 +175,7 @@ module ReVIEW
           @config['use_part'] = true
           if part.file?
             if @buildonly && !@buildonly.include?(part.name)
+              warn "skip #{part.name}.re"
               input_files['CHAPS'] << %Q(\\part{}\n)
             else
               output_chaps(part.name)
@@ -189,6 +190,7 @@ module ReVIEW
           filename = File.basename(chap.path, '.*')
           entry = "\\input{#{filename}.tex}\n"
           if @buildonly && !@buildonly.include?(filename)
+            warn "skip #{filename}.re"
             entry = "\\chapter{}\n"
           else
             output_chaps(filename)

@@ -397,6 +397,7 @@ module ReVIEW
       end
 
       if @buildonly && !@buildonly.include?(id)
+        warn "skip #{id}.re"
         return
       end
 
