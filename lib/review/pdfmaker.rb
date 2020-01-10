@@ -100,6 +100,7 @@ module ReVIEW
     def parse_opts(args)
       cmd_config = {}
       opts = OptionParser.new
+      @buildonly = nil
 
       opts.banner = 'Usage: review-pdfmaker configfile'
       opts.version = ReVIEW::VERSION
@@ -109,6 +110,7 @@ module ReVIEW
       end
       opts.on('--[no-]debug', 'Keep temporary files.') { |debug| cmd_config['debug'] = debug }
       opts.on('--ignore-errors', 'Ignore review-compile errors.') { cmd_config['ignore-errors'] = true }
+      opts.on('-y', '--only file1,file2,...', 'Build only specified files.') { |v| @buildonly = v.split(/\s*,\s*/).map { |m| m.strip.sub(/\.re\Z/, '') } }
 
       opts.parse!(args)
       if args.size != 1
@@ -172,8 +174,13 @@ module ReVIEW
         if part.name.present?
           @config['use_part'] = true
           if part.file?
-            output_chaps(part.name)
-            input_files['CHAPS'] << %Q(\\input{#{part.name}.tex}\n)
+            if @buildonly && !@buildonly.include?(part.name)
+              warn "skip #{part.name}.re"
+              input_files['CHAPS'] << %Q(\\part{}\n)
+            else
+              output_chaps(part.name)
+              input_files['CHAPS'] << %Q(\\input{#{part.name}.tex}\n)
+            end
           else
             input_files['CHAPS'] << %Q(\\part{#{part.name}}\n)
           end
@@ -181,11 +188,18 @@ module ReVIEW
 
         part.chapters.each do |chap|
           filename = File.basename(chap.path, '.*')
-          output_chaps(filename)
-          input_files['PREDEF'] << "\\input{#{filename}.tex}\n" if chap.on_predef?
-          input_files['CHAPS'] << "\\input{#{filename}.tex}\n" if chap.on_chaps?
-          input_files['APPENDIX'] << "\\input{#{filename}.tex}\n" if chap.on_appendix?
-          input_files['POSTDEF'] << "\\input{#{filename}.tex}\n" if chap.on_postdef?
+          entry = "\\input{#{filename}.tex}\n"
+          if @buildonly && !@buildonly.include?(filename)
+            warn "skip #{filename}.re"
+            entry = "\\chapter{}\n"
+          else
+            output_chaps(filename)
+          end
+
+          input_files['PREDEF'] << entry if chap.on_predef?
+          input_files['CHAPS'] << entry if chap.on_chaps?
+          input_files['APPENDIX'] << entry if chap.on_appendix?
+          input_files['POSTDEF'] << entry if chap.on_postdef?
         end
       end
 
@@ -241,7 +255,7 @@ module ReVIEW
         end
 
         call_hook('hook_beforemakeindex')
-        if @config['pdfmaker']['makeindex'] && File.exist?("#{@mastertex}.idx")
+        if @config['pdfmaker']['makeindex'] && File.size?("#{@mastertex}.idx")
           system_or_raise(*[makeindex_command, makeindex_options, @mastertex].flatten.compact)
           system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
