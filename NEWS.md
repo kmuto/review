@@ -1,7 +1,7 @@
 # Version 4.1.0
 ## New Features
 * add `table_row_separator` to specify a separator that separates table rows. Accceptable value: tabs (means `\t+`, default), `singletab` (means `\t`), spaces (means `\s+`), verticalbar (means `\s*\|\s*`) ([#1420])
-* IDGXMLMaker: add `-y` (`--only`) option to specify the files to convert instead of all files ([#1428])
+* PDFMaker, EPUBMaker, WEBMaker, TEXTMaker, IDGXMLMaker: add `-y` (`--only`) option to specify the files to convert instead of all files ([#1428])
 * add `--without-config-comment` option to review-init command to exclude comments from config.yml ([#1453])
 * PDFMaker: add `use_original_image_size` in `pdfmaker` section. If this parameter is set to true, images in `//image`, `//indepimage`, and `//imgtable` will be placed in actual size, not textwidth ([#1461])
 
@@ -15,9 +15,10 @@
 * RSTBuilder: fix conversion failure due to incorrect method argument handling ([#1426])
 * IDGXMLBuilder: there was an error in the warning handling for the table ([#1427])
 * IDGXMLMaker: there was an error in the processing when an error occurred in the filter program ([#1429])
-* PDFMaker: fix a build failure when using inline operators such as `@<code>` or `@<tt>` for heading with `media=ebook` mode ([#1432])
+* PDFMaker: fix a build failure when using inline operators such as `@<code>` or `@<tt>` for heading with `media=ebook` mode ([#1432], [#1465])
 * PDFMaker: raise just warning instead of error, when MeCab isn't installed ([#1445])
 * IDGXMLBuilder: fix `//imgtable` to work correctly ([#1448])
+* PDFMaker: fix an error when makeindex is true but no index is registered ([#1467])
 
 ## Enhancements
 * PDFMaker: add version to .cls/.sty files ([#1163])
@@ -25,6 +26,7 @@
 * IDGXMLMaker: show the contents of stderr from the filter program ([#1443])
 * add *-idgxml folder entry to .gitignore ([#1448])
 * `//source` can now omit options in all builders ([#1447])
+* add Ruby 2.7 to the test targets ([#1468])
 
 ## Docs
 * add description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
@@ -79,6 +81,10 @@
 [#1459]: https://github.com/kmuto/review/pull/1459
 [#1461]: https://github.com/kmuto/review/issues/1461
 [#1462]: https://github.com/kmuto/review/issues/1462
+[#1465]: https://github.com/kmuto/review/pull/1465
+[#1466]: https://github.com/kmuto/review/pull/1466
+[#1467]: https://github.com/kmuto/review/pull/1467
+[#1468]: https://github.com/kmuto/review/pull/1468
 
 # Version 4.0.0
 ## New Features
