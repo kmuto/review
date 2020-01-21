@@ -27,6 +27,7 @@
 * add *-idgxml folder entry to .gitignore ([#1448])
 * `//source` can now omit options in all builders ([#1447])
 * add Ruby 2.7 to the test targets ([#1468])
+* allow a setting of multiple word\_file ([#1469])
 
 ## Docs
 * add description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
@@ -85,6 +86,7 @@
 [#1466]: https://github.com/kmuto/review/pull/1466
 [#1467]: https://github.com/kmuto/review/pull/1467
 [#1468]: https://github.com/kmuto/review/pull/1468
+[#1469]: https://github.com/kmuto/review/issues/1469
 
 # Version 4.0.0
 ## New Features
