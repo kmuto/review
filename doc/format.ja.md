@@ -802,7 +802,7 @@ Web ハイパーリンクを記述するには、リンクに `@<href>`、アン
 "i18n","""i""nternationalizatio""n"""
 ```
 
-単語ファイルのファイルパスは、`config.yml` に `words_file: ファイルパス` で指定します。
+単語ファイルのファイルパスは、`config.yml` に `words_file: ファイルパス` で指定します。`word_file: ["common.csv", "mybook.csv"]` のように複数のファイルも指定可能です（同一のキーがあるときには後に指定したファイルの値が優先されます）。
 
 例:
 
