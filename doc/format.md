@@ -850,7 +850,7 @@ This word file is a CSV file with extension .csv. This first columns is the key,
 "i18n","""i""nternationalizatio""n"""
 ```
 
-Specify the word file path in `words_file` parameter of `config.yml`.
+Specify the word file path in `words_file` parameter of `config.yml`. You can specify multiple word files as `word_file: ["common.csv", "mybook.csv"]`.
 
 Usage:
 
