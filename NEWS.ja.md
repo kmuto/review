@@ -6,7 +6,7 @@
 * PDFMaker: `pdfmaker` セクションに `use_original_image_size` パラメータを新設しました。デフォルトでは `//image`, `//indepimage`, `//imgtable` で挿入する画像において、metrics の指定がないときには版面の横幅に合うよう拡縮しますが、`use_original_image_size` パラメータを true に設定すると、拡縮なしで原寸のまま配置します ([#1461])
 
 ## 非互換の変更
-* PDFMaker: config.yml の `image_scale2width` パラメータを、直下ではなく `pdfmaker` セクションの下に属するように変更しました。互換性のため直下に `image_scale2width` パラメータが存在するときにはそれを尊重しますが、将来的に廃止する可能性があります ([#1462])
+* PDFMaker: config.yml の `image_scale2width` パラメータを、直下から `pdfmaker` セクションの下に属するように変更しました ([#1462])
 
 ## バグ修正
 * PDFMaker: Re:VIEW 3 系のプロジェクトとの後方互換処理の誤りを修正しました ([#1414])
@@ -34,6 +34,7 @@
 * quickstart.ja.md, quickstart.md を Re:VIEW 4 の内容に更新しました ([#1442])
 * サンプル syntax-book を更新しました ([#1448], [#1449])
 * README.md を更新しました ([#1455], [#1458])
+* 図版のビルダ固有オプション `::` の記法を format.ja.md, format.md に記載しました ([#1421])
 
 ## その他
 * Rubocop 0.78.0 の指摘に対応しました ([#1424], [#1430])
@@ -53,6 +54,7 @@
 [#1416]: https://github.com/kmuto/review/issues/1416
 [#1418]: https://github.com/kmuto/review/issues/1418
 [#1420]: https://github.com/kmuto/review/issues/1420
+[#1421]: https://github.com/kmuto/review/issues/1421
 [#1424]: https://github.com/kmuto/review/pull/1424
 [#1425]: https://github.com/kmuto/review/pull/1425
 [#1426]: https://github.com/kmuto/review/pull/1426

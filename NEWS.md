@@ -30,10 +30,11 @@
 * allow a setting of multiple word\_file ([#1469])
 
 ## Docs
-* add description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
+* add the description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
 * update quickstart.ja.md and quickstart.md to Re:VIEW 4 ([#1442])
 * update syntax-book sample document ([#1448], [#1449])
 * update README.md ([#1455], [#1458])
+* update format.ja.md and format.md. add the description about `::` notation which sets builder-specific options to images ([#1421])
 
 ## Others
 * refactor codes with Rubocop 0.78.0 ([#1424], [#1430])
@@ -53,6 +54,7 @@
 [#1416]: https://github.com/kmuto/review/issues/1416
 [#1418]: https://github.com/kmuto/review/issues/1418
 [#1420]: https://github.com/kmuto/review/issues/1420
+[#1421]: https://github.com/kmuto/review/issues/1421
 [#1424]: https://github.com/kmuto/review/pull/1424
 [#1425]: https://github.com/kmuto/review/pull/1425
 [#1426]: https://github.com/kmuto/review/pull/1426
