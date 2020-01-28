@@ -154,12 +154,6 @@ module ReVIEW
         end
       end
 
-      # version 4.0 compatibility
-      if @config['image_scale2width']
-        warn 'image_scale2width parameter is moved to under pdfmaker section'
-        @config['pdfmaker']['image_scale2width'] = @config['image_scale2width']
-      end
-
       begin
         generate_pdf
       rescue ApplicationError => e
