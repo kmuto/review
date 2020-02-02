@@ -28,6 +28,7 @@
 * `//source` 命令は全ビルダでオプションを省略できるようになりました ([#1447])
 * Ruby 2.7 をテスト対象に加えました ([#1468])
 * `word_files` パラメータは配列で複数の単語 CSV ファイルを受け付けるようになりました ([#1469])
+* EPUBMaker: 見出しが1つもない .re ファイルについて警告を出すようにしました。EPUB においてはファイル内に見出しが必ず1つは必要です。見出しを入れたくないときには、`=[notoc]` (目次に入れない) や `=[nodisp]` (目次に入れず表示もしない) を使用してください ([#1474])
 
 ## ドキュメント
 * 奥付に関係する `contact` （連絡先）および `colophon_order` （項目の掲載順序）についてのドキュメントを設定ファイルサンプル `config.yml.sample` に追加しました ([#1425])
@@ -89,6 +90,7 @@
 [#1467]: https://github.com/kmuto/review/pull/1467
 [#1468]: https://github.com/kmuto/review/pull/1468
 [#1469]: https://github.com/kmuto/review/issues/1469
+[#1474]: https://github.com/kmuto/review/issues/1474
 
 # Version 4.0.0
 ## 新機能
