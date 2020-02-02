@@ -422,7 +422,12 @@ module ReVIEW
     def compile_dlist(f)
       @strategy.dl_begin
       while /\A\s*:/ =~ f.peek
-        @strategy.dt(text(f.gets.sub(/\A\s*:/, '').strip))
+        if @strategy.class.to_s == 'ReVIEW::LATEXBuilder'
+          # defer compile_inline to handle footnotes
+          @strategy.dt(f.gets.sub(/\A\s*:/, '').strip)
+        else
+          @strategy.dt(text(f.gets.sub(/\A\s*:/, '').strip))
+        end
         desc = f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) }
         @strategy.dd(desc)
         f.skip_blank_lines

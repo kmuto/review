@@ -299,9 +299,10 @@ module ReVIEW
     end
 
     def dt(str)
-      str.sub!(/\[/) { '\lbrack{}' }
-      str.sub!(/\]/) { '\rbrack{}' }
+      @doc_status[:caption] = true
+      str = compile_inline(str).gsub('[', '\lbrack{}').gsub(']', '\rbrack{}')
       puts '\item[' + str + '] \mbox{} \\\\'
+      @doc_status[:caption] = nil
     end
 
     def dd(lines)
