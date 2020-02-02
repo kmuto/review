@@ -452,6 +452,13 @@ module ReVIEW
       path = File.join(basetmpdir, filename)
       htmlio = File.new(path)
       Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
+      htmlio.close
+
+      if headlines.empty?
+        warn "#{filename} is discarded because there is no heading. Use `=[notoc]' or `=[nodisp]' to exclude headlines from the table of contents."
+        return
+      end
+
       properties = detect_properties(path)
       if properties.present?
         prop_str = ',properties=' + properties.join(' ')
@@ -479,7 +486,6 @@ module ReVIEW
           first = nil
         end
       end
-      htmlio.close
     end
 
     def push_contents(_basetmpdir)
