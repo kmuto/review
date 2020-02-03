@@ -778,6 +778,20 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_dt_inline
+    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
+    @chapter.instance_eval { @footnote_index = fn }
+    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+
+    expected = <<-EOS
+<dl>
+<dt>foo<a id="fnb-bar" href="#fn-bar" class="noteref" epub:type="noteref">*1</a>[]&lt;&gt;&amp;<span class="equation">\\alpha[]</span></dt>
+<dd></dd>
+</dl>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_list
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)

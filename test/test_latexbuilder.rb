@@ -388,6 +388,21 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_dt_inline
+    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
+    @chapter.instance_eval { @footnote_index = fn }
+    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+
+    expected = <<-EOS
+
+\\begin{description}
+\\item[foo\\protect\\footnotemark{}\\lbrack{}\\rbrack{}\\textless{}\\textgreater{}\\&$\\alpha\\lbrack{}\\rbrack{}$] \\mbox{} \\\\
+
+\\end{description}
+EOS
+    assert_equal expected, actual
+  end
+
   def test_cmd
     actual = compile_block("//cmd{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS

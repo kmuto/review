@@ -226,6 +226,17 @@ EOS
     assert_equal %Q(<dl><dt>foo</dt><dd>foo.</dd></dl><p>para</p><dl><dt>foo</dt><dd>foo.</dd></dl><ol><li aid:pstyle="ol-item" olnum="1" num="1">bar</li></ol><dl><dt>foo</dt><dd>foo.</dd></dl><ul><li aid:pstyle="ul-item">bar</li></ul>), actual
   end
 
+  def test_dt_inline
+    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
+    @chapter.instance_eval { @footnote_index = fn }
+    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+
+    expected = <<-EOS.chomp
+<dl><dt>foo<footnote>bar</footnote>[]&lt;&gt;&amp;<replace idref="texinline-1"><pre>\\alpha[]</pre></replace></dt><dd></dd></dl>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_paragraph
     actual = compile_block("foo\nbar\n")
     assert_equal '<p>foobar</p>', actual
