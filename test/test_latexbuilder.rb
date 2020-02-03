@@ -388,22 +388,19 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_dt_footnote
+  def test_dt_inline
     fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
     @chapter.instance_eval { @footnote_index = fn }
-    @builder.dt('foo@<fn>{bar}')
-    expected = <<-EOS
-\\item[foo\\protect\\footnotemark{}] \\mbox{} \\\\
-EOS
-    assert_equal expected, @builder.result
-  end
+    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
-  def test_dt_math
-    @builder.dt('foo[@<m>{[]}][]@<m>$\alpha$')
     expected = <<-EOS
-\\item[foo\\lbrack{}$\\lbrack{}\\rbrack{}$\\rbrack{}\\lbrack{}\\rbrack{}$\\alpha$] \\mbox{} \\\\
+
+\\begin{description}
+\\item[foo\\protect\\footnotemark{}\\lbrack{}\\rbrack{}\\textless{}\\textgreater{}\\&$\\alpha\\lbrack{}\\rbrack{}$] \\mbox{} \\\\
+
+\\end{description}
 EOS
-    assert_equal expected, @builder.result
+    assert_equal expected, actual
   end
 
   def test_cmd
