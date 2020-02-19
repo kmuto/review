@@ -299,8 +299,7 @@ module ReVIEW
     end
 
     def dt(str)
-      str.sub!(/\[/) { '\lbrack{}' }
-      str.sub!(/\]/) { '\rbrack{}' }
+      str = str.gsub('[', '\lbrack{}').gsub(']', '\rbrack{}')
       puts '\item[' + str + '] \mbox{} \\\\'
     end
 
@@ -1027,7 +1026,7 @@ module ReVIEW
     def inline_fn(id)
       if @book.config['footnotetext']
         macro("footnotemark[#{@chapter.footnote(id).number}]", '')
-      elsif @doc_status[:caption] || @doc_status[:table] || @doc_status[:column]
+      elsif @doc_status[:caption] || @doc_status[:table] || @doc_status[:column] || @doc_status[:dt]
         @foottext[id] = @chapter.footnote(id).number
         macro('protect\\footnotemark', '')
       else

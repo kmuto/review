@@ -15,7 +15,7 @@
 %  LaTeX 関連のロゴ（pLaTeX2ε新ドキュメントクラス付録）
 %
 %  Copyright 1999-2016 Haruhiko Okumura
-%  Copyright 2016-2017 Japanese TeX Development Community
+%  Copyright 2016-2019 Japanese TeX Development Community
 %
 % \fi
 %
@@ -27,7 +27,7 @@
 %<*driver>
 \ProvidesFile{jslogo.dtx}
 %</driver>
-  [2017/02/24 okumura, texjporg]
+  [2019/07/25 okumura, texjporg]
 %<*driver>
 \documentclass{jsarticle}
 \usepackage{doc}
@@ -379,8 +379,8 @@
 %    {\def\BibTeX{{\rmfamily B\kern-.05em%
 %     \textsc{i\kern-.025em b}\kern-.08em%
 %     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}}{}
-\DeclareRobustCommand{\BibTeX}{B\kern-.05em\jslg@small{I\kern-.025em B}%
-  \ifx\f@family\cmr\kern-.08em\else\kern-.15em\fi\TeX}
+\DeclareRobustCommand{\BibTeX}{%
+  B\kern-.05em\jslg@small{I\kern-.025em B}\kern-.15em\TeX}
 \DeclareRobustCommand{\SliTeX}{%
   S\kern-.06emL\kern-.18em\jslg@uppersmall{I}\kern -.03em\TeX}
 %    \end{macrocode}

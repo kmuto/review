@@ -25,7 +25,7 @@
 \fi
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{jsbook}
-  [2018/06/23 jsclasses (okumura, texjporg)]
+  [2020/02/02 jsclasses (okumura, texjporg)]
 \def\jsc@clsname{jsbook}
 \newif\ifjsc@needsp@tch
 \jsc@needsp@tchfalse
@@ -468,6 +468,7 @@
 \DeclareFontShape{\jsc@JTn}{gt}{m}{sl}{<->ssub*gt/m/n}{}
 \DeclareFontShape{\jsc@JTn}{mc}{bx}{it}{<->ssub*gt/m/n}{}
 \DeclareFontShape{\jsc@JTn}{mc}{bx}{sl}{<->ssub*gt/m/n}{}
+\ifx\@rmfamilyhook\@undefined  % old
 \DeclareRobustCommand\rmfamily
         {\not@math@alphabet\rmfamily\mathrm
          \romanfamily\rmdefault\kanjifamily\mcdefault\selectfont}
@@ -477,6 +478,25 @@
 \DeclareRobustCommand\ttfamily
         {\not@math@alphabet\ttfamily\mathtt
          \romanfamily\ttdefault\kanjifamily\gtdefault\selectfont}
+\AtBeginDocument{%
+  \ifx\mweights@init\@undefined\else  % mweights.sty is loaded
+    % my definitions above should have been overwritten, recover it!
+    % \selectfont is executed twice but I don't care about speed...
+    \expandafter\g@addto@macro\csname rmfamily \endcsname
+      {\kanjifamily\mcdefault\selectfont}%
+    \expandafter\g@addto@macro\csname sffamily \endcsname
+      {\kanjifamily\gtdefault\selectfont}%
+    \expandafter\g@addto@macro\csname ttfamily \endcsname
+      {\kanjifamily\gtdefault\selectfont}%
+  \fi}
+\else                          % 2020-02-02
+\g@addto@macro\@rmfamilyhook
+  {\prepare@family@series@update@kanji{mc}\mcdefault}
+\g@addto@macro\@sffamilyhook
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\g@addto@macro\@ttfamilyhook
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\fi
 \ifx\DeclareFixJFMCJKTextFontCommand\@undefined
 \DeclareRobustCommand\textmc[1]{%
     \relax\ifmmode \expandafter\nfss@text \fi{\mcfamily #1}}
@@ -1480,11 +1500,11 @@
 \renewcommand{\theenumiii}{\@roman\c@enumiii}
 \renewcommand{\theenumiv}{\@Alph\c@enumiv}
 \newcommand{\labelenumi}{\theenumi.}
-\newcommand{\labelenumii}{\inhibitglue（\theenumii）\inhibitglue}
+\newcommand{\labelenumii}{\inhibitglue （\theenumii ）\inhibitglue}
 \newcommand{\labelenumiii}{\theenumiii.}
 \newcommand{\labelenumiv}{\theenumiv.}
 \renewcommand{\p@enumii}{\theenumi}
-\renewcommand{\p@enumiii}{\theenumi\inhibitglue（\theenumii）}
+\renewcommand{\p@enumiii}{\theenumi\inhibitglue （\theenumii ）}
 \renewcommand{\p@enumiv}{\p@enumiii\theenumiii}
 \newcommand\labelitemi{\textbullet}
 \newcommand\labelitemii{\normalfont\bfseries \textendash}
@@ -1591,7 +1611,7 @@
   \vskip\abovecaptionskip
   \sbox\@tempboxa{#1\hskip1zw\relax #2}%
   \ifdim \wd\@tempboxa <\hsize \centering \fi
-  #1\hskip1zw\relax #2\par
+  #1{\hskip1zw\relax}#2\par
   \vskip\belowcaptionskip}}
 \DeclareOldFontCommand{\mc}{\normalfont\mcfamily}{\mathmc}
 \DeclareOldFontCommand{\gt}{\normalfont\gtfamily}{\mathgt}
@@ -1979,23 +1999,42 @@
 \def\西暦{\西暦true}
 \def\和暦{\西暦false}
 \newcount\heisei \heisei\year \advance\heisei-1988\relax
+\def\pltx@today@year@#1{%
+  \ifnum\numexpr\year-#1=1 元\else
+    \ifnum1=\iftdir\ifmdir0\else1\fi\else0\fi
+      \kansuji\numexpr\year-#1\relax
+    \else
+      \number\numexpr\year-#1\relax\nobreak
+    \fi
+  \fi 年
+}
+\def\pltx@today@year{%
+  \ifnum\numexpr\year*10000+\month*100+\day<19890108
+    昭和\pltx@today@year@{1925}%
+  \else\ifnum\numexpr\year*10000+\month*100+\day<20190501
+    平成\pltx@today@year@{1988}%
+  \else
+    令和\pltx@today@year@{2018}%
+  \fi\fi}
 \def\today{%
   \if@english
     \ifcase\month\or
       January\or February\or March\or April\or May\or June\or
       July\or August\or September\or October\or November\or December\fi
       \space\number\day, \number\year
+  \else\if西暦
+    \ifnum1=\iftdir\ifmdir0\else1\fi\else0\fi \kansuji\year
+    \else\number\year\nobreak\fi 年
   \else
-    \if西暦
-      \number\year 年
-      \number\month 月
-      \number\day 日
-    \else
-      平成\number\heisei 年
-      \number\month 月
-      \number\day 日
-    \fi
-  \fi}
+    \pltx@today@year
+  \fi
+  \ifnum1=\iftdir\ifmdir0\else1\fi\else0\fi
+    \kansuji\month 月
+    \kansuji\day 日
+  \else
+    \number\month\nobreak 月
+    \number\day\nobreak 日
+  \fi\fi}
 \hyphenation{ado-be post-script ghost-script phe-nom-e-no-log-i-cal man-u-script}
 \if@report \pagestyle{plain} \else \pagestyle{headings} \fi
 \pagenumbering{arabic}

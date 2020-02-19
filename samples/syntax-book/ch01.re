@@ -104,7 +104,7 @@ olnumで一応番号が変更可能なことを期待していますが、Webブ
 === 用語リスト
 用語リスト（HTMLの@<i>{dl}、TeXの@<i>{description}）は@<i>{スペース}+@<tt>{:}+@<i>{スペース}で見出しを、説明は行頭にタブかスペースを入れて表現します。
 
- : Alpha@<b>{bold太字}@<i>{italicイタ}@<tt>{等幅code}
+ : Alpha@<b>{bold太字}@<i>{italicイタ}@<tt>{等幅code}@<fn>{foot1}
 	@<i>{DEC}の作っていた@<b>{RISC CPU}。@<i>{italicイタ}@<tt>{等幅code}
 	浮動小数点数演算が速い。
  : POWER
@@ -114,10 +114,12 @@ olnumで一応番号が変更可能なことを期待していますが、Webブ
 	Sunが作っているRISC CPU。
 	CPU数を増やすのが得意。
 
+//footnote[foot1][箇条書き見出しへの脚注。]
+
 //emlist{
 @<b>{bold太字}@<i>{italicイタ}
 
- : Alpha@<embed>{@}<b>{bold太字}@<embed>{@}<i>{italicイタ}@<embed>{@}<tt>{等幅code}
+ : Alpha@<embed>{@}<b>{bold太字}@<embed>{@}<i>{italicイタ}@<embed>{@}<tt>{等幅code}@<fn>{foot1}
         @<embed>{@}<i>{DEC}の作っていた@<embed>{@}<b>{RISC CPU}。@<embed>{@}<i>{italicイタ}@<embed>{@}<tt>{等幅code}
         浮動小数点数演算が速い。
  : POWER
