@@ -19,6 +19,7 @@
 * PDFMaker: raise just warning instead of error, when MeCab isn't installed ([#1445])
 * IDGXMLBuilder: fix `//imgtable` to work correctly ([#1448])
 * PDFMaker: fix an error when makeindex is true but no index is registered ([#1467])
+* PDFMaker: fix missing footnotes in a description list ([#1476])
 
 ## Enhancements
 * PDFMaker: add version to .cls/.sty files ([#1163])
@@ -45,6 +46,7 @@
 * remove unnecessary review-ext.rb from syntax-book ([#1446])
 * add tests for IDGXMLMaker and TextMaker ([#1448])
 * refactor around Index ([#1456], [#1457], [#1459])
+* update jsclasses to version 2020/02/02 ([#1478])
 
 ## Contributors
 * [@turky](https://github.com/turky)
@@ -91,6 +93,8 @@
 [#1468]: https://github.com/kmuto/review/pull/1468
 [#1469]: https://github.com/kmuto/review/issues/1469
 [#1474]: https://github.com/kmuto/review/issues/1474
+[#1476]: https://github.com/kmuto/review/issues/1476
+[#1478]: https://github.com/kmuto/review/issues/1478
 
 # Version 4.0.0
 ## New Features

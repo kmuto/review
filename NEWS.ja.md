@@ -19,6 +19,7 @@
 * PDFMaker: MeCab がインストールされていないときにエラーになるのを警告に変更しました ([#1445])
 * IDGXMLBuilder: `//imgtable` が正しく動作しなかったのを修正しました ([#1448])
 * PDFMaker: 索引が1つも登録されていない状態で makeindex を有効にするとエラーになるのを修正しました ([#1467])
+* PDFMaker: 説明箇条書き (`:`) の見出しに脚注を入れると消えてしまうのを修正しました ([#1476])
 
 ## 機能強化
 * PDFMaker: 問題報告の解析に役立つよう、提供する cls、sty ファイルについてバージョンを付けるようにしました ([#1163])
@@ -45,6 +46,7 @@
 * サンプル syntax-book に入っていた review-ext.rb はもう不要なので削除しました ([#1446])
 * IDGXMLMaker, TextMaker のテストを追加しました ([#1448])
 * Index 関連の処理をリファクタリングしました ([#1456], [#1457], [#1459])
+* jsclasses パッケージを 2020/02/02 バージョンに更新しました ([#1478])
 
 ## コントリビューターのみなさん
 * [@turky](https://github.com/turky)
@@ -91,6 +93,8 @@
 [#1468]: https://github.com/kmuto/review/pull/1468
 [#1469]: https://github.com/kmuto/review/issues/1469
 [#1474]: https://github.com/kmuto/review/issues/1474
+[#1476]: https://github.com/kmuto/review/issues/1476
+[#1478]: https://github.com/kmuto/review/issues/1478
 
 # Version 4.0.0
 ## 新機能
