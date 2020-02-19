@@ -9,13 +9,13 @@
 %  pLaTeX2ε新ドキュメントクラス（日本語 TeX 開発コミュニティ版）
 %  原作者：奥村晴彦 <okumura@okumuralab.org>
 %
-%  Copyright 1993-2016
+%  Copyright 1993-2019
 %  The LaTeX3 Project and any individual authors listed elsewhere
 %  in this file.
 %
 %  Copyright 1995-1999 ASCII Corporation.
 %  Copyright 1999-2016 Haruhiko Okumura
-%  Copyright 2016-2018 Japanese TeX Development Community
+%  Copyright 2016-2020 Japanese TeX Development Community
 %
 % \fi
 %
@@ -31,7 +31,7 @@
 %<*driver>
 \ProvidesFile{jsclasses.dtx}
 %</driver>
-  [2018/06/23 jsclasses (okumura, texjporg)]
+  [2020/02/02 jsclasses (okumura, texjporg)]
 %<*driver>
 \documentclass{jsarticle}
 \usepackage{doc}
@@ -884,7 +884,7 @@
   \fi
   \ifnum\@ptsize=-1
     \def\n@baseline{15}%
-  \fi  
+  \fi
 \fi
 %<*kiyou>
 \def\jsc@magscale{0.9769230}
@@ -893,7 +893,7 @@
   \def\inv@mag{1.02354}
   \jsc@mpt=1\p@
   \jsc@mmm=1mm
-\else 
+\else
   \jsc@mpt=\jsc@magscale\p@
   \jsc@mmm=\jsc@magscale mm
   \def\inv@mag{1}
@@ -1160,6 +1160,18 @@
 \DeclareFontShape{\jsc@JTn}{gt}{m}{sl}{<->ssub*gt/m/n}{}
 \DeclareFontShape{\jsc@JTn}{mc}{bx}{it}{<->ssub*gt/m/n}{}
 \DeclareFontShape{\jsc@JTn}{mc}{bx}{sl}{<->ssub*gt/m/n}{}
+%    \end{macrocode}
+%
+% [2020-02-02] \LaTeXe~2020-02-02でNFSSが拡張され，
+% それに伴いオリジナルの |\rmfamily| などの定義が変化しました。
+% |\DeclareRobustCommand| で直接定義すると，これを上書きして
+% NFSSの拡張部分を壊してしまいますので，
+% 新たに提供されたフックにコードを挿入します。
+% 従来のコードも\LaTeXe~2019-10-01以前のために残してありますが，
+% \texttt{mweights}パッケージ対策も施しました(forum:2763)。
+%
+%    \begin{macrocode}
+\ifx\@rmfamilyhook\@undefined  % old
 \DeclareRobustCommand\rmfamily
         {\not@math@alphabet\rmfamily\mathrm
          \romanfamily\rmdefault\kanjifamily\mcdefault\selectfont}
@@ -1169,6 +1181,25 @@
 \DeclareRobustCommand\ttfamily
         {\not@math@alphabet\ttfamily\mathtt
          \romanfamily\ttdefault\kanjifamily\gtdefault\selectfont}
+\AtBeginDocument{%
+  \ifx\mweights@init\@undefined\else  % mweights.sty is loaded
+    % my definitions above should have been overwritten, recover it!
+    % \selectfont is executed twice but I don't care about speed...
+    \expandafter\g@addto@macro\csname rmfamily \endcsname
+      {\kanjifamily\mcdefault\selectfont}%
+    \expandafter\g@addto@macro\csname sffamily \endcsname
+      {\kanjifamily\gtdefault\selectfont}%
+    \expandafter\g@addto@macro\csname ttfamily \endcsname
+      {\kanjifamily\gtdefault\selectfont}%
+  \fi}
+\else                          % 2020-02-02
+\g@addto@macro\@rmfamilyhook
+  {\prepare@family@series@update@kanji{mc}\mcdefault}
+\g@addto@macro\@sffamilyhook
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\g@addto@macro\@ttfamilyhook
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\fi
 %    \end{macrocode}
 %
 % \begin{macro}{\textmc}
@@ -1340,10 +1371,10 @@
 \xspcode`+=3
 \xspcode`\%=3
 %    \end{macrocode}
-% 
+%
 % これ以外にT1エンコーディングで80〜ffの文字もすべて欧文文字ですので，
 % 両側の和文文字との間にスペースが入らなければなりません。
-% 
+%
 %    \begin{macrocode}
 \xspcode`^^80=3
 \xspcode`^^81=3
@@ -4037,7 +4068,7 @@
 %
 %    \begin{macrocode}
 \newcommand{\labelenumi}{\theenumi.}
-\newcommand{\labelenumii}{\inhibitglue（\theenumii）\inhibitglue}
+\newcommand{\labelenumii}{\inhibitglue （\theenumii ）\inhibitglue}
 \newcommand{\labelenumiii}{\theenumiii.}
 \newcommand{\labelenumiv}{\theenumiv.}
 %    \end{macrocode}
@@ -4056,7 +4087,7 @@
 %
 %    \begin{macrocode}
 \renewcommand{\p@enumii}{\theenumi}
-\renewcommand{\p@enumiii}{\theenumi\inhibitglue（\theenumii）}
+\renewcommand{\p@enumiii}{\theenumi\inhibitglue （\theenumii ）}
 \renewcommand{\p@enumiv}{\p@enumiii\theenumiii}
 %    \end{macrocode}
 % \end{macro}
@@ -4456,7 +4487,7 @@
 %    数式番号の形式です。
 %    デフォルトの値をコメントアウトして示しておきます。
 %
-%    |\inhibitglue（\theequation）\inhibitglue| のように和文かっこ
+%    |\inhibitglue （\theequation ）\inhibitglue| のように和文かっこ
 %    を使うことも可能です。
 %
 %    \begin{macrocode}
@@ -4467,7 +4498,7 @@
 %    |amsmath| パッケージを使う場合は |\tagform@| を次のように修正します。
 %
 %    \begin{macrocode}
-% \def\tagform@#1{\maketag@@@{（\ignorespaces#1\unskip\@@italiccorr）}}
+% \def\tagform@#1{\maketag@@@{（\ignorespaces#1\unskip\@@italiccorr ）}}
 %    \end{macrocode}
 %
 % \subsection{フロート}
@@ -4641,6 +4672,10 @@
 %
 % [2003-11-05] ロジックを少し変えてみました。
 %
+% [2018-12-11] 遅くなりましたが，|listings| パッケージを使うときに
+% |title| を指定すると ``1zw'' が出力されてしまう
+% 問題 (forum:1543，Issue \#71) に対処しました。
+%
 %    \begin{macrocode}
 %<*!jspf>
 % \long\def\@makecaption#1#2{{\small
@@ -4661,7 +4696,7 @@
   \vskip\abovecaptionskip
   \sbox\@tempboxa{#1\hskip1zw\relax #2}%
   \ifdim \wd\@tempboxa <\hsize \centering \fi
-  #1\hskip1zw\relax #2\par
+  #1{\hskip1zw\relax}#2\par
   \vskip\belowcaptionskip}}
 %</!jspf>
 %<*jspf>
@@ -5216,7 +5251,7 @@
 % とりあえずコメントアウトしておきますので，必要に応じて生かしてください。
 %
 %    \begin{macrocode}
-% \def\@biblabel#1{\inhibitglue［#1］\inhibitglue}
+% \def\@biblabel#1{\inhibitglue ［#1］\inhibitglue}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -5243,7 +5278,7 @@
 %        \@latex@warning
 %          {Citation `\@citeb' on page \thepage \space undefined}}%
 %        {\@cite@ofmt{\csname b@\@citeb\endcsname}}}}{#1}}
-% \def\@cite#1#2{\inhibitglue［{#1\if@tempswa ，#2\fi}］\inhibitglue}
+% \def\@cite#1#2{\inhibitglue ［{#1\if@tempswa ，#2\fi}］\inhibitglue}
 %    \end{macrocode}
 %
 % 引用番号を上ツキの 1）のようなスタイルにするには次のようにします。
@@ -5862,8 +5897,13 @@
 % \paragraph{今日の日付}
 %
 % \LaTeX で処理した日付を出力します。
-% |jarticle| などと違って，標準を西暦にし，余分な空白が入らないように改良しました。
+% ^^A |jarticle| などと違って，標準を西暦にし，
+% ^^A 余分な空白が入らないように改良しました。
+% ^^A -- 2018年7月以降は |jarticle| なども標準が西暦，
+% ^^A -- 2019年4月以降は余分な空白が入らなくなっています。
 % 和暦にするには |\和暦| と書いてください。
+% ちなみにこの文章の作成日は西暦では{\西暦\today}で，
+% 和暦では{\和暦\today}です。
 %
 % \begin{macro}{\today}
 %    \begin{macrocode}
@@ -5871,23 +5911,42 @@
 \def\西暦{\西暦true}
 \def\和暦{\西暦false}
 \newcount\heisei \heisei\year \advance\heisei-1988\relax
+\def\pltx@today@year@#1{%
+  \ifnum\numexpr\year-#1=1 元\else
+    \ifnum1=\iftdir\ifmdir0\else1\fi\else0\fi
+      \kansuji\numexpr\year-#1\relax
+    \else
+      \number\numexpr\year-#1\relax\nobreak
+    \fi
+  \fi 年
+}
+\def\pltx@today@year{%
+  \ifnum\numexpr\year*10000+\month*100+\day<19890108
+    昭和\pltx@today@year@{1925}%
+  \else\ifnum\numexpr\year*10000+\month*100+\day<20190501
+    平成\pltx@today@year@{1988}%
+  \else
+    令和\pltx@today@year@{2018}%
+  \fi\fi}
 \def\today{%
   \if@english
     \ifcase\month\or
       January\or February\or March\or April\or May\or June\or
       July\or August\or September\or October\or November\or December\fi
       \space\number\day, \number\year
+  \else\if西暦
+    \ifnum1=\iftdir\ifmdir0\else1\fi\else0\fi \kansuji\year
+    \else\number\year\nobreak\fi 年
   \else
-    \if西暦
-      \number\year 年
-      \number\month 月
-      \number\day 日
-    \else
-      平成\number\heisei 年
-      \number\month 月
-      \number\day 日
-    \fi
-  \fi}
+    \pltx@today@year
+  \fi
+  \ifnum1=\iftdir\ifmdir0\else1\fi\else0\fi
+    \kansuji\month 月
+    \kansuji\day 日
+  \else
+    \number\month\nobreak 月
+    \number\day\nobreak 日
+  \fi\fi}
 %    \end{macrocode}
 % \end{macro}
 %
