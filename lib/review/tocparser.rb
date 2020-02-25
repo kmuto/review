@@ -31,6 +31,7 @@ module ReVIEW
     def parse(f, chap)
       roots = [] # list of chapters
       node_stack = []
+      @chap = chap
       filename = chap.path
       while line = f.gets
         case line
@@ -107,6 +108,9 @@ module ReVIEW
       b = ReVIEW::TEXTBuilder.new
       dummy_book = ReVIEW::Book::Base.load
       dummy_chapter = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
+      if @chap
+        dummy_chapter = @chap
+      end
       dummy_loc = Location.new('', StringIO.new)
       b.bind(ReVIEW::Compiler.new(b), dummy_chapter, dummy_loc)
       b.compile_inline(line)
