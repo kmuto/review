@@ -20,6 +20,7 @@
 * IDGXMLBuilder: fix `//imgtable` to work correctly ([#1448])
 * PDFMaker: fix an error when makeindex is true but no index is registered ([#1467])
 * PDFMaker: fix missing footnotes in a description list ([#1476])
+* review-index: fix an error when `@<w>` exists in headlines ([#1484])
 
 ## Enhancements
 * PDFMaker: add version to .cls/.sty files ([#1163])
@@ -95,6 +96,7 @@
 [#1474]: https://github.com/kmuto/review/issues/1474
 [#1476]: https://github.com/kmuto/review/issues/1476
 [#1478]: https://github.com/kmuto/review/issues/1478
+[#1484]: https://github.com/kmuto/review/pull/1484
 
 # Version 4.0.0
 ## New Features
