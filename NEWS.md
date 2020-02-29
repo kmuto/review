@@ -1,3 +1,103 @@
+# Version 4.1.0
+## New Features
+* add `table_row_separator` to specify a separator that separates table rows. Accceptable value: tabs (means `\t+`, default), `singletab` (means `\t`), spaces (means `\s+`), verticalbar (means `\s*\|\s*`) ([#1420])
+* PDFMaker, EPUBMaker, WEBMaker, TEXTMaker, IDGXMLMaker: add `-y` (`--only`) option to specify the files to convert instead of all files ([#1428])
+* add `--without-config-comment` option to review-init command to exclude comments from config.yml ([#1453])
+* PDFMaker: add `use_original_image_size` in `pdfmaker` section. If this parameter is set to true, images in `//image`, `//indepimage`, and `//imgtable` will be placed in actual size, not textwidth ([#1461])
+
+## Breaking Changes
+* PDFMaker: `image_scale2width` parameter has been moved under `pdfmaker` section ([#1462])
+
+## Bug Fixes
+* PDFMaker: fix backward compatibility error with Re:VIEW 3 ([#1414])
+* PDFMaker: fix an error when compiling review-jlreq with LuaLaTeX ([#1416])
+* PDFMaker: fix index not being included in the table of contents ([#1418])
+* RSTBuilder: fix conversion failure due to incorrect method argument handling ([#1426])
+* IDGXMLBuilder: there was an error in the warning handling for the table ([#1427])
+* IDGXMLMaker: there was an error in the processing when an error occurred in the filter program ([#1429])
+* PDFMaker: fix a build failure when using inline operators such as `@<code>` or `@<tt>` for heading with `media=ebook` mode ([#1432], [#1465])
+* PDFMaker: raise just warning instead of error, when MeCab isn't installed ([#1445])
+* IDGXMLBuilder: fix `//imgtable` to work correctly ([#1448])
+* PDFMaker: fix an error when makeindex is true but no index is registered ([#1467])
+* PDFMaker: fix missing footnotes in a description list ([#1476])
+* review-index: fix an error when `@<w>` exists in headlines ([#1484])
+
+## Enhancements
+* PDFMaker: add version to .cls/.sty files ([#1163])
+* update Dockerfile ([#1412])
+* IDGXMLMaker: show the contents of stderr from the filter program ([#1443])
+* add *-idgxml folder entry to .gitignore ([#1448])
+* `//source` can now omit options in all builders ([#1447])
+* add Ruby 2.7 to the test targets ([#1468])
+* allow a setting of multiple word\_file ([#1469])
+* EPUBMaker: warn when there is no heading in .re file ([#1474])
+
+## Docs
+* add the description about `contact` and `colophon_order` to `config.yml.sample` ([#1425])
+* update quickstart.ja.md and quickstart.md to Re:VIEW 4 ([#1442])
+* update syntax-book sample document ([#1448], [#1449])
+* update README.md ([#1455], [#1458])
+* update format.ja.md and format.md. add the description about `::` notation which sets builder-specific options to images ([#1421])
+
+## Others
+* refactor codes with Rubocop 0.78.0 ([#1424], [#1430])
+* run PDF build test more strictly when there is LaTeX runtime environment ([#1433])
+* switch the build test suite from Travis CI to GitHub Actions ([#1431], [#1436], [#1437])
+* IDGXMLBuilder: refactor code list methods ([#1438], [#1439])
+* remove unnecessary review-ext.rb from syntax-book ([#1446])
+* add tests for IDGXMLMaker and TextMaker ([#1448])
+* refactor around Index ([#1456], [#1457], [#1459])
+* update jsclasses to version 2020/02/02 ([#1478])
+
+## Contributors
+* [@turky](https://github.com/turky)
+
+[#1163]: https://github.com/kmuto/review/issues/1163
+[#1412]: https://github.com/kmuto/review/pull/1412
+[#1414]: https://github.com/kmuto/review/issues/1414
+[#1416]: https://github.com/kmuto/review/issues/1416
+[#1418]: https://github.com/kmuto/review/issues/1418
+[#1420]: https://github.com/kmuto/review/issues/1420
+[#1421]: https://github.com/kmuto/review/issues/1421
+[#1424]: https://github.com/kmuto/review/pull/1424
+[#1425]: https://github.com/kmuto/review/pull/1425
+[#1426]: https://github.com/kmuto/review/pull/1426
+[#1427]: https://github.com/kmuto/review/pull/1427
+[#1428]: https://github.com/kmuto/review/pull/1428
+[#1429]: https://github.com/kmuto/review/pull/1429
+[#1430]: https://github.com/kmuto/review/pull/1430
+[#1431]: https://github.com/kmuto/review/pull/1431
+[#1432]: https://github.com/kmuto/review/issues/1432
+[#1433]: https://github.com/kmuto/review/pull/1433
+[#1436]: https://github.com/kmuto/review/pull/1436
+[#1437]: https://github.com/kmuto/review/issues/1437
+[#1438]: https://github.com/kmuto/review/pull/1438
+[#1439]: https://github.com/kmuto/review/pull/1439
+[#1442]: https://github.com/kmuto/review/issues/1442
+[#1443]: https://github.com/kmuto/review/pull/1443
+[#1445]: https://github.com/kmuto/review/pull/1445
+[#1446]: https://github.com/kmuto/review/pull/1446
+[#1447]: https://github.com/kmuto/review/issues/1447
+[#1448]: https://github.com/kmuto/review/pull/1448
+[#1449]: https://github.com/kmuto/review/pull/1449
+[#1453]: https://github.com/kmuto/review/pull/1453
+[#1455]: https://github.com/kmuto/review/pull/1455
+[#1456]: https://github.com/kmuto/review/pull/1456
+[#1457]: https://github.com/kmuto/review/pull/1457
+[#1458]: https://github.com/kmuto/review/pull/1458
+[#1459]: https://github.com/kmuto/review/pull/1459
+[#1461]: https://github.com/kmuto/review/issues/1461
+[#1462]: https://github.com/kmuto/review/issues/1462
+[#1465]: https://github.com/kmuto/review/pull/1465
+[#1466]: https://github.com/kmuto/review/pull/1466
+[#1467]: https://github.com/kmuto/review/pull/1467
+[#1468]: https://github.com/kmuto/review/pull/1468
+[#1469]: https://github.com/kmuto/review/issues/1469
+[#1474]: https://github.com/kmuto/review/issues/1474
+[#1476]: https://github.com/kmuto/review/issues/1476
+[#1478]: https://github.com/kmuto/review/issues/1478
+[#1484]: https://github.com/kmuto/review/pull/1484
+
 # Version 4.0.0
 ## New Features
 * introduce review-idgxmlmaker which generates IDGXML files at once ([#1337])
@@ -8,7 +108,7 @@
 ## Breaking Changes
 * review-init no longer creates empty `layouts` folder ([#1340])
 * PDFMaker: fix a problem that white space characters disappeared in `@<code>`, `@<tt>`, `@<tti>`, and `@<ttb>`. Also the string is automatically wrapped ([#1348])
-* `//texequation`、`//embed` and `//graph` that don't allow inline op no longer escape inline op in strings. And don't put extra line break ([#1371], [#1374])
+* `//texequation`, `//embed` and `//graph` that don't allow inline op no longer escape inline op in strings. And don't put extra line break ([#1371], [#1374])
 * PDFMaker: change the default table placement from `htp` to `H` for use in columns (`\floatplacement{table}` value in review-style.sty) [#1385]
 * PDFMaker: the space between Japanese/Western characters in the code lists is changed to 0 from 1/4 character ([#1401])
 * change the default value of `toc` parameter from null (false, don't create a table of contents) to true (create a table of contents) ([#1405])
@@ -622,7 +722,7 @@
 
 ## Enhancements
 
-* allow block `{ 〜 //}` in `//indepimage`. ([#802])
+* allow block `{ ... //}` in `//indepimage`. ([#802])
 * warn when images are not found in `//indepimage`([#803])
 * LATEXBuilder: allow caption in `//source` ([#834])
 
