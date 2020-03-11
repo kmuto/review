@@ -175,7 +175,7 @@ module ReVIEW
       end
 
       def volume
-        vol = Volume.sum(chapters.map(&:volume))
+        vol = Volume.sum(parts.map(&:volume) + chapters.map(&:volume))
         vol.page_per_kbyte = page_metric.page_per_kbyte
         vol
       end

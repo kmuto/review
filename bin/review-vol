@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2014-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2014-2020 Minero Aoki, Kenshi Muto
 #               2003-2014 Minero Aoki
 #
 # This program is free software.
@@ -14,82 +14,8 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review'
-require 'optparse'
+require 'review/volumeprinter'
 
-include ReVIEW::TextUtils
-
-def main
-  @logger = ReVIEW.logger
-  @config = ReVIEW::Configure.values
-
-  part_sensitive = false
-  basedir = nil
-  yamlfile = 'config.yml'
-  opts = OptionParser.new
-  opts.version = ReVIEW::VERSION
-  opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| yamlfile = yaml }
-  opts.on('-P', '--part-sensitive', 'Prints volume of each parts.') { part_sensitive = true }
-  opts.on('--directory=DIR', 'Compile all chapters in DIR.') { |path| basedir = path }
-  opts.on('--help', 'Print this message and quit') do
-    puts opts.help
-    exit 0
-  end
-  begin
-    opts.parse!
-  rescue OptionParser::ParseError => e
-    @logger.error e.message
-    $stderr.puts opts.help
-    exit 1
-  end
-
-  book = basedir ? ReVIEW::Book.load(basedir) : ReVIEW::Book::Base.load
-  book.config = @config
-  if yamlfile
-    book.load_config(yamlfile)
-  end
-
-  if part_sensitive
-    sep = ''
-    book.each_part do |part|
-      print sep
-      sep = "\n"
-      if part.number
-        puts "Part #{part.number} #{part.name}"
-      end
-      part.each_chapter do |chap|
-        print_chapter_volume chap
-      end
-      puts '    --------------------'
-      print_volume part.volume
-    end
-  else
-    book.each_chapter do |chap|
-      print_chapter_volume chap
-    end
-  end
-  puts '============================='
-  print_volume(book.volume) # puts "Total #{book.volume}"
-rescue ReVIEW::ApplicationError, Errno::ENOENT => e
-  raise if $DEBUG
-  @logger.error e.message
-  exit 1
+if File.basename($PROGRAM_NAME) == File.basename(__FILE__)
+  ReVIEW::VolumePrinter.execute(*ARGV)
 end
-
-def print_chapter_volume(chap)
-  vol = chap.volume
-  title = chap.title
-  printf("%s %3dKB %6dC %5dL %3dP %s %-s\n",
-         chapnumstr(chap.number), vol.kbytes, vol.chars, vol.lines, vol.page,
-         "#{chap.name} ".ljust(25, '.'), title)
-end
-
-def print_volume(vol)
-  printf("    %3dKB %6dC %5dL %3dP\n", vol.kbytes, vol.chars, vol.lines, vol.page)
-end
-
-def chapnumstr(n)
-  n ? sprintf('%2d.', n) : '   '
-end
-
-main
