@@ -30,13 +30,11 @@ module ReVIEW
       parse_options(args)
       @book = ReVIEW::Book::Base.load
       @book.config = @config
-      if @yamlfile
-        unless File.readable?(@yamlfile)
-          @logger.error("No such fiile or can't open #{@yamlfile}.")
-          exit 1
-        end
-        @book.load_config(@yamlfile)
+      unless File.readable?(@yamlfile)
+        @logger.error("No such fiile or can't open #{@yamlfile}.")
+        exit 1
       end
+      @book.load_config(@yamlfile)
       I18n.setup(@book.config['language'])
 
       @book.each_part do |part|
