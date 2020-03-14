@@ -37,13 +37,18 @@ module ReVIEW
       @book.load_config(@yamlfile)
       I18n.setup(@book.config['language'])
 
-      @book.each_part do |part|
-        if part.number
-          print_chapter_volume(part)
+      begin
+        @book.each_part do |part|
+          if part.number
+            print_chapter_volume(part)
+          end
+          part.each_chapter do |chap|
+            print_chapter_volume(chap)
+          end
         end
-        part.each_chapter do |chap|
-          print_chapter_volume(chap)
-        end
+      rescue ReVIEW::FileNotFound => e
+        @logger.error e
+        exit 1
       end
       puts '============================='
       print_volume(@book.volume)

@@ -59,25 +59,30 @@ module ReVIEW
 
       result_array = []
 
-      @book.parts.each do |part|
-        if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
-          if part.file?
-            result = build_chap(part)
-            result_array += parse_contents(part.name, @upper, result)
-          else
-            result_array += [
-              { name: '', lines: 1, chars: part.name.size },
-              { level: 0, headline: part.name, lines: 1, chars: part.name.size }
-            ]
+      begin
+        @book.parts.each do |part|
+          if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
+            if part.file?
+              result = build_chap(part)
+              result_array += parse_contents(part.name, @upper, result)
+            else
+              result_array += [
+                { name: '', lines: 1, chars: part.name.size },
+                { level: 0, headline: part.name, lines: 1, chars: part.name.size }
+              ]
+            end
           end
-        end
 
-        part.chapters.each do |chap|
-          if @buildonly.nil? || @buildonly.include?(chap.name)
-            result = build_chap(chap)
-            result_array += parse_contents(chap.name, @upper, result)
+          part.chapters.each do |chap|
+            if @buildonly.nil? || @buildonly.include?(chap.name)
+              result = build_chap(chap)
+              result_array += parse_contents(chap.name, @upper, result)
+            end
           end
         end
+      rescue ReVIEW::FileNotFound => e
+        @logger.error e
+        exit 1
       end
 
       print_result(result_array)
