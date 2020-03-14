@@ -113,9 +113,6 @@ module ReVIEW
 
     def parse_contents(name, upper, content)
       headline_array = []
-
-      lines = 0
-      chars = 0
       counter = {}
 
       content.split("\n").each do |l|
@@ -150,8 +147,8 @@ module ReVIEW
         total_chars += h[:chars]
       end
 
-      headline_array.delete_if {|h| h.empty? }.
-        unshift({name: name, lines: total_lines, chars: total_chars})
+      headline_array.delete_if(&:empty?).
+        unshift({ name: name, lines: total_lines, chars: total_chars })
     end
 
     def build_chap(chap)
@@ -164,7 +161,7 @@ module ReVIEW
       end
     end
 
-    def parse_options(args)
+    def parse_options(_args)
       opts = OptionParser.new
       opts.version = ReVIEW::VERSION
       opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| @yamlfile = yaml }
