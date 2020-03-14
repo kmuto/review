@@ -16,10 +16,11 @@ module ReVIEW
   class PLAINTEXTTocBuilder < PLAINTEXTBuilder
     def headline(level, label, caption)
       if @chapter.is_a?(ReVIEW::Book::Part)
-        level = 0
+        print "\x01H0\x01" # XXX: don't modify level value. level value will be handled in sec_counter#prefix()
+      else
+        print "\x01H#{level}\x01"
       end
       # embed header information for tocparser
-      print "\x01H#{level}\x01"
       super(level, label, caption)
     end
   end
