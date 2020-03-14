@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               1999-2007 Minero Aoki
 #
 # This program is free software.
@@ -8,12 +8,22 @@
 #
 
 require 'review/book'
-require 'review/tocparser'
-require 'review/tocprinter'
 require 'review/version'
 require 'optparse'
+require 'review/plaintextbuilder'
 
 module ReVIEW
+  class PLAINTEXTTocBuilder < PLAINTEXTBuilder
+    def headline(level, label, caption)
+      if @chapter.is_a?(ReVIEW::Book::Part)
+        level = 0
+      end
+      # embed header information for tocparser
+      print "\x01H#{level}\x01"
+      super(level, label, caption)
+    end
+  end
+
   class IndexPrinter
     def self.execute(*args)
       Signal.trap(:INT) { exit 1 }
@@ -29,15 +39,15 @@ module ReVIEW
       @logger = ReVIEW.logger
       @config = ReVIEW::Configure.values
       @yamlfile = 'config.yml'
-      @upper = ReVIEW::TOCPrinter.default_upper_level
       @book = ReVIEW::Book::Base.load
-      @printer_class = ReVIEW::TextTOCPrinter
-      @source = nil
+      @upper = 4
+      @indent = true
+      @buildonly = nil
+      @detail = nil
     end
 
     def execute(*args)
       parse_options(args)
-      param = {}
 
       @book.config = ReVIEW::Configure.values
       unless File.readable?(@yamlfile)
@@ -45,17 +55,107 @@ module ReVIEW
         exit 1
       end
       @book.load_config(@yamlfile)
+      I18n.setup(@config['language'])
 
-      begin
-        printer = @printer_class.new(@upper, param)
-        if @source.is_a?(ReVIEW::Book::Part)
-          printer.print_part(@source)
-        else
-          printer.print_book(@source)
+      result_array = []
+
+      @book.parts.each do |part|
+        if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
+          if part.file?
+            result = build_chap(part)
+            result_array += parse_contents(part.name, @upper, result)
+          else
+            result_array += [
+              { name: '', lines: 1, chars: part.name.size },
+              { level: 0, headline: part.name, lines: 1, chars: part.name.size }
+            ]
+          end
         end
-      rescue ReVIEW::Error, RuntimeError, Errno::ENOENT => e
-        raise if $DEBUG
-        error_exit(e.message)
+
+        part.chapters.each do |chap|
+          if @buildonly.nil? || @buildonly.include?(chap.name)
+            result = build_chap(chap)
+            result_array += parse_contents(chap.name, @upper, result)
+          end
+        end
+      end
+
+      print_result(result_array)
+    end
+
+    def print_result(result_array)
+      result_array.each do |result|
+        if result[:name]
+          # file information
+          if @detail
+            puts '============================='
+            printf("%6dC %5dL  %s\n", result[:chars], result[:lines], result[:name])
+            puts '-----------------------------'
+          end
+          next
+        end
+
+        # section information
+        if @detail
+          printf('%6dC %5dL  ', result[:chars], result[:lines])
+        end
+        if @indent
+          print '  ' * (result[:level] == 0 ? 0 : result[:level] - 1)
+        end
+        puts result[:headline]
+      end
+    end
+
+    def parse_contents(name, upper, content)
+      headline_array = []
+
+      lines = 0
+      chars = 0
+      counter = {}
+
+      content.split("\n").each do |l|
+        if l =~ /\A\x01H(\d)\x01/
+          # headline
+          level = $1.to_i
+          l = $'
+          if level <= upper
+            headline_array.push(counter)
+
+            headline = l
+            counter = {
+              level: level,
+              headline: headline,
+              lines: 1,
+              chars: headline.size
+            }
+            next
+          end
+        end
+
+        counter[:lines] += 1
+        counter[:chars] += l.size
+      end
+      headline_array.push(counter)
+
+      total_lines = 0
+      total_chars = 0
+      headline_array.each do |h|
+        next unless h[:lines]
+        total_lines += h[:lines]
+        total_chars += h[:chars]
+      end
+
+      headline_array.delete_if {|h| h.empty? }.
+        unshift({name: name, lines: total_lines, chars: total_chars})
+    end
+
+    def build_chap(chap)
+      compiler = ReVIEW::Compiler.new(ReVIEW::PLAINTEXTTocBuilder.new)
+      begin
+        compiler.compile(@book.chapter(chap.name))
+      rescue ReVIEW::ApplicationError => e
+        @logger.error e
+        exit 1
       end
     end
 
@@ -63,24 +163,17 @@ module ReVIEW
       opts = OptionParser.new
       opts.version = ReVIEW::VERSION
       opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| @yamlfile = yaml }
-      opts.on('-a', '--all', 'print all chapters.') { @source = @book }
-      opts.on('-p', '--part N', 'list only part N.') do |n|
-        @source = @book.part(Integer(n)) or
-          error_exit("part #{n} does not exist in this book")
+      opts.on('-y', '--only file1,file2,...', 'list only specified files.') do |v|
+        @buildonly = v.split(/\s*,\s*/).map { |m| m.strip.sub(/\.re\Z/, '') }
       end
-      opts.on('-c', '--chapter C', 'list only chapter C.') do |c|
-        begin
-          @source = ReVIEW::Book::Part.new(nil, 1, [@book.chapter(c)])
-        rescue
-          error_exit("chapter #{c} does not exist in this book")
-        end
+      opts.on('-l', '--level N', 'list upto N level (default=4)') do |n|
+        @upper = n.to_i
       end
-      opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') do |n|
-        @upper = Integer(n)
-        unless (0..4).cover?(@upper) # 0 is hidden option
-          $stderr.puts '-l/--level option accepts only 1..4'
-          exit 1
-        end
+      opts.on('-d', '--detail', 'show characters and lines of each section.') do
+        @detail = true
+      end
+      opts.on('--noindent', "don't indent headlines") do
+        @indent = nil
       end
       opts.on('--help', 'print this message and quit.') do
         puts opts.help
@@ -93,18 +186,6 @@ module ReVIEW
         $stderr.puts opts.help
         exit 1
       end
-
-      if @source
-        error_exit('-a/-s option and file arguments are exclusive') unless ARGV.empty?
-      else
-        puts opts.help
-        exit 0
-      end
-    end
-
-    def error_exit(msg)
-      @logger.error msg
-      exit 1
     end
   end
 end
