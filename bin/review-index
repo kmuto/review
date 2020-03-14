@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               1999-2007 Minero Aoki
 #
 # This program is free software.
@@ -14,93 +14,6 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/book'
-require 'review/tocparser'
-require 'review/tocprinter'
-require 'review/version'
-require 'optparse'
+require 'review/indexprinter'
 
-def main
-  @logger = ReVIEW.logger
-  Signal.trap(:INT) { exit 1 }
-  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
-    Signal.trap(:PIPE, 'IGNORE')
-  end
-  _main
-rescue Errno::EPIPE
-  exit 0
-end
-
-def _main
-  yamlfile = 'config.yml'
-  printer_class = ReVIEW::TextTOCPrinter
-  source = nil
-  upper = ReVIEW::TOCPrinter.default_upper_level
-  param = {}
-  book = ReVIEW::Book::Base.load
-
-  opts = OptionParser.new
-  opts.version = ReVIEW::VERSION
-  opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| yamlfile = yaml }
-  opts.on('-a', '--all', 'print all chapters.') { source = book }
-  opts.on('-p', '--part N', 'list only part N.') do |n|
-    source = book.part(Integer(n)) or
-      error_exit("part #{n} does not exist in this book")
-  end
-  opts.on('-c', '--chapter C', 'list only chapter C.') do |c|
-    begin
-      source = ReVIEW::Book::Part.new(nil, 1, [book.chapter(c)])
-    rescue
-      error_exit("chapter #{c} does not exist in this book")
-    end
-  end
-  opts.on('-l', '--level N', 'list upto N level (1..4, default=4)') do |n|
-    upper = Integer(n)
-    unless (0..4).cover?(upper) # 0 is hidden option
-      $stderr.puts '-l/--level option accepts only 1..4'
-      exit 1
-    end
-  end
-  opts.on('--text', 'output in plain text (default)') { printer_class = ReVIEW::TextTOCPrinter }
-  opts.on('--html', 'output in HTML (deprecated)') { printer_class = ReVIEW::HTMLTOCPrinter }
-  opts.on('--help', 'print this message and quit.') do
-    puts opts.help
-    exit 0
-  end
-  begin
-    opts.parse!
-  rescue OptionParser::ParseError => e
-    @logger.error e.message
-    $stderr.puts opts.help
-    exit 1
-  end
-
-  book.config = ReVIEW::Configure.values
-  book.load_config(yamlfile) if yamlfile
-
-  if source
-    error_exit('-a/-s option and file arguments are exclusive') unless ARGV.empty?
-  else
-    puts opts.help
-    exit 0
-  end
-
-  begin
-    printer = printer_class.new(upper, param)
-    if source.is_a?(ReVIEW::Book::Part)
-      printer.print_part(source)
-    else
-      printer.print_book(source)
-    end
-  rescue ReVIEW::Error, Errno::ENOENT => e
-    raise if $DEBUG
-    error_exit(e.message)
-  end
-end
-
-def error_exit(msg)
-  @logger.error msg
-  exit 1
-end
-
-main
+ReVIEW::IndexPrinter.execute(*ARGV)
