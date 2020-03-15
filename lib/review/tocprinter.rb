@@ -66,6 +66,17 @@ module ReVIEW
       end
       @book.load_config(@yamlfile)
       I18n.setup(@config['language'])
+
+      if @detail
+        begin
+          require 'unicode/eaw'
+          @calc_char_width = true
+        rescue LoadError
+          @logger.warn('not found unicode/eaw library. page volume may be unreliable.')
+          @calc_char_width = nil
+        end
+      end
+
       print_result(build_result_array)
     end
 
@@ -115,7 +126,7 @@ module ReVIEW
           # file information
           if @detail
             puts '============================='
-            printf("%6dC %5dL %3dP  %s\n", result[:chars], result[:lines], calc_pages(result), result[:name])
+            printf("%6dC %5dL %5dP  %s\n", result[:chars], result[:lines], calc_pages(result).ceil, result[:name])
             puts '-----------------------------'
           end
           next
@@ -123,9 +134,9 @@ module ReVIEW
 
         # section information
         if @detail
-          printf('%6dC %5dL %3dP ', result[:chars], result[:lines], calc_pages(result))
+          printf('%6dC %5dL %5.1fP  ', result[:chars], result[:lines], calc_pages(result))
         end
-        if @indent
+        if @indent && result[:level]
           print '  ' * (result[:level] == 0 ? 0 : result[:level] - 1)
         end
         puts result[:headline]
@@ -136,7 +147,21 @@ module ReVIEW
       p = 0
       p += result[:list_lines].to_f / @book.page_metric.list.n_lines
       p += result[:text_lines].to_f / @book.page_metric.text.n_lines
-      p.ceil
+      p
+    end
+
+    def calc_linesize(l)
+      return l.size unless @calc_char_width
+      w = 0
+      l.split('').each do |c|
+        # XXX: should include A also?
+        if %i[Na H N].include?(Unicode::Eaw.property(c))
+          w += 0.5 # halfwidth
+        else
+          w += 1
+        end
+      end
+      w
     end
 
     def parse_contents(name, upper, content)
@@ -181,14 +206,14 @@ module ReVIEW
           if l.size == 0
             counter[:list_lines] += 1
           else
-            counter[:list_lines] += (l.size - 1) / @book.page_metric.list.n_columns + 1
+            counter[:list_lines] += (calc_linesize(l) - 1) / @book.page_metric.list.n_columns + 1
           end
         else
           # normal paragraph: calculate line wrapping
           if l.size == 0
             counter[:text_lines] += 1
           else
-            counter[:text_lines] += (l.size - 1) / @book.page_metric.text.n_columns + 1
+            counter[:text_lines] += (calc_linesize(l) - 1) / @book.page_metric.text.n_columns + 1
           end
         end
       end
