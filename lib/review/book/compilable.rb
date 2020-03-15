@@ -52,11 +52,7 @@ module ReVIEW
       end
 
       def volume
-        unless @volume
-          @volume = Volume.count_file(path)
-          @volume.page_per_kbyte = @book.page_metric.page_per_kbyte
-        end
-        @volume
+        @volume ||= Volume.count_file(path)
       end
 
       def lines

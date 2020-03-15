@@ -76,7 +76,6 @@ module ReVIEW
       builder.bind(ReVIEW::Compiler.new(builder), chap, nil)
 
       vol = chap.volume
-      vol.page_per_kbyte = @book.page_metric.page_per_kbyte
       title = chap.format_number
       unless title.empty?
         title += '  '

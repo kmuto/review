@@ -23,6 +23,16 @@ module ReVIEW
       # embed header information for tocparser
       super(level, label, caption)
     end
+
+    def base_block(type, lines, caption = nil)
+      puts "\x01STARTLIST\x01"
+      super(type, lines, caption)
+      puts "\x01ENDLIST\x01"
+    end
+
+    def blank
+      @blank_seen = true
+    end
   end
 
   class TOCPrinter
@@ -71,8 +81,8 @@ module ReVIEW
             else
               title = part.format_number + I18n.t('chapter_postfix') + part.title
               result_array += [
-                { name: '', lines: 1, chars: title.size },
-                { level: 0, headline: title, lines: 1, chars: title.size }
+                { name: '', lines: 1, chars: title.size, list_lines: 0, text_lines: 1 },
+                { level: 0, headline: title, lines: 1, chars: title.size, list_lines: 0, text_lines: 1 }
               ]
             end
           end
@@ -105,7 +115,7 @@ module ReVIEW
           # file information
           if @detail
             puts '============================='
-            printf("%6dC %5dL  %s\n", result[:chars], result[:lines], result[:name])
+            printf("%6dC %5dL %3dP  %s\n", result[:chars], result[:lines], calc_pages(result), result[:name])
             puts '-----------------------------'
           end
           next
@@ -113,7 +123,7 @@ module ReVIEW
 
         # section information
         if @detail
-          printf('%6dC %5dL  ', result[:chars], result[:lines])
+          printf('%6dC %5dL %3dP ', result[:chars], result[:lines], calc_pages(result))
         end
         if @indent
           print '  ' * (result[:level] == 0 ? 0 : result[:level] - 1)
@@ -122,12 +132,29 @@ module ReVIEW
       end
     end
 
+    def calc_pages(result)
+      p = 0
+      p += result[:list_lines].to_f / @book.page_metric.list.n_lines
+      p += result[:text_lines].to_f / @book.page_metric.text.n_lines
+      p.ceil
+    end
+
     def parse_contents(name, upper, content)
       headline_array = []
       counter = {}
+      listmode = nil
 
       content.split("\n").each do |l|
-        if l =~ /\A\x01H(\d)\x01/
+        if l.start_with?("\x01STARTLIST\x01")
+          listmode = true
+          if counter.empty?
+            counter = { lines: 0, chars: 0, list_lines: 0, text_lines: 0 }
+          end
+          next
+        elsif l.start_with?("\x01ENDLIST\x01")
+          listmode = nil
+          next
+        elsif l =~ /\A\x01H(\d)\x01/
           # headline
           level = $1.to_i
           l = $'
@@ -138,7 +165,9 @@ module ReVIEW
               level: level,
               headline: headline,
               lines: 1,
-              chars: headline.size
+              chars: headline.size,
+              list_lines: 0,
+              text_lines: 1
             }
             next
           end
@@ -146,19 +175,40 @@ module ReVIEW
 
         counter[:lines] += 1
         counter[:chars] += l.size
+
+        if listmode
+          # code list: calculate line wrapping
+          if l.size == 0
+            counter[:list_lines] += 1
+          else
+            counter[:list_lines] += (l.size - 1) / @book.page_metric.list.n_columns + 1
+          end
+        else
+          # normal paragraph: calculate line wrapping
+          if l.size == 0
+            counter[:text_lines] += 1
+          else
+            counter[:text_lines] += (l.size - 1) / @book.page_metric.text.n_columns + 1
+          end
+        end
       end
       headline_array.push(counter)
 
       total_lines = 0
       total_chars = 0
+      total_list_lines = 0
+      total_text_lines = 0
+
       headline_array.each do |h|
         next unless h[:lines]
         total_lines += h[:lines]
         total_chars += h[:chars]
+        total_list_lines += h[:list_lines]
+        total_text_lines += h[:text_lines]
       end
 
       headline_array.delete_if(&:empty?).
-        unshift({ name: name, lines: total_lines, chars: total_chars })
+        unshift({ name: name, lines: total_lines, chars: total_chars, list_lines: total_list_lines, text_lines: total_text_lines })
     end
 
     def build_chap(chap)
