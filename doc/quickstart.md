@@ -220,14 +220,14 @@ You can use `review-vol` command to know the volume of the document.
 $ review-vol
 ```
 
-You can also use `review-toc` command to generate header list.
+You can also use `review-index` command to generate header list.
 
 ```bash
-$ review-toc --level <heading level>
-$ review-toc --level <heading level> -d  ## show volumes also
+$ review-index --level <heading level>
+$ review-index --level <heading level> -d  ## show volumes also
 ```
 
-review-vol and review-toc can have large differences in the number of characters, lines, and pages. While review-vol only estimates from the file, review-toc actually compiles and calculates.
+review-vol and review-index can have large differences in the number of characters, lines, and pages. While review-vol only estimates from the file, review-index actually compiles and calculates.
 
 ## how to update the document folder to the new Re:VIEW version
 
