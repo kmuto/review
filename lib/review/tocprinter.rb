@@ -1,148 +1,278 @@
-# Copyright (c) 2008-2017 Minero Aoki, Kenshi Muto
-#               2002-2007 Minero Aoki
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
+#               1999-2007 Minero Aoki
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
-# For details of LGPL, see the file "COPYING".
+# For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'review/htmlutils'
-require 'review/tocparser'
+require 'review/book'
+require 'review/version'
+require 'optparse'
+require 'review/plaintextbuilder'
 
 module ReVIEW
-  class TOCPrinter
-    def self.default_upper_level
-      99 # no one use 99 level nest
+  class PLAINTEXTTocBuilder < PLAINTEXTBuilder
+    def headline(level, label, caption)
+      if @chapter.is_a?(ReVIEW::Book::Part)
+        print "\x01H0\x01" # XXX: don't modify level value. level value will be handled in sec_counter#prefix()
+      else
+        print "\x01H#{level}\x01"
+      end
+      # embed header information for tocparser
+      super(level, label, caption)
     end
 
-    def initialize(print_upper, param, out = $stdout)
-      @print_upper = print_upper
-      @config = param
-      @out = out
+    def base_block(type, lines, caption = nil)
+      puts "\x01STARTLIST\x01"
+      super(type, lines, caption)
+      puts "\x01ENDLIST\x01"
     end
 
-    def print_book(book)
-      book.each_part { |part| print_part(part) }
-    end
-
-    def print_part(part)
-      part.each_chapter { |chap| print_chapter(chap) }
-    end
-
-    def print_chapter(chap)
-      chap_node = TOCParser.chapter_node(chap)
-      print_node(1, chap_node)
-      print_children(chap_node)
-    end
-
-    def print?(level)
-      level <= @print_upper
+    def blank
+      @blank_seen = true
     end
   end
 
-  class TextTOCPrinter < TOCPrinter
-    private
+  class TOCPrinter
+    def self.execute(*args)
+      Signal.trap(:INT) { exit 1 }
+      if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
+        Signal.trap(:PIPE, 'IGNORE')
+      end
+      new.execute(*args)
+    rescue Errno::EPIPE
+      exit 0
+    end
 
-    def print_children(node)
-      return unless print?(node.level + 1)
-      node.each_section_with_index do |section, idx|
-        unless section.blank?
-          print_node(idx + 1, section)
-          print_children(section)
+    def initialize
+      @logger = ReVIEW.logger
+      @config = ReVIEW::Configure.values
+      @yamlfile = 'config.yml'
+      @book = ReVIEW::Book::Base.load
+      @upper = 4
+      @indent = true
+      @buildonly = nil
+      @detail = nil
+    end
+
+    def execute(*args)
+      parse_options(args)
+      @book.config = ReVIEW::Configure.values
+      unless File.readable?(@yamlfile)
+        @logger.error("No such fiile or can't open #{@yamlfile}.")
+        exit 1
+      end
+      @book.load_config(@yamlfile)
+      I18n.setup(@config['language'])
+
+      if @detail
+        begin
+          require 'unicode/eaw'
+          @calc_char_width = true
+        rescue LoadError
+          @logger.warn('not found unicode/eaw library. page volume may be unreliable.')
+          @calc_char_width = nil
         end
       end
+
+      print_result(build_result_array)
     end
 
-    def print_node(number, node)
-      if node.chapter?
-        vol = node.volume
-        @out.printf("%3s %3dKB %6dC %5dL  %s (%s)\n",
-                    chapnumstr(node.number),
-                    vol.kbytes, vol.chars, vol.lines,
-                    node.label, node.chapter_id)
-      else ## for section node
-        @out.printf("%17s %5dL  %s\n",
-                    '', node.estimated_lines,
-                    "  #{'   ' * (node.level - 1)}#{number} #{node.label}")
+    def build_result_array
+      result_array = []
+      begin
+        @book.parts.each do |part|
+          if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
+            result_array.push({ part: 'start' })
+            if part.file?
+              result = build_chap(part)
+              result_array += parse_contents(part.name, @upper, result)
+            else
+              title = part.format_number + I18n.t('chapter_postfix') + part.title
+              result_array += [
+                { name: '', lines: 1, chars: title.size, list_lines: 0, text_lines: 1 },
+                { level: 0, headline: title, lines: 1, chars: title.size, list_lines: 0, text_lines: 1 }
+              ]
+            end
+          end
+
+          part.chapters.each do |chap|
+            if @buildonly.nil? || @buildonly.include?(chap.name)
+              result = build_chap(chap)
+              result_array += parse_contents(chap.name, @upper, result)
+            end
+          end
+          if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
+            result_array.push({ part: 'end' })
+          end
+        end
+      rescue ReVIEW::FileNotFound => e
+        @logger.error e
+        exit 1
+      end
+
+      result_array
+    end
+
+    def print_result(result_array)
+      result_array.each do |result|
+        if result[:part]
+          next
+        end
+
+        if result[:name]
+          # file information
+          if @detail
+            puts '============================='
+            printf("%6dC %5dL %5dP  %s\n", result[:chars], result[:lines], calc_pages(result).ceil, result[:name])
+            puts '-----------------------------'
+          end
+          next
+        end
+
+        # section information
+        if @detail
+          printf('%6dC %5dL %5.1fP  ', result[:chars], result[:lines], calc_pages(result))
+        end
+        if @indent && result[:level]
+          print '  ' * (result[:level] == 0 ? 0 : result[:level] - 1)
+        end
+        puts result[:headline]
       end
     end
 
-    def chapnumstr(n)
-      n ? sprintf('%2d.', n) : '   '
+    def calc_pages(result)
+      p = 0
+      p += result[:list_lines].to_f / @book.page_metric.list.n_lines
+      p += result[:text_lines].to_f / @book.page_metric.text.n_lines
+      p
     end
 
-    def volume_columns(level, volstr)
-      cols = ['', '', '', nil]
-      cols[level - 1] = volstr
-      cols[0, 3] # does not display volume of level-4 section
-    end
-  end
-
-  class HTMLTOCPrinter < TOCPrinter
-    include HTMLUtils
-
-    def print_book(book)
-      @out.puts '<ul class="book-toc">'
-      book.each_part { |part| print_part(part) }
-      @out.puts '</ul>'
-    end
-
-    def print_part(part)
-      if part.number
-        @out.puts li(part.title)
+    def calc_linesize(l)
+      return l.size unless @calc_char_width
+      w = 0
+      l.split('').each do |c|
+        # XXX: should include A also?
+        if %i[Na H N].include?(Unicode::Eaw.property(c))
+          w += 0.5 # halfwidth
+        else
+          w += 1
+        end
       end
-      super
+      w
     end
 
-    def print_chapter(chap)
-      chap_node = TOCParser.chapter_node(chap)
-      ext = chap.book.config['htmlext'] || 'html'
-      path = chap.path.sub(/\.re/, '.' + ext)
-      label = if chap_node.number && chap.on_chaps?
-                "#{chap.number} #{chap.title}"
-              else
-                chap.title
-              end
-      @out.puts li(a_name(path, escape_html(label)))
-      return unless print?(2)
-      if print?(3)
-        @out.puts chap_sections_to_s(chap_node)
-      else
-        @out.puts chapter_to_s(chap_node)
+    def parse_contents(name, upper, content)
+      headline_array = []
+      counter = {}
+      listmode = nil
+
+      content.split("\n").each do |l|
+        if l.start_with?("\x01STARTLIST\x01")
+          listmode = true
+          if counter.empty?
+            counter = { lines: 0, chars: 0, list_lines: 0, text_lines: 0 }
+          end
+          next
+        elsif l.start_with?("\x01ENDLIST\x01")
+          listmode = nil
+          next
+        elsif l =~ /\A\x01H(\d)\x01/
+          # headline
+          level = $1.to_i
+          l = $'
+          if level <= upper
+            headline_array.push(counter)
+            headline = l
+            counter = {
+              level: level,
+              headline: headline,
+              lines: 1,
+              chars: headline.size,
+              list_lines: 0,
+              text_lines: 1
+            }
+            next
+          end
+        end
+
+        counter[:lines] += 1
+        counter[:chars] += l.size
+
+        if listmode
+          # code list: calculate line wrapping
+          if l.size == 0
+            counter[:list_lines] += 1
+          else
+            counter[:list_lines] += (calc_linesize(l) - 1) / @book.page_metric.list.n_columns + 1
+          end
+        else
+          # normal paragraph: calculate line wrapping
+          if l.size == 0
+            counter[:text_lines] += 1
+          else
+            counter[:text_lines] += (calc_linesize(l) - 1) / @book.page_metric.text.n_columns + 1
+          end
+        end
+      end
+      headline_array.push(counter)
+
+      total_lines = 0
+      total_chars = 0
+      total_list_lines = 0
+      total_text_lines = 0
+
+      headline_array.each do |h|
+        next unless h[:lines]
+        total_lines += h[:lines]
+        total_chars += h[:chars]
+        total_list_lines += h[:list_lines]
+        total_text_lines += h[:text_lines]
+      end
+
+      headline_array.delete_if(&:empty?).
+        unshift({ name: name, lines: total_lines, chars: total_chars, list_lines: total_list_lines, text_lines: total_text_lines })
+    end
+
+    def build_chap(chap)
+      compiler = ReVIEW::Compiler.new(ReVIEW::PLAINTEXTTocBuilder.new)
+      begin
+        compiler.compile(@book.chapter(chap.name))
+      rescue ReVIEW::ApplicationError => e
+        @logger.error e
+        exit 1
       end
     end
 
-    private
-
-    def chap_sections_to_s(chap)
-      return '' if chap.section_size < 1
-      res = []
-      res << '<ol>'
-      chap.each_section { |sec| res << li(escape_html(sec.label)) }
-      res << '</ol>'
-      res.join("\n")
-    end
-
-    def chapter_to_s(chap)
-      res = []
-      chap.each_section do |sec|
-        res << li(escape_html(sec.label))
-        next unless print?(4)
-        next unless sec.section_size > 0
-        res << '<ul>'
-        sec.each_section { |node| res << li(escape_html(node.label)) }
-        res << '</ul>'
+    def parse_options(args)
+      opts = OptionParser.new
+      opts.version = ReVIEW::VERSION
+      opts.on('--yaml=YAML', 'Read configurations from YAML file.') { |yaml| @yamlfile = yaml }
+      opts.on('-y', '--only file1,file2,...', 'list only specified files.') do |v|
+        @buildonly = v.split(/\s*,\s*/).map { |m| m.strip.sub(/\.re\Z/, '') }
       end
-      res.join("\n")
-    end
-
-    def li(content)
-      "<li>#{content}</li>"
-    end
-
-    def a_name(name, label)
-      %Q(<a name="#{name}">#{label}</a>)
+      opts.on('-l', '--level N', 'list upto N level (default=4)') do |n|
+        @upper = n.to_i
+      end
+      opts.on('-d', '--detail', 'show characters and lines of each section.') do
+        @detail = true
+      end
+      opts.on('--noindent', "don't indent headlines.") do
+        @indent = nil
+      end
+      opts.on('--help', 'print this message and quit.') do
+        puts opts.help
+        exit 0
+      end
+      begin
+        opts.parse!(args)
+      rescue OptionParser::ParseError => e
+        @logger.error e.message
+        $stderr.puts opts.help
+        exit 1
+      end
     end
   end
 end

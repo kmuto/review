@@ -23,7 +23,7 @@ prt: "Re:VIEW Printing inc."
 contact: "https://reviewml.org/"
 date: 2018-11-11
 history: [["2012-01-30"],["2016-04-20","2016-05-03"],["2018-11-11"]]
-rights: (C) 2016-2019 Re:VIEW Commiters, some rights reserved.
+rights: (C) 2016-2020 Re:VIEW Commiters, some rights reserved.
 description: sample config.yml file for Re:VIEW book
 urnid: urn:uid:http://reviewml.org/review-sample-book
 # isbn: null

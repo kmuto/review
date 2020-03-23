@@ -9,7 +9,7 @@ Re:VIEW is free software under the terms of the GNU Lesser General Public Licens
 
 This article describes how to setup Re:VIEW and use it.
 
-The supported version of the article is Re:VIEW 4.0.
+The supported version of the article is Re:VIEW 4.2.
 
 ## Set up Re:VIEW
 
@@ -223,8 +223,11 @@ $ review-vol
 You can also use `review-index` command to generate header list.
 
 ```bash
-$ review-index --level <heading level> -a
+$ review-index --level <heading level>
+$ review-index --level <heading level> -d  ## show volumes also
 ```
+
+review-vol and review-index can have large differences in the number of characters, lines, and pages. While review-vol only estimates from the file, review-index actually compiles and calculates.
 
 ## how to update the document folder to the new Re:VIEW version
 
@@ -232,7 +235,7 @@ Re:VIEW is updated regularly. We Re:VIEW team watch the backward compatibility c
 
 ```bash
 $ review-update
-** review-update updates your project to 4.0.0 **
+** review-update updates your project to 4.1.0 **
 config.yml: Update 'review_version' to '4.0'? [y]/n
 Rakefile will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/Rakefile). Do you really proceed? [y]/n
 lib/tasks/review.rake will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/lib/tasks/review.rake). Do you really proceed? [y]/n
@@ -249,7 +252,7 @@ Finished.
 
 ## Copyright
 
-The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (December 2019).
+The original author of Re:VIEW is Minero Aoki. The current maintainer is Kenshi Muto(@kmuto), and committers are Masayoshi Takahashi and Masanori Kado (March 2020).
 
 If you want to report bugs and patches, or to get more information, see:
 

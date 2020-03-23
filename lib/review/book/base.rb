@@ -79,7 +79,7 @@ module ReVIEW
       def page_metric
         if config['page_metric'].respond_to?(:downcase) && config['page_metric'].upcase =~ /\A[A-Z0-9_]+\Z/
           ReVIEW::Book::PageMetric.const_get(config['page_metric'].upcase)
-        elsif config['page_metric'].is_a?(Array) && config['page_metric'].size == 5
+        elsif config['page_metric'].is_a?(Array) && (config['page_metric'].size == 5 || config['page_metric'].size == 4)
           ReVIEW::Book::PageMetric.new(*config['page_metric'])
         else
           config['page_metric']
@@ -175,9 +175,7 @@ module ReVIEW
       end
 
       def volume
-        vol = Volume.sum(chapters.map(&:volume))
-        vol.page_per_kbyte = page_metric.page_per_kbyte
-        vol
+        Volume.sum(parts.map(&:volume) + chapters.map(&:volume))
       end
 
       def load_config(filename)

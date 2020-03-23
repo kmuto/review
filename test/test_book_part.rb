@@ -46,8 +46,8 @@ class PartTest < Test::Unit::TestCase
 
     part = Book::Part.new(book, nil, chs)
     assert part.volume
-    assert part.volume.bytes > 0
-    assert part.volume.chars > 0
-    assert part.volume.lines > 0
+    assert part.volume.bytes == 0
+    assert part.volume.chars == 0
+    assert part.volume.lines == 0
   end
 end

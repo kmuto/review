@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2007-2020 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -33,20 +33,19 @@ module ReVIEW
         @bytes = bytes
         @chars = chars
         @lines = lines
-        @page_per_kbyte = nil
       end
 
       attr_reader :bytes
       attr_reader :chars
       attr_accessor :lines
-      attr_accessor :page_per_kbyte
 
       def kbytes
         (@bytes.to_f / 1024).ceil
       end
 
       def page
-        (kbytes.to_f / @page_per_kbyte).ceil
+        # XXX:unrelibable
+        kbytes.to_f.ceil
       end
 
       def to_s
