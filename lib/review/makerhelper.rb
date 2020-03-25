@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2018 Yuto HAYAMIZU, Kenshi Muto
+# Copyright (c) 2012-2020 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -111,6 +111,22 @@ module ReVIEW
 \\input{__IMGMATH_BODY__}
 \\end{document}
 EOB
+
+      hashes = File.readlines(File.join(math_dir, '__IMGMATH_BODY__.map')).sort.uniq
+      File.write(File.join(math_dir, '__IMGMATH_BODY__.map'), hashes.join)
+
+      File.open(File.join(math_dir, '__IMGMATH_BODY__.tex'), 'w') do |f|
+        File.open(File.join(math_dir, '__IMGMATH_BODY__.map')) do |map|
+          map.each_line do |l|
+            l.chomp!
+            f.puts "% #{l}"
+            f.puts File.read(File.join(math_dir, "__IMGMATH_BODY__#{l}.tex"))
+            File.unlink(File.join(math_dir, "__IMGMATH_BODY__#{l}.tex"))
+            f.puts '\\clearpage'
+            f.puts
+          end
+        end
+      end
 
       math_dir = File.realpath(math_dir)
       Dir.mktmpdir do |tmpdir|
