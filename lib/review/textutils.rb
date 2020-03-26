@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -98,9 +98,8 @@ module ReVIEW
 
     def defer_math_image(str, path, key)
       # for Re:VIEW >3
-      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.tex'), 'a+') do |f|
+      File.open(File.join(File.dirname(path), "__IMGMATH_BODY__#{key}.tex"), 'w') do |f|
         f.puts str
-        f.puts '\\clearpage'
       end
       File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.map'), 'a+') do |f|
         f.puts key
