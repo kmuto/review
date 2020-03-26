@@ -155,6 +155,7 @@ EOB
       FileUtils.rm_f([File.join(math_dir, '__IMGMATH_BODY__.tex'),
                       File.join(math_dir, '__IMGMATH_BODY__.map')])
     end
+    module_function :make_math_images
 
     def make_math_images_pdfcrop(dir, tex_path, math_dir)
       # rubocop:disable Metrics/BlockLength
