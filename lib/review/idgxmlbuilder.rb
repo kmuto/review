@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -89,7 +89,21 @@ module ReVIEW
         s += '</sect>' if @section > 0
         s += '</chapter>' if @chapter.number > 0
       end
-      @output.string + s + "</#{@rootelement}>\n"
+      solve_nest(@output.string) + s + "</#{@rootelement}>\n"
+    end
+
+    def solve_nest(s)
+      check_nest
+      s.gsub("</dd></dl>\x01→dl←\x01", '').
+        gsub("\x01→/dl←\x01", "</dd></dl>←END\x01").
+        gsub("</li></ul>\x01→ul←\x01", '').
+        gsub("\x01→/ul←\x01", "</li></ul>←END\x01").
+        gsub("</li></ol>\x01→ol←\x01", '').
+        gsub("\x01→/ol←\x01", "</li></ol>←END\x01").
+        gsub("</dl>←END\x01<dl>", '').
+        gsub("</ul>←END\x01<ul>", '').
+        gsub("</ol>←END\x01<ol>", '').
+        gsub("←END\x01", '')
     end
 
     def headline(level, label, caption)

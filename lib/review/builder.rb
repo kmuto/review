@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2020 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -91,8 +91,19 @@ module ReVIEW
       false
     end
 
+    def solve_nest(s)
+      check_nest
+      s.gsub(/\x01→.+?←\x01/, '')
+    end
+
+    def check_nest
+      if @children && !@children.empty?
+        error @children.reverse.map { |tag| "//child[#{tag}]" }.join(',') + ' miss close tag'
+      end
+    end
+
     def result
-      @output.string
+      solve_nest(@output.string)
     end
 
     alias_method :raw_result, :result
@@ -679,6 +690,25 @@ EOTGNUPLOT
 
     def escape(str)
       str
+    end
+
+    def child(tag)
+      @children ||= []
+      puts "\x01→#{tag}←\x01"
+      if tag.start_with?('/')
+        if @children.empty?
+          error "#{tag} is shown but there isn't any opened //child"
+        elsif @children[-1] != tag.sub('/', '')
+          error "#{tag} is shown but previous '#{@children[-1]}' is not closed yet"
+        else
+          @children.pop
+        end
+      else
+        unless %w[dl ol ul].include?(tag)
+          error "#{tag} is invalid value for //child (dl, ol, or ul)"
+        end
+        @children.push(tag)
+      end
     end
   end
 end # module ReVIEW

@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -86,7 +86,7 @@ module ReVIEW
     private :blank
 
     def result
-      @output.string
+      solve_nest(@output.string)
     end
 
     def headline(level, label, caption)

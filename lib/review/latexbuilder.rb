@@ -100,7 +100,21 @@ module ReVIEW
       if @chapter.is_a?(ReVIEW::Book::Part) && !@book.config.check_version('2', exception: false)
         puts '\end{reviewpart}'
       end
-      @output.string
+      solve_nest(@output.string)
+    end
+
+    def solve_nest(s)
+      check_nest
+      s.gsub("\\end{description}\n\n\x01→dl←\x01\n", "\n").
+        gsub("\x01→/dl←\x01", "\\end{description}←END\x01").
+        gsub("\\end{itemize}\n\n\x01→ul←\x01\n", "\n").
+        gsub("\x01→/ul←\x01", "\\end{itemize}←END\x01").
+        gsub("\\end{enumerate}\n\n\x01→ol←\x01\n", "\n").
+        gsub("\x01→/ol←\x01", "\\end{enumerate}←END\x01").
+        gsub("\\end{description}←END\x01\n\n\\begin{description}", '').
+        gsub("\\end{itemize}←END\x01\n\n\\begin{itemize}", '').
+        gsub("\\end{enumerate}←END\x01\n\n\\begin{enumerate}", '').
+        gsub("←END\x01", '')
     end
 
     HEADLINE = {

@@ -2043,4 +2043,311 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//child[ul]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':2: error: //child[ul] miss close tag', e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+//child[ul]
+//child[ol]
+//child[dl]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':4: error: //child[dl],//child[ol],//child[ul] miss close tag', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+//child[ul]
+//child[ol]
+//child[dl]
+//child[/ol]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":4: error: /ol is shown but previous 'dl' is not closed yet", e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//child[ul]
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//child[/ul]
+
+ * UL2
+
+//child[ul]
+
+UL2-PARA
+
+//child[/ul]
+EOS
+
+    expected = <<-EOS
+
+\\begin{itemize}
+\\item UL1
+
+
+\\begin{enumerate}
+\\item UL1{-}OL1
+\\item UL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item UL1{-}UL1
+\\item UL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[UL1{-}DL1] \\mbox{} \\\\
+UL1{-}DD1
+\\item[UL1{-}DL2] \\mbox{} \\\\
+UL1{-}DD2
+\\end{description}
+
+
+\\item UL2
+
+
+UL2{-}PARA
+
+\\end{itemize}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//child[ol]
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//child[/ol]
+
+ 2. OL2
+
+//child[ol]
+
+OL2-PARA
+
+//child[/ol]
+EOS
+
+    expected = <<-EOS
+
+\\begin{enumerate}
+\\item OL1
+
+
+\\begin{enumerate}
+\\item OL1{-}OL1
+\\item OL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item OL1{-}UL1
+\\item OL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[OL1{-}DL1] \\mbox{} \\\\
+OL1{-}DD1
+\\item[OL1{-}DL2] \\mbox{} \\\\
+OL1{-}DD2
+\\end{description}
+
+
+\\item OL2
+
+
+OL2{-}PARA
+
+\\end{enumerate}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//child[dl]
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//child[/dl]
+
+ : DL2
+	DD2
+
+//child[dl]
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//child[/dl]
+EOS
+
+    expected = <<-EOS
+
+\\begin{description}
+\\item[DL1] \\mbox{} \\\\
+
+
+
+\\begin{enumerate}
+\\item DL1{-}OL1
+\\item DL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item DL1{-}UL1
+\\item DL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[DL1{-}DL1] \\mbox{} \\\\
+DL1{-}DD1
+\\item[DL1{-}DL2] \\mbox{} \\\\
+DL1{-}DD2
+\\end{description}
+
+
+\\item[DL2] \\mbox{} \\\\
+DD2
+
+
+\\begin{itemize}
+\\item DD2{-}UL1
+\\item DD2{-}UL2
+\\end{itemize}
+
+DD2{-}PARA
+
+\\end{description}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//child[ol]
+
+ 1. OL1-OL1
+
+//child[ol]
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//child[/ol]
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//child[ul]
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//child[/ul]
+
+ * OL1-UL2
+
+//child[/ol]
+EOS
+    expected = <<-EOS
+
+\\begin{enumerate}
+\\item OL1
+
+
+\\begin{enumerate}
+\\item OL1{-}OL1
+
+
+\\begin{itemize}
+\\item OL1{-}OL1{-}UL1
+\\end{itemize}
+
+OL1{-}OL1{-}PARA
+
+
+\\item OL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item OL1{-}UL1
+
+
+\\begin{description}
+\\item[OL1{-}UL1{-}DL1] \\mbox{} \\\\
+OL1{-}UL1{-}DD1
+\\end{description}
+
+OL1{-}UL1{-}PARA
+
+
+\\item OL1{-}UL2
+\\end{itemize}
+
+\\end{enumerate}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end

@@ -973,4 +973,186 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//child[ul]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':2: error: //child[ul] miss close tag', e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+//child[ul]
+//child[ol]
+//child[dl]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':4: error: //child[dl],//child[ol],//child[ul] miss close tag', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+//child[ul]
+//child[ol]
+//child[dl]
+//child[/ol]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":4: error: /ol is shown but previous 'dl' is not closed yet", e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//child[ul]
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//child[/ul]
+
+ * UL2
+
+//child[ul]
+
+UL2-PARA
+
+//child[/ul]
+EOS
+
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">UL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">UL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">UL1-OL2</li></ol><ul><li aid:pstyle="ul-item">UL1-UL1</li><li aid:pstyle="ul-item">UL1-UL2</li></ul><dl><dt>UL1-DL1</dt><dd>UL1-DD1</dd><dt>UL1-DL2</dt><dd>UL1-DD2</dd></dl></li><li aid:pstyle="ul-item">UL2<p>UL2-PARA</p></li></ul>
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//child[ol]
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//child[/ol]
+
+ 2. OL2
+
+//child[ol]
+
+OL2-PARA
+
+//child[/ol]
+EOS
+
+    expected = <<-EOS.chomp
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1</li><li aid:pstyle="ul-item">OL1-UL2</li></ul><dl><dt>OL1-DL1</dt><dd>OL1-DD1</dd><dt>OL1-DL2</dt><dd>OL1-DD2</dd></dl></li><li aid:pstyle="ol-item" olnum="1" num="2">OL2<p>OL2-PARA</p></li></ol>
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//child[dl]
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//child[/dl]
+
+ : DL2
+	DD2
+
+//child[dl]
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//child[/dl]
+EOS
+
+    expected = <<-EOS.chomp
+<dl><dt>DL1</dt><dd><ol><li aid:pstyle="ol-item" olnum="1" num="1">DL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">DL1-OL2</li></ol><ul><li aid:pstyle="ul-item">DL1-UL1</li><li aid:pstyle="ul-item">DL1-UL2</li></ul><dl><dt>DL1-DL1</dt><dd>DL1-DD1</dd><dt>DL1-DL2</dt><dd>DL1-DD2</dd></dl></dd><dt>DL2</dt><dd>DD2<ul><li aid:pstyle="ul-item">DD2-UL1</li><li aid:pstyle="ul-item">DD2-UL2</li></ul><p>DD2-PARA</p></dd></dl>
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//child[ol]
+
+ 1. OL1-OL1
+
+//child[ol]
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//child[/ol]
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//child[ul]
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//child[/ul]
+
+ * OL1-UL2
+
+//child[/ol]
+EOS
+    expected = <<-EOS.chomp
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1<ul><li aid:pstyle="ul-item">OL1-OL1-UL1</li></ul><p>OL1-OL1-PARA</p></li><li aid:pstyle="ol-item" olnum="1" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1<dl><dt>OL1-UL1-DL1</dt><dd>OL1-UL1-DD1</dd></dl><p>OL1-UL1-PARA</p></li><li aid:pstyle="ul-item">OL1-UL2</li></ul></li></ol>
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end

@@ -653,4 +653,279 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_nest_error_common
+    src = <<-EOS
+//child[unknown]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_match(%r{unknown is invalid value for //child}, e.message)
+
+    src = <<-EOS
+//child[/ul]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_match(/ul is shown but/, e.message)
+
+    src = <<-EOS
+//child[/ol]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_match(/ol is shown but/, e.message)
+
+    src = <<-EOS
+//child[/dl]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_match(/dl is shown but/, e.message)
+  end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//child[ul]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':2: error: //child[ul] miss close tag', e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+//child[ul]
+//child[ol]
+//child[dl]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':4: error: //child[dl],//child[ol],//child[ul] miss close tag', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+//child[ul]
+//child[ol]
+//child[dl]
+//child[/ol]
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":4: error: /ol is shown but previous 'dl' is not closed yet", e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//child[ul]
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//child[/ul]
+
+ * UL2
+
+//child[ul]
+
+UL2-PARA
+
+//child[/ul]
+EOS
+
+    expected = <<-EOS
+UL1
+	
+	1　UL1-OL1
+	2　UL1-OL2
+	
+	UL1-UL1
+	UL1-UL2
+	
+	UL1-DL1
+	UL1-DD1
+	UL1-DL2
+	UL1-DD2
+	
+UL2
+	UL2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//child[ol]
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//child[/ol]
+
+ 2. OL2
+
+//child[ol]
+
+OL2-PARA
+
+//child[/ol]
+EOS
+
+    expected = <<-EOS
+1　OL1
+	
+	1　OL1-OL1
+	2　OL1-OL2
+	
+	OL1-UL1
+	OL1-UL2
+	
+	OL1-DL1
+	OL1-DD1
+	OL1-DL2
+	OL1-DD2
+	
+2　OL2
+	OL2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//child[dl]
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//child[/dl]
+
+ : DL2
+	DD2
+
+//child[dl]
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//child[/dl]
+EOS
+
+    expected = <<-EOS
+DL1
+	
+	1　DL1-OL1
+	2　DL1-OL2
+	
+	DL1-UL1
+	DL1-UL2
+	
+	DL1-DL1
+	DL1-DD1
+	DL1-DL2
+	DL1-DD2
+	
+DL2
+DD2
+	
+	DD2-UL1
+	DD2-UL2
+	
+	DD2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//child[ol]
+
+ 1. OL1-OL1
+
+//child[ol]
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//child[/ol]
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//child[ul]
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//child[/ul]
+
+ * OL1-UL2
+
+//child[/ol]
+EOS
+    expected = <<-EOS
+1　OL1
+	
+	1　OL1-OL1
+	
+		
+		OL1-OL1-UL1
+		
+		OL1-OL1-PARA
+	
+	2　OL1-OL2
+	
+	OL1-UL1
+	
+		
+		OL1-UL1-DL1
+		OL1-UL1-DD1
+		
+		OL1-UL1-PARA
+	
+	OL1-UL2
+	
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end
