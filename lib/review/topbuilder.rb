@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -413,6 +413,29 @@ module ReVIEW
     def common_column_end(type)
       puts "◆→終了:#{@titles[type]}←◆"
       blank
+    end
+
+    def common_block_begin(type, _level, _label, caption = nil)
+      blank
+      puts "◆→開始:#{@titles[type]}←◆"
+      puts '■' + compile_inline(caption) if caption.present?
+    end
+
+    def common_block_end(type, _level)
+      puts "◆→終了:#{@titles[type]}←◆"
+      blank
+    end
+
+    %w[note memo tip info warning important caution notice].each do |name|
+      class_eval %Q(
+        def #{name}_begin(level, label, caption = nil)
+          common_block_begin('#{name}', level, label, caption)
+        end
+
+        def #{name}_end(level)
+          common_block_end('#{name}', level)
+        end
+      )
     end
 
     def indepimage(_lines, id, caption = nil, metric = nil)

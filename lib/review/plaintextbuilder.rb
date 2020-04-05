@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019 Kenshi Muto
+# Copyright (c) 2018-2020 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -547,6 +547,19 @@ module ReVIEW
     end
 
     alias_method :box, :insn
+
+    %w[note memo tip info warning important caution notice].each do |name|
+      class_eval %Q(
+        def #{name}_begin(_level, _label, caption = nil)
+          blank
+          puts compile_inline(caption)
+        end
+
+        def #{name}_end(_level)
+          blank
+        end
+      )
+    end
 
     def indepimage(_lines, _id, caption = nil, _metric = nil)
       blank
