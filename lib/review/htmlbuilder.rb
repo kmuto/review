@@ -312,6 +312,21 @@ module ReVIEW
       captionblock('note', lines, caption)
     end
 
+    %w[note memo tip info warning important caution notice].each do |name|
+      class_eval %Q(
+        def #{name}_begin(_level, _label, caption = nil)
+          puts %Q(<div class="#{name}">)
+          if caption.present?
+            puts %Q(<p class="caption">\#{compile_inline(caption)}</p>)
+          end
+        end
+
+        def #{name}_end(_level)
+          puts '</div>'
+        end
+      )
+    end
+
     def ul_begin
       puts '<ul>'
     end

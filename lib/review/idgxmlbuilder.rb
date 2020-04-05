@@ -1025,6 +1025,21 @@ module ReVIEW
       captionblock('expert', lines, nil)
     end
 
+    %w[note memo tip info warning important caution notice].each do |name|
+      class_eval %Q(
+        def #{name}_begin(_level, _label, caption = nil)
+          print "<#{name}>"
+          if caption.present?
+            puts %Q(<title aid:pstyle='#{name}-title'>\#{compile_inline(caption)}</title>)
+          end
+        end
+
+        def #{name}_end(_level)
+          print "</#{name}>"
+        end
+      )
+    end
+
     def syntaxblock(type, lines, caption)
       captionstr = nil
       if caption.present?

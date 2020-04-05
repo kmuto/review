@@ -212,6 +212,33 @@ module ReVIEW
       @doc_status[:column] = nil
     end
 
+    def common_block_begin(type, _level, _label, caption = nil)
+      print "\\begin{review#{type}}"
+
+      @doc_status[:caption] = true
+      if caption.present?
+        print "[#{compile_inline(caption)}]"
+      end
+      puts
+      @doc_status[:caption] = nil
+    end
+
+    def common_block_end(type, _level)
+      puts "\\end{review#{type}}"
+    end
+
+    %w[note memo tip info warning important caution notice].each do |name|
+      class_eval %Q(
+        def #{name}_begin(level, label, caption = nil)
+          common_block_begin('#{name}', level, label, caption)
+        end
+
+        def #{name}_end(level)
+          common_block_end('#{name}', level)
+        end
+      )
+    end
+
     def captionblock(type, lines, caption)
       if @book.config.check_version('2', exception: false)
         type = 'minicolumn'
