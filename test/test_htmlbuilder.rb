@@ -2390,38 +2390,55 @@ EOS
 
   def test_nest_error_close1
     src = <<-EOS
-//child[ul]
+//beginchild
 EOS
     e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-    assert_equal ':2: error: //child[ul] miss close tag', e.message
+    assert_equal ":1: error: //beginchild is shown, but previous element isn't ul, ol, or dl", e.message
   end
 
   def test_nest_error_close2
     src = <<-EOS
-//child[ul]
-//child[ol]
-//child[dl]
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
 EOS
     e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-    assert_equal ':4: error: //child[dl],//child[ol],//child[ul] miss close tag', e.message
+    assert_equal ':12: error: //beginchild of dl,ol,ul miss //endchild', e.message
   end
 
   def test_nest_error_close3
     src = <<-EOS
-//child[ul]
-//child[ol]
-//child[dl]
-//child[/ol]
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+
+//endchild
 EOS
     e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-    assert_equal ":4: error: /ol is shown but previous 'dl' is not closed yet", e.message
+    assert_equal ':14: error: //beginchild of ol,ul miss //endchild', e.message
   end
 
   def test_nest_ul
     src = <<-EOS
  * UL1
 
-//child[ul]
+//beginchild
 
  1. UL1-OL1
  2. UL1-OL2
@@ -2434,15 +2451,15 @@ EOS
  : UL1-DL2
 	UL1-DD2
 
-//child[/ul]
+//endchild
 
  * UL2
 
-//child[ul]
+//beginchild
 
 UL2-PARA
 
-//child[/ul]
+//endchild
 EOS
 
     expected = <<-EOS
@@ -2478,7 +2495,7 @@ EOS
     src = <<-EOS
  1. OL1
 
-//child[ol]
+//beginchild
 
  1. OL1-OL1
  2. OL1-OL2
@@ -2491,15 +2508,15 @@ EOS
  : OL1-DL2
 	OL1-DD2
 
-//child[/ol]
+//endchild
 
  2. OL2
 
-//child[ol]
+//beginchild
 
 OL2-PARA
 
-//child[/ol]
+//endchild
 EOS
 
     expected = <<-EOS
@@ -2535,7 +2552,7 @@ EOS
     src = <<-EOS
  : DL1
 
-//child[dl]
+//beginchild
 
  1. DL1-OL1
  2. DL1-OL2
@@ -2548,19 +2565,19 @@ EOS
  : DL1-DL2
 	DL1-DD2
 
-//child[/dl]
+//endchild
 
  : DL2
 	DD2
 
-//child[dl]
+//beginchild
 
  * DD2-UL1
  * DD2-UL2
 
 DD2-PARA
 
-//child[/dl]
+//endchild
 EOS
 
     expected = <<-EOS
@@ -2602,34 +2619,34 @@ EOS
     src = <<-EOS
  1. OL1
 
-//child[ol]
+//beginchild
 
  1. OL1-OL1
 
-//child[ol]
+//beginchild
 
  * OL1-OL1-UL1
 
 OL1-OL1-PARA
 
-//child[/ol]
+//endchild
 
  2. OL1-OL2
 
  * OL1-UL1
 
-//child[ul]
+//beginchild
 
  : OL1-UL1-DL1
 	OL1-UL1-DD1
 
 OL1-UL1-PARA
 
-//child[/ul]
+//endchild
 
  * OL1-UL2
 
-//child[/ol]
+//endchild
 EOS
     expected = <<-EOS
 <ol>

@@ -24,7 +24,7 @@ module ReVIEW
       @command_name_stack = []
     end
 
-    attr_reader :strategy
+    attr_reader :strategy, :previous_list_type
 
     def compile(chap)
       @chapter = chap
@@ -160,6 +160,8 @@ module ReVIEW
     defsingle :olnum, 1
     defsingle :firstlinenum, 1
     defsingle :child, 1
+    defsingle :beginchild, 0
+    defsingle :endchild, 0
 
     definline :chapref
     definline :chap
@@ -243,13 +245,17 @@ module ReVIEW
           compile_headline(f.gets)
         when /\A\s+\*/
           compile_ulist(f)
+          @strategy.previous_list_type = 'ul'
         when /\A\s+\d+\./
           compile_olist(f)
+          @strategy.previous_list_type = 'ol'
         when /\A\s+:\s/
           compile_dlist(f)
+          @strategy.previous_list_type = 'dl'
         when /\A\s*:\s/
           warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
+          @strategy.previous_list_type = 'dl'
         when %r{\A//\}}
           f.gets
           error 'block end seen but not opened'

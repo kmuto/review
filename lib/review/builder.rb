@@ -30,7 +30,7 @@ module ReVIEW
       nil
     end
 
-    attr_accessor :doc_status
+    attr_accessor :doc_status, :previous_list_type
 
     def initialize(strict = false, *args)
       @strict = strict
@@ -38,6 +38,7 @@ module ReVIEW
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
+      @previous_list_type = nil
       builder_init(*args)
     end
 
@@ -98,7 +99,7 @@ module ReVIEW
 
     def check_nest
       if @children && !@children.empty?
-        error @children.reverse.map { |tag| "//child[#{tag}]" }.join(',') + ' miss close tag'
+        error "//beginchild of #{@children.reverse.join(',')} miss //endchild"
       end
     end
 
@@ -692,22 +693,20 @@ EOTGNUPLOT
       str
     end
 
-    def child(tag)
+    def beginchild
       @children ||= []
-      puts "\x01→#{tag}←\x01"
-      if tag.start_with?('/')
-        if @children.empty?
-          error "#{tag} is shown but there isn't any opened //child"
-        elsif @children[-1] != tag.sub('/', '')
-          error "#{tag} is shown but previous '#{@children[-1]}' is not closed yet"
-        else
-          @children.pop
-        end
+      unless @previous_list_type
+        error "//beginchild is shown, but previous element isn't ul, ol, or dl"
+      end
+      puts "\x01→#{@previous_list_type}←\x01"
+      @children.push(@previous_list_type)
+    end
+
+    def endchild
+      if @children.nil? || @children.empty?
+        error "//endchild is shown, but any opened //beginchild doesn't exist"
       else
-        unless %w[dl ol ul].include?(tag)
-          error "#{tag} is invalid value for //child (dl, ol, or ul)"
-        end
-        @children.push(tag)
+        puts "\x01→/#{@children.pop}←\x01"
       end
     end
   end
