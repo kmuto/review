@@ -243,6 +243,7 @@ module ReVIEW
           f.gets # Nothing to do
         when /\A=+[\[\s\{]/
           compile_headline(f.gets)
+          @strategy.previous_list_type = nil
         when /\A\s+\*/
           compile_ulist(f)
           @strategy.previous_list_type = 'ul'
@@ -271,6 +272,7 @@ module ReVIEW
           end
           compile_command(syntax, args, lines)
           @command_name_stack.pop
+          @strategy.previous_list_type = nil
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -278,12 +280,14 @@ module ReVIEW
             warn 'skipping block...'
             read_block(f, false)
           end
+          @strategy.previous_list_type = nil
         else
           if f.peek.strip.empty?
             f.gets
             next
           end
           compile_paragraph(f)
+          @strategy.previous_list_type = nil
         end
       end
       close_all_tagged_section
