@@ -37,9 +37,9 @@ EOT
         end
 
         if path.start_with?('.')
-          content << "<li>#{escape(result[:headline])}"
+          content << "<li>#{escape(result[:headline])}" if result[:headline]
         else
-          content << %Q(<li><a href="#{path}">#{escape(result[:headline])}</a>)
+          content << %Q(<li><a href="#{path}">#{escape(result[:headline])}</a>) if result[:headline]
         end
         if result[:level] == 0
           content << "\n<ul>" # part
