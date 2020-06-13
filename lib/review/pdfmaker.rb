@@ -474,7 +474,12 @@ module ReVIEW
     end
 
     def latex_config
-      erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+      result = erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+      local_config_file = File.join(@basedir, 'layouts', 'config-local.tex.erb')
+      if File.exist?(local_config_file)
+        result << erb_content(local_config_file)
+      end
+      result
     end
 
     def template_content
