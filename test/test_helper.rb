@@ -14,7 +14,10 @@ end
 
 def prepare_samplebook(srcdir, bookdir, latextemplatedir, configfile)
   samplebook_dir = File.expand_path("../samples/#{bookdir}/", File.dirname(__FILE__))
-  FileUtils.cp_r(Dir.glob(File.join(samplebook_dir, '*')), srcdir)
+  files = Dir.glob(File.join(samplebook_dir, '*'))
+  # ignore temporary built files
+  files.delete_if { |file| file =~ /.*\-(pdf|epub|text)/ || file == 'webroot' }
+  FileUtils.cp_r(files, srcdir)
   if latextemplatedir
     # copy from review-jsbook or review-jlreq
     template_dir = File.expand_path("../templates/latex/#{latextemplatedir}/", File.dirname(__FILE__))
