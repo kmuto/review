@@ -149,6 +149,23 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
+  def test_template_content_with_localconfig
+    @config['mycustom'] = { 'value' => '#_TEST_' }
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        Dir.mkdir('layouts')
+        File.write(File.join('layouts', 'config-local.tex.erb'), %q(\def\customvalue{<%= escape(@config['mycustom']['value']) %>}))
+        @maker.basedir = Dir.pwd
+        @maker.erb_config
+        tmpl = @maker.template_content
+        expect = File.read(File.join(assets_dir, 'test_template.tex'))
+        expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
+        expect.sub!("\\makeatother\n", '\&' + '\def\customvalue{\#\textunderscore{}TEST\textunderscore{}}')
+        assert_equal(expect, tmpl)
+      end
+    end
+  end
+
   def test_gettemplate_with_backmatter
     @config.merge!(
       'backcover' => 'backcover.tex',
