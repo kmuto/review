@@ -154,13 +154,13 @@ class PDFMakerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         Dir.mkdir('layouts')
-        File.write(File.join('layouts', 'config-local.tex.erb'), %q(\def\customvalue{<%= escape(@config['mycustom']['value']) %>}))
+        File.write(File.join('layouts', 'config-local.tex.erb'), %q(\def\customvalue{<%= escape(@config['mycustom']['value']) %>}) + "\n")
         @maker.basedir = Dir.pwd
         @maker.erb_config
         tmpl = @maker.template_content
         expect = File.read(File.join(assets_dir, 'test_template.tex'))
         expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
-        expect.sub!("\\makeatother\n", '\&' + '\def\customvalue{\#\textunderscore{}TEST\textunderscore{}}')
+        expect.sub!("\\makeatother\n", '\&' + "%% BEGIN: config-local.tex.erb\n\\def\\customvalue{\\#\\textunderscore{}TEST\\textunderscore{}}\n%% END: config-local.tex.erb\n")
         assert_equal(expect, tmpl)
       end
     end

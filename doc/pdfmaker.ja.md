@@ -109,6 +109,48 @@ Re:VIEW 3.0 から review-jlreq.cls という別のクラスファイルも用�
 
 その他の詳細な設定については、sty フォルダにある README.md を参照してください。
 
+### カスタムパラメータの引き渡し
+
+技術的な都合で、config.yml の YAML 設定から TeX のマクロへの変換はすべての設定について行われるわけではなく、ごく限られた値のみに制限しています。これは Re:VIEW 内部の `config.erb` ( https://github.com/kmuto/review/blob/master/templates/latex/config.erb ) の ERB スクリプトによって処理されており、この挙動を変更することは許容していません。
+
+任意の YAML 設定を TeX に引き渡すには、`config.erb` と同様に YAML から TeX への変換を行う固有の ERB スクリプトを作成して配置します。このためには、プロジェクトフォルダに `layouts` フォルダを作成し、そこに固有の ERB スクリプトを `config-local.tex.erb` という名前で置きます。
+
+`config-local.tex.erb` は `config.erb` の評価・埋め込みの後、評価・埋め込みされます。
+
+config.yml を次のようにして、これを TeX に渡したいとします。
+
+```
+mycustom:
+  mystring: HELLO_#1
+  mybool: true
+```
+
+`layouts/config-local.tex.erb` はたとえば次のようになります。
+
+```
+\def\mystring{<%= escape(@config['mycustom']['mystring']) %>}
+<%- if @config['mycustom']['mybool'] -%>
+\def\mybool{true}
+<%- end -%>
+```
+
+次のように展開されます。
+```
+ …
+\makeatother
+%% BEGIN: config-local.tex.erb
+\def\mystring{HELLO\textunderscore{}\#1}
+\def\mybool{true}
+%% END: config-local.tex.erb
+
+\usepackage{reviewmacro}
+ …
+```
+
+こうして定義されたマクロを sty ファイルなどで参照します。
+
+なお、ERB での YAML 解析、および TeX マクロの記述において誤りがあると、極めてわかりにくいエラーになることがあります。`--debug` オプション付きで実行して展開された `__REVIEW_BOOK__.tex` を確認して原因を調査するのがよいでしょう。
+
 ## Re:VIEW 2.0 以前の情報
 
 ### upLaTeX について
