@@ -146,8 +146,8 @@ module ReVIEW
         end
         list_body(id, lines, lang)
         unless top?('list')
-          list_header(id, caption, lang)
           blank
+          list_header(id, caption, lang)
         end
       rescue KeyError
         error "no such list: #{id}"
@@ -171,11 +171,11 @@ module ReVIEW
 
     def base_block(_type, lines, caption = nil)
       blank
-      if top?(['list']) && caption.present?
+      if top?('list') && caption.present?
         puts compile_inline(caption)
       end
       puts lines.join("\n")
-      if !top?(['list']) && caption.present?
+      if !top?('list') && caption.present?
         puts compile_inline(caption)
       end
       blank
@@ -194,9 +194,14 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
-      puts compile_inline(caption) if caption.present?
+      if top?('list')
+        puts compile_inline(caption) if caption.present?
+      end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
+      end
+      unless top?('list')
+        puts compile_inline(caption) if caption.present?
       end
       blank
     end
@@ -269,6 +274,10 @@ module ReVIEW
     end
 
     def table_header(id, caption)
+      unless top?('table')
+        blank
+      end
+
       if id.nil?
         puts compile_inline(caption)
       elsif get_chap
@@ -276,7 +285,10 @@ module ReVIEW
       else
         puts "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [@chapter.table(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
       end
-      blank
+
+      if top?('table')
+        blank
+      end
     end
 
     def table_begin(_ncols)

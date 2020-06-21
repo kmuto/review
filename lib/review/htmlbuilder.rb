@@ -286,15 +286,25 @@ module ReVIEW
     end
 
     def box(lines, caption = nil)
-      puts %Q(<div class="syntax">)
+      captionstr = nil
       if caption.present?
-        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+        captionstr = %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
+      puts %Q(<div class="syntax">)
+
+      if top?('list') && caption.present?
+        puts captionstr
+      end
+
       print %Q(<pre class="syntax">)
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
+
+      if !top?('list') && caption.present?
+        puts captionstr
+      end
       puts '</div>'
     end
 

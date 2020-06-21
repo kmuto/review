@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2020 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -688,6 +688,9 @@ EOTGNUPLOT
     end
 
     def top?(type)
+      unless %w[top bottom].include?(@book.config['caption_position'][type])
+        warn("invalid caption_position/#{type} parameter. 'top' is assumed")
+      end
       @book.config['caption_position'][type] != 'bottom'
     end
   end

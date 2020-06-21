@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -614,11 +614,11 @@ module ReVIEW
       if @chapter.image_bound?(id)
         metrics = parse_metric('idgxml', metric)
         puts '<table>'
-        if top?(['table']) && caption.present?
+        if top?('table') && caption.present?
           table_header(id, caption)
         end
         puts %Q(<imgtable><Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} /></imgtable>)
-        if !top?(['table']) && caption.present?
+        if !top?('table') && caption.present?
           table_header(id, caption)
         end
         puts '</table>'
@@ -1026,6 +1026,7 @@ module ReVIEW
     end
 
     def syntaxblock(type, lines, caption)
+      captionstr = nil
       if caption.present?
         titleopentag = %Q(caption aid:pstyle="#{type}-title")
         titleclosetag = 'caption'
@@ -1033,9 +1034,13 @@ module ReVIEW
           titleopentag = %Q(floattitle type="insn")
           titleclosetag = 'floattitle'
         end
-        puts %Q(<#{type}><#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
+        captionstr = %Q(<#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
+      end
+      print "<#{type}>"
+      if top?('list')
+        puts captionstr
       else
-        puts "<#{type}>"
+        puts ''
       end
 
       no = 1
@@ -1051,6 +1056,9 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
+      unless top?('list')
+        print captionstr
+      end
       puts "</#{type}>"
     end
 
@@ -1065,12 +1073,17 @@ module ReVIEW
     def indepimage(_lines, id, caption = nil, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
+      if top?('image')
+        puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      end
       begin
         puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}"#{metrics} />)
       rescue
         warn %Q(image not bound: #{id})
       end
-      puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      unless top?('image')
+        puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      end
       puts '</img>'
     end
 
@@ -1171,8 +1184,13 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts '<source>'
-      source_header(caption)
+      if top?('list')
+        source_header(caption)
+      end
       source_body(lines, lang)
+      unless top?('list')
+        source_header(caption)
+      end
       puts '</source>'
     end
 

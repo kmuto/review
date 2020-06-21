@@ -297,6 +297,19 @@ EOS
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:リスト←◆
+ 1: foo
+ 2: bar
+
+リスト1.1　this is ★test☆<&>_
+◆→終了:リスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_source
@@ -308,6 +321,20 @@ foo
 bar
 
 buz
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+◆→開始:ソースコードリスト←◆
+foo
+bar
+
+buz
+■foo/bar/test.rb
 ◆→終了:ソースコードリスト←◆
 
 EOS
@@ -349,6 +376,18 @@ bar
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//box[FOO]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:書式←◆
+foo
+bar
+■FOO
+◆→終了:書式←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd
@@ -368,6 +407,18 @@ EOS
 ■cap1
 lineA
 lineB
+◆→終了:コマンド←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:コマンド←◆
+lineA
+lineB
+■cap1
 ◆→終了:コマンド←◆
 
 EOS
@@ -397,6 +448,18 @@ lineB
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+lineA
+lineB
+■cap1
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
@@ -406,6 +469,18 @@ EOS
 ■this is ★test☆<&>_
  1: foo
  2: bar
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+ 1: foo
+ 2: bar
+■this is ★test☆<&>_
 ◆→終了:インラインリスト←◆
 
 EOS
@@ -438,6 +513,19 @@ EOS
 
 ★aaa☆\t★bbb☆
 ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+
+表1.1　FOO
 ◆→終了:表←◆
 
 EOS
@@ -664,6 +752,18 @@ EOS
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
+    expected = <<-EOS
+◆→開始:図←◆
+図1.1　sample photo
+
+◆→./images/chap1-sampleimg.png←◆
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -827,6 +927,20 @@ EOS
 ◆→開始:TeX式←◆
 式1.1　The Equivalence of Mass ▲and☆ Energy
 e=mc^2
+◆→終了:TeX式←◆
+
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+
+    expected = <<-EOS
+式1.1
+
+◆→開始:TeX式←◆
+e=mc^2
+式1.1　The Equivalence of Mass ▲and☆ Energy
 ◆→終了:TeX式←◆
 
 EOS
