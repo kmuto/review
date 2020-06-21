@@ -21,7 +21,7 @@
 %% same distribution. (The sources need not necessarily be
 %% in the same archive or directory.)
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{okumacro}[2018/06/11 okumura, texjporg]
+\ProvidesPackage{okumacro}[2019/07/25 okumura, texjporg]
 \providecommand{\rubyfamily}{}
 \def\kanjistrut{\iftdir
   \vrule \@height0.5zw \@depth0.5zw \@width\z@
@@ -246,9 +246,8 @@
 \newcommand{\PiCTeX}{\PiC\kern-.11em\TeX}
 \newcommand{\JTeX}{\leavevmode\lower.5ex\hbox{J}\kern-.17em\TeX}
 \newcommand{\JLaTeX}{\leavevmode\lower.5ex\hbox{\rm J}\kern-.17em\LaTeX}
-\DeclareRobustCommand{\JBibTeX}{$\mbox{%
-    \lower.5ex\hbox{J}\ifx\f@family\cmr\kern-.15em\else\kern-.05em\fi
-    \BibTeX}$}
+\DeclareRobustCommand{\JBibTeX}{$\m@th\mbox{%
+  \lower.5ex\hbox{J}\kern-.05em\BibTeX}$}
 \newcommand{\pTeXsT}{p\kern-.21em\TeX\kern-.10em s\kern-.21em T}
 \newcommand{\iTeX}{\accent'27\i\TeX}
 \newcommand{\MlTeX}{M\kern-.1667em\lower.5ex\hbox{L}\kern-.25em\TeX}

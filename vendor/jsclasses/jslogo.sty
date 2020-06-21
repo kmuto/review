@@ -22,7 +22,7 @@
 %% in the same archive or directory.)
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{jslogo}
-  [2017/02/24 okumura, texjporg]
+  [2019/07/25 okumura, texjporg]
 \def\jslg@small#1{\hbox{$\m@th$%
   \csname S@\f@size\endcsname
   \fontsize\sf@size\z@
@@ -207,8 +207,8 @@
 \def\upLaTeX{u\pLaTeX}
 \def\upLaTeXe{u\pLaTeXe}
 \def\AmSTeX{\protect\AmS-\protect\TeX{}}
-\DeclareRobustCommand{\BibTeX}{B\kern-.05em\jslg@small{I\kern-.025em B}%
-  \ifx\f@family\cmr\kern-.08em\else\kern-.15em\fi\TeX}
+\DeclareRobustCommand{\BibTeX}{%
+  B\kern-.05em\jslg@small{I\kern-.025em B}\kern-.15em\TeX}
 \DeclareRobustCommand{\SliTeX}{%
   S\kern-.06emL\kern-.18em\jslg@uppersmall{I}\kern -.03em\TeX}
 \providecommand*\pdfstringdefPreHook{}

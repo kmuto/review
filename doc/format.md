@@ -355,6 +355,7 @@ V1 --> V6 --|
 ```
 
 The third option is used to define the scale of images.  `scale=X` is scaling for page width (`scale=0.5` makes image width to be half of page width).
+If you'd like to use different values for each builders, such as HTML and TeX, you can specify the target builders using `::`. Example: `html::style="transform: scale(0.5);",latex::scale=0.5`
 
 When you want to refer images such as "see figure 1.", you can use
 inline reference markup like `@<img>{unixhistory}`.
@@ -850,7 +851,7 @@ This word file is a CSV file with extension .csv. This first columns is the key,
 "i18n","""i""nternationalizatio""n"""
 ```
 
-Specify the word file path in `words_file` parameter of `config.yml`.
+Specify the word file path in `words_file` parameter of `config.yml`. You can specify multiple word files as `word_file: ["common.csv", "mybook.csv"]`.
 
 Usage:
 

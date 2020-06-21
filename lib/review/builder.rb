@@ -56,8 +56,15 @@ module ReVIEW
       @tabwidth = nil
       @tsize = nil
       if @book && @book.config
-        if @book.config['words_file']
-          load_words(@book.config['words_file'])
+        if words_file_path = @book.config['words_file']
+          if words_file_path.is_a?(String)
+            words_files = [words_file_path]
+          else
+            words_files = words_file_path
+          end
+          words_files.each do |f|
+            load_words(f)
+          end
         end
         if @book.config['tabwidth']
           @tabwidth = @book.config['tabwidth']

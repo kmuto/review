@@ -41,7 +41,7 @@ module ReVIEW
         @chapters = chapters
         @name = name
         @path = name
-        @content = nil
+        @content = ''
         if io
           @content = io.read
         elsif @path.present? && File.exist?(File.join(@book.config['contentdir'], @path))
@@ -65,8 +65,11 @@ module ReVIEW
       end
 
       def volume
-        vol = Volume.sum(@chapters.map(&:volume))
-        vol.page_per_kbyte = @book.page_metric.page_per_kbyte
+        if @number && file?
+          vol = Volume.count_file(File.join(@book.config['contentdir'], @path))
+        else
+          vol = Volume.new(0, 0, 0)
+        end
         vol
       end
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2018 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
+# Copyright (c) 2016-2020 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -50,6 +50,7 @@ module ReVIEW
     def parse_opts(args)
       cmd_config = {}
       opts = OptionParser.new
+      @buildonly = nil
 
       opts.banner = 'Usage: review-webmaker [option] configfile'
       opts.version = ReVIEW::VERSION
@@ -58,6 +59,7 @@ module ReVIEW
         exit 0
       end
       opts.on('--ignore-errors', 'Ignore review-compile errors.') { cmd_config['ignore-errors'] = true }
+      opts.on('-y', '--only file1,file2,...', 'Build only specified files.') { |v| @buildonly = v.split(/\s*,\s*/).map { |m| m.strip.sub(/\.re\Z/, '') } }
 
       opts.parse!(args)
       if args.size != 1
@@ -116,7 +118,7 @@ module ReVIEW
       copy_backmatter(@path)
 
       math_dir = "./#{@config['imagedir']}/_review_math"
-      if @config['imgmath'] && File.exist?("#{math_dir}/__IMGMATH_BODY__.tex")
+      if @config['imgmath'] && File.exist?("#{math_dir}/__IMGMATH_BODY__.map")
         make_math_images(math_dir)
       end
 
@@ -185,6 +187,11 @@ module ReVIEW
         filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
       end
       id = File.basename(filename).sub(/\.re\Z/, '')
+
+      if @buildonly && !@buildonly.include?(id)
+        warn "skip #{id}.re"
+        return
+      end
 
       htmlfile = "#{id}.#{@config['htmlext']}"
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2019 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2020 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -73,6 +73,7 @@ module ReVIEW
     def parse_opts(args)
       cmd_config = {}
       opts = OptionParser.new
+      @buildonly = nil
 
       opts.banner = 'Usage: review-epubmaker [options] configfile [export_filename]'
       opts.version = ReVIEW::VERSION
@@ -81,6 +82,7 @@ module ReVIEW
         exit 0
       end
       opts.on('--[no-]debug', 'Keep temporary files.') { |debug| cmd_config['debug'] = debug }
+      opts.on('-y', '--only file1,file2,...', 'Build only specified files.') { |v| @buildonly = v.split(/\s*,\s*/).map { |m| m.strip.sub(/\.re\Z/, '') } }
 
       opts.parse!(args)
       if args.size < 1 || args.size > 2
@@ -164,7 +166,7 @@ module ReVIEW
         copy_backmatter(basetmpdir)
 
         math_dir = "./#{@config['imagedir']}/_review_math"
-        if @config['imgmath'] && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.tex'))
+        if @config['imgmath'] && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.map'))
           make_math_images(math_dir)
         end
         call_hook('hook_afterbackmatter', basetmpdir)
@@ -394,6 +396,11 @@ module ReVIEW
         end
       end
 
+      if @buildonly && !@buildonly.include?(id)
+        warn "skip #{id}.re"
+        return
+      end
+
       htmlfile = "#{id}.#{@config['htmlext']}"
       write_buildlogtxt(basetmpdir, htmlfile, filename)
       log("Create #{htmlfile} from #{filename}.")
@@ -445,6 +452,13 @@ module ReVIEW
       path = File.join(basetmpdir, filename)
       htmlio = File.new(path)
       Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
+      htmlio.close
+
+      if headlines.empty?
+        warn "#{filename} is discarded because there is no heading. Use `=[notoc]' or `=[nodisp]' to exclude headlines from the table of contents."
+        return
+      end
+
       properties = detect_properties(path)
       if properties.present?
         prop_str = ',properties=' + properties.join(' ')
@@ -472,7 +486,6 @@ module ReVIEW
           first = nil
         end
       end
-      htmlio.close
     end
 
     def push_contents(_basetmpdir)

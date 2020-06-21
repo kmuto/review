@@ -1,9 +1,109 @@
+# Version 4.1.0
+## 新機能
+* 表のセル区切りの文字を `table_row_separator` パラメータで変更できるようにしました。指定可能な値は tabs (1個以上のタブ、デフォルト)、singletab (1文字のタブ文字区切り)、spaces (1文字以上のスペースまたはタブ文字の区切り)、 verticalbar ("0個以上の空白 | 0個以上の空白" の区切り) です ([#1420])
+* PDFMaker, EPUBMaker, WEBMaker, TEXTMaker, IDGXMLMaker: 全ファイルでなく変換対象ファイルを指定するための `-y`（または`--only`）オプションを追加しました ([#1428], [#1467])
+* config.yml のコメント行を含めないようにする `--without-config-comment` オプションを review-init に追加しました ([#1453])
+* PDFMaker: `pdfmaker` セクションに `use_original_image_size` パラメータを新設しました。デフォルトでは `//image`, `//indepimage`, `//imgtable` で挿入する画像において、metrics の指定がないときには版面の横幅に合うよう拡縮しますが、`use_original_image_size` パラメータを true に設定すると、拡縮なしで原寸のまま配置します ([#1461])
+
+## 非互換の変更
+* PDFMaker: config.yml の `image_scale2width` パラメータを、直下から `pdfmaker` セクションの下に属するように変更しました ([#1462])
+
+## バグ修正
+* PDFMaker: Re:VIEW 3 系のプロジェクトとの後方互換処理の誤りを修正しました ([#1414])
+* PDFMaker: review-jlreq を LuaLaTeX でコンパイルしたときのエラーを修正しました ([#1416])
+* PDFMaker: 索引が目次に含まれない問題を修正しました ([#1418])
+* RSTBuilder: メソッドの引数の誤りで変換に失敗する問題を修正しました ([#1426])
+* IDGXMLBuilder: 表に関する警告を出すときの誤りを修正しました ([#1427])
+* IDGXMLMaker: フィルタプログラムにエラーが発生したときの処理の誤りを修正しました ([#1429])
+* PDFMaker: `media=ebook` のときに、見出し等に `@<code>` や `@<tt>` のようなコード書体の命令を使うとビルドに失敗する問題を修正しました ([#1432], [#1465])
+* PDFMaker: MeCab がインストールされていないときにエラーになるのを警告に変更しました ([#1445])
+* IDGXMLBuilder: `//imgtable` が正しく動作しなかったのを修正しました ([#1448])
+* PDFMaker: 索引が1つも登録されていない状態で makeindex を有効にするとエラーになるのを修正しました ([#1467])
+* PDFMaker: 説明箇条書き (`:`) の見出しに脚注を入れると消えてしまうのを修正しました ([#1476])
+* review-index: `@<w>` が見出しに使われているときにエラーになるのを修正しました ([#1484])
+
+## 機能強化
+* PDFMaker: 問題報告の解析に役立つよう、提供する cls、sty ファイルについてバージョンを付けるようにしました ([#1163])
+* Dockerfile を更新しました ([#1412])
+* IDGXMLMaker: フィルタプログラムの標準エラー出力を警告扱いで出力するようにしました ([#1443])
+* .gitignore ファイルに 〜-idgxml フォルダ を追加しました ([#1448])
+* `//source` 命令は全ビルダでオプションを省略できるようになりました ([#1447])
+* Ruby 2.7 をテスト対象に加えました ([#1468])
+* `word_files` パラメータは配列で複数の単語 CSV ファイルを受け付けるようになりました ([#1469])
+* EPUBMaker: 見出しが1つもない .re ファイルについて警告を出すようにしました。EPUB においてはファイル内に見出しが必ず1つは必要です。見出しを入れたくないときには、`=[notoc]` (目次に入れない) や `=[nodisp]` (目次に入れず表示もしない) を使用してください ([#1474])
+
+## ドキュメント
+* 奥付に関係する `contact` （連絡先）および `colophon_order` （項目の掲載順序）についてのドキュメントを設定ファイルサンプル `config.yml.sample` に追加しました ([#1425])
+* quickstart.ja.md, quickstart.md を Re:VIEW 4 の内容に更新しました ([#1442])
+* サンプル syntax-book を更新しました ([#1448], [#1449])
+* README.md を更新しました ([#1455], [#1458])
+* 図版のビルダ固有オプション `::` の記法を format.ja.md, format.md に記載しました ([#1421])
+
+## その他
+* Rubocop 0.78.0 の指摘に対応しました ([#1424], [#1430])
+* LaTeX の実行環境がある場合、PDF のビルドテストをより厳密に実行するようにしました ([#1433])
+* ビルドテストを Travis CI から GitHub Actions に切り替えました ([#1431], [#1436], [#1437])
+* IDGXMLBuilder のコードリストの処理をリファクタリングしました ([#1438], [#1439])
+* サンプル syntax-book に入っていた review-ext.rb はもう不要なので削除しました ([#1446])
+* IDGXMLMaker, TextMaker のテストを追加しました ([#1448])
+* Index 関連の処理をリファクタリングしました ([#1456], [#1457], [#1459])
+* jsclasses パッケージを 2020/02/02 バージョンに更新しました ([#1478])
+
+## コントリビューターのみなさん
+* [@turky](https://github.com/turky)
+
+[#1163]: https://github.com/kmuto/review/issues/1163
+[#1412]: https://github.com/kmuto/review/pull/1412
+[#1414]: https://github.com/kmuto/review/issues/1414
+[#1416]: https://github.com/kmuto/review/issues/1416
+[#1418]: https://github.com/kmuto/review/issues/1418
+[#1420]: https://github.com/kmuto/review/issues/1420
+[#1421]: https://github.com/kmuto/review/issues/1421
+[#1424]: https://github.com/kmuto/review/pull/1424
+[#1425]: https://github.com/kmuto/review/pull/1425
+[#1426]: https://github.com/kmuto/review/pull/1426
+[#1427]: https://github.com/kmuto/review/pull/1427
+[#1428]: https://github.com/kmuto/review/pull/1428
+[#1429]: https://github.com/kmuto/review/pull/1429
+[#1430]: https://github.com/kmuto/review/pull/1430
+[#1431]: https://github.com/kmuto/review/pull/1431
+[#1432]: https://github.com/kmuto/review/issues/1432
+[#1433]: https://github.com/kmuto/review/pull/1433
+[#1436]: https://github.com/kmuto/review/pull/1436
+[#1437]: https://github.com/kmuto/review/issues/1437
+[#1438]: https://github.com/kmuto/review/pull/1438
+[#1439]: https://github.com/kmuto/review/pull/1439
+[#1442]: https://github.com/kmuto/review/issues/1442
+[#1443]: https://github.com/kmuto/review/pull/1443
+[#1445]: https://github.com/kmuto/review/pull/1445
+[#1446]: https://github.com/kmuto/review/pull/1446
+[#1447]: https://github.com/kmuto/review/issues/1447
+[#1448]: https://github.com/kmuto/review/pull/1448
+[#1449]: https://github.com/kmuto/review/pull/1449
+[#1453]: https://github.com/kmuto/review/pull/1453
+[#1455]: https://github.com/kmuto/review/pull/1455
+[#1456]: https://github.com/kmuto/review/pull/1456
+[#1457]: https://github.com/kmuto/review/pull/1457
+[#1458]: https://github.com/kmuto/review/pull/1458
+[#1459]: https://github.com/kmuto/review/pull/1459
+[#1461]: https://github.com/kmuto/review/issues/1461
+[#1462]: https://github.com/kmuto/review/issues/1462
+[#1465]: https://github.com/kmuto/review/pull/1465
+[#1466]: https://github.com/kmuto/review/pull/1466
+[#1467]: https://github.com/kmuto/review/pull/1467
+[#1468]: https://github.com/kmuto/review/pull/1468
+[#1469]: https://github.com/kmuto/review/issues/1469
+[#1474]: https://github.com/kmuto/review/issues/1474
+[#1476]: https://github.com/kmuto/review/issues/1476
+[#1478]: https://github.com/kmuto/review/issues/1478
+[#1484]: https://github.com/kmuto/review/pull/1484
+
 # Version 4.0.0
 ## 新機能
 * IDGXML ファイルをまとめて生成する、review-idgxmlmaker を導入しました ([#1337])
 * review-textmaker は、imgmath パラメータが有効になっている場合に、数式を画像化するようになりました ([#1338])
 * review-init に `-w` オプションを指定することで、Web ブラウザ上で TeX のレイアウトができるウィザードモードを用意しました。なお、この機能は実験的であり、将来別のものに置き換える可能性もあります ([#1403])
-* 実験的実装として、複数行から段落を結合する際に、前後の文字の種類に基づいて空白文字の挿入を行う機能を追加しました。この機能を利用するには、unicode-eaw gem をインストールした上で、config.yml に `join_lines_by_lang: true` を追加してください [#1362]
+* 実験的実装として、複数行から段落を結合する際に、前後の文字の種類に基づいて空白文字の挿入を行う機能を追加しました。この機能を利用するには、unicode-eaw gem をインストールした上で、config.yml に `join_lines_by_lang: true` を追加してください ([#1362])
 
 ## 非互換の変更
 * 通常の利用では使われることがないので、review-init の実行時に空の layouts フォルダを作成するのをやめました ([#1340])

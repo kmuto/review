@@ -8,8 +8,8 @@
   <link rel="stylesheet" type="text/css" href="<%=h style %>" />
 <%   end %>
 <% end%>
-<% if @next.present? %><link rel="next" title="<%= h(@next_title)%>" href="<%= h(@next.id.to_s+"."+@book.config['htmlext']) %>"><% end %>
-<% if @prev.present? %><link rel="prev" title="<%= h(@prev_title)%>" href="<%= h(@prev.id.to_s+"."+@book.config['htmlext']) %>"><% end %>
+<% if @next.present? %><link rel="next" title="<%= h(@next_title)%>" href="<%= h(@next.id.to_s+"."+@book.config['htmlext']) %>" /><% end %>
+<% if @prev.present? %><link rel="prev" title="<%= h(@prev_title)%>" href="<%= h(@prev.id.to_s+"."+@book.config['htmlext']) %>" /><% end %>
   <meta name="generator" content="Re:VIEW" />
   <title><%=h @title %> | <%=h @book.config.name_of("booktitle")%></title>
 </head>

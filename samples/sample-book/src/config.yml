@@ -35,7 +35,7 @@ colophon: true
 # font_ext: ["ttf", "woff", "otf"]
 # catalogfile: catalog.yml
 # page_metric: A5
-# page_metric: [40,80,40,80,2]
+# page_metric: [40,34,29,34]
 # direction: "ltr"
 
 epubmaker:

@@ -587,7 +587,7 @@ EOC
   end
 
   def test_page_metric_config_array
-    mktmpbookdir('config.yml' => "bookname: book\npage_metric: [46, 80, 30, 74, 2]\n") do |dir, _book, _files|
+    mktmpbookdir('config.yml' => "bookname: book\npage_metric: [50, 40, 36, 40, 1]\n") do |dir, _book, _files|
       book = Book::Base.new(dir)
       config_file = File.join(dir, 'config.yml')
       book.load_config(config_file)

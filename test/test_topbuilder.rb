@@ -174,6 +174,19 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_dt_inline
+    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
+    @chapter.instance_eval { @footnote_index = fn }
+    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+
+    expected = <<-EOS
+★foo【注1】[]<>&◆→TeX式ここから←◆\\alpha[]◆→TeX式ここまで←◆☆
+	
+
+EOS
+    assert_equal expected, actual
+  end
+
   def test_paragraph
     actual = compile_block("foo\nbar\n")
     assert_equal %Q(foobar\n), actual

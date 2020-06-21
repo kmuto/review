@@ -7,7 +7,7 @@
 %   http://oku.edu.mie-u.ac.jp/~okumura/
 %
 %<okumacro>\NeedsTeXFormat{pLaTeX2e}
-%<okumacro>\ProvidesPackage{okumacro}[2018/06/11 okumura, texjporg]
+%<okumacro>\ProvidesPackage{okumacro}[2019/07/25 okumura, texjporg]
 %<*driver>
 \documentclass{jsarticle}
 \usepackage{doc}
@@ -188,7 +188,7 @@
 %\end{verbatim}
 % としていましたが，2017年9月の\pTeX (p3.7.2)に対応するため
 %\begin{verbatim}
-%    \setbox1=\hbox to\z@{\hbox to 1zw{\hss・\hss}\hss}%
+%    \setbox1=\hbox to\z@{\hbox to 1zw{\hss ・\hss}\hss}%
 %\end{verbatim}
 % に変更しました。これで，p3.7.1以前・p3.7.2以降どちらもOKです。
 %
@@ -599,9 +599,8 @@
 \newcommand{\PiCTeX}{\PiC\kern-.11em\TeX}
 \newcommand{\JTeX}{\leavevmode\lower.5ex\hbox{J}\kern-.17em\TeX}
 \newcommand{\JLaTeX}{\leavevmode\lower.5ex\hbox{\rm J}\kern-.17em\LaTeX}
-\DeclareRobustCommand{\JBibTeX}{$\mbox{%
-    \lower.5ex\hbox{J}\ifx\f@family\cmr\kern-.15em\else\kern-.05em\fi
-    \BibTeX}$}
+\DeclareRobustCommand{\JBibTeX}{$\m@th\mbox{%
+  \lower.5ex\hbox{J}\kern-.05em\BibTeX}$}
 \newcommand{\pTeXsT}{p\kern-.21em\TeX\kern-.10em s\kern-.21em T}
 % インプレスの新 TeX の仮称
 \newcommand{\iTeX}{\accent'27\i\TeX}

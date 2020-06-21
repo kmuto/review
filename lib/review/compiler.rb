@@ -26,6 +26,14 @@ module ReVIEW
 
     attr_reader :strategy
 
+    def non_escaped_commands
+      if @strategy.highlight?
+        %i[list emlist listnum emlistnum cmd]
+      else
+        []
+      end
+    end
+
     def compile(chap)
       @chapter = chap
       do_compile
@@ -225,14 +233,6 @@ module ReVIEW
       f = LineInput.new(StringIO.new(@chapter.content))
       @strategy.bind(self, @chapter, Location.new(@chapter.basename, f))
 
-      @non_parsed_commands = %i[embed texequation graph]
-      if @strategy.highlight?
-        @non_escaped_commands = %i[list emlist listnum emlistnum cmd]
-      else
-        @non_escaped_commands = []
-      end
-      @command_name_stack = []
-
       tagged_section_init
       while f.next?
         case f.peek
@@ -422,7 +422,10 @@ module ReVIEW
     def compile_dlist(f)
       @strategy.dl_begin
       while /\A\s*:/ =~ f.peek
+        # defer compile_inline to handle footnotes
+        @strategy.doc_status[:dt] = true
         @strategy.dt(text(f.gets.sub(/\A\s*:/, '').strip))
+        @strategy.doc_status[:dt] = nil
         desc = f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) }
         @strategy.dd(desc)
         f.skip_blank_lines
@@ -551,7 +554,7 @@ module ReVIEW
 
     def in_non_escaped_command?
       current_command = @command_name_stack.last
-      current_command && @non_escaped_commands.include?(current_command)
+      current_command && non_escaped_commands.include?(current_command)
     end
 
     def text(str, block_mode = false)
