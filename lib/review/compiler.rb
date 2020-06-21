@@ -26,6 +26,14 @@ module ReVIEW
 
     attr_reader :strategy, :previous_list_type
 
+    def non_escaped_commands
+      if @strategy.highlight?
+        %i[list emlist listnum emlistnum cmd]
+      else
+        []
+      end
+    end
+
     def compile(chap)
       @chapter = chap
       do_compile
@@ -227,14 +235,6 @@ module ReVIEW
     def do_compile
       f = LineInput.new(StringIO.new(@chapter.content))
       @strategy.bind(self, @chapter, Location.new(@chapter.basename, f))
-
-      @non_parsed_commands = %i[embed texequation graph]
-      if @strategy.highlight?
-        @non_escaped_commands = %i[list emlist listnum emlistnum cmd]
-      else
-        @non_escaped_commands = []
-      end
-      @command_name_stack = []
 
       tagged_section_init
       while f.next?
@@ -565,7 +565,7 @@ module ReVIEW
 
     def in_non_escaped_command?
       current_command = @command_name_stack.last
-      current_command && @non_escaped_commands.include?(current_command)
+      current_command && non_escaped_commands.include?(current_command)
     end
 
     def text(str, block_mode = false)

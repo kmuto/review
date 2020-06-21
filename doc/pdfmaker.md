@@ -84,6 +84,47 @@ Since Re:VIEW 3.0, review-jlreq.cls is also provided. This class file extends jl
 
 `review-init --latex-template=review-jlreq` command copies the review-jlreq.cls set to `sty` folder.
 
+### Handing over custom parameters
+
+For technical reasons, only a small part of the YAML parameters in config.yml is converted to TeX macros. Re:VIEW's internal `config.erb` ( https://github.com/ kmuto/review/blob/master/templates/latex/ config.erb ) ERB script manages this. You cannot change this script.
+
+If you want to give YAML parameters to TeX, you can use your own ERB script that do the YAML to TeX conversion. This is done by creating `layouts/config-local.tex.erb` in the project folder.
+
+After evaluation and embedding of `config.erb`, `config-local.tex. erb` will be evaluated and embedded as well. For example,
+
+`config.yml`:
+
+```
+mycustom:
+  mystring: HELLO_#1
+  mybool: true
+```
+
+`layouts/config-local.tex.erb`:
+
+```
+\def\mystring{<%= escape(@config['mycustom']['mystring']) %>}
+<%- if @config['mycustom']['mybool'] -%>
+\def\mybool{true}
+<%- end -%>
+```
+
+will be parsed:
+
+```
+ …
+\makeatother
+%% BEGIN: config-local.tex.erb
+\def\mystring{HELLO\textunderscore{}\#1}
+\def\mybool{true}
+%% END: config-local.tex.erb
+
+\usepackage{reviewmacro}
+ …
+```
+
+Refer to these macros in your sty file.
+
 ## Important Changes about LaTeX in Re:VIEW 2.0
 
 * Default LaTeX compiler is upLaTeX, not pLaTeX.

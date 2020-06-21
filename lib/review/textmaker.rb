@@ -98,7 +98,7 @@ module ReVIEW
       end
 
       math_dir = "./#{@config['imagedir']}/_review_math_text"
-      if @config['imgmath'] && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.tex'))
+      if @config['imgmath'] && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.map'))
         make_math_images(math_dir)
       end
     end
