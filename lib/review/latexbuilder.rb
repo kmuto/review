@@ -213,6 +213,8 @@ module ReVIEW
     end
 
     def common_block_begin(type, _level, _label, caption = nil)
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = type
       print "\\begin{review#{type}}"
 
       @doc_status[:caption] = true
@@ -225,6 +227,7 @@ module ReVIEW
 
     def common_block_end(type, _level)
       puts "\\end{review#{type}}"
+      @doc_status[:minicolumn] = nil
     end
 
     %w[note memo tip info warning important caution notice].each do |name|
@@ -240,6 +243,7 @@ module ReVIEW
     end
 
     def captionblock(type, lines, caption)
+      check_nested_minicolumn
       if @book.config.check_version('2', exception: false)
         type = 'minicolumn'
       end

@@ -458,11 +458,14 @@ module ReVIEW
     %w[note memo tip info warning important caution notice].each do |name|
       class_eval %Q(
         def #{name}_begin(level, label, caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
           common_block_begin('#{name}', level, label, caption)
         end
 
         def #{name}_end(level)
           common_block_end('#{name}', level)
+          @doc_status[:minicolumn] = nil
         end
       )
     end

@@ -544,9 +544,26 @@ module ReVIEW
     CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}(lines, caption = nil)
+          check_nested_minicolumn
           captionblock("#{name}", lines, caption)
         end
-      ), __FILE__, __LINE__ - 4
+
+        def #{name}_begin(_level, _label, caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          puts compile_inline(caption)
+        end
+
+        def #{name}_end(_level)
+          @doc_status[:minicolumn] = nil
+        end
+      )
+    end
+
+    def check_nested_minicolumn
+      if @doc_status[:minicolumn]
+        error "#{@location}: nested mini-column is not allowed"
+      end
     end
 
     def graph(lines, id, command, caption = '')
