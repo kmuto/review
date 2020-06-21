@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -919,18 +919,22 @@ module ReVIEW
     end
 
     def note(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('info', lines, caption)
     end
 
@@ -943,6 +947,7 @@ module ReVIEW
     end
 
     def important(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('important', lines, caption)
     end
 
@@ -951,10 +956,12 @@ module ReVIEW
     end
 
     def caution(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('caution', lines, caption)
     end
 
     def warning(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('warning', lines, caption)
     end
 
@@ -967,6 +974,7 @@ module ReVIEW
     end
 
     def notice(lines, caption = nil)
+      check_nested_minicolumn
       if caption
         captionblock('notice-t', lines, caption, 'notice-title')
       else
@@ -1005,6 +1013,8 @@ module ReVIEW
     %w[note memo tip info warning important caution notice].each do |name|
       class_eval %Q(
         def #{name}_begin(_level, _label, caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
           print "<#{name}>"
           if caption.present?
             puts %Q(<title aid:pstyle='#{name}-title'>\#{compile_inline(caption)}</title>)
@@ -1013,6 +1023,7 @@ module ReVIEW
 
         def #{name}_end(_level)
           print "</#{name}>"
+          @doc_status[:minicolumn] = nil
         end
       )
     end

@@ -471,18 +471,22 @@ module ReVIEW
     end
 
     def note(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('info', lines, caption)
     end
 
@@ -491,10 +495,12 @@ module ReVIEW
     end
 
     def best(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('best', lines, caption)
     end
 
     def important(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('important', lines, caption)
     end
 
@@ -503,6 +509,7 @@ module ReVIEW
     end
 
     def caution(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('caution', lines, caption)
     end
 
@@ -515,6 +522,7 @@ module ReVIEW
     end
 
     def notice(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('notice', lines, caption)
     end
 
@@ -543,6 +551,7 @@ module ReVIEW
     end
 
     def warning(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('warning', lines, caption)
     end
 
@@ -551,12 +560,15 @@ module ReVIEW
     %w[note memo tip info warning important caution notice].each do |name|
       class_eval %Q(
         def #{name}_begin(_level, _label, caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
           blank
           puts compile_inline(caption)
         end
 
         def #{name}_end(_level)
           blank
+          @doc_status[:minicolumn] = nil
         end
       )
     end
