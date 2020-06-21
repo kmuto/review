@@ -99,7 +99,7 @@ module ReVIEW
 
     def check_nest
       if @children && !@children.empty?
-        error "//beginchild of #{@children.reverse.join(',')} miss //endchild"
+        error "//beginchild of #{@children.reverse.join(',')} misses //endchild"
       end
     end
 
@@ -693,7 +693,7 @@ EOTGNUPLOT
       str
     end
 
-    def beginchild
+    def beginchild(_comment = nil)
       @children ||= []
       unless @previous_list_type
         error "//beginchild is shown, but previous element isn't ul, ol, or dl"
@@ -702,7 +702,7 @@ EOTGNUPLOT
       @children.push(@previous_list_type)
     end
 
-    def endchild
+    def endchild(_comment = nil)
       if @children.nil? || @children.empty?
         error "//endchild is shown, but any opened //beginchild doesn't exist"
       else

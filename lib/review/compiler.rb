@@ -167,9 +167,8 @@ module ReVIEW
     defsingle :include, 1
     defsingle :olnum, 1
     defsingle :firstlinenum, 1
-    defsingle :child, 1
-    defsingle :beginchild, 0
-    defsingle :endchild, 0
+    defsingle :beginchild, 0..1
+    defsingle :endchild, 0..1
 
     definline :chapref
     definline :chap
