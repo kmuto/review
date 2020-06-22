@@ -2452,6 +2452,156 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+===[#{type}] #{type}1
+
+===[/#{type}]
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+<div class="#{type}">
+<p class="caption">#{type}1</p>
+</div>
+<div class="#{type}">
+<p class="caption">#{type}2</p>
+<p></p>
+</div>
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+==[#{type}] #{type}2
+
+==[/#{type}]
+
+===[#{type}] #{type}3
+
+===[/#{type}]
+
+====[#{type}] #{type}4
+
+====[/#{type}]
+
+=====[#{type}] #{type}5
+
+=====[/#{type}]
+
+======[#{type}] #{type}6
+
+======[/#{type}]
+EOS
+
+      expected = <<-EOS
+<div class="#{type}">
+<p class="caption">#{type}2</p>
+</div>
+<div class="#{type}">
+<p class="caption">#{type}3</p>
+</div>
+<div class="#{type}">
+<p class="caption">#{type}4</p>
+</div>
+<div class="#{type}">
+<p class="caption">#{type}5</p>
+</div>
+<div class="#{type}">
+<p class="caption">#{type}6</p>
+</div>
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+==[#{type}]
+
+ * A
+
+ 1. B
+
+==[/#{type}]
+
+===[#{type}] OMITEND1
+
+//emlist{
+LIST
+//}
+
+==[#{type}] OMITEND2
+EOS
+
+      expected = <<-EOS
+<div class="#{type}">
+<ul>
+<li>A</li>
+</ul>
+<ol>
+<li>B</li>
+</ol>
+</div>
+<div class="#{type}">
+<p class="caption">OMITEND1</p>
+<div class="emlist-code">
+<pre class="emlist">LIST
+</pre>
+</div>
+</div>
+<div class="#{type}">
+<p class="caption">OMITEND2</p>
+</div>
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+//#{type}{
+//}
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+===[#{type}]
+
+===[/#{type}]
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+===[note]
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
   def test_comment
     actual = compile_block('//comment[コメント]')
     assert_equal '', actual
