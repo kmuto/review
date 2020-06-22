@@ -563,7 +563,9 @@ module ReVIEW
           check_nested_minicolumn
           @doc_status[:minicolumn] = '#{name}'
           blank
-          puts compile_inline(caption)
+          if caption.present?
+            puts compile_inline(caption)
+          end
         end
 
         def #{name}_end(_level)

@@ -647,6 +647,177 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_minicolumn_blocks
+    titles = {
+      'note' => 'ノート',
+      'memo' => 'メモ',
+      'important' => '重要',
+      'info' => '情報',
+      'notice' => '注意',
+      'caution' => '警告',
+      'warning' => '危険',
+      'tip' => 'TIP'
+    }
+
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+===[#{type}] #{type}1
+
+===[/#{type}]
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+■#{type}1
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}2
+
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+==[#{type}] #{type}2
+
+==[/#{type}]
+
+===[#{type}] #{type}3
+
+===[/#{type}]
+
+====[#{type}] #{type}4
+
+====[/#{type}]
+
+=====[#{type}] #{type}5
+
+=====[/#{type}]
+
+======[#{type}] #{type}6
+
+======[/#{type}]
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+■#{type}2
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}3
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}4
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}5
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}6
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+==[#{type}]
+
+ * A
+
+ 1. B
+
+==[/#{type}]
+
+===[#{type}] OMITEND1
+
+//emlist{
+LIST
+//}
+
+==[#{type}] OMITEND2
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+
+●	A
+
+1	B
+
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■OMITEND1
+
+◆→開始:インラインリスト←◆
+LIST
+◆→終了:インラインリスト←◆
+
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■OMITEND2
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+//#{type}{
+//}
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+===[#{type}]
+
+===[/#{type}]
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+===[note]
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
   def test_image
     def @chapter.image(_id)
       item = Book::Index::Item.new('sampleimg', 1)

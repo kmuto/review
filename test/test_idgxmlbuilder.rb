@@ -299,6 +299,126 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+===[#{type}] #{type}1
+
+===[/#{type}]
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      if type == 'notice' # exception pattern
+        expected = <<-EOS.chomp
+<#{type}><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}><#{type}-t><title aid:pstyle='#{type}-title'>#{type}2</title><p></p></#{type}-t>
+EOS
+      else
+        expected = <<-EOS.chomp
+<#{type}><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}2</title><p></p></#{type}>
+EOS
+      end
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+==[#{type}] #{type}2
+
+==[/#{type}]
+
+===[#{type}] #{type}3
+
+===[/#{type}]
+
+====[#{type}] #{type}4
+
+====[/#{type}]
+
+=====[#{type}] #{type}5
+
+=====[/#{type}]
+
+======[#{type}] #{type}6
+
+======[/#{type}]
+EOS
+
+      expected = <<-EOS.chomp
+<#{type}><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}3</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}4</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}5</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}6</title></#{type}>
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+==[#{type}]
+
+ * A
+
+ 1. B
+
+==[/#{type}]
+
+===[#{type}] OMITEND1
+
+//emlist{
+LIST
+//}
+
+==[#{type}] OMITEND2
+EOS
+
+      expected = <<-EOS.chomp
+<#{type}><ul><li aid:pstyle="ul-item">A</li></ul><ol><li aid:pstyle="ol-item" olnum="1" num="1">B</li></ol></#{type}><#{type}><title aid:pstyle='#{type}-title'>OMITEND1</title><list type='emlist'><pre>LIST
+</pre></list></#{type}><#{type}><title aid:pstyle='#{type}-title'>OMITEND2</title></#{type}>
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+//#{type}{
+//}
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+===[#{type}]
+
+===[/#{type}]
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+==[#{type}]
+
+===[note]
+
+==[/#{type}]
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/: nested mini\-column is not allowed/, e.message)
+    end
+  end
+
   def test_term
     actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal '<term><p>test1test1.5</p><p>test<i>2</i></p></term>', actual
