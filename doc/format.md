@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 3.0.
+This document explains about the format of Re:VIEW 4.2.
 
 
 ## Paragraph
@@ -531,6 +531,19 @@ Some block commands are used for short column.
 `[caption]` is optional.
 
 The content is like paragraph; separated by empty lines.
+
+From Re:VIEW 4.2, it is also possible to express a short column in a notation similar to a column.
+
+```
+===[note] NOTE
+
+With ordered itemize.
+
+ 1. item1
+ 2. item2
+
+===[/note]
+```
 
 ## Footnotes
 
