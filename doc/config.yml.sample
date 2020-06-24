@@ -188,6 +188,14 @@ toc: true
 # 省略した場合はnull (挿入しない)。別途unicode-eaw gemファイルが必要
 # join_lines_by_lang: null
 
+# 図・表・コードリスト・数式のキャプション位置。
+# 値はtop（上）またはbottom（下）でデフォルトは以下のとおり
+# caption_position:
+#   image: bottom
+#   table: top
+#   list: top
+#   equation: top
+
 # review-toc向けのヒント情報
 # (文字幅を考慮した行数計測には、別途unicode-eaw gemファイルが必要)
 # ページあたりの行数文字数を用紙サイズで指定する(A5 or B5)

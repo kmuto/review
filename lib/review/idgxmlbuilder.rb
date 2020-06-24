@@ -351,7 +351,9 @@ module ReVIEW
 
     def quotedlist(lines, css_class, caption)
       print %Q(<list type='#{css_class}'>)
-      puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>" if caption.present?
+      if caption_top?('list') && caption.present?
+        puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>"
+      end
       print '<pre>'
       no = 1
       lines.each do |line|
@@ -366,7 +368,11 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
-      puts '</pre></list>'
+      puts '</pre>'
+      if !caption_top?('list') && caption.present?
+        puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>"
+      end
+      puts '</list>'
     end
     private :quotedlist
 
@@ -410,20 +416,22 @@ module ReVIEW
     def image_image(id, caption, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
+      image_header(id, caption) if caption_top?('image')
       puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} />)
-      image_header(id, caption)
+      image_header(id, caption) unless caption_top?('image')
       puts '</img>'
     end
 
     def image_dummy(id, caption, lines)
       puts '<img>'
+      image_header(id, caption) if caption_top?('image')
       print %Q(<pre aid:pstyle="dummyimage">)
       lines.each do |line|
         print detab(line)
         print "\n"
       end
       print '</pre>'
-      image_header(id, caption)
+      image_header(id, caption) unless caption_top?('image')
       puts '</img>'
       warn "image not bound: #{id}"
     end
@@ -439,13 +447,15 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       @texblockequation += 1
+      caption_str = nil
       if id
         puts '<equationblock>'
         if get_chap.nil?
-          puts %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+          caption_str = %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
         else
-          puts %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+          caption_str = %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
         end
+        puts caption_str if caption_top?('equation')
       end
 
       puts %Q(<replace idref="texblock-#{@texblockequation}">)
@@ -455,6 +465,7 @@ module ReVIEW
       puts '</replace>'
 
       if id
+        puts caption_str unless caption_top?('equation')
         puts '</equationblock>'
       end
     end
@@ -470,19 +481,26 @@ module ReVIEW
       puts '<table>'
 
       begin
-        table_header(id, caption) if caption.present?
+        if caption_top?('table') && caption.present?
+          table_header(id, caption)
+        end
+
+        if @tablewidth.nil?
+          print '<tbody>'
+        else
+          print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{@col}">)
+        end
+        @table_id = id
+        table_rows(sepidx, rows)
+        puts '</tbody>'
+
+        if !caption_top?('table') && caption.present?
+          table_header(id, caption)
+        end
       rescue KeyError
         error "no such table: #{id}"
       end
-
-      if @tablewidth.nil?
-        print '<tbody>'
-      else
-        print %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows.length}" aid:tcols="#{@col}">)
-      end
-      @table_id = id
-      table_rows(sepidx, rows)
-      puts '</tbody></table>'
+      puts '</table>'
       @tsize = nil
     end
 
@@ -596,8 +614,13 @@ module ReVIEW
       if @chapter.image_bound?(id)
         metrics = parse_metric('idgxml', metric)
         puts '<table>'
-        table_header(id, caption) if caption.present?
+        if caption_top?('table') && caption.present?
+          table_header(id, caption)
+        end
         puts %Q(<imgtable><Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} /></imgtable>)
+        if !caption_top?('table') && caption.present?
+          table_header(id, caption)
+        end
         puts '</table>'
       else
         warn "image not bound: #{id}" if @strict
@@ -1029,6 +1052,7 @@ module ReVIEW
     end
 
     def syntaxblock(type, lines, caption)
+      captionstr = nil
       if caption.present?
         titleopentag = %Q(caption aid:pstyle="#{type}-title")
         titleclosetag = 'caption'
@@ -1036,9 +1060,13 @@ module ReVIEW
           titleopentag = %Q(floattitle type="insn")
           titleclosetag = 'floattitle'
         end
-        puts %Q(<#{type}><#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
+        captionstr = %Q(<#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
+      end
+      print "<#{type}>"
+      if caption_top?('list')
+        puts captionstr
       else
-        puts "<#{type}>"
+        puts ''
       end
 
       no = 1
@@ -1054,6 +1082,9 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
+      unless caption_top?('list')
+        print captionstr
+      end
       puts "</#{type}>"
     end
 
@@ -1068,12 +1099,17 @@ module ReVIEW
     def indepimage(_lines, id, caption = nil, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
+      if caption_top?('image')
+        puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      end
       begin
         puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}"#{metrics} />)
       rescue
         warn %Q(image not bound: #{id})
       end
-      puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      unless caption_top?('image')
+        puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      end
       puts '</img>'
     end
 
@@ -1174,8 +1210,13 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts '<source>'
-      source_header(caption)
+      if caption_top?('list')
+        source_header(caption)
+      end
       source_body(lines, lang)
+      unless caption_top?('list')
+        source_header(caption)
+      end
       puts '</source>'
     end
 
