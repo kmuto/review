@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -95,12 +95,18 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles['list']}←◆"
       begin
-        list_header(id, caption, lang)
+        if caption_top?('list')
+          list_header(id, caption, lang)
+          blank
+        end
+        list_body(id, lines, lang)
+        unless caption_top?('list')
+          blank
+          list_header(id, caption, lang)
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      blank
-      list_body(id, lines, lang)
       puts "◆→終了:#{@titles['list']}←◆"
       blank
     end
@@ -122,8 +128,13 @@ module ReVIEW
     def base_block(type, lines, caption = nil)
       blank
       puts "◆→開始:#{@titles[type]}←◆"
-      puts "■#{compile_inline(caption)}" if caption.present?
+      if caption_top?('list') && caption.present?
+        puts "■#{compile_inline(caption)}"
+      end
       puts lines.join("\n")
+      if !caption_top?('list') && caption.present?
+        puts "■#{compile_inline(caption)}"
+      end
       puts "◆→終了:#{@titles[type]}←◆"
       blank
     end
@@ -140,9 +151,14 @@ module ReVIEW
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
       puts "◆→開始:#{@titles['emlist']}←◆"
-      puts "■#{compile_inline(caption)}" if caption.present?
+      if caption_top?('list') && caption.present?
+        puts "■#{compile_inline(caption)}"
+      end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
+      end
+      if !caption_top?('list') && caption.present?
+        puts "■#{compile_inline(caption)}"
       end
       puts "◆→終了:#{@titles['emlist']}←◆"
       blank
@@ -152,12 +168,18 @@ module ReVIEW
       blank
       puts "◆→開始:#{@titles['list']}←◆"
       begin
-        list_header(id, caption, lang)
+        if caption_top?('list') && caption.present?
+          list_header(id, caption, lang)
+          blank
+        end
+        listnum_body(lines, lang)
+        if !caption_top?('list') && caption.present?
+          blank
+          list_header(id, caption, lang)
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      blank
-      listnum_body(lines, lang)
       puts "◆→終了:#{@titles['list']}←◆"
       blank
     end
@@ -173,8 +195,10 @@ module ReVIEW
       metrics = " #{metrics}" if metrics.present?
       blank
       puts "◆→開始:#{@titles['image']}←◆"
-      image_header(id, caption)
-      blank
+      if caption_top?('image')
+        image_header(id, caption)
+        blank
+      end
       if @chapter.image_bound?(id)
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
@@ -182,6 +206,10 @@ module ReVIEW
         lines.each do |line|
           puts line
         end
+      end
+      unless caption_top?('image')
+        blank
+        image_header(id, caption)
       end
       puts "◆→終了:#{@titles['image']}←◆"
       blank
@@ -198,7 +226,7 @@ module ReVIEW
     def texequation(lines, id = nil, caption = '')
       blank
       puts "◆→開始:#{@titles['texequation']}←◆"
-      texequation_header(id, caption)
+      texequation_header(id, caption) if caption_top?('equation')
 
       if @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
@@ -214,6 +242,7 @@ module ReVIEW
         puts lines.join("\n")
       end
 
+      texequation_header(id, caption) unless caption_top?('equation')
       puts "◆→終了:#{@titles['texequation']}←◆"
       blank
     end
@@ -419,13 +448,18 @@ module ReVIEW
       metrics = parse_metric('top', metric)
       metrics = " #{metrics}" if metrics.present?
       blank
+      if caption_top?('image') && caption.present?
+        puts "図　#{compile_inline(caption)}"
+      end
       begin
         puts "◆→画像 #{@chapter.image(id).path.sub(%r{\A\./}, '')}#{metrics}←◆"
       rescue
         warn "image not bound: #{id}"
         puts "◆→画像 #{id}←◆"
       end
-      puts "図　#{compile_inline(caption)}" if caption.present?
+      if !caption_top?('image') && caption.present?
+        puts "図　#{compile_inline(caption)}"
+      end
       blank
     end
 
