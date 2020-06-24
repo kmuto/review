@@ -1,4 +1,7 @@
 # Version 4.2.0
+## 新機能
+* 図・表・リスト・式のキャプションの位置を内容の上側・下側どちらにするかを指定する `caption_position` パラメータを追加しました。`caption_position` の下位パラメータとして `image`・`table`・`list`・`equation` のパラメータがあり、値として `top` (上側) または `bottom` (下側) を指定します。デフォルトは `image` のみ `bottom`、ほかは `top` です ([#1320])
+
 ## 非互換の変更
 * review-vol を再構成しました。部の処理や見出し内のインライン命令の処理を正しました。表示形式をわかりやすい形に変更しました。部を指定したときに部のボリュームではなく、部ファイル単体のボリュームを返すようにしました。`-P`, `--directory` オプションは廃止しました ([#1485])
 * review-index を再構成しました。オプション名を大幅に変更しています。行数・文字数は `-d` オプションを指定したときのみ表示するようにしました。また、ファイルの行数・文字数ではなく、PLAINTEXTBuilder を利用して、変換結果に近い行数・文字数を返すようにしました (review-vol よりも正確です)。特定の章は `-y` オプションで複数指定できるようにしました ([#1485])
@@ -15,7 +18,8 @@
 * GitHub Actions を eregon/use-ruby-action から ruby/setup-ruby に切り替えました ([#1490])
 * テストの際、samples フォルダ内にあるビルド成果物を無視するようにしました ([#1504])
 
-[#1485]: https://github.com/kmuto/review/issues/148
+[#1320]: https://github.com/kmuto/review/issues/1320
+[#1485]: https://github.com/kmuto/review/issues/1485
 [#1488]: https://github.com/kmuto/review/issues/1488
 [#1490]: https://github.com/kmuto/review/pull/1490
 [#1499]: https://github.com/kmuto/review/issues/1499
