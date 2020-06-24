@@ -434,6 +434,22 @@ buz
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//cmd[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{reviewlistblock}
+\\begin{reviewcmd}
+foo
+bar
+
+buz
+\\end{reviewcmd}
+\\reviewcmdcaption{cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd_lst
@@ -509,6 +525,22 @@ buz
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlist[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{reviewlistblock}
+\\begin{reviewemlist}
+foo
+bar
+
+buz
+\\end{reviewemlist}
+\\reviewemlistcaption{cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_empty_caption
@@ -575,6 +607,22 @@ EOS
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{reviewlistblock}
+\\begin{reviewemlist}
+ 1: foo
+ 2: bar
+ 3: 
+ 4: buz
+\\end{reviewemlist}
+\\reviewemlistcaption{cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_list
@@ -591,11 +639,36 @@ buz
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[id1][cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistblock}
+\\begin{reviewlist}
+foo
+bar
+
+buz
+\\end{reviewlist}
+\\reviewlistcaption{リスト1.1: cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_list_lst
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
+    actual = compile_block("//list[id1][cap1][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistlst}[caption={cap1},language={sql}]
+SELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'
+\\end{reviewlistlst}
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    # XXX: caption_position won't work with highlight
     actual = compile_block("//list[id1][cap1][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
     expected = <<-EOS
 \\begin{reviewlistlst}[caption={cap1},language={sql}]
@@ -635,6 +708,24 @@ EOS
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistblock}
+\\begin{reviewlist}
+ 1: class Foo
+ 2:   def foo
+ 3:     bar
+ 4: 
+ 5:     buz
+ 6:   end
+ 7: end
+\\end{reviewlist}
+\\reviewlistcaption{リスト1.1: ruby}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum_linenum
@@ -659,6 +750,22 @@ EOS
   def test_listnum_lst
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
+    actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistnumlst}[caption={ruby},language={}]
+class Foo
+  def foo
+    bar
+
+    buz
+  end
+end
+\\end{reviewlistnumlst}
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    # XXX: caption_position won't work with highlight
     actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
     expected = <<-EOS
 \\begin{reviewlistnumlst}[caption={ruby},language={}]
@@ -706,6 +813,21 @@ buz
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistblock}
+\\begin{reviewsource}
+foo
+bar
+
+buz
+\\end{reviewsource}
+\\reviewsourcecaption{foo/bar/test.rb}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_source_empty_caption
@@ -726,6 +848,19 @@ EOS
   def test_source_lst
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+\\begin{reviewsourcelst}[title={foo/bar/test.rb},language={}]
+foo
+bar
+
+buz
+\\end{reviewsourcelst}
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    # XXX: caption_position won't work with highlight
     actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
 \\begin{reviewsourcelst}[title={foo/bar/test.rb},language={}]
@@ -888,6 +1023,18 @@ EOS
 
     actual = compile_block("//image[sampleimg][sample photo][]{\n//}\n")
     assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = nil
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
+    expected = <<-EOS
+\\begin{reviewimage}%%sampleimg
+\\reviewimagecaption{sample photo}
+\\label{image:chap1:sampleimg}
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+EOS
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -1007,6 +1154,17 @@ EOS
     assert_equal expected, actual
 
     actual = compile_block("//indepimage[sampleimg][sample photo][]\n")
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = nil
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    expected = <<-EOS
+\\begin{reviewimage}%%sampleimg
+\\reviewindepimagecaption{図: sample photo}
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+EOS
     assert_equal expected, actual
   end
 
@@ -1136,6 +1294,21 @@ ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
 \\end{table}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+\\begin{table}%%foo
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
+\\reviewtablecaption{FOO}
+\\label{table:chap1:foo}
+\\end{table}
+EOS
+    assert_equal expected, actual
   end
 
   def test_empty_table
@@ -1247,6 +1420,26 @@ ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
 \\end{reviewtable}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+\\begin{table}%%
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
+\\reviewtablecaption*{foo}
+\\end{table}
+
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
+EOS
+    assert_equal expected, actual
   end
 
   def test_imgtable
@@ -1284,6 +1477,21 @@ EOS
     assert_equal expected, actual
 
     actual = compile_block("//imgtable[sampleimg][test for imgtable][]{\n//}\n")
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = nil
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
+
+    expected = <<-EOS
+\\begin{table}[h]%%sampleimg
+\\label{table:chap1:sampleimg}
+\\begin{reviewimage}%%sampleimg
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+\\reviewimgtablecaption{test for imgtable}
+\\end{table}
+EOS
     assert_equal expected, actual
   end
 
@@ -2038,6 +2246,21 @@ EOS
 \\begin{equation*}
 e=mc^2
 \\end{equation*}
+\\end{reviewequationblock}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = <<-EOS
+
+\\reviewequationref{1.1}
+
+\\begin{reviewequationblock}
+\\begin{equation*}
+e=mc^2
+\\end{equation*}
+\\reviewequationcaption{式1.1: The Equivalence of Mass \\reviewit{and} Energy}
 \\end{reviewequationblock}
 EOS
     actual = compile_block(src)
