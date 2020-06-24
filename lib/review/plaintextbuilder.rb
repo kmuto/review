@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019 Kenshi Muto
+# Copyright (c) 2018-2020 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -140,12 +140,12 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       blank
       begin
-        if top?('list')
+        if caption_top?('list')
           list_header(id, caption, lang)
           blank
         end
         list_body(id, lines, lang)
-        unless top?('list')
+        unless caption_top?('list')
           blank
           list_header(id, caption, lang)
         end
@@ -171,11 +171,11 @@ module ReVIEW
 
     def base_block(_type, lines, caption = nil)
       blank
-      if top?('list') && caption.present?
+      if caption_top?('list') && caption.present?
         puts compile_inline(caption)
       end
       puts lines.join("\n")
-      if !top?('list') && caption.present?
+      if !caption_top?('list') && caption.present?
         puts compile_inline(caption)
       end
       blank
@@ -194,13 +194,13 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
-      if top?('list')
+      if caption_top?('list')
         puts compile_inline(caption) if caption.present?
       end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
       end
-      unless top?('list')
+      unless caption_top?('list')
         puts compile_inline(caption) if caption.present?
       end
       blank
@@ -209,12 +209,12 @@ module ReVIEW
     def listnum(lines, id, caption, lang = nil)
       blank
       begin
-        if top?('list')
+        if caption_top?('list')
           list_header(id, caption, lang)
           blank
         end
         listnum_body(lines, lang)
-        unless top?('list')
+        unless caption_top?('list')
           blank
           list_header(id, caption, lang)
         end
@@ -250,9 +250,9 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       blank
-      texequation_header(id, caption) if top?('equation')
+      texequation_header(id, caption) if caption_top?('equation')
       puts lines.join("\n")
-      texequation_header(id, caption) unless top?('equation')
+      texequation_header(id, caption) unless caption_top?('equation')
       blank
     end
 
@@ -274,7 +274,7 @@ module ReVIEW
     end
 
     def table_header(id, caption)
-      unless top?('table')
+      unless caption_top?('table')
         blank
       end
 
@@ -286,7 +286,7 @@ module ReVIEW
         puts "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [@chapter.table(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
       end
 
-      if top?('table')
+      if caption_top?('table')
         blank
       end
     end

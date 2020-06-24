@@ -424,7 +424,7 @@ module ReVIEW
       end
       @doc_status[:caption] = nil
 
-      if top?('list') && captionstr
+      if caption_top?('list') && captionstr
         puts captionstr
       end
 
@@ -436,7 +436,7 @@ module ReVIEW
       print body
       puts macro('end', command)
 
-      if !top?('list') && captionstr
+      if !caption_top?('list') && captionstr
         puts captionstr
       end
 
@@ -526,7 +526,7 @@ module ReVIEW
       # image is always bound here
       puts "\\begin{reviewimage}%%#{id}"
 
-      if top?('image') && captionstr
+      if caption_top?('image') && captionstr
         puts captionstr
       end
 
@@ -541,7 +541,7 @@ module ReVIEW
         puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
 
-      if !top?('image') && captionstr
+      if !caption_top?('image') && captionstr
         puts captionstr
       end
 
@@ -620,7 +620,7 @@ module ReVIEW
       if @chapter.image(id).path
         puts "\\begin{reviewimage}%%#{id}"
 
-        if top?('image') && captionstr
+        if caption_top?('image') && captionstr
           puts captionstr
         end
 
@@ -643,7 +643,7 @@ module ReVIEW
         end
       end
 
-      if !top?('image') && captionstr
+      if !caption_top?('image') && captionstr
         puts captionstr
       end
 
@@ -667,7 +667,7 @@ module ReVIEW
 
       sepidx, rows = parse_table_rows(lines)
       begin
-        if top?('table') && caption.present?
+        if caption_top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
@@ -677,7 +677,7 @@ module ReVIEW
       table_rows(sepidx, rows)
       table_end
       if caption.present?
-        unless top?('table')
+        unless caption_top?('table')
           table_header(id, caption)
         end
         puts '\end{table}'
@@ -849,7 +849,7 @@ module ReVIEW
           @doc_status[:caption] = true
           captionstr = macro('reviewimgtablecaption', compile_inline(caption))
           @doc_status[:caption] = nil
-          if top?('table')
+          if caption_top?('table')
             puts captionstr
           end
         end
@@ -860,7 +860,7 @@ module ReVIEW
       imgtable_image(id, caption, metric)
 
       if caption.present?
-        unless top?('table')
+        unless caption_top?('table')
           puts captionstr
         end
         puts '\end{table}'
@@ -913,7 +913,7 @@ module ReVIEW
         end
       end
 
-      if top?('equation') && captionstr
+      if caption_top?('equation') && captionstr
         puts captionstr
       end
 
@@ -923,7 +923,7 @@ module ReVIEW
       end
       puts macro('end', 'equation*')
 
-      if !top?('equation') && captionstr
+      if !caption_top?('equation') && captionstr
         puts captionstr
       end
 

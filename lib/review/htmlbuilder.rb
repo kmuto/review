@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -292,7 +292,7 @@ module ReVIEW
       end
       puts %Q(<div class="syntax">)
 
-      if top?('list') && caption.present?
+      if caption_top?('list') && caption.present?
         puts captionstr
       end
 
@@ -302,7 +302,7 @@ module ReVIEW
       end
       puts '</pre>'
 
-      if !top?('list') && caption.present?
+      if !caption_top?('list') && caption.present?
         puts captionstr
       end
       puts '</div>'
@@ -454,7 +454,7 @@ module ReVIEW
 
     def emlist(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlist-code">)
-      if top?('list') && caption.present?
+      if caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       class_names = ['emlist']
@@ -465,7 +465,7 @@ module ReVIEW
       lexer = lang
       puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
-      if !top?('list') && caption.present?
+      if !caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       puts '</div>'
@@ -473,7 +473,7 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlistnum-code">)
-      if top?('list') && caption.present?
+      if caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
@@ -495,7 +495,7 @@ module ReVIEW
         puts '</pre>'
       end
 
-      if !top?('list') && caption.present?
+      if !caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
@@ -504,7 +504,7 @@ module ReVIEW
 
     def cmd(lines, caption = nil)
       puts %Q(<div class="cmd-code">)
-      if top?('list') && caption.present?
+      if caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
@@ -514,7 +514,7 @@ module ReVIEW
       puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
 
-      if !top?('list') && caption.present?
+      if !caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
@@ -553,13 +553,13 @@ module ReVIEW
     def texequation(lines, id = nil, caption = '')
       if id
         puts %Q(<div id="#{normalize_id(id)}" class="caption-equation">)
-        texequation_header(id, caption) if top?('equation')
+        texequation_header(id, caption) if caption_top?('equation')
       end
 
       texequation_body(lines)
 
       if id
-        texequation_header(id, caption) unless top?('equation')
+        texequation_header(id, caption) unless caption_top?('equation')
         puts '</div>'
       end
     end
@@ -627,22 +627,22 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
-      image_header(id, caption) if top?('image')
+      image_header(id, caption) if caption_top?('image')
       puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      image_header(id, caption) unless top?('image')
+      image_header(id, caption) unless caption_top?('image')
       puts '</div>'
     end
 
     def image_dummy(id, caption, lines)
       warn "image not bound: #{id}"
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
-      image_header(id, caption) if top?('image')
+      image_header(id, caption) if caption_top?('image')
       puts %Q(<pre class="dummyimage">)
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
-      image_header(id, caption) unless top?('image')
+      image_header(id, caption) unless caption_top?('image')
       puts '</div>'
     end
 
@@ -705,13 +705,13 @@ module ReVIEW
 
       puts %Q(<div id="#{normalize_id(id)}" class="imgtable image">)
       begin
-        if top?('table') && caption.present?
+        if caption_top?('table') && caption.present?
           table_header(id, caption)
         end
 
         imgtable_image(id, caption, metric)
 
-        if !top?('table') && caption.present?
+        if !caption_top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
@@ -764,7 +764,7 @@ EOS
       end
 
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
-      if top?('image') && caption.present?
+      if caption_top?('image') && caption.present?
         puts caption_str
       end
       begin
@@ -780,7 +780,7 @@ EOS
         end
       end
 
-      if !top?('image') && caption.present?
+      if !caption_top?('image') && caption.present?
         puts caption_str
       end
       puts '</div>'

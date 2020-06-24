@@ -351,7 +351,7 @@ module ReVIEW
 
     def quotedlist(lines, css_class, caption)
       print %Q(<list type='#{css_class}'>)
-      if top?('list') && caption.present?
+      if caption_top?('list') && caption.present?
         puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>"
       end
       print '<pre>'
@@ -369,7 +369,7 @@ module ReVIEW
         no += 1
       end
       puts '</pre>'
-      if !top?('list') && caption.present?
+      if !caption_top?('list') && caption.present?
         puts "<caption aid:pstyle='#{css_class}-title'>#{compile_inline(caption)}</caption>"
       end
       puts '</list>'
@@ -416,22 +416,22 @@ module ReVIEW
     def image_image(id, caption, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
-      image_header(id, caption) if top?('image')
+      image_header(id, caption) if caption_top?('image')
       puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} />)
-      image_header(id, caption) unless top?('image')
+      image_header(id, caption) unless caption_top?('image')
       puts '</img>'
     end
 
     def image_dummy(id, caption, lines)
       puts '<img>'
-      image_header(id, caption) if top?('image')
+      image_header(id, caption) if caption_top?('image')
       print %Q(<pre aid:pstyle="dummyimage">)
       lines.each do |line|
         print detab(line)
         print "\n"
       end
       print '</pre>'
-      image_header(id, caption) unless top?('image')
+      image_header(id, caption) unless caption_top?('image')
       puts '</img>'
       warn "image not bound: #{id}"
     end
@@ -455,7 +455,7 @@ module ReVIEW
         else
           caption_str = %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
         end
-        puts caption_str if top?('equation')
+        puts caption_str if caption_top?('equation')
       end
 
       puts %Q(<replace idref="texblock-#{@texblockequation}">)
@@ -465,7 +465,7 @@ module ReVIEW
       puts '</replace>'
 
       if id
-        puts caption_str unless top?('equation')
+        puts caption_str unless caption_top?('equation')
         puts '</equationblock>'
       end
     end
@@ -481,7 +481,7 @@ module ReVIEW
       puts '<table>'
 
       begin
-        if top?('table') && caption.present?
+        if caption_top?('table') && caption.present?
           table_header(id, caption)
         end
 
@@ -494,7 +494,7 @@ module ReVIEW
         table_rows(sepidx, rows)
         puts '</tbody>'
 
-        if !top?('table') && caption.present?
+        if !caption_top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
@@ -614,11 +614,11 @@ module ReVIEW
       if @chapter.image_bound?(id)
         metrics = parse_metric('idgxml', metric)
         puts '<table>'
-        if top?('table') && caption.present?
+        if caption_top?('table') && caption.present?
           table_header(id, caption)
         end
         puts %Q(<imgtable><Image href="file://#{@chapter.image(id).path.sub(%r{\A./}, '')}"#{metrics} /></imgtable>)
-        if !top?('table') && caption.present?
+        if !caption_top?('table') && caption.present?
           table_header(id, caption)
         end
         puts '</table>'
@@ -1037,7 +1037,7 @@ module ReVIEW
         captionstr = %Q(<#{titleopentag}>#{compile_inline(caption)}</#{titleclosetag}>)
       end
       print "<#{type}>"
-      if top?('list')
+      if caption_top?('list')
         puts captionstr
       else
         puts ''
@@ -1056,7 +1056,7 @@ module ReVIEW
         print '</listinfo>' if @book.config['listinfo']
         no += 1
       end
-      unless top?('list')
+      unless caption_top?('list')
         print captionstr
       end
       puts "</#{type}>"
@@ -1073,7 +1073,7 @@ module ReVIEW
     def indepimage(_lines, id, caption = nil, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
-      if top?('image')
+      if caption_top?('image')
         puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
       end
       begin
@@ -1081,7 +1081,7 @@ module ReVIEW
       rescue
         warn %Q(image not bound: #{id})
       end
-      unless top?('image')
+      unless caption_top?('image')
         puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
       end
       puts '</img>'
@@ -1184,11 +1184,11 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts '<source>'
-      if top?('list')
+      if caption_top?('list')
         source_header(caption)
       end
       source_body(lines, lang)
-      unless top?('list')
+      unless caption_top?('list')
         source_header(caption)
       end
       puts '</source>'

@@ -142,9 +142,9 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang) if top?('list')
+        list_header(id, caption, lang) if caption_top?('list')
         list_body(id, lines, lang)
-        list_header(id, caption, lang) unless top?('list')
+        list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
@@ -152,18 +152,18 @@ module ReVIEW
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang) if top?('list')
+        list_header(id, caption, lang) if caption_top?('list')
         listnum_body(lines, lang)
-        list_header(id, caption, lang) unless top?('list')
+        list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
     end
 
     def source(lines, caption = nil, lang = nil)
-      source_header(caption) if top?('list')
+      source_header(caption) if caption_top?('list')
       source_body(lines, lang)
-      source_header(caption) unless top?('list')
+      source_header(caption) unless caption_top?('list')
     end
 
     def image(lines, id, caption, metric = nil)
@@ -178,13 +178,13 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       sepidx, rows = parse_table_rows(lines)
       begin
-        if top?('table') && caption.present?
+        if caption_top?('table') && caption.present?
           table_header(id, caption)
         end
         table_begin(rows.first.size)
         table_rows(sepidx, rows)
         table_end
-        if !top?('table') && caption.present?
+        if !caption_top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
@@ -687,7 +687,7 @@ EOTGNUPLOT
       str
     end
 
-    def top?(type)
+    def caption_top?(type)
       unless %w[top bottom].include?(@book.config['caption_position'][type])
         warn("invalid caption_position/#{type} parameter. 'top' is assumed")
       end
