@@ -73,7 +73,7 @@ module EPUBMaker
     # Complement other parameters by using file parameter.
     def complement
       if @id.nil?
-        @id = @file.gsub(%r{[\\/\. ]}, '-')
+        @id = @file.gsub(%r{[\\/. ]}, '-')
       end
       if @id =~ /\A[^a-z]/i
         @id = "rv-#{@id}"

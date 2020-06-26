@@ -63,7 +63,7 @@ module ReVIEW
           raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
         end
 
-        @index.values.each do |item|
+        @index.each_value do |item|
           if item.id.split('|').include?(id)
             return item
           end

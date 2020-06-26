@@ -508,7 +508,7 @@ module ReVIEW
       sepidx = nil
       rows = []
       lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line
+        if /\A[=\-]{12}/ =~ line
           sepidx ||= idx
           next
         end

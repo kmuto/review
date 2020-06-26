@@ -70,7 +70,7 @@ module ReVIEW
         f = LineInput.new(StringIO.new(@content))
         while f.next?
           case f.peek
-          when /\A=+[\[\s\{]/
+          when /\A=+[\[\s{]/
             m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(f.gets)
             return m[2] # tag
           when %r{/\A//[a-z]+/}

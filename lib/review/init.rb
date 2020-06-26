@@ -342,7 +342,7 @@ EOS
       # validation
       if @web_result
         @web_result.each do |s|
-          if s !~ /\A[a-z0-9=_,\.-]*\Z/i
+          if s !~ /\A[a-z0-9=_,.-]*\Z/i
             @web_result = nil
             break
           end
