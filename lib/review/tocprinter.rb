@@ -166,15 +166,12 @@ module ReVIEW
 
     def parse_contents(name, upper, content)
       headline_array = []
-      counter = {}
+      counter = { lines: 0, chars: 0, list_lines: 0, text_lines: 0 }
       listmode = nil
 
       content.split("\n").each do |l|
         if l.start_with?("\x01STARTLIST\x01")
           listmode = true
-          if counter.empty?
-            counter = { lines: 0, chars: 0, list_lines: 0, text_lines: 0 }
-          end
           next
         elsif l.start_with?("\x01ENDLIST\x01")
           listmode = nil
@@ -184,7 +181,9 @@ module ReVIEW
           level = $1.to_i
           l = $'
           if level <= upper
-            headline_array.push(counter)
+            if counter[:chars] > 0
+              headline_array.push(counter)
+            end
             headline = l
             counter = {
               level: level,
