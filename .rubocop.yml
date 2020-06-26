@@ -23,9 +23,6 @@ Lint/AssignmentInCondition:
 Lint/ParenthesesAsGroupedExpression:
   Enabled: true
 
-#Lint/RescueWithoutErrorClass:
-#  Enabled: false
-
 Lint/UnderscorePrefixedVariableName:
   Enabled: true
 
@@ -70,6 +67,9 @@ Performance/RangeInclude:
 
 Performance/DeletePrefix:
   Enabled: false
+
+Performance/RedundantMerge:
+  Enabled: true
 
 #### Style
 
@@ -151,13 +151,10 @@ Style/IfUnlessModifier:
 Style/MutableConstant:
   Enabled: false
 
-#Style/MultipleComparison:
-#  Enabled: true
-
-Style/RedundantInterpolation:
+Style/MultipleComparison:
   Enabled: true
 
-Performance/RedundantMerge:
+Style/RedundantInterpolation:
   Enabled: true
 
 Style/ZeroLengthPredicate:
@@ -320,8 +317,8 @@ Style/RedundantPercentQ:
 Style/WhileUntilModifier:
   Enabled: false
 
-#Style/YodaCondition:
-#  Enabled: true
+Style/YodaCondition:
+  Enabled: true
 
 Style/ExponentialNotation:
   Enabled: true
@@ -520,8 +517,8 @@ Naming/AccessorMethodName:
   Enabled: true
 
 # When defining the == operator, name its argument other.
-#Style/BinaryOperatorParameterName:
-#  Enabled: true
+Style/BinaryOperatorParameterName:
+  Enabled: true
 
 Naming/FileName:
   Enabled: false
