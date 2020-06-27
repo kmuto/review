@@ -292,7 +292,7 @@ module ReVIEW
       index = level - 1
       if tag
         if tag !~ %r{\A/}
-          if caption.empty?
+          if !%w[note memo tip info warning important caution notice].include?(tag) && caption.empty?
             warn 'headline is empty.'
           end
           close_current_tagged_section(level)
