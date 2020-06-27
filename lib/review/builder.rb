@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2020 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -142,25 +142,28 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang)
+        list_header(id, caption, lang) if caption_top?('list')
+        list_body(id, lines, lang)
+        list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body(id, lines, lang)
     end
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang)
+        list_header(id, caption, lang) if caption_top?('list')
+        listnum_body(lines, lang)
+        list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body(lines, lang)
     end
 
     def source(lines, caption = nil, lang = nil)
-      source_header(caption)
+      source_header(caption) if caption_top?('list')
       source_body(lines, lang)
+      source_header(caption) unless caption_top?('list')
     end
 
     def image(lines, id, caption, metric = nil)
@@ -175,15 +178,18 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       sepidx, rows = parse_table_rows(lines)
       begin
-        if caption.present?
+        if caption_top?('table') && caption.present?
+          table_header(id, caption)
+        end
+        table_begin(rows.first.size)
+        table_rows(sepidx, rows)
+        table_end
+        if !caption_top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin(rows.first.size)
-      table_rows(sepidx, rows)
-      table_end
     end
 
     def table_row_separator_regexp
@@ -696,6 +702,13 @@ EOTGNUPLOT
 
     def escape(str)
       str
+    end
+
+    def caption_top?(type)
+      unless %w[top bottom].include?(@book.config['caption_position'][type])
+        warn("invalid caption_position/#{type} parameter. 'top' is assumed")
+      end
+      @book.config['caption_position'][type] != 'bottom'
     end
   end
 end # module ReVIEW

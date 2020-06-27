@@ -100,6 +100,27 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<table><tbody><tr><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>), actual
   end
 
+  def test_table
+    actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS.chomp
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">aaa</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">bbb</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">ccc</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">ddd&lt;&gt;&amp;</td></tbody></table>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS.chomp
+<table><caption>表1.1　FOO</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">aaa</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">bbb</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">ccc</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">ddd&lt;&gt;&amp;</td></tbody></table>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS.chomp
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">aaa</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">bbb</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">ccc</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">ddd&lt;&gt;&amp;</td></tbody><caption>表1.1　FOO</caption></table>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_customize_cellwidth
     actual = compile_block("//tsize[2,3,5]\n//table{\nA\tB\tC\n//}\n")
     assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="8.503">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">C</td></tbody></table>), actual
@@ -144,6 +165,10 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
   def test_emtable
     actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
     assert_equal %Q(<table><caption>foo</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody><caption>foo</caption></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
   end
 
   def test_table_row_separator
@@ -449,11 +474,19 @@ EOS
   def test_emlist
     actual = compile_block("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre></list>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<list type='emlist'><pre>test1\ntest1.5\n\ntest<i>2</i>\n</pre><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption></list>), actual
   end
 
   def test_emlistnum
     actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
     assert_equal %Q(<list type='emlistnum'><caption aid:pstyle='emlistnum-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre></list>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<list type='emlistnum'><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre><caption aid:pstyle='emlistnum-title'>this is <b>test</b>&lt;&amp;&gt;_</caption></list>), actual
   end
 
   def test_emlist_listinfo
@@ -507,6 +540,17 @@ test<i>2</i>
 </pre></codelist>
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><pre>test1
+test1.5
+
+test<i>2</i>
+</pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum
@@ -520,6 +564,17 @@ EOS
 <span type='lineno'> 3: </span>
 <span type='lineno'> 4: </span>test<i>2</i>
 </pre></codelist>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><pre><span type='lineno'> 1: </span>test1
+<span type='lineno'> 2: </span>test1.5
+<span type='lineno'> 3: </span>
+<span type='lineno'> 4: </span>test<i>2</i>
+</pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>
 EOS
     assert_equal expected, actual
   end
@@ -537,6 +592,17 @@ EOS
 </pre></codelist>
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><pre><span type='lineno'>100: </span>test1
+<span type='lineno'>101: </span>test1.5
+<span type='lineno'>102: </span>
+<span type='lineno'>103: </span>test<i>2</i>
+</pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>
+EOS
+    assert_equal expected, actual
   end
 
   def test_list_listinfo
@@ -551,6 +617,17 @@ EOS
 </listinfo><listinfo line="3">
 </listinfo><listinfo line="4" end="4">test<i>2</i>
 </listinfo></pre></codelist>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><pre><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>
 EOS
     assert_equal expected, actual
   end
@@ -571,6 +648,15 @@ lineB
 </pre></list>
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS.chomp
+<list type='cmd'><pre>lineA
+lineB
+</pre><caption aid:pstyle='cmd-title'>cap1</caption></list>
+EOS
+    assert_equal expected, actual
   end
 
   def test_source
@@ -581,6 +667,17 @@ bar
 
 buz
 </pre></source>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre><caption>foo/bar/test.rb</caption></source>
 EOS
     assert_equal expected, actual
   end
@@ -620,6 +717,17 @@ EOS
 </listinfo></insn>
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<insn><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle></insn>
+EOS
+    assert_equal expected, actual
   end
 
   def test_box
@@ -633,6 +741,17 @@ EOS
 </listinfo></box>
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<box><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption></box>
+EOS
+    assert_equal expected, actual
   end
 
   def test_box_non_listinfo
@@ -644,6 +763,17 @@ test1.5
 
 test<i>2</i>
 </box>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<box>test1
+test1.5
+
+test<i>2</i>
+<caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption></box>
 EOS
     assert_equal expected, actual
   end
@@ -689,6 +819,10 @@ EOS
 
     actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
     assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" /><caption>図1.1　sample photo</caption></img>), actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
+    assert_equal %Q(<img><caption>図1.1　sample photo</caption><Image href="file://images/chap1-sampleimg.png" /></img>), actual
   end
 
   def test_image_with_metric
@@ -722,6 +856,10 @@ EOS
 
     actual = compile_block("//indepimage[sampleimg][sample photo]\n")
     assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" /><caption>sample photo</caption></img>), actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    assert_equal %Q(<img><caption>sample photo</caption><Image href="file://images/chap1-sampleimg.png" /></img>), actual
   end
 
   def test_indepimage_without_caption
@@ -1090,6 +1228,11 @@ e=mc^2
 //}
 EOS
     expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><replace idref="texblock-1"><pre>e=mc^2</pre></replace></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><replace idref="texblock-1"><pre>e=mc^2</pre></replace><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
     actual = compile_block(src)
     assert_equal expected, actual
   end

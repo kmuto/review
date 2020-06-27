@@ -58,6 +58,9 @@ Performance/StringReplacement:
 Performance/RangeInclude:
   Enabled: true
 
+Performance/DeletePrefix:
+  Enabled: false
+
 #### Style
 
 Style/AccessModifierDeclarations:
