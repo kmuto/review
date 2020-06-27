@@ -148,4 +148,48 @@ EOB
       assert_equal expect, str
     end
   end
+
+  def test_webtocprinter_nochapter
+    catalog_yml = <<-EOB
+CHAPS:
+EOB
+    mktmpbookdir 'catalog.yml' => catalog_yml do |_dir, book, _files|
+      str = WEBTOCPrinter.book_to_string(book)
+      expect = <<-EOB
+<ul class="book-toc">
+<li><a href="index.html">TOP</a></li>
+</ul>
+EOB
+      assert_equal expect, str
+    end
+  end
+
+  def test_webtocprinter_noheadline
+    catalog_yml = <<-EOB
+CHAPS:
+  - ch1.re
+  - ch2.re
+  - ch3.re
+  - ch4.re
+EOB
+    mktmpbookdir 'catalog.yml' => catalog_yml,
+                 'ch1.re' => "A\n",
+                 'ch2.re' => "B\n\n= C\n== D\n",
+                 'ch3.re' => "//emlist{\nLIST\n//}\n",
+                 'ch4.re' => "==[column] E\n\n= F" do |_dir, book, _files|
+      str = WEBTOCPrinter.book_to_string(book)
+      expect = <<-EOB
+<ul class="book-toc">
+<li><a href="index.html">TOP</a></li>
+<li><a href="ch1.html">-</a></li>
+<li><a href="ch2.html">-</a></li>
+<li><a href="ch2.html">第2章　C</a></li>
+<li><a href="ch3.html">-</a></li>
+<li><a href="ch4.html">-</a></li>
+<li><a href="ch4.html">第4章　F</a></li>
+</ul>
+EOB
+      assert_equal expect, str
+    end
+  end
 end
