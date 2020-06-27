@@ -671,8 +671,6 @@ LIST
 EOS
 
       expected = <<-EOS
-headline is empty.
-
 A
 
 1　B
