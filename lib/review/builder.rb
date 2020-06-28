@@ -84,6 +84,7 @@ module ReVIEW
 
     def builder_init_file
       @sec_counter = SecCounter.new(5, @chapter)
+      @doc_status = {}
     end
     private :builder_init_file
 
