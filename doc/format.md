@@ -532,17 +532,19 @@ Some block commands are used for short column.
 
 The content is like paragraph; separated by empty lines.
 
-From Re:VIEW 4.2, it is also possible to express a short column in a notation similar to a column.
+## Large Block notation
+
+From Re:VIEW x.x, it is also possible to express a short column in a large block notation such as `///command{ ... ///}`.
 
 ```
-===[note] NOTE
+///note[NOTE]{
 
 With ordered itemize.
 
  1. item1
  2. item2
 
-===[/note]
+///}
 ```
 
 ## Footnotes
