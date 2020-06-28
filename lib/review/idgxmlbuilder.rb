@@ -1037,15 +1037,24 @@ module ReVIEW
       class_eval %Q(
         def #{name}_begin(caption = nil)
           check_nested_minicolumn
-          @doc_status[:minicolumn] = '#{name}'
-          print "<#{name}>"
+          if '#{name}' == 'notice' && caption.present?
+            @doc_status[:minicolumn] = '#{name}-t'
+            print "<#{name}-t>"
+          else
+            @doc_status[:minicolumn] = '#{name}'
+            print "<#{name}>"
+          end
           if caption.present?
             puts %Q(<title aid:pstyle='#{name}-title'>\#{compile_inline(caption)}</title>)
           end
         end
 
         def #{name}_end
-          print "</#{name}>"
+          if '#{name}' == 'notice' && @doc_status[:minicolumn] == 'notice-t'
+            print "</#{name}-t>"
+          else
+            print "</#{name}>"
+          end
           @doc_status[:minicolumn] = nil
         end
       )

@@ -567,6 +567,14 @@ module ReVIEW
       end
     end
 
+    def in_minicolumn?
+      @doc_status[:minicolumn]
+    end
+
+    def minicolumn_block_name?(name)
+      CAPTION_TITLES.include?(name)
+    end
+
     def graph(lines, id, command, caption = '')
       c = target_name
       dir = File.join(@book.imagedir, c)

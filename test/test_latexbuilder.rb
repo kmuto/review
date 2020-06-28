@@ -1977,9 +1977,9 @@ EOS
   def test_minicolumn_blocks
     %w[note memo tip info warning important caution notice].each do |type|
       src = <<-EOS
-///#{type}[#{type}1]{
+//#{type}[#{type}1]{
 
-///}
+//}
 
 //#{type}[#{type}2]{
 //}
@@ -1989,31 +1989,30 @@ EOS
 \\begin{review#{type}}[#{type}1]
 \\end{review#{type}}
 \\begin{review#{type}}[#{type}2]
-
 \\end{review#{type}}
 EOS
       assert_equal expected, compile_block(src)
 
       src = <<-EOS
-///#{type}[#{type}2]{
+//#{type}[#{type}2]{
 
-///}
+//}
 
-///#{type}[#{type}3]{
+//#{type}[#{type}3]{
 
-///}
+//}
 
-///#{type}[#{type}4]{
+//#{type}[#{type}4]{
 
-///}
+//}
 
-///#{type}[#{type}5]{
+//#{type}[#{type}5]{
 
-///}
+//}
 
-///#{type}[#{type}6]{
+//#{type}[#{type}6]{
 
-///}
+//}
 EOS
 
       expected = <<-EOS
@@ -2031,23 +2030,23 @@ EOS
       assert_equal expected, compile_block(src)
 
       src = <<-EOS
-///#{type}{
+//#{type}{
 
  * A
 
  1. B
 
-///}
+//}
 
-///#{type}[OMITEND1]{
+//#{type}[OMITEND1]{
 
 //emlist{
 LIST
 //}
 
-///}
-///#{type}[OMITEND2]{
-///}
+//}
+//#{type}[OMITEND2]{
+//}
 EOS
 
       expected = <<-EOS
@@ -2082,15 +2081,15 @@ EOS
     %w[note memo tip info warning important caution notice].each do |type|
       @builder.doc_status.clear
       src = <<-EOS
-///#{type}{
+//#{type}{
 
 //#{type}{
 //}
 
-///}
+//}
 EOS
       e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-      assert_match(/: nested mini\-column is not allowed/, e.message)
+      assert_match(/minicolumn cannot be nested:/, e.message)
     end
   end
 
@@ -2098,16 +2097,16 @@ EOS
     %w[note memo tip info warning important caution notice].each do |type|
       @builder.doc_status.clear
       src = <<-EOS
-///#{type}{
+//#{type}{
 
-///#{type}{
+//#{type}{
 
-///}
+//}
 
-///}
+//}
 EOS
       e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-      assert_match(/large block cannot be nested:/, e.message)
+      assert_match(/minicolumn cannot be nested:/, e.message)
     end
   end
 
@@ -2115,15 +2114,15 @@ EOS
     %w[memo tip info warning important caution notice].each do |type|
       @builder.doc_status.clear
       src = <<-EOS
-///#{type}{
+//#{type}{
 
-///note{
-///}
+//note{
+//}
 
-///}
+//}
 EOS
       e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-      assert_match(/large block cannot be nested:/, e.message)
+      assert_match(/minicolumn cannot be nested:/, e.message)
     end
   end
 
