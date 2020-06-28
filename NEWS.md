@@ -1,3 +1,32 @@
+# Version 4.2.0
+## New Features
+* introduce `caption_position` parameter to specify a caption position of image, table, list, and equation. `caption_position` has child parameters `image`, `table`, `list`, and `equation` and the value is `top` or `bottom` ([#1320])
+
+## Breaking Changes
+* review-vol is rewritten.  Improved processing of parts and inline instructions in headings. Changed display format. When a part is specified, the volume of the part file itself is returned instead of the volume of the part. The `-P` and `--directory` options have been removed ([#1485])
+* review-index is rewritten. Most option names have been changed. The number of lines and characters are now displayed only when `-d` option is specified. review-index uses PLAINTEXTBuilder to return accurate line and character counts. `-y` option is provided to specify a target chapter ([#1485])
+
+## Bug Fixes
+* remove duplicated `@non_parsed_commands` declaration ([#1499])
+* mathematical images not being created in WebMaker and TextMaker has been fixed ([#1501])
+
+## Enhancements
+* improve a performance of building math figures on imgmath ([#1488])
+* for those times when you want to hand over non-default YAML parameters to PDFMaker, you can write your own `layouts/config-local.tex.erb` file ([#1505])
+
+## Others
+* GitHub Actions: use `ruby/setup-ruby` instead of `eregon/use-ruby-action` ([#1490])
+* skip artifacts in the sample folder during testing ([#1504])
+
+[#1320]: https://github.com/kmuto/review/issues/1320
+[#1485]: https://github.com/kmuto/review/issues/1485
+[#1488]: https://github.com/kmuto/review/issues/1488
+[#1490]: https://github.com/kmuto/review/pull/1490
+[#1499]: https://github.com/kmuto/review/issues/1499
+[#1501]: https://github.com/kmuto/review/pull/1501
+[#1504]: https://github.com/kmuto/review/pull/1504
+[#1505]: https://github.com/kmuto/review/issues/1505
+
 # Version 4.1.0
 ## New Features
 * add `table_row_separator` to specify a separator that separates table rows. Accceptable value: tabs (means `\t+`, default), `singletab` (means `\t`), spaces (means `\s+`), verticalbar (means `\s*\|\s*`) ([#1420])
