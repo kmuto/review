@@ -589,7 +589,7 @@ module ReVIEW
 
     %w[note memo tip info warning important caution notice].each do |name|
       class_eval %Q(
-        def #{name}_begin(_level, _label, caption = nil)
+        def #{name}_begin(caption = nil)
           check_nested_minicolumn
           @doc_status[:minicolumn] = '#{name}'
           blank
@@ -598,7 +598,7 @@ module ReVIEW
           end
         end
 
-        def #{name}_end(_level)
+        def #{name}_end
           blank
           @doc_status[:minicolumn] = nil
         end

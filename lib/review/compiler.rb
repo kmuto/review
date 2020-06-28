@@ -238,6 +238,9 @@ module ReVIEW
       f = LineInput.new(StringIO.new(@chapter.content))
       @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
 
+      ## in large block, such as note/info/alert...
+      @large_block_name = nil
+
       tagged_section_init
       while f.next?
         case f.peek
@@ -257,6 +260,14 @@ module ReVIEW
         when %r{\A//\}}
           f.gets
           error 'block end seen but not opened'
+        when %r|\A///([a-z]+)(:?\[.*\])?{\s*$|
+          name = $1
+          line = f.gets
+          args = parse_args(line.sub(%r{\A///[a-z]+}, '').rstrip.chomp('{'), name)
+          compile_large_block_begin(name, *args)
+        when %r(\A///}\s*$)
+          _line = f.gets
+          compile_large_block_end
         when %r{\A//[a-z]+}
           # @command_name_stack.push(name) ## <- move into read_command() to use name
           name, args, lines = read_command(f)
@@ -285,6 +296,33 @@ module ReVIEW
         end
       end
       close_all_tagged_section
+    end
+
+    def compile_large_block_begin(name, caption = nil)
+      mid = "#{name}_begin"
+      unless @strategy.respond_to?(mid)
+        error "strategy does not support large block: #{name}"
+      end
+
+      if @large_block_name
+        error "large block cannot be nested: #{name}"
+        return
+      end
+      @large_block_name = name
+
+      @strategy.__send__(mid, caption)
+    end
+
+    def compile_large_block_end
+      unless @large_block_name
+        error "large block is not used: #{name}"
+        return
+      end
+      name = @large_block_name
+
+      mid = "#{name}_end"
+      @strategy.__send__(mid)
+      @large_block_name = nil
     end
 
     def compile_headline(line)

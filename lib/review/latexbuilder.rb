@@ -212,7 +212,7 @@ module ReVIEW
       @doc_status[:column] = nil
     end
 
-    def common_block_begin(type, _level, _label, caption = nil)
+    def common_block_begin(type, caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = type
       print "\\begin{review#{type}}"
@@ -225,19 +225,19 @@ module ReVIEW
       @doc_status[:caption] = nil
     end
 
-    def common_block_end(type, _level)
+    def common_block_end(type)
       puts "\\end{review#{type}}"
       @doc_status[:minicolumn] = nil
     end
 
     %w[note memo tip info warning important caution notice].each do |name|
       class_eval %Q(
-        def #{name}_begin(level, label, caption = nil)
-          common_block_begin('#{name}', level, label, caption)
+        def #{name}_begin(caption = nil)
+          common_block_begin('#{name}', caption)
         end
 
-        def #{name}_end(level)
-          common_block_end('#{name}', level)
+        def #{name}_end
+          common_block_end('#{name}')
         end
       )
     end
