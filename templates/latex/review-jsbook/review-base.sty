@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2020/01/02]
+\ProvidesClass{review-base}[2020/07/11]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -61,7 +61,7 @@
 
 \PDFDocumentInformation{
   /Title    (\review@booktitlename)
-  /Author   (\review@autnames)
+  \ifdefined\review@autnames /Author   (\review@autnames)\fi
   % /Subject  ()
   % /Keywords (,,)
   /Creator  (Re:VIEW \review@reviewversion, with LaTeX)

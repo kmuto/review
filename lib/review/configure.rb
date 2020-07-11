@@ -18,7 +18,7 @@ module ReVIEW
         'bookname' => 'book', # it defines epub file name also
         'booktitle' => 'Re:VIEW Sample Book',
         'title' => nil,
-        'aut' => ['anonymous'], # author
+        'aut' => nil, # author
         'prt' => nil, # printer(publisher)
         'asn' => nil, # associated name
         'ant' => nil, # bibliographic antecedent

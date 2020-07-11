@@ -10,9 +10,10 @@ class PDFMakerTest < Test::Unit::TestCase
     @config.merge!(
       'bookname' => 'sample',
       'title' => 'Sample Book',
-      'review_version' => 3,
+      'aut' => 'anonymous',
+      'review_version' => 4,
       'urnid' => 'http://example.jp/',
-      'date' => '2011-01-01',
+      'date' => '2020-07-11',
       'language' => 'ja',
       'texcommand' => 'uplatex'
     )
@@ -196,7 +197,7 @@ class PDFMakerTest < Test::Unit::TestCase
     @config['pht'] = ['Mrs.Smith']
     @config['language'] = 'ja'
     history = @maker.make_history_list
-    expect = ['2011年1月1日　発行']
+    expect = ['2020年7月11日　発行']
     assert_equal expect, history
   end
 
@@ -207,9 +208,9 @@ class PDFMakerTest < Test::Unit::TestCase
     @config['language'] = 'ja'
     @config['history'] =
       [['2011-08-03 v1.0.0版発行',
-        '2012-02-15 v1.1.0版発行']]
+        '2020-07-11 v1.2.0版発行']]
     history = @maker.make_history_list
-    expect = ['2011年8月3日　v1.0.0版発行', '2012年2月15日　v1.1.0版発行']
+    expect = ['2011年8月3日　v1.0.0版発行', '2020年7月11日　v1.2.0版発行']
     assert_equal expect, history
   end
 
