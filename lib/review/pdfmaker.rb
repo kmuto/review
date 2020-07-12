@@ -385,11 +385,11 @@ module ReVIEW
           items.each_with_index do |item, rev|
             editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
             revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
-            if item =~ /\A\d+\-\d+\-\d+\Z/
+            if item =~ /\A\d+-\d+-\d+\Z/
               buf << ReVIEW::I18n.t('published_by1', [date_to_s(item), editstr + revstr])
-            elsif item =~ /\A(\d+\-\d+\-\d+)[\s　](.+)/
+            elsif item =~ /\A(\d+-\d+-\d+)[\s　](.+)/
               # custom date with string
-              item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) { |m| buf << ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]]) }
+              item.match(/\A(\d+-\d+-\d+)[\s　](.+)/) { |m| buf << ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]]) }
             else
               # free format
               buf << item
@@ -455,9 +455,9 @@ module ReVIEW
       end
 
       @locale_latex = {}
-      part_tuple = I18n.get('part').split(/\%[A-Za-z]{1,3}/, 2)
-      chapter_tuple = I18n.get('chapter').split(/\%[A-Za-z]{1,3}/, 2)
-      appendix_tuple = I18n.get('appendix').split(/\%[A-Za-z]{1,3}/, 2)
+      part_tuple = I18n.get('part').split(/%[A-Za-z]{1,3}/, 2)
+      chapter_tuple = I18n.get('chapter').split(/%[A-Za-z]{1,3}/, 2)
+      appendix_tuple = I18n.get('appendix').split(/%[A-Za-z]{1,3}/, 2)
       @locale_latex['prepartname'] = part_tuple[0]
       @locale_latex['postpartname'] = part_tuple[1]
       @locale_latex['prechaptername'] = chapter_tuple[0]

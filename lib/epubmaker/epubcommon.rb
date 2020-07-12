@@ -261,11 +261,11 @@ EOT
           items.each_with_index do |item, rev|
             editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
             revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
-            if item =~ /\A\d+\-\d+\-\d+\Z/
+            if item =~ /\A\d+-\d+-\d+\Z/
               buf << %Q(      <p>#{ReVIEW::I18n.t('published_by1', [date_to_s(item), editstr + revstr])}</p>\n)
-            elsif item =~ /\A(\d+\-\d+\-\d+)[\s　](.+)/
+            elsif item =~ /\A(\d+-\d+-\d+)[\s　](.+)/
               # custom date with string
-              item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) do |m|
+              item.match(/\A(\d+-\d+-\d+)[\s　](.+)/) do |m|
                 buf << %Q(      <p>#{ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]])}</p>\n)
               end
             else

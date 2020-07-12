@@ -125,7 +125,7 @@ module ReVIEW
       frmt.gsub!('%%', '##')
 
       unless args.is_a?(Array)
-        args = args.nil? && frmt !~ /\%/ ? [] : [args]
+        args = args.nil? && frmt !~ /%/ ? [] : [args]
       end
 
       percents = frmt.scan(/%[A-Za-z]{1,3}/)

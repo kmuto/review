@@ -238,7 +238,7 @@ module ReVIEW
         case f.peek
         when /\A\#@/
           f.gets # Nothing to do
-        when /\A=+[\[\s\{]/
+        when /\A=+[\[\s{]/
           compile_headline(f.gets)
         when /\A\s+\*/
           compile_ulist(f)
@@ -559,7 +559,7 @@ module ReVIEW
 
     def text(str, block_mode = false)
       return '' if str.empty?
-      words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
+      words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
       words.each do |w|
         if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
           error "`@<xxx>' seen but is not valid inline op: #{w}"

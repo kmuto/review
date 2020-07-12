@@ -145,7 +145,7 @@ class PDFMakerTest < Test::Unit::TestCase
       @maker.erb_config
       tmpl = @maker.template_content
       expect = File.read(File.join(assets_dir, 'test_template.tex'))
-      expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
+      expect.gsub!(/\\def\\review@reviewversion{[^}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
       assert_equal(expect, tmpl)
     end
   end
@@ -160,7 +160,7 @@ class PDFMakerTest < Test::Unit::TestCase
         @maker.erb_config
         tmpl = @maker.template_content
         expect = File.read(File.join(assets_dir, 'test_template.tex'))
-        expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
+        expect.gsub!(/\\def\\review@reviewversion{[^}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
         expect.sub!("\\makeatother\n", '\&' + "%% BEGIN: config-local.tex.erb\n\\def\\customvalue{\\#\\textunderscore{}TEST\\textunderscore{}}\n%% END: config-local.tex.erb\n")
         assert_equal(expect, tmpl)
       end
@@ -182,7 +182,7 @@ class PDFMakerTest < Test::Unit::TestCase
         backcover = "\\clearpage\n\\thispagestyle{empty}\\AddToShipoutPictureBG{%\n\\AtPageLowerLeft{\\includegraphics[width=\\paperwidth,height=\\paperheight]{images/backcover.png}}\n}\n\\null"
         File.open(File.join(dir, 'backcover.tex'), 'w') { |f| f.write(backcover) }
         expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
-        expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
+        expect.gsub!(/\\def\\review@reviewversion{[^}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
         @maker.basedir = Dir.pwd
         @maker.erb_config
         tmpl = @maker.template_content

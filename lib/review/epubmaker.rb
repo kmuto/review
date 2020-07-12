@@ -252,7 +252,7 @@ module ReVIEW
       if @config['epubmaker']['verify_target_images'].present?
         @config['epubmaker']['force_include_images'].each do |file|
           unless File.exist?(file)
-            if file !~ /\Ahttp[s]?:/
+            if file !~ /\Ahttps?:/
               warn "#{file} is not found, skip."
             end
             next

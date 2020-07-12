@@ -8,8 +8,6 @@ AllCops:
 require:
   - rubocop-performance
 
-inherit_from: .rubocop_todo.yml
-
 #### Lint
 
 Lint/EmptyWhen:
@@ -25,9 +23,6 @@ Lint/AssignmentInCondition:
 Lint/ParenthesesAsGroupedExpression:
   Enabled: true
 
-#Lint/RescueWithoutErrorClass:
-#  Enabled: false
-
 Lint/UnderscorePrefixedVariableName:
   Enabled: true
 
@@ -42,6 +37,18 @@ Lint/UselessAssignment:
 
 Lint/ErbNewArguments:
   Enabled: false
+
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
+
+Lint/RaiseException:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
 
 #### Performance
 
@@ -60,6 +67,9 @@ Performance/RangeInclude:
 
 Performance/DeletePrefix:
   Enabled: false
+
+Performance/RedundantMerge:
+  Enabled: true
 
 #### Style
 
@@ -83,9 +93,6 @@ Style/BarePercentLiterals:
 
 Style/BlockDelimiters:
   Enabled: true
-
-Style/BracesAroundHashParameters:
-  Enabled: false
 
 Style/CaseEquality:
   Enabled: false
@@ -144,13 +151,10 @@ Style/IfUnlessModifier:
 Style/MutableConstant:
   Enabled: false
 
-#Style/MultipleComparison:
-#  Enabled: true
-
-Style/RedundantInterpolation:
+Style/MultipleComparison:
   Enabled: true
 
-Performance/RedundantMerge:
+Style/RedundantInterpolation:
   Enabled: true
 
 Style/ZeroLengthPredicate:
@@ -313,8 +317,32 @@ Style/RedundantPercentQ:
 Style/WhileUntilModifier:
   Enabled: false
 
-#Style/YodaCondition:
-#  Enabled: true
+Style/YodaCondition:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/SlicingWithRange:
+  Enabled: false
 
 ### Layout
 
@@ -425,6 +453,17 @@ Layout/TrailingWhitespace:
   Enabled: true
   AllowInHeredoc: true
 
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Layout/LineLength:
+  Max: 256
+  Exclude:
+    - "test/**/*"
+
 #### Metrics
 
 Metrics/BlockNesting:
@@ -443,11 +482,6 @@ Metrics/ClassLength:
   Max: 1500
   Exclude:
     - 'test/*.rb'
-
-Metrics/LineLength:
-  Max: 256
-  Exclude:
-    - "test/**/*"
 
 ### should be < 50
 Metrics/MethodLength:
@@ -483,8 +517,8 @@ Naming/AccessorMethodName:
   Enabled: true
 
 # When defining the == operator, name its argument other.
-#Style/BinaryOperatorParameterName:
-#  Enabled: true
+Style/BinaryOperatorParameterName:
+  Enabled: true
 
 Naming/FileName:
   Enabled: false

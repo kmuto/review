@@ -64,7 +64,7 @@ EOT
       io = StringIO.new
       @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
       assert_raise(ApplicationError) { @u.check_old_catalogs(@tmpdir) }
-      assert_match(/review\-catalog\-converter/, io.string)
+      assert_match(/review-catalog-converter/, io.string)
 
       File.unlink(File.join(@tmpdir, fname))
     end
@@ -86,7 +86,7 @@ EOT
     io = StringIO.new
     @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
     @u.check_own_files(@tmpdir)
-    assert_match(/There is review\-ext\.rb file/, io.string)
+    assert_match(/There is review-ext\.rb file/, io.string)
   end
 
   def test_update_version_older
@@ -385,7 +385,7 @@ EOT
 
     File.write(File.join(@tmpdir, 'sty/review-base.sty'), "% MODIFIED\n")
     @u.update_tex_stys('review-jsbook', @tmpdir)
-    assert_match(/review\-base\.sty will be overridden/, io.string)
+    assert_match(/review-base\.sty will be overridden/, io.string)
     assert_equal cont, File.read(File.join(@tmpdir, 'sty/review-base.sty'))
   end
 
