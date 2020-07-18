@@ -14,8 +14,8 @@ require 'strscan'
 
 module ReVIEW
   class Compiler
-    def initialize(strategy)
-      @strategy = strategy
+    def initialize(builder)
+      @builder = builder
 
       ## commands which do not parse block lines in compiler
       @non_parsed_commands = %i[embed texequation graph]
@@ -24,10 +24,15 @@ module ReVIEW
       @command_name_stack = []
     end
 
-    attr_reader :strategy
+    attr_reader :builder
+
+    def strategy
+      error 'Compiler#strategy is obsoleted. Use Compiler#builder.'
+      @builder
+    end
 
     def non_escaped_commands
-      if @strategy.highlight?
+      if @builder.highlight?
         %i[list emlist listnum emlistnum cmd]
       else
         []
@@ -37,7 +42,7 @@ module ReVIEW
     def compile(chap)
       @chapter = chap
       do_compile
-      @strategy.result
+      @builder.result
     end
 
     class SyntaxElement
@@ -231,7 +236,7 @@ module ReVIEW
 
     def do_compile
       f = LineInput.new(StringIO.new(@chapter.content))
-      @strategy.bind(self, @chapter, Location.new(@chapter.basename, f))
+      @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
 
       tagged_section_init
       while f.next?
@@ -317,7 +322,7 @@ module ReVIEW
         end
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-        @strategy.headline(level, label, caption)
+        @builder.headline(level, label, caption)
       end
     end
 
@@ -328,7 +333,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
-      @strategy.headline(level, label, caption)
+      @builder.headline(level, label, caption)
     end
 
     def tagged_section_init
@@ -337,21 +342,21 @@ module ReVIEW
 
     def open_tagged_section(tag, level, label, caption)
       mid = "#{tag}_begin"
-      unless @strategy.respond_to?(mid)
-        error "strategy does not support tagged section: #{tag}"
+      unless @builder.respond_to?(mid)
+        error "builder does not support tagged section: #{tag}"
         headline(level, label, caption)
         return
       end
       @tagged_section.push([tag, level])
-      @strategy.__send__(mid, level, label, caption)
+      @builder.__send__(mid, level, label, caption)
     end
 
     def close_tagged_section(tag, level)
       mid = "#{tag}_end"
-      if @strategy.respond_to?(mid)
-        @strategy.__send__(mid, level)
+      if @builder.respond_to?(mid)
+        @builder.__send__(mid, level)
       else
-        error "strategy does not support block op: #{mid}"
+        error "builder does not support block op: #{mid}"
       end
     end
 
@@ -374,38 +379,38 @@ module ReVIEW
         line =~ /\A\s+(\*+)/
         current_level = $1.size
         if level == current_level
-          @strategy.ul_item_end
+          @builder.ul_item_end
           # body
-          @strategy.ul_item_begin(buf)
+          @builder.ul_item_begin(buf)
         elsif level < current_level # down
           level_diff = current_level - level
           if level_diff != 1
             error 'too many *.'
           end
           level = current_level
-          @strategy.ul_begin { level }
-          @strategy.ul_item_begin(buf)
+          @builder.ul_begin { level }
+          @builder.ul_item_begin(buf)
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
           (1..level_diff).to_a.reverse_each do |i|
-            @strategy.ul_item_end
-            @strategy.ul_end { level + i }
+            @builder.ul_item_end
+            @builder.ul_end { level + i }
           end
-          @strategy.ul_item_end
+          @builder.ul_item_end
           # body
-          @strategy.ul_item_begin(buf)
+          @builder.ul_item_begin(buf)
         end
       end
 
       (1..level).to_a.reverse_each do |i|
-        @strategy.ul_item_end
-        @strategy.ul_end { i }
+        @builder.ul_item_end
+        @builder.ul_end { i }
       end
     end
 
     def compile_olist(f)
-      @strategy.ol_begin
+      @builder.ol_begin
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
         next if line =~ /\A\#@/
 
@@ -414,24 +419,24 @@ module ReVIEW
         f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
           buf.push(text(cont.strip))
         end
-        @strategy.ol_item(buf, num)
+        @builder.ol_item(buf, num)
       end
-      @strategy.ol_end
+      @builder.ol_end
     end
 
     def compile_dlist(f)
-      @strategy.dl_begin
+      @builder.dl_begin
       while /\A\s*:/ =~ f.peek
         # defer compile_inline to handle footnotes
-        @strategy.doc_status[:dt] = true
-        @strategy.dt(text(f.gets.sub(/\A\s*:/, '').strip))
-        @strategy.doc_status[:dt] = nil
+        @builder.doc_status[:dt] = true
+        @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
+        @builder.doc_status[:dt] = nil
         desc = f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) }
-        @strategy.dd(desc)
+        @builder.dd(desc)
         f.skip_blank_lines
         f.skip_comment_lines
       end
-      @strategy.dl_end
+      @builder.dl_end
     end
 
     def compile_paragraph(f)
@@ -440,7 +445,7 @@ module ReVIEW
         break if line.strip.empty?
         buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
       end
-      @strategy.paragraph(buf)
+      @builder.paragraph(buf)
     end
 
     def read_command(f)
@@ -449,9 +454,9 @@ module ReVIEW
       ignore_inline = @non_parsed_commands.include?(name)
       @command_name_stack.push(name)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
-      @strategy.doc_status[name] = true
+      @builder.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
-      @strategy.doc_status[name] = nil
+      @builder.doc_status[name] = nil
       [name, args, lines]
     end
 
@@ -496,8 +501,8 @@ module ReVIEW
     end
 
     def compile_command(syntax, args, lines)
-      unless @strategy.respond_to?(syntax.name)
-        error "strategy does not support command: //#{syntax.name}"
+      unless @builder.respond_to?(syntax.name)
+        error "builder does not support command: //#{syntax.name}"
         compile_unknown_command(args, lines)
         return
       end
@@ -518,11 +523,11 @@ module ReVIEW
     end
 
     def compile_unknown_command(args, lines)
-      @strategy.unknown_command(args, lines)
+      @builder.unknown_command(args, lines)
     end
 
     def compile_block(syntax, args, lines)
-      @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+      @builder.__send__(syntax.name, (lines || default_block(syntax)), *args)
     end
 
     def default_block(syntax)
@@ -533,7 +538,7 @@ module ReVIEW
     end
 
     def compile_single(syntax, args)
-      @strategy.__send__(syntax.name, *args)
+      @builder.__send__(syntax.name, *args)
     end
 
     def replace_fence(str)
@@ -570,7 +575,7 @@ module ReVIEW
         if in_non_escaped_command? && block_mode
           result << revert_replace_fence(words.shift)
         else
-          result << @strategy.nofunc_text(revert_replace_fence(words.shift))
+          result << @builder.nofunc_text(revert_replace_fence(words.shift))
         end
         break if words.empty?
         result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
@@ -579,28 +584,28 @@ module ReVIEW
     rescue => e
       error e.message
     end
-    public :text # called from strategy
+    public :text # called from builder
 
     def compile_inline(str)
       op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
       unless inline_defined?(op)
         raise CompileError, "no such inline op: #{op}"
       end
-      unless @strategy.respond_to?("inline_#{op}")
-        raise "strategy does not support inline op: @<#{op}>"
+      unless @builder.respond_to?("inline_#{op}")
+        raise "builder does not support inline op: @<#{op}>"
       end
-      @strategy.__send__("inline_#{op}", arg)
+      @builder.__send__("inline_#{op}", arg)
     rescue => e
       error e.message
-      @strategy.nofunc_text(str)
+      @builder.nofunc_text(str)
     end
 
     def warn(msg)
-      @strategy.warn msg
+      @builder.warn msg
     end
 
     def error(msg)
-      @strategy.error msg
+      @builder.error msg
     end
   end
 end # module ReVIEW
