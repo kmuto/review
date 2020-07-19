@@ -327,7 +327,7 @@ module ReVIEW
     end
 
     def close_current_tagged_section(level)
-      while @tagged_section.last and @tagged_section.last[1] >= level
+      while @tagged_section.last && (@tagged_section.last[1] >= level)
         close_tagged_section(* @tagged_section.pop)
       end
     end

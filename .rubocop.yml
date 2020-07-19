@@ -71,6 +71,30 @@ Performance/DeletePrefix:
 Performance/RedundantMerge:
   Enabled: true
 
+Performance/AncestorsInclude:
+  Enabled: true
+
+Performance/BigDecimalWithNumericArgument:
+  Enabled: true
+
+Performance/RedundantSortBlock:
+  Enabled: true
+
+Performance/RedundantStringChars:
+  Enabled: true
+
+Performance/ReverseFirst:
+  Enabled: true
+
+Performance/SortReverse:
+  Enabled: true
+
+Performance/Squeeze:
+  Enabled: true
+
+Performance/StringInclude:
+  Enabled: false
+
 #### Style
 
 Style/AccessModifierDeclarations:
@@ -85,7 +109,7 @@ Style/Alias:
   Enabled: true
 
 Style/AndOr:
-  Enabled: false
+  Enabled: true
 
 Style/BarePercentLiterals:
   EnforcedStyle: percent_q
@@ -130,7 +154,7 @@ Style/EmptyElse:
   Enabled: true
 
 Style/EvalWithLocation:
-  Enabled: false
+  Enabled: true
 
 Style/FormatString:
   EnforcedStyle: sprintf
@@ -517,7 +541,7 @@ Naming/AccessorMethodName:
   Enabled: true
 
 # When defining the == operator, name its argument other.
-Style/BinaryOperatorParameterName:
+Naming/BinaryOperatorParameterName:
   Enabled: true
 
 Naming/FileName:
