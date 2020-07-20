@@ -101,7 +101,7 @@ module ReVIEW
       def parts_in_file
         # TODO: should be `parts.find_all{|part| part.present? and part.file?}` ?
         parts.find_all do |part|
-          part if part.present? and part.file?
+          part if part.present? && part.file?
         end
       end
 

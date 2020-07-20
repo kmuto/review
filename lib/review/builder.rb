@@ -240,7 +240,7 @@ module ReVIEW
 
     def adjust_n_cols(rows)
       rows.each do |cols|
-        while cols.last and cols.last.strip.empty?
+        while cols.last && cols.last.strip.empty?
           cols.pop
         end
       end
@@ -546,7 +546,7 @@ module ReVIEW
         def #{name}(lines, caption = nil)
           captionblock("#{name}", lines, caption)
         end
-      )
+      ), __FILE__, __LINE__ - 4
     end
 
     def graph(lines, id, command, caption = '')

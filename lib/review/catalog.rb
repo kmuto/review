@@ -41,7 +41,7 @@ module ReVIEW
 
     def replace_part(old_name, new_name)
       @yaml['CHAPS'].map! do |e|
-        if e.is_a?(Hash) and (e.keys.first == old_name)
+        if e.is_a?(Hash) && (e.keys.first == old_name)
           e = { new_name => e.values.first }
         end
         e
