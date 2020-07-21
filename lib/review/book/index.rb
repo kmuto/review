@@ -46,7 +46,7 @@ module ReVIEW
 
       def add_item(item)
         if @index[item.id]
-          @logger.warn "warning: duplicate ID: #{item.id} (#{item})"
+          @logger.warn "warning: duplicate ID: #{item.id} (#{item.inspect})"
         end
         @index[item.id] = item
         if item.class != ReVIEW::Book::Chapter
