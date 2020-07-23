@@ -32,18 +32,6 @@ class MakerHelperTest < Test::Unit::TestCase
     assert image_files.include?(File.join(@tmpdir1, 'subdir/foo.png'))
   end
 
-  def test_copy_images_to_dir_convert
-    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM && (`convert -version` rescue nil) && (`gs --version` rescue nil)
-      FileUtils.cp(File.join(assets_dir, 'black.eps'), File.join(@tmpdir1, 'foo.eps'))
-
-      image_files = MakerHelper.copy_images_to_dir(@tmpdir1, @tmpdir2,
-                                                   convert: { eps: :png })
-
-      assert File.exist?(File.join(@tmpdir2, 'foo.eps.png')), 'EPS to PNG conversion failed'
-      assert image_files.include?(File.join(@tmpdir1, 'foo.eps.png'))
-    end
-  end
-
   def test_copy_images_to_dir_with_exts
     types = %w[png gif jpg jpeg svg pdf eps]
     types4epub = %w[png gif jpg jpeg svg]
