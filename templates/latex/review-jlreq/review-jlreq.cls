@@ -1,5 +1,5 @@
 %#!ptex2pdf -l -u -ot '-synctex=1' test-rejlreqbk
-% Copyright (c) 2018-2019 Kenshi Muto.
+% Copyright (c) 2018-2020 Kenshi Muto.
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,7 @@
 % THE SOFTWARE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2019/11/11 Re:VIEW pLaTeX class modified for jlreq.
-cls]
+\ProvidesClass{review-jlreq}[2020/07/23 Re:VIEW upLaTeX/LuaLaTeX class modified for jlreq.cls]
 
 %% hook at end of reviewmacro
 \let\@endofreviewmacrohook\@empty
@@ -65,11 +64,7 @@ cls]
     \recls@error{Not define such hiddenfolio: #1}}\relax
   %% set hiddenfolio preset
   \expandafter\let\expandafter\@makehiddenfolio\csname @makehiddenfolio@#1\endcsname
-  %% redefine to output \@makehiddenfolio for every page
-  %% TODO: would better to use \jlreqtrimmarkssetup
-  \@bannertoken{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
-  \def\jlreq@trimmarks@banner@even@yoko@top@left{\hskip-5mm\smash{\hiddenfolio@font\@makehiddenfolio}}%
-  \AddEverypageHook{\maketombowbox}%
+  \@makehiddenfolio
 \fi}
 
 \def\hiddenfolio@font{\reset@font
@@ -77,29 +72,16 @@ cls]
 
 %% hiddenfolio=default
 \@namedef{@makehiddenfolio@default}{%
-  \ifodd\c@page
-    \llap{\thepage\hspace{\dimexpr\recls@tombobleed}}%
-  \else
-    \rlap{\hspace{\dimexpr\paperwidth+\recls@tombobleed}\thepage}%
-  \fi}
+  \jlreqtrimmarkssetup{banner = { top-gutter = { \hiddenfolio@font\selectfont \thepage} } } }
 
 %% hiddenfolio=marusho-ink
 \@namedef{@makehiddenfolio@marusho-ink}{%
-  \gdef\recls@tombobleed{5mm}%
+  \gdef\recls@tombobleed{5mm}% XXX: won't work. should set via bleed_margin
   \@nameuse{@makehiddenfolio@nikko-pc}}
 
 %% hiddenfolio=nikko-pc
 \@namedef{@makehiddenfolio@nikko-pc}{%
-  \def\recls@hiddfolio{%
-    \edef\recls@tmp{\thepage}%
-    \lower\dimexpr4pt+\recls@tombobleed+.5\paperheight+5\p@\hbox{%
-      \vbox{\expandafter\@tfor\expandafter\recls@x\expandafter:\expandafter=\recls@tmp\do{%
-        \hbox to 1\zw{\hss\recls@x\hss}}}}}%
-  \ifodd\c@page
-    \rlap{\recls@hiddfolio}%
-  \else
-    \llap{\recls@hiddfolio\hspace{-\paperwidth}}%
-  \fi}
+  \jlreqtrimmarkssetup{banner = { center-gutter = { in = {\hiddenfolio@font\selectfont \thepage} } } } }
 
 %% hiddenfolio=shippo
 \@namedef{@makehiddenfolio@shippo}{%
