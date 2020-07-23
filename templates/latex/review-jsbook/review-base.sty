@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2020/07/11]
+\ProvidesClass{review-base}[2020/07/23]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -47,6 +47,11 @@
 }
 
 \long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
+
+%% pass bbox setting to extractbb of graphicx
+\ifdefined\review@bbox
+  \def\Gin@pagebox{\review@bbox}
+\fi
 
 \newenvironment{shadedb}{%
   \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%

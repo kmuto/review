@@ -101,6 +101,9 @@
 <%- if @config['use_part'] -%>
 \def\reviewusepart{true}
 <%- end -%>
+<%- if @config['pdfmaker']['bbox'] -%>
+\def\review@bbox{<%= @config['pdfmaker']['bbox'] %>}
+<%- end -%>
 
 \def\reviewbackcompatibilityhook{
   \ifdefined\reviewimagecaption\else% for 3.0.0 compatibility

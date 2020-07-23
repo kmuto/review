@@ -311,23 +311,12 @@ module ReVIEW
       end
     end
 
-    # PDFMaker#copy_images should copy image files _AND_ execute extractbb (or ebb).
+    # PDFMaker#copy_images should copy image files
     #
     def copy_images(from, to)
       return unless File.exist?(from)
       Dir.mkdir(to)
       ReVIEW::MakerHelper.copy_images_to_dir(from, to)
-      Dir.chdir(to) do
-        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/i }
-        break if images.empty?
-        if @config['pdfmaker']['bbox']
-          system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
-          system_or_raise('ebb', '-B', @config['pdfmaker']['bbox'], *images) unless system('extractbb', '-B', @config['pdfmaker']['bbox'], '-m', *images)
-        else
-          system_with_info('extractbb', *images)
-          system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
-        end
-      end
     end
 
     def make_custom_page(file)
