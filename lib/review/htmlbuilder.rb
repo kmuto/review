@@ -328,7 +328,7 @@ module ReVIEW
           puts '</div>'
           @doc_status[:minicolumn] = nil
         end
-      )
+      ), __FILE__, __LINE__ - 14
     end
 
     def ul_begin

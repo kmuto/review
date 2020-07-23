@@ -1057,7 +1057,7 @@ module ReVIEW
           end
           @doc_status[:minicolumn] = nil
         end
-      )
+      ), __FILE__, __LINE__ - 23
     end
 
     def syntaxblock(type, lines, caption)

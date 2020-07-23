@@ -239,7 +239,7 @@ module ReVIEW
         def #{name}_end
           common_block_end('#{name}')
         end
-      )
+      ), __FILE__, __LINE__ - 8
     end
 
     def captionblock(type, lines, caption)

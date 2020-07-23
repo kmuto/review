@@ -558,7 +558,7 @@ module ReVIEW
         def #{name}_end(_level)
           @doc_status[:minicolumn] = nil
         end
-      )
+      ), __FILE__, __LINE__ - 15
     end
 
     def check_nested_minicolumn

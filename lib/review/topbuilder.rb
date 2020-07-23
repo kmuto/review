@@ -467,7 +467,7 @@ module ReVIEW
           common_block_end('#{name}', nil)
           @doc_status[:minicolumn] = nil
         end
-      )
+      ), __FILE__, __LINE__ - 11
     end
 
     def indepimage(_lines, id, caption = nil, metric = nil)

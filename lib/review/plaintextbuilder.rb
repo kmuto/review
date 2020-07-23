@@ -602,7 +602,7 @@ module ReVIEW
           blank
           @doc_status[:minicolumn] = nil
         end
-      )
+      ), __FILE__, __LINE__ - 14
     end
 
     def indepimage(_lines, _id, caption = nil, _metric = nil)
