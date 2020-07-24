@@ -582,6 +582,24 @@ module ReVIEW
       base_parablock('centering', lines, nil)
     end
 
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          puts ".. #{name}::"
+          blank
+          puts "   " + compile_inline(caption).to_s unless caption.nil?
+          print "   "
+        end
+
+        def #{name}_end
+          blank
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 14
+    end
+
     def note(lines, caption = nil)
       base_parablock('note', lines, caption)
     end
