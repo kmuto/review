@@ -587,7 +587,7 @@ module ReVIEW
 
     alias_method :box, :insn
 
-    %w[note memo tip info warning important caution notice].each do |name|
+    CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}_begin(caption = nil)
           check_nested_minicolumn
