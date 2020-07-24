@@ -549,13 +549,15 @@ module ReVIEW
           captionblock("#{name}", lines, caption)
         end
 
-        def #{name}_begin(_level, _label, caption = nil)
+        def #{name}_begin(caption = nil)
           check_nested_minicolumn
           @doc_status[:minicolumn] = '#{name}'
-          puts compile_inline(caption)
+          if caption
+            puts compile_inline(caption)
+          end
         end
 
-        def #{name}_end(_level)
+        def #{name}_end
           @doc_status[:minicolumn] = nil
         end
       ), __FILE__, __LINE__ - 15
