@@ -1270,6 +1270,27 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_indepimage_nofile
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sample_img#&', 1)
+      item.instance_eval do
+        def path
+          nil
+        end
+      end
+      item
+    end
+
+    actual = compile_block("//indepimage[sample_img#&][sample photo]\n")
+    expected = <<-EOS
+\\begin{reviewdummyimage}
+--[[path = sample\\textunderscore{}img\\#\\& (not exist)]]--
+\\reviewindepimagecaption{図: sample photo}
+\\end{reviewdummyimage}
+EOS
+    assert_equal expected, actual
+  end
+
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
