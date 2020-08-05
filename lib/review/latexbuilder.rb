@@ -637,7 +637,7 @@ module ReVIEW
       else
         warn "image not bound: #{id}"
         puts '\begin{reviewdummyimage}'
-        puts "--[[path = #{id} (#{existence(id)})]]--"
+        puts "--[[path = #{escape(id)} (#{existence(id)})]]--"
         lines.each do |line|
           puts detab(line.rstrip)
         end
