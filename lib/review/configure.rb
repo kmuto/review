@@ -64,6 +64,7 @@ module ReVIEW
         'bib_file' => 'bib.re',
         'words_file' => nil,
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
+        'chapterlink' => true,
         'externallink' => true,
         'join_lines_by_lang' => nil, # experimental. default should be nil
         'table_row_separator' => 'tabs',

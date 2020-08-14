@@ -1018,7 +1018,7 @@ EOS
 
     def inline_column_chap(chapter, id)
       if @book.config['chapterlink']
-        %Q(<a href="\##{column_label(id, chapter)}" class="columnref">#{I18n.t('column', compile_inline(chapter.column(id).caption))}</a>)
+        %Q(<a href="#{chapter.id}#{extname}##{column_label(id, chapter)}" class="columnref">#{I18n.t('column', compile_inline(chapter.column(id).caption))}</a>)
       else
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end

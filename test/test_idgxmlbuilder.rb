@@ -847,9 +847,15 @@ inside column
 this is @<column>{foo}.
 EOS
     expected = <<-EOS.chomp
-<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?><p>this is コラム「test」.</p>
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?><p>this is <link href="column-1">コラム「test」</link>.</p>
 EOS
 
+    assert_equal expected, column_helper(review)
+
+    @config['chapterlink'] = nil
+    expected = <<-EOS.chomp
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?><p>this is コラム「test」.</p>
+EOS
     assert_equal expected, column_helper(review)
   end
 
@@ -861,6 +867,11 @@ EOS
       idx
     end
 
+    actual = compile_inline('test @<column>{chap1|column} test2')
+    expected = 'test <link href="column-1">コラム「column_cap」</link> test2'
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
     actual = compile_inline('test @<column>{chap1|column} test2')
     expected = 'test コラム「column_cap」 test2'
     assert_equal expected, actual
