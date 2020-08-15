@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2020/07/23]
+\ProvidesClass{review-base}[2020/08/14]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -210,9 +210,9 @@
 \newcommand{\reviewtableref}[2]{\review@intn@table #1}
 \newcommand{\reviewlistref}[1]{\review@intn@list #1}
 \newcommand{\reviewequationref}[1]{\review@intn@equation #1}
-\newcommand{\reviewbibref}[2]{#1}
-\newcommand{\reviewcolumnref}[2]{#1}
-\newcommand{\reviewsecref}[2]{#1}
+\newcommand{\reviewbibref}[2]{\hyperref[#2]{#1}}
+\newcommand{\reviewcolumnref}[2]{#1}% XXX:ハイパーリンクにはreviewcolumn側の調整が必要
+\newcommand{\reviewsecref}[2]{\hyperref[#2]{#1}}
 
 \newenvironment{reviewpart}{%
 \setcounter{section}{0}%

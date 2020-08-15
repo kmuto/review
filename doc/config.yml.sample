@@ -92,6 +92,9 @@ debug: null
 # ISBN。省略した場合はurnidが入る
 # isbn: null
 #
+# @<chap>, @<chapref>, @<title>, @<hd>命令をハイパーリンクにする(nullでハイパーリンクにしない)
+# chapterlink: true
+
 # HTMLファイルの拡張子(省略した場合はhtml)
 # htmlext: html
 #

@@ -255,6 +255,10 @@ EOS
 
     @config['secnolevel'] = 3
     actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test \reviewsecref{「1.1.1 te\\textunderscore{}st」}{sec:1-1-1} test2', actual
+
+    @config['chapterlink'] = nil
+    actual = compile_inline('test @<hd>{chap1|test} test2')
     assert_equal 'test 「1.1.1 te\\textunderscore{}st」 test2', actual
   end
 

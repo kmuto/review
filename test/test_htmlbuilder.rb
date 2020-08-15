@@ -252,6 +252,15 @@ EOS
 
     @config['secnolevel'] = 2
     actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test <a href="-.html#h1-1-1">「te_st」</a> test2', actual
+
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test <a href="-.html#h1-1-1">「1.1.1 te_st」</a> test2', actual
+
+    @config['chapterlink'] = nil
+    @config['secnolevel'] = 2
+    actual = compile_inline('test @<hd>{chap1|test} test2')
     assert_equal 'test 「te_st」 test2', actual
 
     @config['secnolevel'] = 3
@@ -279,6 +288,10 @@ EOS
         end
 
         actual = compile_inline('test @<hd>{test} test2')
+        assert_equal 'test <a href="-.html#hI-1">「I.1 te_st」</a> test2', actual
+
+        @config['chapterlink'] = nil
+        actual = compile_inline('test @<hd>{test} test2')
         assert_equal 'test 「I.1 te_st」 test2', actual
       end
     end
@@ -303,6 +316,10 @@ EOS
           idx
         end
 
+        actual = compile_inline('test @<hd>{test} test2')
+        assert_equal 'test <a href="-.html#hA-1">「A.1 te_st」</a> test2', actual
+
+        @config['chapterlink'] = nil
         actual = compile_inline('test @<hd>{test} test2')
         assert_equal 'test 「A.1 te_st」 test2', actual
       end
@@ -355,6 +372,11 @@ EOS
     end
 
     actual = compile_block("@<img>{sampleimg}\n")
+    expected = %Q(<p><span class="imgref"><a href="./-.html#sampleimg">図1.1</a></span></p>\n)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
+    actual = compile_block("@<img>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span></p>\n)
     assert_equal expected, actual
   end
@@ -367,6 +389,11 @@ EOS
     end
 
     actual = compile_block("@<imgref>{sampleimg}\n")
+    expected = %Q(<p><span class="imgref"><a href="./-.html#sampleimg">図1.1</a></span>「sample photo」</p>\n)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
+    actual = compile_block("@<imgref>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span>「sample photo」</p>\n)
     assert_equal expected, actual
   end
@@ -378,6 +405,11 @@ EOS
       item
     end
 
+    actual = compile_block("@<imgref>{sampleimg}\n")
+    expected = %Q(<p><span class="imgref"><a href="./-.html#sampleimg">図1.1</a></span></p>\n)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
     actual = compile_block("@<imgref>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span></p>\n)
     assert_equal expected, actual
@@ -413,6 +445,33 @@ img2 is @<img>{img2}.
 //}
 EOF
         content = File.read(re1)
+        actual = compile_block(content)
+
+        expected = <<-EOS
+<h1><a id="h1"></a><span class="secno">第1章　</span>test</h1>
+<p>tbl1 is <span class="tableref"><a href="./-.html#tbl1">表1.1</a></span>.</p>
+<p>img2 is <span class="imgref"><a href="./-.html#img2">図1.2</a></span>.</p>
+<div id="img1" class="image">
+<img src="images/img1.png" alt="image 1" />
+<p class="caption">
+図1.1: image 1
+</p>
+</div>
+<div id="tbl1" class="imgtable image">
+<p class="caption">表1.1: table 1</p>
+<img src="images/tbl1.png" alt="table 1" />
+</div>
+<div id="img2" class="image">
+<img src="images/img2.png" alt="image 2" />
+<p class="caption">
+図1.2: image 2
+</p>
+</div>
+EOS
+
+        assert_equal expected, actual
+
+        @config['chapterlink'] = nil
         actual = compile_block(content)
 
         expected = <<-EOS
@@ -852,7 +911,11 @@ EOS
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
-    actual = compile_block("@<list>{sampletest}\n")
+    actual = compile_block("@<list>{samplelist}\n")
+    assert_equal %Q(<p><span class="listref"><a href="./-.html#samplelist">リスト1.1</a></span></p>\n), actual
+
+    @config['chapterlink'] = nil
+    actual = compile_block("@<list>{samplelist}\n")
     assert_equal %Q(<p><span class="listref">リスト1.1</span></p>\n), actual
   end
 
@@ -1772,6 +1835,20 @@ EOS
 </div>
 
 <h3><a id="h1-0-1"></a>next level</h3>
+<p>this is <a href="-.html#column-1" class="columnref">コラム「test」</a>.</p>
+EOS
+
+    assert_equal expected, column_helper(review)
+
+    @config['chapterlink'] = nil
+    expected = <<-EOS
+<div class="column">
+
+<h3 id="foo"><a id="column-1"></a>test</h3>
+<p>inside column</p>
+</div>
+
+<h3><a id="h1-0-1"></a>next level</h3>
 <p>this is コラム「test」.</p>
 EOS
 
@@ -1786,6 +1863,11 @@ EOS
       idx
     end
 
+    actual = compile_inline('test @<column>{chap1|column} test2')
+    expected = 'test <a href="-.html#column-1" class="columnref">コラム「column_cap」</a> test2'
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
     actual = compile_inline('test @<column>{chap1|column} test2')
     expected = 'test コラム「column_cap」 test2'
     assert_equal expected, actual
@@ -2145,6 +2227,11 @@ EOS
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
+
+    hd = builder.inline_hd('ch1|test1-1')
+    assert_equal '<a href="ch1.html#h1-1">「1.1 test1-1」</a>', hd
+
+    builder.instance_eval { @book.config['chapterlink'] = nil }
     hd = builder.inline_hd('ch1|test1-1')
     assert_equal '「1.1 test1-1」', hd
   end
@@ -2162,6 +2249,10 @@ EOS
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
     hd = builder.inline_hd('part1|part1-1')
+    assert_equal '<a href="part1.html#h1-1">「1.1 part1-1」</a>', hd
+
+    builder.instance_eval { @book.config['chapterlink'] = nil }
+    hd = builder.inline_hd('part1|part1-1')
     assert_equal '「1.1 part1-1」', hd
   end
 
@@ -2171,7 +2262,12 @@ EOS
     location = Location.new(nil, nil)
     @builder.bind(@compiler, chap1, location)
     hd = @builder.inline_hd('foo')
+    assert_equal '<a href="-.html#h1-1">「1.1 foo」</a>', hd
+
+    @config['chapterlink'] = nil
+    hd = @builder.inline_hd('foo')
     assert_equal '「1.1 foo」', hd
+
     hd = @builder.inline_hd('bar')
     assert_equal '「1.2 bar」', hd
   end
@@ -2226,6 +2322,10 @@ EOS
     def @chapter.table(_id)
       Book::Index::Item.new('sampletable', 1)
     end
+    actual = compile_block("@<table>{sampletest}\n")
+    assert_equal %Q(<p><span class="tableref"><a href="./-.html#sampletest">表1.1</a></span></p>\n), actual
+
+    @config['chapterlink'] = nil
     actual = compile_block("@<table>{sampletest}\n")
     assert_equal %Q(<p><span class="tableref">表1.1</span></p>\n), actual
   end
@@ -2539,6 +2639,20 @@ EOS
 e=mc^2
 //}
 EOS
+    expected = <<-EOS
+<p><span class="eqref"><a href="./-.html#emc2">式1.1</a></span></p>
+<div id="emc2" class="caption-equation">
+<p class="caption">式1.1: The Equivalence of Mass <i>and</i> Energy</p>
+<div class="equation">
+<pre>e=mc^2
+</pre>
+</div>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
     expected = <<-EOS
 <p><span class="eqref">式1.1</span></p>
 <div id="emc2" class="caption-equation">
