@@ -28,7 +28,8 @@ class IDGXMLMakerCmdTest < Test::Unit::TestCase
 
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name']) + RbConfig::CONFIG['EXEEXT']
       Dir.chdir(@tmpdir1) do
-        _o, _e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_IDGXMLMAKER} #{option} #{configfile}")
+        _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_IDGXMLMAKER} #{option} #{configfile}")
+        assert_equal '', e
         assert s.success?
       end
       assert File.exist?(File.join(@tmpdir1, targetfile))
