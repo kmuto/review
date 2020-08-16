@@ -17,18 +17,6 @@ class HTMLUtilsTest < Test::Unit::TestCase
     assert_equal '&amp;', unescape('&amp;amp;')
   end
 
-  def test_escape_html_ex
-    keys = ESC.keys
-    ESC['.'] = 'X'
-    ESC.each_pair do |ch, ref|
-      if keys.include?(ch)
-        assert_equal ref, escape(ch)
-      else
-        assert_equal ch, escape(ch)
-      end
-    end
-  end
-
   def test_strip_html
     assert_equal 'thisistest.', strip_html('<h3>this<b>is</b>test</h3>.')
   end

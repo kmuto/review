@@ -340,9 +340,9 @@ module ReVIEW
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @body = ''
         @body << %Q(<div class="part">\n)
-        @body << %Q(<h1 class="part-number">#{CGI.escapeHTML(ReVIEW::I18n.t('part', part.number))}</h1>\n)
+        @body << %Q(<h1 class="part-number">#{h(ReVIEW::I18n.t('part', part.number))}</h1>\n)
         if part.name.strip.present?
-          @body << %Q(<h2 class="part-title">#{CGI.escapeHTML(part.name.strip)}</h2>\n)
+          @body << %Q(<h2 class="part-title">#{h(part.name.strip)}</h2>\n)
         end
         @body << %Q(</div>\n)
 
@@ -563,19 +563,19 @@ module ReVIEW
 
     def build_titlepage(basetmpdir, htmlfile)
       # TODO: should be created via epubcommon
-      @title = CGI.escapeHTML(@config.name_of('booktitle'))
+      @title = h(@config.name_of('booktitle'))
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @body = ''
         @body << %Q(<div class="titlepage">\n)
-        @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>\n)
+        @body << %Q(<h1 class="tp-title">#{h(@config.name_of('booktitle'))}</h1>\n)
         if @config['subtitle']
-          @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@config.name_of('subtitle'))}</h2>\n)
+          @body << %Q(<h2 class="tp-subtitle">#{h(@config.name_of('subtitle'))}</h2>\n)
         end
         if @config['aut']
-          @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n)
+          @body << %Q(<h2 class="tp-author">#{h(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n)
         end
         if @config['pbl']
-          @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n)
+          @body << %Q(<h3 class="tp-publisher">#{h(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n)
         end
         @body << '</div>'
 

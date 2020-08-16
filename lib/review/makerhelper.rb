@@ -10,6 +10,12 @@ require 'fileutils'
 require 'yaml'
 require 'shellwords'
 
+begin
+  require 'cgi/escape'
+rescue
+  require 'cgi/util'
+end
+
 module ReVIEW
   module MakerHelper
     # Return review/bin directory
@@ -17,6 +23,11 @@ module ReVIEW
       Pathname.new("#{Pathname.new(__FILE__).realpath.dirname}/../../bin").realpath
     end
     module_function :bindir
+
+    def h(str)
+      CGI.escapeHTML(str)
+    end
+    module_function :h
 
     # Copy image files under from_dir to to_dir recursively
     # ==== Args
