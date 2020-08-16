@@ -10,7 +10,11 @@
 
 require 'review/i18n'
 require 'review/template'
-require 'cgi'
+begin
+  require 'cgi/escape'
+rescue LoadError
+  require 'cgi/util'
+end
 
 module EPUBMaker
   # EPUBCommon is the common class for EPUB producer.
@@ -20,6 +24,10 @@ module EPUBMaker
       @body_ext = ''
       @producer = producer
       @body_ext = nil
+    end
+
+    def h(str)
+      CGI.escapeHTML(str)
     end
 
     # Return mimetype content.
@@ -59,10 +67,10 @@ module EPUBMaker
     def ncx_doctitle
       <<EOT
   <docTitle>
-    <text>#{CGI.escapeHTML(@producer.config['title'])}</text>
+    <text>#{h(@producer.config['title'])}</text>
   </docTitle>
   <docAuthor>
-    <text>#{@producer.config['aut'].nil? ? '' : CGI.escapeHTML(join_with_separator(@producer.config['aut'], ReVIEW::I18n.t('names_splitter')))}</text>
+    <text>#{@producer.config['aut'].nil? ? '' : h(join_with_separator(@producer.config['aut'], ReVIEW::I18n.t('names_splitter')))}</text>
   </docAuthor>
 EOT
     end
@@ -72,7 +80,7 @@ EOT
   <navMap>
     <navPoint id="top" playOrder="1">
       <navLabel>
-        <text>#{CGI.escapeHTML(@producer.config['title'])}</text>
+        <text>#{h(@producer.config['title'])}</text>
       </navLabel>
       <content src="#{@producer.config['cover']}"/>
     </navPoint>
@@ -84,7 +92,7 @@ EOT
         s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{CGI.escapeHTML(@producer.res.v('toctitle'))}</text>
+        <text>#{h(@producer.res.v('toctitle'))}</text>
       </navLabel>
       <content src="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}"/>
     </navPoint>
@@ -100,7 +108,7 @@ EOT
         s << <<EOT
     <navPoint id="nav-#{nav_count}" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{indent[level]}#{CGI.escapeHTML(item.title)}</text>
+        <text>#{indent[level]}#{h(item.title)}</text>
       </navLabel>
       <content src="#{item.file}"/>
     </navPoint>
@@ -131,21 +139,21 @@ EOT
         raise "coverimage #{@producer.config['coverimage']} not found. Abort." unless file
         @body = <<-EOT
   <div id="cover-image" class="cover-image">
-    <img src="#{file}" alt="#{CGI.escapeHTML(@producer.config.name_of('title'))}" class="max"/>
+    <img src="#{file}" alt="#{h(@producer.config.name_of('title'))}" class="max"/>
   </div>
         EOT
       else
         @body = <<-EOT
-<h1 class="cover-title">#{CGI.escapeHTML(@producer.config.name_of('title'))}</h1>
+<h1 class="cover-title">#{h(@producer.config.name_of('title'))}</h1>
         EOT
         if @producer.config['subtitle']
           @body << <<-EOT
-<h2 class="cover-subtitle">#{CGI.escapeHTML(@producer.config.name_of('subtitle'))}</h2>
+<h2 class="cover-subtitle">#{h(@producer.config.name_of('subtitle'))}</h2>
           EOT
         end
       end
 
-      @title = CGI.escapeHTML(@producer.config.name_of('title'))
+      @title = h(@producer.config.name_of('title'))
       @language = @producer.config['language']
       @stylesheets = @producer.config['stylesheet']
       tmplfile = if @producer.config['htmlversion'].to_i == 5
@@ -161,7 +169,7 @@ EOT
     # NOTE: this method is not used yet.
     #       see lib/review/epubmaker.rb#build_titlepage
     def titlepage
-      @title = CGI.escapeHTML(@producer.config.name_of('title'))
+      @title = h(@producer.config.name_of('title'))
 
       @body = <<EOT
   <h1 class="tp-title">#{@title}</h1>
@@ -169,7 +177,7 @@ EOT
 
       if @producer.config['subtitle']
         @body << <<EOT
-  <h2 class="tp-subtitle">#{CGI.escapeHTML(@producer.config.name_of('subtitle'))}</h2>
+  <h2 class="tp-subtitle">#{h(@producer.config.name_of('subtitle'))}</h2>
 EOT
       end
 
@@ -179,7 +187,7 @@ EOT
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{CGI.escapeHTML(join_with_separator(@producer.config.names_of('aut'), ReVIEW::I18n.t('names_splitter')))}</h2>
+  <h2 class="tp-author">#{h(join_with_separator(@producer.config.names_of('aut'), ReVIEW::I18n.t('names_splitter')))}</h2>
 EOT
       end
 
@@ -192,7 +200,7 @@ EOT
     <br />
     <br />
   </p>
-  <h3 class="tp-publisher">#{CGI.escapeHTML(join_with_separator(publisher, ReVIEW::I18n.t('names_splitter')))}</h3>
+  <h3 class="tp-publisher">#{h(join_with_separator(publisher, ReVIEW::I18n.t('names_splitter')))}</h3>
 EOT
       end
 
@@ -209,18 +217,18 @@ EOT
 
     # Return colophon content.
     def colophon
-      @title = CGI.escapeHTML(@producer.res.v('colophontitle'))
+      @title = h(@producer.res.v('colophontitle'))
       @body = <<EOT
   <div class="colophon">
 EOT
 
       if @producer.config['subtitle'].nil?
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.config.name_of('title'))}</p>
+    <p class="title">#{h(@producer.config.name_of('title'))}</p>
 EOT
       else
         @body << <<EOT
-    <p class="title">#{CGI.escapeHTML(@producer.config.name_of('title'))}<br /><span class="subtitle">#{CGI.escapeHTML(@producer.config.name_of('subtitle'))}</span></p>
+    <p class="title">#{h(@producer.config.name_of('title'))}<br /><span class="subtitle">#{h(@producer.config.name_of('subtitle'))}</span></p>
 EOT
       end
 
@@ -229,7 +237,7 @@ EOT
       @body << %Q(    <table class="colophon">\n)
       @body << @producer.config['colophon_order'].map do |role|
         if @producer.config[role]
-          %Q(      <tr><th>#{CGI.escapeHTML(@producer.res.v(role))}</th><td>#{CGI.escapeHTML(join_with_separator(@producer.config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
+          %Q(      <tr><th>#{h(@producer.res.v(role))}</th><td>#{h(join_with_separator(@producer.config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
         else
           ''
         end
@@ -238,7 +246,7 @@ EOT
       @body << %Q(      <tr><th>ISBN</th><td>#{@producer.isbn_hyphen}</td></tr>\n) if @producer.isbn_hyphen
       @body << %Q(    </table>\n)
       if @producer.config['rights'] && !@producer.config['rights'].empty?
-        @body << %Q(    <p class="copyright">#{join_with_separator(@producer.config.names_of('rights').map { |m| CGI.escapeHTML(m) }, '<br />')}</p>\n)
+        @body << %Q(    <p class="copyright">#{join_with_separator(@producer.config.names_of('rights').map { |m| h(m) }, '<br />')}</p>\n)
       end
       @body << %Q(  </div>\n)
 
@@ -289,9 +297,9 @@ EOT
 
     # Return own toc content.
     def mytoc
-      @title = CGI.escapeHTML(@producer.res.v('toctitle'))
+      @title = h(@producer.res.v('toctitle'))
 
-      @body = %Q(  <h1 class="toc-title">#{CGI.escapeHTML(@producer.res.v('toctitle'))}</h1>\n)
+      @body = %Q(  <h1 class="toc-title">#{h(@producer.res.v('toctitle'))}</h1>\n)
       if @producer.config['epubmaker']['flattoc'].nil?
         @body << hierarchy_ncx('ul')
       else
@@ -385,7 +393,7 @@ EOT
       @producer.contents.each do |item|
         next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.config['toclevel'].to_i
         is = indent == true ? '　' * item.level : ''
-        s << %Q(<li><a href="#{item.file}">#{is}#{CGI.escapeHTML(item.title)}</a></li>\n)
+        s << %Q(<li><a href="#{item.file}">#{is}#{h(item.title)}</a></li>\n)
       end
       s << %Q(</#{type}>\n)
 

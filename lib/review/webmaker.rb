@@ -284,7 +284,7 @@ module ReVIEW
       File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
         @body = ''
         @body << %Q(<div class="titlepage">)
-        @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>)
+        @body << %Q(<h1 class="tp-title">#{h(@config.name_of('booktitle'))}</h1>)
         if @config['aut']
           @body << %Q(<h2 class="tp-author">#{join_with_separator(@config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))}</h2>)
         end

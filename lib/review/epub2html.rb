@@ -8,9 +8,14 @@
 
 require 'zip'
 require 'rexml/document'
-require 'cgi'
 require 'optparse'
 require 'review/version'
+
+begin
+  require 'cgi/escape'
+rescue
+  require 'cgi/util'
+end
 
 module ReVIEW
   class Epub2Html

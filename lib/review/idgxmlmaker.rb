@@ -15,9 +15,12 @@ require 'review/book'
 require 'review/yamlloader'
 require 'review/idgxmlbuilder'
 require 'review/version'
+require 'review/makerhelper'
 
 module ReVIEW
   class IDGXMLMaker
+    include MakerHelper
+
     attr_accessor :config, :basedir
 
     def initialize
@@ -155,9 +158,9 @@ module ReVIEW
         end
         f.puts '<?xml version="1.0" encoding="UTF-8"?>'
         f.print '<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><title aid:pstyle="h1">'
-        f.print CGI.escapeHTML(title)
+        f.print h(title)
         f.print '</title><?dtp level="1" section="'
-        f.print CGI.escapeHTML(title)
+        f.print h(title)
         f.puts '"?></doc>'
       end
       apply_filter(File.join(basetmpdir, xmlfile))
