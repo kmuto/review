@@ -45,7 +45,7 @@ module ReVIEW
       end
 
       def add_item(item)
-        if @index[item.id]
+        if @index[item.id] && self.class != ReVIEW::Book::IconIndex
           @logger.warn "warning: duplicate ID: #{item.id} (#{item.inspect})"
         end
         @index[item.id] = item
