@@ -16,6 +16,7 @@
 * fix warning message to output more detailed information of item ([#1523])
 * PDFMaker: make `@<hd>` op a hyperlink (when `media=ebook`) ([#1530])
 * use `cgi/escape` first and `cgi/util` as fallback. remove orignal implementation in `ReVIEW::HTMLUtils.escape()` ([#1536])
+* suppress warning with same `@<icon>` ([#1541])
 
 ## Docs
 * fix a typo in format.ja.md and format.md ([#1528])
@@ -48,6 +49,7 @@
 [#1534]: https://github.com/kmuto/review/issues/1534
 [#1536]: https://github.com/kmuto/review/pull/1536
 [#1538]: https://github.com/kmuto/review/pull/1538
+[#1541]: https://github.com/kmuto/review/pull/1541
 
 # Version 4.2.0
 ## New Features

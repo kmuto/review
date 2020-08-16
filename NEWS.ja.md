@@ -16,6 +16,7 @@
 * 図表などのアイテムでエラーが発生したときの表示を詳細にしました ([#1523])
 * PDFMaker: `@<hd>` 命令で展開した項・段について、`media=ebook` のときにはハイパーリンクになるようにしました ([#1530])
 * HTMLBuilder および IDGXMLBuilder において、文字列のエスケープを従来の `cgi/util` の代わりにより高速な `cgi/escape` が利用できるときにはそれを利用するようにしました。また、`ReVIEW::HTMLUtils.escape` も書き換えられました ([#1536])
+* `@<icon>` 命令の利用時に ID の重複の警告が出るのを抑制しました ([#1541])
 
 ## ドキュメント
 * format.ja.md と format.md のタイプミスを修正しました ([#1528])
@@ -48,6 +49,7 @@
 [#1534]: https://github.com/kmuto/review/issues/1534
 [#1536]: https://github.com/kmuto/review/pull/1536
 [#1538]: https://github.com/kmuto/review/pull/1538
+[#1541]: https://github.com/kmuto/review/pull/1541
 
 # Version 4.2.0
 ## 新機能
