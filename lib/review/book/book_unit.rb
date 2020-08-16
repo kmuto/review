@@ -10,11 +10,17 @@ require 'review/textutils'
 
 module ReVIEW
   module Book
-    module Compilable
+    class BookUnit
       include TextUtils
       attr_reader :book
       attr_reader :path
       attr_accessor :content
+
+      def initialize(book, number, name = nil)
+        @book = book
+        @number = number
+        @name = name
+      end
 
       def dirname
         return nil unless @path

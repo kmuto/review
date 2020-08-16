@@ -7,15 +7,13 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-require 'review/book/compilable'
+require 'review/book/book_unit'
 require 'review/lineinput'
 require 'review/preprocessor'
 
 module ReVIEW
   module Book
-    class Chapter
-      include Compilable
-
+    class Chapter < BookUnit
       attr_reader :number, :book
 
       def self.mkchap(book, name, number = nil)
@@ -34,9 +32,7 @@ module ReVIEW
       end
 
       def initialize(book, number, name, path, io = nil)
-        @book = book
-        @number = number
-        @name = name
+        super(book, number, name)
         @path = path
         @io = io
         @title = nil
