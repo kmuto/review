@@ -1,3 +1,54 @@
+# Version 5.0.0
+## 新機能
+* review-jsbook / review-jlreq クラスに、`cover_fit_page` オプションを追加しました。`texdocumentclass` パラメータに `cover_fit_page=true` を付けると、画像サイズがどのようなものであっても仕上がりサイズに拡縮して表紙に貼り込みます。なお、制作において図版は実寸で作成することを推奨します ([#1534])
+
+## 非互換の変更
+* review-jlreq.cls における hiddenfolio の配置を、jlreqtrimmarkssetup を使って実装するように変更しました。以前のバージョンとは位置や表示に若干の違いがあります ([#1397])
+* `chapterlink` パラメータのデフォルト値を true (有効) にしました。これが有効になっているときには、Web、EPUB での章・項の参照や、図表・リスト・式・参考文献の参照などがハイパーリンク化されます。TeX PDF においては `media=ebook` のときのみ、章・項・参考文献の参照がハイパーリンク化されます ([#1529])
+
+## バグ修正
+* PDFMaker: 同名で拡張子違いの図版ファイルがあるときに、位置がずれる問題を修正しました。extractbb コマンドは明示的に呼び出されなくなります ([#1483])
+* PDFMaker: 著者名 (`aut`) パラメータが空のときにエラーになる問題を修正しました ([#1517])
+* PDFMaker: `//indepimage` 命令で画像が存在せず、かつ ID に TeX のエスケープ対象となる文字を含んでいるとエラーが起きる問題を修正しました ([#1527])
+* PDFMaker: `bookttilename` や `aut` パラメータに TeX のエスケープ対象となる文字を入れると PDF メタ情報がおかしくなる問題を修正しました (`media=ebook` のときのみ) ([#1533])
+
+## 機能強化
+* 図表などのアイテムでエラーが発生したときの表示を詳細にしました ([#1523])
+* PDFMaker: `@<hd>` 命令で展開した項・段について、`media=ebook` のときにはハイパーリンクになるようにしました ([#1530])
+* HTMLBuilder および IDGXMLBuilder において、文字列のエスケープを従来の `cgi/util` の代わりにより高速な `cgi/escape` が利用できるときにはそれを利用するようにしました。また、`ReVIEW::HTMLUtils.escape` も書き換えられました ([#1536])
+
+## ドキュメント
+* format.ja.md と format.md のタイプミスを修正しました ([#1528])
+
+## その他
+* Rubocop 0.88.0 に対応しました ([#1511])
+* `Re:VIEW::Compiler` 内の `@strategy` は実際はビルダなので、`@builder` という名前に変更しました ([#1520])
+* Rubocop-performance 1.7.1 に対応しました ([#1521])
+* syntax-book サンプルドキュメントの Gemfile を更新しました ([#1522])
+* ImageMagick における GhostScript の呼び出しが非推奨となったため、テストを除去しました ([#1526])
+* 一部のテストユニットの不要な標準エラー出力を抑制しました ([#1538])
+
+## コントリビューターのみなさん
+* [@snoozer05](https://github.com/snoozer05)
+
+[#1397]: https://github.com/kmuto/review/issues/1397
+[#1483]: https://github.com/kmuto/review/issues/1483
+[#1511]: https://github.com/kmuto/review/pull/1511
+[#1517]: https://github.com/kmuto/review/issues/1517
+[#1520]: https://github.com/kmuto/review/pull/1520
+[#1521]: https://github.com/kmuto/review/pull/1521
+[#1522]: https://github.com/kmuto/review/pull/1522
+[#1523]: https://github.com/kmuto/review/pull/1523
+[#1526]: https://github.com/kmuto/review/pull/1526
+[#1527]: https://github.com/kmuto/review/pull/1527
+[#1528]: https://github.com/kmuto/review/pull/1528
+[#1529]: https://github.com/kmuto/review/issues/1529
+[#1530]: https://github.com/kmuto/review/issues/1530
+[#1533]: https://github.com/kmuto/review/issues/1533
+[#1534]: https://github.com/kmuto/review/issues/1534
+[#1536]: https://github.com/kmuto/review/pull/1536
+[#1538]: https://github.com/kmuto/review/pull/1538
+
 # Version 4.2.0
 ## 新機能
 * 図・表・リスト・式のキャプションの位置を内容の上側・下側どちらにするかを指定する `caption_position` パラメータを追加しました。`caption_position` の下位パラメータとして `image`・`table`・`list`・`equation` のパラメータがあり、値として `top` (上側) または `bottom` (下側) を指定します。デフォルトは `image` のみ `bottom`、ほかは `top` です ([#1320])

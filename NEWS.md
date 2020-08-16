@@ -1,3 +1,54 @@
+# Version 5.0.0
+## New Features
+* added `cover_fit_page` option to review-jsbook / review-jlreq classes. When `cover_fit_page=true` is specified in the `texdocumentclass` parameter, the cover image is scaled to paper size. Note: it is recommended that the images should be created at actual size ([#1534])
+
+## Breaking Changes
+* In review-jlreq.cls, hiddenfolio is now implemented by jlreqtrimmarkssetup. It is slightly different from the previous version in position and display ([#1397])
+* The default value of the `chapterlink` parameter is now true. Most links (chapter, section, image, table, list, equation, bibliography) in Web and EPUB are now hyperlinked. In TeX PDF, some links (chapter, section, biliography) are hyperlinked only when `media=ebook` ([#1529])
+
+## Bug Fixes
+* PDFMaker: fixed a problem with multiple same-named image files with different extensions that would cause them to be misaligned ([#1483])
+* PDFMaker: fixed a problem that cuased an error when the author name (`aut`) was empty ([#1517])
+* PDFMaker: fixed a problem that caused an error if `//indepimage`'s image file didn't exist and ID contained characters to be TeX-escaped ([#1527])
+* PDFMaker: fixed a problem with characters to be TeX-escaped in the `bookttilename` and `aut` parameters causing incorrect PDF metainformation ([#1533])
+
+## Enhancements
+* fix warning message to output more detailed information of item ([#1523])
+* PDFMaker: make `@<hd>` op a hyperlink (when `media=ebook`) ([#1530])
+* use `cgi/escape` first and `cgi/util` as fallback. remove orignal implementation in `ReVIEW::HTMLUtils.escape()` ([#1536])
+
+## Docs
+* fix a typo in format.ja.md and format.md ([#1528])
+
+## Others
+* refactor code with Rubocop 0.88.0 ([#1511])
+* rename `@strategy` to `@builder` in `Re:VIEW::Compiler` ([#1520])
+* refactor code with Rubocop-performance 1.7.1 ([#1521])
+* update Gemfile in syntax-book ([#1522])
+* calling GhostScript in ImageMagick has been deprecated, so the test has been removed ([#1526])
+* unnecessary stderr output on some test units has been suppressed ([#1538])
+
+## Contributors
+* [@snoozer05](https://github.com/snoozer05)
+
+[#1397]: https://github.com/kmuto/review/issues/1397
+[#1483]: https://github.com/kmuto/review/issues/1483
+[#1511]: https://github.com/kmuto/review/pull/1511
+[#1517]: https://github.com/kmuto/review/issues/1517
+[#1520]: https://github.com/kmuto/review/pull/1520
+[#1521]: https://github.com/kmuto/review/pull/1521
+[#1522]: https://github.com/kmuto/review/pull/1522
+[#1523]: https://github.com/kmuto/review/pull/1523
+[#1526]: https://github.com/kmuto/review/pull/1526
+[#1527]: https://github.com/kmuto/review/pull/1527
+[#1528]: https://github.com/kmuto/review/pull/1528
+[#1529]: https://github.com/kmuto/review/issues/1529
+[#1530]: https://github.com/kmuto/review/issues/1530
+[#1533]: https://github.com/kmuto/review/issues/1533
+[#1534]: https://github.com/kmuto/review/issues/1534
+[#1536]: https://github.com/kmuto/review/pull/1536
+[#1538]: https://github.com/kmuto/review/pull/1538
+
 # Version 4.2.0
 ## New Features
 * introduce `caption_position` parameter to specify a caption position of image, table, list, and equation. `caption_position` has child parameters `image`, `table`, `list`, and `equation` and the value is `top` or `bottom` ([#1320])
