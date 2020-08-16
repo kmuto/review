@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2020/08/15]
+\ProvidesClass{review-base}[2020/08/16]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -432,6 +432,9 @@
 
 \if@reclscover
   \ifdefined\review@coverimage
+    \ifrecls@coverfitpage
+       \def\review@coverimageoption{width=\paperwidth,height=\paperheight}
+    \fi
     \def\reviewcoverpagecont{%
       \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
       \cleardoublepage
