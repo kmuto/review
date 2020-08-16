@@ -1285,6 +1285,9 @@ EOS
       item
     end
 
+    io = StringIO.new
+    @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+
     actual = compile_block("//indepimage[sample_img#&][sample photo]\n")
     expected = <<-EOS
 \\begin{reviewdummyimage}
@@ -1293,6 +1296,7 @@ EOS
 \\end{reviewdummyimage}
 EOS
     assert_equal expected, actual
+    assert_match(/WARN --: :1: image not bound: sample_img#&/, io.string)
   end
 
   def test_table
