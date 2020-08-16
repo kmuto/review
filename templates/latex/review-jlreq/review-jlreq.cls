@@ -20,7 +20,7 @@
 % THE SOFTWARE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2020/07/23 Re:VIEW upLaTeX/LuaLaTeX class modified for jlreq.cls]
+\ProvidesClass{review-jlreq}[2020/08/16 Re:VIEW 5.0 upLaTeX/LuaLaTeX class modified for jlreq.cls]
 
 %% hook at end of reviewmacro
 \let\@endofreviewmacrohook\@empty
@@ -92,12 +92,14 @@
 \newif\if@pdfhyperlink \@pdfhyperlinkfalse
 \newif\if@pdftombo \@pdftombofalse
 \newif\if@reclscover \@reclscovertrue
+\newif\ifrecls@coverfitpage \recls@coverfitpagefalse
 \newif\ifrecls@serialpage \recls@serialpagefalse
 \DeclareOptionX{cameraready}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{media}[print]{\gdef\recls@cameraready{#1}}
 \DeclareOptionX{tombopaper}[a4]{\gdef\recls@tombopaper{#1}}
 \DeclareOptionX{bleed_margin}[3mm]{\gdef\recls@tombobleed{#1}}
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
+\DeclareOptionX{cover_fit_page}[false]{\csname recls@coverfitpage#1\endcsname}
 \DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr #1\relax}}
 \DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
 
