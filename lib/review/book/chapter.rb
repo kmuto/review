@@ -68,20 +68,24 @@ module ReVIEW
 
       def find_first_header_option
         f = LineInput.new(StringIO.new(@content))
-        while f.next?
-          case f.peek
-          when /\A=+[\[\s{]/
-            m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(f.gets)
-            return m[2] # tag
-          when %r{/\A//[a-z]+/}
-            line = f.gets
-            if line.rstrip[-1, 1] == '{'
-              f.until_match(%r{\A//\}})
+        begin
+          while f.next?
+            case f.peek
+            when /\A=+[\[\s{]/
+              m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(f.gets)
+              return m[2] # tag
+            when %r{/\A//[a-z]+/}
+              line = f.gets
+              if line.rstrip[-1, 1] == '{'
+                f.until_match(%r{\A//\}})
+              end
             end
+            f.gets
           end
-          f.gets
+          nil
+        rescue ArgumentError => e
+          raise ReVIEW::CompileError, "#{@name}: #{e}"
         end
-        nil
       end
 
       def inspect
