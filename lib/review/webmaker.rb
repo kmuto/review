@@ -156,7 +156,7 @@ module ReVIEW
     end
 
     def build_part(part, basetmpdir, htmlfile)
-      @title = "#{ReVIEW::I18n.t('part', part.number)} #{part.name.strip}"
+      @title = h("#{ReVIEW::I18n.t('part', part.number)} #{part.name.strip}")
       File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
         @body = ''
         @body << %Q(<div class="part">\n)
@@ -260,7 +260,7 @@ module ReVIEW
     end
 
     def build_indexpage(basetmpdir)
-      @title = 'index'
+      @title = h('index')
       File.open("#{basetmpdir}/index.html", 'w') do |f|
         if @config['coverimage']
           file = File.join(@config['imagedir'], @config['coverimage'])
@@ -283,7 +283,7 @@ module ReVIEW
     end
 
     def build_titlepage(basetmpdir, htmlfile)
-      @title = 'titlepage'
+      @title = h('titlepage')
       File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
         @body = ''
         @body << %Q(<div class="titlepage">)
