@@ -105,7 +105,7 @@ module ReVIEW
       remove_old_files(@path)
       Dir.mkdir(@path)
 
-      @book = ReVIEW::Book.load(@basedir)
+      @book = ReVIEW::Book::Base.load(@basedir)
       @book.config = @config
       if @table
         @book.config['tableopt'] = @table
