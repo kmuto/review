@@ -66,6 +66,7 @@ class ChapterTest < Test::Unit::TestCase
 
     book = Book::Base.new
     ch = Book::Chapter.new(book, nil, nil, tf.path)
+    ch.generate_indexes
     assert_equal lines, ch.lines
 
     lines = ["1\n", "2\n", '3']
@@ -78,6 +79,7 @@ class ChapterTest < Test::Unit::TestCase
     tf2.close
 
     ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2.path)
+    ch.generate_indexes
     assert_equal lines, ch.lines # XXX: OK?
   end
 
@@ -262,7 +264,7 @@ E
         o.print content
       end
       ch = Book::Chapter.new(book, 1, 'chapter', path)
-
+      ch.generate_indexes
       assert ch.__send__(ref_method, 'abc')
       assert ch.__send__(ref_method, 'def')
       assert_raises ReVIEW::KeyError do

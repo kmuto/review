@@ -34,15 +34,18 @@ module ReVIEW
       # if Part is dummy, `number` is nil.
       #
       def initialize(book, number, chapters, name = '', io = nil)
-        super(book, number, name)
+        @book = book
+        @number = number
+        @name = name
         @chapters = chapters
         @path = name
-        @content = ''
         if io
           @content = io.read
         elsif @path.present? && File.exist?(File.join(@book.config['contentdir'], @path))
           @content = File.read(File.join(@book.config['contentdir'], @path), mode: 'rt:BOM|utf-8')
-          @name = File.basename(@name, '.re')
+          @name = File.basename(name, '.re')
+        else
+          @content = ''
         end
         if file?
           @title = nil
@@ -50,6 +53,8 @@ module ReVIEW
           @title = name
         end
         @volume = nil
+
+        super()
       end
 
       attr_reader :number

@@ -52,6 +52,10 @@ module ReVIEW
       if @chapter.present?
         @book = @chapter.book
       end
+      @chapter.generate_indexes
+      if @book
+        @book.generate_indexes
+      end
       @tabwidth = nil
       @tsize = nil
       if @book && @book.config

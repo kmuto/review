@@ -14,27 +14,41 @@ module ReVIEW
       include TextUtils
       attr_reader :book
       attr_reader :path
+      attr_reader :lines
       attr_accessor :content
 
-      def initialize(book, number, name = nil)
-        @book = book
-        @number = number
-        @name = name
+      attr_reader :list_index, :table_index, :equation_index, :footnote_index,
+                  :numberless_image_index, :image_index, :icon_index, :indepimage_index,
+                  :headline_index, :column_index
+
+      def initialize
+        if @content
+          @lines = content.lines
+        end
+      end
+
+      def generate_indexes
+        return unless content
+
+        @lines = content.lines
+        @list_index = ListIndex.parse(lines)
+        @table_index = TableIndex.parse(lines)
+        @equation_index = EquationIndex.parse(lines)
+        @footnote_index = FootnoteIndex.parse(lines)
+        @headline_index = HeadlineIndex.parse(lines, self)
+        @column_index = ColumnIndex.parse(lines)
       end
 
       def dirname
-        return nil unless @path
-        File.dirname(@path)
+        @path && File.dirname(@path)
       end
 
       def basename
-        return nil unless @path
-        File.basename(@path)
+        @path && File.basename(@path)
       end
 
       def name
-        return nil unless @name
-        File.basename(@name, '.*')
+        @name && File.basename(@name, '.*')
       end
 
       alias_method :id, :name
@@ -61,45 +75,20 @@ module ReVIEW
         @volume ||= Volume.count_file(path)
       end
 
-      def lines
-        # FIXME: we cannot duplicate Enumerator on ruby 1.9 HEAD
-        (@lines ||= content.lines.to_a).dup
-      end
-
       def list(id)
         list_index[id]
-      end
-
-      def list_index
-        @list_index ||= ListIndex.parse(lines)
-        @list_index
       end
 
       def table(id)
         table_index[id]
       end
 
-      def table_index
-        @table_index ||= TableIndex.parse(lines)
-        @table_index
-      end
-
       def equation(id)
         equation_index[id]
       end
 
-      def equation_index
-        @equation_index ||= EquationIndex.parse(lines)
-        @equation_index
-      end
-
       def footnote(id)
         footnote_index[id]
-      end
-
-      def footnote_index
-        @footnote_index ||= FootnoteIndex.parse(lines)
-        @footnote_index
       end
 
       def image(id)
@@ -109,41 +98,12 @@ module ReVIEW
         indepimage_index[id]
       end
 
-      def numberless_image_index
-        @numberless_image_index ||=
-          NumberlessImageIndex.parse(lines, id,
-                                     @book.imagedir,
-                                     @book.image_types, @book.config['builder'])
-      end
-
-      def image_index
-        @image_index ||= ImageIndex.parse(lines, id,
-                                          @book.imagedir,
-                                          @book.image_types, @book.config['builder'])
-        @image_index
-      end
-
-      def icon_index
-        @icon_index ||= IconIndex.parse(lines, id,
-                                        @book.imagedir,
-                                        @book.image_types, @book.config['builder'])
-        @icon_index
-      end
-
-      def indepimage_index
-        @indepimage_index ||=
-          IndepImageIndex.parse(lines, id,
-                                @book.imagedir,
-                                @book.image_types, @book.config['builder'])
-      end
-
       def bibpaper(id)
         bibpaper_index[id]
       end
 
       def bibpaper_index
         raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
-        @bibpaper_index ||= BibpaperIndex.parse(@book.read_bib.lines.to_a)
         @bibpaper_index
       end
 
@@ -151,16 +111,8 @@ module ReVIEW
         headline_index[caption]
       end
 
-      def headline_index
-        @headline_index ||= HeadlineIndex.parse(lines, self)
-      end
-
       def column(id)
         column_index[id]
-      end
-
-      def column_index
-        @column_index ||= ColumnIndex.parse(lines)
       end
 
       def next_chapter
@@ -172,8 +124,7 @@ module ReVIEW
       end
 
       def image_bound?(item_id)
-        item = self.image(item_id)
-        item.path
+        image(item_id).path
       end
     end
   end

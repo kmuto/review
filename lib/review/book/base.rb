@@ -94,6 +94,25 @@ module ReVIEW
         end
       end
 
+      def create_chapter_index
+        chapter_index = ChapterIndex.new
+        each_chapter do |chap|
+          chapter_index.add_item(Index::Item.new(chap.id, chap.number, chap))
+        end
+        parts.each do |prt|
+          if prt.id.present?
+            chapter_index.add_item(Index::Item.new(prt.id, prt.number, prt))
+          end
+        end
+        chapter_index
+      end
+
+      def generate_indexes
+        self.each_chapter(&:generate_indexes)
+        self.parts.map(&:generate_indexes)
+        @chapter_index = create_chapter_index
+      end
+
       def parts
         @parts ||= read_parts
       end
@@ -136,15 +155,7 @@ module ReVIEW
 
       def chapter_index
         return @chapter_index if @chapter_index
-        @chapter_index = ChapterIndex.new
-        each_chapter do |chap|
-          @chapter_index.add_item(Index::Item.new(chap.id, chap.number, chap))
-        end
-        parts.each do |prt|
-          if prt.id.present?
-            @chapter_index.add_item(Index::Item.new(prt.id, prt.number, prt))
-          end
-        end
+        @chapter_index = create_chapter_index
         @chapter_index
       end
 
