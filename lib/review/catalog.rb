@@ -89,7 +89,7 @@ module ReVIEW
         filenames.concat(postdef)
       end
       filenames.each do |filename|
-        refile = File.join(basedir, config['contentdir'], filename)
+        refile = File.expand_path(File.join(config['contentdir'], filename), basedir)
         unless File.exist?(refile)
           raise FileNotFound, "file not found in catalog.yml: #{refile}"
         end
