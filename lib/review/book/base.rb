@@ -15,7 +15,7 @@ module ReVIEW
     class Base
       attr_accessor :config
       attr_writer :parts
-      attr_writer :catalog
+      attr_accessor :catalog
       attr_reader :basedir
 
       def self.load(basedir = '.', config: nil)
@@ -29,6 +29,11 @@ module ReVIEW
         @chapter_index = nil
         @config = config || ReVIEW::Configure.values
         @catalog = nil
+        catalog_path = filename_join(@basedir, @config['catalogfile'])
+        if catalog_path && File.file?(catalog_path)
+          parse_catalog_file(catalog_path)
+        end
+
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
         @basedir_seen = {}
         update_rubyenv
@@ -183,17 +188,15 @@ module ReVIEW
         @config.merge!(new_conf)
       end
 
-      def catalog
-        return @catalog if @catalog.present?
-
-        catalogfile_path = filename_join(@basedir, config['catalogfile'])
-        if File.file?(catalogfile_path)
-          @catalog = File.open(catalogfile_path, 'rt:BOM|utf-8') { |f| Catalog.new(f) }
+      def parse_catalog_file(path)
+        unless File.file?(path)
+          raise FileNotFound, "catalog.yml is not found #{path}"
         end
-        if @catalog
+
+        File.open(path, 'rt:BOM|utf-8') do |f|
+          @catalog = Catalog.new(f)
           @catalog.validate!(@config, basedir)
         end
-        @catalog
       end
 
       def read_chaps
