@@ -77,19 +77,12 @@ module ReVIEW
     end
 
     def execute(*args)
-      @config = ReVIEW::Configure.values
-      @config.maker = 'idgxmlmaker'
       cmd_config, yamlfile = parse_opts(args)
       error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      begin
-        loader = ReVIEW::YAMLLoader.new
-        @config.deep_merge!(loader.load_file(yamlfile))
-      rescue => e
-        error "yaml error #{e.message}"
-      end
-      # YAML configs will be overridden by command line options.
-      @config.deep_merge!(cmd_config)
+      @config = ReVIEW::Configure.create(maker: 'idgxmlmaker',
+                                         yamlfile: yamlfile,
+                                         config: cmd_config)
       I18n.setup(@config['language'])
       begin
         generate_idgxml_files(yamlfile)
