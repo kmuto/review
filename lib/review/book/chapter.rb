@@ -32,7 +32,9 @@ module ReVIEW
       end
 
       def initialize(book, number, name, path, io = nil)
-        super(book, number, name)
+        @book = book
+        @number = number
+        @name = name
         @path = path
         @io = io
         @title = nil
@@ -49,17 +51,31 @@ module ReVIEW
           @content = File.read(@path, mode: 'rt:BOM|utf-8')
           @number = nil if %w[nonum nodisp notoc].include?(find_first_header_option)
         end
-        @list_index = nil
-        @table_index = nil
-        @equation_index = nil
-        @footnote_index = nil
-        @image_index = nil
-        @icon_index = nil
-        @numberless_image_index = nil
-        @indepimage_index = nil
-        @headline_index = nil
-        @column_index = nil
-        @volume = nil
+
+        super()
+      end
+
+      def generate_indexes
+        super
+
+        return unless content
+        @numberless_image_index =
+          NumberlessImageIndex.parse(lines, id,
+                                     @book.imagedir,
+                                     @book.image_types, @book.config['builder'])
+        @image_index = ImageIndex.parse(lines, id,
+                                        @book.imagedir,
+                                        @book.image_types, @book.config['builder'])
+        @icon_index = IconIndex.parse(lines, id,
+                                      @book.imagedir,
+                                      @book.image_types, @book.config['builder'])
+        @indepimage_index =
+          IndepImageIndex.parse(lines, id,
+                                @book.imagedir,
+                                @book.image_types, @book.config['builder'])
+        if @book.bib_exist?
+          @bibpaper_index = BibpaperIndex.parse(@book.read_bib.lines.to_a)
+        end
       end
 
       def find_first_header_option

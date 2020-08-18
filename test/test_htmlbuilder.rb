@@ -862,11 +862,10 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS
+<div class="footnote" epub:type="footnote" id="fn-bar"><p class="footnote">[*1] bar</p></div>
 <dl>
 <dt>foo<a id="fnb-bar" href="#fn-bar" class="noteref" epub:type="noteref">*1</a>[]&lt;&gt;&amp;<span class="equation">\\alpha[]</span></dt>
 <dd></dd>
@@ -931,6 +930,8 @@ EOS
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
+
+    chap1.generate_indexes
     actual = builder.inline_list('ch1|sampletest')
     assert_equal %Q(<span class="listref"><a href="./ch1.html#sampletest">リスト1.1</a></span>), actual
   end
@@ -2201,19 +2202,19 @@ EOS
   end
 
   def test_inline_fn
-    book = ReVIEW::Book::Base.load
-    book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re])
-    io1 = StringIO.new("//footnote[foo][bar]\n")
-    chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
-    book.parts = [ReVIEW::Book::Part.new(self, nil, [chap1])]
-    builder = ReVIEW::HTMLBuilder.new
-    comp = ReVIEW::Compiler.new(builder)
-    builder.bind(comp, chap1, nil)
-    fn = builder.inline_fn('foo')
-    assert_equal '<a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">*1</a>', fn
+    fn = compile_block("//footnote[foo][bar]\n\n@<fn>{foo}\n")
+    expected = <<-EOS
+<div class=\"footnote\" epub:type=\"footnote\" id=\"fn-foo\"><p class=\"footnote\">[*1] bar</p></div>
+<p><a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">*1</a></p>
+EOS
+    assert_equal expected, fn
     I18n.set('html_footnote_refmark', '+%s')
-    fn = builder.inline_fn('foo')
-    assert_equal '<a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">+1</a>', fn
+    fn = compile_block("//footnote[foo][bar]\n\n@<fn>{foo}\n")
+    expected = <<-EOS
+<div class=\"footnote\" epub:type=\"footnote\" id=\"fn-foo\"><p class=\"footnote\">[*1] bar</p></div>
+<p><a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">+1</a></p>
+EOS
+    assert_equal expected, fn
   end
 
   def test_inline_hd
@@ -2228,6 +2229,8 @@ EOS
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
 
+    chap1.generate_indexes
+    chap2.generate_indexes
     hd = builder.inline_hd('ch1|test1-1')
     assert_equal '<a href="ch1.html#h1-1">「1.1 test1-1」</a>', hd
 
@@ -2248,6 +2251,8 @@ EOS
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
+    book.generate_indexes
+
     hd = builder.inline_hd('part1|part1-1')
     assert_equal '<a href="part1.html#h1-1">「1.1 part1-1」</a>', hd
 
