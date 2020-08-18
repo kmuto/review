@@ -119,6 +119,26 @@ module ReVIEW
       conf
     end
 
+    def self.create(maker: nil, yamlfile: nil, config: nil)
+      conf = self.values
+      conf.maker = maker
+
+      if yamlfile
+        begin
+          loader = ReVIEW::YAMLLoader.new
+          conf.deep_merge!(loader.load_file(yamlfile))
+        rescue => e
+          error "yaml error #{e.message}"
+        end
+      end
+      # YAML configs will be overridden by command line options.
+      if config
+        conf.deep_merge!(config)
+      end
+
+      conf
+    end
+
     def [](key)
       maker = self.maker
       if maker && self.key?(maker) && self.fetch(maker) && self.fetch(maker).key?(key)
