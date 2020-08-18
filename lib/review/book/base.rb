@@ -18,16 +18,16 @@ module ReVIEW
       attr_writer :catalog
       attr_reader :basedir
 
-      def self.load(dir = '.')
-        new(dir)
+      def self.load(basedir = '.', config: nil)
+        new(basedir, config: config)
       end
 
-      def initialize(basedir = '.')
+      def initialize(basedir = '.', config: nil)
         @basedir = basedir
         @logger = ReVIEW.logger
         @parts = nil
         @chapter_index = nil
-        @config = ReVIEW::Configure.values
+        @config = config || ReVIEW::Configure.values
         @catalog = nil
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
         @basedir_seen = {}

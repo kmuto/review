@@ -109,8 +109,7 @@ module ReVIEW
       remove_old_files(@path)
       Dir.mkdir(@path)
 
-      @book = ReVIEW::Book.load(@basedir)
-      @book.config = @config
+      @book = ReVIEW::Book::Base.load(@basedir, config: @config)
 
       copy_stylesheet(@path)
       copy_frontmatter(@path)

@@ -50,7 +50,7 @@ module ReVIEW
       @logger = ReVIEW.logger
       @config = ReVIEW::Configure.values
       @yamlfile = 'config.yml'
-      @book = ReVIEW::Book::Base.load
+      @book = ReVIEW::Book::Base.load('.', config: @config)
       @upper = 4
       @indent = true
       @buildonly = nil
@@ -59,7 +59,6 @@ module ReVIEW
 
     def execute(*args)
       parse_options(args)
-      @book.config = ReVIEW::Configure.values
       unless File.readable?(@yamlfile)
         @logger.error("No such fiile or can't open #{@yamlfile}.")
         exit 1
