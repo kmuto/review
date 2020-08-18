@@ -111,16 +111,32 @@ class ChapterTest < Test::Unit::TestCase
       assert ch1.on_chaps?
       assert !pre.on_chaps?
 
-      ch2_path = File.join(dir, 'chapter2.er')
+      ch2_path = File.join(dir, 'chapter2.re')
       File.open(ch2_path, 'w') {}
       ch2 = Book::Chapter.new(book, 2, 'chapter2', ch2_path)
 
-      ch3_path = File.join(dir, 'chapter3.er')
+      ch3_path = File.join(dir, 'chapter3.re')
       File.open(ch3_path, 'w') {}
       ch3 = Book::Chapter.new(book, 3, 'chapter3', ch3_path)
 
       assert ch2.on_chaps?
       assert !ch3.on_chaps?
+    end
+  end
+
+  def test_invalid_encoding
+    mktmpbookdir 'CHAPS' => 'chapter1.re',
+                 'chapter1.re' => "= 日本語UTF-8\n" do |_dir, book, files|
+      assert Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
+    end
+
+    # UTF-16LE UTF-16BE UTF-32LE UTF-32BE cause error on Windows
+    %w[CP932 SHIFT_JIS EUC-JP].each do |enc|
+      mktmpbookdir 'CHAPS' => 'chapter1.re',
+                   'chapter1.re' => "= 日本語UTF-8\n".encode(enc) do |_dir, book, files|
+        e = assert_raises(ReVIEW::CompileError) { Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re']) }
+        assert_equal 'chapter1: invalid byte sequence in UTF-8', e.message
+      end
     end
   end
 
