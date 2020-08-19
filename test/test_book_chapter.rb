@@ -2,6 +2,10 @@ require 'book_test_helper'
 class ChapterTest < Test::Unit::TestCase
   include BookTestHelper
 
+  def setup
+    I18n.setup
+  end
+
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
     assert_equal :book, ch.book
@@ -144,48 +148,56 @@ class ChapterTest < Test::Unit::TestCase
 
   def test_list_index
     do_test_index(<<E, Book::ListIndex, :list_index, :list)
-//list
-//listnum [abc]
-//list [def]
-//table [def]
-//table [others]
+//listnum[abc][abc-listnum]{
+//}
+//list[def][def-list]{
+//}
+//table[def]{
+//}
+//table[others]{
+//}
 E
   end
 
   def test_table_index
     do_test_index(<<E, Book::TableIndex, :table_index, :table)
-//table
-//table [abc]
-//table [def]
-//list [def]
-//list [others]
+//table[abc]{
+//}
+//table[def]{
+//}
+//list[def][def-list]{
+//}
+//list[others][other-list]{
+//}
 E
   end
 
   def test_footnote_index
     content = <<E
-//footnote
-//footnote [abc][text...]
-//footnote [def][text...]
-//footnote [xyz]
-//list [def]
-//list [others]
+//footnote[abc][textabc...]
+//footnote[def][textdef...]
+//footnote[xyz][textxyz...]
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
     do_test_index(content, Book::FootnoteIndex, :footnote_index, :footnote) do |ch|
       assert_raises ReVIEW::KeyError do
-        ch.footnote('xyz')
+        ch.footnote('xyz2')
       end
     end
   end
 
   def test_bibpaper
     do_test_index(<<E, Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib.re')
-//bibpaper
-//bibpaper [abc][text...]
-//bibpaper [def][text...]
-//bibpaper [xyz]
-//list [def]
-//list [others]
+//bibpaper[abc][text...]
+//bibpaper[def][text...]
+//bibpaper[xyz][text...]
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
     assert_raises FileNotFound do
       do_test_index('', Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib')
@@ -194,11 +206,12 @@ E
 
   def test_headline_index
     do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, propagate: false)
-==
+== x
 == abc
 == def
 === def
-//table others
+//table[others]{
+//}
 E
   end
 
@@ -222,35 +235,47 @@ E
 
   def test_image
     do_test_index(<<E, Book::ImageIndex, :image_index, :image)
-//image
-//image [abc]
-//image [def]
-//list [def]
-//list [others]
+//image[abc][abc-image]{
+//}
+//image[def][abc-image]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
 
     do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, propagate: false)
-//numberlessimage
-//numberlessimage [abc]
-//numberlessimage [def]
-//list [def]
-//list [others]
+//numberlessimage[abc]{
+//}
+//numberlessimage[def]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
 
     do_test_index(<<E, Book::ImageIndex, :image_index, :image)
-//image
-//numberlessimage [abc]
-//image [def]
-//list [def]
-//list [others]
+//numberlessimage[abc]{
+//}
+//image[def][def-image]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
 
     do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, propagate: false)
-//image
-//numberlessimage [abc]
-//image [def]
-//list [def]
-//list [others]
+//numberlessimage[abc]{
+//}
+//image[def][def-image]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
   end
 
