@@ -49,11 +49,11 @@ module ReVIEW
         end
       end
 
-      def make_indexes
+      def execute_indexer
         return unless @catalog
 
         parts.each do |part|
-          part.chapters.each(&:make_indexes)
+          part.chapters.each(&:execute_indexer)
         end
       end
 

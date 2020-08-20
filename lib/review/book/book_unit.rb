@@ -28,7 +28,7 @@ module ReVIEW
         end
       end
 
-      def make_indexes
+      def execute_indexer
         index_builder = ReVIEW::IndexBuilder.new
         compiler = ReVIEW::Compiler.new(index_builder)
         compiler.compile(self)
@@ -40,7 +40,7 @@ module ReVIEW
 
         @lines = content.lines
 
-        @indexes = make_indexes
+        @indexes = execute_indexer
 
         @list_index = @indexes.list_index
         @table_index = @indexes.table_index
