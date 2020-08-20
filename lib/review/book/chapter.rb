@@ -59,22 +59,13 @@ module ReVIEW
         super
 
         return unless content
-        @numberless_image_index =
-          NumberlessImageIndex.parse(lines, id,
-                                     @book.imagedir,
-                                     @book.image_types, @book.config['builder'])
-        @image_index = ImageIndex.parse(lines, id,
-                                        @book.imagedir,
-                                        @book.image_types, @book.config['builder'])
-        @icon_index = IconIndex.parse(lines, id,
-                                      @book.imagedir,
-                                      @book.image_types, @book.config['builder'])
-        @indepimage_index =
-          IndepImageIndex.parse(lines, id,
-                                @book.imagedir,
-                                @book.image_types, @book.config['builder'])
+
+        @numberless_image_index = @indexes.numberless_image_index
+        @image_index = @indexes.image_index
+        @icon_index = @indexes.icon_index
+        @indepimage_index = @indexes.indepimage_index
         if @book.bib_exist?
-          @bibpaper_index = BibpaperIndex.parse(@book.read_bib.lines.to_a)
+          @bibpaper_index = @indexes.bibpaper_index
         end
       end
 

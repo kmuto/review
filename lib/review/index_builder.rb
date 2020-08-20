@@ -17,7 +17,7 @@ module ReVIEW
 
     attr_reader :list_index, :table_index, :equation_index, :footnote_index,
                 :numberless_image_index, :image_index, :icon_index, :indepimage_index,
-                :headline_index, :column_index
+                :headline_index, :column_index, :bibpaper_index
 
     def initialize(strict = false, *args)
       super
@@ -101,13 +101,19 @@ module ReVIEW
     def nonum_begin(level, label, caption)
     end
 
-    def nonum_end(level)
+    def nonum_end(_level)
+    end
+
+    def notoc_begin(level, label, caption)
+    end
+
+    def notoc_end(_level)
     end
 
     def nodisp_begin(level, label, caption)
     end
 
-    def nodisp_end(level)
+    def nodisp_end(_level)
     end
 
     def column_begin(_level, label, caption)
@@ -228,6 +234,10 @@ module ReVIEW
     def imgtable(_lines, id, _caption = nil, _metric = nil)
       item = ReVIEW::Book::Index::Item.new(id, @table_index.size + 1)
       @table_index.add_item(item)
+
+      ## to find image path
+      item = ReVIEW::Book::Index::Item.new(id, @indepimage_index.size + 1)
+      @indepimage_index.add_item(item)
     end
 
     def footnote(id, str)
@@ -497,8 +507,9 @@ module ReVIEW
       ''
     end
 
-    def inline_icon(_id)
-      ''
+    def inline_icon(id)
+      item = ReVIEW::Book::Index::Item.new(id, nil)
+      @icon_index.add_item(item)
     end
 
     def inline_uchar(_str)
