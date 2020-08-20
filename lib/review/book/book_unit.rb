@@ -28,11 +28,15 @@ module ReVIEW
         end
       end
 
-      def execute_indexer
-        index_builder = ReVIEW::IndexBuilder.new
-        compiler = ReVIEW::Compiler.new(index_builder)
+      def execute_indexer(force: false)
+        if @index_builder && !force
+          return @index_builder
+        end
+
+        @index_builder = ReVIEW::IndexBuilder.new
+        compiler = ReVIEW::Compiler.new(@index_builder)
         compiler.compile(self)
-        index_builder
+        @index_builder
       end
 
       def generate_indexes
