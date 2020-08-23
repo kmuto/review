@@ -50,22 +50,25 @@ module ReVIEW
       @table_index = ReVIEW::Book::TableIndex.new
       @equation_index = ReVIEW::Book::EquationIndex.new
       @footnote_index = ReVIEW::Book::FootnoteIndex.new
-      @image_index = ReVIEW::Book::ImageIndex.new(@chapter.name,
-                                                  @book.imagedir,
-                                                  @book.image_types, @book.config['builder'])
-      @icon_index = ReVIEW::Book::IconIndex.new(@chapter.name,
-                                                @book.imagedir,
-                                                @book.image_types, @book.config['builder'])
-      @numberless_image_index = ReVIEW::Book::NumberlessImageIndex.new(@chapter.name,
-                                                                       @book.imagedir,
-                                                                       @book.image_types, @book.config['builder'])
-      @indepimage_index = ReVIEW::Book::IndepImageIndex.new(@chapter.name,
-                                                            @book.imagedir,
-                                                            @book.image_types, @book.config['builder'])
       @headline_index = ReVIEW::Book::HeadlineIndex.new(@chapter)
       @column_index = ReVIEW::Book::ColumnIndex.new
       @chapter_index = ReVIEW::Book::ChapterIndex.new
       @bibpaper_index = ReVIEW::Book::BibpaperIndex.new
+
+      if @book
+        @image_index = ReVIEW::Book::ImageIndex.new(@chapter.name,
+                                                    @book.imagedir,
+                                                    @book.image_types, @book.config['builder'])
+        @icon_index = ReVIEW::Book::IconIndex.new(@chapter.name,
+                                                  @book.imagedir,
+                                                  @book.image_types, @book.config['builder'])
+        @numberless_image_index = ReVIEW::Book::NumberlessImageIndex.new(@chapter.name,
+                                                                         @book.imagedir,
+                                                                         @book.image_types, @book.config['builder'])
+        @indepimage_index = ReVIEW::Book::IndepImageIndex.new(@chapter.name,
+                                                              @book.imagedir,
+                                                              @book.image_types, @book.config['builder'])
+      end
     end
     private :builder_init_file
 
@@ -99,18 +102,63 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
+      cursor = level - 2
+
+      if label
+        @headline_stack[cursor] = label
+      else
+        @headline_stack[cursor] = caption
+      end
+      if @headline_stack.size > cursor + 1
+        @headline_stack = @headline_stack.take(cursor + 1)
+      end
+
+      item_id = @headline_stack.join('|')
+
+      item = ReVIEW::Book::Index::Item.new(item_id, nil, caption)
+      @headline_index.add_item(item)
     end
 
     def nonum_end(_level)
     end
 
     def notoc_begin(level, label, caption)
+      cursor = level - 2
+
+      if label
+        @headline_stack[cursor] = label
+      else
+        @headline_stack[cursor] = caption
+      end
+      if @headline_stack.size > cursor + 1
+        @headline_stack = @headline_stack.take(cursor + 1)
+      end
+
+      item_id = @headline_stack.join('|')
+
+      item = ReVIEW::Book::Index::Item.new(item_id, nil, caption)
+      @headline_index.add_item(item)
     end
 
     def notoc_end(_level)
     end
 
     def nodisp_begin(level, label, caption)
+      cursor = level - 2
+
+      if label
+        @headline_stack[cursor] = label
+      else
+        @headline_stack[cursor] = caption
+      end
+      if @headline_stack.size > cursor + 1
+        @headline_stack = @headline_stack.take(cursor + 1)
+      end
+
+      item_id = @headline_stack.join('|')
+
+      item = ReVIEW::Book::Index::Item.new(item_id, nil, caption)
+      @headline_index.add_item(item)
     end
 
     def nodisp_end(_level)
@@ -508,8 +556,9 @@ module ReVIEW
     end
 
     def inline_icon(id)
-      item = ReVIEW::Book::Index::Item.new(id, nil)
+      item = ReVIEW::Book::Index::Item.new(id, @icon_index.size + 1)
       @icon_index.add_item(item)
+      ''
     end
 
     def inline_uchar(_str)

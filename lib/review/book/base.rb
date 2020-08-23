@@ -17,6 +17,7 @@ module ReVIEW
       attr_writer :parts
       attr_accessor :catalog
       attr_reader :basedir
+      attr_accessor :bibpaper_index
 
       def self.load(basedir = '.', config: nil)
         new(basedir, config: config)
@@ -29,6 +30,7 @@ module ReVIEW
         @chapter_index = nil
         @config = config || ReVIEW::Configure.values
         @catalog = nil
+        @bibpaper_index = nil
         catalog_path = filename_join(@basedir, @config['catalogfile'])
         if catalog_path && File.file?(catalog_path)
           parse_catalog_file(catalog_path)
@@ -121,6 +123,11 @@ module ReVIEW
       end
 
       def generate_indexes
+        if bib_exist?
+          bib = ReVIEW::Book::BookUnit.new(file_content: bib_content, book: self)
+          bib.generate_indexes(use_bib: true)
+          @bibpaper_index = bib.bibpaper_index
+        end
         self.each_chapter(&:generate_indexes)
         self.parts.map(&:generate_indexes)
         @chapter_index = create_chapter_index
@@ -272,6 +279,10 @@ module ReVIEW
 
       def bib_exist?
         File.exist?(File.join(contentdir, bib_file))
+      end
+
+      def bib_content
+        File.read(File.join(contentdir, bib_file))
       end
 
       def prefaces

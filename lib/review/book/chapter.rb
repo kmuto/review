@@ -64,9 +64,6 @@ module ReVIEW
         @image_index = @indexes.image_index
         @icon_index = @indexes.icon_index
         @indepimage_index = @indexes.indepimage_index
-        if @book.bib_exist?
-          @bibpaper_index = @indexes.bibpaper_index
-        end
       end
 
       def find_first_header_option

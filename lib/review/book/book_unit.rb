@@ -22,9 +22,15 @@ module ReVIEW
                   :numberless_image_index, :image_index, :icon_index, :indepimage_index,
                   :headline_index, :column_index
 
-      def initialize
+      def initialize(file_content: nil, book: nil)
+        if book
+          @book = book
+        end
+        if file_content
+          @content = file_content
+        end
         if @content
-          @lines = content.lines
+          @lines = @content.lines
         end
       end
 
@@ -39,7 +45,7 @@ module ReVIEW
         @index_builder
       end
 
-      def generate_indexes
+      def generate_indexes(use_bib: false)
         return unless content
 
         @lines = content.lines
@@ -52,6 +58,13 @@ module ReVIEW
         @footnote_index = @indexes.footnote_index
         @headline_index = @indexes.headline_index
         @column_index = @indexes.column_index
+        if use_bib
+          @book.bibpaper_index = @indexes.bibpaper_index
+        end
+      end
+
+      def number
+        nil
       end
 
       def dirname
@@ -119,7 +132,7 @@ module ReVIEW
 
       def bibpaper_index
         raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
-        @bibpaper_index
+        @book.bibpaper_index
       end
 
       def headline(caption)
