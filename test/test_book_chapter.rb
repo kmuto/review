@@ -194,10 +194,6 @@ E
 //bibpaper[abc][text...]
 //bibpaper[def][text...]
 //bibpaper[xyz][text...]
-//list[def][def-list]{
-//}
-//list[others][others-list]{
-//}
 E
     assert_raises FileNotFound do
       do_test_index('', Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib')
@@ -283,12 +279,14 @@ E
     Dir.mktmpdir do |dir|
       path = File.join(dir, opts[:filename] || 'chapter.re')
 
-      book = Book::Base.new(dir)
-
       File.open(path, 'w') do |o|
         o.print content
       end
+
+      book = Book::Base.new(dir)
+
       ch = Book::Chapter.new(book, 1, 'chapter', path)
+      book.generate_indexes
       ch.generate_indexes
       assert ch.__send__(ref_method, 'abc')
       assert ch.__send__(ref_method, 'def')
