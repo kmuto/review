@@ -9,6 +9,7 @@
 #
 require 'review/configure'
 require 'review/catalog'
+require 'review/book/bib'
 
 module ReVIEW
   module Book
@@ -124,7 +125,7 @@ module ReVIEW
 
       def generate_indexes
         if bib_exist?
-          bib = ReVIEW::Book::BookUnit.new(file_content: bib_content, book: self)
+          bib = ReVIEW::Book::Bib.new(file_content: bib_content, book: self)
           bib.generate_indexes(use_bib: true)
           @bibpaper_index = bib.bibpaper_index
         end

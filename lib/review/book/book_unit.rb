@@ -63,10 +63,6 @@ module ReVIEW
         end
       end
 
-      def number
-        nil
-      end
-
       def dirname
         @path && File.dirname(@path)
       end
