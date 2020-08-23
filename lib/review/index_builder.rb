@@ -35,6 +35,7 @@ module ReVIEW
       @compiler = compiler
       @chapter = chapter
       @location = location
+      @output = StringIO.new
       if @chapter.present?
         @book = @chapter.book
       end
