@@ -57,18 +57,10 @@ module ReVIEW
       @bibpaper_index = ReVIEW::Book::BibpaperIndex.new
 
       if @book
-        @image_index = ReVIEW::Book::ImageIndex.new(@chapter.name,
-                                                    @book.imagedir,
-                                                    @book.image_types, @book.config['builder'])
-        @icon_index = ReVIEW::Book::IconIndex.new(@chapter.name,
-                                                  @book.imagedir,
-                                                  @book.image_types, @book.config['builder'])
-        @numberless_image_index = ReVIEW::Book::NumberlessImageIndex.new(@chapter.name,
-                                                                         @book.imagedir,
-                                                                         @book.image_types, @book.config['builder'])
-        @indepimage_index = ReVIEW::Book::IndepImageIndex.new(@chapter.name,
-                                                              @book.imagedir,
-                                                              @book.image_types, @book.config['builder'])
+        @image_index = ReVIEW::Book::ImageIndex.new(@chapter)
+        @icon_index = ReVIEW::Book::IconIndex.new(@chapter)
+        @numberless_image_index = ReVIEW::Book::NumberlessImageIndex.new(@chapter)
+        @indepimage_index = ReVIEW::Book::IndepImageIndex.new(@chapter)
       end
     end
     private :builder_init_file

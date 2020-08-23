@@ -132,12 +132,15 @@ module ReVIEW
 
       attr_reader :image_finder
 
-      def initialize(chapid, basedir, types, builder)
+      def initialize(chapter)
         super()
-        @chapid = chapid
-        @basedir = basedir
-        @types = types
-        @logger = ReVIEW.logger
+        @chapter = chapter
+        book = @chapter.book
+
+        chapid = chapter.id
+        basedir = book.imagedir
+        builder = book.config['builder']
+        types = book.image_types
 
         @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid, builder, types)
       end
@@ -148,15 +151,6 @@ module ReVIEW
     end
 
     class IconIndex < ImageIndex
-      def initialize(chapid, basedir, types, builder)
-        @index = {}
-        @chapid = chapid
-        @basedir = basedir
-        @types = types
-        @logger = ReVIEW.logger
-
-        @image_finder = ImageFinder.new(basedir, chapid, builder, types)
-      end
     end
 
     class BibpaperIndex < Index
@@ -185,10 +179,9 @@ module ReVIEW
     class HeadlineIndex < Index
       HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
 
-      def initialize(chap)
-        @chap = chap
-        @index = {}
-        @logger = ReVIEW.logger
+      def initialize(chapter)
+        super()
+        @chapter = chapter
       end
 
       def number(id)
@@ -196,10 +189,10 @@ module ReVIEW
           # when notoc
           return ''
         end
-        n = @chap.number
+        n = @chapter.number
         # XXX: remove magic number (move to lib/review/book/chapter.rb)
-        if @chap.on_appendix? && @chap.number > 0 && @chap.number < 28
-          n = @chap.format_number(false)
+        if @chapter.on_appendix? && @chapter.number > 0 && @chapter.number < 28
+          n = @chapter.format_number(false)
         end
         ([n] + self[id].number).join('.')
       end
