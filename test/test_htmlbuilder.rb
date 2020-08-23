@@ -421,12 +421,14 @@ EOS
         file1 = File.join(dir, 'images', 'img1.png')
         filet1 = File.join(dir, 'images', 'tbl1.png')
         file2 = File.join(dir, 'images', 'img2.png')
+        file3 = File.join(dir, 'images', 'icon3.png')
         re1 = File.join(dir, 'sample1.re')
         cat = File.join(dir, 'catalog.yml')
         FileUtils.mkdir_p(File.join(dir, 'images'))
         File.open(file1, 'w') { |f| f.write '' }
         File.open(filet1, 'w') { |f| f.write '' }
         File.open(file2, 'w') { |f| f.write '' }
+        File.open(file3, 'w') { |f| f.write '' }
         File.open(cat, 'w') { |f| f.write "CHAPS:\n  - sample1.re\n" }
         File.open(re1, 'w') { |f| f.write <<EOF }
 = test
@@ -434,6 +436,8 @@ EOS
 tbl1 is @<table>{tbl1}.
 
 img2 is @<img>{img2}.
+
+icon3 is @<icon>{icon3}.
 
 //image[img1][image 1]{
 //}
@@ -451,6 +455,7 @@ EOF
 <h1><a id="h1"></a><span class="secno">第1章　</span>test</h1>
 <p>tbl1 is <span class="tableref"><a href="./-.html#tbl1">表1.1</a></span>.</p>
 <p>img2 is <span class="imgref"><a href="./-.html#img2">図1.2</a></span>.</p>
+<p>icon3 is <img src="images/icon3.png" alt="[icon3]" />.</p>
 <div id="img1" class="image">
 <img src="images/img1.png" alt="image 1" />
 <p class="caption">
@@ -478,6 +483,7 @@ EOS
 <h1><a id="h1"></a><span class="secno">第1章　</span>test</h1>
 <p>tbl1 is <span class="tableref">表1.1</span>.</p>
 <p>img2 is <span class="imgref">図1.2</span>.</p>
+<p>icon3 is <img src="images/icon3.png" alt="[icon3]" />.</p>
 <div id="img1" class="image">
 <img src="images/img1.png" alt="image 1" />
 <p class="caption">
@@ -2166,8 +2172,6 @@ EOS
   end
 
   def test_footnote
-    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
-    @chapter.instance_eval { @footnote_index = fn }
     actual = compile_block("//footnote[foo][bar\\a\\$buz]\n")
     expected = <<-'EOS'
 <div class="footnote" epub:type="footnote" id="fn-foo"><p class="footnote">[*1] bar\a\$buz</p></div>
@@ -2192,8 +2196,6 @@ EOS
   end
 
   def test_footnote_with_tricky_id
-    fn = Book::FootnoteIndex.parse(['//footnote[123 あ_;][bar\\a\\$buz]'])
-    @chapter.instance_eval { @footnote_index = fn }
     actual = compile_block("//footnote[123 あ_;][bar\\a\\$buz]\n")
     expected = <<-'EOS'
 <div class="footnote" epub:type="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[*1] bar\a\$buz</p></div>
