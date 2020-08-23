@@ -38,7 +38,7 @@ class IndexTest < Test::Unit::TestCase
     # rubocop:enable Style/PreferredHashMethods
   end
 
-  def test_headeline_index
+  def test_headline_index
     src = <<-EOB
 = chap1
 == sec1-1
@@ -59,7 +59,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
 
-  def test_headeline_index2
+  def test_headline_index2
     src = <<-EOB
 = chap1
 == sec1-1
@@ -76,7 +76,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.3.1', index.number('sec1-3|sec1-3-1')
   end
 
-  def test_headeline_index3
+  def test_headline_index3
     src = <<-EOB
 = chap1
 == sec1-1
@@ -97,7 +97,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.3.1', index.number('sec1-3|sec1-3-1')
   end
 
-  def test_headeline_index4
+  def test_headline_index4
     src = <<-EOB
 = chap1
 ====[column] c1
@@ -113,7 +113,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
 
-  def test_headeline_index5
+  def test_headline_index5
     src = <<-EOB
 = chap1
 ====[column] c1
@@ -129,7 +129,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.2.2', index.number('sec1-2-2')
   end
 
-  def test_headeline_index6
+  def test_headline_index6
     src = <<-EOB
 = chap1
 == sec1
@@ -144,7 +144,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.1.1', index.number('target')
   end
 
-  def test_headeline_index7
+  def test_headline_index7
     src = <<-EOB
 = chap1
 == sec1
@@ -164,7 +164,7 @@ class IndexTest < Test::Unit::TestCase
     end
   end
 
-  def test_headeline_index8
+  def test_headline_index8
     src = <<-EOB
 = chap1
 == sec1
@@ -178,7 +178,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.1.1', index.number('sec1-1')
   end
 
-  def test_headeline_index9
+  def test_headline_index9
     src = <<-EOB
 = chap1
 == sec1
@@ -194,7 +194,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [1, 1, 1], index['sec1-1-1'].number
   end
 
-  def test_headeline_index10
+  def test_headline_index10
     src = <<-EOB
 = chap1
 == sec1
@@ -209,7 +209,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [1, 1, 1], index['sec1-1-1'].number
   end
 
-  def test_headeline_index11
+  def test_headline_index11
     src = <<-EOB
 = chap1
 ==[nodisp] sec01
@@ -232,7 +232,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [2], index['sec04'].number
   end
 
-  def test_headeline_index12
+  def test_headline_index12
     src = <<-EOB
 = chap1
 == A
