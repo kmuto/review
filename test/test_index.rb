@@ -10,11 +10,8 @@ class IndexTest < Test::Unit::TestCase
 
   def setup
     @builder = TOPBuilder.new
-    @config = ReVIEW::Configure.values
-    @config['secnolevel'] = 2
-    @config['language'] = 'ja'
-    @book = Book::Base.new
-    @book.config = @config
+    @config = ReVIEW::Configure.create(config: { 'secnolevel' => 2, 'language' => 'ja' })
+    @book = Book::Base.new(config: @config)
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
