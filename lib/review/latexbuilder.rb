@@ -599,7 +599,8 @@ module ReVIEW
     end
     private :bib_label
 
-    def column_label(id, chapter = @chapter)
+    def column_label(id, chapter = nil)
+      chapter ||= @chapter
       filename = chapter.id
       num = chapter.column(id).number
       "column:#{filename}:#{num}"

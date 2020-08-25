@@ -7,6 +7,7 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 require 'review/textutils'
+require 'review/index_builder'
 
 module ReVIEW
   module Book
@@ -21,22 +22,45 @@ module ReVIEW
                   :numberless_image_index, :image_index, :icon_index, :indepimage_index,
                   :headline_index, :column_index
 
-      def initialize
+      def initialize(file_content: nil, book: nil)
+        if book
+          @book = book
+        end
+        if file_content
+          @content = file_content
+        end
         if @content
-          @lines = content.lines
+          @lines = @content.lines
         end
       end
 
-      def generate_indexes
+      def execute_indexer(force: false)
+        if @index_builder && !force
+          return @index_builder
+        end
+
+        @index_builder = ReVIEW::IndexBuilder.new
+        compiler = ReVIEW::Compiler.new(@index_builder)
+        compiler.compile(self)
+        @index_builder
+      end
+
+      def generate_indexes(use_bib: false)
         return unless content
 
         @lines = content.lines
-        @list_index = ListIndex.parse(lines)
-        @table_index = TableIndex.parse(lines)
-        @equation_index = EquationIndex.parse(lines)
-        @footnote_index = FootnoteIndex.parse(lines)
-        @headline_index = HeadlineIndex.parse(lines, self)
-        @column_index = ColumnIndex.parse(lines)
+
+        @indexes = execute_indexer
+
+        @list_index = @indexes.list_index
+        @table_index = @indexes.table_index
+        @equation_index = @indexes.equation_index
+        @footnote_index = @indexes.footnote_index
+        @headline_index = @indexes.headline_index
+        @column_index = @indexes.column_index
+        if use_bib
+          @book.bibpaper_index = @indexes.bibpaper_index
+        end
       end
 
       def dirname
@@ -104,7 +128,7 @@ module ReVIEW
 
       def bibpaper_index
         raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
-        @bibpaper_index
+        @book.bibpaper_index
       end
 
       def headline(caption)

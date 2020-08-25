@@ -28,7 +28,7 @@ module ReVIEW
       end
 
       def self.mkpart(chaps)
-        chaps.empty? ? nil : Part.new(self, nil, chaps)
+        chaps.empty? ? nil : Part.new(chaps[0].book, nil, chaps)
       end
 
       # if Part is dummy, `number` is nil.
