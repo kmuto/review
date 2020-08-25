@@ -9,26 +9,34 @@
 #
 require 'review/configure'
 require 'review/catalog'
+require 'review/book/bib'
 
 module ReVIEW
   module Book
     class Base
       attr_accessor :config
       attr_writer :parts
-      attr_writer :catalog
+      attr_accessor :catalog
       attr_reader :basedir
+      attr_accessor :bibpaper_index
 
-      def self.load(dir = '.')
-        new(dir)
+      def self.load(basedir = '.', config: nil)
+        new(basedir, config: config)
       end
 
-      def initialize(basedir = '.')
+      def initialize(basedir = '.', config: nil)
         @basedir = basedir
         @logger = ReVIEW.logger
         @parts = nil
         @chapter_index = nil
-        @config = ReVIEW::Configure.values
+        @config = config || ReVIEW::Configure.values
         @catalog = nil
+        @bibpaper_index = nil
+        catalog_path = filename_join(@basedir, @config['catalogfile'])
+        if catalog_path && File.file?(catalog_path)
+          parse_catalog_file(catalog_path)
+        end
+
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
         @basedir_seen = {}
         update_rubyenv
@@ -41,6 +49,14 @@ module ReVIEW
           else
             Kernel.load(File.expand_path(File.join(@basedir, 'review-ext.rb')))
           end
+        end
+      end
+
+      def execute_indexer
+        return unless @catalog
+
+        parts.each do |part|
+          part.chapters.each(&:execute_indexer)
         end
       end
 
@@ -94,6 +110,30 @@ module ReVIEW
         end
       end
 
+      def create_chapter_index
+        chapter_index = ChapterIndex.new
+        each_chapter do |chap|
+          chapter_index.add_item(Index::Item.new(chap.id, chap.number, chap))
+        end
+        parts.each do |prt|
+          if prt.id.present?
+            chapter_index.add_item(Index::Item.new(prt.id, prt.number, prt))
+          end
+        end
+        chapter_index
+      end
+
+      def generate_indexes
+        if bib_exist?
+          bib = ReVIEW::Book::Bib.new(file_content: bib_content, book: self)
+          bib.generate_indexes(use_bib: true)
+          @bibpaper_index = bib.bibpaper_index
+        end
+        self.each_chapter(&:generate_indexes)
+        self.parts.map(&:generate_indexes)
+        @chapter_index = create_chapter_index
+      end
+
       def parts
         @parts ||= read_parts
       end
@@ -136,15 +176,7 @@ module ReVIEW
 
       def chapter_index
         return @chapter_index if @chapter_index
-        @chapter_index = ChapterIndex.new
-        each_chapter do |chap|
-          @chapter_index.add_item(Index::Item.new(chap.id, chap.number, chap))
-        end
-        parts.each do |prt|
-          if prt.id.present?
-            @chapter_index.add_item(Index::Item.new(prt.id, prt.number, prt))
-          end
-        end
+        @chapter_index = create_chapter_index
         @chapter_index
       end
 
@@ -183,17 +215,15 @@ module ReVIEW
         @config.merge!(new_conf)
       end
 
-      def catalog
-        return @catalog if @catalog.present?
-
-        catalogfile_path = filename_join(@basedir, config['catalogfile'])
-        if File.file?(catalogfile_path)
-          @catalog = File.open(catalogfile_path, 'rt:BOM|utf-8') { |f| Catalog.new(f) }
+      def parse_catalog_file(path)
+        unless File.file?(path)
+          raise FileNotFound, "catalog.yml is not found #{path}"
         end
-        if @catalog
+
+        File.open(path, 'rt:BOM|utf-8') do |f|
+          @catalog = Catalog.new(f)
           @catalog.validate!(@config, basedir)
         end
-        @catalog
       end
 
       def read_chaps
@@ -250,6 +280,10 @@ module ReVIEW
 
       def bib_exist?
         File.exist?(File.join(contentdir, bib_file))
+      end
+
+      def bib_content
+        File.read(File.join(contentdir, bib_file))
       end
 
       def prefaces

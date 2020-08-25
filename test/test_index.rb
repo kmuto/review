@@ -1,11 +1,28 @@
 require 'test_helper'
+require 'review/compiler'
 require 'review/book'
 require 'review/book/index'
+require 'review/topbuilder'
+require 'review/i18n'
 
 class IndexTest < Test::Unit::TestCase
   include ReVIEW
+
+  def setup
+    @builder = TOPBuilder.new
+    @config = ReVIEW::Configure.create(config: { 'secnolevel' => 2, 'language' => 'ja' })
+    @book = Book::Base.new(config: @config)
+    @compiler = ReVIEW::Compiler.new(@builder)
+    @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
+    location = Location.new(nil, nil)
+    @builder.bind(@compiler, @chapter, location)
+
+    I18n.setup(@config['language'])
+  end
+
   def test_footnote_index
-    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar]'])
+    compile_block("//footnote[foo][bar]\n")
+    fn = @chapter.footnote_index
     items = fn.to_a
     item = items[0]
     assert_equal 'foo', item.id
@@ -13,7 +30,8 @@ class IndexTest < Test::Unit::TestCase
   end
 
   def test_footnote_index_with_escape
-    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar[\]buz]'])
+    compile_block('//footnote[foo][bar[\]buz]' + "\n")
+    fn = @chapter.footnote_index
     items = fn.to_a
     item = items[0]
     assert_equal 'foo', item.id
@@ -21,7 +39,8 @@ class IndexTest < Test::Unit::TestCase
   end
 
   def test_footnote_index_with_escape2
-    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
+    compile_block('//footnote[foo][bar\\a\\$buz]' + "\n")
+    fn = @chapter.footnote_index
     items = fn.to_a
     item = items[0]
     assert_equal 'foo', item.id
@@ -29,7 +48,8 @@ class IndexTest < Test::Unit::TestCase
   end
 
   def test_footnote_index_key?
-    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar]'])
+    compile_block('//footnote[foo][bar]' + "\n")
+    fn = @chapter.footnote_index
     assert_equal true, fn.key?('foo')
 
     ## for compatibility
@@ -38,7 +58,7 @@ class IndexTest < Test::Unit::TestCase
     # rubocop:enable Style/PreferredHashMethods
   end
 
-  def test_headeline_index
+  def test_headline_index
     src = <<-EOB
 = chap1
 == sec1-1
@@ -52,14 +72,13 @@ class IndexTest < Test::Unit::TestCase
 == sec1-3
 ==== sec1-3-0-1
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
 
-  def test_headeline_index2
+  def test_headline_index2
     src = <<-EOB
 = chap1
 == sec1-1
@@ -69,14 +88,13 @@ class IndexTest < Test::Unit::TestCase
 == sec1-3
 === sec1-3-1
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src.lines, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [3, 1], index['sec1-3|sec1-3-1'].number
     assert_equal '1.3.1', index.number('sec1-3|sec1-3-1')
   end
 
-  def test_headeline_index3
+  def test_headline_index3
     src = <<-EOB
 = chap1
 == sec1-1
@@ -87,9 +105,8 @@ class IndexTest < Test::Unit::TestCase
 == sec1-3
 === sec1-3-1
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
 
@@ -97,7 +114,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal '1.3.1', index.number('sec1-3|sec1-3-1')
   end
 
-  def test_headeline_index4
+  def test_headline_index4
     src = <<-EOB
 = chap1
 ====[column] c1
@@ -106,14 +123,13 @@ class IndexTest < Test::Unit::TestCase
 === sec1-2-1
 === sec1-2-2
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [2, 2], index['sec1-2|sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2|sec1-2-2')
   end
 
-  def test_headeline_index5
+  def test_headline_index5
     src = <<-EOB
 = chap1
 ====[column] c1
@@ -122,14 +138,13 @@ class IndexTest < Test::Unit::TestCase
 === sec1-2-1
 === sec1-2-2
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [2, 2], index['sec1-2-2'].number
     assert_equal '1.2.2', index.number('sec1-2-2')
   end
 
-  def test_headeline_index6
+  def test_headline_index6
     src = <<-EOB
 = chap1
 == sec1
@@ -137,34 +152,33 @@ class IndexTest < Test::Unit::TestCase
 == sec2
 
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [1, 1], index['target'].number
     assert_equal '1.1.1', index.number('target')
   end
 
-  def test_headeline_index7
+  def test_headline_index7
     src = <<-EOB
 = chap1
 == sec1
 === target
        ^-- dummy target
+
 == sec2
 === target
        ^-- real target but it cannot be detected, because there is another one.
 
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil) # dummy
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
 
     assert_raise ReVIEW::KeyError do
       assert_equal [1, 1], index['target'].number
     end
   end
 
-  def test_headeline_index8
+  def test_headline_index8
     src = <<-EOB
 = chap1
 == sec1
@@ -172,13 +186,13 @@ class IndexTest < Test::Unit::TestCase
 ==== sec1-1-1
 
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
+
     assert_equal '1.1.1', index.number('sec1-1')
   end
 
-  def test_headeline_index9
+  def test_headline_index9
     src = <<-EOB
 = chap1
 == sec1
@@ -188,13 +202,12 @@ class IndexTest < Test::Unit::TestCase
 ==== sec1-1-1
 === sec1-2
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [1, 1, 1], index['sec1-1-1'].number
   end
 
-  def test_headeline_index10
+  def test_headline_index10
     src = <<-EOB
 = chap1
 == sec1
@@ -203,13 +216,12 @@ class IndexTest < Test::Unit::TestCase
 ==== sec1-1-1
 === sec1-2
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [1, 1, 1], index['sec1-1-1'].number
   end
 
-  def test_headeline_index11
+  def test_headline_index11
     src = <<-EOB
 = chap1
 ==[nodisp] sec01
@@ -220,9 +232,8 @@ class IndexTest < Test::Unit::TestCase
 ==[nonum] sec03
 == sec04
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal nil, index['sec01'].number
     assert_equal nil, index['sec02'].number
     assert_equal [1], index['sec1'].number
@@ -232,7 +243,7 @@ class IndexTest < Test::Unit::TestCase
     assert_equal [2], index['sec04'].number
   end
 
-  def test_headeline_index12
+  def test_headline_index12
     src = <<-EOB
 = chap1
 == A
@@ -240,9 +251,8 @@ class IndexTest < Test::Unit::TestCase
 ==[nonum] B
 === B2
     EOB
-    book = Book::Base.load
-    chap = Book::Chapter.new(book, 1, '-', nil)
-    index = Book::HeadlineIndex.parse(src.lines.to_a, chap)
+    compile_block(src)
+    index = @chapter.headline_index
     assert_equal [1], index['A'].number
     assert_equal [1, 1], index['A2'].number
     assert_equal nil, index['B'].number

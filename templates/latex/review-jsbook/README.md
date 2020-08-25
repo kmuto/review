@@ -40,19 +40,21 @@ texdocumentclass: ["review-jsbook", "クラスオプションたち（省略可�
 
 `media` の値によって表紙（config.yml の coverimage に指定した画像）の配置の有無は自動で切り替わりますが、`cover=true` とすれば必ず表紙を入れるようになります。
 
-なお、config.yml の coverimage で指定する画像ファイルは、原寸を想定しています。
+### 表紙画像のサイズの仕上がり紙面合わせ `cover_fit_page=<trueまたはfalse>`
+
+上記の coverimage で指定する画像ファイルは、原寸を想定しているため、サイズが異なる場合にははみ出たり、小さすぎたりすることになります。できるだけ原寸で用意することを推奨しますが、`cover_fit_page=true` とすれば表紙画像を紙面の仕上がりサイズに合わせて拡縮します。
 
 ### 特定の用紙サイズ `paper=<用紙サイズ>`
 
 利用可能な特定の用紙サイズを指定できます。
 
- * `a3` 
+ * `a3`
  * `a4` ［デフォルト］
  * `a5`
- * `a6` 
- * `b4`：JIS B4 
+ * `a6`
+ * `b4`：JIS B4
  * `b5`：JIS B5
- * `b6`：JIS B6 
+ * `b6`：JIS B6
  * `a4var`：210mm x 283mm
  * `b5var`：182mm x 230mm
  * `letter`

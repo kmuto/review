@@ -11,7 +11,6 @@ require 'review/textutils'
 require 'review/compiler'
 require 'review/sec_counter'
 require 'stringio'
-require 'cgi'
 require 'fileutils'
 require 'tempfile'
 require 'csv'
@@ -52,6 +51,10 @@ module ReVIEW
       @output = StringIO.new
       if @chapter.present?
         @book = @chapter.book
+      end
+      @chapter.generate_indexes
+      if @book
+        @book.generate_indexes
       end
       @tabwidth = nil
       @tsize = nil

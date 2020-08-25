@@ -23,17 +23,23 @@ jobs:
         gem install bundler --no-document
         bundle install --retry 3
         bundle exec ruby test/run_test.rb --max-diff-target-string-size=10000 --verbose=v
-    - name: Test with epubcheck-ruby
+    - name: install Re:VIEW and epubcheck-ruby
       shell: bash
       run: |
         gem install -N epubcheck-ruby
-        ruby bin/review-init hello
+        rake install
+    - name: Test with epubcheck-ruby
+      shell: bash
+      run: |
+        review-init hello
         cd hello
-        ruby ../bin/review-epubmaker config.yml
+        ruby -e 'Dir.glob("*.re"){|path| File.write(path, File.read(path).gsub("=", "= foo")) }'
+        review-epubmaker config.yml
         epubcheck book.epub
         cd ..
-        ruby bin/review-init hello2 --epub-version 2
+        review-init hello2 --epub-version 2
         cd hello2
-        ruby ../bin/review-epubmaker config.yml
+        ruby -e 'Dir.glob("*.re"){|path| File.write(path, File.read(path).gsub("=", "= foo")) }'
+        review-epubmaker config.yml
         epubcheck book.epub
         cd ..

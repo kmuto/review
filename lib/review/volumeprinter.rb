@@ -28,8 +28,7 @@ module ReVIEW
 
     def execute(*args)
       parse_options(args)
-      @book = ReVIEW::Book::Base.load
-      @book.config = @config
+      @book = ReVIEW::Book::Base.load('.', config: @config)
       unless File.readable?(@yamlfile)
         @logger.error("No such fiile or can't open #{@yamlfile}.")
         exit 1
@@ -46,7 +45,7 @@ module ReVIEW
             print_chapter_volume(chap)
           end
         end
-      rescue ReVIEW::FileNotFound => e
+      rescue ReVIEW::FileNotFound, ReVIEW::CompileError => e
         @logger.error e
         exit 1
       end

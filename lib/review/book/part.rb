@@ -6,13 +6,11 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-require 'review/book/compilable'
+require 'review/book/book_unit'
 
 module ReVIEW
   module Book
-    class Part
-      include Compilable
-
+    class Part < BookUnit
       def self.mkpart_from_namelistfile(book, path)
         chaps = []
         File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, number|
@@ -30,7 +28,7 @@ module ReVIEW
       end
 
       def self.mkpart(chaps)
-        chaps.empty? ? nil : Part.new(self, nil, chaps)
+        chaps.empty? ? nil : Part.new(chaps[0].book, nil, chaps)
       end
 
       # if Part is dummy, `number` is nil.
@@ -38,15 +36,16 @@ module ReVIEW
       def initialize(book, number, chapters, name = '', io = nil)
         @book = book
         @number = number
-        @chapters = chapters
         @name = name
+        @chapters = chapters
         @path = name
-        @content = ''
         if io
           @content = io.read
         elsif @path.present? && File.exist?(File.join(@book.config['contentdir'], @path))
           @content = File.read(File.join(@book.config['contentdir'], @path), mode: 'rt:BOM|utf-8')
-          @name = File.basename(@name, '.re')
+          @name = File.basename(name, '.re')
+        else
+          @content = ''
         end
         if file?
           @title = nil
@@ -54,6 +53,8 @@ module ReVIEW
           @title = name
         end
         @volume = nil
+
+        super()
       end
 
       attr_reader :number

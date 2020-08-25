@@ -47,23 +47,23 @@ module EPUBMaker
         if @producer.config[item].is_a?(Array)
           @producer.config[item].each_with_index do |v, i|
             if v.is_a?(Hash)
-              s << %Q(    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v['name'])}</dc:#{item}>\n)
+              s << %Q(    <dc:#{item} id="#{item}-#{i}">#{h(v['name'])}</dc:#{item}>\n)
               v.each_pair do |name, val|
                 next if name == 'name'
-                s << %Q(    <meta refines="##{item}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n)
+                s << %Q(    <meta refines="##{item}-#{i}" property="#{name}">#{h(val)}</meta>\n)
               end
             else
-              s << %Q(    <dc:#{item} id="#{item}-#{i}">#{CGI.escapeHTML(v.to_s)}</dc:#{item}>\n)
+              s << %Q(    <dc:#{item} id="#{item}-#{i}">#{h(v.to_s)}</dc:#{item}>\n)
             end
           end
         elsif @producer.config[item].is_a?(Hash)
-          s << %Q(    <dc:#{item} id="#{item}">#{CGI.escapeHTML(@producer.config[item]['name'])}</dc:#{item}>\n)
+          s << %Q(    <dc:#{item} id="#{item}">#{h(@producer.config[item]['name'])}</dc:#{item}>\n)
           @producer.config[item].each_pair do |name, val|
             next if name == 'name'
-            s << %Q(    <meta refines="##{item}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n)
+            s << %Q(    <meta refines="##{item}" property="#{name}">#{h(val)}</meta>\n)
           end
         else
-          s << %Q(    <dc:#{item} id="#{item}">#{CGI.escapeHTML(@producer.config[item].to_s)}</dc:#{item}>\n)
+          s << %Q(    <dc:#{item} id="#{item}">#{h(@producer.config[item].to_s)}</dc:#{item}>\n)
         end
       end
 
@@ -81,14 +81,14 @@ module EPUBMaker
         next unless @producer.config[role]
         @producer.config[role].each_with_index do |v, i|
           if v.is_a?(Hash)
-            s << %Q(    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v['name'])}</dc:creator>\n)
+            s << %Q(    <dc:creator id="#{role}-#{i}">#{h(v['name'])}</dc:creator>\n)
             s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n)
             v.each_pair do |name, val|
               next if name == 'name'
-              s << %Q(    <meta refines="##{role.sub('a-', '')}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n)
+              s << %Q(    <meta refines="##{role.sub('a-', '')}-#{i}" property="#{name}">#{h(val)}</meta>\n)
             end
           else
-            s << %Q(    <dc:creator id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:creator>\n)
+            s << %Q(    <dc:creator id="#{role}-#{i}">#{h(v)}</dc:creator>\n)
             s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n)
           end
         end
@@ -99,27 +99,27 @@ module EPUBMaker
         next unless @producer.config[role]
         @producer.config[role].each_with_index do |v, i|
           if v.is_a?(Hash)
-            s << %Q(    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v['name'])}</dc:contributor>\n)
+            s << %Q(    <dc:contributor id="#{role}-#{i}">#{h(v['name'])}</dc:contributor>\n)
             s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
             v.each_pair do |name, val|
               next if name == 'name'
-              s << %Q(    <meta refines="##{role}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n)
+              s << %Q(    <meta refines="##{role}-#{i}" property="#{name}">#{h(val)}</meta>\n)
             end
           else
-            s << %Q(    <dc:contributor id="#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:contributor>\n)
+            s << %Q(    <dc:contributor id="#{role}-#{i}">#{h(v)}</dc:contributor>\n)
             s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
           end
 
           if %w[prt pbl].include?(role)
             if v.is_a?(Hash)
-              s << %Q(    <dc:publisher id="pub-#{role}-#{i}">#{CGI.escapeHTML(v['name'])}</dc:publisher>\n)
+              s << %Q(    <dc:publisher id="pub-#{role}-#{i}">#{h(v['name'])}</dc:publisher>\n)
               s << %Q(    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
               v.each_pair do |name, val|
                 next if name == 'name'
-                s << %Q(    <meta refines="#pub-#{role}-#{i}" property="#{name}">#{CGI.escapeHTML(val)}</meta>\n)
+                s << %Q(    <meta refines="#pub-#{role}-#{i}" property="#{name}">#{h(val)}</meta>\n)
               end
             else
-              s << %Q(    <dc:publisher id="pub-#{role}-#{i}">#{CGI.escapeHTML(v)}</dc:publisher>\n)
+              s << %Q(    <dc:publisher id="pub-#{role}-#{i}">#{h(v)}</dc:publisher>\n)
               s << %Q(    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">prt</meta>\n)
             end
           end
@@ -129,7 +129,7 @@ module EPUBMaker
       ## add custom <meta> element
       if @producer.config['opf_meta'].present?
         @producer.config['opf_meta'].each do |k, v|
-          s << %Q(    <meta property="#{k}">#{CGI.escapeHTML(v)}</meta>\n)
+          s << %Q(    <meta property="#{k}">#{h(v)}</meta>\n)
         end
       end
 
@@ -206,11 +206,11 @@ EOT
 
       @body = <<EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
-  <h1 class="toc-title">#{CGI.escapeHTML(@producer.res.v('toctitle'))}</h1>
+  <h1 class="toc-title">#{h(@producer.res.v('toctitle'))}</h1>
 #{ncx_main}  </nav>
 EOT
 
-      @title = CGI.escapeHTML(@producer.res.v('toctitle'))
+      @title = h(@producer.res.v('toctitle'))
       @language = @producer.config['language']
       @stylesheets = @producer.config['stylesheet']
       tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)

@@ -122,20 +122,13 @@ module ReVIEW
     end
 
     def execute(*args)
-      @config = ReVIEW::Configure.values
-      @config.maker = 'pdfmaker'
       cmd_config, yamlfile = parse_opts(args)
       error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      begin
-        loader = ReVIEW::YAMLLoader.new
-        @config.deep_merge!(loader.load_file(yamlfile))
-      rescue => e
-        error "yaml error #{e.message}"
-      end
+      @config = ReVIEW::Configure.create(maker: 'pdfmaker',
+                                         yamlfile: yamlfile,
+                                         config: cmd_config)
 
-      # YAML configs will be overridden by command line options.
-      @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
       @basedir = File.absolute_path(File.dirname(yamlfile))
 
@@ -272,8 +265,7 @@ module ReVIEW
       begin
         @compile_errors = nil
 
-        book = ReVIEW::Book.load(@basedir)
-        book.config = @config
+        book = ReVIEW::Book::Base.load(@basedir, config: @config)
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
 
         @input_files = make_input_files(book)

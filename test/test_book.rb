@@ -560,12 +560,9 @@ EOC
   end
 
   def test_contentdir
-    mktmpbookdir('config.yml' => "contentdir: content\n", 'catalog.yml' => "CHAPS:\n - ch01.re\n") do |dir, _book, _files|
-      Dir.mkdir('content')
-      File.open('content/ch01.re', 'w') { |f| f.puts "foo\n" }
-      book = Book::Base.new(dir)
-      config_file = File.join(dir, 'config.yml')
-      book.load_config(config_file)
+    mktmpbookdir('config.yml' => "contentdir: content\n",
+                 'catalog.yml' => "CHAPS:\n - ch01.re\n",
+                 'content/ch01.re' => "foo\n") do |_dir, book, _files|
       assert_equal "foo\n", book.chapters[0].content
     end
   end
@@ -578,19 +575,13 @@ EOC
   end
 
   def test_page_metric_config
-    mktmpbookdir('config.yml' => "bookname: book\npage_metric: B5\n") do |dir, _book, _files|
-      book = Book::Base.new(dir)
-      config_file = File.join(dir, 'config.yml')
-      book.load_config(config_file)
+    mktmpbookdir('config.yml' => "bookname: book\npage_metric: B5\n") do |_dir, book, _files|
       assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
     end
   end
 
   def test_page_metric_config_array
-    mktmpbookdir('config.yml' => "bookname: book\npage_metric: [50, 40, 36, 40, 1]\n") do |dir, _book, _files|
-      book = Book::Base.new(dir)
-      config_file = File.join(dir, 'config.yml')
-      book.load_config(config_file)
+    mktmpbookdir('config.yml' => "bookname: book\npage_metric: [50, 40, 36, 40, 1]\n") do |_dir, book, _files|
       assert_equal ReVIEW::Book::PageMetric::B5, book.page_metric
     end
   end

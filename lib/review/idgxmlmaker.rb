@@ -15,9 +15,12 @@ require 'review/book'
 require 'review/yamlloader'
 require 'review/idgxmlbuilder'
 require 'review/version'
+require 'review/makerhelper'
 
 module ReVIEW
   class IDGXMLMaker
+    include MakerHelper
+
     attr_accessor :config, :basedir
 
     def initialize
@@ -74,19 +77,12 @@ module ReVIEW
     end
 
     def execute(*args)
-      @config = ReVIEW::Configure.values
-      @config.maker = 'idgxmlmaker'
       cmd_config, yamlfile = parse_opts(args)
       error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      begin
-        loader = ReVIEW::YAMLLoader.new
-        @config.deep_merge!(loader.load_file(yamlfile))
-      rescue => e
-        error "yaml error #{e.message}"
-      end
-      # YAML configs will be overridden by command line options.
-      @config.deep_merge!(cmd_config)
+      @config = ReVIEW::Configure.create(maker: 'idgxmlmaker',
+                                         yamlfile: yamlfile,
+                                         config: cmd_config)
       I18n.setup(@config['language'])
       begin
         generate_idgxml_files(yamlfile)
@@ -102,8 +98,7 @@ module ReVIEW
       remove_old_files(@path)
       Dir.mkdir(@path)
 
-      @book = ReVIEW::Book.load(@basedir)
-      @book.config = @config
+      @book = ReVIEW::Book::Base.load(@basedir, config: @config)
       if @table
         @book.config['tableopt'] = @table
       end
@@ -155,9 +150,9 @@ module ReVIEW
         end
         f.puts '<?xml version="1.0" encoding="UTF-8"?>'
         f.print '<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/"><title aid:pstyle="h1">'
-        f.print CGI.escapeHTML(title)
+        f.print h(title)
         f.print '</title><?dtp level="1" section="'
-        f.print CGI.escapeHTML(title)
+        f.print h(title)
         f.puts '"?></doc>'
       end
       apply_filter(File.join(basetmpdir, xmlfile))

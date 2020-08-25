@@ -17,21 +17,6 @@ require 'review/book/index/item'
 module ReVIEW
   module Book
     class Index
-      def self.parse(src, *args)
-        index = self.new(*args)
-        seq = 1
-        src.grep(%r{\A//#{item_type}}) do |line|
-          if id = line.slice(/\[(.*?)\]/, 1)
-            index.add_item(ReVIEW::Book::Index::Item.new(id, seq))
-            seq += 1
-            if id.empty?
-              ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
-            end
-          end
-        end
-        index
-      end
-
       include Enumerable
 
       def item_type
@@ -44,8 +29,12 @@ module ReVIEW
         @image_finder = nil
       end
 
+      def size
+        @index.size
+      end
+
       def add_item(item)
-        if @index[item.id]
+        if @index[item.id] && self.class != ReVIEW::Book::IconIndex
           @logger.warn "warning: duplicate ID: #{item.id} (#{item.inspect})"
         end
         @index[item.id] = item
@@ -57,8 +46,8 @@ module ReVIEW
       def [](id)
         @index.fetch(id)
       rescue
-        if @index.keys.map { |i| i.split('|').last }.flatten. # unfold all ids
-           each_with_object(Hash.new(0)) { |i, h| h[i] += 1 }. # number of occurrences
+        index_keys = @index.keys.map { |i| i.split('|').last }.flatten # unfold all ids
+        if index_keys.each_with_object(Hash.new(0)) { |i, h| h[i] += 1 }. # number of occurrences
            select { |k, v| k == id && v > 1 }.present? # detect duplicated
           raise KeyError, "key '#{id}' is ambiguous for #{self.class}"
         end
@@ -134,55 +123,24 @@ module ReVIEW
     end
 
     class FootnoteIndex < Index
-      def self.parse(src)
-        index = self.new
-        seq = 1
-        src.grep(%r{\A//footnote}) do |line|
-          if m = /\[(.*?)\]\[(.*)\]/.match(line)
-            m1 = m[1].gsub(/\\(\])/) { $1 }
-            m2 = m[2].gsub(/\\(\])/) { $1 }
-            index.add_item(Item.new(m1, seq, m2))
-          end
-          seq += 1
-        end
-        index
-      end
     end
 
     class ImageIndex < Index
-      def self.parse(src, *args)
-        index = self.new(*args)
-        seq = 1
-        src.grep(%r{\A//#{item_type}}) do |line|
-          # ex. ["//image", "id", "", "caption"]
-          elements = line.split(/\[(.*?)\]/)
-          if elements[1].present?
-            if line.start_with?('//imgtable')
-              index.add_item(ReVIEW::Book::Index::Item.new(elements[1], 0, elements[3]))
-            else ## %r<\A//(image|graph)>
-              index.add_item(ReVIEW::Book::Index::Item.new(elements[1], seq, elements[3]))
-              seq += 1
-            end
-            if elements[1] == ''
-              ReVIEW.logger.warn "warning: no ID of #{item_type} in #{line}"
-            end
-          end
-        end
-        index
-      end
-
       def self.item_type
         '(image|graph|imgtable)'
       end
 
       attr_reader :image_finder
 
-      def initialize(chapid, basedir, types, builder)
+      def initialize(chapter)
         super()
-        @chapid = chapid
-        @basedir = basedir
-        @types = types
-        @logger = ReVIEW.logger
+        @chapter = chapter
+        book = @chapter.book
+
+        chapid = chapter.id
+        basedir = book.imagedir
+        builder = book.config['builder']
+        types = book.image_types
 
         @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid, builder, types)
       end
@@ -193,43 +151,9 @@ module ReVIEW
     end
 
     class IconIndex < ImageIndex
-      def initialize(chapid, basedir, types, builder)
-        @index = {}
-        @chapid = chapid
-        @basedir = basedir
-        @types = types
-        @logger = ReVIEW.logger
-
-        @image_finder = ImageFinder.new(basedir, chapid, builder, types)
-      end
-
-      def self.parse(src, *args)
-        index = self.new(*args)
-        seq = 1
-        src.grep(/@<icon>/) do |line|
-          line.gsub(/@<icon>\{(.+?)\}/) do
-            index.add_item(ReVIEW::Book::Index::Item.new($1, seq))
-            seq += 1
-          end
-        end
-        index
-      end
     end
 
     class BibpaperIndex < Index
-      def self.parse(src)
-        index = self.new
-        seq = 1
-        src.grep(%r{\A//bibpaper}) do |line|
-          if m = /\[(.*?)\]\[(.*)\]/.match(line)
-            m1 = m[1].gsub(/\\(.)/) { $1 }
-            m2 = m[2].gsub(/\\(.)/) { $1 }
-            index.add_item(Item.new(m1, seq, m2))
-          end
-          seq += 1
-        end
-        index
-      end
     end
 
     class NumberlessImageIndex < ImageIndex
@@ -255,77 +179,9 @@ module ReVIEW
     class HeadlineIndex < Index
       HEADLINE_PATTERN = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/
 
-      def self.parse(src, chap)
-        headline_index = self.new(chap)
-        indexs = []
-        headlines = []
-        inside_column = false
-        inside_block = nil
-        column_level = -1
-        src.each do |line|
-          if line =~ %r{\A//[a-z]+.*\{\Z}
-            inside_block = true
-            next
-          elsif line.start_with?('//}')
-            inside_block = nil
-            next
-          elsif inside_block
-            next
-          end
-
-          m = HEADLINE_PATTERN.match(line)
-          if m.nil? || m[1].size > 10 # Ignore too deep index
-            next
-          end
-
-          index = m[1].size - 2
-
-          # column
-          if m[2] == 'column'
-            inside_column = true
-            column_level = index
-            next
-          elsif m[2] == '/column'
-            inside_column = false
-            next
-          end
-          if indexs.blank? || index <= column_level
-            inside_column = false
-          end
-          next if inside_column
-          next if m[4].strip.empty? # no title
-
-          next unless index >= 0
-          if indexs.size > (index + 1)
-            unless %w[nonum notoc nodisp].include?(m[2])
-              indexs = indexs.take(index + 1)
-            end
-            headlines = headlines.take(index + 1)
-          end
-          if indexs[index].nil?
-            (0..index).each do |i|
-              indexs[i] ||= 0
-            end
-          end
-
-          if %w[nonum notoc nodisp].include?(m[2])
-            headlines[index] = m[3].present? ? m[3].strip : m[4].strip
-            item_id = headlines.join('|')
-            headline_index.add_item(Item.new(item_id, nil, m[4].strip))
-          else
-            indexs[index] += 1
-            headlines[index] = m[3].present? ? m[3].strip : m[4].strip
-            item_id = headlines.join('|')
-            headline_index.add_item(Item.new(item_id, indexs.dup, m[4].strip))
-          end
-        end
-        headline_index
-      end
-
-      def initialize(chap)
-        @chap = chap
-        @index = {}
-        @logger = ReVIEW.logger
+      def initialize(chapter)
+        super()
+        @chapter = chapter
       end
 
       def number(id)
@@ -333,34 +189,16 @@ module ReVIEW
           # when notoc
           return ''
         end
-        n = @chap.number
+        n = @chapter.number
         # XXX: remove magic number (move to lib/review/book/chapter.rb)
-        if @chap.on_appendix? && @chap.number > 0 && @chap.number < 28
-          n = @chap.format_number(false)
+        if @chapter.on_appendix? && @chapter.number > 0 && @chapter.number < 28
+          n = @chapter.format_number(false)
         end
         ([n] + self[id].number).join('.')
       end
     end
 
     class ColumnIndex < Index
-      COLUMN_PATTERN = /\A(=+)\[column\](?:\{(.+?)\})?(.*)/
-
-      def self.parse(src, *_args)
-        index = self.new
-        seq = 1
-        src.each do |line|
-          m = COLUMN_PATTERN.match(line)
-          next unless m
-          _level = m[1] ## not use it yet
-          id = m[2]
-          caption = m[3].strip
-          id = caption if id.nil? || id.empty?
-
-          index.add_item(ReVIEW::Book::Index::Item.new(id, seq, caption))
-          seq += 1
-        end
-        index
-      end
     end
   end
 end
