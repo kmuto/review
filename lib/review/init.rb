@@ -135,8 +135,7 @@ module ReVIEW
     end
 
     def generate_catalog_file(dir)
-      File.open(File.join(dir, 'catalog.yml'), 'w') do |file|
-        file.write <<-EOS
+      File.write(File.join(dir, 'catalog.yml'), <<-EOS)
 PREDEF:
 
 CHAPS:
@@ -147,7 +146,6 @@ APPENDIX:
 POSTDEF:
 
 EOS
-      end
     end
 
     def generate_images_dir(dir)
@@ -223,13 +221,11 @@ EOT
     def generate_rakefile(dir)
       FileUtils.mkdir_p(File.join(dir, 'lib/tasks'))
 
-      File.open(File.join(dir, 'Rakefile'), 'w') do |file|
-        file.write <<-EOS
+      File.write(File.join(dir, 'Rakefile'), <<-EOS)
 Dir.glob('lib/tasks/*.rake').sort.each do |file|
   load(file)
 end
 EOS
-      end
 
       FileUtils.cp(File.join(@review_dir, 'samples/sample-book/src/lib/tasks/review.rake'),
                    File.join(dir, 'lib/tasks/review.rake'))
@@ -240,14 +236,12 @@ EOS
     end
 
     def generate_gemfile(dir)
-      File.open(File.join(dir, 'Gemfile'), 'w') do |file|
-        file.write <<-EOS
+      File.write(File.join(dir, 'Gemfile'), <<-EOS)
 source 'https://rubygems.org'
 
 gem 'rake'
 gem 'review', '#{ReVIEW::VERSION}'
 EOS
-      end
     end
 
     def generate_doc(dir)

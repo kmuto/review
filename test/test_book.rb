@@ -23,7 +23,7 @@ class BookTest < Test::Unit::TestCase
     test_const = "ReVIEW__BOOK__TEST__#{num}"
     begin
       Dir.mktmpdir do |dir|
-        File.open(File.join(dir, 'review-ext.rb'), 'w') { |o| o.puts "#{test_const} = #{num}" }
+        File.write(File.join(dir, 'review-ext.rb'), "#{test_const} = #{num}")
         Book::Base.load(dir)
         assert_equal num, (Object.class_eval { const_get(test_const) })
       end
