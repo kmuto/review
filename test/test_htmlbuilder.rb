@@ -925,7 +925,7 @@ EOS
   end
 
   def test_inline_list_href
-    book = ReVIEW::Book::Base.load
+    book = ReVIEW::Book::Base.new
     book.config['chapterlink'] = true
     book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re ch2.re])
     io1 = StringIO.new("//list[sampletest][a]{\nfoo\n//}\n")
@@ -2220,7 +2220,7 @@ EOS
   end
 
   def test_inline_hd
-    book = ReVIEW::Book::Base.load
+    book = ReVIEW::Book::Base.new
     book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re ch2.re])
     io1 = StringIO.new("= test1\n\nfoo\n\n== test1-1\n\nbar\n\n== test1-2\n\nbar\n\n")
     io2 = StringIO.new("= test2\n\nfoo\n\n== test2-1\n\nbar\n\n== test2-2\n\nbar\n\n")
@@ -2242,7 +2242,7 @@ EOS
   end
 
   def test_inline_hd_for_part
-    book = ReVIEW::Book::Base.load
+    book = ReVIEW::Book::Base.new
     book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re ch2.re])
     io1 = StringIO.new("= test1\n\nfoo\n\n== test1-1\n\nbar\n\n== test1-2\n\nbar\n\n")
     io2 = StringIO.new("= test2\n\nfoo\n\n== test2-1\n\nbar\n\n== test2-2\n\nbar\n\n")

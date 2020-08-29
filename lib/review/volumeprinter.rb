@@ -28,7 +28,7 @@ module ReVIEW
 
     def execute(*args)
       parse_options(args)
-      @book = ReVIEW::Book::Base.load('.', config: @config)
+      @book = ReVIEW::Book::Base.new('.', config: @config)
       unless File.readable?(@yamlfile)
         @logger.error("No such fiile or can't open #{@yamlfile}.")
         exit 1
