@@ -36,7 +36,7 @@ module ReVIEW
             return @path
           end
 
-          unless @id =~ /\A[A-Za-z0-9_:=+\-()|]+\z/
+          if @id =~ /\s/
             raise ReVIEW::SyntaxError, "invalid ID character for path: `#{@id}`"
           end
           @path = @index.find_path(@id)
