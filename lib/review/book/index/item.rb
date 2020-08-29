@@ -32,7 +32,16 @@ module ReVIEW
         alias_method :content, :caption
 
         def path
-          @path ||= @index.find_path(id)
+          if @path
+            return @path
+          end
+
+          if @id =~ /\s/
+            raise ReVIEW::SyntaxError, "invalid ID character for path: `#{@id}`"
+          end
+          @path = @index.find_path(@id)
+
+          @path
         end
       end
     end

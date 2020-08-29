@@ -665,23 +665,30 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_image_with_tricky_id
+  def test_image_with_tricky_id_kana
     def @chapter.image(_id)
-      item = Book::Index::Item.new('123 あ_;', 1)
-      item.instance_eval { @path = './images/chap1-123 あ_;.png' }
+      item = Book::Index::Item.new('123あいう', 1)
+      item.instance_eval { @path = './images/123あいう.png' }
       item
     end
-
-    actual = compile_block("//image[123 あ_;][sample photo]{\n//}\n")
+    @chapter.instance_eval { @name = 'ch01' }
+    actual = compile_block("//image[123あいう][sample photo]{\n//}\nimg: @<img>{123あいう}\n")
     expected = <<-EOS
-<div id="id_123-_E3_81_82___3B" class="image">
-<img src="images/chap1-123 あ_;.png" alt="sample photo" />
+<div id="id_123_E3_81_82_E3_81_84_E3_81_86" class="image">
+<img src="images/123あいう.png" alt="sample photo" />
 <p class="caption">
 図1.1: sample photo
 </p>
 </div>
+<p>img: <span class="imgref"><a href="./ch01.html#id_123_E3_81_82_E3_81_84_E3_81_86">図1.1</a></span></p>
 EOS
     assert_equal expected, actual
+  end
+
+  def test_image_with_tricky_id_space
+    assert_raise(ReVIEW::SyntaxError) do
+      _result = compile_block("//image[123 abc][sample photo]{\n//}\n")
+    end
   end
 
   def test_indepimage
