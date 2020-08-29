@@ -13,8 +13,6 @@ require 'review/sec_counter'
 
 module ReVIEW
   class IndexBuilder < Builder
-    CAPTION_TITLES = %w[note memo tip info warning important caution notice box].freeze
-
     attr_reader :list_index, :table_index, :equation_index, :footnote_index,
                 :numberless_image_index, :image_index, :icon_index, :indepimage_index,
                 :headline_index, :column_index, :bibpaper_index
@@ -595,14 +593,6 @@ module ReVIEW
 
     def captionblock(_type, _lines, _caption, _specialstyle = nil)
       ''
-    end
-
-    CAPTION_TITLES.each do |name|
-      class_eval %Q(
-        def #{name}(lines, caption = nil)
-          captionblock("#{name}", lines, caption)
-        end
-      ), __FILE__, __LINE__ - 4
     end
 
     def tsize(_str)
