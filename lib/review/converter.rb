@@ -17,7 +17,7 @@ module ReVIEW
       chap_name = File.basename(file, '.*')
       chap = @book.chapter(chap_name)
       result = @compiler.compile(chap)
-      File.open(output_path, 'w') { |f| f.puts result }
+      File.write(output_path, result)
     end
   end
 end

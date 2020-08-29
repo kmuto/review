@@ -76,7 +76,7 @@ class PDFMakerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       coverfile = 'cover.html'
       content = '<html><body>test</body></html>'
-      File.open(File.join(dir, 'cover.tex'), 'w') { |f| f.write(content) }
+      File.write(File.join(dir, 'cover.tex'), content)
       page = @maker.make_custom_page(File.join(dir, coverfile))
       assert_equal(content, page)
     end
@@ -176,11 +176,11 @@ class PDFMakerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         profile = "\\thispagestyle{empty}\\chapter*{Profile}\nsome profile\n"
-        File.open(File.join(dir, 'profile.tex'), 'w') { |f| f.write(profile) }
+        File.write(File.join(dir, 'profile.tex'), profile)
         advfile = "\\thispagestyle{empty}\\chapter*{Ad}\nsome ad content\n"
-        File.open(File.join(dir, 'advfile.tex'), 'w') { |f| f.write(advfile) }
+        File.write(File.join(dir, 'advfile.tex'), advfile)
         backcover = "\\clearpage\n\\thispagestyle{empty}\\AddToShipoutPictureBG{%\n\\AtPageLowerLeft{\\includegraphics[width=\\paperwidth,height=\\paperheight]{images/backcover.png}}\n}\n\\null"
-        File.open(File.join(dir, 'backcover.tex'), 'w') { |f| f.write(backcover) }
+        File.write(File.join(dir, 'backcover.tex'), backcover)
         expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
         expect.gsub!(/\\def\\review@reviewversion{[^}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
         @maker.basedir = Dir.pwd

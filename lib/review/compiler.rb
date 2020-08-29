@@ -73,12 +73,16 @@ module ReVIEW
         end
       end
 
+      def minicolumn?
+        @type == :minicolumn
+      end
+
       def block_required?
-        @type == :block
+        @type == :block or @type == :minicolumn
       end
 
       def block_allowed?
-        @type == :block or @type == :optional
+        @type == :block or @type == :optional or @type == :minicolumn
       end
     end
 
@@ -86,6 +90,10 @@ module ReVIEW
 
     def self.defblock(name, argc, optional = false, &block)
       defsyntax(name, (optional ? :optional : :block), argc, &block)
+    end
+
+    def self.defminicolumn(name, argc, _optional = false, &block)
+      defsyntax(name, :minicolumn, argc, &block)
     end
 
     def self.defsingle(name, argc, &block)
@@ -98,6 +106,16 @@ module ReVIEW
 
     def self.definline(name)
       INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
+    def self.minicolumn_names
+      buf = []
+      SYNTAX.each do |name, syntax|
+        if syntax.minicolumn?
+          buf << name.to_s
+        end
+      end
+      buf
     end
 
     def syntax_defined?(name)
@@ -148,17 +166,18 @@ module ReVIEW
     defblock :bpo, 0
     defblock :flushright, 0
     defblock :centering, 0
-    defblock :note, 0..1
-    defblock :memo, 0..1
-    defblock :info, 0..1
-    defblock :important, 0..1
-    defblock :caution, 0..1
-    defblock :notice, 0..1
-    defblock :warning, 0..1
-    defblock :tip, 0..1
     defblock :box, 0..1
     defblock :comment, 0..1, true
     defblock :embed, 0..1
+
+    defminicolumn :note, 0..1
+    defminicolumn :memo, 0..1
+    defminicolumn :tip, 0..1
+    defminicolumn :info, 0..1
+    defminicolumn :warning, 0..1
+    defminicolumn :important, 0..1
+    defminicolumn :caution, 0..1
+    defminicolumn :notice, 0..1
 
     defsingle :footnote, 2
     defsingle :noindent, 0
