@@ -19,7 +19,7 @@ module ReVIEW
   class Builder
     include TextUtils
 
-    CAPTION_TITLES = %w[note memo tip info warning important caution notice].freeze
+    CAPTION_TITLES = Compiler.minicolumn_names
 
     def pre_paragraph
       nil
