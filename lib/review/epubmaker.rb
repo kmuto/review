@@ -298,7 +298,7 @@ module ReVIEW
 
       basedir = File.dirname(yamlfile)
       base_path = Pathname.new(basedir)
-      book = ReVIEW::Book::Base.load(basedir, config: @config)
+      book = ReVIEW::Book::Base.new(basedir, config: @config)
       @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
       @compile_errors = nil
 

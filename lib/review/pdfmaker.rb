@@ -265,7 +265,7 @@ module ReVIEW
       begin
         @compile_errors = nil
 
-        book = ReVIEW::Book::Base.load(@basedir, config: @config)
+        book = ReVIEW::Book::Base.new(@basedir, config: @config)
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
 
         @input_files = make_input_files(book)

@@ -50,7 +50,7 @@ module ReVIEW
       @logger = ReVIEW.logger
       @config = ReVIEW::Configure.values
       @yamlfile = 'config.yml'
-      @book = ReVIEW::Book::Base.load('.', config: @config)
+      @book = ReVIEW::Book::Base.new('.', config: @config)
       @upper = 4
       @indent = true
       @buildonly = nil

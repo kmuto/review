@@ -79,8 +79,7 @@ def _main
       error('no input') if ARGV.empty?
 
       @basedir = File.dirname(ARGV[0])
-      book = ReVIEW::Book::Base.load(@basedir)
-      book.config = @config # needs only at the first time
+      book = ReVIEW::Book::Base.new(@basedir, config: @config)
       ARGV.each do |item|
         error("file not found: #{item}") unless File.exist?(File.join(book.config['contentdir'], item))
         chap_name = File.basename(item, '.*')
@@ -94,8 +93,7 @@ def _main
         end
       end
     when :dir
-      book = @basedir ? ReVIEW::Book::Base.load(@basedir) : ReVIEW::Book::Base.load
-      book.config = @config
+      book = @basedir ? ReVIEW::Book::Base.new(@basedir, config: @config) : ReVIEW::Book::Base.new(config: @config)
       compiler = ReVIEW::Compiler.new(load_builder_class(@target, @check_only))
       book.chapters.each do |chap|
         str = compiler.compile(chap)
