@@ -46,10 +46,6 @@ module ReVIEW
       '.xml'
     end
 
-    def builder_init
-    end
-    private :builder_init
-
     def builder_init_file
       @warns = []
       @errors = []

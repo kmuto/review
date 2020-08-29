@@ -31,18 +31,13 @@ module ReVIEW
 
     attr_accessor :doc_status
 
-    def initialize(strict = false, *args)
+    def initialize(strict = false, *_args)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
-      builder_init(*args)
     end
-
-    def builder_init(*args)
-    end
-    private :builder_init
 
     def bind(compiler, chapter, location)
       @compiler = compiler
