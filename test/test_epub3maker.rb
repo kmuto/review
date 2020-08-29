@@ -631,7 +631,7 @@ EOT
 </body>
 </html>
 EOT
-      File.open(path, 'w') { |f| f.write(html) }
+      File.write(path, html)
       assert_equal ['mathml'], epubmaker.detect_properties(path)
     end
   end
@@ -656,7 +656,7 @@ EOT
 </body>
 </html>
 EOT
-      File.open(path, 'w') { |f| f.write(html) }
+      File.write(path, html)
       assert_equal ['mathml'], epubmaker.detect_properties(path)
     end
   end

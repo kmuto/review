@@ -61,7 +61,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pR" }
+        File.write(file, "locale: ja\nappendix: 付録%pR")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -82,7 +82,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pA" }
+        File.write(file, "locale: ja\nappendix: 付録%pA")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -272,7 +272,7 @@ EOS
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pR" }
+        File.write(file, "locale: ja\nappendix: 付録%pR")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -301,7 +301,7 @@ EOS
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pA" }
+        File.write(file, "locale: ja\nappendix: 付録%pA")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -425,12 +425,12 @@ EOS
         re1 = File.join(dir, 'sample1.re')
         cat = File.join(dir, 'catalog.yml')
         FileUtils.mkdir_p(File.join(dir, 'images'))
-        File.open(file1, 'w') { |f| f.write '' }
-        File.open(filet1, 'w') { |f| f.write '' }
-        File.open(file2, 'w') { |f| f.write '' }
-        File.open(file3, 'w') { |f| f.write '' }
-        File.open(cat, 'w') { |f| f.write "CHAPS:\n  - sample1.re\n" }
-        File.open(re1, 'w') { |f| f.write <<EOF }
+        File.write(file1, '')
+        File.write(filet1, '')
+        File.write(file2, '')
+        File.write(file3, '')
+        File.write(cat, "CHAPS:\n  - sample1.re\n")
+        File.write(re1, <<-EOF)
 = test
 
 tbl1 is @<table>{tbl1}.
