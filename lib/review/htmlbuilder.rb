@@ -41,10 +41,6 @@ module ReVIEW
       ".#{@book.config['htmlext']}"
     end
 
-    def builder_init
-    end
-    private :builder_init
-
     def builder_init_file
       @noindent = nil
       @ol_num = nil
