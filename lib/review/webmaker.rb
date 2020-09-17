@@ -19,7 +19,6 @@ require 'review/yamlloader'
 require 'review/template'
 require 'review/tocprinter'
 require 'review/version'
-require 'erb'
 require 'review/makerhelper'
 
 module ReVIEW

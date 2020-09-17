@@ -114,9 +114,7 @@ module ReVIEW
         exit 1
       end
 
-      initdir = File.expand_path(args[0])
-
-      initdir
+      File.expand_path(args[0])
     end
 
     def generate_dir(dir)

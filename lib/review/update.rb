@@ -239,7 +239,7 @@ module ReVIEW
     def update_version
       @config_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if config['review_version'].to_f == TARGET_VERSION.to_f
+        if config['review_version'].to_f.round(1) == TARGET_VERSION.to_f.round(1)
           next
         end
 

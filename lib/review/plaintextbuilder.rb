@@ -613,7 +613,7 @@ module ReVIEW
       str
     end
 
-    def inline_chap(id)
+    def inline_chap(id) # rubocop:disable Lint/UselessMethodDefinition
       # "「第#{super}章　#{inline_title(id)}」"
       # "第#{super}章"
       super
