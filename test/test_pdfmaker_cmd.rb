@@ -30,7 +30,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
       Dir.chdir(@tmpdir1) do
         _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_PDFMAKER} #{option} #{configfile}")
         if !e.empty? && !s.success?
-          STDERR.puts e
+          $stderr.puts e
         end
         assert s.success?
       end

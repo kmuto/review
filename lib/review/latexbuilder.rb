@@ -1218,7 +1218,7 @@ module ReVIEW
       error "unknown column: #{id}"
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 
