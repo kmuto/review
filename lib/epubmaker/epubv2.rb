@@ -15,7 +15,7 @@ module EPUBMaker
   # EPUBv2 is EPUB version 2 producer.
   class EPUBv2 < EPUBCommon
     # Construct object with parameter hash +config+ and message resource hash +res+.
-    def initialize(producer)
+    def initialize(producer) # rubocop:disable Lint/UselessMethodDefinition
       super
     end
 

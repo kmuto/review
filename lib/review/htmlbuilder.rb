@@ -1176,7 +1176,7 @@ EOS
       %Q(<span class="balloon">#{escape_html(str)}</span>)
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 

@@ -706,7 +706,7 @@ module ReVIEW
       str
     end
 
-    def inline_chap(id)
+    def inline_chap(id) # rubocop:disable Lint/UselessMethodDefinition
       super
     end
 

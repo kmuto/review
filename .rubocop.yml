@@ -3,6 +3,7 @@ AllCops:
     - lib/lineinput.rb
     - lib/uuid.rb
     - test/syntax-book/*
+    - tmp/*
   DisplayCopNames: true
   NewCops: enable
 
@@ -94,6 +95,9 @@ Performance/Squeeze:
   Enabled: true
 
 Performance/StringInclude:
+  Enabled: false
+
+Performance/CollectionLiteralInLoop:
   Enabled: false
 
 #### Style
@@ -369,6 +373,24 @@ Style/RedundantRegexpEscape:
 Style/SlicingWithRange:
   Enabled: false
 
+Style/AccessorGrouping:
+  Enabled: false
+
+Style/CaseLikeIf:
+  Enabled: false
+
+Style/StringConcatenation:
+  Enabled: false
+
+Style/OptionalBooleanParameter:
+  Enabled: false
+
+Style/SoleNestedConditional:
+  Enabled: false
+
+Style/CombinableLoops:
+  Enabled: false
+
 ### Layout
 
 Layout/BlockAlignment:
@@ -573,8 +595,7 @@ Naming/VariableNumber:
 Security/YAMLLoad:
   Enabled: true
 
-Gemspec/RequiredRubyVersion:
-  Enabled: false
+#### Gemspec
 
-Style/AccessorGrouping:
+Gemspec/RequiredRubyVersion:
   Enabled: false

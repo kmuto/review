@@ -22,7 +22,7 @@ module ReVIEW
       end
 
       def self.sum(vols)
-        vols.inject(new) { |sum, i| sum + i }
+        vols.inject(new) { |sum, i| sum + i } # rubocop:disable Performance/Sum
       end
 
       def self.dummy
