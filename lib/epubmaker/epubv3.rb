@@ -40,6 +40,7 @@ module EPUBMaker
       ReVIEW::Template.load(tmplfile).result(binding)
     end
 
+    # rubocop:disable Metrics/PerceivedComplexity
     def opf_metainfo
       s = ''
       %w[title language date type format source description relation coverage subject rights].each do |item|
@@ -135,6 +136,7 @@ module EPUBMaker
 
       s
     end
+    # rubocop:enable Metrics/PerceivedComplexity
 
     def opf_manifest
       s = ''

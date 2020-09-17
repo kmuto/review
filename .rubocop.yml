@@ -4,6 +4,7 @@ AllCops:
     - lib/uuid.rb
     - test/syntax-book/*
   DisplayCopNames: true
+  NewCops: enable
 
 require:
   - rubocop-performance
@@ -571,3 +572,9 @@ Naming/VariableNumber:
 
 Security/YAMLLoad:
   Enabled: true
+
+Gemspec/RequiredRubyVersion:
+  Enabled: false
+
+Style/AccessorGrouping:
+  Enabled: false
