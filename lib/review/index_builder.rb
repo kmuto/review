@@ -93,6 +93,8 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
+      return if level < 2
+
       cursor = level - 2
 
       if label
@@ -114,6 +116,8 @@ module ReVIEW
     end
 
     def notoc_begin(level, label, caption)
+      return if level < 2
+
       cursor = level - 2
 
       if label
@@ -135,6 +139,8 @@ module ReVIEW
     end
 
     def nodisp_begin(level, label, caption)
+      return if level < 2
+
       cursor = level - 2
 
       if label
