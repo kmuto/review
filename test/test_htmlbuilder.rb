@@ -61,7 +61,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pR" }
+        File.write(file, "locale: ja\nappendix: 付録%pR")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -82,7 +82,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pA" }
+        File.write(file, "locale: ja\nappendix: 付録%pA")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -252,6 +252,15 @@ EOS
 
     @config['secnolevel'] = 2
     actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test <a href="-.html#h1-1-1">「te_st」</a> test2', actual
+
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test <a href="-.html#h1-1-1">「1.1.1 te_st」</a> test2', actual
+
+    @config['chapterlink'] = nil
+    @config['secnolevel'] = 2
+    actual = compile_inline('test @<hd>{chap1|test} test2')
     assert_equal 'test 「te_st」 test2', actual
 
     @config['secnolevel'] = 3
@@ -263,7 +272,7 @@ EOS
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pR" }
+        File.write(file, "locale: ja\nappendix: 付録%pR")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -279,6 +288,10 @@ EOS
         end
 
         actual = compile_inline('test @<hd>{test} test2')
+        assert_equal 'test <a href="-.html#hI-1">「I.1 te_st」</a> test2', actual
+
+        @config['chapterlink'] = nil
+        actual = compile_inline('test @<hd>{test} test2')
         assert_equal 'test 「I.1 te_st」 test2', actual
       end
     end
@@ -288,7 +301,7 @@ EOS
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         file = File.join(dir, 'locale.yml')
-        File.open(file, 'w') { |f| f.write "locale: ja\nappendix: 付録%pA" }
+        File.write(file, "locale: ja\nappendix: 付録%pA")
         I18n.setup('ja')
         @chapter.instance_eval do
           def on_appendix?
@@ -303,6 +316,10 @@ EOS
           idx
         end
 
+        actual = compile_inline('test @<hd>{test} test2')
+        assert_equal 'test <a href="-.html#hA-1">「A.1 te_st」</a> test2', actual
+
+        @config['chapterlink'] = nil
         actual = compile_inline('test @<hd>{test} test2')
         assert_equal 'test 「A.1 te_st」 test2', actual
       end
@@ -355,6 +372,11 @@ EOS
     end
 
     actual = compile_block("@<img>{sampleimg}\n")
+    expected = %Q(<p><span class="imgref"><a href="./-.html#sampleimg">図1.1</a></span></p>\n)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
+    actual = compile_block("@<img>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span></p>\n)
     assert_equal expected, actual
   end
@@ -366,6 +388,11 @@ EOS
       item
     end
 
+    actual = compile_block("@<imgref>{sampleimg}\n")
+    expected = %Q(<p><span class="imgref"><a href="./-.html#sampleimg">図1.1</a></span>「sample photo」</p>\n)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
     actual = compile_block("@<imgref>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span>「sample photo」</p>\n)
     assert_equal expected, actual
@@ -379,6 +406,11 @@ EOS
     end
 
     actual = compile_block("@<imgref>{sampleimg}\n")
+    expected = %Q(<p><span class="imgref"><a href="./-.html#sampleimg">図1.1</a></span></p>\n)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
+    actual = compile_block("@<imgref>{sampleimg}\n")
     expected = %Q(<p><span class="imgref">図1.1</span></p>\n)
     assert_equal expected, actual
   end
@@ -389,19 +421,23 @@ EOS
         file1 = File.join(dir, 'images', 'img1.png')
         filet1 = File.join(dir, 'images', 'tbl1.png')
         file2 = File.join(dir, 'images', 'img2.png')
+        file3 = File.join(dir, 'images', 'icon3.png')
         re1 = File.join(dir, 'sample1.re')
         cat = File.join(dir, 'catalog.yml')
         FileUtils.mkdir_p(File.join(dir, 'images'))
-        File.open(file1, 'w') { |f| f.write '' }
-        File.open(filet1, 'w') { |f| f.write '' }
-        File.open(file2, 'w') { |f| f.write '' }
-        File.open(cat, 'w') { |f| f.write "CHAPS:\n  - sample1.re\n" }
-        File.open(re1, 'w') { |f| f.write <<EOF }
+        File.write(file1, '')
+        File.write(filet1, '')
+        File.write(file2, '')
+        File.write(file3, '')
+        File.write(cat, "CHAPS:\n  - sample1.re\n")
+        File.write(re1, <<-EOF)
 = test
 
 tbl1 is @<table>{tbl1}.
 
 img2 is @<img>{img2}.
+
+icon3 is @<icon>{icon3}.
 
 //image[img1][image 1]{
 //}
@@ -417,8 +453,37 @@ EOF
 
         expected = <<-EOS
 <h1><a id="h1"></a><span class="secno">第1章　</span>test</h1>
+<p>tbl1 is <span class="tableref"><a href="./-.html#tbl1">表1.1</a></span>.</p>
+<p>img2 is <span class="imgref"><a href="./-.html#img2">図1.2</a></span>.</p>
+<p>icon3 is <img src="images/icon3.png" alt="[icon3]" />.</p>
+<div id="img1" class="image">
+<img src="images/img1.png" alt="image 1" />
+<p class="caption">
+図1.1: image 1
+</p>
+</div>
+<div id="tbl1" class="imgtable image">
+<p class="caption">表1.1: table 1</p>
+<img src="images/tbl1.png" alt="table 1" />
+</div>
+<div id="img2" class="image">
+<img src="images/img2.png" alt="image 2" />
+<p class="caption">
+図1.2: image 2
+</p>
+</div>
+EOS
+
+        assert_equal expected, actual
+
+        @config['chapterlink'] = nil
+        actual = compile_block(content)
+
+        expected = <<-EOS
+<h1><a id="h1"></a><span class="secno">第1章　</span>test</h1>
 <p>tbl1 is <span class="tableref">表1.1</span>.</p>
 <p>img2 is <span class="imgref">図1.2</span>.</p>
+<p>icon3 is <img src="images/icon3.png" alt="[icon3]" />.</p>
 <div id="img1" class="image">
 <img src="images/img1.png" alt="image 1" />
 <p class="caption">
@@ -600,23 +665,30 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_image_with_tricky_id
+  def test_image_with_tricky_id_kana
     def @chapter.image(_id)
-      item = Book::Index::Item.new('123 あ_;', 1)
-      item.instance_eval { @path = './images/chap1-123 あ_;.png' }
+      item = Book::Index::Item.new('123あいう', 1)
+      item.instance_eval { @path = './images/123あいう.png' }
       item
     end
-
-    actual = compile_block("//image[123 あ_;][sample photo]{\n//}\n")
+    @chapter.instance_eval { @name = 'ch01' }
+    actual = compile_block("//image[123あいう][sample photo]{\n//}\nimg: @<img>{123あいう}\n")
     expected = <<-EOS
-<div id="id_123-_E3_81_82___3B" class="image">
-<img src="images/chap1-123 あ_;.png" alt="sample photo" />
+<div id="id_123_E3_81_82_E3_81_84_E3_81_86" class="image">
+<img src="images/123あいう.png" alt="sample photo" />
 <p class="caption">
 図1.1: sample photo
 </p>
 </div>
+<p>img: <span class="imgref"><a href="./ch01.html#id_123_E3_81_82_E3_81_84_E3_81_86">図1.1</a></span></p>
 EOS
     assert_equal expected, actual
+  end
+
+  def test_image_with_tricky_id_space
+    assert_raise(ReVIEW::SyntaxError) do
+      _result = compile_block("//image[123 abc][sample photo]{\n//}\n")
+    end
   end
 
   def test_indepimage
@@ -803,11 +875,10 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS
+<div class="footnote" epub:type="footnote" id="fn-bar"><p class="footnote">[*1] bar</p></div>
 <dl>
 <dt>foo<a id="fnb-bar" href="#fn-bar" class="noteref" epub:type="noteref">*1</a>[]&lt;&gt;&amp;<span class="equation">\\alpha[]</span></dt>
 <dd></dd>
@@ -852,22 +923,28 @@ EOS
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
-    actual = compile_block("@<list>{sampletest}\n")
+    actual = compile_block("@<list>{samplelist}\n")
+    assert_equal %Q(<p><span class="listref"><a href="./-.html#samplelist">リスト1.1</a></span></p>\n), actual
+
+    @config['chapterlink'] = nil
+    actual = compile_block("@<list>{samplelist}\n")
     assert_equal %Q(<p><span class="listref">リスト1.1</span></p>\n), actual
   end
 
   def test_inline_list_href
-    book = ReVIEW::Book::Base.load
+    book = ReVIEW::Book::Base.new
     book.config['chapterlink'] = true
     book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re ch2.re])
-    io1 = StringIO.new("//list[sampletest]{\nfoo\n//}\n")
+    io1 = StringIO.new("//list[sampletest][a]{\nfoo\n//}\n")
     io2 = StringIO.new("= BAR\n")
     chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
     chap2 = ReVIEW::Book::Chapter.new(book, 2, 'ch2', 'ch2.re', io2)
-    book.parts = [ReVIEW::Book::Part.new(self, nil, [chap1, chap2])]
+    book.parts = [ReVIEW::Book::Part.new(book, nil, [chap1, chap2])]
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
+
+    chap1.generate_indexes
     actual = builder.inline_list('ch1|sampletest')
     assert_equal %Q(<span class="listref"><a href="./ch1.html#sampletest">リスト1.1</a></span>), actual
   end
@@ -1772,6 +1849,20 @@ EOS
 </div>
 
 <h3><a id="h1-0-1"></a>next level</h3>
+<p>this is <a href="-.html#column-1" class="columnref">コラム「test」</a>.</p>
+EOS
+
+    assert_equal expected, column_helper(review)
+
+    @config['chapterlink'] = nil
+    expected = <<-EOS
+<div class="column">
+
+<h3 id="foo"><a id="column-1"></a>test</h3>
+<p>inside column</p>
+</div>
+
+<h3><a id="h1-0-1"></a>next level</h3>
 <p>this is コラム「test」.</p>
 EOS
 
@@ -1786,6 +1877,11 @@ EOS
       idx
     end
 
+    actual = compile_inline('test @<column>{chap1|column} test2')
+    expected = 'test <a href="-.html#column-1" class="columnref">コラム「column_cap」</a> test2'
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
     actual = compile_inline('test @<column>{chap1|column} test2')
     expected = 'test コラム「column_cap」 test2'
     assert_equal expected, actual
@@ -2083,8 +2179,6 @@ EOS
   end
 
   def test_footnote
-    fn = Book::FootnoteIndex.parse(['//footnote[foo][bar\\a\\$buz]'])
-    @chapter.instance_eval { @footnote_index = fn }
     actual = compile_block("//footnote[foo][bar\\a\\$buz]\n")
     expected = <<-'EOS'
 <div class="footnote" epub:type="footnote" id="fn-foo"><p class="footnote">[*1] bar\a\$buz</p></div>
@@ -2109,8 +2203,6 @@ EOS
   end
 
   def test_footnote_with_tricky_id
-    fn = Book::FootnoteIndex.parse(['//footnote[123 あ_;][bar\\a\\$buz]'])
-    @chapter.instance_eval { @footnote_index = fn }
     actual = compile_block("//footnote[123 あ_;][bar\\a\\$buz]\n")
     expected = <<-'EOS'
 <div class="footnote" epub:type="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[*1] bar\a\$buz</p></div>
@@ -2119,48 +2211,61 @@ EOS
   end
 
   def test_inline_fn
-    book = ReVIEW::Book::Base.load
-    book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re])
-    io1 = StringIO.new("//footnote[foo][bar]\n")
-    chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
-    book.parts = [ReVIEW::Book::Part.new(self, nil, [chap1])]
-    builder = ReVIEW::HTMLBuilder.new
-    comp = ReVIEW::Compiler.new(builder)
-    builder.bind(comp, chap1, nil)
-    fn = builder.inline_fn('foo')
-    assert_equal '<a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">*1</a>', fn
+    fn = compile_block("//footnote[foo][bar]\n\n@<fn>{foo}\n")
+    expected = <<-EOS
+<div class=\"footnote\" epub:type=\"footnote\" id=\"fn-foo\"><p class=\"footnote\">[*1] bar</p></div>
+<p><a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">*1</a></p>
+EOS
+    assert_equal expected, fn
     I18n.set('html_footnote_refmark', '+%s')
-    fn = builder.inline_fn('foo')
-    assert_equal '<a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">+1</a>', fn
+    fn = compile_block("//footnote[foo][bar]\n\n@<fn>{foo}\n")
+    expected = <<-EOS
+<div class=\"footnote\" epub:type=\"footnote\" id=\"fn-foo\"><p class=\"footnote\">[*1] bar</p></div>
+<p><a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">+1</a></p>
+EOS
+    assert_equal expected, fn
   end
 
   def test_inline_hd
-    book = ReVIEW::Book::Base.load
+    book = ReVIEW::Book::Base.new
     book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re ch2.re])
     io1 = StringIO.new("= test1\n\nfoo\n\n== test1-1\n\nbar\n\n== test1-2\n\nbar\n\n")
     io2 = StringIO.new("= test2\n\nfoo\n\n== test2-1\n\nbar\n\n== test2-2\n\nbar\n\n")
     chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
     chap2 = ReVIEW::Book::Chapter.new(book, 2, 'ch2', 'ch2.re', io2)
-    book.parts = [ReVIEW::Book::Part.new(self, nil, [chap1, chap2])]
+    book.parts = [ReVIEW::Book::Part.new(book, nil, [chap1, chap2])]
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
+
+    chap1.generate_indexes
+    chap2.generate_indexes
+    hd = builder.inline_hd('ch1|test1-1')
+    assert_equal '<a href="ch1.html#h1-1">「1.1 test1-1」</a>', hd
+
+    builder.instance_eval { @book.config['chapterlink'] = nil }
     hd = builder.inline_hd('ch1|test1-1')
     assert_equal '「1.1 test1-1」', hd
   end
 
   def test_inline_hd_for_part
-    book = ReVIEW::Book::Base.load
+    book = ReVIEW::Book::Base.new
     book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re ch2.re])
     io1 = StringIO.new("= test1\n\nfoo\n\n== test1-1\n\nbar\n\n== test1-2\n\nbar\n\n")
     io2 = StringIO.new("= test2\n\nfoo\n\n== test2-1\n\nbar\n\n== test2-2\n\nbar\n\n")
     io_p1 = StringIO.new("= part1\n\nfoo\n\n== part1-1\n\nbar\n\n== part1-2\n\nbar\n\n")
     chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
     chap2 = ReVIEW::Book::Chapter.new(book, 2, 'ch2', 'ch2.re', io2)
-    book.parts = [ReVIEW::Book::Part.new(self, 1, [chap1, chap2], 'part1.re', io_p1)]
+    book.parts = [ReVIEW::Book::Part.new(book, 1, [chap1, chap2], 'part1.re', io_p1)]
     builder = ReVIEW::HTMLBuilder.new
     comp = ReVIEW::Compiler.new(builder)
     builder.bind(comp, chap2, nil)
+    book.generate_indexes
+
+    hd = builder.inline_hd('part1|part1-1')
+    assert_equal '<a href="part1.html#h1-1">「1.1 part1-1」</a>', hd
+
+    builder.instance_eval { @book.config['chapterlink'] = nil }
     hd = builder.inline_hd('part1|part1-1')
     assert_equal '「1.1 part1-1」', hd
   end
@@ -2171,7 +2276,12 @@ EOS
     location = Location.new(nil, nil)
     @builder.bind(@compiler, chap1, location)
     hd = @builder.inline_hd('foo')
+    assert_equal '<a href="-.html#h1-1">「1.1 foo」</a>', hd
+
+    @config['chapterlink'] = nil
+    hd = @builder.inline_hd('foo')
     assert_equal '「1.1 foo」', hd
+
     hd = @builder.inline_hd('bar')
     assert_equal '「1.2 bar」', hd
   end
@@ -2226,6 +2336,10 @@ EOS
     def @chapter.table(_id)
       Book::Index::Item.new('sampletable', 1)
     end
+    actual = compile_block("@<table>{sampletest}\n")
+    assert_equal %Q(<p><span class="tableref"><a href="./-.html#sampletest">表1.1</a></span></p>\n), actual
+
+    @config['chapterlink'] = nil
     actual = compile_block("@<table>{sampletest}\n")
     assert_equal %Q(<p><span class="tableref">表1.1</span></p>\n), actual
   end
@@ -2539,6 +2653,20 @@ EOS
 e=mc^2
 //}
 EOS
+    expected = <<-EOS
+<p><span class="eqref"><a href="./-.html#emc2">式1.1</a></span></p>
+<div id="emc2" class="caption-equation">
+<p class="caption">式1.1: The Equivalence of Mass <i>and</i> Energy</p>
+<div class="equation">
+<pre>e=mc^2
+</pre>
+</div>
+</div>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
     expected = <<-EOS
 <p><span class="eqref">式1.1</span></p>
 <div id="emc2" class="caption-equation">

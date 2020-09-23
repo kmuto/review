@@ -11,7 +11,6 @@ require 'review/textutils'
 require 'review/compiler'
 require 'review/sec_counter'
 require 'stringio'
-require 'cgi'
 require 'fileutils'
 require 'tempfile'
 require 'csv'
@@ -20,7 +19,7 @@ module ReVIEW
   class Builder
     include TextUtils
 
-    CAPTION_TITLES = %w[note memo tip info warning important caution notice].freeze
+    CAPTION_TITLES = Compiler.minicolumn_names
 
     def pre_paragraph
       nil
@@ -32,19 +31,14 @@ module ReVIEW
 
     attr_accessor :doc_status, :previous_list_type
 
-    def initialize(strict = false, *args)
+    def initialize(strict = false, *_args)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
       @previous_list_type = nil
-      builder_init(*args)
     end
-
-    def builder_init(*args)
-    end
-    private :builder_init
 
     def bind(compiler, chapter, location)
       @compiler = compiler
@@ -53,6 +47,10 @@ module ReVIEW
       @output = StringIO.new
       if @chapter.present?
         @book = @chapter.book
+      end
+      @chapter.generate_indexes
+      if @book
+        @book.generate_indexes
       end
       @tabwidth = nil
       @tsize = nil
@@ -223,7 +221,7 @@ module ReVIEW
       sepidx = nil
       rows = []
       lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line || /\A[\=\{\-\}]{12}/ =~ line
+        if /\A[=\-]{12}/ =~ line || /\A[={\-}]{12}/ =~ line
           sepidx ||= idx
           next
         end
@@ -252,7 +250,7 @@ module ReVIEW
 
     def adjust_n_cols(rows)
       rows.each do |cols|
-        while cols.last and cols.last.strip.empty?
+        while cols.last && cols.last.strip.empty?
           cols.pop
         end
       end
@@ -558,7 +556,7 @@ module ReVIEW
         def #{name}(lines, caption = nil)
           captionblock("#{name}", lines, caption)
         end
-      )
+      ), __FILE__, __LINE__ - 4
     end
 
     def graph(lines, id, command, caption = '')

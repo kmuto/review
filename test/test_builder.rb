@@ -24,7 +24,7 @@ class BuidlerTest < Test::Unit::TestCase
 
   def test_bind
     b = Builder.new
-    chap = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
+    chap = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.new, nil, '-', nil)
     assert_nothing_raised do
       b.bind(nil, chap, nil)
     end
@@ -37,7 +37,7 @@ class BuidlerTest < Test::Unit::TestCase
     end
 
     b = Builder.new
-    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, nil, '-', nil)
+    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.new, nil, '-', nil)
     b.bind(nil, chapter, nil)
     assert_equal '', b.result
   end
@@ -82,7 +82,7 @@ class BuidlerTest < Test::Unit::TestCase
 
   def test_inline_missing_ref
     b = Builder.new
-    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.load, 1, 'chap1', nil, StringIO.new)
+    chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.new, 1, 'chap1', nil, StringIO.new)
     b.bind(nil, chapter, nil)
     e = assert_raises(ReVIEW::ApplicationError) { b.inline_list('unknown|list1') }
     assert_equal ': error: unknown list: unknown|list1', e.message

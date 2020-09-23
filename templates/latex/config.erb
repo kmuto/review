@@ -1,50 +1,51 @@
+<%- initialize_metachars(@config['texcommand']) -%>
 \makeatletter
 \def\review@reviewversion{<%= ReVIEW::VERSION %>}
 \def\review@texcompiler{<%= @texcompiler %>}
 \def\review@documentclass{<%= @documentclass %>}
 
 <%- %w(booktitle subtitle).each do |item| -%>
-<%-   if @config[item] -%>\def\review@<%= item %>name{<%= escape_latex(@config.name_of(item)) %>}
+<%-   if @config[item] -%>\def\review@<%= item %>name{<%= escape(@config.name_of(item)) %>}
 <%-   end -%>
 <%- end -%>
 
-<%- %w(aut adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl).each do |item| %><%-   if @config[item] -%>\def\review@<%= item %>names{<%= escape_latex(@config.names_of(item).join(I18n.t('names_splitter'))) %>}
+<%- %w(aut adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl).each do |item| %><%-   if @config[item] -%>\def\review@<%= item %>names{<%= escape(@config.names_of(item).join(I18n.t('names_splitter'))) %>}
 <%-   end -%>
 <%- end -%>
 
 \def\review@titlepageauthors{<%= @authors %>}
-\def\review@date{<%= escape_latex(@config['date'].to_s) %>}
+\def\review@date{<%= escape(@config['date'].to_s) %>}
 
-<%- %w(bookname language urnid isbn).each do |item| -%><%-   if @config[item] -%>\def\review@<%= item %>{<%= escape_latex(@config[item]) %>}
+<%- %w(bookname language urnid isbn).each do |item| -%><%-   if @config[item] -%>\def\review@<%= item %>{<%= escape(@config[item]) %>}
 <%-   end -%>
 <%- end -%>
 <%- %w(rights description subject type format source relation coverage).each do |item| -%>
 <%-   if @config[item] -%>
-<%-     a = [@config[item]].flatten -%>\def\review@<%= item %>{<%= a.map{|s| escape_latex(s)}.join('\\' + '\\') %>}
+<%-     a = [@config[item]].flatten -%>\def\review@<%= item %>{<%= a.map{|s| escape(s)}.join('\\' + '\\') %>}
 <%-   end -%>
 <%- end -%>
 
 <%- if @config['highlight'] && @config['highlight']['latex'] -%>\def\review@highlightlatex{<%= @config['highlight']['latex'] %>}
 <%- end -%>
 
-\def\review@intn@list{<%= escape_latex(I18n.t('list')) %>}
-\def\review@intn@columnhead{<%= escape_latex(I18n.t('column_head')) %>}
-\def\review@intn@image{<%= escape_latex(I18n.t('image')) %>}
-\def\review@intn@table{<%= escape_latex(I18n.t('table')) %>}
-\def\review@intn@equation{<%= escape_latex(I18n.t('equation')) %>}
-\def\review@intn@columnname{<%= escape_latex(I18n.t('columnname')) %>}
-\def\review@intn@memohead{<%= escape_latex(I18n.t('memo_head')) %>}
-\def\review@intn@edition{<%= escape_latex(I18n.t('edition')) %>}
-\def\review@intn@publishedby{<%= escape_latex(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
-\def\review@intn@captionprefix{<%= escape_latex(I18n.t('caption_prefix')) %>}
-\def\review@toctitle{<%= escape_latex(@config['toctitle'].present? ? @config['toctitle'] : I18n.t('toctitle')) %>}
-\def\review@prepartname{<%= escape_latex(@locale_latex['prepartname']) %>}
-\def\review@postpartname{<%= escape_latex(@locale_latex['postpartname']) %>}
-\def\review@prechaptername{<%= escape_latex(@locale_latex['prechaptername']) %>}
-\def\review@postchaptername{<%= escape_latex(@locale_latex['postchaptername']) %>}
-\def\review@figurename{<%= escape_latex(I18n.t('image')) %>}
-\def\review@tablename{<%= escape_latex(I18n.t('table')) %>}
-\def\review@appendixname{<%= escape_latex(@locale_latex['preappendixname']) %>}
+\def\review@intn@list{<%= escape(I18n.t('list')) %>}
+\def\review@intn@columnhead{<%= escape(I18n.t('column_head')) %>}
+\def\review@intn@image{<%= escape(I18n.t('image')) %>}
+\def\review@intn@table{<%= escape(I18n.t('table')) %>}
+\def\review@intn@equation{<%= escape(I18n.t('equation')) %>}
+\def\review@intn@columnname{<%= escape(I18n.t('columnname')) %>}
+\def\review@intn@memohead{<%= escape(I18n.t('memo_head')) %>}
+\def\review@intn@edition{<%= escape(I18n.t('edition')) %>}
+\def\review@intn@publishedby{<%= escape(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
+\def\review@intn@captionprefix{<%= escape(I18n.t('caption_prefix')) %>}
+\def\review@toctitle{<%= escape(@config['toctitle'].present? ? @config['toctitle'] : I18n.t('toctitle')) %>}
+\def\review@prepartname{<%= escape(@locale_latex['prepartname']) %>}
+\def\review@postpartname{<%= escape(@locale_latex['postpartname']) %>}
+\def\review@prechaptername{<%= escape(@locale_latex['prechaptername']) %>}
+\def\review@postchaptername{<%= escape(@locale_latex['postchaptername']) %>}
+\def\review@figurename{<%= escape(I18n.t('image')) %>}
+\def\review@tablename{<%= escape(I18n.t('table')) %>}
+\def\review@appendixname{<%= escape(@locale_latex['preappendixname']) %>}
 
 <%- if @config['toc'] -%>
 \def\review@toc{true}
@@ -99,6 +100,9 @@
 \def\reviewpostdeffiles{<%= @input_files['POSTDEF'] %>}
 <%- if @config['use_part'] -%>
 \def\reviewusepart{true}
+<%- end -%>
+<%- if @config['pdfmaker']['bbox'] -%>
+\def\review@bbox{<%= @config['pdfmaker']['bbox'] %>}
 <%- end -%>
 
 \def\reviewbackcompatibilityhook{

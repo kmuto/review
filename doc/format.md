@@ -621,7 +621,7 @@ Usage:
 If you'd like to assign a number like 'Equation 1.1`, specify the identifier and caption.
 
 ```
-//texequationl[emc][The Equivalence of Mass and Energy]{
+//texequation[emc][The Equivalence of Mass and Energy]{
 \sum_{i=1}^nf_n(x)
 //}
 ```

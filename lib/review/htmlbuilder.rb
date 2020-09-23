@@ -41,10 +41,6 @@ module ReVIEW
       ".#{@book.config['htmlext']}"
     end
 
-    def builder_init
-    end
-    private :builder_init
-
     def builder_init_file
       @noindent = nil
       @ol_num = nil
@@ -1032,7 +1028,7 @@ EOS
 
     def inline_column_chap(chapter, id)
       if @book.config['chapterlink']
-        %Q(<a href="\##{column_label(id, chapter)}" class="columnref">#{I18n.t('column', compile_inline(chapter.column(id).caption))}</a>)
+        %Q(<a href="#{chapter.id}#{extname}##{column_label(id, chapter)}" class="columnref">#{I18n.t('column', compile_inline(chapter.column(id).caption))}</a>)
       else
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end
@@ -1194,7 +1190,7 @@ EOS
       %Q(<span class="balloon">#{escape_html(str)}</span>)
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 

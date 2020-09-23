@@ -50,7 +50,7 @@ module ReVIEW
       @logger = ReVIEW.logger
       @config = ReVIEW::Configure.values
       @yamlfile = 'config.yml'
-      @book = ReVIEW::Book::Base.load
+      @book = ReVIEW::Book::Base.new('.', config: @config)
       @upper = 4
       @indent = true
       @buildonly = nil
@@ -59,7 +59,6 @@ module ReVIEW
 
     def execute(*args)
       parse_options(args)
-      @book.config = ReVIEW::Configure.values
       unless File.readable?(@yamlfile)
         @logger.error("No such fiile or can't open #{@yamlfile}.")
         exit 1
@@ -108,7 +107,7 @@ module ReVIEW
             result_array.push({ part: 'end' })
           end
         end
-      rescue ReVIEW::FileNotFound => e
+      rescue ReVIEW::FileNotFound, ReVIEW::CompileError => e
         @logger.error e
         exit 1
       end
@@ -166,15 +165,12 @@ module ReVIEW
 
     def parse_contents(name, upper, content)
       headline_array = []
-      counter = {}
+      counter = { lines: 0, chars: 0, list_lines: 0, text_lines: 0 }
       listmode = nil
 
       content.split("\n").each do |l|
         if l.start_with?("\x01STARTLIST\x01")
           listmode = true
-          if counter.empty?
-            counter = { lines: 0, chars: 0, list_lines: 0, text_lines: 0 }
-          end
           next
         elsif l.start_with?("\x01ENDLIST\x01")
           listmode = nil
@@ -184,7 +180,9 @@ module ReVIEW
           level = $1.to_i
           l = $'
           if level <= upper
-            headline_array.push(counter)
+            if counter[:chars] > 0
+              headline_array.push(counter)
+            end
             headline = l
             counter = {
               level: level,

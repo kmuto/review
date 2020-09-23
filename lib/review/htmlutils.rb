@@ -7,19 +7,16 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
 
-require 'cgi/util'
+begin
+  require 'cgi/escape'
+rescue
+  require 'cgi/util'
+end
+
 module ReVIEW
   module HTMLUtils
-    ESC = {
-      '&' => '&amp;',
-      '<' => '&lt;',
-      '>' => '&gt;',
-      '"' => '&quot;'
-    } # .freeze
-
     def escape(str)
-      t = ESC
-      str.gsub(/[&"<>]/) { |c| t[c] }
+      CGI.escapeHTML(str)
     end
 
     alias_method :escape_html, :escape # for backward compatibility

@@ -109,7 +109,7 @@ def parse_postdef(str, to_appendix = false)
 end
 
 def parse_parts(parts_str, chaps_str)
-  if parts_str.blank? or chaps_str.blank?
+  if parts_str.blank? || chaps_str.blank?
     return "CHAPS:\n\n"
   end
 

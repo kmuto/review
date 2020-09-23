@@ -16,7 +16,7 @@ def prepare_samplebook(srcdir, bookdir, latextemplatedir, configfile)
   samplebook_dir = File.expand_path("../samples/#{bookdir}/", File.dirname(__FILE__))
   files = Dir.glob(File.join(samplebook_dir, '*'))
   # ignore temporary built files
-  files.delete_if { |file| file =~ /.*\-(pdf|epub|text)/ || file == 'webroot' }
+  files.delete_if { |file| file =~ /.*-(pdf|epub|text)/ || file == 'webroot' }
   FileUtils.cp_r(files, srcdir)
   if latextemplatedir
     # copy from review-jsbook or review-jlreq
@@ -39,11 +39,13 @@ end
 
 def compile_block_default(text)
   @chapter.content = text
+  @chapter.execute_indexer(force: true)
   @compiler.compile(@chapter)
 end
 
 def compile_block_html(text)
   @chapter.content = text
+  @chapter.execute_indexer(force: true)
   matched = @compiler.compile(@chapter).match(Regexp.new(%Q(<body>\n(.+)</body>), Regexp::MULTILINE))
   if matched && matched.size > 1
     matched[1]
@@ -54,5 +56,6 @@ end
 
 def compile_block_idgxml(text)
   @chapter.content = text
+  @chapter.execute_indexer(force: true)
   @compiler.compile(@chapter).gsub(Regexp.new(%Q(.*<doc xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">), Regexp::MULTILINE), '').gsub("</doc>\n", '')
 end

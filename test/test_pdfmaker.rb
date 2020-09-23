@@ -10,9 +10,10 @@ class PDFMakerTest < Test::Unit::TestCase
     @config.merge!(
       'bookname' => 'sample',
       'title' => 'Sample Book',
-      'review_version' => 3,
+      'aut' => 'anonymous',
+      'review_version' => 4,
       'urnid' => 'http://example.jp/',
-      'date' => '2011-01-01',
+      'date' => '2020-07-11',
       'language' => 'ja',
       'texcommand' => 'uplatex'
     )
@@ -75,7 +76,7 @@ class PDFMakerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       coverfile = 'cover.html'
       content = '<html><body>test</body></html>'
-      File.open(File.join(dir, 'cover.tex'), 'w') { |f| f.write(content) }
+      File.write(File.join(dir, 'cover.tex'), content)
       page = @maker.make_custom_page(File.join(dir, coverfile))
       assert_equal(content, page)
     end
@@ -144,7 +145,7 @@ class PDFMakerTest < Test::Unit::TestCase
       @maker.erb_config
       tmpl = @maker.template_content
       expect = File.read(File.join(assets_dir, 'test_template.tex'))
-      expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
+      expect.gsub!(/\\def\\review@reviewversion{[^}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
       assert_equal(expect, tmpl)
     end
   end
@@ -159,7 +160,7 @@ class PDFMakerTest < Test::Unit::TestCase
         @maker.erb_config
         tmpl = @maker.template_content
         expect = File.read(File.join(assets_dir, 'test_template.tex'))
-        expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
+        expect.gsub!(/\\def\\review@reviewversion{[^}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
         expect.sub!("\\makeatother\n", '\&' + "%% BEGIN: config-local.tex.erb\n\\def\\customvalue{\\#\\textunderscore{}TEST\\textunderscore{}}\n%% END: config-local.tex.erb\n")
         assert_equal(expect, tmpl)
       end
@@ -175,13 +176,13 @@ class PDFMakerTest < Test::Unit::TestCase
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
         profile = "\\thispagestyle{empty}\\chapter*{Profile}\nsome profile\n"
-        File.open(File.join(dir, 'profile.tex'), 'w') { |f| f.write(profile) }
+        File.write(File.join(dir, 'profile.tex'), profile)
         advfile = "\\thispagestyle{empty}\\chapter*{Ad}\nsome ad content\n"
-        File.open(File.join(dir, 'advfile.tex'), 'w') { |f| f.write(advfile) }
+        File.write(File.join(dir, 'advfile.tex'), advfile)
         backcover = "\\clearpage\n\\thispagestyle{empty}\\AddToShipoutPictureBG{%\n\\AtPageLowerLeft{\\includegraphics[width=\\paperwidth,height=\\paperheight]{images/backcover.png}}\n}\n\\null"
-        File.open(File.join(dir, 'backcover.tex'), 'w') { |f| f.write(backcover) }
+        File.write(File.join(dir, 'backcover.tex'), backcover)
         expect = File.read(File.join(assets_dir, 'test_template_backmatter.tex'))
-        expect.gsub!(/\\def\\review@reviewversion{[^\}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
+        expect.gsub!(/\\def\\review@reviewversion{[^}]+}/, "\\def\\review@reviewversion{#{ReVIEW::VERSION}}")
         @maker.basedir = Dir.pwd
         @maker.erb_config
         tmpl = @maker.template_content
@@ -196,7 +197,7 @@ class PDFMakerTest < Test::Unit::TestCase
     @config['pht'] = ['Mrs.Smith']
     @config['language'] = 'ja'
     history = @maker.make_history_list
-    expect = ['2011年1月1日　発行']
+    expect = ['2020年7月11日　発行']
     assert_equal expect, history
   end
 
@@ -207,9 +208,9 @@ class PDFMakerTest < Test::Unit::TestCase
     @config['language'] = 'ja'
     @config['history'] =
       [['2011-08-03 v1.0.0版発行',
-        '2012-02-15 v1.1.0版発行']]
+        '2020-07-11 v1.2.0版発行']]
     history = @maker.make_history_list
-    expect = ['2011年8月3日　v1.0.0版発行', '2012年2月15日　v1.1.0版発行']
+    expect = ['2011年8月3日　v1.0.0版発行', '2020年7月11日　v1.2.0版発行']
     assert_equal expect, history
   end
 

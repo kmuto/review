@@ -37,6 +37,19 @@ module ReVIEW
       str
     end
 
+    def number_list
+      buf = @counter.dup
+      while buf.present?
+        if buf.last == 0
+          buf.pop
+        else
+          return buf
+        end
+      end
+
+      buf
+    end
+
     def prefix(level, secnolevel)
       return nil if @chapter.number.blank?
 

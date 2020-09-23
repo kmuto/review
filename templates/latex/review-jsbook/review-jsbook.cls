@@ -1,5 +1,5 @@
 %#!ptex2pdf -l -u -ot '-synctex=1' test-rejsbk
-% Copyright (c) 2018-2019 Munehiro Yamamoto, Kenshi Muto.
+% Copyright (c) 2018-2020 Munehiro Yamamoto, Kenshi Muto.
 %
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{review-jsbook}
-  [2019/09/22 v4.0  Re:VIEW pLaTeX class modified for jsbook.cls]
+  [2020/08/16 v5.0  Re:VIEW pLaTeX class modified for jsbook.cls]
 
 \def\recls@error{\ClassError{review-jsbook}}
 \def\recls@warning{\ClassWarning{review-jsbook}}
@@ -226,8 +226,10 @@
 
 %% 表紙・開始番号・通しノンブル
 \newif\if@reclscover \@reclscovertrue
+\newif\ifrecls@coverfitpage \recls@coverfitpagefalse
 \newif\ifrecls@serialpage \recls@serialpagefalse
 \DeclareOptionX{cover}[\@empty]{\gdef\recls@forcecover{#1}}
+\DeclareOptionX{cover_fit_page}[false]{\csname recls@coverfitpage#1\endcsname}
 \DeclareOptionX{startpage}[1]{\gdef\recls@startpage{\numexpr#1}}
 \DeclareOptionX{serial_pagination}[false]{\csname recls@serialpage#1\endcsname}
 

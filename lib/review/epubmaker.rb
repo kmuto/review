@@ -18,7 +18,6 @@ require 'review/version'
 require 'review/htmltoc'
 require 'review/htmlbuilder'
 
-require 'review/yamlloader'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
@@ -52,18 +51,9 @@ module ReVIEW
     end
 
     def load_yaml(yamlfile)
-      loader = ReVIEW::YAMLLoader.new
-      @config = ReVIEW::Configure.values
-      begin
-        @config.deep_merge!(loader.load_file(yamlfile))
-      rescue => e
-        error "yaml error #{e.message}"
-      end
-
       @producer = Producer.new(@config)
       @producer.load(yamlfile)
       @config = @producer.config
-      @config.maker = 'epubmaker'
     end
 
     def self.execute(*args)
@@ -94,13 +84,13 @@ module ReVIEW
     end
 
     def execute(*args)
-      @config = ReVIEW::Configure.values
-      @config.maker = 'epubmaker'
       cmd_config, yamlfile, exportfile = parse_opts(args)
       error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
+      @config = ReVIEW::Configure.create(maker: 'epubmaker',
+                                         yamlfile: yamlfile,
+                                         config: cmd_config)
       load_yaml(yamlfile)
-      @config.deep_merge!(cmd_config)
       update_log_level
       log("Loaded yaml file (#{yamlfile}).")
 
@@ -252,7 +242,7 @@ module ReVIEW
       if @config['epubmaker']['verify_target_images'].present?
         @config['epubmaker']['force_include_images'].each do |file|
           unless File.exist?(file)
-            if file !~ /\Ahttp[s]?:/
+            if file !~ /\Ahttps?:/
               warn "#{file} is not found, skip."
             end
             next
@@ -307,8 +297,7 @@ module ReVIEW
 
       basedir = File.dirname(yamlfile)
       base_path = Pathname.new(basedir)
-      book = ReVIEW::Book.load(basedir)
-      book.config = @config
+      book = ReVIEW::Book::Base.new(basedir, config: @config)
       @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
       @compile_errors = nil
 
@@ -340,9 +329,9 @@ module ReVIEW
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @body = ''
         @body << %Q(<div class="part">\n)
-        @body << %Q(<h1 class="part-number">#{CGI.escapeHTML(ReVIEW::I18n.t('part', part.number))}</h1>\n)
+        @body << %Q(<h1 class="part-number">#{h(ReVIEW::I18n.t('part', part.number))}</h1>\n)
         if part.name.strip.present?
-          @body << %Q(<h2 class="part-title">#{CGI.escapeHTML(part.name.strip)}</h2>\n)
+          @body << %Q(<h2 class="part-title">#{h(part.name.strip)}</h2>\n)
         end
         @body << %Q(</div>\n)
 
@@ -563,19 +552,19 @@ module ReVIEW
 
     def build_titlepage(basetmpdir, htmlfile)
       # TODO: should be created via epubcommon
-      @title = CGI.escapeHTML(@config.name_of('booktitle'))
+      @title = h(@config.name_of('booktitle'))
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @body = ''
         @body << %Q(<div class="titlepage">\n)
-        @body << %Q(<h1 class="tp-title">#{CGI.escapeHTML(@config.name_of('booktitle'))}</h1>\n)
+        @body << %Q(<h1 class="tp-title">#{h(@config.name_of('booktitle'))}</h1>\n)
         if @config['subtitle']
-          @body << %Q(<h2 class="tp-subtitle">#{CGI.escapeHTML(@config.name_of('subtitle'))}</h2>\n)
+          @body << %Q(<h2 class="tp-subtitle">#{h(@config.name_of('subtitle'))}</h2>\n)
         end
         if @config['aut']
-          @body << %Q(<h2 class="tp-author">#{CGI.escapeHTML(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n)
+          @body << %Q(<h2 class="tp-author">#{h(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n)
         end
         if @config['pbl']
-          @body << %Q(<h3 class="tp-publisher">#{CGI.escapeHTML(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n)
+          @body << %Q(<h3 class="tp-publisher">#{h(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n)
         end
         @body << '</div>'
 

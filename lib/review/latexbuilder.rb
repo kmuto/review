@@ -613,7 +613,8 @@ module ReVIEW
     end
     private :bib_label
 
-    def column_label(id, chapter = @chapter)
+    def column_label(id, chapter = nil)
+      chapter ||= @chapter
       filename = chapter.id
       num = chapter.column(id).number
       "column:#{filename}:#{num}"
@@ -651,7 +652,7 @@ module ReVIEW
       else
         warn "image not bound: #{id}"
         puts '\begin{reviewdummyimage}'
-        puts "--[[path = #{id} (#{existence(id)})]]--"
+        puts "--[[path = #{escape(id)} (#{existence(id)})]]--"
         lines.each do |line|
           puts detab(line.rstrip)
         end
@@ -1231,7 +1232,7 @@ module ReVIEW
       error "unknown column: #{id}"
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 

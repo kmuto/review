@@ -255,6 +255,10 @@ EOS
 
     @config['secnolevel'] = 3
     actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test \reviewsecref{「1.1.1 te\\textunderscore{}st」}{sec:1-1-1} test2', actual
+
+    @config['chapterlink'] = nil
+    actual = compile_inline('test @<hd>{chap1|test} test2')
     assert_equal 'test 「1.1.1 te\\textunderscore{}st」 test2', actual
   end
 
@@ -389,9 +393,7 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS
 
@@ -1268,6 +1270,31 @@ EOS
     @book.config['pdfmaker']['use_original_image_size'] = true
     actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
     assert_equal expected, actual
+  end
+
+  def test_indepimage_nofile
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sample_img#&', 1)
+      item.instance_eval do
+        def path
+          nil
+        end
+      end
+      item
+    end
+
+    io = StringIO.new
+    @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+
+    actual = compile_block("//indepimage[sample_img#&][sample photo]\n")
+    expected = <<-EOS
+\\begin{reviewdummyimage}
+--[[path = sample\\textunderscore{}img\\#\\& (not exist)]]--
+\\reviewindepimagecaption{図: sample photo}
+\\end{reviewdummyimage}
+EOS
+    assert_equal expected, actual
+    assert_match(/WARN --: :1: image not bound: sample_img#&/, io.string)
   end
 
   def test_table

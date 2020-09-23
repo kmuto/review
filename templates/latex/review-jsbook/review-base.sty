@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2020/01/02]
+\ProvidesClass{review-base}[2020/08/16]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -48,24 +48,17 @@
 
 \long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
 
+%% pass bbox setting to extractbb of graphicx
+\ifdefined\review@bbox
+  \def\Gin@pagebox{\review@bbox}
+\fi
+
 \newenvironment{shadedb}{%
   \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolorb}}%
   \MakeFramed {\FrameRestore}}%
  {\endMakeFramed}
 
 \newcommand{\parasep}{\vspace*{3zh}}
-
-\newcommand*\PDFDocumentInformation[1]{%
-  \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
-\@onlypreamble\PDFDocumentInformation
-
-\PDFDocumentInformation{
-  /Title    (\review@booktitlename)
-  /Author   (\review@autnames)
-  % /Subject  ()
-  % /Keywords (,,)
-  /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
-}
 
 \RequirePackage{pxrubrica}
 \@ifpackagelater{pxrubrica}{2017/04/20}{%
@@ -205,9 +198,9 @@
 \newcommand{\reviewtableref}[2]{\review@intn@table #1}
 \newcommand{\reviewlistref}[1]{\review@intn@list #1}
 \newcommand{\reviewequationref}[1]{\review@intn@equation #1}
-\newcommand{\reviewbibref}[2]{#1}
-\newcommand{\reviewcolumnref}[2]{#1}
-\newcommand{\reviewsecref}[2]{#1}
+\newcommand{\reviewbibref}[2]{\hyperref[#2]{#1}}
+\newcommand{\reviewcolumnref}[2]{#1}% XXX:ハイパーリンクにはreviewcolumn側の調整が必要
+\newcommand{\reviewsecref}[2]{\hyperref[#2]{#1}}
 
 \newenvironment{reviewpart}{%
 \setcounter{section}{0}%
@@ -373,6 +366,28 @@
   \renewcommand{\appendixname}{\reviewappendixname}
 \fi
 
+% PDF meta information
+\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
+\hypersetup{
+    pdftitle={\review@booktitlename},
+    pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
+    pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
+  }
+\else
+\newcommand*\PDFDocumentInformation[1]{%
+  \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+\@onlypreamble\PDFDocumentInformation
+
+% for non hyperref. escaped character will be displayed funny...
+\PDFDocumentInformation{
+  /Title    (\review@booktitlename)
+  \ifdefined\review@autnames /Author   (\review@autnames)\fi
+  % /Subject  ()
+  % /Keywords (,,)
+  /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
+}
+\fi
+
 %% maxwidth is the original width if it is less than linewidth
 %% otherwise use linewidth (to make sure the graphics do not exceed the margin)
 \def\maxwidth{%
@@ -417,6 +432,9 @@
 
 \if@reclscover
   \ifdefined\review@coverimage
+    \ifrecls@coverfitpage
+       \def\review@coverimageoption{width=\paperwidth,height=\paperheight}
+    \fi
     \def\reviewcoverpagecont{%
       \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
       \cleardoublepage

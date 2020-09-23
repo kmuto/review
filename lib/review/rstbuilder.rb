@@ -97,7 +97,7 @@ module ReVIEW
       end
       p = '='
       case level
-      when 1 then
+      when 1
         unless label
           puts ".. _#{@chapter.name}:"
           blank
@@ -373,8 +373,9 @@ module ReVIEW
 
     def compile_kw(word, alt)
       if alt
-        then " **#{word}（#{alt.strip}）** "
-      else " **#{word}** "
+        " **#{word}（#{alt.strip}）** "
+      else
+        " **#{word}** "
       end
     end
 
@@ -705,7 +706,7 @@ module ReVIEW
       str
     end
 
-    def inline_chap(id)
+    def inline_chap(id) # rubocop:disable Lint/UselessMethodDefinition
       super
     end
 
