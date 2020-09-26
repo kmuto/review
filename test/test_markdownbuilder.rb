@@ -50,6 +50,7 @@ EOS
 test1
 
 test*2*
+
 </div>
 EOS
     assert_equal expected, actual

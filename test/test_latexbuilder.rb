@@ -904,9 +904,11 @@ EOS
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS
 \\begin{reviewmemo}[this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}]
+
 test1
 
 test\\reviewit{2}
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -1899,12 +1901,16 @@ EOS
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnote}
+
 A
 
 B
+
 \\end{reviewnote}
 \\begin{reviewnote}[caption]
+
 A
+
 \\end{reviewnote}
 EOS
     assert_equal expected, actual
@@ -1912,12 +1918,16 @@ EOS
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewmemo}
+
 A
 
 B
+
 \\end{reviewmemo}
 \\begin{reviewmemo}[caption]
+
 A
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -1925,12 +1935,16 @@ EOS
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewinfo}
+
 A
 
 B
+
 \\end{reviewinfo}
 \\begin{reviewinfo}[caption]
+
 A
+
 \\end{reviewinfo}
 EOS
     assert_equal expected, actual
@@ -1938,12 +1952,16 @@ EOS
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewimportant}
+
 A
 
 B
+
 \\end{reviewimportant}
 \\begin{reviewimportant}[caption]
+
 A
+
 \\end{reviewimportant}
 EOS
     assert_equal expected, actual
@@ -1951,12 +1969,16 @@ EOS
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewcaution}
+
 A
 
 B
+
 \\end{reviewcaution}
 \\begin{reviewcaution}[caption]
+
 A
+
 \\end{reviewcaution}
 EOS
     assert_equal expected, actual
@@ -1964,12 +1986,16 @@ EOS
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnotice}
+
 A
 
 B
+
 \\end{reviewnotice}
 \\begin{reviewnotice}[caption]
+
 A
+
 \\end{reviewnotice}
 EOS
     assert_equal expected, actual
@@ -1977,12 +2003,16 @@ EOS
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewwarning}
+
 A
 
 B
+
 \\end{reviewwarning}
 \\begin{reviewwarning}[caption]
+
 A
+
 \\end{reviewwarning}
 EOS
     assert_equal expected, actual
@@ -1990,12 +2020,16 @@ EOS
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewtip}
+
 A
 
 B
+
 \\end{reviewtip}
 \\begin{reviewtip}[caption]
+
 A
+
 \\end{reviewtip}
 EOS
     assert_equal expected, actual
