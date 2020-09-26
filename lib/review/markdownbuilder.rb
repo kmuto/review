@@ -155,7 +155,7 @@ module ReVIEW
       puts %Q(<div class="#{type}">)
       puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
       blocked_lines = split_paragraph(lines)
-      puts blocked_lines.join("\n")
+      puts blocked_lines.join("\n\n")
       puts '</div>'
     end
 

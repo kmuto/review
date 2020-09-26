@@ -159,12 +159,12 @@ class BookTest < Test::Unit::TestCase
   end
 
   def test_parse_chapters
-    mktmpbookdir 'CHAPS' => '' do |_dir, book, _files|
+    mktmpbookdir('CHAPS' => '') do |_dir, book, _files|
       parts = book.instance_eval { parse_chapters }
       assert_equal 0, parts.size
     end
 
-    mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2\n" do |dir, book, _files|
+    mktmpbookdir('CHAPS' => "chapter1.re\nchapter2\n") do |dir, book, _files|
       parts = book.instance_eval { parse_chapters }
       assert_equal 1, parts.size
 
@@ -178,7 +178,7 @@ class BookTest < Test::Unit::TestCase
       assert_equal expect, chaps
     end
 
-    mktmpbookdir 'CHAPS' => <<EOC do |dir, book, _files|
+    mktmpbookdir('CHAPS' => <<EOC) do |dir, book, _files|
 part1_chapter1.re
 part1_chapter2.re
 
@@ -280,22 +280,22 @@ EOC
       assert_equal nil, book.prefaces
     end
 
-    mktmpbookdir 'PREDEF' => '' do |_dir, book, _files|
+    mktmpbookdir('PREDEF' => '') do |_dir, book, _files|
       assert_equal nil, book.prefaces # XXX: OK?
     end
 
-    mktmpbookdir 'PREDEF' => 'chapter1',
-                 'chapter1.re' => '' do |_dir, book, files|
-      assert_kind_of Book::Part, book.prefaces
+    mktmpbookdir('PREDEF' => 'chapter1',
+                 'chapter1.re' => '') do |_dir, book, files|
+      assert_kind_of(Book::Part, book.prefaces)
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
       assert_equal 'chapter1', book.prefaces.chapters.first.name
       assert_equal files['chapter1.re'], book.prefaces.chapters.first.path
     end
 
-    mktmpbookdir 'PREDEF' => "chapter1\n\nchapter2",
-                 'chapter1.re' => '', 'chapter2.re' => '' do |_dir, book, files|
-      assert_kind_of Book::Part, book.prefaces
+    mktmpbookdir('PREDEF' => "chapter1\n\nchapter2",
+                 'chapter1.re' => '', 'chapter2.re' => '') do |_dir, book, files|
+      assert_kind_of(Book::Part, book.prefaces)
       assert_equal '', book.prefaces.name
       assert_equal 2, book.prefaces.chapters.size
       assert_equal 'chapter1', book.prefaces.chapters.first.name
@@ -304,29 +304,29 @@ EOC
       assert_equal files['chapter2.re'], book.prefaces.chapters.last.path
     end
 
-    mktmpbookdir 'PREDEF' => 'chapter1 chapter2',
-                 'chapter1.re' => '', 'chapter2.re' => '' do |_dir, book, _files|
-      assert_kind_of Book::Part, book.prefaces
+    mktmpbookdir('PREDEF' => 'chapter1 chapter2',
+                 'chapter1.re' => '', 'chapter2.re' => '') do |_dir, book, _files|
+      assert_kind_of(Book::Part, book.prefaces)
       assert_equal '', book.prefaces.name
       assert_equal 2, book.prefaces.chapters.size # XXX: OK?
     end
 
-    mktmpbookdir 'PREDEF' => 'not_exist' do |_dir, book, _files|
+    mktmpbookdir('PREDEF' => 'not_exist') do |_dir, book, _files|
       assert_raises FileNotFound do
         assert_equal nil, book.prefaces
       end
     end
 
-    mktmpbookdir 'PREDEF' => 'chapter1.re',
-                 'chapter1.re' => '' do |_dir, book, _files|
-      assert_kind_of Book::Part, book.prefaces
+    mktmpbookdir('PREDEF' => 'chapter1.re',
+                 'chapter1.re' => '') do |_dir, book, _files|
+      assert_kind_of(Book::Part, book.prefaces)
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
     end
 
-    mktmpbookdir 'PREDEF' => 'chapter1.txt',
-                 'chapter1.txt' => '' do |_dir, book, _files|
-      assert_kind_of Book::Part, book.prefaces
+    mktmpbookdir('PREDEF' => 'chapter1.txt',
+                 'chapter1.txt' => '') do |_dir, book, _files|
+      assert_kind_of(Book::Part, book.prefaces)
       assert_equal '', book.prefaces.name
       assert_equal 1, book.prefaces.chapters.size
     end
@@ -337,13 +337,13 @@ EOC
       assert_equal nil, book.appendix
     end
 
-    mktmpbookdir 'POSTDEF' => '' do |_dir, book, _files|
+    mktmpbookdir('POSTDEF' => '') do |_dir, book, _files|
       assert_equal nil, book.appendix
     end
 
-    mktmpbookdir 'POSTDEF' => 'chapter1',
-                 'chapter1.re' => '' do |_dir, book, files|
-      assert_kind_of Book::Part, book.appendix
+    mktmpbookdir('POSTDEF' => 'chapter1',
+                 'chapter1.re' => '') do |_dir, book, files|
+      assert_kind_of(Book::Part, book.appendix)
       assert_equal '', book.appendix.name
       assert_equal 1, book.appendix.chapters.size
       assert_equal 'chapter1', book.appendix.chapters.first.name
@@ -351,9 +351,9 @@ EOC
       assert_equal 1, book.appendix.chapters.first.number
     end
 
-    mktmpbookdir 'POSTDEF' => "chapter1\n\nchapter2",
-                 'chapter1.re' => '', 'chapter2.re' => '' do |_dir, book, files|
-      assert_kind_of Book::Part, book.appendix
+    mktmpbookdir('POSTDEF' => "chapter1\n\nchapter2",
+                 'chapter1.re' => '', 'chapter2.re' => '') do |_dir, book, files|
+      assert_kind_of(Book::Part, book.appendix)
       assert_equal '', book.appendix.name
       assert_equal 2, book.appendix.chapters.size
       assert_equal 'chapter1', book.appendix.chapters.first.name
@@ -364,32 +364,32 @@ EOC
       assert_equal 2, book.appendix.chapters.last.number
     end
 
-    mktmpbookdir 'POSTDEF' => 'chapter1 chapter2',
-                 'chapter1.re' => '', 'chapter2.re' => '' do |_dir, book, _files|
-      assert_kind_of Book::Part, book.appendix
+    mktmpbookdir('POSTDEF' => 'chapter1 chapter2',
+                 'chapter1.re' => '', 'chapter2.re' => '') do |_dir, book, _files|
+      assert_kind_of(Book::Part, book.appendix)
       assert_equal '', book.appendix.name
       assert_equal 2, book.appendix.chapters.size # XXX: OK?
       assert_equal 1, book.appendix.chapters.first.number
       assert_equal 2, book.appendix.chapters.last.number
     end
 
-    mktmpbookdir 'POSTDEF' => 'not_exist' do |_dir, book, _files|
+    mktmpbookdir('POSTDEF' => 'not_exist') do |_dir, book, _files|
       assert_raises FileNotFound do
         assert_equal nil, book.appendix
       end
     end
 
-    mktmpbookdir 'catalog.yml' => "APPENDIX:\n  - p01.re",
-                 'p01.re' => '= appendix' do |_dir, book, _files|
+    mktmpbookdir('catalog.yml' => "APPENDIX:\n  - p01.re",
+                 'p01.re' => '= appendix') do |_dir, book, _files|
       assert_equal 'appendix', book.appendix.chapters.first.title
       assert_equal 1, book.appendix.chapters.first.number
     end
   end
 
   def test_postscripts
-    mktmpbookdir 'catalog.yml' => "POSTDEF:\n  - b01.re",
-                 'b01.re' => '= back' do |_dir, book, _files|
-      assert_kind_of Book::Part, book.postscripts
+    mktmpbookdir('catalog.yml' => "POSTDEF:\n  - b01.re",
+                 'b01.re' => '= back') do |_dir, book, _files|
+      assert_kind_of(Book::Part, book.postscripts)
       assert_equal 1, book.postscripts.chapters.size
       assert_equal 'back', book.postscripts.chapters.first.title
       assert_equal nil, book.postscripts.chapters.first.number
@@ -407,7 +407,7 @@ EOC
       assert tmp.empty?
     end
 
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3", 'PART' => "foo\nbar\n" do |_dir, book, _files|
+    mktmpbookdir('CHAPS' => "ch1\nch2\n\nch3", 'PART' => "foo\nbar\n") do |_dir, book, _files|
       parts = book.parts
       assert_equal 2, parts.size
       assert !book.part(0)
@@ -432,10 +432,10 @@ EOC
       assert tmp.empty?
     end
 
-    mktmpbookdir 'CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
+    mktmpbookdir('CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
                  'PART' => "foo\nbar\n",
                  'ch1.re' => "= ch1\n\n", 'ch2.re' => "= ch2\n\n",
-                 'ch3.re' => "= ch3\n\n" do |_dir, book, _files|
+                 'ch3.re' => "= ch3\n\n") do |_dir, book, _files|
       parts = book.parts_in_file
       assert_equal 0, parts.size
       assert !book.part(0)
@@ -448,11 +448,11 @@ EOC
       assert_equal [1, 2], tmp
     end
 
-    mktmpbookdir 'CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
+    mktmpbookdir('CHAPS' => "ch1.re\nch2.re\n\nch3.re\n",
                  'PART' => "foo.re\nbar.re\n",
                  'foo.re' => "= part1\n\n", 'bar.re' => "= part2\n\n",
                  'ch1.re' => "= ch1\n\n", 'ch2.re' => "= ch2\n\n",
-                 'ch3.re' => "= ch3\n\n" do |_dir, book, _files|
+                 'ch3.re' => "= ch3\n\n") do |_dir, book, _files|
       parts = book.parts_in_file
       assert_equal 2, parts.size
       assert !book.part(0)
@@ -467,7 +467,7 @@ EOC
   end
 
   def test_chapters
-    mktmpbookdir 'CHAPS' => "ch1\nch2\n\nch3" do |_dir, book, _files|
+    mktmpbookdir('CHAPS' => "ch1\nch2\n\nch3") do |_dir, book, _files|
       chapters = book.chapters
       assert_equal 3, chapters.size
 
@@ -486,7 +486,7 @@ EOC
       end
     end
 
-    mktmpbookdir 'CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt" do |_dir, book, _files|
+    mktmpbookdir('CHAPS' => "ch1.txt\nch2.txt\n\nch3.txt") do |_dir, book, _files|
       chapters = book.chapters
       assert_equal 3, chapters.size
 
@@ -507,7 +507,7 @@ EOC
   end
 
   def test_next_chapter
-    mktmpbookdir 'CHAPS' => "ch1\nch2" do |_dir, book, _files|
+    mktmpbookdir('CHAPS' => "ch1\nch2") do |_dir, book, _files|
       chapter = book.chapter('ch1')
       assert_equal book.chapter('ch2'), book.next_chapter(chapter)
 
@@ -517,7 +517,7 @@ EOC
   end
 
   def test_prev_chapter
-    mktmpbookdir 'CHAPS' => "ch1\nch2" do |_dir, book, _files|
+    mktmpbookdir('CHAPS' => "ch1\nch2") do |_dir, book, _files|
       chapter = book.chapter('ch2')
       assert_equal book.chapter('ch1'), book.prev_chapter(chapter)
 
@@ -534,14 +534,14 @@ EOC
       assert_equal 0, book.volume.lines
     end
 
-    mktmpbookdir 'CHAPS' => 'chapter1.re', 'chapter1.re' => '12345' do |_dir, book, _files|
+    mktmpbookdir('CHAPS' => 'chapter1.re', 'chapter1.re' => '12345') do |_dir, book, _files|
       assert book.volume
       assert book.volume.bytes > 0
       assert book.volume.chars > 0
       assert book.volume.lines > 0
     end
 
-    mktmpbookdir 'preface.re' => '12345' do |dir, _book, _files|
+    mktmpbookdir('preface.re' => '12345') do |dir, _book, _files|
       Dir.chdir(dir) do
         book2 = Book::Base.new('.')
         assert book2.volume

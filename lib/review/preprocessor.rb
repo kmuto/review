@@ -355,14 +355,14 @@ module ReVIEW
 
     def parse_git_blob(g_obj)
       IO.popen('git show ' + g_obj.sub(/\Agit\|/, ''), 'r') do |f|
-        init_errorutils f
+        init_errorutils(f)
         return _parse_file(f)
       end
     end
 
     def parse_file(fname)
       File.open(fname, 'rt:BOM|utf-8') do |f|
-        init_errorutils f
+        init_errorutils(f)
         return _parse_file(f)
       end
     end
