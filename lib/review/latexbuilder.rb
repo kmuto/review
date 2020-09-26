@@ -228,10 +228,10 @@ module ReVIEW
           puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
         end
       else
-      if caption.present?
-        print "[#{compile_inline(caption)}]"
-      end
-      puts
+        if caption.present?
+          print "[#{compile_inline(caption)}]"
+        end
+        puts
       end
       @doc_status[:caption] = nil
     end
