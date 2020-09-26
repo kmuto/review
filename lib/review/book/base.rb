@@ -367,8 +367,8 @@ module ReVIEW
           end
         end
 
-        chap = read_chaps.map(&:strip).join("\n").split(/\n{2,}/).
-               map do |part_chunk|
+        # rubocop:disable Style/RedundantAssignment
+        chap = read_chaps.map(&:strip).join("\n").split(/\n{2,}/).map do |part_chunk|
           chaps = part_chunk.split.map { |chapid| Chapter.new(self, num += 1, chapid, File.join(contentdir, chapid)) }
           if part_exist? && read_part.size > part
             Part.new(self, part += 1, chaps, read_part[part - 1])
@@ -376,6 +376,8 @@ module ReVIEW
             Part.new(self, nil, chaps)
           end
         end
+        # rubocop:enable Style/RedundantAssignment
+
         chap
       end
 

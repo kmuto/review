@@ -25,7 +25,7 @@ module BookTestHelper
         else
           config = ReVIEW::Configure.values
         end
-        book = Book::Base.load(dir, config: config)
+        book = Book::Base.new(dir, config: config)
         yield(dir, book, created_files)
       end
     end

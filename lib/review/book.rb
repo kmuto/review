@@ -19,7 +19,7 @@ require 'review/book/index'
 module ReVIEW
   module Book
     def self.load(_dir)
-      raise NotImplementedError, 'ReVIEW::Book.load is obsoleted. Please use ReVIEW::Book::Base.load.'
+      raise NotImplementedError, 'ReVIEW::Book.load is obsoleted. Please use ReVIEW::Book::Base.new.'
     end
   end
 end

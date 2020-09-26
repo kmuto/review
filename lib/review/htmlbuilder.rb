@@ -41,10 +41,6 @@ module ReVIEW
       ".#{@book.config['htmlext']}"
     end
 
-    def builder_init
-    end
-    private :builder_init
-
     def builder_init_file
       @noindent = nil
       @ol_num = nil
@@ -1199,7 +1195,7 @@ EOS
       %Q(<span class="balloon">#{escape_html(str)}</span>)
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 
