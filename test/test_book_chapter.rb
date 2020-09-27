@@ -109,8 +109,8 @@ class ChapterTest < Test::Unit::TestCase
   end
 
   def test_on_chaps?
-    mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re",
-                 'chapter1.re' => '12345', 'preface.re' => 'abcde' do |dir, book, files|
+    mktmpbookdir('CHAPS' => "chapter1.re\nchapter2.re",
+                 'chapter1.re' => '12345', 'preface.re' => 'abcde') do |dir, book, files|
       ch1 = Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
       pre = Book::Chapter.new(book, nil, 'preface', files['preface.re'])
 
@@ -131,15 +131,15 @@ class ChapterTest < Test::Unit::TestCase
   end
 
   def test_invalid_encoding
-    mktmpbookdir 'CHAPS' => 'chapter1.re',
-                 'chapter1.re' => "= 日本語UTF-8\n" do |_dir, book, files|
+    mktmpbookdir('CHAPS' => 'chapter1.re',
+                 'chapter1.re' => "= 日本語UTF-8\n") do |_dir, book, files|
       assert Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
     end
 
     # UTF-16LE UTF-16BE UTF-32LE UTF-32BE cause error on Windows
     %w[CP932 SHIFT_JIS EUC-JP].each do |enc|
-      mktmpbookdir 'CHAPS' => 'chapter1.re',
-                   'chapter1.re' => "= 日本語UTF-8\n".encode(enc) do |_dir, book, files|
+      mktmpbookdir('CHAPS' => 'chapter1.re',
+                   'chapter1.re' => "= 日本語UTF-8\n".encode(enc)) do |_dir, book, files|
         e = assert_raises(ReVIEW::CompileError) { Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re']) }
         assert_equal 'chapter1: invalid byte sequence in UTF-8', e.message
       end
