@@ -255,6 +255,10 @@ EOS
 
     @config['secnolevel'] = 3
     actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test \reviewsecref{「1.1.1 te\\textunderscore{}st」}{sec:1-1-1} test2', actual
+
+    @config['chapterlink'] = nil
+    actual = compile_inline('test @<hd>{chap1|test} test2')
     assert_equal 'test 「1.1.1 te\\textunderscore{}st」 test2', actual
   end
 
@@ -389,9 +393,7 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS
 
@@ -431,6 +433,22 @@ bar
 
 buz
 \\end{reviewcmd}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//cmd[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{reviewlistblock}
+\\begin{reviewcmd}
+foo
+bar
+
+buz
+\\end{reviewcmd}
+\\reviewcmdcaption{cap1}
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
@@ -509,6 +527,22 @@ buz
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlist[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{reviewlistblock}
+\\begin{reviewemlist}
+foo
+bar
+
+buz
+\\end{reviewemlist}
+\\reviewemlistcaption{cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlist_empty_caption
@@ -575,6 +609,22 @@ EOS
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+
+\\begin{reviewlistblock}
+\\begin{reviewemlist}
+ 1: foo
+ 2: bar
+ 3: 
+ 4: buz
+\\end{reviewemlist}
+\\reviewemlistcaption{cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_list
@@ -591,11 +641,36 @@ buz
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[id1][cap1]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistblock}
+\\begin{reviewlist}
+foo
+bar
+
+buz
+\\end{reviewlist}
+\\reviewlistcaption{リスト1.1: cap1}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_list_lst
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
+    actual = compile_block("//list[id1][cap1][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistlst}[caption={cap1},language={sql}]
+SELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'
+\\end{reviewlistlst}
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    # XXX: caption_position won't work with highlight
     actual = compile_block("//list[id1][cap1][sql]{\nSELECT COUNT(*) FROM tests WHERE tests.no > 10 AND test.name LIKE 'ABC%'\n//}\n")
     expected = <<-EOS
 \\begin{reviewlistlst}[caption={cap1},language={sql}]
@@ -635,6 +710,24 @@ EOS
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistblock}
+\\begin{reviewlist}
+ 1: class Foo
+ 2:   def foo
+ 3:     bar
+ 4: 
+ 5:     buz
+ 6:   end
+ 7: end
+\\end{reviewlist}
+\\reviewlistcaption{リスト1.1: ruby}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_listnum_linenum
@@ -659,6 +752,22 @@ EOS
   def test_listnum_lst
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
+    actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistnumlst}[caption={ruby},language={}]
+class Foo
+  def foo
+    bar
+
+    buz
+  end
+end
+\\end{reviewlistnumlst}
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    # XXX: caption_position won't work with highlight
     actual = compile_block("//listnum[test1][ruby]{\nclass Foo\n  def foo\n    bar\n\n    buz\n  end\nend\n//}\n")
     expected = <<-EOS
 \\begin{reviewlistnumlst}[caption={ruby},language={}]
@@ -706,6 +815,21 @@ buz
 \\end{reviewlistblock}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+\\begin{reviewlistblock}
+\\begin{reviewsource}
+foo
+bar
+
+buz
+\\end{reviewsource}
+\\reviewsourcecaption{foo/bar/test.rb}
+\\end{reviewlistblock}
+EOS
+    assert_equal expected, actual
   end
 
   def test_source_empty_caption
@@ -726,6 +850,19 @@ EOS
   def test_source_lst
     @book.config['highlight'] = {}
     @book.config['highlight']['latex'] = 'listings'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+\\begin{reviewsourcelst}[title={foo/bar/test.rb},language={}]
+foo
+bar
+
+buz
+\\end{reviewsourcelst}
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    # XXX: caption_position won't work with highlight
     actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
     expected = <<-EOS
 \\begin{reviewsourcelst}[title={foo/bar/test.rb},language={}]
@@ -767,9 +904,11 @@ EOS
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS
 \\begin{reviewmemo}[this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}]
+
 test1
 
 test\\reviewit{2}
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -887,6 +1026,18 @@ EOS
     assert_equal expected, actual
 
     actual = compile_block("//image[sampleimg][sample photo][]{\n//}\n")
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = nil
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
+    expected = <<-EOS
+\\begin{reviewimage}%%sampleimg
+\\reviewimagecaption{sample photo}
+\\label{image:chap1:sampleimg}
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+EOS
     assert_equal expected, actual
   end
 
@@ -1008,6 +1159,17 @@ EOS
 
     actual = compile_block("//indepimage[sampleimg][sample photo][]\n")
     assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = nil
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//indepimage[sampleimg][sample photo]\n")
+    expected = <<-EOS
+\\begin{reviewimage}%%sampleimg
+\\reviewindepimagecaption{図: sample photo}
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+EOS
+    assert_equal expected, actual
   end
 
   def test_indepimage_without_caption
@@ -1112,6 +1274,31 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_indepimage_nofile
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sample_img#&', 1)
+      item.instance_eval do
+        def path
+          nil
+        end
+      end
+      item
+    end
+
+    io = StringIO.new
+    @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+
+    actual = compile_block("//indepimage[sample_img#&][sample photo]\n")
+    expected = <<-EOS
+\\begin{reviewdummyimage}
+--[[path = sample\\textunderscore{}img\\#\\& (not exist)]]--
+\\reviewindepimagecaption{図: sample photo}
+\\end{reviewdummyimage}
+EOS
+    assert_equal expected, actual
+    assert_match(/WARN --: :1: image not bound: sample_img#&/, io.string)
+  end
+
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
@@ -1136,13 +1323,28 @@ ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
 \\end{table}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+\\begin{table}%%foo
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
+\\reviewtablecaption{FOO}
+\\label{table:chap1:foo}
+\\end{table}
+EOS
+    assert_equal expected, actual
   end
 
   def test_empty_table
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
     assert_equal ':2: error: no rows in the table', e.message
 
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
     assert_equal ':3: error: no rows in the table', e.message
   end
 
@@ -1247,6 +1449,26 @@ ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
 \\end{reviewtable}
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+\\begin{table}%%
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
+\\reviewtablecaption*{foo}
+\\end{table}
+
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
+EOS
+    assert_equal expected, actual
   end
 
   def test_imgtable
@@ -1284,6 +1506,21 @@ EOS
     assert_equal expected, actual
 
     actual = compile_block("//imgtable[sampleimg][test for imgtable][]{\n//}\n")
+    assert_equal expected, actual
+
+    @book.config['pdfmaker']['use_original_image_size'] = nil
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//imgtable[sampleimg][test for imgtable]{\n//}\n")
+
+    expected = <<-EOS
+\\begin{table}[h]%%sampleimg
+\\label{table:chap1:sampleimg}
+\\begin{reviewimage}%%sampleimg
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+\\reviewimgtablecaption{test for imgtable}
+\\end{table}
+EOS
     assert_equal expected, actual
   end
 
@@ -1664,12 +1901,16 @@ EOS
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnote}
+
 A
 
 B
+
 \\end{reviewnote}
 \\begin{reviewnote}[caption]
+
 A
+
 \\end{reviewnote}
 EOS
     assert_equal expected, actual
@@ -1677,12 +1918,16 @@ EOS
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewmemo}
+
 A
 
 B
+
 \\end{reviewmemo}
 \\begin{reviewmemo}[caption]
+
 A
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -1690,12 +1935,16 @@ EOS
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewinfo}
+
 A
 
 B
+
 \\end{reviewinfo}
 \\begin{reviewinfo}[caption]
+
 A
+
 \\end{reviewinfo}
 EOS
     assert_equal expected, actual
@@ -1703,12 +1952,16 @@ EOS
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewimportant}
+
 A
 
 B
+
 \\end{reviewimportant}
 \\begin{reviewimportant}[caption]
+
 A
+
 \\end{reviewimportant}
 EOS
     assert_equal expected, actual
@@ -1716,12 +1969,16 @@ EOS
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewcaution}
+
 A
 
 B
+
 \\end{reviewcaution}
 \\begin{reviewcaution}[caption]
+
 A
+
 \\end{reviewcaution}
 EOS
     assert_equal expected, actual
@@ -1729,12 +1986,16 @@ EOS
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnotice}
+
 A
 
 B
+
 \\end{reviewnotice}
 \\begin{reviewnotice}[caption]
+
 A
+
 \\end{reviewnotice}
 EOS
     assert_equal expected, actual
@@ -1742,12 +2003,16 @@ EOS
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewwarning}
+
 A
 
 B
+
 \\end{reviewwarning}
 \\begin{reviewwarning}[caption]
+
 A
+
 \\end{reviewwarning}
 EOS
     assert_equal expected, actual
@@ -1755,15 +2020,171 @@ EOS
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewtip}
+
 A
 
 B
+
 \\end{reviewtip}
 \\begin{reviewtip}[caption]
+
 A
+
 \\end{reviewtip}
 EOS
     assert_equal expected, actual
+  end
+
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}[#{type}1]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}2]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}[#{type}2]{
+
+//}
+
+//#{type}[#{type}3]{
+
+//}
+
+//#{type}[#{type}4]{
+
+//}
+
+//#{type}[#{type}5]{
+
+//}
+
+//#{type}[#{type}6]{
+
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}[#{type}2]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}3]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}4]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}5]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}6]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}{
+
+ * A
+
+ 1. B
+
+//}
+
+//#{type}[OMITEND1]{
+
+//emlist{
+LIST
+//}
+
+//}
+//#{type}[OMITEND2]{
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}
+
+\\begin{itemize}
+\\item A
+\\end{itemize}
+
+\\begin{enumerate}
+\\item B
+\\end{enumerate}
+
+\\end{review#{type}}
+\\begin{review#{type}}[OMITEND1]
+
+\\begin{reviewlistblock}
+\\begin{reviewemlist}
+LIST
+\\end{reviewemlist}
+\\end{reviewlistblock}
+
+\\end{review#{type}}
+\\begin{review#{type}}[OMITEND2]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
   end
 
   def test_inline_raw0
@@ -1903,18 +2324,18 @@ EOS
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_equal ':1: error: unknown headline: n', e.message
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ":1: error: unknown #{name}: n", e.message
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end
@@ -2038,6 +2459,21 @@ EOS
 \\begin{equation*}
 e=mc^2
 \\end{equation*}
+\\end{reviewequationblock}
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = <<-EOS
+
+\\reviewequationref{1.1}
+
+\\begin{reviewequationblock}
+\\begin{equation*}
+e=mc^2
+\\end{equation*}
+\\reviewequationcaption{式1.1: The Equivalence of Mass \\reviewit{and} Energy}
 \\end{reviewequationblock}
 EOS
     actual = compile_block(src)

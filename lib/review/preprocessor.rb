@@ -195,7 +195,7 @@ module ReVIEW
       op = m[1]
       args = m[2].split(/,\s*/)
       opts = parse_optargs(m[3])
-      return if argc == 0 and args.empty?
+      return if (argc == 0) && args.empty?
       if argc == -1
         # Any number of arguments are allowed.
       elsif args.size != argc
@@ -284,7 +284,7 @@ module ReVIEW
           err = stderr.readlines
         end
       end
-      if err and !err.empty?
+      if err && !err.empty?
         $stderr.puts '[unexpected stderr message]'
         err.each { |line| $stderr.print line }
         error 'get_output: got unexpected output'
@@ -355,14 +355,14 @@ module ReVIEW
 
     def parse_git_blob(g_obj)
       IO.popen('git show ' + g_obj.sub(/\Agit\|/, ''), 'r') do |f|
-        init_errorutils f
+        init_errorutils(f)
         return _parse_file(f)
       end
     end
 
     def parse_file(fname)
       File.open(fname, 'rt:BOM|utf-8') do |f|
-        init_errorutils f
+        init_errorutils(f)
         return _parse_file(f)
       end
     end
@@ -426,7 +426,7 @@ module ReVIEW
           curr.each_value { |list| list.push(Line.new(nil, line)) }
 
         else
-          next if yacchack and line.strip == ';'
+          next if yacchack && (line.strip == ';')
           line = canonical(line)
           curr.each_value { |list| list.push(Line.new(lineno, line)) }
           lineno += 1

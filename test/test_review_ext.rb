@@ -11,7 +11,8 @@ class ReviewExtTest < Test::Unit::TestCase
 module ReVIEW
   class HTMLBuilder
     attr_reader :builder_init_test
-    def builder_init
+    def initialize(strict = false)
+      super
       @builder_init_test = "test"
     end
   end

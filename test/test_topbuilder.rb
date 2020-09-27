@@ -175,11 +175,11 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS
+【注1】bar
+
 ★foo【注1】[]<>&◆→TeX式ここから←◆\\alpha[]◆→TeX式ここまで←◆☆
 	
 
@@ -297,6 +297,19 @@ EOS
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//listnum[test][this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:リスト←◆
+ 1: foo
+ 2: bar
+
+リスト1.1　this is ★test☆<&>_
+◆→終了:リスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_source
@@ -308,6 +321,20 @@ foo
 bar
 
 buz
+◆→終了:ソースコードリスト←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS
+◆→開始:ソースコードリスト←◆
+foo
+bar
+
+buz
+■foo/bar/test.rb
 ◆→終了:ソースコードリスト←◆
 
 EOS
@@ -349,6 +376,18 @@ bar
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//box[FOO]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:書式←◆
+foo
+bar
+■FOO
+◆→終了:書式←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_cmd
@@ -368,6 +407,18 @@ EOS
 ■cap1
 lineA
 lineB
+◆→終了:コマンド←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:コマンド←◆
+lineA
+lineB
+■cap1
 ◆→終了:コマンド←◆
 
 EOS
@@ -397,6 +448,18 @@ lineB
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlist[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+lineA
+lineB
+■cap1
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_emlistnum
@@ -406,6 +469,18 @@ EOS
 ■this is ★test☆<&>_
  1: foo
  2: bar
+◆→終了:インラインリスト←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\nfoo\nbar\n//}\n")
+    expected = <<-EOS
+◆→開始:インラインリスト←◆
+ 1: foo
+ 2: bar
+■this is ★test☆<&>_
 ◆→終了:インラインリスト←◆
 
 EOS
@@ -442,13 +517,26 @@ ccc\tddd<>&
 
 EOS
     assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+
+表1.1　FOO
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
   end
 
   def test_empty_table
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
     assert_equal ':2: error: no rows in the table', e.message
 
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
     assert_equal ':3: error: no rows in the table', e.message
   end
 
@@ -647,6 +735,183 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_minicolumn_blocks
+    titles = {
+      'note' => 'ノート',
+      'memo' => 'メモ',
+      'important' => '重要',
+      'info' => '情報',
+      'notice' => '注意',
+      'caution' => '警告',
+      'warning' => '危険',
+      'tip' => 'TIP'
+    }
+
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+■#{type}1
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}2
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}[#{type}2]{
+
+//}
+
+//#{type}[#{type}3]{
+
+//}
+
+//#{type}[#{type}4]{
+
+//}
+
+//#{type}[#{type}5]{
+
+//}
+
+//#{type}[#{type}6]{
+
+//}
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+■#{type}2
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}3
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}4
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}5
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}6
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}{
+
+ * A
+
+ 1. B
+
+//}
+
+//#{type}[OMITEND1]{
+
+//emlist{
+LIST
+//}
+
+//}
+//#{type}[OMITEND2]{
+//}
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+
+●	A
+
+1	B
+
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■OMITEND1
+
+◆→開始:インラインリスト←◆
+LIST
+◆→終了:インラインリスト←◆
+
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■OMITEND2
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
   def test_image
     def @chapter.image(_id)
       item = Book::Index::Item.new('sampleimg', 1)
@@ -654,6 +919,18 @@ EOS
       item
     end
 
+    actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
+    expected = <<-EOS
+◆→開始:図←◆
+◆→./images/chap1-sampleimg.png←◆
+
+図1.1　sample photo
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['image'] = 'top'
     actual = compile_block("//image[sampleimg][sample photo]{\nfoo\n//}\n")
     expected = <<-EOS
 ◆→開始:図←◆
@@ -676,9 +953,9 @@ EOS
     actual = compile_block("//image[sampleimg][sample photo][scale=1.2]{\nfoo\n//}\n")
     expected = <<-EOS
 ◆→開始:図←◆
-図1.1　sample photo
-
 ◆→./images/chap1-sampleimg.png scale=1.2←◆
+
+図1.1　sample photo
 ◆→終了:図←◆
 
 EOS
@@ -716,18 +993,18 @@ EOB
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_equal ':1: error: unknown headline: n', e.message
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ":1: error: unknown #{name}: n", e.message
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end
@@ -827,6 +1104,20 @@ EOS
 ◆→開始:TeX式←◆
 式1.1　The Equivalence of Mass ▲and☆ Energy
 e=mc^2
+◆→終了:TeX式←◆
+
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+
+    expected = <<-EOS
+式1.1
+
+◆→開始:TeX式←◆
+e=mc^2
+式1.1　The Equivalence of Mass ▲and☆ Energy
 ◆→終了:TeX式←◆
 
 EOS

@@ -122,20 +122,13 @@ module ReVIEW
     end
 
     def execute(*args)
-      @config = ReVIEW::Configure.values
-      @config.maker = 'pdfmaker'
       cmd_config, yamlfile = parse_opts(args)
       error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      begin
-        loader = ReVIEW::YAMLLoader.new
-        @config.deep_merge!(loader.load_file(yamlfile))
-      rescue => e
-        error "yaml error #{e.message}"
-      end
+      @config = ReVIEW::Configure.create(maker: 'pdfmaker',
+                                         yamlfile: yamlfile,
+                                         config: cmd_config)
 
-      # YAML configs will be overridden by command line options.
-      @config.deep_merge!(cmd_config)
       I18n.setup(@config['language'])
       @basedir = File.absolute_path(File.dirname(yamlfile))
 
@@ -272,8 +265,7 @@ module ReVIEW
       begin
         @compile_errors = nil
 
-        book = ReVIEW::Book.load(@basedir)
-        book.config = @config
+        book = ReVIEW::Book::Base.new(@basedir, config: @config)
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
 
         @input_files = make_input_files(book)
@@ -311,23 +303,12 @@ module ReVIEW
       end
     end
 
-    # PDFMaker#copy_images should copy image files _AND_ execute extractbb (or ebb).
+    # PDFMaker#copy_images should copy image files
     #
     def copy_images(from, to)
       return unless File.exist?(from)
       Dir.mkdir(to)
       ReVIEW::MakerHelper.copy_images_to_dir(from, to)
-      Dir.chdir(to) do
-        images = Dir.glob('**/*').find_all { |f| File.file?(f) and f =~ /\.(jpg|jpeg|png|pdf|ai|eps|tif)\z/i }
-        break if images.empty?
-        if @config['pdfmaker']['bbox']
-          system_with_info('extractbb', '-B', @config['pdfmaker']['bbox'], *images)
-          system_or_raise('ebb', '-B', @config['pdfmaker']['bbox'], *images) unless system('extractbb', '-B', @config['pdfmaker']['bbox'], '-m', *images)
-        else
-          system_with_info('extractbb', *images)
-          system_or_raise('ebb', *images) unless system('extractbb', '-m', *images)
-        end
-      end
     end
 
     def make_custom_page(file)
@@ -385,11 +366,11 @@ module ReVIEW
           items.each_with_index do |item, rev|
             editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
             revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
-            if item =~ /\A\d+\-\d+\-\d+\Z/
+            if item =~ /\A\d+-\d+-\d+\Z/
               buf << ReVIEW::I18n.t('published_by1', [date_to_s(item), editstr + revstr])
-            elsif item =~ /\A(\d+\-\d+\-\d+)[\s　](.+)/
+            elsif item =~ /\A(\d+-\d+-\d+)[\s　](.+)/
               # custom date with string
-              item.match(/\A(\d+\-\d+\-\d+)[\s　](.+)/) { |m| buf << ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]]) }
+              item.match(/\A(\d+-\d+-\d+)[\s　](.+)/) { |m| buf << ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]]) }
             else
               # free format
               buf << item
@@ -455,15 +436,15 @@ module ReVIEW
       end
 
       @locale_latex = {}
-      part_tuple = I18n.get('part').split(/\%[A-Za-z]{1,3}/, 2)
-      chapter_tuple = I18n.get('chapter').split(/\%[A-Za-z]{1,3}/, 2)
-      appendix_tuple = I18n.get('appendix').split(/\%[A-Za-z]{1,3}/, 2)
-      @locale_latex['prepartname'] = part_tuple[0]
-      @locale_latex['postpartname'] = part_tuple[1]
-      @locale_latex['prechaptername'] = chapter_tuple[0]
-      @locale_latex['postchaptername'] = chapter_tuple[1]
-      @locale_latex['preappendixname'] = appendix_tuple[0]
-      @locale_latex['postappendixname'] = appendix_tuple[1]
+      part_tuple = I18n.get('part').split(/%[A-Za-z]{1,3}/, 2)
+      chapter_tuple = I18n.get('chapter').split(/%[A-Za-z]{1,3}/, 2)
+      appendix_tuple = I18n.get('appendix').split(/%[A-Za-z]{1,3}/, 2)
+      @locale_latex['prepartname'] = part_tuple[0].to_s
+      @locale_latex['postpartname'] = part_tuple[1].to_s
+      @locale_latex['prechaptername'] = chapter_tuple[0].to_s
+      @locale_latex['postchaptername'] = chapter_tuple[1].to_s
+      @locale_latex['preappendixname'] = appendix_tuple[0].to_s
+      @locale_latex['postappendixname'] = appendix_tuple[1].to_s
     end
 
     def erb_content(file)

@@ -13,13 +13,19 @@ module BookTestHelper
     Dir.mktmpdir do |tmpdir|
       Dir.chdir(tmpdir) do
         dir = '.'
-        files.each_pair do |basename, content|
-          path = File.join(dir, basename)
+        files.each_pair do |filename, content|
+          path = File.join(dir, filename)
+          FileUtils.mkdir_p(File.dirname(path))
           File.open(path, 'w') { |o| o.print content }
-          created_files[basename] = path
+          created_files[filename] = path
         end
-        book = Book::Base.load(dir)
-        book.config = ReVIEW::Configure.values
+        conf_path = File.expand_path('config.yml', dir)
+        if File.exist?(conf_path)
+          config = ReVIEW::Configure.create(yamlfile: conf_path)
+        else
+          config = ReVIEW::Configure.values
+        end
+        book = Book::Base.new(dir, config: config)
         yield(dir, book, created_files)
       end
     end

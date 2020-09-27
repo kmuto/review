@@ -7,15 +7,13 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 #
-require 'review/book/compilable'
+require 'review/book/book_unit'
 require 'review/lineinput'
 require 'review/preprocessor'
 
 module ReVIEW
   module Book
-    class Chapter
-      include Compilable
-
+    class Chapter < BookUnit
       attr_reader :number, :book
 
       def self.mkchap(book, name, number = nil)
@@ -53,35 +51,41 @@ module ReVIEW
           @content = File.read(@path, mode: 'rt:BOM|utf-8')
           @number = nil if %w[nonum nodisp notoc].include?(find_first_header_option)
         end
-        @list_index = nil
-        @table_index = nil
-        @equation_index = nil
-        @footnote_index = nil
-        @image_index = nil
-        @icon_index = nil
-        @numberless_image_index = nil
-        @indepimage_index = nil
-        @headline_index = nil
-        @column_index = nil
-        @volume = nil
+
+        super()
+      end
+
+      def generate_indexes
+        super
+
+        return unless content
+
+        @numberless_image_index = @indexes.numberless_image_index
+        @image_index = @indexes.image_index
+        @icon_index = @indexes.icon_index
+        @indepimage_index = @indexes.indepimage_index
       end
 
       def find_first_header_option
         f = LineInput.new(StringIO.new(@content))
-        while f.next?
-          case f.peek
-          when /\A=+[\[\s\{]/
-            m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(f.gets)
-            return m[2] # tag
-          when %r{/\A//[a-z]+/}
-            line = f.gets
-            if line.rstrip[-1, 1] == '{'
-              f.until_match(%r{\A//\}})
+        begin
+          while f.next?
+            case f.peek
+            when /\A=+[\[\s{]/
+              m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(f.gets)
+              return m[2] # tag
+            when %r{/\A//[a-z]+/}
+              line = f.gets
+              if line.rstrip[-1, 1] == '{'
+                f.until_match(%r{\A//\}})
+              end
             end
+            f.gets
           end
-          f.gets
+          nil
+        rescue ArgumentError => e
+          raise ReVIEW::CompileError, "#{@name}: #{e}"
         end
-        nil
       end
 
       def inspect

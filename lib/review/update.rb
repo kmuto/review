@@ -239,7 +239,7 @@ module ReVIEW
     def update_version
       @config_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if config['review_version'].to_f == TARGET_VERSION.to_f
+        if config['review_version'].to_f.round(1) == TARGET_VERSION.to_f.round(1)
           next
         end
 
@@ -513,11 +513,11 @@ module ReVIEW
     def update_tex_command
       @tex_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if !config['texcommand'] || config['texcommand'] !~ /\s+\-/
+        if !config['texcommand'] || config['texcommand'] !~ /\s+-/
           next
         end
         # option should be moved to texoptions
-        cmd, opts = config['texcommand'].split(/\s+\-/, 2)
+        cmd, opts = config['texcommand'].split(/\s+-/, 2)
         opts = "-#{opts}"
 
         unless confirm("%s: 'texcommand' has options ('%s'). Move it to 'texoptions'?", [File.basename(yml), opts])
@@ -537,12 +537,12 @@ module ReVIEW
     def update_dvi_command
       @tex_ymls.each do |yml|
         config = YAML.load_file(yml)
-        if !config['dvicommand'] || config['dvicommand'] !~ /\s+\-/
+        if !config['dvicommand'] || config['dvicommand'] !~ /\s+-/
           next
         end
 
         # option should be moved to dvioptions
-        cmd, opts = config['dvicommand'].split(/\s+\-/, 2)
+        cmd, opts = config['dvicommand'].split(/\s+-/, 2)
         opts = "-#{opts}"
 
         unless confirm("%s: 'dvicommand' has options ('%s'). Move it to 'dvioptions'?", [File.basename(yml), opts])

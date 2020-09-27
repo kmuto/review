@@ -159,12 +159,18 @@ module ReVIEW
     def list(lines, id, caption, lang = nil)
       blank
       begin
-        list_header(id, caption, lang)
+        if caption_top?('list')
+          list_header(id, caption, lang)
+          blank
+        end
+        list_body(id, lines, lang)
+        unless caption_top?('list')
+          blank
+          list_header(id, caption, lang)
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      blank
-      list_body(id, lines, lang)
       blank
     end
 
@@ -184,8 +190,13 @@ module ReVIEW
 
     def base_block(_type, lines, caption = nil)
       blank
-      puts compile_inline(caption) if caption.present?
+      if caption_top?('list') && caption.present?
+        puts compile_inline(caption)
+      end
       puts lines.join("\n")
+      if !caption_top?('list') && caption.present?
+        puts compile_inline(caption)
+      end
       blank
     end
 
@@ -202,9 +213,14 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, _lang = nil)
       blank
-      puts compile_inline(caption) if caption.present?
+      if caption_top?('list')
+        puts compile_inline(caption) if caption.present?
+      end
       lines.each_with_index do |line, i|
         puts((i + 1).to_s.rjust(2) + ": #{line}")
+      end
+      unless caption_top?('list')
+        puts compile_inline(caption) if caption.present?
       end
       blank
     end
@@ -212,12 +228,18 @@ module ReVIEW
     def listnum(lines, id, caption, lang = nil)
       blank
       begin
-        list_header(id, caption, lang)
+        if caption_top?('list')
+          list_header(id, caption, lang)
+          blank
+        end
+        listnum_body(lines, lang)
+        unless caption_top?('list')
+          blank
+          list_header(id, caption, lang)
+        end
       rescue KeyError
         error "no such list: #{id}"
       end
-      blank
-      listnum_body(lines, lang)
       blank
     end
 
@@ -247,8 +269,9 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = '')
       blank
-      texequation_header(id, caption)
+      texequation_header(id, caption) if caption_top?('equation')
       puts lines.join("\n")
+      texequation_header(id, caption) unless caption_top?('equation')
       blank
     end
 
@@ -270,6 +293,10 @@ module ReVIEW
     end
 
     def table_header(id, caption)
+      unless caption_top?('table')
+        blank
+      end
+
       if id.nil?
         puts compile_inline(caption)
       elsif get_chap
@@ -277,7 +304,10 @@ module ReVIEW
       else
         puts "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [@chapter.table(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
       end
-      blank
+
+      if caption_top?('table')
+        blank
+      end
     end
 
     def table_begin(_ncols)
@@ -490,18 +520,22 @@ module ReVIEW
     end
 
     def note(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('info', lines, caption)
     end
 
@@ -510,10 +544,12 @@ module ReVIEW
     end
 
     def best(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('best', lines, caption)
     end
 
     def important(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('important', lines, caption)
     end
 
@@ -522,6 +558,7 @@ module ReVIEW
     end
 
     def caution(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('caution', lines, caption)
     end
 
@@ -534,6 +571,7 @@ module ReVIEW
     end
 
     def notice(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('notice', lines, caption)
     end
 
@@ -562,10 +600,29 @@ module ReVIEW
     end
 
     def warning(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('warning', lines, caption)
     end
 
     alias_method :box, :insn
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          blank
+          if caption.present?
+            puts compile_inline(caption)
+          end
+        end
+
+        def #{name}_end
+          blank
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 14
+    end
 
     def indepimage(_lines, _id, caption = nil, _metric = nil)
       blank
@@ -602,7 +659,7 @@ module ReVIEW
       str
     end
 
-    def inline_chap(id)
+    def inline_chap(id) # rubocop:disable Lint/UselessMethodDefinition
       # "「第#{super}章　#{inline_title(id)}」"
       # "第#{super}章"
       super

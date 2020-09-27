@@ -14,8 +14,8 @@ require 'strscan'
 
 module ReVIEW
   class Compiler
-    def initialize(strategy)
-      @strategy = strategy
+    def initialize(builder)
+      @builder = builder
 
       ## commands which do not parse block lines in compiler
       @non_parsed_commands = %i[embed texequation graph]
@@ -24,10 +24,16 @@ module ReVIEW
       @command_name_stack = []
     end
 
-    attr_reader :strategy, :previous_list_type
+    attr_reader :previous_list_type
+    attr_reader :builder
+
+    def strategy
+      error 'Compiler#strategy is obsoleted. Use Compiler#builder.'
+      @builder
+    end
 
     def non_escaped_commands
-      if @strategy.highlight?
+      if @builder.highlight?
         %i[list emlist listnum emlistnum cmd]
       else
         []
@@ -37,7 +43,7 @@ module ReVIEW
     def compile(chap)
       @chapter = chap
       do_compile
-      @strategy.result
+      @builder.result
     end
 
     class SyntaxElement
@@ -68,12 +74,16 @@ module ReVIEW
         end
       end
 
+      def minicolumn?
+        @type == :minicolumn
+      end
+
       def block_required?
-        @type == :block
+        @type == :block or @type == :minicolumn
       end
 
       def block_allowed?
-        @type == :block or @type == :optional
+        @type == :block or @type == :optional or @type == :minicolumn
       end
     end
 
@@ -81,6 +91,10 @@ module ReVIEW
 
     def self.defblock(name, argc, optional = false, &block)
       defsyntax(name, (optional ? :optional : :block), argc, &block)
+    end
+
+    def self.defminicolumn(name, argc, _optional = false, &block)
+      defsyntax(name, :minicolumn, argc, &block)
     end
 
     def self.defsingle(name, argc, &block)
@@ -93,6 +107,16 @@ module ReVIEW
 
     def self.definline(name)
       INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
+    def self.minicolumn_names
+      buf = []
+      SYNTAX.each do |name, syntax|
+        if syntax.minicolumn?
+          buf << name.to_s
+        end
+      end
+      buf
     end
 
     def syntax_defined?(name)
@@ -143,17 +167,18 @@ module ReVIEW
     defblock :bpo, 0
     defblock :flushright, 0
     defblock :centering, 0
-    defblock :note, 0..1
-    defblock :memo, 0..1
-    defblock :info, 0..1
-    defblock :important, 0..1
-    defblock :caution, 0..1
-    defblock :notice, 0..1
-    defblock :warning, 0..1
-    defblock :tip, 0..1
     defblock :box, 0..1
     defblock :comment, 0..1, true
     defblock :embed, 0..1
+
+    defminicolumn :note, 0..1
+    defminicolumn :memo, 0..1
+    defminicolumn :tip, 0..1
+    defminicolumn :info, 0..1
+    defminicolumn :warning, 0..1
+    defminicolumn :important, 0..1
+    defminicolumn :caution, 0..1
+    defminicolumn :notice, 0..1
 
     defsingle :footnote, 2
     defsingle :noindent, 0
@@ -233,45 +258,62 @@ module ReVIEW
 
     def do_compile
       f = LineInput.new(StringIO.new(@chapter.content))
-      @strategy.bind(self, @chapter, Location.new(@chapter.basename, f))
+      @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
+
+      ## in minicolumn, such as note/info/alert...
+      @minicolumn_name = nil
 
       tagged_section_init
       while f.next?
         case f.peek
         when /\A\#@/
           f.gets # Nothing to do
-        when /\A=+[\[\s\{]/
+        when /\A=+[\[\s{]/
           compile_headline(f.gets)
-          @strategy.previous_list_type = nil
+          @builder.previous_list_type = nil
         when /\A\s+\*/
           compile_ulist(f)
-          @strategy.previous_list_type = 'ul'
+          @builder.previous_list_type = 'ul'
         when /\A\s+\d+\./
           compile_olist(f)
-          @strategy.previous_list_type = 'ol'
+          @builder.previous_list_type = 'ol'
         when /\A\s+:\s/
           compile_dlist(f)
-          @strategy.previous_list_type = 'dl'
+          @builder.previous_list_type = 'dl'
         when /\A\s*:\s/
           warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
-          @strategy.previous_list_type = 'dl'
+          @builder.previous_list_type = 'dl'
         when %r{\A//\}}
-          f.gets
-          error 'block end seen but not opened'
-        when %r{\A//[a-z]+}
-          # @command_name_stack.push(name) ## <- move into read_command() to use name
-          name, args, lines = read_command(f)
-          syntax = syntax_descriptor(name)
-          unless syntax
-            error "unknown command: //#{name}"
-            compile_unknown_command(args, lines)
-            @command_name_stack.pop
-            next
+          if in_minicolumn?
+            _line = f.gets
+            compile_minicolumn_end
+          else
+            f.gets
+            error 'block end seen but not opened'
           end
-          compile_command(syntax, args, lines)
-          @command_name_stack.pop
-          @strategy.previous_list_type = nil
+        when %r{\A//[a-z]+}
+          line = f.peek
+          matched = line =~ %r|\A//([a-z]+)(:?\[.*\])?{\s*$|
+          if matched && minicolumn_block_name?($1)
+            line = f.gets
+            name = $1
+            args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
+            compile_minicolumn_begin(name, *args)
+          else
+            # @command_name_stack.push(name) ## <- move into read_command() to use name
+            name, args, lines = read_command(f)
+            syntax = syntax_descriptor(name)
+            unless syntax
+              error "unknown command: //#{name}"
+              compile_unknown_command(args, lines)
+              @command_name_stack.pop
+              next
+            end
+            compile_command(syntax, args, lines)
+            @command_name_stack.pop
+          end
+          @builder.previous_list_type = nil
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -279,17 +321,44 @@ module ReVIEW
             warn 'skipping block...'
             read_block(f, false)
           end
-          @strategy.previous_list_type = nil
+          @builder.previous_list_type = nil
         else
           if f.peek.strip.empty?
             f.gets
             next
           end
           compile_paragraph(f)
-          @strategy.previous_list_type = nil
+          @builder.previous_list_type = nil
         end
       end
       close_all_tagged_section
+    end
+
+    def compile_minicolumn_begin(name, caption = nil)
+      mid = "#{name}_begin"
+      unless @builder.respond_to?(mid)
+        error "strategy does not support minicolumn: #{name}"
+      end
+
+      if @minicolumn_name
+        error "minicolumn cannot be nested: #{name}"
+        return
+      end
+      @minicolumn_name = name
+
+      @builder.__send__(mid, caption)
+    end
+
+    def compile_minicolumn_end
+      unless @minicolumn_name
+        error "minicolumn is not used: #{name}"
+        return
+      end
+      name = @minicolumn_name
+
+      mid = "#{name}_end"
+      @builder.__send__(mid)
+      @minicolumn_name = nil
     end
 
     def compile_headline(line)
@@ -327,18 +396,18 @@ module ReVIEW
         end
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-        @strategy.headline(level, label, caption)
+        @builder.headline(level, label, caption)
       end
     end
 
     def close_current_tagged_section(level)
-      while @tagged_section.last and @tagged_section.last[1] >= level
+      while @tagged_section.last && (@tagged_section.last[1] >= level)
         close_tagged_section(* @tagged_section.pop)
       end
     end
 
     def headline(level, label, caption)
-      @strategy.headline(level, label, caption)
+      @builder.headline(level, label, caption)
     end
 
     def tagged_section_init
@@ -347,21 +416,21 @@ module ReVIEW
 
     def open_tagged_section(tag, level, label, caption)
       mid = "#{tag}_begin"
-      unless @strategy.respond_to?(mid)
-        error "strategy does not support tagged section: #{tag}"
+      unless @builder.respond_to?(mid)
+        error "builder does not support tagged section: #{tag}"
         headline(level, label, caption)
         return
       end
       @tagged_section.push([tag, level])
-      @strategy.__send__(mid, level, label, caption)
+      @builder.__send__(mid, level, label, caption)
     end
 
     def close_tagged_section(tag, level)
       mid = "#{tag}_end"
-      if @strategy.respond_to?(mid)
-        @strategy.__send__(mid, level)
+      if @builder.respond_to?(mid)
+        @builder.__send__(mid, level)
       else
-        error "strategy does not support block op: #{mid}"
+        error "builder does not support block op: #{mid}"
       end
     end
 
@@ -384,38 +453,38 @@ module ReVIEW
         line =~ /\A\s+(\*+)/
         current_level = $1.size
         if level == current_level
-          @strategy.ul_item_end
+          @builder.ul_item_end
           # body
-          @strategy.ul_item_begin(buf)
+          @builder.ul_item_begin(buf)
         elsif level < current_level # down
           level_diff = current_level - level
           if level_diff != 1
             error 'too many *.'
           end
           level = current_level
-          @strategy.ul_begin { level }
-          @strategy.ul_item_begin(buf)
+          @builder.ul_begin { level }
+          @builder.ul_item_begin(buf)
         elsif level > current_level # up
           level_diff = level - current_level
           level = current_level
           (1..level_diff).to_a.reverse_each do |i|
-            @strategy.ul_item_end
-            @strategy.ul_end { level + i }
+            @builder.ul_item_end
+            @builder.ul_end { level + i }
           end
-          @strategy.ul_item_end
+          @builder.ul_item_end
           # body
-          @strategy.ul_item_begin(buf)
+          @builder.ul_item_begin(buf)
         end
       end
 
       (1..level).to_a.reverse_each do |i|
-        @strategy.ul_item_end
-        @strategy.ul_end { i }
+        @builder.ul_item_end
+        @builder.ul_end { i }
       end
     end
 
     def compile_olist(f)
-      @strategy.ol_begin
+      @builder.ol_begin
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
         next if line =~ /\A\#@/
 
@@ -424,24 +493,24 @@ module ReVIEW
         f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
           buf.push(text(cont.strip))
         end
-        @strategy.ol_item(buf, num)
+        @builder.ol_item(buf, num)
       end
-      @strategy.ol_end
+      @builder.ol_end
     end
 
     def compile_dlist(f)
-      @strategy.dl_begin
+      @builder.dl_begin
       while /\A\s*:/ =~ f.peek
         # defer compile_inline to handle footnotes
-        @strategy.doc_status[:dt] = true
-        @strategy.dt(text(f.gets.sub(/\A\s*:/, '').strip))
-        @strategy.doc_status[:dt] = nil
+        @builder.doc_status[:dt] = true
+        @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
+        @builder.doc_status[:dt] = nil
         desc = f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) }
-        @strategy.dd(desc)
+        @builder.dd(desc)
         f.skip_blank_lines
         f.skip_comment_lines
       end
-      @strategy.dl_end
+      @builder.dl_end
     end
 
     def compile_paragraph(f)
@@ -450,7 +519,7 @@ module ReVIEW
         break if line.strip.empty?
         buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
       end
-      @strategy.paragraph(buf)
+      @builder.paragraph(buf)
     end
 
     def read_command(f)
@@ -459,9 +528,9 @@ module ReVIEW
       ignore_inline = @non_parsed_commands.include?(name)
       @command_name_stack.push(name)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
-      @strategy.doc_status[name] = true
+      @builder.doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
-      @strategy.doc_status[name] = nil
+      @builder.doc_status[name] = nil
       [name, args, lines]
     end
 
@@ -506,8 +575,8 @@ module ReVIEW
     end
 
     def compile_command(syntax, args, lines)
-      unless @strategy.respond_to?(syntax.name)
-        error "strategy does not support command: //#{syntax.name}"
+      unless @builder.respond_to?(syntax.name)
+        error "builder does not support command: //#{syntax.name}"
         compile_unknown_command(args, lines)
         return
       end
@@ -528,11 +597,11 @@ module ReVIEW
     end
 
     def compile_unknown_command(args, lines)
-      @strategy.unknown_command(args, lines)
+      @builder.unknown_command(args, lines)
     end
 
     def compile_block(syntax, args, lines)
-      @strategy.__send__(syntax.name, (lines || default_block(syntax)), *args)
+      @builder.__send__(syntax.name, (lines || default_block(syntax)), *args)
     end
 
     def default_block(syntax)
@@ -543,7 +612,7 @@ module ReVIEW
     end
 
     def compile_single(syntax, args)
-      @strategy.__send__(syntax.name, *args)
+      @builder.__send__(syntax.name, *args)
     end
 
     def replace_fence(str)
@@ -569,7 +638,7 @@ module ReVIEW
 
     def text(str, block_mode = false)
       return '' if str.empty?
-      words = replace_fence(str).split(/(@<\w+>\{(?:[^\}\\]|\\.)*?\})/, -1)
+      words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
       words.each do |w|
         if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
           error "`@<xxx>' seen but is not valid inline op: #{w}"
@@ -580,7 +649,7 @@ module ReVIEW
         if in_non_escaped_command? && block_mode
           result << revert_replace_fence(words.shift)
         else
-          result << @strategy.nofunc_text(revert_replace_fence(words.shift))
+          result << @builder.nofunc_text(revert_replace_fence(words.shift))
         end
         break if words.empty?
         result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
@@ -589,28 +658,36 @@ module ReVIEW
     rescue => e
       error e.message
     end
-    public :text # called from strategy
+    public :text # called from builder
 
     def compile_inline(str)
       op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
       unless inline_defined?(op)
         raise CompileError, "no such inline op: #{op}"
       end
-      unless @strategy.respond_to?("inline_#{op}")
-        raise "strategy does not support inline op: @<#{op}>"
+      unless @builder.respond_to?("inline_#{op}")
+        raise "builder does not support inline op: @<#{op}>"
       end
-      @strategy.__send__("inline_#{op}", arg)
+      @builder.__send__("inline_#{op}", arg)
     rescue => e
       error e.message
-      @strategy.nofunc_text(str)
+      @builder.nofunc_text(str)
+    end
+
+    def in_minicolumn?
+      @builder.in_minicolumn?
+    end
+
+    def minicolumn_block_name?(name)
+      @builder.minicolumn_block_name?(name)
     end
 
     def warn(msg)
-      @strategy.warn msg
+      @builder.warn msg
     end
 
     def error(msg)
-      @strategy.error msg
+      @builder.error msg
     end
   end
 end # module ReVIEW

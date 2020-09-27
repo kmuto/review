@@ -53,7 +53,7 @@ ARGF.each do |line|
     end
   elsif block == 'table'
     next if line.start_with?('#@')
-    if line !~ /\A\-\-\-\-\-/
+    if line !~ /\A-----/
       # table
       colcount = line.split("\t").size
       if maxcolcount == 0

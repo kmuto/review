@@ -41,10 +41,6 @@ module ReVIEW
       ".#{@book.config['htmlext']}"
     end
 
-    def builder_init
-    end
-    private :builder_init
-
     def builder_init_file
       @noindent = nil
       @ol_num = nil
@@ -242,6 +238,7 @@ module ReVIEW
     end
 
     def captionblock(type, lines, caption)
+      check_nested_minicolumn
       puts %Q(<div class="#{type}">)
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
@@ -300,20 +297,48 @@ module ReVIEW
     end
 
     def box(lines, caption = nil)
-      puts %Q(<div class="syntax">)
+      captionstr = nil
       if caption.present?
-        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+        captionstr = %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
+      puts %Q(<div class="syntax">)
+
+      if caption_top?('list') && caption.present?
+        puts captionstr
+      end
+
       print %Q(<pre class="syntax">)
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
+
+      if !caption_top?('list') && caption.present?
+        puts captionstr
+      end
       puts '</div>'
     end
 
     def note(lines, caption = nil)
       captionblock('note', lines, caption)
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          puts %Q(<div class="#{name}">)
+          if caption.present?
+            puts %Q(<p class="caption">\#{compile_inline(caption)}</p>)
+          end
+        end
+
+        def #{name}_end
+          puts '</div>'
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 14
     end
 
     def ul_begin
@@ -458,7 +483,7 @@ module ReVIEW
 
     def emlist(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlist-code">)
-      if caption.present?
+      if caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
       class_names = ['emlist']
@@ -469,12 +494,15 @@ module ReVIEW
       lexer = lang
       puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
+      if !caption_top?('list') && caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
       puts '</div>'
     end
 
     def emlistnum(lines, caption = nil, lang = nil)
       puts %Q(<div class="emlistnum-code">)
-      if caption.present?
+      if caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
 
@@ -496,19 +524,29 @@ module ReVIEW
         puts '</pre>'
       end
 
+      if !caption_top?('list') && caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
+
       puts '</div>'
     end
 
     def cmd(lines, caption = nil)
       puts %Q(<div class="cmd-code">)
-      if caption.present?
+      if caption_top?('list') && caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
       end
+
       print %Q(<pre class="cmd">)
       body = lines.inject('') { |i, j| i + detab(j) + "\n" }
       lexer = 'shell-session'
       puts highlight(body: body, lexer: lexer, format: 'html')
       puts '</pre>'
+
+      if !caption_top?('list') && caption.present?
+        puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
+      end
+
       puts '</div>'
     end
 
@@ -544,12 +582,13 @@ module ReVIEW
     def texequation(lines, id = nil, caption = '')
       if id
         puts %Q(<div id="#{normalize_id(id)}" class="caption-equation">)
-        texequation_header(id, caption)
+        texequation_header(id, caption) if caption_top?('equation')
       end
 
       texequation_body(lines)
 
       if id
+        texequation_header(id, caption) unless caption_top?('equation')
         puts '</div>'
       end
     end
@@ -617,20 +656,22 @@ module ReVIEW
     def image_image(id, caption, metric)
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      image_header(id, caption) if caption_top?('image')
       puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      image_header(id, caption)
+      image_header(id, caption) unless caption_top?('image')
       puts '</div>'
     end
 
     def image_dummy(id, caption, lines)
       warn "image not bound: #{id}"
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      image_header(id, caption) if caption_top?('image')
       puts %Q(<pre class="dummyimage">)
       lines.each do |line|
         puts detab(line)
       end
       puts '</pre>'
-      image_header(id, caption)
+      image_header(id, caption) unless caption_top?('image')
       puts '</div>'
     end
 
@@ -693,14 +734,18 @@ module ReVIEW
 
       puts %Q(<div id="#{normalize_id(id)}" class="imgtable image">)
       begin
-        if caption.present?
+        if caption_top?('table') && caption.present?
+          table_header(id, caption)
+        end
+
+        imgtable_image(id, caption, metric)
+
+        if !caption_top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-
-      imgtable_image(id, caption, metric)
 
       puts '</div>'
     end
@@ -738,7 +783,19 @@ module ReVIEW
     def indepimage(lines, id, caption = '', metric = nil)
       metrics = parse_metric('html', metric)
       caption = '' unless caption.present?
+      caption_str = nil
+      if caption.present?
+        caption_str = <<-EOS
+<p class="caption">
+#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}
+</p>
+EOS
+      end
+
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
+      if caption_top?('image') && caption.present?
+        puts caption_str
+      end
       begin
         puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
       rescue
@@ -752,10 +809,8 @@ module ReVIEW
         end
       end
 
-      if caption.present?
-        puts %Q(<p class="caption">)
-        puts %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)})
-        puts '</p>'
+      if !caption_top?('image') && caption.present?
+        puts caption_str
       end
       puts '</div>'
     end
@@ -992,7 +1047,7 @@ module ReVIEW
 
     def inline_column_chap(chapter, id)
       if @book.config['chapterlink']
-        %Q(<a href="\##{column_label(id, chapter)}" class="columnref">#{I18n.t('column', compile_inline(chapter.column(id).caption))}</a>)
+        %Q(<a href="#{chapter.id}#{extname}##{column_label(id, chapter)}" class="columnref">#{I18n.t('column', compile_inline(chapter.column(id).caption))}</a>)
       else
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end
@@ -1154,7 +1209,7 @@ module ReVIEW
       %Q(<span class="balloon">#{escape_html(str)}</span>)
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 

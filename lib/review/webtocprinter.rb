@@ -24,6 +24,10 @@ EOT
 
       path = ''
       result_array.each do |result|
+        unless result[:headline]
+          result[:headline] = '-'
+        end
+
         if result[:name]
           path = "#{result[:name]}.#{@book.config['htmlext']}"
           next

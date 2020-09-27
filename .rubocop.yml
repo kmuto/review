@@ -3,12 +3,12 @@ AllCops:
     - lib/lineinput.rb
     - lib/uuid.rb
     - test/syntax-book/*
+    - tmp/*
   DisplayCopNames: true
+  NewCops: enable
 
 require:
   - rubocop-performance
-
-inherit_from: .rubocop_todo.yml
 
 #### Lint
 
@@ -25,9 +25,6 @@ Lint/AssignmentInCondition:
 Lint/ParenthesesAsGroupedExpression:
   Enabled: true
 
-#Lint/RescueWithoutErrorClass:
-#  Enabled: false
-
 Lint/UnderscorePrefixedVariableName:
   Enabled: true
 
@@ -42,6 +39,18 @@ Lint/UselessAssignment:
 
 Lint/ErbNewArguments:
   Enabled: false
+
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
+
+Lint/RaiseException:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
 
 #### Performance
 
@@ -58,6 +67,39 @@ Performance/StringReplacement:
 Performance/RangeInclude:
   Enabled: true
 
+Performance/DeletePrefix:
+  Enabled: false
+
+Performance/RedundantMerge:
+  Enabled: true
+
+Performance/AncestorsInclude:
+  Enabled: true
+
+Performance/BigDecimalWithNumericArgument:
+  Enabled: true
+
+Performance/RedundantSortBlock:
+  Enabled: true
+
+Performance/RedundantStringChars:
+  Enabled: true
+
+Performance/ReverseFirst:
+  Enabled: true
+
+Performance/SortReverse:
+  Enabled: true
+
+Performance/Squeeze:
+  Enabled: true
+
+Performance/StringInclude:
+  Enabled: false
+
+Performance/CollectionLiteralInLoop:
+  Enabled: false
+
 #### Style
 
 Style/AccessModifierDeclarations:
@@ -72,7 +114,7 @@ Style/Alias:
   Enabled: true
 
 Style/AndOr:
-  Enabled: false
+  Enabled: true
 
 Style/BarePercentLiterals:
   EnforcedStyle: percent_q
@@ -80,9 +122,6 @@ Style/BarePercentLiterals:
 
 Style/BlockDelimiters:
   Enabled: true
-
-Style/BracesAroundHashParameters:
-  Enabled: false
 
 Style/CaseEquality:
   Enabled: false
@@ -120,7 +159,7 @@ Style/EmptyElse:
   Enabled: true
 
 Style/EvalWithLocation:
-  Enabled: false
+  Enabled: true
 
 Style/FormatString:
   EnforcedStyle: sprintf
@@ -141,13 +180,10 @@ Style/IfUnlessModifier:
 Style/MutableConstant:
   Enabled: false
 
-#Style/MultipleComparison:
-#  Enabled: true
-
-Style/RedundantInterpolation:
+Style/MultipleComparison:
   Enabled: true
 
-Performance/RedundantMerge:
+Style/RedundantInterpolation:
   Enabled: true
 
 Style/ZeroLengthPredicate:
@@ -216,6 +252,9 @@ Style/MethodCallWithArgsParentheses:
     - 'source'
     - 'assert'
     - 'assert_equal'
+    - 'assert_raise'
+    - 'assert_raises'
+    - 'assert_nothing_raised'
     - 'sh'
     - 'mv'
     - 'rm_rf'
@@ -310,8 +349,50 @@ Style/RedundantPercentQ:
 Style/WhileUntilModifier:
   Enabled: false
 
-#Style/YodaCondition:
-#  Enabled: true
+Style/YodaCondition:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/SlicingWithRange:
+  Enabled: false
+
+Style/AccessorGrouping:
+  Enabled: false
+
+Style/CaseLikeIf:
+  Enabled: false
+
+Style/StringConcatenation:
+  Enabled: false
+
+Style/OptionalBooleanParameter:
+  Enabled: false
+
+Style/SoleNestedConditional:
+  Enabled: false
+
+Style/CombinableLoops:
+  Enabled: false
 
 ### Layout
 
@@ -422,6 +503,17 @@ Layout/TrailingWhitespace:
   Enabled: true
   AllowInHeredoc: true
 
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Layout/LineLength:
+  Max: 256
+  Exclude:
+    - "test/**/*"
+
 #### Metrics
 
 Metrics/BlockNesting:
@@ -440,11 +532,6 @@ Metrics/ClassLength:
   Max: 1500
   Exclude:
     - 'test/*.rb'
-
-Metrics/LineLength:
-  Max: 256
-  Exclude:
-    - "test/**/*"
 
 ### should be < 50
 Metrics/MethodLength:
@@ -480,8 +567,8 @@ Naming/AccessorMethodName:
   Enabled: true
 
 # When defining the == operator, name its argument other.
-#Style/BinaryOperatorParameterName:
-#  Enabled: true
+Naming/BinaryOperatorParameterName:
+  Enabled: true
 
 Naming/FileName:
   Enabled: false
@@ -510,3 +597,8 @@ Naming/VariableNumber:
 
 Security/YAMLLoad:
   Enabled: true
+
+#### Gemspec
+
+Gemspec/RequiredRubyVersion:
+  Enabled: false

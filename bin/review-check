@@ -31,9 +31,7 @@ end
 
 def main
   @config = ReVIEW::Configure.values
-  @book = ReVIEW::Book::Base.load
-  @book.config = @config
-
+  @book = ReVIEW::Book::Base.new(config: @config)
   @logger = ReVIEW.logger
 
   modes = nil
@@ -87,7 +85,7 @@ def check_text(files)
         s = para.join
         m = re.match(s)
         next if m.nil? || m[0] == @review_utils_word_ok
-        next if neg and neg =~ s
+        next if neg && neg =~ s
         str, offset = find_line(para, re)
         out = sprintf("%s:%d: %s\n", path, lineno + offset, str)
         print out

@@ -18,7 +18,7 @@ module ReVIEW
         'bookname' => 'book', # it defines epub file name also
         'booktitle' => 'Re:VIEW Sample Book',
         'title' => nil,
-        'aut' => ['anonymous'], # author
+        'aut' => nil, # author
         'prt' => nil, # printer(publisher)
         'asn' => nil, # associated name
         'ant' => nil, # bibliographic antecedent
@@ -64,6 +64,7 @@ module ReVIEW
         'bib_file' => 'bib.re',
         'words_file' => nil,
         'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
+        'chapterlink' => true,
         'externallink' => true,
         'join_lines_by_lang' => nil, # experimental. default should be nil
         'table_row_separator' => 'tabs',
@@ -106,9 +107,35 @@ module ReVIEW
           'lineheight' => 10 * 1.2,
           'pdfcrop_pixelize_cmd' => 'pdftocairo -%t -r 90 -f %p -l %p -singlefile %i %O',
           'dvipng_cmd' => 'dvipng -T tight -z 9 -p %p -l %p -o %o %i'
+        },
+        'caption_position' => {
+          'list' => 'top',
+          'image' => 'bottom',
+          'table' => 'top',
+          'equation' => 'top'
         }
       ]
       conf.maker = nil
+      conf
+    end
+
+    def self.create(maker: nil, yamlfile: nil, config: nil)
+      conf = self.values
+      conf.maker = maker
+
+      if yamlfile
+        begin
+          loader = ReVIEW::YAMLLoader.new
+          conf.deep_merge!(loader.load_file(yamlfile))
+        rescue => e
+          error "yaml error #{e.message}"
+        end
+      end
+      # YAML configs will be overridden by command line options.
+      if config
+        conf.deep_merge!(config)
+      end
+
       conf
     end
 

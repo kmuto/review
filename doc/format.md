@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 4.2.
+This document explains about the format of Re:VIEW 5.0.
 
 ## Paragraph
 
@@ -529,6 +529,19 @@ Some block commands are used for short column.
 
 The content is like paragraph; separated by empty lines.
 
+From Re:VIEW 5.0, it is also possible to include itemize, figures and tables in short columns.
+
+```
+//note{
+
+With ordered itemize.
+
+ 1. item1
+ 2. item2
+
+//}
+```
+
 ## Footnotes
 
 You can use `//footnote` to write footnotes.
@@ -621,7 +634,7 @@ Usage:
 If you'd like to assign a number like 'Equation 1.1`, specify the identifier and caption.
 
 ```
-//texequationl[emc][The Equivalence of Mass and Energy]{
+//texequation[emc][The Equivalence of Mass and Energy]{
 \sum_{i=1}^nf_n(x)
 //}
 ```

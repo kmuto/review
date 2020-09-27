@@ -229,6 +229,10 @@ EOS
 
     @config['secnolevel'] = 3
     actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test \reviewsecref{「1.1.1 te\\textunderscore{}st」}{sec:1-1-1} test2', actual
+
+    @config['chapterlink'] = nil
+    actual = compile_inline('test @<hd>{chap1|test} test2')
     assert_equal 'test 「1.1.1 te\\textunderscore{}st」 test2', actual
   end
 
@@ -662,9 +666,11 @@ EOS
     expected = <<-EOS
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{this is \\textbf{test}\\textless{}\\&\\textgreater{}\\textunderscore{}}
+
 test1
 
 test\\textit{2}
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1285,13 +1291,17 @@ EOS
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1299,13 +1309,17 @@ EOS
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1313,13 +1327,17 @@ EOS
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1327,13 +1345,17 @@ EOS
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1341,13 +1363,17 @@ EOS
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1355,13 +1381,17 @@ EOS
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1369,13 +1399,17 @@ EOS
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1383,13 +1417,17 @@ EOS
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewminicolumn}
+
 A
 
 B
+
 \\end{reviewminicolumn}
 \\begin{reviewminicolumn}
 \\reviewminicolumntitle{caption}
+
 A
+
 \\end{reviewminicolumn}
 EOS
     assert_equal expected, actual
@@ -1506,18 +1544,18 @@ EOS
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_equal ':1: error: unknown headline: n', e.message
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ":1: error: unknown #{name}: n", e.message
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end

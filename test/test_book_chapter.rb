@@ -2,6 +2,10 @@ require 'book_test_helper'
 class ChapterTest < Test::Unit::TestCase
   include BookTestHelper
 
+  def setup
+    I18n.setup
+  end
+
   def test_initialize
     ch = Book::Chapter.new(:book, :number, :name, '/foo/bar', :io)
     assert_equal :book, ch.book
@@ -66,6 +70,7 @@ class ChapterTest < Test::Unit::TestCase
 
     book = Book::Base.new
     ch = Book::Chapter.new(book, nil, nil, tf.path)
+    ch.generate_indexes
     assert_equal lines, ch.lines
 
     lines = ["1\n", "2\n", '3']
@@ -78,6 +83,7 @@ class ChapterTest < Test::Unit::TestCase
     tf2.close
 
     ch = Book::Chapter.new(book, nil, nil, tf1.path, tf2.path)
+    ch.generate_indexes
     assert_equal lines, ch.lines # XXX: OK?
   end
 
@@ -103,19 +109,19 @@ class ChapterTest < Test::Unit::TestCase
   end
 
   def test_on_chaps?
-    mktmpbookdir 'CHAPS' => "chapter1.re\nchapter2.re",
-                 'chapter1.re' => '12345', 'preface.re' => 'abcde' do |dir, book, files|
+    mktmpbookdir('CHAPS' => "chapter1.re\nchapter2.re",
+                 'chapter1.re' => '12345', 'preface.re' => 'abcde') do |dir, book, files|
       ch1 = Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
       pre = Book::Chapter.new(book, nil, 'preface', files['preface.re'])
 
       assert ch1.on_chaps?
       assert !pre.on_chaps?
 
-      ch2_path = File.join(dir, 'chapter2.er')
+      ch2_path = File.join(dir, 'chapter2.re')
       File.open(ch2_path, 'w') {}
       ch2 = Book::Chapter.new(book, 2, 'chapter2', ch2_path)
 
-      ch3_path = File.join(dir, 'chapter3.er')
+      ch3_path = File.join(dir, 'chapter3.re')
       File.open(ch3_path, 'w') {}
       ch3 = Book::Chapter.new(book, 3, 'chapter3', ch3_path)
 
@@ -124,50 +130,70 @@ class ChapterTest < Test::Unit::TestCase
     end
   end
 
+  def test_invalid_encoding
+    mktmpbookdir('CHAPS' => 'chapter1.re',
+                 'chapter1.re' => "= 日本語UTF-8\n") do |_dir, book, files|
+      assert Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re'])
+    end
+
+    # UTF-16LE UTF-16BE UTF-32LE UTF-32BE cause error on Windows
+    %w[CP932 SHIFT_JIS EUC-JP].each do |enc|
+      mktmpbookdir('CHAPS' => 'chapter1.re',
+                   'chapter1.re' => "= 日本語UTF-8\n".encode(enc)) do |_dir, book, files|
+        e = assert_raises(ReVIEW::CompileError) { Book::Chapter.new(book, 1, 'chapter1', files['chapter1.re']) }
+        assert_equal 'chapter1: invalid byte sequence in UTF-8', e.message
+      end
+    end
+  end
+
   def test_list_index
     do_test_index(<<E, Book::ListIndex, :list_index, :list)
-//list
-//listnum [abc]
-//list [def]
-//table [def]
-//table [others]
+//listnum[abc][abc-listnum]{
+//}
+//list[def][def-list]{
+//}
+//table[def]{
+//}
+//table[others]{
+//}
 E
   end
 
   def test_table_index
     do_test_index(<<E, Book::TableIndex, :table_index, :table)
-//table
-//table [abc]
-//table [def]
-//list [def]
-//list [others]
+//table[abc]{
+//}
+//table[def]{
+//}
+//list[def][def-list]{
+//}
+//list[others][other-list]{
+//}
 E
   end
 
   def test_footnote_index
     content = <<E
-//footnote
-//footnote [abc][text...]
-//footnote [def][text...]
-//footnote [xyz]
-//list [def]
-//list [others]
+//footnote[abc][textabc...]
+//footnote[def][textdef...]
+//footnote[xyz][textxyz...]
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
     do_test_index(content, Book::FootnoteIndex, :footnote_index, :footnote) do |ch|
       assert_raises ReVIEW::KeyError do
-        ch.footnote('xyz')
+        ch.footnote('xyz2')
       end
     end
   end
 
   def test_bibpaper
     do_test_index(<<E, Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib.re')
-//bibpaper
-//bibpaper [abc][text...]
-//bibpaper [def][text...]
-//bibpaper [xyz]
-//list [def]
-//list [others]
+//bibpaper[abc][text...]
+//bibpaper[def][text...]
+//bibpaper[xyz][text...]
 E
     assert_raises FileNotFound do
       do_test_index('', Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib')
@@ -176,11 +202,12 @@ E
 
   def test_headline_index
     do_test_index(<<E, Book::HeadlineIndex, :headline_index, :headline, propagate: false)
-==
+== x
 == abc
 == def
 === def
-//table others
+//table[others]{
+//}
 E
   end
 
@@ -204,35 +231,47 @@ E
 
   def test_image
     do_test_index(<<E, Book::ImageIndex, :image_index, :image)
-//image
-//image [abc]
-//image [def]
-//list [def]
-//list [others]
+//image[abc][abc-image]{
+//}
+//image[def][abc-image]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
 
     do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, propagate: false)
-//numberlessimage
-//numberlessimage [abc]
-//numberlessimage [def]
-//list [def]
-//list [others]
+//numberlessimage[abc]{
+//}
+//numberlessimage[def]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
 
     do_test_index(<<E, Book::ImageIndex, :image_index, :image)
-//image
-//numberlessimage [abc]
-//image [def]
-//list [def]
-//list [others]
+//numberlessimage[abc]{
+//}
+//image[def][def-image]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
 
     do_test_index(<<E, Book::NumberlessImageIndex, :numberless_image_index, :image, propagate: false)
-//image
-//numberlessimage [abc]
-//image [def]
-//list [def]
-//list [others]
+//numberlessimage[abc]{
+//}
+//image[def][def-image]{
+//}
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
 E
   end
 
@@ -240,13 +279,15 @@ E
     Dir.mktmpdir do |dir|
       path = File.join(dir, opts[:filename] || 'chapter.re')
 
-      book = Book::Base.new(dir)
-
       File.open(path, 'w') do |o|
         o.print content
       end
-      ch = Book::Chapter.new(book, 1, 'chapter', path)
 
+      book = Book::Base.new(dir)
+
+      ch = Book::Chapter.new(book, 1, 'chapter', path)
+      book.generate_indexes
+      ch.generate_indexes
       assert ch.__send__(ref_method, 'abc')
       assert ch.__send__(ref_method, 'def')
       assert_raises ReVIEW::KeyError do

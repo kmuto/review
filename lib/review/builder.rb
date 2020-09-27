@@ -11,7 +11,6 @@ require 'review/textutils'
 require 'review/compiler'
 require 'review/sec_counter'
 require 'stringio'
-require 'cgi'
 require 'fileutils'
 require 'tempfile'
 require 'csv'
@@ -20,7 +19,7 @@ module ReVIEW
   class Builder
     include TextUtils
 
-    CAPTION_TITLES = %w[note memo tip info warning important caution notice].freeze
+    CAPTION_TITLES = Compiler.minicolumn_names
 
     def pre_paragraph
       nil
@@ -32,19 +31,14 @@ module ReVIEW
 
     attr_accessor :doc_status, :previous_list_type
 
-    def initialize(strict = false, *args)
+    def initialize(strict = false, *_args)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
       @previous_list_type = nil
-      builder_init(*args)
     end
-
-    def builder_init(*args)
-    end
-    private :builder_init
 
     def bind(compiler, chapter, location)
       @compiler = compiler
@@ -53,6 +47,10 @@ module ReVIEW
       @output = StringIO.new
       if @chapter.present?
         @book = @chapter.book
+      end
+      @chapter.generate_indexes
+      if @book
+        @book.generate_indexes
       end
       @tabwidth = nil
       @tsize = nil
@@ -85,6 +83,7 @@ module ReVIEW
 
     def builder_init_file
       @sec_counter = SecCounter.new(5, @chapter)
+      @doc_status = {}
     end
     private :builder_init_file
 
@@ -154,25 +153,28 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang)
+        list_header(id, caption, lang) if caption_top?('list')
+        list_body(id, lines, lang)
+        list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
-      list_body(id, lines, lang)
     end
 
     def listnum(lines, id, caption, lang = nil)
       begin
-        list_header(id, caption, lang)
+        list_header(id, caption, lang) if caption_top?('list')
+        listnum_body(lines, lang)
+        list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
         error "no such list: #{id}"
       end
-      listnum_body(lines, lang)
     end
 
     def source(lines, caption = nil, lang = nil)
-      source_header(caption)
+      source_header(caption) if caption_top?('list')
       source_body(lines, lang)
+      source_header(caption) unless caption_top?('list')
     end
 
     def image(lines, id, caption, metric = nil)
@@ -187,15 +189,18 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       sepidx, rows = parse_table_rows(lines)
       begin
-        if caption.present?
+        if caption_top?('table') && caption.present?
+          table_header(id, caption)
+        end
+        table_begin(rows.first.size)
+        table_rows(sepidx, rows)
+        table_end
+        if !caption_top?('table') && caption.present?
           table_header(id, caption)
         end
       rescue KeyError
         error "no such table: #{id}"
       end
-      table_begin(rows.first.size)
-      table_rows(sepidx, rows)
-      table_end
     end
 
     def table_row_separator_regexp
@@ -217,7 +222,7 @@ module ReVIEW
       sepidx = nil
       rows = []
       lines.each_with_index do |line, idx|
-        if /\A[\=\-]{12}/ =~ line || /\A[\=\{\-\}]{12}/ =~ line
+        if /\A[=\-]{12}/ =~ line || /\A[={\-}]{12}/ =~ line
           sepidx ||= idx
           next
         end
@@ -246,7 +251,7 @@ module ReVIEW
 
     def adjust_n_cols(rows)
       rows.each do |cols|
-        while cols.last and cols.last.strip.empty?
+        while cols.last && cols.last.strip.empty?
           cols.pop
         end
       end
@@ -550,9 +555,36 @@ module ReVIEW
     CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}(lines, caption = nil)
+          check_nested_minicolumn
           captionblock("#{name}", lines, caption)
         end
-      )
+
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          if caption
+            puts compile_inline(caption)
+          end
+        end
+
+        def #{name}_end
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 17
+    end
+
+    def check_nested_minicolumn
+      if @doc_status[:minicolumn]
+        error "#{@location}: nested mini-column is not allowed"
+      end
+    end
+
+    def in_minicolumn?
+      @doc_status[:minicolumn]
+    end
+
+    def minicolumn_block_name?(name)
+      CAPTION_TITLES.include?(name)
     end
 
     def graph(lines, id, command, caption = '')
@@ -708,6 +740,13 @@ EOTGNUPLOT
       else
         puts "\x01→/#{@children.pop}←\x01"
       end
+    end
+
+    def caption_top?(type)
+      unless %w[top bottom].include?(@book.config['caption_position'][type])
+        warn("invalid caption_position/#{type} parameter. 'top' is assumed")
+      end
+      @book.config['caption_position'][type] != 'bottom'
     end
   end
 end # module ReVIEW

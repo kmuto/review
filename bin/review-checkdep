@@ -30,7 +30,7 @@ def main
     when /\A\#@provide\((.*)\)/
       provide($1)
     else
-      line.scan(/@<kw>\{(.*?)[,\}]/) { provide $1 }
+      line.scan(/@<kw>\{(.*?)[,}]/) { provide($1) }
     end
   end
 end

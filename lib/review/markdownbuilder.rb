@@ -155,8 +155,26 @@ module ReVIEW
       puts %Q(<div class="#{type}">)
       puts %Q(<p class="caption">#{compile_inline(caption)}</p>) if caption.present?
       blocked_lines = split_paragraph(lines)
-      puts blocked_lines.join("\n")
+      puts blocked_lines.join("\n\n")
       puts '</div>'
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          puts %Q(<div class="#{name}">)
+          if caption.present?
+            puts %Q(<p class="caption">\#{compile_inline(caption)}</p>)
+          end
+        end
+
+        def #{name}_end
+          puts '</div>'
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 14
     end
 
     def hr

@@ -1,22 +1,30 @@
-\ProvidesClass{review-base}[2020/01/02]
+\ProvidesClass{review-base}[2020/08/16]
 % jlreq用基本設定
 \def\recls@tmp{luatex}\ifx\recls@tmp\recls@driver
   \hypersetup{
     pdftitle={\review@booktitlename},
-    pdfauthor={\review@autnames},
+    pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
     pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
   }
 \else
-  \newcommand*\PDFDocumentInformation[1]{%
-    \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
-  \@onlypreamble\PDFDocumentInformation
-  \PDFDocumentInformation{
-    /Title    (\review@booktitlename)
-    /Author   (\review@autnames)
-    % /Subject  ()
-    % /Keywords (,,)
-    /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
-  }
+  \def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
+    \hypersetup{
+      pdftitle={\review@booktitlename},
+      pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
+      pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
+    }
+  \else
+    \newcommand*\PDFDocumentInformation[1]{%
+      \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+    \@onlypreamble\PDFDocumentInformation
+    \PDFDocumentInformation{
+      /Title    (\review@booktitlename)
+      \ifdefined\review@autnames /Author   (\review@autnames)\fi
+      % /Subject  ()
+      % /Keywords (,,)
+      /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
+    }
+  \fi
 \fi
 
 \RequirePackage{pxrubrica}
@@ -25,6 +33,11 @@
 \rubysetup{g}}
 
 \long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
+
+%% pass bbox setting to extractbb of graphicx
+\ifdefined\review@bbox
+  \def\Gin@pagebox{\review@bbox}
+\fi
 
 % コードリスト装飾のデフォルト
 \newenvironment{reviewemlist}{%
@@ -122,9 +135,9 @@
 \newcommand{\reviewtableref}[2]{\review@intn@table #1}
 \newcommand{\reviewlistref}[1]{\review@intn@list #1}
 \newcommand{\reviewequationref}[1]{\review@intn@equation #1}
-\newcommand{\reviewbibref}[2]{#1}
-\newcommand{\reviewcolumnref}[2]{#1}
-\newcommand{\reviewsecref}[2]{#1}
+\newcommand{\reviewbibref}[2]{\hyperref[#2]{#1}}
+\newcommand{\reviewcolumnref}[2]{#1}% XXX:ハイパーリンクにはreviewcolumn側の調整が必要
+\newcommand{\reviewsecref}[2]{\hyperref[#2]{#1}}
 
 \renewcommand{\contentsname}{\review@toctitle}
 
@@ -325,6 +338,9 @@
 
 \if@reclscover
   \ifdefined\review@coverimage
+    \ifrecls@coverfitpage
+       \def\review@coverimageoption{width=\paperwidth,height=\paperheight}
+    \fi
     \def\reviewcoverpagecont{%
       \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
       \cleardoublepage
