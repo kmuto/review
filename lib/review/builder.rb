@@ -725,7 +725,7 @@ EOTGNUPLOT
       str
     end
 
-    def beginchild(_comment = nil)
+    def beginchild
       @children ||= []
       unless @previous_list_type
         error "//beginchild is shown, but previous element isn't ul, ol, or dl"
@@ -734,7 +734,7 @@ EOTGNUPLOT
       @children.push(@previous_list_type)
     end
 
-    def endchild(_comment = nil)
+    def endchild
       if @children.nil? || @children.empty?
         error "//endchild is shown, but any opened //beginchild doesn't exist"
       else

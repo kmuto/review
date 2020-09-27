@@ -24,8 +24,7 @@ module ReVIEW
       @command_name_stack = []
     end
 
-    attr_reader :previous_list_type
-    attr_reader :builder
+    attr_reader :builder, :previous_list_type
 
     def strategy
       error 'Compiler#strategy is obsoleted. Use Compiler#builder.'
@@ -192,8 +191,8 @@ module ReVIEW
     defsingle :include, 1
     defsingle :olnum, 1
     defsingle :firstlinenum, 1
-    defsingle :beginchild, 0..1
-    defsingle :endchild, 0..1
+    defsingle :beginchild, 0
+    defsingle :endchild, 0
 
     definline :chapref
     definline :chap
