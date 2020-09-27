@@ -959,23 +959,24 @@ Re:VIEW itemize blocks basically cannot express nested items. Also, none of item
 
 As a workaround, Re:VIEW 4.2 provides an experimental `//beginchild` and `//endchild`. If you want to include something in an itemize block, enclose it with `//beginchild` and `//endchild`. It is also possible to create a multiple nest.
 
-`//beginchild` and `//endchild` cant take one argument and can be used to write a comment.
-
 ```
  * UL1
 
-//beginchild[child of UL1 start]
+//beginchild
+#@# child of UL1 start
 
  1. UL1-OL1
 
-//beginchild[child of UL1-OL1 start]
+//beginchild
+#@# child of UL1-OL1 start
 
 UL1-OL1-PARAGRAPH
 
  * UL1-OL1-UL1
  * UL1-OL1-UL2
 
-//endchild[child of UL1-OL1 end]
+//endchild
+#@# child of UL1-OL1 end
 
  2. UL1-OL2
 
@@ -984,7 +985,8 @@ UL1-OL1-PARAGRAPH
  : UL1-DL2
         UL1-DD2
 
-//endchild[child of UL1 end]
+//endchild
+#@# child of UL1 end
 
  * UL2
 ```

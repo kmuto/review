@@ -2,7 +2,7 @@
 
 Re:VIEW フォーマットの文法について解説します。Re:VIEW フォーマットはアスキー社（現カドカワ）の EWB を基本としながら、一部に RD や各種 Wiki の文法を取り入れて簡素化しています。
 
-このドキュメントは、Re:VIEW 4.2 に基づいています。
+このドキュメントは、Re:VIEW 5.0 に基づいています。
 
 ## 段落
 
@@ -919,23 +919,24 @@ Re:VIEW の箇条書きは `*` 型の箇条書きを除き、基本的に入れ�
 
 この対策として、Re:VIEW 4.2 では試験的に `//beginchild`、`//endchild` というブロック命令を追加しています。箇条書きの途中に何かを含めたいときには、それを `//beginchild` 〜 `//endchild` で囲んで配置します。多重に入れ子にすることも可能です。
 
-`//beginchild`、`//endchild` は任意の引数を1つ取ることができ、挙動には影響しませんが人間に向けたコメントを入れるのに利用できます。
-
 ```
  * UL1
 
-//beginchild[ここからUL1の子]
+//beginchild
+#@# ここからUL1の子
 
  1. UL1-OL1
 
-//beginchild[ここからUL1-OL1の子]
+//beginchild
+#@# ここからUL1-OL1の子
 
 UL1-OL1-PARAGRAPH
 
  * UL1-OL1-UL1
  * UL1-OL1-UL2
 
-//endchild[ここまでUL1-OL1の子]
+//endchild
+#@# ここまでUL1-OL1の子
 
  2. UL1-OL2
 
@@ -944,7 +945,8 @@ UL1-OL1-PARAGRAPH
  : UL1-DL2
         UL1-DD2
 
-//endchild[ここまでUL1の子]
+//endchild
+#@# ここまでUL1の子
 
  * UL2
 ```
