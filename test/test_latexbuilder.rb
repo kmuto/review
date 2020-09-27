@@ -904,9 +904,11 @@ EOS
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS
 \\begin{reviewmemo}[this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}]
+
 test1
 
 test\\reviewit{2}
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -1899,12 +1901,16 @@ EOS
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnote}
+
 A
 
 B
+
 \\end{reviewnote}
 \\begin{reviewnote}[caption]
+
 A
+
 \\end{reviewnote}
 EOS
     assert_equal expected, actual
@@ -1912,12 +1918,16 @@ EOS
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewmemo}
+
 A
 
 B
+
 \\end{reviewmemo}
 \\begin{reviewmemo}[caption]
+
 A
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -1925,12 +1935,16 @@ EOS
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewinfo}
+
 A
 
 B
+
 \\end{reviewinfo}
 \\begin{reviewinfo}[caption]
+
 A
+
 \\end{reviewinfo}
 EOS
     assert_equal expected, actual
@@ -1938,12 +1952,16 @@ EOS
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewimportant}
+
 A
 
 B
+
 \\end{reviewimportant}
 \\begin{reviewimportant}[caption]
+
 A
+
 \\end{reviewimportant}
 EOS
     assert_equal expected, actual
@@ -1951,12 +1969,16 @@ EOS
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewcaution}
+
 A
 
 B
+
 \\end{reviewcaution}
 \\begin{reviewcaution}[caption]
+
 A
+
 \\end{reviewcaution}
 EOS
     assert_equal expected, actual
@@ -1964,12 +1986,16 @@ EOS
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnotice}
+
 A
 
 B
+
 \\end{reviewnotice}
 \\begin{reviewnotice}[caption]
+
 A
+
 \\end{reviewnotice}
 EOS
     assert_equal expected, actual
@@ -1977,12 +2003,16 @@ EOS
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewwarning}
+
 A
 
 B
+
 \\end{reviewwarning}
 \\begin{reviewwarning}[caption]
+
 A
+
 \\end{reviewwarning}
 EOS
     assert_equal expected, actual
@@ -1990,15 +2020,171 @@ EOS
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewtip}
+
 A
 
 B
+
 \\end{reviewtip}
 \\begin{reviewtip}[caption]
+
 A
+
 \\end{reviewtip}
 EOS
     assert_equal expected, actual
+  end
+
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}[#{type}1]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}2]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}[#{type}2]{
+
+//}
+
+//#{type}[#{type}3]{
+
+//}
+
+//#{type}[#{type}4]{
+
+//}
+
+//#{type}[#{type}5]{
+
+//}
+
+//#{type}[#{type}6]{
+
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}[#{type}2]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}3]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}4]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}5]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}6]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}{
+
+ * A
+
+ 1. B
+
+//}
+
+//#{type}[OMITEND1]{
+
+//emlist{
+LIST
+//}
+
+//}
+//#{type}[OMITEND2]{
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}
+
+\\begin{itemize}
+\\item A
+\\end{itemize}
+
+\\begin{enumerate}
+\\item B
+\\end{enumerate}
+
+\\end{review#{type}}
+\\begin{review#{type}}[OMITEND1]
+
+\\begin{reviewlistblock}
+\\begin{reviewemlist}
+LIST
+\\end{reviewemlist}
+\\end{reviewlistblock}
+
+\\end{review#{type}}
+\\begin{review#{type}}[OMITEND2]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
   end
 
   def test_inline_raw0

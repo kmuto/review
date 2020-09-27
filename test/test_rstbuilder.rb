@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'review/compiler'
 require 'review/book'
-require 'review/topbuilder'
+require 'review/rstbuilder'
 require 'review/i18n'
 
 class RSTBuidlerTest < Test::Unit::TestCase
@@ -327,12 +327,15 @@ EOS
 .. note::
 
    A
+
 B
+
 
 .. note::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual
@@ -342,12 +345,15 @@ EOS
 .. memo::
 
    A
+
 B
+
 
 .. memo::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual
@@ -357,12 +363,15 @@ EOS
 .. info::
 
    A
+
 B
+
 
 .. info::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual
@@ -372,12 +381,15 @@ EOS
 .. important::
 
    A
+
 B
+
 
 .. important::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual
@@ -387,12 +399,15 @@ EOS
 .. caution::
 
    A
+
 B
+
 
 .. caution::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual
@@ -402,12 +417,15 @@ EOS
 .. notice::
 
    A
+
 B
+
 
 .. notice::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual
@@ -417,12 +435,15 @@ EOS
 .. warning::
 
    A
+
 B
+
 
 .. warning::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual
@@ -432,12 +453,15 @@ EOS
 .. tip::
 
    A
+
 B
+
 
 .. tip::
 
    caption
    A
+
 
 EOS
     assert_equal expected, actual

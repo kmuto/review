@@ -257,6 +257,9 @@ module ReVIEW
       f = LineInput.new(StringIO.new(@chapter.content))
       @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
 
+      ## in minicolumn, such as note/info/alert...
+      @minicolumn_name = nil
+
       tagged_section_init
       while f.next?
         case f.peek
@@ -274,20 +277,34 @@ module ReVIEW
           warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
         when %r{\A//\}}
-          f.gets
-          error 'block end seen but not opened'
-        when %r{\A//[a-z]+}
-          # @command_name_stack.push(name) ## <- move into read_command() to use name
-          name, args, lines = read_command(f)
-          syntax = syntax_descriptor(name)
-          unless syntax
-            error "unknown command: //#{name}"
-            compile_unknown_command(args, lines)
-            @command_name_stack.pop
-            next
+          if in_minicolumn?
+            _line = f.gets
+            compile_minicolumn_end
+          else
+            f.gets
+            error 'block end seen but not opened'
           end
-          compile_command(syntax, args, lines)
-          @command_name_stack.pop
+        when %r{\A//[a-z]+}
+          line = f.peek
+          matched = line =~ %r|\A//([a-z]+)(:?\[.*\])?{\s*$|
+          if matched && minicolumn_block_name?($1)
+            line = f.gets
+            name = $1
+            args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
+            compile_minicolumn_begin(name, *args)
+          else
+            # @command_name_stack.push(name) ## <- move into read_command() to use name
+            name, args, lines = read_command(f)
+            syntax = syntax_descriptor(name)
+            unless syntax
+              error "unknown command: //#{name}"
+              compile_unknown_command(args, lines)
+              @command_name_stack.pop
+              next
+            end
+            compile_command(syntax, args, lines)
+            @command_name_stack.pop
+          end
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -304,6 +321,33 @@ module ReVIEW
         end
       end
       close_all_tagged_section
+    end
+
+    def compile_minicolumn_begin(name, caption = nil)
+      mid = "#{name}_begin"
+      unless @builder.respond_to?(mid)
+        error "strategy does not support minicolumn: #{name}"
+      end
+
+      if @minicolumn_name
+        error "minicolumn cannot be nested: #{name}"
+        return
+      end
+      @minicolumn_name = name
+
+      @builder.__send__(mid, caption)
+    end
+
+    def compile_minicolumn_end
+      unless @minicolumn_name
+        error "minicolumn is not used: #{name}"
+        return
+      end
+      name = @minicolumn_name
+
+      mid = "#{name}_end"
+      @builder.__send__(mid)
+      @minicolumn_name = nil
     end
 
     def compile_headline(line)
@@ -617,6 +661,14 @@ module ReVIEW
     rescue => e
       error e.message
       @builder.nofunc_text(str)
+    end
+
+    def in_minicolumn?
+      @builder.in_minicolumn?
+    end
+
+    def minicolumn_block_name?(name)
+      @builder.minicolumn_block_name?(name)
     end
 
     def warn(msg)

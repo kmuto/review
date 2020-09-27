@@ -212,7 +212,53 @@ module ReVIEW
       @doc_status[:column] = nil
     end
 
+    def common_block_begin(type, caption = nil)
+      check_nested_minicolumn
+      if @book.config.check_version('2', exception: false)
+        type = 'minicolumn'
+      end
+
+      @doc_status[:minicolumn] = type
+      print "\\begin{review#{type}}"
+
+      @doc_status[:caption] = true
+      if @book.config.check_version('2', exception: false)
+        puts
+        if caption.present?
+          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
+        end
+      else
+        if caption.present?
+          print "[#{compile_inline(caption)}]"
+        end
+        puts
+      end
+      @doc_status[:caption] = nil
+    end
+
+    def common_block_end(type)
+      if @book.config.check_version('2', exception: false)
+        type = 'minicolumn'
+      end
+
+      puts "\\end{review#{type}}"
+      @doc_status[:minicolumn] = nil
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          common_block_begin('#{name}', caption)
+        end
+
+        def #{name}_end
+          common_block_end('#{name}')
+        end
+      ), __FILE__, __LINE__ - 8
+    end
+
     def captionblock(type, lines, caption)
+      check_nested_minicolumn
       if @book.config.check_version('2', exception: false)
         type = 'minicolumn'
       end
