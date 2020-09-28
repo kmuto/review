@@ -74,7 +74,26 @@ module ReVIEW
     private :blank
 
     def result
-      @output.string
+      solve_nest(@output.string)
+    end
+
+    def solve_nest(s)
+      check_nest
+      lines = []
+      clevel = []
+      s.split("\n", -1).each do |l| # -1 means don't omit last "\n"
+        if l =~ /\A\x01→(dl|ul|ol)←\x01/
+          clevel.push($1)
+          lines.push("\x01→END←\x01")
+        elsif l =~ %r{\A\x01→/(dl|ul|ol)←\x01}
+          clevel.pop
+          lines.push("\x01→END←\x01")
+        else
+          lines.push("\t" * clevel.size + l)
+        end
+      end
+
+      lines.join("\n").gsub(/\n*\x01→END←\x01\n*/, "\n")
     end
 
     def headline(level, _label, caption)

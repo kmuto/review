@@ -24,7 +24,7 @@ module ReVIEW
       @command_name_stack = []
     end
 
-    attr_reader :builder
+    attr_reader :builder, :previous_list_type
 
     def strategy
       error 'Compiler#strategy is obsoleted. Use Compiler#builder.'
@@ -191,6 +191,8 @@ module ReVIEW
     defsingle :include, 1
     defsingle :olnum, 1
     defsingle :firstlinenum, 1
+    defsingle :beginchild, 0
+    defsingle :endchild, 0
 
     definline :chapref
     definline :chap
@@ -267,15 +269,20 @@ module ReVIEW
           f.gets # Nothing to do
         when /\A=+[\[\s{]/
           compile_headline(f.gets)
+          @builder.previous_list_type = nil
         when /\A\s+\*/
           compile_ulist(f)
+          @builder.previous_list_type = 'ul'
         when /\A\s+\d+\./
           compile_olist(f)
+          @builder.previous_list_type = 'ol'
         when /\A\s+:\s/
           compile_dlist(f)
+          @builder.previous_list_type = 'dl'
         when /\A\s*:\s/
           warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
+          @builder.previous_list_type = 'dl'
         when %r{\A//\}}
           if in_minicolumn?
             _line = f.gets
@@ -305,6 +312,7 @@ module ReVIEW
             compile_command(syntax, args, lines)
             @command_name_stack.pop
           end
+          @builder.previous_list_type = nil
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -312,12 +320,14 @@ module ReVIEW
             warn 'skipping block...'
             read_block(f, false)
           end
+          @builder.previous_list_type = nil
         else
           if f.peek.strip.empty?
             f.gets
             next
           end
           compile_paragraph(f)
+          @builder.previous_list_type = nil
         end
       end
       close_all_tagged_section

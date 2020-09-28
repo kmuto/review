@@ -893,4 +893,278 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_nest_error_open
+    src = <<-EOS
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":1: error: //endchild is shown, but any opened //beginchild doesn't exist", e.message
+  end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":1: error: //beginchild is shown, but previous element isn't ul, ol, or dl", e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':12: error: //beginchild of dl,ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':14: error: //beginchild of ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//beginchild
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//endchild
+
+ * UL2
+
+//beginchild
+
+UL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+UL1
+	
+	1　UL1-OL1
+	2　UL1-OL2
+	
+	UL1-UL1
+	UL1-UL2
+	
+	UL1-DL1
+	UL1-DD1
+	UL1-DL2
+	UL1-DD2
+	
+UL2
+	UL2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//endchild
+
+ 2. OL2
+
+//beginchild
+
+OL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+1　OL1
+	
+	1　OL1-OL1
+	2　OL1-OL2
+	
+	OL1-UL1
+	OL1-UL2
+	
+	OL1-DL1
+	OL1-DD1
+	OL1-DL2
+	OL1-DD2
+	
+2　OL2
+	OL2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//beginchild
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//endchild
+
+ : DL2
+	DD2
+
+//beginchild
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+DL1
+	
+	1　DL1-OL1
+	2　DL1-OL2
+	
+	DL1-UL1
+	DL1-UL2
+	
+	DL1-DL1
+	DL1-DD1
+	DL1-DL2
+	DL1-DD2
+	
+DL2
+DD2
+	
+	DD2-UL1
+	DD2-UL2
+	
+	DD2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+
+//beginchild
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//endchild
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//beginchild
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//endchild
+
+ * OL1-UL2
+
+//endchild
+EOS
+    expected = <<-EOS
+1　OL1
+	
+	1　OL1-OL1
+	
+		
+		OL1-OL1-UL1
+		
+		OL1-OL1-PARA
+	
+	2　OL1-OL2
+	
+	OL1-UL1
+	
+		
+		OL1-UL1-DL1
+		OL1-UL1-DD1
+		
+		OL1-UL1-PARA
+	
+	OL1-UL2
+	
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end

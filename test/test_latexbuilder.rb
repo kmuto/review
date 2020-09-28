@@ -2479,4 +2479,328 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":1: error: //beginchild is shown, but previous element isn't ul, ol, or dl", e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':12: error: //beginchild of dl,ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':14: error: //beginchild of ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//beginchild
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//endchild
+
+ * UL2
+
+//beginchild
+
+UL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+
+\\begin{itemize}
+\\item UL1
+
+
+\\begin{enumerate}
+\\item UL1{-}OL1
+\\item UL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item UL1{-}UL1
+\\item UL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[UL1{-}DL1] \\mbox{} \\\\
+UL1{-}DD1
+\\item[UL1{-}DL2] \\mbox{} \\\\
+UL1{-}DD2
+\\end{description}
+
+
+\\item UL2
+
+
+UL2{-}PARA
+
+\\end{itemize}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//endchild
+
+ 2. OL2
+
+//beginchild
+
+OL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+
+\\begin{enumerate}
+\\item OL1
+
+
+\\begin{enumerate}
+\\item OL1{-}OL1
+\\item OL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item OL1{-}UL1
+\\item OL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[OL1{-}DL1] \\mbox{} \\\\
+OL1{-}DD1
+\\item[OL1{-}DL2] \\mbox{} \\\\
+OL1{-}DD2
+\\end{description}
+
+
+\\item OL2
+
+
+OL2{-}PARA
+
+\\end{enumerate}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//beginchild
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//endchild
+
+ : DL2
+	DD2
+
+//beginchild
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+
+\\begin{description}
+\\item[DL1] \\mbox{} \\\\
+
+
+
+\\begin{enumerate}
+\\item DL1{-}OL1
+\\item DL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item DL1{-}UL1
+\\item DL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[DL1{-}DL1] \\mbox{} \\\\
+DL1{-}DD1
+\\item[DL1{-}DL2] \\mbox{} \\\\
+DL1{-}DD2
+\\end{description}
+
+
+\\item[DL2] \\mbox{} \\\\
+DD2
+
+
+\\begin{itemize}
+\\item DD2{-}UL1
+\\item DD2{-}UL2
+\\end{itemize}
+
+DD2{-}PARA
+
+\\end{description}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+
+//beginchild
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//endchild
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//beginchild
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//endchild
+
+ * OL1-UL2
+
+//endchild
+EOS
+    expected = <<-EOS
+
+\\begin{enumerate}
+\\item OL1
+
+
+\\begin{enumerate}
+\\item OL1{-}OL1
+
+
+\\begin{itemize}
+\\item OL1{-}OL1{-}UL1
+\\end{itemize}
+
+OL1{-}OL1{-}PARA
+
+
+\\item OL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item OL1{-}UL1
+
+
+\\begin{description}
+\\item[OL1{-}UL1{-}DL1] \\mbox{} \\\\
+OL1{-}UL1{-}DD1
+\\end{description}
+
+OL1{-}UL1{-}PARA
+
+
+\\item OL1{-}UL2
+\\end{itemize}
+
+\\end{enumerate}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
 end

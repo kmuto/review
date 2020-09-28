@@ -6,7 +6,6 @@ Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki sy
 
 This document explains about the format of Re:VIEW 5.0.
 
-
 ## Paragraph
 
 Paragraphs are separated by an empty line.
@@ -284,7 +283,6 @@ puts "hello world!"
 //}
 ```
 
-
 ### Quoting Source Code
 
 `//source` is for quoting source code. filename is mandatory.
@@ -338,7 +336,6 @@ You can use inline markup in `//cmd` blocks.
 You can use `//image{ ... //}` for figures.
 You can write comments or Ascii art in the block as an alternative description.
 When publishing, it's simply ignored.
-
 
 Usage:
 
@@ -969,6 +966,75 @@ this is a special line.
 
 (In other formats, it is just ignored.)
 
+### Nested itemize block
+
+Re:VIEW itemize blocks basically cannot express nested items. Also, none of itemize blocks allow to contain another itemize block or paragraph/image/table/list.
+
+As a workaround, Re:VIEW 4.2 provides an experimental `//beginchild` and `//endchild`. If you want to include something in an itemize block, enclose it with `//beginchild` and `//endchild`. It is also possible to create a multiple nest.
+
+```
+ * UL1
+
+//beginchild
+#@# child of UL1 start
+
+ 1. UL1-OL1
+
+//beginchild
+#@# child of UL1-OL1 start
+
+UL1-OL1-PARAGRAPH
+
+ * UL1-OL1-UL1
+ * UL1-OL1-UL2
+
+//endchild
+#@# child of UL1-OL1 end
+
+ 2. UL1-OL2
+
+ : UL1-DL1
+        UL1-DD1
+ : UL1-DL2
+        UL1-DD2
+
+//endchild
+#@# child of UL1 end
+
+ * UL2
+```
+
+Output:
+
+(In HTML:)
+
+```
+<ul>
+<li>UL1
+<ol>
+<li>UL1-OL1
+<p>UL1-OL1-PARAGRAPH</p>
+<ul>
+<li>UL1-OL1-UL1</li>
+<li>UL1-OL1-UL2</li>
+</ul>
+</li>
+
+<li>UL1-OL2</li>
+</ol>
+<dl>
+<dt>UL1-DL1</dt>
+<dd>UL1-DD1</dd>
+<dt>UL1-DL2</dt>
+<dd>UL1-DD2</dd>
+</dl>
+</li>
+
+<li>UL2</li>
+</ul>
+```
+
+(This is an experimental implementation. Names and behaviors may change in future versions.)
 
 ## Inline Commands
 
@@ -1119,12 +1185,10 @@ C
 A,B,C
 ```
 
-
 ## HTML/LaTeX Layout
 
 `layouts/layout.html.erb` and `layouts/layout.tex.erb` are used as layout file.
 You can use ERb tags in the layout files.
-
 
 Sample layout file(layout.html.erb):
 

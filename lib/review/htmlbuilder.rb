@@ -88,7 +88,7 @@ module ReVIEW
     def result
       # default XHTML header/footer
       @title = strip_html(compile_inline(@chapter.title))
-      @body = @output.string
+      @body = solve_nest(@output.string)
       @language = @book.config['language']
       @stylesheets = @book.config['stylesheet']
       @next = @chapter.next_chapter
@@ -101,6 +101,20 @@ module ReVIEW
       end
 
       ReVIEW::Template.load(layoutfile).result(binding)
+    end
+
+    def solve_nest(s)
+      check_nest
+      s.gsub("</dd>\n</dl>\n\x01→dl←\x01", '').
+        gsub("\x01→/dl←\x01", "</dd>\n</dl>←END\x01").
+        gsub("</li>\n</ul>\n\x01→ul←\x01", '').
+        gsub("\x01→/ul←\x01", "</li>\n</ul>←END\x01").
+        gsub("</li>\n</ol>\n\x01→ol←\x01", '').
+        gsub("\x01→/ol←\x01", "</li>\n</ol>←END\x01").
+        gsub("</dl>←END\x01\n<dl>", '').
+        gsub("</ul>←END\x01\n<ul>", '').
+        gsub("</ol>←END\x01\n<ol>", '').
+        gsub("←END\x01", '')
     end
 
     def xmlns_ops_prefix
