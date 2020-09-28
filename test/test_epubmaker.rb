@@ -824,6 +824,6 @@ EOT
     content = Content.new({ 'file' => 'sample.png' })
     assert_equal 'sample-png', content.id
     content = Content.new({ 'file' => 'sample-&()-=+@:,漢字.png' })
-    assert_equal 'sample-%26%28%29-%3D%2B%40%3A%2C%E6%BC%A2%E5%AD%97-png', content.id
+    assert_equal 'sample-_RVPERCENT_26_RVPERCENT_28_RVPERCENT_29-_RVPERCENT_3D_RVPERCENT_2B_RVPERCENT_40_RVPERCENT_3A_RVPERCENT_2C_RVPERCENT_E6_RVPERCENT_BC_RVPERCENT_A2_RVPERCENT_E5_RVPERCENT_AD_RVPERCENT_97-png', content.id
   end
 end

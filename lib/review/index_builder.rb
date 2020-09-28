@@ -23,7 +23,7 @@ module ReVIEW
 
     def check_id(id)
       if id
-        if id =~ %r![#%\\{}~/$'"|*?&<>`\s]!
+        if id =~ %r![#%\\{}\[\]~/$'"|*?&<>`\s]!
           warn "deprecated ID: `#{$&}` in `#{id}`"
         elsif id.start_with?('.')
           warn "deprecated ID: `#{id}` begins from `.`"
