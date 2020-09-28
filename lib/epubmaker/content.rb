@@ -1,6 +1,6 @@
 # = content.rb -- Content object for EPUBMaker.
 #
-# Copyright (c) 2010-2017 Kenshi Muto
+# Copyright (c) 2010-2020 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of

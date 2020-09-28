@@ -1276,7 +1276,7 @@ EOS
 
   def test_indepimage_nofile
     def @chapter.image(_id)
-      item = Book::Index::Item.new('sample_img#&', 1)
+      item = Book::Index::Item.new('sample_img_nofile_', 1)
       item.instance_eval do
         def path
           nil
@@ -1288,15 +1288,15 @@ EOS
     io = StringIO.new
     @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
 
-    actual = compile_block("//indepimage[sample_img#&][sample photo]\n")
+    actual = compile_block("//indepimage[sample_img_nofile_][sample photo]\n")
     expected = <<-EOS
 \\begin{reviewdummyimage}
---[[path = sample\\textunderscore{}img\\#\\& (not exist)]]--
+--[[path = sample\\textunderscore{}img\\textunderscore{}nofile\\textunderscore{} (not exist)]]--
 \\reviewindepimagecaption{図: sample photo}
 \\end{reviewdummyimage}
 EOS
     assert_equal expected, actual
-    assert_match(/WARN --: :1: image not bound: sample_img#&/, io.string)
+    assert_match(/WARN --: :1: image not bound: sample_img_nofile_/, io.string)
   end
 
   def test_table
