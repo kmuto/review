@@ -685,12 +685,6 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_image_with_tricky_id_space
-    assert_raise(ReVIEW::SyntaxError) do
-      _result = compile_block("//image[123 abc][sample photo]{\n//}\n")
-    end
-  end
-
   def test_indepimage
     def @chapter.image(_id)
       item = Book::Index::Item.new('sampleimg', 1)

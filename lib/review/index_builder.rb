@@ -22,8 +22,12 @@ module ReVIEW
     end
 
     def check_id(id)
-      if id && (id =~ %r![#%\\{}~/$'"|*?<>`\s]! || id.start_with?('.'))
-        warn "unsafe ID character: `#{id}`"
+      if id
+        if id =~ %r![#%\\{}~/$'"|*?&<>`\s]!
+          warn "deprecated ID: `#{$&}` in `#{id}`"
+        elsif id.start_with?('.')
+          warn "deprecated ID: `#{id}` begins from `.`"
+        end
       end
     end
 
