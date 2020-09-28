@@ -1,6 +1,8 @@
 # Version 5.0.0
 ## 新機能
 * review-jsbook / review-jlreq クラスに、`cover_fit_page` オプションを追加しました。`texdocumentclass` パラメータに `cover_fit_page=true` を付けると、画像サイズがどのようなものであっても仕上がりサイズに拡縮して表紙に貼り込みます。なお、制作において図版は実寸で作成することを推奨します ([#1534])
+* 小さな囲み要素 (`//note`, `//memo`, `//tip`, `//info`, `//warning`, `//important`, `//caution`, `//notice`) の中で、`//image` などのブロック命令を含めたり、および箇条書きを入れたりできるようになりました。拡張で類似のことを利用したいときには、defminicolumn で定義します ([#1558], [#1562])
+* 箇条書きの入れ子を指示する命令として `//beginchild`, `//endchild` という1行命令を追加しました。箇条書きの子にしたいものを `//beginchild` と `//endchild` で囲むと、前に位置する箇条書きの子要素になります。**この機能は実験的です。今後のバージョンで挙動を変えたり廃止したりする可能性があります** ([#1497])
 
 ## 非互換の変更
 * review-jlreq.cls における hiddenfolio の配置を、jlreqtrimmarkssetup を使って実装するように変更しました。以前のバージョンとは位置や表示に若干の違いがあります ([#1397])
@@ -11,29 +13,45 @@
 * PDFMaker: 著者名 (`aut`) パラメータが空のときにエラーになる問題を修正しました ([#1517])
 * PDFMaker: `//indepimage` 命令で画像が存在せず、かつ ID に TeX のエスケープ対象となる文字を含んでいるとエラーが起きる問題を修正しました ([#1527])
 * PDFMaker: `bookttilename` や `aut` パラメータに TeX のエスケープ対象となる文字を入れると PDF メタ情報がおかしくなる問題を修正しました (`media=ebook` のときのみ) ([#1533])
+* WebMaker: HTML テンプレートで nil が入ってしまうのを修正しました ([#1545])
+* PDFMaker: 章番号を非表示にするとエラーで失敗するのを修正しました ([#1559])
+* MarkdownBuilder: note 等の中の段落を改行区切りではなく空行区切りにしました ([#1572])
 
 ## 機能強化
 * 図表などのアイテムでエラーが発生したときの表示を詳細にしました ([#1523])
 * PDFMaker: `@<hd>` 命令で展開した項・段について、`media=ebook` のときにはハイパーリンクになるようにしました ([#1530])
 * HTMLBuilder および IDGXMLBuilder において、文字列のエスケープを従来の `cgi/util` の代わりにより高速な `cgi/escape` が利用できるときにはそれを利用するようにしました。また、`ReVIEW::HTMLUtils.escape` も書き換えられました ([#1536])
 * `@<icon>` 命令の利用時に ID の重複の警告が出るのを抑制しました ([#1541])
+* 不正なエンコーディングのファイルを受け取ったときに妥当なエラー表示をするようにしました ([#1544])
+* IndexBuilder を導入しました。これまで図表等の番号の管理および参照はその都度対象ファイルを解析する方法でしたが、IndexBuilder はプロジェクト全体を走査し、以降の各ビルダのために番号を提供します。review-ext.rb でブロック命令やインライン命令を追加していた場合、IndexBuilder クラス (またはその基底クラスである Builder クラス) にも追加が必要です ([#1384], [#1552])
+* ID やラベルに空白文字が含まれている場合、TeX のコンパイルでエラーが発生するため、これらに空白文字が含まれているときにはエラーを返すようにしました ([#1393])
 
 ## ドキュメント
 * format.ja.md と format.md のタイプミスを修正しました ([#1528])
 
 ## その他
-* Rubocop 0.88.0 に対応しました ([#1511])
+* Rubocop 0.92.0 に対応しました ([#1511], [#1569], [#1573])
 * `Re:VIEW::Compiler` 内の `@strategy` は実際はビルダなので、`@builder` という名前に変更しました ([#1520])
 * Rubocop-performance 1.7.1 に対応しました ([#1521])
 * syntax-book サンプルドキュメントの Gemfile を更新しました ([#1522])
 * ImageMagick における GhostScript の呼び出しが非推奨となったため、テストを除去しました ([#1526])
 * 一部のテストユニットの不要な標準エラー出力を抑制しました ([#1538])
+* `Compilable` モジュールの代わりに、`Chapter` および `Part` のスーパークラスとなる `BookUnit` 抽象クラスを導入しました ([#1543])
+* `ReVIEW::Book::Base.load` をやめ、`ReVIEW::Book::Base.load` または `ReVIEW::Book::Base.new` を使うようにしました。`ReVIEW::Book::Base.load` に `:config` オプションを加えました ([#1548], [#1563])
+* 内部のパラメータの汎用構成のために `ReVIEW::Configure.create` コンストラクタを導入しました ([#1549])
+* WebMaker: 使われていない `clean_mathdir` メソッドを削除しました ([#1550])
+* catalog.yml の解析を `ReVIEW::Book::Base.new` の中で最初に実行するようにしました ([#1551])
+* ファイルの書き出しで可能なところは `File.write` を使うようにしました ([#1560])
+* Builder クラスの `builder_init` メソッドを削除し、`initialize` を使うようにしました ([#1564])
 
 ## コントリビューターのみなさん
 * [@snoozer05](https://github.com/snoozer05)
 
+[#1384]: https://github.com/kmuto/review/pull/1384
+[#1393]: https://github.com/kmuto/review/issues/1393
 [#1397]: https://github.com/kmuto/review/issues/1397
 [#1483]: https://github.com/kmuto/review/issues/1483
+[#1497]: https://github.com/kmuto/review/pull/1497
 [#1511]: https://github.com/kmuto/review/pull/1511
 [#1517]: https://github.com/kmuto/review/issues/1517
 [#1520]: https://github.com/kmuto/review/pull/1520
@@ -50,6 +68,23 @@
 [#1536]: https://github.com/kmuto/review/pull/1536
 [#1538]: https://github.com/kmuto/review/pull/1538
 [#1541]: https://github.com/kmuto/review/pull/1541
+[#1543]: https://github.com/kmuto/review/pull/1543
+[#1544]: https://github.com/kmuto/review/issues/1544
+[#1545]: https://github.com/kmuto/review/issues/1545
+[#1548]: https://github.com/kmuto/review/pull/1548
+[#1549]: https://github.com/kmuto/review/pull/1549
+[#1550]: https://github.com/kmuto/review/pull/1550
+[#1551]: https://github.com/kmuto/review/pull/1551
+[#1552]: https://github.com/kmuto/review/pull/1552
+[#1558]: https://github.com/kmuto/review/pull/1558
+[#1559]: https://github.com/kmuto/review/issues/1559
+[#1560]: https://github.com/kmuto/review/pull/1560
+[#1562]: https://github.com/kmuto/review/pull/1562
+[#1563]: https://github.com/kmuto/review/pull/1563
+[#1564]: https://github.com/kmuto/review/pull/1564
+[#1569]: https://github.com/kmuto/review/pull/1569
+[#1572]: https://github.com/kmuto/review/pull/1572
+[#1573]: https://github.com/kmuto/review/pull/1573
 
 # Version 4.2.0
 ## 新機能
