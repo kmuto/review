@@ -24,7 +24,7 @@ module ReVIEW
       @command_name_stack = []
     end
 
-    attr_reader :builder
+    attr_reader :builder, :previous_list_type
 
     def strategy
       error 'Compiler#strategy is obsoleted. Use Compiler#builder.'
@@ -73,12 +73,16 @@ module ReVIEW
         end
       end
 
+      def minicolumn?
+        @type == :minicolumn
+      end
+
       def block_required?
-        @type == :block
+        @type == :block or @type == :minicolumn
       end
 
       def block_allowed?
-        @type == :block or @type == :optional
+        @type == :block or @type == :optional or @type == :minicolumn
       end
     end
 
@@ -86,6 +90,10 @@ module ReVIEW
 
     def self.defblock(name, argc, optional = false, &block)
       defsyntax(name, (optional ? :optional : :block), argc, &block)
+    end
+
+    def self.defminicolumn(name, argc, _optional = false, &block)
+      defsyntax(name, :minicolumn, argc, &block)
     end
 
     def self.defsingle(name, argc, &block)
@@ -98,6 +106,16 @@ module ReVIEW
 
     def self.definline(name)
       INLINE[name] = InlineSyntaxElement.new(name)
+    end
+
+    def self.minicolumn_names
+      buf = []
+      SYNTAX.each do |name, syntax|
+        if syntax.minicolumn?
+          buf << name.to_s
+        end
+      end
+      buf
     end
 
     def syntax_defined?(name)
@@ -148,17 +166,18 @@ module ReVIEW
     defblock :bpo, 0
     defblock :flushright, 0
     defblock :centering, 0
-    defblock :note, 0..1
-    defblock :memo, 0..1
-    defblock :info, 0..1
-    defblock :important, 0..1
-    defblock :caution, 0..1
-    defblock :notice, 0..1
-    defblock :warning, 0..1
-    defblock :tip, 0..1
     defblock :box, 0..1
     defblock :comment, 0..1, true
     defblock :embed, 0..1
+
+    defminicolumn :note, 0..1
+    defminicolumn :memo, 0..1
+    defminicolumn :tip, 0..1
+    defminicolumn :info, 0..1
+    defminicolumn :warning, 0..1
+    defminicolumn :important, 0..1
+    defminicolumn :caution, 0..1
+    defminicolumn :notice, 0..1
 
     defsingle :footnote, 2
     defsingle :noindent, 0
@@ -172,6 +191,8 @@ module ReVIEW
     defsingle :include, 1
     defsingle :olnum, 1
     defsingle :firstlinenum, 1
+    defsingle :beginchild, 0
+    defsingle :endchild, 0
 
     definline :chapref
     definline :chap
@@ -238,6 +259,9 @@ module ReVIEW
       f = LineInput.new(StringIO.new(@chapter.content))
       @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
 
+      ## in minicolumn, such as note/info/alert...
+      @minicolumn_name = nil
+
       tagged_section_init
       while f.next?
         case f.peek
@@ -245,30 +269,50 @@ module ReVIEW
           f.gets # Nothing to do
         when /\A=+[\[\s{]/
           compile_headline(f.gets)
+          @builder.previous_list_type = nil
         when /\A\s+\*/
           compile_ulist(f)
+          @builder.previous_list_type = 'ul'
         when /\A\s+\d+\./
           compile_olist(f)
+          @builder.previous_list_type = 'ol'
         when /\A\s+:\s/
           compile_dlist(f)
+          @builder.previous_list_type = 'dl'
         when /\A\s*:\s/
           warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
           compile_dlist(f)
+          @builder.previous_list_type = 'dl'
         when %r{\A//\}}
-          f.gets
-          error 'block end seen but not opened'
-        when %r{\A//[a-z]+}
-          # @command_name_stack.push(name) ## <- move into read_command() to use name
-          name, args, lines = read_command(f)
-          syntax = syntax_descriptor(name)
-          unless syntax
-            error "unknown command: //#{name}"
-            compile_unknown_command(args, lines)
-            @command_name_stack.pop
-            next
+          if in_minicolumn?
+            _line = f.gets
+            compile_minicolumn_end
+          else
+            f.gets
+            error 'block end seen but not opened'
           end
-          compile_command(syntax, args, lines)
-          @command_name_stack.pop
+        when %r{\A//[a-z]+}
+          line = f.peek
+          matched = line =~ %r|\A//([a-z]+)(:?\[.*\])?{\s*$|
+          if matched && minicolumn_block_name?($1)
+            line = f.gets
+            name = $1
+            args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
+            compile_minicolumn_begin(name, *args)
+          else
+            # @command_name_stack.push(name) ## <- move into read_command() to use name
+            name, args, lines = read_command(f)
+            syntax = syntax_descriptor(name)
+            unless syntax
+              error "unknown command: //#{name}"
+              compile_unknown_command(args, lines)
+              @command_name_stack.pop
+              next
+            end
+            compile_command(syntax, args, lines)
+            @command_name_stack.pop
+          end
+          @builder.previous_list_type = nil
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}"
@@ -276,15 +320,44 @@ module ReVIEW
             warn 'skipping block...'
             read_block(f, false)
           end
+          @builder.previous_list_type = nil
         else
           if f.peek.strip.empty?
             f.gets
             next
           end
           compile_paragraph(f)
+          @builder.previous_list_type = nil
         end
       end
       close_all_tagged_section
+    end
+
+    def compile_minicolumn_begin(name, caption = nil)
+      mid = "#{name}_begin"
+      unless @builder.respond_to?(mid)
+        error "strategy does not support minicolumn: #{name}"
+      end
+
+      if @minicolumn_name
+        error "minicolumn cannot be nested: #{name}"
+        return
+      end
+      @minicolumn_name = name
+
+      @builder.__send__(mid, caption)
+    end
+
+    def compile_minicolumn_end
+      unless @minicolumn_name
+        error "minicolumn is not used: #{name}"
+        return
+      end
+      name = @minicolumn_name
+
+      mid = "#{name}_end"
+      @builder.__send__(mid)
+      @minicolumn_name = nil
     end
 
     def compile_headline(line)
@@ -598,6 +671,14 @@ module ReVIEW
     rescue => e
       error e.message
       @builder.nofunc_text(str)
+    end
+
+    def in_minicolumn?
+      @builder.in_minicolumn?
+    end
+
+    def minicolumn_block_name?(name)
+      @builder.minicolumn_block_name?(name)
     end
 
     def warn(msg)

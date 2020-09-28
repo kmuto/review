@@ -3,7 +3,9 @@ AllCops:
     - lib/lineinput.rb
     - lib/uuid.rb
     - test/syntax-book/*
+    - tmp/*
   DisplayCopNames: true
+  NewCops: enable
 
 require:
   - rubocop-performance
@@ -93,6 +95,9 @@ Performance/Squeeze:
   Enabled: true
 
 Performance/StringInclude:
+  Enabled: false
+
+Performance/CollectionLiteralInLoop:
   Enabled: false
 
 #### Style
@@ -247,6 +252,9 @@ Style/MethodCallWithArgsParentheses:
     - 'source'
     - 'assert'
     - 'assert_equal'
+    - 'assert_raise'
+    - 'assert_raises'
+    - 'assert_nothing_raised'
     - 'sh'
     - 'mv'
     - 'rm_rf'
@@ -366,6 +374,24 @@ Style/RedundantRegexpEscape:
   Enabled: true
 
 Style/SlicingWithRange:
+  Enabled: false
+
+Style/AccessorGrouping:
+  Enabled: false
+
+Style/CaseLikeIf:
+  Enabled: false
+
+Style/StringConcatenation:
+  Enabled: false
+
+Style/OptionalBooleanParameter:
+  Enabled: false
+
+Style/SoleNestedConditional:
+  Enabled: false
+
+Style/CombinableLoops:
   Enabled: false
 
 ### Layout
@@ -571,3 +597,8 @@ Naming/VariableNumber:
 
 Security/YAMLLoad:
   Enabled: true
+
+#### Gemspec
+
+Gemspec/RequiredRubyVersion:
+  Enabled: false

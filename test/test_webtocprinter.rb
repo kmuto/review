@@ -11,7 +11,7 @@ class WEBTOCPrinterTest < Test::Unit::TestCase
   end
 
   def test_webtocprinter_null
-    dummy_book = ReVIEW::Book::Base.load
+    dummy_book = ReVIEW::Book::Base.new
     # chap = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
     str = WEBTOCPrinter.book_to_string(dummy_book)
     expect = <<-EOB
@@ -28,9 +28,9 @@ CHAPS:
   - ch1.re
   - ch2.re
 EOB
-    mktmpbookdir 'catalog.yml' => catalog_yml,
+    mktmpbookdir('catalog.yml' => catalog_yml,
                  'ch1.re' => "= ch. 1\n\n111\n",
-                 'ch2.re' => "= ch. 2\n\n222\n" do |_dir, book, _files|
+                 'ch2.re' => "= ch. 2\n\n222\n") do |_dir, book, _files|
       str = WEBTOCPrinter.book_to_string(book)
       expect = <<-EOB
 <ul class="book-toc">
@@ -51,9 +51,9 @@ CHAPS:
   - part2:
     - ch2.re
 EOB
-    mktmpbookdir 'catalog.yml' => catalog_yml,
+    mktmpbookdir('catalog.yml' => catalog_yml,
                  'ch1.re' => "= ch. 1\n\n111\n",
-                 'ch2.re' => "= ch. 2\n\n222\n" do |_dir, book, _files|
+                 'ch2.re' => "= ch. 2\n\n222\n") do |_dir, book, _files|
       str = WEBTOCPrinter.book_to_string(book)
       expect = <<-EOB
 <ul class="book-toc">
@@ -78,11 +78,11 @@ CHAPS:
   - p2.re:
     - ch2.re
 EOB
-    mktmpbookdir 'catalog.yml' => catalog_yml,
+    mktmpbookdir('catalog.yml' => catalog_yml,
                  'p1.re' => "= This is PART1\n\np111\n",
                  'p2.re' => "= This is PART2\n\np111\n",
                  'ch1.re' => "= ch. 1\n\n111\n",
-                 'ch2.re' => "= ch. 2\n\n222\n" do |_dir, book, _files|
+                 'ch2.re' => "= ch. 2\n\n222\n") do |_dir, book, _files|
       str = WEBTOCPrinter.book_to_string(book)
       expect = <<-EOB
 <ul class="book-toc">
@@ -116,7 +116,7 @@ POSTDEF:
   - post1.re
   - post2.re
 EOB
-    mktmpbookdir 'catalog.yml' => catalog_yml,
+    mktmpbookdir('catalog.yml' => catalog_yml,
                  'pre1.re' => "= PRE1\n\npre111\n",
                  'pre2.re' => "= PRE2\n\npre222\n",
                  'app1.re' => "= APP1\n\napp111\n",
@@ -126,7 +126,7 @@ EOB
                  'post1.re' => "= POST1\n\npo111\n",
                  'post2.re' => "= POST2\n\npo222\n",
                  'ch1.re' => "= ch. 1\n\n111\n",
-                 'ch2.re' => "= ch. 2\n\n222\n" do |_dir, book, _files|
+                 'ch2.re' => "= ch. 2\n\n222\n") do |_dir, book, _files|
       str = WEBTOCPrinter.book_to_string(book)
       expect = <<-EOB
 <ul class="book-toc">
@@ -153,7 +153,7 @@ EOB
     catalog_yml = <<-EOB
 CHAPS:
 EOB
-    mktmpbookdir 'catalog.yml' => catalog_yml do |_dir, book, _files|
+    mktmpbookdir('catalog.yml' => catalog_yml) do |_dir, book, _files|
       str = WEBTOCPrinter.book_to_string(book)
       expect = <<-EOB
 <ul class="book-toc">
@@ -172,11 +172,11 @@ CHAPS:
   - ch3.re
   - ch4.re
 EOB
-    mktmpbookdir 'catalog.yml' => catalog_yml,
+    mktmpbookdir('catalog.yml' => catalog_yml,
                  'ch1.re' => "A\n",
                  'ch2.re' => "B\n\n= C\n== D\n",
                  'ch3.re' => "//emlist{\nLIST\n//}\n",
-                 'ch4.re' => "==[column] E\n\n= F" do |_dir, book, _files|
+                 'ch4.re' => "==[column] E\n\n= F") do |_dir, book, _files|
       str = WEBTOCPrinter.book_to_string(book)
       expect = <<-EOB
 <ul class="book-toc">

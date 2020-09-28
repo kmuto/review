@@ -100,7 +100,21 @@ module ReVIEW
       if @chapter.is_a?(ReVIEW::Book::Part) && !@book.config.check_version('2', exception: false)
         puts '\end{reviewpart}'
       end
-      @output.string
+      solve_nest(@output.string)
+    end
+
+    def solve_nest(s)
+      check_nest
+      s.gsub("\\end{description}\n\n\x01→dl←\x01\n", "\n").
+        gsub("\x01→/dl←\x01", "\\end{description}←END\x01").
+        gsub("\\end{itemize}\n\n\x01→ul←\x01\n", "\n").
+        gsub("\x01→/ul←\x01", "\\end{itemize}←END\x01").
+        gsub("\\end{enumerate}\n\n\x01→ol←\x01\n", "\n").
+        gsub("\x01→/ol←\x01", "\\end{enumerate}←END\x01").
+        gsub("\\end{description}←END\x01\n\n\\begin{description}", '').
+        gsub("\\end{itemize}←END\x01\n\n\\begin{itemize}", '').
+        gsub("\\end{enumerate}←END\x01\n\n\\begin{enumerate}", '').
+        gsub("←END\x01", '')
     end
 
     HEADLINE = {
@@ -212,7 +226,53 @@ module ReVIEW
       @doc_status[:column] = nil
     end
 
+    def common_block_begin(type, caption = nil)
+      check_nested_minicolumn
+      if @book.config.check_version('2', exception: false)
+        type = 'minicolumn'
+      end
+
+      @doc_status[:minicolumn] = type
+      print "\\begin{review#{type}}"
+
+      @doc_status[:caption] = true
+      if @book.config.check_version('2', exception: false)
+        puts
+        if caption.present?
+          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
+        end
+      else
+        if caption.present?
+          print "[#{compile_inline(caption)}]"
+        end
+        puts
+      end
+      @doc_status[:caption] = nil
+    end
+
+    def common_block_end(type)
+      if @book.config.check_version('2', exception: false)
+        type = 'minicolumn'
+      end
+
+      puts "\\end{review#{type}}"
+      @doc_status[:minicolumn] = nil
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          common_block_begin('#{name}', caption)
+        end
+
+        def #{name}_end
+          common_block_end('#{name}')
+        end
+      ), __FILE__, __LINE__ - 8
+    end
+
     def captionblock(type, lines, caption)
+      check_nested_minicolumn
       if @book.config.check_version('2', exception: false)
         type = 'minicolumn'
       end
@@ -599,7 +659,8 @@ module ReVIEW
     end
     private :bib_label
 
-    def column_label(id, chapter = @chapter)
+    def column_label(id, chapter = nil)
+      chapter ||= @chapter
       filename = chapter.id
       num = chapter.column(id).number
       "column:#{filename}:#{num}"
@@ -1217,7 +1278,7 @@ module ReVIEW
       error "unknown column: #{id}"
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 

@@ -19,7 +19,6 @@ require 'review/yamlloader'
 require 'review/template'
 require 'review/tocprinter'
 require 'review/version'
-require 'erb'
 require 'review/makerhelper'
 
 module ReVIEW
@@ -80,19 +79,13 @@ module ReVIEW
     end
 
     def execute(*args)
-      @config = ReVIEW::Configure.values
-      @config.maker = 'webmaker'
       cmd_config, yamlfile = parse_opts(args)
       error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      begin
-        loader = ReVIEW::YAMLLoader.new
-        @config.deep_merge!(loader.load_file(yamlfile))
-      rescue => e
-        error "yaml error #{e.message}"
-      end
-      # YAML configs will be overridden by command line options.
-      @config.deep_merge!(cmd_config)
+      @config = ReVIEW::Configure.create(maker: 'webmaker',
+                                         yamlfile: yamlfile,
+                                         config: cmd_config)
+
       @config['htmlext'] = 'html'
       I18n.setup(@config['language'])
       begin
@@ -109,8 +102,7 @@ module ReVIEW
       remove_old_files(@path)
       Dir.mkdir(@path)
 
-      @book = ReVIEW::Book.load(@basedir)
-      @book.config = @config
+      @book = ReVIEW::Book::Base.new(@basedir, config: @config)
 
       copy_stylesheet(@path)
       copy_frontmatter(@path)
@@ -127,12 +119,6 @@ module ReVIEW
       copy_resources('covers', "#{@path}/#{@config['imagedir']}")
       copy_resources('adv', "#{@path}/#{@config['imagedir']}")
       copy_resources(@config['fontdir'], "#{@path}/fonts", @config['font_ext'])
-    end
-
-    def clean_mathdir
-      if @config['imgmath'] && File.exist?("#{@config['imagedir']}/_review_math")
-        FileUtils.rm_rf("#{@config['imagedir']}/_review_math")
-      end
     end
 
     def build_body(basetmpdir, _yamlfile)
@@ -156,6 +142,7 @@ module ReVIEW
     end
 
     def build_part(part, basetmpdir, htmlfile)
+      @title = h("#{ReVIEW::I18n.t('part', part.number)} #{part.name.strip}")
       File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
         @body = ''
         @body << %Q(<div class="part">\n)
@@ -259,6 +246,7 @@ module ReVIEW
     end
 
     def build_indexpage(basetmpdir)
+      @title = h('index')
       File.open("#{basetmpdir}/index.html", 'w') do |f|
         if @config['coverimage']
           file = File.join(@config['imagedir'], @config['coverimage'])
@@ -281,6 +269,7 @@ module ReVIEW
     end
 
     def build_titlepage(basetmpdir, htmlfile)
+      @title = h('titlepage')
       File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
         @body = ''
         @body << %Q(<div class="titlepage">)

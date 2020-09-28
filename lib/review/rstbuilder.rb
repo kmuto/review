@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -86,7 +86,7 @@ module ReVIEW
     private :blank
 
     def result
-      @output.string
+      solve_nest(@output.string)
     end
 
     def headline(level, label, caption)
@@ -97,7 +97,7 @@ module ReVIEW
       end
       p = '='
       case level
-      when 1 then
+      when 1
         unless label
           puts ".. _#{@chapter.name}:"
           blank
@@ -373,8 +373,9 @@ module ReVIEW
 
     def compile_kw(word, alt)
       if alt
-        then " **#{word}（#{alt.strip}）** "
-      else " **#{word}** "
+        " **#{word}（#{alt.strip}）** "
+      else
+        " **#{word}** "
       end
     end
 
@@ -582,6 +583,24 @@ module ReVIEW
       base_parablock('centering', lines, nil)
     end
 
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          puts ".. #{name}::"
+          blank
+          puts "   " + compile_inline(caption).to_s unless caption.nil?
+          print "   "
+        end
+
+        def #{name}_end
+          blank
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 14
+    end
+
     def note(lines, caption = nil)
       base_parablock('note', lines, caption)
     end
@@ -705,7 +724,7 @@ module ReVIEW
       str
     end
 
-    def inline_chap(id)
+    def inline_chap(id) # rubocop:disable Lint/UselessMethodDefinition
       super
     end
 

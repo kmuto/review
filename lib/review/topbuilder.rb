@@ -444,6 +444,32 @@ module ReVIEW
       blank
     end
 
+    def common_block_begin(type, _level, _label, caption = nil)
+      blank
+      puts "◆→開始:#{@titles[type]}←◆"
+      puts '■' + compile_inline(caption) if caption.present?
+    end
+
+    def common_block_end(type, _level)
+      puts "◆→終了:#{@titles[type]}←◆"
+      blank
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          common_block_begin('#{name}', nil, nil, caption)
+        end
+
+        def #{name}_end
+          common_block_end('#{name}', nil)
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 11
+    end
+
     def indepimage(_lines, id, caption = nil, metric = nil)
       metrics = parse_metric('top', metric)
       metrics = " #{metrics}" if metrics.present?

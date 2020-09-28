@@ -18,7 +18,6 @@ require 'review/version'
 require 'review/htmltoc'
 require 'review/htmlbuilder'
 
-require 'review/yamlloader'
 require 'rexml/document'
 require 'rexml/streamlistener'
 require 'epubmaker'
@@ -52,18 +51,9 @@ module ReVIEW
     end
 
     def load_yaml(yamlfile)
-      loader = ReVIEW::YAMLLoader.new
-      @config = ReVIEW::Configure.values
-      begin
-        @config.deep_merge!(loader.load_file(yamlfile))
-      rescue => e
-        error "yaml error #{e.message}"
-      end
-
       @producer = Producer.new(@config)
       @producer.load(yamlfile)
       @config = @producer.config
-      @config.maker = 'epubmaker'
     end
 
     def self.execute(*args)
@@ -94,13 +84,13 @@ module ReVIEW
     end
 
     def execute(*args)
-      @config = ReVIEW::Configure.values
-      @config.maker = 'epubmaker'
       cmd_config, yamlfile, exportfile = parse_opts(args)
       error "#{yamlfile} not found." unless File.exist?(yamlfile)
 
+      @config = ReVIEW::Configure.create(maker: 'epubmaker',
+                                         yamlfile: yamlfile,
+                                         config: cmd_config)
       load_yaml(yamlfile)
-      @config.deep_merge!(cmd_config)
       update_log_level
       log("Loaded yaml file (#{yamlfile}).")
 
@@ -307,8 +297,7 @@ module ReVIEW
 
       basedir = File.dirname(yamlfile)
       base_path = Pathname.new(basedir)
-      book = ReVIEW::Book.load(basedir)
-      book.config = @config
+      book = ReVIEW::Book::Base.new(basedir, config: @config)
       @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
       @compile_errors = nil
 

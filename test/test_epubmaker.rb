@@ -1,5 +1,6 @@
 require 'test_helper'
 require 'epubmaker'
+require 'review/epubmaker'
 
 class EPUBMakerTest < Test::Unit::TestCase
   include EPUBMaker

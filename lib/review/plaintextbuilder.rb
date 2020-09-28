@@ -74,7 +74,26 @@ module ReVIEW
     private :blank
 
     def result
-      @output.string
+      solve_nest(@output.string)
+    end
+
+    def solve_nest(s)
+      check_nest
+      lines = []
+      clevel = []
+      s.split("\n", -1).each do |l| # -1 means don't omit last "\n"
+        if l =~ /\A\x01→(dl|ul|ol)←\x01/
+          clevel.push($1)
+          lines.push("\x01→END←\x01")
+        elsif l =~ %r{\A\x01→/(dl|ul|ol)←\x01}
+          clevel.pop
+          lines.push("\x01→END←\x01")
+        else
+          lines.push("\t" * clevel.size + l)
+        end
+      end
+
+      lines.join("\n").gsub(/\n*\x01→END←\x01\n*/, "\n")
     end
 
     def headline(level, _label, caption)
@@ -501,18 +520,22 @@ module ReVIEW
     end
 
     def note(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('info', lines, caption)
     end
 
@@ -521,10 +544,12 @@ module ReVIEW
     end
 
     def best(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('best', lines, caption)
     end
 
     def important(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('important', lines, caption)
     end
 
@@ -533,6 +558,7 @@ module ReVIEW
     end
 
     def caution(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('caution', lines, caption)
     end
 
@@ -545,6 +571,7 @@ module ReVIEW
     end
 
     def notice(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('notice', lines, caption)
     end
 
@@ -573,10 +600,29 @@ module ReVIEW
     end
 
     def warning(lines, caption = nil)
+      check_nested_minicolumn
       base_parablock('warning', lines, caption)
     end
 
     alias_method :box, :insn
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          blank
+          if caption.present?
+            puts compile_inline(caption)
+          end
+        end
+
+        def #{name}_end
+          blank
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 14
+    end
 
     def indepimage(_lines, _id, caption = nil, _metric = nil)
       blank
@@ -613,7 +659,7 @@ module ReVIEW
       str
     end
 
-    def inline_chap(id)
+    def inline_chap(id) # rubocop:disable Lint/UselessMethodDefinition
       # "「第#{super}章　#{inline_title(id)}」"
       # "第#{super}章"
       super

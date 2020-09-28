@@ -175,11 +175,11 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS
+【注1】bar
+
 ★foo【注1】[]<>&◆→TeX式ここから←◆\\alpha[]◆→TeX式ここまで←◆☆
 	
 
@@ -533,10 +533,10 @@ EOS
   end
 
   def test_empty_table
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
     assert_equal ':2: error: no rows in the table', e.message
 
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
     assert_equal ':3: error: no rows in the table', e.message
   end
 
@@ -735,6 +735,183 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_minicolumn_blocks
+    titles = {
+      'note' => 'ノート',
+      'memo' => 'メモ',
+      'important' => '重要',
+      'info' => '情報',
+      'notice' => '注意',
+      'caution' => '警告',
+      'warning' => '危険',
+      'tip' => 'TIP'
+    }
+
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+■#{type}1
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}2
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}[#{type}2]{
+
+//}
+
+//#{type}[#{type}3]{
+
+//}
+
+//#{type}[#{type}4]{
+
+//}
+
+//#{type}[#{type}5]{
+
+//}
+
+//#{type}[#{type}6]{
+
+//}
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+■#{type}2
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}3
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}4
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}5
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■#{type}6
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}{
+
+ * A
+
+ 1. B
+
+//}
+
+//#{type}[OMITEND1]{
+
+//emlist{
+LIST
+//}
+
+//}
+//#{type}[OMITEND2]{
+//}
+EOS
+
+      expected = <<-EOS
+◆→開始:#{titles[type]}←◆
+
+●	A
+
+1	B
+
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■OMITEND1
+
+◆→開始:インラインリスト←◆
+LIST
+◆→終了:インラインリスト←◆
+
+◆→終了:#{titles[type]}←◆
+
+◆→開始:#{titles[type]}←◆
+■OMITEND2
+◆→終了:#{titles[type]}←◆
+
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
   def test_image
     def @chapter.image(_id)
       item = Book::Index::Item.new('sampleimg', 1)
@@ -816,18 +993,18 @@ EOB
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_equal ':1: error: unknown headline: n', e.message
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ":1: error: unknown #{name}: n", e.message
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end

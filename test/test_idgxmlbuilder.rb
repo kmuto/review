@@ -155,10 +155,10 @@ EOS
   end
 
   def test_empty_table
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
     assert_equal ':2: error: no rows in the table', e.message
 
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
     assert_equal ':3: error: no rows in the table', e.message
   end
 
@@ -252,9 +252,7 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS.chomp
 <dl><dt>foo<footnote>bar</footnote>[]&lt;&gt;&amp;<replace idref="texinline-1"><pre>\\alpha[]</pre></replace></dt><dd></dd></dl>
@@ -322,6 +320,145 @@ EOS
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
     expected = %Q(<tip><p>A</p><p>B</p></tip><tip><title aid:pstyle='tip-title'>caption</title><p>A</p></tip>)
     assert_equal expected, actual
+  end
+
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      if type == 'notice' # exception pattern
+        expected = <<-EOS.chomp
+<#{type}-t><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}-t>
+EOS
+      else
+        expected = <<-EOS.chomp
+<#{type}><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}>
+EOS
+      end
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}[#{type}2]{
+
+//}
+
+//#{type}[#{type}3]{
+
+//}
+
+//#{type}[#{type}4]{
+
+//}
+
+//#{type}[#{type}5]{
+
+//}
+
+//#{type}[#{type}6]{
+
+//}
+EOS
+
+      if type == 'notice' # exception pattern
+        expected = <<-EOS.chomp
+<#{type}-t><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>#{type}3</title></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>#{type}4</title></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>#{type}5</title></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>#{type}6</title></#{type}-t>
+EOS
+      else
+        expected = <<-EOS.chomp
+<#{type}><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}3</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}4</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}5</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}6</title></#{type}>
+EOS
+      end
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}{
+
+ * A
+
+ 1. B
+
+//}
+
+//#{type}[OMITEND1]{
+
+//emlist{
+LIST
+//}
+
+//}
+//#{type}[OMITEND2]{
+//}
+EOS
+
+      if type == 'notice' # exception pattern
+        expected = <<-EOS.chomp
+<#{type}><ul><li aid:pstyle="ul-item">A</li></ul><ol><li aid:pstyle="ol-item" olnum="1" num="1">B</li></ol></#{type}><#{type}-t><title aid:pstyle='#{type}-title'>OMITEND1</title><list type='emlist'><pre>LIST
+</pre></list></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>OMITEND2</title></#{type}-t>
+EOS
+      else
+        expected = <<-EOS.chomp
+<#{type}><ul><li aid:pstyle="ul-item">A</li></ul><ol><li aid:pstyle="ol-item" olnum="1" num="1">B</li></ol></#{type}><#{type}><title aid:pstyle='#{type}-title'>OMITEND1</title><list type='emlist'><pre>LIST
+</pre></list></#{type}><#{type}><title aid:pstyle='#{type}-title'>OMITEND2</title></#{type}>
+EOS
+      end
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
   end
 
   def test_term
@@ -981,18 +1118,18 @@ EOS
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_equal ':1: error: unknown headline: n', e.message
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ":1: error: unknown #{name}: n", e.message
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end
@@ -1124,6 +1261,205 @@ EOS
 
     @config['caption_position']['equation'] = 'bottom'
     expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><replace idref="texblock-1"><pre>e=mc^2</pre></replace><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":1: error: //beginchild is shown, but previous element isn't ul, ol, or dl", e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':12: error: //beginchild of dl,ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':14: error: //beginchild of ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//beginchild
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//endchild
+
+ * UL2
+
+//beginchild
+
+UL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">UL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">UL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">UL1-OL2</li></ol><ul><li aid:pstyle="ul-item">UL1-UL1</li><li aid:pstyle="ul-item">UL1-UL2</li></ul><dl><dt>UL1-DL1</dt><dd>UL1-DD1</dd><dt>UL1-DL2</dt><dd>UL1-DD2</dd></dl></li><li aid:pstyle="ul-item">UL2<p>UL2-PARA</p></li></ul>
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//endchild
+
+ 2. OL2
+
+//beginchild
+
+OL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS.chomp
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1</li><li aid:pstyle="ul-item">OL1-UL2</li></ul><dl><dt>OL1-DL1</dt><dd>OL1-DD1</dd><dt>OL1-DL2</dt><dd>OL1-DD2</dd></dl></li><li aid:pstyle="ol-item" olnum="1" num="2">OL2<p>OL2-PARA</p></li></ol>
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//beginchild
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//endchild
+
+ : DL2
+	DD2
+
+//beginchild
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS.chomp
+<dl><dt>DL1</dt><dd><ol><li aid:pstyle="ol-item" olnum="1" num="1">DL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">DL1-OL2</li></ol><ul><li aid:pstyle="ul-item">DL1-UL1</li><li aid:pstyle="ul-item">DL1-UL2</li></ul><dl><dt>DL1-DL1</dt><dd>DL1-DD1</dd><dt>DL1-DL2</dt><dd>DL1-DD2</dd></dl></dd><dt>DL2</dt><dd>DD2<ul><li aid:pstyle="ul-item">DD2-UL1</li><li aid:pstyle="ul-item">DD2-UL2</li></ul><p>DD2-PARA</p></dd></dl>
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+
+//beginchild
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//endchild
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//beginchild
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//endchild
+
+ * OL1-UL2
+
+//endchild
+EOS
+    expected = <<-EOS.chomp
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1<ul><li aid:pstyle="ul-item">OL1-OL1-UL1</li></ul><p>OL1-OL1-PARA</p></li><li aid:pstyle="ol-item" olnum="1" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1<dl><dt>OL1-UL1-DL1</dt><dd>OL1-UL1-DD1</dd></dl><p>OL1-UL1-PARA</p></li><li aid:pstyle="ul-item">OL1-UL2</li></ul></li></ol>
+EOS
+
     actual = compile_block(src)
     assert_equal expected, actual
   end

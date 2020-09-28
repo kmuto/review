@@ -19,7 +19,7 @@ module ReVIEW
   class Builder
     include TextUtils
 
-    CAPTION_TITLES = %w[note memo tip info warning important caution notice].freeze
+    CAPTION_TITLES = Compiler.minicolumn_names
 
     def pre_paragraph
       nil
@@ -29,20 +29,16 @@ module ReVIEW
       nil
     end
 
-    attr_accessor :doc_status
+    attr_accessor :doc_status, :previous_list_type
 
-    def initialize(strict = false, *args)
+    def initialize(strict = false, *_args)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
-      builder_init(*args)
+      @previous_list_type = nil
     end
-
-    def builder_init(*args)
-    end
-    private :builder_init
 
     def bind(compiler, chapter, location)
       @compiler = compiler
@@ -51,6 +47,10 @@ module ReVIEW
       @output = StringIO.new
       if @chapter.present?
         @book = @chapter.book
+      end
+      @chapter.generate_indexes
+      if @book
+        @book.generate_indexes
       end
       @tabwidth = nil
       @tsize = nil
@@ -83,6 +83,7 @@ module ReVIEW
 
     def builder_init_file
       @sec_counter = SecCounter.new(5, @chapter)
+      @doc_status = {}
     end
     private :builder_init_file
 
@@ -90,8 +91,19 @@ module ReVIEW
       false
     end
 
+    def solve_nest(s)
+      check_nest
+      s.gsub(/\x01→.+?←\x01/, '')
+    end
+
+    def check_nest
+      if @children && !@children.empty?
+        error "//beginchild of #{@children.reverse.join(',')} misses //endchild"
+      end
+    end
+
     def result
-      @output.string
+      solve_nest(@output.string)
     end
 
     alias_method :raw_result, :result
@@ -543,9 +555,36 @@ module ReVIEW
     CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}(lines, caption = nil)
+          check_nested_minicolumn
           captionblock("#{name}", lines, caption)
         end
-      ), __FILE__, __LINE__ - 4
+
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          if caption
+            puts compile_inline(caption)
+          end
+        end
+
+        def #{name}_end
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 17
+    end
+
+    def check_nested_minicolumn
+      if @doc_status[:minicolumn]
+        error "#{@location}: nested mini-column is not allowed"
+      end
+    end
+
+    def in_minicolumn?
+      @doc_status[:minicolumn]
+    end
+
+    def minicolumn_block_name?(name)
+      CAPTION_TITLES.include?(name)
     end
 
     def graph(lines, id, command, caption = '')
@@ -684,6 +723,23 @@ EOTGNUPLOT
 
     def escape(str)
       str
+    end
+
+    def beginchild
+      @children ||= []
+      unless @previous_list_type
+        error "//beginchild is shown, but previous element isn't ul, ol, or dl"
+      end
+      puts "\x01→#{@previous_list_type}←\x01"
+      @children.push(@previous_list_type)
+    end
+
+    def endchild
+      if @children.nil? || @children.empty?
+        error "//endchild is shown, but any opened //beginchild doesn't exist"
+      else
+        puts "\x01→/#{@children.pop}←\x01"
+      end
     end
 
     def caption_top?(type)

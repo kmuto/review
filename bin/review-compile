@@ -79,8 +79,7 @@ def _main
       error('no input') if ARGV.empty?
 
       @basedir = File.dirname(ARGV[0])
-      book = ReVIEW::Book::Base.load(@basedir)
-      book.config = @config # needs only at the first time
+      book = ReVIEW::Book::Base.new(@basedir, config: @config)
       ARGV.each do |item|
         error("file not found: #{item}") unless File.exist?(File.join(book.config['contentdir'], item))
         chap_name = File.basename(item, '.*')
@@ -88,23 +87,22 @@ def _main
         compiler = ReVIEW::Compiler.new(load_builder_class(@target, @check_only))
         result = compiler.compile(chap)
         if @output_filename
-          write(@output_filename, result)
+          File.write(@output_filename, result)
         else
           puts result unless @check_only
         end
       end
     when :dir
-      book = @basedir ? ReVIEW::Book.load(@basedir) : ReVIEW::Book::Base.load
-      book.config = @config
+      book = @basedir ? ReVIEW::Book::Base.new(@basedir, config: @config) : ReVIEW::Book::Base.new(config: @config)
       compiler = ReVIEW::Compiler.new(load_builder_class(@target, @check_only))
       book.chapters.each do |chap|
         str = compiler.compile(chap)
-        write("#{chap.name}#{compiler.builder.extname}", str) unless @check_only
+        File.write("#{chap.name}#{compiler.builder.extname}", str) unless @check_only
       end
       # PART
       book.parts_in_file.each do |part|
         str = compiler.compile(part)
-        write("#{part.name}#{compiler.builder.extname}", str) unless @check_only
+        File.write("#{part.name}#{compiler.builder.extname}", str) unless @check_only
       end
     else
       raise "must not happen: #{@mode}"
@@ -181,10 +179,6 @@ end
 def load_builder_class(target, strict)
   require "review/#{target}builder"
   ReVIEW.const_get("#{target.upcase}Builder").new(strict)
-end
-
-def write(path, str)
-  File.open(path, 'w') { |f| f.puts str }
 end
 
 main

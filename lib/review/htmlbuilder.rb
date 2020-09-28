@@ -41,10 +41,6 @@ module ReVIEW
       ".#{@book.config['htmlext']}"
     end
 
-    def builder_init
-    end
-    private :builder_init
-
     def builder_init_file
       @noindent = nil
       @ol_num = nil
@@ -92,7 +88,7 @@ module ReVIEW
     def result
       # default XHTML header/footer
       @title = strip_html(compile_inline(@chapter.title))
-      @body = @output.string
+      @body = solve_nest(@output.string)
       @language = @book.config['language']
       @stylesheets = @book.config['stylesheet']
       @next = @chapter.next_chapter
@@ -105,6 +101,20 @@ module ReVIEW
       end
 
       ReVIEW::Template.load(layoutfile).result(binding)
+    end
+
+    def solve_nest(s)
+      check_nest
+      s.gsub("</dd>\n</dl>\n\x01→dl←\x01", '').
+        gsub("\x01→/dl←\x01", "</dd>\n</dl>←END\x01").
+        gsub("</li>\n</ul>\n\x01→ul←\x01", '').
+        gsub("\x01→/ul←\x01", "</li>\n</ul>←END\x01").
+        gsub("</li>\n</ol>\n\x01→ol←\x01", '').
+        gsub("\x01→/ol←\x01", "</li>\n</ol>←END\x01").
+        gsub("</dl>←END\x01\n<dl>", '').
+        gsub("</ul>←END\x01\n<ul>", '').
+        gsub("</ol>←END\x01\n<ol>", '').
+        gsub("←END\x01", '')
     end
 
     def xmlns_ops_prefix
@@ -228,6 +238,7 @@ module ReVIEW
     end
 
     def captionblock(type, lines, caption)
+      check_nested_minicolumn
       puts %Q(<div class="#{type}">)
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
@@ -310,6 +321,24 @@ module ReVIEW
 
     def note(lines, caption = nil)
       captionblock('note', lines, caption)
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          @doc_status[:minicolumn] = '#{name}'
+          puts %Q(<div class="#{name}">)
+          if caption.present?
+            puts %Q(<p class="caption">\#{compile_inline(caption)}</p>)
+          end
+        end
+
+        def #{name}_end
+          puts '</div>'
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 14
     end
 
     def ul_begin
@@ -1180,7 +1209,7 @@ EOS
       %Q(<span class="balloon">#{escape_html(str)}</span>)
     end
 
-    def inline_raw(str)
+    def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
       super(str)
     end
 

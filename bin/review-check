@@ -31,9 +31,7 @@ end
 
 def main
   @config = ReVIEW::Configure.values
-  @book = ReVIEW::Book::Base.load
-  @book.config = @config
-
+  @book = ReVIEW::Book::Base.new(config: @config)
   @logger = ReVIEW.logger
 
   modes = nil

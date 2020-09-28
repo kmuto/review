@@ -393,9 +393,7 @@ EOS
   end
 
   def test_dt_inline
-    fn = Book::FootnoteIndex.parse(['//footnote[bar][bar]'])
-    @chapter.instance_eval { @footnote_index = fn }
-    actual = compile_block(" : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS
 
@@ -906,9 +904,11 @@ EOS
     actual = compile_block("//memo[this is @<b>{test}<&>_]{\ntest1\n\ntest@<i>{2}\n//}\n")
     expected = <<-EOS
 \\begin{reviewmemo}[this is \\reviewbold{test}\\textless{}\\&\\textgreater{}\\textunderscore{}]
+
 test1
 
 test\\reviewit{2}
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -1341,10 +1341,10 @@ EOS
   end
 
   def test_empty_table
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
     assert_equal ':2: error: no rows in the table', e.message
 
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
     assert_equal ':3: error: no rows in the table', e.message
   end
 
@@ -1901,12 +1901,16 @@ EOS
     actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnote}
+
 A
 
 B
+
 \\end{reviewnote}
 \\begin{reviewnote}[caption]
+
 A
+
 \\end{reviewnote}
 EOS
     assert_equal expected, actual
@@ -1914,12 +1918,16 @@ EOS
     actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewmemo}
+
 A
 
 B
+
 \\end{reviewmemo}
 \\begin{reviewmemo}[caption]
+
 A
+
 \\end{reviewmemo}
 EOS
     assert_equal expected, actual
@@ -1927,12 +1935,16 @@ EOS
     actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewinfo}
+
 A
 
 B
+
 \\end{reviewinfo}
 \\begin{reviewinfo}[caption]
+
 A
+
 \\end{reviewinfo}
 EOS
     assert_equal expected, actual
@@ -1940,12 +1952,16 @@ EOS
     actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewimportant}
+
 A
 
 B
+
 \\end{reviewimportant}
 \\begin{reviewimportant}[caption]
+
 A
+
 \\end{reviewimportant}
 EOS
     assert_equal expected, actual
@@ -1953,12 +1969,16 @@ EOS
     actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewcaution}
+
 A
 
 B
+
 \\end{reviewcaution}
 \\begin{reviewcaution}[caption]
+
 A
+
 \\end{reviewcaution}
 EOS
     assert_equal expected, actual
@@ -1966,12 +1986,16 @@ EOS
     actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewnotice}
+
 A
 
 B
+
 \\end{reviewnotice}
 \\begin{reviewnotice}[caption]
+
 A
+
 \\end{reviewnotice}
 EOS
     assert_equal expected, actual
@@ -1979,12 +2003,16 @@ EOS
     actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewwarning}
+
 A
 
 B
+
 \\end{reviewwarning}
 \\begin{reviewwarning}[caption]
+
 A
+
 \\end{reviewwarning}
 EOS
     assert_equal expected, actual
@@ -1992,15 +2020,171 @@ EOS
     actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
     expected = <<-EOS
 \\begin{reviewtip}
+
 A
 
 B
+
 \\end{reviewtip}
 \\begin{reviewtip}[caption]
+
 A
+
 \\end{reviewtip}
 EOS
     assert_equal expected, actual
+  end
+
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}[#{type}1]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}2]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}[#{type}2]{
+
+//}
+
+//#{type}[#{type}3]{
+
+//}
+
+//#{type}[#{type}4]{
+
+//}
+
+//#{type}[#{type}5]{
+
+//}
+
+//#{type}[#{type}6]{
+
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}[#{type}2]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}3]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}4]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}5]
+\\end{review#{type}}
+\\begin{review#{type}}[#{type}6]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}{
+
+ * A
+
+ 1. B
+
+//}
+
+//#{type}[OMITEND1]{
+
+//emlist{
+LIST
+//}
+
+//}
+//#{type}[OMITEND2]{
+//}
+EOS
+
+      expected = <<-EOS
+\\begin{review#{type}}
+
+\\begin{itemize}
+\\item A
+\\end{itemize}
+
+\\begin{enumerate}
+\\item B
+\\end{enumerate}
+
+\\end{review#{type}}
+\\begin{review#{type}}[OMITEND1]
+
+\\begin{reviewlistblock}
+\\begin{reviewemlist}
+LIST
+\\end{reviewemlist}
+\\end{reviewlistblock}
+
+\\end{review#{type}}
+\\begin{review#{type}}[OMITEND2]
+\\end{review#{type}}
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
   end
 
   def test_inline_raw0
@@ -2140,18 +2324,18 @@ EOS
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_equal ':1: error: unknown headline: n', e.message
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ":1: error: unknown #{name}: n", e.message
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end
@@ -2292,6 +2476,330 @@ e=mc^2
 \\reviewequationcaption{式1.1: The Equivalence of Mass \\reviewit{and} Energy}
 \\end{reviewequationblock}
 EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":1: error: //beginchild is shown, but previous element isn't ul, ol, or dl", e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':12: error: //beginchild of dl,ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':14: error: //beginchild of ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//beginchild
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//endchild
+
+ * UL2
+
+//beginchild
+
+UL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+
+\\begin{itemize}
+\\item UL1
+
+
+\\begin{enumerate}
+\\item UL1{-}OL1
+\\item UL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item UL1{-}UL1
+\\item UL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[UL1{-}DL1] \\mbox{} \\\\
+UL1{-}DD1
+\\item[UL1{-}DL2] \\mbox{} \\\\
+UL1{-}DD2
+\\end{description}
+
+
+\\item UL2
+
+
+UL2{-}PARA
+
+\\end{itemize}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//endchild
+
+ 2. OL2
+
+//beginchild
+
+OL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+
+\\begin{enumerate}
+\\item OL1
+
+
+\\begin{enumerate}
+\\item OL1{-}OL1
+\\item OL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item OL1{-}UL1
+\\item OL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[OL1{-}DL1] \\mbox{} \\\\
+OL1{-}DD1
+\\item[OL1{-}DL2] \\mbox{} \\\\
+OL1{-}DD2
+\\end{description}
+
+
+\\item OL2
+
+
+OL2{-}PARA
+
+\\end{enumerate}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//beginchild
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//endchild
+
+ : DL2
+	DD2
+
+//beginchild
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+
+\\begin{description}
+\\item[DL1] \\mbox{} \\\\
+
+
+
+\\begin{enumerate}
+\\item DL1{-}OL1
+\\item DL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item DL1{-}UL1
+\\item DL1{-}UL2
+\\end{itemize}
+
+\\begin{description}
+\\item[DL1{-}DL1] \\mbox{} \\\\
+DL1{-}DD1
+\\item[DL1{-}DL2] \\mbox{} \\\\
+DL1{-}DD2
+\\end{description}
+
+
+\\item[DL2] \\mbox{} \\\\
+DD2
+
+
+\\begin{itemize}
+\\item DD2{-}UL1
+\\item DD2{-}UL2
+\\end{itemize}
+
+DD2{-}PARA
+
+\\end{description}
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+
+//beginchild
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//endchild
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//beginchild
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//endchild
+
+ * OL1-UL2
+
+//endchild
+EOS
+    expected = <<-EOS
+
+\\begin{enumerate}
+\\item OL1
+
+
+\\begin{enumerate}
+\\item OL1{-}OL1
+
+
+\\begin{itemize}
+\\item OL1{-}OL1{-}UL1
+\\end{itemize}
+
+OL1{-}OL1{-}PARA
+
+
+\\item OL1{-}OL2
+\\end{enumerate}
+
+\\begin{itemize}
+\\item OL1{-}UL1
+
+
+\\begin{description}
+\\item[OL1{-}UL1{-}DL1] \\mbox{} \\\\
+OL1{-}UL1{-}DD1
+\\end{description}
+
+OL1{-}UL1{-}PARA
+
+
+\\item OL1{-}UL2
+\\end{itemize}
+
+\\end{enumerate}
+EOS
+
     actual = compile_block(src)
     assert_equal expected, actual
   end

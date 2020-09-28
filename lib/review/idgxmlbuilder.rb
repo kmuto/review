@@ -46,10 +46,6 @@ module ReVIEW
       '.xml'
     end
 
-    def builder_init
-    end
-    private :builder_init
-
     def builder_init_file
       @warns = []
       @errors = []
@@ -89,7 +85,21 @@ module ReVIEW
         s += '</sect>' if @section > 0
         s += '</chapter>' if @chapter.number > 0
       end
-      @output.string + s + "</#{@rootelement}>\n"
+      solve_nest(@output.string) + s + "</#{@rootelement}>\n"
+    end
+
+    def solve_nest(s)
+      check_nest
+      s.gsub("</dd></dl>\x01→dl←\x01", '').
+        gsub("\x01→/dl←\x01", "</dd></dl>←END\x01").
+        gsub("</li></ul>\x01→ul←\x01", '').
+        gsub("\x01→/ul←\x01", "</li></ul>←END\x01").
+        gsub("</li></ol>\x01→ol←\x01", '').
+        gsub("\x01→/ol←\x01", "</li></ol>←END\x01").
+        gsub("</dl>←END\x01<dl>", '').
+        gsub("</ul>←END\x01<ul>", '').
+        gsub("</ol>←END\x01<ol>", '').
+        gsub("←END\x01", '')
     end
 
     def headline(level, label, caption)
@@ -942,18 +952,22 @@ module ReVIEW
     end
 
     def note(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('info', lines, caption)
     end
 
@@ -966,6 +980,7 @@ module ReVIEW
     end
 
     def important(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('important', lines, caption)
     end
 
@@ -974,10 +989,12 @@ module ReVIEW
     end
 
     def caution(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('caution', lines, caption)
     end
 
     def warning(lines, caption = nil)
+      check_nested_minicolumn
       captionblock('warning', lines, caption)
     end
 
@@ -990,6 +1007,7 @@ module ReVIEW
     end
 
     def notice(lines, caption = nil)
+      check_nested_minicolumn
       if caption
         captionblock('notice-t', lines, caption, 'notice-title')
       else
@@ -1023,6 +1041,33 @@ module ReVIEW
 
     def expert(lines)
       captionblock('expert', lines, nil)
+    end
+
+    CAPTION_TITLES.each do |name|
+      class_eval %Q(
+        def #{name}_begin(caption = nil)
+          check_nested_minicolumn
+          if '#{name}' == 'notice' && caption.present?
+            @doc_status[:minicolumn] = '#{name}-t'
+            print "<#{name}-t>"
+          else
+            @doc_status[:minicolumn] = '#{name}'
+            print "<#{name}>"
+          end
+          if caption.present?
+            puts %Q(<title aid:pstyle='#{name}-title'>\#{compile_inline(caption)}</title>)
+          end
+        end
+
+        def #{name}_end
+          if '#{name}' == 'notice' && @doc_status[:minicolumn] == 'notice-t'
+            print "</#{name}-t>"
+          else
+            print "</#{name}>"
+          end
+          @doc_status[:minicolumn] = nil
+        end
+      ), __FILE__, __LINE__ - 23
     end
 
     def syntaxblock(type, lines, caption)

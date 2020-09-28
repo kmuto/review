@@ -476,10 +476,10 @@ EOS
   end
 
   def test_empty_table
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
     assert_equal ':2: error: no rows in the table', e.message
 
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "//table{\n------------\n//}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
     assert_equal ':3: error: no rows in the table', e.message
   end
 
@@ -596,6 +596,147 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = <<-EOS
+#{type}1
+
+#{type}2
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}[#{type}2]{
+
+//}
+
+//#{type}[#{type}3]{
+
+//}
+
+//#{type}[#{type}4]{
+
+//}
+
+//#{type}[#{type}5]{
+
+//}
+
+//#{type}[#{type}6]{
+
+//}
+EOS
+
+      expected = <<-EOS
+#{type}2
+
+#{type}3
+
+#{type}4
+
+#{type}5
+
+#{type}6
+
+EOS
+      assert_equal expected, compile_block(src)
+
+      src = <<-EOS
+//#{type}{
+
+ * A
+
+ 1. B
+
+//}
+
+//#{type}[OMITEND1]{
+
+//emlist{
+LIST
+//}
+
+//}
+//#{type}[OMITEND2]{
+//}
+EOS
+
+      expected = <<-EOS
+A
+
+1　B
+
+OMITEND1
+
+LIST
+
+OMITEND2
+
+EOS
+      assert_equal expected, compile_block(src)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    %w[note memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    %w[memo tip info warning important caution notice].each do |type|
+      @builder.doc_status.clear
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, e.message)
+    end
+  end
+
   def test_image
     def @chapter.image(_id)
       item = Book::Index::Item.new('sampleimg', 1)
@@ -628,18 +769,18 @@ EOS
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<img>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<fn>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<hd>{n}\n" }
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_equal ':1: error: unknown headline: n', e.message
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ":1: error: unknown #{name}: n", e.message
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block "@<#{name}>{n}\n" }
+      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_equal ':1: error: key not found: "n"', e.message
     end
   end
@@ -749,6 +890,280 @@ e=mc^2
 式1.1　The Equivalence of Mass and Energy
 
 EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_error_open
+    src = <<-EOS
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":1: error: //endchild is shown, but any opened //beginchild doesn't exist", e.message
+  end
+
+  def test_nest_error_close1
+    src = <<-EOS
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ":1: error: //beginchild is shown, but previous element isn't ul, ol, or dl", e.message
+  end
+
+  def test_nest_error_close2
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':12: error: //beginchild of dl,ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_error_close3
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal ':14: error: //beginchild of ol,ul misses //endchild', e.message
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//beginchild
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+	UL1-DD1
+ : UL1-DL2
+	UL1-DD2
+
+//endchild
+
+ * UL2
+
+//beginchild
+
+UL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+UL1
+	
+	1　UL1-OL1
+	2　UL1-OL2
+	
+	UL1-UL1
+	UL1-UL2
+	
+	UL1-DL1
+	UL1-DD1
+	UL1-DL2
+	UL1-DD2
+	
+UL2
+	UL2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+	OL1-DD1
+ : OL1-DL2
+	OL1-DD2
+
+//endchild
+
+ 2. OL2
+
+//beginchild
+
+OL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+1　OL1
+	
+	1　OL1-OL1
+	2　OL1-OL2
+	
+	OL1-UL1
+	OL1-UL2
+	
+	OL1-DL1
+	OL1-DD1
+	OL1-DL2
+	OL1-DD2
+	
+2　OL2
+	OL2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//beginchild
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+	DL1-DD1
+ : DL1-DL2
+	DL1-DD2
+
+//endchild
+
+ : DL2
+	DD2
+
+//beginchild
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS
+DL1
+	
+	1　DL1-OL1
+	2　DL1-OL2
+	
+	DL1-UL1
+	DL1-UL2
+	
+	DL1-DL1
+	DL1-DD1
+	DL1-DL2
+	DL1-DD2
+	
+DL2
+DD2
+	
+	DD2-UL1
+	DD2-UL2
+	
+	DD2-PARA
+EOS
+
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+
+//beginchild
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//endchild
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//beginchild
+
+ : OL1-UL1-DL1
+	OL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//endchild
+
+ * OL1-UL2
+
+//endchild
+EOS
+    expected = <<-EOS
+1　OL1
+	
+	1　OL1-OL1
+	
+		
+		OL1-OL1-UL1
+		
+		OL1-OL1-PARA
+	
+	2　OL1-OL2
+	
+	OL1-UL1
+	
+		
+		OL1-UL1-DL1
+		OL1-UL1-DD1
+		
+		OL1-UL1-PARA
+	
+	OL1-UL2
+	
+EOS
+
     actual = compile_block(src)
     assert_equal expected, actual
   end
