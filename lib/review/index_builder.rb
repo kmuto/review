@@ -21,6 +21,16 @@ module ReVIEW
       super
     end
 
+    def check_id(id)
+      if id
+        if id =~ %r![#%\\{}\[\]~/$'"|*?&<>`\s]!
+          warn "deprecated ID: `#{$&}` in `#{id}`"
+        elsif id.start_with?('.')
+          warn "deprecated ID: `#{id}` begins from `.`"
+        end
+      end
+    end
+
     def pre_paragraph
       ''
     end
@@ -72,6 +82,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      check_id(label)
       @sec_counter.inc(level)
       return if level < 2
 
@@ -93,6 +104,7 @@ module ReVIEW
     end
 
     def nonum_begin(level, label, caption)
+      check_id(label)
       return if level < 2
 
       cursor = level - 2
@@ -116,6 +128,7 @@ module ReVIEW
     end
 
     def notoc_begin(level, label, caption)
+      check_id(label)
       return if level < 2
 
       cursor = level - 2
@@ -139,6 +152,7 @@ module ReVIEW
     end
 
     def nodisp_begin(level, label, caption)
+      check_id(label)
       return if level < 2
 
       cursor = level - 2
@@ -162,6 +176,7 @@ module ReVIEW
     end
 
     def column_begin(_level, label, caption)
+      check_id(label)
       item_id = label || caption
       item = ReVIEW::Book::Index::Item.new(item_id, @column_index.size + 1, caption)
       @column_index.add_item(item)
@@ -170,13 +185,15 @@ module ReVIEW
     def column_end(_level)
     end
 
-    def xcolumn_begin(level, label, caption)
+    def xcolumn_begin(_level, label, _caption)
+      check_id(label)
     end
 
     def xcolumn_end(_level)
     end
 
-    def sup_begin(level, label, caption)
+    def sup_begin(_level, label, _caption)
+      check_id(label)
     end
 
     def sup_end(_level)
@@ -232,6 +249,7 @@ module ReVIEW
     alias_method :lead, :read
 
     def list(_lines, id, _caption, _lang = nil)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @list_index.size + 1)
       @list_index.add_item(item)
     end
@@ -240,6 +258,7 @@ module ReVIEW
     end
 
     def listnum(_lines, id, _caption, _lang = nil)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @list_index.size + 1)
       @list_index.add_item(item)
     end
@@ -257,11 +276,13 @@ module ReVIEW
     end
 
     def image(_lines, id, caption, _metric = nil)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @image_index.size + 1, caption)
       @image_index.add_item(item)
     end
 
     def table(_lines, id = nil, caption = nil)
+      check_id(id)
       if id
         item = ReVIEW::Book::Index::Item.new(id, @table_index.size + 1, caption)
         @table_index.add_item(item)
@@ -277,6 +298,7 @@ module ReVIEW
     end
 
     def imgtable(_lines, id, _caption = nil, _metric = nil)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @table_index.size + 1)
       @table_index.add_item(item)
 
@@ -286,16 +308,19 @@ module ReVIEW
     end
 
     def footnote(id, str)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @footnote_index.size + 1, str)
       @footnote_index.add_item(item)
     end
 
     def indepimage(_lines, id, _caption = '', _metric = nil)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @indepimage_index.size + 1)
       @indepimage_index.add_item(item)
     end
 
     def numberlessimage(_lines, id, _caption = '', _metric = nil)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @indepimage_index.size + 1)
       @indepimage_index.add_item(item)
     end
@@ -303,7 +328,8 @@ module ReVIEW
     def hr
     end
 
-    def label(_id)
+    def label(id)
+      check_id(id)
     end
 
     def blankline
@@ -440,6 +466,7 @@ module ReVIEW
     end
 
     def bibpaper(_lines, id, caption)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @bibpaper_index.size + 1, caption)
       @bibpaper_index.add_item(item)
     end
@@ -553,6 +580,7 @@ module ReVIEW
     end
 
     def inline_icon(id)
+      check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @icon_index.size + 1)
       @icon_index.add_item(item)
       ''
@@ -583,6 +611,7 @@ module ReVIEW
     end
 
     def texequation(_lines, id = nil, _caption = '')
+      check_id(id)
       if id
         item = ReVIEW::Book::Index::Item.new(id, @equation_index.size + 1)
         @equation_index.add_item(item)

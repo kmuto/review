@@ -106,8 +106,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_headline_level1_with_tricky_id
-    actual = compile_block("={123 あ_;} this is test.\n")
-    assert_equal %Q(<h1 id="id_123-_E3_81_82___3B"><a id="h1"></a><span class="secno">第1章　</span>this is test.</h1>\n), actual
+    actual = compile_block("={123あ_} this is test.\n")
+    assert_equal %Q(<h1 id="id_123_E3_81_82__"><a id="h1"></a><span class="secno">第1章　</span>this is test.</h1>\n), actual
   end
 
   def test_headline_level1_with_inlinetag
@@ -137,8 +137,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
   end
 
   def test_label_with_tricky_id
-    actual = compile_block("//label[123 あ_;]\n")
-    assert_equal %Q(<a id="id_123-_E3_81_82___3B"></a>\n), actual
+    actual = compile_block("//label[123あ_]\n")
+    assert_equal %Q(<a id="id_123_E3_81_82__"></a>\n), actual
   end
 
   def test_href
@@ -683,12 +683,6 @@ EOS
 <p>img: <span class="imgref"><a href="./ch01.html#id_123_E3_81_82_E3_81_84_E3_81_86">図1.1</a></span></p>
 EOS
     assert_equal expected, actual
-  end
-
-  def test_image_with_tricky_id_space
-    assert_raise(ReVIEW::SyntaxError) do
-      _result = compile_block("//image[123 abc][sample photo]{\n//}\n")
-    end
   end
 
   def test_indepimage
@@ -2203,9 +2197,9 @@ EOS
   end
 
   def test_footnote_with_tricky_id
-    actual = compile_block("//footnote[123 あ_;][bar\\a\\$buz]\n")
+    actual = compile_block("//footnote[123あ_;][bar\\a\\$buz]\n")
     expected = <<-'EOS'
-<div class="footnote" epub:type="footnote" id="fn-id_123-_E3_81_82___3B"><p class="footnote">[*1] bar\a\$buz</p></div>
+<div class="footnote" epub:type="footnote" id="fn-id_123_E3_81_82___3B"><p class="footnote">[*1] bar\a\$buz</p></div>
 EOS
     assert_equal expected, actual
   end

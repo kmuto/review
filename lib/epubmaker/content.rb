@@ -78,7 +78,7 @@ module EPUBMaker
       if @id =~ /\A[^a-z]/i
         @id = "rv-#{@id}"
       end
-      @id = CGI.escape(@id)
+      @id = CGI.escape(@id).gsub('%', '_25_')
 
       if !@file.nil? && @media.nil?
         @media = @file.sub(/.+\./, '').downcase
