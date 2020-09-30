@@ -24,7 +24,10 @@
 * suppress warning with same `@<icon>` ([#1541])
 * fix an error handling when a badly encoded file is received ([#1544])
 * introduce IndexBuilder. IndexBuilder first scans the entire project files and provides indexes for each builder ([#1384], [#1552])
-* IDs and labels containing white space characters are now rejected ([#1393])
+* IDs and labels containing below characters or space characters are now warned ([#1393], [#1574])
+```
+#%\{}[]~/$'"|*?&<>`
+```
 
 ## Docs
 * fix a typo in format.ja.md and format.md ([#1528])
@@ -85,6 +88,7 @@
 [#1569]: https://github.com/kmuto/review/pull/1569
 [#1572]: https://github.com/kmuto/review/pull/1572
 [#1573]: https://github.com/kmuto/review/pull/1573
+[#1574]: https://github.com/kmuto/review/issues/1574
 
 # Version 4.2.0
 ## New Features
