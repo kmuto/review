@@ -819,4 +819,11 @@ EOT
 EOT
     assert_equal expect, @output.string
   end
+
+  def test_epub_unsafe_id
+    content = Content.new({ 'file' => 'sample.png' })
+    assert_equal 'sample-png', content.id
+    content = Content.new({ 'file' => 'sample-&()-=+@:,漢字.png' })
+    assert_equal 'sample-_25_26_25_28_25_29-_25_3D_25_2B_25_40_25_3A_25_2C_25_E6_25_BC_25_A2_25_E5_25_AD_25_97-png', content.id
+  end
 end
