@@ -4,7 +4,7 @@
 %  pLaTeX2ε新ドキュメントクラス（日本語 TeX 開発コミュニティ版）
 %  原作者：奥村晴彦 <okumura@okumuralab.org>
 %
-%  Copyright 1993-2019
+%  Copyright 1993-2020
 %  The LaTeX3 Project and any individual authors listed elsewhere
 %  in this file.
 %
@@ -23,10 +23,11 @@
 %<report>\ProvidesClass{jsreport}
 %<jspf>\ProvidesClass{jspf}
 %<kiyou>\ProvidesClass{kiyou}
+%<minijs>\ProvidesPackage{minijs}
 %<*driver>
 \ProvidesFile{jsclasses.dtx}
 %</driver>
-  [2020/02/02 jsclasses (okumura, texjporg)]
+  [2020/10/05 jsclasses (okumura, texjporg)]
 %<*driver>
 \documentclass{jsarticle}
 \usepackage{doc}
@@ -119,11 +120,26 @@
 %
 % 以下では実際のコードに即して説明します。
 %
+% \texttt{minijs}は，\texttt{jsclasses}に似た設定を行うパッケージです。
+%
+%    \begin{macrocode}
+%<*minijs>
+%% if jsclasses loaded, abort loading this package
+\ifx\@jsc@uplatextrue\@undefined\else
+  \PackageInfo{minijs}{jsclasses does not need minijs, exiting}
+  \expandafter\endinput
+\fi
+%% "fake" jsarticle
+\expandafter\def\csname ver@jsarticle.cls\endcsname{}
+%</minijs>
+%    \end{macrocode}
+%
 % \begin{macro}{\jsc@clsname}
 %
 % 文書クラスの名前です。エラーメッセージ表示などで使われます。
 %
 %    \begin{macrocode}
+%<*class>
 %<article>\def\jsc@clsname{jsarticle}
 %<book>\def\jsc@clsname{jsbook}
 %<report>\def\jsc@clsname{jsreport}
@@ -741,6 +757,11 @@
 % [2017-01-11] トンボオプションが指定されているとき「だけ」|\stockwidth|，
 % |\stockheight|を定義するようにしました。
 %
+% [2020-10-04] \LaTeXe~2020-10-01でカーネルの |\shipout| コードが拡張され
+% |\AtBeginDvi| の実行タイミングが変化したので，この時点で
+% 発行する |\special| の中身を展開しておくようにしました。
+% こうしないと，用紙サイズ設定を間違ってしまいます(Issue \#72)。
+%
 %    \begin{macrocode}
 \iftombow
   \newdimen\stockwidth \newdimen\stockheight
@@ -751,10 +772,11 @@
 \fi
 \ifpapersize
   \iftombow
-    \AtBeginDvi{\special{papersize=\the\stockwidth,\the\stockheight}}
+    \edef\jsc@papersize@special{papersize=\the\stockwidth,\the\stockheight}
   \else
-    \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
+    \edef\jsc@papersize@special{papersize=\the\paperwidth,\the\paperheight}
   \fi
+  \AtBeginDvi{\special{\jsc@papersize@special}}
 \fi
 %    \end{macrocode}
 %
@@ -1054,6 +1076,24 @@
 % $9.62216\,\mathrm{pt} * 0.961 / 10\,\mathrm{pt} = 0.924690$ です。
 %
 %    \begin{macrocode}
+%</class>
+%<*minijs>
+%% min/goth -> jis/jisg (for pLaTeX only)
+\ifx\ucs\@undefined
+\@for\@tempa:=5,6,7,8,9,10,10.95,12,14.4,17.28,20.74,24.88\do{%
+  \expandafter\let\csname JY1/mc/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JY1/gt/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JT1/mc/m/n/\@tempa\endcsname\relax
+  \expandafter\let\csname JT1/gt/m/n/\@tempa\endcsname\relax
+}
+\def\Cjascale{0.924690}
+\DeclareFontShape{JY1}{mc}{m}{n}{<-> s * [0.961] jis}{}
+\DeclareFontShape{JY1}{gt}{m}{n}{<-> s * [0.961] jisg}{}
+\DeclareFontShape{JT1}{mc}{m}{n}{<-> s * [0.961] tmin10}{}
+\DeclareFontShape{JT1}{gt}{m}{n}{<-> s * [0.961] tgoth10}{}
+\fi
+%</minijs>
+%<*class>
 %<*!jspf>
 \def\Cjascale{0.924690}
 \ifmingoth
@@ -1165,7 +1205,22 @@
 % 従来のコードも\LaTeXe~2019-10-01以前のために残してありますが，
 % \texttt{mweights}パッケージ対策も施しました(forum:2763)。
 %
+% [2020-10-04] \LaTeXe~2020-10-01では |\AddToHook| を利用します。
+%
+% ^^A Note that |\AddToHook| is defined as follows:
+% ^^A \begin{itemize}
+% ^^A   \item Format date 2020-02-02 or older: undefined
+% ^^A   \item Format date 2020-10-01 or newer: available
+% ^^A   \item ... under \texttt{latexrelease} rollback: defined but no-op
+% ^^A \end{itemize}
+%
 %    \begin{macrocode}
+%</class>
+%<*class|minijs>
+%% ad-hoc "relation font"
+\@ifl@t@r\fmtversion{2020/10/01}
+    {\jsc@needsp@tchfalse}{\jsc@needsp@tchtrue}
+\ifjsc@needsp@tch          % --- for 2020-02-02 or older BEGIN
 \ifx\@rmfamilyhook\@undefined  % old
 \DeclareRobustCommand\rmfamily
         {\not@math@alphabet\rmfamily\mathrm
@@ -1195,6 +1250,16 @@
 \g@addto@macro\@ttfamilyhook
   {\prepare@family@series@update@kanji{gt}\gtdefault}
 \fi
+\else % --- for 2020-02-02 or older END & for 2020-10-01 BEGIN
+\AddToHook{rmfamily}%
+  {\prepare@family@series@update@kanji{mc}\mcdefault}
+\AddToHook{sffamily}%
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\AddToHook{ttfamily}%
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\fi   % --- for 2020-10-01 END
+%</class|minijs>
+%<*class>
 %    \end{macrocode}
 %
 % \begin{macro}{\textmc}
@@ -1562,25 +1627,31 @@
 % [2008-02-18] |english| オプションで |\parindent| を 1em にしました。
 %
 %    \begin{macrocode}
+%</class>
+%<*class|minijs>
+%% \@setfontsize with \parindent and \(x)kanjiskip settings
 \def\@setfontsize#1#2#3{%
-% \@nomath#1%
+%<minijs>  \@nomath#1%
   \ifx\protect\@typeset@protect
     \let\@currsize#1%
   \fi
   \fontsize{#2}{#3}\selectfont
   \ifdim\parindent>\z@
-    \if@english
-      \parindent=1em
-    \else
+%<class>    \if@english
+%<class>      \parindent=1em
+%<class>    \else
       \parindent=1zw
-    \fi
+%<class>    \fi
   \fi
   \kanjiskip=0zw plus .1zw minus .01zw
-  \ifdim\xkanjiskip>\z@
-    \if@slide \xkanjiskip=0.1em \else
+%<class>  \ifdim\xkanjiskip>\z@
+%<class>    \if@slide \xkanjiskip=0.1em \else
       \xkanjiskip=0.25em plus 0.15em minus 0.06em
-    \fi
-  \fi}
+%<class>    \fi
+%<class>  \fi
+}
+%</class|minijs>
+%<*class>
 %    \end{macrocode}
 % \end{macro}
 %
@@ -1689,7 +1760,12 @@
 % ここで実際に標準フォントサイズで初期化します。
 %
 %    \begin{macrocode}
+%</class>
+%<*class|minijs>
+%% initialize
 \normalsize
+%</class|minijs>
+%<*class>
 %    \end{macrocode}
 %
 % \end{macro}
@@ -6010,6 +6086,7 @@
     \ignorespaces
   \fi}
 %</article|book|report>
+%</class>
 %    \end{macrocode}
 % \end{macro}
 %

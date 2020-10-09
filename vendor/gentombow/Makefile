@@ -25,7 +25,6 @@ gentombow.pdf: gentombow.tex
 .PHONY: install clean
 install:
 	mkdir -p ${TEXMF}/doc/latex/gentombow
-	cp ./Makefile ${TEXMF}/doc/latex/gentombow/
 	cp ./LICENSE ${TEXMF}/doc/latex/gentombow/
 	cp ./README.md ${TEXMF}/doc/latex/gentombow/
 	cp ./*.pdf ${TEXMF}/doc/latex/gentombow/

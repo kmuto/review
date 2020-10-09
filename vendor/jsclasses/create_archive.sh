@@ -14,8 +14,8 @@ echo " * Create $PROJECT.tds.zip"
 git archive --format=tar --prefix=$PROJECT/ HEAD | (cd $TMP && tar xf -)
 rm $TMP/$PROJECT/.gitignore
 rm $TMP/$PROJECT/create_archive.sh
-rm -f $TMP/$PROJECT/jis/*
-rmdir $TMP/$PROJECT/jis
+rm -rf $TMP/$PROJECT/tests
+rm -rf $TMP/$PROJECT/jis
 perl -pi.bak -e "s/\\\$RELEASEDATE/$RELEASEDATE/g" $TMP/$PROJECT/README.md
 rm -f $TMP/$PROJECT/README.md.bak
 
@@ -46,10 +46,10 @@ git archive --format=tar --prefix=$PROJECT/ HEAD | (cd $TMP && tar xf -)
 # winjis.sty should be removed for CTAN
 rm $TMP/$PROJECT/.gitignore
 rm $TMP/$PROJECT/create_archive.sh
-rm -f $TMP/$PROJECT/jis/*
-rmdir $TMP/$PROJECT/jis
+rm -rf $TMP/$PROJECT/tests
+rm -rf $TMP/$PROJECT/jis
 rm $TMP/$PROJECT/*.cls
-ls $TMP/$PROJECT/*.sty | grep -v minijs.sty | xargs rm
+rm $TMP/$PROJECT/*.sty
 perl -pi.bak -e "s/\\\$RELEASEDATE/$RELEASEDATE/g" $TMP/$PROJECT/README.md
 rm -f $TMP/$PROJECT/README.md.bak
 

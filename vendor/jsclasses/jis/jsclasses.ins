@@ -1,8 +1,18 @@
+\input docstrip
+\preamble
+
+Maintained on GitHub: https://github.com/texjporg/jsclasses
+
+\endpreamble
+
 \def\batchfile{jsclasses.ins}
 \input docstrip.tex
 \keepsilent
-\generateFile{jsarticle.cls}{f}{\from{jsclasses.dtx}{article}}
-\generateFile{jsbook.cls}{f}{\from{jsclasses.dtx}{book}}
-\generateFile{jsreport.cls}{f}{\from{jsclasses.dtx}{report}}
-\generateFile{jspf.cls}{f}{\from{jsclasses.dtx}{jspf}}
-\generateFile{kiyou.cls}{f}{\from{jsclasses.dtx}{kiyou}}
+\generateFile{jsarticle.cls}{f}{\from{jsclasses.dtx}{class,article}}
+\generateFile{jsbook.cls}{f}{\from{jsclasses.dtx}{class,book}}
+\generateFile{jsreport.cls}{f}{\from{jsclasses.dtx}{class,report}}
+\generateFile{jspf.cls}{f}{\from{jsclasses.dtx}{class,jspf}}
+\generateFile{kiyou.cls}{f}{\from{jsclasses.dtx}{class,kiyou}}
+\generateFile{minijs.sty}{f}{\from{jsclasses.dtx}{minijs}}
+
+\endbatchfile

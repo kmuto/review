@@ -8,7 +8,7 @@
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{gentombow}
-    [2018/08/30 v0.9j Generate crop mark 'tombow']
+    [2019/07/21 v0.9k Generate crop mark 'tombow']
 \def\pxgtmb@pkgname{gentombow}
 \@namedef{ver@pxgentombow.sty}{}% fake
 
@@ -290,6 +290,7 @@
 %% prepare flag
 \newif\ifpxgtmb@switch    \pxgtmb@switchfalse
 \newif\ifpxgtmb@landscape \pxgtmb@landscapefalse
+\newif\ifpxgtmb@pdfx@x    \pxgtmb@pdfx@xfalse
 
 %% passed from class options
 %% should be declared first inside this package (least priority)
@@ -507,7 +508,7 @@
 %% pdf "digital tombo" (driver-dependent)
 %  the box size calculation is delayed until \AtBeginDocument
 %  to allow users to change \@tombowbleed in the preamble
-\if 1\pxgtmb@pdfbox@status
+
 % convert pt -> bp
 \def\pxgtmb@PDF@setbp#1#2{%
   \@tempdima=.996264#2\relax % 0.996264 = 72/72.27 (cf. 1in = 72.27pt = 72bp)
@@ -521,8 +522,8 @@
     \def\pxgtmb@magscale{1}%
   \fi
   % set pdf boxes in bp unit
-  %\pxgtmb@PDF@setbp\pxgtmb@PDF@crop@ur@x\stockwidth
-  %\pxgtmb@PDF@setbp\pxgtmb@PDF@crop@ur@y\stockheight
+  \pxgtmb@PDF@setbp\pxgtmb@PDF@crop@ur@x\stockwidth
+  \pxgtmb@PDF@setbp\pxgtmb@PDF@crop@ur@y\stockheight
   \pxgtmb@PDF@setbp\pxgtmb@PDF@trim@ll@x{\dimexpr(\stockwidth-\paperwidth)/2}%
   \pxgtmb@PDF@setbp\pxgtmb@PDF@trim@ll@y{\dimexpr(\stockheight-\paperheight)/2}%
   \pxgtmb@PDF@setbp\pxgtmb@PDF@trim@ur@x{\dimexpr(\stockwidth+\paperwidth)/2}%
@@ -532,8 +533,14 @@
   \pxgtmb@PDF@setbp\pxgtmb@PDF@bleed@ur@x{\dimexpr(\stockwidth+\paperwidth)/2+\@tombowbleed}%
   \pxgtmb@PDF@setbp\pxgtmb@PDF@bleed@ur@y{\dimexpr(\stockheight+\paperheight)/2+\@tombowbleed}%
   \xdef\pxgtmb@PDF@CTM{%
-    %% CropBox: implicit (same as MediaBox, large paper size)
-    %/CropBox  [0 0 \pxgtmb@PDF@crop@ur@x\space \pxgtmb@PDF@crop@ur@y]
+    %% CropBox: normally implicit (same as MediaBox, large paper size)
+    %% however, pdfx.sty in PDF/X mode sets /CropBox explicitly, so I need to override it!
+   \ifpxgtmb@pdfx@x
+    \noexpand\pxgtmb@PDF@begin
+    /CropBox  [0 0
+               \pxgtmb@PDF@crop@ur@x\space
+               \pxgtmb@PDF@crop@ur@y] \noexpand\pxgtmb@PDF@end
+   \fi
     %% BleedBox: explicit (final paper size + surrounding \@tombowbleed)
     \noexpand\pxgtmb@PDF@begin
     /BleedBox [\pxgtmb@PDF@bleed@ll@x\space
@@ -547,9 +554,20 @@
                \pxgtmb@PDF@trim@ur@x\space
                \pxgtmb@PDF@trim@ur@y] \noexpand\pxgtmb@PDF@end
     %% ArtBox: implicit
+    %% [Note] PDF/X requires /TrimBox or /ArtBox but not both!
   }%
   \endgroup
 }
+
+% do it
+\AtBeginDocument{\pxgtmb@PDF@emit}
+\def\pxgtmb@PDF@emit{%
+  % handle compatibility with pdfx.sty here;
+  % if pdfx.sty with PDF/X mode detected, force [pdfbox] option!
+  \pxgtmb@handle@pdfx
+  \ifpxgtmb@pdfx@x\def\pxgtmb@pdfbox@status{1}\fi
+  % start actual procedure for [pdfbox] option
+ \if 1\pxgtmb@pdfbox@status
 %% supported drivers: dvips, dvipdfmx, XeTeX, pdfTeX, LuaTeX
 \ifnum0\ifx\pdfvariable\@undefined\else\the\outputmode\fi=0\relax
 \ifnum0\ifx\pdfpageattr\@undefined\else\the\pdfoutput\fi=0\relax
@@ -666,8 +684,7 @@
     \def\pxgtmb@PDF@begin{}\def\pxgtmb@PDF@end{}%
     \edef\pxgtmb@PDF@CTM{{\pxgtmb@PDF@CTM}}%
     \expandafter\pdfpageattr\pxgtmb@PDF@CTM}
-\fi
-\else
+\fi\else
   %% for LuaTeX
   \def\pxgtmb@driver{l}
   % force paper size
@@ -679,7 +696,8 @@
     \edef\pxgtmb@PDF@CTM{pageattr{\pxgtmb@PDF@CTM}}%
     \expandafter\pdfvariable\pxgtmb@PDF@CTM}
 \fi
-\fi
+ \fi
+}
 
 %% make visible tombow box according to the current status of
 %% \@bannerfont, \@bannertoken, \@tombowwidth & \@tombowbleed
@@ -713,7 +731,7 @@
 % because pdf boxes are calculated only inside \AtBeginDocument
 \@onlypreamble\settombowbleed
 
-%% patch internal for pdfpages to work with tombow
+%% patch internal of pdfpages.sty to work with tombow
 %% (tested on pdfpages 2017/10/31 v0.5l)
 %% Note the code is the same as that of pxpdfpages.sty,
 %% but reserved here since gentombow.sty can be used on
@@ -743,5 +761,9 @@
 \fi
 %% do it
 \AtBeginDocument{\@ifpackageloaded{pdfpages}{\pxgtmb@patch@pdfpages}{}}
+
+%% patch pdfx.sty
+%% (tested on pdfx 2019/02/27 v1.6.3)
+\def\pxgtmb@handle@pdfx{\@ifpackageloaded{pdfx}{\let\ifpxgtmb@pdfx@x\ifpdfx@x}{}}
 
 \endinput
