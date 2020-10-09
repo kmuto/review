@@ -1,7 +1,7 @@
 %
 % bounddvi.sty
-% 2016/12/28 v7.2-v7.0 h.y.acetaminophen@gmail.com
-% 2004/12/15 v6.0-v1.0 inoue@ma.ns.tcu.ac.jp
+% 2020/09/25 v8.0-v7.0 h.y.acetaminophen [at] gmail.com
+% 2004/12/15 v6.0-v1.0 inoue [at] ma.ns.tcu.ac.jp
 %
 % This package, originally written by Koichi Inoue
 % and modified by Hironobu Yamashita, is distributed
@@ -10,7 +10,7 @@
 %
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{bounddvi}[2016/12/28 v7.2 bounddvi]
+\ProvidesPackage{bounddvi}[2020/09/25 v8.0 bounddvi]
 
 % catcode trick to hide \iftombow ... \else ... \fi
 % since \iftombow is defined only in pLaTeX.
@@ -50,14 +50,12 @@ Q \fi
 % reset catcode trick
 \catcode`\Q=11\relax
 
-% following code is almost equivalent to
-%   \AtBeginDocument{\AtBeginDvi{...}}
-% however, we append the specification to the _beginning_ of
-% \@begindocumenthook; this ensures proper papersize when
-% dvips (TeX Live 2016 or earlier) is used.
-\begingroup
-\def\@prependto@begindocumenthook{\global\setbox\@begindvibox
-  \vbox{\csname yoko\endcsname\unvbox\@begindvibox
+%% Since LaTeX2e 2020-10-01, \@begindocumenthook is deprecated
+%% and \UseHook{begindocument} etc. are used.
+%% This code appends papersize special to the _end_ of the hook.
+%% (Note: support for old dvips is removed.)
+\ifx\AddToHook\@undefined\else
+  \AtBeginDocument{\AtBeginDvi{%
     \begingroup
       % if \stockwidth/\stockheight are defined & have effective
       % values, copy them to \paperwidth/\paperheight
@@ -69,6 +67,31 @@ Q \fi
         \paperheight\stockheight
       \fi\fi
       % adjust for \mag and emit papersize special
+      \divide\paperwidth\@m\multiply\paperwidth\mag
+      \divide\paperheight\@m\multiply\paperheight\mag
+      \special{papersize=\the\paperwidth,\the\paperheight}%
+    \endgroup}}
+  \expandafter\endinput
+\fi
+
+%% The rest of this package is meant for
+%% LaTeX2e 2020-02-02 PL5 or older.
+
+% following code is almost equivalent to
+%   \AtBeginDocument{\AtBeginDvi{...}}
+% however, we append the specification to the _beginning_ of
+% \@begindocumenthook; this ensures proper papersize when
+% dvips (TeX Live 2016 or earlier) is used.
+\begingroup
+\def\@prependto@begindocumenthook{\global\setbox\@begindvibox
+  \vbox{\csname yoko\endcsname\unvbox\@begindvibox
+    \begingroup
+      \ifx\stockwidth\@undefined\else \ifdim\stockwidth>\z@
+        \paperwidth\stockwidth
+      \fi\fi
+      \ifx\stockheight\@undefined\else \ifdim\stockheight>\z@
+        \paperheight\stockheight
+      \fi\fi
       \divide\paperwidth\@m\multiply\paperwidth\mag
       \divide\paperheight\@m\multiply\paperheight\mag
       \special{papersize=\the\paperwidth,\the\paperheight}%

@@ -291,6 +291,9 @@ CMYKの版ごとにトンボを作成する場合や、特色のトンボが必�
 \item \verb+/BleedBox+: 裁ち落とし領域を含んだサイズ。
 \item \verb+/CropBox+, \verb+/ArtBox+: 明示しない。
 \end{itemize}
+注意：\textsf{pdfx}パッケージがPDF/Xモードで読み込まれていれば、
+このオプション機能は自動的に有効化されます。
+また、\verb+/CropBox+も明示します。
 
 \section{その他の注意点}
 
@@ -390,6 +393,11 @@ $30\,\mathrm{mm}$にしたいとき\footnote{ここでは「本文の領域以�
 \end{verbatim}
 \end{dangerous}
 
+なお、\textsf{geometry}パッケージは用紙サイズ
+(\verb+\paperwidth+, \verb+\paperheight+)を変更する場合もあります。
+こうした場合に備え、\textsf{gentombow}パッケージは
+\textsf{geometry}パッケージよりも後に読み込むようにしてください。
+
 \section*{雑記}
 
 発端はこの話です。
@@ -444,6 +452,7 @@ $30\,\mathrm{mm}$にしたいとき\footnote{ここでは「本文の領域以�
                          \verb+pdfbox+オプションが正常動作するように改良、
                          \verb+\settombowbleed+が\verb+/TrimBox+に反映されな
                          かったバグの修正
+  \item 2019/07/21 v0.9k \textsf{pdfx}パッケージとの整合性をとる改良
 \end{itemize}
 
 \end{document}
