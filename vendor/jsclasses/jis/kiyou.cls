@@ -4,25 +4,13 @@
 %%
 %% The original source files were:
 %%
-%% jsclasses.dtx  (with options: `kiyou')
+%% jsclasses.dtx  (with options: `class,kiyou')
 %% 
-%% IMPORTANT NOTICE:
+%% Maintained on GitHub: https://github.com/texjporg/jsclasses
 %% 
-%% For the copyright see the source file.
-%% 
-%% Any modified versions of this file must be renamed
-%% with new filenames distinct from kiyou.cls.
-%% 
-%% For distribution of the original source see the terms
-%% for copying and modification in the file jsclasses.dtx.
-%% 
-%% This generated file may be distributed as long as the
-%% original source files, as listed above, are part of the
-%% same distribution. (The sources need not necessarily be
-%% in the same archive or directory.)
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{kiyou}
-  [2020/02/02 jsclasses (okumura, texjporg)]
+  [2020/10/05 jsclasses (okumura, texjporg)]
 \def\jsc@clsname{kiyou}
 \newif\ifjsc@needsp@tch
 \jsc@needsp@tchfalse
@@ -252,10 +240,11 @@
 \fi
 \ifpapersize
   \iftombow
-    \AtBeginDvi{\special{papersize=\the\stockwidth,\the\stockheight}}
+    \edef\jsc@papersize@special{papersize=\the\stockwidth,\the\stockheight}
   \else
-    \AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}
+    \edef\jsc@papersize@special{papersize=\the\paperwidth,\the\paperheight}
   \fi
+  \AtBeginDvi{\special{\jsc@papersize@special}}
 \fi
 \def\n@baseline{14.897}
 \newdimen\jsc@mpt
@@ -467,6 +456,10 @@
 \DeclareFontShape{\jsc@JTn}{gt}{m}{sl}{<->ssub*gt/m/n}{}
 \DeclareFontShape{\jsc@JTn}{mc}{bx}{it}{<->ssub*gt/m/n}{}
 \DeclareFontShape{\jsc@JTn}{mc}{bx}{sl}{<->ssub*gt/m/n}{}
+%% ad-hoc "relation font"
+\@ifl@t@r\fmtversion{2020/10/01}
+    {\jsc@needsp@tchfalse}{\jsc@needsp@tchtrue}
+\ifjsc@needsp@tch          % --- for 2020-02-02 or older BEGIN
 \ifx\@rmfamilyhook\@undefined  % old
 \DeclareRobustCommand\rmfamily
         {\not@math@alphabet\rmfamily\mathrm
@@ -496,6 +489,14 @@
 \g@addto@macro\@ttfamilyhook
   {\prepare@family@series@update@kanji{gt}\gtdefault}
 \fi
+\else % --- for 2020-02-02 or older END & for 2020-10-01 BEGIN
+\AddToHook{rmfamily}%
+  {\prepare@family@series@update@kanji{mc}\mcdefault}
+\AddToHook{sffamily}%
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\AddToHook{ttfamily}%
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\fi   % --- for 2020-10-01 END
 \ifx\DeclareFixJFMCJKTextFontCommand\@undefined
 \DeclareRobustCommand\textmc[1]{%
     \relax\ifmmode \expandafter\nfss@text \fi{\mcfamily #1}}
@@ -704,6 +705,7 @@
 \xspcode`^^fe=3
 \xspcode`^^ff=3
 \def\@{\spacefactor3000{}}
+%% \@setfontsize with \parindent and \(x)kanjiskip settings
 \def\@setfontsize#1#2#3{%
   \ifx\protect\@typeset@protect
     \let\@currsize#1%
@@ -721,7 +723,8 @@
     \if@slide \xkanjiskip=0.1em \else
       \xkanjiskip=0.25em plus 0.15em minus 0.06em
     \fi
-  \fi}
+  \fi
+}
 \def\jsc@setfontsize#1#2#3{%
   \@setfontsize#1{#2\jsc@mpt}{#3\jsc@mpt}}
 \emergencystretch 3zw
@@ -752,6 +755,7 @@
   \belowdisplayskip 9\jsc@mpt \@plus3\jsc@mpt \@minus4\jsc@mpt
   \belowdisplayshortskip \belowdisplayskip
   \let\@listi\@listI}
+%% initialize
 \normalsize
 \setbox0\hbox{\char\jis"3441}%
 \setlength\Cht{\ht0}

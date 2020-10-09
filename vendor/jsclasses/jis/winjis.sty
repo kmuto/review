@@ -8,9 +8,10 @@
 % both from http://psitau.kitunebi.com/utf.html by psitau
 %
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{winjis}[2018/02/04 okumura, texjporg]
+\ProvidesPackage{winjis}
+  [2020/10/04 okumura, texjporg]
 %
-% if upLaTeX detected, abort loading this package
+%% if upLaTeX detected, abort loading this package
 \ifnum \ifx\ucs\@undefined\z@\else\ucs"3000 \fi ="3000 % upTeX
   \PackageError{winjis}{This package is not required on upLaTeX}
     {Package `winjis' is meant for using platform-dependent
@@ -20,8 +21,8 @@
   \expandafter\endinput
 \fi
 %
-% if jsclasses (<= 2017) loaded, winjis option is available;
-% abort loading this package
+%% if jsclasses (<= 2017) loaded, winjis option is available;
+%% abort loading this package
 \ifx\winjistrue\@undefined\else
   \PackageWarning{winjis}{%
     Your version of jsclasses should have\MessageBreak
@@ -29,10 +30,10 @@
   \expandafter\endinput
 \fi
 %
-% "fake" jsarticle
+%% "fake" jsarticle
 \expandafter\def\csname ver@jsarticle.cls\endcsname{}
 %
-% use winjis; force jsclasses-style scaling
+%% use winjis; force jsclasses-style scaling
 \@for\@tempa:=5,6,7,8,9,10,10.95,12,14.4,17.28,20.74,24.88\do{%
   \expandafter\let\csname JY1/mc/m/n/\@tempa\endcsname\relax
   \expandafter\let\csname JY1/gt/m/n/\@tempa\endcsname\relax
@@ -55,24 +56,15 @@
   \DeclareFontShape{JT1}{gt}{m}{n}{<-> s * [0.93885] winjisg-v}{}
 \fi
 %
-% if jsclasses loaded, the rest of this package is already done;
-% exit now
+%% if jsclasses loaded, the rest of this package is already done;
+%% exit now
 \ifx\@jsc@uplatextrue\@undefined\else
   \normalsize
   \expandafter\endinput
 \fi
 %
-% \@setfontsize with \parindent and \(x)kanjiskip settings
-\def\@setfontsize#1#2#3{\@nomath#1%
-  \ifx\protect\@typeset@protect
-    \let\@currsize#1%
-  \fi
-  \fontsize{#2}{#3}\selectfont
-  \ifdim\parindent>\z@ \parindent=1zw \fi
-  \kanjiskip=0zw plus .1zw minus .01zw
-  \xkanjiskip=0.25em plus 0.15em minus 0.06em}
-%
-% ad-hoc "relation font"
+%% ad-hoc "relation font"
+%% does not support LaTeX2e 2020-02-02 or later!
 \DeclareRobustCommand\rmfamily
         {\not@math@alphabet\rmfamily\mathrm
          \romanfamily\rmdefault\kanjifamily\mcdefault\selectfont}
@@ -82,6 +74,18 @@
 \DeclareRobustCommand\ttfamily
         {\not@math@alphabet\ttfamily\mathtt
          \romanfamily\ttdefault\kanjifamily\gtdefault\selectfont}
+%
+%% \@setfontsize with \parindent and \(x)kanjiskip settings
+\def\@setfontsize#1#2#3{\@nomath#1%
+  \ifx\protect\@typeset@protect
+    \let\@currsize#1%
+  \fi
+  \fontsize{#2}{#3}\selectfont
+  \ifdim\parindent>\z@ \parindent=1zw \fi
+  \kanjiskip=0zw plus .1zw minus .01zw
+  \xkanjiskip=0.25em plus 0.15em minus 0.06em}
+%
+%% initialize
 \normalsize
 %
 \endinput

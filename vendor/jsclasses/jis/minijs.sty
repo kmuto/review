@@ -1,18 +1,24 @@
-% minimal jsarticle-like fonts
-%
+%%
+%% This is file `minijs.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% jsclasses.dtx  (with options: `minijs')
+%% 
+%% Maintained on GitHub: https://github.com/texjporg/jsclasses
+%% 
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{minijs}[2018/02/04 okumura, texjporg]
-%
-% if jsclasses loaded, abort loading this package
+\ProvidesPackage{minijs}
+  [2020/10/05 jsclasses (okumura, texjporg)]
+%% if jsclasses loaded, abort loading this package
 \ifx\@jsc@uplatextrue\@undefined\else
   \PackageInfo{minijs}{jsclasses does not need minijs, exiting}
   \expandafter\endinput
 \fi
-%
-% "fake" jsarticle
+%% "fake" jsarticle
 \expandafter\def\csname ver@jsarticle.cls\endcsname{}
-%
-% min/goth -> jis/jisg (for pLaTeX only)
+%% min/goth -> jis/jisg (for pLaTeX only)
 \ifx\ucs\@undefined
 \@for\@tempa:=5,6,7,8,9,10,10.95,12,14.4,17.28,20.74,24.88\do{%
   \expandafter\let\csname JY1/mc/m/n/\@tempa\endcsname\relax
@@ -26,18 +32,11 @@
 \DeclareFontShape{JT1}{mc}{m}{n}{<-> s * [0.961] tmin10}{}
 \DeclareFontShape{JT1}{gt}{m}{n}{<-> s * [0.961] tgoth10}{}
 \fi
-%
-% \@setfontsize with \parindent and \(x)kanjiskip settings
-\def\@setfontsize#1#2#3{\@nomath#1%
-  \ifx\protect\@typeset@protect
-    \let\@currsize#1%
-  \fi
-  \fontsize{#2}{#3}\selectfont
-  \ifdim\parindent>\z@ \parindent=1zw \fi
-  \kanjiskip=0zw plus .1zw minus .01zw
-  \xkanjiskip=0.25em plus 0.15em minus 0.06em}
-%
-% ad-hoc "relation font"
+%% ad-hoc "relation font"
+\@ifl@t@r\fmtversion{2020/10/01}
+    {\jsc@needsp@tchfalse}{\jsc@needsp@tchtrue}
+\ifjsc@needsp@tch          % --- for 2020-02-02 or older BEGIN
+\ifx\@rmfamilyhook\@undefined  % old
 \DeclareRobustCommand\rmfamily
         {\not@math@alphabet\rmfamily\mathrm
          \romanfamily\rmdefault\kanjifamily\mcdefault\selectfont}
@@ -47,6 +46,48 @@
 \DeclareRobustCommand\ttfamily
         {\not@math@alphabet\ttfamily\mathtt
          \romanfamily\ttdefault\kanjifamily\gtdefault\selectfont}
+\AtBeginDocument{%
+  \ifx\mweights@init\@undefined\else  % mweights.sty is loaded
+    % my definitions above should have been overwritten, recover it!
+    % \selectfont is executed twice but I don't care about speed...
+    \expandafter\g@addto@macro\csname rmfamily \endcsname
+      {\kanjifamily\mcdefault\selectfont}%
+    \expandafter\g@addto@macro\csname sffamily \endcsname
+      {\kanjifamily\gtdefault\selectfont}%
+    \expandafter\g@addto@macro\csname ttfamily \endcsname
+      {\kanjifamily\gtdefault\selectfont}%
+  \fi}
+\else                          % 2020-02-02
+\g@addto@macro\@rmfamilyhook
+  {\prepare@family@series@update@kanji{mc}\mcdefault}
+\g@addto@macro\@sffamilyhook
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\g@addto@macro\@ttfamilyhook
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\fi
+\else % --- for 2020-02-02 or older END & for 2020-10-01 BEGIN
+\AddToHook{rmfamily}%
+  {\prepare@family@series@update@kanji{mc}\mcdefault}
+\AddToHook{sffamily}%
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\AddToHook{ttfamily}%
+  {\prepare@family@series@update@kanji{gt}\gtdefault}
+\fi   % --- for 2020-10-01 END
+%% \@setfontsize with \parindent and \(x)kanjiskip settings
+\def\@setfontsize#1#2#3{%
+  \@nomath#1%
+  \ifx\protect\@typeset@protect
+    \let\@currsize#1%
+  \fi
+  \fontsize{#2}{#3}\selectfont
+  \ifdim\parindent>\z@
+      \parindent=1zw
+  \fi
+  \kanjiskip=0zw plus .1zw minus .01zw
+      \xkanjiskip=0.25em plus 0.15em minus 0.06em
+}
+%% initialize
 \normalsize
-%
 \endinput
+%%
+%% End of file `minijs.sty'.
