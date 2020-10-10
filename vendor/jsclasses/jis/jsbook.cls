@@ -10,7 +10,7 @@
 %% 
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{jsbook}
-  [2020/10/05 jsclasses (okumura, texjporg)]
+  [2020/10/09 jsclasses (okumura, texjporg)]
 \def\jsc@clsname{jsbook}
 \newif\ifjsc@needsp@tch
 \jsc@needsp@tchfalse

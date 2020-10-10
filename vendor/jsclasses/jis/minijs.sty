@@ -10,7 +10,7 @@
 %% 
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesPackage{minijs}
-  [2020/10/05 jsclasses (okumura, texjporg)]
+  [2020/10/09 jsclasses (okumura, texjporg)]
 %% if jsclasses loaded, abort loading this package
 \ifx\@jsc@uplatextrue\@undefined\else
   \PackageInfo{minijs}{jsclasses does not need minijs, exiting}
@@ -18,6 +18,8 @@
 \fi
 %% "fake" jsarticle
 \expandafter\def\csname ver@jsarticle.cls\endcsname{}
+\newif\ifjsc@needsp@tch
+\jsc@needsp@tchfalse
 %% min/goth -> jis/jisg (for pLaTeX only)
 \ifx\ucs\@undefined
 \@for\@tempa:=5,6,7,8,9,10,10.95,12,14.4,17.28,20.74,24.88\do{%
