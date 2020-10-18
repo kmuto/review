@@ -235,8 +235,8 @@ Re:VIEW is updated regularly. We Re:VIEW team watch the backward compatibility c
 
 ```bash
 $ review-update
-** review-update updates your project to 4.1.0 **
-config.yml: Update 'review_version' to '4.0'? [y]/n
+** review-update updates your project to 5.0.0 **
+config.yml: Update 'review_version' to '5.0'? [y]/n
 Rakefile will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/Rakefile). Do you really proceed? [y]/n
 lib/tasks/review.rake will be overridden with Re:VIEW version (/.../review/samples/sample-book/src/lib/tasks/review.rake). Do you really proceed? [y]/n
 INFO: new file /.../sty/plistings.sty is created.

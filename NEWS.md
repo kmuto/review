@@ -1,3 +1,95 @@
+# Version 5.0.0
+## New Features
+* added `cover_fit_page` option to review-jsbook / review-jlreq classes. When `cover_fit_page=true` is specified in the `texdocumentclass` parameter, the cover image is scaled to paper size. Note: it is recommended that the images should be created at actual size ([#1534])
+* allow minicolumn nesting. Now you can put a block instruction such as `//image` or itemized list in minicolumn (`//note`, `//memo`, `//tip`, `//info`, `//warning`, `//important`, `//caution`, `//notice`) ([#1558], [#1562])
+* added single commands `//beginchild` and `//endchild` for nesting itemized/enumerate/description list. **EXPERIMENTAL FEATURE** ([#1497])
+
+## Breaking Changes
+* In review-jlreq.cls, hiddenfolio is now implemented by jlreqtrimmarkssetup. It is slightly different from the previous version in position and display ([#1397])
+* The default value of the `chapterlink` parameter is now true. Most links (chapter, section, image, table, list, equation, bibliography) in Web and EPUB are now hyperlinked. In TeX PDF, some links (chapter, section, biliography) are hyperlinked only when `media=ebook` ([#1529])
+
+## Bug Fixes
+* PDFMaker: fixed a problem with multiple same-named image files with different extensions that would cause them to be misaligned ([#1483])
+* PDFMaker: fixed a problem that cuased an error when the author name (`aut`) was empty ([#1517])
+* PDFMaker: fixed a problem that caused an error if `//indepimage`'s image file didn't exist and ID contained characters to be TeX-escaped ([#1527])
+* PDFMaker: fixed a problem with characters to be TeX-escaped in the `bookttilename` and `aut` parameters causing incorrect PDF metainformation ([#1533])
+* WebMaker: fixed to avoid nil in HTML template ([#1545])
+* PDFMaker: fixed a problem when hiding chapter numbers ([#1559])
+* MarkdownBuilder: paragraphs in minicolumn should be separated with a blank line instead of a newline ([#1572])
+
+## Enhancements
+* fix warning message to output more detailed information of item ([#1523])
+* PDFMaker: make `@<hd>` op a hyperlink (when `media=ebook`) ([#1530])
+* use `cgi/escape` first and `cgi/util` as fallback. remove orignal implementation in `ReVIEW::HTMLUtils.escape()` ([#1536])
+* suppress warning with same `@<icon>` ([#1541])
+* fix an error handling when a badly encoded file is received ([#1544])
+* introduce IndexBuilder. IndexBuilder first scans the entire project files and provides indexes for each builder ([#1384], [#1552])
+* IDs and labels containing below characters or space characters are now warned ([#1393], [#1574])
+```
+#%\{}[]~/$'"|*?&<>`
+```
+
+## Docs
+* fix a typo in format.ja.md and format.md ([#1528])
+
+## Others
+* refactor code with Rubocop 0.92.0 ([#1511], [#1569], [#1573])
+* rename `@strategy` to `@builder` in `Re:VIEW::Compiler` ([#1520])
+* refactor code with Rubocop-performance 1.7.1 ([#1521])
+* update Gemfile in syntax-book ([#1522])
+* calling GhostScript in ImageMagick has been deprecated, so the test has been removed ([#1526])
+* unnecessary stderr output on some test units has been suppressed ([#1538])
+* add `BookUnit` class instead of `Compilable` module, the super class of `Chapter` and `Part` ([#1543])
+* `ReVIEW::Book.load` is deprecated, use `ReVIEW::Book::Base.load` or `ReVIEW::Book::Base.new` add new option `:config` for `ReVIEW::Book::Base.load` ([#1548], [#1563])
+* added `ReVIEW::Configure.create` ([#1549])
+* WebMaker: removed unused `clean_mathdir` ([#1550])
+* add `Base#parse_catalog_file()` and use it in `ReVIEW::Book::Base.new()`. `Base#catalog` is just getter now  ([#1551])
+* use `File.write` when it can be used ([#1560])
+* remove `Builder#builder_init()` ([#1564])
+
+## Contributors
+* [@snoozer05](https://github.com/snoozer05)
+
+[#1384]: https://github.com/kmuto/review/pull/1384
+[#1393]: https://github.com/kmuto/review/issues/1393
+[#1397]: https://github.com/kmuto/review/issues/1397
+[#1483]: https://github.com/kmuto/review/issues/1483
+[#1497]: https://github.com/kmuto/review/pull/1497
+[#1511]: https://github.com/kmuto/review/pull/1511
+[#1517]: https://github.com/kmuto/review/issues/1517
+[#1520]: https://github.com/kmuto/review/pull/1520
+[#1521]: https://github.com/kmuto/review/pull/1521
+[#1522]: https://github.com/kmuto/review/pull/1522
+[#1523]: https://github.com/kmuto/review/pull/1523
+[#1526]: https://github.com/kmuto/review/pull/1526
+[#1527]: https://github.com/kmuto/review/pull/1527
+[#1528]: https://github.com/kmuto/review/pull/1528
+[#1529]: https://github.com/kmuto/review/issues/1529
+[#1530]: https://github.com/kmuto/review/issues/1530
+[#1533]: https://github.com/kmuto/review/issues/1533
+[#1534]: https://github.com/kmuto/review/issues/1534
+[#1536]: https://github.com/kmuto/review/pull/1536
+[#1538]: https://github.com/kmuto/review/pull/1538
+[#1541]: https://github.com/kmuto/review/pull/1541
+[#1543]: https://github.com/kmuto/review/pull/1543
+[#1544]: https://github.com/kmuto/review/issues/1544
+[#1545]: https://github.com/kmuto/review/issues/1545
+[#1548]: https://github.com/kmuto/review/pull/1548
+[#1549]: https://github.com/kmuto/review/pull/1549
+[#1550]: https://github.com/kmuto/review/pull/1550
+[#1551]: https://github.com/kmuto/review/pull/1551
+[#1552]: https://github.com/kmuto/review/pull/1552
+[#1558]: https://github.com/kmuto/review/pull/1558
+[#1559]: https://github.com/kmuto/review/issues/1559
+[#1560]: https://github.com/kmuto/review/pull/1560
+[#1562]: https://github.com/kmuto/review/pull/1562
+[#1563]: https://github.com/kmuto/review/pull/1563
+[#1564]: https://github.com/kmuto/review/pull/1564
+[#1569]: https://github.com/kmuto/review/pull/1569
+[#1572]: https://github.com/kmuto/review/pull/1572
+[#1573]: https://github.com/kmuto/review/pull/1573
+[#1574]: https://github.com/kmuto/review/issues/1574
+
 # Version 4.2.0
 ## New Features
 * introduce `caption_position` parameter to specify a caption position of image, table, list, and equation. `caption_position` has child parameters `image`, `table`, `list`, and `equation` and the value is `top` or `bottom` ([#1320])
