@@ -232,8 +232,8 @@ Re:VIEW は定期的に更新されています。おおむね後方互換性を
 
 ```bash
 $ review-update
-** review-update はプロジェクトを 4.1.0 に更新します **
-config.yml: 'review_version' を '4.0' に更新しますか? [y]/n ←Enterで実行
+** review-update はプロジェクトを 5.0.0 に更新します **
+config.yml: 'review_version' を '5.0' に更新しますか? [y]/n ←Enterで実行
 Rakefile は Re:VIEW バージョンのもの (/.../review/samples/sample-book/src/Rakefile) で置き換えられます。本当に進めますか? [y]/n
 lib/tasks/review.rake は Re:VIEW バージョンのもの (/.../review/samples/sample-book/src/lib/tasks/review.rake) で置き換えられます。本当に進めますか? [y]/n
 INFO: 新しいファイル /.../sty/plistings.sty が作成されました。
@@ -249,7 +249,7 @@ INFO: 新しいファイル /.../sty/gentombow.sty が作成されました。
 
 ## クレジット
 
-Re:VIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2020年3月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
+Re:VIEW は、青木峰郎によって最初に作成されました。武藤健志がこの開発・保守を引き継ぎ、2020年10月時点では、武藤健志、高橋征義、角征典が開発・保守を継続しています。
 
 バグ・パッチの報告、その他の情報は、
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2019 Kenshi Muto
+# Copyright (c) 2018-2020 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -20,7 +20,7 @@ module ReVIEW
     end
 
     # should be
-    TARGET_VERSION = '4.0'
+    TARGET_VERSION = '5.0'
     EPUB_VERSION = '3'
     HTML_VERSION = '5'
     TEX_DOCUMENTCLASS = ['review-jsbook', 'review-jlreq']
