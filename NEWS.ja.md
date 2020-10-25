@@ -31,6 +31,7 @@
 
 ## ドキュメント
 * format.ja.md と format.md のタイプミスを修正しました ([#1528])
+* makeindex.ja.md のサンプル結果の誤りを修正しました ([#1584])
 
 ## その他
 * Rubocop 0.92.0 に対応しました ([#1511], [#1569], [#1573])
@@ -89,6 +90,7 @@
 [#1572]: https://github.com/kmuto/review/pull/1572
 [#1573]: https://github.com/kmuto/review/pull/1573
 [#1574]: https://github.com/kmuto/review/issues/1574
+[#1584]: https://github.com/kmuto/review/pull/1584
 
 # Version 4.2.0
 ## 新機能
