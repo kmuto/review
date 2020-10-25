@@ -31,6 +31,7 @@
 
 ## Docs
 * fix a typo in format.ja.md and format.md ([#1528])
+* fix incorrect example in makeindex.ja.md ([#1584])
 
 ## Others
 * refactor code with Rubocop 0.92.0 ([#1511], [#1569], [#1573])
@@ -89,6 +90,7 @@
 [#1572]: https://github.com/kmuto/review/pull/1572
 [#1573]: https://github.com/kmuto/review/pull/1573
 [#1574]: https://github.com/kmuto/review/issues/1574
+[#1584]: https://github.com/kmuto/review/pull/1584
 
 # Version 4.2.0
 ## New Features
