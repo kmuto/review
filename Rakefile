@@ -23,7 +23,7 @@ end
 
 desc "Run tests"
 task :test, :target do |task, argv|
-  if argv.to_a.size == 0
+  if argv[:target].nil?
     ruby('test/run_test.rb')
   else
     ruby('test/run_test.rb', "--pattern=#{argv[:target]}")
