@@ -21,8 +21,8 @@ task :rubocop do
   end
 end
 
-desc "Run tests"
-task :test, :target do |task, argv|
+desc 'Run tests'
+task :test, :target do |_, argv|
   if argv[:target].nil?
     ruby('test/run_test.rb')
   else
