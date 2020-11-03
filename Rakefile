@@ -21,8 +21,13 @@ task :rubocop do
   end
 end
 
-task :test do
-  ruby('test/run_test.rb')
+desc 'Run tests'
+task :test, :target do |_, argv|
+  if argv[:target].nil?
+    ruby('test/run_test.rb')
+  else
+    ruby('test/run_test.rb', "--pattern=#{argv[:target]}")
+  end
 end
 
 begin
