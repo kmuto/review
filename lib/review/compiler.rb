@@ -14,6 +14,8 @@ require 'strscan'
 
 module ReVIEW
   class Compiler
+    MAX_HEADLINE_LEVEL = 6
+
     def initialize(builder)
       @builder = builder
 
@@ -364,6 +366,9 @@ module ReVIEW
       @headline_indexs ||= [@chapter.number.to_i - 1]
       m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
       level = m[1].size
+      if level > MAX_HEADLINE_LEVEL
+        raise CompileError, "Invalid header: max headline level is #{MAX_HEADLINE_LEVEL}"
+      end
       tag = m[2]
       label = m[3]
       caption = m[4].strip
