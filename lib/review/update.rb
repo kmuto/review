@@ -414,9 +414,7 @@ module ReVIEW
             opts << "paper=#{v.sub('j', '').sub('paper', '')}"
           when /[\d.]+ptj/ # not cared...
             opts << "fontsize=#{v.sub('j', '')}"
-          when /[\d.]+pt/
-            opts << "fontsize=#{v}"
-          when /[\d.]+Q/
+          when /[\d.]+pt/, /[\d.]+Q/
             opts << "fontsize=#{v}"
           when 'landscape', 'oneside', 'twoside', 'vartwoside', 'onecolumn',
                'twocolumn', 'titlepage', 'notitlepage', 'openright',
@@ -442,9 +440,7 @@ module ReVIEW
             opts << "paper=#{v.sub('j', '').sub('paper', '')}"
           when /[\d.]+ptj/ # not cared...
             opts << "fontsize=#{v.sub('j', '')}"
-          when /[\d.]+pt/
-            opts << "fontsize=#{v}"
-          when /[\d.]+Q/
+          when /[\d.]+pt/, /[\d.]+Q/
             opts << "fontsize=#{v}"
           when 'landscape', 'oneside', 'twoside', 'onecolumn', 'twocolumn', 'titlepage', 'notitlepage', 'openright', 'openany', 'leqno', 'fleqn', 'draft', 'final', 'report'
             # pass-through
