@@ -118,11 +118,11 @@ class ChapterTest < Test::Unit::TestCase
       assert !pre.on_chaps?
 
       ch2_path = File.join(dir, 'chapter2.re')
-      File.open(ch2_path, 'w') {}
+      FileUtils.touch(ch2_path)
       ch2 = Book::Chapter.new(book, 2, 'chapter2', ch2_path)
 
       ch3_path = File.join(dir, 'chapter3.re')
-      File.open(ch3_path, 'w') {}
+      FileUtils.touch(ch3_path)
       ch3 = Book::Chapter.new(book, 3, 'chapter3', ch3_path)
 
       assert ch2.on_chaps?

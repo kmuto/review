@@ -134,7 +134,7 @@ def each_paragraph(f)
     case line
     when /\A\#@ok\((.*)\)/
       @review_utils_word_ok = $1
-    when /\A\#@/
+    when /\A\#@/, /\A\s*\z/
       # do nothing
       next
     when %r{\A//caption\{(.*?)//\}}
@@ -145,9 +145,6 @@ def each_paragraph(f)
       end
     when /\A=/
       yield [line.slice(/\A=+(?:\[.*?\])?\s+(.*)/, 1).strip], f.lineno
-    when /\A\s*\z/
-      # skip
-      next
     else
       buf = [line.strip]
       lineno = f.lineno

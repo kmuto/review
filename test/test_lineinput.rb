@@ -112,7 +112,9 @@ class LineInputTest < Test::Unit::TestCase
     io = StringIO.new("abc\ndef\nghi")
     li = LineInput.new(io)
 
-    li.while_match(/^[ad]/) {}
+    li.while_match(/^[ad]/) do
+      # skip
+    end
     assert_equal 2, li.lineno
     assert_equal 'ghi', li.gets
   end
@@ -131,7 +133,9 @@ class LineInputTest < Test::Unit::TestCase
     io = StringIO.new("abc\ndef\nghi")
     li = LineInput.new(io)
 
-    li.until_match(/^[^a]/) {}
+    li.until_match(/^[^a]/) do
+      # skip
+    end
     assert_equal 1, li.lineno
     assert_equal "def\n", li.gets
   end

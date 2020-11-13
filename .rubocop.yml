@@ -135,6 +135,9 @@ Style/ClassMethods:
 Style/CommentedKeyword:
   Enabled: false
 
+Style/DocumentDynamicEvalDefinition:
+  Enabled: false
+
 Style/FloatDivision:
   Enabled: false
 
@@ -592,6 +595,8 @@ Naming/VariableName:
 Naming/VariableNumber:
   EnforcedStyle: normalcase
   Enabled: true
+  Exclude:
+    - test/*
 
 #### Security
 

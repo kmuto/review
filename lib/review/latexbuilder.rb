@@ -180,10 +180,10 @@ module ReVIEW
     end
 
     def nodisp_begin(level, _label, caption)
-      if @output.pos != 0
-        blank
-      else
+      if @output.pos == 0
         puts macro('clearpage')
+      else
+        blank
       end
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
       # FIXME: headings
@@ -1369,10 +1369,10 @@ module ReVIEW
         else
           if item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
             esc_item = escape_index(escape(item))
-            if esc_item != item
-              "#{escape_index(item)}@#{esc_item}"
-            else
+            if esc_item == item
               esc_item
+            else
+              "#{escape_index(item)}@#{esc_item}"
             end
           else
             yomi = NKF.nkf('-w --hiragana', @index_mecab.parse(item).force_encoding('UTF-8').chomp)

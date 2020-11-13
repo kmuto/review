@@ -1182,10 +1182,10 @@ module ReVIEW
         chs = ['', '「', '」']
         if @book.config['chapref']
           chs2 = @book.config['chapref'].split(',')
-          if chs2.size != 3
-            error '--chapsplitter must have exactly 3 parameters with comma.'
-          else
+          if chs2.size == 3
             chs = chs2
+          else
+            error '--chapsplitter must have exactly 3 parameters with comma.'
           end
         end
         s = "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"

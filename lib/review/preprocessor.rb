@@ -115,7 +115,7 @@ module ReVIEW
 
         when /\A\s*\z/ # empty line
           @f.puts
-        else
+        else # rubocop:disable Lint/DuplicateBranch
           @f.print line
         end
       end
@@ -222,11 +222,14 @@ module ReVIEW
 
     def optarg_value(spec)
       case spec
-      when 'true' then true # [name=true]
-      when 'false' then false # [name=false]
-      when 'nil' then nil # [name=nil]
-      when nil then true # [name]
-      when /^\d+$/ then $&.to_i # [name=8]
+      when 'true' # [name=true], [name]
+        true
+      when 'false' # [name=false]
+        false
+      when 'nil' # [name=nil]
+        nil
+      when /^\d+$/ # [name=8]
+        $&.to_i
       else # [name=val]
         spec
       end
