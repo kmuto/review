@@ -1,7 +1,31 @@
-require 'lineinput'
+#
+# Copyright (c) 2002-2020 Minero Aoki, Masayoshi Takahashi, Kenshi Muto
+#
+# This program is free software.
+# You can distribute/modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+#
+require 'review/exception'
 
 module ReVIEW
-  class LineInput < LineInput
+  class LineInput
+    attr_reader :lineno
+
+    def initialize(f)
+      @input = f
+      @buf = []
+      @lineno = 0
+      @eof_p = false
+    end
+
+    def inspect
+      "\#<#{self.class} file=#{@input.inspect} line=#{lineno}>"
+    end
+
+    def eof?
+      @eof_p
+    end
+
     def skip_comment_lines
       n = 0
       while line = gets
@@ -28,6 +52,117 @@ module ReVIEW
         raise SyntaxError, "found invalid control-sequence character (#{sprintf('%#x', $&.codepoints[0])})."
       end
       line
+    end
+
+    def ungets(line)
+      return unless line
+      @lineno -= 1
+      @buf.push(line)
+      line
+    end
+
+    def peek
+      line = gets
+      ungets(line) if line
+      line
+    end
+
+    def next?
+      peek ? true : false
+    end
+
+    def skip_blank_lines
+      n = 0
+      while line = gets
+        unless line.strip.empty?
+          ungets(line)
+          return n
+        end
+        n += 1
+      end
+      n
+    end
+
+    def gets_if(re)
+      line = gets
+      if !line || re !~ line
+        ungets(line)
+        return nil
+      end
+      line
+    end
+
+    def gets_unless(re)
+      line = gets
+      if !line || re =~ line
+        ungets(line)
+        return nil
+      end
+      line
+    end
+
+    def each
+      while line = gets
+        yield line
+      end
+    end
+
+    def while_match(re)
+      while line = gets
+        unless re =~ line
+          ungets(line)
+          return
+        end
+        yield line
+      end
+      nil
+    end
+
+    def getlines_while(re)
+      buf = []
+      while_match(re) do |line|
+        buf.push(line)
+      end
+      buf
+    end
+
+    alias_method :span, :getlines_while # from Haskell
+
+    def until_match(re)
+      while line = gets
+        if re =~ line
+          ungets(line)
+          return
+        end
+        yield line
+      end
+      nil
+    end
+
+    def getlines_until(re)
+      buf = []
+      until_match(re) do |line|
+        buf.push(line)
+      end
+      buf
+    end
+
+    alias_method :break, :getlines_until # from Haskell
+
+    def until_terminator(re)
+      while line = gets
+        return if re =~ line # discard terminal line
+        yield line
+      end
+      nil
+    end
+
+    def getblock(term_re)
+      buf = []
+      until_terminator(term_re) do |line|
+        buf.push(line)
+      end
+      buf
     end
   end
 end

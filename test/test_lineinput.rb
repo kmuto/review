@@ -1,6 +1,5 @@
 require 'test_helper'
 require 'review/lineinput'
-require 'review/exception'
 require 'tempfile'
 require 'stringio'
 
@@ -10,7 +9,7 @@ class LineInputTest < Test::Unit::TestCase
     li = LineInput.new(io)
     assert_equal 0, li.lineno
     assert !li.eof?
-    assert_equal "#<LineInput file=#{io.inspect} line=0>", li.inspect
+    assert_equal "#<ReVIEW::LineInput file=#{io.inspect} line=0>", li.inspect
   end
 
   def test_gets
