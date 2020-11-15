@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'lineinput'
+require 'review/lineinput'
 require 'tempfile'
 require 'stringio'
 
@@ -9,7 +9,7 @@ class LineInputTest < Test::Unit::TestCase
     li = LineInput.new(io)
     assert_equal 0, li.lineno
     assert !li.eof?
-    assert_equal "#<LineInput file=#{io.inspect} line=0>", li.inspect
+    assert_equal "#<ReVIEW::LineInput file=#{io.inspect} line=0>", li.inspect
   end
 
   def test_gets
@@ -177,5 +177,19 @@ class LineInputTest < Test::Unit::TestCase
     data = li.getblock(%r<\A//\}>)
     assert_equal ["abc\n", "def\n"], data
     assert_equal 3, li.lineno
+  end
+
+  def test_invalid_control_sequence
+    0.upto(31) do |n|
+      content = n.chr
+      io = StringIO.new(content)
+      li = ReVIEW::LineInput.new(io)
+      if [9, 10, 13].include?(n) # TAB, LF, CR
+        assert_equal content, li.gets
+      else
+        e = assert_raise(ReVIEW::SyntaxError) { li.gets }
+        assert_match(/found invalid control/, e.message)
+      end
+    end
   end
 end

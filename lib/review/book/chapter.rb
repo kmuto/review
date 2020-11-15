@@ -85,6 +85,8 @@ module ReVIEW
           nil
         rescue ArgumentError => e
           raise ReVIEW::CompileError, "#{@name}: #{e}"
+        rescue SyntaxError => e
+          raise ReVIEW::SyntaxError, "#{@name}:#{f.lineno}: #{e}"
         end
       end
 

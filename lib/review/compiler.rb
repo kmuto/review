@@ -333,6 +333,8 @@ module ReVIEW
         end
       end
       close_all_tagged_section
+    rescue SyntaxError => e
+      error e
     end
 
     def compile_minicolumn_begin(name, caption = nil)

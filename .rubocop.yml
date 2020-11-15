@@ -1,6 +1,5 @@
 AllCops:
   Exclude:
-    - lib/lineinput.rb
     - lib/uuid.rb
     - test/syntax-book/*
     - tmp/*
