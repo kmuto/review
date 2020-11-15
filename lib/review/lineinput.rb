@@ -9,6 +9,8 @@ require 'review/exception'
 
 module ReVIEW
   class LineInput
+    INVALID_CHARACTER_PATTERN = /[\x00-\x08\x0b-\x0c\x0e-\x1f]/ # accept 0x09: TAB, 0x0a: LF, 0x0d: CR
+
     attr_reader :lineno
 
     def initialize(f)
@@ -47,11 +49,17 @@ module ReVIEW
       line = @input.gets
       @eof_p = true unless line
       @lineno += 1
-      if line =~ /[\x00-\x08]/ || line =~ /[\x0b-\x0c]/ || line =~ /[\x0e-\x1f]/
-        # accept 0x09: TAB, 0x0a: LF, 0x0d: CR
-        raise SyntaxError, "found invalid control-sequence character (#{sprintf('%#x', $&.codepoints[0])})."
+      invalid_char = lookup_invalid_char(line)
+      if invalid_char
+        raise SyntaxError, "found invalid control-sequence character (#{sprintf('%#x', invalid_char.codepoints[0])})."
       end
       line
+    end
+
+    def lookup_invalid_char(line)
+      if line =~ INVALID_CHARACTER_PATTERN
+        $&
+      end
     end
 
     def ungets(line)
