@@ -53,6 +53,7 @@ module ReVIEW
       @first_line_num = nil
       @body_ext = nil
       @toc = nil
+      @javascripts = []
     end
     private :builder_init_file
 
@@ -98,6 +99,11 @@ module ReVIEW
 
       if @book.config.maker == 'webmaker'
         @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
+      end
+
+      if @book.config['mathjax']
+        @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
+        @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
       end
 
       ReVIEW::Template.load(layoutfile).result(binding)
@@ -608,6 +614,8 @@ module ReVIEW
         require 'math_ml/symbol/character_reference'
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         print p.parse(lines.join("\n") + "\n", true)
+      elsif @book.config['mathjax']
+        puts "$$#{lines.join("\n")}$$"
       elsif @book.config['imgmath']
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
@@ -976,6 +984,8 @@ EOS
         require 'math_ml/symbol/character_reference'
         parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
+      elsif @book.config['mathjax']
+        %Q(<span class="equation">\\( #{str} \\)</span>)
       elsif @book.config['imgmath']
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)

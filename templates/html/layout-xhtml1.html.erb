@@ -4,6 +4,12 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
+<% if @javascripts.present? %>
+<%   @javascripts.each do |js| %>
+  <%= js %>
+
+<%   end %>
+<% end %>
 <% if @stylesheets.present? %>
 <%   @stylesheets.each do |style| %>
   <link rel="stylesheet" type="text/css" href="<%= style %>" />

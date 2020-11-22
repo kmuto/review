@@ -3,6 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="<%= @language %>">
 <head>
   <meta charset="UTF-8" />
+<% if @javascripts.present? %>
+<%   @javascripts.each do |js| %>
+  <%= js %>
+
+<%   end %>
+<% end %>
 <% if @stylesheets.present? %>
 <%   @stylesheets.each do |style| %>
   <link rel="stylesheet" type="text/css" href="<%= style %>" />

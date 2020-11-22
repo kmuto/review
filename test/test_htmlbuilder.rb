@@ -364,6 +364,21 @@ EOS
     assert_equal %Q(<span class="equation"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>), actual
   end
 
+  def test_inline_mathjax
+    @config['mathjax'] = true
+    actual = compile_inline('@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}')
+    assert_equal %Q(<span class="equation">\\( \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\)</span>), actual
+
+    content = <<-EOF
+//texequation{
+\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
+//}
+EOF
+    actual = compile_block(content)
+    expected = %Q(<div class="equation">\n$$\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$\n</div>\n)
+    assert_equal expected, actual
+  end
+
   def test_inline_img
     def @chapter.image(_id)
       item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
