@@ -244,9 +244,9 @@ module ReVIEW
         call_hook('hook_beforemakeindex')
         if @config['pdfmaker']['makeindex'] && File.size?("#{@mastertex}.idx")
           system_or_raise(*[makeindex_command, makeindex_options, @mastertex].flatten.compact)
+          call_hook('hook_aftermakeindex')
           system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
-        call_hook('hook_aftermakeindex')
 
         system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         call_hook('hook_aftertexcompile')
