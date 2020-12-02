@@ -1,5 +1,6 @@
 require 'review/tocprinter'
 require 'review/i18n'
+require 'review/htmlutils'
 
 module ReVIEW
   class WEBTOCPrinter < TOCPrinter
