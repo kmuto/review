@@ -492,5 +492,8 @@
 \def\coverpagezero#1{\expandafter\@coverpagezero\csname c@#1\endcsname}
 \def\@coverpagezero#1{cover}
 
+%% 脚注がページをまたいで泣き別れさせない
+\interfootnotelinepenalty\@M
+
 \listfiles
 \endinput
