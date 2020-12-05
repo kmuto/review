@@ -45,7 +45,7 @@ module ReVIEW
             print_chapter_volume(chap)
           end
         end
-      rescue ReVIEW::FileNotFound, ReVIEW::CompileError => e
+      rescue ReVIEW::FileNotFound, ReVIEW::CompileError, ReVIEW::ApplicationError => e
         @logger.error e
         exit 1
       end
