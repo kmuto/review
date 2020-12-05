@@ -21,6 +21,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
     I18n.setup('ja')
+    @skip_pygments = true
   end
 
   def test_xmlns_ops_prefix_epub3
