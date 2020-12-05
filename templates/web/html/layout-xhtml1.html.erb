@@ -3,6 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="<%= @language %>">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+<% if @javascripts.present? %>
+<%   @javascripts.each do |js| %>
+  <%= js %>
+
+<%   end %>
+<% end %>
   <meta http-equiv="Content-Style-Type" content="text/css"/>
 <% if @stylesheets.present? %>
 <%   @stylesheets.each do |style| %>
