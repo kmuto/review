@@ -333,5 +333,8 @@
   \fi
 }
 
+%% 脚注がページをまたいで泣き別れさせない
+\interfootnotelinepenalty\@M
+
 \listfiles
 \endinput
