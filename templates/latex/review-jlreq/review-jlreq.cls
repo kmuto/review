@@ -20,7 +20,7 @@
 % THE SOFTWARE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2020/08/16 Re:VIEW 5.0 upLaTeX/LuaLaTeX class modified for jlreq.cls]
+\ProvidesClass{review-jlreq}[2020/12/12 Re:VIEW 5.1 upLaTeX/LuaLaTeX class modified for jlreq.cls]
 
 %% hook at end of reviewmacro
 \let\@endofreviewmacrohook\@empty
@@ -335,6 +335,10 @@
 
 %% 脚注がページをまたいで泣き別れさせない
 \interfootnotelinepenalty\@M
+
+%% 代替定義
+\def\reviewleftcurlybrace{\{}
+\def\reviewrightcurlybrace{\}}
 
 \listfiles
 \endinput

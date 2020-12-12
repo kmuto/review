@@ -296,13 +296,65 @@ EOS
       return true
     end
     tmpdir = Dir.mktmpdir
-    File.write(File.join(tmpdir, 'sample.dic'), "強運\tはーどらっく\n")
+    File.write(File.join(tmpdir, 'sample.dic'), "強運\tはーどらっく\nmain（ブロック）\tmain{|}\n")
     @book.config['pdfmaker']['makeindex'] = true
     @book.config['pdfmaker']['makeindex_dic'] = "#{tmpdir}/sample.dic"
     @builder.setup_index
     actual = compile_inline('@<hidx>{漢字}@<hidx>{強運}@<hidx>{項目@1<<>>項目@2}')
-    FileUtils.remove_entry_secure(tmpdir)
     assert_equal %Q(\\index{かんじ@漢字}\\index{はーどらっく@強運}\\index{こうもく"@1@項目"@1!こうもく"@2@項目"@2}), actual
+    actual = compile_inline('@<hidx>{main（ブロック）}@<hidx>{あいうえお{\}}')
+    FileUtils.remove_entry_secure(tmpdir)
+    assert_equal %Q(\\index{main｛｜｝@main（ブロック）}\\index{あいうえお｛｝@あいうえお\\reviewleftcurlybrace{}\\reviewrightcurlybrace{}}), actual
+  end
+
+  def test_inline_idx_escape
+    # as is
+    %w[a あ ' ( ) = ` + ; * : , . ? /].each do |c|
+      actual = @builder.index(c)
+      assert_equal %Q(\\index{#{c}}), actual
+    end
+    actual = @builder.index('[')
+    assert_equal %Q(\\index{[}), actual
+    actual = @builder.index(']')
+    assert_equal %Q(\\index{]}), actual
+
+    # escape display string by "
+    %w[! " @].each do |c|
+      actual = @builder.index(c)
+      assert_equal %Q(\\index{"#{c}@"#{c}}), actual
+    end
+
+    # escape display string by \
+    %w[# % &].each do |c|
+      actual = @builder.index(c)
+      assert_equal %Q(\\index{#{c}@\\#{c}}), actual
+    end
+
+    # escape display string by macro
+    actual = @builder.index('$')
+    assert_equal %Q(\\index{$@\\textdollar{}}), actual
+    actual = @builder.index('-')
+    assert_equal %Q(\\index{-@{-}}), actual
+    actual = @builder.index('~')
+    assert_equal %Q(\\index{~@\\textasciitilde{}}), actual
+    actual = @builder.index('^')
+    assert_equal %Q(\\index{^@\\textasciicircum{}}), actual
+    actual = @builder.index('\\')
+    assert_equal %Q(\\index{\\@\\reviewbackslash{}}), actual
+    actual = @builder.index('<')
+    assert_equal %Q(\\index{<@\\textless{}}), actual
+    actual = @builder.index('>')
+    assert_equal %Q(\\index{>@\\textgreater{}}), actual
+    actual = @builder.index('_')
+    assert_equal %Q(\\index{_@\\textunderscore{}}), actual
+
+    # escape both sort key and display string
+    actual = @builder.index('{')
+    assert_equal %Q(\\index{｛@\\reviewleftcurlybrace{}}), actual
+    actual = @builder.index('|')
+    assert_equal %Q(\\index{｜@\\textbar{}}), actual
+    actual = @builder.index('}')
+    assert_equal %Q(\\index{｝@\\reviewrightcurlybrace{}}), actual
   end
 
   def test_jis_x_0201_kana
