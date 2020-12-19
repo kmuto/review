@@ -21,7 +21,7 @@
 
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{review-jsbook}
-  [2020/08/16 v5.0  Re:VIEW pLaTeX class modified for jsbook.cls]
+  [2020/12/12 v5.1 Re:VIEW pLaTeX class modified for jsbook.cls]
 
 \def\recls@error{\ClassError{review-jsbook}}
 \def\recls@warning{\ClassWarning{review-jsbook}}
@@ -494,6 +494,10 @@
 
 %% 脚注がページをまたいで泣き別れさせない
 \interfootnotelinepenalty\@M
+
+%% 代替定義
+\def\reviewleftcurlybrace{\{}
+\def\reviewrightcurlybrace{\}}
 
 \listfiles
 \endinput
