@@ -130,29 +130,28 @@ module ReVIEW
           error "yaml error #{e.message}"
         end
       end
-      conf = migrate_parameters(conf)
 
       # YAML configs will be overridden by command line options.
       if config
         conf.deep_merge!(config)
       end
 
+      conf.migrate_parameters
+
       conf
     end
 
-    def self.migrate_parameters(conf)
+    def migrate_parameters
       # backward compatibility
-      if conf['mathml']
+      if self['mathml']
         warn '"mathml: true" is obsoleted. Please use "math_format: mathml"'
-        conf['math_format'] = 'mathml'
+        self['math_format'] = 'mathml'
       end
 
-      if conf['imgmath']
+      if self['imgmath']
         warn '"imgmath: true" is obsoleted. Please use "math_format: imgmath"'
-        conf['math_format'] = 'imgmath'
+        self['math_format'] = 'imgmath'
       end
-
-      conf
     end
 
     def [](key)

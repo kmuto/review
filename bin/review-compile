@@ -126,7 +126,7 @@ def parse_opts
   opts.on('--chapref="before,middle,after"', 'Chapref decoration. (idgxml)') { |cdec| @config['chapref'] = cdec }
   opts.on('--chapterlink', 'make chapref hyperlink') { @config['chapterlink'] = true }
   opts.on('--stylesheet=file', 'Stylesheet file for HTML (comma separated)') { |files| @config['stylesheet'] = files.split(/\s*,\s*/) }
-  opts.on('--mathml', 'Use MathML for TeX equation in HTML') { @config['mathml'] = true }
+  opts.on('--mathml', 'Use MathML for TeX equation in HTML') { @config['math_format'] = 'mathml' }
   opts.on('--htmlversion=VERSION', 'HTML version.') do |v|
     v = v.to_i
     @config['htmlversion'] = v if [4, 5].include?(v)
