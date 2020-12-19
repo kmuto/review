@@ -101,7 +101,7 @@ module ReVIEW
         @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
       end
 
-      if @book.config['math_presentation'] == 'mathjax'
+      if @book.config['math_format'] == 'mathjax'
         @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
         @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
       end
@@ -609,7 +609,7 @@ module ReVIEW
 
     def texequation_body(lines)
       puts %Q(<div class="equation">)
-      if @book.config['math_presentation'] == 'mathml'
+      if @book.config['math_format'] == 'mathml'
         begin
           require 'math_ml'
           require 'math_ml/symbol/character_reference'
@@ -618,9 +618,9 @@ module ReVIEW
         end
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         print p.parse(lines.join("\n") + "\n", true)
-      elsif @book.config['math_presentation'] == 'mathjax'
+      elsif @book.config['math_format'] == 'mathjax'
         puts "$$#{lines.join("\n")}$$"
-      elsif @book.config['math_presentation'] == 'imgmath'
+      elsif @book.config['math_format'] == 'imgmath'
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
         math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
@@ -983,7 +983,7 @@ EOS
     end
 
     def inline_m(str)
-      if @book.config['math_presentation'] == 'mathml'
+      if @book.config['math_format'] == 'mathml'
         begin
           require 'math_ml'
           require 'math_ml/symbol/character_reference'
@@ -992,9 +992,9 @@ EOS
         end
         parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
-      elsif @book.config['math_presentation'] == 'mathjax'
+      elsif @book.config['math_format'] == 'mathjax'
         %Q(<span class="equation">\\( #{str} \\)</span>)
-      elsif @book.config['math_presentation'] == 'imgmath'
+      elsif @book.config['math_format'] == 'imgmath'
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
         math_dir = File.join(@book.config['imagedir'], '_review_math')

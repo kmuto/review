@@ -255,7 +255,7 @@ Tips。@<b>{太字bold}@<i>{italicイタ}@<tt>{等幅code}
 #@# doorquote、bpo、talk、graph、address、box、linebreak、pagebreak、hr、comment、abbr、acronym、dfn、kbd、q、samp、var、big、small、del、ins、recipe、dtp、raw、embed、include
 
 == LaTeX式
-LaTeX式はTeX紙面以外は保証されません。EPUBではMathML（@<tt>{math_presentation: mathml}）を使えますが、表現や互換性が不足しており、LaTeXをバックエンドとして画像化する@<tt>{math_presentation: imgmath}のほうがよさそうです。
+LaTeX式はTeX紙面以外は保証されません。EPUBではMathML（@<tt>{math_format: mathml}）を使えますが、表現や互換性が不足しており、LaTeXをバックエンドとして画像化する@<tt>{math_format: imgmath}のほうがよさそうです。
 
 //texequation{
 \sum_{i=1}^nf_n(x)

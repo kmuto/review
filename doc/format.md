@@ -653,7 +653,7 @@ Install MathML library (`gem install math_ml`).
 Specify in config.yml as follows:
 
 ```
-math_presentation: mathml
+math_format: mathml
 ```
 
 Whether it is displayed properly in MathML depends on your viewer or browser.
@@ -662,7 +662,7 @@ Whether it is displayed properly in MathML depends on your viewer or browser.
 Specify in config.yml as follows:
 
 ```
-math_presentation: mathjax
+math_format: mathjax
 ```
 
 MathJax JavaScript module is loaded from the Internet. Because the EPUB specification prohibits loading files from external, enabling this feature will cause the EPUB file to fail validation. Also MathJax will not work in almost all EPUB readers, but may be available with CSS formatting processor.
@@ -681,7 +681,7 @@ In addition, external tools for image conversion are also needed. Currently, it 
 By setting in config.yml,
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 ```
 
 it is set as follows:
@@ -716,7 +716,7 @@ imgmath_options:
 For example, to make SVG:
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   format: svg
   pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
@@ -727,7 +727,7 @@ By default, the command specified in `pdfcrop_pixelize_cmd` takes the filename o
 If you want to use the `sips` command or the` magick` command, they can only process a single page, so you need to set `extract_singlepage: true` to extract the specified page from the input PDF. `pdfjam` command (in TeXLive) is used to extract pages.
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   extract_singlepage: true
   # use pdftk instead of default pdfjam (for Windows)
@@ -741,7 +741,7 @@ imgmath_options:
 To create PDF math images:
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   format: pdf
   extract_singlepage: true
@@ -752,7 +752,7 @@ imgmath_options:
 To set the same setting as Re:VIEW 2:
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   converter: dvipng
   fontsize: 12

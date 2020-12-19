@@ -45,7 +45,7 @@ module ReVIEW
         'debug' => nil, # debug flag
         'catalogfile' => 'catalog.yml',
         'language' => 'ja', # XXX default language should be JA??
-        'math_presentation' => nil,
+        'math_format' => nil,
         'htmlext' => 'html',
         'htmlversion' => 5,
         'contentdir' => '.',
@@ -143,13 +143,13 @@ module ReVIEW
     def self.migrate_parameters(conf)
       # backward compatibility
       if conf['mathml']
-        warn '"mathml: true" is obsoleted. Please use "math_presentation: mathml"'
-        conf['math_presentation'] = 'mathml'
+        warn '"mathml: true" is obsoleted. Please use "math_format: mathml"'
+        conf['math_format'] = 'mathml'
       end
 
       if conf['imgmath']
-        warn '"imgmath: true" is obsoleted. Please use "math_presentation: imgmath"'
-        conf['math_presentation'] = 'imgmath'
+        warn '"imgmath: true" is obsoleted. Please use "math_format: imgmath"'
+        conf['math_format'] = 'imgmath'
       end
 
       conf

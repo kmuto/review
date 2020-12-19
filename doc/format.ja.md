@@ -620,7 +620,7 @@ MathML ライブラリをインストールしておきます（`gem install mat
 さらに config.yml に以下のように指定します。
 
 ```
-math_presentation: mathml
+math_format: mathml
 ```
 
 なお、MathML で正常に表現されるかどうかは、ビューアやブラウザに依存します。
@@ -629,7 +629,7 @@ math_presentation: mathml
 config.yml に以下のように指定します。
 
 ```
-math_presentation: mathjax
+math_format: mathjax
 ```
 
 MathJax の JavaScript モジュールはインターネットから読み込まれます。現時点で EPUB の仕様では外部からの読み込みを禁止しているため、MathJax を有効にすると EPUB ファイルの検証を通りません。また、ほぼすべての EPUB リーダーで MathJax は動作しません。CSS 組版との組み合わせでは利用できる可能性があります。
@@ -648,7 +648,7 @@ TeXLive などの LaTeX 環境が必要です。必要に応じて config.yml �
 config.yml で以下のように設定すると、
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 ```
 
 デフォルト値として以下が使われます。
@@ -683,7 +683,7 @@ imgmath_options:
 たとえば SVG を利用するには、次のようにします。
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   format: svg
   pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
@@ -694,7 +694,7 @@ imgmath_options:
 単一のページの処理を前提とする `sips` コマンドや `magick` コマンドを使う場合、入力 PDF から指定のページを抽出するように `extract_singlepage: true` として挙動を変更します。単一ページの抽出はデフォルトで TeXLive の `pdfjam` コマンドが使われます。
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   extract_singlepage: true
   # pdfjamの代わりに外部ツールのpdftkを使う場合（Windowsなど）
@@ -708,7 +708,7 @@ imgmath_options:
 textmaker 向けに PDF 形式の数式ファイルを作成したいときには、たとえば以下のように設定します（ページの抽出には pdftk を利用）。
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   format: pdf
   extract_singlepage: true
@@ -719,7 +719,7 @@ imgmath_options:
 Re:VIEW 2 以前の dvipng の設定に合わせるには、次のようにします。
 
 ```
-math_presentation: imgmath
+math_format: imgmath
 imgmath_options:
   converter: dvipng
   fontsize: 12

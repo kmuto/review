@@ -110,7 +110,7 @@ module ReVIEW
       copy_backmatter(@path)
 
       math_dir = "./#{@config['imagedir']}/_review_math"
-      if @config['math_presentation'] == 'imgmath' && File.exist?("#{math_dir}/__IMGMATH_BODY__.map")
+      if @config['math_format'] == 'imgmath' && File.exist?("#{math_dir}/__IMGMATH_BODY__.map")
         make_math_images(math_dir)
       end
 
