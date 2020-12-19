@@ -59,7 +59,7 @@ module ReVIEW
         end
       end
 
-      @metachars_re = /[#{Regexp.escape(@metachars.keys.join(''))}]/u
+      @metachars_re = /[#{Regexp.escape(@metachars.keys.join(''))}]/u # rubocop:disable Style/RedundantArgument
 
       @metachars_invert = @metachars.invert
     end
