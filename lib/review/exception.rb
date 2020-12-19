@@ -10,10 +10,16 @@
 
 module ReVIEW
   class Error < ::StandardError; end
+
   class ApplicationError < Error; end
+
   class ConfigError < ApplicationError; end
+
   class CompileError < ApplicationError; end
+
   class SyntaxError < CompileError; end
+
   class FileNotFound < ApplicationError; end
+
   class KeyError < CompileError; end
 end

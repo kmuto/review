@@ -490,7 +490,7 @@ module ReVIEW
           hash['id'] = args[:id]
         end
         if args[:properties].present?
-          hash['properties'] = args[:properties].split(' ')
+          hash['properties'] = args[:properties].split(' ') # rubocop:disable Style/RedundantArgument
         end
         if args[:notoc].present?
           hash['notoc'] = args[:notoc]
