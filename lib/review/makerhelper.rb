@@ -79,7 +79,7 @@ module ReVIEW
 
     def cleanup_mathimg(path = '_review_math')
       math_dir = "./#{@config['imagedir']}/#{path}"
-      if @config['imgmath'] && Dir.exist?(math_dir)
+      if @config['math_format'] == 'imgmath' && Dir.exist?(math_dir)
         FileUtils.rm_rf(math_dir)
       end
     end

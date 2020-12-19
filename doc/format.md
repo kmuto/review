@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 5.0.
+This document explains about the format of Re:VIEW 5.1.
 
 ## Paragraph
 
@@ -645,7 +645,7 @@ There is `@<m>{ ... }` for inline (see "Fence notation for inline commands" sect
 
 Whether LaTeX formula is correctly displayed or not depends on the processing system. PDFMaker uses LaTeX internally, so there is no problem.
 
-EPUBMaker and WEBMaker use either MathML transformation or imaging.
+In EPUBMaker and WEBMaker, you can choose between MathML conversion, MathJax conversion, and imaging.
 
 ### MathML case
 Install MathML library (`gem install math_ml`).
@@ -653,10 +653,19 @@ Install MathML library (`gem install math_ml`).
 Specify in config.yml as follows:
 
 ```
-mathml: true
+math_format: mathml
 ```
 
 Whether it is displayed properly in MathML depends on your viewer or browser.
+
+### MathJax case
+Specify in config.yml as follows:
+
+```
+math_format: mathjax
+```
+
+MathJax JavaScript module is loaded from the Internet. Because the EPUB specification prohibits loading files from external, enabling this feature will cause the EPUB file to fail validation. Also MathJax will not work in almost all EPUB readers, but may be available with CSS formatting processor.
 
 ### imaging case
 
@@ -672,7 +681,7 @@ In addition, external tools for image conversion are also needed. Currently, it 
 By setting in config.yml,
 
 ```
-imgmath: true
+math_format: imgmath
 ```
 
 it is set as follows:
@@ -707,7 +716,7 @@ imgmath_options:
 For example, to make SVG:
 
 ```
-imgmath: true
+math_format: imgmath
 imgmath_options:
   format: svg
   pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
@@ -718,7 +727,7 @@ By default, the command specified in `pdfcrop_pixelize_cmd` takes the filename o
 If you want to use the `sips` command or the` magick` command, they can only process a single page, so you need to set `extract_singlepage: true` to extract the specified page from the input PDF. `pdfjam` command (in TeXLive) is used to extract pages.
 
 ```
-imgmath: true
+math_format: imgmath
 imgmath_options:
   extract_singlepage: true
   # use pdftk instead of default pdfjam (for Windows)
@@ -732,7 +741,7 @@ imgmath_options:
 To create PDF math images:
 
 ```
-imgmath: true
+math_format: imgmath
 imgmath_options:
   format: pdf
   extract_singlepage: true
@@ -743,7 +752,7 @@ imgmath_options:
 To set the same setting as Re:VIEW 2:
 
 ```
-imgmath: true
+math_format: imgmath
 imgmath_options:
   converter: dvipng
   fontsize: 12
