@@ -228,7 +228,7 @@ module ReVIEW
       puts "◆→開始:#{@titles['texequation']}←◆"
       texequation_header(id, caption) if caption_top?('equation')
 
-      if @book.config['imgmath']
+      if @book.config['math_presentation'] == 'imgmath'
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
         math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
@@ -397,7 +397,7 @@ module ReVIEW
     end
 
     def inline_m(str)
-      if @book.config['imgmath']
+      if @book.config['math_presentation'] == 'imgmath'
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
         math_dir = File.join(@book.config['imagedir'], '_review_math_text')

@@ -2,7 +2,7 @@
 
 Re:VIEW フォーマットの文法について解説します。Re:VIEW フォーマットはアスキー社（現カドカワ）の EWB を基本としながら、一部に RD や各種 Wiki の文法を取り入れて簡素化しています。
 
-このドキュメントは、Re:VIEW 5.0 に基づいています。
+このドキュメントは、Re:VIEW 5.1 に基づいています。
 
 ## 段落
 
@@ -612,7 +612,7 @@ LaTeX の式を挿入するには、`//texequation{ 〜 //}` を使います。
 
 LaTeX の数式が正常に整形されるかどうかは処理系に依存します。LaTeX を利用する PDFMaker では問題なく利用できます。
 
-EPUBMaker および WEBMaker では、MathML に変換する方法と、画像化する方法のどちらかを選べます。
+EPUBMaker および WEBMaker では、MathML に変換する方法、MathJax に変換する方法、画像化する方法から選べます。
 
 ### MathML の場合
 MathML ライブラリをインストールしておきます（`gem install math_ml`）。
@@ -620,10 +620,19 @@ MathML ライブラリをインストールしておきます（`gem install mat
 さらに config.yml に以下のように指定します。
 
 ```
-mathml: true
+math_presentation: mathml
 ```
 
 なお、MathML で正常に表現されるかどうかは、ビューアやブラウザに依存します。
+
+### MathJax の場合
+config.yml に以下のように指定します。
+
+```
+math_presentation: mathjax
+```
+
+MathJax の JavaScript モジュールはインターネットから読み込まれます。現時点で EPUB の仕様では外部からの読み込みを禁止しているため、MathJax を有効にすると EPUB ファイルの検証を通りません。また、ほぼすべての EPUB リーダーで MathJax は動作しません。CSS 組版との組み合わせでは利用できる可能性があります。
 
 ### 画像化の場合
 
@@ -639,7 +648,7 @@ TeXLive などの LaTeX 環境が必要です。必要に応じて config.yml �
 config.yml で以下のように設定すると、
 
 ```
-imgmath: true
+math_presentation: imgmath
 ```
 
 デフォルト値として以下が使われます。
@@ -674,7 +683,7 @@ imgmath_options:
 たとえば SVG を利用するには、次のようにします。
 
 ```
-imgmath: true
+math_presentation: imgmath
 imgmath_options:
   format: svg
   pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
@@ -685,7 +694,7 @@ imgmath_options:
 単一のページの処理を前提とする `sips` コマンドや `magick` コマンドを使う場合、入力 PDF から指定のページを抽出するように `extract_singlepage: true` として挙動を変更します。単一ページの抽出はデフォルトで TeXLive の `pdfjam` コマンドが使われます。
 
 ```
-imgmath: true
+math_presentation: imgmath
 imgmath_options:
   extract_singlepage: true
   # pdfjamの代わりに外部ツールのpdftkを使う場合（Windowsなど）
@@ -699,7 +708,7 @@ imgmath_options:
 textmaker 向けに PDF 形式の数式ファイルを作成したいときには、たとえば以下のように設定します（ページの抽出には pdftk を利用）。
 
 ```
-imgmath: true
+math_presentation: imgmath
 imgmath_options:
   format: pdf
   extract_singlepage: true
@@ -710,7 +719,7 @@ imgmath_options:
 Re:VIEW 2 以前の dvipng の設定に合わせるには、次のようにします。
 
 ```
-imgmath: true
+math_presentation: imgmath
 imgmath_options:
   converter: dvipng
   fontsize: 12

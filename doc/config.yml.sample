@@ -208,17 +208,14 @@ toc: true
 # 各数字の意味は、順にリストの行数、リストの1行字数、テキストの行数、テキストの1行字数
 # page_metric: [40,34,29,34]
 
-# EPUB・Web生成時におけるMathJaxの利用有無
-# なおMathJaxに必要なデータはネットワークから取得されるため、EPUBで利用できるかはEPUBリーダ依存
-# TeXの数式をMathJaxを使って表現するか。省略した場合はnull (利用しない)
-# これを有効にした場合、imgmathの設定は無視される
-# mathjax: true
+# @<m>, //texequation に記述したTeX数式の表現方法 (PDFMaker (LaTeX) 以外)
+#   null: TeX式をそのまま文字列として出力 (デフォルト)
+#   mathml: MathML変換。別途math_ml gemファイルが必要。EPUBMaker/WebMakerのみ効果
+#   imgmath: 画像化。オプションはimgmath_optionsで設定する
+#   mathjax: MathJax変換。EPUBMaker/WebMakerのみ効果。なお、MathJaxに必要なデータはインターネットから取得される。EPUBで利用できるかはEPUBリーダ依存
+# math_presentation: null
 
-# EPUB・Web、およびテキスト生成時における数式の画像化指定
-# TeXの数式を画像化するか。省略した場合はnull (作成しない)
-# imgmath: true
-
-# imgmathがtrueの場合の設定
+# math_presentationがimgmathの場合の設定
 # 以下のパラメータを有効にするときには、
 # imgmath_options:
 #    パラメータ: 値

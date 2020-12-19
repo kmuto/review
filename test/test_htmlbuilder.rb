@@ -359,14 +359,13 @@ EOS
     rescue LoadError
       return true
     end
-    @config['mathml'] = true
+    @config['math_presentation'] = 'mathml'
     actual = compile_inline('@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}')
-    @config['mathml'] = nil
     assert_equal %Q(<span class="equation"><math xmlns='http://www.w3.org/1998/Math/MathML' display='inline'><mfrac><mrow><mo stretchy='false'>-</mo><mi>b</mi><mo stretchy='false'>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo stretchy='false'>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></math></span>), actual
   end
 
   def test_inline_mathjax
-    @config['mathjax'] = true
+    @config['math_presentation'] = 'mathjax'
     actual = compile_inline('@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}')
     assert_equal %Q(<span class="equation">\\( \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\)</span>), actual
 
@@ -1640,7 +1639,7 @@ EOS
                  'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P} q\n//}\n") do |dir, book, _files|
       @book = book
       @book.config = @config
-      @config['imgmath'] = true
+      @config['math_presentation'] = 'imgmath'
       @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
       location = Location.new(nil, nil)
       @builder.bind(@compiler, @chapter, location)
@@ -1671,7 +1670,7 @@ EOS
       @book = book
       @book.config = @config
       @config['review_version'] = 2
-      @config['imgmath'] = true
+      @config['math_presentation'] = 'imgmath'
       @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
       location = Location.new(nil, nil)
       @builder.bind(@compiler, @chapter, location)
