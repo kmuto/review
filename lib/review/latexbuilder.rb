@@ -1361,22 +1361,23 @@ module ReVIEW
     end
 
     def index(str)
+      # XXX: mendex/upmendex specific
       sa = str.split('<<>>')
 
       sa.map! do |item|
         if @index_db[item]
-          escape_index(escape(@index_db[item])) + '@' + escape_index(escape(item))
+          escape_mendex_key(escape_index(@index_db[item])) + '@' + escape_mendex_display(escape_index(escape(item)))
         else
           if item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
-            esc_item = escape_index(escape(item))
+            esc_item = escape_mendex_display(escape_index(escape(item)))
             if esc_item == item
               esc_item
             else
-              "#{escape_index(item)}@#{esc_item}"
+              "#{escape_mendex_key(escape_index(item))}@#{esc_item}"
             end
           else
             yomi = NKF.nkf('-w --hiragana', @index_mecab.parse(item).force_encoding('UTF-8').chomp)
-            escape_index(escape(yomi)) + '@' + escape_index(escape(item))
+            escape_mendex_key(escape_index(yomi)) + '@' + escape_mendex_display(escape_index(escape(item)))
           end
         end
       end

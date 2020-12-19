@@ -81,6 +81,14 @@ module ReVIEW
       str.gsub(/[@!|"]/) { |s| '"' + s }
     end
 
+    def escape_mendex_key(str)
+      str.gsub('"|', '｜').gsub('{', '｛').gsub('}', '｝')
+    end
+
+    def escape_mendex_display(str)
+      str.gsub('\{', '\reviewleftcurlybrace{}').gsub('\}', '\reviewrightcurlybrace{}')
+    end
+
     def escape_url(str)
       str.gsub(/[\#%]/) { |s| '\\' + s }
     end
