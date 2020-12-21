@@ -495,7 +495,7 @@ module ReVIEW
         if args[:notoc].present?
           params[:notoc] = args[:notoc]
         end
-        @producer.contents.push(Content.new(params))
+        @producer.contents.push(Content.new(**params))
       end
     end
 
