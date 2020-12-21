@@ -186,11 +186,11 @@ EOT
 
   def test_stage2_add_l1item
     stage2
-    expect = EPUBMaker::Content.new('ch01.html',
-                                    'ch01-html',
-                                    'application/xhtml+xml',
-                                    'CH01',
-                                    1)
+    expect = EPUBMaker::Content.new({ 'file' => 'ch01.html',
+                                      'id' => 'ch01-html',
+                                      'media' => 'application/xhtml+xml',
+                                      'title' => 'CH01',
+                                      'level' => 1 })
     assert_equal expect, @producer.contents[0]
   end
 
@@ -275,25 +275,25 @@ EOT
   def test_stage3_add_various_items
     stage3
     expect = [
-      Content.new('ch01.html', 'ch01-html', 'application/xhtml+xml', %Q(CH01<>&"), 1),
-      Content.new('ch02.html', 'ch02-html', 'application/xhtml+xml', 'CH02', 1),
-      Content.new('ch02.html#S1', 'ch02-html#S1', 'html#s1', 'CH02.1', 2),
-      Content.new('ch02.html#S1.1', 'ch02-html#S1-1', '1', 'CH02.1.1', 3),
-      Content.new('ch02.html#S1.1.1', 'ch02-html#S1-1-1', '1', 'CH02.1.1.1', 4),
-      Content.new('ch02.html#S1.1.1.1', 'ch02-html#S1-1-1-1', '1', 'CH02.1.1.1.1', 5),
-      Content.new('ch02.html#S1.1.2', 'ch02-html#S1-1-2', '2', 'CH02.1.1.2', 4),
-      Content.new('ch02.html#S2', 'ch02-html#S2', 'html#s2', 'CH02.2', 2),
-      Content.new('ch02.html#S2.1', 'ch02-html#S2-1', '1', 'CH02.2.1', 3),
-      Content.new('ch03.html', 'ch03-html', 'application/xhtml+xml', 'CH03', 1, nil, ['mathml']),
-      Content.new('ch03.html#S1', 'ch03-html#S1', 'html#s1', 'CH03.1', 2),
-      Content.new('ch03.html#S1.1', 'ch03-html#S1-1', '1', 'CH03.1.1', 3),
-      Content.new('ch04.html', 'ch04-html', 'application/xhtml+xml', 'CH04', 1),
-      Content.new('sample.png', 'sample-png', 'image/png'),
-      Content.new('sample.jpg', 'sample-jpg', 'image/jpeg'),
-      Content.new('sample.JPEG', 'sample-JPEG', 'image/jpeg'),
-      Content.new('sample.SvG', 'sample-SvG', 'image/svg+xml'),
-      Content.new('sample.GIF', 'sample-GIF', 'image/gif'),
-      Content.new('sample.css', 'sample-css', 'text/css')
+      Content.new({ 'file' => 'ch01.html', 'id' => 'ch01-html', 'media' => 'application/xhtml+xml', 'title' => %Q(CH01<>&"), 'level' => 1 }),
+      Content.new({ 'file' => 'ch02.html', 'id' => 'ch02-html', 'media' => 'application/xhtml+xml', 'title' => 'CH02', 'level' => 1 }),
+      Content.new({ 'file' => 'ch02.html#S1', 'id' => 'ch02-html#S1', 'media' => 'html#s1', 'title' => 'CH02.1', 'level' => 2 }),
+      Content.new({ 'file' => 'ch02.html#S1.1', 'id' => 'ch02-html#S1-1', 'media' => '1', 'title' => 'CH02.1.1', 'level' => 3 }),
+      Content.new({ 'file' => 'ch02.html#S1.1.1', 'id' => 'ch02-html#S1-1-1', 'media' => '1', 'title' => 'CH02.1.1.1', 'level' => 4 }),
+      Content.new({ 'file' => 'ch02.html#S1.1.1.1', 'id' => 'ch02-html#S1-1-1-1', 'media' => '1', 'title' => 'CH02.1.1.1.1', 'level' => 5 }),
+      Content.new({ 'file' => 'ch02.html#S1.1.2', 'id' => 'ch02-html#S1-1-2', 'media' => '2', 'title' => 'CH02.1.1.2', 'level' => 4 }),
+      Content.new({ 'file' => 'ch02.html#S2', 'id' => 'ch02-html#S2', 'media' => 'html#s2', 'title' => 'CH02.2', 'level' => 2 }),
+      Content.new({ 'file' => 'ch02.html#S2.1', 'id' => 'ch02-html#S2-1', 'media' => '1', 'title' => 'CH02.2.1', 'level' => 3 }),
+      Content.new({ 'file' => 'ch03.html', 'id' => 'ch03-html', 'media' => 'application/xhtml+xml', 'title' => 'CH03', 'level' => 1, 'properties' => ['mathml'] }),
+      Content.new({ 'file' => 'ch03.html#S1', 'id' => 'ch03-html#S1', 'media' => 'html#s1', 'title' => 'CH03.1', 'level' => 2 }),
+      Content.new({ 'file' => 'ch03.html#S1.1', 'id' => 'ch03-html#S1-1', 'media' => '1', 'title' => 'CH03.1.1', 'level' => 3 }),
+      Content.new({ 'file' => 'ch04.html', 'id' => 'ch04-html', 'media' => 'application/xhtml+xml', 'title' => 'CH04', 'level' => 1 }),
+      Content.new({ 'file' => 'sample.png', 'id' => 'sample-png', 'media' => 'image/png' }),
+      Content.new({ 'file' => 'sample.jpg', 'id' => 'sample-jpg', 'media' => 'image/jpeg' }),
+      Content.new({ 'file' => 'sample.JPEG', 'id' => 'sample-JPEG', 'media' => 'image/jpeg' }),
+      Content.new({ 'file' => 'sample.SvG', 'id' => 'sample-SvG', 'media' => 'image/svg+xml' }),
+      Content.new({ 'file' => 'sample.GIF', 'id' => 'sample-GIF', 'media' => 'image/gif' }),
+      Content.new({ 'file' => 'sample.css', 'id' => 'sample-css', 'media' => 'text/css' })
     ]
 
     assert_equal expect, @producer.contents

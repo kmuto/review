@@ -34,31 +34,19 @@ module EPUBMaker
     end
 
     # :call-seq:
-    #    initialize(file, id, media, title, level, notoc)
     #    initialize(hash)
     # Construct Content object by passing a sequence of parameters or hash.
     # Keys of +hash+ relate with each parameters.
-    # +file+ (or +hash+["file"]) is required. Others are optional.
-    def initialize(fileorhash, id = nil, media = nil, title = nil, level = nil, notoc = nil, properties = nil, chaptype = nil) # rubocop:disable Metrics/ParameterLists
-      if fileorhash.instance_of?(Hash)
-        @id = fileorhash['id']
-        @file = fileorhash['file']
-        @media = fileorhash['media']
-        @title = fileorhash['title']
-        @level = fileorhash['level']
-        @notoc = fileorhash['notoc']
-        @properties = fileorhash['properties'] || []
-        @chaptype = fileorhash['chaptype']
-      else
-        @file = fileorhash
-        @id = id
-        @media = media
-        @title = title
-        @level = level
-        @notoc = notoc
-        @properties = properties || []
-        @chaptype = chaptype
-      end
+    # +hash+['file'] is required. Others are optional.
+    def initialize(hash)
+      @id = hash['id']
+      @file = hash['file']
+      @media = hash['media']
+      @title = hash['title']
+      @level = hash['level']
+      @notoc = hash['notoc']
+      @properties = hash['properties'] || []
+      @chaptype = hash['chaptype']
       complement
     end
 
