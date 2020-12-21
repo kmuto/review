@@ -1016,6 +1016,7 @@ EOS
   end
 
   def test_list_pygments_nulllang
+    return true if @skip_pygments
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
