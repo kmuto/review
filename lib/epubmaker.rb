@@ -1,6 +1,6 @@
 # = epubmaker.rb -- EPUB production set.
 #
-# Copyright (c) 2010-2017 Kenshi Muto
+# Copyright (c) 2010-2020 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -10,11 +10,11 @@
 # == Quick usage
 #  require 'epubmaker'
 #  producer = EPUBMaker::Producer.new
-#  config = producer.load("config.yml")
-#  producer.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
-#  producer.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
+#  config = producer.load('config.yml')
+#  producer.contents.push(EPUBMaker::Content.new(file: 'ch01.xhtml'))
+#  producer.contents.push(EPUBMaker::Content.new(file: 'ch02.xhtml'))
 #   ...
-#  producer.import_imageinfo("images")
+#  producer.import_imageinfo('images')
 #  producer.produce
 
 require 'epubmaker/producer'

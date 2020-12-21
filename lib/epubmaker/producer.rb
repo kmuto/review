@@ -172,9 +172,9 @@ module EPUBMaker
         if f =~ /\.(#{allow_exts.join('|')})\Z/i
           path.chop! if path =~ %r{/\Z}
           if base.nil?
-            @contents.push(EPUBMaker::Content.new('file' => "#{path}/#{f}"))
+            @contents.push(EPUBMaker::Content.new(file: "#{path}/#{f}"))
           else
-            @contents.push(EPUBMaker::Content.new('file' => "#{path.sub(base + '/', '')}/#{f}"))
+            @contents.push(EPUBMaker::Content.new(file: "#{path.sub(base + '/', '')}/#{f}"))
           end
         end
         if FileTest.directory?("#{path}/#{f}")
