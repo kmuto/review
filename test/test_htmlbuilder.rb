@@ -21,7 +21,7 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     location = Location.new(nil, nil)
     @builder.bind(@compiler, @chapter, location)
     I18n.setup('ja')
-    @skip_pygments = true # temporary suspend pygments test
+    @skip_pygments = true # temporary suppress pygments test
   end
 
   def test_xmlns_ops_prefix_epub3
@@ -959,6 +959,7 @@ EOS
   end
 
   def test_list_pygments
+    return true if @skip_pygments
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
