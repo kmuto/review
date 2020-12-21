@@ -187,10 +187,10 @@ EOT
   def test_stage2_add_l1item
     stage2
     expect = EPUBMaker::Content.new(file: 'ch01.html',
-                                      id: 'ch01-html',
-                                      media: 'application/xhtml+xml',
-                                      title: 'CH01',
-                                      level: 1)
+                                    id: 'ch01-html',
+                                    media: 'application/xhtml+xml',
+                                    title: 'CH01',
+                                    level: 1)
     assert_equal expect, @producer.contents[0]
   end
 
