@@ -34,19 +34,18 @@ module EPUBMaker
     end
 
     # :call-seq:
-    #    initialize(hash)
-    # Construct Content object by passing a sequence of parameters or hash.
-    # Keys of +hash+ relate with each parameters.
-    # +hash+['file'] is required. Others are optional.
-    def initialize(hash)
-      @id = hash['id']
-      @file = hash['file']
-      @media = hash['media']
-      @title = hash['title']
-      @level = hash['level']
-      @notoc = hash['notoc']
-      @properties = hash['properties'] || []
-      @chaptype = hash['chaptype']
+    #    initialize(params)
+    # Construct Content object by passing named parameters.
+    # +params+[:file] is required. Others are optional.
+    def initialize(params)
+      @id = params[:id]
+      @file = params[:file]
+      @media = params[:media]
+      @title = params[:title]
+      @level = params[:level]
+      @notoc = params[:notoc]
+      @properties = params[:properties] || []
+      @chaptype = params[:chaptype]
       complement
     end
 

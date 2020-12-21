@@ -482,20 +482,20 @@ module ReVIEW
         next if level.to_i > @config['toclevel'] && args[:force_include].nil?
         log("Push #{file} to ePUB contents.")
 
-        hash = { 'file' => file,
-                 'level' => level.to_i,
-                 'title' => title,
-                 'chaptype' => args[:chaptype] }
+        params = { file: file,
+                   level: level.to_i,
+                   title: title,
+                   chaptype: args[:chaptype] }
         if args[:id].present?
-          hash['id'] = args[:id]
+          params[:id] = args[:id]
         end
         if args[:properties].present?
-          hash['properties'] = args[:properties].split(' ') # rubocop:disable Style/RedundantArgument
+          params[:properties] = args[:properties].split(' ') # rubocop:disable Style/RedundantArgument
         end
         if args[:notoc].present?
-          hash['notoc'] = args[:notoc]
+          params[:notoc] = args[:notoc]
         end
-        @producer.contents.push(Content.new(hash))
+        @producer.contents.push(Content.new(params))
       end
     end
 
@@ -506,7 +506,7 @@ module ReVIEW
           error "#{sfile} is not found."
         end
         FileUtils.cp(sfile, basetmpdir)
-        @producer.contents.push(Content.new('file' => sfile))
+        @producer.contents.push(Content.new(file: sfile))
       end
     end
 

@@ -11,8 +11,8 @@
 #  require 'epubmaker'
 #  producer = EPUBMaker::Producer.new
 #  config = producer.load("config.yml")
-#  producer.contents.push(EPUBMaker::Content.new({"file" => "ch01.xhtml"}))
-#  producer.contents.push(EPUBMaker::Content.new({"file" => "ch02.xhtml"}))
+#  producer.contents.push(EPUBMaker::Content.new({file: "ch01.xhtml"}))
+#  producer.contents.push(EPUBMaker::Content.new({file: "ch02.xhtml"}))
 #   ...
 #  producer.import_imageinfo("images")
 #  producer.produce
