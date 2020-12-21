@@ -37,15 +37,15 @@ module EPUBMaker
     #    initialize(params)
     # Construct Content object by passing named parameters.
     # +params+[:file] is required. Others are optional.
-    def initialize(params)
-      @id = params[:id]
-      @file = params[:file]
-      @media = params[:media]
-      @title = params[:title]
-      @level = params[:level]
-      @notoc = params[:notoc]
-      @properties = params[:properties] || []
-      @chaptype = params[:chaptype]
+    def initialize(file:, id: nil, media: nil, title: nil, level: nil, notoc: nil, properties: nil, chaptype: nil)
+      @id = id
+      @file = file
+      @media = media
+      @title = title
+      @level = level
+      @notoc = notoc
+      @properties = properties || []
+      @chaptype = chaptype
       complement
     end
 
