@@ -86,6 +86,7 @@ module ReVIEW
                                          yamlfile: yamlfile,
                                          config: cmd_config)
 
+      @config['builder'] = 'html'
       @config['htmlext'] = 'html'
       I18n.setup(@config['language'])
       begin
