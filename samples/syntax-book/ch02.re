@@ -339,6 +339,19 @@ labelで定義したラベルへの参照の例です。EPUBだと@<href>{#inlin
 #@# FIXME:EPUB側にTeXのほうを寄せるようにRe:VIEWコードを直す
 #@# FIXME:TeXではpagerefがほしい、ということがありそう。EPUBとの整合性を検討
 
+説明箇条書きはTeXで特殊な扱いをしているため、参照の確認を以下でしておきます。
+
+ : @<chap>{ch01}
+	章番号
+ : @<title>{ch01}
+	章題
+ : @<chapref>{ch01}
+	章番号+題
+ : @<hd>{ch02|crossref}
+	節
+ : @<column>{ch03|column2}
+	コラム参照
+
 === 参考文献
 参考文献@<tt>{bib.re}ファイルへの文献参照は、@<bib>{lins}とします。
 

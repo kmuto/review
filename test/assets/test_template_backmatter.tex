@@ -1,6 +1,6 @@
 \documentclass[dvipdfmx]{review-jsbook}
 \makeatletter
-\def\review@reviewversion{4.2.0}
+\def\review@reviewversion{5.1.0}
 \def\review@texcompiler{uplatex}
 \def\review@documentclass{review-jsbook}
 
@@ -68,6 +68,9 @@ some ad content
   \fi
   \ifdefined\covermatter\else% for 4.0.0 compatibility
     \def\covermatter{}
+  \fi
+  \ifdefined\reviewchapref\else% for 5.1.0 compatibility
+    \newcommand{\reviewchapref}[2]{\hyperref[##2]{##1}}
   \fi
 }
 

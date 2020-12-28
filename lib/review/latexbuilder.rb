@@ -1045,7 +1045,7 @@ module ReVIEW
     def inline_chapref(id)
       title = super
       if @book.config['chapterlink']
-        "\\hyperref[chap:#{id}]{#{title}}"
+        "\\reviewchapref{#{title}}{chap:#{id}}"
       else
         title
       end
@@ -1056,7 +1056,7 @@ module ReVIEW
 
     def inline_chap(id)
       if @book.config['chapterlink']
-        "\\hyperref[chap:#{id}]{#{@book.chapter_index.number(id)}}"
+        "\\reviewchapref{#{@book.chapter_index.number(id)}}{chap:#{id}}"
       else
         @book.chapter_index.number(id)
       end
@@ -1068,7 +1068,7 @@ module ReVIEW
     def inline_title(id)
       title = super
       if @book.config['chapterlink']
-        "\\hyperref[chap:#{id}]{#{title}}"
+        "\\reviewchapref{#{title}}{chap:#{id}}"
       else
         title
       end

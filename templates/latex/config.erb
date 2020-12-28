@@ -116,6 +116,9 @@
   \ifdefined\covermatter\else% for 4.0.0 compatibility
     \def\covermatter{}
   \fi
+  \ifdefined\reviewchapref\else% for 5.1.0 compatibility
+    \newcommand{\reviewchapref}[2]{\hyperref[##2]{##1}}
+  \fi
 }
 
 \makeatother
