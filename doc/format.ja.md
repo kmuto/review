@@ -345,7 +345,7 @@ V1 --> V6 --|
 ```
 
 * `<imgdir>` はデフォルトでは images ディレクトリです。
-* `<builder>` は利用しているビルダ名（ターゲット名）で、たとえば `--target=html` としているのであれば、images/html ディレクトリとなります。
+* `<builder>` は利用しているビルダ名（ターゲット名）で、たとえば `--target=html` としているのであれば、images/html ディレクトリとなります。各 Maker におけるビルダ名は epubmaker および webmaker の場合は `html`、pdfmaker の場合は `latex`、textmaker の場合は `top` です。
 * `<chapid>` は章 ID です。たとえば ch01.re という名前であれば「ch01」です。
 * `<id>` は //image[〜] の最初に入れた「〜」のことです（つまり、ID に日本語や空白交じりの文字を使ってしまうと、後で画像ファイル名の名前付けに苦労することになります！）。
 * `<ext>` は Re:VIEW が自動で判別する拡張子です。ビルダによってサポートおよび優先する拡張子は異なります。
@@ -354,7 +354,7 @@ V1 --> V6 --|
 
 * HTMLBuilder (EPUBMaker、WEBMaker)、MARKDOWNBuilder: .png、.jpg、.jpeg、.gif、.svg
 * LATEXBuilder (PDFMaker): .ai、.eps、.pdf、.tif、.tiff、.png、.bmp、.jpg、.jpeg、.gif
-* それ以外のビルダ: .ai、.psd、.eps、.pdf、.tif、.tiff、.png、.bmp、.jpg、.jpeg、.gif、.svg
+* それ以外のビルダ・Maker: .ai、.psd、.eps、.pdf、.tif、.tiff、.png、.bmp、.jpg、.jpeg、.gif、.svg
 
 ### インラインの画像挿入
 

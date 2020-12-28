@@ -375,7 +375,7 @@ The order of finding image is as follows.  The first matched one is used.
 ```
 
 * ``<imgdir>`` is `images` as default.
-* ``<builder>`` is a builder (target) name to use.  When you use review-comile commmand with ``--target=html``, `<imagedir>/<builder>` is `images/html`.
+* ``<builder>`` is a builder (target) name to use.  When you use review-comile commmand with ``--target=html``, `<imagedir>/<builder>` is `images/html`. The builder name for epubmaker and webmaker is `html`, for pdfmaker it is `latex`, and for textmaker it is `top`.
 * ``<chapid>`` is basename of *.re file.  If the filename is `ch01.re`, chapid is `ch01`.
 * ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
@@ -384,7 +384,7 @@ For each builder, image files are searched in order of the following extensions,
 
 * HTMLBuilder (EPUBMaker, WEBMaker), MARKDOWNBuilder: .png, .jpg, .jpeg, .gif, .svg
 * LATEXBuilder (PDFMaker): .ai, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif
-* Other builders: .ai, .psd, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif, .svg
+* Other builders/makers: .ai, .psd, .eps, .pdf, .tif, .tiff, .png, .bmp, .jpg, .jpeg, .gif, .svg
 
 ### Inline Images
 
