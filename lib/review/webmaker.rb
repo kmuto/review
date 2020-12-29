@@ -103,6 +103,7 @@ module ReVIEW
       Dir.mkdir(@path)
 
       @book = ReVIEW::Book::Base.new(@basedir, config: @config)
+      @converter = ReVIEW::Converter.new(@book, ReVIEW::HTMLBuilder.new)
 
       copy_stylesheet(@path)
       copy_frontmatter(@path)
@@ -123,8 +124,6 @@ module ReVIEW
 
     def build_body(basetmpdir, _yamlfile)
       base_path = Pathname.new(@basedir)
-      builder = ReVIEW::HTMLBuilder.new
-      @converter = ReVIEW::Converter.new(@book, builder)
       @book.parts.each do |part|
         if part.name.present?
           if part.file?
