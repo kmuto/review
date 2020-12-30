@@ -106,6 +106,35 @@ EOS
     assert_equal %Q(test <span class="red">コメント</span> test2), actual
   end
 
+  def test_inline_hd_chap
+    def @chapter.headline_index
+      item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st')
+      idx = Book::HeadlineIndex.new(self)
+      idx.add_item(item)
+      idx
+    end
+
+    @config['secnolevel'] = 2
+    actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test <a href="#h1-1-1">「te_st」</a> test2', actual
+
+    actual = compile_inline('test @<hd>{test} test2')
+    assert_equal 'test <a href="#h1-1-1">「te_st」</a> test2', actual
+
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test <a href="#h1-1-1">「1.1.1 te_st」</a> test2', actual
+
+    @config['chapterlink'] = nil
+    @config['secnolevel'] = 2
+    actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test 「te_st」 test2', actual
+
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<hd>{chap1|test} test2')
+    assert_equal 'test 「1.1.1 te_st」 test2', actual
+  end
+
   def test_ul_nest1
     src = <<-EOS
   * AAA

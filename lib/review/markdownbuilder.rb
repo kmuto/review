@@ -244,6 +244,28 @@ module ReVIEW
       "<!-- DTP:#{str} -->"
     end
 
+    def inline_hd_chap(chap, id)
+      n = chap.headline_index.number(id)
+      if n.present? && chap.number && over_secnolevel?(n)
+        str = I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
+      else
+        str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
+      end
+      if @book.config['chapterlink']
+        if @chapter == chap
+          anchor = 'h' + n.gsub('.', '-')
+          %Q(<a href="##{anchor}">#{str}</a>)
+        else
+          warn 'MARKDOWNBuilder does not support links to other chapters'
+          str
+        end
+      else
+        str
+      end
+    rescue KeyError
+      error "unknown headline: #{id}"
+    end
+
     def indepimage(_lines, id, caption = '', _metric = nil)
       blank
       puts "![#{compile_inline(caption)}](#{@chapter.image(id).path.sub(%r{\A\./}, '')})"
