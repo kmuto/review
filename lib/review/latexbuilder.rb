@@ -1231,6 +1231,10 @@ module ReVIEW
       end
     end
 
+    def inline_ins(str)
+      macro('reviewinsert', escape(str))
+    end
+
     def inline_del(str)
       macro('reviewstrike', escape(str))
     end

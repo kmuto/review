@@ -1063,6 +1063,8 @@ Output:
 @<ttb>{BarClass}:: teletype (monospaced font) and bold
 @<code>{a.foo(bar)}:: teletype (monospaced font) for fragments of code
 @<tcy>{}:: short horizontal text in vertical text
+@<ins>{sentence}:: inserted part (underline)
+@<del>{sentence}:: deleted part (strike through)
 ```
 
 ### References

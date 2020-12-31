@@ -90,19 +90,16 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
     assert_equal "\n", actual
   end
 
-  def test_inline_i
-    actual = compile_inline('test @<i>{inline test} test2')
-    assert_equal 'test inline test test2', actual
+  def test_inline_asis
+    %w(i b tti ttb bou ami u strong em code ins del tcy).each do |tag|
+      actual = compile_inline("test @<#{tag}>{inline test} test2")
+      assert_equal 'test inline test test2', actual
+    end
   end
 
   def test_inline_i_and_escape
     actual = compile_inline('test @<i>{inline<&;\\ test} test2')
     assert_equal 'test inline<&;\\ test test2', actual
-  end
-
-  def test_inline_b
-    actual = compile_inline('test @<b>{inline test} test2')
-    assert_equal 'test inline test test2', actual
   end
 
   def test_inline_b_and_escape
@@ -113,16 +110,6 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
   def test_inline_tt
     actual = compile_inline('test @<tt>{inline test} test2@<tt>{\\}}')
     assert_equal 'test inline test test2}', actual
-  end
-
-  def test_inline_tti
-    actual = compile_inline('test @<tti>{inline test} test2')
-    assert_equal 'test inline test test2', actual
-  end
-
-  def test_inline_ttb
-    actual = compile_inline('test @<ttb>{inline test} test2')
-    assert_equal 'test inline test test2', actual
   end
 
   def test_inline_uchar
