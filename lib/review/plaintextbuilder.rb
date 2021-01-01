@@ -651,8 +651,8 @@ module ReVIEW
       str
     end
 
-    def inline_del(str)
-      str
+    def inline_del(_str)
+      ''
     end
 
     def inline_tcy(str)

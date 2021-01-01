@@ -91,10 +91,15 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
   end
 
   def test_inline_asis
-    %w[i b tti ttb bou ami u strong em code ins del tcy].each do |tag|
+    %w[i b tti ttb bou ami u strong em code ins tcy].each do |tag|
       actual = compile_inline("test @<#{tag}>{inline test} test2")
       assert_equal 'test inline test test2', actual
     end
+  end
+
+  def test_inline_del
+    actual = compile_inline('test @<del>{inline test} test2')
+    assert_equal 'test  test2', actual
   end
 
   def test_inline_i_and_escape
