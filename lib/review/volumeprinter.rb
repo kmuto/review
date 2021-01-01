@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2020 Minero Aoki, Kenshi Muto
+# Copyright (c) 2014-2021 Minero Aoki, Kenshi Muto
 #               2003-2014 Minero Aoki
 #
 # This program is free software.
@@ -22,18 +22,17 @@ module ReVIEW
 
     def initialize
       @logger = ReVIEW.logger
-      @config = ReVIEW::Configure.values
       @yamlfile = 'config.yml'
     end
 
     def execute(*args)
       parse_options(args)
+      @config = ReVIEW::Configure.create(yamlfile: @yamlfile)
       @book = ReVIEW::Book::Base.new('.', config: @config)
       unless File.readable?(@yamlfile)
         @logger.error("No such fiile or can't open #{@yamlfile}.")
         exit 1
       end
-      @book.load_config(@yamlfile)
       I18n.setup(@book.config['language'])
 
       begin

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012-2020 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2012-2021 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -7,6 +7,7 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 require 'securerandom'
+require 'review/yamlloader'
 
 module ReVIEW
   class Configure < Hash
@@ -127,7 +128,7 @@ module ReVIEW
           loader = ReVIEW::YAMLLoader.new
           conf.deep_merge!(loader.load_file(yamlfile))
         rescue => e
-          error "yaml error #{e.message}"
+          raise ReVIEW::ConfigError, "yaml error #{e.message}"
         end
       end
 
