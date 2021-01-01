@@ -647,8 +647,16 @@ module ReVIEW
       ''
     end
 
+    def inline_ins(str)
+      str
+    end
+
     def inline_del(_str)
       ''
+    end
+
+    def inline_tcy(str)
+      str
     end
 
     def inline_br(_str)

@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2019 KADO Masanori, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2013-2020 KADO Masanori, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -222,6 +222,14 @@ module ReVIEW
 
     def inline_u(str)
       "<u>#{str}</u>"
+    end
+
+    def inline_ins(str)
+      "<ins>#{str}</ins>"
+    end
+
+    def inline_del(str)
+      "~~#{str}~~"
     end
 
     def image_image(id, caption, _metric)

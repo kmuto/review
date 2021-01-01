@@ -119,6 +119,11 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal 'test ★inline test☆◆→等幅フォント太字←◆ test2', actual
   end
 
+  def test_inline_tcy
+    actual = compile_inline('test @<tcy>{A} test2')
+    assert_equal 'test ◆→開始:回転←◆A◆→終了:縦回転←◆ test2', actual
+  end
+
   def test_inline_uchar
     actual = compile_inline('test @<uchar>{2460} test2')
     assert_equal 'test ① test2', actual

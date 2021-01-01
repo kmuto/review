@@ -197,6 +197,16 @@ EOS
     assert_equal 'abc\\reviewunderline{def}ghi', actual
   end
 
+  def test_inline_ins
+    actual = compile_inline('abc@<ins>{def}ghi')
+    assert_equal 'abc\\reviewinsert{def}ghi', actual
+  end
+
+  def test_inline_del
+    actual = compile_inline('abc@<del>{def}ghi')
+    assert_equal 'abc\\reviewstrike{def}ghi', actual
+  end
+
   def test_inline_bou
     actual = compile_inline('傍点の@<bou>{テスト}です。')
     assert_equal '傍点の\\reviewbou{テスト}です。', actual

@@ -367,6 +367,18 @@ module ReVIEW
       "＠#{str}＠◆→＠〜＠部分に下線←◆"
     end
 
+    def inline_ins(str)
+      "◆→開始:挿入表現←◆#{str}◆→終了:挿入表現←◆"
+    end
+
+    def inline_del(str)
+      "◆→開始:削除表現←◆#{str}◆→終了:削除表現←◆"
+    end
+
+    def inline_tcy(str)
+      "◆→開始:回転←◆#{str}◆→終了:縦回転←◆"
+    end
+
     def inline_icon(id)
       begin
         "◆→画像 #{@chapter.image(id).path.sub(%r{\A\./}, '')}←◆"

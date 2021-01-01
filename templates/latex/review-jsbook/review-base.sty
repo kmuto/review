@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2020/08/16]
+\ProvidesClass{review-base}[2020/12/31]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -268,6 +268,7 @@
   \def\reviewballoon#1{#1}
   \def\reviewbou#1{#1}
   \def\reviewkw#1{#1}
+  \def\reviewinsert#1{#1}
   \def\reviewstrike#1{#1}
   \def\reviewunderline#1{#1}
 }
@@ -322,14 +323,10 @@
 
 \DeclareRobustCommand{\reviewbou}[1]{\kenten{#1}}
 
-%% @<del> is ignored in LaTeX with default style
-\DeclareRobustCommand{\reviewstrike}[1]{#1}
-
+\DeclareRobustCommand{\reviewinsert}[1]{\Underline{#1}}
+\DeclareRobustCommand{\reviewstrike}[1]{\Midline{#1}}
 %%%% for ulem.sty:
 %%\renewcommand{\reviewstrike}[1]{\sout{#1}}
-%%
-%%%% for jumoline.sty:
-%%\renewcommand{\reviewstrike}[1]{\Middleline{#1}}
 
 \newcommand{\reviewth}[1]{\textgt{#1}}
 \newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}

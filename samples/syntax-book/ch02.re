@@ -285,7 +285,7 @@ a_{m1} & \cdots & a_{mn}
 #@# 場所ラベル定義
 
 === 書体
-本文での……キーワード@<kw>{キーワード, keyword}@<fn>{kw}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}
+本文での……キーワード@<kw>{キーワード, keyword}@<fn>{kw}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、挿入@<ins>{ins挿入}、削除@<del>{del削除}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}
 
 傍点@<embed>{@}<bou>{bou傍点}、ルビ@<embed>{@}<ruby>{愕然, がくぜん}、縦中横@<embed>{@}<tcy>{90}、はTeXでは現状、別パッケージが必要です。
 #@# FIXME:TEXでの文字スタイル。外部パッケージが必要
@@ -299,24 +299,25 @@ a_{m1} & \cdots & a_{mn}
 
 //footnote[kw][キーワードのカッコは太字にしないほうがいいのかなと思いつつあります（手元の案件では太字にしないよう挙動を変えてしまっているほうが多い）。]
 
- * 箇条書き内での……キーワード@<kw>{キーワード, keyword}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}
+ * 箇条書き内での……キーワード@<kw>{キーワード, keyword}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、挿入@<ins>{ins挿入}、削除@<del>{del削除}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}
 
 //tsize[|latex|p{120mm}]
 //table{
-表内での……キーワード@<kw>{キーワード, keyword}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}
+表内での……キーワード@<kw>{キーワード, keyword}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、挿入@<ins>{ins挿入}、削除@<del>{del削除}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}
 //}
 
 コードブロック内では対応装飾は減らしてよいと考えます。代わりにballoonが追加されます。
 
-//emlist[キャプション内での……キーワード@<kw>{キーワード, keyword}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}]{
+//emlist[キャプション内での……キーワード@<kw>{キーワード, keyword}、太字@<b>{b太字}、イタリック@<i>{iイタリック}、等幅@<tt>{tt等幅}、強調@<strong>{strong強調}、強調@<em>{em強調}、下線@<u>{u下線}、等幅@<code>{code等幅}、等幅太字@<ttb>{ttb等幅太字}、等幅イタリック@<tti>{tti等幅イタリック}、網カケ@<ami>{amiアミ}、挿入@<ins>{ins挿入}、削除@<del>{del削除}、16進UTF文字指定@<uchar>{3042}、インラインアイコン@<icon>{inlineicon}]{
 コードブロック内での……
 太字@<b>{b太字}
 イタリック@<i>{iイタリック}
 下線@<u>{u下線}
 網カケ@<ami>{amiアミ}    @<balloon>{ふきだし説明}
+挿入@<ins>{ins挿入}、削除@<del>{del削除}
 //}
 
-=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI},@<ami>{AMI},@<bou>{BOU},@<kw>{KW},@<u>{UNDERLINE}
+=== 見出し内 @<b>{BOLD},@<i>{ITALIC},@<tt>{TT},@<strong>{STRONG},@<em>{EM},@<code>{CODE},@<ttb>{TTB},@<tti>{TTI},@<ami>{AMI},@<bou>{BOU},@<kw>{KW},@<u>{UNDERLINE},@<ins>{INS}、@<del>{DEL}
 
 ==={crossref} 参照
 #@# FIXME:任意ラベルを使うと、EPUBチェックエラーになることがある？

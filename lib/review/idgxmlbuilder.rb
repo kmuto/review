@@ -773,6 +773,14 @@ module ReVIEW
       %Q(<underline>#{escape(str)}</underline>)
     end
 
+    def inline_ins(str)
+      %Q(<ins>#{escape(str)}</ins>)
+    end
+
+    def inline_del(str)
+      %Q(<del>#{escape(str)}</del>)
+    end
+
     def inline_icon(id)
       begin
         %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}" type="inline" />)
