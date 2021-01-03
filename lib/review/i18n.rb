@@ -91,6 +91,7 @@ module ReVIEW
       else
         user_i18n.each do |key, values|
           raise KeyError, "Invalid locale file: #{path}" unless values.is_a?(Hash)
+
           @store[key].merge!(values)
         end
       end

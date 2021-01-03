@@ -82,6 +82,7 @@ module ReVIEW
 
         @title = ''
         return @title unless content
+
         content.each_line do |line|
           if line =~ /\A=+/
             @title = line.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
@@ -119,6 +120,7 @@ module ReVIEW
         return image_index[id] if image_index.key?(id)
         return icon_index[id] if icon_index.key?(id)
         return numberless_image_index[id] if numberless_image_index.key?(id)
+
         indepimage_index[id]
       end
 
@@ -128,6 +130,7 @@ module ReVIEW
 
       def bibpaper_index
         raise FileNotFound, "no such bib file: #{@book.bib_file}" unless @book.bib_exist?
+
         @book.bibpaper_index
       end
 

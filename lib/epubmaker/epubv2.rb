@@ -35,6 +35,7 @@ module EPUBMaker
       s = ''
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next unless @producer.config[item]
+
         if @producer.config[item].is_a?(Array)
           s << @producer.config.names_of(item).map { |i| %Q(    <dc:#{item}>#{h(i)}</dc:#{item}>\n) }.join
         else
@@ -52,6 +53,7 @@ module EPUBMaker
       # creator (should be array)
       %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
         next unless @producer.config[role]
+
         @producer.config.names_of(role).each do |v|
           s << %Q(    <dc:creator opf:role="#{role.sub('a-', '')}">#{h(v)}</dc:creator>\n)
         end
@@ -60,6 +62,7 @@ module EPUBMaker
       # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
         next unless @producer.config[role]
+
         @producer.config.names_of(role).each do |v|
           s << %Q(    <dc:contributor opf:role="#{role}">#{h(v)}</dc:contributor>\n)
           if role == 'prt'
@@ -83,6 +86,7 @@ EOT
 
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
+
         s << %Q(    <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n)
       end
       s << %Q(  </manifest>\n)
@@ -103,6 +107,7 @@ EOT
 
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
+
         s << %Q(    <itemref idref="#{item.id}"/>\n)
       end
       s << %Q(  </spine>\n)

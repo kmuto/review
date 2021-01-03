@@ -72,6 +72,7 @@ module EPUBMaker
     def export_zip_rubyzip_addpath(epub, dirname, rootdir)
       Dir[File.join(dirname, '**', '**')].each do |path|
         next if File.directory?(path)
+
         relpath = Pathname.new(path).relative_path_from(rootdir)
         epub.put_next_entry(relpath)
         epub << File.binread(path)

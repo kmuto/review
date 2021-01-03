@@ -189,6 +189,7 @@ module ReVIEW
           # when notoc
           return ''
         end
+
         n = @chapter.number
         # XXX: remove magic number (move to lib/review/book/chapter.rb)
         if @chapter.on_appendix? && @chapter.number > 0 && @chapter.number < 28

@@ -158,6 +158,7 @@ def replace_old_style_part(dir)
     end
 
     next unless allow_overwrite
+
     File.write("#{dir}/#{part_name}", "= #{part}")
     catalog.replace_part(part, part_name)
   end

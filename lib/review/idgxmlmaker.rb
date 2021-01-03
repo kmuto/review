@@ -88,6 +88,7 @@ module ReVIEW
         generate_idgxml_files(yamlfile)
       rescue ApplicationError => e
         raise if @config['debug']
+
         error(e.message)
       end
     end

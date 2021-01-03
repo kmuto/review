@@ -151,6 +151,7 @@ module ReVIEW
         generate_pdf
       rescue ApplicationError => e
         raise if @config['debug']
+
         error(e.message)
       end
     end
@@ -307,6 +308,7 @@ module ReVIEW
     #
     def copy_images(from, to)
       return unless File.exist?(from)
+
       Dir.mkdir(to)
       ReVIEW::MakerHelper.copy_images_to_dir(from, to)
     end
@@ -316,6 +318,7 @@ module ReVIEW
       if File.exist?(file_sty)
         return File.read(file_sty)
       end
+
       nil
     end
 
@@ -486,6 +489,7 @@ module ReVIEW
       Dir.open(dirname) do |dir|
         dir.sort.each do |fname|
           next unless File.extname(fname).downcase == '.' + extname
+
           FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
           if extname == 'erb'
             File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
@@ -500,6 +504,7 @@ module ReVIEW
 
     def call_hook(hookname)
       return if !@config['pdfmaker'].is_a?(Hash) || @config['pdfmaker'][hookname].nil?
+
       hook = File.absolute_path(@config['pdfmaker'][hookname], @basedir)
       if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
         warn 'hook configuration is prohibited in safe mode. ignored.'

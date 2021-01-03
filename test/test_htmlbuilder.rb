@@ -960,6 +960,7 @@ EOS
 
   def test_list_pygments
     return true if @skip_pygments
+
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
@@ -988,6 +989,7 @@ test&lt;i&gt;2&lt;/i&gt;
 
   def test_list_pygments_lang
     return true if @skip_pygments
+
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
@@ -1017,6 +1019,7 @@ EOS
 
   def test_list_pygments_nulllang
     return true if @skip_pygments
+
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
@@ -1210,6 +1213,7 @@ EOS
 
   def test_listnum_pygments_lang
     return true if @skip_pygments
+
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
@@ -1238,6 +1242,7 @@ EOS
 
   def test_listnum_pygments_lang_linenum
     return true if @skip_pygments
+
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
@@ -1267,6 +1272,7 @@ EOS
 
   def test_listnum_pygments_lang_without_lang
     return true if @skip_pygments
+
     def @chapter.list(_id)
       Book::Index::Item.new('samplelist', 1)
     end
@@ -1454,6 +1460,7 @@ EOS
 
   def test_emlist_pygments_lang
     return true if @skip_pygments
+
     begin
       require 'pygments'
     rescue LoadError
@@ -1591,6 +1598,7 @@ EOS
 
   def test_cmd_pygments
     return true if @skip_pygments
+
     begin
       require 'pygments'
     rescue LoadError
@@ -1637,6 +1645,7 @@ EOS
   def test_texequation
     return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
     return true unless system('latex -version 1>/dev/null 2>/dev/null')
+
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
                  'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P} q\n//}\n") do |dir, book, _files|
       @book = book
@@ -1667,6 +1676,7 @@ EOS
     # Re:VIEW 3 never fail on defer mode. This test is only for Re:VIEW 2.
     return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
     return true unless system('latex -version 1>/dev/null 2>/dev/null')
+
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
                  'ch01.re' => "= test\n\n//texequation{\np \\land \\bm{P}} q\n//}\n") do |dir, book, _files|
       @book = book
@@ -2779,7 +2789,7 @@ EOB
       end
       @book.config['words_file'] = File.join(dir, 'words.csv')
       io = StringIO.new
-      @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+      @builder.instance_eval { @logger = ReVIEW::Logger.new(io) }
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       assert_equal %Q(<p>foo bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ} <b>bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ}</b> [missing word: N]</p>\n), actual
       assert_match(/WARN --: :1: word not bound: N/, io.string)

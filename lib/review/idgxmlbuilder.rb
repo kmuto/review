@@ -282,6 +282,7 @@ module ReVIEW
 
     def list_header(id, caption, _lang)
       return true unless caption.present?
+
       if get_chap.nil?
         puts %Q(<caption>#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
       else
@@ -448,6 +449,7 @@ module ReVIEW
 
     def image_header(id, caption)
       return true unless caption.present?
+
       if get_chap.nil?
         puts %Q(<caption>#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
       else
@@ -640,6 +642,7 @@ module ReVIEW
 
     def comment(lines, comment = nil)
       return unless @book.config['draft']
+
       lines ||= []
       lines.unshift(escape(comment)) unless comment.blank?
       str = lines.join("\n")
@@ -674,7 +677,7 @@ module ReVIEW
         then escape("#{word}（#{alt.strip}）")
         else escape(word)
         end +
-      '</keyword>' +
+        '</keyword>' +
         %Q(<index value="#{escape(word)}" />) +
         if alt
           alt.split(/\s*,\s*/).collect! { |e| %Q(<index value="#{escape(e.strip)}" />) }.join

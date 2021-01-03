@@ -274,6 +274,7 @@ module ReVIEW
 
     def comment(lines, comment = nil)
       return unless @book.config['draft']
+
       lines ||= []
       unless comment.blank?
         lines.unshift(comment)

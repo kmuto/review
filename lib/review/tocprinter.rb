@@ -150,6 +150,7 @@ module ReVIEW
 
     def calc_linesize(l)
       return l.size unless @calc_char_width
+
       w = 0
       l.split('').each do |c|
         # XXX: should include A also?
@@ -223,6 +224,7 @@ module ReVIEW
 
       headline_array.each do |h|
         next unless h[:lines]
+
         total_lines += h[:lines]
         total_chars += h[:chars]
         total_list_lines += h[:list_lines]

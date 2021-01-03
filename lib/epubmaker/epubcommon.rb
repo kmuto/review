@@ -47,6 +47,7 @@ module EPUBMaker
           if !item.media.start_with?('image') || item.file !~ /#{@producer.config['coverimage']}\Z/
             next
           end
+
           s << %Q(    <meta name="cover" content="#{item.id}"/>\n)
           file = item.file
           break
@@ -102,6 +103,7 @@ EOT
 
       @producer.contents.each do |item|
         next if item.title.nil?
+
         indent = indentarray.nil? ? [''] : indentarray
         level = item.level.nil? ? 0 : (item.level - 1)
         level = indent.size - 1 if level >= indent.size
@@ -137,6 +139,7 @@ EOT
       if @producer.config['coverimage']
         file = @producer.coverimage
         raise "coverimage #{@producer.config['coverimage']} not found. Abort." unless file
+
         @body = <<-EOT
   <div id="cover-image" class="cover-image">
     <img src="#{file}" alt="#{h(@producer.config.name_of('title'))}" class="max"/>
@@ -392,6 +395,7 @@ EOT
       s = %Q(<#{type} class="toc-h1">\n)
       @producer.contents.each do |item|
         next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.config['toclevel'].to_i
+
         is = indent == true ? '　' * item.level : ''
         s << %Q(<li><a href="#{item.file}">#{is}#{h(item.title)}</a></li>\n)
       end
@@ -417,8 +421,10 @@ EOT
 
       @producer.contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
+
         fname = "#{basedir}/#{item.file}"
         raise "#{fname} doesn't exist. Abort." unless File.exist?(fname)
+
         FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
         FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
       end

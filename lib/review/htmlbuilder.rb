@@ -75,6 +75,7 @@ module ReVIEW
       if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, 'layouts', 'layout.erb'))
         raise ReVIEW::ConfigError, 'layout.erb is obsoleted. Please use layout.html.erb.'
       end
+
       if File.exist?(layout_file)
         if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
           warn %Q(user's layout is prohibited in safe mode. ignored.)
@@ -155,6 +156,7 @@ module ReVIEW
       @nonum_counter += 1
       puts if level > 1
       return unless caption.present?
+
       if label
         puts %Q(<h#{level} id="#{normalize_id(label)}">#{compile_inline(caption)}</h#{level}>)
       else
@@ -170,6 +172,7 @@ module ReVIEW
       @nonum_counter += 1
       puts if level > 1
       return unless caption.present?
+
       if label
         puts %Q(<h#{level} id="#{normalize_id(label)}" notoc="true">#{compile_inline(caption)}</h#{level}>)
       else
@@ -185,6 +188,7 @@ module ReVIEW
       @nonum_counter += 1
       puts '' if level > 1
       return unless caption.present?
+
       if label
         puts %Q(<a id="#{normalize_id(label)}" /><h#{level} id="#{normalize_id(label)}" hidden="true">#{compile_inline(caption)}</h#{level}>)
       else
@@ -773,6 +777,7 @@ module ReVIEW
 
     def comment(lines, comment = nil)
       return unless @book.config['draft']
+
       lines ||= []
       lines.unshift(escape(comment)) unless comment.blank?
       str = lines.join('<br />')

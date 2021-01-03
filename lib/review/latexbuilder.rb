@@ -51,6 +51,7 @@ module ReVIEW
         @index_db = load_idxdb(@book.config['pdfmaker']['makeindex_dic'])
       end
       return true unless @book.config['pdfmaker']['makeindex_mecab']
+
       begin
         begin
           require 'MeCab'
@@ -334,6 +335,7 @@ module ReVIEW
       blank
       puts '\begin{enumerate}'
       return true unless @ol_num
+
       puts "\\setcounter{enumi}{#{@ol_num - 1}}"
       @ol_num = nil
     end
@@ -557,6 +559,7 @@ module ReVIEW
       if @book.config['pdfmaker']['use_original_image_size'] && s.empty? && !metric.present?
         return ' ' # pass empty to \reviewincludegraphics
       end
+
       s
     end
 
@@ -564,6 +567,7 @@ module ReVIEW
       if @book.config['pdfmaker']['image_scale2width'] && str =~ /\Ascale=([\d.]+)\Z/
         return "width=#{$1}\\maxwidth"
       end
+
       str
     end
 
@@ -1007,6 +1011,7 @@ module ReVIEW
 
     def direct(lines, fmt)
       return unless fmt == 'latex'
+
       lines.each do |line|
         puts line
       end
@@ -1014,6 +1019,7 @@ module ReVIEW
 
     def comment(lines, comment = nil)
       return true unless @book.config['draft']
+
       lines ||= []
       unless comment.blank?
         lines.unshift(escape(comment))

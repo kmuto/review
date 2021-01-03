@@ -21,6 +21,7 @@ module ReVIEW
         if current_yaml.instance_of?(FalseClass)
           raise "#{File.basename(current_file)} is malformed."
         end
+
         yaml = current_yaml.deep_merge(yaml)
 
         if yaml.key?('inherit')

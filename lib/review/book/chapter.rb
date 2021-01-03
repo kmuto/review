@@ -20,6 +20,7 @@ module ReVIEW
         name += book.ext if File.extname(name).empty?
         path = File.join(book.contentdir, name)
         raise FileNotFound, "file not exist: #{path}" unless File.file?(path)
+
         Chapter.new(book, number, name, path)
       end
 

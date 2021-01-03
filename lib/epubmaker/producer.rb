@@ -45,6 +45,7 @@ module EPUBMaker
 
     def coverimage
       return nil unless config['coverimage']
+
       @contents.each do |item|
         if item.media.start_with?('image') && item.file =~ /#{config['coverimage']}\Z/
           return item.file
@@ -160,9 +161,11 @@ module EPUBMaker
     # +base+ defines a string to remove from path name.
     def import_imageinfo(path, base = nil, allow_exts = nil)
       return nil unless File.exist?(path)
+
       allow_exts ||= @config['image_ext']
       Dir.foreach(path) do |f|
         next if f.start_with?('.')
+
         if f =~ /\.(#{allow_exts.join('|')})\Z/i
           path.chop! if path =~ %r{/\Z}
           if base.nil?
@@ -204,6 +207,7 @@ module EPUBMaker
 
     def call_hook(filename, *params)
       return if !filename.present? || !File.exist?(filename) || !FileTest.executable?(filename)
+
       if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
         warn 'hook is prohibited in safe mode. ignored.'
       else

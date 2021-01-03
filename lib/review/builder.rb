@@ -145,6 +145,7 @@ module ReVIEW
 
     def line_num
       return 1 unless @first_line_num
+
       line_n = @first_line_num
       @first_line_num = nil
 
@@ -514,11 +515,13 @@ module ReVIEW
 
     def parse_metric(type, metric)
       return '' if metric.blank?
+
       params = metric.split(/,\s*/)
       results = []
       params.each do |param|
         if param =~ /\A.+?::/
           next unless param =~ /\A#{type}::/
+
           param.sub!(/\A#{type}::/, '')
         end
         param2 = handle_metric(param)
@@ -543,6 +546,7 @@ module ReVIEW
       if m
         ch = @book.contents.detect { |chap| chap.id == m[1] }
         raise KeyError unless ch
+
         return [ch, m[2]]
       end
       [@chapter, chap_ref]

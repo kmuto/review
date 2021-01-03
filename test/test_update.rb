@@ -20,7 +20,7 @@ class UpdateTest < Test::Unit::TestCase
   def test_broken_yml
     File.write(File.join(@tmpdir, 'test.yml'), "invalid: [,]\n")
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     assert_match(/test\.yml is broken\. Ignored\./, io.string)
   end
@@ -62,7 +62,7 @@ EOT
       File.write(File.join(@tmpdir, fname), '')
 
       io = StringIO.new
-      @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+      @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
       assert_raise(ApplicationError) { @u.check_old_catalogs(@tmpdir) }
       assert_match(/review-catalog-converter/, io.string)
 
@@ -75,7 +75,7 @@ EOT
     File.write(File.join(@tmpdir, 'layouts/layout.tex.erb'), '')
 
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     assert_raise(ApplicationError) { @u.check_own_files(@tmpdir) }
     assert_match(%r{There is custom layouts/layout\.tex\.erb file}, io.string)
   end
@@ -84,7 +84,7 @@ EOT
     File.write(File.join(@tmpdir, 'review-ext.rb'), '')
 
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.check_own_files(@tmpdir)
     assert_match(/There is review-ext\.rb file/, io.string)
   end
@@ -93,7 +93,7 @@ EOT
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 2.0\n")
 
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
     assert_match(/Update 'review_version' to '5.0'/, io.string)
@@ -102,7 +102,7 @@ EOT
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 3.0\n")
 
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
     assert_match(/Update 'review_version' to '5.0'/, io.string)
@@ -113,7 +113,7 @@ EOT
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 5.0\n")
 
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
     assert_equal '', io.string
@@ -124,7 +124,7 @@ EOT
     File.write(File.join(@tmpdir, 'config.yml'), "review_version: 99.0\n")
 
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_version
     assert_match(/Update 'review_version' to '5.0'/, io.string)
@@ -133,7 +133,7 @@ EOT
 
   def test_update_rakefile
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.update_rakefile(@tmpdir)
     assert_equal '', io.string
     assert_equal true, File.exist?(File.join(@tmpdir, 'Rakefile'))
@@ -142,7 +142,7 @@ EOT
 
   def test_update_rakefile_same
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.update_rakefile(@tmpdir)
     @u.update_rakefile(@tmpdir)
     assert_equal '', io.string
@@ -155,7 +155,7 @@ EOT
     FileUtils.mkdir_p(File.join(@tmpdir, 'lib/tasks'))
     File.write(File.join(@tmpdir, 'lib/tasks/review.rake'), '')
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.update_rakefile(@tmpdir)
     assert_match(/Rakefile will be overridden with/, io.string)
     assert_match(%r{lib/tasks/review\.rake will be overridden}, io.string)
@@ -166,7 +166,7 @@ EOT
   def test_update_epub_version_older
     File.write(File.join(@tmpdir, 'config.yml'), "epubversion: 2\nhtmlversion: 4\n")
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_epub_version
     assert_match(/Update 'epubversion'/, io.string)
@@ -181,7 +181,7 @@ EOT
   def test_update_epub_version_current
     File.write(File.join(@tmpdir, 'config.yml'), "epubversion: 3\nhtmlversion: 5\n")
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_epub_version
     assert_equal '', io.string
@@ -195,7 +195,7 @@ EOT
   def test_update_epub_version_newer
     File.write(File.join(@tmpdir, 'config.yml'), "epubversion: 99\nhtmlversion: 99\n")
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_epub_version
     assert_equal '', io.string
@@ -209,7 +209,7 @@ EOT
   def test_update_locale_older
     File.write(File.join(@tmpdir, 'locale.yml'), %Q(locale: en\nchapter_quote: "'%s'"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_locale
     assert_match(/'chapter_quote' now takes 2 values/, io.string)
@@ -223,7 +223,7 @@ EOT
   def test_update_locale_current
     File.write(File.join(@tmpdir, 'locale.yml'), %Q(locale: en\nchapter_quote: "'%s...%s'"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_locale
     assert_equal '', io.string
@@ -237,7 +237,7 @@ EOT
   def test_update_tex_parameters_jsbook_to_review_jsbook
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", "a5j,11pt,landscape,oneside,twoside,vartwoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,disablejfam,draft,final,mingoth,winjis,jis,papersize,english,report,jslogo,nojslogo,uplatex,nomag,usemag,nomag*,tombow,tombo,mentuke,autodetect-engine"]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_parameters
     assert_match(/By default it is migrated to/, io.string)
@@ -251,7 +251,7 @@ EOT
   def test_update_tex_parameters_jsbook_to_review_jsbook_invalid
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", "a5paper,invalid"]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_parameters
     assert_match(/couldn't be converted fully/, io.string)
@@ -265,7 +265,7 @@ EOT
   def test_update_tex_parameters_review_jsbook
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jsbook", ""]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_parameters
     assert_equal '', io.string
@@ -278,7 +278,7 @@ EOT
   def test_update_tex_parameters_review_jsbook_obsoletekey
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jsbook", "Q=13.5, H=20, W=40, L=34, head=20mm, gutter=20mm"]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_parameters
     cont = <<EOT
@@ -290,7 +290,7 @@ EOT
   def test_update_tex_parameters_review_jlreq
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jlreq", ""]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_parameters
     assert_equal '', io.string
@@ -303,7 +303,7 @@ EOT
   def test_update_tex_parameters_review_jsbook_review_jlreq
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["review-jsbook", ""]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.specified_template = 'review-jlreq'
     @u.update_tex_parameters
@@ -317,7 +317,7 @@ EOT
   def test_update_tex_parameters_unknownclass
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["unknown", ""]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_parameters
     assert_match(/unknown class/, io.string)
@@ -330,7 +330,7 @@ EOT
   def test_update_tex_parameters_jsbook_unknownclass
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", ""]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.specified_template = 'unknown'
     @u.update_tex_parameters
@@ -344,7 +344,7 @@ EOT
   def test_update_tex_parameters_jsbook_to_review_jlreq
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texdocumentclass: ["jsbook", "a5j,11pt,landscape,oneside,twoside,onecolumn,twocolumn,titlepage,notitlepage,openright,openany,leqno,fleqn,draft,final,report,uplatex,nomag,usemag,nomag*,tombow,tombo,mentuke,autodetect-engine"]\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.specified_template = 'review-jlreq'
     @u.update_tex_parameters
@@ -358,7 +358,7 @@ EOT
 
   def test_update_stys_new
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.update_tex_stys('review-jsbook', @tmpdir)
     assert_equal '', io.string
     assert_equal true, File.exist?(File.join(@tmpdir, 'sty/review-base.sty'))
@@ -368,7 +368,7 @@ EOT
 
   def test_update_stys_new_custom
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.update_tex_stys('review-jsbook', @tmpdir)
     assert_equal '', io.string
     File.write(File.join(@tmpdir, 'sty/review-custom.sty'), "% MY CUSTOM\n")
@@ -379,7 +379,7 @@ EOT
 
   def test_update_stys_modified
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.update_tex_stys('review-jsbook', @tmpdir)
     cont = File.read(File.join(@tmpdir, 'sty/review-base.sty'))
 
@@ -392,7 +392,7 @@ EOT
   def test_update_tex_command
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texcommand: "/Program Files/up-latex --shell-escape -v"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_command
     assert_match(/has options/, io.string)
@@ -406,7 +406,7 @@ EOT
   def test_update_tex_command_noopt
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texcommand: "/Program Files/up-latex"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_command
     assert_equal '', io.string
@@ -419,7 +419,7 @@ EOT
   def test_update_tex_command_withopt
     File.write(File.join(@tmpdir, 'config.yml'), %Q(texcommand: "/Program Files/up-latex --shell-escape -v"\ntexoptions: "-myopt"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_tex_command
     assert_match(/has options/, io.string)
@@ -433,7 +433,7 @@ EOT
   def test_update_dvi_command
     File.write(File.join(@tmpdir, 'config.yml'), %Q(dvicommand: "/Program Files/dvi-pdfmx -q --quiet"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_dvi_command
     assert_match(/has options/, io.string)
@@ -447,7 +447,7 @@ EOT
   def test_update_dvi_command_noopt
     File.write(File.join(@tmpdir, 'config.yml'), %Q(dvicommand: "/Program Files/dvi-pdfmx"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_dvi_command
     assert_equal '', io.string
@@ -460,7 +460,7 @@ EOT
   def test_update_dvi_command_withopt
     File.write(File.join(@tmpdir, 'config.yml'), %Q(dvicommand: "/Program Files/dvi-pdfmx -q --quiet"\ndvioptions: "-myopt"\n))
     io = StringIO.new
-    @u.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @u.instance_eval { @logger = ReVIEW::Logger.new(io) }
     @u.parse_ymls(@tmpdir)
     @u.update_dvi_command
     assert_match(/has options/, io.string)

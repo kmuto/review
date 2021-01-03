@@ -301,6 +301,7 @@ module ReVIEW
         if !config['htmlversion'].present? || config['htmlversion'].to_f >= HTML_VERSION.to_f
           next
         end
+
         if confirm("%s: Update '%s' to '%s' from '%s'?", [File.basename(yml), 'htmlversion', HTML_VERSION, config['htmlversion']])
           rewrite_yml(yml, 'htmlversion', HTML_VERSION)
         end
@@ -313,6 +314,7 @@ module ReVIEW
         if !config['chapter_quote'].present? || config['chapter_quote'].scan('%s').size != 1
           next
         end
+
         v = config['chapter_quote'].sub('%s', '%s %s')
         if confirm("%s: 'chapter_quote' now takes 2 values. Update '%s' to '%s'?", [File.basename(yml), config['chapter_quote'], v])
           rewrite_yml(yml, 'chapter_quote', v)
@@ -512,6 +514,7 @@ module ReVIEW
         if !config['texcommand'] || config['texcommand'] !~ /\s+-/
           next
         end
+
         # option should be moved to texoptions
         cmd, opts = config['texcommand'].split(/\s+-/, 2)
         opts = "-#{opts}"

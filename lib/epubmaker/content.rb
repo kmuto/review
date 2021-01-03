@@ -51,6 +51,7 @@ module EPUBMaker
 
     def ==(other)
       return false unless self.class == other.class
+
       [self.id, self.file, self.media, self.title, self.level, self.notoc, self.chaptype, self.properties] ==
         [other.id, other.file, other.media, other.title, other.level, other.notoc, other.chaptype, other.properties]
     end
