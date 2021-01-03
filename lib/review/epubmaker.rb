@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2021 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -13,7 +13,6 @@ require 'review/book'
 require 'review/configure'
 require 'review/converter'
 require 'review/latexbuilder'
-require 'review/yamlloader'
 require 'review/version'
 require 'review/htmltoc'
 require 'review/htmlbuilder'
@@ -50,12 +49,6 @@ module ReVIEW
       @logger.debug(msg)
     end
 
-    def load_yaml(yamlfile)
-      @producer = Producer.new(@config)
-      @producer.load(yamlfile)
-      @config = @producer.config
-    end
-
     def self.execute(*args)
       self.new.execute(*args)
     end
@@ -90,7 +83,7 @@ module ReVIEW
       @config = ReVIEW::Configure.create(maker: 'epubmaker',
                                          yamlfile: yamlfile,
                                          config: cmd_config)
-      load_yaml(yamlfile)
+      @producer = Producer.new(@config)
       update_log_level
       log("Loaded yaml file (#{yamlfile}).")
 

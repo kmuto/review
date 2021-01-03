@@ -1,13 +1,14 @@
 require 'test_helper'
 require 'epubmaker'
+require 'review/configure'
 require 'review/epubmaker'
 
 class EPUB3MakerTest < Test::Unit::TestCase
   include EPUBMaker
 
   def setup
-    @producer = Producer.new
-    @producer.merge_config(
+    config = ReVIEW::Configure.values
+    config.merge!(
       'bookname' => 'sample',
       'title' => 'Sample Book',
       'epubversion' => 3,
@@ -17,20 +18,23 @@ class EPUB3MakerTest < Test::Unit::TestCase
       'modified' => '2014-12-13T14:15:16Z',
       'titlepage' => nil
     )
+    @producer = Producer.new(config)
     @output = StringIO.new
   end
 
   def test_initialize
-    assert Producer.new
+    assert Producer.new(ReVIEW::Configure.values)
   end
 
   def test_resource_en
-    @producer.merge_config('language' => 'en')
+    @producer.config['language'] = 'en'
+    @producer.modify_config
     assert_equal 'Table of Contents', @producer.res.v('toctitle')
   end
 
   def test_resource_ja
-    @producer.merge_config('language' => 'ja')
+    @producer.config['language'] = 'ja'
+    @producer.modify_config
     assert_equal '目次', @producer.res.v('toctitle')
   end
 
@@ -81,10 +85,11 @@ EOT
   end
 
   def test_stage1_opf_ebpaj
-    @producer.merge_config(
+    @producer.config.merge!(
       'opf_prefix' => { 'ebpaj' => 'http://www.ebpaj.jp/' },
       'opf_meta' => { 'ebpaj:guide-version' => '1.1.2' }
     )
+    @producer.modify_config
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -114,9 +119,10 @@ EOT
   end
 
   def test_stage1_opf_fileas
-    @producer.config['title'] = { 'name' => 'これは書籍です', 'file-as' => 'コレハショセキデス' }
-    @producer.config['aut'] = [{ 'name' => '著者A', 'file-as' => 'チョシャA' }, { 'name' => '著者B', 'file-as' => 'チョシャB' }]
-    @producer.config['pbl'] = [{ 'name' => '出版社', 'file-as' => 'シュッパンシャ' }]
+    @producer.config.merge!('title' => { 'name' => 'これは書籍です', 'file-as' => 'コレハショセキデス' },
+                            'aut' => [{ 'name' => '著者A', 'file-as' => 'チョシャA' }, { 'name' => '著者B', 'file-as' => 'チョシャB' }],
+                            'pbl' => [{ 'name' => '出版社', 'file-as' => 'シュッパンシャ' }])
+    @producer.modify_config
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -344,6 +350,7 @@ EOT
 
   def test_stage3_ncx
     stage3
+    @producer.config['toclevel'] = 2
     @producer.ncx(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -376,6 +383,7 @@ EOT
 
   def test_stage3_mytoc
     stage3
+    @producer.config['toclevel'] = 2
     @producer.mytoc(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -405,7 +413,11 @@ EOT
   end
 
   def test_stage3_flat
-    @producer.merge_config('epubmaker' => { 'flattoc' => true, 'flattocindent' => false })
+    @producer.config.deep_merge!(
+      'toclevel' => 2,
+      'epubmaker' => { 'flattoc' => true, 'flattocindent' => false }
+    )
+    @producer.modify_config
     stage3
     @producer.mytoc(@output)
     expect = <<EOT
@@ -457,6 +469,7 @@ EOT
   def test_stage3_cover_with_image
     stage3
     @producer.config['coverimage'] = 'sample.png'
+    @producer.modify_config
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -478,8 +491,9 @@ EOT
   end
 
   def test_colophon_default
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config.merge!('aut' => ['Mr.Smith'],
+                            'pbl' => ['BLUEPRINT'])
+    @producer.modify_config
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -508,9 +522,10 @@ EOT
   end
 
   def test_colophon_pht
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.config.merge!('aut' => ['Mr.Smith'],
+                            'pbl' => ['BLUEPRINT'],
+                            'pht' => ['Mrs.Smith'])
+    @producer.modify_config
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -540,10 +555,11 @@ EOT
   end
 
   def test_colophon_history
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
-    @producer.merge_config('language' => 'ja')
+    @producer.config.merge!('aut' => 'Mr.Smith',
+                            'pbl' => 'BLUEPRINT',
+                            'pht' => 'Mrs.Smith',
+                            'language' => 'ja')
+    @producer.modify_config
     history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
@@ -554,13 +570,12 @@ EOT
   end
 
   def test_colophon_history_2
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
-    @producer.merge_config(
-      'language' => 'ja',
-      'history' => [['2011-08-03 v1.0.0版発行', '2012-02-15 v1.1.0版発行']]
-    )
+    @producer.config.merge!('aut' => ['Mr.Smith'],
+                            'pbl' => ['BLUEPRINT'],
+                            'pht' => ['Mrs.Smith'],
+                            'language' => 'ja',
+                            'history' => [['2011-08-03 v1.0.0版発行', '2012-02-15 v1.1.0版発行']])
+    @producer.modify_config
     history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
@@ -572,13 +587,12 @@ EOT
   end
 
   def test_colophon_history_date
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
-    @producer.merge_config(
-      'language' => 'ja',
-      'history' => [['2011-08-03', '2012-02-15']]
-    )
+    @producer.config.merge!('aut' => ['Mr.Smith'],
+                            'pbl' => ['BLUEPRINT'],
+                            'pht' => ['Mrs.Smith'],
+                            'language' => 'ja',
+                            'history' => [['2011-08-03', '2012-02-15']])
+    @producer.modify_config
     history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">
@@ -590,15 +604,14 @@ EOT
   end
 
   def test_colophon_history_date2
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
-    @producer.merge_config(
-      'language' => 'ja',
-      'history' => [['2011-08-03', '2012-02-15'],
-                    ['2012-10-01'],
-                    ['2013-03-01']]
-    )
+    @producer.config.merge!('aut' => ['Mr.Smith'],
+                            'pbl' => ['BLUEPRINT'],
+                            'pht' => ['Mrs.Smith'],
+                            'language' => 'ja',
+                            'history' => [['2011-08-03', '2012-02-15'],
+                                          ['2012-10-01'],
+                                          ['2013-03-01']])
+    @producer.modify_config
     history = @producer.instance_eval { @epub.colophon_history }
     expect = <<EOT
     <div class="pubhistory">

@@ -13,7 +13,7 @@ module ReVIEW
   class Configure < Hash
     attr_accessor :maker
 
-    def self.values
+    def self.values # rubocop:disable Metrics/MethodLength
       conf = Configure[
         # These parameters can be overridden by YAML file.
         'bookname' => 'book', # it defines epub file name also
@@ -63,7 +63,7 @@ module ReVIEW
         'image_types' => %w[.ai .psd .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif .svg],
         'bib_file' => 'bib.re',
         'words_file' => nil,
-        'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt],
+        'colophon_order' => %w[aut csl trl dsr ill cov edt pbl contact prt pht],
         'chapterlink' => true,
         'externallink' => true,
         'join_lines_by_lang' => nil, # experimental. default should be nil
@@ -113,6 +113,34 @@ module ReVIEW
           'image' => 'bottom',
           'table' => 'top',
           'equation' => 'top'
+        },
+        # for EPUBMaker
+        'modified' => Time.now.utc.strftime('%Y-%02m-%02dT%02H:%02M:%02SZ'),
+        'isbn' => nil,
+        'titlefile' => nil,
+        'originaltitlefile' => nil,
+        'profile' => nil,
+        'direction' => 'ltr',
+        'image_maxpixels' => 4_000_000,
+        'font_ext' => %w[ttf woff otf],
+        'epubmaker' => {
+          'flattoc' => nil,
+          'flattocindent' => true,
+          'ncx_indent' => [],
+          'zip_stage1' => 'zip -0Xq',
+          'zip_stage2' => 'zip -Xr9Dq',
+          'zip_addpath' => nil,
+          'hook_beforeprocess' => nil,
+          'hook_afterfrontmatter' => nil,
+          'hook_afterbody' => nil,
+          'hook_afterbackmatter' => nil,
+          'hook_aftercopyimage' => nil,
+          'hook_prepack' => nil,
+          'rename_for_legacy' => nil,
+          'verify_target_images' => nil,
+          'force_include_images' => [],
+          'cover_linear' => nil,
+          'back_footnote' => nil
         }
       ]
       conf.maker = nil
@@ -143,6 +171,18 @@ module ReVIEW
     end
 
     def migrate_parameters
+      # string to array
+      %w[subject aut
+         a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt
+         a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl
+         adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt
+         ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl
+         stylesheet rights].each do |item|
+        if self[item] && self[item].is_a?(String)
+          self[item] = [self[item]]
+        end
+      end
+
       # backward compatibility
       if self['mathml']
         warn '"mathml: true" is obsoleted. Please use "math_format: mathml"'
