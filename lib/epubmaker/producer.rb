@@ -1,6 +1,6 @@
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2017 Kenshi Muto
+# Copyright (c) 2010-2021 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -27,40 +27,20 @@ module EPUBMaker
     # Message resource object.
     attr_reader :res
 
-    # Take YAML +file+ and return parameter hash.
-    def self.load(file)
-      if file.nil? || !File.exist?(file)
-        raise "Can't open #{file}."
-      end
-      loader = ReVIEW::YAMLLoader.new
-      loader.load_file(file)
-    end
-
-    # Take YAML +file+ and update parameter hash.
-    def load(file)
-      if file.nil? || !File.exist?(file)
-        raise "Can't open #{file}."
-      end
-      loader = ReVIEW::YAMLLoader.new
-      merge_config(@config.deep_merge(loader.load_file(file)))
-    end
-
     def warn(msg)
       @logger.warn(msg)
     end
 
     # Construct producer object.
-    # +config+ takes initial parameter hash. This parameters can be overriden by EPUBMaker#load or EPUBMaker#merge_config.
-    # +version+ takes EPUB version (default is 2).
-    def initialize(config = nil, version = nil)
+    # +config+ takes initial parameter hash.
+    def initialize(config)
       @contents = []
-      @config = ReVIEW::Configure.new
+      @config = config
+      @config.maker = 'epubmaker'
       @epub = nil
-      @config['epubversion'] = version unless version.nil?
       @res = ReVIEW::I18n
       @logger = ReVIEW.logger
-
-      merge_config(config) if config
+      modify_config
     end
 
     def coverimage
@@ -73,10 +53,25 @@ module EPUBMaker
       nil
     end
 
-    # Update parameters by merging from new parameter hash +config+.
-    def merge_config(config)
-      @config.deep_merge!(config)
-      complement
+    # Modify parameters for EPUB specific.
+    def modify_config
+      if @config['epubversion'] >= 3
+        @config['htmlversion'] = 5
+      end
+
+      unless @config['title']
+        @config['title'] = @config['booktitle']
+      end
+
+      unless @config['cover']
+        @config['cover'] = "#{@config['bookname']}.#{@config['htmlext']}"
+      end
+
+      %w[bookname title].each do |k|
+        unless @config[k]
+          raise "Key #{k} must have a value. Abort."
+        end
+      end
 
       unless @config['epubversion'].nil?
         case @config['epubversion'].to_i
@@ -88,9 +83,8 @@ module EPUBMaker
           raise "Invalid EPUB version (#{@config['epubversion']}.)"
         end
       end
-      if config['language']
-        ReVIEW::I18n.locale = config['language']
-      end
+
+      ReVIEW::I18n.locale = @config['language']
       support_legacy_maker
     end
 
@@ -226,117 +220,9 @@ module EPUBMaker
       if str =~ /\A\d{13}\Z/
         return "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
       end
-      nil
     end
 
     private
-
-    # Complement parameters.
-    def complement
-      @config['htmlext'] ||= 'html'
-      defaults = ReVIEW::Configure.new.merge(
-        'language' => 'ja',
-        'date' => Time.now.strftime('%Y-%m-%d'),
-        'modified' => Time.now.utc.strftime('%Y-%02m-%02dT%02H:%02M:%02SZ'),
-        'isbn' => nil,
-        'toclevel' => 2,
-        'stylesheet' => [],
-        'epubversion' => 3,
-        'htmlversion' => 5,
-        'secnolevel' => 2,
-        'pre_secnolevel' => 0,
-        'post_secnolevel' => 1,
-        'part_secnolevel' => 1,
-        'titlepage' => true,
-        'titlefile' => nil,
-        'originaltitlefile' => nil,
-        'profile' => nil,
-        'colophon' => nil,
-        'colophon_order' => %w[aut csl trl dsr ill edt pbl prt pht],
-        'direction' => 'ltr',
-        'epubmaker' => {
-          'flattoc' => nil,
-          'flattocindent' => true,
-          'ncx_indent' => [],
-          'zip_stage1' => 'zip -0Xq',
-          'zip_stage2' => 'zip -Xr9Dq',
-          'zip_addpath' => nil,
-          'hook_beforeprocess' => nil,
-          'hook_afterfrontmatter' => nil,
-          'hook_afterbody' => nil,
-          'hook_afterbackmatter' => nil,
-          'hook_aftercopyimage' => nil,
-          'hook_prepack' => nil,
-          'rename_for_legacy' => nil,
-          'verify_target_images' => nil,
-          'force_include_images' => [],
-          'cover_linear' => nil,
-          'back_footnote' => nil
-        },
-        'externallink' => true,
-        'contentdir' => '.',
-        'imagedir' => 'images',
-        'fontdir' => 'fonts',
-        'image_ext' => %w[png gif jpg jpeg svg ttf woff otf],
-        'image_maxpixels' => 4_000_000,
-        'font_ext' => %w[ttf woff otf]
-      )
-
-      @config = defaults.deep_merge(@config)
-      @config['title'] = @config['booktitle'] unless @config['title']
-
-      deprecated_parameters = {
-        'ncxindent' => 'epubmaker:ncxindent',
-        'flattoc' => 'epubmaker:flattoc',
-        'flattocindent' => 'epubmaker:flattocindent',
-        'hook_beforeprocess' => 'epubmaker:hook_beforeprocess',
-        'hook_afterfrontmatter' => 'epubmaker:hook_afterfrontmatter',
-        'hook_afterbody' => 'epubmaker:hook_afterbody',
-        'hook_afterbackmatter' => 'epubmaker:hook_afterbackmatter',
-        'hook_aftercopyimage' => 'epubmaker:hook_aftercopyimage',
-        'hook_prepack' => 'epubmaker:hook_prepack',
-        'rename_for_legacy' => 'epubmaker:rename_for_legacy',
-        'zip_stage1' => 'epubmaker:zip_stage1',
-        'zip_stage2' => 'epubmaker:zip_stage2',
-        'zip_addpath' => 'epubmaker:zip_addpath',
-        'verify_target_images' => 'epubmaker:verify_target_images',
-        'force_include_images' => 'epubmaker:force_include_images',
-        'cover_linear' => 'epubmaker:cover_linear'
-      }
-
-      deprecated_parameters.each_pair do |k, v|
-        next if @config[k].nil?
-        sa = v.split(':', 2)
-        warn "Parameter #{k} is deprecated. Use:\n#{sa[0]}:\n  #{sa[1]}: ...\n\n"
-        @config[sa[0]][sa[1]] = @config[k]
-        @config.delete(k)
-      end
-
-      if @config['epubversion'] >= 3
-        @config['htmlversion'] = 5
-      end
-
-      @config.maker = 'epubmaker'
-      @config['cover'] = "#{@config['bookname']}.#{@config['htmlext']}" unless @config['cover']
-
-      %w[bookname title].each do |k|
-        raise "Key #{k} must have a value. Abort." unless @config[k]
-      end
-      # array
-      %w[subject aut
-         a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt
-         a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl
-         adp ann arr art asn aut aqt aft aui ant bkp clb cmm dsr edt
-         ill lyr mdc mus nrt oth pht pbl prt red rev spn ths trc trl
-         stylesheet rights].each do |item|
-        next unless @config[item]
-        if @config[item].is_a?(String)
-          @config[item] = [@config[item]]
-        end
-      end
-      # optional
-      # type, format, identifier, source, relation, coverpage, aut
-    end
 
     def support_legacy_maker
       # legacy review-epubmaker support
@@ -368,8 +254,6 @@ module EPUBMaker
         @config['flag_legacy_pubhistory'] = true
         warn %Q(Parameter 'pubhistory' is obsolete. Please use 'history' array.)
       end
-
-      true
     end
   end
 end

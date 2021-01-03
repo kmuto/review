@@ -6,8 +6,8 @@ class EPUBMakerTest < Test::Unit::TestCase
   include EPUBMaker
 
   def setup
-    @producer = Producer.new
-    @producer.merge_config(
+    config = ReVIEW::Configure.values
+    config.merge!(
       'bookname' => 'sample',
       'title' => 'Sample Book',
       'epubversion' => 2,
@@ -16,20 +16,23 @@ class EPUBMakerTest < Test::Unit::TestCase
       'language' => 'en',
       'titlepage' => nil
     )
+    @producer = Producer.new(config)
     @output = StringIO.new
   end
 
   def test_initialize
-    assert Producer.new
+    assert Producer.new(ReVIEW::Configure.values)
   end
 
   def test_resource_en
-    @producer.merge_config('language' => 'en')
+    @producer.config['language'] = 'en'
+    @producer.modify_config
     assert_equal 'Table of Contents', @producer.res.v('toctitle')
   end
 
   def test_resource_ja
-    @producer.merge_config('language' => 'ja')
+    @producer.config['language'] = 'ja'
+    @producer.modify_config
     assert_equal '目次', @producer.res.v('toctitle')
   end
 
@@ -79,6 +82,7 @@ EOT
 
   def test_stage1_opf_escape
     @producer.config['title'] = 'Sample<>Book'
+    @producer.modify_config
     @producer.opf(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -136,6 +140,7 @@ EOT
 
   def test_stage1_ncx_escape
     @producer.config['title'] = 'Sample<>Book'
+    @producer.modify_config
     @producer.ncx(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -448,6 +453,8 @@ EOT
 
   def test_stage3_mytoc
     stage3
+    @producer.config['toclevel'] = 2
+    @producer.modify_config
     @producer.mytoc(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -477,7 +484,11 @@ EOT
   end
 
   def test_stage3_flat
-    @producer.merge_config('epubmaker' => { 'flattoc' => true, 'flattocindent' => false })
+    @producer.config.deep_merge!(
+      'epubmaker' => { 'flattoc' => true, 'flattocindent' => false },
+      'toclevel' => 2
+    )
+    @producer.modify_config
     stage3
     @producer.mytoc(@output)
     expect = <<EOT
@@ -529,6 +540,7 @@ EOT
   def test_stage3_cover_escape
     stage3
     @producer.config['title'] = 'Sample<>Book'
+    @producer.modify_config
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -550,6 +562,7 @@ EOT
   def test_stage3_cover_with_image
     stage3
     @producer.config['coverimage'] = 'sample.png'
+    @producer.modify_config
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -572,8 +585,11 @@ EOT
 
   def test_stage3_cover_with_image_escape
     stage3
-    @producer.config['title'] = 'Sample<>Book'
-    @producer.config['coverimage'] = 'sample.png'
+    @producer.config.merge!(
+      'title' => 'Sample<>Book',
+      'coverimage' => 'sample.png'
+    )
+    @producer.modify_config
     @producer.cover(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -595,9 +611,12 @@ EOT
   end
 
   def test_colophon_default
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['isbn'] = '9784797372274'
+    @producer.config.merge!(
+      'aut' => ['Mr.Smith'],
+      'pbl' => ['BLUEPRINT'],
+      'isbn' => '9784797372274'
+    )
+    @producer.modify_config
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -627,12 +646,15 @@ EOT
   end
 
   def test_colophon_default_escape_and_multiple
-    @producer.config['title'] = '<&Sample Book>'
-    @producer.config['subtitle'] = 'Sample<>Subtitle'
-    @producer.config['aut'] = ['Mr.Smith', 'Mr.&Anderson']
-    @producer.config['pbl'] = ['BLUEPRINT', 'COPY<>EDIT']
-    @producer.config['isbn'] = '9784797372274'
-    @producer.config['rights'] = ['COPYRIGHT 2016 <>', '& REVIEW']
+    @producer.config.merge!(
+      'title' => '<&Sample Book>',
+      'subtitle' => 'Sample<>Subtitle',
+      'aut' => ['Mr.Smith', 'Mr.&Anderson'],
+      'pbl' => ['BLUEPRINT', 'COPY<>EDIT'],
+      'isbn' => '9784797372274',
+      'rights' => ['COPYRIGHT 2016 <>', '& REVIEW']
+    )
+    @producer.modify_config
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -663,15 +685,18 @@ EOT
   end
 
   def test_colophon_history
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
-    @producer.merge_config('language' => 'ja')
-    @producer.config['history'] =
+    @producer.config.merge!(
+      'aut' => ['Mr.Smith'],
+      'pbl' => ['BLUEPRINT'],
+      'pht' => ['Mrs.Smith'],
+      'language' => 'ja',
+      'history' =>
       [['2011-08-03',
         '2012-02-15'],
        ['2012-10-01'],
        ['2013-03-01']]
+    )
+    @producer.modify_config
     epub = @producer.instance_eval { @epub }
     result = epub.colophon_history
     expect = <<-EOT
@@ -686,14 +711,17 @@ EOT
   end
 
   def test_colophon_history_freeformat
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
-    @producer.merge_config('language' => 'ja')
-    @producer.config['history'] =
+    @producer.config.merge!(
+      'aut' => ['Mr.Smith'],
+      'pbl' => ['BLUEPRINT'],
+      'pht' => ['Mrs.Smith'],
+      'language' => 'ja',
+      'history' =>
       [['2011年8月3日 ver 1.1.0発行'],
        ['2011年10月12日 ver 1.2.0発行'],
        ['2012年1月31日 ver 1.2.1発行']]
+    )
+    @producer.modify_config
 
     epub = @producer.instance_eval { @epub }
     result = epub.colophon_history
@@ -708,9 +736,12 @@ EOT
   end
 
   def test_colophon_pht
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
-    @producer.config['pht'] = ['Mrs.Smith']
+    @producer.config.merge!(
+      'aut' => ['Mr.Smith'],
+      'pbl' => ['BLUEPRINT'],
+      'pht' => ['Mrs.Smith']
+    )
+    @producer.modify_config
     @producer.colophon(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -741,22 +772,28 @@ EOT
 
   def test_isbn13
     @producer.config['isbn'] = '9784797372274'
+    @producer.modify_config
     assert_equal '978-4-79737-227-4', @producer.isbn_hyphen
   end
 
   def test_isbn10
     @producer.config['isbn'] = '4797372273'
+    @producer.modify_config
     assert_equal '4-79737-227-3', @producer.isbn_hyphen
   end
 
   def test_isbn_nil
     @producer.config['isbn'] = nil
+    @producer.modify_config
     assert_equal nil, @producer.isbn_hyphen
   end
 
   def test_title
-    @producer.config['aut'] = ['Mr.Smith']
-    @producer.config['pbl'] = ['BLUEPRINT']
+    @producer.config.merge!(
+      'aut' => ['Mr.Smith'],
+      'pbl' => ['BLUEPRINT']
+    )
+    @producer.modify_config
     @producer.titlepage(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -788,8 +825,11 @@ EOT
   end
 
   def test_title_single_value_param
-    @producer.config['aut'] = 'Mr.Smith'
-    @producer.config['pbl'] = 'BLUEPRINT'
+    @producer.config.merge!(
+      'aut' => 'Mr.Smith',
+      'pbl' => 'BLUEPRINT'
+    )
+    @producer.modify_config
     @producer.titlepage(@output)
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
