@@ -93,6 +93,7 @@ def main
   end
 rescue ReVIEW::Error => e
   raise if $DEBUG
+
   @logger.error e.message
   exit 1
 end

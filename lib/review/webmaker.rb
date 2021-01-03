@@ -92,6 +92,7 @@ module ReVIEW
         generate_html_files(yamlfile)
       rescue ApplicationError => e
         raise if @config['debug']
+
         error(e.message)
       end
     end
@@ -195,6 +196,7 @@ module ReVIEW
 
     def copy_images(resdir, destdir)
       return nil unless File.exist?(resdir)
+
       allow_exts = @config['image_ext']
       FileUtils.mkdir_p(destdir)
       recursive_copy_files(resdir, destdir, allow_exts)
@@ -202,6 +204,7 @@ module ReVIEW
 
     def copy_resources(resdir, destdir, allow_exts = nil)
       return nil if !resdir || !File.exist?(resdir)
+
       allow_exts ||= @config['image_ext']
       FileUtils.mkdir_p(destdir)
       recursive_copy_files(resdir, destdir, allow_exts)
@@ -211,6 +214,7 @@ module ReVIEW
       Dir.open(resdir) do |dir|
         dir.each do |fname|
           next if fname.start_with?('.')
+
           if FileTest.directory?("#{resdir}/#{fname}")
             recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
           elsif fname =~ /\.(#{allow_exts.join('|')})\Z/i
@@ -299,6 +303,7 @@ module ReVIEW
 
     def copy_file_with_param(name, target_file = nil)
       return if @config[name].nil? || !File.exist?(@config[name])
+
       target_file ||= File.basename(@config[name])
       FileUtils.cp(@config[name], File.join(@path, target_file))
     end

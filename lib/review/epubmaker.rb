@@ -185,6 +185,7 @@ module ReVIEW
         log('Finished.')
       rescue ApplicationError => e
         raise if @config['debug']
+
         error(e.message)
       ensure
         FileUtils.remove_entry_secure(basetmpdir) unless @config['debug']
@@ -230,6 +231,7 @@ module ReVIEW
 
     def copy_images(resdir, destdir, allow_exts = nil)
       return nil unless File.exist?(resdir)
+
       allow_exts ||= @config['image_ext']
       FileUtils.mkdir_p(destdir)
       if @config['epubmaker']['verify_target_images'].present?
@@ -252,6 +254,7 @@ module ReVIEW
 
     def copy_resources(resdir, destdir, allow_exts = nil)
       return nil unless File.exist?(resdir)
+
       allow_exts ||= @config['image_ext']
       FileUtils.mkdir_p(destdir)
       recursive_copy_files(resdir, destdir, allow_exts)
@@ -261,6 +264,7 @@ module ReVIEW
       Dir.open(resdir) do |dir|
         dir.each do |fname|
           next if fname.start_with?('.')
+
           if FileTest.directory?(File.join(resdir, fname))
             recursive_copy_files(File.join(resdir, fname), File.join(destdir, fname), allow_exts)
           elsif fname =~ /\.(#{allow_exts.join('|')})\Z/i
@@ -473,6 +477,7 @@ module ReVIEW
     def push_contents(_basetmpdir)
       @htmltoc.each_item do |level, file, title, args|
         next if level.to_i > @config['toclevel'] && args[:force_include].nil?
+
         log("Push #{file} to ePUB contents.")
 
         params = { file: file,
@@ -494,6 +499,7 @@ module ReVIEW
 
     def copy_stylesheet(basetmpdir)
       return if @config['stylesheet'].empty?
+
       @config['stylesheet'].each do |sfile|
         unless File.exist?(sfile)
           error "#{sfile} is not found."
@@ -635,8 +641,10 @@ module ReVIEW
       extre = Regexp.new(pat, Regexp::IGNORECASE)
       Find.find(basetmpdir) do |fname|
         next unless fname.match(extre)
+
         img = ImageSize.path(fname)
         next if img.width.nil? || img.width * img.height <= maxpixels
+
         h = Math.sqrt(img.height * maxpixels / img.width)
         w = maxpixels / h
         fname.sub!("#{basetmpdir}/", '')

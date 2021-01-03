@@ -196,6 +196,7 @@ module ReVIEW
       args = m[2].split(/,\s*/)
       opts = parse_optargs(m[3])
       return if (argc == 0) && args.empty?
+
       if argc == -1
         # Any number of arguments are allowed.
       elsif args.size != argc
@@ -212,6 +213,7 @@ module ReVIEW
 
     def parse_optargs(str)
       return nil unless str
+
       table = {}
       str.split(/,\s*/).each do |a|
         name, spec = a.split('=', 2)
@@ -430,6 +432,7 @@ module ReVIEW
 
         else
           next if yacchack && (line.strip == ';')
+
           line = canonical(line)
           curr.each_value { |list| list.push(Line.new(lineno, line)) }
           lineno += 1

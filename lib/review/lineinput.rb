@@ -46,6 +46,7 @@ module ReVIEW
         return @buf.pop
       end
       return nil if @eof_p # to avoid ARGF blocking.
+
       line = @input.gets
       @eof_p = true unless line
       @lineno += 1
@@ -53,6 +54,7 @@ module ReVIEW
       if invalid_char
         raise SyntaxError, "found invalid control-sequence character (#{sprintf('%#x', invalid_char.codepoints[0])})."
       end
+
       line
     end
 
@@ -64,6 +66,7 @@ module ReVIEW
 
     def ungets(line)
       return unless line
+
       @lineno -= 1
       @buf.push(line)
       line
@@ -160,6 +163,7 @@ module ReVIEW
     def until_terminator(re)
       while line = gets
         return if re =~ line # discard terminal line
+
         yield line
       end
       nil

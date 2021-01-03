@@ -61,7 +61,7 @@ Performance/ReverseEach:
 
 # Use tr instead of gsub.
 Performance/StringReplacement:
-  Enabled: false
+  Enabled: true
 
 Performance/RangeInclude:
   Enabled: true
@@ -422,7 +422,7 @@ Layout/EmptyLines:
   Enabled: true
 
 Layout/EmptyLineAfterGuardClause:
-  Enabled: false
+  Enabled: true
 
 Layout/EmptyLinesAroundAccessModifier:
   Enabled: true
@@ -437,7 +437,7 @@ Layout/EmptyLinesAroundModuleBody:
   Enabled: true
 
 Layout/EndOfLine:
-  Enabled: false
+  Enabled: true
 
 Layout/ExtraSpacing:
   Enabled: true
@@ -458,7 +458,7 @@ Layout/LeadingCommentSpace:
   Enabled: true
 
 Layout/MultilineOperationIndentation:
-  Enabled: false
+  Enabled: true
 
 Layout/SpaceAroundBlockParameters:
   EnforcedStyleInsidePipes: no_space
@@ -480,7 +480,7 @@ Layout/SpaceAroundOperators:
   Enabled: true
 
 Layout/SpaceBeforeBlockBraces:
-  Enabled: false
+  Enabled: true
 
 Layout/SpaceBeforeComma:
   Enabled: true

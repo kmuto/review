@@ -45,12 +45,14 @@ module EPUBMaker
       s = ''
       %w[title language date type format source description relation coverage subject rights].each do |item|
         next unless @producer.config[item]
+
         if @producer.config[item].is_a?(Array)
           @producer.config[item].each_with_index do |v, i|
             if v.is_a?(Hash)
               s << %Q(    <dc:#{item} id="#{item}-#{i}">#{h(v['name'])}</dc:#{item}>\n)
               v.each_pair do |name, val|
                 next if name == 'name'
+
                 s << %Q(    <meta refines="##{item}-#{i}" property="#{name}">#{h(val)}</meta>\n)
               end
             else
@@ -61,6 +63,7 @@ module EPUBMaker
           s << %Q(    <dc:#{item} id="#{item}">#{h(@producer.config[item]['name'])}</dc:#{item}>\n)
           @producer.config[item].each_pair do |name, val|
             next if name == 'name'
+
             s << %Q(    <meta refines="##{item}" property="#{name}">#{h(val)}</meta>\n)
           end
         else
@@ -80,12 +83,14 @@ module EPUBMaker
       # creator (should be array)
       %w[a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl aut].each do |role|
         next unless @producer.config[role]
+
         @producer.config[role].each_with_index do |v, i|
           if v.is_a?(Hash)
             s << %Q(    <dc:creator id="#{role}-#{i}">#{h(v['name'])}</dc:creator>\n)
             s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n)
             v.each_pair do |name, val|
               next if name == 'name'
+
               s << %Q(    <meta refines="##{role.sub('a-', '')}-#{i}" property="#{name}">#{h(val)}</meta>\n)
             end
           else
@@ -98,12 +103,14 @@ module EPUBMaker
       # contributor (should be array)
       %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pbd pbl pht prt red rev spn ths trc trl].each do |role|
         next unless @producer.config[role]
+
         @producer.config[role].each_with_index do |v, i|
           if v.is_a?(Hash)
             s << %Q(    <dc:contributor id="#{role}-#{i}">#{h(v['name'])}</dc:contributor>\n)
             s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
             v.each_pair do |name, val|
               next if name == 'name'
+
               s << %Q(    <meta refines="##{role}-#{i}" property="#{name}">#{h(val)}</meta>\n)
             end
           else
@@ -117,6 +124,7 @@ module EPUBMaker
               s << %Q(    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
               v.each_pair do |name, val|
                 next if name == 'name'
+
                 s << %Q(    <meta refines="#pub-#{role}-#{i}" property="#{name}">#{h(val)}</meta>\n)
               end
             else
@@ -149,6 +157,7 @@ EOT
       if @producer.config['coverimage']
         @producer.contents.each do |item|
           next if !item.media.start_with?('image') || File.basename(item.file) != @producer.config['coverimage']
+
           s << %Q(    <item properties="cover-image" id="cover-#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n)
           item.id = nil
           break
@@ -157,6 +166,7 @@ EOT
 
       @producer.contents.each do |item|
         next if item.file =~ /#/ || item.id.nil? # skip subgroup, or id=nil (for cover)
+
         propstr = ''
         if item.properties.size > 0
           propstr = %Q( properties="#{item.properties.sort.uniq.join(' ')}")
@@ -186,6 +196,7 @@ EOT
       toc = nil
       @producer.contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
+
         if toc.nil? && item.chaptype != 'pre'
           if @producer.config['toc']
             s << %Q(    <itemref idref="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}" />\n)

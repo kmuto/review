@@ -85,6 +85,7 @@ class ZipExporterTest < Test::Unit::TestCase
 
   def test_export_rubyzip
     return unless defined?(Zip) ## skip test
+
     config = { 'epubmaker' => {} }
     epubfile = File.join(@tmpdir, 'test.epub')
     exporter = ZipExporter.new(@epubdir, config)

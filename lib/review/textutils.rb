@@ -51,6 +51,7 @@ module ReVIEW
       if tail.nil? || head.nil?
         return nil
       end
+
       space = true
       # rule 2
       if %i[F W H].include?(Unicode::Eaw.property(tail)) &&
@@ -86,6 +87,7 @@ module ReVIEW
       unless @book.config['join_lines_by_lang']
         return lines.join
       end
+
       lazy = true
       lang = 'ja'
       0.upto(lines.size - 2) do |n|

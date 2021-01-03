@@ -261,7 +261,7 @@ module ReVIEW
       end
       if @book.config['chapterlink']
         if @chapter == chap
-          anchor = 'h' + n.gsub('.', '-')
+          anchor = 'h' + n.tr('.', '-')
           %Q(<a href="##{anchor}">#{str}</a>)
         else
           warn 'MARKDOWNBuilder does not support links to other chapters'
@@ -388,6 +388,7 @@ module ReVIEW
 
     def comment(lines, comment = nil)
       return unless @book.config['draft']
+
       lines ||= []
       unless comment.blank?
         lines.unshift(comment)

@@ -1348,7 +1348,7 @@ EOS
     end
 
     io = StringIO.new
-    @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+    @builder.instance_eval { @logger = ReVIEW::Logger.new(io) }
 
     actual = compile_block("//indepimage[sample_img_nofile_][sample photo]\n")
     expected = <<-EOS
@@ -2374,7 +2374,7 @@ EOB
       @book.config['words_file'] = File.join(dir, 'words.csv')
 
       io = StringIO.new
-      @builder.instance_eval{ @logger = ReVIEW::Logger.new(io) }
+      @builder.instance_eval { @logger = ReVIEW::Logger.new(io) }
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       expected = <<-EOS
 

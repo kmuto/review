@@ -50,6 +50,7 @@ module ReVIEW
 
     def parts_with_chaps
       return [] unless @yaml['CHAPS']
+
       @yaml['CHAPS'].flatten.compact
     end
 

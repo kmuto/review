@@ -51,6 +51,7 @@ module ReVIEW
       Dir.open(from_dir) do |dir|
         dir.each do |fname|
           next if fname =~ /^\./
+
           if FileTest.directory?("#{from_dir}/#{fname}")
             image_files += copy_images_to_dir("#{from_dir}/#{fname}", "#{to_dir}/#{fname}", options)
           else
@@ -59,6 +60,7 @@ module ReVIEW
             is_converted = false
             (options[:convert] || {}).each do |orig_type, conv_type|
               next unless /\.#{orig_type}$/ =~ fname
+
               is_converted = system("convert #{from_dir}/#{fname} #{to_dir}/#{fname}.#{conv_type}")
               image_files << "#{from_dir}/#{fname}.#{conv_type}"
             end
@@ -177,6 +179,7 @@ EOB
         if !status.success? || (!File.exist?(dvi_path) && !File.exist?(pdf_path))
           raise CompileError
         end
+
         if File.exist?(dvi_path)
           out, status = Open3.capture2e(*[@config['dvicommand'], @config['dvioptions'].shellsplit, dvi_path].flatten.compact)
           if !status.success? || !File.exist?(pdf_path)

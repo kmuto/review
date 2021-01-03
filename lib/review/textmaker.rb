@@ -87,6 +87,7 @@ module ReVIEW
         generate_text_files(yamlfile)
       rescue ApplicationError => e
         raise if @config['debug']
+
         error(e.message)
       end
 

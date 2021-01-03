@@ -176,6 +176,7 @@ module ReVIEW
 
       def chapter_index
         return @chapter_index if @chapter_index
+
         @chapter_index = create_chapter_index
         @chapter_index
       end
@@ -188,6 +189,7 @@ module ReVIEW
         finded = false
         each_chapter do |c|
           return c if finded
+
           if c == chapter
             finded = true
           end
@@ -199,6 +201,7 @@ module ReVIEW
         finded = false
         each_chapter_r do |c|
           return c if finded
+
           if c == chapter
             finded = true
           end
@@ -392,6 +395,7 @@ module ReVIEW
         File.open(filename_join(@basedir, filename), 'rt:BOM|utf-8') do |f|
           f.each_line do |line|
             next if line.start_with?('#')
+
             line.gsub!(/#.*\Z/, '')
             res << line
           end

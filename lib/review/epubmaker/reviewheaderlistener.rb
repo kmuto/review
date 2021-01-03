@@ -18,6 +18,7 @@ module ReVIEW
       def tag_start(name, attrs)
         if name =~ /\Ah(\d+)/
           raise "#{name}, #{attrs}" if @level.present?
+
           @level = $1.to_i
           @id = attrs['id'] if attrs['id'].present?
           @notoc = attrs['notoc'] if attrs['notoc'].present?
@@ -49,7 +50,7 @@ module ReVIEW
 
       def text(text)
         if @level.present?
-          @content << text.gsub("\t", '　')
+          @content << text.tr("\t", '　')
         end
       end
     end

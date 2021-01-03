@@ -607,6 +607,7 @@ module ReVIEW
         # ignore
         return
       end
+
       super
     end
 

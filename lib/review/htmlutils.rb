@@ -134,7 +134,7 @@ module ReVIEW
       elsif id =~ /\A[0-9_.-][a-z0-9_.-]*\Z/i
         "id_#{id}" # dummy prefix
       else
-        "id_#{CGI.escape(id.gsub('_', '__')).gsub('%', '_').gsub('+', '-')}" # escape all
+        "id_#{CGI.escape(id.gsub('_', '__')).tr('%', '_').tr('+', '-')}" # escape all
       end
     end
   end

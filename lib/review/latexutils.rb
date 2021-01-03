@@ -82,7 +82,7 @@ module ReVIEW
     end
 
     def escape_mendex_key(str)
-      str.gsub('"|', '｜').gsub('{', '｛').gsub('}', '｝')
+      str.gsub('"|', '｜').tr('{', '｛').tr('}', '｝')
     end
 
     def escape_mendex_display(str)

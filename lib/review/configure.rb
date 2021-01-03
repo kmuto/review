@@ -203,6 +203,7 @@ module ReVIEW
       if self.key?(key)
         return self.fetch(key)
       end
+
       nil
     end
 

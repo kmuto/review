@@ -13,6 +13,7 @@ module ReVIEW
         b = c = l = 0
         File.foreach(path) do |line|
           next if /\A\#@/ =~ line
+
           text = line.gsub(/\s+/, '')
           b += text.bytesize
           c += text.size

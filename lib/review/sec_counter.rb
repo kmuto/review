@@ -55,6 +55,7 @@ module ReVIEW
 
       if level == 1
         return nil unless secnolevel >= 1
+
         if @chapter.is_a?(ReVIEW::Book::Part)
           num = @chapter.number
           "#{I18n.t('part', num)}#{I18n.t('chapter_postfix')}"

@@ -61,6 +61,7 @@ module ReVIEW
         unless @argc_spec === args.size
           raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
         end
+
         if @checker
           @checker.call(*args)
         end
@@ -371,6 +372,7 @@ module ReVIEW
       if level > MAX_HEADLINE_LEVEL
         raise CompileError, "Invalid header: max headline level is #{MAX_HEADLINE_LEVEL}"
       end
+
       tag = m[2]
       label = m[3]
       caption = m[4].strip
@@ -523,6 +525,7 @@ module ReVIEW
       buf = []
       f.until_match(%r{\A//|\A\#@}) do |line|
         break if line.strip.empty?
+
         buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
       end
       @builder.paragraph(buf)
@@ -564,6 +567,7 @@ module ReVIEW
 
     def parse_args(str, _name = nil)
       return [] if str.empty?
+
       scanner = StringScanner.new(str)
       words = []
       while word = scanner.scan(/(\[\]|\[.*?[^\\]\])/)
@@ -628,13 +632,13 @@ module ReVIEW
         if arg =~ /[\x01\x02\x03\x04]/
           error "invalid character in '#{str}'"
         end
-        replaced = arg.gsub('@', "\x01").gsub('\\', "\x02").gsub('{', "\x03").gsub('}', "\x04")
+        replaced = arg.tr('@', "\x01").tr('\\', "\x02").tr('{', "\x03").tr('}', "\x04")
         "@<#{op}>{#{replaced}}"
       end
     end
 
     def revert_replace_fence(str)
-      str.gsub("\x01", '@').gsub("\x02", '\\').gsub("\x03", '{').gsub("\x04", '}')
+      str.tr("\x01", '@').tr("\x02", '\\').tr("\x03", '{').tr("\x04", '}')
     end
 
     def in_non_escaped_command?
@@ -644,6 +648,7 @@ module ReVIEW
 
     def text(str, block_mode = false)
       return '' if str.empty?
+
       words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
       words.each do |w|
         if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
@@ -658,6 +663,7 @@ module ReVIEW
           result << @builder.nofunc_text(revert_replace_fence(words.shift))
         end
         break if words.empty?
+
         result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
       end
       result
@@ -674,6 +680,7 @@ module ReVIEW
       unless @builder.respond_to?("inline_#{op}")
         raise "builder does not support inline op: @<#{op}>"
       end
+
       @builder.__send__("inline_#{op}", arg)
     rescue => e
       error e.message

@@ -78,7 +78,7 @@ module ReVIEW
 
     def dd(lines)
       split_paragraph(lines).each do |paragraph|
-        puts "\t#{paragraph.gsub(/\n/, '')}"
+        puts "\t#{paragraph.delete("\n")}"
       end
     end
 
@@ -274,6 +274,7 @@ module ReVIEW
 
     def comment(lines, comment = nil)
       return unless @book.config['draft']
+
       lines ||= []
       unless comment.blank?
         lines.unshift(comment)
