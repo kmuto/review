@@ -49,7 +49,7 @@ module ReVIEW
 
       def text(text)
         if @level.present?
-          @content << text.gsub("\t", '　')
+          @content << text.tr("\t", '　')
         end
       end
     end

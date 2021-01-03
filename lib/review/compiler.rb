@@ -628,13 +628,13 @@ module ReVIEW
         if arg =~ /[\x01\x02\x03\x04]/
           error "invalid character in '#{str}'"
         end
-        replaced = arg.gsub('@', "\x01").gsub('\\', "\x02").gsub('{', "\x03").gsub('}', "\x04")
+        replaced = arg.tr('@', "\x01").tr('\\', "\x02").tr('{', "\x03").tr('}', "\x04")
         "@<#{op}>{#{replaced}}"
       end
     end
 
     def revert_replace_fence(str)
-      str.gsub("\x01", '@').gsub("\x02", '\\').gsub("\x03", '{').gsub("\x04", '}')
+      str.tr("\x01", '@').tr("\x02", '\\').tr("\x03", '{').tr("\x04", '}')
     end
 
     def in_non_escaped_command?

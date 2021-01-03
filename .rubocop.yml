@@ -61,7 +61,7 @@ Performance/ReverseEach:
 
 # Use tr instead of gsub.
 Performance/StringReplacement:
-  Enabled: false
+  Enabled: true
 
 Performance/RangeInclude:
   Enabled: true

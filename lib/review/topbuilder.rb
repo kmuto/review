@@ -78,7 +78,7 @@ module ReVIEW
 
     def dd(lines)
       split_paragraph(lines).each do |paragraph|
-        puts "\t#{paragraph.gsub(/\n/, '')}"
+        puts "\t#{paragraph.delete("\n")}"
       end
     end
 

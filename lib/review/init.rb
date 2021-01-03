@@ -286,7 +286,7 @@ EOS
       begin
         Zip::File.open(filename) do |zip|
           zip.each do |entry|
-            fname = entry.name.gsub('\\', '/')
+            fname = entry.name.tr('\\', '/')
             if fname =~ /__MACOSX/ || fname =~ /\.DS_Store/
               next
             end

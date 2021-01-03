@@ -1267,7 +1267,7 @@ module ReVIEW
         str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
       end
       if @book.config['chapterlink']
-        anchor = n.gsub(/\./, '-')
+        anchor = n.tr('.', '-')
         macro('reviewsecref', str, sec_label(anchor))
       else
         str

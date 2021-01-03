@@ -1048,7 +1048,7 @@ EOS
         str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
       end
       if @book.config['chapterlink']
-        anchor = 'h' + n.gsub('.', '-')
+        anchor = 'h' + n.tr('.', '-')
         %Q(<a href="#{chap.id}#{extname}##{anchor}">#{str}</a>)
       else
         str
