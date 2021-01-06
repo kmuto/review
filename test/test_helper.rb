@@ -1,4 +1,5 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
+$LOAD_PATH.unshift(File.realpath('../lib', __dir__))
+
 require 'test/unit'
 require 'fileutils'
 require 'review/yamlloader'

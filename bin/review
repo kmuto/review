@@ -13,9 +13,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 
-require 'pathname'
-bindir = Pathname.new(__FILE__).realpath.dirname
-$LOAD_PATH.unshift((bindir + '../lib').realpath)
+$LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'review'
 
@@ -52,7 +50,7 @@ if ARGV[0] == 'version'
 end
 
 command = "review-#{ARGV.shift}"
-bindir = Pathname.new(__FILE__).realpath.dirname
+bindir = File.realpath(__dir__)
 command_path = File.join(bindir, command)
 
 unless File.exist?(command_path)

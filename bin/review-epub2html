@@ -7,10 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 # For details of the GNU LGPL, see the file "COPYING".
 
-require 'pathname'
-
-bindir = Pathname.new(__FILE__).realpath.dirname
-$LOAD_PATH.unshift((bindir + '../lib').realpath)
+$LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'review/epub2html'
 
