@@ -94,24 +94,6 @@ module ReVIEW
       n
     end
 
-    def gets_if(re)
-      line = gets
-      if !line || re !~ line
-        ungets(line)
-        return nil
-      end
-      line
-    end
-
-    def gets_unless(re)
-      line = gets
-      if !line || re =~ line
-        ungets(line)
-        return nil
-      end
-      line
-    end
-
     def each
       while line = gets
         yield line
@@ -128,16 +110,6 @@ module ReVIEW
       end
       nil
     end
-
-    def getlines_while(re)
-      buf = []
-      while_match(re) do |line|
-        buf.push(line)
-      end
-      buf
-    end
-
-    alias_method :span, :getlines_while # from Haskell
 
     def until_match(re)
       while line = gets
@@ -159,22 +131,5 @@ module ReVIEW
     end
 
     alias_method :break, :getlines_until # from Haskell
-
-    def until_terminator(re)
-      while line = gets
-        return if re =~ line # discard terminal line
-
-        yield line
-      end
-      nil
-    end
-
-    def getblock(term_re)
-      buf = []
-      until_terminator(term_re) do |line|
-        buf.push(line)
-      end
-      buf
-    end
   end
 end
