@@ -58,20 +58,6 @@ module ReVIEW
       line
     end
 
-    def lookup_invalid_char(line)
-      if line =~ INVALID_CHARACTER_PATTERN
-        $&
-      end
-    end
-
-    def ungets(line)
-      return unless line
-
-      @lineno -= 1
-      @buf.push(line)
-      line
-    end
-
     def peek
       line = gets
       ungets(line) if line
@@ -122,14 +108,20 @@ module ReVIEW
       nil
     end
 
-    def getlines_until(re)
-      buf = []
-      until_match(re) do |line|
-        buf.push(line)
-      end
-      buf
+    private
+
+    def ungets(line)
+      return unless line
+
+      @lineno -= 1
+      @buf.push(line)
+      line
     end
 
-    alias_method :break, :getlines_until # from Haskell
+    def lookup_invalid_char(line)
+      if line =~ INVALID_CHARACTER_PATTERN
+        $&
+      end
+    end
   end
 end

@@ -513,7 +513,10 @@ module ReVIEW
         @builder.doc_status[:dt] = true
         @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
         @builder.doc_status[:dt] = nil
-        desc = f.break(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/).map { |line| text(line.strip) }
+        desc = []
+        f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
+          desc << text(line.strip)
+        end
         @builder.dd(desc)
         f.skip_blank_lines
         f.skip_comment_lines
