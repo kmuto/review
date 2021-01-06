@@ -262,13 +262,13 @@ module ReVIEW
 
     def generate_pdf
       remove_old_file
-      erb_config
       @path = build_path
       begin
         @compile_errors = nil
 
         book = ReVIEW::Book::Base.new(@basedir, config: @config)
         @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
+        erb_config
 
         @input_files = make_input_files(book)
 
