@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2019 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2018-2021 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -214,6 +214,8 @@ EOT
         # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
         FileUtils.cp(File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty'))
       end
+
+      FileUtils.cp(File.join(@review_dir, 'vendor/ascolorbox/ascolorbox.sty'), File.join(texmacrodir, 'ascolorbox.sty'))
     end
 
     def generate_rakefile(dir)

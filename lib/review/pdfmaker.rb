@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2021 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -22,6 +22,7 @@ require 'review/yamlloader'
 require 'review/version'
 require 'review/makerhelper'
 require 'review/template'
+require 'review/latexbox'
 
 module ReVIEW
   class PDFMaker
@@ -448,6 +449,14 @@ module ReVIEW
       @locale_latex['postchaptername'] = chapter_tuple[1].to_s
       @locale_latex['preappendixname'] = appendix_tuple[0].to_s
       @locale_latex['postappendixname'] = appendix_tuple[1].to_s
+
+      if @config['pdfmaker']['boxsetting']
+        begin
+          @boxsetting = ReVIEW::LaTeXBox.new.tcbox(@config)
+        rescue ReVIEW::ConfigError => e
+          error e
+        end
+      end
     end
 
     def erb_content(file)
