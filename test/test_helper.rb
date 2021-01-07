@@ -1,4 +1,5 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib/')
+$LOAD_PATH.unshift(File.realpath('../lib', __dir__))
+
 require 'test/unit'
 require 'fileutils'
 require 'review/yamlloader'
@@ -9,18 +10,18 @@ def touch_file(path)
 end
 
 def assets_dir
-  File.join(File.dirname(__FILE__), 'assets')
+  File.join(__dir__, 'assets')
 end
 
 def prepare_samplebook(srcdir, bookdir, latextemplatedir, configfile)
-  samplebook_dir = File.expand_path("../samples/#{bookdir}/", File.dirname(__FILE__))
+  samplebook_dir = File.expand_path("../samples/#{bookdir}/", __dir__)
   files = Dir.glob(File.join(samplebook_dir, '*'))
   # ignore temporary built files
   files.delete_if { |file| file =~ /.*-(pdf|epub|text)/ || file == 'webroot' }
   FileUtils.cp_r(files, srcdir)
   if latextemplatedir
     # copy from review-jsbook or review-jlreq
-    template_dir = File.expand_path("../templates/latex/#{latextemplatedir}/", File.dirname(__FILE__))
+    template_dir = File.expand_path("../templates/latex/#{latextemplatedir}/", __dir__)
     FileUtils.cp(Dir.glob(File.join(template_dir, '*')), File.join(srcdir, 'sty'))
   end
   loader = ReVIEW::YAMLLoader.new

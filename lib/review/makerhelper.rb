@@ -20,7 +20,7 @@ module ReVIEW
   module MakerHelper
     # Return review/bin directory
     def bindir
-      Pathname.new("#{Pathname.new(__FILE__).realpath.dirname}/../../bin").realpath
+      File.realpath('../../bin', __dir__)
     end
     module_function :bindir
 
