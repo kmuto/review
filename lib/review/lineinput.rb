@@ -58,20 +58,6 @@ module ReVIEW
       line
     end
 
-    def lookup_invalid_char(line)
-      if line =~ INVALID_CHARACTER_PATTERN
-        $&
-      end
-    end
-
-    def ungets(line)
-      return unless line
-
-      @lineno -= 1
-      @buf.push(line)
-      line
-    end
-
     def peek
       line = gets
       ungets(line) if line
@@ -94,24 +80,6 @@ module ReVIEW
       n
     end
 
-    def gets_if(re)
-      line = gets
-      if !line || re !~ line
-        ungets(line)
-        return nil
-      end
-      line
-    end
-
-    def gets_unless(re)
-      line = gets
-      if !line || re =~ line
-        ungets(line)
-        return nil
-      end
-      line
-    end
-
     def each
       while line = gets
         yield line
@@ -129,16 +97,6 @@ module ReVIEW
       nil
     end
 
-    def getlines_while(re)
-      buf = []
-      while_match(re) do |line|
-        buf.push(line)
-      end
-      buf
-    end
-
-    alias_method :span, :getlines_while # from Haskell
-
     def until_match(re)
       while line = gets
         if re =~ line
@@ -150,31 +108,20 @@ module ReVIEW
       nil
     end
 
-    def getlines_until(re)
-      buf = []
-      until_match(re) do |line|
-        buf.push(line)
-      end
-      buf
+    private
+
+    def ungets(line)
+      return unless line
+
+      @lineno -= 1
+      @buf.push(line)
+      line
     end
 
-    alias_method :break, :getlines_until # from Haskell
-
-    def until_terminator(re)
-      while line = gets
-        return if re =~ line # discard terminal line
-
-        yield line
+    def lookup_invalid_char(line)
+      if line =~ INVALID_CHARACTER_PATTERN
+        $&
       end
-      nil
-    end
-
-    def getblock(term_re)
-      buf = []
-      until_terminator(term_re) do |line|
-        buf.push(line)
-      end
-      buf
     end
   end
 end

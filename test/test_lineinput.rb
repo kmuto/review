@@ -40,21 +40,6 @@ class LineInputTest < Test::Unit::TestCase
     assert li.eof?
   end
 
-  def test_ungets
-    io = StringIO.new('abc')
-    li = LineInput.new(io)
-
-    line = li.gets
-    assert_equal line, li.ungets(line)
-    assert_equal 0, li.lineno
-    assert_equal line, li.gets
-
-    li.ungets('xyz')
-    assert_equal 0, li.lineno
-    li.ungets('xyz')
-    assert_equal(-1, li.lineno) # XXX: OK?
-  end
-
   def test_peek
     li = LineInput.new(StringIO.new)
     assert_equal nil, li.peek
@@ -69,33 +54,6 @@ class LineInputTest < Test::Unit::TestCase
 
     li = LineInput.new(StringIO.new('abc'))
     assert li.next?
-  end
-
-  def test_gets_if
-    io = StringIO.new
-    li = LineInput.new(io)
-    assert_equal nil, li.gets_if(//)
-
-    io = StringIO.new("abc\ndef\nghi")
-    li = LineInput.new(io)
-
-    assert_equal "abc\n", li.gets_if(//)
-    assert_equal nil, li.gets_if(/^X/)
-    assert_equal nil, li.gets_if(/^g/)
-    assert_equal "def\n", li.gets_if(/^d/)
-  end
-
-  def test_gets_unless
-    io = StringIO.new
-    li = LineInput.new(io)
-    assert_equal nil, li.gets_unless(//)
-
-    io = StringIO.new("abc\ndef\nghi")
-    li = LineInput.new(io)
-
-    assert_equal nil, li.gets_unless(//)
-    assert_equal "abc\n", li.gets_unless(/^X/)
-    assert_equal nil, li.gets_unless(/^d/)
   end
 
   def test_each
@@ -119,16 +77,6 @@ class LineInputTest < Test::Unit::TestCase
     assert_equal 'ghi', li.gets
   end
 
-  def test_getlines_while
-    io = StringIO.new("abc\ndef\nghi")
-    li = LineInput.new(io)
-
-    buf = li.getlines_while(/^[ad]/)
-    assert_equal ["abc\n", "def\n"], buf
-    assert_equal 2, li.lineno
-    assert_equal 'ghi', li.gets
-  end
-
   def test_until_match
     io = StringIO.new("abc\ndef\nghi")
     li = LineInput.new(io)
@@ -138,45 +86,6 @@ class LineInputTest < Test::Unit::TestCase
     end
     assert_equal 1, li.lineno
     assert_equal "def\n", li.gets
-  end
-
-  def test_getlines_until
-    io = StringIO.new("abc\ndef\nghi")
-    li = LineInput.new(io)
-
-    buf = li.getlines_until(/^[^a]/)
-    assert_equal ["abc\n"], buf
-    assert_equal 1, li.lineno
-    assert_equal "def\n", li.gets
-  end
-
-  def test_until_terminator
-    io = StringIO.new("abc\n//}\ndef\nghi\n//}\njkl\nmno")
-    li = LineInput.new(io)
-
-    data = ''
-    li.until_terminator(%r<\A//\}>) { |l| data << l }
-    assert_equal "abc\n", data
-    assert_equal 2, li.lineno
-
-    data = ''
-    li.until_terminator(%r<\A//\}>) { |l| data << l }
-    assert_equal "def\nghi\n", data
-    assert_equal 5, li.lineno
-
-    data = ''
-    li.until_terminator(%r<\A//\}>) { |l| data << l }
-    assert_equal "jkl\nmno", data
-    assert_equal 8, li.lineno
-  end
-
-  def test_until_terminator2
-    io = StringIO.new("abc\ndef\n//}\nghi\n//}")
-    li = LineInput.new(io)
-
-    data = li.getblock(%r<\A//\}>)
-    assert_equal ["abc\n", "def\n"], data
-    assert_equal 3, li.lineno
   end
 
   def test_invalid_control_sequence
