@@ -5,14 +5,14 @@ require 'yaml'
 require 'rbconfig'
 require 'open3'
 
-REVIEW_IDGXMLMAKER = File.expand_path('../bin/review-idgxmlmaker', File.dirname(__FILE__))
+REVIEW_IDGXMLMAKER = File.expand_path('../bin/review-idgxmlmaker', __dir__)
 
 class IDGXMLMakerCmdTest < Test::Unit::TestCase
   def setup
     @tmpdir1 = Dir.mktmpdir
 
     @old_rubylib = ENV['RUBYLIB']
-    ENV['RUBYLIB'] = File.expand_path('../lib', File.dirname(__FILE__))
+    ENV['RUBYLIB'] = File.expand_path('../lib', __dir__)
   end
 
   def teardown

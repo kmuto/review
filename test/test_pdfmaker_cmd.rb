@@ -5,14 +5,14 @@ require 'yaml'
 require 'rbconfig'
 require 'open3'
 
-REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', File.dirname(__FILE__))
+REVIEW_PDFMAKER = File.expand_path('../bin/review-pdfmaker', __dir__)
 
 class PDFMakerCmdTest < Test::Unit::TestCase
   def setup
     @tmpdir1 = Dir.mktmpdir
 
     @old_rubylib = ENV['RUBYLIB']
-    ENV['RUBYLIB'] = File.expand_path('../lib', File.dirname(__FILE__))
+    ENV['RUBYLIB'] = File.expand_path('../lib', __dir__)
   end
 
   def teardown

@@ -4,7 +4,7 @@ require 'fileutils'
 require 'yaml'
 require 'rbconfig'
 
-REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker', File.dirname(__FILE__))
+REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker', __dir__)
 
 class EPUBMakerCmdTest < Test::Unit::TestCase
   def setup
@@ -12,7 +12,7 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
     @tmpdir2 = Dir.mktmpdir
 
     @old_rubylib = ENV['RUBYLIB']
-    ENV['RUBYLIB'] = File.expand_path('../lib', File.dirname(__FILE__))
+    ENV['RUBYLIB'] = File.expand_path('lib', __dir__)
   end
 
   def teardown
