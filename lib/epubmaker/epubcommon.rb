@@ -97,7 +97,7 @@ EOT
         s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
       <navLabel>
-        <text>#{h(@producer.res.v('toctitle'))}</text>
+        <text>#{h(ReVIEW::I18n.t('toctitle'))}</text>
       </navLabel>
       <content src="#{config['bookname']}-toc.#{config['htmlext']}"/>
     </navPoint>
@@ -224,7 +224,7 @@ EOT
 
     # Return colophon content.
     def colophon
-      @title = h(@producer.res.v('colophontitle'))
+      @title = h(ReVIEW::I18n.t('colophontitle'))
       @body = <<EOT
   <div class="colophon">
 EOT
@@ -244,7 +244,7 @@ EOT
       @body << %Q(    <table class="colophon">\n)
       @body << config['colophon_order'].map do |role|
         if config[role]
-          %Q(      <tr><th>#{h(@producer.res.v(role))}</th><td>#{h(join_with_separator(config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
+          %Q(      <tr><th>#{h(ReVIEW::I18n.t(role))}</th><td>#{h(join_with_separator(config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
         else
           ''
         end
@@ -304,9 +304,9 @@ EOT
 
     # Return own toc content.
     def mytoc
-      @title = h(@producer.res.v('toctitle'))
+      @title = h(ReVIEW::I18n.t('toctitle'))
 
-      @body = %Q(  <h1 class="toc-title">#{h(@producer.res.v('toctitle'))}</h1>\n)
+      @body = %Q(  <h1 class="toc-title">#{h(ReVIEW::I18n.t('toctitle'))}</h1>\n)
       if config['epubmaker']['flattoc'].nil?
         @body << hierarchy_ncx('ul')
       else

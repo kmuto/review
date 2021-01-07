@@ -219,11 +219,11 @@ EOT
 
       @body = <<EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
-  <h1 class="toc-title">#{h(@producer.res.v('toctitle'))}</h1>
+  <h1 class="toc-title">#{h(ReVIEW::I18n.t('toctitle'))}</h1>
 #{ncx_main}  </nav>
 EOT
 
-      @title = h(@producer.res.v('toctitle'))
+      @title = h(ReVIEW::I18n.t('toctitle'))
       @language = config['language']
       @stylesheets = config['stylesheet']
       tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)

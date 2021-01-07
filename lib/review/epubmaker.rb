@@ -524,7 +524,7 @@ module ReVIEW
         end
         @htmltoc.add_item(1,
                           "titlepage.#{@config['htmlext']}",
-                          @producer.res.v('titlepagetitle'),
+                          ReVIEW::I18n.t('titlepagetitle'),
                           chaptype: 'pre')
       end
 
@@ -533,7 +533,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['originaltitlefile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['originaltitlefile']),
-                          @producer.res.v('originaltitle'),
+                          ReVIEW::I18n.t('originaltitle'),
                           chaptype: 'pre')
       end
 
@@ -542,7 +542,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['creditfile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['creditfile']),
-                          @producer.res.v('credittitle'),
+                          ReVIEW::I18n.t('credittitle'),
                           chaptype: 'pre')
       end
 
@@ -581,7 +581,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['profile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['profile']),
-                          @producer.res.v('profiletitle'),
+                          ReVIEW::I18n.t('profiletitle'),
                           chaptype: 'post')
       end
 
@@ -590,7 +590,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['advfile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['advfile']),
-                          @producer.res.v('advtitle'),
+                          ReVIEW::I18n.t('advtitle'),
                           chaptype: 'post')
       end
 
@@ -604,7 +604,7 @@ module ReVIEW
         end
         @htmltoc.add_item(1,
                           "colophon.#{@config['htmlext']}",
-                          @producer.res.v('colophontitle'),
+                          ReVIEW::I18n.t('colophontitle'),
                           chaptype: 'post')
       end
 
@@ -613,7 +613,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['backcover'])))
         @htmltoc.add_item(1,
                           File.basename(@config['backcover']),
-                          @producer.res.v('backcovertitle'),
+                          ReVIEW::I18n.t('backcovertitle'),
                           chaptype: 'post')
       end
 

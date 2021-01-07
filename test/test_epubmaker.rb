@@ -27,13 +27,13 @@ class EPUBMakerTest < Test::Unit::TestCase
   def test_resource_en
     @producer.config['language'] = 'en'
     @producer.modify_config
-    assert_equal 'Table of Contents', @producer.res.v('toctitle')
+    assert_equal 'Table of Contents', ReVIEW::I18n.t('toctitle')
   end
 
   def test_resource_ja
     @producer.config['language'] = 'ja'
     @producer.modify_config
-    assert_equal '目次', @producer.res.v('toctitle')
+    assert_equal '目次', ReVIEW::I18n.t('toctitle')
   end
 
   def test_mimetype
