@@ -486,15 +486,7 @@ EOT
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)
-      @title = config['booktitle']
-      s = ''
-      File.open(loadfile) do |f|
-        f.each_line do |l|
-          s << l
-        end
-      end
-
-      File.write(writefile, s)
+      FileUtils.cp(loadfile, writefile)
     end
 
     def join_with_separator(value, sep)
