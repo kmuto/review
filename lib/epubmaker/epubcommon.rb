@@ -18,6 +18,7 @@ end
 
 module EPUBMaker
   # EPUBCommon is the common class for EPUB producer.
+  # Some methods of this class are overridden by subclasses
   class EPUBCommon
     # Construct object with parameter hash +config+ and message resource hash +res+.
     def initialize(producer)
@@ -34,9 +35,29 @@ module EPUBMaker
       CGI.escapeHTML(str)
     end
 
+    def produce(epubfile, basedir, tmpdir)
+      raise NotImplementedError # should be overridden
+    end
+
     # Return mimetype content.
     def mimetype
       'application/epub+zip'
+    end
+
+    def opf
+      raise NotImplementedError # should be overridden
+    end
+
+    def opf_manifest
+      raise NotImplementedError # should be overridden
+    end
+
+    def opf_metainfo
+      raise NotImplementedError # should be overridden
+    end
+
+    def opf_tocx
+      raise NotImplementedError # should be overridden
     end
 
     def opf_path
@@ -62,6 +83,10 @@ module EPUBMaker
         end
       end
       s
+    end
+
+    def ncx(indentarray)
+      raise NotImplementedError # should be overridden
     end
 
     def ncx_isbn
@@ -136,12 +161,27 @@ EOT
       tmpl.result(binding)
     end
 
+    def coverimage
+      return nil unless config['coverimage']
+
+      @producer.contents.each do |item|
+        if item.media.start_with?('image') && item.file =~ /#{config['coverimage']}\Z/
+          return item.file
+        end
+      end
+      nil
+    end
+
     # Return cover content.
+    # If Producer#config["coverimage"] is defined, it will be used for
+    # the cover image.
     def cover(type = nil)
+      type ||= config['epubversion'] >= 3 ? 'cover' : nil
+
       @body_ext = type.nil? ? '' : %Q( epub:type="#{type}")
 
       if config['coverimage']
-        file = @producer.coverimage
+        file = coverimage
         raise "coverimage #{config['coverimage']} not found. Abort." unless file
 
         @body = <<-EOT
@@ -250,7 +290,7 @@ EOT
         end
       end.join
 
-      @body << %Q(      <tr><th>ISBN</th><td>#{@producer.isbn_hyphen}</td></tr>\n) if @producer.isbn_hyphen
+      @body << %Q(      <tr><th>ISBN</th><td>#{isbn_hyphen}</td></tr>\n) if isbn_hyphen
       @body << %Q(    </table>\n)
       if config['rights'] && !config['rights'].empty?
         @body << %Q(    <p class="copyright">#{join_with_separator(config.names_of('rights').map { |m| h(m) }, '<br />')}</p>\n)
@@ -266,6 +306,17 @@ EOT
                  end
       tmpl = ReVIEW::Template.load(tmplfile)
       tmpl.result(binding)
+    end
+
+    def isbn_hyphen
+      str = config['isbn'].to_s
+
+      if str =~ /\A\d{10}\Z/
+        return "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
+      end
+      if str =~ /\A\d{13}\Z/
+        return "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
+      end
     end
 
     def colophon_history
@@ -409,18 +460,18 @@ EOT
     end
 
     def produce_write_common(basedir, tmpdir)
-      File.write("#{tmpdir}/mimetype", @producer.mimetype)
+      File.write("#{tmpdir}/mimetype", mimetype)
 
       FileUtils.mkdir_p("#{tmpdir}/META-INF")
-      File.write("#{tmpdir}/META-INF/container.xml", @producer.container)
+      File.write("#{tmpdir}/META-INF/container.xml", container)
 
       FileUtils.mkdir_p("#{tmpdir}/OEBPS")
-      File.write(File.join(tmpdir, opf_path), @producer.opf)
+      File.write(File.join(tmpdir, opf_path), opf)
 
       if File.exist?("#{basedir}/#{config['cover']}")
         FileUtils.cp("#{basedir}/#{config['cover']}", "#{tmpdir}/OEBPS")
       else
-        File.write("#{tmpdir}/OEBPS/#{config['cover']}", @producer.cover)
+        File.write("#{tmpdir}/OEBPS/#{config['cover']}", cover)
       end
 
       @producer.contents.each do |item|

@@ -131,11 +131,11 @@ EOT
       produce_write_common(basedir, tmpdir)
 
       ncx_file = "#{tmpdir}/OEBPS/#{config['bookname']}.ncx"
-      File.write(ncx_file, @producer.ncx(config['epubmaker']['ncxindent']))
+      File.write(ncx_file, ncx(config['epubmaker']['ncxindent']))
 
       if config['mytoc']
         toc_file = "#{tmpdir}/OEBPS/#{config['bookname']}-toc.#{config['htmlext']}"
-        File.write(toc_file, @producer.mytoc)
+        File.write(toc_file, mytoc)
       end
 
       @producer.call_hook(config['epubmaker']['hook_prepack'], tmpdir)

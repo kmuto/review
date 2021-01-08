@@ -43,17 +43,6 @@ module EPUBMaker
       modify_config
     end
 
-    def coverimage
-      return nil unless config['coverimage']
-
-      @contents.each do |item|
-        if item.media.start_with?('image') && item.file =~ /#{config['coverimage']}\Z/
-          return item.file
-        end
-      end
-      nil
-    end
-
     # Modify parameters for EPUB specific.
     def modify_config
       if @config['epubversion'] >= 3
@@ -89,48 +78,9 @@ module EPUBMaker
       support_legacy_maker
     end
 
-    # return mimetype file.
-    def mimetype
-      @epub.mimetype
-    end
-
-    # return opf file.
-    def opf
-      @epub.opf
-    end
-
-    # return ncx file. +indentarray+ defines prefix
-    # string for each level.
-    def ncx(indentarray = [])
-      @epub.ncx(indentarray)
-    end
-
-    # return container file.
-    def container
-      @epub.container
-    end
-
-    # return cover file.
-    # If Producer#config["coverimage"] is defined, it will be used for
-    # the cover image.
-    def cover
-      type = @config['epubversion'] >= 3 ? 'cover' : nil
-      @epub.cover(type)
-    end
-
-    # return title file (copying).
-    def titlepage
-      @epub.titlepage
-    end
-
     # return colophon file
     def colophon
       @epub.colophon
-    end
-
-    # return own toc file
-    def mytoc
-      @epub.mytoc
     end
 
     # Add informations of figure files in +path+ to contents array.
@@ -188,17 +138,6 @@ module EPUBMaker
         warn 'hook is prohibited in safe mode. ignored.'
       else
         system(filename, *params)
-      end
-    end
-
-    def isbn_hyphen
-      str = @config['isbn'].to_s
-
-      if str =~ /\A\d{10}\Z/
-        return "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
-      end
-      if str =~ /\A\d{13}\Z/
-        return "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
       end
     end
 
