@@ -26,6 +26,10 @@ module EPUBMaker
       @body_ext = nil
     end
 
+    def config
+      @producer.config
+    end
+
     def h(str)
       CGI.escapeHTML(str)
     end
@@ -36,15 +40,15 @@ module EPUBMaker
     end
 
     def opf_path
-      "OEBPS/#{@producer.config['bookname']}.opf"
+      "OEBPS/#{config['bookname']}.opf"
     end
 
     def opf_coverimage
       s = ''
-      if @producer.config['coverimage']
+      if config['coverimage']
         file = nil
         @producer.contents.each do |item|
-          if !item.media.start_with?('image') || item.file !~ /#{@producer.config['coverimage']}\Z/
+          if !item.media.start_with?('image') || item.file !~ /#{config['coverimage']}\Z/
             next
           end
 
@@ -54,24 +58,24 @@ module EPUBMaker
         end
 
         if file.nil?
-          raise "coverimage #{@producer.config['coverimage']} not found. Abort."
+          raise "coverimage #{config['coverimage']} not found. Abort."
         end
       end
       s
     end
 
     def ncx_isbn
-      uid = @producer.config['isbn'] || @producer.config['urnid']
+      uid = config['isbn'] || config['urnid']
       %Q(    <meta name="dtb:uid" content="#{uid}"/>\n)
     end
 
     def ncx_doctitle
-      <<EOT
+      <<-EOT
   <docTitle>
-    <text>#{h(@producer.config['title'])}</text>
+    <text>#{h(config['title'])}</text>
   </docTitle>
   <docAuthor>
-    <text>#{@producer.config['aut'].nil? ? '' : h(join_with_separator(@producer.config['aut'], ReVIEW::I18n.t('names_splitter')))}</text>
+    <text>#{config['aut'].nil? ? '' : h(join_with_separator(config['aut'], ReVIEW::I18n.t('names_splitter')))}</text>
   </docAuthor>
 EOT
     end
@@ -81,21 +85,21 @@ EOT
   <navMap>
     <navPoint id="top" playOrder="1">
       <navLabel>
-        <text>#{h(@producer.config['title'])}</text>
+        <text>#{h(config['title'])}</text>
       </navLabel>
-      <content src="#{@producer.config['cover']}"/>
+      <content src="#{config['cover']}"/>
     </navPoint>
 EOT
 
       nav_count = 2
 
-      unless @producer.config['mytoc'].nil?
+      unless config['mytoc'].nil?
         s << <<EOT
     <navPoint id="toc" playOrder="#{nav_count}">
       <navLabel>
         <text>#{h(@producer.res.v('toctitle'))}</text>
       </navLabel>
-      <content src="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}"/>
+      <content src="#{config['bookname']}-toc.#{config['htmlext']}"/>
     </navPoint>
 EOT
         nav_count += 1
@@ -136,30 +140,30 @@ EOT
     def cover(type = nil)
       @body_ext = type.nil? ? '' : %Q( epub:type="#{type}")
 
-      if @producer.config['coverimage']
+      if config['coverimage']
         file = @producer.coverimage
-        raise "coverimage #{@producer.config['coverimage']} not found. Abort." unless file
+        raise "coverimage #{config['coverimage']} not found. Abort." unless file
 
         @body = <<-EOT
   <div id="cover-image" class="cover-image">
-    <img src="#{file}" alt="#{h(@producer.config.name_of('title'))}" class="max"/>
+    <img src="#{file}" alt="#{h(config.name_of('title'))}" class="max"/>
   </div>
         EOT
       else
         @body = <<-EOT
-<h1 class="cover-title">#{h(@producer.config.name_of('title'))}</h1>
+<h1 class="cover-title">#{h(config.name_of('title'))}</h1>
         EOT
-        if @producer.config['subtitle']
+        if config['subtitle']
           @body << <<-EOT
-<h2 class="cover-subtitle">#{h(@producer.config.name_of('subtitle'))}</h2>
+<h2 class="cover-subtitle">#{h(config.name_of('subtitle'))}</h2>
           EOT
         end
       end
 
-      @title = h(@producer.config.name_of('title'))
-      @language = @producer.config['language']
-      @stylesheets = @producer.config['stylesheet']
-      tmplfile = if @producer.config['htmlversion'].to_i == 5
+      @title = h(config.name_of('title'))
+      @language = config['language']
+      @stylesheets = config['stylesheet']
+      tmplfile = if config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -172,29 +176,29 @@ EOT
     # NOTE: this method is not used yet.
     #       see lib/review/epubmaker.rb#build_titlepage
     def titlepage
-      @title = h(@producer.config.name_of('title'))
+      @title = h(config.name_of('title'))
 
       @body = <<EOT
   <h1 class="tp-title">#{@title}</h1>
 EOT
 
-      if @producer.config['subtitle']
+      if config['subtitle']
         @body << <<EOT
-  <h2 class="tp-subtitle">#{h(@producer.config.name_of('subtitle'))}</h2>
+  <h2 class="tp-subtitle">#{h(config.name_of('subtitle'))}</h2>
 EOT
       end
 
-      if @producer.config['aut']
+      if config['aut']
         @body << <<EOT
   <p>
     <br />
     <br />
   </p>
-  <h2 class="tp-author">#{h(join_with_separator(@producer.config.names_of('aut'), ReVIEW::I18n.t('names_splitter')))}</h2>
+  <h2 class="tp-author">#{h(join_with_separator(config.names_of('aut'), ReVIEW::I18n.t('names_splitter')))}</h2>
 EOT
       end
 
-      publisher = @producer.config.names_of('pbl')
+      publisher = config.names_of('pbl')
       if publisher
         @body << <<EOT
   <p>
@@ -207,9 +211,9 @@ EOT
 EOT
       end
 
-      @language = @producer.config['language']
-      @stylesheets = @producer.config['stylesheet']
-      tmplfile = if @producer.config['htmlversion'].to_i == 5
+      @language = config['language']
+      @stylesheets = config['stylesheet']
+      tmplfile = if config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -225,22 +229,22 @@ EOT
   <div class="colophon">
 EOT
 
-      if @producer.config['subtitle'].nil?
+      if config['subtitle'].nil?
         @body << <<EOT
-    <p class="title">#{h(@producer.config.name_of('title'))}</p>
+    <p class="title">#{h(config.name_of('title'))}</p>
 EOT
       else
         @body << <<EOT
-    <p class="title">#{h(@producer.config.name_of('title'))}<br /><span class="subtitle">#{h(@producer.config.name_of('subtitle'))}</span></p>
+    <p class="title">#{h(config.name_of('title'))}<br /><span class="subtitle">#{h(config.name_of('subtitle'))}</span></p>
 EOT
       end
 
-      @body << colophon_history if @producer.config['date'] || @producer.config['history']
+      @body << colophon_history if config['date'] || config['history']
 
       @body << %Q(    <table class="colophon">\n)
-      @body << @producer.config['colophon_order'].map do |role|
-        if @producer.config[role]
-          %Q(      <tr><th>#{h(@producer.res.v(role))}</th><td>#{h(join_with_separator(@producer.config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
+      @body << config['colophon_order'].map do |role|
+        if config[role]
+          %Q(      <tr><th>#{h(@producer.res.v(role))}</th><td>#{h(join_with_separator(config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
         else
           ''
         end
@@ -248,14 +252,14 @@ EOT
 
       @body << %Q(      <tr><th>ISBN</th><td>#{@producer.isbn_hyphen}</td></tr>\n) if @producer.isbn_hyphen
       @body << %Q(    </table>\n)
-      if @producer.config['rights'] && !@producer.config['rights'].empty?
-        @body << %Q(    <p class="copyright">#{join_with_separator(@producer.config.names_of('rights').map { |m| h(m) }, '<br />')}</p>\n)
+      if config['rights'] && !config['rights'].empty?
+        @body << %Q(    <p class="copyright">#{join_with_separator(config.names_of('rights').map { |m| h(m) }, '<br />')}</p>\n)
       end
       @body << %Q(  </div>\n)
 
-      @language = @producer.config['language']
-      @stylesheets = @producer.config['stylesheet']
-      tmplfile = if @producer.config['htmlversion'].to_i == 5
+      @language = config['language']
+      @stylesheets = config['stylesheet']
+      tmplfile = if config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -267,8 +271,8 @@ EOT
     def colophon_history
       buf = ''
       buf << %Q(    <div class="pubhistory">\n)
-      if @producer.config['history']
-        @producer.config['history'].each_with_index do |items, edit|
+      if config['history']
+        config['history'].each_with_index do |items, edit|
           items.each_with_index do |item, rev|
             editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
             revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
@@ -286,7 +290,7 @@ EOT
           end
         end
       else
-        buf << %Q(      <p>#{ReVIEW::I18n.t('published_by2', date_to_s(@producer.config['date']))}</p>\n)
+        buf << %Q(      <p>#{ReVIEW::I18n.t('published_by2', date_to_s(config['date']))}</p>\n)
       end
       buf << %Q(    </div>\n)
       buf
@@ -303,15 +307,15 @@ EOT
       @title = h(@producer.res.v('toctitle'))
 
       @body = %Q(  <h1 class="toc-title">#{h(@producer.res.v('toctitle'))}</h1>\n)
-      if @producer.config['epubmaker']['flattoc'].nil?
+      if config['epubmaker']['flattoc'].nil?
         @body << hierarchy_ncx('ul')
       else
-        @body << flat_ncx('ul', @producer.config['epubmaker']['flattocindent'])
+        @body << flat_ncx('ul', config['epubmaker']['flattocindent'])
       end
 
-      @language = @producer.config['language']
-      @stylesheets = @producer.config['stylesheet']
-      tmplfile = if @producer.config['htmlversion'].to_i == 5
+      @language = config['language']
+      @stylesheets = config['stylesheet']
+      tmplfile = if config['htmlversion'].to_i == 5
                    File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
                  else
                    File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
@@ -325,7 +329,7 @@ EOT
       level = 1
       find_jump = nil
       has_part = nil
-      toclevel = @producer.config['toclevel'].to_i
+      toclevel = config['toclevel'].to_i
 
       # check part existance
       @producer.contents.each do |item|
@@ -394,7 +398,7 @@ EOT
     def flat_ncx(type, indent = nil)
       s = %Q(<#{type} class="toc-h1">\n)
       @producer.contents.each do |item|
-        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > @producer.config['toclevel'].to_i
+        next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > config['toclevel'].to_i
 
         is = indent == true ? '　' * item.level : ''
         s << %Q(<li><a href="#{item.file}">#{is}#{h(item.title)}</a></li>\n)
@@ -431,7 +435,7 @@ EOT
     end
 
     def legacy_cover_and_title_file(loadfile, writefile)
-      @title = @producer.config['booktitle']
+      @title = config['booktitle']
       s = ''
       File.open(loadfile) do |f|
         f.each_line do |l|
