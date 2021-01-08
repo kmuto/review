@@ -39,12 +39,12 @@ class EPUB3MakerTest < Test::Unit::TestCase
   end
 
   def test_mimetype
-    @producer.mimetype(@output)
-    assert_equal 'application/epub+zip', @output.string
+    output = @producer.mimetype
+    assert_equal 'application/epub+zip', output
   end
 
   def test_container
-    @producer.container(@output)
+    output = @producer.container
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
@@ -53,11 +53,11 @@ class EPUB3MakerTest < Test::Unit::TestCase
   </rootfiles>
 </container>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf
-    @producer.opf(@output)
+    output = @producer.opf
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -81,7 +81,7 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf_ebpaj
@@ -90,7 +90,7 @@ EOT
       'opf_meta' => { 'ebpaj:guide-version' => '1.1.2' }
     )
     @producer.modify_config
-    @producer.opf(@output)
+    output = @producer.opf
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en" prefix="ebpaj: http://www.ebpaj.jp/">
@@ -115,7 +115,7 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf_fileas
@@ -123,7 +123,7 @@ EOT
                             'aut' => [{ 'name' => '著者A', 'file-as' => 'チョシャA' }, { 'name' => '著者B', 'file-as' => 'チョシャB' }],
                             'pbl' => [{ 'name' => '出版社', 'file-as' => 'シュッパンシャ' }])
     @producer.modify_config
-    @producer.opf(@output)
+    output = @producer.opf
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -160,11 +160,11 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_ncx
-    @producer.ncx(@output)
+    output = @producer.ncx
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -182,7 +182,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def stage2
@@ -202,7 +202,7 @@ EOT
 
   def test_stage2_opf
     stage2
-    @producer.opf(@output)
+    output = @producer.opf
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -228,12 +228,12 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage2_ncx
     stage2
-    @producer.ncx(@output)
+    output = @producer.ncx
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -252,7 +252,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def stage3
@@ -307,7 +307,7 @@ EOT
 
   def test_stage3_opf
     stage3
-    @producer.opf(@output)
+    output = @producer.opf
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -345,13 +345,13 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_ncx
     stage3
     @producer.config['toclevel'] = 2
-    @producer.ncx(@output)
+    output = @producer.ncx
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -378,13 +378,13 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_mytoc
     stage3
     @producer.config['toclevel'] = 2
-    @producer.mytoc(@output)
+    output = @producer.mytoc
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -409,7 +409,7 @@ EOT
 </ul></body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_flat
@@ -419,7 +419,7 @@ EOT
     )
     @producer.modify_config
     stage3
-    @producer.mytoc(@output)
+    output = @producer.mytoc
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -443,12 +443,12 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover
     stage3
-    @producer.cover(@output)
+    output = @producer.cover
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -463,14 +463,14 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover_with_image
     stage3
     @producer.config['coverimage'] = 'sample.png'
     @producer.modify_config
-    @producer.cover(@output)
+    output = @producer.cover
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -487,14 +487,14 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_default
     @producer.config.merge!('aut' => ['Mr.Smith'],
                             'pbl' => ['BLUEPRINT'])
     @producer.modify_config
-    @producer.colophon(@output)
+    output = @producer.colophon
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -518,7 +518,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_pht
@@ -526,7 +526,7 @@ EOT
                             'pbl' => ['BLUEPRINT'],
                             'pht' => ['Mrs.Smith'])
     @producer.modify_config
-    @producer.colophon(@output)
+    output = @producer.colophon
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -551,7 +551,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_history

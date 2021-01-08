@@ -600,9 +600,7 @@ module ReVIEW
                        File.join(basetmpdir, "colophon.#{@config['htmlext']}"))
         else
           filename = File.join(basetmpdir, "colophon.#{@config['htmlext']}")
-          File.open(filename, 'w') do |f|
-            @producer.colophon(f)
-          end
+          File.write(filename, @producer.colophon)
         end
         @htmltoc.add_item(1,
                           "colophon.#{@config['htmlext']}",

@@ -89,72 +89,48 @@ module EPUBMaker
       support_legacy_maker
     end
 
-    # Write mimetype file to IO object +wobj+.
-    def mimetype(wobj)
-      s = @epub.mimetype
-      if !s.nil? && !wobj.nil?
-        wobj.print s
-      end
+    # return mimetype file.
+    def mimetype
+      @epub.mimetype
     end
 
-    # Write opf file to IO object +wobj+.
-    def opf(wobj)
-      s = @epub.opf
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
+    # return opf file.
+    def opf
+      @epub.opf
     end
 
-    # Write ncx file to IO object +wobj+. +indentarray+ defines prefix
+    # return ncx file. +indentarray+ defines prefix
     # string for each level.
-    def ncx(wobj, indentarray = [])
-      s = @epub.ncx(indentarray)
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
+    def ncx(indentarray = [])
+      @epub.ncx(indentarray)
     end
 
-    # Write container file to IO object +wobj+.
-    def container(wobj)
-      s = @epub.container
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
+    # return container file.
+    def container
+      @epub.container
     end
 
-    # Write cover file to IO object +wobj+.
+    # return cover file.
     # If Producer#config["coverimage"] is defined, it will be used for
     # the cover image.
-    def cover(wobj)
+    def cover
       type = @config['epubversion'] >= 3 ? 'cover' : nil
-      s = @epub.cover(type)
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
+      @epub.cover(type)
     end
 
-    # Write title file (copying) to IO object +wobj+.
-    def titlepage(wobj)
-      s = @epub.titlepage
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
+    # return title file (copying).
+    def titlepage
+      @epub.titlepage
     end
 
-    # Write colophon file to IO object +wobj+.
-    def colophon(wobj)
-      s = @epub.colophon
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
+    # return colophon file
+    def colophon
+      @epub.colophon
     end
 
-    # Write own toc file to IO object +wobj+.
-    def mytoc(wobj)
-      s = @epub.mytoc
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
+    # return own toc file
+    def mytoc
+      @epub.mytoc
     end
 
     # Add informations of figure files in +path+ to contents array.

@@ -409,18 +409,18 @@ EOT
     end
 
     def produce_write_common(basedir, tmpdir)
-      File.open("#{tmpdir}/mimetype", 'w') { |f| @producer.mimetype(f) }
+      File.write("#{tmpdir}/mimetype", @producer.mimetype)
 
       FileUtils.mkdir_p("#{tmpdir}/META-INF")
-      File.open("#{tmpdir}/META-INF/container.xml", 'w') { |f| @producer.container(f) }
+      File.write("#{tmpdir}/META-INF/container.xml", @producer.container)
 
       FileUtils.mkdir_p("#{tmpdir}/OEBPS")
-      File.open(File.join(tmpdir, opf_path), 'w') { |f| @producer.opf(f) }
+      File.write(File.join(tmpdir, opf_path), @producer.opf)
 
-      if File.exist?("#{basedir}/#{@producer.config['cover']}")
-        FileUtils.cp("#{basedir}/#{@producer.config['cover']}", "#{tmpdir}/OEBPS")
+      if File.exist?("#{basedir}/#{config['cover']}")
+        FileUtils.cp("#{basedir}/#{config['cover']}", "#{tmpdir}/OEBPS")
       else
-        File.open("#{tmpdir}/OEBPS/#{@producer.config['cover']}", 'w') { |f| @producer.cover(f) }
+        File.write("#{tmpdir}/OEBPS/#{config['cover']}", @producer.cover)
       end
 
       @producer.contents.each do |item|
@@ -443,9 +443,7 @@ EOT
         end
       end
 
-      File.open(writefile, 'w') do |f|
-        f.puts s
-      end
+      File.write(writefile, s)
     end
 
     def join_with_separator(value, sep)

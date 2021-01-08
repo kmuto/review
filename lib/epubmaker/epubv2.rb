@@ -130,13 +130,12 @@ EOT
     def produce(epubfile, basedir, tmpdir)
       produce_write_common(basedir, tmpdir)
 
-      File.open("#{tmpdir}/OEBPS/#{config['bookname']}.ncx", 'w') do |f|
-        @producer.ncx(f, config['epubmaker']['ncxindent'])
-      end
+      ncx_file = "#{tmpdir}/OEBPS/#{config['bookname']}.ncx"
+      File.write(ncx_file, @producer.ncx(config['epubmaker']['ncxindent']))
+
       if config['mytoc']
-        File.open("#{tmpdir}/OEBPS/#{config['bookname']}-toc.#{config['htmlext']}", 'w') do |f|
-          @producer.mytoc(f)
-        end
+        toc_file = "#{tmpdir}/OEBPS/#{config['bookname']}-toc.#{config['htmlext']}"
+        File.write(toc_file, @producer.mytoc)
       end
 
       @producer.call_hook(config['epubmaker']['hook_prepack'], tmpdir)
