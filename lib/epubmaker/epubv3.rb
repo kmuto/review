@@ -239,7 +239,7 @@ EOT
       toc_file = "#{tmpdir}/OEBPS/#{config['bookname']}-toc.#{config['htmlext']}"
       File.write(toc_file, ncx(config['epubmaker']['ncxindent']))
 
-      @producer.call_hook(config['epubmaker']['hook_prepack'], tmpdir)
+      call_hook(config['epubmaker']['hook_prepack'], tmpdir)
       expoter = EPUBMaker::ZipExporter.new(tmpdir, config)
       expoter.export_zip(epubfile)
     end

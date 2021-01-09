@@ -138,7 +138,7 @@ EOT
         File.write(toc_file, mytoc)
       end
 
-      @producer.call_hook(config['epubmaker']['hook_prepack'], tmpdir)
+      call_hook(config['epubmaker']['hook_prepack'], tmpdir)
       expoter = EPUBMaker::ZipExporter.new(tmpdir, config)
       expoter.export_zip(epubfile)
     end
