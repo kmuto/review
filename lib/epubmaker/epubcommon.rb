@@ -64,24 +64,17 @@ module EPUBMaker
     end
 
     def opf_coverimage
-      s = ''
       if config['coverimage']
-        file = nil
-        contents.each do |item|
-          if !item.media.start_with?('image') || item.file !~ /#{config['coverimage']}\Z/
-            next
-          end
+        item = contents.find { |content| content.coverimage?(config['coverimage']) }
 
-          s << %Q(    <meta name="cover" content="#{item.id}"/>\n)
-          file = item.file
-          break
-        end
-
-        if file.nil?
+        unless item
           raise "coverimage #{config['coverimage']} not found. Abort."
         end
+
+        %Q(    <meta name="cover" content="#{item.id}"/>\n)
+      else
+        ''
       end
-      s
     end
 
     def ncx(indentarray)
@@ -163,12 +156,11 @@ EOT
     def coverimage
       return nil unless config['coverimage']
 
-      contents.each do |item|
-        if item.media.start_with?('image') && item.file =~ /#{config['coverimage']}\Z/
-          return item.file
-        end
+      item = contents.find { |content| content.coverimage?(config['coverimage']) }
+
+      if item
+        item.file
       end
-      nil
     end
 
     # Return cover content.
