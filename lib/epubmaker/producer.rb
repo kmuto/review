@@ -49,13 +49,8 @@ module EPUBMaker
         @config['htmlversion'] = 5
       end
 
-      unless @config['title']
-        @config['title'] = @config['booktitle']
-      end
-
-      unless @config['cover']
-        @config['cover'] = "#{@config['bookname']}.#{@config['htmlext']}"
-      end
+      @config['title'] ||= @config['booktitle']
+      @config['cover'] ||= "#{@config['bookname']}.#{@config['htmlext']}"
 
       %w[bookname title].each do |k|
         unless @config[k]
@@ -63,15 +58,13 @@ module EPUBMaker
         end
       end
 
-      unless @config['epubversion'].nil?
-        case @config['epubversion'].to_i
-        when 2
-          @epub = EPUBMaker::EPUBv2.new(self)
-        when 3
-          @epub = EPUBMaker::EPUBv3.new(self)
-        else
-          raise "Invalid EPUB version (#{@config['epubversion']}.)"
-        end
+      case @config['epubversion'].to_i
+      when 2
+        @epub = EPUBMaker::EPUBv2.new(self)
+      when 3
+        @epub = EPUBMaker::EPUBv3.new(self)
+      else
+        raise "Invalid EPUB version (#{@config['epubversion']}.)"
       end
 
       ReVIEW::I18n.locale = @config['language']
