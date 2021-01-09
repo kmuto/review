@@ -22,13 +22,13 @@ module EPUBMaker
   class EPUBCommon
     # Construct object with parameter hash +config+ and message resource hash +res+.
     def initialize(producer)
-      @producer = producer
+      @config = producer.config
+      @contents = producer.contents
       @body_ext = nil
     end
 
-    def config
-      @producer.config
-    end
+    attr_reader :config
+    attr_reader :contents
 
     def h(str)
       CGI.escapeHTML(str)
@@ -67,7 +67,7 @@ module EPUBMaker
       s = ''
       if config['coverimage']
         file = nil
-        @producer.contents.each do |item|
+        contents.each do |item|
           if !item.media.start_with?('image') || item.file !~ /#{config['coverimage']}\Z/
             next
           end
@@ -129,7 +129,7 @@ EOT
         nav_count += 1
       end
 
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.title.nil?
 
         indent = indentarray.nil? ? [''] : indentarray
@@ -163,7 +163,7 @@ EOT
     def coverimage
       return nil unless config['coverimage']
 
-      @producer.contents.each do |item|
+      contents.each do |item|
         if item.media.start_with?('image') && item.file =~ /#{config['coverimage']}\Z/
           return item.file
         end
@@ -380,7 +380,7 @@ EOT
       toclevel = config['toclevel'].to_i
 
       # check part existance
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.notoc || item.chaptype != 'part'
 
         has_part = true
@@ -388,7 +388,7 @@ EOT
       end
 
       if has_part
-        @producer.contents.each do |item|
+        contents.each do |item|
           if item.chaptype == 'part' && item.level > 0
             # sections in part
             item.level -= 1
@@ -405,7 +405,7 @@ EOT
       doc.context[:attribute_quote] = :quote
 
       e = doc.root.elements[1] # first <li/>
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > toclevel
 
         if item.level == level
@@ -445,7 +445,7 @@ EOT
 
     def flat_ncx(type, indent = nil)
       s = %Q(<#{type} class="toc-h1">\n)
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > config['toclevel'].to_i
 
         is = indent == true ? '　' * item.level : ''
@@ -471,7 +471,7 @@ EOT
         File.write("#{tmpdir}/OEBPS/#{config['cover']}", cover)
       end
 
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
 
         fname = "#{basedir}/#{item.file}"

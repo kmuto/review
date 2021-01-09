@@ -84,7 +84,7 @@ EOT
 
       s << %Q(    <item id="toc" href="#{config['bookname']}-toc.#{config['htmlext']}" media-type="application/xhtml+xml"/>\n) if config['toc'] && config['mytoc']
 
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
 
         s << %Q(    <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n)
@@ -105,7 +105,7 @@ EOT
       s << %Q(    <itemref idref="#{config['bookname']}" linear="#{cover_linear}"/>\n)
       s << %Q(    <itemref idref="toc" />\n) unless config['mytoc'].nil?
 
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
 
         s << %Q(    <itemref idref="#{item.id}"/>\n)

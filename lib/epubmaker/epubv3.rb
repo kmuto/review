@@ -155,7 +155,7 @@ module EPUBMaker
 EOT
 
       if config['coverimage']
-        @producer.contents.each do |item|
+        contents.each do |item|
           next if !item.media.start_with?('image') || File.basename(item.file) != config['coverimage']
 
           s << %Q(    <item properties="cover-image" id="cover-#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n)
@@ -164,7 +164,7 @@ EOT
         end
       end
 
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.file =~ /#/ || item.id.nil? # skip subgroup, or id=nil (for cover)
 
         propstr = ''
@@ -194,7 +194,7 @@ EOT
       s << %Q(    <itemref idref="#{config['bookname']}" linear="#{cover_linear}"/>\n)
 
       toc = nil
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
 
         if toc.nil? && item.chaptype != 'pre'
