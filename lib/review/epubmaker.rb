@@ -598,9 +598,6 @@ module ReVIEW
         if @config['colophon'].is_a?(String) # FIXME: should let obsolete this style?
           FileUtils.cp(@config['colophon'],
                        File.join(basetmpdir, "colophon.#{@config['htmlext']}"))
-        else
-          filename = File.join(basetmpdir, "colophon.#{@config['htmlext']}")
-          File.write(filename, @producer.colophon)
         end
         @htmltoc.add_item(1,
                           "colophon.#{@config['htmlext']}",

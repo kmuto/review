@@ -616,7 +616,7 @@ EOT
       'isbn' => '9784797372274'
     )
     @producer.modify_config
-    output = @producer.colophon
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -654,7 +654,7 @@ EOT
       'rights' => ['COPYRIGHT 2016 <>', '& REVIEW']
     )
     @producer.modify_config
-    output = @producer.colophon
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -741,7 +741,7 @@ EOT
       'pht' => ['Mrs.Smith']
     )
     @producer.modify_config
-    output = @producer.colophon
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>

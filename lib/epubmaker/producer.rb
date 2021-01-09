@@ -71,11 +71,6 @@ module EPUBMaker
       support_legacy_maker
     end
 
-    # return colophon file
-    def colophon
-      @epub.colophon
-    end
-
     # Add informations of figure files in +path+ to contents array.
     # +base+ defines a string to remove from path name.
     def import_imageinfo(path, base = nil, allow_exts = nil)

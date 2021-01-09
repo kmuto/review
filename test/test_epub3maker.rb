@@ -493,7 +493,7 @@ EOT
     @producer.config.merge!('aut' => ['Mr.Smith'],
                             'pbl' => ['BLUEPRINT'])
     @producer.modify_config
-    output = @producer.colophon
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -525,7 +525,7 @@ EOT
                             'pbl' => ['BLUEPRINT'],
                             'pht' => ['Mrs.Smith'])
     @producer.modify_config
-    output = @producer.colophon
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>

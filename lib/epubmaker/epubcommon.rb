@@ -398,6 +398,11 @@ EOT
         File.write("#{tmpdir}/OEBPS/#{config['cover']}", cover)
       end
 
+      if config['colophon'] && !config['colophon'].is_a?(String)
+        filename = File.join(basedir, "colophon.#{config['htmlext']}")
+        File.write(filename, colophon)
+      end
+
       contents.each do |item|
         next if item.file =~ /#/ # skip subgroup
 
