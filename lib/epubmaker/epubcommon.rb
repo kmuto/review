@@ -22,7 +22,6 @@ module EPUBMaker
   class EPUBCommon
     # Construct object with parameter hash +config+ and message resource hash +res+.
     def initialize(producer)
-      @body_ext = ''
       @producer = producer
       @body_ext = nil
     end
@@ -175,10 +174,8 @@ EOT
     # Return cover content.
     # If Producer#config["coverimage"] is defined, it will be used for
     # the cover image.
-    def cover(type = nil)
-      type ||= config['epubversion'] >= 3 ? 'cover' : nil
-
-      @body_ext = type.nil? ? '' : %Q( epub:type="#{type}")
+    def cover
+      @body_ext = config['epubversion'] >= 3 ? %Q( epub:type="cover") : ''
 
       if config['coverimage']
         file = coverimage
