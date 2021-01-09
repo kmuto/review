@@ -19,7 +19,6 @@ class EPUB3MakerTest < Test::Unit::TestCase
       'titlepage' => nil
     )
     @producer = Producer.new(config)
-    @output = StringIO.new
   end
 
   def test_initialize
