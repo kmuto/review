@@ -1,0 +1,20 @@
+  <h1 class="tp-title"><%= @title_str %></h1>
+<% if @subtitle_str %>
+  <h2 class="tp-subtitle"><%= h(@subtitle_str) %></h2>
+<% end %>
+<% if @author_str %>
+  <p>
+    <br />
+    <br />
+  </p>
+  <h2 class="tp-author"><%= h(@author_str) %></h2>
+<% end %>
+<% if @publisher_str %>
+  <p>
+    <br />
+    <br />
+    <br />
+    <br />
+  </p>
+  <h3 class="tp-publisher"><%= h(@publisher_str) %></h3>
+<% end %>

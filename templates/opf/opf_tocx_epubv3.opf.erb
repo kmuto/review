@@ -1,0 +1,17 @@
+<% if @config['direction'] %>
+  <spine page-progression-direction="<%= @config['direction'] %>">
+<% else %>
+  <spine>
+<% end %>
+    <itemref idref="<%= @config['bookname'] %>" linear="<%= @cover_linear %>"/>
+<% toc = nil %>
+<% @tocx_contents.each do |item| %>
+<%   if toc.nil? && item.chaptype != 'pre' %>
+<%     if @config['toc'] %>
+    <itemref idref="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>" />
+<%     end %>
+<%     toc = true %>
+<%   end %>
+    <itemref idref="<%= item.id %>"/>
+<% end %>
+  </spine>

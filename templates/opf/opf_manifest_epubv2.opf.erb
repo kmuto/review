@@ -1,0 +1,10 @@
+  <manifest>
+    <item id="ncx" href="<%= @config['bookname'] %>.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="<%= @config['bookname'] %>" href="<%= @config['cover'] %>" media-type="application/xhtml+xml"/>
+<% if @config['toc'] && @config['mytoc'] %>
+    <item id="toc" href="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>" media-type="application/xhtml+xml"/>
+<% end %>
+<% @items.each do |item| %>
+    <item id="<%= item.id %>" href="<%= item.file %>" media-type="<%= item.media %>"/>
+<% end %>
+  </manifest>

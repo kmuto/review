@@ -1,0 +1,9 @@
+    <div class="pubhistory">
+<% if @config['history'] %>
+<%   @col_history.each do |item| %>
+      <p><%= item %></p>
+<%   end %>
+<% else %>
+      <p><%= ReVIEW::I18n.t('published_by2', date_to_s(@config['date'])) %></p>
+<% end %>
+    </div>

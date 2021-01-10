@@ -1,0 +1,17 @@
+<% @dc_items.each do |item| %>
+    <<%= item[:tag] %>><%= h(item[:val]) %></<%= item[:tag] %>>
+<% end %>
+<% if @config['isbn'] %>
+    <dc:identifier id="BookId" opf:scheme="ISBN"><%= @config['isbn'] %></dc:identifier>
+<% else %>
+    <dc:identifier id="BookId"><%= @config['urnid'] %></dc:identifier>
+<% end %>
+<% @creators.each do |creator| %>
+    <dc:creator opf:role="<%= creator[:role] %>"><%= h(creator[:val]) %></dc:creator>
+<% end %>
+<% @contributers.each do |contributer| %>
+    <dc:contributor opf:role="<%= contributer[:role] %>"><%= h(contributer[:val]) %></dc:contributor>
+<%   if contributer[:role] == 'prt' %>
+    <dc:publisher><%= h(contributer[:val]) %></dc:publisher>
+<%   end %>
+<% end %>
