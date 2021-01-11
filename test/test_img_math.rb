@@ -25,14 +25,16 @@ class ImgMathTest < Test::Unit::TestCase
     str1 = '$A > B \\gg C$'
     key1 = Digest::SHA256.hexdigest(str1)
     img_path1 = @img_math.defer_math_image(str1, key1)
-    @img_math.make_math_images
-
-    assert File.exist?(img_path1)
 
     assert_equal "_gen_#{key1}.png", File.basename(img_path1)
   end
 
   def test_defer_math_image
+    unless support_latex_in_tests?
+      $stderr.puts 'skip test_defer_math_image'
+      return true
+    end
+
     str1 = '$\\sum_{i=1}^nf_n(x) \\in \\mathbb{R}$'
     key1 = Digest::SHA256.hexdigest(str1)
     img_path1 = @img_math.defer_math_image(str1, key1)
@@ -55,17 +57,23 @@ class ImgMathTest < Test::Unit::TestCase
   end
 
   def test_make_math_image_pathname
+    unless support_latex_in_tests?
+      $stderr.puts 'skip test_make_math_image_pathname'
+      return true
+    end
+
     str1 = '$A > B \\gg C$'
     key1 = Digest::SHA256.hexdigest(str1)
     img_path1 = @img_math.make_math_image(str1, key1)
-    @img_math.make_math_images
-
-    assert File.exist?(img_path1)
 
     assert_equal "_gen_#{key1}.png", File.basename(img_path1)
   end
 
   def test_make_math_image
+    unless support_latex_in_tests?
+      $stderr.puts 'skip test_make_math_image'
+      return true
+    end
     str1 = '$A > B \\gg C$'
     key1 = Digest::SHA256.hexdigest(str1)
     img_path1 = @img_math.make_math_image(str1, key1)
@@ -76,6 +84,8 @@ class ImgMathTest < Test::Unit::TestCase
     assert_equal 0, val1
   end
 
+  private
+
   def compare_images(image1, image2)
     compare = MiniMagick::Tool::Compare.new(whiny: false)
     compare.metric('AE')
@@ -85,6 +95,15 @@ class ImgMathTest < Test::Unit::TestCase
 
     compare.call do |_, dist, _|
       return dist.to_i
+    end
+  end
+
+  def support_latex_in_tests?
+    begin
+      `uplatex -v`
+      true
+    rescue
+      false
     end
   end
 end
