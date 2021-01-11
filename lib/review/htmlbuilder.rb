@@ -636,7 +636,7 @@ module ReVIEW
           @img_math.make_math_image(math_str, img_path)
           puts %Q(<img src="#{img_path}" />)
         else
-          @img_math.defer_math_image(math_str, img_path, key)
+          @img_math.defer_math_image(math_str, key)
           puts %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(lines.join(' '))}" />)
         end
       else
@@ -1009,7 +1009,7 @@ EOS
           @img_math.make_math_image(math_str, img_path)
           %Q(<span class="equation"><img src="#{img_path}" /></span>)
         else
-          @img_math.defer_math_image(math_str, img_path, key)
+          @img_math.defer_math_image(math_str, key)
           %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(str)}" /></span>)
         end
       else

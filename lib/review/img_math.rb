@@ -15,7 +15,7 @@ module ReVIEW
       end
     end
 
-    def defer_math_image(str, _path, key)
+    def defer_math_image(str, key)
       # for Re:VIEW >3
       @math_maps[key] = str
     end
