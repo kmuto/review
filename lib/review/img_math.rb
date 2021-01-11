@@ -68,19 +68,17 @@ module ReVIEW
 \\end{document}
       EOB
 
-      File.open(File.join(@math_dir, '__IMGMATH_BODY__.tex'), 'w') do |f|
-        @math_maps.keys.sort.each do |key|
-          f.puts "% #{key}"
-          f.puts @math_maps[key]
-          f.puts '\\clearpage'
-          f.puts
-        end
-      end
-
       math_real_dir = File.realpath(@math_dir)
       Dir.mktmpdir do |tmpdir|
-        FileUtils.cp(File.join(math_real_dir, '__IMGMATH_BODY__.tex'),
-                     tmpdir)
+        File.open(File.join(tmpdir, '__IMGMATH_BODY__.tex'), 'w') do |f|
+          @math_maps.keys.sort.each do |key|
+            f.puts "% #{key}"
+            f.puts @math_maps[key]
+            f.puts '\\clearpage'
+            f.puts
+          end
+        end
+
         tex_path = File.join(tmpdir, '__IMGMATH__.tex')
         File.write(tex_path, texsrc)
 
@@ -102,7 +100,6 @@ module ReVIEW
           exit 1
         end
       end
-      FileUtils.rm_f(File.join(math_real_dir, '__IMGMATH_BODY__.tex'))
       @math_maps.clear
     end
 
