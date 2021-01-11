@@ -151,9 +151,8 @@ module ReVIEW
 
         copy_backmatter(basetmpdir)
 
-        math_dir = "./#{@config['imagedir']}/_review_math"
-        if @config['math_format'] == 'imgmath' && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.map'))
-          @img_math.make_math_images(math_dir)
+        if @config['math_format'] == 'imgmath'
+          @img_math.make_math_images
         end
         call_hook('hook_afterbackmatter', basetmpdir)
 

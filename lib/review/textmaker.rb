@@ -72,7 +72,7 @@ module ReVIEW
     end
 
     def remove_old_files(path)
-      @img_math.cleanup_mathimg('_review_math_text')
+      @img_math.cleanup_mathimg
       FileUtils.rm_rf(path)
     end
 
@@ -83,7 +83,7 @@ module ReVIEW
       @config = ReVIEW::Configure.create(maker: 'textmaker',
                                          yamlfile: yamlfile,
                                          config: cmd_config)
-      @img_math = ReVIEW::ImgMath.new(@config)
+      @img_math = ReVIEW::ImgMath.new(@config, path_name: '_review_math_text')
 
       I18n.setup(@config['language'])
       begin
@@ -94,9 +94,8 @@ module ReVIEW
         error(e.message)
       end
 
-      math_dir = "./#{@config['imagedir']}/_review_math_text"
-      if @config['math_format'] == 'imgmath' && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.map'))
-        @img_math.make_math_images(math_dir)
+      if @config['math_format'] == 'imgmath'
+        @img_math.make_math_images
       end
     end
 

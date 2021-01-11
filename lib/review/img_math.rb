@@ -2,9 +2,10 @@ require 'fileutils'
 
 module ReVIEW
   class ImgMath
-    def initialize(config)
+    def initialize(config, path_name: '_review_math')
       @config = config
       @logger = ReVIEW.logger
+      @math_dir = File.join(@config['imagedir'], path_name)
     end
 
     def error(msg)
@@ -15,10 +16,9 @@ module ReVIEW
       @logger.warn msg
     end
 
-    def cleanup_mathimg(path = '_review_math')
-      math_dir = "./#{@config['imagedir']}/#{path}"
-      if @config['math_format'] == 'imgmath' && Dir.exist?(math_dir)
-        FileUtils.rm_rf(math_dir)
+    def cleanup_mathimg
+      if @config['math_format'] == 'imgmath' && Dir.exist?(@math_dir)
+        FileUtils.rm_rf(@math_dir)
       end
     end
 
@@ -85,7 +85,9 @@ module ReVIEW
       end
     end
 
-    def make_math_images(math_dir)
+    def make_math_images
+      return unless File.exist?(File.join(@math_dir, '__IMGMATH_BODY__.map'))
+
       fontsize = @config['imgmath_options']['fontsize'].to_f
       lineheight = @config['imgmath_options']['lineheight'].to_f
 
@@ -101,26 +103,26 @@ module ReVIEW
 \\end{document}
       EOB
 
-      hashes = File.readlines(File.join(math_dir, '__IMGMATH_BODY__.map')).sort.uniq
-      File.write(File.join(math_dir, '__IMGMATH_BODY__.map'), hashes.join)
+      hashes = File.readlines(File.join(@math_dir, '__IMGMATH_BODY__.map')).sort.uniq
+      File.write(File.join(@math_dir, '__IMGMATH_BODY__.map'), hashes.join)
 
-      File.open(File.join(math_dir, '__IMGMATH_BODY__.tex'), 'w') do |f|
-        File.open(File.join(math_dir, '__IMGMATH_BODY__.map')) do |map|
+      File.open(File.join(@math_dir, '__IMGMATH_BODY__.tex'), 'w') do |f|
+        File.open(File.join(@math_dir, '__IMGMATH_BODY__.map')) do |map|
           map.each_line do |l|
             l.chomp!
             f.puts "% #{l}"
-            f.puts File.read(File.join(math_dir, "__IMGMATH_BODY__#{l}.tex"))
-            File.unlink(File.join(math_dir, "__IMGMATH_BODY__#{l}.tex"))
+            f.puts File.read(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
+            File.unlink(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
             f.puts '\\clearpage'
             f.puts
           end
         end
       end
 
-      math_dir = File.realpath(math_dir)
+      math_real_dir = File.realpath(@math_dir)
       Dir.mktmpdir do |tmpdir|
-        FileUtils.cp([File.join(math_dir, '__IMGMATH_BODY__.tex'),
-                      File.join(math_dir, '__IMGMATH_BODY__.map')],
+        FileUtils.cp([File.join(math_real_dir, '__IMGMATH_BODY__.tex'),
+                      File.join(math_real_dir, '__IMGMATH_BODY__.map')],
                      tmpdir)
         tex_path = File.join(tmpdir, '__IMGMATH__.tex')
         File.write(tex_path, texsrc)
@@ -128,9 +130,9 @@ module ReVIEW
         begin
           case @config['imgmath_options']['converter']
           when 'pdfcrop'
-            make_math_images_pdfcrop(tmpdir, tex_path, math_dir)
+            make_math_images_pdfcrop(tmpdir, tex_path, math_real_dir)
           when 'dvipng'
-            make_math_images_dvipng(tmpdir, tex_path, math_dir)
+            make_math_images_dvipng(tmpdir, tex_path, math_real_dir)
           else
             error "unknown math converter error. imgmath_options/converter parameter should be 'pdfcrop' or 'dvipng'."
             exit 1
@@ -138,16 +140,16 @@ module ReVIEW
         rescue CompileError
           FileUtils.cp([tex_path,
                         File.join(File.dirname(tex_path), '__IMGMATH__.log')],
-                       math_dir)
-          error "LaTeX math compile error. See #{math_dir}/__IMGMATH__.log for details."
+                       math_real_dir)
+          error "LaTeX math compile error. See #{math_real_dir}/__IMGMATH__.log for details."
           exit 1
         end
       end
-      FileUtils.rm_f([File.join(math_dir, '__IMGMATH_BODY__.tex'),
-                      File.join(math_dir, '__IMGMATH_BODY__.map')])
+      FileUtils.rm_f([File.join(math_real_dir, '__IMGMATH_BODY__.tex'),
+                      File.join(math_real_dir, '__IMGMATH_BODY__.map')])
     end
 
-    def make_math_images_pdfcrop(dir, tex_path, math_dir)
+    def make_math_images_pdfcrop(dir, tex_path, math_real_dir)
       # rubocop:disable Metrics/BlockLength
       Dir.chdir(dir) do
         dvi_path = '__IMGMATH__.dvi'
@@ -182,7 +184,7 @@ module ReVIEW
           f.each_line do |key|
             page += 1
             key.chomp!
-            if File.exist?(File.join(math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}"))
+            if File.exist?(File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}"))
               # made already
               next
             end
@@ -210,8 +212,8 @@ module ReVIEW
             args.map! do |m|
               m.sub('%i', pdf_path2).
                 sub('%t', @config['imgmath_options']['format']).
-                sub('%o', File.join(math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
-                sub('%O', File.join(math_dir, "_gen_#{key}")).
+                sub('%o', File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
+                sub('%O', File.join(math_real_dir, "_gen_#{key}")).
                 sub('%p', page.to_s)
             end
             out, status = Open3.capture2e(*args)
@@ -225,7 +227,7 @@ module ReVIEW
       # rubocop:enable Metrics/BlockLength
     end
 
-    def make_math_images_dvipng(dir, tex_path, math_dir)
+    def make_math_images_dvipng(dir, tex_path, math_real_dir)
       Dir.chdir(dir) do
         dvi_path = '__IMGMATH__.dvi'
         out, status = Open3.capture2e(*[@config['texcommand'], @config['texoptions'].shellsplit, tex_path].flatten.compact)
@@ -241,8 +243,8 @@ module ReVIEW
             args = @config['imgmath_options']['dvipng_cmd'].shellsplit
             args.map! do |m|
               m.sub('%i', dvi_path).
-                sub('%o', File.join(math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
-                sub('%O', File.join(math_dir, "_gen_#{key}")).
+                sub('%o', File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
+                sub('%O', File.join(math_real_dir, "_gen_#{key}")).
                 sub('%p', page.to_s)
             end
             out, status = Open3.capture2e(*args)

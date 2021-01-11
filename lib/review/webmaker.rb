@@ -115,9 +115,8 @@ module ReVIEW
       build_body(@path, yamlfile)
       copy_backmatter(@path)
 
-      math_dir = "./#{@config['imagedir']}/_review_math"
-      if @config['math_format'] == 'imgmath' && File.exist?("#{math_dir}/__IMGMATH_BODY__.map")
-        @img_math.make_math_images(math_dir)
+      if @config['math_format'] == 'imgmath'
+        @img_math.make_math_images
       end
 
       copy_images(@config['imagedir'], "#{@path}/#{@config['imagedir']}")
