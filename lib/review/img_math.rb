@@ -9,41 +9,10 @@ module ReVIEW
       @math_maps = []
     end
 
-    def error(msg)
-      @logger.error msg
-    end
-
-    def warn(msg)
-      @logger.warn msg
-    end
-
     def cleanup_mathimg
       if @config['math_format'] == 'imgmath' && Dir.exist?(@math_dir)
         FileUtils.rm_rf(@math_dir)
       end
-    end
-
-    def default_imgmath_preamble
-      <<-EOB
-\\documentclass[uplatex,a3paper,landscape]{jsarticle}
-\\usepackage[deluxe,uplatex]{otf}
-\\usepackage[T1]{fontenc}
-\\usepackage{textcomp}
-\\usepackage{lmodern}
-\\usepackage[dvipdfmx]{graphicx}
-\\usepackage[dvipdfmx,table]{xcolor}
-\\usepackage[utf8]{inputenc}
-\\usepackage{ascmac}
-\\usepackage{float}
-\\usepackage{alltt}
-\\usepackage{amsmath}
-\\usepackage{amssymb}
-\\usepackage{amsfonts}
-\\usepackage{anyfontsize}
-\\usepackage{bm}
-\\pagestyle{empty}
-% \\setpaperwidth{1000mm}
-      EOB
     end
 
     def defer_math_image(str, path, key)
@@ -141,6 +110,39 @@ module ReVIEW
       end
       FileUtils.rm_f(File.join(math_real_dir, '__IMGMATH_BODY__.tex'))
       @math_maps = []
+    end
+
+    private
+
+    def error(msg)
+      @logger.error msg
+    end
+
+    def warn(msg)
+      @logger.warn msg
+    end
+
+    def default_imgmath_preamble
+      <<-EOB
+\\documentclass[uplatex,a3paper,landscape]{jsarticle}
+\\usepackage[deluxe,uplatex]{otf}
+\\usepackage[T1]{fontenc}
+\\usepackage{textcomp}
+\\usepackage{lmodern}
+\\usepackage[dvipdfmx]{graphicx}
+\\usepackage[dvipdfmx,table]{xcolor}
+\\usepackage[utf8]{inputenc}
+\\usepackage{ascmac}
+\\usepackage{float}
+\\usepackage{alltt}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{amsfonts}
+\\usepackage{anyfontsize}
+\\usepackage{bm}
+\\pagestyle{empty}
+% \\setpaperwidth{1000mm}
+      EOB
     end
 
     def make_math_images_pdfcrop(dir, tex_path, math_real_dir)
