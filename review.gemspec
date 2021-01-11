@@ -23,6 +23,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('image_size')
   gem.add_dependency('rouge')
   gem.add_dependency('rubyzip')
+  gem.add_development_dependency('mini_magick')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
   gem.add_development_dependency('rubocop', '~> 1.6.0')

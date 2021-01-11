@@ -8,7 +8,6 @@
 require 'pathname'
 require 'fileutils'
 require 'yaml'
-require 'shellwords'
 
 begin
   require 'cgi/escape'

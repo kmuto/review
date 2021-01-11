@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'shellwords'
 
 module ReVIEW
   class ImgMath
@@ -25,6 +26,7 @@ module ReVIEW
       # Re:VIEW 2 compatibility
 
       img_path = File.join(@math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")
+      Dir.mkdir(@math_dir) unless Dir.exist?(@math_dir)
       fontsize2 = (fontsize * 1.2).round.to_i
       texsrc = <<-EOB
 \\documentclass[12pt]{article}
