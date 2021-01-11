@@ -633,10 +633,10 @@ module ReVIEW
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
         img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
         if @book.config.check_version('2', exception: false)
-          make_math_image(math_str, img_path)
+          @img_math.make_math_image(math_str, img_path)
           puts %Q(<img src="#{img_path}" />)
         else
-          defer_math_image(math_str, img_path, key)
+          @img_math.defer_math_image(math_str, img_path, key)
           puts %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(lines.join(' '))}" />)
         end
       else
@@ -1006,10 +1006,10 @@ EOS
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
         img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
         if @book.config.check_version('2', exception: false)
-          make_math_image(math_str, img_path)
+          @img_math.make_math_image(math_str, img_path)
           %Q(<span class="equation"><img src="#{img_path}" /></span>)
         else
-          defer_math_image(math_str, img_path, key)
+          @img_math.defer_math_image(math_str, img_path, key)
           %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(str)}" /></span>)
         end
       else
@@ -1262,36 +1262,6 @@ EOS
 
     def olnum(num)
       @ol_num = num.to_i
-    end
-
-    def make_math_image(str, path, fontsize = 12)
-      # Re:VIEW 2 compatibility
-      fontsize2 = (fontsize * 1.2).round.to_i
-      texsrc = <<-EOB
-\\documentclass[12pt]{article}
-\\usepackage[utf8]{inputenc}
-\\usepackage{amsmath}
-\\usepackage{amsthm}
-\\usepackage{amssymb}
-\\usepackage{amsfonts}
-\\usepackage{anyfontsize}
-\\usepackage{bm}
-\\pagestyle{empty}
-
-\\begin{document}
-\\fontsize{#{fontsize}}{#{fontsize2}}\\selectfont #{str}
-\\end{document}
-      EOB
-      Dir.mktmpdir do |tmpdir|
-        tex_path = File.join(tmpdir, 'tmpmath.tex')
-        dvi_path = File.join(tmpdir, 'tmpmath.dvi')
-        File.write(tex_path, texsrc)
-        cmd = "latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{path} #{dvi_path}"
-        out, status = Open3.capture2e(cmd)
-        unless status.success?
-          error "latex compile error\n\nError log:\n" + out
-        end
-      end
     end
   end
 end # module ReVIEW

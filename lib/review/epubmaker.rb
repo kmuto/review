@@ -16,6 +16,7 @@ require 'review/latexbuilder'
 require 'review/version'
 require 'review/htmltoc'
 require 'review/htmlbuilder'
+require 'review/img_math'
 
 require 'rexml/document'
 require 'rexml/streamlistener'
@@ -34,6 +35,7 @@ module ReVIEW
       @htmltoc = nil
       @buildlogtxt = 'build-log.txt'
       @logger = ReVIEW.logger
+      @img_math = nil
     end
 
     def error(msg)
@@ -116,6 +118,7 @@ module ReVIEW
       bookname ||= @config['bookname']
       booktmpname = "#{bookname}-epub"
 
+      @img_math = ReVIEW::ImgMath.new(@config)
       begin
         @config.check_version(ReVIEW::VERSION)
       rescue ReVIEW::ConfigError => e
@@ -128,7 +131,7 @@ module ReVIEW
         FileUtils.rm_rf(booktmpname)
       end
 
-      cleanup_mathimg
+      @img_math.cleanup_mathimg
 
       basetmpdir = build_path
       begin
@@ -150,7 +153,7 @@ module ReVIEW
 
         math_dir = "./#{@config['imagedir']}/_review_math"
         if @config['math_format'] == 'imgmath' && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.map'))
-          make_math_images(math_dir)
+          @img_math.make_math_images(math_dir)
         end
         call_hook('hook_afterbackmatter', basetmpdir)
 
@@ -295,7 +298,7 @@ module ReVIEW
       basedir = File.dirname(yamlfile)
       base_path = Pathname.new(basedir)
       book = ReVIEW::Book::Base.new(basedir, config: @config)
-      @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
+      @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new(img_math: @img_math))
       @compile_errors = nil
 
       book.parts.each do |part|

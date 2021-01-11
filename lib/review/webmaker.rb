@@ -20,6 +20,7 @@ require 'review/template'
 require 'review/tocprinter'
 require 'review/version'
 require 'review/makerhelper'
+require 'review/img_math'
 
 module ReVIEW
   class WEBMaker
@@ -31,6 +32,7 @@ module ReVIEW
     def initialize
       @basedir = nil
       @logger = ReVIEW.logger
+      @img_math = nil
     end
 
     def error(msg)
@@ -74,7 +76,7 @@ module ReVIEW
     end
 
     def remove_old_files(path)
-      cleanup_mathimg
+      @img_math.cleanup_mathimg
       FileUtils.rm_rf(path)
     end
 
@@ -87,6 +89,8 @@ module ReVIEW
                                          config: cmd_config)
 
       @config['htmlext'] = 'html'
+      @img_math = ReVIEW::ImgMath.new(@config)
+
       I18n.setup(@config['language'])
       begin
         generate_html_files(yamlfile)
@@ -104,7 +108,7 @@ module ReVIEW
       Dir.mkdir(@path)
 
       @book = ReVIEW::Book::Base.new(@basedir, config: @config)
-      @converter = ReVIEW::Converter.new(@book, ReVIEW::HTMLBuilder.new)
+      @converter = ReVIEW::Converter.new(@book, ReVIEW::HTMLBuilder.new(img_math: @img_math))
 
       copy_stylesheet(@path)
       copy_frontmatter(@path)
@@ -113,7 +117,7 @@ module ReVIEW
 
       math_dir = "./#{@config['imagedir']}/_review_math"
       if @config['math_format'] == 'imgmath' && File.exist?("#{math_dir}/__IMGMATH_BODY__.map")
-        make_math_images(math_dir)
+        @img_math.make_math_images(math_dir)
       end
 
       copy_images(@config['imagedir'], "#{@path}/#{@config['imagedir']}")

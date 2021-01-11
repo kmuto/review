@@ -236,7 +236,7 @@ module ReVIEW
         math_dir = File.join(@book.config['imagedir'], '_review_math_text')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
         img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
-        defer_math_image(math_str, img_path, key)
+        @img_math.defer_math_image(math_str, img_path, key)
         puts "◆→math:#{File.basename(img_path)}←◆"
       else
         puts lines.join("\n")
@@ -416,7 +416,7 @@ module ReVIEW
         math_dir = File.join(@book.config['imagedir'], '_review_math_text')
         Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
         img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
-        defer_math_image(math_str, img_path, key)
+        @img_math.defer_math_image(math_str, img_path, key)
         %Q(◆→TeX式ここから←◆◆→math:#{File.basename(img_path)}←◆◆→TeX式ここまで←◆)
       else
         %Q(◆→TeX式ここから←◆#{str}◆→TeX式ここまで←◆)

@@ -98,16 +98,6 @@ module ReVIEW
       lines.join
     end
 
-    def defer_math_image(str, path, key)
-      # for Re:VIEW >3
-      File.open(File.join(File.dirname(path), "__IMGMATH_BODY__#{key}.tex"), 'w') do |f|
-        f.puts str
-      end
-      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.map'), 'a+') do |f|
-        f.puts key
-      end
-    end
-
     private
 
     # remove elements at the back of `lines` if element is empty string
