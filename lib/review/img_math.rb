@@ -18,10 +18,13 @@ module ReVIEW
     def defer_math_image(str, key)
       # for Re:VIEW >3
       @math_maps[key] = str
+      File.join(@math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")
     end
 
-    def make_math_image(str, path, fontsize = 12)
+    def make_math_image(str, key, fontsize = 12)
       # Re:VIEW 2 compatibility
+
+      img_path = File.join(@math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")
       fontsize2 = (fontsize * 1.2).round.to_i
       texsrc = <<-EOB
 \\documentclass[12pt]{article}
@@ -42,17 +45,20 @@ module ReVIEW
         tex_path = File.join(tmpdir, 'tmpmath.tex')
         dvi_path = File.join(tmpdir, 'tmpmath.dvi')
         File.write(tex_path, texsrc)
-        cmd = "latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{path} #{dvi_path}"
+        cmd = "latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{img_path} #{dvi_path}"
         out, status = Open3.capture2e(cmd)
         unless status.success?
           raise ApplicationError, "latex compile error\n\nError log:\n" + out
         end
+
+        img_path
       end
     end
 
     def make_math_images
       return if @math_maps.empty?
 
+      Dir.mkdir(@math_dir) unless Dir.exist?(@math_dir)
       fontsize = @config['imgmath_options']['fontsize'].to_f
       lineheight = @config['imgmath_options']['lineheight'].to_f
 

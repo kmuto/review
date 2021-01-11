@@ -233,10 +233,7 @@ module ReVIEW
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
         math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
-        math_dir = File.join(@book.config['imagedir'], '_review_math_text')
-        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
-        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
-        @img_math.defer_math_image(math_str, key)
+        img_path = @img_math.defer_math_image(math_str, key)
         puts "◆→math:#{File.basename(img_path)}←◆"
       else
         puts lines.join("\n")
@@ -413,10 +410,7 @@ module ReVIEW
       if @book.config['math_format'] == 'imgmath'
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
-        math_dir = File.join(@book.config['imagedir'], '_review_math_text')
-        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
-        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
-        @img_math.defer_math_image(math_str, key)
+        img_path = @img_math.defer_math_image(math_str, key)
         %Q(◆→TeX式ここから←◆◆→math:#{File.basename(img_path)}←◆◆→TeX式ここまで←◆)
       else
         %Q(◆→TeX式ここから←◆#{str}◆→TeX式ここまで←◆)

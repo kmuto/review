@@ -629,14 +629,11 @@ module ReVIEW
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
         math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
-        math_dir = File.join(@book.config['imagedir'], '_review_math')
-        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
-        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
         if @book.config.check_version('2', exception: false)
-          @img_math.make_math_image(math_str, img_path)
+          img_path = @img_math.make_math_image(math_str, key)
           puts %Q(<img src="#{img_path}" />)
         else
-          @img_math.defer_math_image(math_str, key)
+          img_path = @img_math.defer_math_image(math_str, key)
           puts %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(lines.join(' '))}" />)
         end
       else
@@ -1002,14 +999,11 @@ EOS
       elsif @book.config['math_format'] == 'imgmath'
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
-        math_dir = File.join(@book.config['imagedir'], '_review_math')
-        Dir.mkdir(math_dir) unless Dir.exist?(math_dir)
-        img_path = File.join(math_dir, "_gen_#{key}.#{@book.config['imgmath_options']['format']}")
         if @book.config.check_version('2', exception: false)
-          @img_math.make_math_image(math_str, img_path)
+          img_path = @img_math.make_math_image(math_str, key)
           %Q(<span class="equation"><img src="#{img_path}" /></span>)
         else
-          @img_math.defer_math_image(math_str, key)
+          img_path = @img_math.defer_math_image(math_str, key)
           %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(str)}" /></span>)
         end
       else
