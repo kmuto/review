@@ -6,7 +6,7 @@ module ReVIEW
       @config = config
       @logger = ReVIEW.logger
       @math_dir = File.join(@config['imagedir'], path_name)
-      @math_maps = []
+      @math_maps = {}
     end
 
     def cleanup_mathimg
@@ -15,12 +15,9 @@ module ReVIEW
       end
     end
 
-    def defer_math_image(str, path, key)
+    def defer_math_image(str, _path, key)
       # for Re:VIEW >3
-      File.open(File.join(File.dirname(path), "__IMGMATH_BODY__#{key}.tex"), 'w') do |f|
-        f.puts str
-      end
-      @math_maps << key
+      @math_maps[key] = str
     end
 
     def make_math_image(str, path, fontsize = 12)
@@ -71,13 +68,10 @@ module ReVIEW
 \\end{document}
       EOB
 
-      @math_maps = @math_maps.sort.uniq
-
       File.open(File.join(@math_dir, '__IMGMATH_BODY__.tex'), 'w') do |f|
-        @math_maps.each do |l|
-          f.puts "% #{l}"
-          f.puts File.read(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
-          File.unlink(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
+        @math_maps.keys.sort.each do |key|
+          f.puts "% #{key}"
+          f.puts @math_maps[key]
           f.puts '\\clearpage'
           f.puts
         end
@@ -109,7 +103,7 @@ module ReVIEW
         end
       end
       FileUtils.rm_f(File.join(math_real_dir, '__IMGMATH_BODY__.tex'))
-      @math_maps = []
+      @math_maps.clear
     end
 
     private
@@ -174,7 +168,7 @@ module ReVIEW
         pdf_path = '__IMGMATH__pdfcrop.pdf'
         pdf_path2 = pdf_path
 
-        @math_maps.each_with_index do |key, idx|
+        @math_maps.keys.sort.each_with_index do |key, idx|
           page = idx + 1
           if File.exist?(File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}"))
             # made already
@@ -225,7 +219,7 @@ module ReVIEW
           raise CompileError
         end
 
-        @math_maps.each_with_index do |key, idx|
+        @math_maps.keys.sort.each_with_index do |key, idx|
           page = idx + 1
           args = @config['imgmath_options']['dvipng_cmd'].shellsplit
           args.map! do |m|
