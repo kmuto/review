@@ -6,6 +6,7 @@ module ReVIEW
       @config = config
       @logger = ReVIEW.logger
       @math_dir = File.join(@config['imagedir'], path_name)
+      @math_maps = []
     end
 
     def error(msg)
@@ -50,9 +51,7 @@ module ReVIEW
       File.open(File.join(File.dirname(path), "__IMGMATH_BODY__#{key}.tex"), 'w') do |f|
         f.puts str
       end
-      File.open(File.join(File.dirname(path), '__IMGMATH_BODY__.map'), 'a+') do |f|
-        f.puts key
-      end
+      @math_maps << key
     end
 
     def make_math_image(str, path, fontsize = 12)
@@ -86,7 +85,7 @@ module ReVIEW
     end
 
     def make_math_images
-      return unless File.exist?(File.join(@math_dir, '__IMGMATH_BODY__.map'))
+      return if @math_maps.empty?
 
       fontsize = @config['imgmath_options']['fontsize'].to_f
       lineheight = @config['imgmath_options']['lineheight'].to_f
@@ -103,26 +102,21 @@ module ReVIEW
 \\end{document}
       EOB
 
-      hashes = File.readlines(File.join(@math_dir, '__IMGMATH_BODY__.map')).sort.uniq
-      File.write(File.join(@math_dir, '__IMGMATH_BODY__.map'), hashes.join)
+      @math_maps = @math_maps.sort.uniq
 
       File.open(File.join(@math_dir, '__IMGMATH_BODY__.tex'), 'w') do |f|
-        File.open(File.join(@math_dir, '__IMGMATH_BODY__.map')) do |map|
-          map.each_line do |l|
-            l.chomp!
-            f.puts "% #{l}"
-            f.puts File.read(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
-            File.unlink(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
-            f.puts '\\clearpage'
-            f.puts
-          end
+        @math_maps.each do |l|
+          f.puts "% #{l}"
+          f.puts File.read(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
+          File.unlink(File.join(@math_dir, "__IMGMATH_BODY__#{l}.tex"))
+          f.puts '\\clearpage'
+          f.puts
         end
       end
 
       math_real_dir = File.realpath(@math_dir)
       Dir.mktmpdir do |tmpdir|
-        FileUtils.cp([File.join(math_real_dir, '__IMGMATH_BODY__.tex'),
-                      File.join(math_real_dir, '__IMGMATH_BODY__.map')],
+        FileUtils.cp(File.join(math_real_dir, '__IMGMATH_BODY__.tex'),
                      tmpdir)
         tex_path = File.join(tmpdir, '__IMGMATH__.tex')
         File.write(tex_path, texsrc)
@@ -145,12 +139,11 @@ module ReVIEW
           exit 1
         end
       end
-      FileUtils.rm_f([File.join(math_real_dir, '__IMGMATH_BODY__.tex'),
-                      File.join(math_real_dir, '__IMGMATH_BODY__.map')])
+      FileUtils.rm_f(File.join(math_real_dir, '__IMGMATH_BODY__.tex'))
+      @math_maps = []
     end
 
     def make_math_images_pdfcrop(dir, tex_path, math_real_dir)
-      # rubocop:disable Metrics/BlockLength
       Dir.chdir(dir) do
         dvi_path = '__IMGMATH__.dvi'
         pdf_path = '__IMGMATH__.pdf'
@@ -179,52 +172,47 @@ module ReVIEW
         pdf_path = '__IMGMATH__pdfcrop.pdf'
         pdf_path2 = pdf_path
 
-        File.open('__IMGMATH_BODY__.map') do |f|
-          page = 0
-          f.each_line do |key|
-            page += 1
-            key.chomp!
-            if File.exist?(File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}"))
-              # made already
-              next
-            end
+        @math_maps.each_with_index do |key, idx|
+          page = idx + 1
+          if File.exist?(File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}"))
+            # made already
+            next
+          end
 
-            if @config['imgmath_options']['extract_singlepage']
-              # if extract_singlepage = true, split each page
-              args = @config['imgmath_options']['pdfextract_cmd'].shellsplit
+          if @config['imgmath_options']['extract_singlepage']
+            # if extract_singlepage = true, split each page
+            args = @config['imgmath_options']['pdfextract_cmd'].shellsplit
 
-              args.map! do |m|
-                m.sub('%i', pdf_path).
-                  sub('%o', "__IMGMATH__pdfcrop_p#{page}.pdf").
-                  sub('%O', "__IMGMATH__pdfcrop_p#{page}").
-                  sub('%p', page.to_s)
-              end
-              out, status = Open3.capture2e(*args)
-              unless status.success?
-                warn "error in pdf extracting. Error log:\n#{out}"
-                raise CompileError
-              end
-
-              pdf_path2 = "__IMGMATH__pdfcrop_p#{page}.pdf"
-            end
-
-            args = @config['imgmath_options']['pdfcrop_pixelize_cmd'].shellsplit
             args.map! do |m|
-              m.sub('%i', pdf_path2).
-                sub('%t', @config['imgmath_options']['format']).
-                sub('%o', File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
-                sub('%O', File.join(math_real_dir, "_gen_#{key}")).
+              m.sub('%i', pdf_path).
+                sub('%o', "__IMGMATH__pdfcrop_p#{page}.pdf").
+                sub('%O', "__IMGMATH__pdfcrop_p#{page}").
                 sub('%p', page.to_s)
             end
             out, status = Open3.capture2e(*args)
             unless status.success?
-              warn "error in pdf pixelizing. Error log:\n#{out}"
+              warn "error in pdf extracting. Error log:\n#{out}"
               raise CompileError
             end
+
+            pdf_path2 = "__IMGMATH__pdfcrop_p#{page}.pdf"
+          end
+
+          args = @config['imgmath_options']['pdfcrop_pixelize_cmd'].shellsplit
+          args.map! do |m|
+            m.sub('%i', pdf_path2).
+              sub('%t', @config['imgmath_options']['format']).
+              sub('%o', File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
+              sub('%O', File.join(math_real_dir, "_gen_#{key}")).
+              sub('%p', page.to_s)
+          end
+          out, status = Open3.capture2e(*args)
+          unless status.success?
+            warn "error in pdf pixelizing. Error log:\n#{out}"
+            raise CompileError
           end
         end
       end
-      # rubocop:enable Metrics/BlockLength
     end
 
     def make_math_images_dvipng(dir, tex_path, math_real_dir)
@@ -235,23 +223,19 @@ module ReVIEW
           raise CompileError
         end
 
-        File.open('__IMGMATH_BODY__.map') do |f|
-          page = 0
-          f.each_line do |key|
-            page += 1
-            key.chomp!
-            args = @config['imgmath_options']['dvipng_cmd'].shellsplit
-            args.map! do |m|
-              m.sub('%i', dvi_path).
-                sub('%o', File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
-                sub('%O', File.join(math_real_dir, "_gen_#{key}")).
-                sub('%p', page.to_s)
-            end
-            out, status = Open3.capture2e(*args)
-            unless status.success?
-              warn "error in dvipng. Error log:\n#{out}"
-              raise CompileError
-            end
+        @math_maps.each_with_index do |key, idx|
+          page = idx + 1
+          args = @config['imgmath_options']['dvipng_cmd'].shellsplit
+          args.map! do |m|
+            m.sub('%i', dvi_path).
+              sub('%o', File.join(math_real_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")).
+              sub('%O', File.join(math_real_dir, "_gen_#{key}")).
+              sub('%p', page.to_s)
+          end
+          out, status = Open3.capture2e(*args)
+          unless status.success?
+            warn "error in dvipng. Error log:\n#{out}"
+            raise CompileError
           end
         end
       end
