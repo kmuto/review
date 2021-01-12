@@ -152,13 +152,13 @@ module EPUBMaker
 
     def opf_manifest
       if config['coverimage']
-        item = contents.find { |content| content.coverimage?(config['coverimage']) }
-        if item
-          @coverimage = item
-          item.id = nil
-        end
+        @coverimage = contents.find { |content| content.coverimage?(config['coverimage']) } # @coverimage can be nil
       end
-      @items = contents.find_all { |content| content.file !~ /#/ && content.id } # skip subgroup, or id=nil (for cover)
+      @items = if @coverimage
+                 contents.find_all { |content| content.file !~ /#/ && content.id != @coverimage.id } # skip subgroup, or @coverimage
+               else
+                 contents.find_all { |content| content.file !~ /#/ }
+               end
 
       tmplfile = File.expand_path('./opf/opf_manifest_epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
       ReVIEW::Template.load(tmplfile).result(binding)
