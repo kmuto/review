@@ -21,7 +21,7 @@ puts "Re:VIEW is #{impression}."
 //image[img3-1][適当に作ったコラム内画像]{
 //}
 
-//indepimage[img3-1][適当に作ったコラム内画像]{
+//indepimage[img3-2][適当に作ったコラム内画像]{
 //}
 
 //table[tab3-1][コラム表]{
