@@ -16,6 +16,7 @@ require 'review/yamlloader'
 require 'review/topbuilder'
 require 'review/version'
 require 'review/makerhelper'
+require 'review/img_math'
 
 module ReVIEW
   class TEXTMaker
@@ -27,6 +28,7 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @plaintext = nil
+      @img_math = nil
     end
 
     def error(msg)
@@ -70,7 +72,7 @@ module ReVIEW
     end
 
     def remove_old_files(path)
-      cleanup_mathimg('_review_math_text')
+      @img_math.cleanup_mathimg
       FileUtils.rm_rf(path)
     end
 
@@ -81,6 +83,7 @@ module ReVIEW
       @config = ReVIEW::Configure.create(maker: 'textmaker',
                                          yamlfile: yamlfile,
                                          config: cmd_config)
+      @img_math = ReVIEW::ImgMath.new(@config, path_name: '_review_math_text')
 
       I18n.setup(@config['language'])
       begin
@@ -91,9 +94,8 @@ module ReVIEW
         error(e.message)
       end
 
-      math_dir = "./#{@config['imagedir']}/_review_math_text"
-      if @config['math_format'] == 'imgmath' && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.map'))
-        make_math_images(math_dir)
+      if @config['math_format'] == 'imgmath'
+        @img_math.make_math_images
       end
     end
 
@@ -112,9 +114,9 @@ module ReVIEW
       base_path = Pathname.new(@basedir)
       builder = nil
       if @plaintext
-        builder = ReVIEW::PLAINTEXTBuilder.new
+        builder = ReVIEW::PLAINTEXTBuilder.new(img_math: @img_math)
       else
-        builder = ReVIEW::TOPBuilder.new
+        builder = ReVIEW::TOPBuilder.new(img_math: @img_math)
       end
       @converter = ReVIEW::Converter.new(@book, builder)
       @book.parts.each do |part|
