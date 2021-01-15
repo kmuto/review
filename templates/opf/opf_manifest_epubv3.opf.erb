@@ -1,0 +1,10 @@
+  <manifest>
+    <item properties="nav" id="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>" href="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>" media-type="application/xhtml+xml"/>
+    <item id="<%= @config['bookname'] %>" href="<%= @config['cover'] %>" media-type="application/xhtml+xml"/>
+<% if @coverimage %>
+    <item properties="cover-image" id="cover-<%= @coverimage.id %>" href="<%= @coverimage.file %>" media-type="<%= @coverimage.media %>"/>
+<% end %>
+<% @items.each do |item| %>
+    <item id="<%= item.id %>" href="<%= item.file %>" media-type="<%= item.media %>"<%= item.properties_attribute %>/>
+<% end %>
+  </manifest>

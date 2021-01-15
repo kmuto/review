@@ -14,6 +14,10 @@ require 'epubmaker/zip_exporter'
 module EPUBMaker
   # EPUBv2 is EPUB version 2 producer.
   class EPUBv2 < EPUBCommon
+    DC_ITEMS = %w[title language date type format source description relation coverage subject rights]
+    CREATOR_ATTRIBUTES = %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl]
+    CONTRIBUTER_ATTRIBUTES = %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl]
+
     # Construct object with parameter hash +config+ and message resource hash +res+.
     def initialize(producer) # rubocop:disable Lint/UselessMethodDefinition
       super
@@ -32,86 +36,51 @@ module EPUBMaker
     end
 
     def opf_metainfo
-      s = ''
-      %w[title language date type format source description relation coverage subject rights].each do |item|
-        next unless config[item]
-
-        if config[item].is_a?(Array)
-          s << config.names_of(item).map { |i| %Q(    <dc:#{item}>#{h(i)}</dc:#{item}>\n) }.join
-        else
-          s << %Q(    <dc:#{item}>#{h(config.name_of(item).to_s)}</dc:#{item}>\n)
-        end
-      end
-
-      # ID
-      if config['isbn'].nil?
-        s << %Q(    <dc:identifier id="BookId">#{config['urnid']}</dc:identifier>\n)
-      else
-        s << %Q(    <dc:identifier id="BookId" opf:scheme="ISBN">#{config['isbn']}</dc:identifier>\n)
-      end
-
-      # creator (should be array)
-      %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl].each do |role|
-        next unless config[role]
-
-        config.names_of(role).each do |v|
-          s << %Q(    <dc:creator opf:role="#{role.sub('a-', '')}">#{h(v)}</dc:creator>\n)
-        end
-      end
-
-      # contributor (should be array)
-      %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl].each do |role|
-        next unless config[role]
-
-        config.names_of(role).each do |v|
-          s << %Q(    <dc:contributor opf:role="#{role}">#{h(v)}</dc:contributor>\n)
-          if role == 'prt'
-            s << %Q(    <dc:publisher>#{v}</dc:publisher>\n)
+      @dc_items = DC_ITEMS.map do |item|
+        if config[item]
+          if config[item].is_a?(Array)
+            config.names_of(item).map { |_v| { tag: "dc:#{item}", val: item_sub } }
+          else
+            { tag: "dc:#{item}", val: config.name_of(item).to_s }
           end
         end
-      end
+      end.flatten.compact
 
-      s
+      # creator (should be array)
+      @creators = CREATOR_ATTRIBUTES.map do |role|
+        if config[role]
+          config.names_of(role).map { |v| { role: role, val: v } }
+        end
+      end.flatten.compact
+
+      # contributor (should be array)
+      @contributers = CONTRIBUTER_ATTRIBUTES.map do |role|
+        if config[role]
+          config.names_of(role).map { |v| { role: role, val: v } }
+        end
+      end.flatten.compact
+
+      tmplfile = File.expand_path('./opf/opf_metainfo_epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      ReVIEW::Template.load(tmplfile).result(binding)
     end
 
     def opf_manifest
-      s = ''
-      s << <<EOT
-  <manifest>
-    <item id="ncx" href="#{config['bookname']}.ncx" media-type="application/x-dtbncx+xml"/>
-    <item id="#{config['bookname']}" href="#{config['cover']}" media-type="application/xhtml+xml"/>
-EOT
+      @items = contents.find_all { |item| item.file !~ /#/ } # skip subgroup
 
-      s << %Q(    <item id="toc" href="#{config['bookname']}-toc.#{config['htmlext']}" media-type="application/xhtml+xml"/>\n) if config['toc'] && config['mytoc']
-
-      contents.each do |item|
-        next if item.file =~ /#/ # skip subgroup
-
-        s << %Q(    <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n)
-      end
-      s << %Q(  </manifest>\n)
-      s
+      tmplfile = File.expand_path('./opf/opf_manifest_epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      ReVIEW::Template.load(tmplfile).result(binding)
     end
 
     def opf_tocx
-      cover_linear = if config['epubmaker']['cover_linear'] && config['epubmaker']['cover_linear'] != 'no'
-                       'yes'
-                     else
-                       'no'
-                     end
+      @cover_linear = if config['epubmaker']['cover_linear'] && config['epubmaker']['cover_linear'] != 'no'
+                        'yes'
+                      else
+                        'no'
+                      end
+      @ncx_contents = contents.find_all { |content| content.media =~ /xhtml\+xml/ } # skip non XHTML
 
-      s = ''
-      s << %Q(  <spine toc="ncx">\n)
-      s << %Q(    <itemref idref="#{config['bookname']}" linear="#{cover_linear}"/>\n)
-      s << %Q(    <itemref idref="toc" />\n) unless config['mytoc'].nil?
-
-      contents.each do |item|
-        next if item.media !~ /xhtml\+xml/ # skip non XHTML
-
-        s << %Q(    <itemref idref="#{item.id}"/>\n)
-      end
-      s << %Q(  </spine>\n)
-      s
+      tmplfile = File.expand_path('./opf/opf_tocx_epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      ReVIEW::Template.load(tmplfile).result(binding)
     end
 
     # Return ncx content. +indentarray+ has prefix marks for each level.

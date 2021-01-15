@@ -1,0 +1,10 @@
+<% if @coverimage_src %>
+  <div id="cover-image" class="cover-image">
+    <img src="<%= @coverimage_src %>" alt="<%= h(@config.name_of('title')) %>" class="max"/>
+  </div>
+<% else %>
+<h1 class="cover-title"><%= h(@config.name_of('title')) %></h1>
+<%   if @config['subtitle'] %>
+<h2 class="cover-subtitle"><%= h(@config.name_of('subtitle')) %></h2>
+<%   end %>
+<% end %>

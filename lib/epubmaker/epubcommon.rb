@@ -106,24 +106,11 @@ module EPUBMaker
       @body_ext = config['epubversion'] >= 3 ? %Q( epub:type="cover") : ''
 
       if config['coverimage']
-        file = coverimage
-        raise "coverimage #{config['coverimage']} not found. Abort." unless file
-
-        @body = <<-EOT
-  <div id="cover-image" class="cover-image">
-    <img src="#{file}" alt="#{h(config.name_of('title'))}" class="max"/>
-  </div>
-        EOT
-      else
-        @body = <<-EOT
-<h1 class="cover-title">#{h(config.name_of('title'))}</h1>
-        EOT
-        if config['subtitle']
-          @body << <<-EOT
-<h2 class="cover-subtitle">#{h(config.name_of('subtitle'))}</h2>
-          EOT
-        end
+        @coverimage_src = coverimage
+        raise "coverimage #{config['coverimage']} not found. Abort." unless @coverimage_src
       end
+      tmplfile0 = File.expand_path('./html/_cover.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      @body = ReVIEW::Template.load(tmplfile0).result(binding)
 
       @title = h(config.name_of('title'))
       @language = config['language']
@@ -143,38 +130,18 @@ module EPUBMaker
     def titlepage
       @title = h(config.name_of('title'))
 
-      @body = <<EOT
-  <h1 class="tp-title">#{@title}</h1>
-EOT
-
+      @title_str = config.name_of('title')
       if config['subtitle']
-        @body << <<EOT
-  <h2 class="tp-subtitle">#{h(config.name_of('subtitle'))}</h2>
-EOT
+        @subtitle_str = config.name_of('subtitle')
       end
-
       if config['aut']
-        @body << <<EOT
-  <p>
-    <br />
-    <br />
-  </p>
-  <h2 class="tp-author">#{h(join_with_separator(config.names_of('aut'), ReVIEW::I18n.t('names_splitter')))}</h2>
-EOT
+        @author_str = join_with_separator(config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))
       end
-
-      publisher = config.names_of('pbl')
-      if publisher
-        @body << <<EOT
-  <p>
-    <br />
-    <br />
-    <br />
-    <br />
-  </p>
-  <h3 class="tp-publisher">#{h(join_with_separator(publisher, ReVIEW::I18n.t('names_splitter')))}</h3>
-EOT
+      if config.names_of('pbl')
+        @publisher_str = join_with_separator(config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))
       end
+      tmplfile0 = File.expand_path('./html/_titlepage.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      @body = ReVIEW::Template.load(tmplfile0).result(binding)
 
       @language = config['language']
       @stylesheets = config['stylesheet']
@@ -190,37 +157,10 @@ EOT
     # Return colophon content.
     def colophon
       @title = h(ReVIEW::I18n.t('colophontitle'))
-      @body = <<EOT
-  <div class="colophon">
-EOT
+      @isbn_hyphen = isbn_hyphen
 
-      if config['subtitle'].nil?
-        @body << <<EOT
-    <p class="title">#{h(config.name_of('title'))}</p>
-EOT
-      else
-        @body << <<EOT
-    <p class="title">#{h(config.name_of('title'))}<br /><span class="subtitle">#{h(config.name_of('subtitle'))}</span></p>
-EOT
-      end
-
-      @body << colophon_history if config['date'] || config['history']
-
-      @body << %Q(    <table class="colophon">\n)
-      @body << config['colophon_order'].map do |role|
-        if config[role]
-          %Q(      <tr><th>#{h(ReVIEW::I18n.t(role))}</th><td>#{h(join_with_separator(config.names_of(role), ReVIEW::I18n.t('names_splitter')))}</td></tr>\n)
-        else
-          ''
-        end
-      end.join
-
-      @body << %Q(      <tr><th>ISBN</th><td>#{isbn_hyphen}</td></tr>\n) if isbn_hyphen
-      @body << %Q(    </table>\n)
-      if config['rights'] && !config['rights'].empty?
-        @body << %Q(    <p class="copyright">#{join_with_separator(config.names_of('rights').map { |m| h(m) }, '<br />')}</p>\n)
-      end
-      @body << %Q(  </div>\n)
+      tmplfile0 = File.expand_path('./html/_colophon.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      @body = ReVIEW::Template.load(tmplfile0).result(binding)
 
       @language = config['language']
       @stylesheets = config['stylesheet']
@@ -244,31 +184,29 @@ EOT
     end
 
     def colophon_history
-      buf = ''
-      buf << %Q(    <div class="pubhistory">\n)
+      @col_history = []
       if config['history']
         config['history'].each_with_index do |items, edit|
           items.each_with_index do |item, rev|
             editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
             revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
             if item =~ /\A\d+-\d+-\d+\Z/
-              buf << %Q(      <p>#{ReVIEW::I18n.t('published_by1', [date_to_s(item), editstr + revstr])}</p>\n)
+              @col_history << ReVIEW::I18n.t('published_by1', [date_to_s(item), editstr + revstr])
             elsif item =~ /\A(\d+-\d+-\d+)[\s　](.+)/
               # custom date with string
               item.match(/\A(\d+-\d+-\d+)[\s　](.+)/) do |m|
-                buf << %Q(      <p>#{ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]])}</p>\n)
+                @col_history << ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]])
               end
             else
               # free format
-              buf << %Q(      <p>#{item}</p>\n)
+              @col_history << item
             end
           end
         end
-      else
-        buf << %Q(      <p>#{ReVIEW::I18n.t('published_by2', date_to_s(config['date']))}</p>\n)
       end
-      buf << %Q(    </div>\n)
-      buf
+
+      tmplfile = File.expand_path('./html/_colophon_history.html.erb', ReVIEW::Template::TEMPLATE_DIR)
+      ReVIEW::Template.load(tmplfile).result(binding)
     end
 
     def date_to_s(date)
