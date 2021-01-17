@@ -30,9 +30,7 @@ module EPUBMaker
       @opf_manifest = opf_manifest
       @opf_toc = opf_tocx
 
-      tmplfile = File.expand_path('./opf/epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      tmpl = ReVIEW::Template.load(tmplfile)
-      tmpl.result(binding)
+      ReVIEW::Template.generate(path: './opf/epubv2.opf.erb', binding: binding)
     end
 
     def opf_metainfo
@@ -60,15 +58,13 @@ module EPUBMaker
         end
       end.flatten.compact
 
-      tmplfile = File.expand_path('./opf/opf_metainfo_epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './opf/opf_metainfo_epubv2.opf.erb', binding: binding)
     end
 
     def opf_manifest
       @items = contents.find_all { |item| item.file !~ /#/ } # skip subgroup
 
-      tmplfile = File.expand_path('./opf/opf_manifest_epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './opf/opf_manifest_epubv2.opf.erb', binding: binding)
     end
 
     def opf_tocx
@@ -79,8 +75,7 @@ module EPUBMaker
                       end
       @ncx_contents = contents.find_all { |content| content.media =~ /xhtml\+xml/ } # skip non XHTML
 
-      tmplfile = File.expand_path('./opf/opf_tocx_epubv2.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './opf/opf_tocx_epubv2.opf.erb', binding: binding)
     end
 
     # Return ncx content. +indentarray+ has prefix marks for each level.
@@ -89,8 +84,7 @@ module EPUBMaker
       @ncx_doctitle = ncx_doctitle
       @ncx_navmap = ncx_navmap(indentarray)
 
-      tmplfile = File.expand_path('./ncx/epubv2.ncx.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './ncx/epubv2.ncx.erb', binding: binding)
     end
 
     def ncx_isbn
