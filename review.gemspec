@@ -26,7 +26,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('mini_magick')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
-  gem.add_development_dependency('rubocop', '~> 1.6.0')
+  gem.add_development_dependency('rubocop', '~> 1.8.0')
   gem.add_development_dependency('rubocop-performance')
   gem.add_development_dependency('rubocop-rake')
   gem.add_development_dependency('simplecov')
