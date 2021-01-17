@@ -22,11 +22,13 @@ require 'review/yamlloader'
 require 'review/version'
 require 'review/makerhelper'
 require 'review/template'
+require 'review/call_hook'
 
 module ReVIEW
   class PDFMaker
     include FileUtils
     include ReVIEW::LaTeXUtils
+    include ReVIEW::CallHook
 
     attr_accessor :config, :basedir
 
@@ -199,7 +201,7 @@ module ReVIEW
       Dir.chdir(@path) do
         File.open("./#{@mastertex}.tex", 'wb') { |f| f.write template }
 
-        call_hook('hook_beforetexcompile')
+        call_hook('hook_beforetexcompile', Dir.pwd, @basedir, base_dir: @basedir)
 
         ## do compile
         if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
@@ -242,19 +244,19 @@ module ReVIEW
           system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
 
-        call_hook('hook_beforemakeindex')
+        call_hook('hook_beforemakeindex', Dir.pwd, @basedir, base_dir: @basedir)
         if @config['pdfmaker']['makeindex'] && File.size?("#{@mastertex}.idx")
           system_or_raise(*[makeindex_command, makeindex_options, @mastertex].flatten.compact)
-          call_hook('hook_aftermakeindex')
+          call_hook('hook_aftermakeindex', Dir.pwd, @basedir, base_dir: @basedir)
           system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
 
         system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
-        call_hook('hook_aftertexcompile')
+        call_hook('hook_aftertexcompile', Dir.pwd, @basedir, base_dir: @basedir)
 
         if File.exist?("#{@mastertex}.dvi") && dvicommand.present?
           system_or_raise(*[dvicommand, dvioptions, "#{@mastertex}.dvi"].flatten.compact)
-          call_hook('hook_afterdvipdf')
+          call_hook('hook_afterdvipdf', Dir.pwd, @basedir, base_dir: @basedir)
         end
       end
     end
@@ -495,17 +497,6 @@ module ReVIEW
             FileUtils.cp(File.join(dirname, fname), copybase)
           end
         end
-      end
-    end
-
-    def call_hook(hookname)
-      return if !@config['pdfmaker'].is_a?(Hash) || @config['pdfmaker'][hookname].nil?
-
-      hook = File.absolute_path(@config['pdfmaker'][hookname], @basedir)
-      if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
-        warn 'hook configuration is prohibited in safe mode. ignored.'
-      else
-        system_or_raise(hook, Dir.pwd, @basedir)
       end
     end
   end
