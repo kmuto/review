@@ -17,7 +17,6 @@ class EPUBMakerTest < Test::Unit::TestCase
       'titlepage' => nil
     )
     @producer = Producer.new(config)
-    @output = StringIO.new
   end
 
   def test_initialize
@@ -27,22 +26,22 @@ class EPUBMakerTest < Test::Unit::TestCase
   def test_resource_en
     @producer.config['language'] = 'en'
     @producer.modify_config
-    assert_equal 'Table of Contents', @producer.res.v('toctitle')
+    assert_equal 'Table of Contents', ReVIEW::I18n.t('toctitle')
   end
 
   def test_resource_ja
     @producer.config['language'] = 'ja'
     @producer.modify_config
-    assert_equal '目次', @producer.res.v('toctitle')
+    assert_equal '目次', ReVIEW::I18n.t('toctitle')
   end
 
   def test_mimetype
-    @producer.mimetype(@output)
-    assert_equal 'application/epub+zip', @output.string
+    output = @producer.instance_eval { @epub.mimetype }
+    assert_equal 'application/epub+zip', output
   end
 
   def test_container
-    @producer.container(@output)
+    output = @producer.instance_eval { @epub.container }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
@@ -51,11 +50,11 @@ class EPUBMakerTest < Test::Unit::TestCase
   </rootfiles>
 </container>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
@@ -77,13 +76,13 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf_escape
     @producer.config['title'] = 'Sample<>Book'
     @producer.modify_config
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
@@ -105,11 +104,11 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_ncx
-    @producer.ncx(@output)
+    output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
@@ -135,13 +134,13 @@ EOT
   </navMap>
 </ncx>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_ncx_escape
     @producer.config['title'] = 'Sample<>Book'
     @producer.modify_config
-    @producer.ncx(@output)
+    output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
@@ -167,7 +166,7 @@ EOT
   </navMap>
 </ncx>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def stage2
@@ -187,7 +186,7 @@ EOT
 
   def test_stage2_opf
     stage2
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
@@ -211,12 +210,12 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage2_ncx
     stage2
-    @producer.ncx(@output)
+    output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
@@ -248,7 +247,7 @@ EOT
   </navMap>
 </ncx>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def stage3
@@ -303,7 +302,7 @@ EOT
 
   def test_stage3_opf
     stage3
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId">
@@ -339,12 +338,12 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_ncx
     stage3
-    @producer.ncx(@output)
+    output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
@@ -448,14 +447,14 @@ EOT
   </navMap>
 </ncx>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_mytoc
     stage3
     @producer.config['toclevel'] = 2
     @producer.modify_config
-    @producer.mytoc(@output)
+    output = @producer.instance_eval { @epub.mytoc }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -480,7 +479,7 @@ EOT
 </ul></body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_flat
@@ -490,7 +489,7 @@ EOT
     )
     @producer.modify_config
     stage3
-    @producer.mytoc(@output)
+    output = @producer.instance_eval { @epub.mytoc }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -514,12 +513,12 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover
     stage3
-    @producer.cover(@output)
+    output = @producer.instance_eval { @epub.cover }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -534,14 +533,14 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover_escape
     stage3
     @producer.config['title'] = 'Sample<>Book'
     @producer.modify_config
-    @producer.cover(@output)
+    output = @producer.instance_eval { @epub.cover }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -556,14 +555,14 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover_with_image
     stage3
     @producer.config['coverimage'] = 'sample.png'
     @producer.modify_config
-    @producer.cover(@output)
+    output = @producer.instance_eval { @epub.cover }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -580,7 +579,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover_with_image_escape
@@ -590,7 +589,7 @@ EOT
       'coverimage' => 'sample.png'
     )
     @producer.modify_config
-    @producer.cover(@output)
+    output = @producer.instance_eval { @epub.cover }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -607,7 +606,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_default
@@ -617,7 +616,7 @@ EOT
       'isbn' => '9784797372274'
     )
     @producer.modify_config
-    @producer.colophon(@output)
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -642,7 +641,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_default_escape_and_multiple
@@ -655,7 +654,7 @@ EOT
       'rights' => ['COPYRIGHT 2016 <>', '& REVIEW']
     )
     @producer.modify_config
-    @producer.colophon(@output)
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -681,7 +680,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_history
@@ -742,7 +741,7 @@ EOT
       'pht' => ['Mrs.Smith']
     )
     @producer.modify_config
-    @producer.colophon(@output)
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -767,25 +766,28 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_isbn13
     @producer.config['isbn'] = '9784797372274'
     @producer.modify_config
-    assert_equal '978-4-79737-227-4', @producer.isbn_hyphen
+    isbn = @producer.instance_eval { @epub.isbn_hyphen }
+    assert_equal '978-4-79737-227-4', isbn
   end
 
   def test_isbn10
     @producer.config['isbn'] = '4797372273'
     @producer.modify_config
-    assert_equal '4-79737-227-3', @producer.isbn_hyphen
+    isbn = @producer.instance_eval { @epub.isbn_hyphen }
+    assert_equal '4-79737-227-3', isbn
   end
 
   def test_isbn_nil
     @producer.config['isbn'] = nil
     @producer.modify_config
-    assert_equal nil, @producer.isbn_hyphen
+    isbn = @producer.instance_eval { @epub.isbn_hyphen }
+    assert_equal nil, isbn
   end
 
   def test_title
@@ -794,7 +796,7 @@ EOT
       'pbl' => ['BLUEPRINT']
     )
     @producer.modify_config
-    @producer.titlepage(@output)
+    output = @producer.instance_eval { @epub.titlepage }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -821,7 +823,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_title_single_value_param
@@ -830,7 +832,7 @@ EOT
       'pbl' => 'BLUEPRINT'
     )
     @producer.modify_config
-    @producer.titlepage(@output)
+    output = @producer.instance_eval { @epub.titlepage }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -857,7 +859,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_epub_unsafe_id

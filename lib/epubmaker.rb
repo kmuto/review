@@ -9,13 +9,12 @@
 #
 # == Quick usage
 #  require 'epubmaker'
-#  producer = EPUBMaker::Producer.new
-#  config = producer.load('config.yml')
+#  producer = EPUBMaker::Producer.new(config)
 #  producer.contents.push(EPUBMaker::Content.new(file: 'ch01.xhtml'))
 #  producer.contents.push(EPUBMaker::Content.new(file: 'ch02.xhtml'))
 #   ...
 #  producer.import_imageinfo('images')
-#  producer.produce
+#  producer.produce(epub_filename)
 
 require 'epubmaker/producer'
 require 'epubmaker/content'

@@ -56,6 +56,18 @@ module EPUBMaker
         [other.id, other.file, other.media, other.title, other.level, other.notoc, other.chaptype, other.properties]
     end
 
+    def coverimage?(imagefile)
+      self.media.start_with?('image') && self.file =~ /#{imagefile}\Z/
+    end
+
+    def properties_attribute
+      if self.properties.size > 0
+        %Q( properties="#{self.properties.sort.uniq.join(' ')}")
+      else
+        ''
+      end
+    end
+
     private
 
     # Complement other parameters by using file parameter.

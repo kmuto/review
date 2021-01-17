@@ -1,0 +1,23 @@
+  <div class="colophon">
+<% if @config['subtitle'].nil? %>
+    <p class="title"><%= h(@config.name_of('title')) %></p>
+<% else %>
+    <p class="title"><%= h(@config.name_of('title')) %><br /><span class="subtitle"><%= h(@config.name_of('subtitle')) %></span></p>
+<% end %>
+<% if @config['date'] || @config['history'] %>
+<%= colophon_history %>
+<% end %>
+    <table class="colophon">
+<% @config['colophon_order'].each do |role| %>
+<%   if @config[role] %>
+      <tr><th><%= h(ReVIEW::I18n.t(role)) %></th><td><%= h(join_with_separator(config.names_of(role), ReVIEW::I18n.t('names_splitter'))) %></td></tr>
+<%   end %>
+<% end %>
+<% if @isbn_hyphen %>
+      <tr><th>ISBN</th><td><%= @isbn_hyphen %></td></tr>
+<% end %>
+    </table>
+<% if @config['rights'] && !@config['rights'].empty? %>
+    <p class="copyright"><%= join_with_separator(config.names_of('rights').map { |m| h(m) }, '<br />') %></p>
+<% end %>
+  </div>

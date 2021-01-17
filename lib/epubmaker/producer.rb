@@ -43,30 +43,14 @@ module EPUBMaker
       modify_config
     end
 
-    def coverimage
-      return nil unless config['coverimage']
-
-      @contents.each do |item|
-        if item.media.start_with?('image') && item.file =~ /#{config['coverimage']}\Z/
-          return item.file
-        end
-      end
-      nil
-    end
-
     # Modify parameters for EPUB specific.
     def modify_config
       if @config['epubversion'] >= 3
         @config['htmlversion'] = 5
       end
 
-      unless @config['title']
-        @config['title'] = @config['booktitle']
-      end
-
-      unless @config['cover']
-        @config['cover'] = "#{@config['bookname']}.#{@config['htmlext']}"
-      end
+      @config['title'] ||= @config['booktitle']
+      @config['cover'] ||= "#{@config['bookname']}.#{@config['htmlext']}"
 
       %w[bookname title].each do |k|
         unless @config[k]
@@ -74,87 +58,17 @@ module EPUBMaker
         end
       end
 
-      unless @config['epubversion'].nil?
-        case @config['epubversion'].to_i
-        when 2
-          @epub = EPUBMaker::EPUBv2.new(self)
-        when 3
-          @epub = EPUBMaker::EPUBv3.new(self)
-        else
-          raise "Invalid EPUB version (#{@config['epubversion']}.)"
-        end
+      case @config['epubversion'].to_i
+      when 2
+        @epub = EPUBMaker::EPUBv2.new(self)
+      when 3
+        @epub = EPUBMaker::EPUBv3.new(self)
+      else
+        raise "Invalid EPUB version (#{@config['epubversion']}.)"
       end
 
       ReVIEW::I18n.locale = @config['language']
       support_legacy_maker
-    end
-
-    # Write mimetype file to IO object +wobj+.
-    def mimetype(wobj)
-      s = @epub.mimetype
-      if !s.nil? && !wobj.nil?
-        wobj.print s
-      end
-    end
-
-    # Write opf file to IO object +wobj+.
-    def opf(wobj)
-      s = @epub.opf
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
-    end
-
-    # Write ncx file to IO object +wobj+. +indentarray+ defines prefix
-    # string for each level.
-    def ncx(wobj, indentarray = [])
-      s = @epub.ncx(indentarray)
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
-    end
-
-    # Write container file to IO object +wobj+.
-    def container(wobj)
-      s = @epub.container
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
-    end
-
-    # Write cover file to IO object +wobj+.
-    # If Producer#config["coverimage"] is defined, it will be used for
-    # the cover image.
-    def cover(wobj)
-      type = @config['epubversion'] >= 3 ? 'cover' : nil
-      s = @epub.cover(type)
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
-    end
-
-    # Write title file (copying) to IO object +wobj+.
-    def titlepage(wobj)
-      s = @epub.titlepage
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
-    end
-
-    # Write colophon file to IO object +wobj+.
-    def colophon(wobj)
-      s = @epub.colophon
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
-    end
-
-    # Write own toc file to IO object +wobj+.
-    def mytoc(wobj)
-      s = @epub.mytoc
-      if !s.nil? && !wobj.nil?
-        wobj.puts s
-      end
     end
 
     # Add informations of figure files in +path+ to contents array.
@@ -202,27 +116,6 @@ module EPUBMaker
         @epub.produce(epubfile, basedir, new_tmpdir)
       ensure
         FileUtils.rm_r(new_tmpdir) if tmpdir.nil?
-      end
-    end
-
-    def call_hook(filename, *params)
-      return if !filename.present? || !File.exist?(filename) || !FileTest.executable?(filename)
-
-      if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
-        warn 'hook is prohibited in safe mode. ignored.'
-      else
-        system(filename, *params)
-      end
-    end
-
-    def isbn_hyphen
-      str = @config['isbn'].to_s
-
-      if str =~ /\A\d{10}\Z/
-        return "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
-      end
-      if str =~ /\A\d{13}\Z/
-        return "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
       end
     end
 

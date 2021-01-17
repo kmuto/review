@@ -14,12 +14,16 @@ require 'epubmaker/zip_exporter'
 module EPUBMaker
   # EPUBv3 is EPUB version 3 producer.
   class EPUBv3 < EPUBCommon
+    DC_ITEMS = %w[title language date type format source description relation coverage subject rights]
+    CREATOR_ATTRIBUTES = %w[a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl aut]
+    CONTRIBUTER_ATTRIBUTES = %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pbd pbl pht prt red rev spn ths trc trl]
+
     # Construct object with parameter hash +config+ and message resource hash +res+.
     def initialize(producer)
       super
       @opf_prefix = {}
-      if @producer.config['opf_prefix'].present?
-        @producer.config['opf_prefix'].each { |k, v| @opf_prefix[k] = v }
+      if config['opf_prefix'].present?
+        config['opf_prefix'].each { |k, v| @opf_prefix[k] = v }
       end
     end
 
@@ -40,192 +44,160 @@ module EPUBMaker
       ReVIEW::Template.load(tmplfile).result(binding)
     end
 
-    # rubocop:disable Metrics/PerceivedComplexity
     def opf_metainfo
-      s = ''
-      %w[title language date type format source description relation coverage subject rights].each do |item|
-        next unless @producer.config[item]
+      @dc_items = DC_ITEMS.map do |item|
+        next unless config[item]
 
-        if @producer.config[item].is_a?(Array)
-          @producer.config[item].each_with_index do |v, i|
+        case config[item]
+        when Array
+          config[item].map.with_index do |v, i|
             if v.is_a?(Hash)
-              s << %Q(    <dc:#{item} id="#{item}-#{i}">#{h(v['name'])}</dc:#{item}>\n)
-              v.each_pair do |name, val|
-                next if name == 'name'
-
-                s << %Q(    <meta refines="##{item}-#{i}" property="#{name}">#{h(val)}</meta>\n)
-              end
+              { tag: "dc:#{item}",
+                id: "#{item}-#{i}",
+                val: v['name'],
+                refines: v.map { |name, val| { name: name, val: val } }.delete_if { |h| h[:name] == 'name' } }
             else
-              s << %Q(    <dc:#{item} id="#{item}-#{i}">#{h(v.to_s)}</dc:#{item}>\n)
+              { tag: "dc:#{item}", id: "#{item}-#{i}", val: v.to_s, refines: [] }
             end
           end
-        elsif @producer.config[item].is_a?(Hash)
-          s << %Q(    <dc:#{item} id="#{item}">#{h(@producer.config[item]['name'])}</dc:#{item}>\n)
-          @producer.config[item].each_pair do |name, val|
-            next if name == 'name'
-
-            s << %Q(    <meta refines="##{item}" property="#{name}">#{h(val)}</meta>\n)
-          end
+        when Hash
+          { tag: "dc:#{item}",
+            id: item.to_s,
+            val: config[item]['name'],
+            refines: config[item].map { |name, val| { name: name, val: val } }.delete_if { |h| h[:name] == 'name' } }
         else
-          s << %Q(    <dc:#{item} id="#{item}">#{h(@producer.config[item].to_s)}</dc:#{item}>\n)
+          { tag: "dc:#{item}",
+            id: item.to_s,
+            val: config[item].to_s,
+            refines: [] }
         end
-      end
-
-      s << %Q(    <meta property="dcterms:modified">#{@producer.config['modified']}</meta>\n)
-
-      # ID
-      if @producer.config['isbn'].nil?
-        s << %Q(    <dc:identifier id="BookId">#{@producer.config['urnid']}</dc:identifier>\n)
-      else
-        s << %Q(    <dc:identifier id="BookId">#{@producer.config['isbn']}</dc:identifier>\n)
-      end
+      end.flatten.compact
 
       # creator (should be array)
-      %w[a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl aut].each do |role|
-        next unless @producer.config[role]
+      @creators = CREATOR_ATTRIBUTES.map do |role|
+        next unless config[role]
 
-        @producer.config[role].each_with_index do |v, i|
-          if v.is_a?(Hash)
-            s << %Q(    <dc:creator id="#{role}-#{i}">#{h(v['name'])}</dc:creator>\n)
-            s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n)
-            v.each_pair do |name, val|
-              next if name == 'name'
+        config[role].map.with_index do |v, i|
+          case v
+          when Hash
+            refines = v.map { |name, val| { id: "#{role.sub('a-', '')}-#{i}", property: name.to_s, scheme: nil, val: val } }.delete_if { |h| h[:property] == 'name' }
 
-              s << %Q(    <meta refines="##{role.sub('a-', '')}-#{i}" property="#{name}">#{h(val)}</meta>\n)
-            end
+            {
+              id: "#{role}-#{i}",
+              val: v['name'],
+              refines: [
+                { id: "#{role}-#{i}", property: 'role', scheme: 'marc:relators', val: role.sub('a-', '') }
+              ].concat(refines)
+            }
           else
-            s << %Q(    <dc:creator id="#{role}-#{i}">#{h(v)}</dc:creator>\n)
-            s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role.sub('a-', '')}</meta>\n)
+            {
+              id: "#{role}-#{i}",
+              val: v,
+              refines: [
+                { id: "#{role}-#{i}", property: 'role', scheme: 'marc:relators', val: role.sub('a-', '') }
+              ]
+            }
           end
         end
-      end
+      end.flatten.compact
 
       # contributor (should be array)
-      %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pbd pbl pht prt red rev spn ths trc trl].each do |role|
-        next unless @producer.config[role]
+      @contributers = CONTRIBUTER_ATTRIBUTES.map do |role|
+        next unless config[role]
 
-        @producer.config[role].each_with_index do |v, i|
-          if v.is_a?(Hash)
-            s << %Q(    <dc:contributor id="#{role}-#{i}">#{h(v['name'])}</dc:contributor>\n)
-            s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
-            v.each_pair do |name, val|
-              next if name == 'name'
-
-              s << %Q(    <meta refines="##{role}-#{i}" property="#{name}">#{h(val)}</meta>\n)
-            end
+        config[role].map.with_index do |v, i|
+          case v
+          when Hash
+            refines = v.map { |name, val| { id: "#{role}-#{i}", property: name, scheme: nil, val: val } }.delete_if { |h| h[:property] == 'name' }
+            contributer = {
+              id: "#{role}-#{i}",
+              val: v['name'],
+              refines: [
+                { id: "#{role}-#{i}", property: 'role', scheme: 'marc:relators', val: role }
+              ].concat(refines)
+            }
           else
-            s << %Q(    <dc:contributor id="#{role}-#{i}">#{h(v)}</dc:contributor>\n)
-            s << %Q(    <meta refines="##{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
+            contributer = {
+              id: "#{role}-#{i}",
+              val: v,
+              refines: [
+                { id: "#{role}-#{i}", property: 'role', scheme: 'marc:relators', val: role }
+              ]
+            }
           end
-
           if %w[prt pbl].include?(role)
-            if v.is_a?(Hash)
-              s << %Q(    <dc:publisher id="pub-#{role}-#{i}">#{h(v['name'])}</dc:publisher>\n)
-              s << %Q(    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">#{role}</meta>\n)
-              v.each_pair do |name, val|
-                next if name == 'name'
-
-                s << %Q(    <meta refines="#pub-#{role}-#{i}" property="#{name}">#{h(val)}</meta>\n)
-              end
+            contributer[:pub_id] = "pub-#{role}-#{i}"
+            case v
+            when Hash
+              contributer[:pub_val] = v['name']
+              pub_refines = v.map { |name, val| { id: "pub-#{role}-#{i}", property: name, scheme: nil, val: val } }.delete_if { |h| h[:property] == 'name' }
+              contributer[:pub_refines] = [
+                { id: "pub-#{role}-#{i}", property: 'role', scheme: 'marc:relators', val: role }
+              ].concat(pub_refines)
             else
-              s << %Q(    <dc:publisher id="pub-#{role}-#{i}">#{h(v)}</dc:publisher>\n)
-              s << %Q(    <meta refines="#pub-#{role}-#{i}" property="role" scheme="marc:relators">prt</meta>\n)
+              contributer[:pub_val] = v
+              contributer[:pub_refines] = [
+                { id: "pub-#{role}-#{i}", property: 'role', scheme: 'marc:relators', val: 'prt' }
+              ]
             end
           end
-        end
-      end
 
-      ## add custom <meta> element
-      if @producer.config['opf_meta'].present?
-        @producer.config['opf_meta'].each do |k, v|
-          s << %Q(    <meta property="#{k}">#{h(v)}</meta>\n)
+          contributer
         end
-      end
+      end.flatten.compact
 
-      s
+      tmplfile = File.expand_path('./opf/opf_metainfo_epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      ReVIEW::Template.load(tmplfile).result(binding)
     end
-    # rubocop:enable Metrics/PerceivedComplexity
 
     def opf_manifest
-      s = ''
-      s << <<EOT
-  <manifest>
-    <item properties="nav" id="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}" href="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}" media-type="application/xhtml+xml"/>
-    <item id="#{@producer.config['bookname']}" href="#{@producer.config['cover']}" media-type="application/xhtml+xml"/>
-EOT
-
-      if @producer.config['coverimage']
-        @producer.contents.each do |item|
-          next if !item.media.start_with?('image') || File.basename(item.file) != @producer.config['coverimage']
-
-          s << %Q(    <item properties="cover-image" id="cover-#{item.id}" href="#{item.file}" media-type="#{item.media}"/>\n)
-          item.id = nil
-          break
-        end
+      if config['coverimage']
+        @coverimage = contents.find { |content| content.coverimage?(config['coverimage']) } # @coverimage can be nil
       end
+      @items = if @coverimage
+                 contents.find_all { |content| content.file !~ /#/ && content.id != @coverimage.id } # skip subgroup, or @coverimage
+               else
+                 contents.find_all { |content| content.file !~ /#/ }
+               end
 
-      @producer.contents.each do |item|
-        next if item.file =~ /#/ || item.id.nil? # skip subgroup, or id=nil (for cover)
-
-        propstr = ''
-        if item.properties.size > 0
-          propstr = %Q( properties="#{item.properties.sort.uniq.join(' ')}")
-        end
-        s << %Q(    <item id="#{item.id}" href="#{item.file}" media-type="#{item.media}"#{propstr}/>\n)
-      end
-      s << %Q(  </manifest>\n)
-
-      s
+      tmplfile = File.expand_path('./opf/opf_manifest_epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      ReVIEW::Template.load(tmplfile).result(binding)
     end
 
     def opf_tocx
-      if @producer.config['epubmaker']['cover_linear'] && @producer.config['epubmaker']['cover_linear'] != 'no'
-        cover_linear = 'yes'
-      else
-        cover_linear = 'no'
-      end
-
-      s = ''
-      if @producer.config['direction']
-        s << %Q(  <spine page-progression-direction="#{@producer.config['direction']}">\n)
-      else
-        s << %Q(  <spine>\n)
-      end
-      s << %Q(    <itemref idref="#{@producer.config['bookname']}" linear="#{cover_linear}"/>\n)
-
+      @cover_linear = if config['epubmaker']['cover_linear'] && config['epubmaker']['cover_linear'] != 'no'
+                        'yes'
+                      else
+                        'no'
+                      end
+      @tocx_contents = []
       toc = nil
-      @producer.contents.each do |item|
+      contents.each do |item|
         next if item.media !~ /xhtml\+xml/ # skip non XHTML
 
-        if toc.nil? && item.chaptype != 'pre'
-          if @producer.config['toc']
-            s << %Q(    <itemref idref="#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}" />\n)
-          end
-          toc = true
-        end
-        s << %Q(    <itemref idref="#{item.id}"/>\n)
+        @tocx_contents << item
       end
-      s << %Q(  </spine>\n)
 
-      s
+      tmplfile = File.expand_path('./opf/opf_tocx_epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
+      ReVIEW::Template.load(tmplfile).result(binding)
     end
 
     def ncx(indentarray)
-      ncx_main = if @producer.config['epubmaker']['flattoc'].nil?
+      ncx_main = if config['epubmaker']['flattoc'].nil?
                    hierarchy_ncx('ol')
                  else
-                   flat_ncx('ol', @producer.config['epubmaker']['flattocindent'])
+                   flat_ncx('ol', config['epubmaker']['flattocindent'])
                  end
 
-      @body = <<EOT
+      @body = <<-EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
-  <h1 class="toc-title">#{h(@producer.res.v('toctitle'))}</h1>
+  <h1 class="toc-title">#{h(ReVIEW::I18n.t('toctitle'))}</h1>
 #{ncx_main}  </nav>
-EOT
+      EOT
 
-      @title = h(@producer.res.v('toctitle'))
-      @language = @producer.config['language']
-      @stylesheets = @producer.config['stylesheet']
+      @title = h(ReVIEW::I18n.t('toctitle'))
+      @language = config['language']
+      @stylesheets = config['stylesheet']
       tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
       ReVIEW::Template.load(tmplfile).result(binding)
     end
@@ -236,10 +208,11 @@ EOT
     def produce(epubfile, basedir, tmpdir)
       produce_write_common(basedir, tmpdir)
 
-      File.open("#{tmpdir}/OEBPS/#{@producer.config['bookname']}-toc.#{@producer.config['htmlext']}", 'w') { |f| @producer.ncx(f, @producer.config['epubmaker']['ncxindent']) }
+      toc_file = "#{tmpdir}/OEBPS/#{config['bookname']}-toc.#{config['htmlext']}"
+      File.write(toc_file, ncx(config['epubmaker']['ncxindent']))
 
-      @producer.call_hook(@producer.config['epubmaker']['hook_prepack'], tmpdir)
-      expoter = EPUBMaker::ZipExporter.new(tmpdir, @producer.config)
+      call_hook(config['epubmaker']['hook_prepack'], tmpdir)
+      expoter = EPUBMaker::ZipExporter.new(tmpdir, config)
       expoter.export_zip(epubfile)
     end
   end
