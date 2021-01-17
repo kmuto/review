@@ -16,7 +16,7 @@ jobs:
     - name: Install TeXLive 2020 in ubuntu
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update -y -qq && sudo apt-get install -y -qq texlive-lang-japanese texlive-fonts-recommended texlive-fonts-extra texlive-luatex texlive-extra-utils texlive-latex-extra
+        sudo apt-get update -y -qq && sudo apt-get install -y -qq texlive-lang-japanese texlive-fonts-recommended texlive-fonts-extra texlive-luatex texlive-extra-utils texlive-latex-extra dvipng poppler-utils
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
