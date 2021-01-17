@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [2.4, 2.7, 3.0]
+        ruby: [2.5, 3.0]
         os: [ubuntu-20.04]
     steps:
     - uses: actions/checkout@v2
