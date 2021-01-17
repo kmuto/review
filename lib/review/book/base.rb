@@ -402,7 +402,7 @@ module ReVIEW
         end
         res
       rescue Errno::ENOENT
-        Dir.glob("#{@basedir}/*#{ext}").join("\n")
+        Dir.glob("#{@basedir}/*#{ext}").sort.join("\n")
       rescue Errno::EISDIR
         ''
       end
