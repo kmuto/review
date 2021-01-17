@@ -163,7 +163,7 @@ module ReVIEW
     def parse_ymls(dir)
       language = 'en'
 
-      Dir.glob(File.join(dir, '*.yml')).sort.each do |yml|
+      Dir.glob(File.join(dir, '*.yml')).each do |yml|
         begin
           config = YAML.load_file(yml)
           if config['language'].present?
