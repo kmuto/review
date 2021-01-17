@@ -40,8 +40,7 @@ module EPUBMaker
         @package_attrs << %Q( prefix="#{prefixes_str}")
       end
 
-      tmplfile = File.expand_path('./opf/epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './opf/epubv3.opf.erb', binding: binding)
     end
 
     def opf_metainfo
@@ -146,8 +145,7 @@ module EPUBMaker
         end
       end.flatten.compact
 
-      tmplfile = File.expand_path('./opf/opf_metainfo_epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './opf/opf_metainfo_epubv3.opf.erb', binding: binding)
     end
 
     def opf_manifest
@@ -160,8 +158,7 @@ module EPUBMaker
                  contents.find_all { |content| content.file !~ /#/ }
                end
 
-      tmplfile = File.expand_path('./opf/opf_manifest_epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './opf/opf_manifest_epubv3.opf.erb', binding: binding)
     end
 
     def opf_tocx
@@ -178,8 +175,7 @@ module EPUBMaker
         @tocx_contents << item
       end
 
-      tmplfile = File.expand_path('./opf/opf_tocx_epubv3.opf.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './opf/opf_tocx_epubv3.opf.erb', binding: binding)
     end
 
     def ncx(indentarray)
@@ -198,8 +194,7 @@ module EPUBMaker
       @title = h(ReVIEW::I18n.t('toctitle'))
       @language = config['language']
       @stylesheets = config['stylesheet']
-      tmplfile = File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './html/layout-html5.html.erb', binding: binding)
     end
 
     # Produce EPUB file +epubfile+.

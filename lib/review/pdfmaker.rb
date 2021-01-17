@@ -450,34 +450,30 @@ module ReVIEW
       @locale_latex['postappendixname'] = appendix_tuple[1].to_s
     end
 
-    def erb_content(file)
-      @texcompiler = File.basename(@config['texcommand'], '.*')
-      erb = ReVIEW::Template.load(file, '-')
-      @logger.debug("erb processes #{File.basename(file)}") if @config['debug']
-      erb.result(binding)
-    end
-
     def latex_config
-      result = erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+      result = ReVIEW::Template.generate(path: './latex/config.erb', mode: '-', binding: binding)
       local_config_file = File.join(@basedir, 'layouts', 'config-local.tex.erb')
       if File.exist?(local_config_file)
         result << "%% BEGIN: config-local.tex.erb\n"
-        result << erb_content(local_config_file)
+        result << ReVIEW::Template.generate(path: 'layouts/config-local.tex.erb', mode: '-', binding: binding, template_dir: @basedir)
         result << "%% END: config-local.tex.erb\n"
       end
       result
     end
 
     def template_content
-      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      template_dir = ReVIEW::Template::TEMPLATE_DIR
       if @config.check_version('2', exception: false)
-        template = File.expand_path('./latex-compat2/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+        template_path = './latex-compat2/layout.tex.erb'
+      else
+        template_path = './latex/layout.tex.erb'
       end
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       if File.exist?(layout_file)
-        template = layout_file
+        template_dir = @basedir
+        template_path = 'layouts/layout.tex.erb'
       end
-      erb_content(template)
+      ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')

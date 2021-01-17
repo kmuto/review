@@ -336,9 +336,7 @@ module ReVIEW
 
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        tmpl = ReVIEW::Template.load(tmplfile)
-        f.write tmpl.result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
@@ -571,9 +569,7 @@ module ReVIEW
 
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        tmpl = ReVIEW::Template.load(tmplfile)
-        f.write tmpl.result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 

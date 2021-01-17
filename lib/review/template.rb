@@ -10,6 +10,11 @@ module ReVIEW
       self.new(filename, mode)
     end
 
+    def self.generate(path:, binding:, mode: 1, template_dir: ReVIEW::Template::TEMPLATE_DIR)
+      template_file = File.expand_path(path, template_dir)
+      self.new(template_file, mode).result(binding)
+    end
+
     def initialize(filename = nil, mode = nil)
       return unless filename
 

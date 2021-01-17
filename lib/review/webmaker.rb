@@ -155,8 +155,7 @@ module ReVIEW
 
         @language = @config['language']
         @stylesheets = @config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
@@ -269,8 +268,7 @@ module ReVIEW
         @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
         @next = @book.chapters[0]
         @next_title = @next ? @next.title : ''
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
@@ -290,8 +288,7 @@ module ReVIEW
 
         @language = @config['language']
         @stylesheets = @config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 

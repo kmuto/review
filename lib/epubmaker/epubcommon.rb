@@ -84,9 +84,7 @@ module EPUBMaker
     # Return container content.
     def container
       @opf_path = opf_path
-      tmplfile = File.expand_path('./xml/container.xml.erb', ReVIEW::Template::TEMPLATE_DIR)
-      tmpl = ReVIEW::Template.load(tmplfile)
-      tmpl.result(binding)
+      ReVIEW::Template.generate(path: './xml/container.xml.erb', binding: binding)
     end
 
     def coverimage
@@ -109,19 +107,17 @@ module EPUBMaker
         @coverimage_src = coverimage
         raise "coverimage #{config['coverimage']} not found. Abort." unless @coverimage_src
       end
-      tmplfile0 = File.expand_path('./html/_cover.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      @body = ReVIEW::Template.load(tmplfile0).result(binding)
+      @body = ReVIEW::Template.generate(path: './html/_cover.html.erb', binding: binding)
 
       @title = h(config.name_of('title'))
       @language = config['language']
       @stylesheets = config['stylesheet']
-      tmplfile = if config['htmlversion'].to_i == 5
-                   File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 else
-                   File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 end
-      tmpl = ReVIEW::Template.load(tmplfile)
-      tmpl.result(binding)
+      template_path = if config['htmlversion'].to_i == 5
+                        './html/layout-html5.html.erb'
+                      else
+                        './html/layout-xhtml1.html.erb'
+                      end
+      ReVIEW::Template.generate(path: template_path, binding: binding)
     end
 
     # Return title (copying) content.
@@ -140,18 +136,16 @@ module EPUBMaker
       if config.names_of('pbl')
         @publisher_str = join_with_separator(config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))
       end
-      tmplfile0 = File.expand_path('./html/_titlepage.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      @body = ReVIEW::Template.load(tmplfile0).result(binding)
+      @body = ReVIEW::Template.generate(path: './html/_titlepage.html.erb', binding: binding)
 
       @language = config['language']
       @stylesheets = config['stylesheet']
-      tmplfile = if config['htmlversion'].to_i == 5
-                   File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 else
-                   File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 end
-      tmpl = ReVIEW::Template.load(tmplfile)
-      tmpl.result(binding)
+      template_path = if config['htmlversion'].to_i == 5
+                        './html/layout-html5.html.erb'
+                      else
+                        './html/layout-xhtml1.html.erb'
+                      end
+      ReVIEW::Template.generate(path: template_path, binding: binding)
     end
 
     # Return colophon content.
@@ -159,18 +153,16 @@ module EPUBMaker
       @title = h(ReVIEW::I18n.t('colophontitle'))
       @isbn_hyphen = isbn_hyphen
 
-      tmplfile0 = File.expand_path('./html/_colophon.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      @body = ReVIEW::Template.load(tmplfile0).result(binding)
+      @body = ReVIEW::Template.generate(path: './html/_colophon.html.erb', binding: binding)
 
       @language = config['language']
       @stylesheets = config['stylesheet']
-      tmplfile = if config['htmlversion'].to_i == 5
-                   File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 else
-                   File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 end
-      tmpl = ReVIEW::Template.load(tmplfile)
-      tmpl.result(binding)
+      template_path = if config['htmlversion'].to_i == 5
+                        './html/layout-html5.html.erb'
+                      else
+                        './html/layout-xhtml1.html.erb'
+                      end
+      ReVIEW::Template.generate(path: template_path, binding: binding)
     end
 
     def isbn_hyphen
@@ -205,8 +197,7 @@ module EPUBMaker
         end
       end
 
-      tmplfile = File.expand_path('./html/_colophon_history.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-      ReVIEW::Template.load(tmplfile).result(binding)
+      ReVIEW::Template.generate(path: './html/_colophon_history.html.erb', binding: binding)
     end
 
     def date_to_s(date)
@@ -228,13 +219,12 @@ module EPUBMaker
 
       @language = config['language']
       @stylesheets = config['stylesheet']
-      tmplfile = if config['htmlversion'].to_i == 5
-                   File.expand_path('./html/layout-html5.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 else
-                   File.expand_path('./html/layout-xhtml1.html.erb', ReVIEW::Template::TEMPLATE_DIR)
-                 end
-      tmpl = ReVIEW::Template.load(tmplfile)
-      tmpl.result(binding)
+      template_path = if config['htmlversion'].to_i == 5
+                        './html/layout-html5.html.erb'
+                      else
+                        './html/layout-xhtml1.html.erb'
+                      end
+      ReVIEW::Template.generate(path: template_path, binding: binding)
     end
 
     def hierarchy_ncx(type)
