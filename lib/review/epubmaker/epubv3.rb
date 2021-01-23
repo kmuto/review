@@ -10,11 +10,14 @@
 
 require 'review/epubmaker/epubcommon'
 require 'review/epubmaker/zip_exporter'
+require 'review/call_hook'
 
 module ReVIEW
   class EPUBMaker
     # EPUBv3 is EPUB version 3 producer.
     class EPUBv3 < EPUBCommon
+      include ReVIEW::CallHook
+
       DC_ITEMS = %w[title language date type format source description relation coverage subject rights]
       CREATOR_ATTRIBUTES = %w[a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-csl a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl aut]
       CONTRIBUTER_ATTRIBUTES = %w[adp ann arr art asn aqt aft aui ant bkp clb cmm csl dsr edt ill lyr mdc mus nrt oth pbd pbl pht prt red rev spn ths trc trl]
@@ -199,15 +202,15 @@ module ReVIEW
       end
 
       # Produce EPUB file +epubfile+.
-      # +basedir+ points the directory has contents.
+      # +work_dir+ points the directory has contents.
       # +tmpdir+ defines temporary directory.
-      def produce(epubfile, basedir, tmpdir)
-        produce_write_common(basedir, tmpdir)
+      def produce(epubfile, work_dir, tmpdir, base_dir:)
+        produce_write_common(work_dir, tmpdir)
 
         toc_file = "#{tmpdir}/OEBPS/#{config['bookname']}-toc.#{config['htmlext']}"
         File.write(toc_file, ncx(config['epubmaker']['ncxindent']))
 
-        call_hook(config['epubmaker']['hook_prepack'], tmpdir)
+        call_hook('hook_prepack', tmpdir, base_dir: base_dir)
         expoter = ReVIEW::EPUBMaker::ZipExporter.new(tmpdir, config)
         expoter.export_zip(epubfile)
       end
