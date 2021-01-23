@@ -48,7 +48,19 @@ module ReVIEW
       end
 
       def opf_metainfo
-        @dc_items = DC_ITEMS.map do |item|
+        @dc_items = opf_dc_items
+
+        # creator (should be array)
+        @creators = opf_creators
+
+        # contributor (should be array)
+        @contributers = opf_contributers
+
+        ReVIEW::Template.generate(path: './opf/opf_metainfo_epubv3.opf.erb', binding: binding)
+      end
+
+      def opf_dc_items
+        DC_ITEMS.map do |item|
           next unless config[item]
 
           case config[item]
@@ -75,9 +87,10 @@ module ReVIEW
               refines: [] }
           end
         end.flatten.compact
+      end
 
-        # creator (should be array)
-        @creators = CREATOR_ATTRIBUTES.map do |role|
+      def opf_creators
+        CREATOR_ATTRIBUTES.map do |role|
           next unless config[role]
 
           config[role].map.with_index do |v, i|
@@ -103,9 +116,10 @@ module ReVIEW
             end
           end
         end.flatten.compact
+      end
 
-        # contributor (should be array)
-        @contributers = CONTRIBUTER_ATTRIBUTES.map do |role|
+      def opf_contributers
+        CONTRIBUTER_ATTRIBUTES.map do |role|
           next unless config[role]
 
           config[role].map.with_index do |v, i|
@@ -148,8 +162,6 @@ module ReVIEW
             contributer
           end
         end.flatten.compact
-
-        ReVIEW::Template.generate(path: './opf/opf_metainfo_epubv3.opf.erb', binding: binding)
       end
 
       def opf_manifest
