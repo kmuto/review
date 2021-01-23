@@ -9,7 +9,7 @@
 #
 
 module ReVIEW
-  module EPUBMaker
+  class EPUBMaker
     # EPUBMaker::Content represents a content data for EPUBMaker.
     # EPUBMaker#contents takes an array of Content.
     class Content

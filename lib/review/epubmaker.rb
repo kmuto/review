@@ -20,18 +20,16 @@ require 'review/img_math'
 
 require 'rexml/document'
 require 'rexml/streamlistener'
-require 'epubmaker'
-require 'review/epubmaker/reviewheaderlistener'
-require 'review/makerhelper'
 require 'review/call_hook'
 require 'review/epubmaker/producer'
 require 'review/epubmaker/content'
 require 'review/epubmaker/epubv2'
 require 'review/epubmaker/epubv3'
+require 'review/epubmaker/reviewheaderlistener'
+require 'review/makerhelper'
 
 module ReVIEW
   class EPUBMaker
-    include ::EPUBMaker
     include MakerHelper
     include ReVIEW::CallHook
 
@@ -91,7 +89,7 @@ module ReVIEW
       @config = ReVIEW::Configure.create(maker: 'epubmaker',
                                          yamlfile: yamlfile,
                                          config: cmd_config)
-      @producer = Producer.new(@config)
+      @producer = ReVIEW::EPUBMaker::Producer.new(@config)
       update_log_level
       log("Loaded yaml file (#{yamlfile}).")
       @basedir = File.absolute_path(File.dirname(yamlfile))
@@ -432,7 +430,7 @@ module ReVIEW
       headlines = []
       path = File.join(basetmpdir, filename)
       htmlio = File.new(path)
-      Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
+      REXML::Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
       htmlio.close
 
       if headlines.empty?
@@ -488,7 +486,7 @@ module ReVIEW
         if args[:notoc].present?
           params[:notoc] = args[:notoc]
         end
-        @producer.contents.push(Content.new(**params))
+        @producer.contents.push(ReVIEW::EPUBMaker::Content.new(**params))
       end
     end
 
@@ -500,7 +498,7 @@ module ReVIEW
           error "#{sfile} is not found."
         end
         FileUtils.cp(sfile, basetmpdir)
-        @producer.contents.push(Content.new(file: sfile))
+        @producer.contents.push(ReVIEW::EPUBMaker::Content.new(file: sfile))
       end
     end
 

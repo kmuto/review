@@ -13,7 +13,7 @@ require 'review/epubmaker/zip_exporter'
 require 'review/call_hook'
 
 module ReVIEW
-  module EPUBMaker
+  class EPUBMaker
     # EPUBv3 is EPUB version 3 producer.
     class EPUBv3 < EPUBCommon
       include ReVIEW::CallHook
@@ -211,7 +211,7 @@ module ReVIEW
         File.write(toc_file, ncx(config['epubmaker']['ncxindent']))
 
         call_hook('hook_prepack', tmpdir, base_dir: base_dir)
-        expoter = EPUBMaker::ZipExporter.new(tmpdir, config)
+        expoter = ReVIEW::EPUBMaker::ZipExporter.new(tmpdir, config)
         expoter.export_zip(epubfile)
       end
     end

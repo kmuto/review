@@ -17,7 +17,7 @@ rescue LoadError
 end
 
 module ReVIEW
-  module EPUBMaker
+  class EPUBMaker
     # EPUBCommon is the common class for EPUB producer.
     # Some methods of this class are overridden by subclasses
     class EPUBCommon

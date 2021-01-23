@@ -15,7 +15,7 @@ rescue LoadError
 end
 
 module ReVIEW
-  module EPUBMaker
+  class EPUBMaker
     ##
     # Export into zip file for EPUB producer.
     #
