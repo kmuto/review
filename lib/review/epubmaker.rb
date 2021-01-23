@@ -23,12 +23,14 @@ require 'rexml/streamlistener'
 require 'epubmaker'
 require 'review/epubmaker/reviewheaderlistener'
 require 'review/makerhelper'
+require 'review/call_hook'
 
 module ReVIEW
   class EPUBMaker
     include ::EPUBMaker
     include REXML
     include MakerHelper
+    include ReVIEW::CallHook
 
     def initialize
       @producer = nil
@@ -36,6 +38,7 @@ module ReVIEW
       @buildlogtxt = 'build-log.txt'
       @logger = ReVIEW.logger
       @img_math = nil
+      @basedir = nil
     end
 
     def error(msg)
@@ -88,6 +91,7 @@ module ReVIEW
       @producer = Producer.new(@config)
       update_log_level
       log("Loaded yaml file (#{yamlfile}).")
+      @basedir = File.absolute_path(File.dirname(yamlfile))
 
       produce(yamlfile, exportfile)
     end
@@ -137,24 +141,24 @@ module ReVIEW
       begin
         log("Created first temporary directory as #{basetmpdir}.")
 
-        call_hook('hook_beforeprocess', basetmpdir)
+        call_hook('hook_beforeprocess', basetmpdir, base_dir: @basedir)
 
         @htmltoc = ReVIEW::HTMLToc.new(basetmpdir)
         ## copy all files into basetmpdir
         copy_stylesheet(basetmpdir)
 
         copy_frontmatter(basetmpdir)
-        call_hook('hook_afterfrontmatter', basetmpdir)
+        call_hook('hook_afterfrontmatter', basetmpdir, base_dir: @basedir)
 
         build_body(basetmpdir, yamlfile)
-        call_hook('hook_afterbody', basetmpdir)
+        call_hook('hook_afterbody', basetmpdir, base_dir: @basedir)
 
         copy_backmatter(basetmpdir)
 
         if @config['math_format'] == 'imgmath'
           @img_math.make_math_images
         end
-        call_hook('hook_afterbackmatter', basetmpdir)
+        call_hook('hook_afterbackmatter', basetmpdir, base_dir: @basedir)
 
         ## push contents in basetmpdir into @producer
         push_contents(basetmpdir)
@@ -170,7 +174,7 @@ module ReVIEW
         copy_resources('adv', File.join(basetmpdir, @config['imagedir']))
         copy_resources(@config['fontdir'], File.join(basetmpdir, 'fonts'), @config['font_ext'])
 
-        call_hook('hook_aftercopyimage', basetmpdir)
+        call_hook('hook_aftercopyimage', basetmpdir, base_dir: @basedir)
 
         @producer.import_imageinfo(File.join(basetmpdir, @config['imagedir']), basetmpdir)
         @producer.import_imageinfo(File.join(basetmpdir, 'fonts'), basetmpdir, @config['font_ext'])
@@ -183,7 +187,7 @@ module ReVIEW
           Dir.mkdir(epubtmpdir)
         end
         log('Call ePUB producer.')
-        @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
+        @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir, base_dir: @basedir)
         log('Finished.')
       rescue ApplicationError => e
         raise if @config['debug']
@@ -191,18 +195,6 @@ module ReVIEW
         error(e.message)
       ensure
         FileUtils.remove_entry_secure(basetmpdir) unless @config['debug']
-      end
-    end
-
-    def call_hook(hook_name, *params)
-      filename = @config['epubmaker'][hook_name]
-      log("Call #{hook_name}. (#{filename})")
-      if filename.present? && File.exist?(filename) && FileTest.executable?(filename)
-        if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
-          warn 'hook is prohibited in safe mode. ignored.'
-        else
-          system(filename, *params)
-        end
       end
     end
 

@@ -97,11 +97,12 @@ module EPUBMaker
     alias_method :importImageInfo, :import_imageinfo
 
     # Produce EPUB file +epubfile+.
-    # +basedir+ points the directory has contents (default: current directory.)
+    # +work_dir+ points the directory has contents (default: current directory.)
     # +tmpdir+ defines temporary directory.
-    def produce(epubfile, basedir = nil, tmpdir = nil)
+    # +base_dir+ is original root dir.
+    def produce(epubfile, work_dir, tmpdir = nil, base_dir: nil)
       current = Dir.pwd
-      basedir ||= current
+      base_dir ||= current
 
       # use Dir to solve a path for Windows (see #1011)
       new_tmpdir = Dir[File.join(tmpdir.nil? ? Dir.mktmpdir : tmpdir)][0]
@@ -113,7 +114,7 @@ module EPUBMaker
       File.unlink(epubfile) if File.exist?(epubfile)
 
       begin
-        @epub.produce(epubfile, basedir, new_tmpdir)
+        @epub.produce(epubfile, work_dir, new_tmpdir, base_dir: base_dir)
       ensure
         FileUtils.rm_r(new_tmpdir) if tmpdir.nil?
       end

@@ -25,6 +25,7 @@ module EPUBMaker
       @config = producer.config
       @contents = producer.contents
       @body_ext = nil
+      @logger = ReVIEW.logger
     end
 
     attr_reader :config
