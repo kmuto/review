@@ -24,11 +24,14 @@ require 'epubmaker'
 require 'review/epubmaker/reviewheaderlistener'
 require 'review/makerhelper'
 require 'review/call_hook'
+require 'review/epubmaker/producer'
+require 'review/epubmaker/content'
+require 'review/epubmaker/epubv2'
+require 'review/epubmaker/epubv3'
 
 module ReVIEW
   class EPUBMaker
     include ::EPUBMaker
-    include REXML
     include MakerHelper
     include ReVIEW::CallHook
 
@@ -203,7 +206,7 @@ module ReVIEW
         case content.media
         when 'application/xhtml+xml'
           File.open("#{basetmpdir}/#{content.file}") do |f|
-            Document.new(File.new(f)).each_element('//img') do |e|
+            REXML::Document.new(File.new(f)).each_element('//img') do |e|
               @config['epubmaker']['force_include_images'].push(e.attributes['src'])
               if e.attributes['src'] =~ /svg\Z/i
                 content.properties.push('svg')
