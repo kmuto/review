@@ -1,10 +1,7 @@
 require 'test_helper'
-require 'epubmaker'
 require 'review/epubmaker'
 
 class EPUBMakerTest < Test::Unit::TestCase
-  include EPUBMaker
-
   def setup
     config = ReVIEW::Configure.values
     config.merge!(
@@ -16,11 +13,11 @@ class EPUBMakerTest < Test::Unit::TestCase
       'language' => 'en',
       'titlepage' => nil
     )
-    @producer = Producer.new(config)
+    @producer = ReVIEW::EPUBMaker::Producer.new(config)
   end
 
   def test_initialize
-    assert Producer.new(ReVIEW::Configure.values)
+    assert ReVIEW::EPUBMaker::Producer.new(ReVIEW::Configure.values)
   end
 
   def test_resource_en
@@ -171,16 +168,16 @@ EOT
 
   def stage2
     # add one item
-    @producer.contents << Content.new(file: 'ch01.html', title: 'CH01', level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch01.html', title: 'CH01', level: 1)
   end
 
   def test_stage2_add_l1item
     stage2
-    expect = EPUBMaker::Content.new(file: 'ch01.html',
-                                    id: 'ch01-html',
-                                    media: 'application/xhtml+xml',
-                                    title: 'CH01',
-                                    level: 1)
+    expect = ReVIEW::EPUBMaker::Content.new(file: 'ch01.html',
+                                            id: 'ch01-html',
+                                            media: 'application/xhtml+xml',
+                                            title: 'CH01',
+                                            level: 1)
     assert_equal expect, @producer.contents[0]
   end
 
@@ -252,49 +249,49 @@ EOT
 
   def stage3
     # add more items
-    @producer.contents << Content.new(file: 'ch01.html', title: %Q(CH01<>&"), level: 1)
-    @producer.contents << Content.new(file: 'ch02.html', title: 'CH02', level: 1)
-    @producer.contents << Content.new(file: 'ch02.html#S1', title: 'CH02.1', level: 2)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1', title: 'CH02.1.1', level: 3)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1.1', title: 'CH02.1.1.1', level: 4)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1.1.1', title: 'CH02.1.1.1.1', level: 5)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1.2', title: 'CH02.1.1.2', level: 4)
-    @producer.contents << Content.new(file: 'ch02.html#S2', title: 'CH02.2', level: 2)
-    @producer.contents << Content.new(file: 'ch02.html#S2.1', title: 'CH02.2.1', level: 3)
-    @producer.contents << Content.new(file: 'ch03.html', title: 'CH03', level: 1)
-    @producer.contents << Content.new(file: 'ch03.html#S1', title: 'CH03.1', level: 2)
-    @producer.contents << Content.new(file: 'ch03.html#S1.1', title: 'CH03.1.1', level: 3)
-    @producer.contents << Content.new(file: 'ch04.html', title: 'CH04', level: 1)
-    @producer.contents << Content.new(file: 'sample.png')
-    @producer.contents << Content.new(file: 'sample.jpg')
-    @producer.contents << Content.new(file: 'sample.JPEG')
-    @producer.contents << Content.new(file: 'sample.SvG')
-    @producer.contents << Content.new(file: 'sample.GIF')
-    @producer.contents << Content.new(file: 'sample.css')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch01.html', title: %Q(CH01<>&"), level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html', title: 'CH02', level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1', title: 'CH02.1', level: 2)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1', title: 'CH02.1.1', level: 3)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1', title: 'CH02.1.1.1', level: 4)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1.1', title: 'CH02.1.1.1.1', level: 5)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.2', title: 'CH02.1.1.2', level: 4)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2', title: 'CH02.2', level: 2)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2.1', title: 'CH02.2.1', level: 3)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch03.html', title: 'CH03', level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1', title: 'CH03.1', level: 2)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1.1', title: 'CH03.1.1', level: 3)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch04.html', title: 'CH04', level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.png')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.jpg')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.JPEG')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.SvG')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.GIF')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.css')
   end
 
   def test_stage3_add_various_items
     stage3
     expect = [
-      Content.new(file: 'ch01.html', id: 'ch01-html', media: 'application/xhtml+xml', title: %Q(CH01<>&"), level: 1),
-      Content.new(file: 'ch02.html', id: 'ch02-html', media: 'application/xhtml+xml', title: 'CH02', level: 1),
-      Content.new(file: 'ch02.html#S1', id: 'ch02-html#S1', media: 'html#s1', title: 'CH02.1', level: 2),
-      Content.new(file: 'ch02.html#S1.1', id: 'ch02-html#S1-1', media: '1', title: 'CH02.1.1', level: 3),
-      Content.new(file: 'ch02.html#S1.1.1', id: 'ch02-html#S1-1-1', media: '1', title: 'CH02.1.1.1', level: 4),
-      Content.new(file: 'ch02.html#S1.1.1.1', id: 'ch02-html#S1-1-1-1', media: '1', title: 'CH02.1.1.1.1', level: 5),
-      Content.new(file: 'ch02.html#S1.1.2', id: 'ch02-html#S1-1-2', media: '2', title: 'CH02.1.1.2', level: 4),
-      Content.new(file: 'ch02.html#S2', id: 'ch02-html#S2', media: 'html#s2', title: 'CH02.2', level: 2),
-      Content.new(file: 'ch02.html#S2.1', id: 'ch02-html#S2-1', media: '1', title: 'CH02.2.1', level: 3),
-      Content.new(file: 'ch03.html', id: 'ch03-html', media: 'application/xhtml+xml', title: 'CH03', level: 1),
-      Content.new(file: 'ch03.html#S1', id: 'ch03-html#S1', media: 'html#s1', title: 'CH03.1', level: 2),
-      Content.new(file: 'ch03.html#S1.1', id: 'ch03-html#S1-1', media: '1', title: 'CH03.1.1', level: 3),
-      Content.new(file: 'ch04.html', id: 'ch04-html', media: 'application/xhtml+xml', title: 'CH04', level: 1),
-      Content.new(file: 'sample.png', id: 'sample-png', media: 'image/png'),
-      Content.new(file: 'sample.jpg', id: 'sample-jpg', media: 'image/jpeg'),
-      Content.new(file: 'sample.JPEG', id: 'sample-JPEG', media: 'image/jpeg'),
-      Content.new(file: 'sample.SvG', id: 'sample-SvG', media: 'image/svg+xml'),
-      Content.new(file: 'sample.GIF', id: 'sample-GIF', media: 'image/gif'),
-      Content.new(file: 'sample.css', id: 'sample-css', media: 'text/css')
+      ReVIEW::EPUBMaker::Content.new(file: 'ch01.html', id: 'ch01-html', media: 'application/xhtml+xml', title: %Q(CH01<>&"), level: 1),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html', id: 'ch02-html', media: 'application/xhtml+xml', title: 'CH02', level: 1),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1', id: 'ch02-html#S1', media: 'html#s1', title: 'CH02.1', level: 2),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1', id: 'ch02-html#S1-1', media: '1', title: 'CH02.1.1', level: 3),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1', id: 'ch02-html#S1-1-1', media: '1', title: 'CH02.1.1.1', level: 4),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1.1', id: 'ch02-html#S1-1-1-1', media: '1', title: 'CH02.1.1.1.1', level: 5),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.2', id: 'ch02-html#S1-1-2', media: '2', title: 'CH02.1.1.2', level: 4),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2', id: 'ch02-html#S2', media: 'html#s2', title: 'CH02.2', level: 2),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2.1', id: 'ch02-html#S2-1', media: '1', title: 'CH02.2.1', level: 3),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch03.html', id: 'ch03-html', media: 'application/xhtml+xml', title: 'CH03', level: 1),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1', id: 'ch03-html#S1', media: 'html#s1', title: 'CH03.1', level: 2),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1.1', id: 'ch03-html#S1-1', media: '1', title: 'CH03.1.1', level: 3),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch04.html', id: 'ch04-html', media: 'application/xhtml+xml', title: 'CH04', level: 1),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.png', id: 'sample-png', media: 'image/png'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.jpg', id: 'sample-jpg', media: 'image/jpeg'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.JPEG', id: 'sample-JPEG', media: 'image/jpeg'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.SvG', id: 'sample-SvG', media: 'image/svg+xml'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.GIF', id: 'sample-GIF', media: 'image/gif'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.css', id: 'sample-css', media: 'text/css')
     ]
 
     assert_equal expect, @producer.contents
@@ -863,9 +860,9 @@ EOT
   end
 
   def test_epub_unsafe_id
-    content = Content.new(file: 'sample.png')
+    content = ReVIEW::EPUBMaker::Content.new(file: 'sample.png')
     assert_equal 'sample-png', content.id
-    content = Content.new(file: 'sample-&()-=+@:,漢字.png')
+    content = ReVIEW::EPUBMaker::Content.new(file: 'sample-&()-=+@:,漢字.png')
     assert_equal 'sample-_25_26_25_28_25_29-_25_3D_25_2B_25_40_25_3A_25_2C_25_E6_25_BC_25_A2_25_E5_25_AD_25_97-png', content.id
   end
 end

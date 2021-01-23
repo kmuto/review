@@ -1,11 +1,9 @@
 require 'test_helper'
-require 'epubmaker'
-require 'epubmaker/zip_exporter'
+require 'review/epubmaker'
+require 'review/epubmaker/zip_exporter'
 require 'fileutils'
 
 class ZipExporterTest < Test::Unit::TestCase
-  include EPUBMaker
-
   def setup
     @tmpdir = Dir.mktmpdir
     @epubdir = File.join(@tmpdir, 'epubdir')
@@ -67,7 +65,7 @@ class ZipExporterTest < Test::Unit::TestCase
 
     config = { 'epubmaker' => {} }
     epubfile = File.join(@tmpdir, 'test.epub')
-    exporter = ZipExporter.new(@epubdir, config)
+    exporter = ReVIEW::EPUBMaker::ZipExporter.new(@epubdir, config)
     exporter.export_zip_extcmd(epubfile)
     assert_true(File.exist?(epubfile))
 
@@ -88,7 +86,7 @@ class ZipExporterTest < Test::Unit::TestCase
 
     config = { 'epubmaker' => {} }
     epubfile = File.join(@tmpdir, 'test.epub')
-    exporter = ZipExporter.new(@epubdir, config)
+    exporter = ReVIEW::EPUBMaker::ZipExporter.new(@epubdir, config)
     exporter.export_zip_rubyzip(epubfile)
     assert_true(File.exist?(epubfile))
 
