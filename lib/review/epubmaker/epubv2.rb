@@ -12,7 +12,7 @@ require 'review/epubmaker/epubcommon'
 require 'review/epubmaker/zip_exporter'
 
 module ReVIEW
-  module EPUBMaker
+  class EPUBMaker
     # EPUBv2 is EPUB version 2 producer.
     class EPUBv2 < EPUBCommon
       DC_ITEMS = %w[title language date type format source description relation coverage subject rights]
@@ -167,7 +167,7 @@ EOT
         end
 
         call_hook(config['epubmaker']['hook_prepack'], tmpdir)
-        expoter = EPUBMaker::ZipExporter.new(tmpdir, config)
+        expoter = ReVIEW::EPUBMaker::ZipExporter.new(tmpdir, config)
         expoter.export_zip(epubfile)
       end
     end

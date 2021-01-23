@@ -27,7 +27,7 @@ require 'review/configure'
 require 'review/extentions/hash'
 
 module ReVIEW
-  module EPUBMaker
+  class EPUBMaker
     # EPUBMaker produces EPUB file.
     class Producer
       # Array of content objects.
@@ -70,9 +70,9 @@ module ReVIEW
 
         case @config['epubversion'].to_i
         when 2
-          @epub = EPUBMaker::EPUBv2.new(self)
+          @epub = ReVIEW::EPUBMaker::EPUBv2.new(self)
         when 3
-          @epub = EPUBMaker::EPUBv3.new(self)
+          @epub = ReVIEW::EPUBMaker::EPUBv3.new(self)
         else
           raise "Invalid EPUB version (#{@config['epubversion']}.)"
         end
@@ -93,9 +93,9 @@ module ReVIEW
           if f =~ /\.(#{allow_exts.join('|')})\Z/i
             path.chop! if path =~ %r{/\Z}
             if base.nil?
-              @contents.push(EPUBMaker::Content.new(file: "#{path}/#{f}"))
+              @contents.push(ReVIEW::EPUBMaker::Content.new(file: "#{path}/#{f}"))
             else
-              @contents.push(EPUBMaker::Content.new(file: "#{path.sub(base + '/', '')}/#{f}"))
+              @contents.push(ReVIEW::EPUBMaker::Content.new(file: "#{path.sub(base + '/', '')}/#{f}"))
             end
           end
           if FileTest.directory?("#{path}/#{f}")

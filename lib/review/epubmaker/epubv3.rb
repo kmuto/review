@@ -8,11 +8,11 @@
 # For details of the GNU LGPL, see the file "COPYING".
 #
 
-require 'epubmaker/epubcommon'
-require 'epubmaker/zip_exporter'
+require 'review/epubmaker/epubcommon'
+require 'review/epubmaker/zip_exporter'
 
 module ReVIEW
-  module EPUBMaker
+  class EPUBMaker
     # EPUBv3 is EPUB version 3 producer.
     class EPUBv3 < EPUBCommon
       DC_ITEMS = %w[title language date type format source description relation coverage subject rights]
@@ -208,7 +208,7 @@ module ReVIEW
         File.write(toc_file, ncx(config['epubmaker']['ncxindent']))
 
         call_hook(config['epubmaker']['hook_prepack'], tmpdir)
-        expoter = EPUBMaker::ZipExporter.new(tmpdir, config)
+        expoter = ReVIEW::EPUBMaker::ZipExporter.new(tmpdir, config)
         expoter.export_zip(epubfile)
       end
     end
