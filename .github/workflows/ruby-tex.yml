@@ -1,0 +1,31 @@
+name: Test with TeXLive
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [2.5, 3.0]
+        os: [ubuntu-20.04]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install TeXLive 2020 in ubuntu
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update -y -qq && sudo apt-get install -y -qq texlive-lang-japanese texlive-fonts-recommended texlive-fonts-extra texlive-luatex texlive-extra-utils texlive-latex-extra dvipng poppler-utils
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+    - name: fix ImageMagick policy.xml on Linux
+      if: runner.os == 'Linux'
+      run: sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
+    - name: Build and test with Rake
+      run: |
+        gem install bundler --no-document
+        bundle install --retry 3
+        bundle exec rake

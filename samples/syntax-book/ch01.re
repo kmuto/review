@@ -119,7 +119,7 @@ olnumで一応番号が変更可能なことを期待していますが、Webブ
 //emlist{
 @<b>{bold太字}@<i>{italicイタ}
 
- : Alpha@<embed>{@}<b>{bold太字}@<embed>{@}<i>{italicイタ}@<embed>{@}<tt>{等幅code}@<fn>{foot1}
+ : Alpha@<embed>{@}<b>{bold太字}@<embed>{@}<i>{italicイタ}@<embed>{@}<tt>{等幅code}
         @<embed>{@}<i>{DEC}の作っていた@<embed>{@}<b>{RISC CPU}。@<embed>{@}<i>{italicイタ}@<embed>{@}<tt>{等幅code}
         浮動小数点数演算が速い。
  : POWER

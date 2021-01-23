@@ -1,0 +1,9 @@
+  <spine toc="ncx">
+    <itemref idref="<%= @config['bookname'] %>" linear="<%= @cover_linear %>"/>
+<% if @config['mytoc'] %>
+    <itemref idref="toc" />
+<% end %>
+<% @ncx_contents.each do |item| %>
+    <itemref idref="<%= item.id %>"/>
+<% end %>
+  </spine>

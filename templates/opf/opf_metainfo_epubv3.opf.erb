@@ -1,0 +1,49 @@
+<%# --- DC items --- %>
+<% @dc_items.each do |item| %>
+    <<%= item[:tag] %> id="<%= item[:id] %>"><%= item[:val] %></<%= item[:tag] %>>
+<%   item[:refines].each do | refine | %>
+    <meta refines="#<%= item[:id] %>" property="<%= refine[:name] %>"><%= h(refine[:val]) %></meta>
+<%   end %>
+<% end %>
+    <meta property="dcterms:modified"><%= @config['modified'] %></meta>
+<% if @config['isbn'] %>
+    <dc:identifier id="BookId"><%= @config['isbn'] %></dc:identifier>
+<% else %>
+    <dc:identifier id="BookId"><%= @config['urnid'] %></dc:identifier>
+<% end %>
+<%# --- creator --- %>
+<% @creators.each do |creator| %>
+    <dc:creator id="<%= creator[:id] %>"><%= creator[:val] %></dc:creator>
+<%   creator[:refines].each do |refine| %>
+<%     if refine[:scheme] %>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= refine[:val] %></meta>
+<%     else %>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= refine[:val] %></meta>
+<%     end %>
+<%   end %>
+<% end %>
+<%# --- contributer --- %>
+<% @contributers.each do |contributer| %>
+    <dc:contributor id="<%= contributer[:id] %>"><%= h(contributer[:val]) %></dc:contributor>
+<%   contributer[:refines].each do |refine| %>
+<%     if refine[:scheme] %>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= refine[:val] %></meta>
+<%     else %>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= refine[:val] %></meta>
+<%     end %>
+<%   end %>
+<%   if contributer[:pub_id] %>
+    <dc:publisher id="<%= contributer[:pub_id] %>"><%= h(contributer[:pub_val]) %></dc:publisher>
+<%     contributer[:pub_refines].each do |refine| %>
+<%       if refine[:scheme] %>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= refine[:val] %></meta>
+<%       else %>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= refine[:val] %></meta>
+<%       end %>
+<%     end %>
+<%   end %>
+<% end %>
+<%# --- other --- %>
+<% (@config['opf_meta'] || [] ).each do |k, v| %>
+    <meta property="<%= h(k) %>"><%= h(v) %></meta>
+<% end %>

@@ -23,11 +23,13 @@ require 'review/version'
 require 'review/makerhelper'
 require 'review/template'
 require 'review/latexbox'
+require 'review/call_hook'
 
 module ReVIEW
   class PDFMaker
     include FileUtils
     include ReVIEW::LaTeXUtils
+    include ReVIEW::CallHook
 
     attr_accessor :config, :basedir
 
@@ -200,7 +202,7 @@ module ReVIEW
       Dir.chdir(@path) do
         File.open("./#{@mastertex}.tex", 'wb') { |f| f.write template }
 
-        call_hook('hook_beforetexcompile')
+        call_hook('hook_beforetexcompile', Dir.pwd, @basedir, base_dir: @basedir)
 
         ## do compile
         if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
@@ -243,19 +245,19 @@ module ReVIEW
           system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
 
-        call_hook('hook_beforemakeindex')
+        call_hook('hook_beforemakeindex', Dir.pwd, @basedir, base_dir: @basedir)
         if @config['pdfmaker']['makeindex'] && File.size?("#{@mastertex}.idx")
           system_or_raise(*[makeindex_command, makeindex_options, @mastertex].flatten.compact)
-          call_hook('hook_aftermakeindex')
+          call_hook('hook_aftermakeindex', Dir.pwd, @basedir, base_dir: @basedir)
           system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
         end
 
         system_or_raise(*[texcommand, texoptions, "#{@mastertex}.tex"].flatten.compact)
-        call_hook('hook_aftertexcompile')
+        call_hook('hook_aftertexcompile', Dir.pwd, @basedir, base_dir: @basedir)
 
         if File.exist?("#{@mastertex}.dvi") && dvicommand.present?
           system_or_raise(*[dvicommand, dvioptions, "#{@mastertex}.dvi"].flatten.compact)
-          call_hook('hook_afterdvipdf')
+          call_hook('hook_afterdvipdf', Dir.pwd, @basedir, base_dir: @basedir)
         end
       end
     end
@@ -459,34 +461,30 @@ module ReVIEW
       end
     end
 
-    def erb_content(file)
-      @texcompiler = File.basename(@config['texcommand'], '.*')
-      erb = ReVIEW::Template.load(file, '-')
-      @logger.debug("erb processes #{File.basename(file)}") if @config['debug']
-      erb.result(binding)
-    end
-
     def latex_config
-      result = erb_content(File.expand_path('./latex/config.erb', ReVIEW::Template::TEMPLATE_DIR))
+      result = ReVIEW::Template.generate(path: './latex/config.erb', mode: '-', binding: binding)
       local_config_file = File.join(@basedir, 'layouts', 'config-local.tex.erb')
       if File.exist?(local_config_file)
         result << "%% BEGIN: config-local.tex.erb\n"
-        result << erb_content(local_config_file)
+        result << ReVIEW::Template.generate(path: 'layouts/config-local.tex.erb', mode: '-', binding: binding, template_dir: @basedir)
         result << "%% END: config-local.tex.erb\n"
       end
       result
     end
 
     def template_content
-      template = File.expand_path('./latex/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+      template_dir = ReVIEW::Template::TEMPLATE_DIR
       if @config.check_version('2', exception: false)
-        template = File.expand_path('./latex-compat2/layout.tex.erb', ReVIEW::Template::TEMPLATE_DIR)
+        template_path = './latex-compat2/layout.tex.erb'
+      else
+        template_path = './latex/layout.tex.erb'
       end
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       if File.exist?(layout_file)
-        template = layout_file
+        template_dir = @basedir
+        template_path = 'layouts/layout.tex.erb'
       end
-      erb_content(template)
+      ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
@@ -508,17 +506,6 @@ module ReVIEW
             FileUtils.cp(File.join(dirname, fname), copybase)
           end
         end
-      end
-    end
-
-    def call_hook(hookname)
-      return if !@config['pdfmaker'].is_a?(Hash) || @config['pdfmaker'][hookname].nil?
-
-      hook = File.absolute_path(@config['pdfmaker'][hookname], @basedir)
-      if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
-        warn 'hook configuration is prohibited in safe mode. ignored.'
-      else
-        system_or_raise(hook, Dir.pwd, @basedir)
       end
     end
   end

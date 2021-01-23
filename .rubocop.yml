@@ -51,6 +51,10 @@ Lint/RaiseException:
 Lint/StructNewOverride:
   Enabled: true
 
+# make it enable when supporting only Ruby 3.0 and higher.
+Lint/RedundantDirGlobSort:
+  Enabled: false
+
 #### Performance
 
 Performance/RegexpMatch:

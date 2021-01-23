@@ -7,15 +7,15 @@
 <%= @opf_manifest %>
 <%= @opf_toc %>
   <guide>
-    <reference type="cover" title="<%= @producer.res.v('covertitle') %>" href="<%= @producer.config['cover'] %>"/>
-<% if @producer.config['titlepage'].present? %>
-    <reference type="title-page" title="<%= @producer.res.v('titlepagetitle') %>" href="titlepage.<%= @producer.config['htmlext'] %>"/>
+    <reference type="cover" title="<%= ReVIEW::I18n.t('covertitle') %>" href="<%= @config['cover'] %>"/>
+<% if @config['titlepage'].present? %>
+    <reference type="title-page" title="<%= ReVIEW::I18n.t('titlepagetitle') %>" href="titlepage.<%= @config['htmlext'] %>"/>
 <% end %>
-<% if @producer.config['mytoc'].present? %>
-    <reference type="toc" title="<%= @producer.res.v('toctitle') %>" href="<%= @producer.config['bookname'] %>-toc.<%= @producer.config['htmlext'] %>"/>
+<% if @config['mytoc'].present? %>
+    <reference type="toc" title="<%= ReVIEW::I18n.t('toctitle') %>" href="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>"/>
 <% end %>
-<% if @producer.config['colophon'].present? %>
-    <reference type="colophon" title="<%= @producer.res.v('colophontitle') %>" href="colophon.<%= @producer.config['htmlext'] %>"/>
+<% if @config['colophon'].present? %>
+    <reference type="colophon" title="<%= ReVIEW::I18n.t('colophontitle') %>" href="colophon.<%= @config['htmlext'] %>"/>
 <% end %>
   </guide>
 </package>

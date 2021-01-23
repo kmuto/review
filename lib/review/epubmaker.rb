@@ -16,24 +16,30 @@ require 'review/latexbuilder'
 require 'review/version'
 require 'review/htmltoc'
 require 'review/htmlbuilder'
+require 'review/img_math'
 
 require 'rexml/document'
 require 'rexml/streamlistener'
-require 'epubmaker'
+require 'review/call_hook'
+require 'review/epubmaker/producer'
+require 'review/epubmaker/content'
+require 'review/epubmaker/epubv2'
+require 'review/epubmaker/epubv3'
 require 'review/epubmaker/reviewheaderlistener'
 require 'review/makerhelper'
 
 module ReVIEW
   class EPUBMaker
-    include ::EPUBMaker
-    include REXML
     include MakerHelper
+    include ReVIEW::CallHook
 
     def initialize
       @producer = nil
       @htmltoc = nil
       @buildlogtxt = 'build-log.txt'
       @logger = ReVIEW.logger
+      @img_math = nil
+      @basedir = nil
     end
 
     def error(msg)
@@ -83,9 +89,10 @@ module ReVIEW
       @config = ReVIEW::Configure.create(maker: 'epubmaker',
                                          yamlfile: yamlfile,
                                          config: cmd_config)
-      @producer = Producer.new(@config)
+      @producer = ReVIEW::EPUBMaker::Producer.new(@config)
       update_log_level
       log("Loaded yaml file (#{yamlfile}).")
+      @basedir = File.absolute_path(File.dirname(yamlfile))
 
       produce(yamlfile, exportfile)
     end
@@ -116,6 +123,7 @@ module ReVIEW
       bookname ||= @config['bookname']
       booktmpname = "#{bookname}-epub"
 
+      @img_math = ReVIEW::ImgMath.new(@config)
       begin
         @config.check_version(ReVIEW::VERSION)
       rescue ReVIEW::ConfigError => e
@@ -128,31 +136,30 @@ module ReVIEW
         FileUtils.rm_rf(booktmpname)
       end
 
-      cleanup_mathimg
+      @img_math.cleanup_mathimg
 
       basetmpdir = build_path
       begin
         log("Created first temporary directory as #{basetmpdir}.")
 
-        call_hook('hook_beforeprocess', basetmpdir)
+        call_hook('hook_beforeprocess', basetmpdir, base_dir: @basedir)
 
         @htmltoc = ReVIEW::HTMLToc.new(basetmpdir)
         ## copy all files into basetmpdir
         copy_stylesheet(basetmpdir)
 
         copy_frontmatter(basetmpdir)
-        call_hook('hook_afterfrontmatter', basetmpdir)
+        call_hook('hook_afterfrontmatter', basetmpdir, base_dir: @basedir)
 
         build_body(basetmpdir, yamlfile)
-        call_hook('hook_afterbody', basetmpdir)
+        call_hook('hook_afterbody', basetmpdir, base_dir: @basedir)
 
         copy_backmatter(basetmpdir)
 
-        math_dir = "./#{@config['imagedir']}/_review_math"
-        if @config['math_format'] == 'imgmath' && File.exist?(File.join(math_dir, '__IMGMATH_BODY__.map'))
-          make_math_images(math_dir)
+        if @config['math_format'] == 'imgmath'
+          @img_math.make_math_images
         end
-        call_hook('hook_afterbackmatter', basetmpdir)
+        call_hook('hook_afterbackmatter', basetmpdir, base_dir: @basedir)
 
         ## push contents in basetmpdir into @producer
         push_contents(basetmpdir)
@@ -168,7 +175,7 @@ module ReVIEW
         copy_resources('adv', File.join(basetmpdir, @config['imagedir']))
         copy_resources(@config['fontdir'], File.join(basetmpdir, 'fonts'), @config['font_ext'])
 
-        call_hook('hook_aftercopyimage', basetmpdir)
+        call_hook('hook_aftercopyimage', basetmpdir, base_dir: @basedir)
 
         @producer.import_imageinfo(File.join(basetmpdir, @config['imagedir']), basetmpdir)
         @producer.import_imageinfo(File.join(basetmpdir, 'fonts'), basetmpdir, @config['font_ext'])
@@ -181,7 +188,7 @@ module ReVIEW
           Dir.mkdir(epubtmpdir)
         end
         log('Call ePUB producer.')
-        @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir)
+        @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir, base_dir: @basedir)
         log('Finished.')
       rescue ApplicationError => e
         raise if @config['debug']
@@ -192,24 +199,12 @@ module ReVIEW
       end
     end
 
-    def call_hook(hook_name, *params)
-      filename = @config['epubmaker'][hook_name]
-      log("Call #{hook_name}. (#{filename})")
-      if filename.present? && File.exist?(filename) && FileTest.executable?(filename)
-        if ENV['REVIEW_SAFE_MODE'].to_i & 1 > 0
-          warn 'hook is prohibited in safe mode. ignored.'
-        else
-          system(filename, *params)
-        end
-      end
-    end
-
     def verify_target_images(basetmpdir)
       @producer.contents.each do |content|
         case content.media
         when 'application/xhtml+xml'
           File.open("#{basetmpdir}/#{content.file}") do |f|
-            Document.new(File.new(f)).each_element('//img') do |e|
+            REXML::Document.new(File.new(f)).each_element('//img') do |e|
               @config['epubmaker']['force_include_images'].push(e.attributes['src'])
               if e.attributes['src'] =~ /svg\Z/i
                 content.properties.push('svg')
@@ -295,7 +290,7 @@ module ReVIEW
       basedir = File.dirname(yamlfile)
       base_path = Pathname.new(basedir)
       book = ReVIEW::Book::Base.new(basedir, config: @config)
-      @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new)
+      @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new(img_math: @img_math))
       @compile_errors = nil
 
       book.parts.each do |part|
@@ -334,9 +329,7 @@ module ReVIEW
 
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        tmpl = ReVIEW::Template.load(tmplfile)
-        f.write tmpl.result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
@@ -437,7 +430,7 @@ module ReVIEW
       headlines = []
       path = File.join(basetmpdir, filename)
       htmlio = File.new(path)
-      Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
+      REXML::Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
       htmlio.close
 
       if headlines.empty?
@@ -493,7 +486,7 @@ module ReVIEW
         if args[:notoc].present?
           params[:notoc] = args[:notoc]
         end
-        @producer.contents.push(Content.new(**params))
+        @producer.contents.push(ReVIEW::EPUBMaker::Content.new(**params))
       end
     end
 
@@ -505,7 +498,7 @@ module ReVIEW
           error "#{sfile} is not found."
         end
         FileUtils.cp(sfile, basetmpdir)
-        @producer.contents.push(Content.new(file: sfile))
+        @producer.contents.push(ReVIEW::EPUBMaker::Content.new(file: sfile))
       end
     end
 
@@ -524,7 +517,7 @@ module ReVIEW
         end
         @htmltoc.add_item(1,
                           "titlepage.#{@config['htmlext']}",
-                          @producer.res.v('titlepagetitle'),
+                          ReVIEW::I18n.t('titlepagetitle'),
                           chaptype: 'pre')
       end
 
@@ -533,7 +526,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['originaltitlefile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['originaltitlefile']),
-                          @producer.res.v('originaltitle'),
+                          ReVIEW::I18n.t('originaltitle'),
                           chaptype: 'pre')
       end
 
@@ -542,7 +535,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['creditfile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['creditfile']),
-                          @producer.res.v('credittitle'),
+                          ReVIEW::I18n.t('credittitle'),
                           chaptype: 'pre')
       end
 
@@ -569,9 +562,7 @@ module ReVIEW
 
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        tmpl = ReVIEW::Template.load(tmplfile)
-        f.write tmpl.result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
@@ -581,7 +572,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['profile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['profile']),
-                          @producer.res.v('profiletitle'),
+                          ReVIEW::I18n.t('profiletitle'),
                           chaptype: 'post')
       end
 
@@ -590,7 +581,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['advfile'])))
         @htmltoc.add_item(1,
                           File.basename(@config['advfile']),
-                          @producer.res.v('advtitle'),
+                          ReVIEW::I18n.t('advtitle'),
                           chaptype: 'post')
       end
 
@@ -598,15 +589,10 @@ module ReVIEW
         if @config['colophon'].is_a?(String) # FIXME: should let obsolete this style?
           FileUtils.cp(@config['colophon'],
                        File.join(basetmpdir, "colophon.#{@config['htmlext']}"))
-        else
-          filename = File.join(basetmpdir, "colophon.#{@config['htmlext']}")
-          File.open(filename, 'w') do |f|
-            @producer.colophon(f)
-          end
         end
         @htmltoc.add_item(1,
                           "colophon.#{@config['htmlext']}",
-                          @producer.res.v('colophontitle'),
+                          ReVIEW::I18n.t('colophontitle'),
                           chaptype: 'post')
       end
 
@@ -615,7 +601,7 @@ module ReVIEW
                      File.join(basetmpdir, File.basename(@config['backcover'])))
         @htmltoc.add_item(1,
                           File.basename(@config['backcover']),
-                          @producer.res.v('backcovertitle'),
+                          ReVIEW::I18n.t('backcovertitle'),
                           chaptype: 'post')
       end
 

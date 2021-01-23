@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="<%= @producer.config['language'] %>"<%= @package_attrs %>>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="<%= @config['language'] %>"<%= @package_attrs %>>
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
 <%= @opf_metainfo %>
 <%= @opf_coverimage %>
@@ -7,13 +7,13 @@
 <%= @opf_manifest %>
 <%= @opf_toc %>
   <guide>
-    <reference type="cover" title="<%= @producer.res.v('covertitle') %>" href="<%= @producer.config['cover'] %>"/>
-<% if @producer.config["titlepage"].present? %>
-    <reference type="title-page" title="<%= @producer.res.v('titlepagetitle') %>" href="titlepage.<%= @producer.config['htmlext'] %>"/>
+    <reference type="cover" title="<%= ReVIEW::I18n.t('covertitle') %>" href="<%= @config['cover'] %>"/>
+<% if @config["titlepage"].present? %>
+    <reference type="title-page" title="<%= ReVIEW::I18n.t('titlepagetitle') %>" href="titlepage.<%= @config['htmlext'] %>"/>
 <% end %>
-    <reference type="toc" title="<%= @producer.res.v('toctitle') %>" href="<%= @producer.config['bookname'] %>-toc.<%= @producer.config['htmlext'] %>"/>
-<% if @producer.config['colophon'].present? %>
-    <reference type="colophon" title="<%= @producer.res.v('colophontitle') %>" href="colophon.<%= @producer.config['htmlext'] %>"/>
+    <reference type="toc" title="<%= ReVIEW::I18n.t('toctitle') %>" href="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>"/>
+<% if @config['colophon'].present? %>
+    <reference type="colophon" title="<%= ReVIEW::I18n.t('colophontitle') %>" href="colophon.<%= @config['htmlext'] %>"/>
 <% end %>
   </guide>
 </package>

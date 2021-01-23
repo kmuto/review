@@ -20,6 +20,7 @@ require 'review/template'
 require 'review/tocprinter'
 require 'review/version'
 require 'review/makerhelper'
+require 'review/img_math'
 
 module ReVIEW
   class WEBMaker
@@ -31,6 +32,7 @@ module ReVIEW
     def initialize
       @basedir = nil
       @logger = ReVIEW.logger
+      @img_math = nil
     end
 
     def error(msg)
@@ -74,7 +76,7 @@ module ReVIEW
     end
 
     def remove_old_files(path)
-      cleanup_mathimg
+      @img_math.cleanup_mathimg
       FileUtils.rm_rf(path)
     end
 
@@ -87,6 +89,8 @@ module ReVIEW
                                          config: cmd_config)
 
       @config['htmlext'] = 'html'
+      @img_math = ReVIEW::ImgMath.new(@config)
+
       I18n.setup(@config['language'])
       begin
         generate_html_files(yamlfile)
@@ -104,16 +108,15 @@ module ReVIEW
       Dir.mkdir(@path)
 
       @book = ReVIEW::Book::Base.new(@basedir, config: @config)
-      @converter = ReVIEW::Converter.new(@book, ReVIEW::HTMLBuilder.new)
+      @converter = ReVIEW::Converter.new(@book, ReVIEW::HTMLBuilder.new(img_math: @img_math))
 
       copy_stylesheet(@path)
       copy_frontmatter(@path)
       build_body(@path, yamlfile)
       copy_backmatter(@path)
 
-      math_dir = "./#{@config['imagedir']}/_review_math"
-      if @config['math_format'] == 'imgmath' && File.exist?("#{math_dir}/__IMGMATH_BODY__.map")
-        make_math_images(math_dir)
+      if @config['math_format'] == 'imgmath'
+        @img_math.make_math_images
       end
 
       copy_images(@config['imagedir'], "#{@path}/#{@config['imagedir']}")
@@ -152,8 +155,7 @@ module ReVIEW
 
         @language = @config['language']
         @stylesheets = @config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
@@ -266,8 +268,7 @@ module ReVIEW
         @toc = ReVIEW::WEBTOCPrinter.book_to_string(@book)
         @next = @book.chapters[0]
         @next_title = @next ? @next.title : ''
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
@@ -287,8 +288,7 @@ module ReVIEW
 
         @language = @config['language']
         @stylesheets = @config['stylesheet']
-        tmplfile = File.expand_path(template_name, ReVIEW::Template::TEMPLATE_DIR)
-        f.write ReVIEW::Template.load(tmplfile).result(binding)
+        f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 

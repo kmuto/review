@@ -31,13 +31,14 @@ module ReVIEW
 
     attr_accessor :doc_status, :previous_list_type
 
-    def initialize(strict = false, *_args)
+    def initialize(strict = false, *_args, img_math: nil)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
       @previous_list_type = nil
+      @img_math = img_math
     end
 
     def bind(compiler, chapter, location)

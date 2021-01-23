@@ -8,7 +8,6 @@ class HTMLBuidlerTest < Test::Unit::TestCase
 
   def setup
     ReVIEW::I18n.setup
-    @builder = HTMLBuilder.new
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['stylesheet'] = nil
@@ -16,6 +15,8 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @config['epubmaker'] = {}
     @book = Book::Base.new('.')
     @book.config = @config
+    img_math = ReVIEW::ImgMath.new(@config)
+    @builder = HTMLBuilder.new(img_math: img_math)
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -1653,6 +1654,8 @@ EOS
       @config['math_format'] = 'imgmath'
       @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
       location = Location.new(nil, nil)
+      img_math = ReVIEW::ImgMath.new(@config)
+      @builder = HTMLBuilder.new(img_math: img_math)
       @builder.bind(@compiler, @chapter, location)
       FileUtils.mkdir_p(File.join(dir, 'images'))
       expected = <<-EOB
@@ -1685,6 +1688,8 @@ EOS
       @config['math_format'] = 'imgmath'
       @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
       location = Location.new(nil, nil)
+      img_math = ReVIEW::ImgMath.new(@config)
+      @builder = HTMLBuilder.new(img_math: img_math)
       @builder.bind(@compiler, @chapter, location)
       FileUtils.mkdir_p(File.join(dir, 'images'))
       tmpio = $stderr

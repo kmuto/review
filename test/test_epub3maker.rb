@@ -1,11 +1,8 @@
 require 'test_helper'
-require 'epubmaker'
 require 'review/configure'
 require 'review/epubmaker'
 
 class EPUB3MakerTest < Test::Unit::TestCase
-  include EPUBMaker
-
   def setup
     config = ReVIEW::Configure.values
     config.merge!(
@@ -18,33 +15,32 @@ class EPUB3MakerTest < Test::Unit::TestCase
       'modified' => '2014-12-13T14:15:16Z',
       'titlepage' => nil
     )
-    @producer = Producer.new(config)
-    @output = StringIO.new
+    @producer = ReVIEW::EPUBMaker::Producer.new(config)
   end
 
   def test_initialize
-    assert Producer.new(ReVIEW::Configure.values)
+    assert ReVIEW::EPUBMaker::Producer.new(ReVIEW::Configure.values)
   end
 
   def test_resource_en
     @producer.config['language'] = 'en'
     @producer.modify_config
-    assert_equal 'Table of Contents', @producer.res.v('toctitle')
+    assert_equal 'Table of Contents', ReVIEW::I18n.t('toctitle')
   end
 
   def test_resource_ja
     @producer.config['language'] = 'ja'
     @producer.modify_config
-    assert_equal '目次', @producer.res.v('toctitle')
+    assert_equal '目次', ReVIEW::I18n.t('toctitle')
   end
 
   def test_mimetype
-    @producer.mimetype(@output)
-    assert_equal 'application/epub+zip', @output.string
+    output = @producer.instance_eval { @epub.mimetype }
+    assert_equal 'application/epub+zip', output
   end
 
   def test_container
-    @producer.container(@output)
+    output = @producer.instance_eval { @epub.container }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
@@ -53,11 +49,11 @@ class EPUB3MakerTest < Test::Unit::TestCase
   </rootfiles>
 </container>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -81,7 +77,7 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf_ebpaj
@@ -90,7 +86,7 @@ EOT
       'opf_meta' => { 'ebpaj:guide-version' => '1.1.2' }
     )
     @producer.modify_config
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en" prefix="ebpaj: http://www.ebpaj.jp/">
@@ -115,7 +111,7 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_opf_fileas
@@ -123,7 +119,7 @@ EOT
                             'aut' => [{ 'name' => '著者A', 'file-as' => 'チョシャA' }, { 'name' => '著者B', 'file-as' => 'チョシャB' }],
                             'pbl' => [{ 'name' => '出版社', 'file-as' => 'シュッパンシャ' }])
     @producer.modify_config
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -160,11 +156,11 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage1_ncx
-    @producer.ncx(@output)
+    output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -182,27 +178,27 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def stage2
     # add one item
-    @producer.contents << Content.new(file: 'ch01.html', title: 'CH01', level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch01.html', title: 'CH01', level: 1)
   end
 
   def test_stage2_add_l1item
     stage2
-    expect = EPUBMaker::Content.new(file: 'ch01.html',
-                                    id: 'ch01-html',
-                                    media: 'application/xhtml+xml',
-                                    title: 'CH01',
-                                    level: 1)
+    expect = ReVIEW::EPUBMaker::Content.new(file: 'ch01.html',
+                                            id: 'ch01-html',
+                                            media: 'application/xhtml+xml',
+                                            title: 'CH01',
+                                            level: 1)
     assert_equal expect, @producer.contents[0]
   end
 
   def test_stage2_opf
     stage2
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -228,12 +224,12 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage2_ncx
     stage2
-    @producer.ncx(@output)
+    output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -252,54 +248,54 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def stage3
     # add more items
-    @producer.contents << Content.new(file: 'ch01.html', title: %Q(CH01<>&"), level: 1)
-    @producer.contents << Content.new(file: 'ch02.html', title: 'CH02', level: 1)
-    @producer.contents << Content.new(file: 'ch02.html#S1', title: 'CH02.1', level: 2)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1', title: 'CH02.1.1', level: 3)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1.1', title: 'CH02.1.1.1', level: 4)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1.1.1', title: 'CH02.1.1.1.1', level: 5)
-    @producer.contents << Content.new(file: 'ch02.html#S1.1.2', title: 'CH02.1.1.2', level: 4)
-    @producer.contents << Content.new(file: 'ch02.html#S2', title: 'CH02.2', level: 2)
-    @producer.contents << Content.new(file: 'ch02.html#S2.1', title: 'CH02.2.1', level: 3)
-    @producer.contents << Content.new(file: 'ch03.html', title: 'CH03', level: 1, properties: ['mathml'])
-    @producer.contents << Content.new(file: 'ch03.html#S1', title: 'CH03.1', level: 2)
-    @producer.contents << Content.new(file: 'ch03.html#S1.1', title: 'CH03.1.1', level: 3)
-    @producer.contents << Content.new(file: 'ch04.html', title: 'CH04', level: 1)
-    @producer.contents << Content.new(file: 'sample.png')
-    @producer.contents << Content.new(file: 'sample.jpg')
-    @producer.contents << Content.new(file: 'sample.JPEG')
-    @producer.contents << Content.new(file: 'sample.SvG')
-    @producer.contents << Content.new(file: 'sample.GIF')
-    @producer.contents << Content.new(file: 'sample.css')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch01.html', title: %Q(CH01<>&"), level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html', title: 'CH02', level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1', title: 'CH02.1', level: 2)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1', title: 'CH02.1.1', level: 3)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1', title: 'CH02.1.1.1', level: 4)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1.1', title: 'CH02.1.1.1.1', level: 5)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.2', title: 'CH02.1.1.2', level: 4)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2', title: 'CH02.2', level: 2)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2.1', title: 'CH02.2.1', level: 3)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch03.html', title: 'CH03', level: 1, properties: ['mathml'])
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1', title: 'CH03.1', level: 2)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1.1', title: 'CH03.1.1', level: 3)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch04.html', title: 'CH04', level: 1)
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.png')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.jpg')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.JPEG')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.SvG')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.GIF')
+    @producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'sample.css')
   end
 
   def test_stage3_add_various_items
     stage3
     expect = [
-      Content.new(file: 'ch01.html', id: 'ch01-html', media: 'application/xhtml+xml', title: %Q(CH01<>&"), level: 1),
-      Content.new(file: 'ch02.html', id: 'ch02-html', media: 'application/xhtml+xml', title: 'CH02', level: 1),
-      Content.new(file: 'ch02.html#S1', id: 'ch02-html#S1', media: 'html#s1', title: 'CH02.1', level: 2),
-      Content.new(file: 'ch02.html#S1.1', id: 'ch02-html#S1-1', media: '1', title: 'CH02.1.1', level: 3),
-      Content.new(file: 'ch02.html#S1.1.1', id: 'ch02-html#S1-1-1', media: '1', title: 'CH02.1.1.1', level: 4),
-      Content.new(file: 'ch02.html#S1.1.1.1', id: 'ch02-html#S1-1-1-1', media: '1', title: 'CH02.1.1.1.1', level: 5),
-      Content.new(file: 'ch02.html#S1.1.2', id: 'ch02-html#S1-1-2', media: '2', title: 'CH02.1.1.2', level: 4),
-      Content.new(file: 'ch02.html#S2', id: 'ch02-html#S2', media: 'html#s2', title: 'CH02.2', level: 2),
-      Content.new(file: 'ch02.html#S2.1', id: 'ch02-html#S2-1', media: '1', title: 'CH02.2.1', level: 3),
-      Content.new(file: 'ch03.html', id: 'ch03-html', media: 'application/xhtml+xml', title: 'CH03', level: 1, properties: ['mathml']),
-      Content.new(file: 'ch03.html#S1', id: 'ch03-html#S1', media: 'html#s1', title: 'CH03.1', level: 2),
-      Content.new(file: 'ch03.html#S1.1', id: 'ch03-html#S1-1', media: '1', title: 'CH03.1.1', level: 3),
-      Content.new(file: 'ch04.html', id: 'ch04-html', media: 'application/xhtml+xml', title: 'CH04', level: 1),
-      Content.new(file: 'sample.png', id: 'sample-png', media: 'image/png'),
-      Content.new(file: 'sample.jpg', id: 'sample-jpg', media: 'image/jpeg'),
-      Content.new(file: 'sample.JPEG', id: 'sample-JPEG', media: 'image/jpeg'),
-      Content.new(file: 'sample.SvG', id: 'sample-SvG', media: 'image/svg+xml'),
-      Content.new(file: 'sample.GIF', id: 'sample-GIF', media: 'image/gif'),
-      Content.new(file: 'sample.css', id: 'sample-css', media: 'text/css')
+      ReVIEW::EPUBMaker::Content.new(file: 'ch01.html', id: 'ch01-html', media: 'application/xhtml+xml', title: %Q(CH01<>&"), level: 1),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html', id: 'ch02-html', media: 'application/xhtml+xml', title: 'CH02', level: 1),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1', id: 'ch02-html#S1', media: 'html#s1', title: 'CH02.1', level: 2),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1', id: 'ch02-html#S1-1', media: '1', title: 'CH02.1.1', level: 3),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1', id: 'ch02-html#S1-1-1', media: '1', title: 'CH02.1.1.1', level: 4),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.1.1', id: 'ch02-html#S1-1-1-1', media: '1', title: 'CH02.1.1.1.1', level: 5),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S1.1.2', id: 'ch02-html#S1-1-2', media: '2', title: 'CH02.1.1.2', level: 4),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2', id: 'ch02-html#S2', media: 'html#s2', title: 'CH02.2', level: 2),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch02.html#S2.1', id: 'ch02-html#S2-1', media: '1', title: 'CH02.2.1', level: 3),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch03.html', id: 'ch03-html', media: 'application/xhtml+xml', title: 'CH03', level: 1, properties: ['mathml']),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1', id: 'ch03-html#S1', media: 'html#s1', title: 'CH03.1', level: 2),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch03.html#S1.1', id: 'ch03-html#S1-1', media: '1', title: 'CH03.1.1', level: 3),
+      ReVIEW::EPUBMaker::Content.new(file: 'ch04.html', id: 'ch04-html', media: 'application/xhtml+xml', title: 'CH04', level: 1),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.png', id: 'sample-png', media: 'image/png'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.jpg', id: 'sample-jpg', media: 'image/jpeg'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.JPEG', id: 'sample-JPEG', media: 'image/jpeg'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.SvG', id: 'sample-SvG', media: 'image/svg+xml'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.GIF', id: 'sample-GIF', media: 'image/gif'),
+      ReVIEW::EPUBMaker::Content.new(file: 'sample.css', id: 'sample-css', media: 'text/css')
     ]
 
     assert_equal expect, @producer.contents
@@ -307,7 +303,7 @@ EOT
 
   def test_stage3_opf
     stage3
-    @producer.opf(@output)
+    output = @producer.instance_eval { @epub.opf }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
@@ -345,13 +341,13 @@ EOT
   </guide>
 </package>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_ncx
     stage3
     @producer.config['toclevel'] = 2
-    @producer.ncx(@output)
+    output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -378,13 +374,13 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_mytoc
     stage3
     @producer.config['toclevel'] = 2
-    @producer.mytoc(@output)
+    output = @producer.instance_eval { @epub.mytoc }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -409,7 +405,7 @@ EOT
 </ul></body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_flat
@@ -419,7 +415,7 @@ EOT
     )
     @producer.modify_config
     stage3
-    @producer.mytoc(@output)
+    output = @producer.instance_eval { @epub.mytoc }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -443,12 +439,12 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover
     stage3
-    @producer.cover(@output)
+    output = @producer.instance_eval { @epub.cover }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -463,14 +459,14 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_stage3_cover_with_image
     stage3
     @producer.config['coverimage'] = 'sample.png'
     @producer.modify_config
-    @producer.cover(@output)
+    output = @producer.instance_eval { @epub.cover }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -487,14 +483,14 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_default
     @producer.config.merge!('aut' => ['Mr.Smith'],
                             'pbl' => ['BLUEPRINT'])
     @producer.modify_config
-    @producer.colophon(@output)
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -518,7 +514,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_pht
@@ -526,7 +522,7 @@ EOT
                             'pbl' => ['BLUEPRINT'],
                             'pht' => ['Mrs.Smith'])
     @producer.modify_config
-    @producer.colophon(@output)
+    output = @producer.instance_eval { @epub.colophon }
     expect = <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -551,7 +547,7 @@ EOT
 </body>
 </html>
 EOT
-    assert_equal expect, @output.string
+    assert_equal expect, output
   end
 
   def test_colophon_history
