@@ -17,12 +17,6 @@ end
 
 module ReVIEW
   module MakerHelper
-    # Return review/bin directory
-    def bindir
-      File.realpath('../../bin', __dir__)
-    end
-    module_function :bindir
-
     def h(str)
       CGI.escapeHTML(str)
     end
