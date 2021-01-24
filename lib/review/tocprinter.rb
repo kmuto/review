@@ -36,6 +36,8 @@ module ReVIEW
   end
 
   class TOCPrinter
+    Counter = Struct.new(:name, :level, :headline, :lines, :chars, :list_lines, :text_lines, :part, keyword_init: true)
+
     def self.execute(*args)
       new.execute(*args)
     end
@@ -80,15 +82,15 @@ module ReVIEW
       begin
         @book.parts.each do |part|
           if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
-            result_array.push({ part: 'start' })
+            result_array.push(Counter.new(part: 'start'))
             if part.file?
               result = build_chap(part)
               result_array += parse_contents(part.name, @upper, result)
             else
               title = part.format_number + I18n.t('chapter_postfix') + part.title
               result_array += [
-                { name: '', lines: 1, chars: title.size, list_lines: 0, text_lines: 1 },
-                { level: 0, headline: title, lines: 1, chars: title.size, list_lines: 0, text_lines: 1 }
+                Counter.new(name: '', lines: 1, chars: title.size, list_lines: 0, text_lines: 1),
+                Counter.new(level: 0, headline: title, lines: 1, chars: title.size, list_lines: 0, text_lines: 1)
               ]
             end
           end
@@ -100,7 +102,7 @@ module ReVIEW
             end
           end
           if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
-            result_array.push({ part: 'end' })
+            result_array.push(Counter.new(part: 'end'))
           end
         end
       rescue ReVIEW::FileNotFound, ReVIEW::CompileError => e
@@ -113,15 +115,15 @@ module ReVIEW
 
     def print_result(result_array)
       result_array.each do |result|
-        if result[:part]
+        if result.part
           next
         end
 
-        if result[:name]
+        if result.name
           # file information
           if @detail
             puts '============================='
-            printf("%6dC %5dL %5dP  %s\n", result[:chars], result[:lines], calc_pages(result).ceil, result[:name])
+            printf("%6dC %5dL %5dP  %s\n", result.chars, result.lines, calc_pages(result).ceil, result.name)
             puts '-----------------------------'
           end
           next
@@ -129,20 +131,18 @@ module ReVIEW
 
         # section information
         if @detail
-          printf('%6dC %5dL %5.1fP  ', result[:chars], result[:lines], calc_pages(result))
+          printf('%6dC %5dL %5.1fP  ', result.chars, result.lines, calc_pages(result))
         end
-        if @indent && result[:level]
-          print '  ' * (result[:level] == 0 ? 0 : result[:level] - 1)
+        if @indent && result.level
+          print '  ' * (result.level == 0 ? 0 : result.level - 1)
         end
-        puts result[:headline]
+        puts result.headline
       end
     end
 
     def calc_pages(result)
-      p = 0
-      p += result[:list_lines].to_f / @book.page_metric.list.n_lines
-      p += result[:text_lines].to_f / @book.page_metric.text.n_lines
-      p
+      (result.list_lines.to_f / @book.page_metric.list.n_lines) +
+        (result.text_lines.to_f / @book.page_metric.text.n_lines)
     end
 
     def calc_linesize(line)
@@ -160,7 +160,7 @@ module ReVIEW
 
     def parse_contents(name, upper, content)
       headline_array = []
-      counter = { lines: 0, chars: 0, list_lines: 0, text_lines: 0 }
+      counter = Counter.new(lines: 0, chars: 0, list_lines: 0, text_lines: 0)
       listmode = nil
 
       content.split("\n").each do |l|
@@ -175,59 +175,65 @@ module ReVIEW
           level = $1.to_i
           l = $'
           if level <= upper
-            if counter[:chars] > 0
+            if counter.chars > 0
               headline_array.push(counter)
             end
             headline = l
-            counter = {
+            counter = Counter.new(
               level: level,
               headline: headline,
               lines: 1,
               chars: headline.size,
               list_lines: 0,
               text_lines: 1
-            }
+            )
             next
           end
         end
 
-        counter[:lines] += 1
-        counter[:chars] += l.size
+        counter.lines += 1
+        counter.chars += l.size
 
         if listmode
           # code list: calculate line wrapping
           if l.size == 0
-            counter[:list_lines] += 1
+            counter.list_lines += 1
           else
-            counter[:list_lines] += (calc_linesize(l) - 1) / @book.page_metric.list.n_columns + 1
+            counter.list_lines += (calc_linesize(l) - 1) / @book.page_metric.list.n_columns + 1
           end
         else
           # normal paragraph: calculate line wrapping
           if l.size == 0
-            counter[:text_lines] += 1
+            counter.text_lines += 1
           else
-            counter[:text_lines] += (calc_linesize(l) - 1) / @book.page_metric.text.n_columns + 1
+            counter.text_lines += (calc_linesize(l) - 1) / @book.page_metric.text.n_columns + 1
           end
         end
       end
       headline_array.push(counter)
 
-      total_lines = 0
-      total_chars = 0
-      total_list_lines = 0
-      total_text_lines = 0
+      total = calc_total_count(name, headline_array)
+
+      headline_array.unshift(total)
+    end
+
+    def calc_total_count(name, headline_array)
+      total = Counter.new(name: name,
+                          lines: 0,
+                          chars: 0,
+                          list_lines: 0,
+                          text_lines: 0)
 
       headline_array.each do |h|
-        next unless h[:lines]
+        next unless h.lines
 
-        total_lines += h[:lines]
-        total_chars += h[:chars]
-        total_list_lines += h[:list_lines]
-        total_text_lines += h[:text_lines]
+        total.lines += h.lines
+        total.chars += h.chars
+        total.list_lines += h.list_lines
+        total.text_lines += h.text_lines
       end
 
-      headline_array.delete_if(&:empty?).
-        unshift({ name: name, lines: total_lines, chars: total_chars, list_lines: total_list_lines, text_lines: total_text_lines })
+      total
     end
 
     def build_chap(chap)
