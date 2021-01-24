@@ -37,13 +37,7 @@ module ReVIEW
 
   class TOCPrinter
     def self.execute(*args)
-      Signal.trap(:INT) { exit 1 }
-      if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
-        Signal.trap(:PIPE, 'IGNORE')
-      end
       new.execute(*args)
-    rescue Errno::EPIPE
-      exit 0
     end
 
     def initialize
@@ -53,6 +47,7 @@ module ReVIEW
       @indent = true
       @buildonly = nil
       @detail = nil
+      @calc_char_width = nil
     end
 
     def execute(*args)
