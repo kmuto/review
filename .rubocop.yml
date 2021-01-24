@@ -549,7 +549,7 @@ Metrics/MethodLength:
 
 ### should be < 20
 Metrics/CyclomaticComplexity:
-  Max: 32
+  Max: 25
 
 ### should be < 60
 Metrics/AbcSize:

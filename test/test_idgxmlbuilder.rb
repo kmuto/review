@@ -48,6 +48,19 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<title id="test" aid:pstyle="h3">1.0.1　this is test.</title><?dtp level="3" section="1.0.1　this is test."?>), actual
   end
 
+  def test_headline_secttags
+    @config['structuredxml'] = true
+    actual = compile_block("= HEAD1\n== HEAD1-1\n\n=== HEAD1-1-1\n\n== HEAD1-2\n\n==== HEAD1-2-0-1\n\n===== HEAD1-2-0-1-1\n\n== HEAD1-3\n")
+    expected = '<chapter id="chap:1"><title aid:pstyle="h1">第1章　HEAD1</title><?dtp level="1" section="第1章　HEAD1"?>' +
+               '<sect id="sect:1.1"><title aid:pstyle="h2">1.1　HEAD1-1</title><?dtp level="2" section="1.1　HEAD1-1"?>' +
+               '<sect2 id="sect:1.1.1"><title aid:pstyle="h3">HEAD1-1-1</title><?dtp level="3" section="HEAD1-1-1"?></sect2></sect>' +
+               '<sect id="sect:1.2"><title aid:pstyle="h2">1.2　HEAD1-2</title><?dtp level="2" section="1.2　HEAD1-2"?>' +
+               '<sect3 id="sect:1.2.0.1"><title aid:pstyle="h4">HEAD1-2-0-1</title><?dtp level="4" section="HEAD1-2-0-1"?>' +
+               '<sect4 id="sect:1.2.0.1.1"><title aid:pstyle="h5">HEAD1-2-0-1-1</title><?dtp level="5" section="HEAD1-2-0-1-1"?></sect4></sect3></sect>' +
+               '<sect id="sect:1.3"><title aid:pstyle="h2">1.3　HEAD1-3</title><?dtp level="2" section="1.3　HEAD1-3"?></sect></chapter>'
+    assert_equal expected, actual
+  end
+
   def test_label
     actual = compile_block("//label[label_test]\n")
     assert_equal %Q(<label id='label_test' />), actual
