@@ -695,4 +695,39 @@ large.svg: 250x150 exceeds a limit. suggeted value is 95x57
 EOS
     assert_equal expected, err
   end
+
+  def test_build_part
+    Dir.mktmpdir do |tmpdir|
+      book = ReVIEW::Book::Base.new
+      book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re])
+      io1 = StringIO.new("//list[sampletest][a]{\nfoo\n//}\n")
+      chap1 = ReVIEW::Book::Chapter.new(book, 1, 'ch1', 'ch1.re', io1)
+      part1 = ReVIEW::Book::Part.new(book, 1, [chap1])
+      book.parts = [part1]
+      epubmaker = ReVIEW::EPUBMaker.new
+      epubmaker.instance_eval do
+        @config = book.config
+        @producer = ReVIEW::EPUBMaker::Producer.new(@config)
+      end
+      epubmaker.build_part(part1, tmpdir, 'part1.html')
+
+      expected = <<-EOB
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:ops="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="generator" content="Re:VIEW" />
+  <title></title>
+</head>
+<body>
+<div class="part">
+<h1 class="part-number">第I部</h1>
+</div>
+</body>
+</html>
+      EOB
+      assert_equal expected, File.read(File.join(tmpdir, 'part1.html'))
+    end
+  end
 end

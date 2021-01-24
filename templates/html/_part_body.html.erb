@@ -1,0 +1,6 @@
+<div class="part">
+<h1 class="part-number"><%= h(ReVIEW::I18n.t('part', @part_number)) %></h1>
+<% if @part_title.present? %>
+<h2 class="part-title"><%= h(@part_title) %></h2>
+<% end %>
+</div>
