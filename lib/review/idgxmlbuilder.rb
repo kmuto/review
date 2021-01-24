@@ -103,15 +103,9 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      output_close_sect_tags(level)
       case level
       when 1
-        if @secttags
-          print '</sect4>' if @subsubsubsection > 0
-          print '</sect3>' if @subsubsection > 0
-          print '</sect2>' if @subsection > 0
-          print '</sect>' if @section > 0
-        end
-
         print %Q(<chapter id="chap:#{@chapter.number}">) if @secttags
 
         @section = 0
@@ -119,12 +113,6 @@ module ReVIEW
         @subsubsection = 0
         @subsubsubsection = 0
       when 2
-        if @secttags
-          print '</sect4>' if @subsubsubsection > 0
-          print '</sect3>' if @subsubsection > 0
-          print '</sect2>' if @subsection > 0
-          print '</sect>' if @section > 0
-        end
         @section += 1
         print %Q(<sect id="sect:#{@chapter.number}.#{@section}">) if @secttags
 
@@ -132,30 +120,17 @@ module ReVIEW
         @subsubsection = 0
         @subsubsubsection = 0
       when 3
-        if @secttags
-          print '</sect4>' if @subsubsubsection > 0
-          print '</sect3>' if @subsubsection > 0
-          print '</sect2>' if @subsection > 0
-        end
-
         @subsection += 1
         print %Q(<sect2 id="sect:#{@chapter.number}.#{@section}.#{@subsection}">) if @secttags
 
         @subsubsection = 0
         @subsubsubsection = 0
       when 4
-        if @secttags
-          print '</sect4>' if @subsubsubsection > 0
-          print '</sect3>' if @subsubsection > 0
-        end
-
         @subsubsection += 1
         print %Q(<sect3 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}">) if @secttags
 
         @subsubsubsection = 0
       when 5
-        print '</sect4>' if @secttags && @subsubsubsection > 0
-
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) if @secttags
       when 6 # rubocop:disable Lint/EmptyWhen
@@ -168,6 +143,23 @@ module ReVIEW
       label = label.nil? ? '' : %Q( id="#{label}")
       toccaption = escape(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>)
+    end
+
+    def output_close_sect_tags(level)
+      if @secttags
+        if level <= 5 && @subsubsubsection > 0
+          print '</sect4>'
+        end
+        if level <= 4 && @subsubsection > 0
+          print '</sect3>'
+        end
+        if level <= 3 && @subsection > 0
+          print '</sect2>'
+        end
+        if level <= 2 && @section > 0
+          print '</sect>'
+        end
+      end
     end
 
     def ul_begin
