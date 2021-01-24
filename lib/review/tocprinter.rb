@@ -84,21 +84,21 @@ module ReVIEW
           if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
             result_array.push(Counter.new(part: 'start'))
             if part.file?
-              result = build_chap(part)
-              result_array += parse_contents(part.name, @upper, result)
+              content = build_chap(part)
+              result_array.concat(parse_contents(part.name, @upper, content))
             else
               title = part.format_number + I18n.t('chapter_postfix') + part.title
-              result_array += [
+              result_array.push(
                 Counter.new(name: '', lines: 1, chars: title.size, list_lines: 0, text_lines: 1),
                 Counter.new(level: 0, headline: title, lines: 1, chars: title.size, list_lines: 0, text_lines: 1)
-              ]
+              )
             end
           end
 
           part.chapters.each do |chap|
             if @buildonly.nil? || @buildonly.include?(chap.name)
-              result = build_chap(chap)
-              result_array += parse_contents(chap.name, @upper, result)
+              content = build_chap(chap)
+              result_array.concat(parse_contents(chap.name, @upper, content))
             end
           end
           if part.name.present? && (@buildonly.nil? || @buildonly.include?(part.name))
@@ -163,7 +163,7 @@ module ReVIEW
       counter = Counter.new(lines: 0, chars: 0, list_lines: 0, text_lines: 0)
       listmode = nil
 
-      content.split("\n").each do |l|
+      content.each_line(chomp: true) do |l|
         if l.start_with?("\x01STARTLIST\x01")
           listmode = true
           next
@@ -196,25 +196,27 @@ module ReVIEW
 
         if listmode
           # code list: calculate line wrapping
-          if l.size == 0
-            counter.list_lines += 1
-          else
-            counter.list_lines += (calc_linesize(l) - 1) / @book.page_metric.list.n_columns + 1
-          end
+          counter.list_lines += calc_line_wrapping(l, mode: :list)
         else
           # normal paragraph: calculate line wrapping
-          if l.size == 0
-            counter.text_lines += 1
-          else
-            counter.text_lines += (calc_linesize(l) - 1) / @book.page_metric.text.n_columns + 1
-          end
+          counter.text_lines += calc_line_wrapping(l, mode: :text)
         end
       end
       headline_array.push(counter)
 
       total = calc_total_count(name, headline_array)
-
       headline_array.unshift(total)
+    end
+
+    def calc_line_wrapping(line, mode:)
+      return 1 if line.size == 0
+
+      case mode
+      when :list
+        (calc_linesize(line) - 1) / @book.page_metric.list.n_columns + 1
+      else # mode == :text
+        (calc_linesize(line) - 1) / @book.page_metric.text.n_columns + 1
+      end
     end
 
     def calc_total_count(name, headline_array)
