@@ -36,7 +36,20 @@ module ReVIEW
   end
 
   class TOCPrinter
-    Counter = Struct.new(:name, :level, :headline, :lines, :chars, :list_lines, :text_lines, :part, keyword_init: true)
+    class Counter
+      def initialize(name: nil, level: nil, headline: nil, lines: nil, chars: nil, list_lines: nil, text_lines: nil, part: nil)
+        @name = name
+        @level = level
+        @headline = headline
+        @lines = lines
+        @chars = chars
+        @list_lines = list_lines
+        @text_lines = text_lines
+        @part = part
+      end
+
+      attr_accessor :name, :level, :headline, :lines, :chars, :list_lines, :text_lines, :part
+    end
 
     def self.execute(*args)
       new.execute(*args)
