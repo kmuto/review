@@ -145,19 +145,17 @@ module ReVIEW
       p
     end
 
-    def calc_linesize(l)
-      return l.size unless @calc_char_width
+    def calc_linesize(line)
+      return line.size unless @calc_char_width
 
-      w = 0
-      l.split('').each do |c|
+      line.each_char.inject(0) do |result, char|
         # XXX: should include A also?
-        if %i[Na H N].include?(Unicode::Eaw.property(c))
-          w += 0.5 # halfwidth
+        if %i[Na H N].include?(Unicode::Eaw.property(char))
+          result + 0.5 # halfwidth
         else
-          w += 1
+          result + 1
         end
       end
-      w
     end
 
     def parse_contents(name, upper, content)
