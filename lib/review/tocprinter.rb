@@ -50,6 +50,8 @@ module ReVIEW
       @calc_char_width = nil
     end
 
+    attr_accessor :calc_char_width
+
     def execute(*args)
       parse_options(args)
       @config = ReVIEW::Configure.create(yamlfile: @yamlfile)
