@@ -214,8 +214,6 @@ EOT
         # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
         FileUtils.cp(File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty'))
       end
-
-      FileUtils.cp(File.join(@review_dir, 'vendor/ascolorbox/ascolorbox.sty'), File.join(texmacrodir, 'ascolorbox.sty'))
     end
 
     def generate_rakefile(dir)

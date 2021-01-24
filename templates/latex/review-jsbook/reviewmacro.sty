@@ -4,6 +4,11 @@
 % Re:VIEW 2互換のreviewmacro.sty(装飾カスタマイズ)内容
 \RequirePackage{review-style}
 
+% 囲み飾りの設定
+\ifdefined\reviewboxsetting%
+  \RequirePackage{review-tcbox}
+\fi
+
 % ユーザー固有の定義
 \RequirePackage{review-custom}
 

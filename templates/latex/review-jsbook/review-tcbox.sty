@@ -1,0 +1,66 @@
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{areview-tcbox}[2021/1/24, Version 0.0.1]
+% original version: ascolorbox 2019/4/30, Version 1.0.3]
+\RequirePackage{tikz,tcolorbox,varwidth,multicol,ifthen,ifptex,ifluatex,ifuptex,ifxetex}
+
+\usetikzlibrary{calc}
+\tcbuselibrary{xparse,hooks,skins,breakable}
+
+\ifthenelse{\boolean{luatex}}{% LuaLaTeX
+              \RequirePackage{luatexja}
+              \def\reviewtcb@textgt#1{\textgt{#1}}
+              \def\reviewtcb@gtfamily{\gtfamily}
+              \def\reviewtcb@zw#1#2{#1\zw}
+       }{
+              \ifthenelse{\boolean{xetex}}{% XeLaTeX
+                     \RequirePackage{zxjatype}
+                     \def\reviewtcb@textgt#1{\textbf{#1}}
+                     \def\reviewtcb@gtfamily{\bfseries}
+                     \def\reviewtcb@zw#1#2{#2}
+              }{
+                     \ifthenelse{\boolean{ptex}}{% pLaTeX
+                            \def\reviewtcb@textgt#1{\textgt{#1}}
+                            \def\reviewtcb@gtfamily{\gtfamily}
+                            \def\reviewtcb@zw#1#2{#1zw}
+                     }{
+                            \ifthenelse{\boolean{uptex}}{% upLaTeX
+                                   \def\reviewtcb@textgt#1{\textgt{#1}}
+                                   \def\reviewtcb@gtfamily{\gtfamily}
+                                   \def\reviewtcb@zw#1#2{#1zw}
+                            }{% pdfLaTeX
+                                   \RequirePackage[whole]{bxcjkjatype}
+                                   \def\reviewtcb@textgt#1{\textbf{#1}}
+                                   \def\reviewtcb@gtfamily{\gtfamily}
+                                   \def\reviewtcb@zw#1#2{#2}
+                            }
+                 }
+              }
+}
+
+% squarebox
+\DeclareTColorBox{rv@squarebox@nocaption}{ O{} }{%
+  empty, % スキン
+  left=3mm,right=3mm,top=3mm,bottom=3mm, % 内部パディング。デフォルトは4mm
+  arc = 0mm, % コーナーの角度
+  % カラーは 色A!色Aの含み具合!色B。色Bを省略したときにはwhite。
+  colback=white, %white, % 背景。デフォルトはblack!5!white
+  breakable, % 分断許容
+  enhanced jigsaw, % 分断時に罫線切り取り
+  pad at break=0mm, % 分断されたときの上下アキ。デフォルトは3.5mm
+  boxrule=.25mm, % 線幅。toprule,bottomrule,leftrule,rightruleで個別指定も可
+  #1}
+
+\DeclareTColorBox{rv@squarebox@caption}{ m O{} }{%
+  empty,
+  left=3mm,right=3mm,top=3mm,bottom=3mm,
+  arc = 0mm,
+  colback=white,
+  breakable,
+  enhanced jigsaw,
+  pad at break=0mm,
+  boxrule=.25mm,
+  coltitle=black, % キャプション文字色
+  colbacktitle=white, % キャプション背景
+  title={#1},
+  #2}
