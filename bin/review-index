@@ -13,4 +13,13 @@ $LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'review/tocprinter'
 
-ReVIEW::TOCPrinter.execute(*ARGV)
+begin
+  Signal.trap(:INT) { exit 1 }
+  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
+    Signal.trap(:PIPE, 'IGNORE')
+  end
+
+  ReVIEW::TOCPrinter.execute(*ARGV)
+rescue Errno::EPIPE
+  exit 0
+end

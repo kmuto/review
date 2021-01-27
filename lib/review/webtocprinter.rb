@@ -25,28 +25,28 @@ EOT
 
       path = ''
       result_array.each do |result|
-        unless result[:headline]
-          result[:headline] = '-'
+        unless result.headline
+          result.headline = '-'
         end
 
-        if result[:name]
-          path = "#{result[:name]}.#{@book.config['htmlext']}"
+        if result.name
+          path = "#{result.name}.#{@book.config['htmlext']}"
           next
         end
 
-        if result[:part]
-          if result[:part] == 'end'
+        if result.part
+          if result.part == 'end'
             content << "</ul></li>\n"
           end
           next
         end
 
         if path.start_with?('.')
-          content << "<li>#{escape(result[:headline])}"
+          content << "<li>#{escape(result.headline)}"
         else
-          content << %Q(<li><a href="#{path}">#{escape(result[:headline])}</a>)
+          content << %Q(<li><a href="#{path}">#{escape(result.headline)}</a>)
         end
-        if result[:level] == 0
+        if result.level == 0
           content << "\n<ul>" # part
         else
           content << "</li>\n"
