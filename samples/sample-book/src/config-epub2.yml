@@ -11,7 +11,7 @@ language: ja
 # 書名
 booktitle: Re:VIEWサンプル書籍
 # 固有IDに使用するドメイン。省略した場合は時刻に基づくランダムUUIDが入る
-urnid: urn:uid:http://tatsu-zine.com/books/review-sample-book/1.0.0/
+urnid: urn:uuid:http://tatsu-zine.com/books/review-sample-book/1.0.0/
 # ISBN。省略した場合はurnidが入る
 # isbn: null
 # 著者名。["高橋征義", "John Doe"] のように配列を使うことで複数指定可
