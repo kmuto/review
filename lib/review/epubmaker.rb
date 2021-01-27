@@ -422,12 +422,19 @@ module ReVIEW
       properties
     end
 
-    def write_info_body(basetmpdir, _id, filename, ispart = nil, chaptype = nil)
+    def parse_headlines(path)
       headlines = []
+
+      File.open(path) do |htmlio|
+        REXML::Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
+      end
+
+      headlines
+    end
+
+    def write_info_body(basetmpdir, _id, filename, ispart = nil, chaptype = nil)
       path = File.join(basetmpdir, filename)
-      htmlio = File.new(path)
-      REXML::Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
-      htmlio.close
+      headlines = parse_headlines(path)
 
       if headlines.empty?
         warn "#{filename} is discarded because there is no heading. Use `=[notoc]' or `=[nodisp]' to exclude headlines from the table of contents."

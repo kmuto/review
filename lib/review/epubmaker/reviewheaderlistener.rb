@@ -7,6 +7,15 @@
 #
 module ReVIEW
   class EPUBMaker
+    # Listener class to scan HTML and get heading information
+    #
+    # The heading information this listener will retrieve is as follows:
+    #
+    # * level: Heading level (1..6)
+    # * id: HTMl ID attribute. Basically the `id` attribute of the h(1-6) element, but if there is an `a` element within the h(1-6) element, it will be its `id` attribute.
+    # * title: The title string of the headline. Usually, it is the text within the h(1-6) element, but if there is an `img` element, it will be the text with its `alt` attribute.
+    # * notoc: The `notoc` attribute of the headline element.
+    #
     class ReVIEWHeaderListener
       include REXML::StreamListener
       def initialize(headlines)
@@ -22,7 +31,7 @@ module ReVIEW
           @level = $1.to_i
           @id = attrs['id'] if attrs['id'].present?
           @notoc = attrs['notoc'] if attrs['notoc'].present?
-        elsif !@level.nil?
+        elsif @level.present? # if in <hN> tag
           if name == 'img' && attrs['alt'].present?
             @content << attrs['alt']
           elsif name == 'a' && attrs['id'].present?
