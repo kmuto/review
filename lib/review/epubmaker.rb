@@ -319,13 +319,9 @@ module ReVIEW
     def build_part(part, basetmpdir, htmlfile)
       log("Create #{htmlfile} from a template.")
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
-        @body = ''
-        @body << %Q(<div class="part">\n)
-        @body << %Q(<h1 class="part-number">#{h(ReVIEW::I18n.t('part', part.number))}</h1>\n)
-        if part.name.strip.present?
-          @body << %Q(<h2 class="part-title">#{h(part.name.strip)}</h2>\n)
-        end
-        @body << %Q(</div>\n)
+        @part_number = part.number
+        @part_title = part.name.strip
+        @body = ReVIEW::Template.generate(path: 'html/_part_body.html.erb', binding: binding)
 
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
