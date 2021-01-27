@@ -10,6 +10,7 @@ require 'review/exception'
 require 'review/textutils'
 require 'review/compiler'
 require 'review/sec_counter'
+require 'review/img_math'
 require 'stringio'
 require 'fileutils'
 require 'tempfile'
@@ -56,6 +57,7 @@ module ReVIEW
       @tabwidth = nil
       @tsize = nil
       if @book && @book.config
+        @img_math ||= ReVIEW::ImgMath.new(@book.config)
         if words_file_path = @book.config['words_file']
           if words_file_path.is_a?(String)
             words_files = [words_file_path]
