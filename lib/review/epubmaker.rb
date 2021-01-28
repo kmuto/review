@@ -319,13 +319,9 @@ module ReVIEW
     def build_part(part, basetmpdir, htmlfile)
       log("Create #{htmlfile} from a template.")
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
-        @body = ''
-        @body << %Q(<div class="part">\n)
-        @body << %Q(<h1 class="part-number">#{h(ReVIEW::I18n.t('part', part.number))}</h1>\n)
-        if part.name.strip.present?
-          @body << %Q(<h2 class="part-title">#{h(part.name.strip)}</h2>\n)
-        end
-        @body << %Q(</div>\n)
+        @part_number = part.number
+        @part_title = part.name.strip
+        @body = ReVIEW::Template.generate(path: 'html/_part_body.html.erb', binding: binding)
 
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
@@ -426,12 +422,19 @@ module ReVIEW
       properties
     end
 
-    def write_info_body(basetmpdir, _id, filename, ispart = nil, chaptype = nil)
+    def parse_headlines(path)
       headlines = []
+
+      File.open(path) do |htmlio|
+        REXML::Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
+      end
+
+      headlines
+    end
+
+    def write_info_body(basetmpdir, _id, filename, ispart = nil, chaptype = nil)
       path = File.join(basetmpdir, filename)
-      htmlio = File.new(path)
-      REXML::Document.parse_stream(htmlio, ReVIEWHeaderListener.new(headlines))
-      htmlio.close
+      headlines = parse_headlines(path)
 
       if headlines.empty?
         warn "#{filename} is discarded because there is no heading. Use `=[notoc]' or `=[nodisp]' to exclude headlines from the table of contents."

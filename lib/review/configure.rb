@@ -32,7 +32,7 @@ module ReVIEW
         'date' => Time.now.strftime('%Y-%m-%d'), # publishing date
         'rights' => nil, # Copyright messages
         'description' => nil, # Description
-        'urnid' => "urn:uid:#{SecureRandom.uuid}", # Identifier
+        'urnid' => "urn:uuid:#{SecureRandom.uuid}", # Identifier
         'stylesheet' => [], # stylesheet file
         'coverfile' => nil, # content file of body of cover page
         'mytoc' => nil, # whether make own table of contents or not
