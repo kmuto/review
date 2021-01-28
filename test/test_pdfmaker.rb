@@ -261,4 +261,75 @@ class PDFMakerTest < Test::Unit::TestCase
               '2012年1月31日 ver 1.2.1発行']
     assert_equal expect, history
   end
+
+  def test_box_setting_is_defined
+    %w[column note memo tip info warning important caution notice].each do |name|
+      @config['pdfmaker']['boxsetting'] = {
+        name => { 'style' => 'simplebox' }
+      }
+      assert !ReVIEW::LaTeXBox.new.tcbox(@config).empty?
+    end
+    @config['pdfmaker']['boxsetting'] = {
+      'invalid' => { 'style' => 'simplebox' }
+    }
+    assert ReVIEW::LaTeXBox.new.tcbox(@config).empty?
+  end
+
+  def test_box_setting_options
+    @config['pdfmaker']['boxsetting'] = {
+      'note' => { 'style' => 'simplebox' },
+      'important' => { 'style' => 'simplebox', 'options' => 'colback=blue,arc=3mm' },
+      'caution' => { 'style' => 'squarecaptionbox', 'options_with_caption' => 'attach boxed title to top bottom' }
+    }
+
+    expected = <<-EOS
+\\renewenvironment{reviewnote}[1][]{%
+  \\csdef{rv@tmp@withcaption}{true}
+  \\notblank{##1}{
+    \\begin{rv@simplebox@caption}{##1}
+   }{
+    \\csundef{rv@tmp@withcaption}
+    \\begin{rv@simplebox@nocaption}
+   }
+}{
+  \\ifcsdef{rv@tmp@withcaption}{
+    \\end{rv@simplebox@caption}
+  }{
+    \\end{rv@simplebox@nocaption}
+  }
+}
+\\renewenvironment{reviewimportant}[1][]{%
+  \\csdef{rv@tmp@withcaption}{true}
+  \\notblank{##1}{
+    \\begin{rv@simplebox@caption}{##1}[colback=blue,arc=3mm]
+   }{
+    \\csundef{rv@tmp@withcaption}
+    \\begin{rv@simplebox@nocaption}[colback=blue,arc=3mm]
+   }
+}{
+  \\ifcsdef{rv@tmp@withcaption}{
+    \\end{rv@simplebox@caption}
+  }{
+    \\end{rv@simplebox@nocaption}
+  }
+}
+\\renewenvironment{reviewcaution}[1][]{%
+  \\csdef{rv@tmp@withcaption}{true}
+  \\notblank{##1}{
+    \\begin{rv@squarecaptionbox@caption}{##1}[attach boxed title to top bottom]
+   }{
+    \\csundef{rv@tmp@withcaption}
+    \\begin{rv@squarecaptionbox@nocaption}
+   }
+}{
+  \\ifcsdef{rv@tmp@withcaption}{
+    \\end{rv@squarecaptionbox@caption}
+  }{
+    \\end{rv@squarecaptionbox@nocaption}
+  }
+}
+EOS
+    actual = ReVIEW::LaTeXBox.new.tcbox(@config)
+    assert_equal expected, actual
+  end
 end

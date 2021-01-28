@@ -209,9 +209,9 @@ EOT
       FileUtils.cp(Dir.glob(File.join(tdir, '*.*')), texmacrodir)
 
       if @template == 'review-jsbook'
-        # provide jsbook from vendor/. current version is 2018/06/23
+        # provide jsbook from vendor/. current version is 2020/10/09
         FileUtils.cp(File.join(@review_dir, 'vendor/jsclasses/jsbook.cls'), File.join(texmacrodir, 'jsbook.cls'))
-        # provide gentombow from vendor/. current version is 2018/08/30 v0.9j
+        # provide gentombow from vendor/. current version is 2019/07/21 v0.9k
         FileUtils.cp(File.join(@review_dir, 'vendor/gentombow/gentombow.sty'), File.join(texmacrodir, 'gentombow.sty'))
       end
     end

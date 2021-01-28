@@ -16,7 +16,9 @@ module ReVIEW
       ret = ''
 
       %w[column note memo tip info warning important caution notice].each do |name|
-        if config['pdfmaker']['boxsetting'][name].nil? || config['pdfmaker']['boxsetting'][name]['style'].nil?
+        if config['pdfmaker'].nil? || config['pdfmaker']['boxsetting'].nil? ||
+           config['pdfmaker']['boxsetting'][name].nil? ||
+           config['pdfmaker']['boxsetting'][name]['style'].nil?
           next
         end
 
