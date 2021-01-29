@@ -22,8 +22,8 @@ module ReVIEW
           next
         end
 
-        options = nil
-        options_with_caption = nil
+        options = '[]'
+        options_with_caption = '[]'
         if config['pdfmaker']['boxsetting'][name]['options']
           options = "[#{config['pdfmaker']['boxsetting'][name]['options']}]"
           options_with_caption = options
