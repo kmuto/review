@@ -286,10 +286,10 @@ class PDFMakerTest < Test::Unit::TestCase
 \\renewenvironment{reviewnote}[1][]{%
   \\csdef{rv@tmp@withcaption}{true}
   \\notblank{##1}{
-    \\begin{rv@simplebox@caption}{##1}
+    \\begin{rv@simplebox@caption}{##1}[]
    }{
     \\csundef{rv@tmp@withcaption}
-    \\begin{rv@simplebox@nocaption}
+    \\begin{rv@simplebox@nocaption}[]
    }
 }{
   \\ifcsdef{rv@tmp@withcaption}{
@@ -319,7 +319,7 @@ class PDFMakerTest < Test::Unit::TestCase
     \\begin{rv@squarecaptionbox@caption}{##1}[attach boxed title to top bottom]
    }{
     \\csundef{rv@tmp@withcaption}
-    \\begin{rv@squarecaptionbox@nocaption}
+    \\begin{rv@squarecaptionbox@nocaption}[]
    }
 }{
   \\ifcsdef{rv@tmp@withcaption}{
