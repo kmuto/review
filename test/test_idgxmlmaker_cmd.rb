@@ -30,7 +30,7 @@ class IDGXMLMakerCmdTest < Test::Unit::TestCase
       Dir.chdir(@tmpdir1) do
         _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_IDGXMLMAKER} #{option} #{configfile}")
         if defined?(ReVIEW::TTYLogger)
-          assert_match /SUCCESS/, e
+          assert_match(/SUCCESS/, e)
         else
           assert_equal '', e
         end
