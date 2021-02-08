@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{review-style}[2019/09/16]
+\ProvidesPackage{review-style}[2021/01/06]
 
 \RequirePackage{fancyhdr}
 \pagestyle{fancy}
@@ -47,3 +47,8 @@
 
 % space between English/Japanese characters in list environments (\z@ means 0, no space. You can comment out below line for backward compatibility.)
 \def\reviewlistxkanjiskip{\z@}
+
+% boxsetting
+\ifdefined\reviewboxsetting
+  \reviewboxsetting
+\fi

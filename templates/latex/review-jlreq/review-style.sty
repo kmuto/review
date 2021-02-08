@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{review-style}[2019/09/16]
+\ProvidesPackage{review-style}[2020/01/06]
 
 %% using Helvetica as sans-serif
 \renewcommand{\sfdefault}{phv}
@@ -36,3 +36,8 @@
 
 % リスト内和欧空き幅 (\z@は0で、空きなしを意味する。互換性で空きを入れたいときは以下の行をコメントアウトする)
 \def\reviewlistxkanjiskip{\z@}
+
+% boxsetting
+\ifdefined\reviewboxsetting
+  \reviewboxsetting
+\fi

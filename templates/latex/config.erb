@@ -104,6 +104,11 @@
 <%- if @config['pdfmaker']['bbox'] -%>
 \def\review@bbox{<%= @config['pdfmaker']['bbox'] %>}
 <%- end -%>
+<%- if @boxsetting -%>
+\newcommand{\reviewboxsetting}{%
+<%= @boxsetting %>%
+}
+<%- end -%>
 
 \def\reviewbackcompatibilityhook{
   \ifdefined\reviewimagecaption\else% for 3.0.0 compatibility

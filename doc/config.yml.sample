@@ -426,4 +426,17 @@ pdfmaker:
   colophon: true
   # 表紙挿入時に表紙のページ番号名を「cover」とし、偶数ページ扱いにして大扉前に白ページが入るのを防ぐ。デフォルトはtrue
   # use_cover_nombre: true
+  #
+  # 囲み表現の切り替え設定
+  # column, note, memo, tip, info, warning, important, caution, noticeを設定可
+  # styleはreview-tcbox.styまたは独自に作成したスタイルで定義済みの囲みスタイル名
+  # optionsはキャプションなし囲みに対するtcolorboxの追加・上書きオプション
+  # options_with_captionはキャプション付き囲みのtcolorboxの追加・上書きオプション（省略した場合はoptionsと同じ）
+  #
+  # boxsetting:
+  #   note:
+  #     style: squarebox
+  #     options: "colback=black!5!white"
+  #     options_with_caption: "colbacktitle=black!25!white"
+  #
   # pdfmaker:階層を使うものはここまで

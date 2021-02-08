@@ -4,6 +4,11 @@
 % スタイル装飾
 \usepackage{review-style}
 
+% 囲み飾りの設定
+\ifdefined\reviewboxsetting%
+  \RequirePackage{review-tcbox}
+\fi
+
 % ユーザー固有の定義
 \usepackage{review-custom}
 
