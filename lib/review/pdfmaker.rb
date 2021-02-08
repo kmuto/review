@@ -291,6 +291,9 @@ module ReVIEW
         build_pdf
 
         FileUtils.cp(File.join(@path, "#{@mastertex}.pdf"), pdf_filepath)
+        if @logger.ttylogger?
+          @logger.success("built #{pdf_filepath}")
+        end
       ensure
         remove_entry_secure(@path) unless @config['debug']
       end

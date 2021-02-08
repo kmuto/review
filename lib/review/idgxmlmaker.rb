@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Kenshi Muto
+# Copyright (c) 2019-2021 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -86,6 +86,9 @@ module ReVIEW
       I18n.setup(@config['language'])
       begin
         generate_idgxml_files(yamlfile)
+        if @logger.ttylogger?
+          @logger.success("built #{Dir.pwd}/#{build_path}")
+        end
       rescue ApplicationError => e
         raise if @config['debug']
 

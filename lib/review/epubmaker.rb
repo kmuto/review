@@ -99,8 +99,13 @@ module ReVIEW
 
     def update_log_level
       if @config['debug']
-        @logger.level = Logger::DEBUG
-      else
+        if @logger.ttylogger?
+          ReVIEW.logger = nil
+          @logger = ReVIEW.logger(level: 'debug')
+        else
+          @logger.level = Logger::DEBUG
+        end
+      elsif !@logger.ttylogger?
         @logger.level = Logger::INFO
       end
     end
@@ -190,6 +195,9 @@ module ReVIEW
         log('Call ePUB producer.')
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir, base_dir: @basedir)
         log('Finished.')
+        if @logger.ttylogger?
+          @logger.success("built #{@basedir}/#{bookname}.epub")
+        end
       rescue ApplicationError => e
         raise if @config['debug']
 
