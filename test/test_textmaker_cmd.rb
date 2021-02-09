@@ -29,7 +29,11 @@ class TEXTMakerCmdTest < Test::Unit::TestCase
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name']) + RbConfig::CONFIG['EXEEXT']
       Dir.chdir(@tmpdir1) do
         _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_TEXTMAKER} #{option} #{configfile}")
-        assert_equal '', e
+        if defined?(ReVIEW::TTYLogger)
+          assert_match(/SUCCESS/, e)
+        else
+          assert_equal '', e
+        end
         assert s.success?
       end
       assert File.exist?(File.join(@tmpdir1, targetfile))

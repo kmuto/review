@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2020 Kenshi Muto
+# Copyright (c) 2018-2021 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -88,6 +88,7 @@ module ReVIEW
       I18n.setup(@config['language'])
       begin
         generate_text_files(yamlfile)
+        @logger.success("built #{build_path}")
       rescue ApplicationError => e
         raise if @config['debug']
 

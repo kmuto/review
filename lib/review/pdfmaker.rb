@@ -291,6 +291,7 @@ module ReVIEW
         build_pdf
 
         FileUtils.cp(File.join(@path, "#{@mastertex}.pdf"), pdf_filepath)
+        @logger.success("built #{File.basename(pdf_filepath)}")
       ensure
         remove_entry_secure(@path) unless @config['debug']
       end

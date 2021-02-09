@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
+# Copyright (c) 2016-2021 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -94,6 +94,7 @@ module ReVIEW
       I18n.setup(@config['language'])
       begin
         generate_html_files(yamlfile)
+        @logger.success("built #{build_path}")
       rescue ApplicationError => e
         raise if @config['debug']
 
