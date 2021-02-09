@@ -195,9 +195,7 @@ module ReVIEW
         log('Call ePUB producer.')
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir, base_dir: @basedir)
         log('Finished.')
-        if @logger.ttylogger?
-          @logger.success("built #{@basedir}/#{bookname}.epub")
-        end
+        @logger.success("built #{bookname}.epub")
       rescue ApplicationError => e
         raise if @config['debug']
 

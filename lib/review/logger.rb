@@ -10,6 +10,10 @@ module ReVIEW
     def ttylogger?
       nil
     end
+
+    def success(_log)
+      # empty (for backward compatibility)
+    end
   end
 
   begin

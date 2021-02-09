@@ -86,9 +86,7 @@ module ReVIEW
       I18n.setup(@config['language'])
       begin
         generate_idgxml_files(yamlfile)
-        if @logger.ttylogger?
-          @logger.success("built #{Dir.pwd}/#{build_path}")
-        end
+        @logger.success("built #{build_path}")
       rescue ApplicationError => e
         raise if @config['debug']
 
