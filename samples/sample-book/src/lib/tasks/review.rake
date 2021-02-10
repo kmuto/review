@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
+# Copyright (c) 2006-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,11 @@ EPUB_OPTIONS = ENV['REVIEW_EPUB_OPTIONS'] || ''
 WEB_OPTIONS = ENV['REVIEW_WEB_OPTIONS'] || ''
 IDGXML_OPTIONS = ENV['REVIEW_IDGXML_OPTIONS'] || ''
 TEXT_OPTIONS = ENV['REVIEW_TEXT_OPTIONS'] || ''
+
+REVIEW_VSBIN = ENV['REVIEW_VSBIN'] || 'vivliostyle'
+REVIEW_VSBIN_USESANDBOX = ENV['REVIEW_VSBIN_USESANDBOX'] ? '' : '--no-sandbox'
+REVIEW_VSBIN_PDF = ENV['REVIEW_VSBIN_PDF'] || BOOK_PDF
+REVIEW_VSBIN_OPTIONS = ENV['REVIEW_VSBIN_OPTIONS'] || ''
 
 def build(mode, chapter)
   sh("review-compile --target=#{mode} --footnotetext --stylesheet=style.css #{chapter} > tmp")
@@ -124,5 +129,16 @@ end
 file IDGXMLROOT => SRC do
   FileUtils.rm_rf([IDGXMLROOT])
 end
+
+desc 'run vivliostyle'
+task 'vivliostyle:preview': BOOK_EPUB do
+  sh "#{REVIEW_VSBIN} preview #{REVIEW_VSBIN_USESANDBOX} #{REVIEW_VSBIN_OPTIONS} #{BOOK_EPUB}"
+end
+
+task 'vivliostyle:build': BOOK_EPUB do
+  sh "#{REVIEW_VSBIN} build #{REVIEW_VSBIN_USESANDBOX} #{REVIEW_VSBIN_OPTIONS} -o #{REVIEW_VSBIN_PDF} #{BOOK_EPUB}"
+end
+
+task vivliostyle: 'vivliostyle:build'
 
 CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT, 'images/_review_math', 'images/_review_math_text', TEXTROOT, IDGXMLROOT])
