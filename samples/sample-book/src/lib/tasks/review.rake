@@ -36,10 +36,10 @@ WEB_OPTIONS = ENV['REVIEW_WEB_OPTIONS'] || ''
 IDGXML_OPTIONS = ENV['REVIEW_IDGXML_OPTIONS'] || ''
 TEXT_OPTIONS = ENV['REVIEW_TEXT_OPTIONS'] || ''
 
-REVIEW_VSBIN = ENV['REVIEW_VSBIN'] || 'vivliostyle'
-REVIEW_VSBIN_USESANDBOX = ENV['REVIEW_VSBIN_USESANDBOX'] ? '' : '--no-sandbox'
-REVIEW_VSBIN_PDF = ENV['REVIEW_VSBIN_PDF'] || BOOK_PDF
-REVIEW_VSBIN_OPTIONS = ENV['REVIEW_VSBIN_OPTIONS'] || ''
+REVIEW_VSCLI = ENV['REVIEW_VSCLI'] || 'vivliostyle'
+REVIEW_VSCLI_USESANDBOX = ENV['REVIEW_VSCLI_USESANDBOX'] ? '' : '--no-sandbox'
+REVIEW_VSCLI_PDF = ENV['REVIEW_VSCLI_PDF'] || BOOK_PDF
+REVIEW_VSCLI_OPTIONS = ENV['REVIEW_VSCLI_OPTIONS'] || ''
 
 def build(mode, chapter)
   sh("review-compile --target=#{mode} --footnotetext --stylesheet=style.css #{chapter} > tmp")
@@ -132,11 +132,11 @@ end
 
 desc 'run vivliostyle'
 task 'vivliostyle:preview': BOOK_EPUB do
-  sh "#{REVIEW_VSBIN} preview #{REVIEW_VSBIN_USESANDBOX} #{REVIEW_VSBIN_OPTIONS} #{BOOK_EPUB}"
+  sh "#{REVIEW_VSCLI} preview #{REVIEW_VSCLI_USESANDBOX} #{REVIEW_VSCLI_OPTIONS} #{BOOK_EPUB}"
 end
 
 task 'vivliostyle:build': BOOK_EPUB do
-  sh "#{REVIEW_VSBIN} build #{REVIEW_VSBIN_USESANDBOX} #{REVIEW_VSBIN_OPTIONS} -o #{REVIEW_VSBIN_PDF} #{BOOK_EPUB}"
+  sh "#{REVIEW_VSCLI} build #{REVIEW_VSCLI_USESANDBOX} #{REVIEW_VSCLI_OPTIONS} -o #{REVIEW_VSCLI_PDF} #{BOOK_EPUB}"
 end
 
 task vivliostyle: 'vivliostyle:build'

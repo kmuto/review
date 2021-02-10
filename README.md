@@ -62,11 +62,12 @@ $ echo "export PATH=PATH_OF_REVIEW/bin:$PATH" >> ~/.profile
 $ review-init hello
 $ cd hello
 $ (... add and edit *.re file, config.yml and catalog.yml ...)
-$ rake epub    ## generating EPUB
-$ rake pdf     ## generating PDF (Requirement TeXLive)
-$ rake text    ## generating texts
-$ rake web     ## generating Web pages
-$ rake idgxml  ## generating InDesign XML files
+$ rake epub         ## generating EPUB
+$ rake pdf          ## generating PDF (Requirement TeXLive)
+$ rake text         ## generating texts
+$ rake web          ## generating Web pages
+$ rake idgxml       ## generating InDesign XML files
+$ rake vivliostyle  ## generating PDF using Vivliostyle-CLI (Requirement Vivliostyle-CLI)
 ```
 
 For further information, see [doc/quickstart.md](https://github.com/kmuto/review/blob/master/doc/quickstart.md)
