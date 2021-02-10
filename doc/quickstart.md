@@ -9,7 +9,7 @@ Re:VIEW is free software under the terms of the GNU Lesser General Public Licens
 
 This article describes how to setup Re:VIEW and use it.
 
-The supported version of the article is Re:VIEW 4.2.
+The supported version of the article is Re:VIEW 5.1.
 
 ## Set up Re:VIEW
 
@@ -161,6 +161,16 @@ $ rake idgxml    ## generate InDesign XML
 
 There is a sample YAML file [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample) in the same directory of this document.
 
+#### generate PDF using Vivliostyle CLI
+
+Instead of using TeX (`review-pdfmaker` or `rake pdf`), you can also create a PDF use [Vivliostyle CLI](https://github.com/vivliostyle/vivliostyle-cli). Re:VIEW creates EPUB first and then converts it to PDF with Vivliostyle CLI.
+
+```bash
+$ rake vivliostyle:build    ## build PDF using Viliostyle
+$ rake vivliostyle:preview  ## preview pages in Chrome/Chromium browser
+$ rake vivliostyle          ## shortcut of vivliostyle:build
+```
+
 ### add chapters and modify them
 
 `catalog.yml` file is a catalog of Re:VIEW format files.
@@ -181,7 +191,6 @@ POSTDEF:
 ```
 
 The first item in CHAPS is the first chapter, and the second item (if you add) is the second chapter. PREDEF is for front matter, APPENDIX is for appendix, and POSTDEF is for back matter.  You can see in detail with [catalog.md](https://github.com/kmuto/review/blob/master/doc/catalog.ja.md).
-
 
 ### more information
 

@@ -8,7 +8,7 @@ Re:VIEW は GNU Lesser General Public License Version 2.1 に基づいて配布�
 
 このドキュメントでは、Re:VIEW のセットアップから変換の例までを簡単に説明します。
 
-このドキュメントは、Re:VIEW 4.2 に基づいています。
+このドキュメントは、Re:VIEW 5.1 に基づいています。
 
 ## セットアップ
 
@@ -159,6 +159,16 @@ $ rake idgxml ←InDesign XMLの作成
 config.yml のサンプルについては以下を参照してください。
 
 * [config.yml.sample](https://github.com/kmuto/review/blob/master/doc/config.yml.sample)
+
+#### Vivliostyle CLI を使った PDF 化
+
+TeX (`review-pdfmaker`、`rake pdf`) を利用する代わりに、[Vivliostyle CLI](https://github.com/vivliostyle/vivliostyle-cli) を使って PDF を作成することもできます。Re:VIEW が EPUB を作成したあと、VivliostyleCLI がそれを PDF に変換します。
+
+```bash
+$ rake vivliostyle:build    ← Vivliostyle を使って PDF を作成
+$ rake vivliostyle:preview  ← Chrome/Chromium ブラウザでプレビュー
+$ rake vivliostyle          ← vivliostyle:buildのショートカット
+```
 
 ### 章を増やす、カスタマイズする
 作成した PDF あるいは EPUB を見ると、先に作成した RE:VIEW フォーマットテキストファイルが「第1章」となっていることがわかります。
