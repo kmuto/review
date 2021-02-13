@@ -575,7 +575,7 @@ module ReVIEW
       array.join(',')
     end
 
-    def image_image(id, caption='', metric=nil)
+    def image_image(id, caption = '', metric = nil)
       captionstr = nil
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
@@ -605,7 +605,7 @@ module ReVIEW
         puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
 
-      if !caption_top?('image')
+      unless caption_top?('image')
         puts captionstr
       end
 

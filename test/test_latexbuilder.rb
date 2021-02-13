@@ -1266,7 +1266,6 @@ EOS
     actual = compile_block("//indepimage[sampleimg][]\n")
     assert_equal expected, actual
 
-
     actual = compile_block("//indepimage[sampleimg][][]\n")
     assert_equal expected, actual
   end
