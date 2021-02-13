@@ -81,13 +81,15 @@ class ImgMathTest < Test::Unit::TestCase
     assert File.exist?(img_path1)
 
     val1 = compare_images(img_path1, File.join(assets_dir, 'img_math/img3.png'))
-    assert_equal 0, val1
+    assert val1 < 10
   end
 
   private
 
   def compare_images(image1, image2)
     compare = MiniMagick::Tool::Compare.new(whiny: false)
+    compare << '-fuzz'
+    compare << '10%'
     compare.metric('AE')
     compare << image1
     compare << image2
