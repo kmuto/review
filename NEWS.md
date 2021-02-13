@@ -16,6 +16,7 @@
 * PDFMaker: fixed errors when index contains `{`, `}`, or `|` ([#1611])
 * review-vol: valid error messages will be displayed when invalid headings are found ([#1604])
 * PDFMaker: `after_makeindex` hook to be executed after `mendex` execution, not after LaTeX compilation ([#1605])
+* PDFMaker: if the caption of `//image` is empty, the figure number will be printed instead of an internal error ([#1666])
 
 ## Enhancements
 * Maker commands now display with nice colors and icons for their progress status when tty-logger gem is installed ([#1660])
@@ -31,7 +32,7 @@
 * EPUBMaker: moved EPUB library from `lib/epubmaker` to `lib/review/epubmaker` and refactored it ([#1575], [#1617], [#1635], [#1640], [#1641], [#1650], [#1653], [#1655])
 * EPUBMaker: added tests ([#1656])
 * PDFMaker: refactored some ([#1664])
-* introduced `ReVIEW::ImgMath` class to handle mathematic images ([#1642], [#1649], [#1659])
+* introduced `ReVIEW::ImgMath` class to handle mathematic images ([#1642], [#1649], [#1659], [#1662])
 * IDGXMLMaker: refactored some ([#1654])
 * MakerHelper: refactored some ([#1652])
 * introduced `ReVIEW::Template.generate` class to handle the templates ([#1648])
@@ -46,8 +47,10 @@
 * WebTocPrinter: fixed an error of test ([#1606])
 * improved to make it easier to specify the target of the test ([#1594])
 
+[#1666]: https://github.com/kmuto/review/issues/1666
 [#1664]: https://github.com/kmuto/review/pull/1664
 [#1663]: https://github.com/kmuto/review/pull/1663
+[#1662]: https://github.com/kmuto/review/issues/1662
 [#1660]: https://github.com/kmuto/review/issues/1660
 [#1659]: https://github.com/kmuto/review/pull/1659
 [#1658]: https://github.com/kmuto/review/pull/1658

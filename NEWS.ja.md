@@ -16,6 +16,7 @@
 * PDFMaker: 索引に `{`, `}`, `|` が含まれているときにエラーや奇妙な文字に変換されるのを修正しました ([#1611])
 * review-vol: 不正な見出しがあったときに妥当なエラーメッセージを出力するようにしました ([#1604])
 * PDFMaker: `after_makeindex` フックを LaTeX コンパイル後ではなく `mendex` 実行後に実行するように修正しました ([#1605])
+* PDFMaker: `//image` のキャプションが空だったときに内部エラーではなく図番号が出力されるように修正しました ([#1666])
 
 ## 機能強化
 * tty-loger gem パッケージがインストールされている場合、Re:VIEW の各 Maker コマンドの進行状態をアイコンおよびカラーで示すようにしました ([#1660])
@@ -31,7 +32,7 @@
 * EPUBMaker: EPUB ライブラリ一式を `lib/epubmaker` から `lib/review/epubmaker` に移動し、リファクタリングしました ([#1575], [#1617], [#1635], [#1640], [#1641], [#1650], [#1653], [#1655])
 * EPUBMaker: テストを追加しました ([#1656])
 * PDFMaker: いくつかの処理をリファクタリングしました ([#1664])
-* 数式画像生成処理を `ReVIEW::ImgMath` クラスにまとめました ([#1642], [#1649], [#1659])
+* 数式画像生成処理を `ReVIEW::ImgMath` クラスにまとめました ([#1642], [#1649], [#1659], [#1662])
 * IDGXMLMaker: いくつかの処理をリファクタリングしました ([#1654])
 * MakerHelper: いくつかの処理をリファクタリングしました ([#1652])
 * テンプレート処理を `ReVIEW::Template.generate` メソッドに統一しました ([#1648])
@@ -46,8 +47,10 @@
 * WebTocPrinter: テストのエラーを修正しました ([#1606])
 * テストのターゲットを指定しやすいようにしました ([#1594])
 
+[#1666]: https://github.com/kmuto/review/issues/1666
 [#1664]: https://github.com/kmuto/review/pull/1664
 [#1663]: https://github.com/kmuto/review/pull/1663
+[#1662]: https://github.com/kmuto/review/issues/1662
 [#1660]: https://github.com/kmuto/review/issues/1660
 [#1659]: https://github.com/kmuto/review/pull/1659
 [#1658]: https://github.com/kmuto/review/pull/1658
