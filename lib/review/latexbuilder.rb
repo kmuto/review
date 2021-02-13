@@ -1,6 +1,6 @@
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2020 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2021 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -575,13 +575,13 @@ module ReVIEW
       array.join(',')
     end
 
-    def image_image(id, caption, metric)
+    def image_image(id, caption = '', metric = nil)
       captionstr = nil
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
-        captionstr = macro('caption', compile_inline(caption)) + "\n" if caption.present?
+        captionstr = macro('caption', compile_inline(caption)) + "\n"
       else
-        captionstr = macro('reviewimagecaption', compile_inline(caption)) + "\n" if caption.present?
+        captionstr = macro('reviewimagecaption', compile_inline(caption)) + "\n"
       end
       captionstr << macro('label', image_label(id))
       @doc_status[:caption] = nil
@@ -590,7 +590,7 @@ module ReVIEW
       # image is always bound here
       puts "\\begin{reviewimage}%%#{id}"
 
-      if caption_top?('image') && captionstr
+      if caption_top?('image')
         puts captionstr
       end
 
@@ -605,7 +605,7 @@ module ReVIEW
         puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
       end
 
-      if !caption_top?('image') && captionstr
+      unless caption_top?('image')
         puts captionstr
       end
 

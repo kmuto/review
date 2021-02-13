@@ -630,6 +630,20 @@ EOS
 EOS
     assert_equal expected, actual
 
+    actual = compile_block("//image[sampleimg][]{\n//}\n")
+    expected = <<-EOS
+<div id="sampleimg" class="image">
+<img src="images/chap1-sampleimg.png" alt="" />
+<p class="caption">
+図1.1: 
+</p>
+</div>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//image[sampleimg][][]{\n//}\n")
+    assert_equal expected, actual
+
     @config['caption_position']['image'] = 'top'
     actual = compile_block("//image[sampleimg][sample photo]{\n//}\n")
     expected = <<-EOS
@@ -745,6 +759,12 @@ EOS
 <img src="images/chap1-sampleimg.png" alt="" />
 </div>
 EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//indepimage[sampleimg][]\n")
+    assert_equal expected, actual
+
+    actual = compile_block("//indepimage[sampleimg][][]\n")
     assert_equal expected, actual
   end
 
