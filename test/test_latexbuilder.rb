@@ -1101,6 +1101,19 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    actual = compile_block("//image[sampleimg][]{\n//}\n")
+    expected = <<-EOS
+\\begin{reviewimage}%%sampleimg
+\\reviewimagecaption{}
+\\label{image:chap1:sampleimg}
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//image[sampleimg][][]{\n//}\n")
+    assert_equal expected, actual
   end
 
   def test_image_with_metric
@@ -1249,6 +1262,13 @@ EOS
 \\end{reviewimage}
 EOS
     assert_equal expected, actual
+
+    actual = compile_block("//indepimage[sampleimg][]\n")
+    assert_equal expected, actual
+
+
+    actual = compile_block("//indepimage[sampleimg][][]\n")
+    assert_equal expected, actual
   end
 
   def test_indepimage_with_metric
@@ -1383,6 +1403,16 @@ EOS
 ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
 \\end{reviewtable}
 \\end{table}
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table[foo][]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+\\begin{reviewtable}{|l|l|}
+\\hline
+\\reviewth{aaa} & \\reviewth{bbb} \\\\  \\hline
+ccc & ddd\\textless{}\\textgreater{}\\& \\\\  \\hline
+\\end{reviewtable}
 EOS
     assert_equal expected, actual
 
@@ -1551,6 +1581,18 @@ EOS
 \\end{reviewimage}
 \\end{table}
 EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//imgtable[sampleimg][]{\n//}\n")
+    expected = <<-EOS
+\\label{table:chap1:sampleimg}
+\\begin{reviewimage}%%sampleimg
+\\reviewincludegraphics[width=\\maxwidth]{./images/chap1-sampleimg.png}
+\\end{reviewimage}
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//imgtable[sampleimg][][]{\n//}\n")
     assert_equal expected, actual
 
     @book.config['pdfmaker']['use_original_image_size'] = true
