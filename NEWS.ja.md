@@ -1,3 +1,103 @@
+# Version 5.1.0
+## 新機能
+* CSS 組版ソフトウェア [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli) を呼び出す Rake ルールを追加しました。Vivliostyle-CLI をインストールした環境において、`rake vivliostyle:build` または `rake vivliostyle` で PDF を作成、`rake vivliostyle:preview` でブラウザのプレビューが開きます ([#1663])
+* PDFMaker: `config.yml` に `boxsetting` パラメータを新設し、column・note・memo・tip・info・warning・important・caution・notice の囲み飾りを事前定義のものや独自に作成したものから選択およびカスタマイズできるようにしました ([#1637])
+* 挿入箇所を示す `@<ins>`、削除箇所を示す `@<del>` の2つのインライン命令を追加しました ([#1630])
+* EPUBMaker, WebMaker: 数式表現手法として MathJax をサポートし、数式表現手法を `math_format` パラメータで選択するようにしました ([#1587], [#1614])
+
+## 非互換の変更
+* EPUBMaker: `urnid` パラメータのデフォルト値のプレフィクスを、`urn:uid` から `urn:uuid` に変更しました ([#1658])
+* PDFMaker: 長い脚注がページ分断されないようにしました ([#1607])
+
+## バグ修正
+* `contentdir` を設定しているときに WebMaker, review-vol, review-index がエラーになるのを修正しました ([#1633])
+* WebMaker: `images/html` 図版フォルダが見つけられないのを修正しました ([#1623])
+* PDFMaker: 用語リストの見出しで chapterlink がおかしな結果になるのを修正しました ([#1619])
+* PDFMaker: 索引に `{`, `}`, `|` が含まれているときにエラーや奇妙な文字に変換されるのを修正しました ([#1611])
+* review-vol: 不正な見出しがあったときに妥当なエラーメッセージを出力するようにしました ([#1604])
+* PDFMaker: `after_makeindex` フックを LaTeX コンパイル後ではなく `mendex` 実行後に実行するように修正しました ([#1605])
+
+## 機能強化
+* tty-loger gem パッケージがインストールされている場合、Re:VIEW の各 Maker コマンドの進行状態をアイコンおよびカラーで示すようにしました ([#1660])
+* PDFMaker: クラスファイルで `\RequirePackage{plautopatch}` を最初に評価するようにしました ([#1644])
+* MARKDOWNBuilder: `@<hd>` をサポートしました ([#1629])
+* Re:VIEW ドキュメントファイルに不正なエスケープシーケンス文字が含まれているときにエラーを出すようにしました ([#1596], [#1602])
+* `=` の数が6を超える見出し扱いの行があるときにエラーを出すようにしました ([#1591])
+
+## ドキュメント
+* 画像探索の際に各 Maker が参照するサブフォルダ名について記載しました ([#1626])
+
+## その他
+* EPUBMaker: EPUB ライブラリ一式を `lib/epubmaker` から `lib/review/epubmaker` に移動し、リファクタリングしました ([#1575], [#1617], [#1635], [#1640], [#1641], [#1650], [#1653], [#1655])
+* EPUBMaker: テストを追加しました ([#1656])
+* PDFMaker: いくつかの処理をリファクタリングしました ([#1664])
+* 数式画像生成処理を `ReVIEW::ImgMath` クラスにまとめました ([#1642], [#1649], [#1659])
+* IDGXMLMaker: いくつかの処理をリファクタリングしました ([#1654])
+* MakerHelper: いくつかの処理をリファクタリングしました ([#1652])
+* テンプレート処理を `ReVIEW::Template.generate` メソッドに統一しました ([#1648])
+* GitHub Actions で TeX コンパイルのテストも行うようにしました ([#1643])
+* Rubocop 1.8 に対応しました ([#1593], [#1598], [#1613], [#1636], [#1647])
+* サンプル syntax-book の重複 ID を修正しました ([#1646])
+* ライブラリの相対パスの参照方法をリファクタリングしました ([#1639])
+* `ReVIEW::LineInput` クラスをリファタクタリングしました ([#1638])
+* Copyright を2021年に更新しました ([#1632])
+* Ruby 3.0 でのテストを実行するようにしました ([#1622])
+* 不安定な Pygments のテストを抑制しました ([#1610], [#1618])
+* WebTocPrinter: テストのエラーを修正しました ([#1606])
+* テストのターゲットを指定しやすいようにしました ([#1594])
+
+[#1664]: https://github.com/kmuto/review/pull/1664
+[#1663]: https://github.com/kmuto/review/pull/1663
+[#1660]: https://github.com/kmuto/review/issues/1660
+[#1659]: https://github.com/kmuto/review/pull/1659
+[#1658]: https://github.com/kmuto/review/pull/1658
+[#1656]: https://github.com/kmuto/review/pull/1656
+[#1655]: https://github.com/kmuto/review/pull/1655
+[#1654]: https://github.com/kmuto/review/pull/1654
+[#1653]: https://github.com/kmuto/review/pull/1653
+[#1652]: https://github.com/kmuto/review/pull/1652
+[#1650]: https://github.com/kmuto/review/pull/1650
+[#1649]: https://github.com/kmuto/review/pull/1649
+[#1648]: https://github.com/kmuto/review/pull/1648
+[#1647]: https://github.com/kmuto/review/pull/1647
+[#1646]: https://github.com/kmuto/review/pull/1646
+[#1644]: https://github.com/kmuto/review/issues/1644
+[#1643]: https://github.com/kmuto/review/pull/1643
+[#1642]: https://github.com/kmuto/review/pull/1642
+[#1641]: https://github.com/kmuto/review/pull/1641
+[#1640]: https://github.com/kmuto/review/pull/1640
+[#1639]: https://github.com/kmuto/review/pull/1639
+[#1638]: https://github.com/kmuto/review/pull/1638
+[#1637]: https://github.com/kmuto/review/pull/1637
+[#1636]: https://github.com/kmuto/review/pull/1636
+[#1635]: https://github.com/kmuto/review/pull/1635
+[#1633]: https://github.com/kmuto/review/issues/1633
+[#1632]: https://github.com/kmuto/review/issues/1632
+[#1630]: https://github.com/kmuto/review/issues/1630
+[#1629]: https://github.com/kmuto/review/pull/1629
+[#1626]: https://github.com/kmuto/review/pull/1626
+[#1623]: https://github.com/kmuto/review/issues/1623
+[#1622]: https://github.com/kmuto/review/pull/1622
+[#1619]: https://github.com/kmuto/review/issues/1619
+[#1618]: https://github.com/kmuto/review/pull/1618
+[#1617]: https://github.com/kmuto/review/pull/1617
+[#1614]: https://github.com/kmuto/review/pull/1614
+[#1613]: https://github.com/kmuto/review/pull/1613
+[#1611]: https://github.com/kmuto/review/issues/1611
+[#1610]: https://github.com/kmuto/review/pull/1610
+[#1607]: https://github.com/kmuto/review/issues/1607
+[#1606]: https://github.com/kmuto/review/issues/1606
+[#1605]: https://github.com/kmuto/review/issues/1605
+[#1604]: https://github.com/kmuto/review/issues/1604
+[#1602]: https://github.com/kmuto/review/pull/1602
+[#1598]: https://github.com/kmuto/review/pull/1598
+[#1596]: https://github.com/kmuto/review/issues/1596
+[#1594]: https://github.com/kmuto/review/pull/1594
+[#1593]: https://github.com/kmuto/review/pull/1593
+[#1591]: https://github.com/kmuto/review/issues/1591
+[#1587]: https://github.com/kmuto/review/issues/1587
+[#1575]: https://github.com/kmuto/review/issues/1575
+
 # Version 5.0.0
 ## 新機能
 * review-jsbook / review-jlreq クラスに、`cover_fit_page` オプションを追加しました。`texdocumentclass` パラメータに `cover_fit_page=true` を付けると、画像サイズがどのようなものであっても仕上がりサイズに拡縮して表紙に貼り込みます。なお、制作において図版は実寸で作成することを推奨します ([#1534])
