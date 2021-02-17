@@ -504,25 +504,32 @@ module ReVIEW
 
       @config['stylesheet'].each do |sfile|
         unless File.exist?(sfile)
-          error "#{sfile} is not found."
+          error "stylesheet: #{sfile} is not found."
         end
         FileUtils.cp(sfile, basetmpdir)
         @producer.contents.push(ReVIEW::EPUBMaker::Content.new(file: sfile))
       end
     end
 
+    def copy_static_file(configname, destdir, destfilename: nil)
+      destfilename ||= @config[configname]
+      unless File.exist?(@config[configname])
+        error "#{configname}: #{@config[configname]} is not found."
+      end
+      FileUtils.cp(@config[configname],
+                   File.join(destdir, destfilename))
+    end
+
     def copy_frontmatter(basetmpdir)
       if @config['cover'].present? && File.exist?(@config['cover'])
-        FileUtils.cp(@config['cover'],
-                     File.join(basetmpdir, File.basename(@config['cover'])))
+        copy_static_file('cover', basetmpdir)
       end
 
       if @config['titlepage']
         if @config['titlefile'].nil?
           build_titlepage(basetmpdir, "titlepage.#{@config['htmlext']}")
         else
-          FileUtils.cp(@config['titlefile'],
-                       File.join(basetmpdir, "titlepage.#{@config['htmlext']}"))
+          copy_static_file('titlefile', basetmpdir, destfilename: "titlepage.#{@config['htmlext']}")
         end
         @htmltoc.add_item(1,
                           "titlepage.#{@config['htmlext']}",
@@ -530,18 +537,16 @@ module ReVIEW
                           chaptype: 'pre')
       end
 
-      if @config['originaltitlefile'].present? && File.exist?(@config['originaltitlefile'])
-        FileUtils.cp(@config['originaltitlefile'],
-                     File.join(basetmpdir, File.basename(@config['originaltitlefile'])))
+      if @config['originaltitlefile'].present?
+        copy_static_file('originaltitlefile', basetmpdir)
         @htmltoc.add_item(1,
                           File.basename(@config['originaltitlefile']),
                           ReVIEW::I18n.t('originaltitle'),
                           chaptype: 'pre')
       end
 
-      if @config['creditfile'].present? && File.exist?(@config['creditfile'])
-        FileUtils.cp(@config['creditfile'],
-                     File.join(basetmpdir, File.basename(@config['creditfile'])))
+      if @config['creditfile'].present?
+        copy_static_file('creditfile', basetmpdir)
         @htmltoc.add_item(1,
                           File.basename(@config['creditfile']),
                           ReVIEW::I18n.t('credittitle'),
@@ -577,8 +582,7 @@ module ReVIEW
 
     def copy_backmatter(basetmpdir)
       if @config['profile']
-        FileUtils.cp(@config['profile'],
-                     File.join(basetmpdir, File.basename(@config['profile'])))
+        copy_static_file('profile', basetmpdir)
         @htmltoc.add_item(1,
                           File.basename(@config['profile']),
                           ReVIEW::I18n.t('profiletitle'),
@@ -586,8 +590,7 @@ module ReVIEW
       end
 
       if @config['advfile']
-        FileUtils.cp(@config['advfile'],
-                     File.join(basetmpdir, File.basename(@config['advfile'])))
+        copy_static_file('advfile', basetmpdir)
         @htmltoc.add_item(1,
                           File.basename(@config['advfile']),
                           ReVIEW::I18n.t('advtitle'),
@@ -595,9 +598,8 @@ module ReVIEW
       end
 
       if @config['colophon']
-        if @config['colophon'].is_a?(String) # FIXME: should let obsolete this style?
-          FileUtils.cp(@config['colophon'],
-                       File.join(basetmpdir, "colophon.#{@config['htmlext']}"))
+        if @config['colophon'].is_a?(String)
+          copy_static_file('colophon', basetmpdir, destfilename: "colophon.#{@config['htmlext']}") # override pre-built colophon
         end
         @htmltoc.add_item(1,
                           "colophon.#{@config['htmlext']}",
@@ -606,8 +608,7 @@ module ReVIEW
       end
 
       if @config['backcover']
-        FileUtils.cp(@config['backcover'],
-                     File.join(basetmpdir, File.basename(@config['backcover'])))
+        copy_static_file('backcover', basetmpdir)
         @htmltoc.add_item(1,
                           File.basename(@config['backcover']),
                           ReVIEW::I18n.t('backcovertitle'),
