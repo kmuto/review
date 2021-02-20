@@ -865,4 +865,77 @@ EOT
     content = ReVIEW::EPUBMaker::Content.new(file: 'sample-&()-=+@:,漢字.png')
     assert_equal 'sample-_25_26_25_28_25_29-_25_3D_25_2B_25_40_25_3A_25_2C_25_E6_25_BC_25_A2_25_E5_25_AD_25_97-png', content.id
   end
+
+  def epubmaker_instance
+    Dir.mktmpdir do |tmpdir|
+      epubmaker = ReVIEW::EPUBMaker.new
+      epubmaker.instance_eval do
+        @config = ReVIEW::Configure.create(maker: 'epubmaker')
+        @config['titlepage'] = nil
+        @producer = ReVIEW::EPUBMaker::Producer.new(@config)
+
+        @htmltoc = ReVIEW::HTMLToc.new(tmpdir)
+
+        def config
+          @config
+        end
+
+        def error(s)
+          raise ApplicationError, s
+        end
+      end
+
+      File.write(File.join(tmpdir, 'exist.css'), 'body {}')
+      File.write(File.join(tmpdir, 'exist.html'), '<html></html>')
+
+      Dir.chdir(tmpdir) do
+        Dir.mkdir('test')
+        yield(epubmaker, File.join(tmpdir, 'test'))
+      end
+    end
+  end
+
+  def test_copy_static_file
+    epubmaker_instance do |epubmaker, tmpdir|
+      epubmaker.config['stylesheet'] = ['exist.css']
+      assert_nothing_raised { epubmaker.copy_stylesheet(tmpdir) }
+
+      epubmaker.config['stylesheet'] = ['nothing.css']
+      e = assert_raise(ApplicationError) { epubmaker.copy_stylesheet(tmpdir) }
+      assert_equal 'stylesheet: nothing.css is not found.', e.message
+    end
+
+    epubmaker_instance do |epubmaker, tmpdir|
+      epubmaker.config['titlepage'] = true
+      epubmaker.config['titlefile'] = 'exist.html'
+      assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
+
+      epubmaker.config['titlefile'] = 'nothing.html'
+      e = assert_raise(ApplicationError) { epubmaker.copy_frontmatter(tmpdir) }
+      assert_equal 'titlefile: nothing.html is not found.', e.message
+    end
+
+    # XXX: only `cover' is allowed to have invalid file name.
+    %w[originaltitlefile creditfile].each do |name|
+      epubmaker_instance do |epubmaker, tmpdir|
+        epubmaker.config[name] = 'exist.html'
+        assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
+
+        epubmaker.config[name] = 'nothing.html'
+        e = assert_raise(ApplicationError) { epubmaker.copy_frontmatter(tmpdir) }
+        assert_equal "#{name}: nothing.html is not found.", e.message
+      end
+    end
+
+    %w[profile advfile colophon backcover].each do |name|
+      epubmaker_instance do |epubmaker, tmpdir|
+        epubmaker.config[name] = 'exist.html'
+        assert_nothing_raised { epubmaker.copy_backmatter(tmpdir) }
+
+        epubmaker.config[name] = 'nothing.html'
+        e = assert_raise(ApplicationError) { epubmaker.copy_backmatter(tmpdir) }
+        assert_equal "#{name}: nothing.html is not found.", e.message
+      end
+    end
+  end
 end
