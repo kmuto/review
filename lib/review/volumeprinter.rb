@@ -45,7 +45,7 @@ module ReVIEW
           end
         end
       rescue ReVIEW::FileNotFound, ReVIEW::CompileError, ReVIEW::ApplicationError => e
-        @logger.error e
+        @logger.error e.message
         exit 1
       end
       puts '============================='
