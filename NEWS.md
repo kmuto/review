@@ -17,6 +17,7 @@
 * review-vol: valid error messages will be displayed when invalid headings are found ([#1604])
 * PDFMaker: `after_makeindex` hook to be executed after `mendex` execution, not after LaTeX compilation ([#1605])
 * PDFMaker: if the caption of `//image` is empty, the figure number will be printed instead of an internal error ([#1666])
+* fixed review-vol and review-index errors when a file is invalid ([#1671])
 
 ## Enhancements
 * Maker commands now display with nice colors and icons for their progress status when tty-logger gem is installed ([#1660])
@@ -47,6 +48,7 @@
 * WebTocPrinter: fixed an error of test ([#1606])
 * improved to make it easier to specify the target of the test ([#1594])
 
+[#1671]: https://github.com/kmuto/review/issues/1671
 [#1666]: https://github.com/kmuto/review/issues/1666
 [#1664]: https://github.com/kmuto/review/pull/1664
 [#1663]: https://github.com/kmuto/review/pull/1663

@@ -17,6 +17,7 @@
 * review-vol: 不正な見出しがあったときに妥当なエラーメッセージを出力するようにしました ([#1604])
 * PDFMaker: `after_makeindex` フックを LaTeX コンパイル後ではなく `mendex` 実行後に実行するように修正しました ([#1605])
 * PDFMaker: `//image` のキャプションが空だったときに内部エラーではなく図番号が出力されるように修正しました ([#1666])
+* review-vol, review-index が不正なファイルを受け取ったときのエラー処理を修正しました ([#1671])
 
 ## 機能強化
 * tty-loger gem パッケージがインストールされている場合、Re:VIEW の各 Maker コマンドの進行状態をアイコンおよびカラーで示すようにしました ([#1660])
@@ -47,6 +48,7 @@
 * WebTocPrinter: テストのエラーを修正しました ([#1606])
 * テストのターゲットを指定しやすいようにしました ([#1594])
 
+[#1671]: https://github.com/kmuto/review/issues/1671
 [#1666]: https://github.com/kmuto/review/issues/1666
 [#1664]: https://github.com/kmuto/review/pull/1664
 [#1663]: https://github.com/kmuto/review/pull/1663
