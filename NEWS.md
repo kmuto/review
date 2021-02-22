@@ -18,6 +18,7 @@
 * PDFMaker: `after_makeindex` hook to be executed after `mendex` execution, not after LaTeX compilation ([#1605])
 * PDFMaker: if the caption of `//image` is empty, the figure number will be printed instead of an internal error ([#1666])
 * fixed review-vol and review-index errors when a file is invalid ([#1671])
+* EPUBMaker: fixed an error when static file is missing ([#1670])
 
 ## Enhancements
 * Maker commands now display with nice colors and icons for their progress status when tty-logger gem is installed ([#1660])
@@ -38,7 +39,7 @@
 * MakerHelper: refactored some ([#1652])
 * introduced `ReVIEW::Template.generate` class to handle the templates ([#1648])
 * added a test of TeX compilation to GitHub Actions ([#1643])
-* refactored codes according to Rubocop 1.8 ([#1593], [#1598], [#1613], [#1636], [#1647])
+* refactored codes according to Rubocop 1.10 ([#1593], [#1598], [#1613], [#1636], [#1647], [#1669])
 * fixed duplicate IDs of syntax-book sample ([#1646])
 * refactored the way to reference relative pathes ([#1639])
 * refactored `ReVIEW::LineInput` class ([#1638])
@@ -49,6 +50,8 @@
 * improved to make it easier to specify the target of the test ([#1594])
 
 [#1671]: https://github.com/kmuto/review/issues/1671
+[#1670]: https://github.com/kmuto/review/pull/1670
+[#1669]: https://github.com/kmuto/review/pull/1669
 [#1666]: https://github.com/kmuto/review/issues/1666
 [#1664]: https://github.com/kmuto/review/pull/1664
 [#1663]: https://github.com/kmuto/review/pull/1663

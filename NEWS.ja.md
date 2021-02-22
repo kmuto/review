@@ -18,6 +18,7 @@
 * PDFMaker: `after_makeindex` フックを LaTeX コンパイル後ではなく `mendex` 実行後に実行するように修正しました ([#1605])
 * PDFMaker: `//image` のキャプションが空だったときに内部エラーではなく図番号が出力されるように修正しました ([#1666])
 * review-vol, review-index が不正なファイルを受け取ったときのエラー処理を修正しました ([#1671])
+* EPUBMaker: author などの静的ファイルを指示したときに、ファイルが存在しないと内部エラーを起こしていたのを修正しました ([#1670])
 
 ## 機能強化
 * tty-loger gem パッケージがインストールされている場合、Re:VIEW の各 Maker コマンドの進行状態をアイコンおよびカラーで示すようにしました ([#1660])
@@ -38,7 +39,7 @@
 * MakerHelper: いくつかの処理をリファクタリングしました ([#1652])
 * テンプレート処理を `ReVIEW::Template.generate` メソッドに統一しました ([#1648])
 * GitHub Actions で TeX コンパイルのテストも行うようにしました ([#1643])
-* Rubocop 1.8 に対応しました ([#1593], [#1598], [#1613], [#1636], [#1647])
+* Rubocop 1.10 に対応しました ([#1593], [#1598], [#1613], [#1636], [#1647], [#1669])
 * サンプル syntax-book の重複 ID を修正しました ([#1646])
 * ライブラリの相対パスの参照方法をリファクタリングしました ([#1639])
 * `ReVIEW::LineInput` クラスをリファタクタリングしました ([#1638])
@@ -49,6 +50,8 @@
 * テストのターゲットを指定しやすいようにしました ([#1594])
 
 [#1671]: https://github.com/kmuto/review/issues/1671
+[#1670]: https://github.com/kmuto/review/pull/1670
+[#1669]: https://github.com/kmuto/review/pull/1669
 [#1666]: https://github.com/kmuto/review/issues/1666
 [#1664]: https://github.com/kmuto/review/pull/1664
 [#1663]: https://github.com/kmuto/review/pull/1663
