@@ -337,7 +337,9 @@ module ReVIEW
           next if item.file =~ /#/ # skip subgroup
 
           fname = "#{basedir}/#{item.file}"
-          raise "#{fname} doesn't exist. Abort." unless File.exist?(fname)
+          unless File.exist?(fname)
+            raise "#{fname} is not found."
+          end
 
           FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
           FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
