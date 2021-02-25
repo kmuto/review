@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
   gem.platform    = Gem::Platform::RUBY
   gem.license     = 'LGPL'
   gem.authors     = %w[kmuto takahashim]
-  gem.email       = 'kmuto@debian.org'
+  gem.email       = 'kmuto@kmuto.jp'
   gem.homepage    = 'http://github.com/kmuto/review'
   gem.summary     = 'Re:VIEW: a easy-to-use digital publishing system'
   gem.description = 'Re:VIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.'
