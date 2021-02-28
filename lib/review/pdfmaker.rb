@@ -135,7 +135,9 @@ module ReVIEW
       I18n.setup(@config['language'])
       @basedir = File.absolute_path(File.dirname(yamlfile))
 
-      unless @config.check_version(ReVIEW::VERSION, exception: false)
+      begin
+        @config.check_version(ReVIEW::VERSION)
+      rescue ReVIEW::ConfigError => e
         warn e.message
       end
 
