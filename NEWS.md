@@ -1,3 +1,111 @@
+# Version 5.1.0
+## New Features
+* added Rake rule to call [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli), CSS typesetting formatter. Create a PDF with `rake vivliostyle:build` or `rake vivliostyle`, and open a preview with `rake vivliostyle:preview` ([#1663])
+* PDFMaker: introduced `boxsetting` parameter to choose and customize the decorations for column, note, memo, tip, info, warning, important, caution and notice ([#1637])
+* added inline op, `@<ins>` (indicates an insertion) and `@<del>` (indicates a deletion) ([#1630])
+* EPUBMaker, WebMaker: MathJax is now supported. Added `math_format` parameter to choose the mathematical expression method ([#1587], [#1614])
+
+## Breaking Changes
+* EPUBMaker: changed the default value of the `urnid` parameter from `urn:uid` to `urn:uuid` ([#1658])
+* PDFMaker: footnotes are no longer broken up by a page ([#1607])
+
+## Bug Fixes
+* fixed WebMaker, review-vol and review-index errors when `contentdir` is defined ([#1633])
+* WebMaker: fixed `images/html` foder not being found ([#1623])
+* PDFMaker: fixed chapterlink in term list ([#1619])
+* PDFMaker: fixed errors when index contains `{`, `}`, or `|` ([#1611])
+* review-vol: valid error messages will be displayed when invalid headings are found ([#1604])
+* PDFMaker: `after_makeindex` hook to be executed after `mendex` execution, not after LaTeX compilation ([#1605])
+* PDFMaker: if the caption of `//image` is empty, the figure number will be printed instead of an internal error ([#1666])
+* fixed review-vol and review-index errors when a file is invalid ([#1671])
+* EPUBMaker: fixed an error when static file is missing ([#1670])
+
+## Enhancements
+* Maker commands now display with nice colors and icons for their progress status when tty-logger gem is installed ([#1660])
+* PDFMaker: added `\RequirePackage{plautopatch}` definition to class files ([#1644])
+* MARKDOWNBuilder: supported `@<hd>` ([#1629])
+* Re:VIEW now reports an error when a document file contains invalid escape sequence characters ([#1596], [#1602])
+* an error is raised when there are more than 6 `=` in a heading ([#1591])
+
+## Docs
+* documented the name of the image folder referenced by Makers ([#1626])
+
+## Others
+* EPUBMaker: moved EPUB library from `lib/epubmaker` to `lib/review/epubmaker` and refactored it ([#1575], [#1617], [#1635], [#1640], [#1641], [#1650], [#1653], [#1655])
+* EPUBMaker: added tests ([#1656])
+* PDFMaker: refactored some ([#1664])
+* introduced `ReVIEW::ImgMath` class to handle mathematic images ([#1642], [#1649], [#1659], [#1662])
+* IDGXMLMaker: refactored some ([#1654])
+* MakerHelper: refactored some ([#1652])
+* introduced `ReVIEW::Template.generate` class to handle the templates ([#1648])
+* added a test of TeX compilation to GitHub Actions ([#1643])
+* refactored codes according to Rubocop 1.10 ([#1593], [#1598], [#1613], [#1636], [#1647], [#1669])
+* fixed duplicate IDs of syntax-book sample ([#1646])
+* refactored the way to reference relative pathes ([#1639])
+* refactored `ReVIEW::LineInput` class ([#1638])
+* update Copyright to 2021 ([#1632])
+* added Ruby 3.0 to the test platform ([#1622])
+* suppressed tests for Pygments ([#1610], [#1618])
+* WebTocPrinter: fixed an error of test ([#1606])
+* improved to make it easier to specify the target of the test ([#1594])
+
+[#1671]: https://github.com/kmuto/review/issues/1671
+[#1670]: https://github.com/kmuto/review/pull/1670
+[#1669]: https://github.com/kmuto/review/pull/1669
+[#1666]: https://github.com/kmuto/review/issues/1666
+[#1664]: https://github.com/kmuto/review/pull/1664
+[#1663]: https://github.com/kmuto/review/pull/1663
+[#1662]: https://github.com/kmuto/review/issues/1662
+[#1660]: https://github.com/kmuto/review/issues/1660
+[#1659]: https://github.com/kmuto/review/pull/1659
+[#1658]: https://github.com/kmuto/review/pull/1658
+[#1656]: https://github.com/kmuto/review/pull/1656
+[#1655]: https://github.com/kmuto/review/pull/1655
+[#1654]: https://github.com/kmuto/review/pull/1654
+[#1653]: https://github.com/kmuto/review/pull/1653
+[#1652]: https://github.com/kmuto/review/pull/1652
+[#1650]: https://github.com/kmuto/review/pull/1650
+[#1649]: https://github.com/kmuto/review/pull/1649
+[#1648]: https://github.com/kmuto/review/pull/1648
+[#1647]: https://github.com/kmuto/review/pull/1647
+[#1646]: https://github.com/kmuto/review/pull/1646
+[#1644]: https://github.com/kmuto/review/issues/1644
+[#1643]: https://github.com/kmuto/review/pull/1643
+[#1642]: https://github.com/kmuto/review/pull/1642
+[#1641]: https://github.com/kmuto/review/pull/1641
+[#1640]: https://github.com/kmuto/review/pull/1640
+[#1639]: https://github.com/kmuto/review/pull/1639
+[#1638]: https://github.com/kmuto/review/pull/1638
+[#1637]: https://github.com/kmuto/review/pull/1637
+[#1636]: https://github.com/kmuto/review/pull/1636
+[#1635]: https://github.com/kmuto/review/pull/1635
+[#1633]: https://github.com/kmuto/review/issues/1633
+[#1632]: https://github.com/kmuto/review/issues/1632
+[#1630]: https://github.com/kmuto/review/issues/1630
+[#1629]: https://github.com/kmuto/review/pull/1629
+[#1626]: https://github.com/kmuto/review/pull/1626
+[#1623]: https://github.com/kmuto/review/issues/1623
+[#1622]: https://github.com/kmuto/review/pull/1622
+[#1619]: https://github.com/kmuto/review/issues/1619
+[#1618]: https://github.com/kmuto/review/pull/1618
+[#1617]: https://github.com/kmuto/review/pull/1617
+[#1614]: https://github.com/kmuto/review/pull/1614
+[#1613]: https://github.com/kmuto/review/pull/1613
+[#1611]: https://github.com/kmuto/review/issues/1611
+[#1610]: https://github.com/kmuto/review/pull/1610
+[#1607]: https://github.com/kmuto/review/issues/1607
+[#1606]: https://github.com/kmuto/review/issues/1606
+[#1605]: https://github.com/kmuto/review/issues/1605
+[#1604]: https://github.com/kmuto/review/issues/1604
+[#1602]: https://github.com/kmuto/review/pull/1602
+[#1598]: https://github.com/kmuto/review/pull/1598
+[#1596]: https://github.com/kmuto/review/issues/1596
+[#1594]: https://github.com/kmuto/review/pull/1594
+[#1593]: https://github.com/kmuto/review/pull/1593
+[#1591]: https://github.com/kmuto/review/issues/1591
+[#1587]: https://github.com/kmuto/review/issues/1587
+[#1575]: https://github.com/kmuto/review/issues/1575
+
 # Version 5.0.0
 ## New Features
 * added `cover_fit_page` option to review-jsbook / review-jlreq classes. When `cover_fit_page=true` is specified in the `texdocumentclass` parameter, the cover image is scaled to paper size. Note: it is recommended that the images should be created at actual size ([#1534])
