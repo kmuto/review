@@ -266,7 +266,7 @@ module ReVIEW
     end
 
     def evaluate(path, chunk)
-      outputs = get_output("ruby #{path}", false).split(/\n/).map(&:strip)
+      outputs = get_output("ruby #{path}", false).split("\n").map(&:strip)
       chunk.map do |line|
         if /\# \$\d+/ =~ line.string
           # map result into source.
