@@ -1,3 +1,9 @@
+# Version 5.1.1
+## Bug Fixes
+* Fix the runtime error of `review-preproc` ([#1679])
+
+[#1679]: https://github.com/kmuto/review/issues/1679
+
 # Version 5.1.0
 ## New Features
 * added Rake rule to call [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli), CSS typesetting formatter. Create a PDF with `rake vivliostyle:build` or `rake vivliostyle`, and open a preview with `rake vivliostyle:preview` ([#1663])

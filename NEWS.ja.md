@@ -1,3 +1,9 @@
+# Version 5.1.1
+## バグ修正
+* `review-preproc` がエラーになるのを修正しました ([#1679])
+
+[#1679]: https://github.com/kmuto/review/issues/1679
+
 # Version 5.1.0
 ## 新機能
 * CSS 組版ソフトウェア [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli) を呼び出す Rake ルールを追加しました。Vivliostyle-CLI をインストールした環境において、`rake vivliostyle:build` または `rake vivliostyle` で PDF を作成、`rake vivliostyle:preview` でブラウザのプレビューが開きます ([#1663])
