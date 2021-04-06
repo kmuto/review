@@ -19,7 +19,7 @@ module ReVIEW
       return unless filename
 
       content = File.read(filename)
-      @erb = ERB.new(content, nil, mode)
+      @erb = ERB.new(content, trim_mode: mode)
     end
 
     def result(bind_data = nil)
