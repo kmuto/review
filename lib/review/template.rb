@@ -19,11 +19,11 @@ module ReVIEW
       return unless filename
 
       content = File.read(filename)
-      if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.6')
-        @erb = ERB.new(content, nil, mode)
-      else
-        @erb = ERB.new(content, trim_mode: mode)
-      end
+      @erb = if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.6')
+               ERB.new(content, trim_mode: mode)
+             else
+               ERB.new(content, nil, mode)
+             end
     end
 
     def result(bind_data = nil)
