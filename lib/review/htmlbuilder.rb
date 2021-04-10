@@ -54,6 +54,15 @@ module ReVIEW
       @body_ext = nil
       @toc = nil
       @javascripts = []
+      @section_level = 0
+      if @book.config.maker
+        if @book.config[@book.config.maker] && @book.config[@book.config.maker]['use_section']
+          @use_section = true
+        end
+      elsif @book.config['epubmaker'] && @book.config['epubmaker']['use_section']
+        # for review-compile
+        @use_section = true
+      end
     end
     private :builder_init_file
 
@@ -87,10 +96,38 @@ module ReVIEW
       layout_file
     end
 
+    def open_sections(level)
+      unless @use_section
+        return nil
+      end
+
+      result = []
+      if level > @section_level
+        @section_level.upto(level - 2) do
+          result << '<section>'
+        end
+      else
+        @section_level.downto(level) do
+          result << '</section>'
+        end
+      end
+      result << '<section>'
+      @section_level = level
+      result.join("\n") + "\n"
+    end
+
+    def close_sections
+      if @use_section.nil? || @section_level == 0
+        return ''
+      end
+
+      "</section>\n" * @section_level
+    end
+
     def result
       # default XHTML header/footer
       @title = strip_html(compile_inline(@chapter.title))
-      @body = solve_nest(@output.string)
+      @body = solve_nest(@output.string) + close_sections
       @language = @book.config['language']
       @stylesheets = @book.config['stylesheet']
       @next = @chapter.next_chapter
@@ -133,6 +170,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      print open_sections(level)
       prefix, anchor = headline_prefix(level)
       if prefix
         prefix = %Q(<span class="secno">#{prefix}</span>)
