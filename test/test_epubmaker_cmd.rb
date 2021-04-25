@@ -35,9 +35,11 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
   end
 
   def check_filesize(epubfile)
-    Zip::File.open(epubfile) do |zio|
-      zio.each do |entry|
-        assert_not_equal(0, entry.size, "#{entry.name} is 0 byte.")
+    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
+      Zip::File.open(epubfile) do |zio|
+        zio.each do |entry|
+          assert_not_equal(0, entry.size, "#{entry.name} is 0 byte.")
+        end
       end
     end
   end
