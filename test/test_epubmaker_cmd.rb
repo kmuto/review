@@ -3,13 +3,13 @@ require 'tmpdir'
 require 'fileutils'
 require 'yaml'
 require 'rbconfig'
+require 'zip'
 
 REVIEW_EPUBMAKER = File.expand_path('../bin/review-epubmaker', __dir__)
 
 class EPUBMakerCmdTest < Test::Unit::TestCase
   def setup
     @tmpdir1 = Dir.mktmpdir
-    @tmpdir2 = Dir.mktmpdir
 
     @old_rubylib = ENV['RUBYLIB']
     ENV['RUBYLIB'] = File.expand_path('lib', __dir__)
@@ -17,7 +17,6 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
 
   def teardown
     FileUtils.rm_rf(@tmpdir1)
-    FileUtils.rm_rf(@tmpdir2)
     ENV['RUBYLIB'] = @old_rubylib
   end
 
@@ -35,11 +34,21 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
     end
   end
 
+  def check_filesize(epubfile)
+    Zip::File.open(epubfile) do |zio|
+      zio.each do |entry|
+        assert_not_equal(0, entry.size, "#{entry.name} is 0 byte.")
+      end
+    end
+  end
+
   def test_epubmaker_cmd_samplebook
     common_buildepub('sample-book/src', 'config.yml', 'book.epub')
+    check_filesize(File.join(@tmpdir1, 'book.epub'))
   end
 
   def test_epubmaker_cmd_syntaxbook
     common_buildepub('syntax-book', 'config.yml', 'syntax-book.epub')
+    check_filesize(File.join(@tmpdir1, 'syntax-book.epub'))
   end
 end
