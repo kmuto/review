@@ -246,7 +246,7 @@ module ReVIEW
           basedir = File.dirname(file)
           FileUtils.mkdir_p(File.join(destdir, basedir))
           log("Copy #{file} to the temporary directory.")
-          FileUtils.cp(file, File.join(destdir, basedir))
+          FileUtils.cp(file, File.join(destdir, basedir), preserve: true)
         end
       else
         recursive_copy_files(resdir, destdir, allow_exts)
@@ -271,7 +271,7 @@ module ReVIEW
           elsif fname =~ /\.(#{allow_exts.join('|')})\Z/i
             FileUtils.mkdir_p(destdir)
             log("Copy #{resdir}/#{fname} to the temporary directory.")
-            FileUtils.cp(File.join(resdir, fname), destdir)
+            FileUtils.cp(File.join(resdir, fname), destdir, preserve: true)
           end
         end
       end
@@ -506,7 +506,7 @@ module ReVIEW
         unless File.exist?(sfile)
           error "stylesheet: #{sfile} is not found."
         end
-        FileUtils.cp(sfile, basetmpdir)
+        FileUtils.cp(sfile, basetmpdir, preserve: true)
         @producer.contents.push(ReVIEW::EPUBMaker::Content.new(file: sfile))
       end
     end
@@ -517,7 +517,7 @@ module ReVIEW
         error "#{configname}: #{@config[configname]} is not found."
       end
       FileUtils.cp(@config[configname],
-                   File.join(destdir, destfilename))
+                   File.join(destdir, destfilename), preserve: true)
     end
 
     def copy_frontmatter(basetmpdir)
