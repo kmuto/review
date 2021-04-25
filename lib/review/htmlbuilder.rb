@@ -118,6 +118,7 @@ module ReVIEW
       unless @use_section
         return ''
       end
+
       "</section>\n" * @section_stack.size
     end
 
