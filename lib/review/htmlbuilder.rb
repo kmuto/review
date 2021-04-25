@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -55,6 +55,7 @@ module ReVIEW
       @toc = nil
       @javascripts = []
       @section_level = 0
+      @section_stack = []
       if @book.config.maker
         if @book.config[@book.config.maker] && @book.config[@book.config.maker]['use_section']
           @use_section = true
@@ -96,32 +97,28 @@ module ReVIEW
       layout_file
     end
 
-    def open_sections(level)
+    def open_section(level)
       unless @use_section
         return nil
       end
 
       result = []
-      if level > @section_level
-        @section_level.upto(level - 2) do
-          result << '<section>'
-        end
-      else
-        @section_level.downto(level) do
-          result << '</section>'
-        end
+
+      while @section_stack.size > 0 && level <= @section_stack[-1]
+        result << '</section>'
+        @section_stack.pop
       end
+      @section_stack.push(level)
       result << '<section>'
-      @section_level = level
-      result.join("\n") + "\n"
+
+      return result.join("\n")
     end
 
     def close_sections
-      if @use_section.nil? || @section_level == 0
+      unless @use_section
         return ''
       end
-
-      "</section>\n" * @section_level
+      "</section>\n" * @section_stack.size
     end
 
     def result
@@ -170,7 +167,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
-      print open_sections(level)
+      print open_section(level)
       prefix, anchor = headline_prefix(level)
       if prefix
         prefix = %Q(<span class="secno">#{prefix}</span>)

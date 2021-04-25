@@ -137,14 +137,11 @@ class HTMLBuidlerTest < Test::Unit::TestCase
     @book.config['epubmaker']['use_section'] = true
     actual = compile_block("= H1\n== H2\n== H2-2\n")
     expected = <<-EOS
+<section><h1><a id="h1"></a><span class="secno">第1章　</span>H1</h1>
 <section>
-<h1><a id="h1"></a><span class="secno">第1章　</span>H1</h1>
-<section>
-
 <h2><a id="h1-1"></a><span class="secno">1.1　</span>H2</h2>
 </section>
 <section>
-
 <h2><a id="h1-2"></a><span class="secno">1.2　</span>H2-2</h2>
 </section>
 </section>
@@ -153,20 +150,14 @@ EOS
 
     actual = compile_block("= H1\n== H2\n==== H4\n== H2-2\n")
     expected = <<-EOS
+<section><h1><a id="h1"></a><span class="secno">第1章　</span>H1</h1>
 <section>
-<h1><a id="h1"></a><span class="secno">第1章　</span>H1</h1>
-<section>
-
 <h2><a id="h1-1"></a><span class="secno">1.1　</span>H2</h2>
 <section>
-<section>
-
 <h4><a id="h1-1-0-1"></a>H4</h4>
 </section>
 </section>
-</section>
 <section>
-
 <h2><a id="h1-2"></a><span class="secno">1.2　</span>H2-2</h2>
 </section>
 </section>
@@ -176,19 +167,9 @@ EOS
     actual = compile_block("===== H5\n= H1\n")
     expected = <<-EOS
 <section>
-<section>
-<section>
-<section>
-<section>
-
 <h5><a id="h1-0-0-0-1"></a>H5</h5>
 </section>
-</section>
-</section>
-</section>
-</section>
-<section>
-<h1><a id="h1"></a><span class="secno">第1章　</span>H1</h1>
+<section><h1><a id="h1"></a><span class="secno">第1章　</span>H1</h1>
 </section>
 EOS
     assert_equal expected, actual
