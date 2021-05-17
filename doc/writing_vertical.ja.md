@@ -35,6 +35,12 @@ body {
     -epub-writing-mode:   vertical-rl;
     writing-mode: tb-rl;
 }
+
+span.tcy {
+    -webkit-text-combine: horizontal;
+    -ms-text-combine-horizontal: all;
+    text-combine-upright: all;
+}
 ```
 
 また、縦書きの書籍は通常、「左開き」（右ページから左ページへ進む）となるので、config.yml の direction パラメータを設定します。
