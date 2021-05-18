@@ -5,6 +5,7 @@ AllCops:
     - tmp/*
   DisplayCopNames: true
   NewCops: enable
+  TargetRubyVersion: 2.5
 
 require:
   - rubocop-performance
