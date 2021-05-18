@@ -821,7 +821,7 @@ module ReVIEW
       ret = []
       s = ''
       brace = nil
-      size.split('').each do |ch|
+      size.chars.each do |ch|
         case ch
         when '|'
           next
