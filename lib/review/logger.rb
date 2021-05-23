@@ -7,6 +7,30 @@ module ReVIEW
       self.formatter = ->(severity, _datetime, name, msg) { "#{severity} #{name}: #{msg}\n" }
     end
 
+    def warn(msg, location: nil)
+      if location
+        super("#{location}: #{msg}")
+      else
+        super(msg)
+      end
+    end
+
+    def error(msg, location: nil)
+      if location
+        super("#{location}: #{msg}")
+      else
+        super(msg)
+      end
+    end
+
+    def debug(msg, location: nil)
+      if location
+        super("#{location}: #{msg}")
+      else
+        super(msg)
+      end
+    end
+
     def ttylogger?
       nil
     end
@@ -19,6 +43,30 @@ module ReVIEW
   begin
     require 'tty-logger'
     class TTYLogger < ::TTY::Logger
+      def warn(msg, location: nil)
+        if location
+          super("#{location}: #{msg}")
+        else
+          super(msg)
+        end
+      end
+
+      def error(msg, location: nil)
+        if location
+          super("#{location}: #{msg}")
+        else
+          super(msg)
+        end
+      end
+
+      def debug(msg, location: nil)
+        if location
+          super("#{location}: #{msg}")
+        else
+          super(msg)
+        end
+      end
+
       def ttylogger?
         true
       end

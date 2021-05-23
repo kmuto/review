@@ -21,11 +21,13 @@ require 'review/tocprinter'
 require 'review/version'
 require 'review/makerhelper'
 require 'review/img_math'
+require 'review/loggable'
 
 module ReVIEW
   class WEBMaker
     include ERB::Util
     include MakerHelper
+    include ReVIEW::Loggable
 
     attr_accessor :config, :basedir
 
@@ -33,15 +35,6 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @img_math = nil
-    end
-
-    def error(msg)
-      @logger.error msg
-      exit 1
-    end
-
-    def warn(msg)
-      @logger.warn msg
     end
 
     def self.execute(*args)
@@ -82,7 +75,7 @@ module ReVIEW
 
     def execute(*args)
       cmd_config, yamlfile = parse_opts(args)
-      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+      error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       @config = ReVIEW::Configure.create(maker: 'webmaker',
                                          yamlfile: yamlfile,
@@ -98,7 +91,7 @@ module ReVIEW
       rescue ApplicationError => e
         raise if @config['debug']
 
-        error(e.message)
+        error! e.message
       end
     end
 

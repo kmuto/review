@@ -16,10 +16,12 @@ require 'review/yamlloader'
 require 'review/idgxmlbuilder'
 require 'review/version'
 require 'review/makerhelper'
+require 'review/loggable'
 
 module ReVIEW
   class IDGXMLMaker
     include MakerHelper
+    include ReVIEW::Loggable
 
     attr_accessor :config, :basedir
 
@@ -27,15 +29,6 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @plaintext = nil
-    end
-
-    def error(msg)
-      @logger.error "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
-      exit 1
-    end
-
-    def warn(msg)
-      @logger.warn "#{File.basename($PROGRAM_NAME, '.*')}: #{msg}"
     end
 
     def self.execute(*args)
@@ -78,7 +71,7 @@ module ReVIEW
 
     def execute(*args)
       cmd_config, yamlfile = parse_opts(args)
-      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+      error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       @config = ReVIEW::Configure.create(maker: 'idgxmlmaker',
                                          yamlfile: yamlfile,
@@ -90,7 +83,7 @@ module ReVIEW
       rescue ApplicationError => e
         raise if @config['debug']
 
-        error(e.message)
+        error! e.message
       end
     end
 
@@ -180,8 +173,8 @@ module ReVIEW
         @converter.convert(filename, File.join(basetmpdir, xmlfile))
         apply_filter(File.join(basetmpdir, xmlfile))
       rescue => e
-        warn "compile error in #{filename} (#{e.class})"
-        warn e.message
+        error "compile error in #{filename} (#{e.class})"
+        error e.message
       end
     end
   end

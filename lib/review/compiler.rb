@@ -24,6 +24,12 @@ module ReVIEW
 
       ## to decide escaping/non-escaping for text
       @command_name_stack = []
+
+      @logger = ReVIEW.logger
+
+      @ignore_errors = builder.is_a?(ReVIEW::IndexBuilder)
+
+      @compile_errors = nil
     end
 
     attr_reader :builder, :previous_list_type
@@ -44,6 +50,10 @@ module ReVIEW
     def compile(chap)
       @chapter = chap
       do_compile
+      if @compile_errors
+        raise ApplicationError, "#{location.filename} cannot be compiled."
+      end
+
       @builder.result
     end
 
@@ -292,7 +302,7 @@ module ReVIEW
             compile_minicolumn_end
           else
             f.gets
-            error 'block end seen but not opened'
+            error 'block end seen but not opened', location: location
           end
         when %r{\A//[a-z]+}
           line = f.peek
@@ -307,8 +317,7 @@ module ReVIEW
             name, args, lines = read_command(f)
             syntax = syntax_descriptor(name)
             unless syntax
-              error "unknown command: //#{name}"
-              compile_unknown_command(args, lines)
+              error "unknown command: //#{name}", location: location
               @command_name_stack.pop
               next
             end
@@ -335,17 +344,17 @@ module ReVIEW
       end
       close_all_tagged_section
     rescue SyntaxError => e
-      error e
+      error e, location: location
     end
 
     def compile_minicolumn_begin(name, caption = nil)
       mid = "#{name}_begin"
       unless @builder.respond_to?(mid)
-        error "strategy does not support minicolumn: #{name}"
+        error "strategy does not support minicolumn: #{name}", location: location
       end
 
       if @minicolumn_name
-        error "minicolumn cannot be nested: #{name}"
+        error "minicolumn cannot be nested: #{name}", location: location
         return
       end
       @minicolumn_name = name
@@ -355,7 +364,7 @@ module ReVIEW
 
     def compile_minicolumn_end
       unless @minicolumn_name
-        error "minicolumn is not used: #{name}"
+        error "minicolumn is not used: #{name}", location: location
         return
       end
       name = @minicolumn_name
@@ -382,7 +391,7 @@ module ReVIEW
           open_tag = tag[1..-1]
           prev_tag_info = @tagged_section.pop
           if prev_tag_info.nil? || prev_tag_info.first != open_tag
-            error "#{open_tag} is not opened."
+            error "#{open_tag} is not opened.", location: location
           end
           close_tagged_section(*prev_tag_info)
         else
@@ -425,7 +434,7 @@ module ReVIEW
     def open_tagged_section(tag, level, label, caption)
       mid = "#{tag}_begin"
       unless @builder.respond_to?(mid)
-        error "builder does not support tagged section: #{tag}"
+        error "builder does not support tagged section: #{tag}", location: location
         headline(level, label, caption)
         return
       end
@@ -438,7 +447,7 @@ module ReVIEW
       if @builder.respond_to?(mid)
         @builder.__send__(mid, level)
       else
-        error "builder does not support block op: #{mid}"
+        error "builder does not support block op: #{mid}", location: location
       end
     end
 
@@ -467,7 +476,7 @@ module ReVIEW
         elsif level < current_level # down
           level_diff = current_level - level
           if level_diff != 1
-            error 'too many *.'
+            error 'too many *.', location: location
           end
           level = current_level
           @builder.ul_begin { level }
@@ -561,7 +570,7 @@ module ReVIEW
         end
       end
       unless f.peek.to_s.start_with?('//}')
-        error "unexpected EOF (block begins at: #{head})"
+        error "unexpected EOF (block begins at: #{head})", location: location
         return buf
       end
       f.gets # discard terminator
@@ -581,7 +590,7 @@ module ReVIEW
         words << w2
       end
       unless scanner.eos?
-        error "argument syntax error: #{scanner.rest} in #{str.inspect}"
+        error "argument syntax error: #{scanner.rest} in #{str.inspect}", location: location
         return []
       end
       words
@@ -589,28 +598,23 @@ module ReVIEW
 
     def compile_command(syntax, args, lines)
       unless @builder.respond_to?(syntax.name)
-        error "builder does not support command: //#{syntax.name}"
-        compile_unknown_command(args, lines)
+        error "builder does not support command: //#{syntax.name}", location: location
         return
       end
       begin
         syntax.check_args(args)
       rescue CompileError => e
-        error e.message
+        error e.message, location: location
         args = ['(NoArgument)'] * syntax.min_argc
       end
       if syntax.block_allowed?
         compile_block(syntax, args, lines)
       else
         if lines
-          error "block is not allowed for command //#{syntax.name}; ignore"
+          error "block is not allowed for command //#{syntax.name}; ignore", location: location
         end
         compile_single(syntax, args)
       end
-    end
-
-    def compile_unknown_command(args, lines)
-      @builder.unknown_command(args, lines)
     end
 
     def compile_block(syntax, args, lines)
@@ -619,7 +623,7 @@ module ReVIEW
 
     def default_block(syntax)
       if syntax.block_required?
-        error "block is required for //#{syntax.name}; use empty block"
+        error "block is required for //#{syntax.name}; use empty block", location: location
       end
       []
     end
@@ -633,7 +637,7 @@ module ReVIEW
         op = $1
         arg = $3
         if arg =~ /[\x01\x02\x03\x04]/
-          error "invalid character in '#{str}'"
+          error "invalid character in '#{str}'", location: location
         end
         replaced = arg.tr('@', "\x01").tr('\\', "\x02").tr('{', "\x03").tr('}', "\x04")
         "@<#{op}>{#{replaced}}"
@@ -655,7 +659,7 @@ module ReVIEW
       words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
       words.each do |w|
         if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
-          error "`@<xxx>' seen but is not valid inline op: #{w}"
+          error "`@<xxx>' seen but is not valid inline op: #{w}", location: location
         end
       end
       result = ''
@@ -671,7 +675,7 @@ module ReVIEW
       end
       result
     rescue => e
-      error e.message
+      error e.message, location: location
     end
     public :text # called from builder
 
@@ -686,7 +690,7 @@ module ReVIEW
 
       @builder.__send__("inline_#{op}", arg)
     rescue => e
-      error e.message
+      error e.message, location: location
       @builder.nofunc_text(str)
     end
 
@@ -698,12 +702,23 @@ module ReVIEW
       @builder.minicolumn_block_name?(name)
     end
 
-    def warn(msg)
-      @builder.warn msg
+    def ignore_errors?
+      @ignore_errors
     end
 
-    def error(msg)
-      @builder.error msg
+    def location
+      @builder.location
+    end
+
+    def warn(msg)
+      @logger.warn(msg)
+    end
+
+    def error(msg, location: nil)
+      unless ignore_errors?
+        @logger.error(msg, location: location)
+        @compile_errors = true
+      end
     end
   end
 end # module ReVIEW

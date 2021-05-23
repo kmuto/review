@@ -599,16 +599,11 @@ module ReVIEW
     end
 
     def warn(msg)
-      @logger.warn "#{@location}: #{msg}"
+      @logger.warn msg, location: @location
     end
 
-    def error(msg = '(no message)')
-      if msg =~ /builder does not support command/
-        # ignore
-        return
-      end
-
-      super
+    def error(msg = nil)
+      # ignore in indexing
     end
 
     def texequation(_lines, id = nil, _caption = '')

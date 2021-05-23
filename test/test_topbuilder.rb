@@ -14,6 +14,8 @@ class TOPBuidlerTest < Test::Unit::TestCase
     @config['language'] = 'ja'
     @book = Book::Base.new
     @book.config = @config
+    @log_io = StringIO.new
+    ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -539,10 +541,10 @@ EOS
 
   def test_empty_table
     e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
-    assert_equal ':2: error: no rows in the table', e.message
+    assert_equal 'no rows in the table', e.message
 
     e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
-    assert_equal ':3: error: no rows in the table', e.message
+    assert_equal 'no rows in the table', e.message
   end
 
   def test_inline_table
@@ -879,8 +881,8 @@ EOS
 
 //}
 EOS
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-      assert_match(/minicolumn cannot be nested:/, e.message)
+      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, @log_io.string)
     end
   end
 
@@ -896,8 +898,8 @@ EOS
 
 //}
 EOS
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-      assert_match(/minicolumn cannot be nested:/, e.message)
+      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, @log_io.string)
     end
   end
 
@@ -912,8 +914,8 @@ EOS
 
 //}
 EOS
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-      assert_match(/minicolumn cannot be nested:/, e.message)
+      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_match(/minicolumn cannot be nested:/, @log_io.string)
     end
   end
 
@@ -998,19 +1000,25 @@ EOB
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
-    assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
-    assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
-    assert_equal ':1: error: unknown headline: n', e.message
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
+    assert_match(/unknown image: n/, @log_io.string)
+
+    @log_io.string = ''
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
+    assert_match(/unknown footnote: n/, @log_io.string)
+
+    @log_io.string = ''
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
+    assert_match(/unknown headline: n/, @log_io.string)
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
-      assert_equal ":1: error: unknown #{name}: n", e.message
+      @log_io.string = ''
+      assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
+      assert_match(/unknown #{name}: n/, @log_io.string)
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
-      assert_equal ':1: error: key not found: "n"', e.message
+      @log_io.string = ''
+      assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
+      assert_match(/key not found: "n"/, @log_io.string)
     end
   end
 

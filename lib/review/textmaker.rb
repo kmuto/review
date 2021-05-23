@@ -17,10 +17,12 @@ require 'review/topbuilder'
 require 'review/version'
 require 'review/makerhelper'
 require 'review/img_math'
+require 'review/loggable'
 
 module ReVIEW
   class TEXTMaker
     include MakerHelper
+    include ReVIEW::Loggable
 
     attr_accessor :config, :basedir
 
@@ -29,15 +31,6 @@ module ReVIEW
       @logger = ReVIEW.logger
       @plaintext = nil
       @img_math = nil
-    end
-
-    def error(msg)
-      @logger.error msg
-      exit 1
-    end
-
-    def warn(msg)
-      @logger.warn msg
     end
 
     def self.execute(*args)
@@ -78,7 +71,7 @@ module ReVIEW
 
     def execute(*args)
       cmd_config, yamlfile = parse_opts(args)
-      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+      error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       @config = ReVIEW::Configure.create(maker: 'textmaker',
                                          yamlfile: yamlfile,
@@ -162,8 +155,8 @@ module ReVIEW
       begin
         @converter.convert(filename, File.join(basetmpdir, textfile))
       rescue => e
-        warn "compile error in #{filename} (#{e.class})"
-        warn e.message
+        error "compile error in #{filename} (#{e.class})"
+        error e.message
       end
     end
   end

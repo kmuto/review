@@ -31,6 +31,7 @@ module ReVIEW
     end
 
     attr_accessor :doc_status, :previous_list_type
+    attr_reader :location
 
     def initialize(strict = false, *_args, img_math: nil)
       @strict = strict
@@ -497,15 +498,11 @@ module ReVIEW
     end
 
     def warn(msg)
-      @logger.warn "#{@location}: #{msg}"
+      @logger.warn(msg, location: @location)
     end
 
     def error(msg)
-      if msg =~ /:\d+: error: /
-        raise ApplicationError, msg
-      else
-        raise ApplicationError, "#{@location}: error: #{msg}"
-      end
+      raise ApplicationError, msg
     end
 
     def handle_metric(str)
