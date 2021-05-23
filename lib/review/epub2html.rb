@@ -23,7 +23,7 @@ module ReVIEW
       new.execute(*args)
     end
 
-    def execute(*args)
+    def parse_options!(*args)
       opts = OptionParser.new
 
       opts.banner = <<EOT
@@ -47,8 +47,17 @@ EOT
         exit 1
       end
 
-      htmls = parse_epub(args[0])
-      puts join_html(args[1], htmls)
+      args
+    end
+
+    def execute(*args)
+      params = parse_options!(*args)
+      execute_with_params(*params)
+    end
+
+    def execute_with_params(epubname, reffile)
+      htmls = parse_epub(epubname)
+      puts join_html(reffile, htmls)
     end
 
     def initialize
