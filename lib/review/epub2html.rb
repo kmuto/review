@@ -64,7 +64,7 @@ EOT
             opf = entry.get_input_stream.read
             @opfxml = REXML::Document.new(opf)
           elsif /.+\.x?html\Z/.match?(entry.name)
-            htmls[entry.name.sub('OEBPS/', '')] = entry.get_input_stream.read.force_encoding('utf-8')
+            htmls[File.basename(entry.name)] = entry.get_input_stream.read.force_encoding('utf-8')
           end
         end
       end
@@ -145,7 +145,8 @@ EOT
     def join_html(reffile, htmls)
       head = tail = nil
       body = []
-      make_list.each do |fname|
+      make_list.each do |href_value|
+        fname = File.basename(href_value)
         if head.nil? && (reffile.nil? || reffile == fname)
           head, tail = take_headtail(htmls[fname])
         end
