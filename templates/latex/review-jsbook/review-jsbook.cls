@@ -389,7 +389,7 @@
   hidelinks,
   setpagesize=false,
 ]{hyperref}
-\RequirePackage[dvipdfmx]{pxjahyper}
+\RequirePackage{pxjahyper}
 
 %% more useful macros
 %% ----------
