@@ -47,35 +47,35 @@ EOT
         exit 1
       end
 
-      parse_epub(args[0])
-      puts join_html(args[1])
+      htmls = parse_epub(args[0])
+      puts join_html(args[1], htmls)
     end
 
     def initialize
       @opfxml = nil
-      @htmls = {}
-      @head = nil
-      @tail = nil
       @inline_footnote = nil
     end
 
     def parse_epub(epubname)
+      htmls = {}
       Zip::File.open(epubname) do |zio|
         zio.each do |entry|
           if /.+\.opf\Z/.match?(entry.name)
             opf = entry.get_input_stream.read
             @opfxml = REXML::Document.new(opf)
           elsif /.+\.x?html\Z/.match?(entry.name)
-            @htmls[entry.name.sub('OEBPS/', '')] = entry.get_input_stream.read.force_encoding('utf-8')
+            htmls[entry.name.sub('OEBPS/', '')] = entry.get_input_stream.read.force_encoding('utf-8')
           end
         end
       end
-      nil
+      htmls
     end
 
     def take_headtail(html)
-      @head = html.sub(/(<body.*?>).*/m, '\1')
-      @tail = html.sub(%r{.*(</body>)}m, '\1')
+      head = html.sub(/(<body.*?>).*/m, '\1')
+      tail = html.sub(%r{.*(</body>)}m, '\1')
+
+      [head, tail]
     end
 
     def sanitize(s)
@@ -142,16 +142,17 @@ EOT
         sub(%r{(</body>).*}m, '</section>')
     end
 
-    def join_html(reffile)
+    def join_html(reffile, htmls)
+      head = tail = nil
       body = []
       make_list.each do |fname|
-        if @head.nil? && (reffile.nil? || reffile == fname)
-          take_headtail(@htmls[fname])
+        if head.nil? && (reffile.nil? || reffile == fname)
+          head, tail = take_headtail(htmls[fname])
         end
 
-        body << modify_html(fname, @htmls[fname])
+        body << modify_html(fname, htmls[fname])
       end
-      "#{@head}\n#{body.join("\n")}\n#{@tail}"
+      "#{head}\n#{body.join("\n")}\n#{tail}"
     end
 
     def make_list
