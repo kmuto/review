@@ -23,6 +23,11 @@ module ReVIEW
       new.execute(*args)
     end
 
+    def initialize
+      @opfxml = nil
+      @inline_footnote = nil
+    end
+
     def parse_options!(*args)
       opts = OptionParser.new
 
@@ -58,11 +63,6 @@ EOT
     def execute_with_params(epubname, reffile)
       htmls = parse_epub(epubname)
       puts join_html(reffile, htmls)
-    end
-
-    def initialize
-      @opfxml = nil
-      @inline_footnote = nil
     end
 
     def parse_epub(epubname)
