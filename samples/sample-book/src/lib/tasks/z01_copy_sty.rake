@@ -1,5 +1,6 @@
-desc 'copy sty/* files from current Re:VIEW source code (in git repos)'
 REVIEW_TEMPLATE = ENV['REVIEW_TEMPLATE'] || 'review-jsbook'
+
+desc 'copy sty/* files from current Re:VIEW source code (in git repos)'
 task :copy_sty do
   review_rootdir = '../../..'
   template_dir = File.join(review_rootdir, "templates/latex/#{REVIEW_TEMPLATE}")

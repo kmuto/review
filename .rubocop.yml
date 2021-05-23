@@ -9,6 +9,7 @@ AllCops:
 
 require:
   - rubocop-performance
+  - rubocop-rake
 
 #### Lint
 
