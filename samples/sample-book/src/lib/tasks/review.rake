@@ -130,15 +130,17 @@ file IDGXMLROOT => SRC do
   FileUtils.rm_rf([IDGXMLROOT])
 end
 
-desc 'run vivliostyle'
+desc 'preview with vivliostyle'
 task 'vivliostyle:preview': BOOK_EPUB do
   sh "#{REVIEW_VSCLI} preview #{REVIEW_VSCLI_USESANDBOX} #{REVIEW_VSCLI_OPTIONS} #{BOOK_EPUB}"
 end
 
+desc 'build with vivliostyle'
 task 'vivliostyle:build': BOOK_EPUB do
   sh "#{REVIEW_VSCLI} build #{REVIEW_VSCLI_USESANDBOX} #{REVIEW_VSCLI_OPTIONS} -o #{REVIEW_VSCLI_PDF} #{BOOK_EPUB}"
 end
 
+desc 'build with vivliostyle'
 task vivliostyle: 'vivliostyle:build'
 
 CLEAN.include([BOOK, BOOK_PDF, BOOK_EPUB, BOOK + '-pdf', BOOK + '-epub', WEBROOT, 'images/_review_math', 'images/_review_math_text', TEXTROOT, IDGXMLROOT])
