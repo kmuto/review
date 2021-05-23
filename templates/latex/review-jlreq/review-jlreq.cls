@@ -218,7 +218,7 @@
 ]{hyperref}
 
 \def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
-  \RequirePackage[\recls@driver]{pxjahyper}
+  \RequirePackage{pxjahyper}
 \fi
 
 %% include fullpage graphics
