@@ -10,10 +10,13 @@ require 'review/extentions'
 require 'review/preprocessor'
 require 'review/exception'
 require 'review/location'
+require 'review/loggable'
 require 'strscan'
 
 module ReVIEW
   class Compiler
+    include Loggable
+
     MAX_HEADLINE_LEVEL = 6
 
     def initialize(builder)
@@ -293,7 +296,7 @@ module ReVIEW
           compile_dlist(f)
           @builder.previous_list_type = 'dl'
         when /\A\s*:\s/
-          warn 'Definition list starting with `:` is deprecated. It should start with ` : `.'
+          warn 'Definition list starting with `:` is deprecated. It should start with ` : `.', location: location
           compile_dlist(f)
           @builder.previous_list_type = 'dl'
         when %r{\A//\}}
@@ -327,9 +330,9 @@ module ReVIEW
           @builder.previous_list_type = nil
         when %r{\A//}
           line = f.gets
-          warn "`//' seen but is not valid command: #{line.strip.inspect}"
+          warn "`//' seen but is not valid command: #{line.strip.inspect}", location: location
           if block_open?(line)
-            warn 'skipping block...'
+            warn 'skipping block...', location: location
             read_block(f, false)
           end
           @builder.previous_list_type = nil
@@ -396,14 +399,14 @@ module ReVIEW
           close_tagged_section(*prev_tag_info)
         else
           if caption.empty?
-            warn 'headline is empty.'
+            warn 'headline is empty.', location: location
           end
           close_current_tagged_section(level)
           open_tagged_section(tag, level, label, caption)
         end
       else
         if caption.empty?
-          warn 'headline is empty.'
+          warn 'headline is empty.', location: location
         end
         if @headline_indexs.size > (index + 1)
           @headline_indexs = @headline_indexs[0..index]
@@ -710,15 +713,12 @@ module ReVIEW
       @builder.location
     end
 
-    def warn(msg)
-      @logger.warn(msg)
-    end
-
+    ## override
     def error(msg, location: nil)
-      unless ignore_errors?
-        @logger.error(msg, location: location)
-        @compile_errors = true
-      end
+      return if ignore_errors? # for IndexBuilder
+
+      @compile_errors = true
+      super
     end
   end
 end # module ReVIEW
