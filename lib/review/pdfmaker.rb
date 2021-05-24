@@ -30,7 +30,7 @@ module ReVIEW
   class PDFMaker
     include FileUtils
     include ReVIEW::LaTeXUtils
-    include ReVIEW::Loggable
+    include Loggable
     include ReVIEW::CallHook
 
     attr_accessor :config, :basedir

@@ -4,7 +4,7 @@ require 'review/loggable'
 
 module ReVIEW
   class ImgMath
-    include ReVIEW::Loggable
+    include Loggable
 
     def initialize(config, path_name: '_review_math')
       @config = config

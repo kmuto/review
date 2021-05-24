@@ -22,7 +22,7 @@ require 'review/loggable'
 module ReVIEW
   class TEXTMaker
     include MakerHelper
-    include ReVIEW::Loggable
+    include Loggable
 
     attr_accessor :config, :basedir
 

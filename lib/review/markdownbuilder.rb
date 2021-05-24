@@ -245,7 +245,7 @@ module ReVIEW
     def inline_img(id)
       "#{I18n.t('image')}#{@chapter.image(id).number}"
     rescue KeyError
-      error "unknown image: #{id}"
+      app_error "unknown image: #{id}"
     end
 
     def inline_dtp(str)
@@ -264,14 +264,14 @@ module ReVIEW
           anchor = 'h' + n.tr('.', '-')
           %Q(<a href="##{anchor}">#{str}</a>)
         else
-          warn 'MARKDOWNBuilder does not support links to other chapters'
+          warn 'MARKDOWNBuilder does not support links to other chapters', location: location
           str
         end
       else
         str
       end
     rescue KeyError
-      error "unknown headline: #{id}"
+      app_error "unknown headline: #{id}"
     end
 
     def indepimage(_lines, id, caption = '', _metric = nil)
@@ -401,7 +401,7 @@ module ReVIEW
       begin
         "![](#{@chapter.image(id).path.sub(%r{\A\./}, '')})"
       rescue
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         %Q(<pre>missing image: #{id}</pre>)
       end
     end

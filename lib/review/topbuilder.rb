@@ -105,7 +105,7 @@ module ReVIEW
           list_header(id, caption, lang)
         end
       rescue KeyError
-        error "no such list: #{id}"
+        app_error "no such list: #{id}"
       end
       puts "◆→終了:#{@titles['list']}←◆"
       blank
@@ -178,7 +178,7 @@ module ReVIEW
           list_header(id, caption, lang)
         end
       rescue KeyError
-        error "no such list: #{id}"
+        app_error "no such list: #{id}"
       end
       puts "◆→終了:#{@titles['list']}←◆"
       blank
@@ -202,7 +202,7 @@ module ReVIEW
       if @chapter.image_bound?(id)
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
       else
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         lines.each do |line|
           puts line
         end
@@ -287,7 +287,7 @@ module ReVIEW
     def inline_fn(id)
       "【注#{@chapter.footnote(id).number}】"
     rescue KeyError
-      error "unknown footnote: #{id}"
+      app_error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, ruby)
@@ -381,7 +381,7 @@ module ReVIEW
       begin
         "◆→画像 #{@chapter.image(id).path.sub(%r{\A\./}, '')}←◆"
       rescue
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         "◆→画像 #{id}←◆"
       end
     end
@@ -425,7 +425,7 @@ module ReVIEW
     def inline_bib(id)
       %Q([#{@chapter.bibpaper(id).number}])
     rescue KeyError
-      error "unknown bib: #{id}"
+      app_error "unknown bib: #{id}"
     end
 
     def noindent
@@ -487,7 +487,7 @@ module ReVIEW
       begin
         puts "◆→画像 #{@chapter.image(id).path.sub(%r{\A\./}, '')}#{metrics}←◆"
       rescue
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         puts "◆→画像 #{id}←◆"
       end
       if !caption_top?('image') && caption.present?

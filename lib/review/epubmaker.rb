@@ -32,7 +32,7 @@ require 'review/loggable'
 module ReVIEW
   class EPUBMaker
     include MakerHelper
-    include ReVIEW::Loggable
+    include Loggable
     include ReVIEW::CallHook
 
     def initialize

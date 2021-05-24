@@ -27,7 +27,7 @@ module ReVIEW
   class WEBMaker
     include ERB::Util
     include MakerHelper
-    include ReVIEW::Loggable
+    include Loggable
 
     attr_accessor :config, :basedir
 

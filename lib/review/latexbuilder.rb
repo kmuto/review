@@ -61,7 +61,7 @@ module ReVIEW
         require 'nkf'
         @index_mecab = MeCab::Tagger.new(@book.config['pdfmaker']['makeindex_mecab_opts'])
       rescue LoadError
-        warn 'not found MeCab'
+        warn 'not found MeCab', location: location
       end
     end
 
@@ -156,7 +156,7 @@ module ReVIEW
         puts macro('label', label) if label
       end
     rescue
-      error "unknown level: #{level}"
+      app_error "unknown level: #{level}"
     end
 
     def nonum_begin(level, _label, caption)
@@ -480,7 +480,7 @@ module ReVIEW
               captionstr = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
             end
           rescue KeyError
-            error "no such list: #{id}"
+            app_error "no such list: #{id}"
           end
         end
       end
@@ -613,7 +613,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      warn "image not bound: #{id}"
+      warn "image not bound: #{id}", location: location
       puts '\begin{reviewdummyimage}'
       # path = @chapter.image(id).path
       puts "--[[path = #{id} (#{existence(id)})]]--"
@@ -700,7 +700,7 @@ module ReVIEW
           puts "\\#{command}[width=\\maxwidth]{#{@chapter.image(id).path}}"
         end
       else
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         puts '\begin{reviewdummyimage}'
         puts "--[[path = #{escape(id)} (#{existence(id)})]]--"
         lines.each do |line|
@@ -736,7 +736,7 @@ module ReVIEW
           table_header(id, caption)
         end
       rescue KeyError
-        error "no such table: #{id}"
+        app_error "no such table: #{id}"
       end
       table_begin(rows.first.size)
       table_rows(sepidx, rows)
@@ -902,7 +902,7 @@ module ReVIEW
 
     def imgtable(lines, id, caption = nil, metric = nil)
       unless @chapter.image_bound?(id)
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         image_dummy(id, caption, lines)
         return
       end
@@ -920,7 +920,7 @@ module ReVIEW
         end
         puts macro('label', table_label(id))
       rescue ReVIEW::KeyError
-        error "no such table: #{id}"
+        app_error "no such table: #{id}"
       end
       imgtable_image(id, caption, metric)
 
@@ -1056,7 +1056,7 @@ module ReVIEW
         title
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
@@ -1067,7 +1067,7 @@ module ReVIEW
         @book.chapter_index.number(id)
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
@@ -1079,7 +1079,7 @@ module ReVIEW
         title
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
       nofunc_text("[UnknownChapter:#{id}]")
     end
 
@@ -1096,7 +1096,7 @@ module ReVIEW
         macro('reviewlistref', I18n.t('format_number', [get_chap(chapter), chapter.list(id).number]))
       end
     rescue KeyError
-      error "unknown list: #{id}"
+      app_error "unknown list: #{id}"
     end
 
     def inline_table(id)
@@ -1107,7 +1107,7 @@ module ReVIEW
         macro('reviewtableref', I18n.t('format_number', [get_chap(chapter), chapter.table(id).number]), table_label(id, chapter))
       end
     rescue KeyError
-      error "unknown table: #{id}"
+      app_error "unknown table: #{id}"
     end
 
     def inline_img(id)
@@ -1118,7 +1118,7 @@ module ReVIEW
         macro('reviewimageref', I18n.t('format_number', [get_chap(chapter), chapter.image(id).number]), image_label(id, chapter))
       end
     rescue KeyError
-      error "unknown image: #{id}"
+      app_error "unknown image: #{id}"
     end
 
     def inline_eq(id)
@@ -1129,13 +1129,13 @@ module ReVIEW
         macro('reviewequationref', I18n.t('format_number', [get_chap(chapter), chapter.equation(id).number]))
       end
     rescue KeyError
-      error "unknown equation: #{id}"
+      app_error "unknown equation: #{id}"
     end
 
     def footnote(id, content)
       if @book.config['footnotetext'] || @foottext[id]
         if @doc_status[:column]
-          warn "//footnote[#{id}] is in the column block. It is recommended to move out of the column block."
+          warn "//footnote[#{id}] is in the column block. It is recommended to move out of the column block.", location: location
         end
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
       end
@@ -1151,7 +1151,7 @@ module ReVIEW
         macro('footnote', compile_inline(@chapter.footnote(id).content.strip))
       end
     rescue KeyError
-      error "unknown footnote: #{id}"
+      app_error "unknown footnote: #{id}"
     end
 
     BOUTEN = '・'.freeze
@@ -1285,7 +1285,7 @@ module ReVIEW
             I18n.t('column', compile_inline(chapter.column(id).caption)),
             column_label(id, chapter))
     rescue KeyError
-      error "unknown column: #{id}"
+      app_error "unknown column: #{id}"
     end
 
     def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
@@ -1324,7 +1324,7 @@ module ReVIEW
         end
         macro(command, @chapter.image(id).path)
       else
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         "\\verb|--[[path = #{id} (#{existence(id)})]]--|"
       end
     end

@@ -6,14 +6,14 @@ module ReVIEW
       logger.error(msg, location: location)
     end
 
-    def error!(msg, location: nil, exception: nil)
+    def app_error(msg)
+      raise ApplicationError, msg
+    end
+
+    def error!(msg, location: nil)
       logger.error(msg, location: location)
 
-      if exception
-        raise exception, msg
-      else
-        exit 1
-      end
+      exit 1
     end
 
     def warn(msg, location: nil)
