@@ -9,63 +9,46 @@
 
 require 'review/textutils'
 require 'review/exception'
-require 'nkf'
+require 'review/preprocessor/directive'
+require 'review/preprocessor/line'
+require 'review/preprocessor/repository'
+require 'review/loggable'
+require 'open3'
 
 module ReVIEW
-  module ErrorUtils
-    def init_errorutils(f)
-      @errutils_file = f
-      @errutils_err = false
-    end
-
-    def warn(msg)
-      @logger.warn "#{location}: #{msg}"
-    end
-
-    def error(msg)
-      @errutils_err = true
-      raise ApplicationError, "#{location}: #{msg}"
-    end
-
-    def location
-      "#{filename}:#{lineno}"
-    end
-
-    def filename
-      @errutils_file.path
-    end
-
-    def lineno
-      @errutils_file.lineno
-    end
-  end
-
   class Preprocessor
-    include ErrorUtils
+    include Loggable
 
-    def initialize(repo, param)
-      @repository = repo
-      @config = param
+    TYPES = %w[file range].freeze
+    KNOWN_DIRECTIVES = %w[require provide warn ok].freeze
+    INF_INDENT = 9999
+
+    def initialize(param)
+      @repository = ReVIEW::Preprocessor::Repository.new(param)
+      @config = param ## do not use params in this class; only used in Repository
       @logger = ReVIEW.logger
       @leave_content = nil
     end
 
-    def process(inf, outf)
-      init_errorutils(inf)
-      @f = outf
-      begin
-        preproc(inf)
-      rescue Errno::ENOENT => e
-        error e.message
+    def process(path)
+      File.open(path) do |inf|
+        @inf = inf
+        @f = StringIO.new
+        begin
+          preproc(@inf)
+        rescue Errno::ENOENT => e
+          error! e.message
+        end
+        @f.string
       end
     end
 
     private
 
-    TYPES = %w[file range].freeze
-
     def preproc(f)
-      init_vars
+      @vartable = {}
+      @has_errors = false
+
       f.each_line do |line|
         case line
         when /\A\#@\#/, /\A\#\#\#\#/
@@ -98,18 +81,18 @@ module ReVIEW
           path = expand(direc.args[0])
           @leave_content = File.extname(path) == '.re'
           ent = @repository.fetch_range(path, direc.args[1]) or
-            error "unknown range: #{path}: #{direc.args[1]}"
+            app_error "unknown range: #{path}: #{direc.args[1]}"
           ent = (direc['unindent'] ? unindent(ent, direc['unindent']) : ent)
           replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
         when /\A\#@end/
-          error 'unbaranced #@end'
+          app_error 'unbaranced #@end'
 
         when /\A\#@/
           op = line.slice(/@(\w+)/, 1)
-          warn "unknown directive: #{line.strip}" unless known_directive?(op)
+          warn "unknown directive: #{line.strip}", location: location unless known_directive?(op)
           if op == 'warn'
-            warn line.strip.sub(/\#@warn\((.+)\)/, '\1')
+            warn line.strip.sub(/\#@warn\((.+)\)/, '\1'), location: location
           end
           @f.print line
 
@@ -118,10 +101,15 @@ module ReVIEW
         else # rubocop:disable Lint/DuplicateBranch
           @f.print line
         end
+      rescue ApplicationError => e
+        @has_errors = true
+        error e.message, location: location
+      end
+
+      if @has_erros
+        error! 'preprocessor failed.'
       end
     end
-
-    KNOWN_DIRECTIVES = %w[require provide warn ok].freeze
 
     def known_directive?(op)
       KNOWN_DIRECTIVES.index(op)
@@ -151,47 +139,23 @@ module ReVIEW
           return nil
         when %r{\A//\}}
           unless @leave_content
-            warn '//} seen in list'
+            warn '//} seen in list', location: location
             @f.print line
             return nil
           end
         when /\A\#@\w/
-          warn "#{line.slice(/\A\#@\w+/)} seen in list"
+          warn "#{line.slice(/\A\#@\w+/)} seen in list", location: location
           @f.print line
         when /\A\#@/
           @f.print line
         end
       end
-      error "list reached end of file (beginning line = #{begline})"
-    end
-
-    class Directive
-      def initialize(op, args, opts)
-        @op = op
-        @args = args
-        @opts = opts
-      end
-
-      attr_reader :op
-      attr_reader :args
-      attr_reader :opts
-
-      def arg
-        @args.first
-      end
-
-      def opt
-        @opts.first
-      end
-
-      def [](key)
-        @opts[key]
-      end
+      app_error "list reached end of file (beginning line = #{begline})"
     end
 
     def parse_directive(line, argc, *optdecl)
       m = /\A\#@(\w+)\((.*?)\)(?:\[(.*?)\])?\z/.match(line.strip) or
-        error "wrong directive: #{line.strip}"
+        app_error "wrong directive: #{line.strip}"
       op = m[1]
       args = m[2].split(/,\s*/)
       opts = parse_optargs(m[3])
@@ -200,12 +164,12 @@ module ReVIEW
       if argc == -1
         # Any number of arguments are allowed.
       elsif args.size != argc
-        error 'wrong arg size'
+        app_error 'wrong arg size'
       end
       if opts
         wrong_opts = opts.keys - optdecl
         unless wrong_opts.empty?
-          error "wrong option: #{wrong_opts.keys.join(' ')}"
+          app_error "wrong option: #{wrong_opts.keys.join(' ')}"
         end
       end
       Directive.new(op, args, opts || {})
@@ -237,10 +201,6 @@ module ReVIEW
       end
     end
 
-    def init_vars
-      @vartable = {}
-    end
-
     def defvar(name, value)
       @vartable[name] = value
     end
@@ -257,8 +217,6 @@ module ReVIEW
       re = /\A#{' ' * n}/
       chunk.map { |line| line.edit { |s| s.sub(re, '') } }
     end
-
-    INF_INDENT = 9999
 
     def minimum_indent(chunk)
       n = chunk.map { |line| line.empty? ? INF_INDENT : line.num_indent }.min
@@ -277,8 +235,6 @@ module ReVIEW
       end
     end
 
-    require 'open3'
-
     def get_output(cmd, use_stderr)
       out = err = nil
       Open3.popen3(cmd) do |_stdin, stdout, stderr|
@@ -292,182 +248,22 @@ module ReVIEW
       if err && !err.empty?
         $stderr.puts '[unexpected stderr message]'
         err.each { |line| $stderr.print line }
-        error 'get_output: got unexpected output'
+        app_error 'get_output: got unexpected output'
       end
       num = 0
       out.map { |line| Line.new(num += 1, line) }
     end
-  end
 
-  class Line
-    def initialize(number, string)
-      @number = number
-      @string = string
+    def location
+      "#{filename}:#{lineno}"
     end
 
-    attr_reader :number
-    attr_reader :string
-    alias_method :to_s, :string
-
-    def edit
-      self.class.new(@number, yield(@string))
+    def filename
+      @inf.path
     end
 
-    def empty?
-      @string.strip.empty?
-    end
-
-    def num_indent
-      @string.slice(/\A\s*/).size
-    end
-  end
-
-  class Repository
-    include TextUtils
-    include ErrorUtils
-
-    def initialize(param)
-      @repository = {}
-      @config = param
-      @logger = ReVIEW.logger
-    end
-
-    def fetch_file(file)
-      file_descripter(file)['file']
-    end
-
-    def fetch_range(file, name)
-      fetch(file, 'range', name)
-    end
-
-    def fetch(file, type, name)
-      table = file_descripter(file)[type] or return nil
-      table[name]
-    end
-
-    private
-
-    def file_descripter(fname)
-      @leave_content = File.extname(fname) == '.re'
-      return @repository[fname] if @repository[fname]
-
-      @repository[fname] = git?(fname) ? parse_git_blob(fname) : parse_file(fname)
-    end
-
-    def git?(fname)
-      fname.start_with?('git|')
-    end
-
-    def parse_git_blob(g_obj)
-      IO.popen('git show ' + g_obj.sub(/\Agit\|/, ''), 'r') do |f|
-        init_errorutils(f)
-        return _parse_file(f)
-      end
-    end
-
-    def parse_file(fname)
-      File.open(fname, 'rt:BOM|utf-8') do |f|
-        init_errorutils(f)
-        return _parse_file(f)
-      end
-    end
-
-    def _parse_file(f)
-      whole = []
-      repo = { 'file' => whole }
-      curr = { 'WHOLE' => whole }
-      lineno = 1
-      yacchack = false # remove ';'-only lines.
-      opened = [['(not opened)', '(not opened)']] * 3
-
-      f.each do |line|
-        case line
-        when /(?:\A\#@|\#@@)([a-z]+)_(begin|end)\((.*)\)/
-          type = check_type($1)
-          direction = $2
-          spec = check_spec($3)
-          case direction
-          when 'begin'
-            key = "#{type}/#{spec}"
-            if curr[key]
-              error "begin x2: #{key}"
-            end
-            (repo[type] ||= {})[spec] = curr[key] = []
-          when 'end'
-            curr.delete("#{type}/#{spec}") or
-              error "end before begin: #{type}/#{spec}"
-          else
-            raise 'must not happen'
-          end
-
-        when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\{}
-          type = check_type($1)
-          spec = check_spec($2)
-          key = "#{type}/#{spec}"
-          if curr[key]
-            error "begin x2: #{key}"
-          end
-          (repo[type] ||= {})[spec] = curr[key] = []
-          opened.push([type, spec])
-
-        when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\}}
-          type = check_type($1)
-          spec = check_spec($2)
-          curr.delete("#{type}/#{spec}") or
-            error "end before begin: #{type}/#{spec}"
-          opened.delete("#{type}/#{spec}")
-
-        when /(?:\A\#@|\#@@)\}/
-          type, spec = opened.last
-          curr.delete("#{type}/#{spec}") or
-            error "closed before open: #{type}/#{spec}"
-          opened.pop
-
-        when /(?:\A\#@|\#@@)yacchack/
-          yacchack = true
-
-        when /\A\#@-/ # does not increment line number.
-          line = canonical($')
-          curr.each_value { |list| list.push(Line.new(nil, line)) }
-
-        else
-          next if yacchack && (line.strip == ';')
-
-          line = canonical(line)
-          curr.each_value { |list| list.push(Line.new(lineno, line)) }
-          lineno += 1
-        end
-      end
-      if curr.size > 1
-        curr.delete('WHOLE')
-        curr.each { |range, lines| @logger.warn "#{filename}: unclosed range: #{range} (begin @#{lines.first.number})" }
-        raise ApplicationError, 'ERROR'
-      end
-
-      repo
-    end
-
-    def canonical(line)
-      if @leave_content
-        return line
-      end
-
-      tabwidth = @config['tabwidth'] || 8
-      if tabwidth > 0
-        detab(line, tabwidth).rstrip + "\n"
-      else
-        line
-      end
-    end
-
-    def check_type(type)
-      error "wrong type: #{type.inspect}" unless Preprocessor::TYPES.index(type)
-      type
-    end
-
-    def check_spec(spec)
-      error "wrong spec: #{spec.inspect}" unless /\A\w+\z/ =~ spec
-      spec
+    def lineno
+      @inf.lineno
     end
   end
 end
