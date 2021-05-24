@@ -267,8 +267,7 @@ module ReVIEW
     def check_compile_status
       return unless @compile_errors
 
-      $stderr.puts 'compile error, No EPUB file output.'
-      exit 1
+      error! 'compile error, No EPUB file output.'
     end
 
     def build_body(basetmpdir, yamlfile)

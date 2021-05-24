@@ -31,6 +31,7 @@ module ReVIEW
       @logger = ReVIEW.logger
       @plaintext = nil
       @img_math = nil
+      @compile_errors = nil
     end
 
     def self.execute(*args)
@@ -85,7 +86,7 @@ module ReVIEW
       rescue ApplicationError => e
         raise if @config['debug']
 
-        error(e.message)
+        error! e.message
       end
 
       if @config['math_format'] == 'imgmath'
@@ -102,6 +103,10 @@ module ReVIEW
       @book = ReVIEW::Book::Base.new(@basedir, config: @config)
 
       build_body(@path, yamlfile)
+
+      if @compile_errors
+        app_error 'compile error, No TEXT file output.'
+      end
     end
 
     def build_body(basetmpdir, _yamlfile)
@@ -155,6 +160,7 @@ module ReVIEW
       begin
         @converter.convert(filename, File.join(basetmpdir, textfile))
       rescue => e
+        @compile_errors = true
         error "compile error in #{filename} (#{e.class})"
         error e.message
       end

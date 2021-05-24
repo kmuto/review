@@ -40,6 +40,7 @@ module ReVIEW
       @logger = ReVIEW.logger
       @input_files = Hash.new { |h, key| h[key] = '' }
       @mastertex = '__REVIEW_BOOK__'
+      @compile_errors = nil
     end
 
     def system_with_info(*args)

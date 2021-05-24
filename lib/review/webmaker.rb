@@ -35,6 +35,7 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @img_math = nil
+      @compile_errors = nil
     end
 
     def self.execute(*args)
@@ -122,6 +123,7 @@ module ReVIEW
 
     def build_body(basetmpdir, _yamlfile)
       base_path = Pathname.new(@basedir)
+      @compile_errors = nil
       @book.parts.each do |part|
         if part.name.present?
           if part.file?
@@ -135,6 +137,9 @@ module ReVIEW
         end
 
         part.chapters.each { |chap| build_chap(chap, base_path, basetmpdir, false) }
+      end
+      if @compile_errors
+        app_error 'compile error, No web files output.'
       end
     end
 
@@ -184,9 +189,10 @@ module ReVIEW
 
       begin
         @converter.convert(filename, File.join(basetmpdir, htmlfile))
-      rescue => e
-        warn "compile error in #{filename} (#{e.class})"
-        warn e.message
+      rescue ApplicationError => e
+        @compile_errors = true
+        error "compile error in #{filename} (#{e.class})"
+        error e.message
       end
     end
 

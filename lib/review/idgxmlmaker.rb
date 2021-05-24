@@ -29,6 +29,7 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @plaintext = nil
+      @compile_errors = nil
     end
 
     def self.execute(*args)
@@ -99,6 +100,10 @@ module ReVIEW
       end
 
       build_body(@path, yamlfile)
+
+      if @compile_errors
+        app_error 'compile error, No IDGXML file output.'
+      end
     end
 
     def apply_filter(xmlfile)
@@ -173,6 +178,7 @@ module ReVIEW
         @converter.convert(filename, File.join(basetmpdir, xmlfile))
         apply_filter(File.join(basetmpdir, xmlfile))
       rescue => e
+        @compile_errors = true
         error "compile error in #{filename} (#{e.class})"
         error e.message
       end
