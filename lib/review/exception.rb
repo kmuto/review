@@ -22,4 +22,11 @@ module ReVIEW
   class FileNotFound < ApplicationError; end
 
   class KeyError < CompileError; end
+
+  class BuildError < ApplicationError
+    def initialize(msg, location: nil)
+      @location = location
+      super(msg)
+    end
+  end
 end

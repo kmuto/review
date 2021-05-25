@@ -13,6 +13,8 @@ class EPUBMakerTest < Test::Unit::TestCase
       'language' => 'en',
       'titlepage' => nil
     )
+    @log_io = StringIO.new
+    ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @producer = ReVIEW::EPUBMaker::Producer.new(config)
   end
 
@@ -901,8 +903,8 @@ EOT
       assert_nothing_raised { epubmaker.copy_stylesheet(tmpdir) }
 
       epubmaker.config['stylesheet'] = ['nothing.css']
-      e = assert_raise(ApplicationError) { epubmaker.copy_stylesheet(tmpdir) }
-      assert_equal 'stylesheet: nothing.css is not found.', e.message
+      assert_raise(SystemExit) { epubmaker.copy_stylesheet(tmpdir) }
+      assert_equal "ERROR --: stylesheet: nothing.css is not found.\n", @log_io.string
     end
 
     epubmaker_instance do |epubmaker, tmpdir|
@@ -911,8 +913,9 @@ EOT
       assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
 
       epubmaker.config['titlefile'] = 'nothing.html'
-      e = assert_raise(ApplicationError) { epubmaker.copy_frontmatter(tmpdir) }
-      assert_equal 'titlefile: nothing.html is not found.', e.message
+      @log_io.string = ''
+      assert_raise(SystemExit) { epubmaker.copy_frontmatter(tmpdir) }
+      assert_equal "ERROR --: titlefile: nothing.html is not found.\n", @log_io.string
     end
 
     # XXX: only `cover' is allowed to have invalid file name.
@@ -922,8 +925,9 @@ EOT
         assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
 
         epubmaker.config[name] = 'nothing.html'
-        e = assert_raise(ApplicationError) { epubmaker.copy_frontmatter(tmpdir) }
-        assert_equal "#{name}: nothing.html is not found.", e.message
+        @log_io.string = ''
+        assert_raise(SystemExit) { epubmaker.copy_frontmatter(tmpdir) }
+        assert_equal "ERROR --: #{name}: nothing.html is not found.\n", @log_io.string
       end
     end
 
@@ -933,8 +937,9 @@ EOT
         assert_nothing_raised { epubmaker.copy_backmatter(tmpdir) }
 
         epubmaker.config[name] = 'nothing.html'
-        e = assert_raise(ApplicationError) { epubmaker.copy_backmatter(tmpdir) }
-        assert_equal "#{name}: nothing.html is not found.", e.message
+        @log_io.string = ''
+        assert_raise(SystemExit) { epubmaker.copy_backmatter(tmpdir) }
+        assert_equal "ERROR --: #{name}: nothing.html is not found.\n", @log_io.string
       end
     end
   end

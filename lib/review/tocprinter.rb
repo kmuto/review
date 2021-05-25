@@ -257,7 +257,7 @@ module ReVIEW
         compiler.compile(@book.chapter(chap.name))
       rescue ReVIEW::ApplicationError => e
         @logger.error e.message
-        exit 1
+        ''
       end
     end
 

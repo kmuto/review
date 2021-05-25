@@ -255,6 +255,8 @@ Style/MethodCallWithArgsParentheses:
     - 'write'
     - 'warn'
     - 'error'
+    - 'error!'
+    - 'app_error'
     - 'raise'
     - 'yield'
     - 'source'

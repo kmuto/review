@@ -1,8 +1,11 @@
 require 'fileutils'
 require 'shellwords'
+require 'review/loggable'
 
 module ReVIEW
   class ImgMath
+    include Loggable
+
     def initialize(config, path_name: '_review_math')
       @config = config
       @logger = ReVIEW.logger
@@ -50,7 +53,7 @@ module ReVIEW
         cmd = "latex --interaction=nonstopmode --output-directory=#{tmpdir} #{tex_path} && dvipng -T tight -z9 -o #{img_path} #{dvi_path}"
         out, status = Open3.capture2e(cmd)
         unless status.success?
-          raise ApplicationError, "latex compile error\n\nError log:\n" + out
+          raise ApplicationError, "latex compile error\n\nError log:\n#{out}"
         end
 
         img_path
@@ -97,29 +100,19 @@ module ReVIEW
           when 'dvipng'
             make_math_images_dvipng(tmpdir, tex_path, math_real_dir)
           else
-            error "unknown math converter error. imgmath_options/converter parameter should be 'pdfcrop' or 'dvipng'."
-            exit 1
+            error! "unknown math converter error. imgmath_options/converter parameter should be 'pdfcrop' or 'dvipng'."
           end
         rescue CompileError
           FileUtils.cp([tex_path,
                         File.join(File.dirname(tex_path), '__IMGMATH__.log')],
                        math_real_dir)
-          error "LaTeX math compile error. See #{math_real_dir}/__IMGMATH__.log for details."
-          exit 1
+          error! "LaTeX math compile error. See #{math_real_dir}/__IMGMATH__.log for details."
         end
       end
       @math_maps.clear
     end
 
     private
-
-    def error(msg)
-      @logger.error msg
-    end
-
-    def warn(msg)
-      @logger.warn msg
-    end
 
     def default_imgmath_preamble
       <<-EOB
@@ -156,7 +149,7 @@ module ReVIEW
         if File.exist?(dvi_path)
           out, status = Open3.capture2e(*[@config['dvicommand'], @config['dvioptions'].shellsplit, dvi_path].flatten.compact)
           if !status.success? || !File.exist?(pdf_path)
-            warn "error in #{@config['dvicommand']}. Error log:\n#{out}"
+            @logger.error "error in #{@config['dvicommand']}. Error log:\n#{out}"
             raise CompileError
           end
         end
@@ -167,7 +160,7 @@ module ReVIEW
         end
         out, status = Open3.capture2e(*args)
         unless status.success?
-          warn "error in pdfcrop. Error log:\n#{out}"
+          @logger.error "error in pdfcrop. Error log:\n#{out}"
           raise CompileError
         end
         pdf_path = '__IMGMATH__pdfcrop.pdf'
@@ -192,7 +185,7 @@ module ReVIEW
             end
             out, status = Open3.capture2e(*args)
             unless status.success?
-              warn "error in pdf extracting. Error log:\n#{out}"
+              @logger.error "error in pdf extracting. Error log:\n#{out}"
               raise CompileError
             end
 
@@ -209,7 +202,7 @@ module ReVIEW
           end
           out, status = Open3.capture2e(*args)
           unless status.success?
-            warn "error in pdf pixelizing. Error log:\n#{out}"
+            @logger.error "error in pdf pixelizing. Error log:\n#{out}"
             raise CompileError
           end
         end
@@ -235,7 +228,7 @@ module ReVIEW
           end
           out, status = Open3.capture2e(*args)
           unless status.success?
-            warn "error in dvipng. Error log:\n#{out}"
+            @logger.error "error in dvipng. Error log:\n#{out}"
             raise CompileError
           end
         end

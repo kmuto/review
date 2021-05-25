@@ -25,21 +25,20 @@ require 'review/epubmaker/epubv3'
 require 'review/i18n'
 require 'review/configure'
 require 'review/extentions/hash'
+require 'review/loggable'
 
 module ReVIEW
   class EPUBMaker
     # EPUBMaker produces EPUB file.
     class Producer
+      include Loggable
+
       # Array of content objects.
       attr_accessor :contents
       # Parameter hash.
       attr_accessor :config
       # Message resource object.
       attr_reader :res
-
-      def warn(msg)
-        @logger.warn(msg)
-      end
 
       # Construct producer object.
       # +config+ takes initial parameter hash.

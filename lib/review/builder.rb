@@ -11,6 +11,7 @@ require 'review/textutils'
 require 'review/compiler'
 require 'review/sec_counter'
 require 'review/img_math'
+require 'review/loggable'
 require 'stringio'
 require 'fileutils'
 require 'tempfile'
@@ -19,6 +20,7 @@ require 'csv'
 module ReVIEW
   class Builder
     include TextUtils
+    include Loggable
 
     CAPTION_TITLES = Compiler.minicolumn_names
 
@@ -31,6 +33,7 @@ module ReVIEW
     end
 
     attr_accessor :doc_status, :previous_list_type
+    attr_reader :location
 
     def initialize(strict = false, *_args, img_math: nil)
       @strict = strict
@@ -76,7 +79,7 @@ module ReVIEW
           begin
             require 'unicode/eaw'
           rescue LoadError
-            warn 'not found unicode/eaw. disabled join_lines_by_lang feature.'
+            warn 'not found unicode/eaw. disabled join_lines_by_lang feature.', location: @location
             @book.config['join_lines_by_lang'] = nil
           end
         end
@@ -101,7 +104,7 @@ module ReVIEW
 
     def check_nest
       if @children && !@children.empty?
-        error "//beginchild of #{@children.reverse.join(',')} misses //endchild"
+        app_error "//beginchild of #{@children.reverse.join(',')} misses //endchild"
       end
     end
 
@@ -161,7 +164,7 @@ module ReVIEW
         list_body(id, lines, lang)
         list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
-        error "no such list: #{id}"
+        app_error "no such list: #{id}"
       end
     end
 
@@ -171,7 +174,7 @@ module ReVIEW
         listnum_body(lines, lang)
         list_header(id, caption, lang) unless caption_top?('list')
       rescue KeyError
-        error "no such list: #{id}"
+        app_error "no such list: #{id}"
       end
     end
 
@@ -185,7 +188,7 @@ module ReVIEW
       if @chapter.image_bound?(id)
         image_image(id, caption, metric)
       else
-        warn "image not bound: #{id}" if @strict
+        warn "image not bound: #{id}", location: @location if @strict
         image_dummy(id, caption, lines)
       end
     end
@@ -203,7 +206,7 @@ module ReVIEW
           table_header(id, caption)
         end
       rescue KeyError
-        error "no such table: #{id}"
+        app_error "no such table: #{id}"
       end
     end
 
@@ -218,7 +221,7 @@ module ReVIEW
       when 'verticalbar'
         Regexp.new('\s*\\' + escape('|') + '\s*')
       else
-        error "Unknown value for 'table_row_separator', shold be: tabs, singletab, spaces, verticalbar"
+        app_error "Unknown value for 'table_row_separator', shold be: tabs, singletab, spaces, verticalbar"
       end
     end
 
@@ -233,7 +236,7 @@ module ReVIEW
         rows.push(line.strip.split(table_row_separator_regexp).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
-      error 'no rows in the table' if rows.empty?
+      app_error 'no rows in the table' if rows.empty?
       [sepidx, rows]
     end
 
@@ -294,19 +297,19 @@ module ReVIEW
     def inline_chapref(id)
       compile_inline(@book.chapter_index.display_string(id))
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_chap(id)
       @book.chapter_index.number(id)
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_title(id)
       compile_inline(@book.chapter_index.title(id))
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_list(id)
@@ -317,7 +320,7 @@ module ReVIEW
         %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(id).number])})
       end
     rescue KeyError
-      error "unknown list: #{id}"
+      app_error "unknown list: #{id}"
     end
 
     def inline_img(id)
@@ -328,7 +331,7 @@ module ReVIEW
         %Q(#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(id).number])})
       end
     rescue KeyError
-      error "unknown image: #{id}"
+      app_error "unknown image: #{id}"
     end
 
     def inline_imgref(id)
@@ -349,7 +352,7 @@ module ReVIEW
         %Q(#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(id).number])})
       end
     rescue KeyError
-      error "unknown table: #{id}"
+      app_error "unknown table: #{id}"
     end
 
     def inline_eq(id)
@@ -360,13 +363,13 @@ module ReVIEW
         %Q(#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [chapter.equation(id).number])})
       end
     rescue KeyError
-      error "unknown equation: #{id}"
+      app_error "unknown equation: #{id}"
     end
 
     def inline_fn(id)
       @chapter.footnote(id).content
     rescue KeyError
-      error "unknown footnote: #{id}"
+      app_error "unknown footnote: #{id}"
     end
 
     def inline_bou(str)
@@ -422,7 +425,7 @@ module ReVIEW
         inline_hd_chap(@chapter, id)
       end
     rescue KeyError
-      error "unknown headline: #{id}"
+      app_error "unknown headline: #{id}"
     end
 
     def inline_column(id)
@@ -436,7 +439,7 @@ module ReVIEW
         inline_column_chap(@chapter, id)
       end
     rescue KeyError
-      error "unknown column: #{id}"
+      app_error "unknown column: #{id}"
     end
 
     def inline_column_chap(chapter, id)
@@ -460,7 +463,7 @@ module ReVIEW
       if translated
         escape(translated)
       else
-        warn "word not bound: #{s}"
+        warn "word not bound: #{s}", location: @location
         escape("[missing word: #{s}]")
       end
     end
@@ -493,18 +496,6 @@ module ReVIEW
         print lines.join("\n") + "\n" if builders.include?(c)
       else
         print lines.join("\n") + "\n"
-      end
-    end
-
-    def warn(msg)
-      @logger.warn "#{@location}: #{msg}"
-    end
-
-    def error(msg)
-      if msg =~ /:\d+: error: /
-        raise ApplicationError, msg
-      else
-        raise ApplicationError, "#{@location}: error: #{msg}"
       end
     end
 
@@ -582,7 +573,7 @@ module ReVIEW
 
     def check_nested_minicolumn
       if @doc_status[:minicolumn]
-        error "#{@location}: nested mini-column is not allowed"
+        app_error "#{@location}: nested mini-column is not allowed"
       end
     end
 
@@ -735,7 +726,7 @@ EOTGNUPLOT
     def beginchild
       @children ||= []
       unless @previous_list_type
-        error "//beginchild is shown, but previous element isn't ul, ol, or dl"
+        app_error "//beginchild is shown, but previous element isn't ul, ol, or dl"
       end
       puts "\x01→#{@previous_list_type}←\x01"
       @children.push(@previous_list_type)
@@ -743,7 +734,7 @@ EOTGNUPLOT
 
     def endchild
       if @children.nil? || @children.empty?
-        error "//endchild is shown, but any opened //beginchild doesn't exist"
+        app_error "//endchild is shown, but any opened //beginchild doesn't exist"
       else
         puts "\x01→/#{@children.pop}←\x01"
       end
@@ -751,7 +742,7 @@ EOTGNUPLOT
 
     def caption_top?(type)
       unless %w[top bottom].include?(@book.config['caption_position'][type])
-        warn("invalid caption_position/#{type} parameter. 'top' is assumed")
+        warn "invalid caption_position/#{type} parameter. 'top' is assumed", location: @location
       end
       @book.config['caption_position'][type] != 'bottom'
     end

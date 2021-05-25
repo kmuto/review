@@ -265,7 +265,7 @@ module ReVIEW
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end
     rescue KeyError
-      error "unknown column: #{id}"
+      app_error "unknown column: #{id}"
     end
 
     def inline_list(id)
@@ -436,7 +436,7 @@ module ReVIEW
       print '</pre>'
       image_header(id, caption) unless caption_top?('image')
       puts '</img>'
-      warn "image not bound: #{id}"
+      warn "image not bound: #{id}", location: location
     end
 
     def image_header(id, caption)
@@ -502,7 +502,7 @@ module ReVIEW
           table_header(id, caption)
         end
       rescue KeyError
-        error "no such table: #{id}"
+        app_error "no such table: #{id}"
       end
       puts '</table>'
       @tsize = nil
@@ -524,7 +524,7 @@ module ReVIEW
         col2 = rows[rows.length - 1].split(table_row_separator_regexp).length
         @col = col2 if col2 > @col
       end
-      error 'no rows in the table' if rows.empty?
+      app_error 'no rows in the table' if rows.empty?
       [sepidx, rows]
     end
 
@@ -539,11 +539,11 @@ module ReVIEW
           cellwidth.size.times do |n|
             cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
             totallength += cellwidth[n]
-            warn "total length exceeds limit for table: #{@table_id}" if totallength > @tablewidth
+            warn "total length exceeds limit for table: #{@table_id}", location: location if totallength > @tablewidth
           end
           if cellwidth.size < @col
             cw = (@tablewidth - totallength) / (@col - cellwidth.size)
-            warn "auto cell sizing exceeds limit for table: #{@table_id}" if cw <= 0
+            warn "auto cell sizing exceeds limit for table: #{@table_id}", location: location if cw <= 0
             (cellwidth.size..(@col - 1)).each { |i| cellwidth[i] = cw }
           end
         end
@@ -627,7 +627,7 @@ module ReVIEW
         end
         puts '</table>'
       else
-        warn "image not bound: #{id}" if @strict
+        warn "image not bound: #{id}", location: location if @strict
         image_dummy(id, caption, lines)
       end
     end
@@ -656,7 +656,7 @@ module ReVIEW
     def inline_fn(id)
       %Q(<footnote>#{compile_inline(@chapter.footnote(id).content.strip)}</footnote>)
     rescue KeyError
-      error "unknown footnote: #{id}"
+      app_error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, ruby)
@@ -718,7 +718,7 @@ module ReVIEW
           sprintf('&#x%x;', 9392 + str[0] - 65)
         end
       else
-        error "can't parse maru: #{str}"
+        app_error "can't parse maru: #{str}"
       end
     end
 
@@ -780,7 +780,7 @@ module ReVIEW
       begin
         %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}" type="inline" />)
       rescue
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         ''
       end
     end
@@ -1127,7 +1127,7 @@ module ReVIEW
       begin
         puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}"#{metrics} />)
       rescue
-        warn %Q(image not bound: #{id})
+        warn %Q(image not bound: #{id}), location: location
       end
       unless caption_top?('image')
         puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
@@ -1188,7 +1188,7 @@ module ReVIEW
           if chs2.size == 3
             chs = chs2
           else
-            error '--chapsplitter must have exactly 3 parameters with comma.'
+            app_error '--chapsplitter must have exactly 3 parameters with comma.'
           end
         end
         s = "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
@@ -1206,7 +1206,7 @@ module ReVIEW
         end
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_chap(id)
@@ -1216,7 +1216,7 @@ module ReVIEW
         @book.chapter_index.number(id)
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_title(id)
@@ -1227,7 +1227,7 @@ module ReVIEW
         title
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def source(lines, caption = nil, lang = nil)
@@ -1270,7 +1270,7 @@ module ReVIEW
     def inline_bib(id)
       %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
     rescue KeyError
-      error "unknown bib: #{id}"
+      app_error "unknown bib: #{id}"
     end
 
     def inline_hd_chap(chap, id)
@@ -1281,7 +1281,7 @@ module ReVIEW
         I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
       end
     rescue KeyError
-      error "unknown headline: #{id}"
+      app_error "unknown headline: #{id}"
     end
 
     def inline_recipe(id)

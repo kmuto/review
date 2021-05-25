@@ -44,8 +44,6 @@ module ReVIEW
     def builder_init_file
       @noindent = nil
       @ol_num = nil
-      @warns = []
-      @errors = []
       @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
       @column = 0
       @sec_counter = SecCounter.new(5, @chapter)
@@ -78,7 +76,7 @@ module ReVIEW
 
       if File.exist?(layout_file)
         if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
-          warn %Q(user's layout is prohibited in safe mode. ignored.)
+          warn %Q(user's layout is prohibited in safe mode. ignored.), location: location
           layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
         end
       else
@@ -618,7 +616,7 @@ module ReVIEW
           require 'math_ml'
           require 'math_ml/symbol/character_reference'
         rescue LoadError
-          error 'not found math_ml'
+          app_error 'not found math_ml'
         end
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         print p.parse(lines.join("\n") + "\n", true)
@@ -676,7 +674,7 @@ module ReVIEW
     end
 
     def image_dummy(id, caption, lines)
-      warn "image not bound: #{id}"
+      warn "image not bound: #{id}", location: location
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
       image_header(id, caption) if caption_top?('image')
       puts %Q(<pre class="dummyimage">)
@@ -740,7 +738,7 @@ module ReVIEW
 
     def imgtable(lines, id, caption = nil, metric = nil)
       unless @chapter.image_bound?(id)
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         image_dummy(id, caption, lines)
         return
       end
@@ -757,7 +755,7 @@ module ReVIEW
           table_header(id, caption)
         end
       rescue KeyError
-        error "no such table: #{id}"
+        app_error "no such table: #{id}"
       end
 
       puts '</div>'
@@ -813,7 +811,7 @@ EOS
       begin
         puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
       rescue
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         if lines
           puts %Q(<pre class="dummyimage">)
           lines.each do |line|
@@ -866,7 +864,7 @@ EOS
     alias_method :inline_ref, :inline_labelref
 
     def inline_pageref(id)
-      error "pageref op is unsupported on this builder: #{id}"
+      app_error "pageref op is unsupported on this builder: #{id}"
     end
 
     def inline_chapref(id)
@@ -877,7 +875,7 @@ EOS
         title
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_chap(id)
@@ -887,7 +885,7 @@ EOS
         @book.chapter_index.number(id)
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_title(id)
@@ -898,7 +896,7 @@ EOS
         title
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def inline_fn(id)
@@ -908,7 +906,7 @@ EOS
         %Q(<a id="fnb-#{normalize_id(id)}" href="#fn-#{normalize_id(id)}" class="noteref">*#{@chapter.footnote(id).number}</a>)
       end
     rescue KeyError
-      error "unknown footnote: #{id}"
+      app_error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, ruby)
@@ -990,7 +988,7 @@ EOS
           require 'math_ml'
           require 'math_ml/symbol/character_reference'
         rescue LoadError
-          error 'not found math_ml'
+          app_error 'not found math_ml'
         end
         parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
@@ -1036,7 +1034,7 @@ EOS
     def inline_bib(id)
       %Q(<a href="#{@book.bib_file.gsub(/\.re\Z/, ".#{@book.config['htmlext']}")}#bib-#{normalize_id(id)}">[#{@chapter.bibpaper(id).number}]</a>)
     rescue KeyError
-      error "unknown bib: #{id}"
+      app_error "unknown bib: #{id}"
     end
 
     def inline_hd_chap(chap, id)
@@ -1053,7 +1051,7 @@ EOS
         str
       end
     rescue KeyError
-      error "unknown headline: #{id}"
+      app_error "unknown headline: #{id}"
     end
 
     def column_label(id, chapter = @chapter)
@@ -1069,7 +1067,7 @@ EOS
         I18n.t('column', compile_inline(chapter.column(id).caption))
       end
     rescue KeyError
-      error "unknown column: #{id}"
+      app_error "unknown column: #{id}"
     end
 
     def inline_list(id)
@@ -1196,7 +1194,7 @@ EOS
       begin
         %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
       rescue
-        warn "image not bound: #{id}"
+        warn "image not bound: #{id}", location: location
         %Q(<pre>missing image: #{id}</pre>)
       end
     end

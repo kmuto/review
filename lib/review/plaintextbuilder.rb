@@ -169,7 +169,7 @@ module ReVIEW
           list_header(id, caption, lang)
         end
       rescue KeyError
-        error "no such list: #{id}"
+        app_error "no such list: #{id}"
       end
       blank
     end
@@ -238,7 +238,7 @@ module ReVIEW
           list_header(id, caption, lang)
         end
       rescue KeyError
-        error "no such list: #{id}"
+        app_error "no such list: #{id}"
       end
       blank
     end
@@ -337,7 +337,7 @@ module ReVIEW
     def inline_fn(id)
       " 注#{@chapter.footnote(id).number} "
     rescue KeyError
-      error "unknown footnote: #{id}"
+      app_error "unknown footnote: #{id}"
     end
 
     def compile_ruby(base, _ruby)
@@ -401,7 +401,7 @@ module ReVIEW
     def inline_bib(id)
       %Q(#{@chapter.bibpaper(id).number} )
     rescue KeyError
-      error "unknown bib: #{id}"
+      app_error "unknown bib: #{id}"
     end
 
     def inline_hd_chap(chap, id)
@@ -412,7 +412,7 @@ module ReVIEW
         I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
       end
     rescue KeyError
-      error "unknown headline: #{id}"
+      app_error "unknown headline: #{id}"
     end
 
     def noindent
@@ -680,7 +680,7 @@ module ReVIEW
         if @book.config['chapref']
           chs2 = @book.config['chapref'].split(',')
           if chs2.size != 3
-            error '--chapsplitter must have exactly 3 parameters with comma.'
+            app_error '--chapsplitter must have exactly 3 parameters with comma.'
           end
           chs = chs2
         end
@@ -694,7 +694,7 @@ module ReVIEW
         end
       end
     rescue KeyError
-      error "unknown chapter: #{id}"
+      app_error "unknown chapter: #{id}"
     end
 
     def source(lines, caption = nil, _lang = nil)

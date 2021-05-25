@@ -21,11 +21,13 @@ require 'review/tocprinter'
 require 'review/version'
 require 'review/makerhelper'
 require 'review/img_math'
+require 'review/loggable'
 
 module ReVIEW
   class WEBMaker
     include ERB::Util
     include MakerHelper
+    include Loggable
 
     attr_accessor :config, :basedir
 
@@ -33,15 +35,7 @@ module ReVIEW
       @basedir = nil
       @logger = ReVIEW.logger
       @img_math = nil
-    end
-
-    def error(msg)
-      @logger.error msg
-      exit 1
-    end
-
-    def warn(msg)
-      @logger.warn msg
+      @compile_errors = nil
     end
 
     def self.execute(*args)
@@ -82,7 +76,7 @@ module ReVIEW
 
     def execute(*args)
       cmd_config, yamlfile = parse_opts(args)
-      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+      error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       @config = ReVIEW::Configure.create(maker: 'webmaker',
                                          yamlfile: yamlfile,
@@ -98,7 +92,7 @@ module ReVIEW
       rescue ApplicationError => e
         raise if @config['debug']
 
-        error(e.message)
+        error! e.message
       end
     end
 
@@ -129,6 +123,7 @@ module ReVIEW
 
     def build_body(basetmpdir, _yamlfile)
       base_path = Pathname.new(@basedir)
+      @compile_errors = nil
       @book.parts.each do |part|
         if part.name.present?
           if part.file?
@@ -142,6 +137,9 @@ module ReVIEW
         end
 
         part.chapters.each { |chap| build_chap(chap, base_path, basetmpdir, false) }
+      end
+      if @compile_errors
+        app_error 'compile error, No web files output.'
       end
     end
 
@@ -191,9 +189,10 @@ module ReVIEW
 
       begin
         @converter.convert(filename, File.join(basetmpdir, htmlfile))
-      rescue => e
-        warn "compile error in #{filename} (#{e.class})"
-        warn e.message
+      rescue ApplicationError => e
+        @compile_errors = true
+        error "compile error in #{filename} (#{e.class})"
+        error e.message
       end
     end
 

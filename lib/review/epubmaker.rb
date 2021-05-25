@@ -27,10 +27,12 @@ require 'review/epubmaker/epubv2'
 require 'review/epubmaker/epubv3'
 require 'review/epubmaker/reviewheaderlistener'
 require 'review/makerhelper'
+require 'review/loggable'
 
 module ReVIEW
   class EPUBMaker
     include MakerHelper
+    include Loggable
     include ReVIEW::CallHook
 
     def initialize
@@ -40,19 +42,6 @@ module ReVIEW
       @logger = ReVIEW.logger
       @img_math = nil
       @basedir = nil
-    end
-
-    def error(msg)
-      @logger.error msg
-      exit 1
-    end
-
-    def warn(msg)
-      @logger.warn msg
-    end
-
-    def log(msg)
-      @logger.debug(msg)
     end
 
     def self.execute(*args)
@@ -84,14 +73,14 @@ module ReVIEW
 
     def execute(*args)
       cmd_config, yamlfile, exportfile = parse_opts(args)
-      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+      error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       @config = ReVIEW::Configure.create(maker: 'epubmaker',
                                          yamlfile: yamlfile,
                                          config: cmd_config)
       @producer = ReVIEW::EPUBMaker::Producer.new(@config)
       update_log_level
-      log("Loaded yaml file (#{yamlfile}).")
+      debug("Loaded yaml file (#{yamlfile}).")
       @basedir = File.absolute_path(File.dirname(yamlfile))
 
       produce(yamlfile, exportfile)
@@ -129,12 +118,10 @@ module ReVIEW
       booktmpname = "#{bookname}-epub"
 
       @img_math = ReVIEW::ImgMath.new(@config)
-      begin
-        @config.check_version(ReVIEW::VERSION)
-      rescue ReVIEW::ConfigError => e
+      unless @config.check_version(ReVIEW::VERSION, exception: false)
         warn e.message
       end
-      log("#{bookname}.epub will be created.")
+      debug("#{bookname}.epub will be created.")
 
       FileUtils.rm_f("#{bookname}.epub")
       if @config['debug']
@@ -145,7 +132,7 @@ module ReVIEW
 
       basetmpdir = build_path
       begin
-        log("Created first temporary directory as #{basetmpdir}.")
+        debug("Created first temporary directory as #{basetmpdir}.")
 
         call_hook('hook_beforeprocess', basetmpdir, base_dir: @basedir)
 
@@ -192,14 +179,14 @@ module ReVIEW
           epubtmpdir = File.join(basetmpdir, booktmpname)
           Dir.mkdir(epubtmpdir)
         end
-        log('Call ePUB producer.')
+        debug('Call ePUB producer.')
         @producer.produce("#{bookname}.epub", basetmpdir, epubtmpdir, base_dir: @basedir)
-        log('Finished.')
+        debug('Finished.')
         @logger.success("built #{bookname}.epub")
       rescue ApplicationError => e
         raise if @config['debug']
 
-        error(e.message)
+        error! e.message
       ensure
         FileUtils.remove_entry_secure(basetmpdir) unless @config['debug']
       end
@@ -245,7 +232,7 @@ module ReVIEW
           end
           basedir = File.dirname(file)
           FileUtils.mkdir_p(File.join(destdir, basedir))
-          log("Copy #{file} to the temporary directory.")
+          debug("Copy #{file} to the temporary directory.")
           FileUtils.cp(file, File.join(destdir, basedir), preserve: true)
         end
       else
@@ -270,7 +257,7 @@ module ReVIEW
             recursive_copy_files(File.join(resdir, fname), File.join(destdir, fname), allow_exts)
           elsif fname =~ /\.(#{allow_exts.join('|')})\Z/i
             FileUtils.mkdir_p(destdir)
-            log("Copy #{resdir}/#{fname} to the temporary directory.")
+            debug("Copy #{resdir}/#{fname} to the temporary directory.")
             FileUtils.cp(File.join(resdir, fname), destdir, preserve: true)
           end
         end
@@ -280,8 +267,7 @@ module ReVIEW
     def check_compile_status
       return unless @compile_errors
 
-      $stderr.puts 'compile error, No EPUB file output.'
-      exit 1
+      error! 'compile error, No EPUB file output.'
     end
 
     def build_body(basetmpdir, yamlfile)
@@ -323,7 +309,7 @@ module ReVIEW
     end
 
     def build_part(part, basetmpdir, htmlfile)
-      log("Create #{htmlfile} from a template.")
+      debug("Create #{htmlfile} from a template.")
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @part_number = part.number
         @part_title = part.name.strip
@@ -384,7 +370,7 @@ module ReVIEW
 
       htmlfile = "#{id}.#{@config['htmlext']}"
       write_buildlogtxt(basetmpdir, htmlfile, filename)
-      log("Create #{htmlfile} from #{filename}.")
+      debug("Create #{htmlfile} from #{filename}.")
 
       if @config['params'].present?
         warn %Q('params:' in config.yml is obsoleted.)
@@ -398,8 +384,8 @@ module ReVIEW
         remove_hidden_title(basetmpdir, htmlfile)
       rescue => e
         @compile_errors = true
-        warn "compile error in #{filename} (#{e.class})"
-        warn e.message
+        error "compile error in #{filename} (#{e.class})"
+        error e.message
       end
     end
 
@@ -480,7 +466,7 @@ module ReVIEW
       @htmltoc.each_item do |level, file, title, args|
         next if level.to_i > @config['toclevel'] && args[:force_include].nil?
 
-        log("Push #{file} to ePUB contents.")
+        debug("Push #{file} to ePUB contents.")
 
         params = { file: file,
                    level: level.to_i,
@@ -504,7 +490,7 @@ module ReVIEW
 
       @config['stylesheet'].each do |sfile|
         unless File.exist?(sfile)
-          error "stylesheet: #{sfile} is not found."
+          error! "stylesheet: #{sfile} is not found."
         end
         FileUtils.cp(sfile, basetmpdir, preserve: true)
         @producer.contents.push(ReVIEW::EPUBMaker::Content.new(file: sfile))
@@ -514,7 +500,7 @@ module ReVIEW
     def copy_static_file(configname, destdir, destfilename: nil)
       destfilename ||= @config[configname]
       unless File.exist?(@config[configname])
-        error "#{configname}: #{@config[configname]} is not found."
+        error! "#{configname}: #{@config[configname]} is not found."
       end
       FileUtils.cp(@config[configname],
                    File.join(destdir, destfilename), preserve: true)

@@ -16,6 +16,8 @@ require 'fileutils'
 require 'optparse'
 require 'yaml'
 
+include ReVIEW::Loggable
+
 DEFAULT_CONFIG_FILENAME = 'config.yml'.freeze
 
 def main
@@ -47,17 +49,17 @@ def _main
   begin
     loader = ReVIEW::YAMLLoader.new
     if @config['yaml']
-      error "#{@config['yaml']} not found." unless File.exist?(@config['yaml'])
+      error! "#{@config['yaml']} not found." unless File.exist?(@config['yaml'])
       begin
         @config.deep_merge!(loader.load_file(@config['yaml']))
       rescue => e
-        error "yaml error #{e.message}"
+        error! "yaml error #{e.message}"
       end
     elsif File.exist?(DEFAULT_CONFIG_FILENAME)
       begin
         @config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
       rescue => e
-        error "yaml error #{e.message}"
+        error! "yaml error #{e.message}"
       end
     end
 
@@ -73,12 +75,12 @@ def _main
 
     case @mode
     when :files
-      error('no input') if ARGV.empty?
+      error!('no input') if ARGV.empty?
 
       @basedir = File.dirname(ARGV[0])
       book = ReVIEW::Book::Base.new(@basedir, config: @config)
       ARGV.each do |item|
-        error("file not found: #{item}") unless File.exist?(File.join(book.config['contentdir'], item))
+        error!("file not found: #{item}") unless File.exist?(File.join(book.config['contentdir'], item))
         chap_name = File.basename(item, '.*')
         chap = book.chapter(chap_name)
         compiler = ReVIEW::Compiler.new(load_builder_class(@target, @check_only))
@@ -105,7 +107,7 @@ def _main
       raise "must not happen: #{@mode}"
     end
   rescue ReVIEW::ApplicationError => e
-    error(e.message)
+    error! e.message
   end
 end
 
@@ -162,15 +164,6 @@ def parse_opts
     $stderr.puts opts.help
     exit 1
   end
-end
-
-def error(msg)
-  @logger.error msg
-  exit 1
-end
-
-def warn(msg)
-  @logger.warn msg
 end
 
 def load_builder_class(target, strict)

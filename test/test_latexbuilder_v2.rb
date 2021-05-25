@@ -20,6 +20,8 @@ class LATEXBuidlerV2Test < Test::Unit::TestCase
     @config['pdfmaker']['image_scale2width'] = nil
     @book = Book::Base.new
     @book.config = @config
+    @log_io = StringIO.new
+    ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -1544,19 +1546,25 @@ EOS
   end
 
   def test_inline_unknown
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
-    assert_equal ':1: error: unknown image: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
-    assert_equal ':1: error: unknown footnote: n', e.message
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
-    assert_equal ':1: error: unknown headline: n', e.message
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
+    assert_match(/unknown image: n/, @log_io.string)
+
+    @log_io.string = ''
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
+    assert_match(/unknown footnote: n/, @log_io.string)
+
+    @log_io.string = ''
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
+    assert_match(/unknown headline: n/, @log_io.string)
     %w[list table column].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
-      assert_equal ":1: error: unknown #{name}: n", e.message
+      @log_io.string = ''
+      assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
+      assert_match(/unknown #{name}: n/, @log_io.string)
     end
     %w[chap chapref title].each do |name|
-      e = assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
-      assert_equal ':1: error: key not found: "n"', e.message
+      @log_io.string = ''
+      assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
+      assert_match(/key not found: "n"/, @log_io.string)
     end
   end
 

@@ -24,11 +24,13 @@ require 'review/makerhelper'
 require 'review/template'
 require 'review/latexbox'
 require 'review/call_hook'
+require 'review/loggable'
 
 module ReVIEW
   class PDFMaker
     include FileUtils
     include ReVIEW::LaTeXUtils
+    include Loggable
     include ReVIEW::CallHook
 
     attr_accessor :config, :basedir
@@ -38,13 +40,14 @@ module ReVIEW
       @logger = ReVIEW.logger
       @input_files = Hash.new { |h, key| h[key] = '' }
       @mastertex = '__REVIEW_BOOK__'
+      @compile_errors = nil
     end
 
     def system_with_info(*args)
       @logger.info args.join(' ')
       out, status = Open3.capture2e(*args)
       unless status.success?
-        @logger.error "execution error\n\nError log:\n" + out
+        error "execution error\n\nError log:\n#{out}"
       end
     end
 
@@ -52,17 +55,8 @@ module ReVIEW
       @logger.info args.join(' ')
       out, status = Open3.capture2e(*args)
       unless status.success?
-        error "failed to run command: #{args.join(' ')}\n\nError log:\n" + out
+        error! "failed to run command: #{args.join(' ')}\n\nError log:\n#{out}"
       end
-    end
-
-    def error(msg)
-      @logger.error msg
-      exit 1
-    end
-
-    def warn(msg)
-      @logger.warn msg
     end
 
     def pdf_filepath
@@ -92,7 +86,7 @@ module ReVIEW
       if ignore_errors
         @logger.info 'compile error, but try to generate PDF file'
       else
-        error 'compile error, No PDF file output.'
+        error! 'compile error, No PDF file output.'
       end
     end
 
@@ -126,7 +120,7 @@ module ReVIEW
 
     def execute(*args)
       cmd_config, yamlfile = parse_opts(args)
-      error "#{yamlfile} not found." unless File.exist?(yamlfile)
+      error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
       @config = ReVIEW::Configure.create(maker: 'pdfmaker',
                                          yamlfile: yamlfile,
@@ -155,7 +149,7 @@ module ReVIEW
       rescue ApplicationError => e
         raise if @config['debug']
 
-        error(e.message)
+        error! e.message
       end
     end
 
@@ -217,7 +211,7 @@ module ReVIEW
           makeindex_dic = ReVIEW::Configure.values['pdfmaker']['makeindex_dic']
         else
           unless @config['texcommand'].present?
-            error "texcommand isn't defined."
+            error! "texcommand isn't defined."
           end
           texcommand = @config['texcommand']
           dvicommand = @config['dvicommand']
@@ -303,8 +297,8 @@ module ReVIEW
         @converter.convert(filename + '.re', File.join(@path, filename + '.tex'))
       rescue => e
         @compile_errors = true
-        warn "compile error in #{filename}.tex (#{e.class})"
-        warn e.message
+        error "compile error in #{filename}.tex (#{e.class})"
+        error e.message
       end
     end
 
@@ -457,7 +451,7 @@ module ReVIEW
         begin
           @boxsetting = ReVIEW::LaTeXBox.new.tcbox(@config)
         rescue ReVIEW::ConfigError => e
-          error e
+          error! e
         end
       end
     end

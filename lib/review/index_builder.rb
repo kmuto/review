@@ -24,9 +24,9 @@ module ReVIEW
     def check_id(id)
       if id
         if id =~ %r![#%\\{}\[\]~/$'"|*?&<>`\s]!
-          warn "deprecated ID: `#{$&}` in `#{id}`"
+          warn "deprecated ID: `#{$&}` in `#{id}`", location: location
         elsif id.start_with?('.')
-          warn "deprecated ID: `#{id}` begins from `.`"
+          warn "deprecated ID: `#{id}` begins from `.`", location: location
         end
       end
     end
@@ -598,17 +598,9 @@ module ReVIEW
       ''
     end
 
-    def warn(msg)
-      @logger.warn "#{@location}: #{msg}"
-    end
-
-    def error(msg = '(no message)')
-      if msg =~ /builder does not support command/
-        # ignore
-        return
-      end
-
-      super
+    ## override
+    def error(msg = nil)
+      # ignore in indexing
     end
 
     def texequation(_lines, id = nil, _caption = '')
