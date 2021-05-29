@@ -200,7 +200,7 @@ module ReVIEW
 
     def ol_begin
       puts '<ol>'
-      @ol_num ||= 1
+      @ol_num ||= 1 # rubocop:disable Naming/MemoizedInstanceVariableName
     end
 
     def ol_item(lines, num)

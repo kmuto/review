@@ -587,7 +587,7 @@ Naming/HeredocDelimiterNaming:
   Enabled: false
 
 Naming/MemoizedInstanceVariableName:
-  Enabled: false
+  Enabled: true
 
 Naming/MethodName:
   Enabled: true
