@@ -71,65 +71,67 @@ module ReVIEW
         opened = [['(not opened)', '(not opened)']] * 3
 
         f.each do |line|
-          case line
-          when /(?:\A\#@|\#@@)([a-z]+)_(begin|end)\((.*)\)/
-            type = check_type($1)
-            direction = $2
-            spec = check_spec($3)
-            case direction
-            when 'begin'
+          begin
+            case line
+            when /(?:\A\#@|\#@@)([a-z]+)_(begin|end)\((.*)\)/
+              type = check_type($1)
+              direction = $2
+              spec = check_spec($3)
+              case direction
+              when 'begin'
+                key = "#{type}/#{spec}"
+                if curr[key]
+                  app_error "begin x2: #{key}"
+                end
+                (repo[type] ||= {})[spec] = curr[key] = []
+              when 'end'
+                curr.delete("#{type}/#{spec}") or
+                  app_error "end before begin: #{type}/#{spec}"
+              else
+                app_error 'must not happen'
+              end
+
+            when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\{}
+              type = check_type($1)
+              spec = check_spec($2)
               key = "#{type}/#{spec}"
               if curr[key]
                 app_error "begin x2: #{key}"
               end
               (repo[type] ||= {})[spec] = curr[key] = []
-            when 'end'
+              opened.push([type, spec])
+
+            when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\}}
+              type = check_type($1)
+              spec = check_spec($2)
               curr.delete("#{type}/#{spec}") or
                 app_error "end before begin: #{type}/#{spec}"
+              opened.delete("#{type}/#{spec}")
+
+            when /(?:\A\#@|\#@@)\}/
+              type, spec = opened.last
+              curr.delete("#{type}/#{spec}") or
+                app_error "closed before open: #{type}/#{spec}"
+              opened.pop
+
+            when /(?:\A\#@|\#@@)yacchack/
+              yacchack = true
+
+            when /\A\#@-/ # does not increment line number.
+              line = canonical($')
+              curr.each_value { |list| list.push(Line.new(nil, line)) }
+
             else
-              app_error 'must not happen'
+              next if yacchack && (line.strip == ';')
+
+              line = canonical(line)
+              curr.each_value { |list| list.push(Line.new(lineno, line)) }
+              lineno += 1
             end
-
-          when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\{}
-            type = check_type($1)
-            spec = check_spec($2)
-            key = "#{type}/#{spec}"
-            if curr[key]
-              app_error "begin x2: #{key}"
-            end
-            (repo[type] ||= {})[spec] = curr[key] = []
-            opened.push([type, spec])
-
-          when %r{(?:\A\#@|\#@@)([a-z]+)/(\w+)\}}
-            type = check_type($1)
-            spec = check_spec($2)
-            curr.delete("#{type}/#{spec}") or
-              app_error "end before begin: #{type}/#{spec}"
-            opened.delete("#{type}/#{spec}")
-
-          when /(?:\A\#@|\#@@)\}/
-            type, spec = opened.last
-            curr.delete("#{type}/#{spec}") or
-              app_error "closed before open: #{type}/#{spec}"
-            opened.pop
-
-          when /(?:\A\#@|\#@@)yacchack/
-            yacchack = true
-
-          when /\A\#@-/ # does not increment line number.
-            line = canonical($')
-            curr.each_value { |list| list.push(Line.new(nil, line)) }
-
-          else
-            next if yacchack && (line.strip == ';')
-
-            line = canonical(line)
-            curr.each_value { |list| list.push(Line.new(lineno, line)) }
-            lineno += 1
+          rescue ApplicationError => e
+            @has_errors = true
+            error e.message, location: location
           end
-        rescue ApplicationError => e
-          @has_errors = true
-          error e.message, location: location
         end
         if curr.size > 1
           curr.delete('WHOLE')

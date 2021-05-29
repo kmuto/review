@@ -50,60 +50,62 @@ module ReVIEW
       @has_errors = false
 
       f.each_line do |line|
-        case line
-        when /\A\#@\#/, /\A\#\#\#\#/
-          @f.print line
+        begin
+          case line
+          when /\A\#@\#/, /\A\#\#\#\#/
+            @f.print line
 
-        when /\A\#@defvar/
-          @f.print line
-          direc = parse_directive(line, 2)
-          defvar(*direc.args)
+          when /\A\#@defvar/
+            @f.print line
+            direc = parse_directive(line, 2)
+            defvar(*direc.args)
 
-        when /\A\#@mapoutput/
-          direc = parse_directive(line, 1, 'stderr')
-          @f.print line
-          get_output(expand(direc.arg), direc['stderr']).each { |out| @f.print out.string }
-          skip_list(f)
+          when /\A\#@mapoutput/
+            direc = parse_directive(line, 1, 'stderr')
+            @f.print line
+            get_output(expand(direc.arg), direc['stderr']).each { |out| @f.print out.string }
+            skip_list(f)
 
-        when /\A\#@mapfile/
-          direc = parse_directive(line, 1, 'eval')
-          path = expand(direc.arg)
-          @leave_content = File.extname(path) == '.re'
-          if direc['eval']
-            ent = evaluate(path, ent)
-          else
-            ent = @repository.fetch_file(path)
+          when /\A\#@mapfile/
+            direc = parse_directive(line, 1, 'eval')
+            path = expand(direc.arg)
+            @leave_content = File.extname(path) == '.re'
+            if direc['eval']
+              ent = evaluate(path, ent)
+            else
+              ent = @repository.fetch_file(path)
+            end
+            replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
+
+          when /\A\#@map(?:range)?/
+            direc = parse_directive(line, 2, 'unindent')
+            path = expand(direc.args[0])
+            @leave_content = File.extname(path) == '.re'
+            ent = @repository.fetch_range(path, direc.args[1]) or
+              app_error "unknown range: #{path}: #{direc.args[1]}"
+            ent = (direc['unindent'] ? unindent(ent, direc['unindent']) : ent)
+            replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
+
+          when /\A\#@end/
+            app_error 'unbaranced #@end'
+
+          when /\A\#@/
+            op = line.slice(/@(\w+)/, 1)
+            warn "unknown directive: #{line.strip}", location: location unless known_directive?(op)
+            if op == 'warn'
+              warn line.strip.sub(/\#@warn\((.+)\)/, '\1'), location: location
+            end
+            @f.print line
+
+          when /\A\s*\z/ # empty line
+            @f.puts
+          else # rubocop:disable Lint/DuplicateBranch
+            @f.print line
           end
-          replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
-
-        when /\A\#@map(?:range)?/
-          direc = parse_directive(line, 2, 'unindent')
-          path = expand(direc.args[0])
-          @leave_content = File.extname(path) == '.re'
-          ent = @repository.fetch_range(path, direc.args[1]) or
-            app_error "unknown range: #{path}: #{direc.args[1]}"
-          ent = (direc['unindent'] ? unindent(ent, direc['unindent']) : ent)
-          replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
-
-        when /\A\#@end/
-          app_error 'unbaranced #@end'
-
-        when /\A\#@/
-          op = line.slice(/@(\w+)/, 1)
-          warn "unknown directive: #{line.strip}", location: location unless known_directive?(op)
-          if op == 'warn'
-            warn line.strip.sub(/\#@warn\((.+)\)/, '\1'), location: location
-          end
-          @f.print line
-
-        when /\A\s*\z/ # empty line
-          @f.puts
-        else # rubocop:disable Lint/DuplicateBranch
-          @f.print line
+        rescue ApplicationError => e
+          @has_errors = true
+          error e.message, location: location
         end
-      rescue ApplicationError => e
-        @has_errors = true
-        error e.message, location: location
       end
 
       if @has_erros
