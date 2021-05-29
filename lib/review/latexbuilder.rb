@@ -143,9 +143,7 @@ module ReVIEW
         prefix = '*'
       end
       blank unless @output.pos == 0
-      @doc_status[:caption] = true
-      puts macro(headline_name + prefix, compile_inline(caption))
-      @doc_status[:caption] = nil
+      puts macro(headline_name + prefix, compile_caption_text(caption))
       if prefix == '*' && level <= @book.config['toclevel'].to_i
         puts "\\addcontentsline{toc}{#{headline_name}}{#{compile_inline(caption)}}"
       end
@@ -161,9 +159,7 @@ module ReVIEW
 
     def nonum_begin(level, _label, caption)
       blank unless @output.pos == 0
-      @doc_status[:caption] = true
-      puts macro(HEADLINE[level] + '*', compile_inline(caption))
-      @doc_status[:caption] = nil
+      puts macro(HEADLINE[level] + '*', compile_caption_text(caption))
       puts macro('addcontentsline', 'toc', HEADLINE[level], compile_inline(caption))
     end
 
@@ -172,9 +168,7 @@ module ReVIEW
 
     def notoc_begin(level, _label, caption)
       blank unless @output.pos == 0
-      @doc_status[:caption] = true
-      puts macro(HEADLINE[level] + '*', compile_inline(caption))
-      @doc_status[:caption] = nil
+      puts macro(HEADLINE[level] + '*', compile_caption_text(caption))
     end
 
     def notoc_end(level)
@@ -203,17 +197,15 @@ module ReVIEW
         target = "\\hypertarget{#{column_label(caption)}}{}"
       end
 
-      @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
         puts '\\begin{reviewcolumn}'
         puts target
-        puts macro('reviewcolumnhead', nil, compile_inline(caption))
+        puts macro('reviewcolumnhead', nil, compile_caption_text(caption))
       else
         # ver.3
         print '\\begin{reviewcolumn}'
-        puts "[#{compile_inline(caption)}#{target}]"
+        puts "[#{compile_caption_text(caption)}#{target}]"
       end
-      @doc_status[:caption] = nil
 
       if level <= @book.config['toclevel'].to_i
         puts "\\addcontentsline{toc}{#{HEADLINE[level]}}{#{compile_inline(caption)}}"
@@ -234,19 +226,17 @@ module ReVIEW
 
       print "\\begin{#{command_name}}"
 
-      @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
         puts
         if caption.present?
-          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
+          puts "\\reviewminicolumntitle{#{compile_caption_text(caption)}}"
         end
       else
         if caption.present?
-          print "[#{compile_inline(caption)}]"
+          print "[#{compile_caption_text(caption)}]"
         end
         puts
       end
-      @doc_status[:caption] = nil
     end
 
     def common_block_end(type)
@@ -280,20 +270,18 @@ module ReVIEW
 
       print "\\begin{#{command_name}}"
 
-      @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
         puts
         if caption.present?
-          puts "\\reviewminicolumntitle{#{compile_inline(caption)}}"
+          puts "\\reviewminicolumntitle{#{compile_caption_text(caption)}}"
         end
       else
         if caption.present?
-          print "[#{compile_inline(caption)}]"
+          print "[#{compile_caption_text(caption)}]"
         end
         puts
       end
 
-      @doc_status[:caption] = nil
       blocked_lines = split_paragraph(lines)
       puts blocked_lines.join("\n\n")
 
@@ -464,27 +452,25 @@ module ReVIEW
     end
 
     def common_code_block(id, lines, command, caption, _lang)
-      @doc_status[:caption] = true
       captionstr = nil
       unless @book.config.check_version('2', exception: false)
         puts '\\begin{reviewlistblock}'
       end
       if caption.present?
         if command =~ /emlist/ || command =~ /cmd/ || command =~ /source/
-          captionstr = macro(command + 'caption', compile_inline(caption))
+          captionstr = macro(command + 'caption', compile_caption_text(caption))
         else
           begin
             if get_chap.nil?
-              captionstr = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+              captionstr = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_caption_text(caption)}")
             else
-              captionstr = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+              captionstr = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_caption_text(caption)}")
             end
           rescue KeyError
             app_error "no such list: #{id}"
           end
         end
       end
-      @doc_status[:caption] = nil
 
       if caption_top?('list') && captionstr
         puts captionstr
@@ -577,14 +563,12 @@ module ReVIEW
 
     def image_image(id, caption = '', metric = nil)
       captionstr = nil
-      @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
-        captionstr = macro('caption', compile_inline(caption)) + "\n"
+        captionstr = macro('caption', compile_caption_text(caption)) + "\n"
       else
-        captionstr = macro('reviewimagecaption', compile_inline(caption)) + "\n"
+        captionstr = macro('reviewimagecaption', compile_caption_text(caption)) + "\n"
       end
       captionstr << macro('label', image_label(id))
-      @doc_status[:caption] = nil
 
       metrics = parse_metric('latex', metric)
       # image is always bound here
@@ -621,13 +605,11 @@ module ReVIEW
         puts detab(line.rstrip)
       end
       puts macro('label', image_label(id))
-      @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
-        puts macro('caption', compile_inline(caption)) if caption.present?
+        puts macro('caption', compile_caption_text(caption)) if caption.present?
       elsif caption.present?
-        puts macro('reviewimagecaption', compile_inline(caption))
+        puts macro('reviewimagecaption', compile_caption_text(caption))
       end
-      @doc_status[:caption] = nil
       puts '\end{reviewdummyimage}'
     end
 
@@ -676,10 +658,8 @@ module ReVIEW
 
       captionstr = nil
       if caption.present?
-        @doc_status[:caption] = true
         captionstr = macro('reviewindepimagecaption',
-                           %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_inline(caption)}))
-        @doc_status[:caption] = nil
+                           %Q(#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{compile_caption_text(caption)}))
       end
 
       if @chapter.image(id).path
@@ -782,15 +762,11 @@ module ReVIEW
     def table_header(id, caption)
       if id.nil?
         if caption.present?
-          @doc_status[:caption] = true
-          puts macro('reviewtablecaption*', compile_inline(caption))
-          @doc_status[:caption] = nil
+          puts macro('reviewtablecaption*', compile_caption_text(caption))
         end
       else
         if caption.present?
-          @doc_status[:caption] = true
-          puts macro('reviewtablecaption', compile_inline(caption))
-          @doc_status[:caption] = nil
+          puts macro('reviewtablecaption', compile_caption_text(caption))
         end
         puts macro('label', table_label(id))
       end
@@ -907,9 +883,7 @@ module ReVIEW
       begin
         if caption.present?
           puts "\\begin{table}[h]%%#{id}"
-          @doc_status[:caption] = true
-          captionstr = macro('reviewimgtablecaption', compile_inline(caption))
-          @doc_status[:caption] = nil
+          captionstr = macro('reviewimgtablecaption', compile_caption_text(caption))
           if caption_top?('table')
             puts captionstr
           end
@@ -1140,7 +1114,7 @@ module ReVIEW
     def inline_fn(id)
       if @book.config['footnotetext']
         macro("footnotemark[#{@chapter.footnote(id).number}]", '')
-      elsif @doc_status[:caption] || @doc_status[:table] || in_column? || in_dt?
+      elsif in_caption? || in_column? || in_dt?
         @foottext[id] = @chapter.footnote(id).number
         macro('protect\\footnotemark', '')
       else
@@ -1419,6 +1393,17 @@ module ReVIEW
 
     def olnum(num)
       @ol_num = num.to_i
+    end
+
+    def in_caption?
+      @in_caption
+    end
+
+    def compile_caption_text(caption)
+      @in_caption = true
+      caption_text = @compiler.text(caption)
+      @in_caption = nil
+      return caption_text
     end
   end
 end
