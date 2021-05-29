@@ -65,6 +65,7 @@ module ReVIEW
       print %Q(<?xml version="1.0" encoding="UTF-8"?>\n)
       print %Q(<#{@rootelement} xmlns:aid="http://ns.adobe.com/AdobeInDesign/4.0/">)
       @secttags = @book.config['structuredxml']
+      @minicolumn_with_caption = nil
     end
     private :builder_init_file
 
@@ -955,22 +956,18 @@ module ReVIEW
     end
 
     def note(lines, caption = nil)
-      check_nested_minicolumn
       captionblock('note', lines, caption)
     end
 
     def memo(lines, caption = nil)
-      check_nested_minicolumn
       captionblock('memo', lines, caption)
     end
 
     def tip(lines, caption = nil)
-      check_nested_minicolumn
       captionblock('tip', lines, caption)
     end
 
     def info(lines, caption = nil)
-      check_nested_minicolumn
       captionblock('info', lines, caption)
     end
 
@@ -983,7 +980,6 @@ module ReVIEW
     end
 
     def important(lines, caption = nil)
-      check_nested_minicolumn
       captionblock('important', lines, caption)
     end
 
@@ -992,12 +988,10 @@ module ReVIEW
     end
 
     def caution(lines, caption = nil)
-      check_nested_minicolumn
       captionblock('caution', lines, caption)
     end
 
     def warning(lines, caption = nil)
-      check_nested_minicolumn
       captionblock('warning', lines, caption)
     end
 
@@ -1010,7 +1004,6 @@ module ReVIEW
     end
 
     def notice(lines, caption = nil)
-      check_nested_minicolumn
       if caption
         captionblock('notice-t', lines, caption, 'notice-title')
       else
@@ -1049,12 +1042,10 @@ module ReVIEW
     CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}_begin(caption = nil)
-          check_nested_minicolumn
           if '#{name}' == 'notice' && caption.present?
-            @doc_status[:minicolumn] = '#{name}-t'
+            @minicolumn_with_caption = true
             print "<#{name}-t>"
           else
-            @doc_status[:minicolumn] = '#{name}'
             print "<#{name}>"
           end
           if caption.present?
@@ -1063,14 +1054,14 @@ module ReVIEW
         end
 
         def #{name}_end
-          if '#{name}' == 'notice' && @doc_status[:minicolumn] == 'notice-t'
+          if '#{name}' == 'notice' && @minicolumn_with_caption
             print "</#{name}-t>"
+            @minicolumn_with_caption = nil
           else
             print "</#{name}>"
           end
-          @doc_status[:minicolumn] = nil
         end
-      ), __FILE__, __LINE__ - 23
+      ), __FILE__, __LINE__ - 21
     end
 
     def syntaxblock(type, lines, caption)

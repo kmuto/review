@@ -28,6 +28,8 @@ module ReVIEW
       ## to decide escaping/non-escaping for text
       @command_name_stack = []
 
+      @doc_status = nil
+
       @logger = ReVIEW.logger
 
       @ignore_errors = builder.is_a?(ReVIEW::IndexBuilder)
@@ -52,6 +54,7 @@ module ReVIEW
 
     def compile(chap)
       @chapter = chap
+      @doc_status = {}
       do_compile
       if @compile_errors
         raise ApplicationError, "#{location.filename} cannot be compiled."
@@ -269,6 +272,18 @@ module ReVIEW
     definline :w
     definline :wb
 
+    def in_minicolumn?
+      @doc_status[:minicolumn]
+    end
+
+    def in_column?
+      @doc_status[:column]
+    end
+
+    def in_dt?
+      @doc_status[:dt]
+    end
+
     private
 
     def do_compile
@@ -362,6 +377,7 @@ module ReVIEW
         return
       end
       @minicolumn_name = name
+      @doc_status[:minicolumn] = name
 
       @builder.__send__(mid, caption)
     end
@@ -375,6 +391,8 @@ module ReVIEW
 
       mid = "#{name}_end"
       @builder.__send__(mid)
+
+      @doc_status[:minicolumn] = nil
       @minicolumn_name = nil
     end
 
@@ -443,12 +461,19 @@ module ReVIEW
         return
       end
       @tagged_section.push([tag, level])
+      if tag == 'column'
+        @doc_status[:column] = true
+      end
       @builder.__send__(mid, level, label, caption)
     end
 
     def close_tagged_section(tag, level)
       mid = "#{tag}_end"
       if @builder.respond_to?(mid)
+        if tag == 'column'
+          @doc_status[:column] = nil
+        end
+
         @builder.__send__(mid, level)
       else
         error "builder does not support block op: #{mid}", location: location
@@ -523,9 +548,9 @@ module ReVIEW
       @builder.dl_begin
       while /\A\s*:/ =~ f.peek
         # defer compile_inline to handle footnotes
-        @builder.doc_status[:dt] = true
+        @doc_status[:dt] = true
         @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
-        @builder.doc_status[:dt] = nil
+        @doc_status[:dt] = nil
         desc = []
         f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
           desc << text(line.strip)
@@ -553,9 +578,9 @@ module ReVIEW
       ignore_inline = @non_parsed_commands.include?(name)
       @command_name_stack.push(name)
       args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
-      @builder.doc_status[name] = true
+      @doc_status[name] = true
       lines = block_open?(line) ? read_block(f, ignore_inline) : nil
-      @builder.doc_status[name] = nil
+      @doc_status[name] = nil
       [name, args, lines]
     end
 
@@ -696,10 +721,6 @@ module ReVIEW
     rescue => e
       error e.message, location: location
       @builder.nofunc_text(str)
-    end
-
-    def in_minicolumn?
-      @builder.in_minicolumn?
     end
 
     def minicolumn_block_name?(name)

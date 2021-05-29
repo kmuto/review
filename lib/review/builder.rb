@@ -32,14 +32,12 @@ module ReVIEW
       nil
     end
 
-    attr_accessor :doc_status
     attr_reader :location
 
     def initialize(strict = false, *_args, img_math: nil)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
-      @doc_status = {}
       @dictionary = {}
       @img_math = img_math
     end
@@ -88,7 +86,6 @@ module ReVIEW
 
     def builder_init_file
       @sec_counter = SecCounter.new(5, @chapter)
-      @doc_status = {}
     end
     private :builder_init_file
 
@@ -552,32 +549,30 @@ module ReVIEW
     CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}(lines, caption = nil)
-          check_nested_minicolumn
           captionblock("#{name}", lines, caption)
         end
 
         def #{name}_begin(caption = nil)
-          check_nested_minicolumn
-          @doc_status[:minicolumn] = '#{name}'
           if caption
             puts compile_inline(caption)
           end
         end
 
         def #{name}_end
-          @doc_status[:minicolumn] = nil
         end
-      ), __FILE__, __LINE__ - 17
-    end
-
-    def check_nested_minicolumn
-      if @doc_status[:minicolumn]
-        app_error "#{@location}: nested mini-column is not allowed"
-      end
+      ), __FILE__, __LINE__ - 13
     end
 
     def in_minicolumn?
-      @doc_status[:minicolumn]
+      @compiler.in_minicolumn?
+    end
+
+    def in_column?
+      @compiler.in_minicolumn?
+    end
+
+    def in_dt?
+      @compiler.in_dt?
     end
 
     def minicolumn_block_name?(name)

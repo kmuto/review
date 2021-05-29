@@ -195,7 +195,6 @@ module ReVIEW
 
     def column_begin(level, label, caption)
       blank
-      @doc_status[:column] = true
 
       target = nil
       if label
@@ -224,17 +223,16 @@ module ReVIEW
     def column_end(_level)
       puts '\\end{reviewcolumn}'
       blank
-      @doc_status[:column] = nil
     end
 
     def common_block_begin(type, caption = nil)
-      check_nested_minicolumn
       if @book.config.check_version('2', exception: false)
-        type = 'minicolumn'
+        command_name = 'reviewminicolumn'
+      else
+        command_name = "review#{type}"
       end
 
-      @doc_status[:minicolumn] = type
-      print "\\begin{review#{type}}"
+      print "\\begin{#{command_name}}"
 
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
@@ -253,11 +251,12 @@ module ReVIEW
 
     def common_block_end(type)
       if @book.config.check_version('2', exception: false)
-        type = 'minicolumn'
+        command_name = 'reviewminicolumn'
+      else
+        command_name = "review#{type}"
       end
 
-      puts "\\end{review#{type}}"
-      @doc_status[:minicolumn] = nil
+      puts "\\end{#{command_name}}"
     end
 
     CAPTION_TITLES.each do |name|
@@ -273,12 +272,13 @@ module ReVIEW
     end
 
     def captionblock(type, lines, caption)
-      check_nested_minicolumn
       if @book.config.check_version('2', exception: false)
-        type = 'minicolumn'
+        command_name = 'reviewminicolumn'
+      else
+        command_name = "review#{type}"
       end
 
-      print "\\begin{review#{type}}"
+      print "\\begin{#{command_name}}"
 
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
@@ -1130,7 +1130,7 @@ module ReVIEW
 
     def footnote(id, content)
       if @book.config['footnotetext'] || @foottext[id]
-        if @doc_status[:column]
+        if in_column?
           warn "//footnote[#{id}] is in the column block. It is recommended to move out of the column block.", location: location
         end
         puts macro("footnotetext[#{@chapter.footnote(id).number}]", compile_inline(content.strip))
@@ -1140,7 +1140,7 @@ module ReVIEW
     def inline_fn(id)
       if @book.config['footnotetext']
         macro("footnotemark[#{@chapter.footnote(id).number}]", '')
-      elsif @doc_status[:caption] || @doc_status[:table] || @doc_status[:column] || @doc_status[:dt]
+      elsif @doc_status[:caption] || @doc_status[:table] || in_column? || in_dt?
         @foottext[id] = @chapter.footnote(id).number
         macro('protect\\footnotemark', '')
       else

@@ -2729,7 +2729,6 @@ EOS
 
   def test_minicolumn_blocks_nest_error1
     %w[note memo tip info warning important caution notice].each do |type|
-      @builder.doc_status.clear
       src = <<-EOS
 //#{type}{
 
@@ -2745,7 +2744,6 @@ EOS
 
   def test_minicolumn_blocks_nest_error2
     %w[note memo tip info warning important caution notice].each do |type|
-      @builder.doc_status.clear
       src = <<-EOS
 //#{type}{
 
@@ -2762,7 +2760,6 @@ EOS
 
   def test_minicolumn_blocks_nest_error3
     %w[memo tip info warning important caution notice].each do |type|
-      @builder.doc_status.clear
       src = <<-EOS
 //#{type}{
 
