@@ -624,8 +624,8 @@ module ReVIEW
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
         puts macro('caption', compile_inline(caption)) if caption.present?
-      else
-        puts macro('reviewimagecaption', compile_inline(caption)) if caption.present?
+      elsif caption.present?
+        puts macro('reviewimagecaption', compile_inline(caption))
       end
       @doc_status[:caption] = nil
       puts '\end{reviewdummyimage}'
@@ -834,15 +834,11 @@ module ReVIEW
           ret << s
           s = ''
         else
-          if brace
+          if brace || s.empty?
             s << ch
           else
-            if s.empty?
-              s << ch
-            else
-              ret << s
-              s = ch
-            end
+            ret << s
+            s = ch
           end
         end
       end
@@ -1377,18 +1373,16 @@ module ReVIEW
       sa.map! do |item|
         if @index_db[item]
           escape_mendex_key(escape_index(@index_db[item])) + '@' + escape_mendex_display(escape_index(escape(item)))
-        else
-          if item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
-            esc_item = escape_mendex_display(escape_index(escape(item)))
-            if esc_item == item
-              esc_item
-            else
-              "#{escape_mendex_key(escape_index(item))}@#{esc_item}"
-            end
+        elsif item =~ /\A[[:ascii:]]+\Z/ || @index_mecab.nil?
+          esc_item = escape_mendex_display(escape_index(escape(item)))
+          if esc_item == item
+            esc_item
           else
-            yomi = NKF.nkf('-w --hiragana', @index_mecab.parse(item).force_encoding('UTF-8').chomp)
-            escape_mendex_key(escape_index(yomi)) + '@' + escape_mendex_display(escape_index(escape(item)))
+            "#{escape_mendex_key(escape_index(item))}@#{esc_item}"
           end
+        else
+          yomi = NKF.nkf('-w --hiragana', @index_mecab.parse(item).force_encoding('UTF-8').chomp)
+          escape_mendex_key(escape_index(yomi)) + '@' + escape_mendex_display(escape_index(escape(item)))
         end
       end
 

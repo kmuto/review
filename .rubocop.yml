@@ -180,7 +180,7 @@ Style/GuardClause:
   Enabled: false
 
 Style/IfInsideElse:
-  Enabled: false
+  Enabled: true
 
 Style/IfUnlessModifier:
   Enabled: false
