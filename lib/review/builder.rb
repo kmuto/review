@@ -32,7 +32,7 @@ module ReVIEW
       nil
     end
 
-    attr_accessor :doc_status, :previous_list_type
+    attr_accessor :doc_status
     attr_reader :location
 
     def initialize(strict = false, *_args, img_math: nil)
@@ -41,7 +41,6 @@ module ReVIEW
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
-      @previous_list_type = nil
       @img_math = img_math
     end
 
@@ -723,13 +722,17 @@ EOTGNUPLOT
       str
     end
 
+    def previous_list_type
+      @compiler.previous_list_type
+    end
+
     def beginchild
       @children ||= []
-      unless @previous_list_type
+      unless previous_list_type
         app_error "//beginchild is shown, but previous element isn't ul, ol, or dl"
       end
-      puts "\x01→#{@previous_list_type}←\x01"
-      @children.push(@previous_list_type)
+      puts "\x01→#{previous_list_type}←\x01"
+      @children.push(previous_list_type)
     end
 
     def endchild
