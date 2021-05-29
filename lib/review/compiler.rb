@@ -274,6 +274,7 @@ module ReVIEW
     def do_compile
       f = LineInput.new(StringIO.new(@chapter.content))
       @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
+      @previous_list_type = nil
 
       ## in minicolumn, such as note/info/alert...
       @minicolumn_name = nil
@@ -285,20 +286,20 @@ module ReVIEW
           f.gets # Nothing to do
         when /\A=+[\[\s{]/
           compile_headline(f.gets)
-          @builder.previous_list_type = nil
+          @previous_list_type = nil
         when /\A\s+\*/
           compile_ulist(f)
-          @builder.previous_list_type = 'ul'
+          @previous_list_type = 'ul'
         when /\A\s+\d+\./
           compile_olist(f)
-          @builder.previous_list_type = 'ol'
+          @previous_list_type = 'ol'
         when /\A\s+:\s/
           compile_dlist(f)
-          @builder.previous_list_type = 'dl'
+          @previous_list_type = 'dl'
         when /\A\s*:\s/
           warn 'Definition list starting with `:` is deprecated. It should start with ` : `.', location: location
           compile_dlist(f)
-          @builder.previous_list_type = 'dl'
+          @previous_list_type = 'dl'
         when %r{\A//\}}
           if in_minicolumn?
             _line = f.gets
@@ -327,7 +328,7 @@ module ReVIEW
             compile_command(syntax, args, lines)
             @command_name_stack.pop
           end
-          @builder.previous_list_type = nil
+          @previous_list_type = nil
         when %r{\A//}
           line = f.gets
           warn "`//' seen but is not valid command: #{line.strip.inspect}", location: location
@@ -335,14 +336,14 @@ module ReVIEW
             warn 'skipping block...', location: location
             read_block(f, false)
           end
-          @builder.previous_list_type = nil
+          @previous_list_type = nil
         else
           if f.peek.strip.empty?
             f.gets
             next
           end
           compile_paragraph(f)
-          @builder.previous_list_type = nil
+          @previous_list_type = nil
         end
       end
       close_all_tagged_section
