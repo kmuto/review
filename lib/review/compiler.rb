@@ -37,7 +37,7 @@ module ReVIEW
       @compile_errors = nil
     end
 
-    attr_reader :builder, :previous_list_type
+    attr_reader :builder, :previous_list_type, :doc_status
 
     def strategy
       error 'Compiler#strategy is obsoleted. Use Compiler#builder.'

@@ -86,6 +86,9 @@ module ReVIEW
 
     def builder_init_file
       @sec_counter = SecCounter.new(5, @chapter)
+      if @compiler.doc_status
+        @doc_status = @compiler.doc_status ## for compatibility
+      end
     end
     private :builder_init_file
 
