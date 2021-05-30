@@ -28,7 +28,6 @@ require 'review/loggable'
 
 module ReVIEW
   class PDFMaker
-    include FileUtils
     include ReVIEW::LaTeXUtils
     include Loggable
     include ReVIEW::CallHook
@@ -287,7 +286,7 @@ module ReVIEW
         FileUtils.cp(File.join(@path, "#{@mastertex}.pdf"), pdf_filepath)
         @logger.success("built #{File.basename(pdf_filepath)}")
       ensure
-        remove_entry_secure(@path) unless @config['debug']
+        FileUtils.remove_entry_secure(@path) unless @config['debug']
       end
     end
 
