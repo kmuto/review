@@ -42,12 +42,12 @@ module ReVIEW
     end
 
     def builder_init_file
+      super
       @section = 0
       @subsection = 0
       @subsubsection = 0
       @subsubsubsection = 0
       @blank_seen = true
-      @sec_counter = SecCounter.new(5, @chapter)
     end
     private :builder_init_file
 

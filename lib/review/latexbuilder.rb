@@ -28,6 +28,7 @@ module ReVIEW
     end
 
     def builder_init_file
+      super
       @chapter.book.image_types = %w[.ai .eps .pdf .tif .tiff .png .bmp .jpg .jpeg .gif]
       @blank_needed = false
       @latex_tsize = nil
@@ -35,7 +36,6 @@ module ReVIEW
       @cellwidth = nil
       @ol_num = nil
       @first_line_num = nil
-      @sec_counter = SecCounter.new(5, @chapter)
       @foottext = {}
       setup_index
       initialize_metachars(@book.config['texcommand'])

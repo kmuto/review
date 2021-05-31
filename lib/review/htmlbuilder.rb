@@ -42,11 +42,11 @@ module ReVIEW
     end
 
     def builder_init_file
+      super
       @noindent = nil
       @ol_num = nil
       @chapter.book.image_types = %w[.png .jpg .jpeg .gif .svg]
       @column = 0
-      @sec_counter = SecCounter.new(5, @chapter)
       @nonum_counter = 0
       @first_line_num = nil
       @body_ext = nil

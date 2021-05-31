@@ -47,6 +47,7 @@ module ReVIEW
     end
 
     def builder_init_file
+      super
       @warns = []
       @errors = []
       @section = 0

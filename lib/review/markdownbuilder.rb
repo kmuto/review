@@ -18,6 +18,7 @@ module ReVIEW
     end
 
     def builder_init_file
+      super
       @noindent = nil
       @blank_seen = nil
       @ul_indent = 0

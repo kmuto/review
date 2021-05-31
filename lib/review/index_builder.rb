@@ -51,8 +51,7 @@ module ReVIEW
     end
 
     def builder_init_file
-      @sec_counter = SecCounter.new(5, @chapter)
-
+      super
       @headline_stack = []
 
       @list_index = ReVIEW::Book::ListIndex.new
