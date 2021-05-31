@@ -273,6 +273,9 @@ module ReVIEW
         @config['usepackage'] = ''
         @config['usepackage'] = "\\usepackage{#{@config['texstyle']}}" if @config['texstyle']
 
+        if @config['pdfmaker']['use_symlink']
+          logger.info 'use symlink'
+        end
         copy_images(@config['imagedir'], File.join(@path, @config['imagedir']))
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
@@ -307,7 +310,11 @@ module ReVIEW
       return unless File.exist?(from)
 
       Dir.mkdir(to)
-      ReVIEW::MakerHelper.copy_images_to_dir(from, to)
+      if @config['pdfmaker']['use_symlink']
+        ReVIEW::MakerHelper.copy_images_to_dir(from, to, use_symlink: true)
+      else
+        ReVIEW::MakerHelper.copy_images_to_dir(from, to)
+      end
     end
 
     def make_custom_page(file)
@@ -496,6 +503,8 @@ module ReVIEW
             File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
               f.print erb_content(File.join(dirname, fname))
             end
+          elsif @config['pdfmaker']['use_symlink']
+            FileUtils.ln_s(File.join(dirname, fname), copybase)
           else
             FileUtils.cp(File.join(dirname, fname), copybase)
           end
