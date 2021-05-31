@@ -273,6 +273,9 @@ module ReVIEW
         @config['usepackage'] = ''
         @config['usepackage'] = "\\usepackage{#{@config['texstyle']}}" if @config['texstyle']
 
+        if @config['pdfmaker']['use_symlink']
+          logger.info 'use symlink'
+        end
         copy_images(@config['imagedir'], File.join(@path, @config['imagedir']))
         copy_sty(File.join(Dir.pwd, 'sty'), @path)
         copy_sty(File.join(Dir.pwd, 'sty'), @path, 'fd')
@@ -308,7 +311,7 @@ module ReVIEW
 
       Dir.mkdir(to)
       if @config['pdfmaker']['use_symlink']
-        ReVIEW::MakerHelper.copy_images_to_dir(from, to, { use_symlink: true })
+        ReVIEW::MakerHelper.copy_images_to_dir(from, to, use_symlink: true)
       else
         ReVIEW::MakerHelper.copy_images_to_dir(from, to)
       end
