@@ -16,9 +16,13 @@ require 'review/version'
 require 'review/extentions'
 require 'review/logger'
 require 'review/lineinput'
+require 'review/loggable'
 require 'stringio'
 require 'fileutils'
 require 'optparse'
+require 'tempfile'
+
+include ReVIEW::Loggable
 
 def sigmain
   Signal.trap(:INT) { exit 1 }
@@ -30,16 +34,7 @@ rescue Errno::EPIPE
   exit 0
 end
 
-def main
-  @logger = ReVIEW.logger
-  if File.file?('review-preproc-ext.rb')
-    if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
-      @logger.warn 'review-preproc-ext.rb is prohibited in safe mode. ignored.'
-    else
-      Kernel.load(File.expand_path('review-preproc-ext.rb'))
-    end
-  end
-
+def parse_options
   param = {}
 
   mode = :output
@@ -57,32 +52,42 @@ def main
   begin
     opts.parse!
   rescue OptionParser::ParseError => e
-    @logger.error e.message
+    error e.message
     $stderr.puts opts.help
     exit 1
   end
 
-  pp = ReVIEW::Preprocessor.new(ReVIEW::Repository.new(param), param)
-  current_file = nil
+  [param, mode]
+end
+
+def main
+  @logger = ReVIEW.logger
+  if File.file?('review-preproc-ext.rb')
+    if ENV['REVIEW_SAFE_MODE'].to_i & 2 > 0
+      warn 'review-preproc-ext.rb is prohibited in safe mode. ignored.'
+    else
+      Kernel.load(File.expand_path('review-preproc-ext.rb'))
+    end
+  end
+
+  param, mode = parse_options
+  pp = ReVIEW::Preprocessor.new(param)
   ARGV.each do |path|
-    current_file = path
     case mode
     when :output
-      File.open(path) { |f| pp.process(f, $stdout) }
+      $stdout.write(pp.process(path))
     when :replace
-      File.write("#{path}.pptmp", preproc(pp, path))
-      File.rename("#{path}.pptmp", path)
+      output = pp.process(path)
+      File.write(path, output)
     when :diff, :check
-      tmp = '/tmp/review.pptmp'
-      begin
-        File.write(tmp, preproc(pp, path))
+      Tempfile.create('review.pptmp') do |tmp_io|
+        tmp = tmp_io.path
+        tmp_io.write(pp.process(path))
         if mode == :check
           system("diff -qu #{path} #{tmp} >/dev/null || echo #{path}")
         else
           system("diff -u #{path} #{tmp}")
         end
-      ensure
-        FileUtils.rm_f(tmp)
       end
     else
       raise "must not happen: #{mode}"
@@ -91,18 +96,7 @@ def main
 rescue ReVIEW::Error => e
   raise if $DEBUG
 
-  @logger.error e.message
-  exit 1
-end
-
-def preproc(pp, path)
-  buf = StringIO.new
-  File.open(path) { |f| pp.process(f, buf) }
-  buf.string
-end
-
-def File.write(path, str)
-  File.open(path, 'w') { |f| f.write str }
+  error! e.message
 end
 
 sigmain
