@@ -1374,7 +1374,7 @@ EOS
     actual = compile_block("//indepimage[sample_img_nofile_][sample photo]\n")
     expected = <<-EOS
 \\begin{reviewdummyimage}
---[[path = sample\\textunderscore{}img\\textunderscore{}nofile\\textunderscore{} (not exist)]]--
+{-}{-}[[path = sample\\reviewbackslash{}textunderscore\\{\\}img\\reviewbackslash{}textunderscore\\{\\}nofile\\reviewbackslash{}textunderscore\\{\\} (not exist)]]{-}{-}
 \\reviewindepimagecaption{図: sample photo}
 \\end{reviewdummyimage}
 EOS
