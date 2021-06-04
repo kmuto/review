@@ -615,9 +615,9 @@ module ReVIEW
     def image_dummy(id, caption, lines)
       warn "image not bound: #{id}", location: location
       puts '\begin{reviewdummyimage}'
-      # path = @chapter.image(id).path
-      puts "--[[path = #{id} (#{existence(id)})]]--"
+      puts escape("--[[path = #{id} (#{existence(id)})]]--")
       lines.each do |line|
+        puts "\n"
         puts detab(line.rstrip)
       end
       puts macro('label', image_label(id))
@@ -702,8 +702,9 @@ module ReVIEW
       else
         warn "image not bound: #{id}", location: location
         puts '\begin{reviewdummyimage}'
-        puts "--[[path = #{escape(id)} (#{existence(id)})]]--"
+        puts escape("--[[path = #{escape(id)} (#{existence(id)})]]--")
         lines.each do |line|
+          puts "\n"
           puts detab(line.rstrip)
         end
       end

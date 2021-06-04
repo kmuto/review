@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2020/12/31]
+\ProvidesClass{review-base}[2021/06/04]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -112,8 +112,8 @@
 
 \newenvironment{reviewdummyimage}{%
   \begin{figure}
-    \begin{center}\begin{alltt}}{%
-    \end{alltt}\end{center}
+    \begin{center}}{%
+    \end{center}
   \end{figure}}
 
 \DeclareRobustCommand{\reviewincludegraphics}[2][]{%
