@@ -89,6 +89,10 @@ module ReVIEW
       layout_file
     end
 
+    def use_section?
+      @use_section
+    end
+
     def open_section(level)
       unless @use_section
         return nil
