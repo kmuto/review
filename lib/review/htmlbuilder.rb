@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -52,6 +52,16 @@ module ReVIEW
       @body_ext = nil
       @toc = nil
       @javascripts = []
+      @section_level = 0
+      @section_stack = []
+      if @book.config.maker
+        if @book.config[@book.config.maker] && @book.config[@book.config.maker]['use_section']
+          @use_section = true
+        end
+      elsif @book.config['epubmaker'] && @book.config['epubmaker']['use_section']
+        # for review-compile
+        @use_section = true
+      end
     end
     private :builder_init_file
 
@@ -85,10 +95,35 @@ module ReVIEW
       layout_file
     end
 
+    def open_section(level)
+      unless @use_section
+        return nil
+      end
+
+      result = []
+
+      while @section_stack.size > 0 && level <= @section_stack[-1]
+        result << '</section>'
+        @section_stack.pop
+      end
+      @section_stack.push(level)
+      result << '<section>'
+
+      return result.join("\n")
+    end
+
+    def close_sections
+      unless @use_section
+        return ''
+      end
+
+      "</section>\n" * @section_stack.size
+    end
+
     def result
       # default XHTML header/footer
       @title = strip_html(compile_inline(@chapter.title))
-      @body = solve_nest(@output.string)
+      @body = solve_nest(@output.string) + close_sections
       @language = @book.config['language']
       @stylesheets = @book.config['stylesheet']
       @next = @chapter.next_chapter
@@ -131,6 +166,7 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      print open_section(level)
       prefix, anchor = headline_prefix(level)
       if prefix
         prefix = %Q(<span class="secno">#{prefix}</span>)
