@@ -94,10 +94,6 @@ module ReVIEW
     end
 
     def open_section(level)
-      unless @use_section
-        return nil
-      end
-
       result = []
 
       while @section_stack.size > 0 && level <= @section_stack[-1]
@@ -111,17 +107,18 @@ module ReVIEW
     end
 
     def close_sections
-      unless @use_section
-        return ''
-      end
-
       "</section>\n" * @section_stack.size
     end
 
     def result
+      # flush all `</section>`
+      if use_section?
+        print close_sections
+      end
+
       # default XHTML header/footer
       @title = strip_html(compile_inline(@chapter.title))
-      @body = solve_nest(@output.string) + close_sections
+      @body = solve_nest(@output.string)
       @language = @book.config['language']
       @stylesheets = @book.config['stylesheet']
       @next = @chapter.next_chapter
@@ -164,7 +161,9 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
-      print open_section(level)
+      if use_section?
+        print open_section(level)
+      end
       prefix, anchor = headline_prefix(level)
       if prefix
         prefix = %Q(<span class="secno">#{prefix}</span>)
