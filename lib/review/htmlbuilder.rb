@@ -52,7 +52,6 @@ module ReVIEW
       @body_ext = nil
       @toc = nil
       @javascripts = []
-      @section_level = 0
       @section_stack = []
       if @book.config.maker
         if @book.config[@book.config.maker] && @book.config[@book.config.maker]['use_section']
