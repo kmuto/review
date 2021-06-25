@@ -53,14 +53,9 @@ module ReVIEW
       @toc = nil
       @javascripts = []
       @section_stack = []
-      if @book.config.maker
-        if @book.config[@book.config.maker] && @book.config[@book.config.maker]['use_section']
-          @use_section = true
-        end
-      elsif @book.config['epubmaker'] && @book.config['epubmaker']['use_section']
-        # for review-compile
-        @use_section = true
-      end
+
+      maker = @book.config.maker || 'epubmaker' # for review-compile
+      @use_section = @book.config[maker] && @book.config[maker]['use_section']
     end
     private :builder_init_file
 
