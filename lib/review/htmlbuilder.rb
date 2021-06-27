@@ -107,7 +107,7 @@ module ReVIEW
         @section_stack.pop
       end
       @section_stack.push(level)
-      result << '<section>'
+      result << %Q(<section class="level#{level}">)
 
       return result.join("\n")
     end
