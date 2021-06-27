@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -52,6 +52,10 @@ module ReVIEW
       @body_ext = nil
       @toc = nil
       @javascripts = []
+      @section_stack = []
+
+      maker = @book.config.maker || 'epubmaker' # for review-compile
+      @use_section = @book.config[maker] && @book.config[maker]['use_section']
     end
     private :builder_init_file
 
@@ -85,7 +89,33 @@ module ReVIEW
       layout_file
     end
 
+    def use_section?
+      @use_section
+    end
+
+    def open_section(level)
+      result = []
+
+      while @section_stack.size > 0 && level <= @section_stack[-1]
+        result << '</section>'
+        @section_stack.pop
+      end
+      @section_stack.push(level)
+      result << %Q(<section class="level#{level}">)
+
+      return result.join("\n")
+    end
+
+    def close_sections
+      "</section>\n" * @section_stack.size
+    end
+
     def result
+      # flush all `</section>`
+      if use_section?
+        print close_sections
+      end
+
       # default XHTML header/footer
       @title = strip_html(compile_inline(@chapter.title))
       @body = solve_nest(@output.string)
@@ -131,6 +161,9 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      if use_section?
+        print open_section(level)
+      end
       prefix, anchor = headline_prefix(level)
       if prefix
         prefix = %Q(<span class="secno">#{prefix}</span>)
