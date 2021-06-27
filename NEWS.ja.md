@@ -1,4 +1,7 @@
 # Version 5.2.0
+## 新機能
+* EPUBMaker: CSS 組版向けに、見出しの存在に応じて `<section>` で階層化する機能を追加しました。config.yml で `epubmaker` セクションの `use_section` パラメータを `true` にすると有効化されます ([#1685])
+
 ## バグ修正
 * PDFMaker: Ruby 2.6 以上でテンプレートの引数についての警告が出る問題を修正しました ([#1683])
 * EPUBMaker: Docker 環境においてファイルがコピーされず空になる問題を修正しました ([#1686])
@@ -25,6 +28,7 @@
 [#1674]: https://github.com/kmuto/review/issues/1674
 [#1683]: https://github.com/kmuto/review/pulls/1683
 [#1684]: https://github.com/kmuto/review/pulls/1684
+[#1685]: https://github.com/kmuto/review/pulls/1685
 [#1686]: https://github.com/kmuto/review/issues/1686
 [#1688]: https://github.com/kmuto/review/pulls/1688
 [#1689]: https://github.com/kmuto/review/pulls/1689

@@ -1,4 +1,7 @@
 # Version 5.2.0
+## New Features
+* EPUBMaker: added `<section>` based on heading level for CSS formatting, when the `epubmaker/use_section` parameter is set to `true` ([#1685])
+
 ## Bug Fixes
 * PDFMaker: fixed a problem that caused a warning in templates for Ruby 2.6 and above ([#1683])
 * EPUBMaker: fixed an issue that caused copied files to be empty in Docker environments ([#1686])
@@ -25,6 +28,7 @@
 [#1674]: https://github.com/kmuto/review/issues/1674
 [#1683]: https://github.com/kmuto/review/pulls/1683
 [#1684]: https://github.com/kmuto/review/pulls/1684
+[#1685]: https://github.com/kmuto/review/pulls/1685
 [#1686]: https://github.com/kmuto/review/issues/1686
 [#1688]: https://github.com/kmuto/review/pulls/1688
 [#1689]: https://github.com/kmuto/review/pulls/1689
@@ -48,7 +52,7 @@
 
 # Version 5.1.0
 ## New Features
-* added Rake rule to call [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli), CSS typesetting formatter. Create a PDF with `rake vivliostyle:build` or `rake vivliostyle`, and open a preview with `rake vivliostyle:preview` ([#1663])
+<* added Rake rule to call [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli), CSS typesetting formatter. Create a PDF with `rake vivliostyle:build` or `rake vivliostyle`, and open a preview with `rake vivliostyle:preview` ([#1663])
 * PDFMaker: introduced `boxsetting` parameter to choose and customize the decorations for column, note, memo, tip, info, warning, important, caution and notice ([#1637])
 * added inline op, `@<ins>` (indicates an insertion) and `@<del>` (indicates a deletion) ([#1630])
 * EPUBMaker, WebMaker: MathJax is now supported. Added `math_format` parameter to choose the mathematical expression method ([#1587], [#1614])
