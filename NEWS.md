@@ -54,7 +54,7 @@
 
 # Version 5.1.0
 ## New Features
-<* added Rake rule to call [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli), CSS typesetting formatter. Create a PDF with `rake vivliostyle:build` or `rake vivliostyle`, and open a preview with `rake vivliostyle:preview` ([#1663])
+* added Rake rule to call [Vivliostyle-CLI](https://github.com/vivliostyle/vivliostyle-cli), CSS typesetting formatter. Create a PDF with `rake vivliostyle:build` or `rake vivliostyle`, and open a preview with `rake vivliostyle:preview` ([#1663])
 * PDFMaker: introduced `boxsetting` parameter to choose and customize the decorations for column, note, memo, tip, info, warning, important, caution and notice ([#1637])
 * added inline op, `@<ins>` (indicates an insertion) and `@<del>` (indicates a deletion) ([#1630])
 * EPUBMaker, WebMaker: MathJax is now supported. Added `math_format` parameter to choose the mathematical expression method ([#1587], [#1614])
@@ -1856,4 +1856,3 @@ To support language parameter for syntax highlighting, if you use review-ext.rb 
 * add headline level 5 and 6 (paragraph, subparagraph)
 * escape all dash
 * add ``begin{alltt}..\end{alltt}`` into ``\reviewemlist``, ``\reviewlist`` and ``\reviewcmd``
-
