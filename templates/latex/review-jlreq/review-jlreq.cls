@@ -82,7 +82,7 @@
 
 %% hiddenfolio=nikko-pc
 \@namedef{@makehiddenfolio@nikko-pc}{%
-  \jlreqtrimmarkssetup{banner = { center-gutter= { \hiddenfolio@font\selectfont \thepage} } } }
+  \jlreqtrimmarkssetup{banner = { center-gutter= { in = { \hiddenfolio@font\selectfont \thepage} } } } }
 
 %% hiddenfolio=shippo
 \@namedef{@makehiddenfolio@shippo}{%
