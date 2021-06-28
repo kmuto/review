@@ -12,6 +12,7 @@
 ## 機能強化
 * 警告とエラーを出力する際の処理を改善しました。`error!` (すぐに終了) および `app_error` (`ApplicationError` 例外を上げる) メソッドを導入しました ([#1674])
 * PDFMaker: ビルドのために画像ファイルをコピーする際、実コピーではなくシンボリックリンクを利用して処理を高速化するオプションを追加しました。`pdfmaker` セクションの `use_symlink` パラメータを `true` にすると、デフォルト挙動の実コピーの代わりにシンボリックリンクが使われます。Windows など一部の OS ではこれは動作しない可能性があります ([#1696])
+* PDFMaker: review-jlreq で `serial_pagination=true, openany` を指定したときには前付の後の空ページが入らないようにしました ([#1711])
 
 ## その他
 * GitHub Actions まわりを修正しました ([#1684], [#1691])
@@ -43,6 +44,7 @@
 [#1702]: https://github.com/kmuto/review/pulls/1702
 [#1704]: https://github.com/kmuto/review/pulls/1704
 [#1706]: https://github.com/kmuto/review/issues/1706
+[#1711]: https://github.com/kmuto/review/issues/1711
 
 # Version 5.1.1
 ## バグ修正

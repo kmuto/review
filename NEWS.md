@@ -12,6 +12,7 @@
 ## Enhancements
 * improve around warn and error handling ([#1674])
 * PDFMaker: introduced `pdfmaker/use_symlink` parameter to speed up the process by using symbolic links instead of actual copies. This may not work on some operating systems such as Windows ([#1696])
+* PDFMaker: don't insert empty page after frontmatter when using review-jlreq with `serial_pagination=true, openany` ([#1711])
 
 ## Others
 * fixed related to GitHub Actions ([#1684], [#1691])
@@ -43,6 +44,7 @@
 [#1702]: https://github.com/kmuto/review/pulls/1702
 [#1704]: https://github.com/kmuto/review/pulls/1704
 [#1706]: https://github.com/kmuto/review/issues/1706
+[#1711]: https://github.com/kmuto/review/issues/1711
 
 # Version 5.1.1
 ## Bug Fixes
