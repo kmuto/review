@@ -21,7 +21,7 @@
 
 \IfFileExists{plautopatch.sty}{\RequirePackage{plautopatch}}{}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2021/01/12 Re:VIEW 5.1 upLaTeX/LuaLaTeX class modified for jlreq.cls]
+\ProvidesClass{review-jlreq}[2021/06/28 Re:VIEW 5.2 upLaTeX/LuaLaTeX class modified for jlreq.cls]
 
 %% hook at end of reviewmacro
 \let\@endofreviewmacrohook\@empty
@@ -82,7 +82,7 @@
 
 %% hiddenfolio=nikko-pc
 \@namedef{@makehiddenfolio@nikko-pc}{%
-  \jlreqtrimmarkssetup{banner = { center-gutter = { in = {\hiddenfolio@font\selectfont \thepage} } } } }
+  \jlreqtrimmarkssetup{banner = { center-gutter= { \hiddenfolio@font\selectfont \thepage} } } }
 
 %% hiddenfolio=shippo
 \@namedef{@makehiddenfolio@shippo}{%
@@ -282,6 +282,7 @@
 % シンプルな通しノンブル
 \ifrecls@serialpage
   \jlreqsetup{frontmatter_pagination=continuous}
+  \if@openright\else\jlreqsetup{mainmatter_pagebreak=clearpage}\fi
 \fi
 
 % 開始ページを変更
