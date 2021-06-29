@@ -279,7 +279,6 @@ module ReVIEW
     end
 
     def captionblock(type, lines, caption)
-      check_nested_minicolumn
       puts %Q(<div class="#{type}">)
       if caption.present?
         puts %Q(<p class="caption">#{compile_inline(caption)}</p>)
@@ -367,8 +366,6 @@ module ReVIEW
     CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}_begin(caption = nil)
-          check_nested_minicolumn
-          @doc_status[:minicolumn] = '#{name}'
           puts %Q(<div class="#{name}">)
           if caption.present?
             puts %Q(<p class="caption">\#{compile_inline(caption)}</p>)
@@ -377,9 +374,8 @@ module ReVIEW
 
         def #{name}_end
           puts '</div>'
-          @doc_status[:minicolumn] = nil
         end
-      ), __FILE__, __LINE__ - 14
+      ), __FILE__, __LINE__ - 11
     end
 
     def ul_begin

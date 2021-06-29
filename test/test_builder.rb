@@ -4,6 +4,10 @@ require 'review/builder'
 require 'review/book'
 
 class MockCompiler
+  def doc_status
+    {}
+  end
+
   def text(s)
     [:text, s]
   end
@@ -26,7 +30,7 @@ class BuidlerTest < Test::Unit::TestCase
     b = Builder.new
     chap = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.new, nil, '-', nil)
     assert_nothing_raised do
-      b.bind(nil, chap, nil)
+      b.bind(MockCompiler.new, chap, nil)
     end
   end
 
@@ -38,7 +42,7 @@ class BuidlerTest < Test::Unit::TestCase
 
     b = Builder.new
     chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.new, nil, '-', nil)
-    b.bind(nil, chapter, nil)
+    b.bind(MockCompiler.new, chapter, nil)
     assert_equal '', b.result
   end
 
@@ -83,7 +87,7 @@ class BuidlerTest < Test::Unit::TestCase
   def test_inline_missing_ref
     b = Builder.new
     chapter = ReVIEW::Book::Chapter.new(ReVIEW::Book::Base.new, 1, 'chap1', nil, StringIO.new)
-    b.bind(nil, chapter, nil)
+    b.bind(MockCompiler.new, chapter, nil)
     e = assert_raises(ReVIEW::ApplicationError) { b.inline_list('unknown|list1') }
     assert_equal 'unknown list: unknown|list1', e.message
     e = assert_raises(ReVIEW::ApplicationError) { b.inline_table('unknown|table1') }

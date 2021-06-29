@@ -465,16 +465,13 @@ module ReVIEW
     CAPTION_TITLES.each do |name|
       class_eval %Q(
         def #{name}_begin(caption = nil)
-          check_nested_minicolumn
-          @doc_status[:minicolumn] = '#{name}'
           common_block_begin('#{name}', nil, nil, caption)
         end
 
         def #{name}_end
           common_block_end('#{name}', nil)
-          @doc_status[:minicolumn] = nil
         end
-      ), __FILE__, __LINE__ - 11
+      ), __FILE__, __LINE__ - 8
     end
 
     def indepimage(_lines, id, caption = nil, metric = nil)
