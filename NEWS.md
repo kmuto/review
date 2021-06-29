@@ -1,3 +1,51 @@
+# Version 5.2.0
+## New Features
+* EPUBMaker: added `<section>` based on heading level for CSS formatting, when the `epubmaker/use_section` parameter is set to `true` ([#1685])
+
+## Bug Fixes
+* PDFMaker: fixed a problem that caused a warning in templates for Ruby 2.6 and above ([#1683])
+* EPUBMaker: fixed an issue that caused copied files to be empty in Docker environments ([#1686])
+* added CSS style for correct displaying horizontal characters in vertical typesetting ([#1688])
+* PDFMaker: fixed the pxjahyper option conflict error on latest TeXLive ([#1690])
+* PDFMaker: fixed compile error when image is not found ([#1706])
+
+## Enhancements
+* improve around warn and error handling ([#1674])
+* PDFMaker: introduced `pdfmaker/use_symlink` parameter to speed up the process by using symbolic links instead of actual copies. This may not work on some operating systems such as Windows ([#1696])
+* PDFMaker: don't insert empty page after frontmatter when using review-jlreq with `serial_pagination=true, openany` ([#1711])
+
+## Others
+* fixed related to GitHub Actions ([#1684], [#1691])
+* review-preproc: refactored ([#1697])
+* refactored nested lists handling ([#1698])
+* refactor code with Rubocop 1.12 ([#1689], [#1692], [#1699], [#1700])
+* The `builder_init_file` method of each builder now executes `super` first to use base builder's `builder_init_file` ([#1702])
+* PDFMaker: Stopped implicitly including FileUtils library ([#1704])
+
+## Contributors
+* [@odaki](https://github.com/odaki)
+* [@imamurayusuke](https://github.com/imamurayusuke)
+
+[#1674]: https://github.com/kmuto/review/issues/1674
+[#1683]: https://github.com/kmuto/review/pulls/1683
+[#1684]: https://github.com/kmuto/review/pulls/1684
+[#1685]: https://github.com/kmuto/review/pulls/1685
+[#1686]: https://github.com/kmuto/review/issues/1686
+[#1688]: https://github.com/kmuto/review/pulls/1688
+[#1689]: https://github.com/kmuto/review/pulls/1689
+[#1690]: https://github.com/kmuto/review/pulls/1690
+[#1691]: https://github.com/kmuto/review/pulls/1691
+[#1692]: https://github.com/kmuto/review/pulls/1692
+[#1696]: https://github.com/kmuto/review/issues/1696
+[#1697]: https://github.com/kmuto/review/pulls/1697
+[#1698]: https://github.com/kmuto/review/pulls/1698
+[#1699]: https://github.com/kmuto/review/pulls/1699
+[#1700]: https://github.com/kmuto/review/pulls/1700
+[#1702]: https://github.com/kmuto/review/pulls/1702
+[#1704]: https://github.com/kmuto/review/pulls/1704
+[#1706]: https://github.com/kmuto/review/issues/1706
+[#1711]: https://github.com/kmuto/review/issues/1711
+
 # Version 5.1.1
 ## Bug Fixes
 * Fix the runtime error of `review-preproc` ([#1679])
@@ -1808,4 +1856,3 @@ To support language parameter for syntax highlighting, if you use review-ext.rb 
 * add headline level 5 and 6 (paragraph, subparagraph)
 * escape all dash
 * add ``begin{alltt}..\end{alltt}`` into ``\reviewemlist``, ``\reviewlist`` and ``\reviewcmd``
-

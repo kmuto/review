@@ -1,3 +1,51 @@
+# Version 5.2.0
+## 新機能
+* EPUBMaker: CSS 組版向けに、見出しの存在に応じて `<section>` で階層化する機能を追加しました。config.yml で `epubmaker` セクションの `use_section` パラメータを `true` にすると有効化されます ([#1685])
+
+## バグ修正
+* PDFMaker: Ruby 2.6 以上でテンプレートの引数についての警告が出る問題を修正しました ([#1683])
+* EPUBMaker: Docker 環境においてファイルがコピーされず空になる問題を修正しました ([#1686])
+* 縦中横を正しく表示する CSS 設定を追加しました ([#1688])
+* PDFMaker: 新しい TeXLive との組み合わせで pxjahyper のオプション競合エラーが発生するのを修正しました ([#1690])
+* PDFMaker: 画像が見つからないときにコンパイルエラーになるのを修正しました ([#1706])
+
+## 機能強化
+* 警告とエラーを出力する際の処理を改善しました。`error!` (すぐに終了) および `app_error` (`ApplicationError` 例外を上げる) メソッドを導入しました ([#1674])
+* PDFMaker: ビルドのために画像ファイルをコピーする際、実コピーではなくシンボリックリンクを利用して処理を高速化するオプションを追加しました。`pdfmaker` セクションの `use_symlink` パラメータを `true` にすると、デフォルト挙動の実コピーの代わりにシンボリックリンクが使われます。Windows など一部の OS ではこれは動作しない可能性があります ([#1696])
+* PDFMaker: review-jlreq で `serial_pagination=true, openany` を指定したときには前付の後の空ページが入らないようにしました ([#1711])
+
+## その他
+* GitHub Actions まわりを修正しました ([#1684], [#1691])
+* review-preproc: リファクタリングを行いました ([#1697])
+* 入れ子の箇条書きの処理をリファクタリングしました ([#1698])
+* Rubocop 1.12 に対応しました ([#1689], [#1692], [#1699], [#1700])
+* 各ビルダの `builder_init_file` メソッドで最初に `super` で基底 builder の `builder_init_file` を実行するようにしました ([#1702])
+* PDFMaker: FileUtils ライブラリを内部で使う際に、明示記法の `FIleUtils.foobar` を使うようにしました ([#1704])
+
+## コントリビューターのみなさん
+* [@odaki](https://github.com/odaki)
+* [@imamurayusuke](https://github.com/imamurayusuke)
+
+[#1674]: https://github.com/kmuto/review/issues/1674
+[#1683]: https://github.com/kmuto/review/pulls/1683
+[#1684]: https://github.com/kmuto/review/pulls/1684
+[#1685]: https://github.com/kmuto/review/pulls/1685
+[#1686]: https://github.com/kmuto/review/issues/1686
+[#1688]: https://github.com/kmuto/review/pulls/1688
+[#1689]: https://github.com/kmuto/review/pulls/1689
+[#1690]: https://github.com/kmuto/review/pulls/1690
+[#1691]: https://github.com/kmuto/review/pulls/1691
+[#1692]: https://github.com/kmuto/review/pulls/1692
+[#1696]: https://github.com/kmuto/review/issues/1696
+[#1697]: https://github.com/kmuto/review/pulls/1697
+[#1698]: https://github.com/kmuto/review/pulls/1698
+[#1699]: https://github.com/kmuto/review/pulls/1699
+[#1700]: https://github.com/kmuto/review/pulls/1700
+[#1702]: https://github.com/kmuto/review/pulls/1702
+[#1704]: https://github.com/kmuto/review/pulls/1704
+[#1706]: https://github.com/kmuto/review/issues/1706
+[#1711]: https://github.com/kmuto/review/issues/1711
+
 # Version 5.1.1
 ## バグ修正
 * `review-preproc` がエラーになるのを修正しました ([#1679])
