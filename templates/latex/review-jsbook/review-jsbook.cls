@@ -22,7 +22,7 @@
 \IfFileExists{plautopatch.sty}{\RequirePackage{plautopatch}}{}
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{review-jsbook}
-  [2021/01/12 v5.1 Re:VIEW pLaTeX class modified for jsbook.cls]
+  [2021/08/23 v5.2 Re:VIEW pLaTeX class modified for jsbook.cls]
 
 \def\recls@error{\ClassError{review-jsbook}}
 \def\recls@warning{\ClassWarning{review-jsbook}}
@@ -44,7 +44,10 @@
 \PassOptionsToPackage{nosetpagesize}{graphicx}%%for TL16 or higher version
 }{}
 
-\RequirePackage{xkeyval,everypage}%%,etoolbox
+\RequirePackage{xkeyval}%%,etoolbox
+\IfFileExists{everypage-1x.sty}{% is bundled in TL20 or higher
+\RequirePackage{everypage-1x}
+}{\RequirePackage{everypage}}
 
 %% useful helpers
 \newcommand\recls@get@p@[2]{%
