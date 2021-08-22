@@ -22,7 +22,7 @@
 \IfFileExists{plautopatch.sty}{\RequirePackage{plautopatch}}{}
 \NeedsTeXFormat{pLaTeX2e}
 \ProvidesClass{review-jsbook}
-  [2021/08/23 v5.2 Re:VIEW pLaTeX class modified for jsbook.cls]
+  [2021/08/23 v5.3 Re:VIEW pLaTeX class modified for jsbook.cls]
 
 \def\recls@error{\ClassError{review-jsbook}}
 \def\recls@warning{\ClassWarning{review-jsbook}}
