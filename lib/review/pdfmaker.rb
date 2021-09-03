@@ -446,6 +446,10 @@ module ReVIEW
           end
       end
 
+      if @config['coverimage'] && !File.exist?(File.join(@config['imagedir'], @config['coverimage']))
+        raise ReVIEW::ConfigError, "coverimage #{@config['coverimage']} is not found."
+      end
+
       @locale_latex = {}
       part_tuple = I18n.get('part').split(/%[A-Za-z]{1,3}/, 2)
       chapter_tuple = I18n.get('chapter').split(/%[A-Za-z]{1,3}/, 2)
