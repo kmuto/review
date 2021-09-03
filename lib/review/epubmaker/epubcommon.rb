@@ -1,6 +1,6 @@
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2019 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2021 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -70,7 +70,7 @@ module ReVIEW
           item = contents.find { |content| content.coverimage?(config['coverimage']) }
 
           unless item
-            raise "coverimage #{config['coverimage']} not found. Abort."
+            raise ApplicationError, "coverimage #{config['coverimage']} not found. Abort."
           end
 
           %Q(    <meta name="cover" content="#{item.id}"/>\n)
@@ -107,7 +107,7 @@ module ReVIEW
 
         if config['coverimage']
           @coverimage_src = coverimage
-          raise "coverimage #{config['coverimage']} not found. Abort." unless @coverimage_src
+          raise ApplicationError, "coverimage #{config['coverimage']} not found. Abort." unless @coverimage_src
         end
         @body = ReVIEW::Template.generate(path: './html/_cover.html.erb', binding: binding)
 
@@ -338,7 +338,7 @@ module ReVIEW
 
           fname = "#{basedir}/#{item.file}"
           unless File.exist?(fname)
-            raise "#{fname} is not found."
+            raise ApplicationError, "#{fname} is not found."
           end
 
           FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
