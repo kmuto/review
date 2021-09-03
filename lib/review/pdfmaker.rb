@@ -318,12 +318,16 @@ module ReVIEW
     end
 
     def make_custom_page(file)
-      file_sty = file.to_s.sub(/\.[^.]+\Z/, '.tex')
-      if File.exist?(file_sty)
-        return File.read(file_sty)
+      if file.nil?
+        return nil
       end
 
-      nil
+      file_sty = file.to_s.sub(/\.[^.]+\Z/, '.tex')
+      if File.exist?(file_sty)
+        File.read(file_sty)
+      else
+        raise ReVIEW::ConfigError, "File #{file} is not found."
+      end
     end
 
     def join_with_separator(value, sep)
@@ -471,6 +475,8 @@ module ReVIEW
         result << "%% END: config-local.tex.erb\n"
       end
       result
+    rescue StandardError => e
+      error! "template or configuration error: #{e.message}"
     end
 
     def template_content
