@@ -167,6 +167,25 @@ class PDFMakerTest < Test::Unit::TestCase
     end
   end
 
+  def test_template_content_with_invalid_localconfig
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        Dir.mkdir('layouts')
+        File.write(File.join('layouts', 'config-local.tex.erb'), %q(<%= not_existed_method %>\n))
+        @maker.basedir = Dir.pwd
+        @maker.erb_config
+        @maker.instance_eval do
+          def error!(msg)
+            msg
+          end
+        end
+        error_msg = @maker.template_content
+        assert_match(/template or configuration error:/, error_msg)
+        assert_match(/\(erb\):1:in `latex_config': undefined local variable or method `not_existed_method'/, error_msg)
+      end
+    end
+  end
+
   def test_gettemplate_with_backmatter
     @config.merge!(
       'backcover' => 'backcover.tex',
