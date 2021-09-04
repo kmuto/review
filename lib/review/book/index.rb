@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -123,6 +123,9 @@ module ReVIEW
     end
 
     class FootnoteIndex < Index
+    end
+
+    class EndnoteIndex < Index
     end
 
     class ImageIndex < Index

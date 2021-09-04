@@ -94,6 +94,8 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal 'unknown column: unknown|column1', e.message
     e = assert_raises(ReVIEW::ApplicationError) { b.inline_fn('unknown|footnote1') }
     assert_equal 'unknown footnote: unknown|footnote1', e.message
+    e = assert_raises(ReVIEW::ApplicationError) { b.inline_endnote('endnote1') }
+    assert_equal 'unknown endnote: endnote1', e.message
   end
 
   def test_nest_error

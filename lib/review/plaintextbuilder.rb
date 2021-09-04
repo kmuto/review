@@ -74,6 +74,7 @@ module ReVIEW
     private :blank
 
     def result
+      check_printendnotes
       solve_nest(@output.string)
     end
 

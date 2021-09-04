@@ -189,6 +189,26 @@ E
     end
   end
 
+  def test_endnote_index
+    content = <<E
+//footnote[abc][textabc...]
+//footnote[def][textdef...]
+//footnote[xyz][textxyz...]
+//endnote[abc][textabc...]
+//endnote[def][textdef...]
+//endnote[xyz][textxyz...]
+//list[def][def-list]{
+//}
+//list[others][others-list]{
+//}
+E
+    do_test_index(content, Book::EndnoteIndex, :endnote_index, :endnote) do |ch|
+      assert_raises ReVIEW::KeyError do
+        ch.endnote('xyz2')
+      end
+    end
+  end
+
   def test_bibpaper
     do_test_index(<<E, Book::BibpaperIndex, :bibpaper_index, :bibpaper, filename: 'bib.re')
 //bibpaper[abc][text...]

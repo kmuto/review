@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
 #
 # This program is free software.
@@ -288,6 +288,24 @@ module ReVIEW
       "【注#{@chapter.footnote(id).number}】"
     rescue KeyError
       app_error "unknown footnote: #{id}"
+    end
+
+    def inline_endnote(id)
+      "【後注#{@chapter.endnote(id).number}】"
+    rescue KeyError
+      app_error "unknown endnote: #{id}"
+    end
+
+    def endnote_begin
+      puts '◆→開始:後注←◆'
+    end
+
+    def endnote_end
+      puts '◆→終了:後注←◆'
+    end
+
+    def endnote_item(id)
+      puts "【後注#{@chapter.endnote(id).number}】#{compile_inline(@chapter.endnote(id).content)}"
     end
 
     def compile_ruby(base, ruby)

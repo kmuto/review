@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 5.1.
+This document explains about the format of Re:VIEW 5.3.
 
 ## Paragraph
 
@@ -551,6 +551,7 @@ Usage:
 ```
 You can get the packages from support site for the book.@<fn>{site}
 You should get and install it before reading the book.
+
 //footnote[site][support site of the book: http://i.loveruby.net/ja/stdcompiler ]
 ```
 
@@ -571,6 +572,34 @@ And you cannot use footnote and footnotemark/footnotetext at the same time.
 Note that with this option, Re:VIEW use footnotemark and footnotetext instead of normal footnote.
 There are some constraints to use this option.
 You cannot use footnote and footnotemark/footnotetext at the same time.
+
+## Endnotes
+
+You can use `//endnote` to write endnotes.
+
+Usage:
+
+```
+You can get the packages from support site for the book.@<endnote>{site}
+You should get and install it before reading the book.
+
+//endnote[site][support site of the book: http://i.loveruby.net/ja/stdcompiler ]
+```
+
+`@<endnote>{site}` in source are replaced by endnote marks, and the phrase "support site of .."
+is stored for printing later.
+
+To print stored endnotes, place "`//printendnotes`" where you want to write down them (usually at the end of the chapter).
+
+```
+ ...
+
+==== Endnote
+
+//printendnotes
+```
+
+It is not possible to create an endnote that spans multiple chapters.
 
 ## Bibliography
 

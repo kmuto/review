@@ -58,6 +58,19 @@ class IndexTest < Test::Unit::TestCase
     # rubocop:enable Style/PreferredHashMethods
   end
 
+  def test_endnote_index
+    compile_block("//endnote[foo][bar]\n//printendnotes\n")
+    endnote = @chapter.endnote_index
+    items = endnote.to_a
+    item = items[0]
+    assert_equal 'foo', item.id
+    assert_equal 'bar', item.content
+    assert_equal true, endnote.key?('foo')
+    # rubocop:disable Style/PreferredHashMethods
+    assert_equal true, endnote.has_key?('foo')
+    # rubocop:enable Style/PreferredHashMethods
+  end
+
   def test_headline_index
     src = <<-EOB
 = chap1
