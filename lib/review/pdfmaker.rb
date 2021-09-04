@@ -479,8 +479,6 @@ module ReVIEW
         result << "%% END: config-local.tex.erb\n"
       end
       result
-    rescue StandardError => e
-      error! "template or configuration error: #{e.message}"
     end
 
     def template_content
@@ -496,6 +494,8 @@ module ReVIEW
         template_path = 'layouts/layout.tex.erb'
       end
       ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
+    rescue => e
+      error! "template or configuration error: #{e.full_message}"
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
