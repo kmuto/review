@@ -255,7 +255,7 @@ Tips。@<b>{太字bold}@<i>{italicイタ}@<tt>{等幅code}
 #@# doorquote、bpo、talk、graph、address、box、linebreak、pagebreak、hr、comment、abbr、acronym、dfn、kbd、q、samp、var、big、small、del、ins、recipe、dtp、raw、embed、include
 
 == 後注
-後注は脚注と同様の書式で、@<tt>{//endnote}で内容@<endnote>{end1}、@<tt>{@<endnote>}で参照します@<endnote>{end2}。後注は@<tt>{//printendnotes}を書いた箇所にまとめて書き出されます。ここではファイル末尾に置いています。
+後注は脚注と同様の書式で、@<tt>{//endnote}で内容@<endnote>{end1}、@<tt>{@}@<tt>{<endnote>}で参照します@<endnote>{end2}。後注は@<tt>{//printendnotes}を書いた箇所にまとめて書き出されます。ここではファイル末尾に置いています。
 
 //endnote[end1][後注その1です。]
 //endnote[end2][後注その2です。]
@@ -368,5 +368,5 @@ labelで定義したラベルへの参照の例です。EPUBだと@<href>{#inlin
 
 idx, hidxいずれも=見出しの中には入れないようにし、後続の段落先頭にhidxで入れるように注意します（入れてしまうと目次などがおかしくなります）。
 
-===== 後注
+==== 後注
 //printendnotes

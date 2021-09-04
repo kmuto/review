@@ -1160,6 +1160,7 @@ module ReVIEW
     end
 
     def printendnotes
+      @shown_endnotes = true
       blank
       puts '\theendnotes'
       blank

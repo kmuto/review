@@ -106,6 +106,19 @@ EOS
     assert_equal %Q(test <span class="red">コメント</span> test2), actual
   end
 
+  def test_endnote
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//endnote[foo][bar]\n\n@<endnote>{foo}\n") }
+    assert_equal '//endnote is found but //printendnotes is not found.', e.message
+
+    actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
+    expected = <<-'EOS'
+<sup>(1)</sup>
+
+(1) bar
+EOS
+    assert_equal expected, actual
+  end
+
   def test_inline_hd_chap
     def @chapter.headline_index
       item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st')
