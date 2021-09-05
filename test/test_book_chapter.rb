@@ -1,4 +1,5 @@
 require 'book_test_helper'
+
 class ChapterTest < Test::Unit::TestCase
   include BookTestHelper
 
@@ -174,6 +175,7 @@ E
 
   def test_footnote_index
     content = <<E
+@<fn>{abc}@<fn>{def}@<fn>{xyz}
 //footnote[abc][textabc...]
 //footnote[def][textdef...]
 //footnote[xyz][textxyz...]
@@ -191,6 +193,7 @@ E
 
   def test_endnote_index
     content = <<E
+@<fn>{abc}@<fn>{def}@<fn>{xyz}@<endnote>{abc}@<endnote>{def}@<endnote>{xyz}
 //footnote[abc][textabc...]
 //footnote[def][textdef...]
 //footnote[xyz][textxyz...]
