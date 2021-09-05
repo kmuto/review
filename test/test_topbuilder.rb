@@ -999,6 +999,20 @@ EOB
     end
   end
 
+  def test_endnote
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//endnote[foo][bar]\n\n@<endnote>{foo}\n") }
+    assert_equal '//endnote is found but //printendnotes is not found.', e.message
+
+    actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
+    expected = <<-'EOS'
+【後注1】
+◆→開始:後注←◆
+【後注1】bar
+◆→終了:後注←◆
+EOS
+    assert_equal expected, actual
+  end
+
   def test_inline_unknown
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_match(/unknown image: n/, @log_io.string)
@@ -1006,6 +1020,10 @@ EOB
     @log_io.string = ''
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_match(/unknown footnote: n/, @log_io.string)
+
+    @log_io.string = ''
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<endnote>{n}\n") }
+    assert_match(/unknown endnote: n/, @log_io.string)
 
     @log_io.string = ''
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }

@@ -2322,6 +2322,43 @@ EOS
     assert_equal expected, fn
   end
 
+  def test_endnote
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//endnote[foo][bar]\n\n@<endnote>{foo}\n") }
+    assert_equal '//endnote is found but //printendnotes is not found.', e.message
+
+    actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
+    expected = <<-'EOS'
+<p><a id="endnoteb-foo" href="#endnote-foo" class="noteref" epub:type="noteref">(1)</a></p>
+<div class="endnotes">
+<div class="endnote" id="endnote-foo"><p class="endnote">(1) bar</p></div>
+</div>
+EOS
+    assert_equal expected, actual
+
+    @book.config['epubmaker'] ||= {}
+    @book.config['epubmaker']['back_footnote'] = true
+    actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
+    expected = <<-'EOS'
+<p><a id="endnoteb-foo" href="#endnote-foo" class="noteref" epub:type="noteref">(1)</a></p>
+<div class="endnotes">
+<div class="endnote" id="endnote-foo"><p class="endnote"><a href="#endnoteb-foo">⏎</a>(1) bar</p></div>
+</div>
+EOS
+    assert_equal expected, actual
+
+    I18n.set('html_endnote_textmark', '+%s:')
+    I18n.set('html_endnote_refmark', '+%s:')
+    I18n.set('html_footnote_backmark', '←')
+    actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
+    expected = <<-'EOS'
+<p><a id="endnoteb-foo" href="#endnote-foo" class="noteref" epub:type="noteref">+1:</a></p>
+<div class="endnotes">
+<div class="endnote" id="endnote-foo"><p class="endnote"><a href="#endnoteb-foo">←</a>+1:bar</p></div>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_inline_hd
     book = ReVIEW::Book::Base.new
     book.catalog = ReVIEW::Catalog.new('CHAPS' => %w[ch1.re ch2.re])
@@ -2868,6 +2905,8 @@ EOB
     assert_match(/unknown image: n/, @log_io.string)
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_match(/unknown footnote: n/, @log_io.string)
+    assert_raises(ReVIEW::ApplicationError) { compile_block("@<endnote>{n}\n") }
+    assert_match(/unknown endnote: n/, @log_io.string)
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_match(/unknown headline: n/, @log_io.string)
     %w[list table column].each do |name|

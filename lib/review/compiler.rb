@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2020 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2021 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -196,6 +196,8 @@ module ReVIEW
     defminicolumn :notice, 0..1
 
     defsingle :footnote, 2
+    defsingle :endnote, 2
+    defsingle :printendnotes, 0
     defsingle :noindent, 0
     defsingle :blankline, 0
     defsingle :pagebreak, 0
@@ -220,6 +222,7 @@ module ReVIEW
     definline :table
     definline :eq
     definline :fn
+    definline :endnote
     definline :kw
     definline :ruby
     definline :bou

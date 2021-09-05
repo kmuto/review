@@ -98,6 +98,8 @@ module ReVIEW
     private :puts
 
     def result
+      check_printendnotes
+
       if @chapter.is_a?(ReVIEW::Book::Part) && !@book.config.check_version('2', exception: false)
         puts '\end{reviewpart}'
       end
@@ -1149,6 +1151,19 @@ module ReVIEW
       end
     rescue KeyError
       app_error "unknown footnote: #{id}"
+    end
+
+    def inline_endnote(id)
+      macro('endnote', compile_inline(@chapter.endnote(id).content.strip))
+    rescue KeyError
+      app_error "unknown footnote: #{id}"
+    end
+
+    def printendnotes
+      @shown_endnotes = true
+      blank
+      puts '\theendnotes'
+      blank
     end
 
     BOUTEN = '・'.freeze

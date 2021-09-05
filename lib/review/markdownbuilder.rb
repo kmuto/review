@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2020 KADO Masanori, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2013-2021 KADO Masanori, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -359,6 +359,14 @@ module ReVIEW
 
     def inline_fn(id)
       "[^#{id}]"
+    end
+
+    def inline_endnote(id)
+      "<sup>#{I18n.t('html_endnote_refmark', @chapter.endnote(id).number)}</sup>"
+    end
+
+    def endnote_item(id)
+      puts "#{I18n.t('html_endnote_textmark', @chapter.endnote(id).number)}#{compile_inline(@chapter.endnote(id).content)}"
     end
 
     def inline_br(_str)

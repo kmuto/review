@@ -111,6 +111,8 @@ module ReVIEW
     end
 
     def result
+      check_printendnotes
+
       # flush all `</section>`
       if use_section?
         print close_sections
@@ -825,6 +827,22 @@ module ReVIEW
       end
     end
 
+    def endnote_begin
+      puts %Q(<div class="endnotes">)
+    end
+
+    def endnote_end
+      puts %Q(</div>)
+    end
+
+    def endnote_item(id)
+      back = ''
+      if @book.config['epubmaker'] && @book.config['epubmaker']['back_footnote']
+        back = %Q(<a href="#endnoteb-#{normalize_id(id)}">#{I18n.t('html_footnote_backmark')}</a>)
+      end
+      puts %Q(<div class="endnote" id="endnote-#{normalize_id(id)}"><p class="endnote">#{back}#{I18n.t('html_endnote_textmark', @chapter.endnote(id).number)}#{compile_inline(@chapter.endnote(id).content)}</p></div>)
+    end
+
     def indepimage(lines, id, caption = '', metric = nil)
       metrics = parse_metric('html', metric)
       caption = '' unless caption.present?
@@ -940,6 +958,12 @@ EOS
       end
     rescue KeyError
       app_error "unknown footnote: #{id}"
+    end
+
+    def inline_endnote(id)
+      %Q(<a id="endnoteb-#{normalize_id(id)}" href="#endnote-#{normalize_id(id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', @chapter.endnote(id).number)}</a>)
+    rescue KeyError
+      app_error "unknown endnote: #{id}"
     end
 
     def compile_ruby(base, ruby)

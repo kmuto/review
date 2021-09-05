@@ -86,6 +86,7 @@ module ReVIEW
     private :blank
 
     def result
+      check_printendnotes
       solve_nest(@output.string)
     end
 
@@ -365,6 +366,14 @@ module ReVIEW
 
     def inline_fn(id)
       " [##{id.sub(' ', '_')}]_ "
+    end
+
+    def inline_endnote(id)
+      " [(#{@chapter.endnote(id).number})]_ "
+    end
+
+    def endnote_item(id)
+      puts ".. [(#{@chapter.endnote(id).number})] #{compile_inline(@chapter.endnote(id).content)}"
     end
 
     def compile_ruby(base, ruby)

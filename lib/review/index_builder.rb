@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -13,7 +13,8 @@ require 'review/sec_counter'
 
 module ReVIEW
   class IndexBuilder < Builder
-    attr_reader :list_index, :table_index, :equation_index, :footnote_index,
+    attr_reader :list_index, :table_index, :equation_index,
+                :footnote_index, :endnote_index,
                 :numberless_image_index, :image_index, :icon_index, :indepimage_index,
                 :headline_index, :column_index, :bibpaper_index
 
@@ -58,6 +59,7 @@ module ReVIEW
       @table_index = ReVIEW::Book::TableIndex.new
       @equation_index = ReVIEW::Book::EquationIndex.new
       @footnote_index = ReVIEW::Book::FootnoteIndex.new
+      @endnote_index = ReVIEW::Book::EndnoteIndex.new
       @headline_index = ReVIEW::Book::HeadlineIndex.new(@chapter)
       @column_index = ReVIEW::Book::ColumnIndex.new
       @chapter_index = ReVIEW::Book::ChapterIndex.new
@@ -312,6 +314,12 @@ module ReVIEW
       @footnote_index.add_item(item)
     end
 
+    def endnote(id, str)
+      check_id(id)
+      item = ReVIEW::Book::Index::Item.new(id, @endnote_index.size + 1, str)
+      @endnote_index.add_item(item)
+    end
+
     def indepimage(_lines, id, _caption = '', _metric = nil)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @indepimage_index.size + 1)
@@ -352,6 +360,9 @@ module ReVIEW
     def noindent
     end
 
+    def printendnotes
+    end
+
     def compile_inline(s)
       @compiler.text(s)
     end
@@ -389,6 +400,10 @@ module ReVIEW
     end
 
     def inline_fn(_id)
+      ''
+    end
+
+    def inline_endnote(_id)
       ''
     end
 

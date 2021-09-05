@@ -517,6 +517,19 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_endnote
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//endnote[foo][bar]\n\n@<endnote>{foo}\n") }
+    assert_equal '//endnote is found but //printendnotes is not found.', e.message
+
+    actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
+    expected = <<-'EOS'
+ [(1)]_ 
+
+.. [(1)] bar
+EOS
+    assert_equal expected, actual
+  end
+
   def test_inline_raw0
     assert_equal 'normal', compile_inline('@<raw>{normal}')
   end

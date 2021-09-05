@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -78,6 +78,8 @@ module ReVIEW
     end
 
     def result
+      check_printendnotes
+
       s = ''
       if @secttags
         s += '</sect4>' if @subsubsubsection > 0
@@ -658,6 +660,24 @@ module ReVIEW
       %Q(<footnote>#{compile_inline(@chapter.footnote(id).content.strip)}</footnote>)
     rescue KeyError
       app_error "unknown footnote: #{id}"
+    end
+
+    def inline_endnote(id)
+      %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(#{@chapter.endnote(id).number})</span>)
+    rescue KeyError
+      app_error "unknown endnote: #{id}"
+    end
+
+    def endnote_begin
+      puts '<endnotes>'
+    end
+
+    def endnote_end
+      puts '</endnotes>'
+    end
+
+    def endnote_item(id)
+      puts %Q(<endnote id='endnoteb-#{normalize_id(id)}'><span type='endnotenumber'>(#{@chapter.endnote(id).number})</span>\t#{compile_inline(@chapter.endnote(id).content)}</endnote>)
     end
 
     def compile_ruby(base, ruby)

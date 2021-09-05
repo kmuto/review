@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2017 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2021 Minero Aoki, Kenshi Muto
 #               2002-2008 Minero Aoki
 #
 # This program is free software.
@@ -18,7 +18,8 @@ module ReVIEW
       attr_reader :lines
       attr_accessor :content
 
-      attr_reader :list_index, :table_index, :equation_index, :footnote_index,
+      attr_reader :list_index, :table_index, :equation_index,
+                  :footnote_index, :endnote_index,
                   :numberless_image_index, :image_index, :icon_index, :indepimage_index,
                   :headline_index, :column_index
 
@@ -56,6 +57,7 @@ module ReVIEW
         @table_index = @indexes.table_index
         @equation_index = @indexes.equation_index
         @footnote_index = @indexes.footnote_index
+        @endnote_index = @indexes.endnote_index
         @headline_index = @indexes.headline_index
         @column_index = @indexes.column_index
         if use_bib
@@ -114,6 +116,14 @@ module ReVIEW
 
       def footnote(id)
         footnote_index[id]
+      end
+
+      def endnote(id)
+        endnote_index[id]
+      end
+
+      def endnotes
+        endnote_index
       end
 
       def image(id)

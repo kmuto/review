@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2020 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2021 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -42,6 +42,7 @@ module ReVIEW
       @doc_status = {}
       @dictionary = {}
       @img_math = img_math
+      @shown_endnotes = true
     end
 
     def bind(compiler, chapter, location)
@@ -107,7 +108,14 @@ module ReVIEW
       end
     end
 
+    def check_printendnotes
+      if @shown_endnotes.nil?
+        app_error '//endnote is found but //printendnotes is not found.'
+      end
+    end
+
     def result
+      check_printendnotes
       solve_nest(@output.string)
     end
 
@@ -273,17 +281,28 @@ module ReVIEW
       table(lines, nil, caption)
     end
 
-    # def footnote(id, str)
-    #   @footnotes.push [id, str]
-    # end
-    #
-    # def flush_footnote
-    #   footnote_begin
-    #   @footnotes.each do |id, str|
-    #     footnote_item(id, str)
-    #   end
-    #   footnote_end
-    # end
+    def printendnotes
+      @shown_endnotes = true
+      endnote_begin
+      @chapter.endnotes.each do |en|
+        endnote_item(en.id)
+      end
+      endnote_end
+    end
+
+    def endnote(_id, _str)
+      @shown_endnotes = nil
+    end
+
+    def endnote_begin
+    end
+
+    def endnote_end
+    end
+
+    def endnote_item(id)
+      puts "(#{@chapter.endnote(id).number}) #{compile_inline(@chapter.endnote(id).content)}"
+    end
 
     def blankline
       puts ''
@@ -369,6 +388,12 @@ module ReVIEW
       @chapter.footnote(id).content
     rescue KeyError
       app_error "unknown footnote: #{id}"
+    end
+
+    def inline_endnote(id)
+      "(#{@chapter.endnote(id).number})"
+    rescue KeyError
+      app_error "unknown endnote: #{id}"
     end
 
     def inline_bou(str)
