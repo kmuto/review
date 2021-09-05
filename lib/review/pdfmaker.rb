@@ -326,7 +326,7 @@ module ReVIEW
       if File.exist?(file_sty)
         File.read(file_sty)
       else
-        raise ReVIEW::ConfigError, "File #{file} is not found."
+        warn "File #{file_sty} is not found."
       end
     end
 
