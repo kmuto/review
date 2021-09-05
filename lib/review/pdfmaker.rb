@@ -495,7 +495,12 @@ module ReVIEW
       end
       ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
     rescue => e
-      error! "template or configuration error: #{e.full_message(highlight: false)}"
+      if defined?(e.full_message)
+        error! "template or configuration error: #{e.full_message(highlight: false)}"
+      else
+        # <= Ruby 2.4
+        error! "template or configuration error: #{e.message}"
+      end
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
