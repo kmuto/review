@@ -318,12 +318,16 @@ module ReVIEW
     end
 
     def make_custom_page(file)
-      file_sty = file.to_s.sub(/\.[^.]+\Z/, '.tex')
-      if File.exist?(file_sty)
-        return File.read(file_sty)
+      if file.nil?
+        return nil
       end
 
-      nil
+      file_sty = file.to_s.sub(/\.[^.]+\Z/, '.tex')
+      if File.exist?(file_sty)
+        File.read(file_sty)
+      else
+        raise ReVIEW::ConfigError, "File #{file} is not found."
+      end
     end
 
     def join_with_separator(value, sep)
@@ -442,6 +446,10 @@ module ReVIEW
           end
       end
 
+      if @config['coverimage'] && !File.exist?(File.join(@config['imagedir'], @config['coverimage']))
+        raise ReVIEW::ConfigError, "coverimage #{@config['coverimage']} is not found."
+      end
+
       @locale_latex = {}
       part_tuple = I18n.get('part').split(/%[A-Za-z]{1,3}/, 2)
       chapter_tuple = I18n.get('chapter').split(/%[A-Za-z]{1,3}/, 2)
@@ -486,6 +494,13 @@ module ReVIEW
         template_path = 'layouts/layout.tex.erb'
       end
       ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
+    rescue => e
+      if defined?(e.full_message)
+        error! "template or configuration error: #{e.full_message(highlight: false)}"
+      else
+        # <= Ruby 2.4
+        error! "template or configuration error: #{e.message}"
+      end
     end
 
     def copy_sty(dirname, copybase, extname = 'sty')
