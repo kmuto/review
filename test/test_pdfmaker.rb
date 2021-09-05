@@ -181,7 +181,7 @@ class PDFMakerTest < Test::Unit::TestCase
         end
         error_msg = @maker.template_content
         assert_match(/template or configuration error:/, error_msg)
-        assert_match(/\(erb\):1:in `latex_config': undefined local variable or method `not_existed_method'/, error_msg)
+        assert_match(/undefined local variable or method `not_existed_method'/, error_msg)
       end
     end
   end
