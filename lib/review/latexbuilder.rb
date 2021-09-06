@@ -1360,7 +1360,7 @@ module ReVIEW
     end
 
     def inline_tcy(str)
-      macro('rensuji', escape(str))
+      macro('reviewtcy', escape(str))
     end
 
     def inline_balloon(str)
