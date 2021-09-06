@@ -39,6 +39,9 @@
 \RequirePackage{fix-cm}%%\RequirePackage{fix-cm,exscale}
 \IfFileExists{latexrelease.sty}{}{\RequirePackage{fixltx2e}}
 
+%% amsmath: override \@ifstar with \new@ifnextchar in amsgen.sty
+\let\ltx@ifstar\@ifstar%%as \@ifstar of LaTeX kernel
+
 %% graphicx: added nosetpagesize
 \IfFileExists{platexrelease.sty}{%% is bundled in TL16 or higher release version
 \PassOptionsToPackage{nosetpagesize}{graphicx}%%for TL16 or higher version
@@ -152,7 +155,7 @@
   \xdef#1{\ifx\recls@hiddenfolio\@empty tombo,\fi#1}}
 
 %% \recls@set@hiddenfolio{<preset>}
-%% <preset>: default, marusho-ink (丸正インキ), nikko-pc (日光企画), 
+%% <preset>: default, marusho-ink (丸正インキ), nikko-pc (日光企画),
 %%    shippo (ねこのしっぽ)
 \def\recls@set@hiddenfolio#1{\ifx#1\@empty\else
   \@ifundefined{@makehiddenfolio@#1}{%
@@ -401,12 +404,29 @@
 \let\grnchry@gutter\recls@gutter
 \newcommand*\includefullpagegraphics{%
   \clearpage
-  \@ifstar
+  \ltx@ifstar
     {\@includefullpagegraphics}%
     {\thispagestyle{empty}\@includefullpagegraphics}
 }
 
 \newcommand*\@includefullpagegraphics[2][]{%
+  \iftdir
+    \vbox to \textheight{%
+      \ifodd\c@page
+        \vskip-\dimexpr\evensidemargin - \topskip + 1in\relax
+      \else
+        \vskip-\dimexpr\oddsidemargin - \topskip + 1in\relax
+      \fi
+      \vbox to \paperwidth{\vss
+        \hbox to \textwidth{%
+          \hskip-\grnchry@head\relax
+          \hbox to \paperheight{\hss
+            \rotatebox{90}{\includegraphics[#1]{#2}}%
+          \hss}%
+        \hss}%
+      \vss}%
+    \vss}%
+  \else
     \vbox to \textheight{%
       \vskip-\grnchry@head
       \vbox to \paperheight{\vss
@@ -422,6 +442,7 @@
         \hss}%
       \vss}%
     \vss}%
+  \fi
   \clearpage
 }
 
