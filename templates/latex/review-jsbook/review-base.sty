@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2021/09/04]
+\ProvidesClass{review-base}[2021/09/06]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -68,9 +68,12 @@
 \rubysetup{J}}{%
 \rubysetup{g}}
 
+\DeclareRobustCommand{\reviewtcy}[1]{\PackageError{review-base}{\reviewtcy is not allowed in yoko mode}{}}
+
 \ifthenelse{\equal{\review@documentclass}{utbook} \OR \equal{\review@documentclass}{tbook}}{%
 \newcommand{\headfont}{\gtfamily\sffamily\bfseries}
 \RequirePackage{plext}
+\DeclareRobustCommand{\reviewtcy}[1]{\rensuji{#1}}
 }{%
 }
 

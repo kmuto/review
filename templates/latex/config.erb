@@ -124,6 +124,9 @@
   \ifdefined\reviewchapref\else% for 5.1.0 compatibility
     \newcommand{\reviewchapref}[2]{\hyperref[##2]{##1}}
   \fi
+  \ifdefined\reviewtcy\else% for 5.3.0 compatibility
+    \DeclareRobustCommand{\reviewtcy}[1]{\rensuji{##1}}
+  \fi
 }
 
 \makeatother
