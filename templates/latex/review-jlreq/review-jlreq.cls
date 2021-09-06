@@ -222,7 +222,7 @@
 \fi
 
 % 縦書き対処
-\ifvmode
+\if@tate
   \def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
     \RequirePackage{plext}
   \fi
@@ -358,7 +358,7 @@
 \newcounter{reclsendnote}
 \setcounter{reclsendnote}{0}
 \if@tate
-  \renewcommand*{\thereclsendnote}{\jlreq@open@bracket@before@space\inhibitglue（\jlreq@rensuji{\@arabic\c@reclsendnote}）\inhibitglue}
+  \renewcommand*{\thereclsendnote}{\jlreq@open@bracket@before@space\inhibitglue（\tatechuyoko{\@arabic\c@reclsendnote}）\inhibitglue}
 \else
   \renewcommand*{\thereclsendnote}{(\arabic{reclsendnote}\hbox{}）\inhibitglue}
 \fi

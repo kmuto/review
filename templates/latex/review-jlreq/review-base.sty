@@ -339,7 +339,11 @@
        \def\review@coverimageoption{width=\paperwidth,height=\paperheight}
     \fi
     \def\reviewcoverpagecont{%
-      \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
+      \if@tate
+        \expandafter\includefullpagegraphics\expandafter[angle=90,\review@coverimageoption]{\review@coverimage}
+      \else
+        \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
+      \fi
       \cleardoublepage
     }
   \fi
@@ -352,7 +356,7 @@
 \ifdefined\review@titlepage
   \ifthenelse{\isundefined{\review@titlefile}}{%
     \def\reviewtitlepagecont{%
-      \ifvmode% 縦書き大扉
+      \if@tate% 縦書き大扉
         \begin{titlepage}
         \thispagestyle{empty}
           \begin{minipage}<y>{\textheight}
@@ -443,7 +447,7 @@
   \ifthenelse{\isundefined{\review@colophonfile}}{%
     \def\reviewcolophonpagecont{%
       \reviewcolophon
-      \ifvmode% 縦書き奥付
+      \if@tate% 縦書き奥付
         \thispagestyle{empty}
         \hfill
         \begin{minipage}<y>{\textheight}
