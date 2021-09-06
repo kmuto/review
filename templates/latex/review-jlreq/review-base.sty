@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2021/06/28]
+\ProvidesClass{review-base}[2021/09/06]
 % jlreq用基本設定
 \def\recls@tmp{luatex}\ifx\recls@tmp\recls@driver
   \hypersetup{
@@ -186,6 +186,7 @@
 \DeclareRobustCommand{\reviewunderline}[1]{\underline{#1}}% ulemかjumolineで上書き。デフォルトはulemにしている
 \DeclareRobustCommand{\reviewit}[1]{\textit{#1}}
 \DeclareRobustCommand{\reviewbold}[1]{\textbf{#1}}
+\DeclareRobustCommand{\reviewtcy}[1]{\tatechuyoko{#1}}
 
 % allow break line in tt
 % contributed by @zr_tex8r
