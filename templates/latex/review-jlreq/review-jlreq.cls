@@ -21,7 +21,7 @@
 
 \IfFileExists{plautopatch.sty}{\RequirePackage{plautopatch}}{}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2021/09/04 Re:VIEW 5.3 upLaTeX/LuaLaTeX class modified for jlreq.cls]
+\ProvidesClass{review-jlreq}[2021/09/06 Re:VIEW 5.3 upLaTeX/LuaLaTeX class modified for jlreq.cls]
 
 %% hook at end of reviewmacro
 \let\@endofreviewmacrohook\@empty
@@ -219,6 +219,17 @@
 
 \def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
   \RequirePackage{pxjahyper}
+\fi
+
+% 縦書き対処
+\ifvmode
+  \def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
+    \RequirePackage{plext}
+  \fi
+  \def\recls@tmp{lualatex}\ifx\recls@tmp\recls@engine
+    \RequirePackage{lltjext}
+  \fi
+  \jlreqsetup{frontmatter_pagebreak={}}% これを入れないと大扉前に白が入る
 \fi
 
 %% include fullpage graphics

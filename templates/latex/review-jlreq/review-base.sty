@@ -352,30 +352,65 @@
 \ifdefined\review@titlepage
   \ifthenelse{\isundefined{\review@titlefile}}{%
     \def\reviewtitlepagecont{%
-       \begin{titlepage}
-       \thispagestyle{empty}
-       \begin{center}%
-       \mbox{}%
-       \vskip5\zw
-       \reviewtitlefont%
-       {\Huge\review@booktitlename\par}%
-       \ifdefined\review@subtitlename
-         \vskip 1em%
-         {\Large\review@subtitlename\par}%
-       \fi
-       \vskip 15em%
-       {\huge
-       \lineskip .75em
-       \begin{tabular}[t]{p{\textwidth}}%
-       \centering\review@titlepageauthors
-       \end{tabular}\par}%
-       \vfill
-       {\large\review@date \review@intn@edition%
-         \hspace{2\zw}%
-         \review@intn@publishedby\par}%
-       \vskip4\zw\mbox{}
-       \end{center}%
-       \end{titlepage}\clearpage
+      \ifvmode% 縦書き大扉
+        \begin{titlepage}
+        \thispagestyle{empty}
+          \begin{minipage}<y>{\textheight}
+            \begin{center}
+              \mbox{}%
+              \vskip5\zw
+              \reviewtitlefont%
+              {\Huge\review@booktitlename\par}%
+              \ifdefined\review@subtitlename
+                \vskip 1em%
+                {\Large\review@subtitlename\par}%
+              \fi
+              \vskip 15em%
+              {\huge
+                \lineskip .75em
+                \begin{tabular}[t]{p{\textwidth}}%
+                  \centering\review@titlepageauthors
+                \end{tabular}\par}%
+            \end{center}
+          \end{minipage}
+          \hfill
+          \begin{minipage}<y>{\textheight}
+            \begin{center}
+              \reviewtitlefont%
+              {\large\review@date \review@intn@edition%
+                \hspace{2\zw}%
+                \review@intn@publishedby\par}%
+              \vskip4\zw\mbox{}
+            \end{center}
+          \end{minipage}
+        \end{titlepage}
+        \clearpage
+      \else% 横書き大扉
+        \begin{titlepage}
+        \thispagestyle{empty}
+        \begin{center}%
+        \mbox{}%
+        \vskip5\zw
+        \reviewtitlefont%
+        {\Huge\review@booktitlename\par}%
+        \ifdefined\review@subtitlename
+          \vskip 1em%
+          {\Large\review@subtitlename\par}%
+        \fi
+        \vskip 15em%
+        {\huge
+        \lineskip .75em
+        \begin{tabular}[t]{p{\textwidth}}%
+        \centering\review@titlepageauthors
+        \end{tabular}\par}%
+        \vfill
+        {\large\review@date \review@intn@edition%
+          \hspace{2\zw}%
+          \review@intn@publishedby\par}%
+        \vskip4\zw\mbox{}
+        \end{center}%
+        \end{titlepage}\clearpage
+      \fi
     }
   }{%
     \def\reviewtitlepagecont{\review@titlefile}
@@ -407,24 +442,47 @@
 \ifdefined\review@colophon
   \ifthenelse{\isundefined{\review@colophonfile}}{%
     \def\reviewcolophonpagecont{%
-\reviewcolophon
-\thispagestyle{empty}
-\vspace*{\fill}
-{\noindent\reviewtitlefont\Large\review@booktitlename}\\
-\ifdefined\review@subtitlename
-{\noindent\reviewtitlefont\large\review@subtitlename} \\
-\fi
-\rule[8pt]{\textwidth}{1pt} \\
-{\noindent\review@pubhistories}
+      \reviewcolophon
+      \ifvmode% 縦書き奥付
+        \thispagestyle{empty}
+        \hfill
+        \begin{minipage}<y>{\textheight}
+          {\noindent\reviewtitlefont\Large\review@booktitlename}\\
+          \ifdefined\review@subtitlename
+            {\noindent\reviewtitlefont\large\review@subtitlename} \\
+          \fi
+          \rule[8pt]{\textwidth}{1pt} \\
+          {\noindent\review@pubhistories}
+          \vspace{.5\Cvs}
 
-\begin{tabularx}{\dimexpr\textwidth-0.5em}{lX}
-\review@colophonnames
-\end{tabularx}
-　\\
-\rule[0pt]{\textwidth}{1pt} \\
-\ifdefined\review@rights
-\review@rights
-\fi
+          \begin{tabularx}{\dimexpr\textwidth-0.5em}{lX}
+            \review@colophonnames
+          \end{tabularx}%
+          　\\
+          \rule[0pt]{\textwidth}{1pt} \\
+          \ifdefined\review@rights
+            \review@rights
+          \fi
+        \end{minipage}
+      \else% 横書き奥付
+        \thispagestyle{empty}
+        \vspace*{\fill}
+        {\noindent\reviewtitlefont\Large\review@booktitlename}\\
+        \ifdefined\review@subtitlename
+          {\noindent\reviewtitlefont\large\review@subtitlename} \\
+        \fi
+        \rule[8pt]{\textwidth}{1pt} \\
+        {\noindent\review@pubhistories}
+
+        \begin{tabularx}{\dimexpr\textwidth-0.5em}{lX}
+          \review@colophonnames
+        \end{tabularx}%
+        　\\
+        \rule[0pt]{\textwidth}{1pt} \\
+        \ifdefined\review@rights
+          \review@rights
+        \fi
+      \fi
     }%
   }{%
     \def\reviewcolophonpagecont{\review@colophonfile}
