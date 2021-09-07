@@ -12,6 +12,8 @@ class IndexTest < Test::Unit::TestCase
     @builder = TOPBuilder.new
     @config = ReVIEW::Configure.create(config: { 'secnolevel' => 2, 'language' => 'ja' })
     @book = Book::Base.new(config: @config)
+    @log_io = StringIO.new
+    ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @compiler = ReVIEW::Compiler.new(@builder)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = Location.new(nil, nil)
@@ -21,16 +23,19 @@ class IndexTest < Test::Unit::TestCase
   end
 
   def test_footnote_index
-    compile_block("//footnote[foo][bar]\n")
+    compile_block("@<fn>{foo}\n//footnote[foo][bar]\n")
     fn = @chapter.footnote_index
     items = fn.to_a
     item = items[0]
     assert_equal 'foo', item.id
     assert_equal 'bar', item.content
+
+    compile_block("//footnote[foo][bar]\n")
+    assert_match(/ID foo is not referred/, @log_io.string)
   end
 
   def test_footnote_index_with_escape
-    compile_block('//footnote[foo][bar[\]buz]' + "\n")
+    compile_block("@<fn>{foo}\n" + '//footnote[foo][bar[\]buz]' + "\n")
     fn = @chapter.footnote_index
     items = fn.to_a
     item = items[0]
@@ -39,7 +44,7 @@ class IndexTest < Test::Unit::TestCase
   end
 
   def test_footnote_index_with_escape2
-    compile_block('//footnote[foo][bar\\a\\$buz]' + "\n")
+    compile_block("@<fn>{foo}\n" + '//footnote[foo][bar\\a\\$buz]' + "\n")
     fn = @chapter.footnote_index
     items = fn.to_a
     item = items[0]
@@ -48,7 +53,7 @@ class IndexTest < Test::Unit::TestCase
   end
 
   def test_footnote_index_key?
-    compile_block('//footnote[foo][bar]' + "\n")
+    compile_block("@<fn>{foo}\n" + '//footnote[foo][bar]' + "\n")
     fn = @chapter.footnote_index
     assert_equal true, fn.key?('foo')
 
@@ -59,7 +64,7 @@ class IndexTest < Test::Unit::TestCase
   end
 
   def test_endnote_index
-    compile_block("//endnote[foo][bar]\n//printendnotes\n")
+    compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
     endnote = @chapter.endnote_index
     items = endnote.to_a
     item = items[0]
@@ -69,6 +74,14 @@ class IndexTest < Test::Unit::TestCase
     # rubocop:disable Style/PreferredHashMethods
     assert_equal true, endnote.has_key?('foo')
     # rubocop:enable Style/PreferredHashMethods
+
+    e = assert_raises(ReVIEW::ApplicationError) do
+      compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n")
+    end
+    assert_equal '//endnote is found but //printendnotes is not found.', e.message
+
+    compile_block("//endnote[foo][bar]\n//printendnotes\n")
+    assert_match(/ID foo is not referred/, @log_io.string)
   end
 
   def test_headline_index

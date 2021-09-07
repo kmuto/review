@@ -21,7 +21,7 @@
 
 \IfFileExists{plautopatch.sty}{\RequirePackage{plautopatch}}{}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2021/09/06 Re:VIEW 5.3 upLaTeX/LuaLaTeX class modified for jlreq.cls]
+\ProvidesClass{review-jlreq}[2021/09/07 Re:VIEW 5.3 upLaTeX/LuaLaTeX class modified for jlreq.cls]
 
 %% hook at end of reviewmacro
 \let\@endofreviewmacrohook\@empty
@@ -31,6 +31,9 @@
 
 \RequirePackage{fix-cm}%%\RequirePackage{fix-cm,exscale}
 \IfFileExists{latexrelease.sty}{}{\RequirePackage{fixltx2e}}
+
+%% amsmath: override \@ifstar with \new@ifnextchar in amsgen.sty
+\let\ltx@ifstar\@ifstar%%as \@ifstar of LaTeX kernel
 
 %% graphicx: added nosetpagesize
 \IfFileExists{platexrelease.sty}{%% is bundled in TL16 or higher release version
@@ -237,12 +240,29 @@
 \edef\grnchry@gutter{\evensidemargin}
 \newcommand*\includefullpagegraphics{%
   \clearpage
-  \@ifstar
+  \ltx@ifstar
     {\@includefullpagegraphics}%
     {\thispagestyle{empty}\@includefullpagegraphics}
 }
 
 \newcommand*\@includefullpagegraphics[2][]{%
+  \if@tate
+    \vbox to \textheight{%
+      \ifodd\c@page
+        \vskip-\dimexpr\evensidemargin - \topskip + 1in\relax
+      \else
+        \vskip-\dimexpr\oddsidemargin - \topskip + 1in\relax
+      \fi
+      \vbox to \paperwidth{\vss
+        \hbox to \textwidth{%
+          \hskip-\grnchry@head\relax
+          \hbox to \paperheight{\hss
+            \rotatebox{90}{\includegraphics[#1]{#2}}%
+          \hss}%
+        \hss}%
+      \vss}%
+    \vss}%
+  \else
     \vbox to \textheight{%
       \vskip-\grnchry@head
       \vbox to \paperheight{\vss
@@ -258,6 +278,7 @@
         \hss}%
       \vss}%
     \vss}%
+  \fi
   \clearpage
 }
 

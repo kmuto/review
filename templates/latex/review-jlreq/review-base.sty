@@ -339,11 +339,7 @@
        \def\review@coverimageoption{width=\paperwidth,height=\paperheight}
     \fi
     \def\reviewcoverpagecont{%
-      \if@tate
-        \expandafter\includefullpagegraphics\expandafter[angle=90,\review@coverimageoption]{\review@coverimage}
-      \else
-        \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
-      \fi
+      \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
       \cleardoublepage
     }
   \fi

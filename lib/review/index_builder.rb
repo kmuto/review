@@ -54,6 +54,10 @@ module ReVIEW
     def builder_init_file
       super
       @headline_stack = []
+      @crossref = {
+        footnote: {},
+        endnote: {}
+      }
 
       @list_index = ReVIEW::Book::ListIndex.new
       @table_index = ReVIEW::Book::TableIndex.new
@@ -75,6 +79,14 @@ module ReVIEW
     private :builder_init_file
 
     def result
+      %i[footnote endnote].each do |name|
+        @crossref[name].each_pair do |k, v|
+          if v == 0
+            warn "#{@chapter.basename}: #{name} ID #{k} is not referred."
+          end
+        end
+      end
+
       nil
     end
 
@@ -249,56 +261,73 @@ module ReVIEW
 
     alias_method :lead, :read
 
-    def list(_lines, id, _caption, _lang = nil)
+    def list(lines, id, caption, _lang = nil)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @list_index.size + 1)
       @list_index.add_item(item)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
-    def source(_lines, _caption = nil, _lang = nil)
+    def source(lines, caption = nil, _lang = nil)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
-    def listnum(_lines, id, _caption, _lang = nil)
+    def listnum(lines, id, caption, _lang = nil)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @list_index.size + 1)
       @list_index.add_item(item)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
-    def emlist(lines, caption = nil, lang = nil)
+    def emlist(lines, caption = nil, _lang = nil)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
-    def emlistnum(lines, caption = nil, lang = nil)
+    def emlistnum(lines, caption = nil, _lang = nil)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
     def cmd(lines, caption = nil)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
     def quote(lines)
+      lines.each { |line| compile_inline(line) }
     end
 
     def image(_lines, id, caption, _metric = nil)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @image_index.size + 1, caption)
       @image_index.add_item(item)
+      compile_inline(caption)
     end
 
-    def table(_lines, id = nil, caption = nil)
+    def table(lines, id = nil, caption = nil)
       check_id(id)
       if id
         item = ReVIEW::Book::Index::Item.new(id, @table_index.size + 1, caption)
         @table_index.add_item(item)
       end
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
-    def emtable(_lines, _caption = nil)
+    def emtable(_lines, caption = nil)
       # item = ReVIEW::Book::TableIndex::Item.new(id, @table_index.size + 1)
       # @table_index << item
+      compile_inline(caption)
     end
 
     def comment(lines, comment = nil)
     end
 
-    def imgtable(_lines, id, _caption = nil, _metric = nil)
+    def imgtable(_lines, id, caption = nil, _metric = nil)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @table_index.size + 1)
       @table_index.add_item(item)
@@ -306,30 +335,37 @@ module ReVIEW
       ## to find image path
       item = ReVIEW::Book::Index::Item.new(id, @indepimage_index.size + 1)
       @indepimage_index.add_item(item)
+      compile_inline(caption)
     end
 
     def footnote(id, str)
       check_id(id)
+      @crossref[:footnote][id] ||= 0
       item = ReVIEW::Book::Index::Item.new(id, @footnote_index.size + 1, str)
       @footnote_index.add_item(item)
+      compile_inline(str)
     end
 
     def endnote(id, str)
       check_id(id)
+      @crossref[:endnote][id] ||= 0
       item = ReVIEW::Book::Index::Item.new(id, @endnote_index.size + 1, str)
       @endnote_index.add_item(item)
+      compile_inline(str)
     end
 
-    def indepimage(_lines, id, _caption = '', _metric = nil)
+    def indepimage(_lines, id, caption = '', _metric = nil)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @indepimage_index.size + 1)
       @indepimage_index.add_item(item)
+      compile_inline(caption)
     end
 
-    def numberlessimage(_lines, id, _caption = '', _metric = nil)
+    def numberlessimage(_lines, id, caption = '', _metric = nil)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @indepimage_index.size + 1)
       @indepimage_index.add_item(item)
+      compile_inline(caption)
     end
 
     def hr
@@ -342,10 +378,12 @@ module ReVIEW
     def blankline
     end
 
-    def flushright(_lines)
+    def flushright(lines)
+      lines.each { |line| compile_inline(line) }
     end
 
     def centering(lines)
+      lines.each { |line| compile_inline(line) }
     end
 
     def olnum(_num)
@@ -354,7 +392,8 @@ module ReVIEW
     def pagebreak
     end
 
-    def bpo(_lines)
+    def bpo(lines)
+      lines.each { |line| compile_inline(line) }
     end
 
     def noindent
@@ -399,11 +438,13 @@ module ReVIEW
       ''
     end
 
-    def inline_fn(_id)
+    def inline_fn(id)
+      @crossref[:footnote][id] = @crossref[:footnote][id] ? @crossref[:footnote][id] + 1 : 1
       ''
     end
 
-    def inline_endnote(_id)
+    def inline_endnote(id)
+      @crossref[:endnote][id] = @crossref[:endnote][id] ? @crossref[:endnote][id] + 1 : 1
       ''
     end
 
@@ -479,10 +520,12 @@ module ReVIEW
       ''
     end
 
-    def bibpaper(_lines, id, caption)
+    def bibpaper(lines, id, caption)
       check_id(id)
       item = ReVIEW::Book::Index::Item.new(id, @bibpaper_index.size + 1, caption)
       @bibpaper_index.add_item(item)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
     end
 
     def inline_hd(_id)
@@ -617,12 +660,13 @@ module ReVIEW
       # ignore in indexing
     end
 
-    def texequation(_lines, id = nil, _caption = '')
+    def texequation(_lines, id = nil, caption = '')
       check_id(id)
       if id
         item = ReVIEW::Book::Index::Item.new(id, @equation_index.size + 1)
         @equation_index.add_item(item)
       end
+      compile_inline(caption)
     end
 
     def get_chap(_chapter = nil)
@@ -633,7 +677,9 @@ module ReVIEW
       ''
     end
 
-    def captionblock(_type, _lines, _caption, _specialstyle = nil)
+    def captionblock(_type, lines, caption, _specialstyle = nil)
+      compile_inline(caption)
+      lines.each { |line| compile_inline(line) }
       ''
     end
 
