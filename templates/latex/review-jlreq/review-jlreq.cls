@@ -21,7 +21,7 @@
 
 \IfFileExists{plautopatch.sty}{\RequirePackage{plautopatch}}{}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{review-jlreq}[2021/09/04 Re:VIEW 5.3 upLaTeX/LuaLaTeX class modified for jlreq.cls]
+\ProvidesClass{review-jlreq}[2021/09/07 Re:VIEW 5.3 upLaTeX/LuaLaTeX class modified for jlreq.cls]
 
 %% hook at end of reviewmacro
 \let\@endofreviewmacrohook\@empty
@@ -347,7 +347,7 @@
 \newcounter{reclsendnote}
 \setcounter{reclsendnote}{0}
 \if@tate
-  \renewcommand*{\thereclsendnote}{\jlreq@open@bracket@before@space\inhibitglue（\jlreq@rensuji{\@arabic\c@reclsendnote}）\inhibitglue}
+  \renewcommand*{\thereclsendnote}{\jlreq@open@bracket@before@space\inhibitglue（\tatechuyoko{\@arabic\c@reclsendnote}）\inhibitglue}
 \else
   \renewcommand*{\thereclsendnote}{(\arabic{reclsendnote}\hbox{}）\inhibitglue}
 \fi
