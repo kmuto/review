@@ -235,7 +235,7 @@
 }
 
 \newcommand*\@includefullpagegraphics[2][]{%
-  \iftdir
+  \if@tate
     \vbox to \textheight{%
       \ifodd\c@page
         \vskip-\dimexpr\evensidemargin - \topskip + 1in\relax

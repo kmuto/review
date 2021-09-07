@@ -290,6 +290,9 @@
 % \typeout{!!! magscale: \jsc@magscale}
 % \typeout{!!! mag: \the\mag}%%=> 1000 -> OK
 
+%% compatibility for jlreq.cls
+\let\if@tate\iftdir
+
 %% override papersize with custom papersize
 \ifx\recls@paperwidth\@empty\else\ifx\recls@paperheight\@empty\else
   \setlength{\paperwidth}{\recls@paperwidth}
@@ -410,7 +413,7 @@
 }
 
 \newcommand*\@includefullpagegraphics[2][]{%
-  \iftdir
+  \if@tate
     \vbox to \textheight{%
       \ifodd\c@page
         \vskip-\dimexpr\evensidemargin - \topskip + 1in\relax
