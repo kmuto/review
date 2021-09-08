@@ -27,15 +27,15 @@ module ReVIEW
 
     def execute(*args)
       parse_options(args)
-      @config = ReVIEW::Configure.create(yamlfile: @yamlfile)
-      @book = ReVIEW::Book::Base.new('.', config: @config)
-      unless File.readable?(@yamlfile)
-        @logger.error("No such fiile or can't open #{@yamlfile}.")
-        exit 1
-      end
-      I18n.setup(@book.config['language'])
-
       begin
+        @config = ReVIEW::Configure.create(yamlfile: @yamlfile)
+        @book = ReVIEW::Book::Base.new('.', config: @config)
+        unless File.readable?(@yamlfile)
+          raise ReVIEW::FileNotFound, "No such fiile or can't open #{@yamlfile}."
+        end
+
+        I18n.setup(@book.config['language'])
+
         @book.each_part do |part|
           if part.number
             print_chapter_volume(part)
@@ -44,7 +44,7 @@ module ReVIEW
             print_chapter_volume(chap)
           end
         end
-      rescue ReVIEW::FileNotFound, ReVIEW::CompileError, ReVIEW::ApplicationError => e
+      rescue ReVIEW::ConfigError, ReVIEW::FileNotFound, ReVIEW::CompileError, ReVIEW::ApplicationError => e
         @logger.error e.message
         exit 1
       end
