@@ -69,12 +69,17 @@ module ReVIEW
 
     def execute(*args)
       parse_options(args)
-      @config = ReVIEW::Configure.create(yamlfile: @yamlfile)
-      @book = ReVIEW::Book::Base.new('.', config: @config)
-      unless File.readable?(@yamlfile)
-        @logger.error("No such fiile or can't open #{@yamlfile}.")
+      begin
+        @config = ReVIEW::Configure.create(yamlfile: @yamlfile)
+        @book = ReVIEW::Book::Base.new('.', config: @config)
+        unless File.readable?(@yamlfile)
+          raise ReVIEW::FileNotFound, "No such fiile or can't open #{@yamlfile}."
+        end
+      rescue ReVIEW::ConfigError, ReVIEW::FileNotFound, ReVIEW::CompileError, ReVIEW::ApplicationError => e
+        @logger.error e.message
         exit 1
       end
+
       I18n.setup(@config['language'])
 
       if @detail
