@@ -108,7 +108,7 @@ EOS
 
   def test_endnote
     e = assert_raises(ReVIEW::ApplicationError) { compile_block("//endnote[foo][bar]\n\n@<endnote>{foo}\n") }
-    assert_equal '//endnote is found but //printendnotes is not found.', e.message
+    assert_equal ':4: //endnote is found but //printendnotes is not found.', e.message
 
     actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
     expected = <<-'EOS'

@@ -104,16 +104,16 @@ class BuidlerTest < Test::Unit::TestCase
     assert_equal '', b.solve_nest('')
     b.children = ['dl']
     e = assert_raises(ReVIEW::ApplicationError) { b.solve_nest('') }
-    assert_equal '//beginchild of dl misses //endchild', e.message
+    assert_equal ': //beginchild of dl misses //endchild', e.message
     b.children = ['ul', 'dl', 'ol']
     e = assert_raises(ReVIEW::ApplicationError) { b.solve_nest('') }
-    assert_equal '//beginchild of ol,dl,ul misses //endchild', e.message
+    assert_equal ': //beginchild of ol,dl,ul misses //endchild', e.message
 
     assert_equal "\u0001→/ol←\u0001", b.endchild
     assert_equal "\u0001→/dl←\u0001", b.endchild
     assert_equal "\u0001→/ul←\u0001", b.endchild
     e = assert_raises(ReVIEW::ApplicationError) { b.endchild }
-    assert_equal "//endchild is shown, but any opened //beginchild doesn't exist", e.message
+    assert_equal ": //endchild is shown, but any opened //beginchild doesn't exist", e.message
   end
 
   class XBuilder < Builder
