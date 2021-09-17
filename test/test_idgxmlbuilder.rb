@@ -1291,7 +1291,7 @@ EOS
 //beginchild
 EOS
     e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-    assert_equal "//beginchild is shown, but previous element isn't ul, ol, or dl", e.message
+    assert_equal ":1: //beginchild is shown, but previous element isn't ul, ol, or dl", e.message
   end
 
   def test_nest_error_close2
@@ -1309,7 +1309,7 @@ EOS
 //beginchild
 EOS
     e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-    assert_equal '//beginchild of dl,ol,ul misses //endchild', e.message
+    assert_equal ':12: //beginchild of dl,ol,ul misses //endchild', e.message
   end
 
   def test_nest_error_close3
@@ -1329,7 +1329,7 @@ EOS
 //endchild
 EOS
     e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
-    assert_equal '//beginchild of ol,ul misses //endchild', e.message
+    assert_equal ':14: //beginchild of ol,ul misses //endchild', e.message
   end
 
   def test_nest_ul

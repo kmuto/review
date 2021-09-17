@@ -104,13 +104,13 @@ module ReVIEW
 
     def check_nest
       if @children && !@children.empty?
-        app_error "//beginchild of #{@children.reverse.join(',')} misses //endchild"
+        app_error "#{@location}: //beginchild of #{@children.reverse.join(',')} misses //endchild"
       end
     end
 
     def check_printendnotes
       if @shown_endnotes.nil?
-        app_error '//endnote is found but //printendnotes is not found.'
+        app_error "#{@location}: //endnote is found but //printendnotes is not found."
       end
     end
 
@@ -754,7 +754,7 @@ EOTGNUPLOT
     def beginchild
       @children ||= []
       unless previous_list_type
-        app_error "//beginchild is shown, but previous element isn't ul, ol, or dl"
+        app_error "#{@location}: //beginchild is shown, but previous element isn't ul, ol, or dl"
       end
       puts "\x01→#{previous_list_type}←\x01"
       @children.push(previous_list_type)
@@ -762,7 +762,7 @@ EOTGNUPLOT
 
     def endchild
       if @children.nil? || @children.empty?
-        app_error "//endchild is shown, but any opened //beginchild doesn't exist"
+        app_error "#{@location}: //endchild is shown, but any opened //beginchild doesn't exist"
       else
         puts "\x01→/#{@children.pop}←\x01"
       end

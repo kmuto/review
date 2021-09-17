@@ -78,7 +78,7 @@ class IndexTest < Test::Unit::TestCase
     e = assert_raises(ReVIEW::ApplicationError) do
       compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n")
     end
-    assert_equal '//endnote is found but //printendnotes is not found.', e.message
+    assert_equal ':3: //endnote is found but //printendnotes is not found.', e.message
 
     compile_block("//endnote[foo][bar]\n//printendnotes\n")
     assert_match(/ID foo is not referred/, @log_io.string)
