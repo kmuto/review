@@ -683,6 +683,10 @@ module ReVIEW
       ''
     end
 
+    def graph(lines, id, _command, caption = '')
+      image(lines, id, caption)
+    end
+
     def tsize(_str)
       ''
     end
