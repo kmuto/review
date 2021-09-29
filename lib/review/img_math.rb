@@ -104,6 +104,7 @@ module ReVIEW
           end
         rescue CompileError
           FileUtils.cp([tex_path,
+                        File.join(File.dirname(tex_path), '__IMGMATH_BODY__.tex'),
                         File.join(File.dirname(tex_path), '__IMGMATH__.log')],
                        math_real_dir)
           error! "LaTeX math compile error. See #{math_real_dir}/__IMGMATH__.log for details."
