@@ -748,7 +748,7 @@ For example, to make SVG:
 math_format: imgmath
 imgmath_options:
   format: svg
-  pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
+  pdfcrop_pixelize_cmd: "pdftocairo -%t -r 90 -f %p -l %p %i %o"
 ```
 
 By default, the command specified in `pdfcrop_pixelize_cmd` takes the filename of multi-page PDF consisting of one formula per page.

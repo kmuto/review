@@ -712,7 +712,7 @@ imgmath_options:
 math_format: imgmath
 imgmath_options:
   format: svg
-  pdfcrop_pixelize_cmd: "pdftocairo -svg -r 90 -f %p -l %p -singlefile %i %o"
+  pdfcrop_pixelize_cmd: "pdftocairo -%t -r 90 -f %p -l %p %i %o"
 ```
 
 デフォルトでは、pdfcrop_pixelize_cmd に指定するコマンドは、1ページあたり1数式からなる複数ページの PDF のファイル名を `%i` プレースホルダで受け取り、`%p` プレースホルダのページ数に基づいて `%o`（拡張子あり）または `%O`（拡張子なし）の画像ファイルに書き出す、という仕組みになっています。
