@@ -1,3 +1,48 @@
+# Version 5.3.0
+## 新機能
+* 後注のサポートを追加しました。`//endnote` 命令で後注内容、`@<endnote>` 命令で後注参照、`//printendnotes` 命令で後注を配置する場所を指定します ([#1724])
+
+## バグ修正
+* 新しい jlreq において ifthen パッケージに非依存になったことによるエラーを修正しました ([#1718])
+* review-jsbook と新しい TeXLive 2020 以降の組み合わせにおいて、隠しノンブルがすべて1になってしまう問題を修正しました ([#1720])
+* coverimage パラメータに実際に存在しないファイルを指定したときに例外エラーが発生するのを修正しました ([#1726], [#1729])
+* titlefile・creditfile・profile パラメータに存在しないファイルを指定したときに警告を表示するようにしました ([#1730])
+* review-jlreq で `@<tcy>` 命令がエラーになるのを修正しました。縦中横の TeX 表現側での抽象名に `\reviewtcy` マクロを使うようにしました ([#1733])
+* review-vol および review-index の例外エラーを修正しました ([#1740])
+* 数式ビルドエラーが出たときに `__IMGMATH_BODY__.tex` のコピーを忘れているのを修正しました ([#1747])
+* `//beginchild`・`//endchild` 命令でエラーが起きたときにエラー位置の表示がされていなかったのを修正しました ([#1742])
+* `//graph` 命令を使うとビルドエラーになるのを修正しました ([#1744])
+
+## 機能強化
+* 脚注 (`//footnote`)・後注(`//endnote`) を定義したけれども参照（`@<fn>`、`@<endnote>`）していないときに警告するようにしました ([#1725])
+* 紙面全体に画像を貼り込む `\includefullpagegraphics` マクロを縦書きにも対応するようにしました ([#1734])
+
+## ドキュメント
+* format.ja.md, format.md: SVG数式を作成するコマンドラインの間違いを修正しました ([#1748])
+
+## その他
+* Windows 版 Ruby 2.7 のテストを追加しました ([#1743])
+
+## コントリビューターのみなさん
+* [@munepi](https://github.com/munepi)
+* [@huideyeren](https://github.com/huideyeren)
+
+[#1718]: https://github.com/kmuto/review/issues/1718
+[#1720]: https://github.com/kmuto/review/issues/1720
+[#1724]: https://github.com/kmuto/review/issues/1724
+[#1725]: https://github.com/kmuto/review/issues/1725
+[#1726]: https://github.com/kmuto/review/issues/1726
+[#1729]: https://github.com/kmuto/review/pull/1729
+[#1730]: https://github.com/kmuto/review/pull/1730
+[#1733]: https://github.com/kmuto/review/issues/1733
+[#1734]: https://github.com/kmuto/review/issues/1734
+[#1740]: https://github.com/kmuto/review/pull/1740
+[#1742]: https://github.com/kmuto/review/pull/1742
+[#1743]: https://github.com/kmuto/review/pull/1743
+[#1744]: https://github.com/kmuto/review/issues/1744
+[#1747]: https://github.com/kmuto/review/pull/1747
+[#1748]: https://github.com/kmuto/review/pull/1748
+
 # Version 5.2.0
 ## 新機能
 * EPUBMaker: CSS 組版向けに、見出しの存在に応じて `<section>` で階層化する機能を追加しました。config.yml で `epubmaker` セクションの `use_section` パラメータを `true` にすると有効化されます ([#1685])
