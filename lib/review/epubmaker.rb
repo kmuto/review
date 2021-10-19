@@ -118,7 +118,9 @@ module ReVIEW
       booktmpname = "#{bookname}-epub"
 
       @img_math = ReVIEW::ImgMath.new(@config)
-      unless @config.check_version(ReVIEW::VERSION, exception: false)
+      begin
+        @config.check_version(ReVIEW::VERSION, exception: true)
+      rescue ReVIEW::ConfigError => e
         warn e.message
       end
       debug("#{bookname}.epub will be created.")
