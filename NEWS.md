@@ -12,6 +12,8 @@
 * fixed forgetting to copy `__IMGMATH_BODY__.tex` when math compiling error occurs ([#1747])
 * fixed the problem that the position of `//beginchild` and `//endchild` is not displayed when an error occurs ([#1742])
 * fixed a build error when using `//graph` op ([#1744])
+* fixed undefined variable in epubmaker.rb ([#1755])
+* fixed execution error in review-catalog-converter ([#1753])
 
 ## Enhancements
 * warnings are now given when footnotes (`//footnote`) and endnotes (`//endnote`) are defined but not referenced (`@<fn>`, `@<endnote>`) ([#1725])
@@ -42,6 +44,8 @@
 [#1744]: https://github.com/kmuto/review/issues/1744
 [#1747]: https://github.com/kmuto/review/pull/1747
 [#1748]: https://github.com/kmuto/review/pull/1748
+[#1753]: https://github.com/kmuto/review/issues/1753
+[#1755]: https://github.com/kmuto/review/issues/1755
 
 # Version 5.2.0
 ## New Features

@@ -12,6 +12,8 @@
 * 数式ビルドエラーが出たときに `__IMGMATH_BODY__.tex` のコピーを忘れているのを修正しました ([#1747])
 * `//beginchild`・`//endchild` 命令でエラーが起きたときにエラー位置の表示がされていなかったのを修正しました ([#1742])
 * `//graph` 命令を使うとビルドエラーになるのを修正しました ([#1744])
+* epubmaker.rb で未定義の変数を参照している箇所を修正しました ([#1755])
+* review-catalog-converter がエラーになるのを修正しました ([#1753])
 
 ## 機能強化
 * 脚注 (`//footnote`)・後注(`//endnote`) を定義したけれども参照（`@<fn>`、`@<endnote>`）していないときに警告するようにしました ([#1725])
@@ -42,6 +44,8 @@
 [#1744]: https://github.com/kmuto/review/issues/1744
 [#1747]: https://github.com/kmuto/review/pull/1747
 [#1748]: https://github.com/kmuto/review/pull/1748
+[#1753]: https://github.com/kmuto/review/issues/1753
+[#1755]: https://github.com/kmuto/review/issues/1755
 
 # Version 5.2.0
 ## 新機能
