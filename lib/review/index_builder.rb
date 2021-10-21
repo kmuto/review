@@ -114,6 +114,7 @@ module ReVIEW
 
       item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption)
       @headline_index.add_item(item)
+      compile_inline(caption)
     end
 
     def nonum_begin(level, label, caption)
