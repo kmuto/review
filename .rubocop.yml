@@ -57,6 +57,9 @@ Lint/StructNewOverride:
 Lint/RedundantDirGlobSort:
   Enabled: false
 
+Lint/ElseLayout:
+  Enabled: false
+
 #### Performance
 
 Performance/RegexpMatch:
