@@ -231,9 +231,9 @@ module ReVIEW
 
       case mode
       when :list
-        (calc_linesize(line) - 1) / @book.page_metric.list.n_columns + 1
+        ((calc_linesize(line) - 1) / @book.page_metric.list.n_columns) + 1
       else # mode == :text
-        (calc_linesize(line) - 1) / @book.page_metric.text.n_columns + 1
+        ((calc_linesize(line) - 1) / @book.page_metric.text.n_columns) + 1
       end
     end
 

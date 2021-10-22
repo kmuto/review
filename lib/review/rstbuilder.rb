@@ -125,7 +125,7 @@ module ReVIEW
     end
 
     def ul_item(lines)
-      puts '  ' * (@ul_indent - 1) + "* #{join_lines_to_paragraph(lines)}"
+      puts ('  ' * (@ul_indent - 1)) + "* #{join_lines_to_paragraph(lines)}"
     end
 
     def ul_end
@@ -139,7 +139,7 @@ module ReVIEW
     end
 
     def ol_item(lines, _num)
-      puts '  ' * (@ol_indent - 1) + "#. #{join_lines_to_paragraph(lines)}"
+      puts ('  ' * (@ol_indent - 1)) + "#. #{join_lines_to_paragraph(lines)}"
     end
 
     def ol_end
