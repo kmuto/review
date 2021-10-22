@@ -24,6 +24,7 @@
 
 ## その他
 * Windows 版 Ruby 2.7 のテストを追加しました ([#1743])
+* Rubocop 1.22.1 に対応しました ([#1759])
 
 ## コントリビューターのみなさん
 * [@munepi](https://github.com/munepi)
@@ -46,6 +47,7 @@
 [#1748]: https://github.com/kmuto/review/pull/1748
 [#1753]: https://github.com/kmuto/review/issues/1753
 [#1755]: https://github.com/kmuto/review/issues/1755
+[#1759]: https://github.com/kmuto/review/pull/1759
 
 # Version 5.2.0
 ## 新機能

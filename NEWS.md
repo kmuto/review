@@ -24,6 +24,7 @@
 
 ## Others
 * added tests for Ruby 2.7 for Windows ([#1743])
+* refactor code with Rubocop 1.22.1 ([#1759])
 
 ## Contributors
 * [@munepi](https://github.com/munepi)
@@ -46,6 +47,7 @@
 [#1748]: https://github.com/kmuto/review/pull/1748
 [#1753]: https://github.com/kmuto/review/issues/1753
 [#1755]: https://github.com/kmuto/review/issues/1755
+[#1759]: https://github.com/kmuto/review/pull/1759
 
 # Version 5.2.0
 ## New Features
