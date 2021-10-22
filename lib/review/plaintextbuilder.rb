@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2020 Kenshi Muto
+# Copyright (c) 2018-2021 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -90,7 +90,7 @@ module ReVIEW
           clevel.pop
           lines.push("\x01→END←\x01")
         else
-          lines.push("\t" * clevel.size + l)
+          lines.push(("\t" * clevel.size) + l)
         end
       end
 

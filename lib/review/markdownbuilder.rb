@@ -98,7 +98,7 @@ module ReVIEW
     end
 
     def ul_item_begin(lines)
-      puts '  ' * (@ul_indent - 1) + '* ' + join_lines_to_paragraph(lines)
+      puts ('  ' * (@ul_indent - 1)) + '* ' + join_lines_to_paragraph(lines)
     end
 
     def ul_item_end

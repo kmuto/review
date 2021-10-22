@@ -15,7 +15,7 @@ module ReVIEW
       add = 0
       len = nil
       str.gsub("\t") do
-        len = ts - ($`.size + add) % ts
+        len = ts - (($`.size + add) % ts)
         add += len - 1
         ' ' * len
       end
@@ -72,12 +72,13 @@ module ReVIEW
         end
 
         # lazy than rule 3, but it looks better
-        if lazy &&
-           (%i[F W H].include?(Unicode::Eaw.property(tail)) &&
-            tail !~ /\p{Hangul}/) ||
-           (%i[F W H].include?(Unicode::Eaw.property(head)) &&
-            head !~ /\p{Hangul}/)
-          space = nil
+        if lazy
+          if (%i[F W H].include?(Unicode::Eaw.property(tail)) &&
+              tail !~ /\p{Hangul}/) ||
+             (%i[F W H].include?(Unicode::Eaw.property(head)) &&
+              head !~ /\p{Hangul}/)
+            space = nil
+          end
         end
       end
       space
