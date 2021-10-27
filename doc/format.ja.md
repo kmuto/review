@@ -396,7 +396,7 @@ plot sin(x)
 * Gnuplot ( http://www.gnuplot.info/ ) : `gnuplot` コマンドへのパスを OS に設定すること
 * Blockdiag ( http://blockdiag.com/ ) : `blockdiag` コマンドへのパスを OS に設定すること。PDF を生成する場合は ReportLab もインストールすること
 * aafigure ( https://launchpad.net/aafigure ) : `aafigure` コマンドへのパスを OS に設定すること
-* PlantUML ( http://plantuml.com/ ) : `java` コマンドへのパスを OS に設定し、`plantuml.jar` が作業フォルダにあること
+* PlantUML ( http://plantuml.com/ ) : `java` コマンドへのパスを OS に設定し、`plantuml.jar` が作業フォルダ、または `/usr/share/plantuml` あるいは `/usr/share/java` フォルダにあること
 
 ## 表
 
