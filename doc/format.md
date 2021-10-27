@@ -423,7 +423,7 @@ Before using these tools, you should installed them and configured path appropri
 * Gnuplot ( http://www.gnuplot.info/ ) : set path to `gnuplot` command
 * Blockdiag ( http://blockdiag.com/ ) : set path to `blockdiag` command. Install ReportLab also to make a PDF
 * aafigure ( https://launchpad.net/aafigure ) : set path to `aafigure` command
-* PlantUML ( http://plantuml.com/ ) : set path to `java` command. place `plantuml.jar` on working folder
+* PlantUML ( http://plantuml.com/ ) : set path to `java` command. place `plantuml.jar` on working folder, `/usr/share/plantuml` or `/usr/share/java`.
 
 ## Tables
 

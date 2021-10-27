@@ -669,7 +669,17 @@ EOTGNUPLOT
         ext = 'eps'
         file_path.sub!(/\.pdf\Z/, '.eps')
       end
-      system_graph(id, 'java', '-jar', 'plantuml.jar', "-t#{ext}", '-charset', 'UTF-8', tf_path)
+      plant_path = nil
+      if File.exist?('plantuml.jar')
+        plant_path = 'plantuml.jar'
+      elsif File.exist?('/usr/share/plantuml/plantuml.jar')
+        plant_path = '/usr/share/plantuml/plantuml.jar'
+      elsif File.exist?('/usr/share/java/plantuml.jar')
+        plant_path = '/usr/share/java/plantuml.jar'
+      else
+        error!('missing plantuml.jar. Please put plantuml.jar at the working folder.')
+      end
+      system_graph(id, 'java', '-jar', plant_path, "-t#{ext}", '-charset', 'UTF-8', tf_path)
       FileUtils.mv("#{tf_path}.#{ext}", file_path)
       file_path
     end
