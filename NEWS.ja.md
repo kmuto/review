@@ -18,6 +18,7 @@
 ## 機能強化
 * 脚注 (`//footnote`)・後注(`//endnote`) を定義したけれども参照（`@<fn>`、`@<endnote>`）していないときに警告するようにしました ([#1725])
 * 紙面全体に画像を貼り込む `\includefullpagegraphics` マクロを縦書きにも対応するようにしました ([#1734])
+* plantuml の jar ファイル探索先を作業フォルダのほか、`/usr/share/plantuml`、`/usr/share/java` からも探すようにしました ([#1760])
 
 ## ドキュメント
 * format.ja.md, format.md: SVG数式を作成するコマンドラインの間違いを修正しました ([#1748])
@@ -48,6 +49,7 @@
 [#1753]: https://github.com/kmuto/review/issues/1753
 [#1755]: https://github.com/kmuto/review/issues/1755
 [#1759]: https://github.com/kmuto/review/pull/1759
+[#1760]: https://github.com/kmuto/review/pull/1760
 
 # Version 5.2.0
 ## 新機能

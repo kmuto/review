@@ -18,6 +18,7 @@
 ## Enhancements
 * warnings are now given when footnotes (`//footnote`) and endnotes (`//endnote`) are defined but not referenced (`@<fn>`, `@<endnote>`) ([#1725])
 * `\includefullpagegraphics` macro that pastes an image over the entire page now supports vertical writing ([#1734])
+* try to find plantuml.jar from the working folder, `/usr/share/plantuml`, or `/usr/share/java` ([#1760])
 
 ## Docs
 * format.ja.md, format.md: fixed a mistake in the command line for creating SVG formulas ([#1748])
@@ -48,6 +49,7 @@
 [#1753]: https://github.com/kmuto/review/issues/1753
 [#1755]: https://github.com/kmuto/review/issues/1755
 [#1759]: https://github.com/kmuto/review/pull/1759
+[#1760]: https://github.com/kmuto/review/pull/1760
 
 # Version 5.2.0
 ## New Features
