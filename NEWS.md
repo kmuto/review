@@ -1,3 +1,56 @@
+# Version 5.3.0
+## New Features
+* add the future of endnote. `//endnote` specifies the content of the endnote, `@<endnote>` specifies the reference to the endnote, and `//printendnotes` places endnotes ([#1724])
+
+## Bug Fixes
+* fixed an error in new jlreq that caused it to become independent of ifthen package ([#1718])
+* fixed an issue with hidden folio being set to all 1 when using review-jsbook with TeXLive 2020 or later ([#1720])
+* fixed an error that occurred when a non-existent file was specified in the coverimage parameter ([#1726], [#1729])
+* it now warns when a non-existent file is specified in the titlefile, creditfile, and profile parameters ([#1730])
+* fixed `@<tcy>` op error in review-jlreq. this op will be expanded into `\reviewtcy` macro ([#1733])
+* fixed exception errors in review-vol and review-index ([#1740])
+* fixed forgetting to copy `__IMGMATH_BODY__.tex` when math compiling error occurs ([#1747])
+* fixed the problem that the position of `//beginchild` and `//endchild` is not displayed when an error occurs ([#1742])
+* fixed a build error when using `//graph` op ([#1744])
+* fixed undefined variable in epubmaker.rb ([#1755])
+* fixed execution error in review-catalog-converter ([#1753])
+
+## Enhancements
+* warnings are now given when footnotes (`//footnote`) and endnotes (`//endnote`) are defined but not referenced (`@<fn>`, `@<endnote>`) ([#1725])
+* `\includefullpagegraphics` macro that pastes an image over the entire page now supports vertical writing ([#1734])
+* try to find plantuml.jar from the working folder, `/usr/share/plantuml`, or `/usr/share/java` ([#1760])
+
+## Docs
+* format.ja.md, format.md: fixed a mistake in the command line for creating SVG formulas ([#1748])
+
+## Others
+* added tests for Ruby 2.7 for Windows ([#1743])
+* refactor code with Rubocop 1.22.1 ([#1759])
+
+## Contributors
+* [@munepi](https://github.com/munepi)
+* [@huideyeren](https://github.com/huideyeren)
+
+[#1718]: https://github.com/kmuto/review/issues/1718
+[#1720]: https://github.com/kmuto/review/issues/1720
+[#1724]: https://github.com/kmuto/review/issues/1724
+[#1725]: https://github.com/kmuto/review/issues/1725
+[#1726]: https://github.com/kmuto/review/issues/1726
+[#1729]: https://github.com/kmuto/review/pull/1729
+[#1730]: https://github.com/kmuto/review/pull/1730
+[#1733]: https://github.com/kmuto/review/issues/1733
+[#1734]: https://github.com/kmuto/review/issues/1734
+[#1740]: https://github.com/kmuto/review/pull/1740
+[#1742]: https://github.com/kmuto/review/pull/1742
+[#1743]: https://github.com/kmuto/review/pull/1743
+[#1744]: https://github.com/kmuto/review/issues/1744
+[#1747]: https://github.com/kmuto/review/pull/1747
+[#1748]: https://github.com/kmuto/review/pull/1748
+[#1753]: https://github.com/kmuto/review/issues/1753
+[#1755]: https://github.com/kmuto/review/issues/1755
+[#1759]: https://github.com/kmuto/review/pull/1759
+[#1760]: https://github.com/kmuto/review/pull/1760
+
 # Version 5.2.0
 ## New Features
 * EPUBMaker: added `<section>` based on heading level for CSS formatting, when the `epubmaker/use_section` parameter is set to `true` ([#1685])
