@@ -4,7 +4,7 @@
 <% if @coverimage %>
     <item properties="cover-image" id="cover-<%= @coverimage.id %>" href="<%= @coverimage.file %>" media-type="<%= @coverimage.media %>"/>
 <% end %>
-<% @items.each do |item| %>
+<% @items.sort { |a, b| a.id <=> b.id }.each do |item| %>
     <item id="<%= item.id %>" href="<%= item.file %>" media-type="<%= item.media %>"<%= item.properties_attribute %>/>
 <% end %>
   </manifest>

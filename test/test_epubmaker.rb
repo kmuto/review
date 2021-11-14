@@ -318,12 +318,12 @@ EOT
     <item id="ch02-html" href="ch02.html" media-type="application/xhtml+xml"/>
     <item id="ch03-html" href="ch03.html" media-type="application/xhtml+xml"/>
     <item id="ch04-html" href="ch04.html" media-type="application/xhtml+xml"/>
-    <item id="sample-png" href="sample.png" media-type="image/png"/>
-    <item id="sample-jpg" href="sample.jpg" media-type="image/jpeg"/>
+    <item id="sample-GIF" href="sample.GIF" media-type="image/gif"/>
     <item id="sample-JPEG" href="sample.JPEG" media-type="image/jpeg"/>
     <item id="sample-SvG" href="sample.SvG" media-type="image/svg+xml"/>
-    <item id="sample-GIF" href="sample.GIF" media-type="image/gif"/>
     <item id="sample-css" href="sample.css" media-type="text/css"/>
+    <item id="sample-jpg" href="sample.jpg" media-type="image/jpeg"/>
+    <item id="sample-png" href="sample.png" media-type="image/png"/>
   </manifest>
   <spine toc="ncx">
     <itemref idref="sample" linear="no"/>
