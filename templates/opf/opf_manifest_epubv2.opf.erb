@@ -4,7 +4,7 @@
 <% if @config['toc'] && @config['mytoc'] %>
     <item id="toc" href="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>" media-type="application/xhtml+xml"/>
 <% end %>
-<% @items.each do |item| %>
+<% @items.sort_by { |x| x.id }.each do |item| %>
     <item id="<%= item.id %>" href="<%= item.file %>" media-type="<%= item.media %>"/>
 <% end %>
   </manifest>
