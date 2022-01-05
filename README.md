@@ -74,13 +74,14 @@ For further information, see [doc/quickstart.md](https://github.com/kmuto/review
 
 ## Resources
 
-|         | URL                                    |
-|---------|----------------------------------------|
-| Home    | http://reviewml.org                    |
-| Project | https://github.com/kmuto/review/       |
-| Gems    | https://rubygems.org/gems/review       |
-| Wiki    | https://github.com/kmuto/review/wiki   |
-| Bugs    | https://github.com/kmuto/review/issues |
+|         | URL                                         |
+|---------|---------------------------------------------|
+| Home    | http://reviewml.org                         |
+| Project | https://github.com/kmuto/review/            |
+| Gems    | https://rubygems.org/gems/review            |
+| Q&A     | https://github.com/kmuto/review/discussions |
+| Wiki    | https://github.com/kmuto/review/wiki        |
+| Bugs    | https://github.com/kmuto/review/issues      |
 
 ### Documents
 
@@ -116,4 +117,4 @@ Exception:
 
 ## Copyright
 
-Copyright (c) 2006-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
+Copyright (c) 2006-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
