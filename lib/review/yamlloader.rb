@@ -17,8 +17,8 @@ module ReVIEW
 
       while file_queue.present?
         current_file = file_queue.shift
-        current_yaml = YAML.load_file(current_file)
-        if current_yaml.instance_of?(FalseClass)
+        current_yaml = YAML.safe_load_file(current_file, aliases: true, permitted_classes: [Date])
+        if current_yaml.instance_of?(FalseClass) || current_yaml.nil?
           raise "#{File.basename(current_file)} is malformed."
         end
 
