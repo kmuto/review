@@ -21,6 +21,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   gem.add_dependency('image_size')
+  gem.add_dependency('psych', '3.3.2')
   gem.add_dependency('rouge')
   gem.add_dependency('rubyzip')
   gem.add_dependency('tty-logger')
