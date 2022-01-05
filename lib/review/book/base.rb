@@ -408,7 +408,7 @@ module ReVIEW
       end
 
       def filename_join(*args)
-        File.join(args.reject(&:nil?))
+        File.join(args.compact)
       end
     end
   end

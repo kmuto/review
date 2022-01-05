@@ -12,6 +12,7 @@ Gem::Specification.new do |gem|
   gem.summary     = 'Re:VIEW: a easy-to-use digital publishing system'
   gem.description = 'Re:VIEW is a digital publishing system for books and ebooks. It supports InDesign, EPUB and LaTeX.'
   gem.required_rubygems_version = Gem::Requirement.new('>= 0') if gem.respond_to?(:required_rubygems_version=)
+  gem.metadata = { 'rubygems_mfa_required' => 'true' }
 
   gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

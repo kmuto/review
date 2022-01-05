@@ -179,12 +179,12 @@ EOS
         content = content.split("\n").delete_if { |l| l.strip.start_with?('#') || l.strip.empty? }.join("\n")
       end
 
-      File.open(File.join(dir, 'config.yml'), 'w') { |f| f.write content }
+      File.write(File.join(dir, 'config.yml'), content)
       if @webui && !@web_result[2].empty?
         File.open(File.join(dir, 'config-ebook.yml'), 'w') do |f|
           f.puts <<EOT
 # for ebook PDF
-# REVIEW_CONFIG_FILE=config.yml rake pdf
+# REVIEW_CONFIG_FILE=config-ebook.yml rake pdf
 inherit: ["config.yml"]
 # bookname: book-ebook
 texdocumentclass: ["#{@web_result[0]}", "#{@web_result[2]}"]
