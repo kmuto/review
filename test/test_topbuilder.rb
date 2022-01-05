@@ -983,12 +983,11 @@ EOS
 
   def test_inline_w
     Dir.mktmpdir do |dir|
-      File.open(File.join(dir, 'words.csv'), 'w') do |f|
-        f.write <<EOB
+      File.write(File.join(dir, 'words.csv'), <<EOB
 "F","foo"
 "B","bar""\\<>_@<b>{BAZ}"
 EOB
-      end
+      )
       @book.config['words_file'] = File.join(dir, 'words.csv')
 
       io = StringIO.new

@@ -2887,12 +2887,11 @@ EOS
 
   def test_inline_w
     Dir.mktmpdir do |dir|
-      File.open(File.join(dir, 'words.csv'), 'w') do |f|
-        f.write <<EOB
+      File.write(File.join(dir, 'words.csv'), <<EOB
 "F","foo"
 "B","bar""\\<>_@<b>{BAZ}"
 EOB
-      end
+      )
       @book.config['words_file'] = File.join(dir, 'words.csv')
       actual = compile_block('@<w>{F} @<w>{B} @<wb>{B} @<w>{N}')
       assert_equal %Q(<p>foo bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ} <b>bar&quot;\\&lt;&gt;_@&lt;b&gt;{BAZ}</b> [missing word: N]</p>\n), actual
