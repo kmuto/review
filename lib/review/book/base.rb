@@ -214,7 +214,7 @@ module ReVIEW
       end
 
       def load_config(filename)
-        new_conf = YAML.review_load_file(filename, aliases: true, permitted_classes: [Date])
+        new_conf = YAML.review_load_file(filename)
         @config.merge!(new_conf)
       end
 
