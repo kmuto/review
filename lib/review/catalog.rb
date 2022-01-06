@@ -5,7 +5,7 @@ module ReVIEW
   class Catalog
     def initialize(file)
       if file.respond_to?(:read)
-        @yaml = YAML.safe_load(file.read, aliases: true, permitted_classes: [Date])
+        @yaml = YAML.review_load(file.read)
       else ## as Object
         @yaml = file
       end
