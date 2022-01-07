@@ -3,7 +3,6 @@ review_version: 5.0
 bookname: book
 language: ja
 booktitle: Re:VIEWサンプル書籍
-urnid: urn:uuid:http://reviewml.com/books/review-sample-book/
 # isbn: null
 aut: Re:VIEW Writers
 pbl: Re:VIEW Publishers
