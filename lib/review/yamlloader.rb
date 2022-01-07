@@ -2,6 +2,39 @@ require 'yaml'
 
 module ReVIEW
   class YAMLLoader
+    def self.safe_load_file(file)
+      if YAML.respond_to?(:safe_load_file)
+        YAML.safe_load_file(file, aliases: true, permitted_classes: [Date])
+      else
+        File.open(file, 'rt:bom|utf-8') do |f|
+          begin
+            # < Ruby 3.1
+            YAML.safe_load(f, filename: file, aliases: true, permitted_classes: [Date])
+          rescue ArgumentError
+            # < Ruby 2.7
+            YAML.safe_load(f, [Date])
+          rescue Psych::DisallowedClass
+            # < Ruby 2.5
+            YAML.safe_load(File.read(file), [Date])
+          end
+        end
+      end
+    end
+
+    def self.safe_load(s)
+      if YAML.respond_to?(:safe_load_file)
+        YAML.safe_load(s, aliases: true, permitted_classes: [Date])
+      else
+        begin
+          # < Ruby 3.1
+          YAML.safe_load(s, aliases: true, permitted_classes: [Date])
+        rescue ArgumentError, Psych::DisallowedClass
+          # < Ruby 2.7
+          YAML.safe_load(s, [Date])
+        end
+      end
+    end
+
     def initialize
     end
 
@@ -17,7 +50,7 @@ module ReVIEW
 
       while file_queue.present?
         current_file = file_queue.shift
-        current_yaml = YAML.safe_load_file(current_file, aliases: true, permitted_classes: [Date])
+        current_yaml = YAMLLoader.safe_load_file(current_file)
         if current_yaml.instance_of?(FalseClass) || current_yaml.nil?
           raise "#{File.basename(current_file)} is malformed."
         end

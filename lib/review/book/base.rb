@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
 #               2002-2008 Minero Aoki
 #
 # This program is free software.
@@ -214,7 +214,7 @@ module ReVIEW
       end
 
       def load_config(filename)
-        new_conf = YAML.safe_load_file(filename, aliases: true, permitted_classes: [Date])
+        new_conf = YAMLLoader.safe_load_file(filename)
         @config.merge!(new_conf)
       end
 

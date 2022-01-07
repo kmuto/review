@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2020 Kenshi Muto
+# Copyright (c) 2018-2022 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -165,7 +165,7 @@ module ReVIEW
 
       Dir.glob(File.join(dir, '*.yml')).sort.each do |yml|
         begin
-          config = YAML.safe_load_file(yml, aliases: true, permitted_classes: [Date])
+          config = YAMLLoader.safe_load_file(yml)
           if config['language'].present?
             language = config['language']
           end
@@ -238,7 +238,7 @@ module ReVIEW
 
     def update_version
       @config_ymls.each do |yml|
-        config = YAML.safe_load_file(yml, aliases: true, permitted_classes: [Date])
+        config = YAMLLoader.safe_load_file(yml)
         if config['review_version'].to_f.round(1) == TARGET_VERSION.to_f.round(1)
           next
         end
@@ -292,7 +292,7 @@ module ReVIEW
 
     def update_epub_version
       @epub_ymls.each do |yml|
-        config = YAML.safe_load_file(yml, aliases: true, permitted_classes: [Date])
+        config = YAMLLoader.safe_load_file(yml)
         if config['epubversion'].present? && config['epubversion'].to_f < EPUB_VERSION.to_f
           if confirm("%s: Update '%s' to '%s' from '%s'?", [File.basename(yml), 'epubversion', EPUB_VERSION, config['epubversion']])
             rewrite_yml(yml, 'epubversion', EPUB_VERSION)
@@ -310,7 +310,7 @@ module ReVIEW
 
     def update_locale
       @locale_ymls.each do |yml|
-        config = YAML.safe_load_file(yml, aliases: true, permitted_classes: [Date])
+        config = YAMLLoader.safe_load_file(yml)
         if !config['chapter_quote'].present? || config['chapter_quote'].scan('%s').size != 1
           next
         end
@@ -324,7 +324,7 @@ module ReVIEW
 
     def update_tex_parameters
       @tex_ymls.each do |yml|
-        config = YAML.safe_load_file(yml, aliases: true, permitted_classes: [Date])
+        config = YAMLLoader.safe_load_file(yml)
         unless config['texdocumentclass']
           next
         end
@@ -510,7 +510,7 @@ module ReVIEW
 
     def update_tex_command
       @tex_ymls.each do |yml|
-        config = YAML.safe_load_file(yml, aliases: true, permitted_classes: [Date])
+        config = YAMLLoader.safe_load_file(yml)
         if !config['texcommand'] || config['texcommand'] !~ /\s+-/
           next
         end
@@ -535,7 +535,7 @@ module ReVIEW
 
     def update_dvi_command
       @tex_ymls.each do |yml|
-        config = YAML.safe_load_file(yml, aliases: true, permitted_classes: [Date])
+        config = YAMLLoader.safe_load_file(yml)
         if !config['dvicommand'] || config['dvicommand'] !~ /\s+-/
           next
         end
