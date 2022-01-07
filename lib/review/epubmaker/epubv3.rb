@@ -1,6 +1,6 @@
 # = epubv3.rb -- EPUB version 3 producer.
 #
-# Copyright (c) 2010-2017 Kenshi Muto
+# Copyright (c) 2010-2022 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -195,6 +195,7 @@ module ReVIEW
       end
 
       def ncx(indentarray)
+        @body_ext = %Q( epub:type="toc")
         ncx_main = if config['epubmaker']['flattoc'].nil?
                      hierarchy_ncx('ol')
                    else
@@ -210,7 +211,9 @@ module ReVIEW
         @title = h(ReVIEW::I18n.t('toctitle'))
         @language = config['language']
         @stylesheets = config['stylesheet']
-        ReVIEW::Template.generate(path: './html/layout-html5.html.erb', binding: binding)
+        ret = ReVIEW::Template.generate(path: './html/layout-html5.html.erb', binding: binding)
+        @body_ext = nil
+        ret
       end
 
       # Produce EPUB file +epubfile+.
