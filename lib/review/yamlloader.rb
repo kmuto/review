@@ -10,9 +10,12 @@ module ReVIEW
           begin
             # < Ruby 3.1
             YAML.safe_load(f, filename: file, aliases: true, permitted_classes: [Date])
-          rescue ArgumentError, Psych::DisallowedClass
+          rescue ArgumentError
             # < Ruby 2.7
             YAML.safe_load(f, [Date])
+          rescue Psych::DisallowedClass
+            # < Ruby 2.5
+            YAML.safe_load(File.read(file), [Date])
           end
         end
       end
