@@ -170,7 +170,7 @@ EOT
   <meta name="generator" content="Re:VIEW" />
   <title>Table of Contents</title>
 </head>
-<body epub:type="toc">
+<body>
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">Table of Contents</h1>
 
@@ -239,7 +239,7 @@ EOT
   <meta name="generator" content="Re:VIEW" />
   <title>Table of Contents</title>
 </head>
-<body epub:type="toc">
+<body>
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">Table of Contents</h1>
 
@@ -357,7 +357,7 @@ EOT
   <meta name="generator" content="Re:VIEW" />
   <title>Table of Contents</title>
 </head>
-<body epub:type="toc">
+<body>
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">Table of Contents</h1>
 
@@ -390,7 +390,7 @@ EOT
   <meta name="generator" content="Re:VIEW" />
   <title>Table of Contents</title>
 </head>
-<body epub:type="toc">
+<body>
   <h1 class="toc-title">Table of Contents</h1>
 
 <ul class="toc-h1"><li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
@@ -425,7 +425,7 @@ EOT
   <meta name="generator" content="Re:VIEW" />
   <title>Table of Contents</title>
 </head>
-<body epub:type="toc">
+<body>
   <h1 class="toc-title">Table of Contents</h1>
 <ul class="toc-h1">
 <li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>

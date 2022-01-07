@@ -195,7 +195,6 @@ module ReVIEW
       end
 
       def ncx(indentarray)
-        @body_ext = %Q( epub:type="toc")
         ncx_main = if config['epubmaker']['flattoc'].nil?
                      hierarchy_ncx('ol')
                    else
@@ -211,9 +210,7 @@ module ReVIEW
         @title = h(ReVIEW::I18n.t('toctitle'))
         @language = config['language']
         @stylesheets = config['stylesheet']
-        ret = ReVIEW::Template.generate(path: './html/layout-html5.html.erb', binding: binding)
-        @body_ext = nil
-        ret
+        ReVIEW::Template.generate(path: './html/layout-html5.html.erb', binding: binding)
       end
 
       # Produce EPUB file +epubfile+.

@@ -213,8 +213,6 @@ module ReVIEW
       # Return own toc content.
       def mytoc
         @title = h(ReVIEW::I18n.t('toctitle'))
-
-        @body_ext = config['epubversion'] >= 3 ? %Q( epub:type="toc") : nil
         @body = %Q(  <h1 class="toc-title">#{h(ReVIEW::I18n.t('toctitle'))}</h1>\n)
         if config['epubmaker']['flattoc'].nil?
           @body << hierarchy_ncx('ul')
@@ -229,9 +227,7 @@ module ReVIEW
                         else
                           './html/layout-xhtml1.html.erb'
                         end
-        ret = ReVIEW::Template.generate(path: template_path, binding: binding)
-        @body_ext = nil
-        ret
+        ReVIEW::Template.generate(path: template_path, binding: binding)
       end
 
       def hierarchy_ncx(type)
