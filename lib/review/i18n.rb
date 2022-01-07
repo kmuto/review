@@ -75,11 +75,11 @@ module ReVIEW
     end
 
     def load_file(path)
-      @store = YAML.review_load_file(path)
+      @store = ReVIEW::YAMLLoader.safe_load_file(path)
     end
 
     def update_localefile(path)
-      user_i18n = YAML.review_load_file(path)
+      user_i18n = ReVIEW::YAMLLoader.safe_load_file(path)
       locale = user_i18n['locale']
       if locale
         user_i18n.delete('locale')
