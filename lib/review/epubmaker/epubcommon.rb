@@ -1,6 +1,6 @@
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2021 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -103,7 +103,7 @@ module ReVIEW
       # If Producer#config["coverimage"] is defined, it will be used for
       # the cover image.
       def cover
-        @body_ext = config['epubversion'] >= 3 ? %Q( epub:type="cover") : ''
+        @body_ext = config['epubversion'] >= 3 ? %Q( epub:type="cover") : nil
 
         if config['coverimage']
           @coverimage_src = coverimage
@@ -119,7 +119,9 @@ module ReVIEW
                         else
                           './html/layout-xhtml1.html.erb'
                         end
-        ReVIEW::Template.generate(path: template_path, binding: binding)
+        ret = ReVIEW::Template.generate(path: template_path, binding: binding)
+        @body_ext = nil
+        ret
       end
 
       # Return title (copying) content.
@@ -211,7 +213,6 @@ module ReVIEW
       # Return own toc content.
       def mytoc
         @title = h(ReVIEW::I18n.t('toctitle'))
-
         @body = %Q(  <h1 class="toc-title">#{h(ReVIEW::I18n.t('toctitle'))}</h1>\n)
         if config['epubmaker']['flattoc'].nil?
           @body << hierarchy_ncx('ul')
