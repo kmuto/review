@@ -210,19 +210,20 @@ module ReVIEW
         @title = h(ReVIEW::I18n.t('toctitle'))
         @language = config['language']
         @stylesheets = config['stylesheet']
-        ReVIEW::Template.generate(path: './html/layout-html5.html.erb', binding: binding)
+        ReVIEW::Template.generate(path: template_name, binding: binding)
       end
 
       # Produce EPUB file +epubfile+.
       # +work_dir+ points the directory has contents.
       # +tmpdir+ defines temporary directory.
       def produce(epubfile, work_dir, tmpdir, base_dir:)
+        @workdir = base_dir
         produce_write_common(work_dir, tmpdir)
 
         toc_file = "#{tmpdir}/OEBPS/#{config['bookname']}-toc.#{config['htmlext']}"
         File.write(toc_file, ncx(config['epubmaker']['ncxindent']))
 
-        call_hook('hook_prepack', tmpdir, base_dir: base_dir)
+        call_hook('hook_prepack', tmpdir, base_dir: @workdir)
         expoter = ReVIEW::EPUBMaker::ZipExporter.new(tmpdir, config)
         expoter.export_zip(epubfile)
       end

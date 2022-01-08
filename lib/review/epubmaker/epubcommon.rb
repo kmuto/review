@@ -27,6 +27,7 @@ module ReVIEW
         @contents = producer.contents
         @body_ext = nil
         @logger = ReVIEW.logger
+        @workdir = nil
       end
 
       attr_reader :config
@@ -36,7 +37,8 @@ module ReVIEW
         CGI.escapeHTML(str)
       end
 
-      def produce(epubfile, basedir, tmpdir)
+      def produce(_epubfile, _basedir, _tmpdir, base_dir:)
+        @workdir = base_dir
         raise NotImplementedError # should be overridden
       end
 
@@ -99,6 +101,21 @@ module ReVIEW
         end
       end
 
+      def template_name
+        if @workdir
+          layoutfile = File.join(@workdir, 'layouts', 'layout.html.erb')
+          if File.exist?(layoutfile)
+            return layoutfile
+          end
+        end
+
+        if config['htmlversion'].to_i == 5
+          './html/layout-html5.html.erb'
+        else
+          './html/layout-xhtml1.html.erb'
+        end
+      end
+
       # Return cover content.
       # If Producer#config["coverimage"] is defined, it will be used for
       # the cover image.
@@ -114,12 +131,7 @@ module ReVIEW
         @title = h(config.name_of('title'))
         @language = config['language']
         @stylesheets = config['stylesheet']
-        template_path = if config['htmlversion'].to_i == 5
-                          './html/layout-html5.html.erb'
-                        else
-                          './html/layout-xhtml1.html.erb'
-                        end
-        ret = ReVIEW::Template.generate(path: template_path, binding: binding)
+        ret = ReVIEW::Template.generate(path: template_name, binding: binding)
         @body_ext = nil
         ret
       end
@@ -144,12 +156,7 @@ module ReVIEW
 
         @language = config['language']
         @stylesheets = config['stylesheet']
-        template_path = if config['htmlversion'].to_i == 5
-                          './html/layout-html5.html.erb'
-                        else
-                          './html/layout-xhtml1.html.erb'
-                        end
-        ReVIEW::Template.generate(path: template_path, binding: binding)
+        ReVIEW::Template.generate(path: template_name, binding: binding)
       end
 
       # Return colophon content.
@@ -161,12 +168,7 @@ module ReVIEW
 
         @language = config['language']
         @stylesheets = config['stylesheet']
-        template_path = if config['htmlversion'].to_i == 5
-                          './html/layout-html5.html.erb'
-                        else
-                          './html/layout-xhtml1.html.erb'
-                        end
-        ReVIEW::Template.generate(path: template_path, binding: binding)
+        ReVIEW::Template.generate(path: template_name, binding: binding)
       end
 
       def isbn_hyphen
@@ -222,12 +224,7 @@ module ReVIEW
 
         @language = config['language']
         @stylesheets = config['stylesheet']
-        template_path = if config['htmlversion'].to_i == 5
-                          './html/layout-html5.html.erb'
-                        else
-                          './html/layout-xhtml1.html.erb'
-                        end
-        ReVIEW::Template.generate(path: template_path, binding: binding)
+        ReVIEW::Template.generate(path: template_name, binding: binding)
       end
 
       def hierarchy_ncx(type)

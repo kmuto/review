@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2021 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -324,6 +324,13 @@ module ReVIEW
     end
 
     def template_name
+      if @basedir
+        layoutfile = File.join(@basedir, 'layouts', 'layout.html.erb')
+        if File.exist?(layoutfile)
+          return layoutfile
+        end
+      end
+
       if @producer.config['htmlversion'].to_i == 5
         './html/layout-html5.html.erb'
       else
