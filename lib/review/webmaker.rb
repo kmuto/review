@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
+# Copyright (c) 2016-2022 Masayoshi Takahashi, Masanori Kado, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -97,7 +97,7 @@ module ReVIEW
     end
 
     def generate_html_files(yamlfile)
-      @basedir = File.dirname(yamlfile)
+      @basedir = File.absolute_path(File.dirname(yamlfile))
       @path = build_path
       remove_old_files(@path)
       Dir.mkdir(@path)
@@ -159,6 +159,13 @@ module ReVIEW
     end
 
     def template_name
+      if @basedir
+        layoutfile = File.join(@basedir, 'layouts', 'layout-web.html.erb')
+        if File.exist?(layoutfile)
+          return layoutfile
+        end
+      end
+
       if @config['htmlversion'].to_i == 5
         'web/html/layout-html5.html.erb'
       else

@@ -1,6 +1,6 @@
 # = epubv2.rb -- EPUB version 2 producer.
 #
-# Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -159,6 +159,7 @@ EOT
       # +basedir+ points the directory has contents.
       # +tmpdir+ defines temporary directory.
       def produce(epubfile, work_dir, tmpdir, base_dir:)
+        @workdir = base_dir
         produce_write_common(work_dir, tmpdir)
 
         ncx_file = "#{tmpdir}/OEBPS/#{config['bookname']}.ncx"
