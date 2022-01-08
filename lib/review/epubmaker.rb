@@ -315,20 +315,23 @@ module ReVIEW
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @part_number = part.number
         @part_title = part.name.strip
-        @body = ReVIEW::Template.generate(path: 'html/_part_body.html.erb', binding: binding)
-
+        @body = ReVIEW::Template.generate(path: template_name(localfile: '_part_body.html.erb', systemfile: 'html/_part_body.html.erb'), binding: binding)
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
         f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
-    def template_name
+    def template_name(localfile: 'layout.html.erb', systemfile: nil)
       if @basedir
-        layoutfile = File.join(@basedir, 'layouts', 'layout.html.erb')
+        layoutfile = File.join(@basedir, 'layouts', localfile)
         if File.exist?(layoutfile)
           return layoutfile
         end
+      end
+
+      if systemfile
+        return systemfile
       end
 
       if @producer.config['htmlversion'].to_i == 5
@@ -552,25 +555,12 @@ module ReVIEW
     end
 
     def build_titlepage(basetmpdir, htmlfile)
-      # TODO: should be created via epubcommon
       @title = h(@config.name_of('booktitle'))
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
-        @body = ''
-        @body << %Q(<div class="titlepage">\n)
-        @body << %Q(<h1 class="tp-title">#{h(@config.name_of('booktitle'))}</h1>\n)
-        if @config['subtitle']
-          @body << %Q(<h2 class="tp-subtitle">#{h(@config.name_of('subtitle'))}</h2>\n)
-        end
-        if @config['aut']
-          @body << %Q(<h2 class="tp-author">#{h(@config.names_of('aut').join(ReVIEW::I18n.t('names_splitter')))}</h2>\n)
-        end
-        if @config['pbl']
-          @body << %Q(<h3 class="tp-publisher">#{h(@config.names_of('pbl').join(ReVIEW::I18n.t('names_splitter')))}</h3>\n)
-        end
-        @body << '</div>'
-
+        @body = ReVIEW::Template.generate(path: template_name(localfile: '_titlepage.html.erb', systemfile: 'html/_titlepage.html.erb'), binding: binding)
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
+
         f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end

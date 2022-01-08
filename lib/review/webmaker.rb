@@ -146,24 +146,25 @@ module ReVIEW
     def build_part(part, basetmpdir, htmlfile)
       @title = h("#{ReVIEW::I18n.t('part', part.number)} #{part.name.strip}")
       File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
-        @body = ''
-        @body << %Q(<div class="part">\n)
-        @body << %Q(<h1 class="part-number">#{ReVIEW::I18n.t('part', part.number)}</h1>\n)
-        @body << %Q(<h2 class="part-title">#{part.name.strip}</h2>\n) if part.name.strip.present?
-        @body << "</div>\n"
-
+        @part_number = part.number
+        @part_title = part.name.strip
+        @body = ReVIEW::Template.generate(path: template_name(localfile: '_part_body.html.erb', systemfile: 'html/_part_body.html.erb'), binding: binding)
         @language = @config['language']
         @stylesheets = @config['stylesheet']
         f.write ReVIEW::Template.generate(path: template_name, binding: binding)
       end
     end
 
-    def template_name
+    def template_name(localfile: 'layout-web.html.erb', systemfile: nil)
       if @basedir
-        layoutfile = File.join(@basedir, 'layouts', 'layout-web.html.erb')
+        layoutfile = File.join(@basedir, 'layouts', localfile)
         if File.exist?(layoutfile)
           return layoutfile
         end
+      end
+
+      if systemfile
+        return systemfile
       end
 
       if @config['htmlversion'].to_i == 5
@@ -281,18 +282,8 @@ module ReVIEW
 
     def build_titlepage(basetmpdir, htmlfile)
       @title = h('titlepage')
-      File.open("#{basetmpdir}/#{htmlfile}", 'w') do |f|
-        @body = ''
-        @body << %Q(<div class="titlepage">)
-        @body << %Q(<h1 class="tp-title">#{h(@config.name_of('booktitle'))}</h1>)
-        if @config['aut']
-          @body << %Q(<h2 class="tp-author">#{join_with_separator(@config.names_of('aut'), ReVIEW::I18n.t('names_splitter'))}</h2>)
-        end
-        if @config['pbl']
-          @body << %Q(<h3 class="tp-publisher">#{join_with_separator(@config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))}</h3>)
-        end
-        @body << '</div>'
-
+      File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
+        @body = ReVIEW::Template.generate(path: template_name(localfile: '_titlepage.html.erb', systemfile: 'html/_titlepage.html.erb'), binding: binding)
         @language = @config['language']
         @stylesheets = @config['stylesheet']
         f.write ReVIEW::Template.generate(path: template_name, binding: binding)

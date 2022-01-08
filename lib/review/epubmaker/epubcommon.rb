@@ -101,12 +101,16 @@ module ReVIEW
         end
       end
 
-      def template_name
+      def template_name(localfile: 'layout.html.erb', systemfile: nil)
         if @workdir
-          layoutfile = File.join(@workdir, 'layouts', 'layout.html.erb')
+          layoutfile = File.join(@workdir, 'layouts', localfile)
           if File.exist?(layoutfile)
             return layoutfile
           end
+        end
+
+        if systemfile
+          return systemfile
         end
 
         if config['htmlversion'].to_i == 5
@@ -126,7 +130,7 @@ module ReVIEW
           @coverimage_src = coverimage
           raise ApplicationError, "coverimage #{config['coverimage']} not found. Abort." unless @coverimage_src
         end
-        @body = ReVIEW::Template.generate(path: './html/_cover.html.erb', binding: binding)
+        @body = ReVIEW::Template.generate(path: template_name(localfile: '_cover.html.erb', systemfile: 'html/_cover.html.erb'), binding: binding)
 
         @title = h(config.name_of('title'))
         @language = config['language']
@@ -152,7 +156,7 @@ module ReVIEW
         if config.names_of('pbl')
           @publisher_str = join_with_separator(config.names_of('pbl'), ReVIEW::I18n.t('names_splitter'))
         end
-        @body = ReVIEW::Template.generate(path: './html/_titlepage.html.erb', binding: binding)
+        @body = ReVIEW::Template.generate(path: template_name(localfile: '_titlepage.html.erb', systemfile: './html/_titlepage.html.erb'), binding: binding)
 
         @language = config['language']
         @stylesheets = config['stylesheet']
@@ -164,7 +168,7 @@ module ReVIEW
         @title = h(ReVIEW::I18n.t('colophontitle'))
         @isbn_hyphen = isbn_hyphen
 
-        @body = ReVIEW::Template.generate(path: './html/_colophon.html.erb', binding: binding)
+        @body = ReVIEW::Template.generate(path: template_name(localfile: '_colophon.html.erb', systemfile: './html/_colophon.html.erb'), binding: binding)
 
         @language = config['language']
         @stylesheets = config['stylesheet']
@@ -203,7 +207,7 @@ module ReVIEW
           end
         end
 
-        ReVIEW::Template.generate(path: './html/_colophon_history.html.erb', binding: binding)
+        ReVIEW::Template.generate(path: template_name(localfile: '_colophon_history.html.erb', systemfile: './html/_colophon_history.html.erb'), binding: binding)
       end
 
       def date_to_s(date)

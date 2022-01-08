@@ -6,6 +6,7 @@ class EPUBMakerTest < Test::Unit::TestCase
     config = ReVIEW::Configure.values
     config.merge!(
       'bookname' => 'sample',
+      'booktitle' => 'Sample Book',
       'title' => 'Sample Book',
       'epubversion' => 2,
       'urnid' => 'http://example.jp/',
@@ -806,19 +807,11 @@ EOT
   <title>Sample Book</title>
 </head>
 <body>
-  <h1 class="tp-title">Sample Book</h1>
-  <p>
-    <br />
-    <br />
-  </p>
-  <h2 class="tp-author">Mr.Smith</h2>
-  <p>
-    <br />
-    <br />
-    <br />
-    <br />
-  </p>
-  <h3 class="tp-publisher">BLUEPRINT</h3>
+<div class="titlepage">
+<h1 class="tp-title">Sample Book</h1>
+<h2 class="tp-author">Mr.Smith</h2>
+<h3 class="tp-publisher">BLUEPRINT</h3>
+</div>
 </body>
 </html>
 EOT
@@ -842,19 +835,11 @@ EOT
   <title>Sample Book</title>
 </head>
 <body>
-  <h1 class="tp-title">Sample Book</h1>
-  <p>
-    <br />
-    <br />
-  </p>
-  <h2 class="tp-author">Mr.Smith</h2>
-  <p>
-    <br />
-    <br />
-    <br />
-    <br />
-  </p>
-  <h3 class="tp-publisher">BLUEPRINT</h3>
+<div class="titlepage">
+<h1 class="tp-title">Sample Book</h1>
+<h2 class="tp-author">Mr.Smith</h2>
+<h3 class="tp-publisher">BLUEPRINT</h3>
+</div>
 </body>
 </html>
 EOT
