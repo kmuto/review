@@ -14,11 +14,11 @@ module ReVIEW
       def self.mkpart_from_namelistfile(book, path)
         chaps = []
         File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, number|
-          if path =~ /PREDEF/
-            chaps << Chapter.mkchap(book, name)
-          else
-            chaps << Chapter.mkchap(book, name, number + 1)
-          end
+          chaps << if path =~ /PREDEF/
+                     Chapter.mkchap(book, name)
+                   else
+                     Chapter.mkchap(book, name, number + 1)
+                   end
         end
         Part.mkpart(chaps)
       end
@@ -47,11 +47,11 @@ module ReVIEW
         else
           @content = ''
         end
-        if file?
-          @title = nil
-        else
-          @title = name
-        end
+        @title = if file?
+                   nil
+                 else
+                   name
+                 end
         @volume = nil
 
         super()
@@ -78,11 +78,10 @@ module ReVIEW
 
       def volume
         if @number && file?
-          vol = Volume.count_file(File.join(@book.config['contentdir'], @path))
+          Volume.count_file(File.join(@book.config['contentdir'], @path))
         else
-          vol = Volume.new(0, 0, 0)
+          Volume.new(0, 0, 0)
         end
-        vol
       end
 
       def file?

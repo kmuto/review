@@ -348,15 +348,15 @@ EOS
 //}
 EOS
 
-      if type == 'notice' # exception pattern
-        expected = <<-EOS.chomp
+      expected = if type == 'notice' # exception pattern
+                   <<-EOS.chomp
 <#{type}-t><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}-t>
 EOS
-      else
-        expected = <<-EOS.chomp
+                 else
+                   <<-EOS.chomp
 <#{type}><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}>
 EOS
-      end
+                 end
       assert_equal expected, compile_block(src)
 
       src = <<-EOS
@@ -412,17 +412,17 @@ LIST
 //}
 EOS
 
-      if type == 'notice' # exception pattern
-        expected = <<-EOS.chomp
+      expected = if type == 'notice' # exception pattern
+                   <<-EOS.chomp
 <#{type}><ul><li aid:pstyle="ul-item">A</li></ul><ol><li aid:pstyle="ol-item" olnum="1" num="1">B</li></ol></#{type}><#{type}-t><title aid:pstyle='#{type}-title'>OMITEND1</title><list type='emlist'><pre>LIST
 </pre></list></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>OMITEND2</title></#{type}-t>
 EOS
-      else
-        expected = <<-EOS.chomp
+                 else
+                   <<-EOS.chomp
 <#{type}><ul><li aid:pstyle="ul-item">A</li></ul><ol><li aid:pstyle="ol-item" olnum="1" num="1">B</li></ol></#{type}><#{type}><title aid:pstyle='#{type}-title'>OMITEND1</title><list type='emlist'><pre>LIST
 </pre></list></#{type}><#{type}><title aid:pstyle='#{type}-title'>OMITEND2</title></#{type}>
 EOS
-      end
+                 end
       assert_equal expected, compile_block(src)
     end
   end

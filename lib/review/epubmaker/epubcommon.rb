@@ -220,11 +220,11 @@ module ReVIEW
       def mytoc
         @title = h(ReVIEW::I18n.t('toctitle'))
         @body = %Q(  <h1 class="toc-title">#{h(ReVIEW::I18n.t('toctitle'))}</h1>\n)
-        if config['epubmaker']['flattoc'].nil?
-          @body << hierarchy_ncx('ul')
-        else
-          @body << flat_ncx('ul', config['epubmaker']['flattocindent'])
-        end
+        @body << if config['epubmaker']['flattoc'].nil?
+                   hierarchy_ncx('ul')
+                 else
+                   flat_ncx('ul', config['epubmaker']['flattocindent'])
+                 end
 
         @language = config['language']
         @stylesheets = config['stylesheet']

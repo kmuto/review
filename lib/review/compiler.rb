@@ -671,11 +671,11 @@ module ReVIEW
       end
       result = ''
       until words.empty?
-        if in_non_escaped_command? && block_mode
-          result << revert_replace_fence(words.shift)
-        else
-          result << @builder.nofunc_text(revert_replace_fence(words.shift))
-        end
+        result << if in_non_escaped_command? && block_mode
+                    revert_replace_fence(words.shift)
+                  else
+                    @builder.nofunc_text(revert_replace_fence(words.shift))
+                  end
         break if words.empty?
 
         result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))

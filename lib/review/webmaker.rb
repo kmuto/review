@@ -175,13 +175,11 @@ module ReVIEW
     end
 
     def build_chap(chap, base_path, basetmpdir, ispart)
-      filename = ''
-
-      if ispart.present?
-        filename = chap.path
-      else
-        filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
-      end
+      filename = if ispart.present?
+                   chap.path
+                 else
+                   Pathname.new(chap.path).relative_path_from(base_path).to_s
+                 end
       id = File.basename(filename).sub(/\.re\Z/, '')
 
       if @buildonly && !@buildonly.include?(id)

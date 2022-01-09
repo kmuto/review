@@ -446,11 +446,11 @@ module ReVIEW
       end
 
       properties = detect_properties(path)
-      if properties.present?
-        prop_str = ',properties=' + properties.join(' ')
-      else
-        prop_str = ''
-      end
+      prop_str = if properties.present?
+                   ',properties=' + properties.join(' ')
+                 else
+                   ''
+                 end
       first = true
       headlines.each do |headline|
         if ispart.present? && headline['level'] == 1

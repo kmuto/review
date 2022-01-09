@@ -107,15 +107,15 @@ EOT
         end
 
         file, anc = href.split('#', 2)
-        if anc
-          if file.empty?
-            anc = "#{sanitize(fname)}_#{sanitize(anc)}"
-          else
-            anc = "#{sanitize(file)}_#{sanitize(anc)}"
-          end
-        else
-          anc = sanitize(file)
-        end
+        anc = if anc
+                if file.empty?
+                  "#{sanitize(fname)}_#{sanitize(anc)}"
+                else
+                  "#{sanitize(file)}_#{sanitize(anc)}"
+                end
+              else
+                sanitize(file)
+              end
 
         e.attributes['href'] = "##{anc}"
       end

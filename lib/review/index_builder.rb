@@ -101,11 +101,7 @@ module ReVIEW
 
       cursor = level - 2
 
-      if label
-        @headline_stack[cursor] = label
-      else
-        @headline_stack[cursor] = caption
-      end
+      @headline_stack[cursor] = (label || caption)
       if @headline_stack.size > cursor + 1
         @headline_stack = @headline_stack.take(cursor + 1)
       end
@@ -123,11 +119,7 @@ module ReVIEW
 
       cursor = level - 2
 
-      if label
-        @headline_stack[cursor] = label
-      else
-        @headline_stack[cursor] = caption
-      end
+      @headline_stack[cursor] = (label || caption)
       if @headline_stack.size > cursor + 1
         @headline_stack = @headline_stack.take(cursor + 1)
       end
@@ -147,11 +139,7 @@ module ReVIEW
 
       cursor = level - 2
 
-      if label
-        @headline_stack[cursor] = label
-      else
-        @headline_stack[cursor] = caption
-      end
+      @headline_stack[cursor] = (label || caption)
       if @headline_stack.size > cursor + 1
         @headline_stack = @headline_stack.take(cursor + 1)
       end
@@ -171,11 +159,7 @@ module ReVIEW
 
       cursor = level - 2
 
-      if label
-        @headline_stack[cursor] = label
-      else
-        @headline_stack[cursor] = caption
-      end
+      @headline_stack[cursor] = (label || caption)
       if @headline_stack.size > cursor + 1
         @headline_stack = @headline_stack.take(cursor + 1)
       end
