@@ -297,7 +297,7 @@ module ReVIEW
       @logger.info "compiling #{filename}.tex"
       begin
         @converter.convert(filename + '.re', File.join(@path, filename + '.tex'))
-      rescue => e
+      rescue StandardError => e
         @compile_errors = true
         error "compile error in #{filename}.tex (#{e.class})"
         error e.message
@@ -494,7 +494,7 @@ module ReVIEW
         template_path = 'layouts/layout.tex.erb'
       end
       ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
-    rescue => e
+    rescue StandardError => e
       if defined?(e.full_message)
         error! "template or configuration error: #{e.full_message(highlight: false)}"
       else

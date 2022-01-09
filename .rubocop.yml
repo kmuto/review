@@ -320,9 +320,6 @@ Style/RedundantSelf:
 Style/RegexpLiteral:
   Enabled: true
 
-Style/RescueStandardError:
-  Enabled: false
-
 Style/Semicolon:
   Enabled: true
 

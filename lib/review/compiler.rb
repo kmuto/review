@@ -681,7 +681,7 @@ module ReVIEW
         result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
       end
       result
-    rescue => e
+    rescue StandardError => e
       error e.message, location: location
     end
     public :text # called from builder
@@ -696,7 +696,7 @@ module ReVIEW
       end
 
       @builder.__send__("inline_#{op}", arg)
-    rescue => e
+    rescue StandardError => e
       error e.message, location: location
       @builder.nofunc_text(str)
     end

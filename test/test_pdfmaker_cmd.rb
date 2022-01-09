@@ -41,7 +41,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_sample_jsbook_print
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_sample_jsbook_print'
       return true
     end
@@ -51,7 +51,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_sample_jsbook_ebook
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_sample_jsbook_ebook'
       return true
     end
@@ -61,7 +61,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_sample_jlreq_print
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_sample_jlreq_print'
       return true
     end
@@ -71,7 +71,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_sample_jlreq_ebook
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_sample_jlreq_ebook'
       return true
     end
@@ -81,7 +81,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_syntax_jsbook_print
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_syntax_jsbook_print'
       return true
     end
@@ -91,7 +91,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_syntax_jsbook_print_buildonly
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_syntax_jsbook_print_buildonly'
       return true
     end
@@ -101,7 +101,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_syntax_jsbook_ebook
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_syntax_jsbook_ebook'
       return true
     end
@@ -111,7 +111,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_syntax_jlreq_ebook
     begin
       `uplatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_syntax_jlreq_ebook'
       return true
     end
@@ -121,7 +121,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   def test_pdfmaker_cmd_syntax_jlreq_ebook_lualatex
     begin
       `lualatex -v`
-    rescue
+    rescue StandardError
       $stderr.puts 'skip test_pdfmaker_cmd_syntax_jlreq_ebook_lualatex'
       return true
     end

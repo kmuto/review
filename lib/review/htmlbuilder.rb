@@ -861,7 +861,7 @@ EOS
       end
       begin
         puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         if lines
           puts %Q(<pre class="dummyimage">)
@@ -1250,7 +1250,7 @@ EOS
     def inline_icon(id)
       begin
         %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         %Q(<pre>missing image: #{id}</pre>)
       end

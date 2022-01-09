@@ -45,7 +45,7 @@ module ReVIEW
 
       def [](id)
         @index.fetch(id)
-      rescue
+      rescue StandardError
         index_keys = @index.keys.map { |i| i.split('|').last }.flatten # unfold all ids
         if index_keys.each_with_object(Hash.new(0)) { |i, h| h[i] += 1 }. # number of occurrences
            select { |k, v| k == id && v > 1 }.present? # detect duplicated
@@ -84,14 +84,14 @@ module ReVIEW
         begin
           chapter = chapter_item.content
           chapter.format_number
-        rescue # part
+        rescue StandardError # part
           I18n.t('part', chapter.number)
         end
       end
 
       def title(id)
         @index.fetch(id).content.title
-      rescue # non-file part
+      rescue StandardError # non-file part
         @index.fetch(id).content.name
       end
 

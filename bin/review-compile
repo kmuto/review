@@ -52,13 +52,13 @@ def _main
       error! "#{@config['yaml']} not found." unless File.exist?(@config['yaml'])
       begin
         @config.deep_merge!(loader.load_file(@config['yaml']))
-      rescue => e
+      rescue StandardError => e
         error! "yaml error #{e.message}"
       end
     elsif File.exist?(DEFAULT_CONFIG_FILENAME)
       begin
         @config.deep_merge!(loader.load_file(DEFAULT_CONFIG_FILENAME))
-      rescue => e
+      rescue StandardError => e
         error! "yaml error #{e.message}"
       end
     end

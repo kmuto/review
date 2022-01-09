@@ -800,7 +800,7 @@ module ReVIEW
     def inline_icon(id)
       begin
         %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}" type="inline" />)
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         ''
       end
@@ -1147,7 +1147,7 @@ module ReVIEW
       end
       begin
         puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}"#{metrics} />)
-      rescue
+      rescue StandardError
         warn %Q(image not bound: #{id}), location: location
       end
       unless caption_top?('image')

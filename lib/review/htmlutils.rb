@@ -9,7 +9,7 @@
 
 begin
   require 'cgi/escape'
-rescue
+rescue StandardError
   require 'cgi/util'
 end
 

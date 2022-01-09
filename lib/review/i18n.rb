@@ -171,7 +171,7 @@ module ReVIEW
       args_matched = (frmt.count('%') <= args.size)
       frmt.gsub!('##', '%%')
       args_matched ? (frmt % args) : frmt
-    rescue
+    rescue StandardError
       str
     end
   end

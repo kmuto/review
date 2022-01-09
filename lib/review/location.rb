@@ -22,7 +22,7 @@ module ReVIEW
     def string
       begin
         "#{@filename}:#{@f.lineno}"
-      rescue
+      rescue StandardError
         "#{@filename}:nil"
       end
     end

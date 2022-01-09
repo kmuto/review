@@ -409,7 +409,7 @@ module ReVIEW
     def inline_icon(id)
       begin
         "![](#{@chapter.image(id).path.sub(%r{\A\./}, '')})"
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         %Q(<pre>missing image: #{id}</pre>)
       end

@@ -394,7 +394,7 @@ module ReVIEW
         @converter.convert(filename, File.join(basetmpdir, htmlfile))
         write_info_body(basetmpdir, id, htmlfile, ispart, chaptype)
         remove_hidden_title(basetmpdir, htmlfile)
-      rescue => e
+      rescue StandardError => e
         @compile_errors = true
         error "compile error in #{filename} (#{e.class})"
         error e.message

@@ -157,7 +157,7 @@ module ReVIEW
         puts macro('label', sec_label(anchor))
         puts macro('label', label) if label
       end
-    rescue
+    rescue StandardError
       app_error "unknown level: #{level}"
     end
 

@@ -155,7 +155,7 @@ module ReVIEW
         begin
           loader = ReVIEW::YAMLLoader.new
           conf.deep_merge!(loader.load_file(yamlfile))
-        rescue => e
+        rescue StandardError => e
           raise ReVIEW::ConfigError, "yaml error #{e.message}"
         end
       end

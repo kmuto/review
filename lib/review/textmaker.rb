@@ -159,7 +159,7 @@ module ReVIEW
 
       begin
         @converter.convert(filename, File.join(basetmpdir, textfile))
-      rescue => e
+      rescue StandardError => e
         @compile_errors = true
         error "compile error in #{filename} (#{e.class})"
         error e.message

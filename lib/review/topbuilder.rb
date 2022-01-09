@@ -398,7 +398,7 @@ module ReVIEW
     def inline_icon(id)
       begin
         "◆→画像 #{@chapter.image(id).path.sub(%r{\A\./}, '')}←◆"
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         "◆→画像 #{id}←◆"
       end
@@ -504,7 +504,7 @@ module ReVIEW
       end
       begin
         puts "◆→画像 #{@chapter.image(id).path.sub(%r{\A\./}, '')}#{metrics}←◆"
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         puts "◆→画像 #{id}←◆"
       end

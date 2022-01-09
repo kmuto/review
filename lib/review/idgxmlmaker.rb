@@ -119,7 +119,7 @@ module ReVIEW
         if s.success?
           File.write(xmlfile, o) # override
         end
-      rescue => e
+      rescue StandardError => e
         warn("filter error for #{xmlfile}: #{e.message}")
       end
     end
@@ -177,7 +177,7 @@ module ReVIEW
       begin
         @converter.convert(filename, File.join(basetmpdir, xmlfile))
         apply_filter(File.join(basetmpdir, xmlfile))
-      rescue => e
+      rescue StandardError => e
         @compile_errors = true
         error "compile error in #{filename} (#{e.class})"
         error e.message
