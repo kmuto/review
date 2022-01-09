@@ -480,7 +480,7 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       @tablewidth = nil
       if @book.config['tableopt']
-        @tablewidth = @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f
+        @tablewidth = @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f # rubocop:disable Style/FloatDivision
       end
       @col = 0
 
@@ -540,7 +540,7 @@ module ReVIEW
           cellwidth = @tsize.split(/\s*,\s*/)
           totallength = 0
           cellwidth.size.times do |n|
-            cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
+            cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f # rubocop:disable Style/FloatDivision
             totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{@table_id}", location: location if totallength > @tablewidth
           end

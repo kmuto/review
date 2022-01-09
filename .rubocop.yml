@@ -140,9 +140,6 @@ Style/CommentedKeyword:
 Style/DocumentDynamicEvalDefinition:
   Enabled: false
 
-Style/FloatDivision:
-  Enabled: false
-
 # Do not introduce global variables.
 Style/GlobalVars:
   Enabled: true
