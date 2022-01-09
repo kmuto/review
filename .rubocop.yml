@@ -57,9 +57,6 @@ Lint/StructNewOverride:
 Lint/RedundantDirGlobSort:
   Enabled: false
 
-Lint/ElseLayout:
-  Enabled: false
-
 #### Performance
 
 Performance/RegexpMatch:
@@ -109,9 +106,6 @@ Performance/CollectionLiteralInLoop:
   Enabled: false
 
 #### Style
-
-Style/AccessModifierDeclarations:
-  Enabled: false
 
 Style/AsciiComments:
   Enabled: false
