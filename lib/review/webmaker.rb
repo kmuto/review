@@ -225,7 +225,7 @@ module ReVIEW
 
           if FileTest.directory?("#{resdir}/#{fname}")
             recursive_copy_files("#{resdir}/#{fname}", "#{destdir}/#{fname}", allow_exts)
-          elsif fname =~ /\.(#{allow_exts.join('|')})\Z/i
+          elsif /\.(#{allow_exts.join('|')})\Z/i.match?(fname)
             FileUtils.mkdir_p(destdir)
             FileUtils.cp("#{resdir}/#{fname}", destdir)
           end

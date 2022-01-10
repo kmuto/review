@@ -31,7 +31,7 @@ module ReVIEW
     def skip_comment_lines
       n = 0
       while line = gets
-        unless line.strip =~ /\A\#@/
+        unless /\A\#@/.match?(line.strip)
           ungets(line)
           return n
         end
@@ -88,7 +88,7 @@ module ReVIEW
 
     def while_match(re)
       while line = gets
-        unless re =~ line
+        unless re&.match?(line)
           ungets(line)
           return
         end
@@ -99,7 +99,7 @@ module ReVIEW
 
     def until_match(re)
       while line = gets
-        if re =~ line
+        if re&.match?(line)
           ungets(line)
           return
         end

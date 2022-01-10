@@ -227,7 +227,7 @@ module ReVIEW
       if @config['epubmaker']['verify_target_images'].present?
         @config['epubmaker']['force_include_images'].each do |file|
           unless File.exist?(file)
-            if file !~ /\Ahttps?:/
+            unless /\Ahttps?:/.match?(file)
               warn "#{file} is not found, skip."
             end
             next
@@ -257,7 +257,7 @@ module ReVIEW
 
           if FileTest.directory?(File.join(resdir, fname))
             recursive_copy_files(File.join(resdir, fname), File.join(destdir, fname), allow_exts)
-          elsif fname =~ /\.(#{allow_exts.join('|')})\Z/i
+          elsif /\.(#{allow_exts.join('|')})\Z/i.match?(fname)
             FileUtils.mkdir_p(destdir)
             debug("Copy #{resdir}/#{fname} to the temporary directory.")
             FileUtils.cp(File.join(resdir, fname), destdir, preserve: true)
@@ -386,7 +386,7 @@ module ReVIEW
 
       if @config['params'].present?
         warn %Q('params:' in config.yml is obsoleted.)
-        if @config['params'] =~ /stylesheet=/
+        if /stylesheet=/.match?(@config['params'])
           warn %Q(stylesheets should be defined in 'stylesheet:', not in 'params:')
         end
       end

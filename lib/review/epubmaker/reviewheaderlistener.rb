@@ -41,7 +41,7 @@ module ReVIEW
       end
 
       def tag_end(name)
-        if name =~ /\Ah\d+/
+        if /\Ah\d+/.match?(name)
           if @id.present?
             @headlines.push({ 'level' => @level,
                               'id' => @id,

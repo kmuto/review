@@ -59,9 +59,6 @@ Lint/RedundantDirGlobSort:
 
 #### Performance
 
-Performance/RegexpMatch:
-  Enabled: false
-
 Performance/ReverseEach:
   Enabled: true
 
@@ -124,9 +121,6 @@ Style/BarePercentLiterals:
 
 Style/BlockDelimiters:
   Enabled: true
-
-Style/CaseEquality:
-  Enabled: false
 
 Style/ClassCheck:
   Enabled: true
@@ -384,9 +378,6 @@ Style/StringConcatenation:
   Enabled: false
 
 Style/OptionalBooleanParameter:
-  Enabled: false
-
-Style/SoleNestedConditional:
   Enabled: false
 
 Style/CombinableLoops:

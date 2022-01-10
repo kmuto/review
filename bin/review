@@ -58,7 +58,7 @@ unless File.exist?(command_path)
   usage
 end
 
-if RUBY_PLATFORM =~ /mswin|bccwin|mingw/
+if RUBY_PLATFORM.match?(/mswin|bccwin|mingw/)
   cmd = File.join(RbConfig::CONFIG['bindir'],
                   RbConfig::CONFIG['ruby_install_name'])
   cmd << RbConfig::CONFIG['EXEEXT']

@@ -43,7 +43,7 @@ module ReVIEW
 
       Dir.open(from_dir) do |dir|
         dir.each do |fname|
-          next if fname =~ /^\./
+          next if /^\./.match?(fname)
 
           if FileTest.directory?("#{from_dir}/#{fname}")
             image_files += copy_images_to_dir("#{from_dir}/#{fname}", "#{to_dir}/#{fname}", options)
@@ -52,7 +52,7 @@ module ReVIEW
 
             is_converted = false
             (options[:convert] || {}).each do |orig_type, conv_type|
-              next unless /\.#{orig_type}$/ =~ fname
+              next unless /\.#{orig_type}$/.match?(fname)
 
               is_converted = system("convert #{from_dir}/#{fname} #{to_dir}/#{fname}.#{conv_type}")
               image_files << "#{from_dir}/#{fname}.#{conv_type}"

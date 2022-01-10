@@ -129,9 +129,9 @@ module ReVIEW
     end
 
     def normalize_id(id)
-      if id =~ /\A[a-z][a-z0-9_.-]*\Z/i
+      if /\A[a-z][a-z0-9_.-]*\Z/i.match?(id)
         id
-      elsif id =~ /\A[0-9_.-][a-z0-9_.-]*\Z/i
+      elsif /\A[0-9_.-][a-z0-9_.-]*\Z/i.match?(id)
         "id_#{id}" # dummy prefix
       else
         "id_#{CGI.escape(id.gsub('_', '__')).tr('%', '_').tr('+', '-')}" # escape all

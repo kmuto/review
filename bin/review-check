@@ -18,7 +18,7 @@ include ReVIEW::TextUtils
 
 def sigmain
   Signal.trap(:INT) { exit 1 }
-  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
+  unless RUBY_PLATFORM.match?(/mswin(?!ce)|mingw|cygwin|bccwin/)
     Signal.trap(:PIPE, 'IGNORE')
   end
   main
@@ -95,7 +95,7 @@ end
 def find_line(lines, re)
   # single line?
   lines.each_with_index do |line, idx|
-    if re =~ line
+    if re&.match?(line)
       return line.gsub(re, '<<<\&>>>'), idx
     end
   end
@@ -104,7 +104,7 @@ def find_line(lines, re)
   i = 0
   while i < lines.size - 1
     str = lines[i] + lines[i + 1]
-    return str.gsub(re, '<<<\&>>>'), i if re =~ str
+    return str.gsub(re, '<<<\&>>>'), i if re&.match?(str)
 
     i += 1
   end
@@ -118,7 +118,7 @@ def words_re(rc)
   File.foreach(rc) do |line|
     next if line[0, 1] == '#'
 
-    if / !/ =~ line
+    if / !/.match?(line)
       line, n = *line.split('!', 2)
       nega.push(n.strip)
     end
@@ -141,7 +141,7 @@ def each_paragraph(f)
       yield [$1], f.filename, f.lineno
     when %r<\A//\w.*\{\s*\z>
       while line = f.gets
-        break if %r{//\}} === line
+        break if %r{//\}}.match?(line)
       end
     when /\A=/
       yield [line.slice(/\A=+(?:\[.*?\])?\s+(.*)/, 1).strip], f.lineno
@@ -150,8 +150,8 @@ def each_paragraph(f)
       lineno = f.lineno
       while line = f.gets
         break if line.strip.empty?
-        break if %r{\A(?:=|//[\w\}])} =~ line
-        next if /\A\#@/ =~ line
+        break if %r{\A(?:=|//[\w\}])}.match?(line)
+        next if /\A\#@/.match?(line)
 
         buf.push(line.strip)
       end

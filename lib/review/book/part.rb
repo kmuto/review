@@ -14,7 +14,7 @@ module ReVIEW
       def self.mkpart_from_namelistfile(book, path)
         chaps = []
         File.read(path, mode: 'rt:BOM|utf-8').split.each_with_index do |name, number|
-          chaps << if path =~ /PREDEF/
+          chaps << if /PREDEF/.match?(path)
                      Chapter.mkchap(book, name)
                    else
                      Chapter.mkchap(book, name, number + 1)

@@ -165,7 +165,7 @@ module ReVIEW
       end
 
       def check_spec(spec)
-        app_error "wrong spec: #{spec.inspect}" unless /\A\w+\z/ =~ spec
+        app_error "wrong spec: #{spec.inspect}" unless /\A\w+\z/.match?(spec)
         spec
       end
 

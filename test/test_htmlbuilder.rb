@@ -1708,7 +1708,7 @@ EOS
   end
 
   def test_texequation
-    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true if /mswin|mingw|cygwin/.match?(RUBY_PLATFORM)
     return true unless system('latex -version 1>/dev/null 2>/dev/null')
 
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",
@@ -1741,7 +1741,7 @@ EOS
 
   def test_texequation_fail
     # Re:VIEW 3 never fail on defer mode. This test is only for Re:VIEW 2.
-    return true if /mswin|mingw|cygwin/ =~ RUBY_PLATFORM
+    return true if /mswin|mingw|cygwin/.match?(RUBY_PLATFORM)
     return true unless system('latex -version 1>/dev/null 2>/dev/null')
 
     mktmpbookdir('catalog.yml' => "CHAPS:\n - ch01.re\n",

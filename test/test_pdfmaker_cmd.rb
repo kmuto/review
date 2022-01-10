@@ -21,7 +21,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   end
 
   def common_buildpdf(bookdir, templatedir, configfile, targetpdffile, option = nil)
-    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
+    unless /mswin|mingw|cygwin/.match?(RUBY_PLATFORM)
       config = prepare_samplebook(@tmpdir1, bookdir, templatedir, configfile)
       builddir = File.join(@tmpdir1, config['bookname'] + '-pdf')
       assert !File.exist?(builddir)

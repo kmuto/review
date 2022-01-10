@@ -377,9 +377,9 @@ module ReVIEW
           items.each_with_index do |item, rev|
             editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
             revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
-            if item =~ /\A\d+-\d+-\d+\Z/
+            if /\A\d+-\d+-\d+\Z/.match?(item)
               buf << ReVIEW::I18n.t('published_by1', [date_to_s(item), editstr + revstr])
-            elsif item =~ /\A(\d+-\d+-\d+)[\s　](.+)/
+            elsif /\A(\d+-\d+-\d+)[\s　](.+)/.match?(item)
               # custom date with string
               item.match(/\A(\d+-\d+-\d+)[\s　](.+)/) { |m| buf << ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]]) }
             else

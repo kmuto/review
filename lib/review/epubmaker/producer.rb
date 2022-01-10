@@ -89,8 +89,8 @@ module ReVIEW
         Dir.foreach(path) do |f|
           next if f.start_with?('.')
 
-          if f =~ /\.(#{allow_exts.join('|')})\Z/i
-            path.chop! if path =~ %r{/\Z}
+          if /\.(#{allow_exts.join('|')})\Z/i.match?(f)
+            path.chop! if %r{/\Z}.match?(path)
             if base.nil?
               @contents.push(ReVIEW::EPUBMaker::Content.new(file: "#{path}/#{f}"))
             else
@@ -115,7 +115,7 @@ module ReVIEW
 
         # use Dir to solve a path for Windows (see #1011)
         new_tmpdir = Dir[File.join(tmpdir.nil? ? Dir.mktmpdir : tmpdir)][0]
-        if epubfile !~ %r{\A/}
+        unless epubfile.start_with?('/')
           epubfile = "#{current}/#{epubfile}"
         end
 
