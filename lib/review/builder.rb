@@ -134,11 +134,9 @@ module ReVIEW
     end
 
     def load_words(file)
-      if File.exist?(file)
-        if /\.csv\Z/i.match?(file)
-          CSV.foreach(file) do |row|
-            @dictionary[row[0]] = row[1]
-          end
+      if File.exist?(file) && /\.csv\Z/i.match?(file)
+        CSV.foreach(file) do |row|
+          @dictionary[row[0]] = row[1]
         end
       end
     end

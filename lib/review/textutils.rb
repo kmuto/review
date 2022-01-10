@@ -72,13 +72,11 @@ module ReVIEW
         end
 
         # lazy than rule 3, but it looks better
-        if lazy
-          if (%i[F W H].include?(Unicode::Eaw.property(tail)) &&
+        if lazy && ((%i[F W H].include?(Unicode::Eaw.property(tail)) &&
               tail !~ /\p{Hangul}/) ||
              (%i[F W H].include?(Unicode::Eaw.property(head)) &&
-              head !~ /\p{Hangul}/)
-            space = nil
-          end
+              head !~ /\p{Hangul}/))
+          space = nil
         end
       end
       space

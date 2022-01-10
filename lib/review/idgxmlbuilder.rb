@@ -1142,16 +1142,16 @@ module ReVIEW
     def indepimage(_lines, id, caption = nil, metric = nil)
       metrics = parse_metric('idgxml', metric)
       puts '<img>'
-      if caption_top?('image')
-        puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      if caption_top?('image') && caption.present?
+        puts %Q(<caption>#{compile_inline(caption)}</caption>)
       end
       begin
         puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}"#{metrics} />)
       rescue StandardError
         warn %Q(image not bound: #{id}), location: location
       end
-      unless caption_top?('image')
-        puts %Q(<caption>#{compile_inline(caption)}</caption>) if caption.present?
+      if !caption_top?('image') && caption.present?
+        puts %Q(<caption>#{compile_inline(caption)}</caption>)
       end
       puts '</img>'
     end

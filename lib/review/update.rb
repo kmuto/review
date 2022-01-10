@@ -226,9 +226,11 @@ module ReVIEW
 
     def check_own_files(dir)
       if File.exist?(File.join(dir, 'layouts/layout.tex.erb'))
+        # rubocop:disable Style/SoleNestedConditional
         unless confirm('** There is custom layouts/layout.tex.erb file. Updating may break to make PDF until you fix layout.tex.erb. Do you really proceed to update? **', [], nil)
           raise ApplicationError
         end
+        # rubocop:enable Style/SoleNestedConditional
       end
 
       if File.exist?(File.join(dir, 'review-ext.rb'))
@@ -265,10 +267,12 @@ module ReVIEW
       target_rakefile = File.join(dir, 'Rakefile')
       if File.exist?(target_rakefile)
         if Digest::SHA256.hexdigest(File.read(target_rakefile)) != Digest::SHA256.hexdigest(File.read(master_rakefile))
+          # rubocop:disable Style/SoleNestedConditional
           if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['Rakefile', master_rakefile])
             FileUtils.mv(target_rakefile, "#{target_rakefile}-old")
             FileUtils.cp(master_rakefile, target_rakefile)
           end
+          # rubocop:enable Style/SoleNestedConditional
         end
       else
         @logger.info t('new file %s is created.', [target_rakefile]) unless @force
@@ -278,12 +282,14 @@ module ReVIEW
       master_rakefile = File.join(@review_dir, 'samples/sample-book/src/lib/tasks/review.rake')
       target_rakefile = File.join(taskdir, 'review.rake')
       if File.exist?(target_rakefile)
+        # rubocop:disable Style/SoleNestedConditional
         if Digest::SHA256.hexdigest(File.read(target_rakefile)) != Digest::SHA256.hexdigest(File.read(master_rakefile))
           if confirm('%s will be overridden with Re:VIEW version (%s). Do you really proceed?', ['lib/tasks/review.rake', master_rakefile])
             FileUtils.mv(target_rakefile, "#{target_rakefile}-old")
             FileUtils.cp(master_rakefile, target_rakefile)
           end
         end
+        # rubocop:enable Style/SoleNestedConditional
       else
         @logger.info t('new file %s is created.', [target_rakefile]) unless @force
         FileUtils.cp(master_rakefile, target_rakefile)
@@ -294,9 +300,11 @@ module ReVIEW
       @epub_ymls.each do |yml|
         config = YAMLLoader.safe_load_file(yml)
         if config['epubversion'].present? && config['epubversion'].to_f < EPUB_VERSION.to_f
+          # rubocop:disable Style/SoleNestedConditional
           if confirm("%s: Update '%s' to '%s' from '%s'?", [File.basename(yml), 'epubversion', EPUB_VERSION, config['epubversion']])
             rewrite_yml(yml, 'epubversion', EPUB_VERSION)
           end
+          # rubocop:enable Style/SoleNestedConditional
         end
         if !config['htmlversion'].present? || config['htmlversion'].to_f >= HTML_VERSION.to_f
           next

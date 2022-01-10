@@ -383,9 +383,6 @@ Style/StringConcatenation:
 Style/OptionalBooleanParameter:
   Enabled: false
 
-Style/SoleNestedConditional:
-  Enabled: false
-
 Style/CombinableLoops:
   Enabled: false
 
