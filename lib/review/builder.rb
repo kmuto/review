@@ -62,11 +62,11 @@ module ReVIEW
       if @book && @book.config
         @img_math ||= ReVIEW::ImgMath.new(@book.config)
         if words_file_path = @book.config['words_file']
-          if words_file_path.is_a?(String)
-            words_files = [words_file_path]
-          else
-            words_files = words_file_path
-          end
+          words_files = if words_file_path.is_a?(String)
+                          [words_file_path]
+                        else
+                          words_file_path
+                        end
           words_files.each do |f|
             load_words(f)
           end

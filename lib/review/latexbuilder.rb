@@ -157,7 +157,7 @@ module ReVIEW
         puts macro('label', sec_label(anchor))
         puts macro('label', label) if label
       end
-    rescue
+    rescue StandardError
       app_error "unknown level: #{level}"
     end
 
@@ -199,12 +199,11 @@ module ReVIEW
       blank
       @doc_status[:column] = true
 
-      target = nil
-      if label
-        target = "\\hypertarget{#{column_label(label)}}{}"
-      else
-        target = "\\hypertarget{#{column_label(caption)}}{}"
-      end
+      target = if label
+                 "\\hypertarget{#{column_label(label)}}{}"
+               else
+                 "\\hypertarget{#{column_label(caption)}}{}"
+               end
 
       @doc_status[:caption] = true
       if @book.config.check_version('2', exception: false)
@@ -476,11 +475,11 @@ module ReVIEW
           captionstr = macro(command + 'caption', compile_inline(caption))
         else
           begin
-            if get_chap.nil?
-              captionstr = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
-            else
-              captionstr = macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
-            end
+            captionstr = if get_chap.nil?
+                           macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+                         else
+                           macro('reviewlistcaption', "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+                         end
           rescue KeyError
             app_error "no such list: #{id}"
           end
@@ -578,13 +577,12 @@ module ReVIEW
     end
 
     def image_image(id, caption = '', metric = nil)
-      captionstr = nil
       @doc_status[:caption] = true
-      if @book.config.check_version('2', exception: false)
-        captionstr = macro('caption', compile_inline(caption)) + "\n"
-      else
-        captionstr = macro('reviewimagecaption', compile_inline(caption)) + "\n"
-      end
+      captionstr = if @book.config.check_version('2', exception: false)
+                     macro('caption', compile_inline(caption)) + "\n"
+                   else
+                     macro('reviewimagecaption', compile_inline(caption)) + "\n"
+                   end
       captionstr << macro('label', image_label(id))
       @doc_status[:caption] = nil
 
@@ -970,11 +968,11 @@ module ReVIEW
 
       if id
         puts macro('begin', 'reviewequationblock')
-        if get_chap.nil?
-          captionstr = macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
-        else
-          captionstr = macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
-        end
+        captionstr = if get_chap.nil?
+                       macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+                     else
+                       macro('reviewequationcaption', "#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix')}#{compile_inline(caption)}")
+                     end
       end
 
       if caption_top?('equation') && captionstr
@@ -1279,11 +1277,11 @@ module ReVIEW
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
-      if n.present? && chap.number && over_secnolevel?(n)
-        str = I18n.t('hd_quote', [chap.headline_index.number(id), compile_inline(chap.headline(id).caption)])
-      else
-        str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
-      end
+      str = if n.present? && chap.number && over_secnolevel?(n)
+              I18n.t('hd_quote', [chap.headline_index.number(id), compile_inline(chap.headline(id).caption)])
+            else
+              I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
+            end
       if @book.config['chapterlink']
         anchor = n.tr('.', '-')
         macro('reviewsecref', str, sec_label(anchor))

@@ -57,9 +57,6 @@ Lint/StructNewOverride:
 Lint/RedundantDirGlobSort:
   Enabled: false
 
-Lint/ElseLayout:
-  Enabled: false
-
 #### Performance
 
 Performance/RegexpMatch:
@@ -110,9 +107,6 @@ Performance/CollectionLiteralInLoop:
 
 #### Style
 
-Style/AccessModifierDeclarations:
-  Enabled: false
-
 Style/AsciiComments:
   Enabled: false
 
@@ -146,9 +140,6 @@ Style/CommentedKeyword:
 Style/DocumentDynamicEvalDefinition:
   Enabled: false
 
-Style/FloatDivision:
-  Enabled: false
-
 # Do not introduce global variables.
 Style/GlobalVars:
   Enabled: true
@@ -156,9 +147,6 @@ Style/GlobalVars:
 # Use self-assignment shorthand +=.
 Style/SelfAssignment:
   Enabled: true
-
-Style/ConditionalAssignment:
-  Enabled: false
 
 Style/Documentation:
   Enabled: false
@@ -319,9 +307,6 @@ Style/RedundantSelf:
 
 Style/RegexpLiteral:
   Enabled: true
-
-Style/RescueStandardError:
-  Enabled: false
 
 Style/Semicolon:
   Enabled: true

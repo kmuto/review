@@ -20,11 +20,11 @@ module BookTestHelper
           created_files[filename] = path
         end
         conf_path = File.expand_path('config.yml', dir)
-        if File.exist?(conf_path)
-          config = ReVIEW::Configure.create(yamlfile: conf_path)
-        else
-          config = ReVIEW::Configure.values
-        end
+        config = if File.exist?(conf_path)
+                   ReVIEW::Configure.create(yamlfile: conf_path)
+                 else
+                   ReVIEW::Configure.values
+                 end
         book = Book::Base.new(dir, config: config)
         yield(dir, book, created_files)
       end
@@ -34,11 +34,11 @@ module BookTestHelper
   def get_instance_variables(obj)
     obj.instance_variables.each_with_object({}) do |name, memo|
       value = obj.instance_variable_get(name)
-      if value.instance_variables.empty?
-        memo[name] = value
-      else
-        memo[name] = get_instance_variables(value)
-      end
+      memo[name] = if value.instance_variables.empty?
+                     value
+                   else
+                     get_instance_variables(value)
+                   end
     end
   end
 end

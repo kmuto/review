@@ -111,12 +111,11 @@ module ReVIEW
 
     def build_body(basetmpdir, _yamlfile)
       base_path = Pathname.new(@basedir)
-      builder = nil
-      if @plaintext
-        builder = ReVIEW::PLAINTEXTBuilder.new(img_math: @img_math)
-      else
-        builder = ReVIEW::TOPBuilder.new(img_math: @img_math)
-      end
+      builder = if @plaintext
+                  ReVIEW::PLAINTEXTBuilder.new(img_math: @img_math)
+                else
+                  ReVIEW::TOPBuilder.new(img_math: @img_math)
+                end
       @converter = ReVIEW::Converter.new(@book, builder)
       @book.parts.each do |part|
         if part.name.present?
@@ -142,13 +141,11 @@ module ReVIEW
     end
 
     def build_chap(chap, base_path, basetmpdir, ispart)
-      filename = ''
-
-      if ispart.present?
-        filename = chap.path
-      else
-        filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
-      end
+      filename = if ispart.present?
+                   chap.path
+                 else
+                   Pathname.new(chap.path).relative_path_from(base_path).to_s
+                 end
       id = File.basename(filename).sub(/\.re\Z/, '')
       if @buildonly && !@buildonly.include?(id)
         warn "skip #{id}.re"
@@ -159,7 +156,7 @@ module ReVIEW
 
       begin
         @converter.convert(filename, File.join(basetmpdir, textfile))
-      rescue => e
+      rescue StandardError => e
         @compile_errors = true
         error "compile error in #{filename} (#{e.class})"
         error e.message

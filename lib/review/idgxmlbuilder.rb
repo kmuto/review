@@ -457,11 +457,11 @@ module ReVIEW
       caption_str = nil
       if id
         puts '<equationblock>'
-        if get_chap.nil?
-          caption_str = %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
-        else
-          caption_str = %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
-        end
+        caption_str = if get_chap.nil?
+                        %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+                      else
+                        %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(id).number])}#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}</caption>)
+                      end
         puts caption_str if caption_top?('equation')
       end
 
@@ -480,7 +480,7 @@ module ReVIEW
     def table(lines, id = nil, caption = nil)
       @tablewidth = nil
       if @book.config['tableopt']
-        @tablewidth = @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f
+        @tablewidth = @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f # rubocop:disable Style/FloatDivision
       end
       @col = 0
 
@@ -540,7 +540,7 @@ module ReVIEW
           cellwidth = @tsize.split(/\s*,\s*/)
           totallength = 0
           cellwidth.size.times do |n|
-            cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
+            cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f # rubocop:disable Style/FloatDivision
             totallength += cellwidth[n]
             warn "total length exceeds limit for table: #{@table_id}", location: location if totallength > @tablewidth
           end
@@ -800,7 +800,7 @@ module ReVIEW
     def inline_icon(id)
       begin
         %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}" type="inline" />)
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         ''
       end
@@ -1147,7 +1147,7 @@ module ReVIEW
       end
       begin
         puts %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}"#{metrics} />)
-      rescue
+      rescue StandardError
         warn %Q(image not bound: #{id}), location: location
       end
       unless caption_top?('image')

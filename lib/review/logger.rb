@@ -76,27 +76,27 @@ module ReVIEW
   end
 
   def self.logger(level: 'info')
-    if const_defined?(:TTYLogger)
-      @logger ||= TTYLogger.new do |config|
-        config.level = level.to_sym
-        config.handlers = [
-          [:console,
-           {
-             styles: {
-               debug: { label: 'DEBUG' },
-               info: { label: 'INFO', color: :magenta },
-               success: { label: 'SUCCESS' },
-               wait: { label: 'WAIT' },
-               warn: { label: 'WARN' },
-               error: { label: 'ERROR' },
-               fatal: { label: 'FATAL' }
-             }
-           }]
-        ]
-      end
-    else
-      @logger ||= ReVIEW::Logger.new($stderr, progname: File.basename($PROGRAM_NAME, '.*'))
-    end
+    @logger ||= if const_defined?(:TTYLogger)
+                  TTYLogger.new do |config|
+                    config.level = level.to_sym
+                    config.handlers = [
+                      [:console,
+                       {
+                         styles: {
+                           debug: { label: 'DEBUG' },
+                           info: { label: 'INFO', color: :magenta },
+                           success: { label: 'SUCCESS' },
+                           wait: { label: 'WAIT' },
+                           warn: { label: 'WARN' },
+                           error: { label: 'ERROR' },
+                           fatal: { label: 'FATAL' }
+                         }
+                       }]
+                    ]
+                  end
+                else
+                  ReVIEW::Logger.new($stderr, progname: File.basename($PROGRAM_NAME, '.*'))
+                end
   end
 
   def self.logger=(logger)

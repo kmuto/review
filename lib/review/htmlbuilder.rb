@@ -67,11 +67,11 @@ module ReVIEW
         htmldir = 'html'
         localfilename = 'layout.html.erb'
       end
-      if @book.htmlversion == 5
-        htmlfilename = File.join(htmldir, 'layout-html5.html.erb')
-      else
-        htmlfilename = File.join(htmldir, 'layout-xhtml1.html.erb')
-      end
+      htmlfilename = if @book.htmlversion == 5
+                       File.join(htmldir, 'layout-html5.html.erb')
+                     else
+                       File.join(htmldir, 'layout-xhtml1.html.erb')
+                     end
 
       layout_file = File.join(@book.basedir, 'layouts', localfilename)
       if !File.exist?(layout_file) && File.exist?(File.join(@book.basedir, 'layouts', 'layout.erb'))
@@ -861,7 +861,7 @@ EOS
       end
       begin
         puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         if lines
           puts %Q(<pre class="dummyimage">)
@@ -1096,11 +1096,11 @@ EOS
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
-      if n.present? && chap.number && over_secnolevel?(n)
-        str = I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
-      else
-        str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
-      end
+      str = if n.present? && chap.number && over_secnolevel?(n)
+              I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
+            else
+              I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
+            end
       if @book.config['chapterlink']
         anchor = 'h' + n.tr('.', '-')
         %Q(<a href="#{chap.id}#{extname}##{anchor}">#{str}</a>)
@@ -1250,7 +1250,7 @@ EOS
     def inline_icon(id)
       begin
         %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         %Q(<pre>missing image: #{id}</pre>)
       end

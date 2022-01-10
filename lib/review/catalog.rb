@@ -4,11 +4,11 @@ require 'date'
 module ReVIEW
   class Catalog
     def initialize(file)
-      if file.respond_to?(:read)
-        @yaml = YAMLLoader.safe_load(file.read)
-      else ## as Object
-        @yaml = file
-      end
+      @yaml = if file.respond_to?(:read)
+                YAMLLoader.safe_load(file.read)
+              else ## as Object
+                file
+              end
       @yaml ||= {}
     end
 

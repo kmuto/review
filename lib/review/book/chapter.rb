@@ -42,7 +42,7 @@ module ReVIEW
         if @io
           begin
             @content = @io.read
-          rescue
+          rescue StandardError
             @content = nil
           end
         else

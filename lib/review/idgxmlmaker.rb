@@ -119,7 +119,7 @@ module ReVIEW
         if s.success?
           File.write(xmlfile, o) # override
         end
-      rescue => e
+      rescue StandardError => e
         warn("filter error for #{xmlfile}: #{e.message}")
       end
     end
@@ -159,13 +159,11 @@ module ReVIEW
     end
 
     def build_chap(chap, base_path, basetmpdir, ispart)
-      filename = ''
-
-      if ispart.present?
-        filename = chap.path
-      else
-        filename = Pathname.new(chap.path).relative_path_from(base_path).to_s
-      end
+      filename = if ispart.present?
+                   chap.path
+                 else
+                   Pathname.new(chap.path).relative_path_from(base_path).to_s
+                 end
       id = File.basename(filename).sub(/\.re\Z/, '')
       if @buildonly && !@buildonly.include?(id)
         warn "skip #{id}.re"
@@ -177,7 +175,7 @@ module ReVIEW
       begin
         @converter.convert(filename, File.join(basetmpdir, xmlfile))
         apply_filter(File.join(basetmpdir, xmlfile))
-      rescue => e
+      rescue StandardError => e
         @compile_errors = true
         error "compile error in #{filename} (#{e.class})"
         error e.message

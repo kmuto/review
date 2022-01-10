@@ -9,7 +9,7 @@
 
 begin
   require 'cgi/escape'
-rescue
+rescue StandardError
   require 'cgi/util'
 end
 
@@ -60,13 +60,13 @@ module ReVIEW
     def highlight_pygments(ops)
       body = ops[:body] || ''
       format = ops[:format] || ''
-      if ops[:lexer].present?
-        lexer = ops[:lexer]
-      elsif @book.config['highlight'] && @book.config['highlight']['lang']
-        lexer = @book.config['highlight']['lang'] # default setting
-      else
-        lexer = 'text'
-      end
+      lexer = if ops[:lexer].present?
+                ops[:lexer]
+              elsif @book.config['highlight'] && @book.config['highlight']['lang']
+                @book.config['highlight']['lang'] # default setting
+              else
+                'text'
+              end
       options = { nowrap: true, noclasses: true }
       if ops[:linenum]
         options[:nowrap] = false
@@ -93,13 +93,13 @@ module ReVIEW
 
     def highlight_rouge(ops)
       body = ops[:body] || ''
-      if ops[:lexer].present?
-        lexer = ops[:lexer]
-      elsif @book.config['highlight'] && @book.config['highlight']['lang']
-        lexer = @book.config['highlight']['lang'] # default setting
-      else
-        lexer = 'text'
-      end
+      lexer = if ops[:lexer].present?
+                ops[:lexer]
+              elsif @book.config['highlight'] && @book.config['highlight']['lang']
+                @book.config['highlight']['lang'] # default setting
+              else
+                'text'
+              end
       # format = ops[:format] || ''
 
       first_line_num = 1 ## default

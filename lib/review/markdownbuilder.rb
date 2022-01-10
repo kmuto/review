@@ -255,11 +255,11 @@ module ReVIEW
 
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
-      if n.present? && chap.number && over_secnolevel?(n)
-        str = I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
-      else
-        str = I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
-      end
+      str = if n.present? && chap.number && over_secnolevel?(n)
+              I18n.t('hd_quote', [n, compile_inline(chap.headline(id).caption)])
+            else
+              I18n.t('hd_quote_without_number', compile_inline(chap.headline(id).caption))
+            end
       if @book.config['chapterlink']
         if @chapter == chap
           anchor = 'h' + n.tr('.', '-')
@@ -409,7 +409,7 @@ module ReVIEW
     def inline_icon(id)
       begin
         "![](#{@chapter.image(id).path.sub(%r{\A\./}, '')})"
-      rescue
+      rescue StandardError
         warn "image not bound: #{id}", location: location
         %Q(<pre>missing image: #{id}</pre>)
       end

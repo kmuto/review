@@ -70,11 +70,11 @@ module ReVIEW
             direc = parse_directive(line, 1, 'eval')
             path = expand(direc.arg)
             @leave_content = File.extname(path) == '.re'
-            if direc['eval']
-              ent = evaluate(path, ent)
-            else
-              ent = @repository.fetch_file(path)
-            end
+            ent = if direc['eval']
+                    evaluate(path, ent)
+                  else
+                    @repository.fetch_file(path)
+                  end
             replace_block(f, line, ent, false) # FIXME: turn off lineno: tmp
 
           when /\A\#@map(?:range)?/

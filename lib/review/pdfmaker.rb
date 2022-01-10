@@ -136,11 +136,11 @@ module ReVIEW
 
       # version 2 compatibility
       unless @config['texdocumentclass']
-        if @config.check_version(2, exception: false)
-          @config['texdocumentclass'] = ['jsbook', 'uplatex,oneside']
-        else
-          @config['texdocumentclass'] = @config['_texdocumentclass']
-        end
+        @config['texdocumentclass'] = if @config.check_version(2, exception: false)
+                                        ['jsbook', 'uplatex,oneside']
+                                      else
+                                        @config['_texdocumentclass']
+                                      end
       end
 
       begin
@@ -297,7 +297,7 @@ module ReVIEW
       @logger.info "compiling #{filename}.tex"
       begin
         @converter.convert(filename + '.re', File.join(@path, filename + '.tex'))
-      rescue => e
+      rescue StandardError => e
         @compile_errors = true
         error "compile error in #{filename}.tex (#{e.class})"
         error e.message
@@ -483,18 +483,18 @@ module ReVIEW
 
     def template_content
       template_dir = ReVIEW::Template::TEMPLATE_DIR
-      if @config.check_version('2', exception: false)
-        template_path = './latex-compat2/layout.tex.erb'
-      else
-        template_path = './latex/layout.tex.erb'
-      end
+      template_path = if @config.check_version('2', exception: false)
+                        './latex-compat2/layout.tex.erb'
+                      else
+                        './latex/layout.tex.erb'
+                      end
       layout_file = File.join(@basedir, 'layouts', 'layout.tex.erb')
       if File.exist?(layout_file)
         template_dir = @basedir
         template_path = 'layouts/layout.tex.erb'
       end
       ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
-    rescue => e
+    rescue StandardError => e
       if defined?(e.full_message)
         error! "template or configuration error: #{e.full_message(highlight: false)}"
       else

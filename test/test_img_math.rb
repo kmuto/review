@@ -104,7 +104,7 @@ class ImgMathTest < Test::Unit::TestCase
     begin
       `uplatex -v`
       true
-    rescue
+    rescue StandardError
       false
     end
   end
