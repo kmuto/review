@@ -135,7 +135,7 @@ module ReVIEW
 
     def load_words(file)
       if File.exist?(file)
-        if file =~ /\.csv\Z/i
+        if /\.csv\Z/i.match?(file)
           CSV.foreach(file) do |row|
             @dictionary[row[0]] = row[1]
           end
@@ -537,8 +537,8 @@ module ReVIEW
       params = metric.split(/,\s*/)
       results = []
       params.each do |param|
-        if param =~ /\A.+?::/
-          next unless param =~ /\A#{type}::/
+        if /\A.+?::/.match?(param)
+          next unless /\A#{type}::/.match?(param)
 
           param.sub!(/\A#{type}::/, '')
         end

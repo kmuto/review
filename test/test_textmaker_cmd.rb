@@ -21,7 +21,7 @@ class TEXTMakerCmdTest < Test::Unit::TestCase
   end
 
   def common_buildtext(bookdir, configfile, targetfile, option)
-    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
+    unless /mswin|mingw|cygwin/.match?(RUBY_PLATFORM)
       config = prepare_samplebook(@tmpdir1, bookdir, nil, configfile)
       builddir = File.join(@tmpdir1, config['bookname'] + '-text')
       assert !File.exist?(builddir)

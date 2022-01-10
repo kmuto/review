@@ -467,7 +467,7 @@ module ReVIEW
     def compile_ulist(f)
       level = 0
       f.while_match(/\A\s+\*|\A\#@/) do |line|
-        next if line =~ /\A\#@/
+        next if /\A\#@/.match?(line)
 
         buf = [text(line.sub(/\*+/, '').strip)]
         f.while_match(/\A\s+(?!\*)\S/) do |cont|
@@ -510,7 +510,7 @@ module ReVIEW
     def compile_olist(f)
       @builder.ol_begin
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
-        next if line =~ /\A\#@/
+        next if /\A\#@/.match?(line)
 
         num = line.match(/(\d+)\./)[1]
         buf = [text(line.sub(/\d+\./, '').strip)]
@@ -572,7 +572,7 @@ module ReVIEW
       f.until_match(%r{\A//\}}) do |line|
         if ignore_inline
           buf.push(line.chomp)
-        elsif line !~ /\A\#@/
+        elsif !/\A\#@/.match?(line)
           buf.push(text(line.rstrip, true))
         end
       end
@@ -643,7 +643,7 @@ module ReVIEW
       str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
         op = $1
         arg = $3
-        if arg =~ /[\x01\x02\x03\x04]/
+        if /[\x01\x02\x03\x04]/.match?(arg)
           error "invalid character in '#{str}'", location: location
         end
         replaced = arg.tr('@', "\x01").tr('\\', "\x02").tr('{', "\x03").tr('}', "\x04")

@@ -178,9 +178,9 @@ module ReVIEW
       def isbn_hyphen
         str = config['isbn'].to_s
 
-        if str =~ /\A\d{10}\Z/
+        if /\A\d{10}\Z/.match?(str)
           "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
-        elsif str =~ /\A\d{13}\Z/
+        elsif /\A\d{13}\Z/.match?(str)
           "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
         end
       end
@@ -192,9 +192,9 @@ module ReVIEW
             items.each_with_index do |item, rev|
               editstr = edit == 0 ? ReVIEW::I18n.t('first_edition') : ReVIEW::I18n.t('nth_edition', (edit + 1).to_s)
               revstr = ReVIEW::I18n.t('nth_impression', (rev + 1).to_s)
-              if item =~ /\A\d+-\d+-\d+\Z/
+              if /\A\d+-\d+-\d+\Z/.match?(item)
                 @col_history << ReVIEW::I18n.t('published_by1', [date_to_s(item), editstr + revstr])
-              elsif item =~ /\A(\d+-\d+-\d+)[\s　](.+)/
+              elsif /\A(\d+-\d+-\d+)[\s　](.+)/.match?(item)
                 # custom date with string
                 item.match(/\A(\d+-\d+-\d+)[\s　](.+)/) do |m|
                   @col_history << ReVIEW::I18n.t('published_by3', [date_to_s(m[1]), m[2]])
@@ -336,7 +336,7 @@ module ReVIEW
         end
 
         contents.each do |item|
-          next if item.file =~ /#/ # skip subgroup
+          next if /#/.match?(item.file) # skip subgroup
 
           fname = "#{basedir}/#{item.file}"
           unless File.exist?(fname)

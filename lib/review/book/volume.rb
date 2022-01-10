@@ -12,7 +12,7 @@ module ReVIEW
       def self.count_file(path)
         b = c = l = 0
         File.foreach(path) do |line|
-          next if /\A\#@/ =~ line
+          next if /\A\#@/.match?(line)
 
           text = line.gsub(/\s+/, '')
           b += text.bytesize

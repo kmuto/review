@@ -515,7 +515,7 @@ module ReVIEW
       sepidx = nil
       rows = []
       lines.each_with_index do |line, idx|
-        if /\A[=\-]{12}/ =~ line
+        if /\A[=\-]{12}/.match?(line)
           sepidx ||= idx
           next
         end
@@ -724,15 +724,15 @@ module ReVIEW
     end
 
     def inline_maru(str)
-      if str =~ /\A\d+\Z/
+      if /\A\d+\Z/.match?(str)
         sprintf('&#x%x;', 9311 + str.to_i)
-      elsif str =~ /\A[A-Z]\Z/
+      elsif /\A[A-Z]\Z/.match?(str)
         begin
           sprintf('&#x%x;', 9398 + str.codepoints.to_a[0] - 65)
         rescue NoMethodError
           sprintf('&#x%x;', 9398 + str[0] - 65)
         end
-      elsif str =~ /\A[a-z]\Z/
+      elsif /\A[a-z]\Z/.match?(str)
         begin
           sprintf('&#x%x;', 9392 + str.codepoints.to_a[0] - 65)
         rescue NoMethodError

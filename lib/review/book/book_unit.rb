@@ -86,7 +86,7 @@ module ReVIEW
         return @title unless content
 
         content.each_line do |line|
-          if line =~ /\A=+/
+          if /\A=+/.match?(line)
             @title = line.sub(/\A=+(\[.+?\])?(\{.+?\})?/, '').strip
             break
           end

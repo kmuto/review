@@ -186,7 +186,7 @@ module ReVIEW
         @tocx_contents = []
         toc = nil
         contents.each do |item|
-          next if item.media !~ /xhtml\+xml/ # skip non XHTML
+          next unless /xhtml\+xml/.match?(item.media) # skip non XHTML
 
           @tocx_contents << item
         end

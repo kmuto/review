@@ -803,7 +803,7 @@ module ReVIEW
       end
 
       if @tsize
-        if @tsize =~ /\A[\d., ]+\Z/
+        if /\A[\d., ]+\Z/.match?(@tsize)
           @cellwidth = @tsize.split(/\s*,\s*/)
           @cellwidth.collect! { |i| "p{#{i}mm}" }
           puts macro('begin', 'reviewtable', '|' + @cellwidth.join('|') + '|')
@@ -856,7 +856,7 @@ module ReVIEW
     end
 
     def th(s, cellwidth = 'l')
-      if /\\\\/ =~ s
+      if /\\\\/.match?(s)
         if !@book.config.check_version('2', exception: false) && cellwidth =~ /\{/
           macro('reviewth', s.gsub("\\\\\n", '\\newline{}'))
         else
@@ -869,7 +869,7 @@ module ReVIEW
     end
 
     def td(s, cellwidth = 'l')
-      if /\\\\/ =~ s
+      if /\\\\/.match?(s)
         if !@book.config.check_version('2', exception: false) && cellwidth =~ /\{/
           s.gsub("\\\\\n", '\\newline{}')
         else
@@ -1412,7 +1412,7 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      if /\A[a-z]+:/ =~ url
+      if /\A[a-z]+:/.match?(url)
         if label
           macro('href', escape_url(url), escape(label))
         else

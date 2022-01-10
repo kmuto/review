@@ -41,7 +41,7 @@ ARGF.each do |line|
     unless %w[list emlist listnum emlistnum cmd image table].include?(block)
       @logger.warn "#{ln}: found '#{$1}' without the head space. Is it correct?"
     end
-  elsif line =~ /\A\*\s+/
+  elsif /\A\*\s+/.match?(line)
     # itemize
     unless %w[list emlist listnum emlistnum cmd image table].include?(block)
       @logger.warn "#{ln}: found '*' without the head space. Is it correct?"
@@ -53,7 +53,7 @@ ARGF.each do |line|
   elsif block == 'table'
     next if line.start_with?('#@')
 
-    if line !~ /\A-----/
+    unless line.start_with?('-----')
       # table
       colcount = line.split("\t").size
       if maxcolcount == 0

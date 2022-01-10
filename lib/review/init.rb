@@ -257,7 +257,7 @@ EOS
         exit 1
       end
 
-      if filename =~ %r{\Ahttps?://}
+      if %r{\Ahttps?://}.match?(filename)
         begin
           @logger.info "Downloading from #{filename}"
           zipdata = Net::HTTP.get(URI.parse(filename))
@@ -334,7 +334,7 @@ EOS
       # validation
       if @web_result
         @web_result.each do |s|
-          if s !~ /\A[a-z0-9=_,.-]*\Z/i
+          unless /\A[a-z0-9=_,.-]*\Z/i.match?(s)
             @web_result = nil
             break
           end

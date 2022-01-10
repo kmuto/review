@@ -76,7 +76,7 @@ module ReVIEW
         if @id.nil?
           @id = @file.gsub(%r{[\\/. ]}, '-')
         end
-        if @id =~ /\A[^a-z]/i
+        if /\A[^a-z]/i.match?(@id)
           @id = "rv-#{@id}"
         end
         @id = CGI.escape(@id).gsub('%', '_25_')

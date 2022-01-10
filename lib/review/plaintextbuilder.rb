@@ -86,7 +86,7 @@ module ReVIEW
         if l =~ /\A\x01→(dl|ul|ol)←\x01/
           clevel.push($1)
           lines.push("\x01→END←\x01")
-        elsif l =~ %r{\A\x01→/(dl|ul|ol)←\x01}
+        elsif %r{\A\x01→/(dl|ul|ol)←\x01}.match?(l)
           clevel.pop
           lines.push("\x01→END←\x01")
         else

@@ -21,7 +21,7 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
   end
 
   def common_buildepub(bookdir, configfile, targetepubfile)
-    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
+    unless /mswin|mingw|cygwin/.match?(RUBY_PLATFORM)
       config = prepare_samplebook(@tmpdir1, bookdir, nil, configfile)
       builddir = File.join(@tmpdir1, config['bookname'] + '-epub')
       assert !File.exist?(builddir)
@@ -35,7 +35,7 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
   end
 
   def check_filesize(epubfile)
-    if /mswin|mingw|cygwin/ !~ RUBY_PLATFORM
+    unless /mswin|mingw|cygwin/.match?(RUBY_PLATFORM)
       Zip::File.open(epubfile) do |zio|
         zio.each do |entry|
           assert_not_equal(0, entry.size, "#{entry.name} is 0 byte.")

@@ -59,9 +59,6 @@ Lint/RedundantDirGlobSort:
 
 #### Performance
 
-Performance/RegexpMatch:
-  Enabled: false
-
 Performance/ReverseEach:
   Enabled: true
 

@@ -62,10 +62,10 @@ EOT
     def parse_epub(epubname)
       Zip::File.open(epubname) do |zio|
         zio.each do |entry|
-          if entry.name =~ /.+\.opf\Z/
+          if /.+\.opf\Z/.match?(entry.name)
             opf = entry.get_input_stream.read
             @opfxml = REXML::Document.new(opf)
-          elsif entry.name =~ /.+\.x?html\Z/
+          elsif /.+\.x?html\Z/.match?(entry.name)
             @htmls[entry.name.sub('OEBPS/', '')] = entry.get_input_stream.read.force_encoding('utf-8')
           end
         end

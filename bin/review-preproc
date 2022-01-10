@@ -26,7 +26,7 @@ include ReVIEW::Loggable
 
 def sigmain
   Signal.trap(:INT) { exit 1 }
-  if RUBY_PLATFORM !~ /mswin(?!ce)|mingw|cygwin|bccwin/
+  unless RUBY_PLATFORM.match?(/mswin(?!ce)|mingw|cygwin|bccwin/)
     Signal.trap(:PIPE, 'IGNORE')
   end
   main
