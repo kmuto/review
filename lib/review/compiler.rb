@@ -71,7 +71,7 @@ module ReVIEW
       attr_reader :name
 
       def check_args(args)
-        unless @argc_spec === args.size
+        unless @argc_spec === args.size # rubocop:disable Style/CaseEquality
           raise CompileError, "wrong # of parameters (block command //#{@name}, expect #{@argc_spec} but #{args.size})"
         end
 

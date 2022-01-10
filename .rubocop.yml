@@ -122,9 +122,6 @@ Style/BarePercentLiterals:
 Style/BlockDelimiters:
   Enabled: true
 
-Style/CaseEquality:
-  Enabled: false
-
 Style/ClassCheck:
   Enabled: true
 
