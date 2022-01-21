@@ -44,7 +44,7 @@ module ReVIEW
 
     def non_escaped_commands
       if @builder.highlight?
-        %i[list emlist listnum emlistnum cmd]
+        %i[list emlist listnum emlistnum cmd source]
       else
         []
       end
