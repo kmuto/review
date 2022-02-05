@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2022 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -687,8 +687,9 @@ module ReVIEW
     def compile_kw(word, alt)
       '<keyword>' +
         if alt
-        then escape("#{word}（#{alt.strip}）")
-        else escape(word)
+          escape("#{word}（#{alt.strip}）")
+        else
+          escape(word)
         end +
         '</keyword>' +
         %Q(<index value="#{escape(word)}" />) +

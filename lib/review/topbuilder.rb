@@ -337,8 +337,9 @@ module ReVIEW
 
     def compile_kw(word, alt)
       if alt
-      then "★#{word}☆（#{alt.strip}）"
-      else "★#{word}☆"
+        "★#{word}☆（#{alt.strip}）"
+      else
+        "★#{word}☆"
       end
     end
 
