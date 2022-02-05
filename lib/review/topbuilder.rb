@@ -528,9 +528,9 @@ module ReVIEW
         indepimage_header(id, caption)
         blank
       end
-      begin
+      if @chapter.image_bound?(id)
         puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
-      rescue StandardError
+      else
         warn "image not bound: #{id}", location: location
         lines.each do |line|
           puts line
