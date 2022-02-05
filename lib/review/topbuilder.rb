@@ -292,6 +292,31 @@ module ReVIEW
     def table_end
     end
 
+    def imgtable(lines, id, caption = nil, metric = nil)
+      metrics = parse_metric('top', metric)
+      metrics = " #{metrics}" if metrics.present?
+      blank
+      puts "◆→開始:#{@titles['table']}←◆"
+      if caption_top?('table') && caption.present?
+        table_header(id, caption)
+      end
+
+      if @chapter.image_bound?(id)
+        puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
+      else
+        warn "image not bound: #{id}", location: location
+        lines.each do |line|
+          puts line
+        end
+      end
+
+      if !caption_top?('table') && caption.present?
+        table_header(id, caption)
+      end
+      puts "◆→終了:#{@titles['table']}←◆"
+      blank
+    end
+
     def comment(lines, comment = nil)
       return unless @book.config['draft']
 
