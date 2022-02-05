@@ -519,26 +519,36 @@ module ReVIEW
       ), __FILE__, __LINE__ - 11
     end
 
-    def indepimage(_lines, id, caption = nil, metric = nil)
+    def indepimage(lines, id, caption = nil, metric = nil)
       metrics = parse_metric('top', metric)
       metrics = " #{metrics}" if metrics.present?
       blank
+      puts "◆→開始:#{@titles['image']}←◆"
       if caption_top?('image') && caption.present?
-        puts "図　#{compile_inline(caption)}"
+        indepimage_header(id, caption)
+        blank
       end
-      begin
-        puts "◆→画像 #{@chapter.image(id).path.sub(%r{\A\./}, '')}#{metrics}←◆"
-      rescue StandardError
+      if @chapter.image_bound?(id)
+        puts "◆→#{@chapter.image(id).path}#{metrics}←◆"
+      else
         warn "image not bound: #{id}", location: location
-        puts "◆→画像 #{id}←◆"
+        lines.each do |line|
+          puts line
+        end
       end
       if !caption_top?('image') && caption.present?
-        puts "図　#{compile_inline(caption)}"
+        blank
+        indepimage_header(id, caption)
       end
+      puts "◆→終了:#{@titles['image']}←◆"
       blank
     end
 
     alias_method :numberlessimage, :indepimage
+
+    def indepimage_header(_id, caption)
+      puts "図#{I18n.t('caption_prefix_idgxml')}#{compile_inline(caption)}"
+    end
 
     def inline_code(str)
       "△#{str}☆"

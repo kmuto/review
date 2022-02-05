@@ -1022,6 +1022,63 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_image_dummy
+    actual = compile_block("//image[dummy][sample photo]{\nDUMMY\n//}\n")
+    expected = <<-EOS
+◆→開始:図←◆
+DUMMY
+
+図1.1　sample photo
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_indepimage
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1)
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("//indepimage[sampleimg][sample photo]{\nfoo\n//}\n")
+    expected = <<-EOS
+◆→開始:図←◆
+◆→./images/chap1-sampleimg.png←◆
+
+図　sample photo
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['image'] = 'top'
+    actual = compile_block("//indepimage[sampleimg][sample photo]{\nfoo\n//}\n")
+    expected = <<-EOS
+◆→開始:図←◆
+図　sample photo
+
+◆→./images/chap1-sampleimg.png←◆
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_indepimage_dummy
+    actual = compile_block("//indepimage[dummy][sample photo]{\nDUMMY\n//}\n")
+    expected = <<-EOS
+◆→開始:図←◆
+DUMMY
+
+図　sample photo
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
   def test_texequation
     actual = compile_block("//texequation{\n\\sin\n1^{2}\n//}\n")
     expected = <<-EOS
