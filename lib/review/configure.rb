@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012-2021 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2012-2022 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -141,6 +141,9 @@ module ReVIEW
           'force_include_images' => [],
           'cover_linear' => nil,
           'back_footnote' => nil
+        },
+        'textmaker' => {
+          'th_bold' => nil
         }
       ]
       conf.maker = nil

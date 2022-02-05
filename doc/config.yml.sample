@@ -442,3 +442,9 @@ pdfmaker:
   #     options_with_caption: "colbacktitle=black!25!white"
   #
   # pdfmaker:階層を使うものはここまで
+# textmaker:
+  # 表見出しの表現の設定
+  # nullの場合は区切り線（------------）で見出し行と通常の行を分ける。
+  # trueの場合は見出しを★〜☆で囲み（太字と同様）、区切り線を入れない。
+  # th_bold: null
+  # textmaker:階層を使うものはここまで
