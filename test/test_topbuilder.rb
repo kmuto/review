@@ -623,6 +623,37 @@ EOS
     assert_equal expected, actual
   end
 
+  def test_imgtable
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1)
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("//imgtable[sampleimg][sample photo]{\nfoo\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+表1.1　sample photo
+
+◆→./images/chap1-sampleimg.png←◆
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//imgtable[sampleimg][sample photo]{\nfoo\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+◆→./images/chap1-sampleimg.png←◆
+
+表1.1　sample photo
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
   def test_table_row_separator
     src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS
