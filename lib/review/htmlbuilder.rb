@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -977,8 +977,9 @@ EOS
     def compile_kw(word, alt)
       %Q(<b class="kw">) +
         if alt
-        then escape(word + " (#{alt.strip})")
-        else escape(word)
+          escape(word + " (#{alt.strip})")
+        else
+          escape(word)
         end +
         "</b><!-- IDX:#{escape_comment(escape(word))} -->"
     end
