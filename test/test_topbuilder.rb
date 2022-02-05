@@ -151,7 +151,8 @@ class TOPBuidlerTest < Test::Unit::TestCase
     actual = compile_block("//table{\n★1☆\t▲2☆\n------------\n★3☆\t▲4☆<>&\n//}\n")
     expected = <<-EOS
 ◆→開始:表←◆
-★★1☆☆\t★▲2☆☆
+★1☆\t▲2☆
+------------
 ★3☆\t▲4☆<>&
 ◆→終了:表←◆
 
@@ -506,7 +507,8 @@ EOS
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
 ◆→開始:表←◆
-★aaa☆\t★bbb☆
+aaa\tbbb
+------------
 ccc\tddd<>&
 ◆→終了:表←◆
 
@@ -518,7 +520,8 @@ EOS
 ◆→開始:表←◆
 表1.1　FOO
 
-★aaa☆\t★bbb☆
+aaa\tbbb
+------------
 ccc\tddd<>&
 ◆→終了:表←◆
 
@@ -529,10 +532,34 @@ EOS
     actual = compile_block("//table[foo][FOO]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
 ◆→開始:表←◆
-★aaa☆\t★bbb☆
+aaa\tbbb
+------------
 ccc\tddd<>&
 
 表1.1　FOO
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_table_th_bold
+    @config['textmaker']['th_bold'] = true
+    actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+★aaa☆\t★bbb☆
+ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//table{\naaa\tbbb\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+★aaa☆\tbbb
+★ccc☆\tddd<>&
 ◆→終了:表←◆
 
 EOS
@@ -561,6 +588,28 @@ EOS
 ◆→開始:表←◆
 foo
 
+aaa\tbbb
+------------
+ccc\tddd<>&
+◆→終了:表←◆
+
+◆→開始:表←◆
+aaa\tbbb
+------------
+ccc\tddd<>&
+◆→終了:表←◆
+
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emtable_thbold
+    @config['textmaker']['th_bold'] = true
+    actual = compile_block("//emtable[foo]{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n//emtable{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
+    expected = <<-EOS
+◆→開始:表←◆
+foo
+
 ★aaa☆\t★bbb☆
 ccc\tddd<>&
 ◆→終了:表←◆
@@ -578,7 +627,8 @@ EOS
     src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS
 ◆→開始:表←◆
-★1☆	★2☆	★3  4| 5☆
+1	2	3  4| 5
+------------
 a b	c  d   |e	
 ◆→終了:表←◆
 
@@ -590,7 +640,8 @@ EOS
     actual = compile_block(src)
     expected = <<-EOS
 ◆→開始:表←◆
-★1☆	★2☆	★☆	★3  4| 5☆
+1	2		3  4| 5
+------------
 a b	c  d   |e		
 ◆→終了:表←◆
 
@@ -601,7 +652,8 @@ EOS
     actual = compile_block(src)
     expected = <<-EOS
 ◆→開始:表←◆
-★1☆	★2☆	★3☆	★4|☆	★5☆
+1	2	3	4|	5
+------------
 a	b	c	d	|e
 ◆→終了:表←◆
 
@@ -612,7 +664,8 @@ EOS
     actual = compile_block(src)
     expected = <<-EOS
 ◆→開始:表←◆
-★1	2		3  4☆	★5☆
+1	2		3  4	5
+------------
 a b	c  d	e
 ◆→終了:表←◆
 

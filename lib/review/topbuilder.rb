@@ -262,8 +262,31 @@ module ReVIEW
       blank
     end
 
+    def table_rows(sepidx, rows)
+      if sepidx
+        sepidx.times do
+          tr(rows.shift.map { |s| th(s) })
+        end
+        if !@book.config['textmaker'] || !@book.config['textmaker']['th_bold']
+          puts '-' * 12
+        end
+        rows.each do |cols|
+          tr(cols.map { |s| td(s) })
+        end
+      else
+        rows.each do |cols|
+          h, *cs = *cols
+          tr([th(h)] + cs.map { |s| td(s) })
+        end
+      end
+    end
+
     def th(str)
-      "★#{str}☆"
+      if @book.config['textmaker'] && @book.config['textmaker']['th_bold']
+        "★#{str}☆"
+      else
+        str
+      end
     end
 
     def table_end
