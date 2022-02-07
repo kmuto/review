@@ -30,7 +30,7 @@
 [#1773]: https://github.com/kmuto/review/pull/1773
 [#1775]: https://github.com/kmuto/review/pull/1775
 [#1776]: https://github.com/kmuto/review/pull/1776
-[#1776]: https://github.com/kmuto/review/issues/1777
+[#1777]: https://github.com/kmuto/review/issues/1777
 [#1779]: https://github.com/kmuto/review/pull/1779
 [#1780]: https://github.com/kmuto/review/pull/1780
 [#1782]: https://github.com/kmuto/review/pull/1782
