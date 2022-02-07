@@ -1,3 +1,47 @@
+# Version 5.4.0
+## 新機能
+* Re:VIEW に関する質問の受け付けに対応する [GitHub Discussions](https://github.com/kmuto/review/discussions) を開始しました
+
+## 非互換の変更
+* EPUBMaker: opf ファイルの `manifest` 内の `item` を ID 文字列の辞書順でソートするようにしました ([#1763])
+* TextMaker: 表の見出しセル行を太字表現（★〜☆）にするのではなく、見出しセル行と通常セル行の区切り線を入れるようにしました。従来の太字表現に戻すには `textmaker` セクションの `th_bold` パラメータを true に設定してください ([#1789])
+* TextMaker: `//indepimage` 命令の出力結果を `//image` に合わせました。開始・終了マークが入り、画像ファイルが見つからないときにはコメント内容を出力するようになります ([#1790])
+* TextMaker: `//imgtable` 命令の出力結果を `//image` および `//table` に合わせました。開始・終了マークが入り、画像ファイルが見つからないときにはコメント内容を出力するようになります ([#1791])
+* ハイライト有効時に、`//source` 命令もハイライト対象として中身をエスケープしないようにしました ([#1788])
+
+## バグ修正
+* Ruby 3.1 で YAML のエラーが発生するのを修正し、互換性も持たせました ([#1767], [#1775])
+* EPUBMaker: `epub:type=cover` が大扉や奥付に入るのを修正しました ([#1776])
+* 無効な urnid の例がサンプルとして示されているのを削除しました ([#1779])
+
+## 機能強化
+* EPUBMaker, WebMaker: 表紙・大扉・奥付・部のベーステンプレートに通常の章と同じく `layout.html.erb` または `layout-web.html.erb` を使うようにしました ([#1780])
+* EPUBMaker, WebMaker: 表紙・大扉・奥付・部のカスタムテンプレートとして、`layouts` フォルダの `_cover.html.erb`、`_titlepage.html.erb`、`_colophon.html.erb`、`_colophon_history.html.erb`、`_part_body.html.erb` で上書きできるようにしました ([#1777])
+
+## ドキュメント
+* GitHub Discussions について README.md に記載しました ([#1772])
+
+## その他
+* RuboCop 1.25.1 の指摘を反映しました ([#1773], [#1782], [#1783], [#1784], [#1792])
+
+[#1763]: https://github.com/kmuto/review/pull/1763
+[#1767]: https://github.com/kmuto/review/pull/1767
+[#1772]: https://github.com/kmuto/review/pull/1772
+[#1773]: https://github.com/kmuto/review/pull/1773
+[#1775]: https://github.com/kmuto/review/pull/1775
+[#1776]: https://github.com/kmuto/review/pull/1776
+[#1776]: https://github.com/kmuto/review/issues/1777
+[#1779]: https://github.com/kmuto/review/pull/1779
+[#1780]: https://github.com/kmuto/review/pull/1780
+[#1782]: https://github.com/kmuto/review/pull/1782
+[#1783]: https://github.com/kmuto/review/pull/1783
+[#1784]: https://github.com/kmuto/review/pull/1784
+[#1788]: https://github.com/kmuto/review/pull/1788
+[#1789]: https://github.com/kmuto/review/issues/1789
+[#1790]: https://github.com/kmuto/review/issues/1790
+[#1791]: https://github.com/kmuto/review/issues/1791
+[#1792]: https://github.com/kmuto/review/pull/1792
+
 # Version 5.3.0
 ## 新機能
 * 後注のサポートを追加しました。`//endnote` 命令で後注内容、`@<endnote>` 命令で後注参照、`//printendnotes` 命令で後注を配置する場所を指定します ([#1724])

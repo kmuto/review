@@ -1,3 +1,47 @@
+# Version 5.4.0
+## New Features
+* [GitHub Discussions](https://github.com/kmuto/review/discussions) has been opened to answer questions about Re:VIEW
+
+## Breaking Changes
+* EPUBMaker: `manifest/item` in the opf file is now sorted by the dictional order of ID strings ([#1763])
+* TextMaker: the separator line now put between the heading rows and the normal rows of the table. To revert this behavior to old version, set `textmaker/th_bold` parameter to true ([#1789])
+* TextMaker: the output result of the `//indepimage` op has been adjusted to `//image` ([#1790])
+* TextMaker: the output result of the `//imgtable` op has been adjusted to `//image` and `//table` ([#1791])
+* `//source` op is now also not escaped when highlighting is enabled ([#1788])
+
+## Bug Fixes
+* fixed YAML error in Ruby 3.1 and kept backward compatibility ([#1767], [#1775])
+* EPUBMaker: removed `epub:type=cover` from titlepage and colophon ([#1776])
+* removed invalid urnid sample ([#1779])
+
+## Enhancements
+* EPUBMaker, WebMaker: use `layout.html.erb` or `layout-web.html.erb` as the base template for cover, titlepage, colophon, and part, just like regular chapters ([#1780])
+* EPUBMaker, WebMaker: cover, titlepage, colophon, and part can now be overwritten with `_cover.html.erb`, `_titlepage.html.erb`, `_colophon.html.erb`, `_colophon_history.html.erb`, and `_part_body.html.erb` ([#1777])
+
+## Docs
+* mentioned GitHub Discussions in README.md ([#1772])
+
+## Others
+* refactor code with RuboCop 1.25.1 ([#1773], [#1782], [#1783], [#1784], [#1792])
+
+[#1763]: https://github.com/kmuto/review/pull/1763
+[#1767]: https://github.com/kmuto/review/pull/1767
+[#1772]: https://github.com/kmuto/review/pull/1772
+[#1773]: https://github.com/kmuto/review/pull/1773
+[#1775]: https://github.com/kmuto/review/pull/1775
+[#1776]: https://github.com/kmuto/review/pull/1776
+[#1776]: https://github.com/kmuto/review/issues/1777
+[#1779]: https://github.com/kmuto/review/pull/1779
+[#1780]: https://github.com/kmuto/review/pull/1780
+[#1782]: https://github.com/kmuto/review/pull/1782
+[#1783]: https://github.com/kmuto/review/pull/1783
+[#1784]: https://github.com/kmuto/review/pull/1784
+[#1788]: https://github.com/kmuto/review/pull/1788
+[#1789]: https://github.com/kmuto/review/issues/1789
+[#1790]: https://github.com/kmuto/review/issues/1790
+[#1791]: https://github.com/kmuto/review/issues/1791
+[#1792]: https://github.com/kmuto/review/pull/1792
+
 # Version 5.3.0
 ## New Features
 * add the future of endnote. `//endnote` specifies the content of the endnote, `@<endnote>` specifies the reference to the endnote, and `//printendnotes` places endnotes ([#1724])
