@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021 Kenshi Muto
+# Copyright (c) 2018-2022 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -74,9 +74,14 @@ module ReVIEW
       cmd_config, yamlfile = parse_opts(args)
       error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      @config = ReVIEW::Configure.create(maker: 'textmaker',
-                                         yamlfile: yamlfile,
-                                         config: cmd_config)
+      begin
+        @config = ReVIEW::Configure.create(maker: 'textmaker',
+                                           yamlfile: yamlfile,
+                                           config: cmd_config)
+      rescue ReVIEW::ConfigError => e
+        error! e.message
+      end
+
       @img_math = ReVIEW::ImgMath.new(@config, path_name: '_review_math_text')
 
       I18n.setup(@config['language'])

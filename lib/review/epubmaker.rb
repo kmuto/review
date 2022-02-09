@@ -75,9 +75,13 @@ module ReVIEW
       cmd_config, yamlfile, exportfile = parse_opts(args)
       error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      @config = ReVIEW::Configure.create(maker: 'epubmaker',
-                                         yamlfile: yamlfile,
-                                         config: cmd_config)
+      begin
+        @config = ReVIEW::Configure.create(maker: 'epubmaker',
+                                           yamlfile: yamlfile,
+                                           config: cmd_config)
+      rescue ReVIEW::ConfigError => e
+        error! e.message
+      end
       @producer = ReVIEW::EPUBMaker::Producer.new(@config)
       update_log_level
       debug("Loaded yaml file (#{yamlfile}).")

@@ -78,9 +78,13 @@ module ReVIEW
       cmd_config, yamlfile = parse_opts(args)
       error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      @config = ReVIEW::Configure.create(maker: 'webmaker',
-                                         yamlfile: yamlfile,
-                                         config: cmd_config)
+      begin
+        @config = ReVIEW::Configure.create(maker: 'webmaker',
+                                           yamlfile: yamlfile,
+                                           config: cmd_config)
+      rescue ReVIEW::ConfigError => e
+        error! e.message
+      end
 
       @config['htmlext'] = 'html'
       @img_math = ReVIEW::ImgMath.new(@config)
