@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2021 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -121,9 +121,13 @@ module ReVIEW
       cmd_config, yamlfile = parse_opts(args)
       error! "#{yamlfile} not found." unless File.exist?(yamlfile)
 
-      @config = ReVIEW::Configure.create(maker: 'pdfmaker',
-                                         yamlfile: yamlfile,
-                                         config: cmd_config)
+      begin
+        @config = ReVIEW::Configure.create(maker: 'pdfmaker',
+                                           yamlfile: yamlfile,
+                                           config: cmd_config)
+      rescue ReVIEW::ConfigError => e
+        error! e.message
+      end
 
       I18n.setup(@config['language'])
       @basedir = File.absolute_path(File.dirname(yamlfile))
