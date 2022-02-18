@@ -86,7 +86,7 @@ module ReVIEW
         s += '</sect3>' if @subsubsection > 0
         s += '</sect2>' if @subsection > 0
         s += '</sect>' if @section > 0
-        s += '</chapter>' if @chapter.number > 0
+        s += '</chapter>'
       end
       solve_nest(@output.string) + s + "</#{@rootelement}>\n"
     end
