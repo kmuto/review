@@ -14,7 +14,7 @@
 * EPUBMaker: `epub:type=cover` が大扉や奥付に入るのを修正しました ([#1776])
 * 無効な urnid の例がサンプルとして示されているのを削除しました ([#1779])
 * config.yml の YAML 構文にエラーがあったときに例外ではなく妥当なエラーを返すようにしました ([#1797])
-
+* IDGXMLMaker: secttags を有効にしている状態で前付や後付がエラーになるのを修正しました ([#1800])
 
 ## 機能強化
 * EPUBMaker, WebMaker: 表紙・大扉・奥付・部のベーステンプレートに通常の章と同じく `layout.html.erb` または `layout-web.html.erb` を使うようにしました ([#1780])
@@ -44,6 +44,7 @@
 [#1791]: https://github.com/kmuto/review/issues/1791
 [#1792]: https://github.com/kmuto/review/pull/1792
 [#1797]: https://github.com/kmuto/review/issues/1797
+[#1800]: https://github.com/kmuto/review/pull/1800
 
 # Version 5.3.0
 ## 新機能

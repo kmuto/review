@@ -14,6 +14,7 @@
 * EPUBMaker: removed `epub:type=cover` from titlepage and colophon ([#1776])
 * removed invalid urnid sample ([#1779])
 * when there is a syntax error in config.yml, exit with proper error message instead of an exception ([#1797])
+* IDGXMLMaker: fixed an error to compile prefaces or postfaces when secttags is enabled ([#1800])
 
 ## Enhancements
 * EPUBMaker, WebMaker: use `layout.html.erb` or `layout-web.html.erb` as the base template for cover, titlepage, colophon, and part, just like regular chapters ([#1780])
@@ -43,6 +44,7 @@
 [#1791]: https://github.com/kmuto/review/issues/1791
 [#1792]: https://github.com/kmuto/review/pull/1792
 [#1797]: https://github.com/kmuto/review/issues/1797
+[#1800]: https://github.com/kmuto/review/pull/1800
 
 # Version 5.3.0
 ## New Features
