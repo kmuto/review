@@ -87,7 +87,7 @@ aut: ["青木峰郎", "武藤健志", "高橋征義", "角征典"]
 debug: null
 
 # 固有IDに使用するドメイン。指定しない場合には、時刻に基づくランダムUUIDが入る
-# urnid: urn:uuid:http://example.com/book-title/
+# urnid: urn:uuid:ffffffff-ffff-ffff-ffff-ffffffffffff
 #
 # ISBN。省略した場合はurnidが入る
 # isbn: null
