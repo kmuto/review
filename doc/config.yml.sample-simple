@@ -25,7 +25,7 @@ date: 2018-11-11
 history: [["2012-01-30"],["2016-04-20","2016-05-03"],["2018-11-11"]]
 rights: (C) 2016-2020 Re:VIEW Commiters, some rights reserved.
 description: sample config.yml file for Re:VIEW book
-urnid: urn:uuid:http://reviewml.org/review-sample-book
+# urnid: urn:uuid:ffffffff-ffff-ffff-ffff-ffffffffffff
 # isbn: null
 
 ## Book Structure
