@@ -30,7 +30,7 @@ class ImgMathTest < Test::Unit::TestCase
   end
 
   def test_defer_math_image
-    unless support_latex_in_tests?
+    unless support_latex_in_tests? && support_pdftocairo_in_tests?
       $stderr.puts 'skip test_defer_math_image'
       return true
     end
@@ -103,6 +103,15 @@ class ImgMathTest < Test::Unit::TestCase
   def support_latex_in_tests?
     begin
       `uplatex -v`
+      true
+    rescue StandardError
+      false
+    end
+  end
+
+  def support_pdftocairo_in_tests?
+    begin
+      `pdftocairo -v`
       true
     rescue StandardError
       false
