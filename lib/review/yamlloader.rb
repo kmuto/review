@@ -1,4 +1,5 @@
 require 'yaml'
+require 'date'
 
 module ReVIEW
   class YAMLLoader
