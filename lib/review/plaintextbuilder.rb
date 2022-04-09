@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2021 Kenshi Muto
+# Copyright (c) 2018-2022 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of

@@ -148,6 +148,38 @@ EOS
     assert_equal 'test 「1.1.1 te_st」 test2', actual
   end
 
+  def test_inline_sec
+    def @chapter.headline_index
+      item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st<>')
+      idx = Book::HeadlineIndex.new(self)
+      idx.add_item(item)
+      idx
+    end
+
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<secref>{test}')
+    assert_equal 'test <a href="#h1-1-1">「1.1.1 te_st<>」</a>', actual
+    actual = compile_inline('test @<sectitle>{test}')
+    assert_equal 'test te_st<>', actual
+    actual = compile_inline('test @<sec>{test}')
+    assert_equal 'test 1.1.1', actual
+
+    @config['secnolevel'] = 2
+    actual = compile_inline('test @<secref>{test}')
+    assert_equal 'test <a href="#h1-1-1">「te_st<>」</a>', actual
+    actual = compile_inline('test @<sectitle>{test}')
+    assert_equal 'test te_st<>', actual
+    assert_raises(ReVIEW::ApplicationError) { compile_block('test @<sec>{test}') }
+    @config['chapterlink'] = nil
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<secref>{test}')
+    assert_equal 'test 「1.1.1 te_st<>」', actual
+    actual = compile_inline('test @<sectitle>{test}')
+    assert_equal 'test te_st<>', actual
+    actual = compile_inline('test @<sec>{test}')
+    assert_equal 'test 1.1.1', actual
+  end
+
   def test_ul_nest1
     src = <<-EOS
   * AAA

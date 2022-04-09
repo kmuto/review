@@ -372,6 +372,40 @@ EOS
     end
   end
 
+  def test_inline_sec
+    def @chapter.headline_index
+      item = Book::Index::Item.new('chap1|test', [1, 1], 'te_st<>')
+      idx = Book::HeadlineIndex.new(self)
+      idx.add_item(item)
+      idx
+    end
+
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<secref>{test}')
+    assert_equal 'test <a href="-.html#h1-1-1">「1.1.1 te_st&lt;&gt;」</a>', actual
+    actual = compile_inline('test @<sectitle>{test}')
+    assert_equal 'test <a href="-.html#h1-1-1">te_st&lt;&gt;</a>', actual
+    actual = compile_inline('test @<sec>{test}')
+    assert_equal 'test <a href="-.html#h1-1-1">1.1.1</a>', actual
+
+    @config['secnolevel'] = 2
+    actual = compile_inline('test @<secref>{test}')
+    assert_equal 'test <a href="-.html#h1-1-1">「te_st&lt;&gt;」</a>', actual
+    actual = compile_inline('test @<sectitle>{test}')
+    assert_equal 'test <a href="-.html#h1-1-1">te_st&lt;&gt;</a>', actual
+    assert_raises(ReVIEW::ApplicationError) { compile_block('test @<sec>{test}') }
+    assert_match(/the target headline doesn't have a number/, @log_io.string)
+
+    @config['chapterlink'] = nil
+    @config['secnolevel'] = 3
+    actual = compile_inline('test @<secref>{test}')
+    assert_equal 'test 「1.1.1 te_st&lt;&gt;」', actual
+    actual = compile_inline('test @<sectitle>{test}')
+    assert_equal 'test te_st&lt;&gt;', actual
+    actual = compile_inline('test @<sec>{test}')
+    assert_equal 'test 1.1.1', actual
+  end
+
   def test_inline_uchar
     actual = compile_inline('test @<uchar>{2460} test2')
     assert_equal 'test &#x2460; test2', actual

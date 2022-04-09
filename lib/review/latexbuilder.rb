@@ -1,6 +1,6 @@
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
-#               2010-2021 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
+#               2010-2022 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -1287,6 +1287,28 @@ module ReVIEW
         macro('reviewsecref', str, sec_label(anchor))
       else
         str
+      end
+    end
+
+    def inline_sec(id)
+      if @book.config['chapterlink']
+        n = super(id)
+        anchor = n.tr('.', '-')
+        macro('reviewsecref', n, sec_label(anchor))
+      else
+        super(id)
+      end
+    rescue KeyError
+      app_error "unknown headline: #{id}"
+    end
+
+    def inline_sectitle(id)
+      if @book.config['chapterlink']
+        chap, id2 = extract_chapter_id(id)
+        anchor = chap.headline_index.number(id2).tr('.', '-')
+        macro('reviewsecref', super(id), sec_label(anchor))
+      else
+        super(id)
       end
     end
 

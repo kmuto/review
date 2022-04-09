@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2021 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #
 # This program is free software.
@@ -514,6 +514,18 @@ module ReVIEW
     end
 
     def inline_hd(_id)
+      ''
+    end
+
+    def inline_secref(_id)
+      ''
+    end
+
+    def inline_sec(_id)
+      ''
+    end
+
+    def inline_sectitle(_id)
       ''
     end
 

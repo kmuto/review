@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2021 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2022 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -232,6 +232,9 @@ module ReVIEW
     definline :code
     definline :bib
     definline :hd
+    definline :secref
+    definline :sec
+    definline :sectitle
     definline :href
     definline :recipe
     definline :column
