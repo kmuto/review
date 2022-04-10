@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2021 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2022 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -446,6 +446,27 @@ module ReVIEW
       else
         inline_hd_chap(@chapter, id)
       end
+    rescue KeyError
+      app_error "unknown headline: #{id}"
+    end
+
+    alias_method :inline_secref, :inline_hd
+
+    def inline_sec(id)
+      chapter, id = extract_chapter_id(id)
+      n = chapter.headline_index.number(id)
+      if n.present? && chapter.number && over_secnolevel?(n)
+        n
+      else
+        app_error "the target headline doesn't have a number: #{id}"
+      end
+    rescue KeyError
+      app_error "unknown headline: #{id}"
+    end
+
+    def inline_sectitle(id)
+      chapter, id = extract_chapter_id(id)
+      compile_inline(chapter.headline(id).caption)
     rescue KeyError
       app_error "unknown headline: #{id}"
     end

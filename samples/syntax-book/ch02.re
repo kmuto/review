@@ -332,10 +332,16 @@ a_{m1} & \cdots & a_{mn}
  * 章題：@<title>{ch01}、@<title>{part2}、@<title>{appA}、@<title>{bib}
  * 章番号+題：@<chapref>{ch02}、@<chapref>{part2}、@<chapref>{appA}、@<chapref>{bib}
 
-節や項への参照はhdを使います。
+節や項への参照はhdまたはsecを使います。
 
  * @<hd>{ch02|ブロック命令}の@<hd>{ch02|ブロック命令|図}
  * @<hd>{ch02|crossref}
+ * @<secref>{ch02|ブロック命令}の@<secref>{ch02|ブロック命令|図}
+ * @<secref>{ch02|crossref}
+ * @<sec>{ch02|ブロック命令}の@<sec>{ch02|ブロック命令|図}
+ * @<sec>{ch02|crossref}
+ * @<sectitle>{ch02|ブロック命令}の@<sectitle>{ch02|ブロック命令|図}
+ * @<sectitle>{ch02|crossref}
  * コラム参照 @<column>{ch03|column2}
 
 他章への図表リスト参照の例です（@<list>{pre01|main1}、@<img>{pre01|fractal}、@<table>{pre01|tbl1}、@<list>{appA|lista-1}、@<img>{appA|puzzle}、@<table>{appA|taba-1}）。

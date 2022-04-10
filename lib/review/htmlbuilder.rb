@@ -1112,6 +1112,31 @@ EOS
       app_error "unknown headline: #{id}"
     end
 
+    def inline_sec(id)
+      if @book.config['chapterlink']
+        chap, id2 = extract_chapter_id(id)
+        n = chap.headline_index.number(id2)
+        anchor = 'h' + n.tr('.', '-')
+        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{super(id)}</a>)
+      else
+        super(id)
+      end
+    rescue KeyError
+      app_error "unknown headline: #{id}"
+    end
+
+    def inline_sectitle(id)
+      if @book.config['chapterlink']
+        chap, id2 = extract_chapter_id(id)
+        anchor = 'h' + chap.headline_index.number(id2).tr('.', '-')
+        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{super(id)}</a>)
+      else
+        super(id)
+      end
+    rescue KeyError
+      app_error "unknown headline: #{id}"
+    end
+
     def column_label(id, chapter = @chapter)
       num = chapter.column(id).number
       "column-#{num}"
