@@ -1,4 +1,4 @@
-name: Test
+name: Lint by RuboCop
 
 on:
   push:
@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['2.4', '2.5', '2.6', '2.7', '3.0', '3.1']
-        os: [ubuntu-latest, macOS-latest]
+        ruby: ['2.5', '2.6', '2.7', '3.0', '3.1']
+        os: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
@@ -28,4 +28,4 @@ jobs:
       run: |
         gem install bundler --no-document
         bundle install --retry 3
-        bundle exec rake test
+        bundle exec rubocop -P
