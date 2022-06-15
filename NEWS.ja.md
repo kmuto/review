@@ -1,3 +1,18 @@
+# Version 5.5.0
+## 新機能
+* 節や項を参照するインライン命令として、 `@<secref>` , `@<sec>` , `@<sectitle>` を追加しました。`@<secref>` は節や項の番号+タイトルを含むテキスト（ `@<hd>` と同じ）、 `@<sec>` は節や項の番号のみ、`@<sectitle>` はタイトルのみに展開されます ([#1809])
+## バグ修正
+* テストエラーを修正しました ([#1804])
+* review-update コマンドがエラーになるのを修正しました ([#1807])
+
+## その他
+* rexml がバンドル gem 扱いになったので、gemspec に追加しました ([#1808])
+
+[#1804]: https://github.com/kmuto/review/pull/1804
+[#1807]: https://github.com/kmuto/review/pull/1807
+[#1808]: https://github.com/kmuto/review/pull/1808
+[#1809]: https://github.com/kmuto/review/issues/1809
+
 # Version 5.4.0
 ## 新機能
 * Re:VIEW に関する質問の受け付けに対応する [GitHub Discussions](https://github.com/kmuto/review/discussions) を開始しました
