@@ -854,6 +854,7 @@ module ReVIEW
       else
         %Q(<replace idref="texinline-#{@texinlineequation}"><pre>#{escape(str)}</pre></replace>)
       end
+    end
 
     def noindent
       @noindent = true
