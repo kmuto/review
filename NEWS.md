@@ -1,3 +1,19 @@
+# Version 5.5.0
+## New Features
+* introduced `@<secref>`, `@<sec>`, and `@<sectitle>` as inline op to refer sections ([#1809])
+
+## Bug Fixes
+* fixed test error ([#1804])
+* fixed an error of review-update ([#1807])
+
+## Others
+* added rexml to gemspec ([#1808])
+
+[#1804]: https://github.com/kmuto/review/pull/1804
+[#1807]: https://github.com/kmuto/review/pull/1807
+[#1808]: https://github.com/kmuto/review/pull/1808
+[#1809]: https://github.com/kmuto/review/issues/1809
+
 # Version 5.4.0
 ## New Features
 * [GitHub Discussions](https://github.com/kmuto/review/discussions) has been opened to answer questions about Re:VIEW
