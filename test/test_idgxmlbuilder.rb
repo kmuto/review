@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'book_test_helper'
 require 'review/compiler'
 require 'review/book'
 require 'review/idgxmlbuilder'
@@ -6,6 +7,7 @@ require 'review/i18n'
 
 class IDGXMLBuidlerTest < Test::Unit::TestCase
   include ReVIEW
+  include BookTestHelper
 
   def setup
     @builder = IDGXMLBuilder.new
@@ -14,6 +16,7 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @config['tableopt'] = '10'
     @book = Book::Base.new
     @book.config = @config
+    img_math = ReVIEW::ImgMath.new(@config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -260,6 +263,15 @@ EOS
     actual = compile_inline('@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}')
     assert_equal %Q(<replace idref="texinline-1"><pre>\\sin</pre></replace> <replace idref="texinline-2"><pre>\\frac{1}{2}</pre></replace>), actual
   end
+
+  def test_inline_m_imgmath
+    @config['math_format'] = 'imgmath'
+    actual = compile_inline('@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}')
+    assert_equal %Q(<Image href="file://images/_review_math/_gen_5fded382aa33f0f0652092d41e05c743f7453c26ca1433038a4883234975a9b0.png" type="inline" /> <Image href="file://images/_review_math/_gen_e7e9536310cdba7ff948771f791cefe32f99b73c608778c9660db79e4926e9f9.png" type="inline" />), actual
+  end
+
+
+  
 
   def test_dlist_beforeulol
     actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
@@ -1282,6 +1294,37 @@ EOS
 
     @config['caption_position']['equation'] = 'bottom'
     expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><replace idref="texblock-1"><pre>e=mc^2</pre></replace><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_imgmath
+    @config['math_format'] = 'imgmath'
+    src = <<-EOS
+//texequation{
+p \\land \\bm{P} q
+//}
+EOS
+    expected = %Q(<img><Image href="file://images/_review_math/_gen_84291054a12d278ea05694c20fbbc8e974ec66fc13be801c01dca764faeecccb.png" /></img>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_with_caption_imgmath
+    @config['math_format'] = 'imgmath'
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><img><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></img></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><img><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></img><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
     actual = compile_block(src)
     assert_equal expected, actual
   end
