@@ -267,7 +267,7 @@ EOS
   def test_inline_m_imgmath
     @config['math_format'] = 'imgmath'
     actual = compile_inline('@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}')
-    assert_equal %Q(<Image href="file://images/_review_math/_gen_5fded382aa33f0f0652092d41e05c743f7453c26ca1433038a4883234975a9b0.png" type="inline" /> <Image href="file://images/_review_math/_gen_e7e9536310cdba7ff948771f791cefe32f99b73c608778c9660db79e4926e9f9.png" type="inline" />), actual
+    assert_equal %Q(<inlineequation><Image href="file://images/_review_math/_gen_5fded382aa33f0f0652092d41e05c743f7453c26ca1433038a4883234975a9b0.png" type="inline" /></inlineequation> <inlineequation><Image href="file://images/_review_math/_gen_e7e9536310cdba7ff948771f791cefe32f99b73c608778c9660db79e4926e9f9.png" type="inline" /></inlineequation>), actual
   end
 
 
@@ -1305,7 +1305,7 @@ EOS
 p \\land \\bm{P} q
 //}
 EOS
-    expected = %Q(<img><Image href="file://images/_review_math/_gen_84291054a12d278ea05694c20fbbc8e974ec66fc13be801c01dca764faeecccb.png" /></img>)
+    expected = %Q(<equationimage><Image href="file://images/_review_math/_gen_84291054a12d278ea05694c20fbbc8e974ec66fc13be801c01dca764faeecccb.png" /></equationimage>)
     actual = compile_block(src)
     assert_equal expected, actual
   end
@@ -1319,12 +1319,12 @@ EOS
 e=mc^2
 //}
 EOS
-    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><img><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></img></equationblock>)
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><equationimage><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></equationimage></equationblock>)
     actual = compile_block(src)
     assert_equal expected, actual
 
     @config['caption_position']['equation'] = 'bottom'
-    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><img><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></img><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><equationimage><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></equationimage><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
     actual = compile_block(src)
     assert_equal expected, actual
   end

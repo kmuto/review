@@ -471,9 +471,9 @@ module ReVIEW
         math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
         img_path = @img_math.defer_math_image(math_str, key)
-        puts '<img>'
+        puts '<equationimage>'
         puts %Q(<Image href="file://#{img_path}" />)
-        puts '</img>'
+        puts '</equationimage>'
       else
         puts %Q(<replace idref="texblock-#{@texblockequation}">)
         puts '<pre>'
@@ -850,7 +850,7 @@ module ReVIEW
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
         img_path = @img_math.defer_math_image(math_str, key)
-        %Q(<Image href="file://#{img_path}" type="inline" />)
+        %Q(<inlineequation><Image href="file://#{img_path}" type="inline" /></inlineequation>)
       else
         %Q(<replace idref="texinline-#{@texinlineequation}"><pre>#{escape(str)}</pre></replace>)
       end
