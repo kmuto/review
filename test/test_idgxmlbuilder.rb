@@ -16,7 +16,6 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     @config['tableopt'] = '10'
     @book = Book::Base.new
     @book.config = @config
-    img_math = ReVIEW::ImgMath.new(@config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @compiler = ReVIEW::Compiler.new(@builder)
@@ -269,9 +268,6 @@ EOS
     actual = compile_inline('@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}')
     assert_equal %Q(<inlineequation><Image href="file://images/_review_math/_gen_5fded382aa33f0f0652092d41e05c743f7453c26ca1433038a4883234975a9b0.png" type="inline" /></inlineequation> <inlineequation><Image href="file://images/_review_math/_gen_e7e9536310cdba7ff948771f791cefe32f99b73c608778c9660db79e4926e9f9.png" type="inline" /></inlineequation>), actual
   end
-
-
-  
 
   def test_dlist_beforeulol
     actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
