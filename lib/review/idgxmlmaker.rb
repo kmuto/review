@@ -16,6 +16,7 @@ require 'review/yamlloader'
 require 'review/idgxmlbuilder'
 require 'review/version'
 require 'review/makerhelper'
+require 'review/img_math'
 require 'review/loggable'
 
 module ReVIEW
@@ -28,6 +29,7 @@ module ReVIEW
     def initialize
       @basedir = nil
       @logger = ReVIEW.logger
+      @img_math = nil
       @plaintext = nil
       @compile_errors = nil
     end
@@ -67,6 +69,7 @@ module ReVIEW
     end
 
     def remove_old_files(path)
+      @img_math.cleanup_mathimg
       FileUtils.rm_rf(path)
     end
 
@@ -81,6 +84,9 @@ module ReVIEW
       rescue ReVIEW::ConfigError => e
         error! e.message
       end
+
+      @img_math = ReVIEW::ImgMath.new(@config)
+
       I18n.setup(@config['language'])
       begin
         generate_idgxml_files(yamlfile)
@@ -89,6 +95,10 @@ module ReVIEW
         raise if @config['debug']
 
         error! e.message
+      end
+
+      if @config['math_format'] == 'imgmath'
+        @img_math.make_math_images
       end
     end
 
@@ -130,7 +140,7 @@ module ReVIEW
 
     def build_body(basetmpdir, _yamlfile)
       base_path = Pathname.new(@basedir)
-      @converter = ReVIEW::Converter.new(@book, ReVIEW::IDGXMLBuilder.new)
+      @converter = ReVIEW::Converter.new(@book, ReVIEW::IDGXMLBuilder.new(img_math: @img_math))
       @book.parts.each do |part|
         if part.name.present?
           if part.file?
