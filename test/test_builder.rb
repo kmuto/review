@@ -71,6 +71,8 @@ class BuidlerTest < Test::Unit::TestCase
     end
     str = @b.inline_ruby('foo,bar')
     assert_equal str, ['foo', 'bar']
+    str = @b.inline_ruby('    foo    ,    bar  ')
+    assert_equal str, ['foo', 'bar']
     str = @b.inline_ruby('foo\\,\\,,\\,bar,buz')
     assert_equal str, ['foo,,', ',bar,buz']
   end

@@ -327,8 +327,16 @@ EOS
     assert_equal 'test p.\pageref{p1}', actual
   end
 
+  def test_inline_ruby
+    actual = compile_inline('@<ruby>{  foo  ,  bar  }')
+    assert_equal '\\ruby{foo}{bar}', actual
+  end
+
   def test_inline_ruby_comma
     actual = compile_inline('@<ruby>{foo\\, bar\\, buz,フー・バー・バズ}')
+    assert_equal '\\ruby{foo, bar, buz}{フー・バー・バズ}', actual
+
+    actual = compile_inline('@<ruby>{foo\\, bar\\, buz    ,  フー・バー・バズ  }')
     assert_equal '\\ruby{foo, bar, buz}{フー・バー・バズ}', actual
   end
 

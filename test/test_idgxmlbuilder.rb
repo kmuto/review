@@ -229,7 +229,10 @@ EOS
   end
 
   def test_inline_ruby
-    actual = compile_inline('@<ruby>{coffin, bed}')
+    actual = compile_inline('@<ruby>{coffin,bed}')
+    assert_equal %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>coffin</aid:rb><aid:rt>bed</aid:rt></aid:ruby></GroupRuby>), actual
+
+    actual = compile_inline('@<ruby>{     coffin  ,   bed   }')
     assert_equal %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>coffin</aid:rb><aid:rt>bed</aid:rt></aid:ruby></GroupRuby>), actual
   end
 
