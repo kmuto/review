@@ -1350,7 +1350,7 @@ module ReVIEW
 
     def inline_icon(id)
       if @chapter.image(id).path
-        command = 'reviewincludegraphics'
+        command = 'reviewicon'
         if @book.config.check_version('2', exception: false)
           command = 'includegraphics'
         end

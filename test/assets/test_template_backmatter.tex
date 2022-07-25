@@ -1,6 +1,6 @@
 \documentclass[dvipdfmx]{review-jsbook}
 \makeatletter
-\def\review@reviewversion{5.3.0}
+\def\review@reviewversion{5.6.0}
 \def\review@texcompiler{uplatex}
 \def\review@documentclass{review-jsbook}
 
@@ -74,6 +74,9 @@ some ad content
   \fi
   \ifdefined\reviewtcy\else% for 5.3.0 compatibility
     \DeclareRobustCommand{\reviewtcy}[1]{\rensuji{##1}}
+  \fi
+  \ifdefined\reviewicon\else% for 5.6.0 compatibility
+    \DeclareRobustCommand{\reviewicon}[1]{\reviewincludegraphics{##1}}
   \fi
 }
 

@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2021/09/06]
+\ProvidesClass{review-base}[2022/07/25]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -331,6 +331,10 @@
 
 \DeclareRobustCommand{\reviewinsert}[1]{\Underline{#1}}
 \DeclareRobustCommand{\reviewstrike}[1]{\Midline{#1}}
+\DeclareRobustCommand{\reviewicon}[1]{\includegraphics[]{#1}}
+% アイコンの高さを文字の高さに合わせたいときには、以下をreview-custom.styに記述してください:
+% \DeclareRobustCommand{\reviewicon}[1]{\includegraphics[height=0.9zw]{#1}}
+
 %%%% for ulem.sty:
 %%\renewcommand{\reviewstrike}[1]{\sout{#1}}
 
