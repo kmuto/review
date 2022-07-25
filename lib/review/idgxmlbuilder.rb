@@ -692,7 +692,7 @@ module ReVIEW
     end
 
     def compile_ruby(base, ruby)
-      %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape(base.strip)}</aid:rb><aid:rt>#{escape(ruby.strip)}</aid:rt></aid:ruby></GroupRuby>)
+      %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape(base)}</aid:rb><aid:rt>#{escape(ruby)}</aid:rt></aid:ruby></GroupRuby>)
     end
 
     def compile_kw(word, alt)

@@ -100,6 +100,9 @@ class PLAINTEXTBuidlerTest < Test::Unit::TestCase
   def test_inline_ruby
     actual = compile_inline('@<ruby>{coffin,bed}')
     assert_equal 'coffin', actual
+
+    actual = compile_inline('@<ruby>{  coffin  ,  bed  }')
+    assert_equal 'coffin', actual
   end
 
   def test_inline_kw

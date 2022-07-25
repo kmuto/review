@@ -401,10 +401,10 @@ module ReVIEW
     def inline_ruby(arg)
       base, *ruby = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/)
       if base
-        base = base.gsub(/\\,/, ',')
+        base = base.gsub(/\\,/, ',').strip
       end
       if ruby
-        ruby = ruby.join(',').gsub(/\\,/, ',')
+        ruby = ruby.join(',').gsub(/\\,/, ',').strip
       end
       compile_ruby(base, ruby)
     end

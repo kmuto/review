@@ -1113,7 +1113,7 @@ Output:
 ### Other inline commands
 
 ```
-@<ruby>{Matsumoto, Matz}:: ruby markups
+@<ruby>{Matsumoto,Matz}:: ruby markups
 @<br>{}::  linebreak in paragraph
 @<uchar>{2460}:: Unicode code point
 @<href>{http://www.google.com/, google}:: hyper link(URL)

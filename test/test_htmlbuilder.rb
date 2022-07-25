@@ -419,6 +419,9 @@ EOS
   def test_inline_ruby
     actual = compile_inline('@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。')
     assert_equal '<ruby>粗雑<rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby>繊細<rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。', actual
+
+    actual = compile_inline('@<ruby>{  粗雑  ,  クルード  }と思われているなら@<ruby>{  繊細  ,テクニカル  }にやり、繊細と思われているなら粗雑にやる。')
+    assert_equal '<ruby>粗雑<rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby>繊細<rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。', actual
   end
 
   def test_inline_ruby_comma
