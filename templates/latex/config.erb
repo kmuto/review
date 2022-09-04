@@ -34,7 +34,9 @@
 \def\review@intn@table{<%= escape(I18n.t('table')) %>}
 \def\review@intn@equation{<%= escape(I18n.t('equation')) %>}
 \def\review@intn@columnname{<%= escape(I18n.t('columnname')) %>}
-\def\review@intn@memohead{<%= escape(I18n.t('memo_head')) %>}
+<%- %w[note tip info warning important caution notice memo].each do |mini| -%>
+\def\review@intn@<%= mini%>head{<%= escape(I18n.t("#{mini}_head")) %>}
+<%- end -%>
 \def\review@intn@edition{<%= escape(I18n.t('edition')) %>}
 \def\review@intn@publishedby{<%= escape(I18n.t('published_by', @config.names_of('pbl').join(I18n.t('names_splitter'))))%>}
 \def\review@intn@captionprefix{<%= escape(I18n.t('caption_prefix')) %>}
