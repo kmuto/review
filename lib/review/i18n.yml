@@ -17,7 +17,14 @@ ja:
   hd_quote_without_number: "「%s」"
   appendix: 付録%pA
   numberless_image: "図:"
-  memo_head: ■メモ
+  note_head: NOTE
+  tip_head: TIP
+  info_head: INFORMATION
+  warning_head: WARNING
+  important_head: IMPORTANT
+  caution_head: CAUTION
+  notice_head: NOTICE
+  memo_head: MEMO
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
@@ -107,7 +114,14 @@ en:
   hd_quote_without_number: '"%s"'
   appendix: Appendix %s
   numberless_image: "Figure:"
-  memo_head: Note
+  note_head: NOTE
+  tip_head: TIP
+  info_head: INFORMATION
+  warning_head: WARNING
+  important_head: IMPORTANT
+  caution_head: CAUTION
+  notice_head: NOTICE
+  memo_head: MEMO
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
@@ -178,6 +192,14 @@ zh-TW:
   hd_quote_without_number: "「%s」"
   appendix: 附錄%s
   numberless_image: "圖:"
+  note_head: NOTE
+  tip_head: TIP
+  info_head: INFORMATION
+  warning_head: WARNING
+  important_head: IMPORTANT
+  caution_head: CAUTION
+  notice_head: NOTICE
+  memo_head: MEMO
   format_number: "%s.%d"
   format_number_header: "%s.%d:"
   format_number_without_chapter: "%d"
