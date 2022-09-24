@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 5.3.
+This document explains about the format of Re:VIEW 5.5.
 
 ## Paragraph
 
@@ -112,7 +112,7 @@ You should add emply lines between Paragraphs and Itemize (same as Ordered and N
 ## Ordered Itemize
 
 Ordered itemize (ol in HTML)  uses ` 1. ...`, ` 2. ...`, ` 3. ...`.
-They aren't nested.
+Nesting output like `1-1` is not supported by default (nesting can be expressed using `//beginchild` - `//endchild`).
 
 Usage:
 
@@ -122,15 +122,24 @@ Usage:
  3. 3rd condition
 ```
 
-The value of Number is ignored.
-
-```
- 1. 1st condition
- 1. 2nd condition
- 1. 3rd condition
-```
-
 You must write one more space character at line head like itemize.
+
+Whether the numbers appear as described depends on the software that produces the output.
+
+* HTML (EPUB), TeX: The number will start from 1 regardless of the number entered.
+* IDGXML, text: The numbers will be output as described. Therefore, writing all numbers as "1." will produce strange results.
+
+In HTML (EPUB) and TeX builders, use `//olnum[number]` to change the first number. Note that the intermediate numbers cannot be changed.
+
+Usage:
+
+```
+//olnum[10]
+
+ 1. This number will be 10
+ 2. This number will be 11
+ 6. 12 in continuity, not 6 or 15.
+```
 
 ## Definition List
 
@@ -512,6 +521,26 @@ Seeing is believing.
 
 You can use inline markup in quotations.
 
+Center-aligned paragraphs are represented by `//centering{ ~ //}` and right-aligned paragraphs by `//flushright{ ~ //}`.
+
+To include multiple paragraphs, separate them with a blank line.
+
+Usage:
+
+```
+//centering{
+This is
+
+center aligned.
+//}
+
+//flushright{
+This is
+
+right aligned.
+//}
+```
+
 ## Short column
 
 Some block commands are used for short column.
@@ -670,7 +699,7 @@ If you'd like to assign a number like 'Equation 1.1`, specify the identifier and
 
 To reference this, use the inline command `@<eq>`.
 
-There is `@<m>{ ... }` for inline (see "Fence notation for inline commands" section also).
+There is `@<m>{ ... }` for inline. When writing long expressions, it is convenient to use fence notation (`@<m>$~$` or `@<m>|~|`) to avoid escaping. (see "Fence notation for inline commands" section also).
 
 Whether LaTeX formula is correctly displayed or not depends on the processing system. PDFMaker uses LaTeX internally, so there is no problem.
 
@@ -943,34 +972,7 @@ Usage:
 
 ## Raw Data Block
 
-When you want to write non-Re:VIEW line, use `//raw` or `//embed`.
-
-### `//raw` block
-
-Usage:
-
-```
-//raw[|html|<div class="special">\nthis is a special line.\n</div>]
-```
-
-In above line, `html` is a builder name that handle raw data.
-You can use `html`, `latex`, `idgxml` and `top` as builder name.
-You can specify multiple builder names with separator `,`.
-`\n` is translated into newline(U+000A).
-
-Output:
-
-(In HTML:)
-
-```
-<div class="special">
-this is a special line.
-</div>
-```
-
-(In other formats, it is just ignored.)
-
-Note: `//raw` and `@<raw>` may break structured document easily.
+When you want to write non-Re:VIEW line, use `//embed` or `@<embed>`.
 
 ### `//embed` block
 
@@ -1004,11 +1006,42 @@ this is a special line.
 
 (In other formats, it is just ignored.)
 
+For inline, use `@<embed>{|builder|raw string}`.
+
+### `//raw` block
+
+`//raw` and `@<raw>` is an old notation and should no longer be used (use it only if you want to avoid line breaks in IDGXML builder).
+
+Usage:
+
+```
+//raw[|html|<div class="special">\nthis is a special line.\n</div>]
+```
+
+In above line, `html` is a builder name that handle raw data.
+You can use `html`, `latex`, `idgxml` and `top` as builder name.
+You can specify multiple builder names with separator `,`.
+`\n` is translated into newline(U+000A).
+
+Output:
+
+(In HTML:)
+
+```
+<div class="special">
+this is a special line.
+</div>
+```
+
+(In other formats, it is just ignored.)
+
+Note: `//embed`, `@<embed>`, `//raw` and `@<raw>` may break structured document easily.
+
 ### Nested itemize block
 
 Re:VIEW itemize blocks basically cannot express nested items. Also, none of itemize blocks allow to contain another itemize block or paragraph/image/table/list.
 
-As a workaround, Re:VIEW 4.2 provides an experimental `//beginchild` and `//endchild`. If you want to include something in an itemize block, enclose it with `//beginchild` and `//endchild`. It is also possible to create a multiple nest.
+As a workaround, Re:VIEW provides `//beginchild` and `//endchild` since Re:VIEW 4.2. If you want to include something in an itemize block, enclose it with `//beginchild` and `//endchild`. It is also possible to create a multiple nest.
 
 ```
  * UL1
@@ -1091,9 +1124,11 @@ Output:
 @<tti>{FooClass}:: teletype (monospaced font) and italic
 @<ttb>{BarClass}:: teletype (monospaced font) and bold
 @<code>{a.foo(bar)}:: teletype (monospaced font) for fragments of code
-@<tcy>{}:: short horizontal text in vertical text
+@<tcy>{text}:: short horizontal text in vertical text
 @<ins>{sentence}:: inserted part (underline)
 @<del>{sentence}:: deleted part (strike through)
+@<sup>{text}:: superscript
+@<sub>{text}:: subscript
 ```
 
 ### References
@@ -1121,8 +1156,8 @@ Output:
 @<m>{a + \alpha}:: TeX inline equation
 @<w>{key}:: expand the value corresponding to the key.
 @<wb>{key}:: expand the value corresponding to the key with bold style.
-@<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}`, `\\` is `\`, and `\n` is newline.
 @<embed>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}` and `\\` is `\`.
+@<raw>{|html|<span>ABC</span>}:: inline raw data inline. `\}` is `}`, `\\` is `\`, and `\n` is newline. (deprecated)
 @<idx>{string}:: output a string and register it as an index. See makeindex.md.
 @<hidx>{string}:: register a string as an index. A leveled index is expressed like `parent<<>>child`
 @<balloon>{abc}:: inline balloon in code block. For example, `@<balloon>{ABC}` produces `←ABC`. This may seem too simple. To decorate it, modify the style sheet file or override a function by `review-ext.rb`
