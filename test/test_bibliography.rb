@@ -93,11 +93,21 @@ EOS
   def test_list_latex
     @book.config['bib-csl-style'] = 'acm-siggraph'
     expect = <<-EOS
-\\begin{enumerate}
-\\item  Fraassen, B.C. van. 1989. \\emph{Laws and Symmetry}. Oxford University Press, Oxford.
-\\item  Thomas, D. and Hunt, A. 2019. \\emph{The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition}. The Pragmatic Bookshelf.
-\\item  Thomas, D., Fowler, C., and Hunt, A. 2009. \\emph{Programming Ruby 1.9: The Pragmatic Programmer’s Guide}. The Pragmatic Bookshelf, Raleigh, North Carolina.
-\\end{enumerate}
+\\begin{description}
+\\item[] Fraassen, B.C. van. 1989. \\emph{Laws and Symmetry}. Oxford University Press, Oxford.
+\\item[] Thomas, D. and Hunt, A. 2019. \\emph{The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition}. The Pragmatic Bookshelf.
+\\item[] Thomas, D., Fowler, C., and Hunt, A. 2009. \\emph{Programming Ruby 1.9: The Pragmatic Programmer’s Guide}. The Pragmatic Bookshelf, Raleigh, North Carolina.
+\\end{description}
+EOS
+    assert_equal expect.chomp, @bib.format('latex').list
+
+    @book.config['bib-csl-style'] = 'ieee'
+    expect = <<-EOS
+\\begin{description}
+\\item[] [1]D. Thomas, C. Fowler, and A. Hunt, \\emph{Programming Ruby 1.9: The Pragmatic Programmer’s Guide}. Raleigh, North Carolina: The Pragmatic Bookshelf, 2009.
+\\item[] [2]B. C. van Fraassen, \\emph{Laws and Symmetry}. Oxford: Oxford University Press, 1989.
+\\item[] [3]D. Thomas and A. Hunt, \\emph{The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition}. The Pragmatic Bookshelf, 2019.
+\\end{description}
 EOS
     assert_equal expect.chomp, @bib.format('latex').list
   end
