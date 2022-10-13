@@ -40,6 +40,10 @@ class BibliographyTest < Test::Unit::TestCase
     @book.config['bib-csl-style'] = 'ieee'
     assert_equal '[1, 2]',
                  @bib.format('text').ref('pickaxe,fraassen_1989')
+
+    @book.config['bib-csl-style'] = 'sist02'
+    assert_equal '[2, 3]',
+                 @bib.format('text').ref('pickaxe,fraassen_1989')
   end
 
   def test_cite_html
