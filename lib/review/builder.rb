@@ -436,6 +436,14 @@ module ReVIEW
       puts
     end
 
+    def inline_bibref(id)
+      @chapter.bibliography.format('text').ref(id)
+    end
+
+    def bibliography
+      puts @chapter.bibliography.format('text').list
+    end
+
     def inline_hd(id)
       m = /\A([^|]+)\|(.+)/.match(id)
       if m && m[1]

@@ -1275,6 +1275,14 @@ module ReVIEW
       macro('reviewbibref', "[#{@chapter.bibpaper(id).number}]", bib_label(id))
     end
 
+    def inline_bibref(id)
+      @chapter.bibliography.format('latex').ref(id)
+    end
+
+    def bibliography
+      puts @chapter.bibliography.format('latex').list
+    end
+
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       str = if n.present? && chap.number && over_secnolevel?(n)
