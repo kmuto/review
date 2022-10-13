@@ -25,6 +25,23 @@ class BibliographyTest < Test::Unit::TestCase
     assert_equal '[1]', @bib.format('text').ref('pickaxe')
   end
 
+  def test_ref_text_multiple
+    @book.config['bib-csl-style'] = 'acm-siggraph'
+    assert_equal '[Thomas et al. 2009; van Fraassen 1989]',
+                 @bib.format('text').ref('pickaxe,fraassen_1989')
+
+    assert_equal '[Thomas et al. 2009; van Fraassen 1989]',
+                 @bib.format('text').ref('pickaxe,                 fraassen_1989')
+
+    @book.config['bib-csl-style'] = 'apa'
+    assert_equal '(Thomas et al., 2009; van Fraassen, 1989)',
+                 @bib.format('text').ref('pickaxe,fraassen_1989')
+
+    @book.config['bib-csl-style'] = 'ieee'
+    assert_equal '[1, 2]',
+                 @bib.format('text').ref('pickaxe,fraassen_1989')
+  end
+
   def test_cite_html
     @book.config['bib-csl-style'] = 'acm-siggraph'
     assert_equal '[Thomas et al. 2009]', @bib.format('html').ref('pickaxe')

@@ -26,19 +26,24 @@ module ReVIEW
         raise ReVIEW::ConfigError, 'not found bibtex libraries. disabled bibtex feature.'
       end
 
-      def ref(key)
-        cited = @citeproc.render(:citation, id: key)
+      def ref(keys)
+        authors = []
+        keys.split(',').each do |key|
+          authors << { id: key.strip }
+        end
+
+        cited = @citeproc.render(:citation, authors)
 
         # FIXME: need to apply CSL style
-        if cited == ''
-          idx = 1
-          @citeproc.bibliography.ids.each do |i|
-            if i == key
-              cited = "[#{idx}]"
-              break
+        if cited.gsub(/[\s,]/, '') == ''
+          refnums = []
+          refnames = authors.map{ |i| i.values }.flatten
+          @citeproc.bibliography.ids.each_with_index do |key, idx|
+            if refnames.include?(key)
+              refnums << (idx + 1)
             end
-            idx += 1
           end
+          cited = "[#{refnums.join(', ')}]"
         end
 
         cited
