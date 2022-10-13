@@ -25,6 +25,9 @@ Gem::Specification.new do |gem|
   gem.add_dependency('rouge')
   gem.add_dependency('rubyzip')
   gem.add_dependency('tty-logger')
+  gem.add_development_dependency('bibtex-ruby')
+  gem.add_development_dependency('citeproc-ruby')
+  gem.add_development_dependency('csl-styles')
   gem.add_development_dependency('mini_magick')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
@@ -35,7 +38,4 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('test-unit')
   gem.add_development_dependency('unicode-eaw')
   gem.add_development_dependency('webrick')
-  gem.add_development_dependency('bibtex-ruby')
-  gem.add_development_dependency('citeproc-ruby')
-  gem.add_development_dependency('csl-styles')
 end
