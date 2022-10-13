@@ -62,6 +62,7 @@ class BibliographyTest < Test::Unit::TestCase
     @book.config['bib-csl-style'] = 'acm-siggraph'
     expect = <<-EOS
 Fraassen, B.C. van. 1989. Laws and Symmetry. Oxford University Press, Oxford.
+Thomas, D. and Hunt, A. 2019. The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition. The Pragmatic Bookshelf.
 Thomas, D., Fowler, C., and Hunt, A. 2009. Programming Ruby 1.9: The Pragmatic Programmer’s Guide. The Pragmatic Bookshelf, Raleigh, North Carolina.
 EOS
     assert_equal expect.chomp, @bib.format('text').list
@@ -72,6 +73,7 @@ EOS
     expect = <<-EOS
 <ol class="csl-bibliography">
   <li class="csl-entry"><span style="font-variant: small-caps">Fraassen, B.C. van</span>. 1989. <i>Laws and Symmetry</i>. Oxford University Press, Oxford.</li>
+  <li class="csl-entry"><span style="font-variant: small-caps">Thomas, D. and Hunt, A.</span> 2019. <i>The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition</i>. The Pragmatic Bookshelf.</li>
   <li class="csl-entry"><span style="font-variant: small-caps">Thomas, D., Fowler, C., and Hunt, A.</span> 2009. <i>Programming Ruby 1.9: The Pragmatic Programmer’s Guide</i>. The Pragmatic Bookshelf, Raleigh, North Carolina.</li>
 </ol>
 EOS
@@ -82,6 +84,7 @@ EOS
 <ol class="csl-bibliography">
   <li class="csl-entry" style="margin-bottom: 0.0em">[1]D. Thomas, C. Fowler, and A. Hunt, <i>Programming Ruby 1.9: The Pragmatic Programmer’s Guide</i>. Raleigh, North Carolina: The Pragmatic Bookshelf, 2009.</li>
   <li class="csl-entry" style="margin-bottom: 0.0em">[2]B. C. van Fraassen, <i>Laws and Symmetry</i>. Oxford: Oxford University Press, 1989.</li>
+  <li class="csl-entry" style="margin-bottom: 0.0em">[3]D. Thomas and A. Hunt, <i>The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition</i>. The Pragmatic Bookshelf, 2019.</li>
 </ol>
 EOS
     assert_equal expect.chomp, @bib.format('html').list
@@ -92,6 +95,7 @@ EOS
     expect = <<-EOS
 \\begin{enumerate}
 \\item  Fraassen, B.C. van. 1989. \\emph{Laws and Symmetry}. Oxford University Press, Oxford.
+\\item  Thomas, D. and Hunt, A. 2019. \\emph{The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition}. The Pragmatic Bookshelf.
 \\item  Thomas, D., Fowler, C., and Hunt, A. 2009. \\emph{Programming Ruby 1.9: The Pragmatic Programmer’s Guide}. The Pragmatic Bookshelf, Raleigh, North Carolina.
 \\end{enumerate}
 EOS
@@ -116,6 +120,12 @@ EOS
   Publisher = {Oxford University Press},
   Title = {Laws and Symmetry},
   Year = 1989
+}
+@book{pragbook,
+  author = {Thomas, Dave and Hunt, Andy},
+  publisher = {The Pragmatic Bookshelf},
+  title = {The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition},
+  year = {2019}
 }
 EOS
   end
