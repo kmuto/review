@@ -2,6 +2,7 @@ begin
   require 'bibtex'
   require 'citeproc'
   require 'csl/styles'
+  require 'review/book/bibliography_format'
 rescue LoadError
   # raise ReVIEW::ConfigError inside the class
 end
@@ -50,7 +51,16 @@ module ReVIEW
       end
 
       def list
-        @citeproc.bibliography.join
+        b = @citeproc.bibliography
+        content = []
+        b.references.each_with_index do |r, idx|
+          content << [b.prefix, r, b.suffix].compact.join
+        end
+        [
+          b.header,
+          content.join(b.connector),
+          b.footer
+        ].compact.join(b.connector)
       end
     end
   end
