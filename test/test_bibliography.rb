@@ -44,6 +44,8 @@ class BibliographyTest < Test::Unit::TestCase
     @book.config['bib-csl-style'] = 'sist02'
     assert_equal '[2, 3]',
                  @bib.format('text').ref('pickaxe,fraassen_1989')
+    assert_equal '[2, 3]',
+                 @bib.format('text').ref('fraassen_1989,pickaxe')
   end
 
   def test_cite_html
@@ -111,6 +113,16 @@ EOS
 \\item[] [1]D. Thomas, C. Fowler, and A. Hunt, \\emph{Programming Ruby 1.9: The Pragmatic Programmer’s Guide}. Raleigh, North Carolina: The Pragmatic Bookshelf, 2009.
 \\item[] [2]B. C. van Fraassen, \\emph{Laws and Symmetry}. Oxford: Oxford University Press, 1989.
 \\item[] [3]D. Thomas and A. Hunt, \\emph{The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition}. The Pragmatic Bookshelf, 2019.
+\\end{description}
+EOS
+    assert_equal expect.chomp, @bib.format('latex').list
+
+    @book.config['bib-csl-style'] = 'sist02'
+    expect = <<-EOS
+\\begin{description}
+\\item[] (1)Thomas, Dave, Hunt, Andy. The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition. The Pragmatic Bookshelf, 2019.
+\\item[] (2)Fraassen, Bas C. van. Laws and Symmetry. Oxford, Oxford University Press, 1989.
+\\item[] (3)Thomas, Dave, Fowler, Chad, Hunt, Andy. Programming Ruby 1.9: The Pragmatic Programmer’s Guide. Raleigh, North Carolina, The Pragmatic Bookshelf, 2009, (The Facets of Ruby).
 \\end{description}
 EOS
     assert_equal expect.chomp, @bib.format('latex').list
