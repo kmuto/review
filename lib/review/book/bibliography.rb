@@ -20,7 +20,7 @@ module ReVIEW
 
       def format(format)
         style = @config['bib-csl-style'] || 'acm-siggraph'
-        @citeproc = CiteProc::Processor.new(style: style, format: format)
+        @citeproc = CiteProc::Processor.new(style: style, format: format, locale: 'en-US')
         @citeproc.import(@bibtex.to_citeproc)
         self
       rescue NameError
