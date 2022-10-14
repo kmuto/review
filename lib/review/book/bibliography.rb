@@ -36,9 +36,9 @@ module ReVIEW
         cited = @citeproc.render(:citation, authors)
 
         # FIXME: need to apply CSL style
-        if cited.gsub(/[\[\]\(\)\s,]/, '') == ''
+        if cited.gsub(/[\[\]()\s,]/, '') == ''
           refnums = []
-          refnames = authors.map{ |i| i.values }.flatten
+          refnames = authors.map(&:values).flatten
           @citeproc.bibliography.ids.each_with_index do |key, idx|
             if refnames.include?(key)
               refnums << (idx + 1)
@@ -53,7 +53,7 @@ module ReVIEW
       def list
         b = @citeproc.bibliography
         content = []
-        b.references.each_with_index do |r, idx|
+        b.references.each_with_index do |r, _idx|
           content << [b.prefix, r, b.suffix].compact.join
         end
         [
