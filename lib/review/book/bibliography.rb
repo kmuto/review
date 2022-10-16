@@ -54,7 +54,7 @@ module ReVIEW
         b = @citeproc.bibliography
         content = []
 
-        (0..(b.references.size-1)).each do |i|
+        (0..(b.references.size - 1)).each do |i|
           id = b.ids[i]
           reference = b.references[i]
 
