@@ -112,7 +112,6 @@ EOS
     assert_equal expect.chomp, @bib.format('latex').list
   end
 
-
   def test_sist02
     @book.config['bib-csl-style'] = 'sist02'
     key = 'pickaxe'
