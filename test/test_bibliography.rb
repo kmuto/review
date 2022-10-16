@@ -115,7 +115,7 @@ EOS
 
   def test_sist02
     @book.config['bib-csl-style'] = 'sist02'
-    key = "pickaxe"
+    key = 'pickaxe'
 
     # The sort order depends on the execution environment (OS).
     # Therefore if the reference number is the same, it is assumed to be passed.
