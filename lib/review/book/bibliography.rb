@@ -50,11 +50,17 @@ module ReVIEW
         cited
       end
 
-      def list
+      def list(key = nil)
         b = @citeproc.bibliography
         content = []
-        b.references.each_with_index do |r, _idx|
-          content << [b.prefix, r, b.suffix].compact.join
+
+        (0..(b.references.size-1)).each do |i|
+          id = b.ids[i]
+          reference = b.references[i]
+
+          if key.blank? || key == id
+            content << [b.prefix, reference, b.suffix].compact.join
+          end
         end
         [
           b.header,
