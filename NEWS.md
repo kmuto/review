@@ -1,3 +1,21 @@
+# Version 5.6.0
+## New Features
+* IDGXMLBuilder: support `imgmath` math_format in `//texequation` and `@<m>` ([#1829])
+* LATEXBuilder: use `reviewicon` macro instead of `reviewincludegraphics` in `@<icon>` ([#1838])
+* trim spaces before/after characters in ruby text ([#1839])
+
+## Breaking Changes
+* LATEXBuilder: use `MEMO`, `NOTICE`, `CAUTION` or other headers instead of `■メモ`. If you want to use older headers, add `■メモ` in `locale.yml`. ([#1856])
+
+## Others
+* update documents `format.md` and `format.ja.md` ([#1860])
+
+[#1829]: https://github.com/kmuto/review/pull/1829
+[#1838]: https://github.com/kmuto/review/pull/1838
+[#1839]: https://github.com/kmuto/review/pull/1839
+[#1856]: https://github.com/kmuto/review/pull/1856
+[#1860]: https://github.com/kmuto/review/pull/1860
+
 # Version 5.5.0
 ## New Features
 * introduced `@<secref>`, `@<sec>`, and `@<sectitle>` as inline op to refer sections ([#1809])
