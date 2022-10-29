@@ -1,3 +1,21 @@
+# Version 5.6.0
+## 新機能
+* IDGXMLBuilder: `//texequation` と `@<m>` で `imgmath` math_formatに対応しました ([#1829])
+* LATEXBuilder: `@<icon>`用のマクロとして`reviewicon`マクロを追加し、 `reviewincludegraphics`マクロの代わりに使うようにしました ([#1838])
+* ルビ文字列の前後のスペースを削除するようにしました ([#1839])
+
+## 非互換の変更
+* LATEXBuilder: 囲み記事の見出しとして `■メモ` の代わりに `MEMO`, `NOTICE`, `CAUTION` 等を使うようにしました。以前の見出しを使う場合は`locale.yml`に記載してください ([#1856])
+
+## その他
+* ドキュメント `format.md` と `format.ja.md` を更新しました ([#1860])
+
+[#1829]: https://github.com/kmuto/review/pull/1829
+[#1838]: https://github.com/kmuto/review/pull/1838
+[#1839]: https://github.com/kmuto/review/pull/1839
+[#1856]: https://github.com/kmuto/review/pull/1856
+[#1860]: https://github.com/kmuto/review/pull/1860
+
 # Version 5.5.0
 ## 新機能
 * 節や項を参照するインライン命令として、 `@<secref>` , `@<sec>` , `@<sectitle>` を追加しました。`@<secref>` は節や項の番号+タイトルを含むテキスト（ `@<hd>` と同じ）、 `@<sec>` は節や項の番号のみ、`@<sectitle>` はタイトルのみに展開されます ([#1809])
