@@ -707,7 +707,7 @@ EOS
   def test_blankline
     actual = compile_block("//blankline\nfoo\n")
     expected = <<-EOS
-\\vspace*{\\baselineskip}
+\\par\\vspace{\\baselineskip}\\par
 
 foo
 EOS
