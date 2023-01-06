@@ -1038,7 +1038,7 @@ module ReVIEW
     end
 
     def blankline
-      puts '\vspace*{\baselineskip}'
+      puts '\par\vspace{\baselineskip}\par'
     end
 
     def noindent
