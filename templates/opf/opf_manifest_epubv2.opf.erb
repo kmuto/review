@@ -1,6 +1,8 @@
   <manifest>
     <item id="ncx" href="<%= @config['bookname'] %>.ncx" media-type="application/x-dtbncx+xml"/>
+<% if @config['cover'] %>
     <item id="<%= @config['bookname'] %>" href="<%= @config['cover'] %>" media-type="application/xhtml+xml"/>
+<% end %>
 <% if @config['toc'] && @config['mytoc'] %>
     <item id="toc" href="<%= @config['bookname'] %>-toc.<%= @config['htmlext'] %>" media-type="application/xhtml+xml"/>
 <% end %>

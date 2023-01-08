@@ -174,11 +174,20 @@ EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">Table of Contents</h1>
 
-<ol class="toc-h1"></ol>  </nav>
+<ol class="toc-h1"><li><a href="sample.html">Cover</a></li>
+</ol>  </nav>
 </body>
 </html>
 EOT
     assert_equal expect, output
+
+    @producer.config['cover'] = 'mycover.html'
+    output = @producer.instance_eval { @epub.ncx([]) }
+    assert_equal expect.sub('sample.html', 'mycover.html'), output
+
+    @producer.config['cover'] = nil
+    output = @producer.instance_eval { @epub.ncx([]) }
+    assert_equal expect.sub(%Q(<li><a href="sample.html">Cover</a></li>\n), ''), output
   end
 
   def stage2
@@ -243,7 +252,8 @@ EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">Table of Contents</h1>
 
-<ol class="toc-h1"><li><a href="ch01.html">CH01</a></li>
+<ol class="toc-h1"><li><a href="sample.html">Cover</a></li>
+<li><a href="ch01.html">CH01</a></li>
 </ol>  </nav>
 </body>
 </html>
@@ -361,7 +371,8 @@ EOT
   <nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc" id="toc">
   <h1 class="toc-title">Table of Contents</h1>
 
-<ol class="toc-h1"><li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
+<ol class="toc-h1"><li><a href="sample.html">Cover</a></li>
+<li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
 <li><a href="ch02.html">CH02</a>
 <ol class="toc-h2"><li><a href="ch02.html#S1">CH02.1</a></li>
 <li><a href="ch02.html#S2">CH02.2</a></li>
@@ -393,7 +404,8 @@ EOT
 <body>
   <h1 class="toc-title">Table of Contents</h1>
 
-<ul class="toc-h1"><li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
+<ul class="toc-h1"><li><a href="sample.html">Cover</a></li>
+<li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
 <li><a href="ch02.html">CH02</a>
 <ul class="toc-h2"><li><a href="ch02.html#S1">CH02.1</a></li>
 <li><a href="ch02.html#S2">CH02.2</a></li>
@@ -428,6 +440,7 @@ EOT
 <body>
   <h1 class="toc-title">Table of Contents</h1>
 <ul class="toc-h1">
+<li><a href="sample.html">Cover</a></li>
 <li><a href="ch01.html">CH01&lt;&gt;&amp;&quot;</a></li>
 <li><a href="ch02.html">CH02</a></li>
 <li><a href="ch02.html#S1">CH02.1</a></li>

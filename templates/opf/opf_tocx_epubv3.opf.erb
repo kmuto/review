@@ -3,7 +3,9 @@
 <% else %>
   <spine>
 <% end %>
+<% if @config['cover'].present? %>
     <itemref idref="<%= @config['bookname'] %>" linear="<%= @cover_linear %>"/>
+<% end %>
 <% toc = nil %>
 <% @tocx_contents.each do |item| %>
 <%   if toc.nil? && item.chaptype != 'pre' %>

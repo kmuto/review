@@ -117,4 +117,4 @@ Exception:
 
 ## Copyright
 
-Copyright (c) 2006-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.
+Copyright (c) 2006-2023 Minero Aoki, Kenshi Muto, Masayoshi Takahashi, Masanori Kado.

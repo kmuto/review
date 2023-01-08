@@ -7,7 +7,9 @@
 <%= @opf_manifest %>
 <%= @opf_toc %>
   <guide>
+<% if @config['cover'].present? %>
     <reference type="cover" title="<%= ReVIEW::I18n.t('covertitle') %>" href="<%= @config['cover'] %>"/>
+<% end %>
 <% if @config['titlepage'].present? %>
     <reference type="title-page" title="<%= ReVIEW::I18n.t('titlepagetitle') %>" href="titlepage.<%= @config['htmlext'] %>"/>
 <% end %>

@@ -1,6 +1,6 @@
 # = epubv3.rb -- EPUB version 3 producer.
 #
-# Copyright (c) 2010-2022 Kenshi Muto
+# Copyright (c) 2010-2023 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -211,6 +211,14 @@ module ReVIEW
         @language = config['language']
         @stylesheets = config['stylesheet']
         ReVIEW::Template.generate(path: template_name, binding: binding)
+      end
+
+      def coveritem
+        if config['cover']
+          [Content.new(file: config['cover'], title: ReVIEW::I18n.t('covertitle'), level: 1, chaptype: 'cover')]
+        else
+          []
+        end
       end
 
       # Produce EPUB file +epubfile+.
