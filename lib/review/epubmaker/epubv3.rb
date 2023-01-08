@@ -1,6 +1,6 @@
 # = epubv3.rb -- EPUB version 3 producer.
 #
-# Copyright (c) 2010-2022 Kenshi Muto
+# Copyright (c) 2010-2023 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
