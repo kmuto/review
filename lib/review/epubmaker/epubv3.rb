@@ -213,6 +213,14 @@ module ReVIEW
         ReVIEW::Template.generate(path: template_name, binding: binding)
       end
 
+      def coveritem
+        if config['cover']
+          [Content.new(file: config['cover'], title: ReVIEW::I18n.t('covertitle'), level: 1, chaptype: 'cover')]
+        else
+          []
+        end
+      end
+
       # Produce EPUB file +epubfile+.
       # +work_dir+ points the directory has contents.
       # +tmpdir+ defines temporary directory.
