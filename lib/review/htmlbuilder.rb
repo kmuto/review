@@ -656,7 +656,7 @@ module ReVIEW
         p = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         print p.parse(lines.join("\n") + "\n", true)
       elsif @book.config['math_format'] == 'mathjax'
-        puts "$$#{lines.join("\n")}$$"
+        puts "$$#{lines.join("\n").gsub('<', '\lt{}').gsub('>', '\gt{}')}$$"
       elsif @book.config['math_format'] == 'imgmath'
         fontsize = @book.config['imgmath_options']['fontsize'].to_f
         lineheight = @book.config['imgmath_options']['lineheight'].to_f
@@ -1051,7 +1051,7 @@ EOS
         parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
         %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
       elsif @book.config['math_format'] == 'mathjax'
-        %Q(<span class="equation">\\( #{str} \\)</span>)
+        %Q(<span class="equation">\\( #{str.gsub('<', '\lt{}').gsub('>', '\gt{}')} \\)</span>)
       elsif @book.config['math_format'] == 'imgmath'
         math_str = '$' + str + '$'
         key = Digest::SHA256.hexdigest(str)
