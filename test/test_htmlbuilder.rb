@@ -451,8 +451,8 @@ EOS
     actual = compile_inline('@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}')
     assert_equal %Q(<span class="equation">\\( \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\)</span>), actual
 
-    actual = compile_inline('@<m>{a < b, b > c, a < b > c}')
-    assert_equal %Q(<span class="equation">\\( a \\lt{} b, b \\gt{} c, a \\lt{} b \\gt{} c \\)</span>), actual
+    actual = compile_inline('@<m>{a < b, b > c, a < b > c, a \\& b \\& c}')
+    assert_equal %Q(<span class="equation">\\( a \\lt{} b, b \\gt{} c, a \\lt{} b \\gt{} c, a \\&amp; b \\&amp; c \\)</span>), actual
 
     content = <<-EOF
 //texequation{
@@ -471,7 +471,7 @@ a < b & b > c & a < b > c
 //}
 EOF
     actual = compile_block(content)
-    expected = %Q(<div class="equation">\n$$\\begin{aligned}\na \\lt{} b & b \\gt{} c & a \\lt{} b \\gt{} c\n\\end{aligned}$$\n</div>\n)
+    expected = %Q(<div class="equation">\n$$\\begin{aligned}\na \\lt{} b &amp; b \\gt{} c &amp; a \\lt{} b \\gt{} c\n\\end{aligned}$$\n</div>\n)
     assert_equal expected, actual
   end
 
