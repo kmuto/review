@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
+# Copyright (c) 2009-2023 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
 #               2002-2008 Minero Aoki
 #
 # This program is free software.

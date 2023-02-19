@@ -1,6 +1,6 @@
 # = producer.rb -- EPUB producer.
 #
-# Copyright (c) 2010-2021 Kenshi Muto
+# Copyright (c) 2010-2023 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -119,8 +119,7 @@ module ReVIEW
           epubfile = "#{current}/#{epubfile}"
         end
 
-        # FIXME: error check
-        File.unlink(epubfile) if File.exist?(epubfile)
+        FileUtils.rm_f(epubfile)
 
         begin
           @epub.produce(epubfile, work_dir, new_tmpdir, base_dir: base_dir)

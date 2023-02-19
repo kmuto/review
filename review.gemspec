@@ -14,8 +14,7 @@ Gem::Specification.new do |gem|
   gem.required_rubygems_version = Gem::Requirement.new('>= 0') if gem.respond_to?(:required_rubygems_version=)
   gem.metadata = { 'rubygems_mfa_required' => 'true' }
 
-  gem.files         = `git ls-files`.split("\n")
-  gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+  gem.files         = `git ls-files`.split("\n").reject { |f| f.match(/^test/) }
   gem.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   gem.extra_rdoc_files = []
   gem.require_paths = ['lib']
@@ -28,7 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('mini_magick')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
-  gem.add_development_dependency('rubocop', '~> 1.27.0')
+  gem.add_development_dependency('rubocop', '~> 1.45.1')
   gem.add_development_dependency('rubocop-performance')
   gem.add_development_dependency('rubocop-rake')
   gem.add_development_dependency('simplecov')

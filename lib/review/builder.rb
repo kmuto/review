@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2022 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2023 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -234,7 +234,8 @@ module ReVIEW
       sepidx = nil
       rows = []
       lines.each_with_index do |line, idx|
-        if /\A[=\-]{12}/ =~ line || /\A[={\-}]{12}/ =~ line
+        # {} is for LaTeX
+        if /\A[=-]{12}/ =~ line || /\A[={}-]{12}/ =~ line
           sepidx ||= idx
           next
         end
@@ -512,12 +513,7 @@ module ReVIEW
     end
 
     def inline_wb(s)
-      translated = @dictionary[s]
-      if translated
-        inline_b(translated)
-      else
-        inline_b("[missing word: #{s}]")
-      end
+      inline_b(@dictionary[s] || "[missing word: #{s}]")
     end
 
     def raw(str)

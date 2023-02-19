@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2023 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -69,9 +69,7 @@ module ReVIEW
     def build_path
       if @config['debug']
         path = "#{@config['bookname']}-pdf"
-        if File.exist?(path)
-          FileUtils.rm_rf(path, secure: true)
-        end
+        FileUtils.rm_rf(path, secure: true)
         Dir.mkdir(path)
         path
       else
@@ -517,7 +515,7 @@ module ReVIEW
         dir.sort.each do |fname|
           next unless File.extname(fname).downcase == '.' + extname
 
-          FileUtils.mkdir_p(copybase) unless Dir.exist?(copybase)
+          FileUtils.mkdir_p(copybase)
           if extname == 'erb'
             File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
               f.print erb_content(File.join(dirname, fname))

@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2022 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2023 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -516,7 +516,7 @@ module ReVIEW
       sepidx = nil
       rows = []
       lines.each_with_index do |line, idx|
-        if /\A[=\-]{12}/.match?(line)
+        if /\A[=-]{12}/.match?(line)
           sepidx ||= idx
           next
         end

@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2020 Yuto HAYAMIZU, Kenshi Muto
+# Copyright (c) 2012-2023 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -48,7 +48,7 @@ module ReVIEW
           if FileTest.directory?("#{from_dir}/#{fname}")
             image_files += copy_images_to_dir("#{from_dir}/#{fname}", "#{to_dir}/#{fname}", options)
           else
-            FileUtils.mkdir_p(to_dir) unless File.exist?(to_dir)
+            FileUtils.mkdir_p(to_dir)
 
             is_converted = false
             (options[:convert] || {}).each do |orig_type, conv_type|

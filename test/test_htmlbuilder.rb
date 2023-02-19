@@ -1106,7 +1106,7 @@ test&lt;i&gt;2&lt;/i&gt;
 <div id="samplelist" class="caption-code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
 <pre class="list language-ruby highlight"><span style="color: #008000; font-weight: bold">def</span> <span style="color: #0000FF">foo</span>(a1, a2<span style="color: #666666">=</span><span style="color: #19177C">:test</span>)
-  (<span style="color: #666666">1..3</span>)<span style="color: #666666">.</span>times{<span style="color: #666666">\|</span>i<span style="color: #666666">|</span> a<span style="color: #666666">.</span>include?(<span style="color: #19177C">:foo</span>)}
+  (<span style="color: #666666">1..3</span>)<span style="color: #666666">.</span>times{<span style="color: #666666">|</span>i<span style="color: #666666">|</span> a<span style="color: #666666">.</span>include?(<span style="color: #19177C">:foo</span>)}
   <span style="color: #008000; font-weight: bold">return</span> <span style="color: #008000">true</span>
 <span style="color: #008000; font-weight: bold">end</span>
 </pre>
@@ -1757,8 +1757,8 @@ EOS
       @builder.bind(@compiler, @chapter, location)
       FileUtils.mkdir_p(File.join(dir, 'images'))
       expected = <<-EOB
-<div class=\"equation\">
-<img src=\"images/_review_math/_gen_XXX.png\" class=\"math_gen_84291054a12d278ea05694c20fbbc8e974ec66fc13be801c01dca764faeecccb\" alt="p \\land \\bm{P} q" />
+<div class="equation">
+<img src="images/_review_math/_gen_XXX.png" class="math_gen_84291054a12d278ea05694c20fbbc8e974ec66fc13be801c01dca764faeecccb" alt="p \\land \\bm{P} q" />
 </div>
       EOB
       tmpio = $stderr
@@ -2343,14 +2343,14 @@ EOS
   def test_inline_fn
     fn = compile_block("//footnote[foo][bar]\n\n@<fn>{foo}\n")
     expected = <<-EOS
-<div class=\"footnote\" epub:type=\"footnote\" id=\"fn-foo\"><p class=\"footnote\">[*1] bar</p></div>
+<div class="footnote" epub:type="footnote" id="fn-foo"><p class="footnote">[*1] bar</p></div>
 <p><a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">*1</a></p>
 EOS
     assert_equal expected, fn
     I18n.set('html_footnote_refmark', '+%s')
     fn = compile_block("//footnote[foo][bar]\n\n@<fn>{foo}\n")
     expected = <<-EOS
-<div class=\"footnote\" epub:type=\"footnote\" id=\"fn-foo\"><p class=\"footnote\">[*1] bar</p></div>
+<div class="footnote" epub:type="footnote" id="fn-foo"><p class="footnote">[*1] bar</p></div>
 <p><a id="fnb-foo" href="#fn-foo" class="noteref" epub:type="noteref">+1</a></p>
 EOS
     assert_equal expected, fn
@@ -2361,7 +2361,7 @@ EOS
     assert_equal ':4: //endnote is found but //printendnotes is not found.', e.message
 
     actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
-    expected = <<-'EOS'
+    expected = <<-EOS
 <p><a id="endnoteb-foo" href="#endnote-foo" class="noteref" epub:type="noteref">(1)</a></p>
 <div class="endnotes">
 <div class="endnote" id="endnote-foo"><p class="endnote">(1) bar</p></div>
@@ -2372,7 +2372,7 @@ EOS
     @book.config['epubmaker'] ||= {}
     @book.config['epubmaker']['back_footnote'] = true
     actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
-    expected = <<-'EOS'
+    expected = <<-EOS
 <p><a id="endnoteb-foo" href="#endnote-foo" class="noteref" epub:type="noteref">(1)</a></p>
 <div class="endnotes">
 <div class="endnote" id="endnote-foo"><p class="endnote"><a href="#endnoteb-foo">⏎</a>(1) bar</p></div>
@@ -2384,7 +2384,7 @@ EOS
     I18n.set('html_endnote_refmark', '+%s:')
     I18n.set('html_footnote_backmark', '←')
     actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
-    expected = <<-'EOS'
+    expected = <<-EOS
 <p><a id="endnoteb-foo" href="#endnote-foo" class="noteref" epub:type="noteref">+1:</a></p>
 <div class="endnotes">
 <div class="endnote" id="endnote-foo"><p class="endnote"><a href="#endnoteb-foo">←</a>+1:bar</p></div>

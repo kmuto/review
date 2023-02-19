@@ -71,7 +71,7 @@ EXPECTED
 //}
 REFILE
 
-    inc_txt = <<-'INC_TXT'
+    inc_txt = <<-INC_TXT
 test.
 	test2.
 

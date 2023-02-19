@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2023 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -106,9 +106,7 @@ module ReVIEW
     def build_path
       if @config['debug']
         path = File.expand_path("#{@config['bookname']}-epub", Dir.pwd)
-        if File.exist?(path)
-          FileUtils.rm_rf(path, secure: true)
-        end
+        FileUtils.rm_rf(path, secure: true)
         Dir.mkdir(path)
         path
       else
