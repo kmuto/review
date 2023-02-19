@@ -1,3 +1,37 @@
+# Version 5.6.0
+## New Features
+* IDGXMLBuilder: support `imgmath` math_format in `//texequation` and `@<m>` ([#1829])
+* LATEXBuilder: use `reviewicon` macro instead of `reviewincludegraphics` in `@<icon>` ([#1838])
+* trim spaces before/after characters in ruby text ([#1839])
+
+## Breaking Changes
+* LATEXBuilder: use `MEMO`, `NOTICE`, `CAUTION` or other headers instead of `■メモ`. If you want to use older headers, add `■メモ` in `locale.yml`. ([#1856])
+
+## Others
+* update documents `format.md` and `format.ja.md` ([#1860])
+
+[#1829]: https://github.com/kmuto/review/pull/1829
+[#1838]: https://github.com/kmuto/review/pull/1838
+[#1839]: https://github.com/kmuto/review/pull/1839
+[#1856]: https://github.com/kmuto/review/pull/1856
+[#1860]: https://github.com/kmuto/review/pull/1860
+
+# Version 5.5.0
+## New Features
+* introduced `@<secref>`, `@<sec>`, and `@<sectitle>` as inline op to refer sections ([#1809])
+
+## Bug Fixes
+* fixed test error ([#1804])
+* fixed an error of review-update ([#1807])
+
+## Others
+* added rexml to gemspec ([#1808])
+
+[#1804]: https://github.com/kmuto/review/pull/1804
+[#1807]: https://github.com/kmuto/review/pull/1807
+[#1808]: https://github.com/kmuto/review/pull/1808
+[#1809]: https://github.com/kmuto/review/issues/1809
+
 # Version 5.4.0
 ## New Features
 * [GitHub Discussions](https://github.com/kmuto/review/discussions) has been opened to answer questions about Re:VIEW

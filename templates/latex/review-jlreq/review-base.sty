@@ -146,35 +146,35 @@
 
 % 囲み記事
 \newenvironment{reviewnote}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries NOTE #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@notehead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 \newenvironment{reviewmemo}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries MEMO #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@memohead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 \newenvironment{reviewtip}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries Tips #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@tiphead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 \newenvironment{reviewinfo}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries INFORMATION #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@infohead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 \newenvironment{reviewwarning}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries WARNING! #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@warninghead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 \newenvironment{reviewimportant}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries IMPORTANT! #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@importanthead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 \newenvironment{reviewcaution}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries CAUTION! #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@cautionhead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 \newenvironment{reviewnotice}[1][]{%
-  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries NOTICE #1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@noticehead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
  {\end{tcolorbox}}
 
 % 書体
@@ -187,6 +187,9 @@
 \DeclareRobustCommand{\reviewit}[1]{\textit{#1}}
 \DeclareRobustCommand{\reviewbold}[1]{\textbf{#1}}
 \DeclareRobustCommand{\reviewtcy}[1]{\tatechuyoko{#1}}
+\DeclareRobustCommand{\reviewicon}[1]{\includegraphics[]{#1}}
+% アイコンの高さを文字の高さに合わせたいときには、以下をreview-custom.styに記述してください:
+% \DeclareRobustCommand{\reviewicon}[1]{\includegraphics[height=0.9\zw]{#1}}
 
 % allow break line in tt
 % contributed by @zr_tex8r

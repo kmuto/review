@@ -1038,7 +1038,7 @@ module ReVIEW
     end
 
     def blankline
-      puts '\vspace*{\baselineskip}'
+      puts '\par\vspace{\baselineskip}\par'
     end
 
     def noindent
@@ -1350,7 +1350,7 @@ module ReVIEW
 
     def inline_icon(id)
       if @chapter.image(id).path
-        command = 'reviewincludegraphics'
+        command = 'reviewicon'
         if @book.config.check_version('2', exception: false)
           command = 'includegraphics'
         end

@@ -466,11 +466,22 @@ module ReVIEW
         puts caption_str if caption_top?('equation')
       end
 
-      puts %Q(<replace idref="texblock-#{@texblockequation}">)
-      puts '<pre>'
-      print lines.join("\n")
-      puts '</pre>'
-      puts '</replace>'
+      if @book.config['math_format'] == 'imgmath'
+        fontsize = @book.config['imgmath_options']['fontsize'].to_f
+        lineheight = @book.config['imgmath_options']['lineheight'].to_f
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{lines.join("\n")}\n\\end{equation*}\n"
+        key = Digest::SHA256.hexdigest(math_str)
+        img_path = @img_math.defer_math_image(math_str, key)
+        puts '<equationimage>'
+        puts %Q(<Image href="file://#{img_path}" />)
+        puts '</equationimage>'
+      else
+        puts %Q(<replace idref="texblock-#{@texblockequation}">)
+        puts '<pre>'
+        puts lines.join("\n")
+        puts '</pre>'
+        puts '</replace>'
+      end
 
       if id
         puts caption_str unless caption_top?('equation')
@@ -682,7 +693,7 @@ module ReVIEW
     end
 
     def compile_ruby(base, ruby)
-      %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape(base.strip)}</aid:rb><aid:rt>#{escape(ruby.strip)}</aid:rt></aid:ruby></GroupRuby>)
+      %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{escape(base)}</aid:rb><aid:rt>#{escape(ruby)}</aid:rt></aid:ruby></GroupRuby>)
     end
 
     def compile_kw(word, alt)
@@ -836,7 +847,14 @@ module ReVIEW
 
     def inline_m(str)
       @texinlineequation += 1
-      %Q(<replace idref="texinline-#{@texinlineequation}"><pre>#{escape(str)}</pre></replace>)
+      if @book.config['math_format'] == 'imgmath'
+        math_str = '$' + str + '$'
+        key = Digest::SHA256.hexdigest(str)
+        img_path = @img_math.defer_math_image(math_str, key)
+        %Q(<inlineequation><Image href="file://#{img_path}" type="inline" /></inlineequation>)
+      else
+        %Q(<replace idref="texinline-#{@texinlineequation}"><pre>#{escape(str)}</pre></replace>)
+      end
     end
 
     def noindent

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2021 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2018-2022 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -308,7 +308,12 @@ EOS
     end
 
     def start_webui
-      require 'webrick'
+      begin
+        require 'webrick'
+      rescue LoadError
+        @logger.error 'not found webrick. Please install webrick gem.'
+        exit 1
+      end
       web_config = {
         BindAddress: @bind,
         Port: @port,

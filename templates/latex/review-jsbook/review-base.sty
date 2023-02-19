@@ -1,4 +1,4 @@
-\ProvidesClass{review-base}[2021/09/06]
+\ProvidesClass{review-base}[2022/07/25]
 \RequirePackage{ifthen}
 \@ifundefined{Hy@Info}{% for jsbook.cls
   \RequirePackage[dvipdfmx,bookmarks=true,bookmarksnumbered=true]{hyperref}
@@ -214,9 +214,9 @@
 \renewcommand{\thesection}{\thepart.\@arabic\c@section}%
 }{}
 
-\newcommand{\reviewminicolumntitle}[1]{%
+\newcommand{\reviewminicolumntitle}[2]{%
 \review@ifempty{#1}{}{%
-  {\large \review@intn@memohead{}: #1}\\}}
+  {\large ■#2: #1}\\}}
 
 \renewcommand{\contentsname}{\review@toctitle}
 
@@ -226,35 +226,35 @@
 
 \newenvironment{reviewnote}[1][]{%
   \begin{reviewminicolumn}
-\review@ifempty{#1}{}{\reviewminicolumntitle{#1}}
+  \reviewminicolumntitle{#1}{\review@intn@notehead}
 }{\end{reviewminicolumn}}
 \newenvironment{reviewmemo}[1][]{%
   \begin{reviewminicolumn}
-  \reviewminicolumntitle{#1}
+  \reviewminicolumntitle{#1}{\review@intn@memohead}
 }{\end{reviewminicolumn}}
 \newenvironment{reviewtip}[1][]{%
   \begin{reviewminicolumn}
-  \reviewminicolumntitle{#1}
+  \reviewminicolumntitle{#1}{\review@intn@tiphead}
 }{\end{reviewminicolumn}}
 \newenvironment{reviewinfo}[1][]{%
   \begin{reviewminicolumn}
-  \reviewminicolumntitle{#1}
+  \reviewminicolumntitle{#1}{\review@intn@infohead}
 }{\end{reviewminicolumn}}
 \newenvironment{reviewwarning}[1][]{%
   \begin{reviewminicolumn}
-  \reviewminicolumntitle{#1}
+  \reviewminicolumntitle{#1}{\review@intn@warninghead}
 }{\end{reviewminicolumn}}
 \newenvironment{reviewimportant}[1][]{%
   \begin{reviewminicolumn}
-  \reviewminicolumntitle{#1}
+  \reviewminicolumntitle{#1}{\review@intn@importanthead}
 }{\end{reviewminicolumn}}
 \newenvironment{reviewcaution}[1][]{%
   \begin{reviewminicolumn}
-  \reviewminicolumntitle{#1}
+  \reviewminicolumntitle{#1}{\review@intn@cautionhead}
 }{\end{reviewminicolumn}}
 \newenvironment{reviewnotice}[1][]{%
   \begin{reviewminicolumn}
-  \reviewminicolumntitle{#1}
+  \reviewminicolumntitle{#1}{\review@intn@noticehead}
 }{\end{reviewminicolumn}}
 
 \DeclareRobustCommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
@@ -331,6 +331,10 @@
 
 \DeclareRobustCommand{\reviewinsert}[1]{\Underline{#1}}
 \DeclareRobustCommand{\reviewstrike}[1]{\Midline{#1}}
+\DeclareRobustCommand{\reviewicon}[1]{\includegraphics[]{#1}}
+% アイコンの高さを文字の高さに合わせたいときには、以下をreview-custom.styに記述してください:
+% \DeclareRobustCommand{\reviewicon}[1]{\includegraphics[height=0.9zw]{#1}}
+
 %%%% for ulem.sty:
 %%\renewcommand{\reviewstrike}[1]{\sout{#1}}
 

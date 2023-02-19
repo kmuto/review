@@ -1,6 +1,6 @@
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2023 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -231,6 +231,10 @@ module ReVIEW
         ReVIEW::Template.generate(path: template_name, binding: binding)
       end
 
+      def coveritem
+        []
+      end
+
       def hierarchy_ncx(type)
         require 'rexml/document'
         level = 1
@@ -264,7 +268,7 @@ module ReVIEW
         doc.context[:attribute_quote] = :quote
 
         e = doc.root.elements[1] # first <li/>
-        contents.each do |item|
+        (coveritem + contents).each do |item|
           next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > toclevel
 
           if item.level == level
@@ -304,7 +308,7 @@ module ReVIEW
 
       def flat_ncx(type, indent = nil)
         s = %Q(<#{type} class="toc-h1">\n)
-        contents.each do |item|
+        (coveritem + contents).each do |item|
           next if !item.notoc.nil? || item.level.nil? || item.file.nil? || item.title.nil? || item.level > config['toclevel'].to_i
 
           is = indent == true ? '　' * item.level : ''
@@ -324,10 +328,12 @@ module ReVIEW
         FileUtils.mkdir_p("#{tmpdir}/OEBPS")
         File.write(File.join(tmpdir, opf_path), opf)
 
-        if File.exist?("#{basedir}/#{config['cover']}")
-          FileUtils.cp("#{basedir}/#{config['cover']}", "#{tmpdir}/OEBPS")
-        else
-          File.write("#{tmpdir}/OEBPS/#{config['cover']}", cover)
+        if config['cover']
+          if File.exist?("#{basedir}/#{config['cover']}")
+            FileUtils.cp("#{basedir}/#{config['cover']}", "#{tmpdir}/OEBPS")
+          else
+            File.write("#{tmpdir}/OEBPS/#{config['cover']}", cover)
+          end
         end
 
         if config['colophon'] && !config['colophon'].is_a?(String)

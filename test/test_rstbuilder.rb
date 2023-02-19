@@ -110,6 +110,9 @@ EOS
   def test_inline_ruby
     actual = compile_inline('@<ruby>{coffin,bed}')
     assert_equal ' :ruby:`coffin`<bed>`_ ', actual
+
+    actual = compile_inline('@<ruby>{  coffin  ,  bed  }')
+    assert_equal ' :ruby:`coffin`<bed>`_ ', actual
   end
 
   def test_inline_kw

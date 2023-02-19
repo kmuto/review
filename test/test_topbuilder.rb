@@ -69,6 +69,9 @@ class TOPBuidlerTest < Test::Unit::TestCase
   def test_inline_ruby
     actual = compile_inline('@<ruby>{coffin,bed}')
     assert_equal 'coffin◆→DTP連絡:「coffin」に「bed」とルビ←◆', actual
+
+    actual = compile_inline('@<ruby>{  coffin  ,  bed  }')
+    assert_equal 'coffin◆→DTP連絡:「coffin」に「bed」とルビ←◆', actual
   end
 
   def test_inline_kw

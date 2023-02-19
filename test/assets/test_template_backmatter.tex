@@ -1,6 +1,6 @@
 \documentclass[dvipdfmx]{review-jsbook}
 \makeatletter
-\def\review@reviewversion{5.3.0}
+\def\review@reviewversion{5.6.0}
 \def\review@texcompiler{uplatex}
 \def\review@documentclass{review-jsbook}
 
@@ -22,7 +22,14 @@
 \def\review@intn@table{表}
 \def\review@intn@equation{式}
 \def\review@intn@columnname{コラム}
-\def\review@intn@memohead{■メモ}
+\def\review@intn@notehead{NOTE}
+\def\review@intn@tiphead{TIP}
+\def\review@intn@infohead{INFORMATION}
+\def\review@intn@warninghead{WARNING}
+\def\review@intn@importanthead{IMPORTANT}
+\def\review@intn@cautionhead{CAUTION}
+\def\review@intn@noticehead{NOTICE}
+\def\review@intn@memohead{MEMO}
 \def\review@intn@edition{版}
 \def\review@intn@publishedby{ 発行}
 \def\review@intn@captionprefix{ }
@@ -74,6 +81,9 @@ some ad content
   \fi
   \ifdefined\reviewtcy\else% for 5.3.0 compatibility
     \DeclareRobustCommand{\reviewtcy}[1]{\rensuji{##1}}
+  \fi
+  \ifdefined\reviewicon\else% for 5.6.0 compatibility
+    \DeclareRobustCommand{\reviewicon}[1]{\reviewincludegraphics{##1}}
   \fi
 }
 

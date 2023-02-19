@@ -72,7 +72,13 @@ $ ls hello
 Rakefile     catalog.yml  config.yml   hello.re     images/      layouts/     sty/         style.css
 ```
 
-If your purpose is to create a PDF using TeX, it is a good idea to use the wizard mode for basic layouting in a web browser. Add `-w` option to review-init.
+If your purpose is to create a PDF using TeX, it is a good idea to use the wizard mode for basic layouting in a web browser. Because the wizard mode requires webrick library, please install webrick gem before running.
+
+```
+$ gem install webrick
+```
+
+Run review-init with `-w` option.
 
 (notice: currently wizard UI supports only Japanese language)
 

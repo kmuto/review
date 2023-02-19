@@ -419,6 +419,9 @@ EOS
   def test_inline_ruby
     actual = compile_inline('@<ruby>{粗雑,クルード}と思われているなら@<ruby>{繊細,テクニカル}にやり、繊細と思われているなら粗雑にやる。')
     assert_equal '<ruby>粗雑<rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby>繊細<rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。', actual
+
+    actual = compile_inline('@<ruby>{  粗雑  ,  クルード  }と思われているなら@<ruby>{  繊細  ,テクニカル  }にやり、繊細と思われているなら粗雑にやる。')
+    assert_equal '<ruby>粗雑<rp>（</rp><rt>クルード</rt><rp>）</rp></ruby>と思われているなら<ruby>繊細<rp>（</rp><rt>テクニカル</rt><rp>）</rp></ruby>にやり、繊細と思われているなら粗雑にやる。', actual
   end
 
   def test_inline_ruby_comma
@@ -448,6 +451,9 @@ EOS
     actual = compile_inline('@<m>{\\frac{-b \\pm \\sqrt{b^2 - 4ac\\}\\}{2a\\}}')
     assert_equal %Q(<span class="equation">\\( \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \\)</span>), actual
 
+    actual = compile_inline('@<m>{a < b, b > c, a < b > c, a \\& b \\& c}')
+    assert_equal %Q(<span class="equation">\\( a \\lt{} b, b \\gt{} c, a \\lt{} b \\gt{} c, a \\&amp; b \\&amp; c \\)</span>), actual
+
     content = <<-EOF
 //texequation{
 \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
@@ -455,6 +461,17 @@ EOS
 EOF
     actual = compile_block(content)
     expected = %Q(<div class="equation">\n$$\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$\n</div>\n)
+    assert_equal expected, actual
+
+    content = <<-EOF
+//texequation{
+\\begin{aligned}
+a < b & b > c & a < b > c
+\\end{aligned}
+//}
+EOF
+    actual = compile_block(content)
+    expected = %Q(<div class="equation">\n$$\\begin{aligned}\na \\lt{} b &amp; b \\gt{} c &amp; a \\lt{} b \\gt{} c\n\\end{aligned}$$\n</div>\n)
     assert_equal expected, actual
   end
 
