@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2022 Kenshi Muto
+# Copyright (c) 2018-2023 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -258,9 +258,7 @@ module ReVIEW
 
     def update_rakefile(dir)
       taskdir = File.join(dir, 'lib/tasks')
-      unless File.exist?(taskdir)
-        FileUtils.mkdir_p(taskdir)
-      end
+      FileUtils.mkdir_p(taskdir)
 
       master_rakefile = File.join(@review_dir, 'samples/sample-book/src/Rakefile')
 
@@ -474,9 +472,7 @@ module ReVIEW
 
     def update_tex_stys(template, dir)
       texmacrodir = File.join(dir, 'sty')
-      unless File.exist?(texmacrodir)
-        FileUtils.mkdir(texmacrodir)
-      end
+      FileUtils.mkdir_p(texmacrodir)
 
       tdir = File.join(@review_dir, 'templates/latex', template)
       Dir.glob(File.join(tdir, '*.*')).each do |master_styfile|

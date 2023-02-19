@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2022 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2023 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -136,7 +136,8 @@ module ReVIEW
       when 5
         @subsubsubsection += 1
         print %Q(<sect4 id="sect:#{@chapter.number}.#{@section}.#{@subsection}.#{@subsubsection}.#{@subsubsubsection}">) if @secttags
-      when 6 # rubocop:disable Lint/EmptyWhen
+      when 6
+        # ignore
       else
         raise "caption level too deep or unsupported: #{level}"
       end
@@ -526,7 +527,7 @@ module ReVIEW
       sepidx = nil
       rows = []
       lines.each_with_index do |line, idx|
-        if /\A[=\-]{12}/.match?(line)
+        if /\A[=-]{12}/.match?(line)
           sepidx ||= idx
           next
         end

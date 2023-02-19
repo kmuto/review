@@ -5,7 +5,7 @@ AllCops:
     - tmp/*
   DisplayCopNames: true
   NewCops: enable
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.7
 
 require:
   - rubocop-performance
@@ -36,6 +36,9 @@ Performance/StringInclude:
   Enabled: false
 
 Performance/CollectionLiteralInLoop:
+  Enabled: false
+
+Performance/MapCompact:
   Enabled: false
 
 #### Style
@@ -109,7 +112,7 @@ Style/LineEndConcatenation:
   Enabled: false
 
 Style/MethodCallWithArgsParentheses:
-  IgnoredMethods:
+  AllowedMethods:
     - 'require'
     - 'include'
     - 'file'
@@ -192,6 +195,9 @@ Style/OptionalBooleanParameter:
   Enabled: false
 
 Style/CombinableLoops:
+  Enabled: false
+
+Style/FetchEnvVar:
   Enabled: false
 
 ### Layout
@@ -296,3 +302,8 @@ Naming/VariableNumber:
 
 Gemspec/RequiredRubyVersion:
   Enabled: false
+
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: gemspec
+  Exclude:
+    - samples/syntax-book/Gemfile

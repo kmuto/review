@@ -22,11 +22,6 @@ module ReVIEW
       CREATOR_ATTRIBUTES = %w[aut a-adp a-ann a-arr a-art a-asn a-aqt a-aft a-aui a-ant a-bkp a-clb a-cmm a-dsr a-edt a-ill a-lyr a-mdc a-mus a-nrt a-oth a-pht a-prt a-red a-rev a-spn a-ths a-trc a-trl]
       CONTRIBUTER_ATTRIBUTES = %w[adp ann arr art asn aqt aft aui ant bkp clb cmm dsr edt ill lyr mdc mus nrt oth pht prt red rev spn ths trc trl]
 
-      # Construct object with parameter hash +config+ and message resource hash +res+.
-      def initialize(producer) # rubocop:disable Lint/UselessMethodDefinition
-        super
-      end
-
       # Return opf file content.
       def opf
         @opf_metainfo = opf_metainfo

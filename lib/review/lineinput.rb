@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2002-2020 Minero Aoki, Masayoshi Takahashi, Kenshi Muto
+# Copyright (c) 2002-2023 Minero Aoki, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.
 # You can distribute/modify this program under the terms of
@@ -21,7 +21,7 @@ module ReVIEW
     end
 
     def inspect
-      "\#<#{self.class} file=#{@input.inspect} line=#{lineno}>"
+      "#<#{self.class} file=#{@input.inspect} line=#{lineno}>"
     end
 
     def eof?

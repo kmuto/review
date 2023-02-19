@@ -1147,7 +1147,7 @@ EOB
     assert_equal ':4: //endnote is found but //printendnotes is not found.', e.message
 
     actual = compile_block("@<endnote>{foo}\n//endnote[foo][bar]\n//printendnotes\n")
-    expected = <<-'EOS'
+    expected = <<-EOS
 【後注1】
 ◆→開始:後注←◆
 【後注1】bar

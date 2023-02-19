@@ -36,9 +36,6 @@ module ReVIEW
       end
     end
 
-    def initialize
-    end
-
     # load YAML files
     #
     # `inherit: [3.yml, 6.yml]` in 7.yml; `inherit: [1.yml, 2.yml]` in 3.yml; `inherit: [4.yml, 5.yml]` in 6.yml

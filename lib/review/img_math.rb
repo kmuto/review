@@ -1,3 +1,10 @@
+#
+# Copyright (c) 2021-2023 Masayoshi Takahashi, Kenshi Muto
+#
+# This program is free software.
+# You can distribute/modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+#
 require 'fileutils'
 require 'shellwords'
 require 'review/loggable'
@@ -29,7 +36,7 @@ module ReVIEW
       # Re:VIEW 2 compatibility
 
       img_path = File.join(@math_dir, "_gen_#{key}.#{@config['imgmath_options']['format']}")
-      Dir.mkdir(@math_dir) unless Dir.exist?(@math_dir)
+      FileUtils.mkdir_p(@math_dir)
       fontsize2 = (fontsize * 1.2).round.to_i
       texsrc = <<-EOB
 \\documentclass[12pt]{article}
@@ -63,7 +70,7 @@ module ReVIEW
     def make_math_images
       return if @math_maps.empty?
 
-      Dir.mkdir(@math_dir) unless Dir.exist?(@math_dir)
+      FileUtils.mkdir_p(@math_dir)
       fontsize = @config['imgmath_options']['fontsize'].to_f
       lineheight = @config['imgmath_options']['lineheight'].to_f
 
