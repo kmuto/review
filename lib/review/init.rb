@@ -61,7 +61,7 @@ module ReVIEW
 
     def parse_options(args)
       @port = 18000
-      @bind = '0'
+      @bind = '0.0.0.0'
 
       opts = OptionParser.new
       opts.version = ReVIEW::VERSION
