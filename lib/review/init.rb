@@ -97,7 +97,7 @@ module ReVIEW
       opts.on('', '--port port', 'port to use for Web based layout configuration. (default: 18000)') do |port|
         @port = port
       end
-      opts.on('', '--bind bindaddress', 'address to use for Web based layout configuration. (default: 0 (any))') do |bind|
+      opts.on('', '--bind bindaddress', 'address to use for Web based layout configuration. (default: 0.0.0.0 (any))') do |bind|
         @bind = bind
       end
 
@@ -321,7 +321,7 @@ EOS
         AccessLog: [[File.open(IO::NULL, 'w'), '']]
       }
 
-      bind_address = (@bind == '0') ? '<thishost>' : @bind
+      bind_address = (@bind == '0.0.0.0') ? '<thishost>' : @bind
       puts "Please access http://#{bind_address}:#{web_config[:Port]} from Web browser."
       begin
         @web_server = WEBrick::HTTPServer.new(web_config)
