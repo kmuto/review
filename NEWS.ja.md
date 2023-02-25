@@ -1,3 +1,25 @@
+# Version 5.7.0
+## バグ修正
+* Windows において、`review-init -w` の実行時にバインドアドレスを省略したときにエラーが発生するのを修正しました ([#1824])
+* PDFMaker: `//blankline` でページをまたいだときに、ページの先頭に空行が入るのを抑制しました ([#1872])
+* EPUBMaker: MathJax で数式を表現する際に、`<`, `>`, `&` を変換し、HTML のエラーが出ないようにしました ([#1876], [#1877])
+
+## 非互換の変更
+* 動作検証済みバージョンを Ruby 2.7 以降としました ([#1871])
+* EPUMaker: EPUB の検証ルールに従い、EPUB の目次に表紙へのリンクを含めました ([#1874])
+
+## その他
+* Ruby 3.2 を動作検証テスト対象に含めました ([#1871])
+* RuboCop 1.45.1 の指摘を反映しました ([#1878])
+
+[#1824]: https://github.com/kmuto/review/issues/1824
+[#1871]: https://github.com/kmuto/review/pull/1871
+[#1872]: https://github.com/kmuto/review/issues/1872
+[#1874]: https://github.com/kmuto/review/issues/1874
+[#1876]: https://github.com/kmuto/review/pull/1876
+[#1877]: https://github.com/kmuto/review/pull/1877
+[#1878]: https://github.com/kmuto/review/pull/1878
+
 # Version 5.6.0
 ## 新機能
 * IDGXMLBuilder: `//texequation` と `@<m>` で `imgmath` math_formatに対応しました ([#1829])

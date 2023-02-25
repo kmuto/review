@@ -1,3 +1,24 @@
+# Version 5.7.0
+## Bug Fixes
+* Fixed error when omitting a bind address of `review-init -w` on Windows ([#1824])
+* EPUBMaker: escape `<`, `>`, and `&` when converting to MathJax to avoid HTML errors ([#1876], [#1877])
+
+## Breaking Changes
+* Ruby 2.6 or earlier was excluded from the operation verification ([#1871])
+* EPUMaker: included a link to the cover in the table of contents according to EPUB validation rules ([#1874])
+
+## Others
+* Ruby 3.2 is now included in the testing target ([#1871])
+* refactor code with RuboCop 1.45.1 ([#1878])
+
+[#1824]: https://github.com/kmuto/review/issues/1824
+[#1871]: https://github.com/kmuto/review/pull/1871
+[#1872]: https://github.com/kmuto/review/issues/1872
+[#1874]: https://github.com/kmuto/review/issues/1874
+[#1876]: https://github.com/kmuto/review/pull/1876
+[#1877]: https://github.com/kmuto/review/pull/1877
+[#1878]: https://github.com/kmuto/review/pull/1878
+
 # Version 5.6.0
 ## New Features
 * IDGXMLBuilder: support `imgmath` math_format in `//texequation` and `@<m>` ([#1829])
