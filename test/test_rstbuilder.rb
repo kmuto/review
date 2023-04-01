@@ -616,4 +616,14 @@ EOS
 
     assert_equal expected, column_helper(review)
   end
+
+  def test_graph_mermaid
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('id', 1, 'id')
+      item.instance_eval { @path = './images/id.png' }
+      item
+    end
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//graph[id][mermaid]{\n<->\n//}") }
+    assert_match(/not handle Mermaid/, e.message)
+  end
 end

@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022 Kenshi Muto
+# Copyright (c) 2018-2023 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -721,6 +721,14 @@ module ReVIEW
 
     def nofunc_text(str)
       str
+    end
+
+    def graph_mermaid(_id, file_path, _line, _tf_path)
+      file_path
+    end
+
+    def image_ext
+      'png'
     end
 
     alias_method :th, :nofunc_text

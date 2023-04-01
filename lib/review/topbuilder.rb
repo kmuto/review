@@ -596,5 +596,9 @@ module ReVIEW
     def circle_begin(_level, _label, caption)
       puts "・\t#{caption}"
     end
+
+    def graph_mermaid(_id, _file_path, _line, _tf_path)
+      app_error "#{@location}: could not handle Mermaid of //graph in this builder at this time"
+    end
   end
 end # module ReVIEW

@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2023 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -53,6 +53,7 @@ module ReVIEW
       @toc = nil
       @javascripts = []
       @section_stack = []
+      @use_graph_mermaid = nil
 
       maker = @book.config.maker || 'epubmaker' # for review-compile
       @use_section = @book.config[maker] && @book.config[maker]['use_section']
@@ -135,6 +136,10 @@ module ReVIEW
       if @book.config['math_format'] == 'mathjax'
         @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
         @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
+      end
+
+      if @use_graph_mermaid
+        @javascripts.push(%Q(<script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'; mermaid.initialize({ startOnLoad: true });</script>))
       end
 
       ReVIEW::Template.load(layoutfile).result(binding)
@@ -703,7 +708,12 @@ module ReVIEW
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
       image_header(id, caption) if caption_top?('image')
-      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
+      if @text_image
+        puts @text_image
+        @text_image = nil
+      else
+        puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
+      end
       image_header(id, caption) unless caption_top?('image')
       puts '</div>'
     end
@@ -1087,6 +1097,15 @@ EOS
 
     def bibpaper_bibpaper(_id, _caption, lines)
       print split_paragraph(lines).join
+    end
+
+    def graph_mermaid(_id, file_path, line, _tf_path)
+      @use_graph_mermaid = true
+      @text_image = <<EOT
+<pre class="mermaid">
+#{line}</pre>
+EOT
+      file_path
     end
 
     def inline_bib(id)
