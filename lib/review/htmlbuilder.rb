@@ -703,12 +703,7 @@ module ReVIEW
       metrics = parse_metric('html', metric)
       puts %Q(<div id="#{normalize_id(id)}" class="image">)
       image_header(id, caption) if caption_top?('image')
-      if @text_image
-        puts @text_image
-        @text_image = nil
-      else
-        puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
-      end
+      puts %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="#{escape(compile_inline(caption))}"#{metrics} />)
       image_header(id, caption) unless caption_top?('image')
       puts '</div>'
     end
