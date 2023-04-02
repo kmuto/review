@@ -68,6 +68,12 @@ module ReVIEW
         'externallink' => true,
         'join_lines_by_lang' => nil, # experimental. default should be nil
         'table_row_separator' => 'tabs',
+        # for Playwright
+        'playwright_options' => {
+          'playwright_path' => './node_modules/.bin/playwright',
+          'pdfcrop_path' => 'pdfcrop',
+          'pdftocairo_path' => 'pdftocairo'
+        },
         # for IDGXML
         'tableopt' => nil,
         'listinfo' => nil,

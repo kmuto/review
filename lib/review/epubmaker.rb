@@ -17,6 +17,7 @@ require 'review/version'
 require 'review/htmltoc'
 require 'review/htmlbuilder'
 require 'review/img_math'
+require 'review/img_graph'
 
 require 'rexml/document'
 require 'rexml/streamlistener'
@@ -41,6 +42,7 @@ module ReVIEW
       @buildlogtxt = 'build-log.txt'
       @logger = ReVIEW.logger
       @img_math = nil
+      @img_graph = nil
       @basedir = nil
     end
 
@@ -282,11 +284,12 @@ module ReVIEW
       @manifeststr = ''
       @ncxstr = ''
       @tocdesc = []
+      @img_graph = ReVIEW::ImgGraph.new(@config, 'html', path_name: '_review_graph')
 
       basedir = File.dirname(yamlfile)
       base_path = Pathname.new(basedir)
       book = ReVIEW::Book::Base.new(basedir, config: @config)
-      @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new(img_math: @img_math))
+      @converter = ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new(img_math: @img_math, img_graph: @img_graph))
       @compile_errors = nil
 
       book.parts.each do |part|
@@ -310,6 +313,13 @@ module ReVIEW
         end
       end
       check_compile_status
+
+      begin
+        @img_graph.make_mermaid_images
+      rescue ApplicationError => e
+        error! e.message
+      end
+      @img_graph.cleanup_graphimg
     end
 
     def build_part(part, basetmpdir, htmlfile)

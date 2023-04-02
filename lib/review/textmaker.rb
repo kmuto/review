@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022 Kenshi Muto
+# Copyright (c) 2018-2023 Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -17,6 +17,7 @@ require 'review/topbuilder'
 require 'review/version'
 require 'review/makerhelper'
 require 'review/img_math'
+require 'review/img_graph'
 require 'review/loggable'
 
 module ReVIEW
@@ -31,6 +32,7 @@ module ReVIEW
       @logger = ReVIEW.logger
       @plaintext = nil
       @img_math = nil
+      @img_graph = nil
       @compile_errors = nil
     end
 
@@ -67,6 +69,7 @@ module ReVIEW
 
     def remove_old_files(path)
       @img_math.cleanup_mathimg
+      @img_graph.cleanup_graphimg
       FileUtils.rm_rf(path)
     end
 
@@ -83,6 +86,7 @@ module ReVIEW
       end
 
       @img_math = ReVIEW::ImgMath.new(@config, path_name: '_review_math_text')
+      @img_graph = ReVIEW::ImgGraph.new(@config, 'top', path_name: '_review_graph')
 
       I18n.setup(@config['language'])
       begin
@@ -97,6 +101,13 @@ module ReVIEW
       if @config['math_format'] == 'imgmath'
         @img_math.make_math_images
       end
+
+      begin
+        @img_graph.make_mermaid_images
+      rescue ApplicationError => e
+        error! e.message
+      end
+      @img_graph.cleanup_graphimg
     end
 
     def generate_text_files(yamlfile)
@@ -117,9 +128,9 @@ module ReVIEW
     def build_body(basetmpdir, _yamlfile)
       base_path = Pathname.new(@basedir)
       builder = if @plaintext
-                  ReVIEW::PLAINTEXTBuilder.new(img_math: @img_math)
+                  ReVIEW::PLAINTEXTBuilder.new(img_math: @img_math, img_graph: @img_graph)
                 else
-                  ReVIEW::TOPBuilder.new(img_math: @img_math)
+                  ReVIEW::TOPBuilder.new(img_math: @img_math, img_graph: @img_graph)
                 end
       @converter = ReVIEW::Converter.new(@book, builder)
       @book.parts.each do |part|

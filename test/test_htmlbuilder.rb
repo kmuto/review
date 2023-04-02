@@ -3330,17 +3330,22 @@ EOS
   def test_graph_mermaid
     def @chapter.image(_id)
       item = Book::Index::Item.new('id', 1, 'id')
-      item.instance_eval { @path = './images/id.png' }
+      item.instance_eval { @path = './images/html/id.svg' }
       item
     end
-    actual = compile_block("//graph[id][mermaid]{\n<->\n//}")
+
+    begin
+      require 'playwrightrunner'
+    rescue LoadError
+      return true
+    end
+
+    actual = compile_block("//graph[id][mermaid][foo]{\ngraph LR; B --> C\n//}")
     expected = <<-EOS
 <div id="id" class="image">
-<pre class="mermaid">
-<->
-</pre>
+<img src="images/html/id.svg" alt="foo" />
 <p class="caption">
-図1.1: 
+図1.1: foo
 </p>
 </div>
 EOS

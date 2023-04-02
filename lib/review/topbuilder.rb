@@ -597,8 +597,8 @@ module ReVIEW
       puts "・\t#{caption}"
     end
 
-    def graph_mermaid(_id, _file_path, _line, _tf_path)
-      app_error "#{@location}: could not handle Mermaid of //graph in this builder at this time"
+    def graph_mermaid(id, file_path, line, tf_path)
+      graph_mermaid_impl(id, file_path, line, tf_path)
     end
   end
 end # module ReVIEW

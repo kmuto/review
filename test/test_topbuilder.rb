@@ -1302,10 +1302,25 @@ EOS
   def test_graph_mermaid
     def @chapter.image(_id)
       item = Book::Index::Item.new('id', 1, 'id')
-      item.instance_eval { @path = './images/id.png' }
+      item.instance_eval { @path = './images/top/id.pdf' }
       item
     end
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//graph[id][mermaid]{\n<->\n//}") }
-    assert_match(/not handle Mermaid/, e.message)
+
+    begin
+      require 'playwrightrunner'
+    rescue LoadError
+      return true
+    end
+
+    actual = compile_block("//graph[id][mermaid][foo]{\ngraph LR; B --> C\n//}")
+    expected = <<-EOS
+◆→開始:図←◆
+◆→./images/top/id.pdf←◆
+
+図1.1　foo
+◆→終了:図←◆
+
+EOS
+    assert_equal expected, actual
   end
 end

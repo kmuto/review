@@ -36,7 +36,7 @@ module ReVIEW
           @exts.each do |ext|
             @entries.find do |entry|
               downname = entry.sub(/\.[^.]+$/, File.extname(entry).downcase)
-              if downname == "#{target}#{ext}"
+              if downname == "#{target}#{ext}" || File.absolute_path(downname) == File.absolute_path("#{target}#{ext}")
                 return entry
               end
             end
