@@ -724,7 +724,11 @@ module ReVIEW
     end
 
     def graph_mermaid(_id, file_path, _line, _tf_path)
-      file_path
+if self.insntace_of?(ReVIEW::PLAINTEXTBuilder)
+  file_path
+else
+  super
+end
     end
 
     def image_ext
