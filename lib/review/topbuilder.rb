@@ -596,9 +596,5 @@ module ReVIEW
     def circle_begin(_level, _label, caption)
       puts "・\t#{caption}"
     end
-
-    def graph_mermaid(id, file_path, line, tf_path)
-      graph_mermaid_impl(id, file_path, line, tf_path)
-    end
   end
 end # module ReVIEW

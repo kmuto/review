@@ -702,7 +702,7 @@ EOTGNUPLOT
       file_path
     end
 
-    def graph_mermaid_impl(id, _file_path, _line, tf_path)
+    def graph_mermaid(id, _file_path, _line, tf_path)
       begin
         require 'playwrightrunner'
       rescue LoadError
@@ -710,10 +710,6 @@ EOTGNUPLOT
       end
 
       @img_graph.defer_mermaid_image(File.read(tf_path), id)
-    end
-
-    def graph_mermaid(id, file_path, line, tf_path)
-      graph_mermaid_impl(id, file_path, line, tf_path)
     end
 
     def image_ext
