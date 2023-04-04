@@ -1526,4 +1526,24 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_graph_mermaid
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('id', 1, 'id')
+      item.instance_eval { @path = './images/idgxml/id.pdf' }
+      item
+    end
+
+    begin
+      require 'playwrightrunner'
+    rescue LoadError
+      return true
+    end
+
+    actual = compile_block("//graph[id][mermaid][foo]{\ngraph LR; B --> C\n//}")
+    expected = <<-EOS.chomp
+<img><Image href="file://images/idgxml/id.pdf" /><caption>図1.1　foo</caption></img>
+EOS
+    assert_equal expected, actual
+  end
 end

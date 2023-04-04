@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2022 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2023 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #

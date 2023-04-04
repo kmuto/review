@@ -2969,4 +2969,28 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_graph_mermaid
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('id', 1, 'id')
+      item.instance_eval { @path = './images/latex/id.pdf' }
+      item
+    end
+
+    begin
+      require 'playwrightrunner'
+    rescue LoadError
+      return true
+    end
+
+    actual = compile_block("//graph[id][mermaid][foo]{\ngraph LR; B --> C\n//}")
+    expected = <<-EOS
+\\begin{reviewimage}%%id
+\\reviewincludegraphics[width=\\maxwidth]{./images/latex/id.pdf}
+\\reviewimagecaption{foo}
+\\label{image:chap1:id}
+\\end{reviewimage}
+EOS
+    assert_equal expected, actual
+  end
 end

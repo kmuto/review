@@ -11,6 +11,7 @@ require 'review/textutils'
 require 'review/compiler'
 require 'review/sec_counter'
 require 'review/img_math'
+require 'review/img_graph'
 require 'review/loggable'
 require 'stringio'
 require 'fileutils'
@@ -35,13 +36,14 @@ module ReVIEW
     attr_accessor :doc_status
     attr_reader :location
 
-    def initialize(strict = false, *_args, img_math: nil)
+    def initialize(strict = false, *_args, img_math: nil, img_graph: nil)
       @strict = strict
       @output = nil
       @logger = ReVIEW.logger
       @doc_status = {}
       @dictionary = {}
       @img_math = img_math
+      @img_graph = img_graph
       @shown_endnotes = true
     end
 
@@ -61,6 +63,7 @@ module ReVIEW
       @tsize = nil
       if @book && @book.config
         @img_math ||= ReVIEW::ImgMath.new(@book.config)
+        @img_graph ||= ReVIEW::ImgGraph.new(@book.config, target_name)
         if words_file_path = @book.config['words_file']
           words_files = if words_file_path.is_a?(String)
                           [words_file_path]
@@ -697,6 +700,16 @@ EOTGNUPLOT
       system_graph(id, 'java', '-jar', plant_path, "-t#{ext}", '-charset', 'UTF-8', tf_path)
       FileUtils.mv("#{tf_path}.#{ext}", file_path)
       file_path
+    end
+
+    def graph_mermaid(id, _file_path, _line, tf_path)
+      begin
+        require 'playwrightrunner'
+      rescue LoadError
+        app_error "#{@location}: could not handle Mermaid of //graph in this builder."
+      end
+
+      @img_graph.defer_mermaid_image(File.read(tf_path), id)
     end
 
     def image_ext

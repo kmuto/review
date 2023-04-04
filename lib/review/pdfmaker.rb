@@ -25,6 +25,7 @@ require 'review/template'
 require 'review/latexbox'
 require 'review/call_hook'
 require 'review/loggable'
+require 'review/img_graph'
 
 module ReVIEW
   class PDFMaker
@@ -260,16 +261,25 @@ module ReVIEW
     def generate_pdf
       remove_old_file
       @path = build_path
+      @img_graph = ReVIEW::ImgGraph.new(@config, 'latex', path_name: '_review_graph')
+
       begin
         @compile_errors = nil
 
         book = ReVIEW::Book::Base.new(@basedir, config: @config)
-        @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new)
+        @converter = ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new(img_graph: @img_graph))
         erb_config
 
         @input_files = make_input_files(book)
 
         check_compile_status(@config['ignore-errors'])
+
+        begin
+          @img_graph.make_mermaid_images
+        rescue ApplicationError => e
+          error! e.message
+        end
+        @img_graph.cleanup_graphimg
 
         # for backward compatibility
         @config['usepackage'] = ''

@@ -1211,4 +1211,18 @@ EOS
     actual = compile_block(src)
     assert_equal expected, actual
   end
+
+  def test_graph_mermaid
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('id', 1, 'id')
+      item.instance_eval { @path = './images/id.png' }
+      item
+    end
+    actual = compile_block("//graph[id][mermaid]{\n<->\n//}")
+    expected = <<-EOS
+図1.1　
+
+EOS
+    assert_equal expected, actual
+  end
 end

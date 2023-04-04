@@ -368,4 +368,26 @@ EOS
     actual = compile_block('@<ruby>{謳,うた}い文句')
     assert_equal "<ruby>謳<rp>（</rp><rt>うた</rt><rp>）</rp></ruby>い文句\n\n", actual
   end
+
+  def test_graph_mermaid
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('id', 1, 'id')
+      item.instance_eval { @path = './images/markdown/id.svg' }
+      item
+    end
+
+    begin
+      require 'playwrightrunner'
+    rescue LoadError
+      return true
+    end
+
+    actual = compile_block("//graph[id][mermaid][foo]{\ngraph LR; B --> C\n//}")
+    expected = <<-EOS
+
+![foo](images/markdown/id.svg)
+
+EOS
+    assert_equal expected, actual
+  end
 end
