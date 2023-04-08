@@ -55,13 +55,13 @@ EOB
       mermaid_graph_maps.each_pair do |key, val|
         File.write(File.join(@graph_dir, 'mermaid', "#{key}.html"), mermaid_html(val[:content]))
       end
-
       @logger.info 'calling Playwright'
 
       begin
         require 'playwrightrunner'
         PlaywrightRunner.mermaids_to_images(
           { playwright_path: @config['playwright_options']['playwright_path'],
+            selfcrop: @config['playwright_options']['selfcrop'],
             pdfcrop_path: @config['playwright_options']['pdfcrop_path'],
             pdftocairo_path: @config['playwright_options']['pdftocairo_path'] },
           src: File.join(@graph_dir, 'mermaid'),
