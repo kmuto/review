@@ -440,7 +440,7 @@ Before using these tools, you should installed them and configured path appropri
 Mermaid is a JavaScript-based diagram tool that runs in a Web browser. For use with EPUB or LaTeX PDF, Re:VIEW calls the Web browser internally to create images. At this time, we have not confirmed that Mermaid works on any platforms other than Linux.
 
 1. Create `package.json` in your project (if you have an existing file, add the line `"playwright"...` to the `dependencies`).
-
+   ```
    {
      "name": "book",
      "dependencies": {
