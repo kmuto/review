@@ -449,7 +449,7 @@ Mermaid は Web ブラウザ上で動作する JavaScript ベースの図形描�
 プロジェクトの `config.yml` を適宜調整します。デフォルト値は以下のとおりです。
 
 ```
-playwright:
+playwright_options:
   playwright_path: "./node_modules/.bin/playwright"
   selfcrop: true
   pdfcrop_path: "pdfcrop"
