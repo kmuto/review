@@ -71,6 +71,7 @@ module ReVIEW
         # for Playwright
         'playwright_options' => {
           'playwright_path' => './node_modules/.bin/playwright',
+          'selfcrop' => true,
           'pdfcrop_path' => 'pdfcrop',
           'pdftocairo_path' => 'pdftocairo'
         },
