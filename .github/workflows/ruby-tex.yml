@@ -29,9 +29,9 @@ jobs:
       if: runner.os == 'Linux'
       run: sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
     - name: use Node.js 18.x
-      uses: action/setup-node@v3
+      uses: actions/setup-node@v3
       with:
-        node-version: '18.x'
+        node-version: 18
     - name: Build and test with Rake
       run: |
         gem install bundler --no-document
