@@ -468,7 +468,7 @@ Mermaid is a JavaScript-based diagram tool that runs in a Web browser. For use w
 Adjust `config.yml`. The default values are as follows:
 
 ```
-playwright:
+playwright_options:
   playwright_path: "./node_modules/.bin/playwright"
   selfcrop: true
   pdfcrop_path: "pdfcrop"
