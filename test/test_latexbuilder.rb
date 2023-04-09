@@ -360,8 +360,12 @@ EOS
     begin
       require 'MeCab'
     rescue LoadError
-      $stderr.puts 'skip test_inline_idx_yomi (cannot find MeCab)'
-      return true
+      begin
+        require 'mecab'
+      rescue LoadError
+        $stderr.puts 'skip test_inline_idx_yomi (cannot find MeCab)'
+        return true
+      end
     end
     tmpdir = Dir.mktmpdir
     File.write(File.join(tmpdir, 'sample.dic'), "強運\tはーどらっく\nmain（ブロック）\tmain{|}\n")
