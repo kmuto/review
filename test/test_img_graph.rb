@@ -54,6 +54,7 @@ EOB
 
   def test_make_mermaid_pdf
     unless @playwright_path
+      $stderr.puts 'skip test_make_mermaid_pdf (cannot find playwright)'
       return true
     end
 
@@ -65,12 +66,14 @@ EOB
 
   def test_make_mermaid_svg
     unless @playwright_path
+      $stderr.puts 'skip test_make_mermaid_svg (cannot find playwright)'
       return true
     end
 
     begin
       `pdftocairo -v`
     rescue StandardError
+      $stderr.puts 'skip test_make_mermaid_svg (cannot find pdftocairo)'
       return true
     end
 
