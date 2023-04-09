@@ -266,6 +266,8 @@ toc: true
 # playwright:
   # playwrightコマンドのパス
   # playwright_path: "./node_modules/.bin/playwright"
+  # playwright-runnerの切り取りを使う。pdfcropを使う場合はfalseにする
+  # selfcrop: true
   # pdfcropコマンドのパス
   # pdfcrop_path: "pdfcrop"
   # pdftocairoコマンドのパス

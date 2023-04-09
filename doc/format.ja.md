@@ -2,7 +2,7 @@
 
 Re:VIEW フォーマットの文法について解説します。Re:VIEW フォーマットはアスキー社（現カドカワ）の EWB を基本としながら、一部に RD や各種 Wiki の文法を取り入れて簡素化しています。
 
-このドキュメントは、Re:VIEW 5.5 に基づいています。
+このドキュメントは、Re:VIEW 5.8 に基づいています。
 
 ## 段落
 
@@ -407,13 +407,61 @@ plot sin(x)
 //}
 ```
 
-コマンド名には、「`graphviz`」「`gnuplot`」「`blockdiag`」「`aafigure`」「`plantuml`」のいずれかを指定できます。ツールはそれぞれ別途インストールし、インストール先のフォルダ名を指定することなく実行できる (パスを通す) 必要があります。
+コマンド名には、「`graphviz`」「`gnuplot`」「`blockdiag`」「`aafigure`」「`plantuml`」「`mermaid`」のいずれかを指定できます。ツールはそれぞれ別途インストールし、インストール先のフォルダ名を指定することなく実行できる (パスを通す) 必要があります。
 
 * Graphviz ( https://www.graphviz.org/ ) : `dot` コマンドへのパスを OS に設定すること
 * Gnuplot ( http://www.gnuplot.info/ ) : `gnuplot` コマンドへのパスを OS に設定すること
 * Blockdiag ( http://blockdiag.com/ ) : `blockdiag` コマンドへのパスを OS に設定すること。PDF を生成する場合は ReportLab もインストールすること
 * aafigure ( https://launchpad.net/aafigure ) : `aafigure` コマンドへのパスを OS に設定すること
 * PlantUML ( http://plantuml.com/ ) : `java` コマンドへのパスを OS に設定し、`plantuml.jar` が作業フォルダ、または `/usr/share/plantuml` あるいは `/usr/share/java` フォルダにあること
+* Mermaid ( https://mermaid.js.org/ ) : 以下を参照
+
+### Mermaid の利用
+
+Mermaid は Web ブラウザ上で動作する JavaScript ベースの図形描画ツールです。EPUB や LaTeX 経由の PDF で利用するには、Web ブラウザを内部的に呼び出して画像化する必要があります。現時点で、Linux 以外の動作は確認していません。
+
+1. プロジェクトに次のように `package.json` を作成します（既存のファイルがあるときには、`dependencies` に `"playwright"〜` の行を追加します）。
+   ```
+   {
+     "name": "book",
+     "dependencies": {
+       "playwright": "^1.32.2"
+     }
+   }
+   ```
+2. Playwright ライブラリをインストールします。`npm` がない場合は、[Node.js](https://nodejs.org/) の環境をセットアップしてください。
+   ```
+   npm install
+   ```
+3. Playwright ライブラリを Ruby から呼び出すモジュールである [playwright-runner](https://github.com/kmuto/playwright-runner) をインストールします。
+   ```
+   gem install playwright-runner
+   ```
+4. (オプション) EPUB には SVG 形式を作成する必要がありますが、SVG に変換するには、[poppler](https://gitlab.freedesktop.org/poppler/poppler) に含まれる `pdftocairo` コマンドが必要です。Debian およびその派生物では以下のようにしてインストールできます。
+   ```
+   apt install poppler-utils
+   ```
+5. (オプション) デフォルトでは図の周囲に大きめの余白ができてしまいます。これを詰めるには、TeXLive に含まれる `pdfcrop` コマンドが必要です。Debian およびその派生物では以下のようにしてインストールできます。
+   ```
+   apt install texlive-extra-utils
+   ```
+
+プロジェクトの `config.yml` を適宜調整します。デフォルト値は以下のとおりです。
+
+```
+playwright:
+  playwright_path: "./node_modules/.bin/playwright"
+  selfcrop: true
+  pdfcrop_path: "pdfcrop"
+  pdftocairo_path: "pdftocairo"
+```
+
+- `playwright_path`: `playwright` コマンドのパスを相対パスまたは絶対パスで指定する
+- `selfcrop`: `playwright-runner` の画像切り出しを使う。`pdfcrop` が不要になるが、周囲に余白が生じる。`pdfcrop` を使うときには `false` に設定する
+- `pdfcrop_path`: `pdfcrop` コマンドのパス。`selfcrop` が `true` のときには無視される
+- `pdftocairo_path`: `pdftocairo` コマンドのパス
+
+Re:VIEW 側の記法としては `//graph[ID][mermaid][キャプション]` または `//graph[ID][mermaid]` となりますが、この ID に基づき、`images/html/ID.svg`（EPUB の場合）や `images/latex/ID.pdf`（LaTeX PDF の場合）が生成されます。
 
 ## 表
 
