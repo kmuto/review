@@ -4,7 +4,7 @@ The document is a brief guide for Re:VIEW markup syntax.
 
 Re:VIEW is based on EWB of ASCII (now KADOKAWA), influenced RD and other Wiki system's syntax.
 
-This document explains about the format of Re:VIEW 5.5.
+This document explains about the format of Re:VIEW 5.8.
 
 ## Paragraph
 
@@ -425,7 +425,7 @@ plot sin(x)
 //}
 ```
 
-You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure`, and `plantuml` as the command name.
+You can use `graphviz`, `gnuplot`, `blockdiag`, `aafigure`, `plantuml`, and `mermaid` as the command name.
 Before using these tools, you should installed them and configured path appropriately.
 
 * Graphviz ( https://www.graphviz.org/ ) : set path to `dot` command
@@ -433,6 +433,54 @@ Before using these tools, you should installed them and configured path appropri
 * Blockdiag ( http://blockdiag.com/ ) : set path to `blockdiag` command. Install ReportLab also to make a PDF
 * aafigure ( https://launchpad.net/aafigure ) : set path to `aafigure` command
 * PlantUML ( http://plantuml.com/ ) : set path to `java` command. place `plantuml.jar` on working folder, `/usr/share/plantuml` or `/usr/share/java`.
+* Mermaid ( https://mermaid.js.org/ ) : see below
+
+### using Mermaid
+
+Mermaid is a JavaScript-based diagram tool that runs in a Web browser. For use with EPUB or LaTeX PDF, Re:VIEW calls the Web browser internally to create images. At this time, we have not confirmed that Mermaid works on any platforms other than Linux.
+
+1. Create `package.json` in your project (if you have an existing file, add the line `"playwright"...` to the `dependencies`).
+
+   {
+     "name": "book",
+     "dependencies": {
+       "playwright": "^1.32.2"
+     }
+   }
+   ```
+2. Install Playwright library. If you don't have `npm`, set up [Node.js](https://nodejs.org/) first.
+   ```
+   npm install
+   ```
+3. Install [playwright-runner](https://github.com/kmuto/playwright-runner), a module that calls the Playwright library from Ruby.
+   ```
+   gem install playwright-runner
+   ```
+4. (Optional) Since EPUB cannot handle PDF, the images must be in SVG format; to convert them to SVG, you need the `pdftocairo` command included in [poppler](https://gitlab.freedesktop.org/poppler/poppler). It can be installed in Debian and its derivatives as follows:
+   ```
+   apt install poppler-utils
+   ```
+5. (Optional )By default, there will be white margins around the figure. To crop them, you need the `pdfcrop` command included in TeXLive, which can be installed in Debian and its derivatives as follows:
+   ```
+   apt install texlive-extra-utils
+   ```
+
+Adjust `config.yml`. The default values are as follows:
+
+```
+playwright:
+  playwright_path: "./node_modules/.bin/playwright"
+  selfcrop: true
+  pdfcrop_path: "pdfcrop"
+  pdftocairo_path: "pdftocairo"
+```
+
+- `playwright_path`: path of the `playwright` command.
+- `selfcrop`: use the default cropper of `playwright-runner`. The `pdfcrop` will not be needed, but there will be margins around it. Set to `false` if you can use `pdfcrop`.
+- `pdfcrop_path`: path of the `pdfcrop` command. Ignored if `selfcrop` is `true`.
+- `pdftocairo_path`: path of the `pdftocairo` command.
+
+The notation in Re:VIEW is `//graph[ID][mermaid][caption]` or `//graph[ID][mermaid]`. Based on this ID, `images/html/ID.svg` (for EPUB) or `images/latex/ID.pdf` (for LaTeX PDF) will be generated.
 
 ## Tables
 
