@@ -224,6 +224,17 @@
   \RequirePackage{pxjahyper}
 \fi
 
+% 縦書き対処
+\if@tate
+  \def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
+    \RequirePackage{plext}
+  \fi
+  \def\recls@tmp{lualatex}\ifx\recls@tmp\recls@engine
+    \RequirePackage{lltjext}
+  \fi
+  \jlreqsetup{frontmatter_pagebreak={}}% これを入れないと大扉前に白が入る
+\fi
+
 %% include fullpage graphics
 \edef\grnchry@head{\dimexpr\topmargin+1in+\headheight+\headsep}
 \edef\grnchry@gutter{\evensidemargin}
