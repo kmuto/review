@@ -365,6 +365,12 @@ labelで定義したラベルへの参照の例です。EPUBだと@<href>{#inlin
  : @<column>{ch03|column2}
 	コラム参照
 
+URLは@<embed>{@}<href>を使います。@<href>{https://localhost/longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong}@<fn>{fnref}
+
+//footnote[fnref][脚注に長いURLを入れてみます。@<href>{https://localhost/longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglong}]
+
+
+
 === 参考文献
 参考文献@<tt>{bib.re}ファイルへの文献参照は、@<bib>{lins}とします。
 
