@@ -73,7 +73,7 @@ module ReVIEW
       end
 
       def imagedir
-        File.join(@basedir, config['imagedir'])
+        config['imagedir']
       end
 
       def image_types

@@ -138,14 +138,7 @@ module ReVIEW
       def initialize(chapter)
         super()
         @chapter = chapter
-        book = @chapter.book
-
-        chapid = chapter.id
-        basedir = book.imagedir
-        builder = book.config['builder']
-        types = book.image_types
-
-        @image_finder = ReVIEW::Book::ImageFinder.new(basedir, chapid, builder, types)
+        @image_finder = ReVIEW::Book::ImageFinder.new(@chapter)
       end
 
       def find_path(id)

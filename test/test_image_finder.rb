@@ -20,12 +20,17 @@ class ImageFinderTest < Test::Unit::TestCase
     end
   end
 
+  def finder
+    book = Book::Base.new(@dir, config: { 'builder' => 'builder', 'imagedir' => @dir })
+    book.image_types = ['.jpg']
+    ch = Book::Chapter.new(book, 1, 'ch01', nil)
+    ReVIEW::Book::ImageFinder.new(ch)
+  end
+
   def test_find_path_pattern1
     path = File.join(@dir, 'builder/ch01/foo.jpg')
     FileUtils.mkdir_p(File.dirname(path))
     FileUtils.touch(path)
-
-    finder = ReVIEW::Book::ImageFinder.new(@dir, 'ch01', 'builder', ['.jpg'])
 
     assert_equal(path, finder.find_path('foo'))
   end
@@ -35,7 +40,6 @@ class ImageFinderTest < Test::Unit::TestCase
     FileUtils.mkdir_p(File.dirname(path))
     FileUtils.touch(path)
 
-    finder = ReVIEW::Book::ImageFinder.new(@dir, 'ch01', 'builder', ['.jpg'])
     assert_equal(path, finder.find_path('foo'))
   end
 
@@ -44,7 +48,6 @@ class ImageFinderTest < Test::Unit::TestCase
     FileUtils.mkdir_p(File.dirname(path))
     FileUtils.touch(path)
 
-    finder = ReVIEW::Book::ImageFinder.new(@dir, 'ch01', 'builder', ['.jpg'])
     assert_equal(path, finder.find_path('foo'))
   end
 
@@ -53,7 +56,6 @@ class ImageFinderTest < Test::Unit::TestCase
     FileUtils.mkdir_p(File.dirname(path))
     FileUtils.touch(path)
 
-    finder = ReVIEW::Book::ImageFinder.new(@dir, 'ch01', 'builder', ['.jpg'])
     assert_equal(path, finder.find_path('foo'))
   end
 
@@ -62,7 +64,6 @@ class ImageFinderTest < Test::Unit::TestCase
     FileUtils.mkdir_p(File.dirname(path))
     FileUtils.touch(path)
 
-    finder = ReVIEW::Book::ImageFinder.new(@dir, 'ch01', 'builder', ['.jpg'])
     assert_equal(path, finder.find_path('foo'))
   end
 
@@ -75,7 +76,6 @@ class ImageFinderTest < Test::Unit::TestCase
     path_dstimg = File.join(path_dst, 'foo.jpg')
     FileUtils.touch(path_srcimg)
 
-    finder = ReVIEW::Book::ImageFinder.new(@dir, 'ch01', 'builder', ['.jpg'])
     assert_equal(path_dstimg, finder.find_path('foo'))
   end
 end
