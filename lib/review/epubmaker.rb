@@ -327,6 +327,7 @@ module ReVIEW
       File.open(File.join(basetmpdir, htmlfile), 'w') do |f|
         @part_number = part.number
         @part_title = part.name.strip
+        @title = @part_title
         @body = ReVIEW::Template.generate(path: template_name(localfile: '_part_body.html.erb', systemfile: 'html/_part_body.html.erb'), binding: binding)
         @language = @producer.config['language']
         @stylesheets = @producer.config['stylesheet']
