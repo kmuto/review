@@ -78,4 +78,9 @@ class ImageFinderTest < Test::Unit::TestCase
 
     assert_equal(path_dstimg, finder.find_path('foo'))
   end
+
+  def test_entry_object
+    assert_equal({ basename: 'ch01/Foo', downcase: 'ch01/Foo.jpg', path: 'ch01/Foo.JPG' },
+                 finder.entry_object('ch01/Foo.JPG'))
+  end
 end
