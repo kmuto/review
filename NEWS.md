@@ -1,3 +1,20 @@
+# Version 5.8.0
+## New Features
+* The `//graph` operator allows graphical description in Mermaid notation. See `doc/format.md` for details on prepairing and setting up external tools ([#1885])
+
+## Bug Fixes
+* EPUBMaker: fix `<title>` not being included in the auto-generated part content ([#1898])
+
+## Enhancements
+* PDFMaker: fix to wrap long URLs with `@<href>` operator ([#1890])
+
+## Contributors
+* [@munepi](https://github.com/munepi)
+
+[#1885]: https://github.com/kmuto/review/pull/1885
+[#1890]: https://github.com/kmuto/review/issues/1890
+[#1898]: https://github.com/kmuto/review/pull/1898
+
 # Version 5.7.0
 ## Bug Fixes
 * Fixed error when omitting a bind address of `review-init -w` on Windows ([#1824])

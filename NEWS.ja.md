@@ -1,3 +1,20 @@
+# Version 5.8.0
+## 新機能
+* `//graph` 命令でMermaid記法によるグラフ記述ができるようになりました。外部ツールの用意や設定については`doc/format.ja.md`を参照してください ([#1885])
+
+## バグ修正
+* EPUBMaker: 自動生成される部の内容に`<title>`が入らないのを修正しました ([#1898])
+
+## 機能強化
+* PDFMaker: `@<href>`命令で長いURLを記述したときに、ページをはみ出さずに折り返すようにしました ([#1890])
+
+## コントリビューターのみなさん
+* [@munepi](https://github.com/munepi)
+
+[#1885]: https://github.com/kmuto/review/pull/1885
+[#1890]: https://github.com/kmuto/review/issues/1890
+[#1898]: https://github.com/kmuto/review/pull/1898
+
 # Version 5.7.0
 ## バグ修正
 * Windows において、`review-init -w` の実行時にバインドアドレスを省略したときにエラーが発生するのを修正しました ([#1824])
