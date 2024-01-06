@@ -37,6 +37,7 @@ EOB
     File.write(File.join(@tmpdir, 'package.json'), json)
     Dir.chdir(@tmpdir) do
       system('npm install')
+      system('npx playwright install chromium')
     end
 
     File.join(@tmpdir, 'node_modules', '.bin', 'playwright')
