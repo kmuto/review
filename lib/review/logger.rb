@@ -32,7 +32,7 @@ module ReVIEW
     end
 
     def ttylogger?
-      nil
+      false
     end
 
     def success(_log)

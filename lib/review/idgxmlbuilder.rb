@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2023 Minero Aoki, Kenshi Muto
+# Copyright (c) 2008-2024 Minero Aoki, Kenshi Muto
 #               2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -532,9 +532,9 @@ module ReVIEW
           next
         end
         if @tablewidth
-          rows.push(line.gsub(/\t\.\t/, "\tDUMMYCELLSPLITTER\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\tDUMMYCELLSPLITTER").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
+          rows.push(line.gsub("\t.\t", "\tDUMMYCELLSPLITTER\t").gsub("\t..\t", "\t.\t").gsub(/\t\.\Z/, "\tDUMMYCELLSPLITTER").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
         else
-          rows.push(line.gsub(/\t\.\t/, "\t\t").gsub(/\t\.\.\t/, "\t.\t").gsub(/\t\.\Z/, "\t").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
+          rows.push(line.gsub("\t.\t", "\t\t").gsub("\t..\t", "\t.\t").gsub(/\t\.\Z/, "\t").gsub(/\t\.\.\Z/, "\t.").gsub(/\A\./, ''))
         end
         col2 = rows[rows.length - 1].split(table_row_separator_regexp).length
         @col = col2 if col2 > @col

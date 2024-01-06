@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2022 Minero Aoki, Kenshi Muto
+# Copyright (c) 2009-2024 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
 # This program is free software.
@@ -681,7 +681,7 @@ module ReVIEW
                   end
         break if words.empty?
 
-        result << compile_inline(revert_replace_fence(words.shift.gsub(/\\\}/, '}').gsub(/\\\\/, '\\')))
+        result << compile_inline(revert_replace_fence(words.shift.gsub('\\}', '}').gsub('\\\\', '\\')))
       end
       result
     rescue StandardError => e

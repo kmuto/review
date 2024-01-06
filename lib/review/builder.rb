@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2023 Minero Aoki, Kenshi Muto
+# Copyright (c) 2002-2024 Minero Aoki, Kenshi Muto
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -133,7 +133,7 @@ module ReVIEW
     end
 
     def target_name
-      self.class.to_s.gsub(/ReVIEW::/, '').gsub(/Builder/, '').downcase
+      self.class.to_s.gsub('ReVIEW::', '').gsub('Builder', '').downcase
     end
 
     def load_words(file)
@@ -405,10 +405,10 @@ module ReVIEW
     def inline_ruby(arg)
       base, *ruby = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/)
       if base
-        base = base.gsub(/\\,/, ',').strip
+        base = base.gsub('\,', ',').strip
       end
       if ruby
-        ruby = ruby.join(',').gsub(/\\,/, ',').strip
+        ruby = ruby.join(',').gsub('\,', ',').strip
       end
       compile_ruby(base, ruby)
     end
@@ -420,9 +420,9 @@ module ReVIEW
 
     def inline_href(arg)
       url, label = *arg.scan(/(?:(?:(?:\\\\)*\\,)|[^,\\]+)+/).map(&:lstrip)
-      url = url.gsub(/\\,/, ',').strip
+      url = url.gsub('\,', ',').strip
       if label
-        label = label.gsub(/\\,/, ',').strip
+        label = label.gsub('\,', ',').strip
       end
       compile_href(url, label)
     end
@@ -640,7 +640,7 @@ module ReVIEW
       tf.puts content
       tf.close
       begin
-        file_path = send("graph_#{command}".to_sym, id, file_path, content, tf.path)
+        file_path = send(:"graph_#{command}", id, file_path, content, tf.path)
       ensure
         tf.unlink
       end

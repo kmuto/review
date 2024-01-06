@@ -35,7 +35,7 @@ module ReVIEW
     end
 
     def encode_args(args)
-      args.delete_if { |_k, v| v.nil? }.map { |k, v| "#{k}=#{v}" }.join(',')
+      args.compact.map { |k, v| "#{k}=#{v}" }.join(',')
     end
   end
 end
