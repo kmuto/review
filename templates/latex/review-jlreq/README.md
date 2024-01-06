@@ -47,7 +47,8 @@ texdocumentclass: ["review-jlreq", "クラスオプションたち（省略可�
 利用可能な特定の用紙サイズを指定できます。［デフォルト］は a5 です。
 
  * `a0` 〜 `a10`：A 列
- * `b0` 〜 `b10`：JIS B 列
+ * `b0j` 〜 `b10j`：JIS B 列
+ * `b0` 〜 `b10`：ISO B 列
  * `c0` 〜 `c8`：C 列
  * `a4var`：210mm x 283mm
  * `b5var`：182mm x 230mm
@@ -56,6 +57,8 @@ texdocumentclass: ["review-jlreq", "クラスオプションたち（省略可�
  * `executive`：エグゼクティブ、7.25in x 10.5in
  * `hagaki`：葉書き、100mm x 148mm
  * `{横幅,縦幅}`：任意の指定サイズ
+
+日本の B 列サイズにするには `b5j` のように j 付きで指定することに注意してください。
 
 ### トンボ用紙サイズ `tombopaper=<用紙サイズ>` および塗り足し幅 `bleed_margin=<幅>`
 
