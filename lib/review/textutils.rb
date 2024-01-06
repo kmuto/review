@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2020 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
+# Copyright (c) 2008-2023 Minero Aoki, Kenshi Muto, Masayoshi Takahashi,
 #                         KADO Masanori
 #               2002-2007 Minero Aoki
 #
@@ -49,7 +49,7 @@ module ReVIEW
       tail = line1[-1]
       head = line2[0]
       if tail.nil? || head.nil?
-        return nil
+        return false
       end
 
       space = true

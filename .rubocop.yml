@@ -5,7 +5,7 @@ AllCops:
     - tmp/*
   DisplayCopNames: true
   NewCops: enable
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.0
 
 require:
   - rubocop-performance
@@ -39,6 +39,9 @@ Performance/CollectionLiteralInLoop:
   Enabled: false
 
 Performance/MapCompact:
+  Enabled: false
+
+Performance/StringIdentifierArgument:
   Enabled: false
 
 #### Style

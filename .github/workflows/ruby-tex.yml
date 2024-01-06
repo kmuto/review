@@ -13,11 +13,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['2.7', '3.2']
-        os: [ubuntu-20.04]
+        ruby: ['3.2']
+        os: [ubuntu-22.04]
     steps:
     - uses: actions/checkout@v2
-    - name: Install TeXLive 2020 in ubuntu
+    - name: Install TeXLive 2021 in ubuntu
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update -y -qq && sudo apt-get install -y -qq texlive-lang-japanese texlive-fonts-recommended texlive-fonts-extra texlive-luatex texlive-extra-utils texlive-latex-extra dvipng poppler-utils

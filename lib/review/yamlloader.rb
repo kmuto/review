@@ -16,7 +16,9 @@ module ReVIEW
             YAML.safe_load(f, [Date])
           rescue Psych::DisallowedClass
             # < Ruby 2.5
+            # rubocop:disable Style/YAMLFileRead
             YAML.safe_load(File.read(file), [Date])
+            # rubocop:enable Style/YAMLFileRead
           end
         end
       end
