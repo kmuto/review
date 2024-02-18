@@ -202,6 +202,11 @@
   \def\reviewinsert#1{#1}
   \def\reviewstrike#1{#1}
   \def\reviewunderline#1{#1}
+  \def\reviewtt#1{#1}
+  \def\reviewcode#1{#1}
+  \def\reviewtti#1{#1}
+  \def\reviewttb#1{#1}
+  \let\reviewicon\@gobble
 }
 \newif\ifreview@ba@break
 \def\review@ba@end{\review@ba@end@}
@@ -247,10 +252,10 @@
   \review@ba@breaktrue
   \review@break@all@a
 }
-\DeclareRobustCommand{\reviewtt}[1]{{\ttfamily\reviewbreakall{#1}}}
-\DeclareRobustCommand{\reviewcode}[1]{{\ttfamily\reviewbreakall{#1}}}
-\DeclareRobustCommand{\reviewtti}[1]{{\ttfamily\itshape\reviewbreakall{#1}}}
-\DeclareRobustCommand{\reviewttb}[1]{{\ttfamily\bfseries\reviewbreakall{#1}}}
+\DeclareRobustCommand{\reviewtt}[1]{{\frenchspacing\ttfamily\reviewbreakall{#1}}}
+\DeclareRobustCommand{\reviewcode}[1]{{\frenchspacing\ttfamily\reviewbreakall{#1}}}
+\DeclareRobustCommand{\reviewtti}[1]{{\frenchspacing\ttfamily\itshape\reviewbreakall{#1}}}
+\DeclareRobustCommand{\reviewttb}[1]{{\frenchspacing\ttfamily\bfseries\reviewbreakall{#1}}}
 
 \DeclareRobustCommand{\reviewbou}[1]{\kenten{#1}}
 
