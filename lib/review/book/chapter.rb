@@ -10,11 +10,12 @@
 require 'review/book/book_unit'
 require 'review/lineinput'
 require 'review/preprocessor'
+require 'review/book/bibliography'
 
 module ReVIEW
   module Book
     class Chapter < BookUnit
-      attr_reader :number, :book
+      attr_reader :number, :book, :bibliography
 
       def self.mkchap(book, name, number = nil)
         name += book.ext if File.extname(name).empty?
@@ -51,6 +52,19 @@ module ReVIEW
         if !@content && @path && File.exist?(@path)
           @content = File.read(@path, mode: 'rt:BOM|utf-8')
           @number = nil if %w[nonum nodisp notoc].include?(find_first_header_option)
+
+          # bibliography
+          if @book && @book.config
+            chapter_bibfile = File.join(File.dirname(@path), File.basename(@path, '.re') + '.bib')
+            if File.exist?(chapter_bibfile)
+              @bibliography = Book::Bibliography.new(chapter_bibfile, @book.config)
+            else
+              book_bibfile = File.join(@book.basedir, @book.config['bookname'] + '.bib')
+              if File.exist?(book_bibfile)
+                @bibliography = Book::Bibliography.new(book_bibfile, @book.config)
+              end
+            end
+          end
         end
 
         super()
