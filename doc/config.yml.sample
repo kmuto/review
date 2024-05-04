@@ -332,7 +332,7 @@ epubmaker:
   # 画像ファイルの縦x横の最大ピクセル数許容値
   # image_maxpixels: 4000000
   #
-  # Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
+  # Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02...、後付にpost01,post02...という名前付けルールにするか
   # rename_for_legacy: null
   #
   # ePUBアーカイブの非圧縮実行

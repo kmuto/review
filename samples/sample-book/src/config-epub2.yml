@@ -153,7 +153,7 @@ colophon: true
 #  verify_target_images: null
 #  verify_target_imagesがtrueの状態において、解析で発見されなくても強制的に取り込むファイルの相対パスの配列
 #  force_include_images: []
-# Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02l...、後付にpost01,post02...という名前付けルールにするか
+# Re:VIEWファイル名を使わず、前付にpre01,pre02...、本文にchap01,chap02...、後付にpost01,post02...という名前付けルールにするか
 #  rename_for_legacy: null
 # ePUBアーカイブの非圧縮実行
 #  zip_stage1: "zip -0Xq"
