@@ -1,3 +1,20 @@
+# Version 5.9.0
+## Bug Fixes
+* LATEXBuilder: fix the spacing for `@<code>`, `@<tt>`, `@<tti>`, `@<ttb>` to be more appropriate. Also improved handling of PDF bookmarks ([#1906], [#1907]).
+
+## Enhancements
+* differentiated between JIS B and ISO B paper sizes in `review-jlreq.cls` Users Guide ([#1904]).
+* fix typos in `config.yml.sample` ([#1909]).
+
+## Contributors
+* [@munepi](https://github.com/munepi)
+* [@koshikawa](https://github.com/koshikawa)
+
+[#1904]: https://github.com/kmuto/review/pull/1904
+[#1906]: https://github.com/kmuto/review/issues/1906
+[#1907]: https://github.com/kmuto/review/pull/1907
+[#1909]: https://github.com/kmuto/review/pull/1909
+
 # Version 5.8.0
 ## New Features
 * The `//graph` operator allows graphical description in Mermaid notation. See `doc/format.md` for details on prepairing and setting up external tools ([#1885])

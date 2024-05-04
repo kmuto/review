@@ -1,3 +1,20 @@
+# Version 5.9.0
+## バグ修正
+* LATEXBuilder: `@<code>`, `@<tt>`, `@<tti>`, `@<ttb>`での空白幅が適切になるよう修正しました。またPDF栞の扱いを改善しました([#1906],[#1907])。
+
+## 機能強化
+* `review-jlreq.cls`のUsers Guideで用紙サイズの指定にJIS B列とISO B列を区別するようにしました([#1904])
+* `config.yml.sample`での誤記を修正しました([#1909])
+
+## コントリビューターのみなさん
+* [@munepi](https://github.com/munepi)
+* [@koshikawa](https://github.com/koshikawa)
+
+[#1904]: https://github.com/kmuto/review/pull/1904
+[#1906]: https://github.com/kmuto/review/issues/1906
+[#1907]: https://github.com/kmuto/review/pull/1907
+[#1909]: https://github.com/kmuto/review/pull/1909
+
 # Version 5.8.0
 ## 新機能
 * `//graph` 命令でMermaid記法によるグラフ記述ができるようになりました。外部ツールの用意や設定については`doc/format.ja.md`を参照してください ([#1885])
