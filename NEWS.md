@@ -6,8 +6,6 @@
 * differentiated between JIS B and ISO B paper sizes in `review-jlreq.cls` Users Guide ([#1904]).
 * fix typos in `config.yml.sample` ([#1909]).
 
-* PDFMaker: fix to wrap long URLs with `@<href>` operator ([#1890])
-
 ## Contributors
 * [@munepi](https://github.com/munepi)
 * [@koshikawa](https://github.com/koshikawa)
