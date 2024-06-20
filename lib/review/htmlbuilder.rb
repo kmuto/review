@@ -1095,6 +1095,14 @@ EOS
       app_error "unknown bib: #{id}"
     end
 
+    def inline_bibref(id)
+      @chapter.bibliography.format('html').ref(id)
+    end
+
+    def bibliography
+      puts @chapter.bibliography.format('html').list
+    end
+
     def inline_hd_chap(chap, id)
       n = chap.headline_index.number(id)
       str = if n.present? && chap.number && over_secnolevel?(n)
