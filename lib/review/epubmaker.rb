@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2023 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2024 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -523,7 +523,7 @@ module ReVIEW
     end
 
     def copy_static_file(configname, destdir, destfilename: nil)
-      destfilename ||= @config[configname]
+      destfilename ||= File.basename(@config[configname])
       unless File.exist?(@config[configname])
         error! "#{configname}: #{@config[configname]} is not found."
       end
