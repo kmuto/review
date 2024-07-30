@@ -339,6 +339,7 @@ module ReVIEW
         File.read(file_sty)
       else
         warn "File #{file_sty} is not found."
+        nil
       end
     end
 
@@ -505,6 +506,15 @@ module ReVIEW
         template_dir = @basedir
         template_path = 'layouts/layout.tex.erb'
       end
+
+      if @config['cover'] && !File.exist?(@config['cover'])
+        error! "File #{@config['cover']} is not found."
+      end
+
+      if @config['titlepage'] && @config['titlefile'] && !File.exist?(@config['titlefile'])
+        error! "File #{@config['titlefile']} is not found."
+      end
+
       ReVIEW::Template.generate(path: template_path, mode: '-', binding: binding, template_dir: template_dir)
     rescue StandardError => e
       if defined?(e.full_message)
