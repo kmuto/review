@@ -875,6 +875,9 @@ EOT
       File.write(File.join(tmpdir, 'exist.css'), 'body {}')
       File.write(File.join(tmpdir, 'exist.html'), '<html></html>')
 
+      Dir.mkdir(File.join(tmpdir, 'subdir'))
+      File.write(File.join(tmpdir, 'subdir', 'exist.html'), '<html></html>')
+
       Dir.chdir(tmpdir) do
         Dir.mkdir('test')
         yield(epubmaker, File.join(tmpdir, 'test'))
@@ -897,6 +900,9 @@ EOT
       epubmaker.config['titlefile'] = 'exist.html'
       assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
 
+      epubmaker.config['titlefile'] = 'subdir/exist.html'
+      assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
+
       epubmaker.config['titlefile'] = 'nothing.html'
       @log_io.string = ''
       assert_raise(SystemExit) { epubmaker.copy_frontmatter(tmpdir) }
@@ -909,6 +915,9 @@ EOT
         epubmaker.config[name] = 'exist.html'
         assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
 
+        epubmaker.config[name] = 'subdir/exist.html'
+        assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
+
         epubmaker.config[name] = 'nothing.html'
         @log_io.string = ''
         assert_raise(SystemExit) { epubmaker.copy_frontmatter(tmpdir) }
@@ -919,6 +928,9 @@ EOT
     %w[profile advfile colophon backcover].each do |name|
       epubmaker_instance do |epubmaker, tmpdir|
         epubmaker.config[name] = 'exist.html'
+        assert_nothing_raised { epubmaker.copy_backmatter(tmpdir) }
+
+        epubmaker.config[name] = 'subdir/exist.html'
         assert_nothing_raised { epubmaker.copy_backmatter(tmpdir) }
 
         epubmaker.config[name] = 'nothing.html'
