@@ -26,7 +26,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('rouge')
   gem.add_dependency('rubyzip')
   gem.add_dependency('tty-logger')
-  gem.add_development_dependency('mini_magick')
+  gem.add_development_dependency('mini_magick', '~> 5.0.0')
   gem.add_development_dependency('playwright-runner')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')

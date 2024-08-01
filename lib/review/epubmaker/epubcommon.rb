@@ -1,6 +1,6 @@
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
-# Copyright (c) 2010-2023 Kenshi Muto and Masayoshi Takahashi
+# Copyright (c) 2010-2024 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of
@@ -320,19 +320,19 @@ module ReVIEW
       end
 
       def produce_write_common(basedir, tmpdir)
-        File.write("#{tmpdir}/mimetype", mimetype)
+        File.write(File.join(tmpdir, 'mimetype'), mimetype)
 
-        FileUtils.mkdir_p("#{tmpdir}/META-INF")
-        File.write("#{tmpdir}/META-INF/container.xml", container)
+        FileUtils.mkdir_p(File.join(tmpdir, 'META-INF'))
+        File.write(File.join(tmpdir, 'META-INF', 'container.xml'), container)
 
-        FileUtils.mkdir_p("#{tmpdir}/OEBPS")
+        FileUtils.mkdir_p(File.join(tmpdir, 'OEBPS'))
         File.write(File.join(tmpdir, opf_path), opf)
 
         if config['cover']
-          if File.exist?("#{basedir}/#{config['cover']}")
-            FileUtils.cp("#{basedir}/#{config['cover']}", "#{tmpdir}/OEBPS")
+          if File.exist?(File.join(basedir, File.basename(config['cover'])))
+            FileUtils.cp(File.join(basedir, File.basename(config['cover'])), File.join(tmpdir, 'OEBPS'))
           else
-            File.write("#{tmpdir}/OEBPS/#{config['cover']}", cover)
+            File.write(File.join(tmpdir, 'OEBPS', File.basename(config['cover'])), cover)
           end
         end
 
@@ -344,13 +344,13 @@ module ReVIEW
         contents.each do |item|
           next if /#/.match?(item.file) # skip subgroup
 
-          fname = "#{basedir}/#{item.file}"
+          fname = File.join(basedir, item.file)
           unless File.exist?(fname)
             raise ApplicationError, "#{fname} is not found."
           end
 
-          FileUtils.mkdir_p(File.dirname("#{tmpdir}/OEBPS/#{item.file}"))
-          FileUtils.cp(fname, "#{tmpdir}/OEBPS/#{item.file}")
+          FileUtils.mkdir_p(File.dirname(File.join(tmpdir, 'OEBPS', item.file)))
+          FileUtils.cp(fname, File.join(tmpdir, 'OEBPS', item.file))
         end
       end
 
