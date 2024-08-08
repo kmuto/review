@@ -101,7 +101,7 @@ module ReVIEW
     end
 
     def generate_html_files(yamlfile)
-      @basedir = File.absolute_path(File.dirname(yamlfile))
+      @basedir = File.dirname(yamlfile)
       @path = build_path
       remove_old_files(@path)
       Dir.mkdir(@path)
