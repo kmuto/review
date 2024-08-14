@@ -35,6 +35,7 @@ end
 def compile_block(text)
   method_name = "compile_block_#{@builder.target_name}"
   method_name = 'compile_block_default' unless self.respond_to?(method_name, true)
+  @chapter.book.cache.reset
   self.__send__(method_name, text)
 end
 
