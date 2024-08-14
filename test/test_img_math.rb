@@ -88,7 +88,7 @@ class ImgMathTest < Test::Unit::TestCase
 
   def compare_images(image1, image2)
     MiniMagick.errors = false
-    compare = MiniMagick::Tool::Compare.new
+    compare = MiniMagick.compare
     compare << '-fuzz'
     compare << '10%'
     compare.metric('AE')
