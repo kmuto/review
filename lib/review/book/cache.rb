@@ -19,8 +19,9 @@ module ReVIEW
 
       # key should be Symbol, not String
       def fetch(key, &block)
-        raise ArgumentError, 'Key should be Symbol' unless key.kind_of?(Symbol)
-        if has_key?(key)
+        raise ArgumentError, 'Key should be Symbol' unless key.is_a?(Symbol)
+
+        if key?(key)
           read(key)
         else
           exec_block_and_save(key, &block)
@@ -29,8 +30,8 @@ module ReVIEW
 
       private
 
-      def has_key?(key)
-        @store.has_key?(key)
+      def key?(key)
+        @store.key?(key)
       end
 
       def read(key)
@@ -41,7 +42,7 @@ module ReVIEW
         @store[key] = value
       end
 
-      def exec_block_and_save(key, &block)
+      def exec_block_and_save(key)
         result = yield(key)
 
         write(key, result)
