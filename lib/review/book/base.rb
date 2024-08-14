@@ -10,6 +10,7 @@
 require 'review/configure'
 require 'review/catalog'
 require 'review/book/bib'
+require 'review/book/cache'
 
 module ReVIEW
   module Book
@@ -19,6 +20,7 @@ module ReVIEW
       attr_accessor :catalog
       attr_reader :basedir
       attr_accessor :bibpaper_index
+      attr_reader :cache
 
       def self.load(basedir = '.', config: nil)
         new(basedir, config: config)
@@ -39,6 +41,8 @@ module ReVIEW
 
         @warn_old_files = {} # XXX for checking CHAPS, PREDEF, POSTDEF
         @basedir_seen = {}
+
+        @cache = ReVIEW::Book::Cache.new
         update_rubyenv
       end
 
