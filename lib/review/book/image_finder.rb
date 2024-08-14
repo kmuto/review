@@ -26,7 +26,9 @@ module ReVIEW
       end
 
       def dir_entries
-        Dir.glob(File.join(@basedir, '**{,/*/**}/*.*')).uniq.sort.map { |entry| entry.sub(%r{^\./}, '') }
+        @book.cache.fetch(:image_finder_dir_entries) do
+          Dir.glob(File.join(@basedir, '**{,/*/**}/*.*')).uniq.sort.map { |entry| entry.sub(%r{^\./}, '') }
+        end
       end
 
       def add_entry(path)
