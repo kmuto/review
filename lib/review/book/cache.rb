@@ -21,18 +21,18 @@ module ReVIEW
       def fetch(key, &block)
         raise ArgumentError, 'Key should be Symbol' unless key.is_a?(Symbol)
 
-        if key?(key)
+        if cached?(key)
           read(key)
         else
           exec_block_and_save(key, &block)
         end
       end
 
-      private
-
-      def key?(key)
+      def cached?(key)
         @store.key?(key)
       end
+
+      private
 
       def read(key)
         @store[key]
