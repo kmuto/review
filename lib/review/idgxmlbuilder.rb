@@ -273,7 +273,7 @@ module ReVIEW
     end
 
     def inline_list(id)
-      "<span type='list'>#{super(id)}</span>"
+      "<span type='list'>#{super}</span>"
     end
 
     def list_header(id, caption, _lang)
@@ -304,7 +304,7 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       puts '<codelist>'
-      super(lines, id, caption, lang)
+      super
       puts '</codelist>'
     end
 
@@ -329,7 +329,7 @@ module ReVIEW
 
     def listnum(lines, id, caption, lang = nil)
       puts '<codelist>'
-      super(lines, id, caption, lang)
+      super
       puts '</codelist>'
     end
 
@@ -389,15 +389,15 @@ module ReVIEW
     end
 
     def inline_table(id)
-      "<span type='table'>#{super(id)}</span>"
+      "<span type='table'>#{super}</span>"
     end
 
     def inline_img(id)
-      "<span type='image'>#{super(id)}</span>"
+      "<span type='image'>#{super}</span>"
     end
 
     def inline_eq(id)
-      "<span type='eq'>#{super(id)}</span>"
+      "<span type='eq'>#{super}</span>"
     end
 
     def inline_imgref(id)
@@ -725,7 +725,7 @@ module ReVIEW
     end
 
     def inline_raw(str)
-      super(str).gsub('\\n', "\n")
+      super.gsub('\\n', "\n")
     end
 
     def inline_hint(str)

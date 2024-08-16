@@ -556,7 +556,7 @@ module ReVIEW
     end
 
     def parse_metric(type, metric)
-      s = super(type, metric)
+      s = super
       if @book.config['pdfmaker']['use_original_image_size'] && s.empty? && !metric.present?
         return ' ' # pass empty to \reviewincludegraphics
       end
@@ -1292,11 +1292,11 @@ module ReVIEW
 
     def inline_sec(id)
       if @book.config['chapterlink']
-        n = super(id)
+        n = super
         anchor = n.tr('.', '-')
         macro('reviewsecref', n, sec_label(anchor))
       else
-        super(id)
+        super
       end
     rescue KeyError
       app_error "unknown headline: #{id}"
@@ -1306,9 +1306,9 @@ module ReVIEW
       if @book.config['chapterlink']
         chap, id2 = extract_chapter_id(id)
         anchor = chap.headline_index.number(id2).tr('.', '-')
-        macro('reviewsecref', super(id), sec_label(anchor))
+        macro('reviewsecref', super, sec_label(anchor))
       else
-        super(id)
+        super
       end
     end
 
@@ -1321,7 +1321,7 @@ module ReVIEW
     end
 
     def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
-      super(str)
+      super
     end
 
     def inline_sub(str)

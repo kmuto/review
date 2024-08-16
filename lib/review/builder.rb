@@ -773,7 +773,7 @@ EOTGNUPLOT
     ## override TextUtils::detab
     def detab(str, num = nil)
       if num
-        super(str, num)
+        super
       elsif @tabwidth
         super(str, @tabwidth)
       else
