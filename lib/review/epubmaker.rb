@@ -220,6 +220,11 @@ module ReVIEW
           end
         end
       end
+
+      if @config['coverimage']
+        @config['epubmaker']['force_include_images'].push(File.join(@config['imagedir'], @config['coverimage']))
+      end
+
       @config['epubmaker']['force_include_images'] = @config['epubmaker']['force_include_images'].compact.sort.uniq
     end
 
