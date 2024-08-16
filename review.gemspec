@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.required_rubygems_version = Gem::Requirement.new('>= 0') if gem.respond_to?(:required_rubygems_version=)
   gem.metadata = { 'rubygems_mfa_required' => 'true' }
 
-  gem.files         = `git ls-files`.split("\n").reject { |f| f.match(/^test/) }
+  gem.files         = `git ls-files`.split("\n").reject { |f| f.match(/^test/) }.reject { |f| f.match(/^vendor\/imagemagick/) }
   gem.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   gem.extra_rdoc_files = []
   gem.require_paths = ['lib']
