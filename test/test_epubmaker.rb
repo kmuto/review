@@ -867,6 +867,10 @@ EOT
           @config
         end
 
+        def producer
+          @producer
+        end
+
         def error(s)
           raise ApplicationError, s
         end
@@ -938,6 +942,22 @@ EOT
         assert_raise(SystemExit) { epubmaker.copy_backmatter(tmpdir) }
         assert_equal "ERROR --: #{name}: nothing.html is not found.\n", @log_io.string
       end
+    end
+  end
+
+  def test_verify_target_images
+    epubmaker_instance do |epubmaker, tmpdir|
+      epubmaker.config['epubmaker']['verify_target_images'] = true
+      epubmaker.config['coverimage'] = 'cover.png'
+
+      epubmaker.producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'ch01.html', title: 'CH01', level: 1)
+      File.write(File.join(tmpdir, 'ch01.html'), '<html><img src="images/ch01.png" /></html>')
+      epubmaker.producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'style.css')
+      File.write(File.join(tmpdir, 'style.css'), 'div { background-image: url("images/bg.jpg")}')
+      epubmaker.verify_target_images(tmpdir)
+
+      expect = %w(images/bg.jpg images/ch01.png images/cover.png)
+      assert_equal expect, epubmaker.config['epubmaker']['force_include_images']
     end
   end
 end
