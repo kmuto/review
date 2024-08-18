@@ -949,7 +949,7 @@ EOT
   end
 
   def test_verify_target_images
-    epubmaker_instance do |epubmaker, _tmpdir|
+    epubmaker_instance do |epubmaker, tmpdir|
       epubmaker.config['epubmaker']['verify_target_images'] = true
       epubmaker.config['coverimage'] = 'cover.png'
 
