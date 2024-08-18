@@ -854,41 +854,45 @@ EOT
   end
 
   def epubmaker_instance
-    Dir.mktmpdir do |tmpdir|
-      epubmaker = ReVIEW::EPUBMaker.new
-      epubmaker.instance_eval do
-        @config = ReVIEW::Configure.create(maker: 'epubmaker')
-        @config['titlepage'] = nil
-        @producer = ReVIEW::EPUBMaker::Producer.new(@config)
+    begin
+      Dir.mktmpdir do |tmpdir|
+        epubmaker = ReVIEW::EPUBMaker.new
+        epubmaker.instance_eval do
+          @config = ReVIEW::Configure.create(maker: 'epubmaker')
+          @config['titlepage'] = nil
+          @producer = ReVIEW::EPUBMaker::Producer.new(@config)
 
-        @htmltoc = ReVIEW::HTMLToc.new(tmpdir)
+          @htmltoc = ReVIEW::HTMLToc.new(tmpdir)
 
-        def config
-          @config
+          def config
+            @config
+          end
+
+          def producer
+            @producer
+          end
+
+          def error(s)
+            raise ApplicationError, s
+          end
         end
 
-        def producer
-          @producer
-        end
+        File.write(File.join(tmpdir, 'exist.css'), 'body {}')
+        File.write(File.join(tmpdir, 'exist.html'), '<html></html>')
 
-        def error(s)
-          raise ApplicationError, s
+        Dir.mkdir(File.join(tmpdir, 'subdir'))
+        File.write(File.join(tmpdir, 'subdir', 'exist.html'), '<html></html>')
+
+        Dir.mkdir(File.join(tmpdir, 'test'))
+        File.write(File.join(tmpdir, 'test', 'ch01.html'), '<html><img src="images/ch01.png" /></html>')
+        File.write(File.join(tmpdir, 'test', 'style.css'), 'div { background-image: url("images/bg.jpg")}')
+
+        Dir.chdir(tmpdir) do
+          yield(epubmaker, File.join(tmpdir, 'test'))
         end
       end
-
-      File.write(File.join(tmpdir, 'exist.css'), 'body {}')
-      File.write(File.join(tmpdir, 'exist.html'), '<html></html>')
-
-      Dir.mkdir(File.join(tmpdir, 'subdir'))
-      File.write(File.join(tmpdir, 'subdir', 'exist.html'), '<html></html>')
-
-      Dir.mkdir(File.join(tmpdir, 'test'))
-      File.write(File.join(tmpdir, 'test', 'ch01.html'), '<html><img src="images/ch01.png" /></html>')
-      File.write(File.join(tmpdir, 'test', 'style.css'), 'div { background-image: url("images/bg.jpg")}')
-
-      Dir.chdir(tmpdir) do
-        yield(epubmaker, File.join(tmpdir, 'test'))
-      end
+    rescue Errno::EACCES
+      # Windows fails unlink when file is opened
     end
   end
 
@@ -957,8 +961,8 @@ EOT
       epubmaker.producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'style.css')
       epubmaker.verify_target_images(tmpdir)
 
-      # expect = %w[images/bg.jpg images/ch01.png images/cover.png]
-      # assert_equal expect, epubmaker.config['epubmaker']['force_include_images']
+      expect = %w[images/bg.jpg images/ch01.png images/cover.png]
+      assert_equal expect, epubmaker.config['epubmaker']['force_include_images']
       assert_equal true, true
     end
   end
