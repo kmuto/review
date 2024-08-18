@@ -956,7 +956,7 @@ EOT
       File.write(File.join(tmpdir, 'style.css'), 'div { background-image: url("images/bg.jpg")}')
       epubmaker.verify_target_images(tmpdir)
 
-      expect = %w(images/bg.jpg images/ch01.png images/cover.png)
+      expect = %w[images/bg.jpg images/ch01.png images/cover.png]
       assert_equal expect, epubmaker.config['epubmaker']['force_include_images']
     end
   end
