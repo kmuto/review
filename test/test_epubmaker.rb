@@ -882,10 +882,11 @@ EOT
       Dir.mkdir(File.join(tmpdir, 'subdir'))
       File.write(File.join(tmpdir, 'subdir', 'exist.html'), '<html></html>')
 
+      Dir.mkdir(File.join(tmpdir, 'test'))
+      File.write(File.join(tmpdir, 'test', 'ch01.html'), '<html><img src="images/ch01.png" /></html>')
+      File.write(File.join(tmpdir, 'test', 'style.css'), 'div { background-image: url("images/bg.jpg")}')
+
       Dir.chdir(tmpdir) do
-        Dir.mkdir('test')
-        File.write(File.join(tmpdir, 'test', 'ch01.html'), '<html><img src="images/ch01.png" /></html>')
-        File.write(File.join(tmpdir, 'test', 'style.css'), 'div { background-image: url("images/bg.jpg")}')
         yield(epubmaker, File.join(tmpdir, 'test'))
       end
     end
