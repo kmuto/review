@@ -214,7 +214,7 @@ module ReVIEW
           File.open(File.join(basetmpdir, content.file)) do |f|
             f.each_line do |l|
               l.scan(/url\((.+?)\)/) do |_m|
-                @config['epubmaker']['force_include_images'].push($1.strip)
+                @config['epubmaker']['force_include_images'].push($1.strip.gsub(/\A(['"])(.*)\1\Z/, '\2'))
               end
             end
           end
