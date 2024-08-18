@@ -955,6 +955,7 @@ EOT
       epubmaker.producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'style.css')
       File.write(File.join(tmpdir, 'style.css'), 'div { background-image: url("images/bg.jpg")}')
       epubmaker.verify_target_images(tmpdir)
+      File.unlink(File.join(tmpdir, 'ch01.html'), File.join(tmpdir, 'style.css'))
 
       expect = %w[images/bg.jpg images/ch01.png images/cover.png]
       assert_equal expect, epubmaker.config['epubmaker']['force_include_images']
