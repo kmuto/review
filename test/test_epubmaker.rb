@@ -891,7 +891,7 @@ EOT
           yield(epubmaker, File.join(tmpdir, 'test'))
         end
       end
-    rescue Errno::EACCES
+    rescue Errno::EACCES, Errno::ENOTEMPTY
       # Windows fails unlink when file is opened
     end
   end
