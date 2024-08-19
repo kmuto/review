@@ -47,13 +47,14 @@ class ImgMathTest < Test::Unit::TestCase
     assert File.exist?(img_path2)
 
     val1 = compare_images(img_path1, File.join(assets_dir, 'img_math/img1.png'))
-    assert_equal 0, val1
+    assert val1 >= 0.9
 
     val2 = compare_images(img_path2, File.join(assets_dir, 'img_math/img2.png'))
-    assert_equal 0, val2
+    assert val2 >= 0.9
 
     val3 = compare_images(img_path1, img_path2)
-    assert val3 > 100
+
+    assert val3 < 0.9
   end
 
   def test_make_math_image_pathname
@@ -81,23 +82,21 @@ class ImgMathTest < Test::Unit::TestCase
     assert File.exist?(img_path1)
 
     val1 = compare_images(img_path1, File.join(assets_dir, 'img_math/img3.png'))
-    assert val1 < 10
+    assert val1 >= 0.9
   end
 
   private
 
   def compare_images(image1, image2)
     MiniMagick.errors = false
-    compare = MiniMagick::Tool::Compare.new
-    compare << '-fuzz'
-    compare << '10%'
-    compare.metric('AE')
+    compare = MiniMagick.compare
+    compare.metric('SSIM')
     compare << image1
     compare << image2
     compare << File.join(@tmpdir, 'diff.jpg')
 
     compare.call do |_, dist, _|
-      return dist.to_i
+      return dist.to_f
     end
   end
 

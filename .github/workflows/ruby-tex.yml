@@ -20,11 +20,19 @@ jobs:
     - name: Install TeXLive 2021 in ubuntu
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update -y -qq && sudo apt-get install -y -qq texlive-lang-japanese texlive-fonts-recommended texlive-fonts-extra texlive-luatex texlive-extra-utils texlive-latex-extra dvipng poppler-utils
+        sudo apt-get update -y -qq && sudo apt-get install -y -qq texlive-lang-japanese texlive-fonts-recommended texlive-fonts-extra texlive-luatex texlive-extra-utils texlive-latex-extra dvipng poppler-utils libfuse2
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
+    - name: use vendor's imagemagick
+      run: |
+        export PATH=${GITHUB_WORKSPACE}/vendor/imagemagick:${PATH}
+        chmod 755 ${GITHUB_WORKSPACE}/vendor/imagemagick/magick
+        ln -s ${GITHUB_WORKSPACE}/vendor/imagemagick/magick ${GITHUB_WORKSPACE}/vendor/imagemagick/compare
+        which compare
+        magick -version
+        compare -version
     - name: fix ImageMagick policy.xml on Linux
       if: runner.os == 'Linux'
       run: sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
@@ -34,6 +42,7 @@ jobs:
         node-version: 18
     - name: Build and test with Rake
       run: |
+        export PATH=${GITHUB_WORKSPACE}/vendor/imagemagick:${PATH}
         gem install bundler --no-document
         bundle install --retry 3
         bundle exec rake
