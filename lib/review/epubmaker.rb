@@ -214,12 +214,17 @@ module ReVIEW
           File.open(File.join(basetmpdir, content.file)) do |f|
             f.each_line do |l|
               l.scan(/url\((.+?)\)/) do |_m|
-                @config['epubmaker']['force_include_images'].push($1.strip)
+                @config['epubmaker']['force_include_images'].push($1.strip.gsub(/\A(['"])(.*)\1\Z/, '\2'))
               end
             end
           end
         end
       end
+
+      if @config['coverimage']
+        @config['epubmaker']['force_include_images'].push(File.join(@config['imagedir'], @config['coverimage']))
+      end
+
       @config['epubmaker']['force_include_images'] = @config['epubmaker']['force_include_images'].compact.sort.uniq
     end
 
