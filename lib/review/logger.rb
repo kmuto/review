@@ -3,7 +3,7 @@ require 'logger'
 module ReVIEW
   class Logger < ::Logger
     def initialize(io = $stderr, progname: '--')
-      super(io, progname: progname)
+      super
       self.formatter = ->(severity, _datetime, name, msg) { "#{severity} #{name}: #{msg}\n" }
     end
 

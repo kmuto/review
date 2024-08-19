@@ -455,7 +455,7 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="caption-code">)
-      super(lines, id, caption, lang)
+      super
       puts '</div>'
     end
 
@@ -480,7 +480,7 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       puts %Q(<div class="source-code">)
-      super(lines, caption, lang)
+      super
       puts '</div>'
     end
 
@@ -500,7 +500,7 @@ module ReVIEW
 
     def listnum(lines, id, caption, lang = nil)
       puts %Q(<div id="#{normalize_id(id)}" class="code">)
-      super(lines, id, caption, lang)
+      super
       puts '</div>'
     end
 
@@ -737,7 +737,7 @@ module ReVIEW
       else
         puts %Q(<div class="table">)
       end
-      super(lines, id, caption)
+      super
       puts '</div>'
     end
 
@@ -1117,9 +1117,9 @@ EOS
         chap, id2 = extract_chapter_id(id)
         n = chap.headline_index.number(id2)
         anchor = 'h' + n.tr('.', '-')
-        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{super(id)}</a>)
+        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{super}</a>)
       else
-        super(id)
+        super
       end
     rescue KeyError
       app_error "unknown headline: #{id}"
@@ -1129,9 +1129,9 @@ EOS
       if @book.config['chapterlink']
         chap, id2 = extract_chapter_id(id)
         anchor = 'h' + chap.headline_index.number(id2).tr('.', '-')
-        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{super(id)}</a>)
+        %Q(<a href="#{chap.id}#{extname}##{anchor}">#{super}</a>)
       else
-        super(id)
+        super
       end
     rescue KeyError
       app_error "unknown headline: #{id}"
@@ -1154,7 +1154,7 @@ EOS
     end
 
     def inline_list(id)
-      str = super(id)
+      str = super
       chapter, id = extract_chapter_id(id)
       if @book.config['chapterlink']
         %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
@@ -1164,7 +1164,7 @@ EOS
     end
 
     def inline_table(id)
-      str = super(id)
+      str = super
       chapter, id = extract_chapter_id(id)
       if @book.config['chapterlink']
         %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
@@ -1174,7 +1174,7 @@ EOS
     end
 
     def inline_img(id)
-      str = super(id)
+      str = super
       chapter, id = extract_chapter_id(id)
       if @book.config['chapterlink']
         %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
@@ -1184,7 +1184,7 @@ EOS
     end
 
     def inline_eq(id)
-      str = super(id)
+      str = super
       chapter, id = extract_chapter_id(id)
       if @book.config['chapterlink']
         %Q(<span class="eqref"><a href="./#{chapter.id}#{extname}##{normalize_id(id)}">#{str}</a></span>)
@@ -1308,7 +1308,7 @@ EOS
     end
 
     def inline_raw(str) # rubocop:disable Lint/UselessMethodDefinition
-      super(str)
+      super
     end
 
     def nofunc_text(str)

@@ -21,12 +21,12 @@ module ReVIEW
         print "\x01H#{level}\x01"
       end
       # embed header information for tocparser
-      super(level, label, caption)
+      super
     end
 
     def base_block(type, lines, caption = nil)
       puts "\x01STARTLIST\x01"
-      super(type, lines, caption)
+      super
       puts "\x01ENDLIST\x01"
     end
 

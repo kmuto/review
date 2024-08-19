@@ -362,7 +362,7 @@ module ReVIEW
     end
 
     def inline_raw(str)
-      super(str).gsub('\\n', "\n")
+      super.gsub('\\n', "\n")
     end
 
     def inline_hidx(_str)
