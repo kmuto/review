@@ -1,3 +1,27 @@
+# Version 5.10.0
+## バグ修正
+* サブディレクトリとカスタムページを両方指定するとエラーが発生するバグを修正しました([#1913],[#1914])
+* EPUBBuilder: ビルド時間が長い問題を解決しました([#1915],[#1916],[#1919])
+* ImageMagickのcompareのmetricに`SSIM`を使うように変更し、環境によってテストが失敗する問題を修正しました([#1917],[#1921])
+* EPUBMaker: `verify_target_images`が有効な場合、coverimageを暗黙に取り込むよう修正しました([#1918],[#1923])
+
+## 機能強化
+* Ruby 3.4で`csv` gemと`nkf` gemがdefault gemではなくなる警告に対応しました([#1911])
+
+## コントリビューターのみなさん
+* [@fabon-f](https://github.com/fabon-f)
+
+[#1911]: https://github.com/kmuto/review/pull/1911
+[#1913]: https://github.com/kmuto/review/issues/1913
+[#1914]: https://github.com/kmuto/review/pull/1914
+[#1915]: https://github.com/kmuto/review/issues/1915
+[#1916]: https://github.com/kmuto/review/issues/1916
+[#1917]: https://github.com/kmuto/review/issues/1917
+[#1918]: https://github.com/kmuto/review/issues/1918
+[#1919]: https://github.com/kmuto/review/pull/1919
+[#1921]: https://github.com/kmuto/review/pull/1921
+[#1923]: https://github.com/kmuto/review/pull/1923
+
 # Version 5.9.0
 ## バグ修正
 * LATEXBuilder: `@<code>`, `@<tt>`, `@<tti>`, `@<ttb>`での空白幅が適切になるよう修正しました。またPDF栞の扱いを改善しました([#1906],[#1907])。
