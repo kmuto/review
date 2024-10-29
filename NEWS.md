@@ -1,3 +1,27 @@
+# Version 5.10.0
+## Bug Fixes
+* Fixed an issue where specifying both a subdirectory and a custom page would cause an error ([#1913], [#1914]).
+* EPUBBuilder: Resolved an issue with long build times. ([#1915], [#1916], [#1919]).
+* EPUBMaker: When `verify_target_images` is enabled, modified to implicitly include coverimage ([#1918], [#1923]).
+* Changed the metric option of ImageMagick's compare command to use `SSIM` ([#1917], [#1921]).
+
+## Enhancements
+* Resolved warnings about the `csv` and `nkf` gems no longer being default gems in Ruby 3.4 ([#1911]).
+
+## Contributors
+* [@fabon-f](https://github.com/fabon-f)
+
+[#1911]: https://github.com/kmuto/review/pull/1911
+[#1913]: https://github.com/kmuto/review/issues/1913
+[#1914]: https://github.com/kmuto/review/pull/1914
+[#1915]: https://github.com/kmuto/review/issues/1915
+[#1916]: https://github.com/kmuto/review/issues/1916
+[#1917]: https://github.com/kmuto/review/issues/1917
+[#1918]: https://github.com/kmuto/review/issues/1918
+[#1919]: https://github.com/kmuto/review/pull/1919
+[#1921]: https://github.com/kmuto/review/pull/1921
+[#1923]: https://github.com/kmuto/review/pull/1923
+
 # Version 5.9.0
 ## Bug Fixes
 * LATEXBuilder: fix the spacing for `@<code>`, `@<tt>`, `@<tti>`, `@<ttb>` to be more appropriate. Also improved handling of PDF bookmarks ([#1906], [#1907]).
