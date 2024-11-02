@@ -33,7 +33,7 @@ Conversion from config.yml to TeX macro is executed in `templates/latex/config.e
 
 In the new `layout.tex.erb`, content is constructed by defining or changing the following macros.
 
-* `\reviewbegindocumenthook` : hook begining the document
+* `\reviewbegindocumenthook` : hook beginning the document
 * `\reviewcoverpagecont` : cover contents
 * `\reviewfrontmatterhook` : hook before frontmatter
 * `\reviewtitlepagecont` : titlepage contents

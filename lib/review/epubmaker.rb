@@ -647,7 +647,7 @@ module ReVIEW
         h = Math.sqrt(img.height * maxpixels / img.width)
         w = maxpixels / h
         fname.sub!("#{basetmpdir}/", '')
-        warn "#{fname}: #{img.width}x#{img.height} exceeds a limit. suggeted value is #{w.to_i}x#{h.to_i}"
+        warn "#{fname}: #{img.width}x#{img.height} exceeds a limit. suggested value is #{w.to_i}x#{h.to_i}"
       end
 
       true

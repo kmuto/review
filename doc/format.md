@@ -44,7 +44,7 @@ Usage:
 
 Headings should not have any spaces before title; if line head has space, it is as paragraph.
 
-You should add emply lines between Paragraphs and Headings.
+You should add empty lines between Paragraphs and Headings.
 
 ## Column
 
@@ -107,7 +107,7 @@ Usage:
 In itemize, you must write one more space character at line head.
 When you use `*` without spaces in line head, it's just paragraph.
 
-You should add emply lines between Paragraphs and Itemize (same as Ordered and Non-Orderd).
+You should add empty lines between Paragraphs and Itemize (same as Ordered and Non-Ordered).
 
 ## Ordered Itemize
 
@@ -180,7 +180,7 @@ The syntax of block commands is below:
 //}
 ```
 
-If there is no options, the begining line is just `//command{`.  When you want to use a character `]`, you must use escaping `\]`.
+If there is no options, the beginning line is just `//command{`.  When you want to use a character `]`, you must use escaping `\]`.
 
 Some block commands has no content.
 
@@ -188,7 +188,7 @@ Some block commands has no content.
 //command[option1][option2]...
 ```
 
-Inline commands are used in block,  paragraphes, headings, block contents and block options.
+Inline commands are used in block,  paragraphs, headings, block contents and block options.
 
 ```
 @<command>{content}
@@ -370,7 +370,7 @@ When you refer a image in the other chapter, you can use the same way as a list 
 
 When you want to use images in paragraph or other inline context, you can use `@<icon>`.
 
-### Finding image pathes
+### Finding image paths
 
 The order of finding image is as follows.  The first matched one is used.
 
@@ -384,7 +384,7 @@ The order of finding image is as follows.  The first matched one is used.
 ```
 
 * ``<imgdir>`` is `images` as default.
-* ``<builder>`` is a builder (target) name to use.  When you use review-comile commmand with ``--target=html``, `<imagedir>/<builder>` is `images/html`. The builder name for epubmaker and webmaker is `html`, for pdfmaker it is `latex`, and for textmaker it is `top`.
+* ``<builder>`` is a builder (target) name to use.  When you use review-comile command with ``--target=html``, `<imagedir>/<builder>` is `images/html`. The builder name for epubmaker and webmaker is `html`, for pdfmaker it is `latex`, and for textmaker it is `top`.
 * ``<chapid>`` is basename of *.re file.  If the filename is `ch01.re`, chapid is `ch01`.
 * ``<id>`` is the ID of the first argument of `//image`.  You should use only printable ASCII characters as ID.
 * ``<ext>`` is file extensions of Re:VIEW.  They are different by the builder you use.
@@ -494,7 +494,7 @@ When you want to use an empty column, you write `.`.
 Usage:
 
 ```
-//table[envvars][Important environment varialbes]{
+//table[envvars][Important environment variables]{
 Name            Comment
 -------------------------------------------------------------
 PATH            Directories where commands exist
@@ -536,7 +536,7 @@ When using LaTeX or IDGXML builder, you can specify each column width of the tab
 //tsize[|builder|width-of-column1,width-of-column2,...]
 ```
 
-* The collumn width is specified in mm.
+* The column width is specified in mm.
 * For IDGXML, if only 1st of the three columns is specified, the remaining 2nd and 3rd columns will be the width of the remainder of the live area width equally divided. It is not possible to specify that only the 1st and 3rd columns are specified.
 * For LaTeX, you have to specify all column widths.
 * For LaTeX, you can also directly specify the column parameter of LaTeX table macro like `//tsize[|latex||p{20mm}cr|]`.
@@ -869,7 +869,7 @@ imgmath_options:
 
 `//noindent` is a tag for spacing.
 
-* `//noindent` : ingore indentation immediately following line. (in HTML, add `noindent` class)
+* `//noindent` : ignore indentation immediately following line. (in HTML, add `noindent` class)
 
 ## Blank line
 
@@ -890,7 +890,7 @@ Insert two blank line below.
 
 ## Referring headings
 
-There are 3 inline commands to refer a chapter.  These references use Chapter ID. The Chapter ID is filename of chapter without extentions.  For example, Chapter ID of `advanced.re` is `advance`.
+There are 3 inline commands to refer a chapter.  These references use Chapter ID. The Chapter ID is filename of chapter without extensions.  For example, Chapter ID of `advanced.re` is `advance`.
 
 * `@<chap>{ChapterID}` : chapter number (ex. `Chapter 17`).
 * `@<title>{ChapterID}` : chapter title

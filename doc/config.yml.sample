@@ -416,7 +416,7 @@ pdfmaker:
   # 画像のデフォルトのサイズを、版面横幅合わせではなく、原寸をそのまま利用する
   # use_original_image_size: null
   #
-  # PDFやIllustratorファイル(.ai)の画像のBoudingBoxの抽出に指定のボックスを採用する
+  # PDFやIllustratorファイル(.ai)の画像のBoundingBoxの抽出に指定のボックスを採用する
   # cropbox(デフォルト), mediabox, artbox, trimbox, bleedboxから選択する。
   # Illustrator CC以降のIllustratorファイルに対してはmediaboxを指定する必要がある
   # bbox: mediabox

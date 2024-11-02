@@ -279,7 +279,7 @@
 
 ## Bug Fixes
 * fixed WebMaker, review-vol and review-index errors when `contentdir` is defined ([#1633])
-* WebMaker: fixed `images/html` foder not being found ([#1623])
+* WebMaker: fixed `images/html` folder not being found ([#1623])
 * PDFMaker: fixed chapterlink in term list ([#1619])
 * PDFMaker: fixed errors when index contains `{`, `}`, or `|` ([#1611])
 * review-vol: valid error messages will be displayed when invalid headings are found ([#1604])
@@ -309,7 +309,7 @@
 * added a test of TeX compilation to GitHub Actions ([#1643])
 * refactored codes according to Rubocop 1.10 ([#1593], [#1598], [#1613], [#1636], [#1647], [#1669])
 * fixed duplicate IDs of syntax-book sample ([#1646])
-* refactored the way to reference relative pathes ([#1639])
+* refactored the way to reference relative paths ([#1639])
 * refactored `ReVIEW::LineInput` class ([#1638])
 * update Copyright to 2021 ([#1632])
 * added Ruby 3.0 to the test platform ([#1622])
@@ -386,7 +386,7 @@
 
 ## Bug Fixes
 * PDFMaker: fixed a problem with multiple same-named image files with different extensions that would cause them to be misaligned ([#1483])
-* PDFMaker: fixed a problem that cuased an error when the author name (`aut`) was empty ([#1517])
+* PDFMaker: fixed a problem that caused an error when the author name (`aut`) was empty ([#1517])
 * PDFMaker: fixed a problem that caused an error if `//indepimage`'s image file didn't exist and ID contained characters to be TeX-escaped ([#1527])
 * PDFMaker: fixed a problem with characters to be TeX-escaped in the `bookttilename` and `aut` parameters causing incorrect PDF metainformation ([#1533])
 * WebMaker: fixed to avoid nil in HTML template ([#1545])
@@ -396,7 +396,7 @@
 ## Enhancements
 * fix warning message to output more detailed information of item ([#1523])
 * PDFMaker: make `@<hd>` op a hyperlink (when `media=ebook`) ([#1530])
-* use `cgi/escape` first and `cgi/util` as fallback. remove orignal implementation in `ReVIEW::HTMLUtils.escape()` ([#1536])
+* use `cgi/escape` first and `cgi/util` as fallback. remove original implementation in `ReVIEW::HTMLUtils.escape()` ([#1536])
 * suppress warning with same `@<icon>` ([#1541])
 * fix an error handling when a badly encoded file is received ([#1544])
 * introduce IndexBuilder. IndexBuilder first scans the entire project files and provides indexes for each builder ([#1384], [#1552])
@@ -499,7 +499,7 @@
 
 # Version 4.1.0
 ## New Features
-* add `table_row_separator` to specify a separator that separates table rows. Accceptable value: tabs (means `\t+`, default), `singletab` (means `\t`), spaces (means `\s+`), verticalbar (means `\s*\|\s*`) ([#1420])
+* add `table_row_separator` to specify a separator that separates table rows. Acceptable value: tabs (means `\t+`, default), `singletab` (means `\t`), spaces (means `\s+`), verticalbar (means `\s*\|\s*`) ([#1420])
 * PDFMaker, EPUBMaker, WEBMaker, TEXTMaker, IDGXMLMaker: add `-y` (`--only`) option to specify the files to convert instead of all files ([#1428])
 * add `--without-config-comment` option to review-init command to exclude comments from config.yml ([#1453])
 * PDFMaker: add `use_original_image_size` in `pdfmaker` section. If this parameter is set to true, images in `//image`, `//indepimage`, and `//imgtable` will be placed in actual size, not textwidth ([#1461])
@@ -646,7 +646,7 @@
 * refactor mkdchap* and mkpart* ([#1383])
 * don't update rubygems in Travis CI ([#1389])
 * refactor around Index ([#1390])
-* add configration for review-jlreq to sample documents ([#1391])
+* add configuration for review-jlreq to sample documents ([#1391])
 * definition list should start with spaces ([#1398])
 
 ## Contributors
@@ -971,7 +971,7 @@
 * add `review-epub2html` to produce single HTML file from EPUB file for CSS typesetting ([#1098])
 
 ## Breaking Changes
-* PDFMaker: allow a path with space character on `texcommand`, `dvicommmand`, and `makeindex_command`. Due to this change, these parameters no longer take command options. use `texoptions`, `dvioptions`, and `makeindex_options` to specify  options ([#1091])
+* PDFMaker: allow a path with space character on `texcommand`, `dvicommand`, and `makeindex_command`. Due to this change, these parameters no longer take command options. use `texoptions`, `dvioptions`, and `makeindex_options` to specify  options ([#1091])
 * PDFMaker: the file used internally has been changed from `book.tex` to `__REVIEW_BOOK__.tex` ([#1081])
 * PDFMaker: dropped geometry.sty from jsbook style ([#912])
 * PDFMaker: use twocolumn option for jsbook style ([#1032])
@@ -991,7 +991,7 @@
 
 ## Docs
 * Move sample documents to /samples folder ([#1073])
-* Add descriptions abount hooks and parameters of indexing into `config.yml.sample` ([#1097])
+* Add descriptions about hooks and parameters of indexing into `config.yml.sample` ([#1097])
 * Fix typo in quickstart.md ([#1079])
 
 ## Contributors
@@ -1035,7 +1035,7 @@
 * When the value of review_version is 3 or more, `@<m>` no longer add a space before and after formula ([#943])
 * the function of automatic detection of highlight target language by identifier in `//list`, `//listnum` is removed from HTMLBuilder ([#1016])
 * LATEXBuilder: restructured `layout.tex.erb` ([#950])
-* LATEXBuilder: add a new envirionment `reviewlistblock` in LaTeX ([#916])
+* LATEXBuilder: add a new environment `reviewlistblock` in LaTeX ([#916])
 * LATEXBuilder: attach `plistings` package and suport it instead of jlisting  for `listings` ([#635])
 * LATEXBuilder: remove underline in anchor for printing use ([#808])
 * LATEXBuilder: use more abstract name like `\reviewbold` instead of `\textbf` ([#792])
@@ -1116,7 +1116,7 @@
 ## New Features
 
 * add a new maker command `review-textmaker` to output plain text files ([#926])
-* LATEXBuilder: add a new parameter `pdfmaker/bbox` for settings of BoudingBox ([#947])
+* LATEXBuilder: add a new parameter `pdfmaker/bbox` for settings of BoundingBox ([#947])
 * add a new command `//blankline` ([#942])
 
 ## Breaking Changes
@@ -1131,7 +1131,7 @@
 * fix column closing ([#894])
 * fix internal errors in `@<hd>` ([#896])
 * LATEXBuilder: fix to ignore empty caption ([#922])
-* fix invalid commmand errors in `//graph` when using gnuplot ([#931])
+* fix invalid command errors in `//graph` when using gnuplot ([#931])
 * fix errors of `review` command in Windows ([#940])
 * EPUBMaker: fix error of removing temporary files in Windows ([#946])
 
@@ -1196,7 +1196,7 @@
 * use built-in Logger class for warns and errors ([#705])
 * EPUBMaker: warn of large images because of rejecting ebook stores ([#819])
 * LATEXBuilder: add new inline command `@<pageref>` ([#836])
-* support inline notaion `| |` and `$ $` instead of `{}` to surpress escaping `}` ([#876])
+* support inline notation `| |` and `$ $` instead of `{}` to suppress escaping `}` ([#876])
 
 ## Breaking Changes
 
@@ -1211,7 +1211,7 @@
 
 * fix misrecognition of HeadlineIndex ([#121])
 * TOPBuilder: fix metric parameter in `//image` and `//indepimage` ([#805])
-* fix refering columns in other chapters ([#817])
+* fix referring columns in other chapters ([#817])
 * use execution date when `date` in config.yml is empty ([#824])
 * fix I18N messages of `listref`, `imgref`, and `tableref` in frontmatters and backmatters ([#830])
 * WebMaker: fix booktitle using Hash ([#831])
@@ -1235,7 +1235,7 @@
 
 ## Others
 
-* fix coding rules to surpress rubocop v0.50.0 ([#823])
+* fix coding rules to suppress rubocop v0.50.0 ([#823])
 
 ## Contributors
 
@@ -1340,7 +1340,7 @@
 * PDFMaker: support index `@<idx>`, `@<hidx>` ([#261],[#660],[#669],[#740])
 * add RSTBuilder ([#733],[#738])
 * add `//embed{...//}` and `@<embed>{...}` ([#730],[#751],[#757],[#758])
-* HTMLBuilder, IDGXMLBuilder, LATEXBuilder: suppot `//firstlinenum` for `//listnum` and `//emlistnum` ([#685],[#688])
+* HTMLBuilder, IDGXMLBuilder, LATEXBuilder: support `//firstlinenum` for `//listnum` and `//emlistnum` ([#685],[#688])
 * review-compile: `--nolfinxml` is deprecated ([#683],[#708])
 * HTMLBuilder: Enclose references (`@<img>`, `@<table>`, and `@<list>`) with `<span>`. Class names are 'imgref', 'tableref', and 'listref'. ([#696],[#697])
 * HTMLBuilder: support Rouge ([#684],[#710],[#711])
@@ -1549,7 +1549,7 @@
 * PDFMaker: Migrate platex to uplatex ([#541])
 * EPUBMaker: Support ebpaj format. ([#251], [#429])
 * EPUBMaker: Add `direction` in default setting ([#508])
-* EPUBMaker: Allow `pronounciation` of booktitle and author ([#507])
+* EPUBMaker: Allow `pronunciation` of booktitle and author ([#507])
 * review-preproc: allow monkeypatch in review-preproc ([#494])
 * HTMLBuilder: Disable hyperlink with `@<href>` with epubmaker/externallink: false in config.yml ([#509], [#544])
 * EPUBMaker: Add custom prefix and `<meta>` element in OPF ([#513])
@@ -2001,7 +2001,7 @@ To support language parameter for syntax highlighting, if you use review-ext.rb 
 
 ### HTMLBuilder
 
-* Use pygments higlighting only if "pygments: true" is defined.
+* Use pygments highlighting only if "pygments: true" is defined.
 * Support epub:type="noteref" and epub:type="footnote" in EPUB3
 
 ### LATEXBuilder

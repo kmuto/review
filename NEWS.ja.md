@@ -972,7 +972,7 @@
 * CSS 組版向けに EPUB ファイルを単一 HTML ファイルに変換する `review-epub2html` コマンドを追加しました ([#1098])
 
 ## 非互換の変更
-* PDFMaker: `texcommand`、`dvicommmand`、`makeindex_command` に空白文字入りのパスを指定できるようにしました。これに伴い、これらのパラメータはコマンドオプションを取ることはできなくなりました。コマンドオプションは本来の `texoptions`、`dvioptions`、`makeindex_options` のパラメータに指定してください ([#1091])
+* PDFMaker: `texcommand`、`dvicommand`、`makeindex_command` に空白文字入りのパスを指定できるようにしました。これに伴い、これらのパラメータはコマンドオプションを取ることはできなくなりました。コマンドオプションは本来の `texoptions`、`dvioptions`、`makeindex_options` のパラメータに指定してください ([#1091])
 * PDFMaker: book.re というファイルで生じるビルドの失敗を修正しました。これまではベースファイルとして `book.tex` という名前のファイルを内部で作成していましたが、`__REVIEW_BOOK__.tex` という名前に変更しました ([#1081])
 * PDFMaker: jsbook ベーススタイルにおいて、geometry を読み込まないようにしました ([#912])
 * PDFMaker: jsbook ベーススタイルにおいて、ページ番号を見開きの左右に振るようにしました ([#1032])
@@ -1117,7 +1117,7 @@
 
 ## 新機能
 * プレインテキストを出力する review-textmaker コマンドを用意しました ([#926])
-* LaTeX 向けに、図版の BoudingBox の採取手段を変更する `pdfmaker/bbox` パラメータを追加しました ([#947])
+* LaTeX 向けに、図版の BoundingBox の採取手段を変更する `pdfmaker/bbox` パラメータを追加しました ([#947])
 * 新機能：空行を入れる命令 `//blankline` を追加しました ([#942])
 
 ## 非互換の変更
@@ -1994,7 +1994,7 @@
 
 ### HTMLBuilder
 
-* pygmentsによるhiglightingをconfig.ymlで"pygments: true"と指定した場合のみ有効になるようにしました。
+* pygmentsによるhighlightingをconfig.ymlで"pygments: true"と指定した場合のみ有効になるようにしました。
 * EPUB3での脚注について、epub:type="noteref"とepub:type="footnote"が指定されるようになりました。
 
 ### LATEXBuilder

@@ -701,10 +701,10 @@ EOT
     end
 
     expected = <<-EOS
-large.gif: 250x150 exceeds a limit. suggeted value is 95x57
-large.jpg: 250x150 exceeds a limit. suggeted value is 95x57
-large.png: 250x150 exceeds a limit. suggeted value is 95x57
-large.svg: 250x150 exceeds a limit. suggeted value is 95x57
+large.gif: 250x150 exceeds a limit. suggested value is 95x57
+large.jpg: 250x150 exceeds a limit. suggested value is 95x57
+large.png: 250x150 exceeds a limit. suggested value is 95x57
+large.svg: 250x150 exceeds a limit. suggested value is 95x57
 EOS
     assert_equal expected, err
   end

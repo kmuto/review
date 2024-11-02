@@ -137,8 +137,8 @@ To convert files in the project, use review-*maker command.
 
 - review-pdfmaker: generate PDF
 - review-epubmaker: generate EPUB
-- review-textmaker: genrate plaintext
-- review-idgxmlmaker: genrate InDesign XML
+- review-textmaker: generate plaintext
+- review-idgxmlmaker: generate InDesign XML
 
 To generate PDF, you should install TeXLive 2012 or later. To generate EPUB, you should install zip command.
 When you want to use MathML, you should install [MathML library](http://www.hinet.mydns.jp/?mathml.rb)
