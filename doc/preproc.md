@@ -69,7 +69,7 @@ $ rake preproc
 You also can embed a part of the target file with `#@maprange` marker.
 
 Add `#@range_begin(ID)` and `#@range_end` in the target file you want to embed.
-In `#@range_begin(ID)`, you must add ID as parameger to identify the part.
+In `#@range_begin(ID)`, you must add ID as parameter to identify the part.
 
 In the code below, `sample` is the ID of the range to embed.
 

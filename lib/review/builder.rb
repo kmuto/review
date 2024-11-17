@@ -229,7 +229,7 @@ module ReVIEW
       when 'verticalbar'
         Regexp.new('\s*\\' + escape('|') + '\s*')
       else
-        app_error "Unknown value for 'table_row_separator', shold be: tabs, singletab, spaces, verticalbar"
+        app_error "Unknown value for 'table_row_separator', should be: tabs, singletab, spaces, verticalbar"
       end
     end
 

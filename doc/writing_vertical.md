@@ -1,4 +1,4 @@
-# Supporing Vertical Writing (experimental)
+# Supporting Vertical Writing (experimental)
 
 From Re:VIEW 2.0, Re:VIEW supports vertical writings, especially for Japanese document.
 

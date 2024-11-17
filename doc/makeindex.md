@@ -93,5 +93,5 @@ For example, if you want to change the appearance of the index page, specify the
 ## Hint
 The builders other than LaTeX builder don't provide a method to use indexes. Because the targets of other builders don't have a general way of sorting or outputting indexes.
 
-In EPUB (HTML builder), the index is embeded as `<!-- IDX:indexword -->` comment. In IDGXML builder, it is embeded as `<index value="indexword">` XML element.
+In EPUB (HTML builder), the index is embedded as `<!-- IDX:indexword -->` comment. In IDGXML builder, it is embedded as `<index value="indexword">` XML element.
 You can probably pick up them and prepare your own tool to sort (by using LaTeX mendex command, e.g.) and output.
