@@ -205,6 +205,7 @@ module ReVIEW
           unless File.exist?(File.join(basetmpdir, content.file))
             next
           end
+
           File.open(File.join(basetmpdir, content.file)) do |f|
             REXML::Document.new(File.new(f)).each_element('//img') do |e|
               @config['epubmaker']['force_include_images'].push(e.attributes['src'])
@@ -217,6 +218,7 @@ module ReVIEW
           unless File.exist?(File.join(basetmpdir, content.file))
             next
           end
+
           File.open(File.join(basetmpdir, content.file)) do |f|
             f.each_line do |l|
               l.scan(/url\((.+?)\)/) do |_m|
