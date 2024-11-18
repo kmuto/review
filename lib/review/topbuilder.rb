@@ -56,6 +56,7 @@ module ReVIEW
         'bpo' => 'bpo',
         'source' => 'ソースコードリスト'
       }
+      @first_line_num = nil
     end
     private :builder_init_file
 
@@ -149,13 +150,14 @@ module ReVIEW
     end
 
     def emlistnum(lines, caption = nil, _lang = nil)
+      first_line_number = line_num
       blank
       puts "◆→開始:#{@titles['emlist']}←◆"
       if caption_top?('list') && caption.present?
         puts "■#{compile_inline(caption)}"
       end
       lines.each_with_index do |line, i|
-        puts((i + 1).to_s.rjust(2) + ": #{line}")
+        puts((i + first_line_number).to_s.rjust(2) + ": #{line}")
       end
       if !caption_top?('list') && caption.present?
         puts "■#{compile_inline(caption)}"
@@ -185,8 +187,9 @@ module ReVIEW
     end
 
     def listnum_body(lines, _lang)
+      first_line_number = line_num
       lines.each_with_index do |line, i|
-        puts((i + 1).to_s.rjust(2) + ": #{line}")
+        puts((i + first_line_number).to_s.rjust(2) + ": #{line}")
       end
     end
 
