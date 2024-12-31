@@ -94,7 +94,9 @@ Style/TernaryParentheses:
   Enabled: false
 
 Style/FrozenStringLiteralComment:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - 'samples/**/*'
 
 Style/SafeNavigation:
   Enabled: false
