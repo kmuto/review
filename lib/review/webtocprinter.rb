@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'review/tocprinter'
 require 'review/i18n'
 require 'review/htmlutils'

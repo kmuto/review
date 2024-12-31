@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Copyright (c) 2014-2023 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
 #

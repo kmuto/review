@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2012-2023 Yuto HAYAMIZU, Kenshi Muto
 #
 # This program is free software.

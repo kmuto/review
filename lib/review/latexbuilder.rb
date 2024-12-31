@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
 #               2010-2022 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
@@ -1163,7 +1165,7 @@ module ReVIEW
       blank
     end
 
-    BOUTEN = '・'.freeze
+    BOUTEN = '・'
 
     def inline_bou(str)
       macro('reviewbou', escape(str))

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # = content.rb -- Content object for EPUBMaker.
 #
 # Copyright (c) 2010-2020 Kenshi Muto

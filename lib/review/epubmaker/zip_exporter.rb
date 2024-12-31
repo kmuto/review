@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2010-2017 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.

@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 #
 # This program is free software.
 # You can distribute or modify this program under the terms of

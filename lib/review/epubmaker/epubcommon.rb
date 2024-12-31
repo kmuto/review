@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # = epubcommon.rb -- super class for EPUBv2 and EPUBv3
 #
 # Copyright (c) 2010-2024 Kenshi Muto and Masayoshi Takahashi

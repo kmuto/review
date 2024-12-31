@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2013-2021 KADO Masanori, Masayoshi Takahashi, Kenshi Muto
 #
 # This program is free software.

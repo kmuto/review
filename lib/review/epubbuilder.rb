@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # epubbuilder.rb
 #   just for compatibility
 #

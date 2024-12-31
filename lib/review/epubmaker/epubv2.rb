@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # = epubv2.rb -- EPUB version 2 producer.
 #
 # Copyright (c) 2010-2022 Kenshi Muto and Masayoshi Takahashi

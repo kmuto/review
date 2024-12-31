@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # = producer.rb -- EPUB producer.
 #
 # Copyright (c) 2010-2023 Kenshi Muto

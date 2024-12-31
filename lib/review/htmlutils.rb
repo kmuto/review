@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Copyright (c) 2006-2018 Minero Aoki, Kenshi Muto
 #               2002-2006 Minero Aoki
