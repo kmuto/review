@@ -64,7 +64,7 @@ class LineInputTest < Test::Unit::TestCase
     li = ReVIEW::LineInput.new(io)
 
     data = []
-    li.each { |l| data << l }
+    li.each { |l| data << l } # rubocop:disable Style/MapIntoArray
     assert_equal content, data.join
   end
 
