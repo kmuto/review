@@ -491,7 +491,7 @@ module ReVIEW
         puts captionstr
       end
 
-      body = ''
+      body = +''
       lines.each_with_index do |line, idx|
         body.concat(yield(line, idx))
       end
@@ -820,7 +820,7 @@ module ReVIEW
 
     def separate_tsize(size)
       ret = []
-      s = ''
+      s = +''
       brace = nil
       size.chars.each do |ch|
         case ch
@@ -833,7 +833,7 @@ module ReVIEW
           brace = nil
           s << ch
           ret << s
-          s = ''
+          s = +''
         else
           if brace || s.empty?
             s << ch

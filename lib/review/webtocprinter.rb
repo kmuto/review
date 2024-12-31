@@ -18,7 +18,7 @@ module ReVIEW
     end
 
     def print_result(result_array)
-      content = <<EOT
+      content = +<<EOT
 <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
 EOT

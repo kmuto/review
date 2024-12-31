@@ -672,7 +672,7 @@ module ReVIEW
           error "`@<xxx>' seen but is not valid inline op: #{w}", location: location
         end
       end
-      result = ''
+      result = +''
       until words.empty?
         result << if in_non_escaped_command? && block_mode
                     revert_replace_fence(words.shift)

@@ -13,7 +13,7 @@ module ReVIEW
     end
 
     def tcbox(config)
-      ret = ''
+      ret = +''
 
       %w[column note memo tip info warning important caution notice].each do |name|
         if config['pdfmaker'].nil? || config['pdfmaker']['boxsetting'].nil? ||

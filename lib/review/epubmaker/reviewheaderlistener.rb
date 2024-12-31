@@ -20,7 +20,7 @@ module ReVIEW
       include REXML::StreamListener
       def initialize(headlines)
         @level = nil
-        @content = ''
+        @content = +''
         @headlines = headlines
       end
 
@@ -48,7 +48,7 @@ module ReVIEW
                               'title' => @content,
                               'notoc' => @notoc })
           end
-          @content = ''
+          @content = +''
           @level = nil
           @id = nil
           @notoc = nil

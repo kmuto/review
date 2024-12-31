@@ -395,7 +395,7 @@ module ReVIEW
             @logger.warn "!!! #{filename} is obsoleted. please use catalog.yml."
           end
         end
-        res = ''
+        res = +''
         File.open(filename_join(@basedir, filename), 'rt:BOM|utf-8') do |f|
           f.each_line do |line|
             next if line.start_with?('#')

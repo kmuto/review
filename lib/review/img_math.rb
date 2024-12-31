@@ -74,12 +74,15 @@ module ReVIEW
       fontsize = @config['imgmath_options']['fontsize'].to_f
       lineheight = @config['imgmath_options']['lineheight'].to_f
 
-      texsrc = default_imgmath_preamble
-      if @config['imgmath_options']['preamble_file'] && File.readable?(@config['imgmath_options']['preamble_file'])
-        texsrc = File.read(@config['imgmath_options']['preamble_file'])
-      end
+      texsrc_pre =
+        if @config['imgmath_options']['preamble_file'] && File.readable?(@config['imgmath_options']['preamble_file'])
+          File.read(@config['imgmath_options']['preamble_file'])
+        else
+          default_imgmath_preamble
+        end
 
-      texsrc << <<-EOB
+      texsrc = <<-EOB
+#{texsrc_pre}
 \\begin{document}
 \\fontsize{#{fontsize}}{#{lineheight}}\\selectfont
 \\input{__IMGMATH_BODY__}
