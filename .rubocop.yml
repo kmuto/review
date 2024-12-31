@@ -94,8 +94,7 @@ Style/TernaryParentheses:
   Enabled: false
 
 Style/FrozenStringLiteralComment:
-  EnforcedStyle: never
-  Enabled: true
+  Enabled: false
 
 Style/SafeNavigation:
   Enabled: false
