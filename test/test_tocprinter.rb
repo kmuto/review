@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 require 'review/tocprinter'
 require 'unicode/eaw'

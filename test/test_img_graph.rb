@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 require 'review/htmlbuilder'
 require 'review/img_graph'
