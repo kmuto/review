@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
   gem.extra_rdoc_files = []
   gem.require_paths = ['lib']
 
+  gem.add_dependency('base64')
   gem.add_dependency('csv')
   gem.add_dependency('image_size')
   gem.add_dependency('nkf')
