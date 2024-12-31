@@ -168,7 +168,7 @@ module ReVIEW
 
     def build_part(part, basetmpdir, xmlfile)
       File.open(File.join(basetmpdir, xmlfile), 'w') do |f|
-        title = ReVIEW::I18n.t('part', part.number)
+        title = +ReVIEW::I18n.t('part', part.number)
         if part.name.strip.present?
           title << ReVIEW::I18n.t('chapter_postfix')
           title << part.name.strip

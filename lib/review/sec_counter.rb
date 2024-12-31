@@ -32,7 +32,7 @@ module ReVIEW
     def anchor(level)
       str = @chapter.format_number(false)
       0.upto(level - 2) do |i|
-        str << "-#{@counter[i]}"
+        str = "#{str}-#{@counter[i]}"
       end
       str
     end
@@ -63,14 +63,15 @@ module ReVIEW
           "#{@chapter.format_number}#{I18n.t('chapter_postfix')}"
         end
       elsif secnolevel >= level
-        prefix = if @chapter.is_a?(ReVIEW::Book::Part)
-                   I18n.t('part_short', @chapter.number)
-                 else
-                   @chapter.format_number(false)
-                 end
+        prefix = []
+        prefix << if @chapter.is_a?(ReVIEW::Book::Part)
+                    I18n.t('part_short', @chapter.number)
+                  else
+                    @chapter.format_number(false)
+                  end
         0.upto(level - 2) { |i| prefix << ".#{@counter[i]}" }
         prefix << I18n.t('chapter_postfix')
-        prefix
+        prefix.join
       end
     end
   end

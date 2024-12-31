@@ -536,10 +536,10 @@ module ReVIEW
       if title == 'title' && caption_str == ''
         # ignore
       else
-        args = "#{title}={#{caption_str}}," + args
+        args = "#{title}={#{caption_str}},#{args}"
       end
       if first_line_num != 1
-        args << ",firstnumber=#{first_line_num}"
+        args = "#{args},firstnumber=#{first_line_num}"
       end
       args
     end
@@ -579,11 +579,10 @@ module ReVIEW
     def image_image(id, caption = '', metric = nil)
       @doc_status[:caption] = true
       captionstr = if @book.config.check_version('2', exception: false)
-                     macro('caption', compile_inline(caption)) + "\n"
+                     macro('caption', compile_inline(caption)) + "\n" + macro('label', image_label(id))
                    else
-                     macro('reviewimagecaption', compile_inline(caption)) + "\n"
+                     macro('reviewimagecaption', compile_inline(caption)) + "\n" + macro('label', image_label(id))
                    end
-      captionstr << macro('label', image_label(id))
       @doc_status[:caption] = nil
 
       metrics = parse_metric('latex', metric)
