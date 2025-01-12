@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Copyright (c) 2018-2022 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #

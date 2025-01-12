@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'test/unit'

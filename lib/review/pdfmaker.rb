@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2010-2024 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
@@ -156,7 +158,7 @@ module ReVIEW
     end
 
     def make_input_files(book)
-      input_files = Hash.new { |h, key| h[key] = '' }
+      input_files = Hash.new { |h, key| h[key] = +'' }
       book.parts.each do |part|
         if part.name.present?
           @config['use_part'] = true
@@ -484,7 +486,7 @@ module ReVIEW
     end
 
     def latex_config
-      result = ReVIEW::Template.generate(path: './latex/config.erb', mode: '-', binding: binding)
+      result = +ReVIEW::Template.generate(path: './latex/config.erb', mode: '-', binding: binding)
       local_config_file = File.join(@basedir, 'layouts', 'config-local.tex.erb')
       if File.exist?(local_config_file)
         result << "%% BEGIN: config-local.tex.erb\n"

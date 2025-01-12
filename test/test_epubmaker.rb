@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 require 'review/epubmaker'
 
@@ -915,7 +917,8 @@ EOT
       assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
 
       epubmaker.config['titlefile'] = 'nothing.html'
-      @log_io.string = ''
+      @log_io.rewind
+      @log_io.truncate(0)
       assert_raise(SystemExit) { epubmaker.copy_frontmatter(tmpdir) }
       assert_equal "ERROR --: titlefile: nothing.html is not found.\n", @log_io.string
     end
@@ -930,7 +933,8 @@ EOT
         assert_nothing_raised { epubmaker.copy_frontmatter(tmpdir) }
 
         epubmaker.config[name] = 'nothing.html'
-        @log_io.string = ''
+        @log_io.rewind
+        @log_io.truncate(0)
         assert_raise(SystemExit) { epubmaker.copy_frontmatter(tmpdir) }
         assert_equal "ERROR --: #{name}: nothing.html is not found.\n", @log_io.string
       end
@@ -945,7 +949,8 @@ EOT
         assert_nothing_raised { epubmaker.copy_backmatter(tmpdir) }
 
         epubmaker.config[name] = 'nothing.html'
-        @log_io.string = ''
+        @log_io.rewind
+        @log_io.truncate(0)
         assert_raise(SystemExit) { epubmaker.copy_backmatter(tmpdir) }
         assert_equal "ERROR --: #{name}: nothing.html is not found.\n", @log_io.string
       end

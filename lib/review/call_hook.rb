@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReVIEW
   module CallHook
     def call_hook(hook_name, *params, base_dir: nil)

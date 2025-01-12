@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 require 'review/lineinput'
 require 'tempfile'
@@ -6,7 +8,7 @@ require 'stringio'
 class LineInputTest < Test::Unit::TestCase
   def test_initialize
     io = StringIO.new
-    li = LineInput.new(io)
+    li = ReVIEW::LineInput.new(io)
     assert_equal 0, li.lineno
     assert !li.eof?
     assert_equal "#<ReVIEW::LineInput file=#{io.inspect} line=0>", li.inspect
@@ -23,7 +25,7 @@ class LineInputTest < Test::Unit::TestCase
   end
 
   def do_test_gets(io)
-    li = LineInput.new(io)
+    li = ReVIEW::LineInput.new(io)
 
     assert_equal "abc\n", li.gets
     assert_equal "def\r\n", li.gets
@@ -41,34 +43,34 @@ class LineInputTest < Test::Unit::TestCase
   end
 
   def test_peek
-    li = LineInput.new(StringIO.new)
+    li = ReVIEW::LineInput.new(StringIO.new)
     assert_equal nil, li.peek
 
-    li = LineInput.new(StringIO.new('abc'))
+    li = ReVIEW::LineInput.new(StringIO.new('abc'))
     assert_equal 'abc', li.peek
   end
 
   def test_next?
-    li = LineInput.new(StringIO.new)
+    li = ReVIEW::LineInput.new(StringIO.new)
     assert !li.next?
 
-    li = LineInput.new(StringIO.new('abc'))
+    li = ReVIEW::LineInput.new(StringIO.new('abc'))
     assert li.next?
   end
 
   def test_each
     content = "abc\ndef\nghi"
     io = StringIO.new(content)
-    li = LineInput.new(io)
+    li = ReVIEW::LineInput.new(io)
 
-    data = ''
-    li.each { |l| data << l }
-    assert_equal content, data
+    data = []
+    li.each { |l| data << l } # rubocop:disable Style/MapIntoArray
+    assert_equal content, data.join
   end
 
   def test_while_match
     io = StringIO.new("abc\ndef\nghi")
-    li = LineInput.new(io)
+    li = ReVIEW::LineInput.new(io)
 
     li.while_match(/^[ad]/) do
       # skip
@@ -79,7 +81,7 @@ class LineInputTest < Test::Unit::TestCase
 
   def test_until_match
     io = StringIO.new("abc\ndef\nghi")
-    li = LineInput.new(io)
+    li = ReVIEW::LineInput.new(io)
 
     li.until_match(/^[^a]/) do
       # skip

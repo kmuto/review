@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2019 Minero Aoki, Kenshi Muto
 #
 # This program is free software.

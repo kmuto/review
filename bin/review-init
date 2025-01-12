@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 #
 # Copyright (c) 2013-2017 Masanori Kado, Masayoshi Takahashi, Kenshi Muto
 #

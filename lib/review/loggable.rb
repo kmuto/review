@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReVIEW
   module Loggable
     attr_reader :logger

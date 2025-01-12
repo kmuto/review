@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReVIEW
   class HTMLToc
     def initialize(basedir)

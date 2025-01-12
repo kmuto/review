@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'book_test_helper'
 require 'fileutils'
 

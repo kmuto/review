@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2021 Kenshi Muto
 #
 # This program is free software.
@@ -13,7 +15,7 @@ module ReVIEW
     end
 
     def tcbox(config)
-      ret = ''
+      ret = +''
 
       %w[column note memo tip info warning important caution notice].each do |name|
         if config['pdfmaker'].nil? || config['pdfmaker']['boxsetting'].nil? ||

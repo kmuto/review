@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2002-2007 Minero Aoki
 #               2008-2009 Minero Aoki, Kenshi Muto
 #               2010-2022 Minero Aoki, Kenshi Muto, TAKAHASHI Masayoshi
@@ -491,7 +493,7 @@ module ReVIEW
         puts captionstr
       end
 
-      body = ''
+      body = +''
       lines.each_with_index do |line, idx|
         body.concat(yield(line, idx))
       end
@@ -536,10 +538,10 @@ module ReVIEW
       if title == 'title' && caption_str == ''
         # ignore
       else
-        args = "#{title}={#{caption_str}}," + args
+        args = "#{title}={#{caption_str}},#{args}"
       end
       if first_line_num != 1
-        args << ",firstnumber=#{first_line_num}"
+        args = "#{args},firstnumber=#{first_line_num}"
       end
       args
     end
@@ -579,11 +581,10 @@ module ReVIEW
     def image_image(id, caption = '', metric = nil)
       @doc_status[:caption] = true
       captionstr = if @book.config.check_version('2', exception: false)
-                     macro('caption', compile_inline(caption)) + "\n"
+                     macro('caption', compile_inline(caption)) + "\n" + macro('label', image_label(id))
                    else
-                     macro('reviewimagecaption', compile_inline(caption)) + "\n"
+                     macro('reviewimagecaption', compile_inline(caption)) + "\n" + macro('label', image_label(id))
                    end
-      captionstr << macro('label', image_label(id))
       @doc_status[:caption] = nil
 
       metrics = parse_metric('latex', metric)
@@ -820,7 +821,7 @@ module ReVIEW
 
     def separate_tsize(size)
       ret = []
-      s = ''
+      s = +''
       brace = nil
       size.chars.each do |ch|
         case ch
@@ -833,7 +834,7 @@ module ReVIEW
           brace = nil
           s << ch
           ret << s
-          s = ''
+          s = +''
         else
           if brace || s.empty?
             s << ch
@@ -1164,7 +1165,7 @@ module ReVIEW
       blank
     end
 
-    BOUTEN = '・'.freeze
+    BOUTEN = '・'
 
     def inline_bou(str)
       macro('reviewbou', escape(str))

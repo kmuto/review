@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Hash
   def deep_merge!(other)
     self.merge!(other) do |_key, v_self, v_other|

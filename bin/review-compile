@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 #
 # Copyright (c) 2008-2019 Kenshi Muto, Masayoshi Takahashi, KADO Masanori, Minero Aoki
 # Copyright (c) 1999-2007 Minero Aoki
@@ -18,7 +20,7 @@ require 'yaml'
 
 include ReVIEW::Loggable
 
-DEFAULT_CONFIG_FILENAME = 'config.yml'.freeze
+DEFAULT_CONFIG_FILENAME = 'config.yml'
 
 def main
   Signal.trap(:INT) { exit 1 }

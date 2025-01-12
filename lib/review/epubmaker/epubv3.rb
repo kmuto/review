@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # = epubv3.rb -- EPUB version 3 producer.
 #
 # Copyright (c) 2010-2023 Kenshi Muto
@@ -41,7 +43,7 @@ module ReVIEW
 
         if @opf_prefix && @opf_prefix.size > 0
           prefixes_str = @opf_prefix.map { |k, v| %Q(#{k}: #{v}) }.join(' ')
-          @package_attrs << %Q( prefix="#{prefixes_str}")
+          @package_attrs = %Q( prefix="#{prefixes_str}")
         end
 
         ReVIEW::Template.generate(path: './opf/epubv3.opf.erb', binding: binding)

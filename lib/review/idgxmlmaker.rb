@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2019-2023 Kenshi Muto
 #
 # This program is free software.
@@ -168,7 +170,7 @@ module ReVIEW
 
     def build_part(part, basetmpdir, xmlfile)
       File.open(File.join(basetmpdir, xmlfile), 'w') do |f|
-        title = ReVIEW::I18n.t('part', part.number)
+        title = +ReVIEW::I18n.t('part', part.number)
         if part.name.strip.present?
           title << ReVIEW::I18n.t('chapter_postfix')
           title << part.name.strip

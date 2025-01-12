@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # textbuilder.rb
 #
 # Copyright (c) 2010-2017 Kenshi Muto

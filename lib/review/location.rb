@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2009-2019 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
 # Copyright (c) 2002-2007 Minero Aoki
 #

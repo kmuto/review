@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 # Copyright (c) 2010-2019 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.

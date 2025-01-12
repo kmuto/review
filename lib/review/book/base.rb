@@ -1,4 +1,5 @@
-#
+# frozen_string_literal: true
+
 # Copyright (c) 2009-2023 Minero Aoki, Kenshi Muto, Masayoshi Takahashi
 #               2002-2008 Minero Aoki
 #
@@ -395,7 +396,7 @@ module ReVIEW
             @logger.warn "!!! #{filename} is obsoleted. please use catalog.yml."
           end
         end
-        res = ''
+        res = +''
         File.open(filename_join(@basedir, filename), 'rt:BOM|utf-8') do |f|
           f.each_line do |line|
             next if line.start_with?('#')

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2009-2024 Minero Aoki, Kenshi Muto
 # Copyright (c) 2002-2007 Minero Aoki
 #
@@ -672,7 +674,7 @@ module ReVIEW
           error "`@<xxx>' seen but is not valid inline op: #{w}", location: location
         end
       end
-      result = ''
+      result = +''
       until words.empty?
         result << if in_non_escaped_command? && block_mode
                     revert_replace_fence(words.shift)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2010-2018 Kenshi Muto and Masayoshi Takahashi
 #
 # This program is free software.
@@ -20,7 +22,7 @@ module ReVIEW
       include REXML::StreamListener
       def initialize(headlines)
         @level = nil
-        @content = ''
+        @content = +''
         @headlines = headlines
       end
 
@@ -48,7 +50,7 @@ module ReVIEW
                               'title' => @content,
                               'notoc' => @notoc })
           end
-          @content = ''
+          @content = +''
           @level = nil
           @id = nil
           @notoc = nil

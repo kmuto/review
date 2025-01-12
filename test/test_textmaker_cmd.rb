@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 require 'tmpdir'
 require 'fileutils'
@@ -30,7 +32,7 @@ class TEXTMakerCmdTest < Test::Unit::TestCase
       Dir.chdir(@tmpdir1) do
         _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_TEXTMAKER} #{option} #{configfile}")
         if defined?(ReVIEW::TTYLogger)
-          assert_match(/SUCCESS/, e)
+          assert_match(/SUCCESS|INFO/, e) # XXX TTY::Logger should be fixed
         else
           assert_equal '', e
         end

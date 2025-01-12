@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 require 'review/compiler'
 require 'review/book'
@@ -806,24 +808,29 @@ EOS
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<img>{n}\n") }
     assert_match(/unknown image: n/, @log_io.string)
 
-    @log_io.string = ''
+    @log_io.rewind
+    @log_io.truncate(0)
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<fn>{n}\n") }
     assert_match(/unknown footnote: n/, @log_io.string)
 
-    @log_io.string = ''
+    @log_io.rewind
+    @log_io.truncate(0)
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<endnote>{n}\n") }
     assert_match(/unknown endnote: n/, @log_io.string)
 
-    @log_io.string = ''
+    @log_io.rewind
+    @log_io.truncate(0)
     assert_raises(ReVIEW::ApplicationError) { compile_block("@<hd>{n}\n") }
     assert_match(/unknown headline: n/, @log_io.string)
     %w[list table column].each do |name|
-      @log_io.string = ''
+      @log_io.rewind
+      @log_io.truncate(0)
       assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_match(/unknown #{name}: n/, @log_io.string)
     end
     %w[chap chapref title].each do |name|
-      @log_io.string = ''
+      @log_io.rewind
+      @log_io.truncate(0)
       assert_raises(ReVIEW::ApplicationError) { compile_block("@<#{name}>{n}\n") }
       assert_match(/key not found: "n"/, @log_io.string)
     end
