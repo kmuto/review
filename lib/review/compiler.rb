@@ -13,6 +13,7 @@ require 'review/preprocessor'
 require 'review/exception'
 require 'review/location'
 require 'review/loggable'
+require 'review/ast'
 require 'strscan'
 
 module ReVIEW
@@ -21,8 +22,9 @@ module ReVIEW
 
     MAX_HEADLINE_LEVEL = 6
 
-    def initialize(builder)
+    def initialize(builder, ast_mode: false)
       @builder = builder
+      @ast_mode = ast_mode
 
       ## commands which do not parse block lines in compiler
       @non_parsed_commands = %i[embed texequation graph]
@@ -35,6 +37,10 @@ module ReVIEW
       @ignore_errors = builder.is_a?(ReVIEW::IndexBuilder)
 
       @compile_errors = nil
+
+      ## AST related
+      @ast_root = nil
+      @current_ast_node = nil
     end
 
     attr_reader :builder, :previous_list_type
@@ -54,12 +60,31 @@ module ReVIEW
 
     def compile(chap)
       @chapter = chap
-      do_compile
+
+      if @ast_mode
+        compile_to_ast
+      else
+        do_compile
+      end
+
       if @compile_errors
         raise ApplicationError, "#{location.filename} cannot be compiled."
       end
 
       @builder.result
+    end
+
+    def compile_to_ast
+      @ast_root = AST::DocumentNode.new(Location.new(@chapter.basename, nil))
+      @current_ast_node = @ast_root
+
+      # AST construction currently has basic support only
+      # Will be expanded gradually in Phase 2
+      do_compile
+    end
+
+    def ast_result
+      @ast_root
     end
 
     class SyntaxElement
