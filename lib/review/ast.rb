@@ -15,6 +15,8 @@ require 'review/ast/table_node'
 require 'review/ast/image_node'
 require 'review/ast/code_block_node'
 require 'review/ast/inline_node'
+require 'review/ast/text_node'
+require 'review/ast/embed_node'
 
 module ReVIEW
   module AST

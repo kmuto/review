@@ -29,6 +29,11 @@ module ReVIEW
       JSON.pretty_generate(@document_node.to_h)
     end
 
+    # Special method to add an AST node directly (used by compiler in AST mode)
+    def add_ast_node(ast_node)
+      @document_node.add_child(ast_node)
+    end
+
     def headline(level, label, caption)
       node = AST::HeadlineNode.new(@location)
       node.level = level
@@ -208,13 +213,123 @@ module ReVIEW
       str
     end
 
-    # Dummy implementations for other Builder methods
+    # Inline element methods needed for AST processing
+    def inline_hd(str)
+      create_inline_node('hd', str)
+    end
+
+    def inline_hd_chap(str)
+      create_inline_node('hd', str)
+    end
+
+    def inline_img(str)
+      create_inline_node('img', str)
+    end
+
+    def inline_list(str)
+      create_inline_node('list', str)
+    end
+
+    def inline_table(str)
+      create_inline_node('table', str)
+    end
+
+    def inline_eq(str)
+      create_inline_node('eq', str)
+    end
+
+    def inline_chap(str)
+      create_inline_node('chap', str)
+    end
+
+    def inline_chapref(str)
+      create_inline_node('chapref', str)
+    end
+
+    def inline_sec(str)
+      create_inline_node('sec', str)
+    end
+
+    def inline_secref(str)
+      create_inline_node('secref', str)
+    end
+
+    def inline_labelref(str)
+      create_inline_node('labelref', str)
+    end
+
+    def inline_ref(str)
+      create_inline_node('ref', str)
+    end
+
+    def inline_w(str)
+      create_inline_node('w', str)
+    end
+
+    def inline_wb(str)
+      create_inline_node('wb', str)
+    end
+
+    def inline_b(str)
+      create_inline_node('b', str)
+    end
+
+    def inline_i(str)
+      create_inline_node('i', str)
+    end
+
+    def inline_code(str)
+      create_inline_node('code', str)
+    end
+
+    def inline_tt(str)
+      create_inline_node('tt', str)
+    end
+
+    def inline_ruby(str)
+      create_inline_node('ruby', str)
+    end
+
+    def inline_href(str)
+      create_inline_node('href', str)
+    end
+
+    def inline_kw(str)
+      create_inline_node('kw', str)
+    end
+
+    def inline_embed(str)
+      create_inline_node('embed', str)
+    end
+
+    def embed(lines, arg = nil)
+      node = AST::EmbedNode.new(@location)
+      node.embed_type = :block
+      node.lines = lines
+      node.arg = arg
+      add_node(node)
+    end
+
+    def raw(arg)
+      # Raw commands are processed traditionally and don't create AST nodes
+      # This is just a compatibility method for JsonBuilder
+    end
+
     def quote(lines)
       node = AST::ParagraphNode.new(@location)
       node.content = lines.join("\n")
       add_node(node)
     end
 
+    private
+
+    def create_inline_node(_inline_type, content)
+      # For JsonBuilder, we return the processed string content
+      # The AST nodes are created by the compiler, not by the builder
+      content
+    end
+
+    # Dummy implementations for other Builder methods
     def note(lines, caption = nil)
       captionblock('note', lines, caption)
     end
@@ -254,7 +369,75 @@ module ReVIEW
       add_node(node)
     end
 
-    private
+    # Minicolumn begin/end methods
+    def note_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def note_end
+      # no-op for JSON builder
+    end
+
+    def memo_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def memo_end
+      # no-op for JSON builder
+    end
+
+    def tip_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def tip_end
+      # no-op for JSON builder
+    end
+
+    def info_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def info_end
+      # no-op for JSON builder
+    end
+
+    def warning_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def warning_end
+      # no-op for JSON builder
+    end
+
+    def important_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def important_end
+      # no-op for JSON builder
+    end
+
+    def caution_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def caution_end
+      # no-op for JSON builder
+    end
+
+    def notice_begin(caption = nil)
+      # no-op for JSON builder
+    end
+
+    def notice_end
+      # no-op for JSON builder
+    end
+
+    # Other methods that may be needed
+    def blockquote(lines)
+      quote(lines)
+    end
 
     def add_node(node)
       @current_node.add_child(node)

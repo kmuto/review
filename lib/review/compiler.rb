@@ -14,7 +14,9 @@ require 'review/exception'
 require 'review/location'
 require 'review/loggable'
 require 'review/ast'
+require 'review/ast_renderer'
 require 'strscan'
+require 'set'
 
 module ReVIEW
   class Compiler
@@ -22,9 +24,10 @@ module ReVIEW
 
     MAX_HEADLINE_LEVEL = 6
 
-    def initialize(builder, ast_mode: false)
+    def initialize(builder, ast_mode: false, ast_elements: [])
       @builder = builder
       @ast_mode = ast_mode
+      @ast_elements = Set.new(ast_elements) # Elements to process via AST
 
       ## commands which do not parse block lines in compiler
       @non_parsed_commands = %i[embed texequation graph]
@@ -41,6 +44,7 @@ module ReVIEW
       ## AST related
       @ast_root = nil
       @current_ast_node = nil
+      @ast_renderer = nil
     end
 
     attr_reader :builder, :previous_list_type
@@ -77,14 +81,650 @@ module ReVIEW
     def compile_to_ast
       @ast_root = AST::DocumentNode.new(Location.new(@chapter.basename, nil))
       @current_ast_node = @ast_root
+      @ast_renderer = ASTRenderer.new(@builder)
 
-      # AST construction currently has basic support only
-      # Will be expanded gradually in Phase 2
+      if @ast_elements.empty?
+        # Full AST mode: build complete AST then render
+        do_compile_with_ast_building
+        @ast_renderer.render(@ast_root) if @ast_renderer
+      else
+        # Hybrid mode: process specified elements via AST, others directly
+        do_compile_hybrid
+      end
+    end
+
+    def do_compile_with_ast_building
+      # This will be implemented later for full AST mode
+      # For now, fall back to regular compilation
+      do_compile
+    end
+
+    def do_compile_hybrid
+      # For hybrid mode, we'll extend do_compile to selectively build AST nodes
       do_compile
     end
 
     def ast_result
       @ast_root
+    end
+
+    # Check if element should be processed via AST
+    def should_use_ast?(element)
+      @ast_mode && (@ast_elements.empty? || @ast_elements.include?(element))
+    end
+
+    # Build headline AST node
+    def build_headline_ast(level, label, caption)
+      node = AST::HeadlineNode.new(location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        # Special handling for JsonBuilder - pass AST node directly
+        if @builder.is_a?(ReVIEW::JSONBuilder)
+          @builder.add_ast_node(node)
+        else
+          @ast_renderer.send(:visit_headline, node)
+        end
+      end
+    end
+
+    # Build paragraph AST node
+    def build_paragraph_ast(lines)
+      node = AST::ParagraphNode.new(location)
+
+      # Parse inline elements in each line and create child nodes
+      lines.each do |line|
+        parse_inline_elements(line, node)
+      end
+
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        # Special handling for JsonBuilder - pass AST node directly
+        if @builder.is_a?(ReVIEW::JSONBuilder)
+          @builder.add_ast_node(node)
+        else
+          @ast_renderer.send(:visit_paragraph, node)
+        end
+      end
+    end
+
+    # Parse inline elements and create AST nodes
+    def parse_inline_elements(str, parent_node)
+      return if str.empty?
+
+      words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
+      words.each do |word|
+        if word.match?(/\A@<\w+>\{.*?\}\z/)
+          # This is an inline element
+          create_inline_ast_node(word, parent_node)
+        else
+          # This is plain text
+          unless word.empty?
+            text_node = AST::TextNode.new(location)
+            text_node.content = revert_replace_fence(word)
+            parent_node.add_child(text_node)
+          end
+        end
+      end
+    end
+
+    # Create inline AST node
+    def create_inline_ast_node(str, parent_node)
+      match = /\A@<(\w+)>\{(.*?)\}\z/.match(revert_replace_fence(str.gsub('\\}', '}').gsub('\\\\', '\\')))
+      return unless match
+
+      op = match[1]
+      arg = match[2]
+
+      # Special handling for certain inline types
+      case op
+      when 'embed'
+        create_inline_embed_ast_node(arg, parent_node)
+      when 'ruby'
+        create_inline_ruby_ast_node(arg, parent_node)
+      when 'href'
+        create_inline_href_ast_node(arg, parent_node)
+      when 'kw'
+        create_inline_kw_ast_node(arg, parent_node)
+      when 'hd'
+        create_inline_hd_ast_node(arg, parent_node)
+      when 'img', 'list', 'table', 'eq'
+        create_inline_ref_ast_node(op, arg, parent_node)
+      when 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
+        create_inline_cross_ref_ast_node(op, arg, parent_node)
+      when 'w', 'wb'
+        create_inline_word_ast_node(op, arg, parent_node)
+      else
+        # Standard inline processing
+        inline_node = AST::InlineNode.new(location)
+        inline_node.inline_type = op
+        inline_node.args = [arg]
+
+        # Handle nested inline elements in the argument
+        if arg.include?('@<')
+          parse_inline_elements(arg, inline_node)
+        else
+          # Simple text argument
+          text_node = AST::TextNode.new(location)
+          text_node.content = arg
+          inline_node.add_child(text_node)
+        end
+
+        parent_node.add_child(inline_node)
+      end
+    end
+
+    # Create inline embed AST node
+    def create_inline_embed_ast_node(arg, parent_node)
+      node = AST::EmbedNode.new(location)
+      node.embed_type = :inline
+      node.lines = [arg]
+      node.arg = arg
+      parent_node.add_child(node)
+    end
+
+    # Create inline ruby AST node
+    def create_inline_ruby_ast_node(arg, parent_node)
+      inline_node = AST::InlineNode.new(location)
+      inline_node.inline_type = 'ruby'
+
+      # Parse ruby format: "base_text,ruby_text"
+      if arg.include?(',')
+        parts = arg.split(',', 2)
+        inline_node.args = [parts[0].strip, parts[1].strip]
+
+        # Add text nodes for both parts
+        parent_text = AST::TextNode.new(location)
+        parent_text.content = parts[0].strip
+        inline_node.add_child(parent_text)
+
+        ruby_text = AST::TextNode.new(location)
+        ruby_text.content = parts[1].strip
+        inline_node.add_child(ruby_text)
+      else
+        inline_node.args = [arg]
+        text_node = AST::TextNode.new(location)
+        text_node.content = arg
+        inline_node.add_child(text_node)
+      end
+
+      parent_node.add_child(inline_node)
+    end
+
+    # Create inline href AST node
+    def create_inline_href_ast_node(arg, parent_node)
+      inline_node = AST::InlineNode.new(location)
+      inline_node.inline_type = 'href'
+
+      # Parse href format: "URL" or "URL, display_text"
+      text_content = if arg.include?(',')
+                       parts = arg.split(',', 2)
+                       inline_node.args = [parts[0].strip, parts[1].strip]
+                       parts[1].strip # Display text
+                     else
+                       inline_node.args = [arg]
+                       arg # URL as display text
+                     end
+
+      text_node = AST::TextNode.new(location)
+      text_node.content = text_content
+      inline_node.add_child(text_node)
+
+      parent_node.add_child(inline_node)
+    end
+
+    # Create inline kw AST node
+    def create_inline_kw_ast_node(arg, parent_node)
+      inline_node = AST::InlineNode.new(location)
+      inline_node.inline_type = 'kw'
+
+      # Parse kw format: "keyword" or "keyword, supplement"
+      if arg.include?(',')
+        parts = arg.split(',', 2)
+        inline_node.args = [parts[0].strip, parts[1].strip]
+
+        # Add text nodes for both parts
+        main_text = AST::TextNode.new(location)
+        main_text.content = parts[0].strip
+        inline_node.add_child(main_text)
+
+        supplement_text = AST::TextNode.new(location)
+        supplement_text.content = parts[1].strip
+        inline_node.add_child(supplement_text)
+      else
+        inline_node.args = [arg]
+        text_node = AST::TextNode.new(location)
+        text_node.content = arg
+        inline_node.add_child(text_node)
+      end
+
+      parent_node.add_child(inline_node)
+    end
+
+    # Create inline hd AST node
+    def create_inline_hd_ast_node(arg, parent_node)
+      inline_node = AST::InlineNode.new(location)
+      inline_node.inline_type = 'hd'
+
+      # Parse hd format: "chapter_id|heading" or just "heading"
+      if arg.include?('|')
+        parts = arg.split('|', 2)
+        inline_node.args = [parts[0].strip, parts[1].strip]
+
+        # Add text nodes for both parts
+        chapter_text = AST::TextNode.new(location)
+        chapter_text.content = parts[0].strip
+        inline_node.add_child(chapter_text)
+
+        heading_text = AST::TextNode.new(location)
+        heading_text.content = parts[1].strip
+        inline_node.add_child(heading_text)
+      else
+        inline_node.args = [arg]
+        text_node = AST::TextNode.new(location)
+        text_node.content = arg
+        inline_node.add_child(text_node)
+      end
+
+      parent_node.add_child(inline_node)
+    end
+
+    # Create inline reference AST node (for img, list, table, eq)
+    def create_inline_ref_ast_node(ref_type, arg, parent_node)
+      inline_node = AST::InlineNode.new(location)
+      inline_node.inline_type = ref_type
+
+      # Parse reference format: "ID" or "chapter_id|ID"
+      if arg.include?('|')
+        parts = arg.split('|', 2)
+        inline_node.args = [parts[0].strip, parts[1].strip]
+
+        # Add text nodes for both parts
+        chapter_text = AST::TextNode.new(location)
+        chapter_text.content = parts[0].strip
+        inline_node.add_child(chapter_text)
+
+        id_text = AST::TextNode.new(location)
+        id_text.content = parts[1].strip
+        inline_node.add_child(id_text)
+      else
+        inline_node.args = [arg]
+        text_node = AST::TextNode.new(location)
+        text_node.content = arg
+        inline_node.add_child(text_node)
+      end
+
+      parent_node.add_child(inline_node)
+    end
+
+    # Create inline cross-reference AST node (for chap, chapref, sec, secref, labelref, ref)
+    def create_inline_cross_ref_ast_node(ref_type, arg, parent_node)
+      inline_node = AST::InlineNode.new(location)
+      inline_node.inline_type = ref_type
+
+      # Cross-references typically just have a single ID argument
+      inline_node.args = [arg]
+      text_node = AST::TextNode.new(location)
+      text_node.content = arg
+      inline_node.add_child(text_node)
+
+      parent_node.add_child(inline_node)
+    end
+
+    # Create inline word AST node (for w, wb)
+    def create_inline_word_ast_node(word_type, arg, parent_node)
+      inline_node = AST::InlineNode.new(location)
+      inline_node.inline_type = word_type
+
+      # Word expansion commands just have the filename argument
+      inline_node.args = [arg]
+      text_node = AST::TextNode.new(location)
+      text_node.content = arg
+      inline_node.add_child(text_node)
+
+      parent_node.add_child(inline_node)
+    end
+
+    # Build block command AST node (e.g., embed, list, table, etc.)
+    def build_block_command_ast(command_name, args, lines)
+      case command_name
+      when :embed
+        build_embed_ast(args, lines)
+      when :list, :listnum
+        build_list_ast(command_name, args, lines)
+      when :emlist, :emlistnum
+        build_emlist_ast(command_name, args, lines)
+      when :source
+        build_source_ast(args, lines)
+      when :cmd
+        build_cmd_ast(args, lines)
+      when :table, :emtable, :imgtable
+        build_table_ast(command_name, args, lines)
+      when :image, :indepimage, :numberlessimage
+        build_image_ast(command_name, args, lines)
+      when :quote, :blockquote
+        build_quote_ast(command_name, args, lines)
+      when :note, :memo, :tip, :info, :warning, :important, :caution, :notice
+        build_minicolumn_ast(command_name, args, lines)
+      when :footnote, :endnote
+        build_footnote_ast(command_name, args, lines)
+      when :raw
+        build_raw_ast(args, lines)
+      else
+        # Fallback to traditional processing for unknown commands
+        syntax = syntax_descriptor(command_name)
+        if syntax&.block_allowed?
+          @builder.__send__(command_name, lines || [], *args)
+        else
+          @builder.__send__(command_name, *args)
+        end
+      end
+    end
+
+    # Build embed AST node
+    def build_embed_ast(args, lines)
+      node = AST::EmbedNode.new(location)
+      node.embed_type = :block
+      node.lines = lines || []
+      node.arg = args.first if args&.any?
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        # Special handling for JsonBuilder - pass AST node directly
+        if @builder.is_a?(ReVIEW::JSONBuilder)
+          @builder.add_ast_node(node)
+        else
+          @ast_renderer.send(:visit_embed, node)
+        end
+      end
+    end
+
+    # Build list/listnum AST node
+    def build_list_ast(command_name, args, lines)
+      node = AST::CodeBlockNode.new(location)
+      node.id = args[0] if args&.any?
+      node.caption = args[1] if args && args.size > 1
+      node.lang = args[2] if args && args.size > 2
+      node.lines = lines || []
+      node.line_numbers = (command_name == :listnum)
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_code_block, node)
+      end
+    end
+
+    # Build emlist/emlistnum AST node
+    def build_emlist_ast(command_name, args, lines)
+      node = AST::CodeBlockNode.new(location)
+      node.caption = args[0] if args&.any?
+      node.lang = args[1] if args && args.size > 1
+      node.lines = lines || []
+      node.line_numbers = (command_name == :emlistnum)
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_code_block, node)
+      end
+    end
+
+    # Build source AST node
+    def build_source_ast(args, lines)
+      node = AST::CodeBlockNode.new(location)
+      node.caption = args[0] if args&.any?
+      node.lang = args[1] if args && args.size > 1
+      node.lines = lines || []
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_code_block, node)
+      end
+    end
+
+    # Build cmd AST node
+    def build_cmd_ast(args, lines)
+      node = AST::CodeBlockNode.new(location)
+      node.caption = args[0] if args&.any?
+      node.lang = 'shell'
+      node.lines = lines || []
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_code_block, node)
+      end
+    end
+
+    # Build table AST node
+    def build_table_ast(_command_name, args, lines)
+      node = AST::TableNode.new(location)
+      node.id = args[0] if args&.any?
+      node.caption = args[1] if args && args.size > 1
+
+      # Parse table content
+      if lines && lines.any?
+        separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
+        if separator_index
+          node.headers = lines[0...separator_index]
+          node.rows = lines[(separator_index + 1)..-1] || []
+        else
+          node.rows = lines
+        end
+      end
+
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_table, node)
+      end
+    end
+
+    # Build image AST node
+    def build_image_ast(_command_name, args, _lines)
+      node = AST::ImageNode.new(location)
+      node.id = args[0] if args&.any?
+      node.caption = args[1] if args && args.size > 1
+      node.metric = args[2] if args && args.size > 2
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_image, node)
+      end
+    end
+
+    # Build quote AST node
+    def build_quote_ast(command_name, _args, lines)
+      node = AST::ParagraphNode.new(location)
+
+      # Parse inline elements in quote content
+      (lines || []).each do |line|
+        parse_inline_elements(line, node)
+      end
+
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode - use quote-specific method
+      if @ast_renderer
+        if command_name == :blockquote
+          @builder.blockquote(lines || [])
+        else
+          @builder.quote(lines || [])
+        end
+      end
+    end
+
+    # Build minicolumn AST node (note, memo, tip, etc.)
+    def build_minicolumn_ast(command_name, args, lines)
+      node = AST::ParagraphNode.new(location)
+      node.content = "#{command_name}: #{args.first || ''}"
+
+      # Parse inline elements in minicolumn content
+      (lines || []).each do |line|
+        parse_inline_elements(line, node)
+      end
+
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode - use minicolumn-specific method
+      if @ast_renderer
+        @builder.__send__("#{command_name}_begin", args.first)
+        (lines || []).each do |line|
+          # Process inline elements in line for proper rendering
+          processed_line = text(line)
+          @builder.paragraph([processed_line])
+        end
+        @builder.__send__("#{command_name}_end")
+      end
+    end
+
+    # Build footnote AST node
+    def build_footnote_ast(command_name, args, _lines)
+      # Footnotes are single-line commands, not block commands
+      # Handle them as inline processing would
+      if @ast_renderer
+        @builder.__send__(command_name, *args)
+      end
+    end
+
+    # Build raw AST node
+    def build_raw_ast(args, lines)
+      node = AST::EmbedNode.new(location)
+      node.embed_type = :raw
+      node.lines = lines || []
+      node.arg = args.first if args&.any?
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer && args&.any?
+        @builder.raw(args.first)
+      end
+    end
+
+    # Build unordered list AST node
+    def build_ulist_ast(f)
+      node = AST::ListNode.new(location)
+      node.list_type = :ul
+
+      level = 0
+      f.while_match(/\A\s+\*|\A\#@/) do |line|
+        next if /\A\#@/.match?(line)
+
+        # Collect raw lines without processing inline elements for AST
+        raw_lines = [line.sub(/\*+/, '').strip]
+        f.while_match(/\A\s+(?!\*)\S/) do |cont|
+          raw_lines.push(cont.strip)
+        end
+
+        line =~ /\A\s+(\*+)/
+        current_level = $1.size
+
+        item_node = AST::ListItemNode.new(location)
+        item_node.level = current_level
+
+        # Parse inline elements in item content
+        raw_lines.each do |raw_line|
+          parse_inline_elements(raw_line, item_node)
+        end
+
+        node.children << item_node
+        level = current_level
+      end
+
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_list, node)
+      end
+    end
+
+    # Build ordered list AST node
+    def build_olist_ast(f)
+      node = AST::ListNode.new(location)
+      node.list_type = :ol
+
+      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
+        next if /\A\#@/.match?(line)
+
+        num = line.match(/(\d+)\./)[1]
+        raw_lines = [line.sub(/\d+\./, '').strip]
+        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
+          raw_lines.push(cont.strip)
+        end
+
+        item_node = AST::ListItemNode.new(location)
+        item_node.level = 1
+        item_node.content = num # Store original number for reference
+
+        # Parse inline elements in item content
+        raw_lines.each do |raw_line|
+          parse_inline_elements(raw_line, item_node)
+        end
+
+        node.children << item_node
+      end
+
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_list, node)
+      end
+    end
+
+    # Build definition list AST node
+    def build_dlist_ast(f)
+      node = AST::ListNode.new(location)
+      node.list_type = :dl
+
+      while /\A\s*:/ =~ f.peek
+        # Get definition term
+        dt_line = f.gets.sub(/\A\s*:/, '').strip
+        dt_node = AST::ListItemNode.new(location)
+        dt_node.level = 1
+        parse_inline_elements(dt_line, dt_node)
+
+        # Get definition description
+        desc_lines = []
+        f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
+          desc_lines << line.strip
+        end
+
+        # Create a container node for the dt/dd pair
+        item_node = AST::ListItemNode.new(location)
+        item_node.level = 1
+
+        # Add dt as first child
+        item_node.add_child(dt_node)
+
+        # Add dd content as additional children
+        desc_lines.each do |desc_line|
+          parse_inline_elements(desc_line, item_node)
+        end
+
+        node.children << item_node
+        f.skip_blank_lines
+        f.skip_comment_lines
+      end
+
+      @current_ast_node.add_child(node)
+
+      # Render immediately in hybrid mode
+      if @ast_renderer
+        @ast_renderer.send(:visit_list, node)
+      end
     end
 
     class SyntaxElement
@@ -452,7 +1092,12 @@ module ReVIEW
         end
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-        @builder.headline(level, label, caption)
+
+        if should_use_ast?(:headline)
+          build_headline_ast(level, label, caption)
+        else
+          @builder.headline(level, label, caption)
+        end
       end
     end
 
@@ -497,6 +1142,14 @@ module ReVIEW
     end
 
     def compile_ulist(f)
+      if should_use_ast?(:ulist)
+        build_ulist_ast(f)
+      else
+        compile_ulist_traditional(f)
+      end
+    end
+
+    def compile_ulist_traditional(f)
       level = 0
       f.while_match(/\A\s+\*|\A\#@/) do |line|
         next if /\A\#@/.match?(line)
@@ -540,6 +1193,14 @@ module ReVIEW
     end
 
     def compile_olist(f)
+      if should_use_ast?(:olist)
+        build_olist_ast(f)
+      else
+        compile_olist_traditional(f)
+      end
+    end
+
+    def compile_olist_traditional(f)
       @builder.ol_begin
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
         next if /\A\#@/.match?(line)
@@ -555,6 +1216,14 @@ module ReVIEW
     end
 
     def compile_dlist(f)
+      if should_use_ast?(:dlist)
+        build_dlist_ast(f)
+      else
+        compile_dlist_traditional(f)
+      end
+    end
+
+    def compile_dlist_traditional(f)
       @builder.dl_begin
       while /\A\s*:/ =~ f.peek
         # defer compile_inline to handle footnotes
@@ -573,13 +1242,25 @@ module ReVIEW
     end
 
     def compile_paragraph(f)
-      buf = []
-      f.until_match(%r{\A//|\A\#@}) do |line|
-        break if line.strip.empty?
+      if should_use_ast?(:paragraph)
+        # For AST processing, collect raw lines without processing inline elements
+        raw_lines = []
+        f.until_match(%r{\A//|\A\#@}) do |line|
+          break if line.strip.empty?
 
-        buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
+          raw_lines.push(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t"))
+        end
+        build_paragraph_ast(raw_lines)
+      else
+        # Traditional processing with inline elements processed immediately
+        buf = []
+        f.until_match(%r{\A//|\A\#@}) do |line|
+          break if line.strip.empty?
+
+          buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
+        end
+        @builder.paragraph(buf)
       end
-      @builder.paragraph(buf)
     end
 
     def read_command(f)
@@ -646,7 +1327,11 @@ module ReVIEW
         error e.message, location: location
         args = ['(NoArgument)'] * syntax.min_argc
       end
-      if syntax.block_allowed?
+
+      # Check if this command should be processed via AST
+      if should_use_ast?(syntax.name)
+        build_block_command_ast(syntax.name, args, lines)
+      elsif syntax.block_allowed?
         compile_block(syntax, args, lines)
       else
         if lines

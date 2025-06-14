@@ -1,0 +1,285 @@
+# frozen_string_literal: true
+
+require File.expand_path('test_helper', __dir__)
+require 'review/ast'
+require 'review/ast_renderer'
+require 'review/compiler'
+require 'review/htmlbuilder'
+require 'review/book'
+require 'review/book/chapter'
+
+class TestASTComprehensive < Test::Unit::TestCase
+  def setup
+    @config = ReVIEW::Configure.values
+    @config['secnolevel'] = 2
+    @config['language'] = 'ja'
+    @book = ReVIEW::Book::Base.new
+    @book.config = @config
+    @log_io = StringIO.new
+    ReVIEW.logger = ReVIEW::Logger.new(@log_io)
+    ReVIEW::I18n.setup(@config['language'])
+  end
+
+  def test_code_blocks_ast_processing
+    content = <<~EOB
+      = Code Examples
+
+      Normal list with ID:
+
+      //list[sample][Sample Code][ruby]{
+      puts "Hello, World!"
+      def greeting
+        "Hello"
+      end
+      //}
+
+      Embedded list without ID:
+
+      //emlist[Ruby Example][ruby]{
+      puts "Embedded example"
+      //}
+
+      Numbered list:
+
+      //listnum[numbered][Numbered Example][python]{
+      print("Hello")
+      print("World")
+      //}
+
+      Command example:
+
+      //cmd[Terminal Commands]{
+      ls -la
+      cd /home
+      //}
+    EOB
+
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph list listnum emlist emlistnum cmd])
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    compiler.compile(chapter)
+    ast_root = compiler.ast_result
+
+    # Check code block nodes
+    code_blocks = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::CodeBlockNode) }
+    assert_equal 4, code_blocks.size
+
+    # Check list block
+    list_block = code_blocks.find { |n| n.id == 'sample' }
+    assert_not_nil(list_block)
+    assert_equal 'Sample Code', list_block.caption
+    assert_equal 'ruby', list_block.lang
+    assert_equal false, list_block.line_numbers
+
+    # Check emlist block
+    emlist_block = code_blocks.find { |n| n.caption == 'Ruby Example' && n.id.nil? }
+    assert_not_nil(emlist_block)
+    assert_equal 'ruby', emlist_block.lang
+
+    # Check listnum block
+    listnum_block = code_blocks.find { |n| n.id == 'numbered' }
+    assert_not_nil(listnum_block)
+    assert_equal true, listnum_block.line_numbers
+
+    # Check cmd block
+    cmd_block = code_blocks.find { |n| n.lang == 'shell' }
+    assert_not_nil(cmd_block)
+    assert_equal 'Terminal Commands', cmd_block.caption
+  end
+
+  def test_table_ast_processing
+    content = <<~EOB
+      = Tables
+
+      //table[envvars][Environment Variables]{
+      Name	Meaning
+      ------------
+      PATH	Command directories
+      HOME	User home directory
+      LANG	Default locale
+      //}
+
+      //emtable[Simple Table]{
+      Col1	Col2
+      A	B
+      C	D
+      //}
+    EOB
+
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph table])
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    compiler.compile(chapter)
+    ast_root = compiler.ast_result
+
+    # Check table nodes
+    table_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::TableNode) }
+    assert_equal 1, table_nodes.size # Only main table is processed via AST
+
+    # Check first table with headers
+    main_table = table_nodes.find { |n| n.id == 'envvars' }
+    assert_not_nil(main_table)
+    assert_equal 'Environment Variables', main_table.caption
+    assert_equal ['Name	Meaning'], main_table.headers
+    assert_equal 3, main_table.rows.size
+
+    # Check emtable (no headers) - currently processes as traditional
+    # since emtable not in AST elements list for this test
+  end
+
+  def test_image_ast_processing
+    content = <<~EOB
+      = Images
+
+      //image[diagram][System Diagram][scale=0.5]{
+      ASCII art or description here
+      //}
+
+      //indepimage[logo][Company Logo]
+
+    EOB
+
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph image indepimage])
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    compiler.compile(chapter)
+    ast_root = compiler.ast_result
+
+    # Check image nodes
+    image_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ImageNode) }
+    assert_equal 2, image_nodes.size
+
+    # Check main image
+    main_image = image_nodes.find { |n| n.id == 'diagram' }
+    assert_not_nil(main_image)
+    assert_equal 'System Diagram', main_image.caption
+    assert_equal 'scale=0.5', main_image.metric
+
+    # Check indepimage
+    indep_image = image_nodes.find { |n| n.id == 'logo' }
+    assert_not_nil(indep_image)
+    assert_equal 'Company Logo', indep_image.caption
+  end
+
+  def test_special_inline_elements_ast_processing
+    content = <<~EOB
+      = Special Inline Elements
+
+      This paragraph contains @<ruby>{漢字,かんじ} with ruby annotation.
+
+      Visit @<href>{https://example.com, Example Site} for more information.
+
+      The @<kw>{HTTP, HyperText Transfer Protocol} is a protocol.
+
+      Simple @<b>{bold} and @<code>{code} elements.
+
+      Unicode character: @<uchar>{2603} (snowman).
+    EOB
+
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    compiler.compile(chapter)
+    ast_root = compiler.ast_result
+
+    paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
+
+    # Find ruby inline
+    ruby_para = paragraph_nodes[0]
+    ruby_node = ruby_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'ruby' }
+    assert_not_nil(ruby_node)
+    assert_equal ['漢字', 'かんじ'], ruby_node.args
+
+    # Find href inline
+    href_para = paragraph_nodes[1]
+    href_node = href_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'href' }
+    assert_not_nil(href_node)
+    assert_equal ['https://example.com', 'Example Site'], href_node.args
+
+    # Find kw inline
+    kw_para = paragraph_nodes[2]
+    kw_node = kw_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'kw' }
+    assert_not_nil(kw_node)
+    assert_equal ['HTTP', 'HyperText Transfer Protocol'], kw_node.args
+
+    # Find standard inline elements
+    simple_para = paragraph_nodes[3]
+    bold_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'b' }
+    code_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'code' }
+    assert_not_nil(bold_node)
+    assert_not_nil(code_node)
+
+    # Find uchar inline
+    uchar_para = paragraph_nodes[4]
+    uchar_node = uchar_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'uchar' }
+    assert_not_nil(uchar_node)
+    assert_equal ['2603'], uchar_node.args
+  end
+
+  def test_comprehensive_output_compatibility
+    content = <<~EOB
+      = Comprehensive Test
+
+      Intro with @<b>{bold} text.
+
+       * List item with @<code>{code}
+       * Another item
+
+      //list[example][Code Example][ruby]{
+      puts "Hello"
+      //}
+
+      //table[data][Data Table]{
+      Name	Value
+      --------
+      A	1
+      B	2
+      //}
+
+      Text with @<ruby>{日本語,にほんご} and @<href>{http://example.com}.
+
+       1. Numbered item
+       2. Another numbered item
+
+      //quote{
+      This is a quote with @<i>{italic} text.
+      //}
+
+      Final paragraph.
+    EOB
+
+    # Test with AST mode
+    builder_ast = ReVIEW::HTMLBuilder.new
+    compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true, ast_elements: %i[headline paragraph ulist olist list table quote])
+    chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter_ast.content = content
+    result_ast = compiler_ast.compile(chapter_ast)
+
+    # Test with traditional mode
+    builder_trad = ReVIEW::HTMLBuilder.new
+    compiler_trad = ReVIEW::Compiler.new(builder_trad)
+    chapter_trad = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter_trad.content = content
+    result_trad = compiler_trad.compile(chapter_trad)
+
+    # Both should produce comprehensive HTML
+    ['<h1>', '<ul>', '<ol>', '<table>', '<blockquote>'].each do |tag|
+      assert(result_ast.include?(tag), "AST mode should produce #{tag}")
+      assert(result_trad.include?(tag), "Traditional mode should produce #{tag}")
+    end
+
+    # Check inline elements
+    ['<b>', '<code', '<i>'].each do |tag|
+      assert(result_ast.include?(tag), "AST mode should produce #{tag}")
+      assert(result_trad.include?(tag), "Traditional mode should produce #{tag}")
+    end
+  end
+end

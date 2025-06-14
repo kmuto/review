@@ -46,15 +46,42 @@ module ReVIEW
         to_h.to_json(*args)
       end
 
+      # Custom JSON serialization with options
+      def to_json_with_options(options = nil)
+        require_relative('json_serializer')
+        JSONSerializer.serialize(self, options || JSONSerializer::Options.new)
+      end
+
+      # JSON serialization preserving hierarchical structure
+      def to_pretty_json(indent: '  ')
+        JSON.pretty_generate(to_h, indent: indent)
+      end
+
+      # Compact JSON serialization (without location information)
+      def to_compact_json
+        options = JSONSerializer::Options.new
+        options.include_location = false
+        options.include_empty_arrays = false
+        options.pretty = false
+        to_json_with_options(options)
+      end
+
       private
 
       def location_to_h
         return nil unless location
 
-        {
-          filename: location.filename,
-          lineno: location.lineno
-        }
+        begin
+          {
+            filename: location.filename,
+            lineno: location.lineno
+          }
+        rescue StandardError
+          {
+            filename: location.filename,
+            lineno: nil
+          }
+        end
       end
     end
   end
