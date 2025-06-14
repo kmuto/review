@@ -73,7 +73,7 @@ module ReVIEW
               'type' => 'string',
               'enum' => %w[
                 DocumentNode HeadlineNode ParagraphNode InlineNode TextNode
-                CodeBlockNode ImageNode TableNode ListNode ListItemNode EmbedNode
+                CodeBlockNode ImageNode TableNode ListNode ListItemNode EmbedNode ColumnNode
               ]
             },
             'location' => {

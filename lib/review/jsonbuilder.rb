@@ -8,6 +8,7 @@
 
 require 'review/builder'
 require 'review/ast'
+require 'review/ast/column_node'
 
 module ReVIEW
   class JSONBuilder < Builder
@@ -120,7 +121,7 @@ module ReVIEW
       add_node(node)
     end
 
-    def image(_lines, id, caption, metric = nil)
+    def image(_lines, id, caption = nil, metric = nil)
       node = AST::ImageNode.new(@location)
       node.id = id
       node.caption = caption
@@ -128,15 +129,26 @@ module ReVIEW
       add_node(node)
     end
 
-    def indepimage(lines, id, caption, metric = nil)
-      image(lines, id, caption, metric)
+    def indepimage(_lines, id, caption = nil, metric = nil)
+      image(_lines, id, caption, metric)
     end
 
-    def numberlessimage(lines, id, caption, metric = nil)
-      image(lines, id, caption, metric)
+    def numberlessimage(_lines, id, caption = nil, metric = nil)
+      image(_lines, id, caption, metric)
     end
 
-    def table(lines, id = nil, caption = nil)
+    def table(lines = nil, id = nil, caption = nil)
+      # Handle case where lines is nil or empty
+      if lines.nil? || lines.empty?
+        node = AST::TableNode.new(@location)
+        node.id = id
+        node.caption = caption
+        node.headers = []
+        node.rows = []
+        add_node(node)
+        return
+      end
+
       sepidx, rows = parse_table_rows(lines)
       node = AST::TableNode.new(@location)
       node.id = id
@@ -402,8 +414,6 @@ module ReVIEW
       # No-op for JSON
     end
 
-    private
-
     def create_inline_node(_inline_type, content)
       # For JsonBuilder, we return the processed string content
       # The AST nodes are created by the compiler, not by the builder
@@ -452,67 +462,115 @@ module ReVIEW
 
     # Minicolumn begin/end methods
     def note_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'note'
+      node = AST::Node.new(@location)
+      node.type = 'note'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def note_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     def memo_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'memo'
+      node = AST::Node.new(@location)
+      node.type = 'memo'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def memo_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     def tip_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'tip'
+      node = AST::Node.new(@location)
+      node.type = 'tip'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def tip_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     def info_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'info'
+      node = AST::Node.new(@location)
+      node.type = 'info'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def info_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     def warning_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'warning'
+      node = AST::Node.new(@location)
+      node.type = 'warning'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def warning_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     def important_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'important'
+      node = AST::Node.new(@location)
+      node.type = 'important'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def important_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     def caution_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'caution'
+      node = AST::Node.new(@location)
+      node.type = 'caution'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def caution_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     def notice_begin(caption = nil)
-      # no-op for JSON builder
+      check_nested_minicolumn
+      @doc_status[:minicolumn] = 'notice'
+      node = AST::Node.new(@location)
+      node.type = 'notice'
+      node.content = caption if caption
+      push_node(node)
     end
 
     def notice_end
-      # no-op for JSON builder
+      @doc_status[:minicolumn] = nil
+      pop_node
     end
 
     # Other methods that may be needed
@@ -524,6 +582,50 @@ module ReVIEW
       @current_node.add_child(node)
     end
 
+    # Additional block commands
+    def imgtable(_lines, id = nil, caption = nil, metric = nil)
+      # For JSON, treat as image with table type
+      node = AST::ImageNode.new(@location)
+      node.id = id
+      node.caption = caption
+      node.metric = metric
+      add_node(node)
+    end
+
+    def flushright(lines)
+      # For JSON, treat as generic node
+      node = AST::Node.new(@location)
+      node.type = 'flushright'
+      lines.each do |line|
+        text_node = AST::TextNode.new(@location)
+        text_node.content = line
+        node.add_child(text_node)
+      end
+      add_node(node)
+    end
+
+    def texequation(lines, id = nil, caption = nil)
+      # For JSON, create a generic node for TeX equations
+      node = AST::Node.new(@location)
+      node.type = 'texequation'
+      node.id = id if id
+      node.content = caption if caption
+      lines&.each do |line|
+        text_node = AST::TextNode.new(@location)
+        text_node.content = line
+        node.add_child(text_node)
+      end
+      add_node(node)
+    end
+
+    def label(id)
+      # For JSON, create a generic node for labels
+      node = AST::Node.new(@location)
+      node.type = 'label'
+      node.id = id
+      add_node(node)
+    end
+
     def push_node(node)
       @current_node.add_child(node)
       @node_stack.push(@current_node)
@@ -532,6 +634,143 @@ module ReVIEW
 
     def pop_node
       @current_node = @node_stack.pop if @node_stack.any?
+    end
+
+    # Tagged section support
+    def column_begin(level, label, caption)
+      node = AST::ColumnNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.column_type = 'column'
+      push_node(node)
+    end
+
+    def column_end(_level)
+      pop_node
+    end
+
+    def xcolumn_begin(level, label, caption)
+      node = AST::ColumnNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.column_type = 'xcolumn'
+      push_node(node)
+    end
+
+    def xcolumn_end(_level)
+      pop_node
+    end
+
+    # Support for other column types that may exist
+    def world_begin(level, label, caption)
+      node = AST::ColumnNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.column_type = 'world'
+      push_node(node)
+    end
+
+    def world_end(_level)
+      pop_node
+    end
+
+    def hood_begin(level, label, caption)
+      node = AST::ColumnNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.column_type = 'hood'
+      push_node(node)
+    end
+
+    def hood_end(_level)
+      pop_node
+    end
+
+    def edition_begin(level, label, caption)
+      node = AST::ColumnNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.column_type = 'edition'
+      push_node(node)
+    end
+
+    def edition_end(_level)
+      pop_node
+    end
+
+    def insideout_begin(level, label, caption)
+      node = AST::ColumnNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.column_type = 'insideout'
+      push_node(node)
+    end
+
+    def insideout_end(_level)
+      pop_node
+    end
+
+    # Additional inline methods
+    def inline_m(str)
+      create_inline_node('m', str)
+    end
+
+    def inline_strong(str)
+      create_inline_node('strong', str)
+    end
+
+    def inline_em(str)
+      create_inline_node('em', str)
+    end
+
+    def inline_u(str)
+      create_inline_node('u', str)
+    end
+
+    def inline_ttb(str)
+      create_inline_node('ttb', str)
+    end
+
+    def inline_tti(str)
+      create_inline_node('tti', str)
+    end
+
+    def inline_ami(str)
+      create_inline_node('ami', str)
+    end
+
+    def inline_ins(str)
+      create_inline_node('ins', str)
+    end
+
+    def inline_del(str)
+      create_inline_node('del', str)
+    end
+
+    def inline_uchar(str)
+      create_inline_node('uchar', str)
+    end
+
+    def inline_icon(str)
+      create_inline_node('icon', str)
+    end
+
+    def inline_bib(str)
+      create_inline_node('bib', str)
+    end
+
+    def inline_hidx(str)
+      create_inline_node('hidx', str)
+    end
+
+    def inline_idx(str)
+      create_inline_node('idx', str)
     end
   end
 end
