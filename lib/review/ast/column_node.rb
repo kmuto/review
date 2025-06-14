@@ -7,12 +7,12 @@ module ReVIEW
     class ColumnNode < Node
       attr_accessor :level, :label, :caption, :column_type
 
-      def initialize(location = nil)
-        super
-        @level = nil
-        @label = nil
-        @caption = nil
-        @column_type = 'column' # default column type
+      def initialize(location: nil, level: nil, label: nil, caption: nil, column_type: 'column', **kwargs)
+        super(location: location, **kwargs)
+        @level = level
+        @label = label
+        @caption = caption
+        @column_type = column_type
       end
 
       def to_h

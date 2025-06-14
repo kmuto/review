@@ -14,13 +14,13 @@ module ReVIEW
     class Node
       attr_accessor :location, :parent, :children, :type, :id, :content
 
-      def initialize(location = nil)
+      def initialize(location: nil, type: nil, id: nil, content: nil, **_kwargs)
         @location = location
         @children = []
         @parent = nil
-        @type = nil
-        @id = nil
-        @content = nil
+        @type = type
+        @id = id
+        @content = content
       end
 
       def accept(visitor)

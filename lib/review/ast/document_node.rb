@@ -7,10 +7,10 @@ module ReVIEW
     class DocumentNode < Node
       attr_accessor :title, :chapters
 
-      def initialize(location = nil)
-        super
-        @title = nil
-        @chapters = []
+      def initialize(location: nil, title: nil, chapters: [], **kwargs)
+        super(location: location, **kwargs)
+        @title = title
+        @chapters = chapters
       end
 
       def to_h

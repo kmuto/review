@@ -5,7 +5,7 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class ParagraphNode < Node
-      def initialize(location = nil)
+      def initialize(location: nil, **kwargs)
         super
       end
 

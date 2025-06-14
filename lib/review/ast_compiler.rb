@@ -81,7 +81,7 @@ module ReVIEW
       mock_file = Object.new
       mock_file.define_singleton_method(:lineno) { line_number }
 
-      @ast_root = AST::DocumentNode.new(Location.new(@chapter.basename, mock_file))
+      @ast_root = AST::DocumentNode.new(location: Location.new(@chapter.basename, mock_file))
       # Initialize title to match JSONBuilder behavior
       @ast_root.title = @chapter.respond_to?(:title) ? @chapter.title : ''
       @current_ast_node = @ast_root
@@ -150,7 +150,7 @@ module ReVIEW
       caption = m[4].strip
 
       # For AST mode, we only handle simple headlines (no tagged sections for now)
-      node = AST::HeadlineNode.new(location)
+      node = AST::HeadlineNode.new(location: location)
       node.level = level
       node.label = label
       # Tagged sections - for now, just create a regular headline
@@ -172,7 +172,7 @@ module ReVIEW
 
       return if raw_lines.empty?
 
-      node = AST::ParagraphNode.new(location)
+      node = AST::ParagraphNode.new(location: location)
       # Process inline elements within paragraph
       raw_lines.each { |line| @inline_processor.parse_inline_elements(line, node) }
 
@@ -203,7 +203,7 @@ module ReVIEW
         # Fallback to original processing for unknown commands
         # This would need access to the original compiler's syntax_descriptor method
         # For now, create a generic node
-        generic_node = AST::Node.new(location)
+        generic_node = AST::Node.new(location: location)
         generic_node.type = name.to_s
         @current_ast_node.add_child(generic_node)
       end
@@ -220,7 +220,7 @@ module ReVIEW
 
     # Build headline AST node
     def build_headline_ast(level, label, caption)
-      node = AST::HeadlineNode.new(location)
+      node = AST::HeadlineNode.new(location: location)
       node.level = level
       node.label = label
       node.caption = caption
@@ -239,7 +239,7 @@ module ReVIEW
 
     # Build paragraph AST node
     def build_paragraph_ast(lines)
-      node = AST::ParagraphNode.new(location)
+      node = AST::ParagraphNode.new(location: location)
 
       # Parse inline elements in each line and create child nodes
       lines.each do |line|

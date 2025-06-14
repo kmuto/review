@@ -7,11 +7,11 @@ module ReVIEW
     class ImageNode < Node
       attr_accessor :id, :caption, :metric
 
-      def initialize(location = nil)
-        super
-        @id = nil
-        @caption = nil
-        @metric = nil
+      def initialize(location: nil, id: nil, caption: nil, metric: nil, **kwargs)
+        super(location: location, id: id, **kwargs)
+        @id = id
+        @caption = caption
+        @metric = metric
       end
 
       def to_h

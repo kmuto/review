@@ -7,12 +7,12 @@ module ReVIEW
     class TableNode < Node
       attr_accessor :id, :caption, :headers, :rows
 
-      def initialize(location = nil)
-        super
-        @id = nil
-        @caption = nil
-        @headers = []
-        @rows = []
+      def initialize(location: nil, id: nil, caption: nil, headers: [], rows: [], **kwargs)
+        super(location: location, id: id, **kwargs)
+        @id = id
+        @caption = caption
+        @headers = headers
+        @rows = rows
       end
 
       def to_h

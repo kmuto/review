@@ -7,10 +7,10 @@ module ReVIEW
     class InlineNode < Node
       attr_accessor :inline_type, :args
 
-      def initialize(location = nil)
-        super
-        @inline_type = nil
-        @args = nil
+      def initialize(location: nil, inline_type: nil, args: nil, **kwargs)
+        super(location: location, **kwargs)
+        @inline_type = inline_type
+        @args = args
       end
 
       def to_h

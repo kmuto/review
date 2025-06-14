@@ -116,7 +116,7 @@ module ReVIEW
         @ast_compiler.build_headline_ast(level, label, caption)
       else
         # Legacy implementation for non-AST mode
-        node = AST::HeadlineNode.new(location)
+        node = AST::HeadlineNode.new(location: location)
         node.level = level
         node.label = label
         node.caption = caption
@@ -140,7 +140,7 @@ module ReVIEW
         @ast_compiler.build_paragraph_ast(lines)
       else
         # Legacy implementation for non-AST mode
-        node = AST::ParagraphNode.new(location)
+        node = AST::ParagraphNode.new(location: location)
 
         # Parse inline elements in each line and create child nodes
         lines.each do |line|
@@ -173,7 +173,7 @@ module ReVIEW
         else
           # This is plain text
           unless word.empty?
-            text_node = AST::TextNode.new(location)
+            text_node = AST::TextNode.new(location: location)
             text_node.content = revert_replace_fence(word)
             parent_node.add_child(text_node)
           end
@@ -209,7 +209,7 @@ module ReVIEW
         create_inline_word_ast_node(op, arg, parent_node)
       else
         # Standard inline processing
-        inline_node = AST::InlineNode.new(location)
+        inline_node = AST::InlineNode.new(location: location)
         inline_node.inline_type = op
         inline_node.args = [arg]
 
@@ -218,7 +218,7 @@ module ReVIEW
           parse_inline_elements(arg, inline_node)
         else
           # Simple text argument
-          text_node = AST::TextNode.new(location)
+          text_node = AST::TextNode.new(location: location)
           text_node.content = arg
           inline_node.add_child(text_node)
         end
@@ -229,7 +229,7 @@ module ReVIEW
 
     # Create inline embed AST node
     def create_inline_embed_ast_node(arg, parent_node)
-      node = AST::EmbedNode.new(location)
+      node = AST::EmbedNode.new(location: location)
       node.embed_type = :inline
       node.lines = [arg]
       node.arg = arg
@@ -238,7 +238,7 @@ module ReVIEW
 
     # Create inline ruby AST node
     def create_inline_ruby_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(location)
+      inline_node = AST::InlineNode.new(location: location)
       inline_node.inline_type = 'ruby'
 
       # Parse ruby format: "base_text,ruby_text"
@@ -247,16 +247,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        parent_text = AST::TextNode.new(location)
+        parent_text = AST::TextNode.new(location: location)
         parent_text.content = parts[0].strip
         inline_node.add_child(parent_text)
 
-        ruby_text = AST::TextNode.new(location)
+        ruby_text = AST::TextNode.new(location: location)
         ruby_text.content = parts[1].strip
         inline_node.add_child(ruby_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -266,7 +266,7 @@ module ReVIEW
 
     # Create inline href AST node
     def create_inline_href_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(location)
+      inline_node = AST::InlineNode.new(location: location)
       inline_node.inline_type = 'href'
 
       # Parse href format: "URL" or "URL, display_text"
@@ -279,7 +279,7 @@ module ReVIEW
                        arg # URL as display text
                      end
 
-      text_node = AST::TextNode.new(location)
+      text_node = AST::TextNode.new(location: location)
       text_node.content = text_content
       inline_node.add_child(text_node)
 
@@ -288,7 +288,7 @@ module ReVIEW
 
     # Create inline kw AST node
     def create_inline_kw_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(location)
+      inline_node = AST::InlineNode.new(location: location)
       inline_node.inline_type = 'kw'
 
       # Parse kw format: "keyword" or "keyword, supplement"
@@ -297,16 +297,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        main_text = AST::TextNode.new(location)
+        main_text = AST::TextNode.new(location: location)
         main_text.content = parts[0].strip
         inline_node.add_child(main_text)
 
-        supplement_text = AST::TextNode.new(location)
+        supplement_text = AST::TextNode.new(location: location)
         supplement_text.content = parts[1].strip
         inline_node.add_child(supplement_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -316,7 +316,7 @@ module ReVIEW
 
     # Create inline hd AST node
     def create_inline_hd_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(location)
+      inline_node = AST::InlineNode.new(location: location)
       inline_node.inline_type = 'hd'
 
       # Parse hd format: "chapter_id|heading" or just "heading"
@@ -325,16 +325,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        chapter_text = AST::TextNode.new(location)
+        chapter_text = AST::TextNode.new(location: location)
         chapter_text.content = parts[0].strip
         inline_node.add_child(chapter_text)
 
-        heading_text = AST::TextNode.new(location)
+        heading_text = AST::TextNode.new(location: location)
         heading_text.content = parts[1].strip
         inline_node.add_child(heading_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -344,7 +344,7 @@ module ReVIEW
 
     # Create inline reference AST node (for img, list, table, eq)
     def create_inline_ref_ast_node(ref_type, arg, parent_node)
-      inline_node = AST::InlineNode.new(location)
+      inline_node = AST::InlineNode.new(location: location)
       inline_node.inline_type = ref_type
 
       # Parse reference format: "ID" or "chapter_id|ID"
@@ -353,16 +353,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        chapter_text = AST::TextNode.new(location)
+        chapter_text = AST::TextNode.new(location: location)
         chapter_text.content = parts[0].strip
         inline_node.add_child(chapter_text)
 
-        id_text = AST::TextNode.new(location)
+        id_text = AST::TextNode.new(location: location)
         id_text.content = parts[1].strip
         inline_node.add_child(id_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -372,12 +372,12 @@ module ReVIEW
 
     # Create inline cross-reference AST node (for chap, chapref, sec, secref, labelref, ref)
     def create_inline_cross_ref_ast_node(ref_type, arg, parent_node)
-      inline_node = AST::InlineNode.new(location)
+      inline_node = AST::InlineNode.new(location: location)
       inline_node.inline_type = ref_type
 
       # Cross-references typically just have a single ID argument
       inline_node.args = [arg]
-      text_node = AST::TextNode.new(location)
+      text_node = AST::TextNode.new(location: location)
       text_node.content = arg
       inline_node.add_child(text_node)
 
@@ -386,12 +386,12 @@ module ReVIEW
 
     # Create inline word AST node (for w, wb)
     def create_inline_word_ast_node(word_type, arg, parent_node)
-      inline_node = AST::InlineNode.new(location)
+      inline_node = AST::InlineNode.new(location: location)
       inline_node.inline_type = word_type
 
       # Word expansion commands just have the filename argument
       inline_node.args = [arg]
-      text_node = AST::TextNode.new(location)
+      text_node = AST::TextNode.new(location: location)
       text_node.content = arg
       inline_node.add_child(text_node)
 
@@ -436,7 +436,7 @@ module ReVIEW
 
     # Build embed AST node
     def build_embed_ast(args, lines)
-      node = AST::EmbedNode.new(location)
+      node = AST::EmbedNode.new(location: location)
       node.embed_type = :block
       node.lines = lines || []
       node.arg = args.first if args&.any?
@@ -455,7 +455,7 @@ module ReVIEW
 
     # Build list/listnum AST node
     def build_list_ast(command_name, args, lines)
-      node = AST::CodeBlockNode.new(location)
+      node = AST::CodeBlockNode.new(location: location)
       node.id = args[0] if args&.any?
       node.caption = args[1] if args && args.size > 1
       node.lang = args[2] if args && args.size > 2
@@ -471,7 +471,7 @@ module ReVIEW
 
     # Build emlist/emlistnum AST node
     def build_emlist_ast(command_name, args, lines)
-      node = AST::CodeBlockNode.new(location)
+      node = AST::CodeBlockNode.new(location: location)
       node.caption = args[0] if args&.any?
       node.lang = args[1] if args && args.size > 1
       node.lines = lines || []
@@ -486,7 +486,7 @@ module ReVIEW
 
     # Build source AST node
     def build_source_ast(args, lines)
-      node = AST::CodeBlockNode.new(location)
+      node = AST::CodeBlockNode.new(location: location)
       node.caption = args[0] if args&.any?
       node.lang = args[1] if args && args.size > 1
       node.lines = lines || []
@@ -500,7 +500,7 @@ module ReVIEW
 
     # Build cmd AST node
     def build_cmd_ast(args, lines)
-      node = AST::CodeBlockNode.new(location)
+      node = AST::CodeBlockNode.new(location: location)
       node.caption = args[0] if args&.any?
       node.lang = 'shell'
       node.lines = lines || []
@@ -514,7 +514,7 @@ module ReVIEW
 
     # Build table AST node
     def build_table_ast(_command_name, args, lines)
-      node = AST::TableNode.new(location)
+      node = AST::TableNode.new(location: location)
       node.id = args[0] if args&.any?
       node.caption = args[1] if args && args.size > 1
 
@@ -539,7 +539,7 @@ module ReVIEW
 
     # Build image AST node
     def build_image_ast(_command_name, args, _lines)
-      node = AST::ImageNode.new(location)
+      node = AST::ImageNode.new(location: location)
       node.id = args[0] if args&.any?
       node.caption = args[1] if args && args.size > 1
       node.metric = args[2] if args && args.size > 2
@@ -553,7 +553,7 @@ module ReVIEW
 
     # Build quote AST node
     def build_quote_ast(command_name, _args, lines)
-      node = AST::ParagraphNode.new(location)
+      node = AST::ParagraphNode.new(location: location)
 
       # Parse inline elements in quote content
       (lines || []).each do |line|
@@ -574,7 +574,7 @@ module ReVIEW
 
     # Build minicolumn AST node (note, memo, tip, etc.)
     def build_minicolumn_ast(command_name, args, lines)
-      node = AST::ParagraphNode.new(location)
+      node = AST::ParagraphNode.new(location: location)
       node.content = "#{command_name}: #{args.first || ''}"
 
       # Parse inline elements in minicolumn content
@@ -607,7 +607,7 @@ module ReVIEW
 
     # Build raw AST node
     def build_raw_ast(args, lines)
-      node = AST::EmbedNode.new(location)
+      node = AST::EmbedNode.new(location: location)
       node.embed_type = :raw
       node.lines = lines || []
       node.arg = args.first if args&.any?
@@ -621,7 +621,7 @@ module ReVIEW
 
     # Build unordered list AST node
     def build_ulist_ast(f)
-      node = AST::ListNode.new(location)
+      node = AST::ListNode.new(location: location)
       node.list_type = :ul
 
       level = 0
@@ -637,7 +637,7 @@ module ReVIEW
         line =~ /\A\s+(\*+)/
         current_level = $1.size
 
-        item_node = AST::ListItemNode.new(location)
+        item_node = AST::ListItemNode.new(location: location)
         item_node.level = current_level
 
         # Parse inline elements in item content
@@ -659,7 +659,7 @@ module ReVIEW
 
     # Build ordered list AST node
     def build_olist_ast(f)
-      node = AST::ListNode.new(location)
+      node = AST::ListNode.new(location: location)
       node.list_type = :ol
 
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
@@ -671,7 +671,7 @@ module ReVIEW
           raw_lines.push(cont.strip)
         end
 
-        item_node = AST::ListItemNode.new(location)
+        item_node = AST::ListItemNode.new(location: location)
         item_node.level = 1
         item_node.content = num # Store original number for reference
 
@@ -693,13 +693,13 @@ module ReVIEW
 
     # Build definition list AST node
     def build_dlist_ast(f)
-      node = AST::ListNode.new(location)
+      node = AST::ListNode.new(location: location)
       node.list_type = :dl
 
       while /\A\s*:/ =~ f.peek
         # Get definition term
         dt_line = f.gets.sub(/\A\s*:/, '').strip
-        dt_node = AST::ListItemNode.new(location)
+        dt_node = AST::ListItemNode.new(location: location)
         dt_node.level = 1
         parse_inline_elements(dt_line, dt_node)
 
@@ -710,7 +710,7 @@ module ReVIEW
         end
 
         # Create a container node for the dt/dd pair
-        item_node = AST::ListItemNode.new(location)
+        item_node = AST::ListItemNode.new(location: location)
         item_node.level = 1
 
         # Add dt as first child

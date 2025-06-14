@@ -36,7 +36,7 @@ module ReVIEW
         else
           # This is plain text
           unless word.empty?
-            text_node = AST::TextNode.new(@ast_compiler.location)
+            text_node = AST::TextNode.new(location: @ast_compiler.location)
             text_node.content = revert_replace_fence(word)
             parent_node.add_child(text_node)
           end
@@ -72,7 +72,7 @@ module ReVIEW
         create_inline_word_ast_node(op, arg, parent_node)
       else
         # Standard inline processing
-        inline_node = AST::InlineNode.new(@ast_compiler.location)
+        inline_node = AST::InlineNode.new(location: @ast_compiler.location)
         inline_node.inline_type = op
         inline_node.args = [arg]
 
@@ -81,7 +81,7 @@ module ReVIEW
           parse_inline_elements(arg, inline_node)
         else
           # Simple text argument
-          text_node = AST::TextNode.new(@ast_compiler.location)
+          text_node = AST::TextNode.new(location: @ast_compiler.location)
           text_node.content = arg
           inline_node.add_child(text_node)
         end
@@ -92,7 +92,7 @@ module ReVIEW
 
     # Create inline embed AST node
     def create_inline_embed_ast_node(arg, parent_node)
-      node = AST::EmbedNode.new(@ast_compiler.location)
+      node = AST::EmbedNode.new(location: @ast_compiler.location)
       node.embed_type = :inline
       node.lines = [arg]
       node.arg = arg
@@ -101,7 +101,7 @@ module ReVIEW
 
     # Create inline ruby AST node
     def create_inline_ruby_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(@ast_compiler.location)
+      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
       inline_node.inline_type = 'ruby'
 
       # Parse ruby format: "base_text,ruby_text"
@@ -110,16 +110,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        parent_text = AST::TextNode.new(@ast_compiler.location)
+        parent_text = AST::TextNode.new(location: @ast_compiler.location)
         parent_text.content = parts[0].strip
         inline_node.add_child(parent_text)
 
-        ruby_text = AST::TextNode.new(@ast_compiler.location)
+        ruby_text = AST::TextNode.new(location: @ast_compiler.location)
         ruby_text.content = parts[1].strip
         inline_node.add_child(ruby_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(@ast_compiler.location)
+        text_node = AST::TextNode.new(location: @ast_compiler.location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -129,7 +129,7 @@ module ReVIEW
 
     # Create inline href AST node
     def create_inline_href_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(@ast_compiler.location)
+      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
       inline_node.inline_type = 'href'
 
       # Parse href format: "URL" or "URL, display_text"
@@ -142,7 +142,7 @@ module ReVIEW
                        arg # URL as display text
                      end
 
-      text_node = AST::TextNode.new(@ast_compiler.location)
+      text_node = AST::TextNode.new(location: @ast_compiler.location)
       text_node.content = text_content
       inline_node.add_child(text_node)
 
@@ -151,7 +151,7 @@ module ReVIEW
 
     # Create inline kw AST node
     def create_inline_kw_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(@ast_compiler.location)
+      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
       inline_node.inline_type = 'kw'
 
       # Parse kw format: "keyword" or "keyword, supplement"
@@ -160,16 +160,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        main_text = AST::TextNode.new(@ast_compiler.location)
+        main_text = AST::TextNode.new(location: @ast_compiler.location)
         main_text.content = parts[0].strip
         inline_node.add_child(main_text)
 
-        supplement_text = AST::TextNode.new(@ast_compiler.location)
+        supplement_text = AST::TextNode.new(location: @ast_compiler.location)
         supplement_text.content = parts[1].strip
         inline_node.add_child(supplement_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(@ast_compiler.location)
+        text_node = AST::TextNode.new(location: @ast_compiler.location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -179,7 +179,7 @@ module ReVIEW
 
     # Create inline hd AST node
     def create_inline_hd_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(@ast_compiler.location)
+      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
       inline_node.inline_type = 'hd'
 
       # Parse hd format: "chapter_id|heading" or just "heading"
@@ -188,16 +188,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        chapter_text = AST::TextNode.new(@ast_compiler.location)
+        chapter_text = AST::TextNode.new(location: @ast_compiler.location)
         chapter_text.content = parts[0].strip
         inline_node.add_child(chapter_text)
 
-        heading_text = AST::TextNode.new(@ast_compiler.location)
+        heading_text = AST::TextNode.new(location: @ast_compiler.location)
         heading_text.content = parts[1].strip
         inline_node.add_child(heading_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(@ast_compiler.location)
+        text_node = AST::TextNode.new(location: @ast_compiler.location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -207,7 +207,7 @@ module ReVIEW
 
     # Create inline reference AST node (for img, list, table, eq)
     def create_inline_ref_ast_node(ref_type, arg, parent_node)
-      inline_node = AST::InlineNode.new(@ast_compiler.location)
+      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
       inline_node.inline_type = ref_type
 
       # Parse reference format: "ID" or "chapter_id|ID"
@@ -216,16 +216,16 @@ module ReVIEW
         inline_node.args = [parts[0].strip, parts[1].strip]
 
         # Add text nodes for both parts
-        chapter_text = AST::TextNode.new(@ast_compiler.location)
+        chapter_text = AST::TextNode.new(location: @ast_compiler.location)
         chapter_text.content = parts[0].strip
         inline_node.add_child(chapter_text)
 
-        id_text = AST::TextNode.new(@ast_compiler.location)
+        id_text = AST::TextNode.new(location: @ast_compiler.location)
         id_text.content = parts[1].strip
         inline_node.add_child(id_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(@ast_compiler.location)
+        text_node = AST::TextNode.new(location: @ast_compiler.location)
         text_node.content = arg
         inline_node.add_child(text_node)
       end
@@ -235,12 +235,12 @@ module ReVIEW
 
     # Create inline cross-reference AST node (for chap, chapref, sec, secref, labelref, ref)
     def create_inline_cross_ref_ast_node(ref_type, arg, parent_node)
-      inline_node = AST::InlineNode.new(@ast_compiler.location)
+      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
       inline_node.inline_type = ref_type
 
       # Cross-references typically just have a single ID argument
       inline_node.args = [arg]
-      text_node = AST::TextNode.new(@ast_compiler.location)
+      text_node = AST::TextNode.new(location: @ast_compiler.location)
       text_node.content = arg
       inline_node.add_child(text_node)
 
@@ -249,12 +249,12 @@ module ReVIEW
 
     # Create inline word AST node (for w, wb)
     def create_inline_word_ast_node(word_type, arg, parent_node)
-      inline_node = AST::InlineNode.new(@ast_compiler.location)
+      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
       inline_node.inline_type = word_type
 
       # Word expansion commands just have the filename argument
       inline_node.args = [arg]
-      text_node = AST::TextNode.new(@ast_compiler.location)
+      text_node = AST::TextNode.new(location: @ast_compiler.location)
       text_node.content = arg
       inline_node.add_child(text_node)
 

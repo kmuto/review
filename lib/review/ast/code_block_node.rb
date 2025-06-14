@@ -7,13 +7,13 @@ module ReVIEW
     class CodeBlockNode < Node
       attr_accessor :lang, :id, :caption, :lines, :line_numbers
 
-      def initialize(location = nil)
-        super
-        @lang = nil
-        @id = nil
-        @caption = nil
-        @lines = []
-        @line_numbers = false
+      def initialize(location: nil, lang: nil, id: nil, caption: nil, lines: [], line_numbers: false, **kwargs)
+        super(location: location, id: id, **kwargs)
+        @lang = lang
+        @id = id
+        @caption = caption
+        @lines = lines
+        @line_numbers = line_numbers
       end
 
       def to_h

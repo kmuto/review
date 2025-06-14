@@ -7,11 +7,11 @@ module ReVIEW
     class EmbedNode < Node
       attr_accessor :lines, :arg, :embed_type
 
-      def initialize(location = nil)
-        super
-        @lines = []
-        @arg = nil
-        @embed_type = :block # :block or :inline
+      def initialize(location: nil, lines: [], arg: nil, embed_type: :block, **kwargs)
+        super(location: location, **kwargs)
+        @lines = lines
+        @arg = arg
+        @embed_type = embed_type # :block or :inline
       end
 
       def to_h

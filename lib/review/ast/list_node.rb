@@ -7,10 +7,10 @@ module ReVIEW
     class ListNode < Node
       attr_accessor :list_type, :items
 
-      def initialize(location = nil)
-        super
-        @list_type = nil # :ul, :ol, :dl
-        @items = []
+      def initialize(location: nil, list_type: nil, items: [], **kwargs)
+        super(location: location, **kwargs)
+        @list_type = list_type # :ul, :ol, :dl
+        @items = items
       end
 
       def to_h
@@ -34,11 +34,11 @@ module ReVIEW
     class ListItemNode < Node
       attr_accessor :content, :level, :number
 
-      def initialize(location = nil)
-        super
-        @content = nil
-        @level = 1
-        @number = nil
+      def initialize(location: nil, content: nil, level: 1, number: nil, **kwargs)
+        super(location: location, content: content, **kwargs)
+        @content = content
+        @level = level
+        @number = number
       end
 
       def to_h

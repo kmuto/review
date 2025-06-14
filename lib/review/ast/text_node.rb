@@ -7,9 +7,9 @@ module ReVIEW
     class TextNode < Node
       attr_accessor :content
 
-      def initialize(location = nil)
+      def initialize(location: nil, content: '', **kwargs)
         super
-        @content = ''
+        @content = content
       end
 
       def to_h

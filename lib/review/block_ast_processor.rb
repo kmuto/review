@@ -25,7 +25,7 @@ module ReVIEW
     end
 
     def compile_code_block_to_ast(type, args, lines)
-      node = AST::CodeBlockNode.new(@ast_compiler.location)
+      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
 
       case type
       when :list, :listnum
@@ -50,7 +50,7 @@ module ReVIEW
     end
 
     def compile_image_to_ast(_type, args)
-      node = AST::ImageNode.new(@ast_compiler.location)
+      node = AST::ImageNode.new(location: @ast_compiler.location)
       node.id = args[0]
       node.caption = args[1]
       node.metric = args[2]
@@ -59,7 +59,7 @@ module ReVIEW
     end
 
     def compile_table_to_ast(type, args, lines)
-      node = AST::TableNode.new(@ast_compiler.location)
+      node = AST::TableNode.new(location: @ast_compiler.location)
 
       if type == :table
         node.id = args[0]
@@ -84,14 +84,14 @@ module ReVIEW
     end
 
     def compile_list_to_ast(type, lines)
-      node = AST::ListNode.new(@ast_compiler.location)
+      node = AST::ListNode.new(location: @ast_compiler.location)
       node.list_type = type
 
       # For now, treat lines as simple list items
       # This would need more sophisticated parsing for nested lists
       if lines
         lines.each do |line|
-          item_node = AST::ListItemNode.new(@ast_compiler.location)
+          item_node = AST::ListItemNode.new(location: @ast_compiler.location)
           item_node.content = line
           item_node.level = 1
           node.items << item_node
@@ -102,7 +102,7 @@ module ReVIEW
     end
 
     def compile_quote_to_ast(lines)
-      node = AST::ParagraphNode.new(@ast_compiler.location)
+      node = AST::ParagraphNode.new(location: @ast_compiler.location)
       if lines
         lines.each { |line| @ast_compiler.inline_processor.parse_inline_elements(line, node) }
       end
@@ -113,14 +113,14 @@ module ReVIEW
     def compile_minicolumn_to_ast(type, args, lines)
       # For now, create a simple container node
       # This could be extended to a specific MinicolumnNode type
-      node = AST::Node.new(@ast_compiler.location)
+      node = AST::Node.new(location: @ast_compiler.location)
       node.type = 'minicolumn'
       node.id = type.to_s
       node.content = args[0] if args && args[0] # caption
 
       if lines
         lines.each do |line|
-          text_node = AST::TextNode.new(@ast_compiler.location)
+          text_node = AST::TextNode.new(location: @ast_compiler.location)
           text_node.content = line
           node.add_child(text_node)
         end
@@ -130,7 +130,7 @@ module ReVIEW
     end
 
     def compile_embed_to_ast(args, lines)
-      node = AST::EmbedNode.new(@ast_compiler.location)
+      node = AST::EmbedNode.new(location: @ast_compiler.location)
       node.embed_type = :block
       node.arg = args[0] if args
       node.lines = lines || []
@@ -140,14 +140,14 @@ module ReVIEW
 
     def compile_read_to_ast(lines)
       # Create a generic node for read blocks
-      node = AST::Node.new(@ast_compiler.location)
+      node = AST::Node.new(location: @ast_compiler.location)
       node.type = 'read'
       node.content = (lines || []).join("\n")
 
       # Process each line as text content
       if lines
         lines.each do |line|
-          text_node = AST::TextNode.new(@ast_compiler.location)
+          text_node = AST::TextNode.new(location: @ast_compiler.location)
           text_node.content = line
           node.add_child(text_node)
         end
@@ -183,7 +183,7 @@ module ReVIEW
         build_raw_ast(args, lines)
       else
         # Fallback - create generic node
-        generic_node = AST::Node.new(@ast_compiler.location)
+        generic_node = AST::Node.new(location: @ast_compiler.location)
         generic_node.type = command_name.to_s
         @ast_compiler.add_child_to_current_node(generic_node)
       end
@@ -191,7 +191,7 @@ module ReVIEW
 
     # Build embed AST node
     def build_embed_ast(args, lines)
-      node = AST::EmbedNode.new(@ast_compiler.location)
+      node = AST::EmbedNode.new(location: @ast_compiler.location)
       node.embed_type = :block
       node.lines = lines || []
       node.arg = args.first if args&.any?
@@ -203,7 +203,7 @@ module ReVIEW
 
     # Build list/listnum AST node
     def build_list_ast(command_name, args, lines)
-      node = AST::CodeBlockNode.new(@ast_compiler.location)
+      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
       node.id = args[0] if args&.any?
       node.caption = args[1] if args && args.size > 1
       node.lang = args[2] if args && args.size > 2
@@ -217,7 +217,7 @@ module ReVIEW
 
     # Build emlist/emlistnum AST node
     def build_emlist_ast(command_name, args, lines)
-      node = AST::CodeBlockNode.new(@ast_compiler.location)
+      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
       node.caption = args[0] if args&.any?
       node.lang = args[1] if args && args.size > 1
       node.lines = lines || []
@@ -230,7 +230,7 @@ module ReVIEW
 
     # Build source AST node
     def build_source_ast(args, lines)
-      node = AST::CodeBlockNode.new(@ast_compiler.location)
+      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
       node.caption = args[0] if args&.any?
       node.lang = args[1] if args && args.size > 1
       node.lines = lines || []
@@ -242,7 +242,7 @@ module ReVIEW
 
     # Build cmd AST node
     def build_cmd_ast(args, lines)
-      node = AST::CodeBlockNode.new(@ast_compiler.location)
+      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
       node.caption = args[0] if args&.any?
       node.lang = 'shell'
       node.lines = lines || []
@@ -254,7 +254,7 @@ module ReVIEW
 
     # Build table AST node
     def build_table_ast(_command_name, args, lines)
-      node = AST::TableNode.new(@ast_compiler.location)
+      node = AST::TableNode.new(location: @ast_compiler.location)
       node.id = args[0] if args&.any?
       node.caption = args[1] if args && args.size > 1
 
@@ -277,7 +277,7 @@ module ReVIEW
 
     # Build image AST node
     def build_image_ast(_command_name, args, _lines)
-      node = AST::ImageNode.new(@ast_compiler.location)
+      node = AST::ImageNode.new(location: @ast_compiler.location)
       node.id = args[0] if args&.any?
       node.caption = args[1] if args && args.size > 1
       node.metric = args[2] if args && args.size > 2
@@ -289,7 +289,7 @@ module ReVIEW
 
     # Build quote AST node
     def build_quote_ast(command_name, _args, lines)
-      node = AST::ParagraphNode.new(@ast_compiler.location)
+      node = AST::ParagraphNode.new(location: @ast_compiler.location)
 
       # Parse inline elements in quote content
       (lines || []).each do |line|
@@ -310,7 +310,7 @@ module ReVIEW
 
     # Build minicolumn AST node (note, memo, tip, etc.)
     def build_minicolumn_ast(command_name, args, lines)
-      node = AST::ParagraphNode.new(@ast_compiler.location)
+      node = AST::ParagraphNode.new(location: @ast_compiler.location)
       node.content = "#{command_name}: #{args.first || ''}"
 
       # Parse inline elements in minicolumn content
@@ -343,7 +343,7 @@ module ReVIEW
 
     # Build raw AST node
     def build_raw_ast(args, lines)
-      node = AST::EmbedNode.new(@ast_compiler.location)
+      node = AST::EmbedNode.new(location: @ast_compiler.location)
       node.embed_type = :raw
       node.lines = lines || []
       node.arg = args.first if args&.any?
@@ -357,7 +357,7 @@ module ReVIEW
 
     # Build unordered list AST node
     def build_ulist_ast(f)
-      node = AST::ListNode.new(@ast_compiler.location)
+      node = AST::ListNode.new(location: @ast_compiler.location)
       node.list_type = :ul
 
       level = 0
@@ -373,7 +373,7 @@ module ReVIEW
         line =~ /\A\s+(\*+)/
         current_level = $1.size
 
-        item_node = AST::ListItemNode.new(@ast_compiler.location)
+        item_node = AST::ListItemNode.new(location: @ast_compiler.location)
         item_node.level = current_level
 
         # Parse inline elements in item content
@@ -393,7 +393,7 @@ module ReVIEW
 
     # Build ordered list AST node
     def build_olist_ast(f)
-      node = AST::ListNode.new(@ast_compiler.location)
+      node = AST::ListNode.new(location: @ast_compiler.location)
       node.list_type = :ol
 
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
@@ -405,7 +405,7 @@ module ReVIEW
           raw_lines.push(cont.strip)
         end
 
-        item_node = AST::ListItemNode.new(@ast_compiler.location)
+        item_node = AST::ListItemNode.new(location: @ast_compiler.location)
         item_node.level = 1
         item_node.content = num # Store original number for reference
 
@@ -425,13 +425,13 @@ module ReVIEW
 
     # Build definition list AST node
     def build_dlist_ast(f)
-      node = AST::ListNode.new(@ast_compiler.location)
+      node = AST::ListNode.new(location: @ast_compiler.location)
       node.list_type = :dl
 
       while /\A\s*:/ =~ f.peek
         # Get definition term
         dt_line = f.gets.sub(/\A\s*:/, '').strip
-        dt_node = AST::ListItemNode.new(@ast_compiler.location)
+        dt_node = AST::ListItemNode.new(location: @ast_compiler.location)
         dt_node.level = 1
         @ast_compiler.inline_processor.parse_inline_elements(dt_line, dt_node)
 
@@ -442,7 +442,7 @@ module ReVIEW
         end
 
         # Create a container node for the dt/dd pair
-        item_node = AST::ListItemNode.new(@ast_compiler.location)
+        item_node = AST::ListItemNode.new(location: @ast_compiler.location)
         item_node.level = 1
 
         # Add dt as first child

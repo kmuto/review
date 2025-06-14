@@ -7,11 +7,11 @@ module ReVIEW
     class HeadlineNode < Node
       attr_accessor :level, :label, :caption
 
-      def initialize(location = nil)
-        super
-        @level = nil
-        @label = nil
-        @caption = nil
+      def initialize(location: nil, level: nil, label: nil, caption: nil, **kwargs)
+        super(location: location, **kwargs)
+        @level = level
+        @label = label
+        @caption = caption
       end
 
       def to_h
