@@ -75,9 +75,8 @@ module ReVIEW
               hash[:chapters] = node.chapters&.map { |chapter| serialize_to_hash(chapter, options) } || []
             end
           when ReVIEW::AST::ParagraphNode
-            # ParagraphNode field order - don't include content field
+            # ParagraphNode uses standard Node serialization (children only)
             hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
-            # Explicitly return hash without merging node properties
             return hash
           when ReVIEW::AST::CodeBlockNode
             # CodeBlockNode field order as expected by tests
@@ -130,7 +129,7 @@ module ReVIEW
           }
         when ReVIEW::AST::ParagraphNode
           {
-            # No additional properties for ParagraphNode in JSON output
+            # ParagraphNode has no additional properties beyond base Node
           }
         when ReVIEW::AST::InlineNode
           {
@@ -246,7 +245,7 @@ module ReVIEW
           node.label = hash[:label]
           node.caption = hash[:caption]
         when ReVIEW::AST::ParagraphNode
-          node.content = hash[:content]
+          # ParagraphNode has no additional properties to restore
         when ReVIEW::AST::InlineNode
           node.inline_type = hash[:inline_type]
           node.args = hash[:args]

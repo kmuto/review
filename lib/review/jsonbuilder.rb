@@ -54,7 +54,13 @@ module ReVIEW
 
     def paragraph(lines)
       node = AST::ParagraphNode.new(@location)
-      node.content = lines.join("\n")
+      # Create TextNode for paragraph content to maintain consistency with AST mode
+      content = lines.join("\n")
+      if !content.empty?
+        text_node = AST::TextNode.new(@location)
+        text_node.content = content
+        node.add_child(text_node)
+      end
       add_node(node)
     end
 

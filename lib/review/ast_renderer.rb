@@ -65,12 +65,12 @@ module ReVIEW
     end
 
     def visit_paragraph(node)
+      # ParagraphNode content is always stored in children as TextNode/InlineNode
       lines = if node.children.any?
-                # Render inline elements within paragraph
                 [render_inline_content(node)]
               else
-                # Fallback for paragraphs without structured content
-                node.content ? [node.content] : []
+                # Empty paragraph
+                []
               end
       @builder.paragraph(lines)
     end

@@ -39,7 +39,9 @@ class TestASTPhase2 < Test::Unit::TestCase
     root.add_child(headline)
 
     para = ReVIEW::AST::ParagraphNode.new
-    para.content = 'Test paragraph content'
+    text_node = ReVIEW::AST::TextNode.new
+    text_node.content = 'Test paragraph content'
+    para.add_child(text_node)
     root.add_child(para)
 
     # Test that renderer can process AST

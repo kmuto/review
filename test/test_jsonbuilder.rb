@@ -133,8 +133,17 @@ class JSONBuilderTest < Test::Unit::TestCase
               "filename": null,
               "lineno": 2
             },
-            "children": [],
-            "content": "This is a simple paragraph."
+            "children": [
+              {
+                "type": "TextNode",
+                "location": {
+                  "filename": null,
+                  "lineno": 2
+                },
+                "children": [],
+                "content": "This is a simple paragraph."
+              }
+            ]
           }
         ],
         "title": "",
