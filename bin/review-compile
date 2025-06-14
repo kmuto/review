@@ -14,6 +14,7 @@
 $LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'review'
+require 'review/ast_config'
 require 'fileutils'
 require 'optparse'
 require 'yaml'
@@ -84,12 +85,16 @@ def _main
         chap_name = File.basename(item, '.*')
         chap = book.chapter(chap_name)
         builder = load_builder_class(@target, @check_only)
-        # Use AST mode for JSON target to ensure proper location tracking
-        compiler = if @target == 'json'
-                     ReVIEW::Compiler.new(builder, ast_mode: true)
-                   else
-                     ReVIEW::Compiler.new(builder)
-                   end
+        # Create compiler with AST configuration
+        ast_config = ReVIEW::ASTConfig.new(@config)
+        compiler_options = ast_config.compiler_options
+
+        # Override for JSON target to ensure proper location tracking
+        if @target == 'json' && compiler_options[:ast_mode] == false
+          compiler_options = { ast_mode: true, ast_elements: [] }
+        end
+
+        compiler = ReVIEW::Compiler.new(builder, **compiler_options)
         result = compiler.compile(chap)
         if @output_filename
           File.write(@output_filename, result)
@@ -100,12 +105,16 @@ def _main
     when :dir
       book = @basedir ? ReVIEW::Book::Base.new(@basedir, config: @config) : ReVIEW::Book::Base.new(config: @config)
       builder = load_builder_class(@target, @check_only)
-      # Use AST mode for JSON target to ensure proper location tracking
-      compiler = if @target == 'json'
-                   ReVIEW::Compiler.new(builder, ast_mode: true)
-                 else
-                   ReVIEW::Compiler.new(builder)
-                 end
+      # Create compiler with AST configuration
+      ast_config = ReVIEW::ASTConfig.new(@config)
+      compiler_options = ast_config.compiler_options
+
+      # Override for JSON target to ensure proper location tracking
+      if @target == 'json' && compiler_options[:ast_mode] == false
+        compiler_options = { ast_mode: true, ast_elements: [] }
+      end
+
+      compiler = ReVIEW::Compiler.new(builder, **compiler_options)
       book.chapters.each do |chap|
         str = compiler.compile(chap)
         File.write("#{chap.name}#{compiler.builder.extname}", str) unless @check_only

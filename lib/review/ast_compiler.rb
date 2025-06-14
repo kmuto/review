@@ -8,6 +8,7 @@
 
 require 'review/ast'
 require 'review/ast_renderer'
+require 'review/ast_performance_tracker'
 require 'review/loggable'
 require 'review/lineinput'
 require 'review/inline_ast_processor'
@@ -49,6 +50,9 @@ module ReVIEW
       # Debug settings for hybrid mode
       @debug_ast_elements = ENV['REVIEW_DEBUG_AST'] == 'true'
       @ast_element_stats = Hash.new(0) # Track AST usage statistics
+
+      # Performance measurement
+      @performance_tracker = ASTPerformanceTracker.new
 
       log_hybrid_mode_status if @debug_ast_elements
     end
@@ -97,6 +101,8 @@ module ReVIEW
       @current_ast_node = @ast_root
       @ast_renderer = ASTRenderer.new(@builder)
 
+      @performance_tracker.start_timing(:total_compilation_time)
+
       if @ast_elements.empty?
         # Full AST mode: build complete AST without rendering
         do_compile_with_ast_building
@@ -105,6 +111,10 @@ module ReVIEW
         # Hybrid mode: process specified elements via AST, others directly
         do_compile_hybrid
       end
+
+      # Record performance statistics
+      @performance_tracker.end_timing(:total_compilation_time)
+      @performance_tracker.log_statistics
 
       # Log statistics after compilation
       log_ast_element_statistics if @debug_ast_elements
@@ -332,9 +342,14 @@ module ReVIEW
         mode: @ast_elements.empty? ? :full_ast : :hybrid,
         ast_elements: @ast_elements.to_a,
         debug_enabled: @debug_ast_elements,
-        statistics: @ast_element_stats.dup
+        performance_enabled: @performance_tracker.enabled?,
+        statistics: @ast_element_stats.dup,
+        performance: @performance_tracker.all_stats
       }
     end
+
+    # Expose performance tracker for external access
+    attr_reader :performance_tracker
 
     private
 

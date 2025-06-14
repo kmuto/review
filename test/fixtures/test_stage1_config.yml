@@ -1,0 +1,10 @@
+# Stage 1 Test Configuration - Headlines only via AST
+bookname: "stage1-test"
+booktitle: "Stage 1 AST Test"
+
+# Stage 1: Headlines only
+ast:
+  mode: "hybrid"
+  stage: 1
+  debug: true
+  performance: true
