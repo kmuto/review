@@ -5,7 +5,7 @@
 # For simple Hash-based AST testing, see test_astbuilder_simple.rb
 
 require 'json'
-require 'test_helper'
+require_relative 'test_helper'
 require 'review'
 require 'review/jsonbuilder'
 

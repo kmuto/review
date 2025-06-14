@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require File.expand_path('test_helper', __dir__)
+require_relative 'test_helper'
 require 'review/ast'
 require 'review/compiler'
 require 'review/index_builder'

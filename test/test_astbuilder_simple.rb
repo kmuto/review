@@ -4,7 +4,7 @@
 # This tests the simple Hash-based AST structure generation capabilities.
 # For production AST processing tests, see test_full_ast_mode.rb
 
-require 'test_helper'
+require_relative 'test_helper'
 require 'review/astbuilder'
 require 'review/configure'
 require 'review/book'

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require File.expand_path('test_helper', __dir__)
+require_relative 'test_helper'
 require 'review/ast'
 require 'review/ast/json_serializer'
 require 'json'
