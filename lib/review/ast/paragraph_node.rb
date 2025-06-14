@@ -13,9 +13,9 @@ module ReVIEW
       end
 
       def to_h
-        super.merge(
-          content: content
-        )
+        # For paragraph nodes, we don't include the content field in the serialization
+        # Only include the base Node fields (type, location, children)
+        super
       end
     end
   end

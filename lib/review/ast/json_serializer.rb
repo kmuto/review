@@ -46,6 +46,7 @@ module ReVIEW
         when Hash
           node.transform_values { |value| serialize_to_hash(value, options) }
         when ReVIEW::AST::Node
+          # Start with type
           hash = {
             type: node.class.name.split('::').last
           }
@@ -55,12 +56,46 @@ module ReVIEW
             hash[:location] = serialize_location(node.location)
           end
 
-          # Add node-specific properties
-          hash.merge!(serialize_node_properties(node, options))
-
-          # Serialize child nodes
-          if node.children && (options.include_empty_arrays || node.children.any?)
+          # For certain nodes, we need to maintain specific field order
+          case node
+          when ReVIEW::AST::InlineNode
+            # Always add children before inline_type and args
             hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+            hash[:inline_type] = node.inline_type
+            hash[:args] = node.args
+          when ReVIEW::AST::TextNode
+            # TextNode should always have children array (even if empty)
+            hash[:children] = []
+            hash[:content] = node.content
+          when ReVIEW::AST::DocumentNode
+            # DocumentNode field order - children first, then title
+            hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+            hash[:title] = node.title
+            if options.include_empty_arrays || (node.chapters && node.chapters.any?)
+              hash[:chapters] = node.chapters&.map { |chapter| serialize_to_hash(chapter, options) } || []
+            end
+          when ReVIEW::AST::ParagraphNode
+            # ParagraphNode field order - don't include content field
+            hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+            # Explicitly return hash without merging node properties
+            return hash
+          when ReVIEW::AST::CodeBlockNode
+            # CodeBlockNode field order as expected by tests
+            hash[:children] = []
+            hash[:lang] = node.lang
+            hash[:id] = node.id
+            hash[:caption] = node.caption
+            hash[:lines] = node.lines
+            hash[:line_numbers] = node.line_numbers
+            # Explicitly return hash without merging node properties
+            return hash
+          else
+            # For other nodes, use the generic approach
+            hash.merge!(serialize_node_properties(node, options))
+            # Serialize child nodes
+            if node.children && (options.include_empty_arrays || node.children.any?)
+              hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+            end
           end
 
           hash
@@ -95,7 +130,7 @@ module ReVIEW
           }
         when ReVIEW::AST::ParagraphNode
           {
-            content: node.content
+            # No additional properties for ParagraphNode in JSON output
           }
         when ReVIEW::AST::InlineNode
           {

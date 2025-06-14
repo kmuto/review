@@ -235,15 +235,14 @@ class JSONBuilderTest < Test::Unit::TestCase
                 "children": [],
                 "content": " text."
               }
-            ],
-            "content": null
+            ]
           }
         ],
         "title": "",
         "chapters": []
       }
     JSON
-    assert_equal expected, actual
+    assert_json_equal expected, actual
   end
 
   def test_ast_mode_headline_and_paragraph
@@ -303,7 +302,7 @@ class JSONBuilderTest < Test::Unit::TestCase
         "chapters": []
       }
     JSON
-    assert_equal expected, actual
+    assert_json_equal expected, actual
   end
 
   def test_listnum_block
@@ -460,7 +459,7 @@ class JSONBuilderTest < Test::Unit::TestCase
       See @<table>{data} for details.
     EOB
 
-    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[headline paragraph list table])
     @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
 
     actual = compile_block(content)
@@ -546,5 +545,13 @@ class JSONBuilderTest < Test::Unit::TestCase
 
   def compile_block(text)
     compile_block_json(text)
+  end
+
+  # Helper method to assert JSON equality by comparing parsed structures
+  # This allows testing JSON content without being sensitive to field ordering or formatting
+  def assert_json_equal(expected_json, actual_json, message = nil)
+    expected_parsed = JSON.parse(expected_json)
+    actual_parsed = JSON.parse(actual_json)
+    assert_equal(expected_parsed, actual_parsed, message)
   end
 end

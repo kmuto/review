@@ -30,7 +30,9 @@ module ReVIEW
       if @compiler.respond_to?(:ast_result) && @compiler.ast_result
         # Use the AST from the compiler
         require 'review/ast/json_serializer'
-        ReVIEW::AST::JSONSerializer.serialize(@compiler.ast_result)
+        options = ReVIEW::AST::JSONSerializer::Options.new
+        options.include_empty_arrays = true
+        ReVIEW::AST::JSONSerializer.serialize(@compiler.ast_result, options)
       else
         # Use our internal document node
         JSON.pretty_generate(@document_node.to_h)
