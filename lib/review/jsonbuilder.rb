@@ -12,7 +12,7 @@ require 'review/ast'
 module ReVIEW
   class JSONBuilder < Builder
     def initialize(strict = false, *args, **kwargs)
-      super(strict, *args, **kwargs)
+      super
       @document_node = nil
       @current_node = nil
       @node_stack = []
