@@ -780,5 +780,47 @@ module ReVIEW
     def inline_idx(str)
       create_inline_node('idx', str)
     end
+
+    def inline_sup(str)
+      create_inline_node('sup', str)
+    end
+
+    def inline_sub(str)
+      create_inline_node('sub', str)
+    end
+
+    def image_ext
+      # Return the path for image extensions
+      # In JSON mode, we just return a simple string
+      'images'
+    end
+
+    def centering(lines)
+      node = AST::Node.new(location: @location)
+      node.type = 'centering'
+      lines.each do |line|
+        text_node = AST::TextNode.new(location: @location)
+        text_node.content = line
+        node.add_child(text_node)
+      end
+      add_node(node)
+    end
+
+    def comment(lines, caption = nil)
+      # Comments can be processed in draft mode
+      node = AST::Node.new(location: @location)
+      node.type = 'comment'
+      node.content = caption if caption
+      lines&.each do |line|
+        text_node = AST::TextNode.new(location: @location)
+        text_node.content = line
+        node.add_child(text_node)
+      end
+      add_node(node)
+    end
+
+    def inline_comment(str)
+      create_inline_node('comment', str)
+    end
   end
 end
