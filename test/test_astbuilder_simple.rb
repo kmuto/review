@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Test for ASTBuilder - lightweight AST builder for testing and debugging
+# This tests the simple Hash-based AST structure generation capabilities.
+# For production AST processing tests, see test_full_ast_mode.rb
+
 require 'test_helper'
 require 'review/astbuilder'
 require 'review/configure'

@@ -43,9 +43,9 @@ module ReVIEW
           location: location_to_h,
           children: children.map(&:to_h)
         }
-        result[:node_type] = @type if @type
-        result[:id] = @id if @id
-        result[:content] = @content if @content
+        result[:node_type] = @type if @type && !@type.empty?
+        result[:id] = @id if @id && !@id.empty?
+        result[:content] = @content if @content && !@content.empty?
         result
       end
 

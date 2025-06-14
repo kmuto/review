@@ -26,7 +26,15 @@ module ReVIEW
     end
 
     def result
-      JSON.pretty_generate(@document_node.to_h)
+      # In AST mode, check if compiler has provided an AST result
+      if @compiler.respond_to?(:ast_result) && @compiler.ast_result
+        # Use the AST from the compiler
+        require 'review/ast/json_serializer'
+        ReVIEW::AST::JSONSerializer.serialize(@compiler.ast_result)
+      else
+        # Use our internal document node
+        JSON.pretty_generate(@document_node.to_h)
+      end
     end
 
     # Special method to add an AST node directly (used by compiler in AST mode)

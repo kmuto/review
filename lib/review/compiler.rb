@@ -15,6 +15,7 @@ require 'review/location'
 require 'review/loggable'
 require 'review/ast'
 require 'review/ast_renderer'
+require 'review/ast_compiler'
 require 'strscan'
 require 'set'
 
@@ -41,7 +42,12 @@ module ReVIEW
 
       @compile_errors = nil
 
-      ## AST related
+      ## AST related - delegate to ASTCompiler when in AST mode
+      if @ast_mode
+        @ast_compiler = ASTCompiler.new(builder, ast_elements, self)
+      end
+      
+      # Legacy AST fields for backward compatibility
       @ast_root = nil
       @current_ast_node = nil
       @ast_renderer = nil
@@ -66,7 +72,11 @@ module ReVIEW
       @chapter = chap
 
       if @ast_mode
-        compile_to_ast
+        @ast_compiler.compile_to_ast(chap)
+        # Update legacy fields for backward compatibility
+        @ast_root = @ast_compiler.ast_root
+        @current_ast_node = @ast_compiler.current_ast_node
+        @ast_renderer = @ast_compiler.ast_renderer
       else
         do_compile
       end
@@ -78,78 +88,73 @@ module ReVIEW
       @builder.result
     end
 
-    def compile_to_ast
-      @ast_root = AST::DocumentNode.new(Location.new(@chapter.basename, nil))
-      @current_ast_node = @ast_root
-      @ast_renderer = ASTRenderer.new(@builder)
 
-      if @ast_elements.empty?
-        # Full AST mode: build complete AST then render
-        do_compile_with_ast_building
-        @ast_renderer.render(@ast_root) if @ast_renderer
-      else
-        # Hybrid mode: process specified elements via AST, others directly
-        do_compile_hybrid
-      end
-    end
 
-    def do_compile_with_ast_building
-      # This will be implemented later for full AST mode
-      # For now, fall back to regular compilation
-      do_compile
-    end
-
-    def do_compile_hybrid
-      # For hybrid mode, we'll extend do_compile to selectively build AST nodes
-      do_compile
-    end
-
+    # Public AST interface - delegate to ASTCompiler when in AST mode
     def ast_result
-      @ast_root
+      if @ast_mode && @ast_compiler
+        @ast_compiler.ast_result
+      else
+        @ast_root
+      end
     end
 
     # Check if element should be processed via AST
     def should_use_ast?(element)
-      @ast_mode && (@ast_elements.empty? || @ast_elements.include?(element))
+      if @ast_mode && @ast_compiler
+        @ast_compiler.should_use_ast?(element)
+      else
+        @ast_mode && (@ast_elements.empty? || @ast_elements.include?(element))
+      end
     end
 
-    # Build headline AST node
+    # Build headline AST node - delegate to ASTCompiler when in AST mode
     def build_headline_ast(level, label, caption)
-      node = AST::HeadlineNode.new(location)
-      node.level = level
-      node.label = label
-      node.caption = caption
-      @current_ast_node.add_child(node)
+      if @ast_mode && @ast_compiler
+        @ast_compiler.build_headline_ast(level, label, caption)
+      else
+        # Legacy implementation for non-AST mode
+        node = AST::HeadlineNode.new(location)
+        node.level = level
+        node.label = label
+        node.caption = caption
+        @current_ast_node.add_child(node) if @current_ast_node
 
-      # Render immediately in hybrid mode
-      if @ast_renderer
-        # Special handling for JsonBuilder - pass AST node directly
-        if @builder.is_a?(ReVIEW::JSONBuilder)
-          @builder.add_ast_node(node)
-        else
-          @ast_renderer.send(:visit_headline, node)
+        # Render immediately in hybrid mode
+        if @ast_renderer
+          # Special handling for JsonBuilder - pass AST node directly
+          if @builder.is_a?(ReVIEW::JSONBuilder)
+            @builder.add_ast_node(node)
+          else
+            @ast_renderer.send(:visit_headline, node)
+          end
         end
       end
     end
 
-    # Build paragraph AST node
+    # Build paragraph AST node - delegate to ASTCompiler when in AST mode
     def build_paragraph_ast(lines)
-      node = AST::ParagraphNode.new(location)
+      if @ast_mode && @ast_compiler
+        @ast_compiler.build_paragraph_ast(lines)
+      else
+        # Legacy implementation for non-AST mode
+        node = AST::ParagraphNode.new(location)
 
-      # Parse inline elements in each line and create child nodes
-      lines.each do |line|
-        parse_inline_elements(line, node)
-      end
+        # Parse inline elements in each line and create child nodes
+        lines.each do |line|
+          parse_inline_elements(line, node)
+        end
 
-      @current_ast_node.add_child(node)
+        @current_ast_node.add_child(node) if @current_ast_node
 
-      # Render immediately in hybrid mode
-      if @ast_renderer
-        # Special handling for JsonBuilder - pass AST node directly
-        if @builder.is_a?(ReVIEW::JSONBuilder)
-          @builder.add_ast_node(node)
-        else
-          @ast_renderer.send(:visit_paragraph, node)
+        # Render immediately in hybrid mode
+        if @ast_renderer
+          # Special handling for JsonBuilder - pass AST node directly
+          if @builder.is_a?(ReVIEW::JSONBuilder)
+            @builder.add_ast_node(node)
+          else
+            @ast_renderer.send(:visit_paragraph, node)
+          end
         end
       end
     end

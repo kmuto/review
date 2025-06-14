@@ -50,17 +50,10 @@ module ReVIEW
       # Create a temporary chapter for standalone file
       content = File.read(path)
 
-      # Create builder and compiler with AST mode enabled
+      # Create builder and compiler with full AST mode enabled
       builder = ReVIEW::JSONBuilder.new
-      # Get all available elements for AST processing
-      all_elements = %i[paragraph headline list listnum emlist emlistnum
-                        cmd table imgtable emtable ul ol dl
-                        image indepimage numberlessimage source quote
-                        note memo tip info warning important caution notice
-                        inline_b inline_i inline_code inline_tt inline_ruby
-                        inline_href inline_kw inline_hd inline_img inline_list
-                        inline_table inline_embed embed lead footnote]
-      compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: all_elements)
+      # Full AST mode: empty ast_elements array means process everything via AST
+      compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [])
 
       # Create mock chapter object
       basename = File.basename(path)
@@ -70,11 +63,16 @@ module ReVIEW
       # Compile to AST
       compiler.compile(chap)
 
-      # Get the AST root node
-      ast_root = compiler.builder.instance_variable_get(:@document_node)
+      # Get the AST root node from the compiler
+      ast_root = compiler.ast_result
 
-      # Serialize to JSON
-      ReVIEW::AST::JSONSerializer.serialize(ast_root, @serializer_options)
+      # Serialize to JSON if we have an AST root
+      if ast_root
+        ReVIEW::AST::JSONSerializer.serialize(ast_root, @serializer_options)
+      else
+        # Fallback to builder result
+        builder.result
+      end
     end
 
     def dump_with_builder(path, book)

@@ -9,6 +9,27 @@
 require 'review/builder'
 
 module ReVIEW
+  # ASTBuilder - Lightweight AST builder for testing, debugging, and learning purposes
+  #
+  # This builder creates simple Hash-based AST structures that are easy to inspect
+  # and test. For production AST processing, use JSONBuilder with ast_mode: true
+  # which provides full-featured AST nodes with proper type safety and metadata.
+  #
+  # Use cases:
+  # - Unit testing of builder interface
+  # - Quick AST structure debugging
+  # - Learning Re:VIEW document structure
+  # - Lightweight prototyping
+  #
+  # Comparison with Full AST Mode:
+  # - ASTBuilder: Hash structure, lightweight, good for simple tests
+  # - Full AST Mode: Typed nodes, rich metadata, production-ready
+  #
+  # Example:
+  #   builder = ReVIEW::ASTBuilder.new
+  #   builder.headline(1, 'intro', 'Introduction')
+  #   result = builder.result
+  #   # => {"type"=>"document", "children"=>[{"type"=>"heading", ...}]}
   class ASTBuilder < Builder
     def initialize(strict = false, *args, **kwargs)
       super

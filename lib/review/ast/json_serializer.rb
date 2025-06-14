@@ -151,7 +151,16 @@ module ReVIEW
             embed_type: node.embed_type
           }
         else
-          {}
+          # Handle generic Node instances (used for read, minicolumn, etc.)
+          if node.class == ReVIEW::AST::Node
+            result = {}
+            result[:node_type] = node.type if node.type && !node.type.empty?
+            result[:id] = node.id if node.id && !node.id.empty?
+            result[:content] = node.content if node.content && !node.content.empty?
+            result
+          else
+            {}
+          end
         end
       end
 
