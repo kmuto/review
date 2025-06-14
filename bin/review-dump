@@ -1,0 +1,175 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copyright (c) 2024 Minero Aoki, Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review/init'
+require 'review/compiler'
+require 'review/book'
+require 'review/jsonbuilder'
+require 'review/ast/json_serializer'
+require 'optparse'
+require 'json'
+
+def main
+  config = ReVIEW::Configure.values
+  mode = :ast  # Default mode
+  output_file = nil
+  serializer_options = ReVIEW::AST::JSONSerializer::Options.new
+
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($0, '.*')} [options] CHAPTER.re\n" \
+                "Dump Re:VIEW document as AST in JSON format"
+
+  opts.on('-c', '--config=FILE', 'specify config file') do |file|
+    config.deep_merge!(ReVIEW::Configure.create(yamlfile: file).values)
+  end
+
+  opts.on('-o', '--output=FILE', 'output to FILE instead of stdout') do |file|
+    output_file = file
+  end
+
+  opts.on('--mode=MODE', ['ast', 'builder'], 'output mode (ast: AST dump, builder: JSONBuilder output)') do |m|
+    mode = m.to_sym
+  end
+
+  opts.on('--[no-]pretty', 'pretty print JSON (default: true)') do |v|
+    serializer_options.pretty = v
+  end
+
+  opts.on('--[no-]location', 'include location information (default: true)') do |v|
+    serializer_options.include_location = v
+  end
+
+  opts.on('--[no-]empty-arrays', 'include empty arrays (default: false)') do |v|
+    serializer_options.include_empty_arrays = v
+  end
+
+  opts.on('--indent=INDENT', 'indentation for pretty print (default: "  ")') do |v|
+    serializer_options.indent = v
+  end
+
+  opts.on('--compact', 'compact output (no location, no empty arrays, no pretty print)') do
+    serializer_options.pretty = false
+    serializer_options.include_location = false
+    serializer_options.include_empty_arrays = false
+  end
+
+  opts.on('--help', 'print help and exit') do
+    puts opts.help
+    exit 0
+  end
+
+  begin
+    opts.parse!
+  rescue OptionParser::InvalidOption => e
+    $stderr.puts e.message
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  if ARGV.empty?
+    $stderr.puts 'No input files.'
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  # Setup book structure
+  begin
+    book = ReVIEW::Book::Base.new(config: config)
+    
+    # Process each input file
+    ARGV.each do |path|
+      unless File.exist?(path)
+        $stderr.puts "#{path}: file not found"
+        exit 1
+      end
+
+      output = if mode == :ast
+                 dump_ast(path, book, config, serializer_options)
+               else
+                 dump_with_builder(path, book, config)
+               end
+
+      if output_file
+        File.write(output_file, output)
+        $stderr.puts "Output written to: #{output_file}"
+      else
+        puts output
+      end
+    end
+  rescue ReVIEW::ApplicationError => e
+    $stderr.puts "Error: #{e.message}"
+    exit 1
+  rescue Exception => e
+    $stderr.puts "Fatal error: #{e.class}: #{e.message}"
+    $stderr.puts e.backtrace if $DEBUG
+    exit 1
+  end
+end
+
+def dump_ast(path, book, config, serializer_options)
+  # Create a temporary chapter for standalone file
+  content = File.read(path)
+  location = ReVIEW::Location.new(path, nil)
+  
+  # Create builder and compiler with AST mode enabled
+  builder = ReVIEW::JSONBuilder.new
+  # Get all available elements for AST processing
+  all_elements = [:paragraph, :headline, :list, :listnum, :emlist, :emlistnum, 
+                  :cmd, :table, :imgtable, :emtable, :ul, :ol, :dl,
+                  :image, :indepimage, :numberlessimage, :source, :quote,
+                  :note, :memo, :tip, :info, :warning, :important, :caution, :notice,
+                  :inline_b, :inline_i, :inline_code, :inline_tt, :inline_ruby,
+                  :inline_href, :inline_kw, :inline_hd, :inline_img, :inline_list,
+                  :inline_table, :inline_embed, :embed, :lead, :footnote]
+  compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: all_elements)
+  
+  # Create mock chapter object
+  basename = File.basename(path)
+  chap = ReVIEW::Book::Chapter.new(book, nil, basename, path)
+  chap.instance_variable_set(:@content, content)
+  
+  # Compile to AST
+  compiler.compile(chap)
+  
+  # Get the AST root node
+  ast_root = compiler.builder.instance_variable_get(:@document_node)
+  
+  # Serialize to JSON
+  ReVIEW::AST::JSONSerializer.serialize(ast_root, serializer_options)
+end
+
+def dump_with_builder(path, book, config)
+  # Use JSONBuilder to process the file
+  content = File.read(path)
+  
+  # Create compiler with JSONBuilder
+  builder = ReVIEW::JSONBuilder.new
+  compiler = ReVIEW::Compiler.new(builder)
+  
+  # Create mock chapter object
+  basename = File.basename(path)
+  chap = ReVIEW::Book::Chapter.new(book, nil, basename, path)
+  chap.instance_variable_set(:@content, content)
+  
+  # Compile
+  compiler.compile(chap)
+  
+  # Return builder result
+  builder.result
+end
+
+if __FILE__ == $0
+  main
+end
