@@ -21,8 +21,8 @@ module ReVIEW
 
     def bind(compiler, chapter, location)
       super
-      @document_node = AST::DocumentNode.new(location: location)
-      @document_node.title = chapter.title if chapter.respond_to?(:title)
+      title = chapter.respond_to?(:title) ? chapter.title : nil
+      @document_node = AST::DocumentNode.new(location: location, title: title)
       @current_node = @document_node
     end
 
@@ -55,66 +55,77 @@ module ReVIEW
       # Create TextNode for paragraph content to maintain consistency with AST mode
       content = lines.join("\n")
       unless content.empty?
-        text_node = AST::TextNode.new(location: @location)
-        text_node.content = content
+        text_node = AST::TextNode.new(location: @location, content: content)
         node.add_child(text_node)
       end
       add_node(node)
     end
 
     def list(lines, id, caption, lang = nil)
-      node = AST::CodeBlockNode.new(location: @location)
-      node.lang = lang
-      node.id = id
-      node.caption = caption
-      node.lines = lines
-      node.line_numbers = false
+      node = AST::CodeBlockNode.new(
+        location: @location,
+        lang: lang,
+        id: id,
+        caption: caption,
+        lines: lines,
+        line_numbers: false
+      )
       add_node(node)
     end
 
     def listnum(lines, id, caption, lang = nil)
-      node = AST::CodeBlockNode.new(location: @location)
-      node.lang = lang
-      node.id = id
-      node.caption = caption
-      node.lines = lines
-      node.line_numbers = true
+      node = AST::CodeBlockNode.new(
+        location: @location,
+        lang: lang,
+        id: id,
+        caption: caption,
+        lines: lines,
+        line_numbers: true
+      )
       add_node(node)
     end
 
     def emlist(lines, caption = nil, lang = nil)
-      node = AST::CodeBlockNode.new(location: @location)
-      node.lang = lang
-      node.caption = caption
-      node.lines = lines
-      node.line_numbers = false
+      node = AST::CodeBlockNode.new(
+        location: @location,
+        lang: lang,
+        caption: caption,
+        lines: lines,
+        line_numbers: false
+      )
       add_node(node)
     end
 
     def emlistnum(lines, caption = nil, lang = nil)
-      node = AST::CodeBlockNode.new(location: @location)
-      node.lang = lang
-      node.caption = caption
-      node.lines = lines
-      node.line_numbers = true
+      node = AST::CodeBlockNode.new(
+        location: @location,
+        lang: lang,
+        caption: caption,
+        lines: lines,
+        line_numbers: true
+      )
       add_node(node)
     end
 
     def cmd(lines, caption = nil)
-      node = AST::CodeBlockNode.new(location: @location)
-      node.lang = 'shell'
-      node.caption = caption
-      node.lines = lines
-      node.line_numbers = false
+      node = AST::CodeBlockNode.new(
+        location: @location,
+        lang: 'shell',
+        caption: caption,
+        lines: lines,
+        line_numbers: false
+      )
       add_node(node)
     end
 
     def source(lines, caption = nil, lang = nil)
-      node = AST::CodeBlockNode.new(location: @location)
-      node.lang = lang
-      node.caption = caption
-      node.lines = lines
-      node.line_numbers = false
+      node = AST::CodeBlockNode.new(
+        location: @location,
+        lang: lang,
+        caption: caption,
+        lines: lines,
+        line_numbers: false
+      )
       add_node(node)
     end
 
@@ -137,27 +148,34 @@ module ReVIEW
     def table(lines = nil, id = nil, caption = nil)
       # Handle case where lines is nil or empty
       if lines.nil? || lines.empty?
-        node = AST::TableNode.new(location: @location)
-        node.id = id
-        node.caption = caption
-        node.headers = []
-        node.rows = []
+        node = AST::TableNode.new(
+          location: @location,
+          id: id,
+          caption: caption,
+          headers: [],
+          rows: []
+        )
         add_node(node)
         return
       end
 
       sepidx, rows = parse_table_rows(lines)
-      node = AST::TableNode.new(location: @location)
-      node.id = id
-      node.caption = caption
-
+      
       if sepidx
-        node.headers = rows[0...sepidx]
-        node.rows = rows[sepidx..-1]
+        headers = rows[0...sepidx]
+        table_rows = rows[sepidx..-1]
       else
-        node.headers = []
-        node.rows = rows
+        headers = []
+        table_rows = rows
       end
+      
+      node = AST::TableNode.new(
+        location: @location,
+        id: id,
+        caption: caption,
+        headers: headers,
+        rows: table_rows
+      )
 
       add_node(node)
     end
@@ -329,10 +347,12 @@ module ReVIEW
     end
 
     def embed(lines, arg = nil)
-      node = AST::EmbedNode.new(location: @location)
-      node.embed_type = :block
-      node.lines = lines
-      node.arg = arg
+      node = AST::EmbedNode.new(
+        location: @location,
+        embed_type: :block,
+        lines: lines,
+        arg: arg
+      )
       add_node(node)
     end
 
@@ -361,6 +381,12 @@ module ReVIEW
 
     def noindent
       # No-op for JSON output
+    end
+
+    def pagebreak
+      # Create a node to represent the page break
+      node = AST::Node.new(location: @location, type: 'pagebreak')
+      add_node(node)
     end
 
     def footnote(id, str)
@@ -686,6 +712,15 @@ module ReVIEW
     end
 
     def insideout_end(_level)
+      pop_node
+    end
+
+    def notoc_begin(level, label, caption)
+      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'notoc')
+      push_node(node)
+    end
+
+    def notoc_end(_level)
       pop_node
     end
 

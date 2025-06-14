@@ -36,8 +36,10 @@ module ReVIEW
         else
           # This is plain text
           unless word.empty?
-            text_node = AST::TextNode.new(location: @ast_compiler.location)
-            text_node.content = revert_replace_fence(word)
+            text_node = AST::TextNode.new(
+              location: @ast_compiler.location,
+              content: revert_replace_fence(word)
+            )
             parent_node.add_child(text_node)
           end
         end
@@ -72,17 +74,21 @@ module ReVIEW
         create_inline_word_ast_node(op, arg, parent_node)
       else
         # Standard inline processing
-        inline_node = AST::InlineNode.new(location: @ast_compiler.location)
-        inline_node.inline_type = op
-        inline_node.args = [arg]
+        inline_node = AST::InlineNode.new(
+          location: @ast_compiler.location,
+          inline_type: op,
+          args: [arg]
+        )
 
         # Handle nested inline elements in the argument
         if arg.include?('@<')
           parse_inline_elements(arg, inline_node)
         else
           # Simple text argument
-          text_node = AST::TextNode.new(location: @ast_compiler.location)
-          text_node.content = arg
+          text_node = AST::TextNode.new(
+            location: @ast_compiler.location,
+            content: arg
+          )
           inline_node.add_child(text_node)
         end
 
@@ -101,8 +107,10 @@ module ReVIEW
 
     # Create inline ruby AST node
     def create_inline_ruby_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
-      inline_node.inline_type = 'ruby'
+      inline_node = AST::InlineNode.new(
+        location: @ast_compiler.location,
+        inline_type: 'ruby'
+      )
 
       # Parse ruby format: "base_text,ruby_text"
       if arg.include?(',')
@@ -119,8 +127,10 @@ module ReVIEW
         inline_node.add_child(ruby_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location: @ast_compiler.location)
-        text_node.content = arg
+        text_node = AST::TextNode.new(
+          location: @ast_compiler.location,
+          content: arg
+        )
         inline_node.add_child(text_node)
       end
 
@@ -129,8 +139,10 @@ module ReVIEW
 
     # Create inline href AST node
     def create_inline_href_ast_node(arg, parent_node)
-      inline_node = AST::InlineNode.new(location: @ast_compiler.location)
-      inline_node.inline_type = 'href'
+      inline_node = AST::InlineNode.new(
+        location: @ast_compiler.location,
+        inline_type: 'href'
+      )
 
       # Parse href format: "URL" or "URL, display_text"
       text_content = if arg.include?(',')
@@ -142,8 +154,10 @@ module ReVIEW
                        arg # URL as display text
                      end
 
-      text_node = AST::TextNode.new(location: @ast_compiler.location)
-      text_node.content = text_content
+      text_node = AST::TextNode.new(
+        location: @ast_compiler.location,
+        content: text_content
+      )
       inline_node.add_child(text_node)
 
       parent_node.add_child(inline_node)
@@ -169,8 +183,10 @@ module ReVIEW
         inline_node.add_child(supplement_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location: @ast_compiler.location)
-        text_node.content = arg
+        text_node = AST::TextNode.new(
+          location: @ast_compiler.location,
+          content: arg
+        )
         inline_node.add_child(text_node)
       end
 
@@ -197,8 +213,10 @@ module ReVIEW
         inline_node.add_child(heading_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location: @ast_compiler.location)
-        text_node.content = arg
+        text_node = AST::TextNode.new(
+          location: @ast_compiler.location,
+          content: arg
+        )
         inline_node.add_child(text_node)
       end
 
@@ -225,8 +243,10 @@ module ReVIEW
         inline_node.add_child(id_text)
       else
         inline_node.args = [arg]
-        text_node = AST::TextNode.new(location: @ast_compiler.location)
-        text_node.content = arg
+        text_node = AST::TextNode.new(
+          location: @ast_compiler.location,
+          content: arg
+        )
         inline_node.add_child(text_node)
       end
 
@@ -240,8 +260,10 @@ module ReVIEW
 
       # Cross-references typically just have a single ID argument
       inline_node.args = [arg]
-      text_node = AST::TextNode.new(location: @ast_compiler.location)
-      text_node.content = arg
+      text_node = AST::TextNode.new(
+        location: @ast_compiler.location,
+        content: arg
+      )
       inline_node.add_child(text_node)
 
       parent_node.add_child(inline_node)
@@ -254,8 +276,10 @@ module ReVIEW
 
       # Word expansion commands just have the filename argument
       inline_node.args = [arg]
-      text_node = AST::TextNode.new(location: @ast_compiler.location)
-      text_node.content = arg
+      text_node = AST::TextNode.new(
+        location: @ast_compiler.location,
+        content: arg
+      )
       inline_node.add_child(text_node)
 
       parent_node.add_child(inline_node)

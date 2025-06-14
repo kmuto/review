@@ -81,9 +81,12 @@ module ReVIEW
       mock_file = Object.new
       mock_file.define_singleton_method(:lineno) { line_number }
 
-      @ast_root = AST::DocumentNode.new(location: Location.new(@chapter.basename, mock_file))
       # Initialize title to match JSONBuilder behavior
-      @ast_root.title = @chapter.respond_to?(:title) ? @chapter.title : ''
+      title = @chapter.respond_to?(:title) ? @chapter.title : ''
+      @ast_root = AST::DocumentNode.new(
+        location: Location.new(@chapter.basename, mock_file),
+        title: title
+      )
       @current_ast_node = @ast_root
       @ast_renderer = ASTRenderer.new(@builder)
 
@@ -150,12 +153,14 @@ module ReVIEW
       caption = m[4].strip
 
       # For AST mode, we only handle simple headlines (no tagged sections for now)
-      node = AST::HeadlineNode.new(location: location)
-      node.level = level
-      node.label = label
       # Tagged sections - for now, just create a regular headline
       # TODO: Implement proper tagged section support in AST if needed
-      node.caption = caption
+      node = AST::HeadlineNode.new(
+        location: location,
+        level: level,
+        label: label,
+        caption: caption
+      )
       if level == 1 && @ast_root && @ast_root.title.nil?
         @ast_root.title = caption
       end
@@ -203,8 +208,7 @@ module ReVIEW
         # Fallback to original processing for unknown commands
         # This would need access to the original compiler's syntax_descriptor method
         # For now, create a generic node
-        generic_node = AST::Node.new(location: location)
-        generic_node.type = name.to_s
+        generic_node = AST::Node.new(location: location, type: name.to_s)
         @current_ast_node.add_child(generic_node)
       end
     end
@@ -220,10 +224,7 @@ module ReVIEW
 
     # Build headline AST node
     def build_headline_ast(level, label, caption)
-      node = AST::HeadlineNode.new(location: location)
-      node.level = level
-      node.label = label
-      node.caption = caption
+      node = AST::HeadlineNode.new(location: location, level: level, label: label, caption: caption)
       @current_ast_node.add_child(node)
 
       # Render immediately in hybrid mode

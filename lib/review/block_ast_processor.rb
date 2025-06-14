@@ -25,78 +25,110 @@ module ReVIEW
     end
 
     def compile_code_block_to_ast(type, args, lines)
-      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
-
       case type
       when :list, :listnum
-        node.id = args[0]
-        node.caption = args[1]
-        node.lang = args[2]
-        node.line_numbers = (type == :listnum)
+        node = AST::CodeBlockNode.new(
+          location: @ast_compiler.location,
+          id: args[0],
+          caption: args[1],
+          lang: args[2],
+          lines: lines || [],
+          line_numbers: (type == :listnum)
+        )
       when :emlist, :emlistnum
-        node.caption = args[0]
-        node.lang = args[1]
-        node.line_numbers = (type == :emlistnum)
+        node = AST::CodeBlockNode.new(
+          location: @ast_compiler.location,
+          caption: args[0],
+          lang: args[1],
+          lines: lines || [],
+          line_numbers: (type == :emlistnum)
+        )
       when :cmd
-        node.caption = args[0]
-        node.lang = 'shell'
+        node = AST::CodeBlockNode.new(
+          location: @ast_compiler.location,
+          caption: args[0],
+          lang: 'shell',
+          lines: lines || [],
+          line_numbers: false
+        )
       when :source
-        node.caption = args[0]
-        node.lang = args[1]
+        node = AST::CodeBlockNode.new(
+          location: @ast_compiler.location,
+          caption: args[0],
+          lang: args[1],
+          lines: lines || [],
+          line_numbers: false
+        )
       end
-
-      node.lines = lines || []
       @ast_compiler.add_child_to_current_node(node)
     end
 
     def compile_image_to_ast(_type, args)
-      node = AST::ImageNode.new(location: @ast_compiler.location)
-      node.id = args[0]
-      node.caption = args[1]
-      node.metric = args[2]
+      node = AST::ImageNode.new(
+        location: @ast_compiler.location,
+        id: args[0],
+        caption: args[1],
+        metric: args[2]
+      )
 
       @ast_compiler.add_child_to_current_node(node)
     end
 
     def compile_table_to_ast(type, args, lines)
-      node = AST::TableNode.new(location: @ast_compiler.location)
-
-      if type == :table
-        node.id = args[0]
-        node.caption = args[1]
-      else
-        node.caption = args[0]
-      end
-
+      # Parse table data
+      headers = []
+      rows = []
       if lines
         # Simple table parsing for AST mode
         separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
         if separator_index
-          node.headers = lines[0...separator_index]
-          node.rows = lines[(separator_index + 1)..-1] || []
+          headers = lines[0...separator_index]
+          rows = lines[(separator_index + 1)..-1] || []
         else
-          node.headers = []
-          node.rows = lines
+          headers = []
+          rows = lines
         end
+      end
+
+      if type == :table
+        node = AST::TableNode.new(
+          location: @ast_compiler.location,
+          id: args[0],
+          caption: args[1],
+          headers: headers,
+          rows: rows
+        )
+      else
+        node = AST::TableNode.new(
+          location: @ast_compiler.location,
+          caption: args[0],
+          headers: headers,
+          rows: rows
+        )
       end
 
       @ast_compiler.add_child_to_current_node(node)
     end
 
     def compile_list_to_ast(type, lines)
-      node = AST::ListNode.new(location: @ast_compiler.location)
-      node.list_type = type
-
-      # For now, treat lines as simple list items
-      # This would need more sophisticated parsing for nested lists
+      # Create list items
+      items = []
       if lines
         lines.each do |line|
-          item_node = AST::ListItemNode.new(location: @ast_compiler.location)
-          item_node.content = line
-          item_node.level = 1
-          node.items << item_node
+          item_node = AST::ListItemNode.new(
+            location: @ast_compiler.location,
+            content: line,
+            level: 1
+          )
+          items << item_node
         end
       end
+
+      node = AST::ListNode.new(
+        location: @ast_compiler.location,
+        list_type: type,
+        items: items
+      )
 
       @ast_compiler.add_child_to_current_node(node)
     end
@@ -113,15 +145,19 @@ module ReVIEW
     def compile_minicolumn_to_ast(type, args, lines)
       # For now, create a simple container node
       # This could be extended to a specific MinicolumnNode type
-      node = AST::Node.new(location: @ast_compiler.location)
-      node.type = 'minicolumn'
-      node.id = type.to_s
-      node.content = args[0] if args && args[0] # caption
+      node = AST::Node.new(
+        location: @ast_compiler.location,
+        type: 'minicolumn',
+        id: type.to_s,
+        content: args && args[0] ? args[0] : nil
+      )
 
       if lines
         lines.each do |line|
-          text_node = AST::TextNode.new(location: @ast_compiler.location)
-          text_node.content = line
+          text_node = AST::TextNode.new(
+            location: @ast_compiler.location,
+            content: line
+          )
           node.add_child(text_node)
         end
       end
@@ -130,25 +166,31 @@ module ReVIEW
     end
 
     def compile_embed_to_ast(args, lines)
-      node = AST::EmbedNode.new(location: @ast_compiler.location)
-      node.embed_type = :block
-      node.arg = args[0] if args
-      node.lines = lines || []
+      node = AST::EmbedNode.new(
+        location: @ast_compiler.location,
+        embed_type: :block,
+        arg: args[0],
+        lines: lines || []
+      )
 
       @ast_compiler.add_child_to_current_node(node)
     end
 
     def compile_read_to_ast(lines)
       # Create a generic node for read blocks
-      node = AST::Node.new(location: @ast_compiler.location)
-      node.type = 'read'
-      node.content = (lines || []).join("\n")
+      node = AST::Node.new(
+        location: @ast_compiler.location,
+        type: 'read',
+        content: (lines || []).join("\n")
+      )
 
       # Process each line as text content
       if lines
         lines.each do |line|
-          text_node = AST::TextNode.new(location: @ast_compiler.location)
-          text_node.content = line
+          text_node = AST::TextNode.new(
+            location: @ast_compiler.location,
+            content: line
+          )
           node.add_child(text_node)
         end
       end
@@ -183,18 +225,22 @@ module ReVIEW
         build_raw_ast(args, lines)
       else
         # Fallback - create generic node
-        generic_node = AST::Node.new(location: @ast_compiler.location)
-        generic_node.type = command_name.to_s
+        generic_node = AST::Node.new(
+          location: @ast_compiler.location,
+          type: command_name.to_s
+        )
         @ast_compiler.add_child_to_current_node(generic_node)
       end
     end
 
     # Build embed AST node
     def build_embed_ast(args, lines)
-      node = AST::EmbedNode.new(location: @ast_compiler.location)
-      node.embed_type = :block
-      node.lines = lines || []
-      node.arg = args.first if args&.any?
+      node = AST::EmbedNode.new(
+        location: @ast_compiler.location,
+        embed_type: :block,
+        lines: lines || [],
+        arg: args&.any? ? args.first : nil
+      )
       @ast_compiler.add_child_to_current_node(node)
 
       # Render immediately in hybrid mode
@@ -203,12 +249,14 @@ module ReVIEW
 
     # Build list/listnum AST node
     def build_list_ast(command_name, args, lines)
-      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
-      node.id = args[0] if args&.any?
-      node.caption = args[1] if args && args.size > 1
-      node.lang = args[2] if args && args.size > 2
-      node.lines = lines || []
-      node.line_numbers = (command_name == :listnum)
+      node = AST::CodeBlockNode.new(
+        location: @ast_compiler.location,
+        id: args&.any? ? args[0] : nil,
+        caption: args && args.size > 1 ? args[1] : nil,
+        lang: args && args.size > 2 ? args[2] : nil,
+        lines: lines || [],
+        line_numbers: (command_name == :listnum)
+      )
       @ast_compiler.add_child_to_current_node(node)
 
       # Render immediately in hybrid mode
@@ -217,11 +265,13 @@ module ReVIEW
 
     # Build emlist/emlistnum AST node
     def build_emlist_ast(command_name, args, lines)
-      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
-      node.caption = args[0] if args&.any?
-      node.lang = args[1] if args && args.size > 1
-      node.lines = lines || []
-      node.line_numbers = (command_name == :emlistnum)
+      node = AST::CodeBlockNode.new(
+        location: @ast_compiler.location,
+        caption: args&.any? ? args[0] : nil,
+        lang: args && args.size > 1 ? args[1] : nil,
+        lines: lines || [],
+        line_numbers: (command_name == :emlistnum)
+      )
       @ast_compiler.add_child_to_current_node(node)
 
       # Render immediately in hybrid mode
@@ -230,10 +280,12 @@ module ReVIEW
 
     # Build source AST node
     def build_source_ast(args, lines)
-      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
-      node.caption = args[0] if args&.any?
-      node.lang = args[1] if args && args.size > 1
-      node.lines = lines || []
+      node = AST::CodeBlockNode.new(
+        location: @ast_compiler.location,
+        caption: args&.any? ? args[0] : nil,
+        lang: args && args.size > 1 ? args[1] : nil,
+        lines: lines || []
+      )
       @ast_compiler.add_child_to_current_node(node)
 
       # Render immediately in hybrid mode
@@ -242,10 +294,12 @@ module ReVIEW
 
     # Build cmd AST node
     def build_cmd_ast(args, lines)
-      node = AST::CodeBlockNode.new(location: @ast_compiler.location)
-      node.caption = args[0] if args&.any?
-      node.lang = 'shell'
-      node.lines = lines || []
+      node = AST::CodeBlockNode.new(
+        location: @ast_compiler.location,
+        caption: args&.any? ? args[0] : nil,
+        lang: 'shell',
+        lines: lines || []
+      )
       @ast_compiler.add_child_to_current_node(node)
 
       # Render immediately in hybrid mode
@@ -254,20 +308,26 @@ module ReVIEW
 
     # Build table AST node
     def build_table_ast(_command_name, args, lines)
-      node = AST::TableNode.new(location: @ast_compiler.location)
-      node.id = args[0] if args&.any?
-      node.caption = args[1] if args && args.size > 1
-
       # Parse table content
+      headers = []
+      rows = []
       if lines && lines.any?
         separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
         if separator_index
-          node.headers = lines[0...separator_index]
-          node.rows = lines[(separator_index + 1)..-1] || []
+          headers = lines[0...separator_index]
+          rows = lines[(separator_index + 1)..-1] || []
         else
-          node.rows = lines
+          rows = lines
         end
       end
+
+      node = AST::TableNode.new(
+        location: @ast_compiler.location,
+        id: args&.any? ? args[0] : nil,
+        caption: args && args.size > 1 ? args[1] : nil,
+        headers: headers,
+        rows: rows
+      )
 
       @ast_compiler.add_child_to_current_node(node)
 
@@ -277,10 +337,12 @@ module ReVIEW
 
     # Build image AST node
     def build_image_ast(_command_name, args, _lines)
-      node = AST::ImageNode.new(location: @ast_compiler.location)
-      node.id = args[0] if args&.any?
-      node.caption = args[1] if args && args.size > 1
-      node.metric = args[2] if args && args.size > 2
+      node = AST::ImageNode.new(
+        location: @ast_compiler.location,
+        id: args&.any? ? args[0] : nil,
+        caption: args && args.size > 1 ? args[1] : nil,
+        metric: args && args.size > 2 ? args[2] : nil
+      )
       @ast_compiler.add_child_to_current_node(node)
 
       # Render immediately in hybrid mode
@@ -310,7 +372,10 @@ module ReVIEW
 
     # Build minicolumn AST node (note, memo, tip, etc.)
     def build_minicolumn_ast(command_name, args, lines)
-      node = AST::ParagraphNode.new(location: @ast_compiler.location)
+      node = AST::ParagraphNode.new(
+        location: @ast_compiler.location
+      )
+      # Note: content is set separately as ParagraphNode doesn't accept content in constructor
       node.content = "#{command_name}: #{args.first || ''}"
 
       # Parse inline elements in minicolumn content
@@ -343,10 +408,12 @@ module ReVIEW
 
     # Build raw AST node
     def build_raw_ast(args, lines)
-      node = AST::EmbedNode.new(location: @ast_compiler.location)
-      node.embed_type = :raw
-      node.lines = lines || []
-      node.arg = args.first if args&.any?
+      node = AST::EmbedNode.new(
+        location: @ast_compiler.location,
+        embed_type: :raw,
+        lines: lines || [],
+        arg: args&.any? ? args.first : nil
+      )
       @ast_compiler.add_child_to_current_node(node)
 
       # Render immediately in hybrid mode
@@ -357,8 +424,10 @@ module ReVIEW
 
     # Build unordered list AST node
     def build_ulist_ast(f)
-      node = AST::ListNode.new(location: @ast_compiler.location)
-      node.list_type = :ul
+      node = AST::ListNode.new(
+        location: @ast_compiler.location,
+        list_type: :ul
+      )
 
       level = 0
       f.while_match(/\A\s+\*|\A\#@/) do |line|
@@ -373,8 +442,10 @@ module ReVIEW
         line =~ /\A\s+(\*+)/
         current_level = $1.size
 
-        item_node = AST::ListItemNode.new(location: @ast_compiler.location)
-        item_node.level = current_level
+        item_node = AST::ListItemNode.new(
+          location: @ast_compiler.location,
+          level: current_level
+        )
 
         # Parse inline elements in item content
         raw_lines.each do |raw_line|
@@ -393,8 +464,10 @@ module ReVIEW
 
     # Build ordered list AST node
     def build_olist_ast(f)
-      node = AST::ListNode.new(location: @ast_compiler.location)
-      node.list_type = :ol
+      node = AST::ListNode.new(
+        location: @ast_compiler.location,
+        list_type: :ol
+      )
 
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
         next if /\A\#@/.match?(line)
@@ -405,9 +478,11 @@ module ReVIEW
           raw_lines.push(cont.strip)
         end
 
-        item_node = AST::ListItemNode.new(location: @ast_compiler.location)
-        item_node.level = 1
-        item_node.content = num # Store original number for reference
+        item_node = AST::ListItemNode.new(
+          location: @ast_compiler.location,
+          level: 1,
+          content: num # Store original number for reference
+        )
 
         # Parse inline elements in item content
         raw_lines.each do |raw_line|
@@ -425,14 +500,18 @@ module ReVIEW
 
     # Build definition list AST node
     def build_dlist_ast(f)
-      node = AST::ListNode.new(location: @ast_compiler.location)
-      node.list_type = :dl
+      node = AST::ListNode.new(
+        location: @ast_compiler.location,
+        list_type: :dl
+      )
 
       while /\A\s*:/ =~ f.peek
         # Get definition term
         dt_line = f.gets.sub(/\A\s*:/, '').strip
-        dt_node = AST::ListItemNode.new(location: @ast_compiler.location)
-        dt_node.level = 1
+        dt_node = AST::ListItemNode.new(
+          location: @ast_compiler.location,
+          level: 1
+        )
         @ast_compiler.inline_processor.parse_inline_elements(dt_line, dt_node)
 
         # Get definition description
@@ -442,8 +521,10 @@ module ReVIEW
         end
 
         # Create a container node for the dt/dd pair
-        item_node = AST::ListItemNode.new(location: @ast_compiler.location)
-        item_node.level = 1
+        item_node = AST::ListItemNode.new(
+          location: @ast_compiler.location,
+          level: 1
+        )
 
         # Add dt as first child
         item_node.add_child(dt_node)
