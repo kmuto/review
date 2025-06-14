@@ -5,22 +5,20 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class HeadlineNode < Node
-      attr_accessor :level, :label, :caption, :type
+      attr_accessor :level, :label, :caption
 
       def initialize(location = nil)
         super
         @level = nil
         @label = nil
         @caption = nil
-        @type = nil
       end
 
       def to_h
         super.merge(
           level: level,
           label: label,
-          caption: caption,
-          type: type
+          caption: caption
         )
       end
     end

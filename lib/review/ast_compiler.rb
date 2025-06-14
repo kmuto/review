@@ -52,6 +52,8 @@ module ReVIEW
     def compile_to_ast(chapter)
       @chapter = chapter
       @ast_root = AST::DocumentNode.new(Location.new(@chapter.basename, nil))
+      # Initialize title to match JSONBuilder behavior
+      @ast_root.title = @chapter.respond_to?(:title) ? @chapter.title : ""
       @current_ast_node = @ast_root
       @ast_renderer = ASTRenderer.new(@builder)
 
