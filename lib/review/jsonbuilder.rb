@@ -46,16 +46,16 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
-      node = AST::HeadlineNode.new(location: @location, level: level, label: label, caption: caption)
+      node = AST::HeadlineNode.new(location: location, level: level, label: label, caption: caption)
       add_node(node)
     end
 
     def paragraph(lines)
-      node = AST::ParagraphNode.new(location: @location)
+      node = AST::ParagraphNode.new(location: location)
       # Create TextNode for paragraph content to maintain consistency with AST mode
       content = lines.join("\n")
       unless content.empty?
-        text_node = AST::TextNode.new(location: @location, content: content)
+        text_node = AST::TextNode.new(location: location, content: content)
         node.add_child(text_node)
       end
       add_node(node)
@@ -63,7 +63,7 @@ module ReVIEW
 
     def list(lines, id, caption, lang = nil)
       node = AST::CodeBlockNode.new(
-        location: @location,
+        location: location,
         lang: lang,
         id: id,
         caption: caption,
@@ -75,7 +75,7 @@ module ReVIEW
 
     def listnum(lines, id, caption, lang = nil)
       node = AST::CodeBlockNode.new(
-        location: @location,
+        location: location,
         lang: lang,
         id: id,
         caption: caption,
@@ -87,7 +87,7 @@ module ReVIEW
 
     def emlist(lines, caption = nil, lang = nil)
       node = AST::CodeBlockNode.new(
-        location: @location,
+        location: location,
         lang: lang,
         caption: caption,
         lines: lines,
@@ -98,7 +98,7 @@ module ReVIEW
 
     def emlistnum(lines, caption = nil, lang = nil)
       node = AST::CodeBlockNode.new(
-        location: @location,
+        location: location,
         lang: lang,
         caption: caption,
         lines: lines,
@@ -109,7 +109,7 @@ module ReVIEW
 
     def cmd(lines, caption = nil)
       node = AST::CodeBlockNode.new(
-        location: @location,
+        location: location,
         lang: 'shell',
         caption: caption,
         lines: lines,
@@ -120,7 +120,7 @@ module ReVIEW
 
     def source(lines, caption = nil, lang = nil)
       node = AST::CodeBlockNode.new(
-        location: @location,
+        location: location,
         lang: lang,
         caption: caption,
         lines: lines,
@@ -130,7 +130,7 @@ module ReVIEW
     end
 
     def image(_lines, id, caption = nil, metric = nil)
-      node = AST::ImageNode.new(location: @location)
+      node = AST::ImageNode.new(location: location)
       node.id = id
       node.caption = caption
       node.metric = metric
@@ -149,7 +149,7 @@ module ReVIEW
       # Handle case where lines is nil or empty
       if lines.nil? || lines.empty?
         node = AST::TableNode.new(
-          location: @location,
+          location: location,
           id: id,
           caption: caption,
           headers: [],
@@ -170,7 +170,7 @@ module ReVIEW
       end
       
       node = AST::TableNode.new(
-        location: @location,
+        location: location,
         id: id,
         caption: caption,
         headers: headers,
@@ -185,13 +185,13 @@ module ReVIEW
     end
 
     def ul_begin(&_block)
-      node = AST::ListNode.new(location: @location)
+      node = AST::ListNode.new(location: location)
       node.list_type = :ul
       push_node(node)
     end
 
     def ul_item_begin(lines)
-      item_node = AST::ListItemNode.new(location: @location)
+      item_node = AST::ListItemNode.new(location: location)
       item_node.content = lines.join("\n")
       @current_node.items << item_node
     end
@@ -205,13 +205,13 @@ module ReVIEW
     end
 
     def ol_begin
-      node = AST::ListNode.new(location: @location)
+      node = AST::ListNode.new(location: location)
       node.list_type = :ol
       push_node(node)
     end
 
     def ol_item(lines, num)
-      item_node = AST::ListItemNode.new(location: @location)
+      item_node = AST::ListItemNode.new(location: location)
       item_node.content = lines.join("\n")
       item_node.level = num.to_i
       @current_node.items << item_node
@@ -222,13 +222,13 @@ module ReVIEW
     end
 
     def dl_begin
-      node = AST::ListNode.new(location: @location)
+      node = AST::ListNode.new(location: location)
       node.list_type = :dl
       push_node(node)
     end
 
     def dt(str)
-      item_node = AST::ListItemNode.new(location: @location)
+      item_node = AST::ListItemNode.new(location: location)
       item_node.content = str
       @current_node.items << item_node
     end
@@ -236,7 +236,7 @@ module ReVIEW
     def dd(lines)
       # Associate dd with the previous dt by adding to the last item
       if @current_node.items.last
-        @current_node.items.last.children << AST::ParagraphNode.new(location: @location).tap do |para|
+        @current_node.items.last.children << AST::ParagraphNode.new(location: location).tap do |para|
           para.content = lines.join("\n")
         end
       end
@@ -348,7 +348,7 @@ module ReVIEW
 
     def embed(lines, arg = nil)
       node = AST::EmbedNode.new(
-        location: @location,
+        location: location,
         embed_type: :block,
         lines: lines,
         arg: arg
@@ -362,17 +362,17 @@ module ReVIEW
     end
 
     def quote(lines)
-      node = AST::ParagraphNode.new(location: @location)
+      node = AST::ParagraphNode.new(location: location)
       node.content = lines.join("\n")
       add_node(node)
     end
 
     # Block commands that were missing
     def lead(lines)
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'lead'
       lines.each do |line|
-        text_node = AST::TextNode.new(location: @location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = line
         node.add_child(text_node)
       end
@@ -385,12 +385,12 @@ module ReVIEW
 
     def pagebreak
       # Create a node to represent the page break
-      node = AST::Node.new(location: @location, type: 'pagebreak')
+      node = AST::Node.new(location: location, type: 'pagebreak')
       add_node(node)
     end
 
     def footnote(id, str)
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'footnote'
       node.id = id
       node.content = str
@@ -412,7 +412,7 @@ module ReVIEW
 
     # Section types that were missing
     def nonum_begin(level, label, caption)
-      node = AST::HeadlineNode.new(location: @location)
+      node = AST::HeadlineNode.new(location: location)
       node.level = level
       node.label = label
       node.caption = caption
@@ -425,7 +425,7 @@ module ReVIEW
     end
 
     def nodisp_begin(level, label, caption)
-      node = AST::HeadlineNode.new(location: @location)
+      node = AST::HeadlineNode.new(location: location)
       node.level = level
       node.label = label
       node.caption = caption
@@ -477,7 +477,7 @@ module ReVIEW
     end
 
     def captionblock(_type, lines, _caption, _specialstyle = nil)
-      node = AST::ParagraphNode.new(location: @location)
+      node = AST::ParagraphNode.new(location: location)
       node.content = lines.join("\n")
       # Also preserves type and caption information (dedicated node types planned for future)
       add_node(node)
@@ -487,7 +487,7 @@ module ReVIEW
     def note_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'note'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'note'
       node.content = caption if caption
       push_node(node)
@@ -501,7 +501,7 @@ module ReVIEW
     def memo_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'memo'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'memo'
       node.content = caption if caption
       push_node(node)
@@ -515,7 +515,7 @@ module ReVIEW
     def tip_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'tip'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'tip'
       node.content = caption if caption
       push_node(node)
@@ -529,7 +529,7 @@ module ReVIEW
     def info_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'info'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'info'
       node.content = caption if caption
       push_node(node)
@@ -543,7 +543,7 @@ module ReVIEW
     def warning_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'warning'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'warning'
       node.content = caption if caption
       push_node(node)
@@ -557,7 +557,7 @@ module ReVIEW
     def important_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'important'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'important'
       node.content = caption if caption
       push_node(node)
@@ -571,7 +571,7 @@ module ReVIEW
     def caution_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'caution'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'caution'
       node.content = caption if caption
       push_node(node)
@@ -585,7 +585,7 @@ module ReVIEW
     def notice_begin(caption = nil)
       check_nested_minicolumn
       @doc_status[:minicolumn] = 'notice'
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'notice'
       node.content = caption if caption
       push_node(node)
@@ -608,7 +608,7 @@ module ReVIEW
     # Additional block commands
     def imgtable(_lines, id = nil, caption = nil, metric = nil)
       # For JSON, treat as image with table type
-      node = AST::ImageNode.new(location: @location)
+      node = AST::ImageNode.new(location: location)
       node.id = id
       node.caption = caption
       node.metric = metric
@@ -617,10 +617,10 @@ module ReVIEW
 
     def flushright(lines)
       # For JSON, treat as generic node
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'flushright'
       lines.each do |line|
-        text_node = AST::TextNode.new(location: @location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = line
         node.add_child(text_node)
       end
@@ -629,12 +629,12 @@ module ReVIEW
 
     def texequation(lines, id = nil, caption = nil)
       # For JSON, create a generic node for TeX equations
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'texequation'
       node.id = id if id
       node.content = caption if caption
       lines&.each do |line|
-        text_node = AST::TextNode.new(location: @location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = line
         node.add_child(text_node)
       end
@@ -643,7 +643,7 @@ module ReVIEW
 
     def label(id)
       # For JSON, create a generic node for labels
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'label'
       node.id = id
       add_node(node)
@@ -661,7 +661,7 @@ module ReVIEW
 
     # Tagged section support
     def column_begin(level, label, caption)
-      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'column')
+      node = AST::ColumnNode.new(location: location, level: level, label: label, caption: caption, column_type: 'column')
       push_node(node)
     end
 
@@ -670,7 +670,7 @@ module ReVIEW
     end
 
     def xcolumn_begin(level, label, caption)
-      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'xcolumn')
+      node = AST::ColumnNode.new(location: location, level: level, label: label, caption: caption, column_type: 'xcolumn')
       push_node(node)
     end
 
@@ -680,7 +680,7 @@ module ReVIEW
 
     # Support for other column types that may exist
     def world_begin(level, label, caption)
-      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'world')
+      node = AST::ColumnNode.new(location: location, level: level, label: label, caption: caption, column_type: 'world')
       push_node(node)
     end
 
@@ -689,7 +689,7 @@ module ReVIEW
     end
 
     def hood_begin(level, label, caption)
-      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'hood')
+      node = AST::ColumnNode.new(location: location, level: level, label: label, caption: caption, column_type: 'hood')
       push_node(node)
     end
 
@@ -698,7 +698,7 @@ module ReVIEW
     end
 
     def edition_begin(level, label, caption)
-      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'edition')
+      node = AST::ColumnNode.new(location: location, level: level, label: label, caption: caption, column_type: 'edition')
       push_node(node)
     end
 
@@ -707,7 +707,7 @@ module ReVIEW
     end
 
     def insideout_begin(level, label, caption)
-      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'insideout')
+      node = AST::ColumnNode.new(location: location, level: level, label: label, caption: caption, column_type: 'insideout')
       push_node(node)
     end
 
@@ -716,7 +716,7 @@ module ReVIEW
     end
 
     def notoc_begin(level, label, caption)
-      node = AST::ColumnNode.new(location: @location, level: level, label: label, caption: caption, column_type: 'notoc')
+      node = AST::ColumnNode.new(location: location, level: level, label: label, caption: caption, column_type: 'notoc')
       push_node(node)
     end
 
@@ -796,10 +796,10 @@ module ReVIEW
     end
 
     def centering(lines)
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'centering'
       lines.each do |line|
-        text_node = AST::TextNode.new(location: @location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = line
         node.add_child(text_node)
       end
@@ -808,11 +808,11 @@ module ReVIEW
 
     def comment(lines, caption = nil)
       # Comments can be processed in draft mode
-      node = AST::Node.new(location: @location)
+      node = AST::Node.new(location: location)
       node.type = 'comment'
       node.content = caption if caption
       lines&.each do |line|
-        text_node = AST::TextNode.new(location: @location)
+        text_node = AST::TextNode.new(location: location)
         text_node.content = line
         node.add_child(text_node)
       end
