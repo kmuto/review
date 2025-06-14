@@ -261,7 +261,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.instance_of?(::ReVIEW::JSONBuilder)
+        if @builder.class.name == 'ReVIEW::JSONBuilder'
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_headline, node)
@@ -283,7 +283,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.instance_of?(::ReVIEW::JSONBuilder)
+        if @builder.class.name == 'ReVIEW::JSONBuilder'
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_paragraph, node)

@@ -1,0 +1,10 @@
+# Stage 2 Test Configuration - Headlines + Paragraphs via AST
+bookname: "stage2-test"
+booktitle: "Stage 2 AST Test"
+
+# Stage 2: Headlines + Paragraphs
+ast:
+  mode: "hybrid"
+  stage: 2
+  debug: true
+  performance: true
