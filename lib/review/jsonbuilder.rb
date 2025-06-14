@@ -56,7 +56,7 @@ module ReVIEW
       node = AST::ParagraphNode.new(@location)
       # Create TextNode for paragraph content to maintain consistency with AST mode
       content = lines.join("\n")
-      if !content.empty?
+      unless content.empty?
         text_node = AST::TextNode.new(@location)
         text_node.content = content
         node.add_child(text_node)
@@ -221,7 +221,8 @@ module ReVIEW
 
     # Inline element processing
     def compile_inline(str)
-      # Currently returns as-is (detailed implementation planned for Phase 2)
+      # For traditional mode, return unprocessed inline content
+      # For AST processing, use compile_inline_ast helper method
       str
     end
 

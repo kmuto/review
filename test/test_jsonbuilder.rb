@@ -251,7 +251,7 @@ class JSONBuilderTest < Test::Unit::TestCase
         "chapters": []
       }
     JSON
-    assert_json_equal expected, actual
+    assert_json_equal(expected, actual)
   end
 
   def test_ast_mode_headline_and_paragraph
@@ -311,7 +311,7 @@ class JSONBuilderTest < Test::Unit::TestCase
         "chapters": []
       }
     JSON
-    assert_json_equal expected, actual
+    assert_json_equal(expected, actual)
   end
 
   def test_listnum_block
@@ -413,6 +413,40 @@ class JSONBuilderTest < Test::Unit::TestCase
     # Quote blocks are handled as paragraph nodes in JsonBuilder
     quote = json['children'].find { |child| child['type'] == 'ParagraphNode' }
     assert_not_nil(quote)
+  end
+
+  def test_inline_elements_ast_structure
+    # Test that compile_inline returns AST structure for inline elements
+
+    # Test @<code>{code snippet}
+    result = compile_inline_ast('@<code>{code snippet}')
+    json = JSON.parse(result)
+
+    assert_equal 'InlineNode', json['type']
+    assert_equal 'code', json['inline_type']
+    assert_equal ['code snippet'], json['args']
+    assert_equal 1, json['children'].size
+    assert_equal 'TextNode', json['children'][0]['type']
+    assert_equal 'code snippet', json['children'][0]['content']
+
+    # Test @<b>{bold text}
+    result = compile_inline_ast('@<b>{bold text}')
+    json = JSON.parse(result)
+
+    assert_equal 'InlineNode', json['type']
+    assert_equal 'b', json['inline_type']
+    assert_equal ['bold text'], json['args']
+    assert_equal 1, json['children'].size
+    assert_equal 'TextNode', json['children'][0]['type']
+    assert_equal 'bold text', json['children'][0]['content']
+
+    # Test @<i>{italic text}
+    result = compile_inline_ast('@<i>{italic text}')
+    json = JSON.parse(result)
+
+    assert_equal 'InlineNode', json['type']
+    assert_equal 'i', json['inline_type']
+    assert_equal ['italic text'], json['args']
   end
 
   def test_inline_elements_unprocessed
@@ -562,5 +596,24 @@ class JSONBuilderTest < Test::Unit::TestCase
     expected_parsed = JSON.parse(expected_json)
     actual_parsed = JSON.parse(actual_json)
     assert_equal(expected_parsed, actual_parsed, message)
+  end
+
+  # Helper method to compile inline elements and return AST structure
+  def compile_inline_ast(text)
+    # Create a minimal paragraph with inline element to get AST structure
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[paragraph])
+    @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
+
+    # Compile a paragraph containing the inline element
+    paragraph_content = "Text with #{text} element."
+    result = compile_block(paragraph_content)
+    json = JSON.parse(result)
+
+    # Extract the inline node from the paragraph
+    paragraph = json['children'].find { |child| child['type'] == 'ParagraphNode' }
+    inline_node = paragraph['children'].find { |child| child['type'] == 'InlineNode' }
+
+    # Return the inline node as JSON
+    JSON.pretty_generate(inline_node)
   end
 end

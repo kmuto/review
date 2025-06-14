@@ -46,61 +46,91 @@ module ReVIEW
         when Hash
           node.transform_values { |value| serialize_to_hash(value, options) }
         when ReVIEW::AST::Node
-          # Start with type
-          hash = {
-            type: node.class.name.split('::').last
-          }
-
-          # Include location information
-          if options.include_location && node.location
-            hash[:location] = serialize_location(node.location)
-          end
-
-          # For certain nodes, we need to maintain specific field order
-          case node
-          when ReVIEW::AST::InlineNode
-            # Always add children before inline_type and args
-            hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
-            hash[:inline_type] = node.inline_type
-            hash[:args] = node.args
-          when ReVIEW::AST::TextNode
-            # TextNode should always have children array (even if empty)
-            hash[:children] = []
-            hash[:content] = node.content
-          when ReVIEW::AST::DocumentNode
-            # DocumentNode field order - children first, then title
-            hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
-            hash[:title] = node.title
-            if options.include_empty_arrays || (node.chapters && node.chapters.any?)
-              hash[:chapters] = node.chapters&.map { |chapter| serialize_to_hash(chapter, options) } || []
-            end
-          when ReVIEW::AST::ParagraphNode
-            # ParagraphNode uses standard Node serialization (children only)
-            hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
-            return hash
-          when ReVIEW::AST::CodeBlockNode
-            # CodeBlockNode field order as expected by tests
-            hash[:children] = []
-            hash[:lang] = node.lang
-            hash[:id] = node.id
-            hash[:caption] = node.caption
-            hash[:lines] = node.lines
-            hash[:line_numbers] = node.line_numbers
-            # Explicitly return hash without merging node properties
-            return hash
-          else
-            # For other nodes, use the generic approach
-            hash.merge!(serialize_node_properties(node, options))
-            # Serialize child nodes
-            if node.children && (options.include_empty_arrays || node.children.any?)
-              hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
-            end
-          end
-
-          hash
+          serialize_ast_node_to_hash(node, options)
         else
           node
         end
+      end
+
+      # Serialize AST Node to Hash with specific ordering
+      def serialize_ast_node_to_hash(node, options)
+        # Start with type
+        hash = {
+          type: node.class.name.split('::').last
+        }
+
+        # Include location information
+        if options.include_location && node.location
+          hash[:location] = serialize_location(node.location)
+        end
+
+        # Handle specific node types with custom serialization
+        case node
+        when ReVIEW::AST::InlineNode
+          serialize_inline_node(node, hash, options)
+        when ReVIEW::AST::TextNode
+          serialize_text_node(node, hash)
+        when ReVIEW::AST::DocumentNode
+          serialize_document_node(node, hash, options)
+        when ReVIEW::AST::ParagraphNode
+          serialize_paragraph_node(node, hash, options)
+        when ReVIEW::AST::CodeBlockNode
+          serialize_code_block_node(node, hash)
+        else
+          serialize_generic_node(node, hash, options)
+        end
+      end
+
+      # Serialize InlineNode
+      def serialize_inline_node(node, hash, options)
+        hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+        hash[:inline_type] = node.inline_type
+        hash[:args] = node.args
+        hash
+      end
+
+      # Serialize TextNode
+      def serialize_text_node(node, hash)
+        hash[:children] = []
+        hash[:content] = node.content
+        hash
+      end
+
+      # Serialize DocumentNode
+      def serialize_document_node(node, hash, options)
+        hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+        hash[:title] = node.title
+        if options.include_empty_arrays || (node.chapters && node.chapters.any?)
+          hash[:chapters] = node.chapters&.map { |chapter| serialize_to_hash(chapter, options) } || []
+        end
+        hash
+      end
+
+      # Serialize ParagraphNode
+      def serialize_paragraph_node(node, hash, options)
+        hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+        hash
+      end
+
+      # Serialize CodeBlockNode
+      def serialize_code_block_node(node, hash)
+        hash[:children] = []
+        hash[:lang] = node.lang
+        hash[:id] = node.id
+        hash[:caption] = node.caption
+        hash[:lines] = node.lines
+        hash[:line_numbers] = node.line_numbers
+        hash
+      end
+
+      # Serialize generic Node
+      def serialize_generic_node(node, hash, options)
+        hash.merge!(serialize_node_properties(node, options))
+        # Serialize child nodes
+        if node.children && (options.include_empty_arrays || node.children.any?)
+          hash[:children] = node.children.map { |child| serialize_to_hash(child, options) }
+        end
+        hash
       end
 
       # Serialize location information
@@ -122,165 +152,138 @@ module ReVIEW
       def serialize_node_properties(node, options)
         case node
         when ReVIEW::AST::HeadlineNode
-          {
-            level: node.level,
-            label: node.label,
-            caption: node.caption
-          }
+          serialize_headline_properties(node)
         when ReVIEW::AST::ParagraphNode
-          {
-            # ParagraphNode has no additional properties beyond base Node
-          }
+          serialize_paragraph_properties
         when ReVIEW::AST::InlineNode
-          {
-            inline_type: node.inline_type,
-            args: node.args
-          }
-        when ReVIEW::AST::TextNode # rubocop:disable Lint/DuplicateBranch
-          {
-            content: node.content
-          }
+          serialize_inline_properties(node)
+        when ReVIEW::AST::TextNode
+          serialize_text_properties(node)
         when ReVIEW::AST::DocumentNode
-          hash = { title: node.title }
-          if options.include_empty_arrays || (node.chapters && node.chapters.any?)
-            hash[:chapters] = node.chapters&.map { |chapter| serialize_to_hash(chapter, options) } || []
-          end
-          hash
+          serialize_document_properties(node, options)
         when ReVIEW::AST::CodeBlockNode
-          {
-            lang: node.lang,
-            id: node.id,
-            caption: node.caption,
-            lines: node.lines,
-            line_numbers: node.line_numbers
-          }
+          serialize_code_block_properties(node)
         when ReVIEW::AST::ImageNode
-          {
-            id: node.id,
-            caption: node.caption,
-            metric: node.metric
-          }
+          serialize_image_properties(node)
         when ReVIEW::AST::TableNode
-          {
-            id: node.id,
-            caption: node.caption,
-            headers: node.headers,
-            rows: node.rows
-          }
+          serialize_table_properties(node)
         when ReVIEW::AST::ListNode
-          hash = { list_type: node.list_type }
-          if options.include_empty_arrays || (node.items && node.items.any?)
-            hash[:items] = node.items&.map { |item| serialize_to_hash(item, options) } || []
-          end
-          hash
+          serialize_list_properties(node, options)
         when ReVIEW::AST::ListItemNode
-          {
-            content: node.content,
-            level: node.level
-          }
+          serialize_list_item_properties(node)
         when ReVIEW::AST::EmbedNode
-          {
-            lines: node.lines,
-            arg: node.arg,
-            embed_type: node.embed_type
-          }
+          serialize_embed_properties(node)
         else
-          # Handle generic Node instances (used for read, minicolumn, etc.)
-          if node.class == ReVIEW::AST::Node
-            result = {}
-            result[:node_type] = node.type if node.type && !node.type.empty?
-            result[:id] = node.id if node.id && !node.id.empty?
-            result[:content] = node.content if node.content && !node.content.empty?
-            result
-          else
-            {}
-          end
+          serialize_generic_properties(node)
         end
       end
 
-      # Restore AST from JSON string (basic implementation)
-      def deserialize(json_string)
-        hash = JSON.parse(json_string, symbolize_names: true)
-        deserialize_from_hash(hash)
+      # Individual property serialization methods
+      def serialize_headline_properties(node)
+        {
+          level: node.level,
+          label: node.label,
+          caption: node.caption
+        }
       end
 
-      # Restore AST node from Hash
-      def deserialize_from_hash(hash)
-        return nil unless hash.is_a?(Hash) && hash[:type]
+      def serialize_paragraph_properties
+        {
+          # ParagraphNode has no additional properties beyond base Node
+        }
+      end
 
-        node_class = ReVIEW::AST.const_get(hash[:type])
-        location = deserialize_location(hash[:location]) if hash[:location]
-        node = node_class.new(location)
+      def serialize_inline_properties(node)
+        {
+          inline_type: node.inline_type,
+          args: node.args
+        }
+      end
 
-        # Restore node-specific properties
-        restore_node_properties(node, hash)
+      def serialize_text_properties(node)
+        {
+          content: node.content
+        }
+      end
 
-        # Restore child nodes
-        if hash[:children]
-          hash[:children].each do |child_hash|
-            child = deserialize_from_hash(child_hash)
-            node.add_child(child) if child
-          end
+      def serialize_document_properties(node, options)
+        hash = { title: node.title }
+        if options.include_empty_arrays || (node.chapters && node.chapters.any?)
+          hash[:chapters] = node.chapters&.map { |chapter| serialize_to_hash(chapter, options) } || []
         end
-
-        node
+        hash
       end
 
-      # Restore location information
-      def deserialize_location(location_hash)
-        return nil unless location_hash.is_a?(Hash)
-
-        # Create simple Location struct
-        Struct.new(:filename, :lineno).new(
-          location_hash[:filename],
-          location_hash[:lineno]
-        )
+      def serialize_code_block_properties(node)
+        {
+          lang: node.lang,
+          id: node.id,
+          caption: node.caption,
+          lines: node.lines,
+          line_numbers: node.line_numbers
+        }
       end
 
-      # Restore node-specific properties
-      def restore_node_properties(node, hash)
-        case node
-        when ReVIEW::AST::HeadlineNode
-          node.level = hash[:level]
-          node.label = hash[:label]
-          node.caption = hash[:caption]
-        when ReVIEW::AST::ParagraphNode
-          # ParagraphNode has no additional properties to restore
-        when ReVIEW::AST::InlineNode
-          node.inline_type = hash[:inline_type]
-          node.args = hash[:args]
-        when ReVIEW::AST::TextNode # rubocop:disable Lint/DuplicateBranch
-          node.content = hash[:content]
-        when ReVIEW::AST::DocumentNode
-          node.title = hash[:title]
-          node.chapters = hash[:chapters] || []
-        when ReVIEW::AST::CodeBlockNode
-          node.lang = hash[:lang]
-          node.id = hash[:id]
-          node.caption = hash[:caption]
-          node.lines = hash[:lines] || []
-          node.line_numbers = hash[:line_numbers] || false
-        when ReVIEW::AST::ImageNode
-          node.id = hash[:id]
-          node.caption = hash[:caption]
-          node.metric = hash[:metric]
-        when ReVIEW::AST::TableNode
-          node.id = hash[:id]
-          node.caption = hash[:caption]
-          node.headers = hash[:headers] || []
-          node.rows = hash[:rows] || []
-        when ReVIEW::AST::ListNode
-          node.list_type = hash[:list_type]
-          node.items = hash[:items] || []
-        when ReVIEW::AST::ListItemNode
-          node.content = hash[:content]
-          node.level = hash[:level] || 1
-        when ReVIEW::AST::EmbedNode
-          node.lines = hash[:lines] || []
-          node.arg = hash[:arg]
-          node.embed_type = hash[:embed_type] || :block
+      def serialize_image_properties(node)
+        {
+          id: node.id,
+          caption: node.caption,
+          metric: node.metric
+        }
+      end
+
+      def serialize_table_properties(node)
+        {
+          id: node.id,
+          caption: node.caption,
+          headers: node.headers,
+          rows: node.rows
+        }
+      end
+
+      def serialize_list_properties(node, options)
+        hash = { list_type: node.list_type }
+        if options.include_empty_arrays || (node.items && node.items.any?)
+          hash[:items] = node.items&.map { |item| serialize_to_hash(item, options) } || []
+        end
+        hash
+      end
+
+      def serialize_list_item_properties(node)
+        {
+          content: node.content,
+          level: node.level
+        }
+      end
+
+      def serialize_embed_properties(node)
+        {
+          lines: node.lines,
+          arg: node.arg,
+          embed_type: node.embed_type
+        }
+      end
+
+      def serialize_generic_properties(node)
+        # Handle generic Node instances (used for read, minicolumn, etc.)
+        if node.instance_of?(ReVIEW::AST::Node)
+          result = {}
+          result[:node_type] = node.type if node.type && !node.type.empty?
+          result[:id] = node.id if node.id && !node.id.empty?
+          result[:content] = node.content if node.content && !node.content.empty?
+          result
+        else
+          {}
         end
       end
+
+      # Deserialization methods are available but not currently used in production
+      # Commented out to reduce module complexity. Uncomment if needed.
+
+      # def deserialize(json_string)
+      #   hash = JSON.parse(json_string, symbolize_names: true)
+      #   deserialize_from_hash(hash)
+      # end
 
       # JSON schema definition for validation
       def json_schema

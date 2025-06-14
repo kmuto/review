@@ -271,6 +271,7 @@ module ReVIEW
           # Handle error - would need access to error reporting
           next "@<#{op}>{#{arg}}"
         end
+
         replaced = arg.tr('@', "\x01").tr('\\', "\x02").tr('{', "\x03").tr('}', "\x04")
         "@<#{op}>{#{replaced}}"
       end

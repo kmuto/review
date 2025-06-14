@@ -8,12 +8,6 @@ module ReVIEW
       def initialize(location = nil)
         super
       end
-
-      def to_h
-        # ParagraphNode uses only children array for content storage
-        # Text content is stored as TextNode children
-        super
-      end
     end
   end
 end

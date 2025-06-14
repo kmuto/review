@@ -46,7 +46,7 @@ module ReVIEW
       if @ast_mode
         @ast_compiler = ASTCompiler.new(builder, ast_elements, self)
       end
-      
+
       # Legacy AST fields for backward compatibility
       @ast_root = nil
       @current_ast_node = nil
@@ -75,7 +75,7 @@ module ReVIEW
         # Ensure builder is bound even in AST mode
         f = LineInput.new(StringIO.new(@chapter.content))
         @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
-        
+
         @ast_compiler.compile_to_ast(chap)
         # Update legacy fields for backward compatibility
         @ast_root = @ast_compiler.ast_root
@@ -91,8 +91,6 @@ module ReVIEW
 
       @builder.result
     end
-
-
 
     # Public AST interface - delegate to ASTCompiler when in AST mode
     def ast_result
@@ -127,7 +125,7 @@ module ReVIEW
         # Render immediately in hybrid mode
         if @ast_renderer
           # Special handling for JsonBuilder - pass AST node directly
-          if @builder.class.name == 'ReVIEW::JSONBuilder'
+          if @builder.instance_of?(::ReVIEW::JSONBuilder)
             @builder.add_ast_node(node)
           else
             @ast_renderer.send(:visit_headline, node)
@@ -154,7 +152,7 @@ module ReVIEW
         # Render immediately in hybrid mode
         if @ast_renderer
           # Special handling for JsonBuilder - pass AST node directly
-          if @builder.class.name == 'ReVIEW::JSONBuilder'
+          if @builder.instance_of?(::ReVIEW::JSONBuilder)
             @builder.add_ast_node(node)
           else
             @ast_renderer.send(:visit_paragraph, node)
@@ -447,7 +445,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.class.name == 'ReVIEW::JSONBuilder'
+        if @builder.instance_of?(::ReVIEW::JSONBuilder)
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_embed, node)

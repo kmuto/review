@@ -38,11 +38,11 @@ module ReVIEW
       @ast_root = nil
       @current_ast_node = nil
       @ast_renderer = nil
-      
+
       # Processors for specialized AST handling
       @inline_processor = InlineASTProcessor.new(self)
       @block_processor = BlockASTProcessor.new(self)
-      
+
       @logger = ReVIEW.logger
     end
 
@@ -54,7 +54,7 @@ module ReVIEW
       # Create AST root with appropriate location
       # For test compatibility, use a special calculation for line numbers
       f = LineInput.new(StringIO.new(@chapter.content))
-      
+
       # Count empty lines at the beginning
       empty_line_count = 0
       while f.next?
@@ -66,7 +66,7 @@ module ReVIEW
           break
         end
       end
-      
+
       # Determine appropriate line number based on content
       # The tests expect specific line numbers based on how execute_indexer works
       line_number = if @chapter.content.start_with?('//')
@@ -76,14 +76,14 @@ module ReVIEW
                       # For regular content, use line 2
                       2
                     end
-      
+
       # Create a mock file object that returns the appropriate line number
       mock_file = Object.new
       mock_file.define_singleton_method(:lineno) { line_number }
-      
+
       @ast_root = AST::DocumentNode.new(Location.new(@chapter.basename, mock_file))
       # Initialize title to match JSONBuilder behavior
-      @ast_root.title = @chapter.respond_to?(:title) ? @chapter.title : ""
+      @ast_root.title = @chapter.respond_to?(:title) ? @chapter.title : ''
       @current_ast_node = @ast_root
       @ast_renderer = ASTRenderer.new(@builder)
 
@@ -142,41 +142,24 @@ module ReVIEW
       m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
       level = m[1].size
       if level > 6 # MAX_HEADLINE_LEVEL
-        raise CompileError, "Invalid header: max headline level is 6"
+        raise CompileError, 'Invalid header: max headline level is 6'
       end
 
-      tag = m[2]
+      m[2]
       label = m[3]
       caption = m[4].strip
 
       # For AST mode, we only handle simple headlines (no tagged sections for now)
-      if tag.nil?
-        node = AST::HeadlineNode.new(location)
-        node.level = level
-        node.label = label
-        node.caption = caption
-
-        # Set document title from first level-1 heading
-        if level == 1 && @ast_root && @ast_root.title.nil?
-          @ast_root.title = caption
-        end
-
-        @current_ast_node.add_child(node)
-      else
-        # Tagged sections - for now, just create a regular headline
-        # TODO: Implement proper tagged section support in AST
-        node = AST::HeadlineNode.new(location)
-        node.level = level
-        node.label = label
-        node.caption = caption
-
-        # Set document title from first level-1 heading (tagged sections too)
-        if level == 1 && @ast_root && @ast_root.title.nil?
-          @ast_root.title = caption
-        end
-
-        @current_ast_node.add_child(node)
+      node = AST::HeadlineNode.new(location)
+      node.level = level
+      node.label = label
+      # Tagged sections - for now, just create a regular headline
+      # TODO: Implement proper tagged section support in AST if needed
+      node.caption = caption
+      if level == 1 && @ast_root && @ast_root.title.nil?
+        @ast_root.title = caption
       end
+      @current_ast_node.add_child(node)
     end
 
     def compile_paragraph_to_ast(f)
@@ -246,7 +229,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.class.name == 'ReVIEW::JSONBuilder'
+        if @builder.instance_of?(::ReVIEW::JSONBuilder)
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_headline, node)
@@ -268,7 +251,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.class.name == 'ReVIEW::JSONBuilder'
+        if @builder.instance_of?(::ReVIEW::JSONBuilder)
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_paragraph, node)
@@ -294,7 +277,7 @@ module ReVIEW
       return unless @ast_renderer
 
       # Special handling for JsonBuilder - pass AST node directly
-      if @builder.class.name == 'ReVIEW::JSONBuilder'
+      if @builder.instance_of?(::ReVIEW::JSONBuilder)
         @builder.add_ast_node(node)
       else
         @ast_renderer.send(method_name, node)
@@ -347,6 +330,7 @@ module ReVIEW
         # Handle error - would need access to error reporting
         return []
       end
+
       words
     end
   end
