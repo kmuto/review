@@ -72,6 +72,10 @@ module ReVIEW
       @chapter = chap
 
       if @ast_mode
+        # Ensure builder is bound even in AST mode
+        f = LineInput.new(StringIO.new(@chapter.content))
+        @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
+        
         @ast_compiler.compile_to_ast(chap)
         # Update legacy fields for backward compatibility
         @ast_root = @ast_compiler.ast_root
@@ -123,7 +127,7 @@ module ReVIEW
         # Render immediately in hybrid mode
         if @ast_renderer
           # Special handling for JsonBuilder - pass AST node directly
-          if @builder.is_a?(ReVIEW::JSONBuilder)
+          if @builder.class.name == 'ReVIEW::JSONBuilder'
             @builder.add_ast_node(node)
           else
             @ast_renderer.send(:visit_headline, node)
@@ -150,7 +154,7 @@ module ReVIEW
         # Render immediately in hybrid mode
         if @ast_renderer
           # Special handling for JsonBuilder - pass AST node directly
-          if @builder.is_a?(ReVIEW::JSONBuilder)
+          if @builder.class.name == 'ReVIEW::JSONBuilder'
             @builder.add_ast_node(node)
           else
             @ast_renderer.send(:visit_paragraph, node)
@@ -443,7 +447,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.is_a?(ReVIEW::JSONBuilder)
+        if @builder.class.name == 'ReVIEW::JSONBuilder'
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_embed, node)

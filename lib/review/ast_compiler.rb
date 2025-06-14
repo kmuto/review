@@ -92,10 +92,18 @@ module ReVIEW
     end
 
     def do_compile_hybrid
-      # For hybrid mode, we'll extend do_compile to selectively build AST nodes
-      # This would integrate with the traditional compilation flow
-      # For now, delegate to full AST mode
-      do_compile_with_ast_building
+      # Hybrid mode: delegate to the main compiler's do_compile method
+      # but with AST processing enabled for specified elements
+      if @compiler
+        # Set up AST context in the main compiler before delegating
+        @compiler.instance_variable_set(:@ast_root, @ast_root)
+        @compiler.instance_variable_set(:@current_ast_node, @current_ast_node)
+        @compiler.instance_variable_set(:@ast_renderer, @ast_renderer)
+        @compiler.send(:do_compile)
+      else
+        # Fallback to full AST mode if no main compiler available
+        do_compile_with_ast_building
+      end
     end
 
     # AST-specific compilation methods
@@ -208,7 +216,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.is_a?(ReVIEW::JSONBuilder)
+        if @builder.class.name == 'ReVIEW::JSONBuilder'
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_headline, node)
@@ -230,7 +238,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.is_a?(ReVIEW::JSONBuilder)
+        if @builder.class.name == 'ReVIEW::JSONBuilder'
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_paragraph, node)
@@ -256,7 +264,7 @@ module ReVIEW
       return unless @ast_renderer
 
       # Special handling for JsonBuilder - pass AST node directly
-      if @builder.is_a?(ReVIEW::JSONBuilder)
+      if @builder.class.name == 'ReVIEW::JSONBuilder'
         @builder.add_ast_node(node)
       else
         @ast_renderer.send(method_name, node)
