@@ -22,19 +22,22 @@ module ReVIEW
     end
 
     class ListItemNode < Node
-      attr_accessor :content, :level
+      attr_accessor :content, :level, :number
 
       def initialize(location = nil)
         super
         @content = nil
         @level = 1
+        @number = nil
       end
 
       def to_h
-        super.merge(
+        result = super.merge(
           content: content,
           level: level
         )
+        result[:number] = number if number
+        result
       end
     end
   end

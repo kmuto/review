@@ -11,8 +11,8 @@ require 'review/ast'
 
 module ReVIEW
   class JSONBuilder < Builder
-    def initialize
-      super
+    def initialize(strict = false, *args, **kwargs)
+      super(strict, *args, **kwargs)
       @document_node = nil
       @current_node = nil
       @node_stack = []
@@ -319,6 +319,70 @@ module ReVIEW
       node = AST::ParagraphNode.new(@location)
       node.content = lines.join("\n")
       add_node(node)
+    end
+
+    # Block commands that were missing
+    def lead(lines)
+      node = AST::Node.new(@location)
+      node.type = 'lead'
+      lines.each do |line|
+        text_node = AST::TextNode.new(@location)
+        text_node.content = line
+        node.add_child(text_node)
+      end
+      @current_node.add_child(node)
+    end
+
+    def noindent
+      # No-op for JSON output
+    end
+
+    def footnote(id, str)
+      node = AST::Node.new(@location)
+      node.type = 'footnote'
+      node.id = id
+      node.content = str
+      @current_node.add_child(node)
+    end
+
+    def olnum(num)
+      # Store the starting number for ordered lists
+      # This is typically used to set the starting number for the next ol_item
+      @ol_num = num.to_i
+    end
+
+    # Inline commands that were missing
+    def inline_br(_str)
+      # For now, return empty string as builders expect string output
+      # In AST mode, this would be handled differently
+      ''
+    end
+
+    # Section types that were missing
+    def nonum_begin(level, label, caption)
+      node = AST::HeadlineNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.type = 'nonum'
+      @current_node.add_child(node)
+    end
+
+    def nonum_end(level)
+      # No-op for JSON
+    end
+
+    def nodisp_begin(level, label, caption)
+      node = AST::HeadlineNode.new(@location)
+      node.level = level
+      node.label = label
+      node.caption = caption
+      node.type = 'nodisp'
+      @current_node.add_child(node)
+    end
+
+    def nodisp_end(level)
+      # No-op for JSON
     end
 
     private

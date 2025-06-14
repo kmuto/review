@@ -11,12 +11,15 @@ require 'json'
 module ReVIEW
   module AST
     class Node
-      attr_accessor :location, :parent, :children
+      attr_accessor :location, :parent, :children, :type, :id, :content
 
       def initialize(location = nil)
         @location = location
         @children = []
         @parent = nil
+        @type = nil
+        @id = nil
+        @content = nil
       end
 
       def accept(visitor)
@@ -35,11 +38,15 @@ module ReVIEW
 
       # For JSON output
       def to_h
-        {
+        result = {
           type: self.class.name.split('::').last,
           location: location_to_h,
           children: children.map(&:to_h)
         }
+        result[:node_type] = @type if @type
+        result[:id] = @id if @id
+        result[:content] = @content if @content
+        result
       end
 
       def to_json(*args)
