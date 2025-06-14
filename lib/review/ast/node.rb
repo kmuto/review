@@ -125,17 +125,10 @@ module ReVIEW
 
       # Serialize location information
       def serialize_location(location)
-        begin
-          {
-            filename: location.respond_to?(:filename) ? location.filename : nil,
-            lineno: location.respond_to?(:lineno) ? location.lineno : nil
-          }
-        rescue StandardError
-          {
-            filename: nil,
-            lineno: nil
-          }
-        end
+        {
+          filename: location.respond_to?(:filename) ? location.filename : nil,
+          lineno: location.respond_to?(:lineno) ? location.lineno : nil
+        }
       end
 
       private
