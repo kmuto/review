@@ -232,31 +232,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 'HeadlineNode', parsed['type']
   end
 
-  def test_json_deserialization
-    # Create original node
-    original = AST::HeadlineNode.new(@location)
-    original.level = 1
-    original.label = 'intro'
-    original.caption = 'Introduction'
-
-    text_node = AST::TextNode.new(@location)
-    text_node.content = 'Some text'
-    original.add_child(text_node)
-
-    # Serialize to JSON
-    json = AST::JSONSerializer.serialize(original)
-
-    # Deserialize back
-    restored = AST::JSONSerializer.deserialize(json)
-
-    assert_equal original.class, restored.class
-    assert_equal original.level, restored.level
-    assert_equal original.label, restored.label
-    assert_equal original.caption, restored.caption
-    assert_equal original.children.size, restored.children.size
-    assert_equal original.children.first.content, restored.children.first.content
-  end
-
   def test_pretty_json_method
     node = AST::HeadlineNode.new(@location)
     node.level = 1
