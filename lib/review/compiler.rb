@@ -646,8 +646,10 @@ module ReVIEW
 
     # Build minicolumn AST node (note, memo, tip, etc.)
     def build_minicolumn_ast(command_name, args, lines)
-      node = AST::ParagraphNode.new(location: location)
-      node.content = "#{command_name}: #{args.first || ''}"
+      node = AST::ParagraphNode.new(
+        location: location,
+        content: "#{command_name}: #{args.first || ''}"
+      )
 
       # Parse inline elements in minicolumn content
       (lines || []).each do |line|
@@ -713,8 +715,10 @@ module ReVIEW
         line =~ /\A\s+(\*+)/
         current_level = $1.size
 
-        item_node = AST::ListItemNode.new(location: location)
-        item_node.level = current_level
+        item_node = AST::ListItemNode.new(
+          location: location,
+          level: current_level
+        )
 
         # Parse inline elements in item content
         raw_lines.each do |raw_line|
@@ -749,9 +753,11 @@ module ReVIEW
           raw_lines.push(cont.strip)
         end
 
-        item_node = AST::ListItemNode.new(location: location)
-        item_node.level = 1
-        item_node.content = num # Store original number for reference
+        item_node = AST::ListItemNode.new(
+          location: location,
+          level: 1,
+          content: num # Store original number for reference
+        )
 
         # Parse inline elements in item content
         raw_lines.each do |raw_line|
@@ -779,8 +785,10 @@ module ReVIEW
       while /\A\s*:/ =~ f.peek
         # Get definition term
         dt_line = f.gets.sub(/\A\s*:/, '').strip
-        dt_node = AST::ListItemNode.new(location: location)
-        dt_node.level = 1
+        dt_node = AST::ListItemNode.new(
+          location: location,
+          level: 1
+        )
         parse_inline_elements(dt_line, dt_node)
 
         # Get definition description
@@ -790,8 +798,10 @@ module ReVIEW
         end
 
         # Create a container node for the dt/dd pair
-        item_node = AST::ListItemNode.new(location: location)
-        item_node.level = 1
+        item_node = AST::ListItemNode.new(
+          location: location,
+          level: 1
+        )
 
         # Add dt as first child
         item_node.add_child(dt_node)

@@ -24,10 +24,12 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_headline_node_serialization
-    node = AST::HeadlineNode.new(location: @location)
-    node.level = 1
-    node.label = 'intro'
-    node.caption = 'Introduction'
+    node = AST::HeadlineNode.new(
+      location: @location,
+      level: 1,
+      label: 'intro',
+      caption: 'Introduction'
+    )
 
     json = node.to_json
     parsed = JSON.parse(json)
@@ -42,24 +44,32 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     para = AST::ParagraphNode.new(location: @location)
 
     # Add text node
-    text1 = AST::TextNode.new(location: @location)
-    text1.content = 'This is '
+    text1 = AST::TextNode.new(
+      location: @location,
+      content: 'This is '
+    )
     para.add_child(text1)
 
     # Add inline node
-    inline = AST::InlineNode.new(location: @location)
-    inline.inline_type = 'b'
-    inline.args = ['bold']
+    inline = AST::InlineNode.new(
+      location: @location,
+      inline_type: 'b',
+      args: ['bold']
+    )
 
-    inline_text = AST::TextNode.new(location: @location)
-    inline_text.content = 'bold'
+    inline_text = AST::TextNode.new(
+      location: @location,
+      content: 'bold'
+    )
     inline.add_child(inline_text)
 
     para.add_child(inline)
 
     # Add more text
-    text2 = AST::TextNode.new(location: @location)
-    text2.content = ' text.'
+    text2 = AST::TextNode.new(
+      location: @location,
+      content: ' text.'
+    )
     para.add_child(text2)
 
     json = para.to_json
@@ -86,12 +96,14 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_code_block_node_serialization
-    node = AST::CodeBlockNode.new(location: @location)
-    node.id = 'example'
-    node.caption = 'Example Code'
-    node.lang = 'ruby'
-    node.lines = ['def hello', '  puts "world"', 'end']
-    node.line_numbers = true
+    node = AST::CodeBlockNode.new(
+      location: @location,
+      id: 'example',
+      caption: 'Example Code',
+      lang: 'ruby',
+      lines: ['def hello', '  puts "world"', 'end'],
+      line_numbers: true
+    )
 
     json = node.to_json
     parsed = JSON.parse(json)
@@ -105,11 +117,13 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_table_node_serialization
-    node = AST::TableNode.new(location: @location)
-    node.id = 'data'
-    node.caption = 'Sample Data'
-    node.headers = [['Name', 'Age']]
-    node.rows = [['Alice', '25'], ['Bob', '30']]
+    node = AST::TableNode.new(
+      location: @location,
+      id: 'data',
+      caption: 'Sample Data',
+      headers: [['Name', 'Age']],
+      rows: [['Alice', '25'], ['Bob', '30']]
+    )
 
     json = node.to_json
     parsed = JSON.parse(json)
@@ -122,17 +136,23 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_list_node_serialization
-    list = AST::ListNode.new(location: @location)
-    list.list_type = :ul
+    list = AST::ListNode.new(
+      location: @location,
+      list_type: :ul
+    )
 
-    item1 = AST::ListItemNode.new(location: @location)
-    item1.content = 'First item'
-    item1.level = 1
+    item1 = AST::ListItemNode.new(
+      location: @location,
+      content: 'First item',
+      level: 1
+    )
     list.items << item1
 
-    item2 = AST::ListItemNode.new(location: @location)
-    item2.content = 'Second item'
-    item2.level = 1
+    item2 = AST::ListItemNode.new(
+      location: @location,
+      content: 'Second item',
+      level: 1
+    )
     list.items << item2
 
     json = list.to_json
@@ -146,10 +166,12 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_embed_node_serialization
-    node = AST::EmbedNode.new(location: @location)
-    node.embed_type = :block
-    node.arg = 'html'
-    node.lines = ['<div>HTML content</div>', '<p>Paragraph</p>']
+    node = AST::EmbedNode.new(
+      location: @location,
+      embed_type: :block,
+      arg: 'html',
+      lines: ['<div>HTML content</div>', '<p>Paragraph</p>']
+    )
 
     json = node.to_json
     parsed = JSON.parse(json)
@@ -161,16 +183,22 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_document_node_serialization
-    doc = AST::DocumentNode.new(location: @location)
-    doc.title = 'Test Document'
+    doc = AST::DocumentNode.new(
+      location: @location,
+      title: 'Test Document'
+    )
 
-    headline = AST::HeadlineNode.new(location: @location)
-    headline.level = 1
-    headline.caption = 'Chapter 1'
+    headline = AST::HeadlineNode.new(
+      location: @location,
+      level: 1,
+      caption: 'Chapter 1'
+    )
     doc.add_child(headline)
 
-    para = AST::ParagraphNode.new(location: @location)
-    para.content = 'Test paragraph'
+    para = AST::ParagraphNode.new(
+      location: @location,
+      content: 'Test paragraph'
+    )
     doc.add_child(para)
 
     json = doc.to_json
@@ -184,9 +212,11 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_custom_json_serializer_basic
-    node = AST::HeadlineNode.new(location: @location)
-    node.level = 2
-    node.caption = 'Section Title'
+    node = AST::HeadlineNode.new(
+      location: @location,
+      level: 2,
+      caption: 'Section Title'
+    )
 
     options = AST::JSONSerializer::Options.new
     json = AST::JSONSerializer.serialize(node, options)
@@ -198,9 +228,11 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_custom_json_serializer_without_location
-    node = AST::HeadlineNode.new(location: @location)
-    node.level = 2
-    node.caption = 'Section Title'
+    node = AST::HeadlineNode.new(
+      location: @location,
+      level: 2,
+      caption: 'Section Title'
+    )
 
     options = AST::JSONSerializer::Options.new
     options.include_location = false
@@ -215,9 +247,11 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_custom_json_serializer_compact
-    node = AST::HeadlineNode.new(location: @location)
-    node.level = 2
-    node.caption = 'Section Title'
+    node = AST::HeadlineNode.new(
+      location: @location,
+      level: 2,
+      caption: 'Section Title'
+    )
 
     options = AST::JSONSerializer::Options.new
     options.pretty = false
@@ -233,9 +267,11 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_pretty_json_method
-    node = AST::HeadlineNode.new(location: @location)
-    node.level = 1
-    node.caption = 'Test'
+    node = AST::HeadlineNode.new(
+      location: @location,
+      level: 1,
+      caption: 'Test'
+    )
 
     pretty_json = node.to_pretty_json
 
@@ -247,9 +283,11 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_compact_json_method
-    node = AST::HeadlineNode.new(location: @location)
-    node.level = 1
-    node.caption = 'Test'
+    node = AST::HeadlineNode.new(
+      location: @location,
+      level: 1,
+      caption: 'Test'
+    )
 
     compact_json = node.to_compact_json
 
@@ -260,10 +298,11 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_json_with_options_method
-    node = AST::HeadlineNode.new(location: @location)
-    node.level = 1
-    node.caption = 'Test'
-
+    node = AST::HeadlineNode.new(
+      location: @location,
+      level: 1,
+      caption: 'Test'
+    )
     options = AST::JSONSerializer::Options.new
     options.include_location = false
     options.pretty = false
@@ -293,43 +332,59 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
   def test_complex_nested_structure
     # Create a complex document structure
-    doc = AST::DocumentNode.new(location: @location)
-    doc.title = 'Complex Document'
+    doc = AST::DocumentNode.new(
+      location: @location,
+      title: 'Complex Document'
+    )
 
     # Add headline
-    headline = AST::HeadlineNode.new(location: @location)
-    headline.level = 1
-    headline.caption = 'Introduction'
+    headline = AST::HeadlineNode.new(
+      location: @location,
+      level: 1,
+      caption: 'Introduction'
+    )
     doc.add_child(headline)
 
     # Add paragraph with inline elements
-    para = AST::ParagraphNode.new(location: @location)
+    para = AST::ParagraphNode.new(
+      location: @location
+    )
 
-    text1 = AST::TextNode.new(location: @location)
-    text1.content = 'This paragraph has '
+    text1 = AST::TextNode.new(
+      location: @location,
+      content: 'This paragraph has '
+    )
     para.add_child(text1)
 
-    inline = AST::InlineNode.new(location: @location)
-    inline.inline_type = 'code'
-    inline.args = ['inline code']
+    inline = AST::InlineNode.new(
+      location: @location,
+      inline_type: 'code',
+      args: ['inline code']
+    )
 
-    inline_text = AST::TextNode.new(location: @location)
-    inline_text.content = 'inline code'
+    inline_text = AST::TextNode.new(
+      location: @location,
+      content: 'inline code'
+    )
     inline.add_child(inline_text)
     para.add_child(inline)
 
-    text2 = AST::TextNode.new(location: @location)
-    text2.content = ' elements.'
+    text2 = AST::TextNode.new(
+      location: @location,
+      content: ' elements.'
+    )
     para.add_child(text2)
 
     doc.add_child(para)
 
     # Add code block
-    code = AST::CodeBlockNode.new(location: @location)
-    code.id = 'example'
-    code.caption = 'Code Example'
-    code.lang = 'ruby'
-    code.lines = ['puts "Hello, World!"']
+    code = AST::CodeBlockNode.new(
+      location: @location,
+      id: 'example',
+      caption: 'Code Example',
+      lang: 'ruby',
+      lines: ['puts "Hello, World!"']
+    )
     doc.add_child(code)
 
     # Serialize and verify
