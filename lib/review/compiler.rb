@@ -25,10 +25,12 @@ module ReVIEW
 
     MAX_HEADLINE_LEVEL = 6
 
-    def initialize(builder, ast_mode: false, ast_elements: [])
+    def initialize(builder, ast_mode: false, ast_elements: nil)
       @builder = builder
       @ast_mode = ast_mode
-      @ast_elements = Set.new(ast_elements) # Elements to process via AST
+      # When ast_elements is not specified, use empty array
+      # Otherwise, use the specified ast_elements
+      @ast_elements = Set.new(ast_elements || [])
 
       ## commands which do not parse block lines in compiler
       @non_parsed_commands = %i[embed texequation graph]

@@ -952,7 +952,7 @@ module ReVIEW
           # This is plain text
           unless word.empty?
             text_node = AST::TextNode.new(
-              location: @location,
+              location: location,
               content: word
             )
             caption_nodes << text_node
@@ -972,14 +972,14 @@ module ReVIEW
       arg = match[2]
 
       inline_node = AST::InlineNode.new(
-        location: @location,
+        location: location,
         inline_type: op,
         args: [arg]
       )
 
       # Add text content to inline node
       text_node = AST::TextNode.new(
-        location: @location,
+        location: location,
         content: arg
       )
       inline_node.add_child(text_node)

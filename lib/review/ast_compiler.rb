@@ -12,6 +12,7 @@ require 'review/loggable'
 require 'review/lineinput'
 require 'review/inline_ast_processor'
 require 'review/block_ast_processor'
+require 'review/snapshot_location'
 require 'stringio'
 require 'set'
 
@@ -108,6 +109,8 @@ module ReVIEW
       # Build the complete AST structure
       while f.next?
         @lineno = f.lineno
+        # Create a snapshot location that captures the current line number
+        @current_location = SnapshotLocation.new(@chapter.basename, f.lineno + 1)
         line_content = f.peek
         case line_content
         when /\A\#@/
@@ -267,7 +270,7 @@ module ReVIEW
 
     # Helper methods that need to be accessible from processors
     def location
-      @builder.location
+      @current_location || @builder.location
     end
 
     def add_child_to_current_node(node)
