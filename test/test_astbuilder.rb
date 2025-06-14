@@ -16,6 +16,10 @@ class FakeChapter
     @book = book
     @number = number
   end
+
+  def generate_indexes
+    # No-op for test
+  end
 end
 
 class TestReVIEWParser < Test::Unit::TestCase
