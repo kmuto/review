@@ -25,6 +25,18 @@ module ReVIEW
           line_numbers: line_numbers
         )
       end
+
+      protected
+
+      def serialize_properties(hash, _options)
+        hash[:children] = []
+        hash[:lang] = lang
+        hash[:id] = id
+        hash[:caption] = caption
+        hash[:lines] = lines
+        hash[:line_numbers] = line_numbers
+        hash
+      end
     end
   end
 end

@@ -23,6 +23,16 @@ module ReVIEW
           rows: rows
         )
       end
+
+      protected
+
+      def serialize_properties(hash, _options)
+        hash[:id] = id
+        hash[:caption] = caption
+        hash[:headers] = headers
+        hash[:rows] = rows
+        hash
+      end
     end
   end
 end

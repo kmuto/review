@@ -21,6 +21,15 @@ module ReVIEW
           embed_type: embed_type
         )
       end
+
+      protected
+
+      def serialize_properties(hash, _options)
+        hash[:lines] = lines
+        hash[:arg] = arg
+        hash[:embed_type] = embed_type
+        hash
+      end
     end
   end
 end

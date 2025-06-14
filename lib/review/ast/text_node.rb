@@ -17,6 +17,14 @@ module ReVIEW
           content: content
         )
       end
+
+      protected
+
+      def serialize_properties(hash, _options)
+        hash[:children] = []
+        hash[:content] = content
+        hash
+      end
     end
   end
 end

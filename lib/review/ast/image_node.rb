@@ -21,6 +21,15 @@ module ReVIEW
           metric: metric
         )
       end
+
+      protected
+
+      def serialize_properties(hash, _options)
+        hash[:id] = id
+        hash[:caption] = caption
+        hash[:metric] = metric
+        hash
+      end
     end
   end
 end

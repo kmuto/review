@@ -8,6 +8,13 @@ module ReVIEW
       def initialize(location = nil)
         super
       end
+
+      protected
+
+      def serialize_properties(hash, options)
+        hash[:children] = children.map { |child| child.serialize_to_hash(options) }
+        hash
+      end
     end
   end
 end

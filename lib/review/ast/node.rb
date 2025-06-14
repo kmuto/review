@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'json'
+require_relative 'json_serializer'
 
 module ReVIEW
   module AST
@@ -53,15 +54,47 @@ module ReVIEW
         to_h.to_json(*args)
       end
 
+      # Serialize node to hash with options
+      def serialize_to_hash(options = nil)
+        options ||= JSONSerializer::Options.new
+
+        # Start with type
+        hash = {
+          type: self.class.name.split('::').last
+        }
+
+        # Include location information
+        if options.include_location && location
+          hash[:location] = serialize_location(location)
+        end
+
+        # Call node-specific serialization
+        serialize_properties(hash, options)
+
+        # Serialize child nodes if any
+        if children && (options.include_empty_arrays || children.any?)
+          hash[:children] = children.map { |child| child.serialize_to_hash(options) }
+        end
+
+        hash
+      end
+
       # Custom JSON serialization with options
       def to_json_with_options(options = nil)
-        require_relative('json_serializer')
-        JSONSerializer.serialize(self, options || JSONSerializer::Options.new)
+        options ||= JSONSerializer::Options.new
+        hash = serialize_to_hash(options)
+        if options.pretty
+          JSON.pretty_generate(hash, indent: options.indent)
+        else
+          JSON.generate(hash)
+        end
       end
 
       # JSON serialization preserving hierarchical structure
       def to_pretty_json(indent: '  ')
-        JSON.pretty_generate(to_h, indent: indent)
+        options = JSONSerializer::Options.new
+        options.indent = indent
+        to_json_with_options(options)
       end
 
       # Compact JSON serialization (without location information)
@@ -71,6 +104,38 @@ module ReVIEW
         options.include_empty_arrays = false
         options.pretty = false
         to_json_with_options(options)
+      end
+
+      protected
+
+      # Override this method in subclasses to add node-specific properties
+      def serialize_properties(hash, options)
+        # Base Node implementation
+        hash[:children] = [] if children.none? && options.include_empty_arrays
+
+        # Handle generic Node instances (used for read, minicolumn, etc.)
+        if instance_of?(ReVIEW::AST::Node)
+          hash[:node_type] = type if type && !type.empty?
+          hash[:id] = id if id && !id.empty?
+          hash[:content] = content if content && !content.empty?
+        end
+
+        hash
+      end
+
+      # Serialize location information
+      def serialize_location(location)
+        begin
+          {
+            filename: location.respond_to?(:filename) ? location.filename : nil,
+            lineno: location.respond_to?(:lineno) ? location.lineno : nil
+          }
+        rescue StandardError
+          {
+            filename: nil,
+            lineno: nil
+          }
+        end
       end
 
       private

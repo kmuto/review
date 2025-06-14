@@ -19,6 +19,15 @@ module ReVIEW
           args: args
         )
       end
+
+      protected
+
+      def serialize_properties(hash, options)
+        hash[:children] = children.map { |child| child.serialize_to_hash(options) }
+        hash[:inline_type] = inline_type
+        hash[:args] = args
+        hash
+      end
     end
   end
 end

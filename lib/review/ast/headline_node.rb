@@ -21,6 +21,15 @@ module ReVIEW
           caption: caption
         )
       end
+
+      protected
+
+      def serialize_properties(hash, _options)
+        hash[:level] = level
+        hash[:label] = label
+        hash[:caption] = caption
+        hash
+      end
     end
   end
 end

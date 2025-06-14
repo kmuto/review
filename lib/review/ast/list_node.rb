@@ -19,6 +19,16 @@ module ReVIEW
           items: items&.map(&:to_h)
         )
       end
+
+      protected
+
+      def serialize_properties(hash, options)
+        hash[:list_type] = list_type
+        if options.include_empty_arrays || (items && items.any?)
+          hash[:items] = items&.map { |item| item.serialize_to_hash(options) } || []
+        end
+        hash
+      end
     end
 
     class ListItemNode < Node
@@ -38,6 +48,15 @@ module ReVIEW
         )
         result[:number] = number if number
         result
+      end
+
+      protected
+
+      def serialize_properties(hash, _options)
+        hash[:content] = content
+        hash[:level] = level
+        hash[:number] = number if number
+        hash
       end
     end
   end
