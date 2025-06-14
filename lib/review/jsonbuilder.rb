@@ -50,7 +50,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption
+        caption: parse_caption(caption)
       )
       add_node(node)
     end
@@ -71,7 +71,7 @@ module ReVIEW
         location: location,
         lang: lang,
         id: id,
-        caption: caption,
+        caption: parse_caption(caption),
         lines: lines,
         line_numbers: false
       )
@@ -83,7 +83,7 @@ module ReVIEW
         location: location,
         lang: lang,
         id: id,
-        caption: caption,
+        caption: parse_caption(caption),
         lines: lines,
         line_numbers: true
       )
@@ -94,7 +94,7 @@ module ReVIEW
       node = AST::CodeBlockNode.new(
         location: location,
         lang: lang,
-        caption: caption,
+        caption: parse_caption(caption),
         lines: lines,
         line_numbers: false
       )
@@ -105,7 +105,7 @@ module ReVIEW
       node = AST::CodeBlockNode.new(
         location: location,
         lang: lang,
-        caption: caption,
+        caption: parse_caption(caption),
         lines: lines,
         line_numbers: true
       )
@@ -116,7 +116,7 @@ module ReVIEW
       node = AST::CodeBlockNode.new(
         location: location,
         lang: 'shell',
-        caption: caption,
+        caption: parse_caption(caption),
         lines: lines,
         line_numbers: false
       )
@@ -127,7 +127,7 @@ module ReVIEW
       node = AST::CodeBlockNode.new(
         location: location,
         lang: lang,
-        caption: caption,
+        caption: parse_caption(caption),
         lines: lines,
         line_numbers: false
       )
@@ -138,7 +138,7 @@ module ReVIEW
       node = AST::ImageNode.new(
         location: location,
         id: id,
-        caption: caption,
+        caption: parse_caption(caption),
         metric: metric
       )
       add_node(node)
@@ -158,7 +158,7 @@ module ReVIEW
         node = AST::TableNode.new(
           location: location,
           id: id,
-          caption: caption,
+          caption: parse_caption(caption),
           headers: [],
           rows: []
         )
@@ -179,7 +179,7 @@ module ReVIEW
       node = AST::TableNode.new(
         location: location,
         id: id,
-        caption: caption,
+        caption: parse_caption(caption),
         headers: headers,
         rows: table_rows
       )
@@ -726,7 +726,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption,
+        caption: parse_caption(caption),
         column_type: 'column'
       )
       push_node(node)
@@ -741,7 +741,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption,
+        caption: parse_caption(caption),
         column_type: 'xcolumn'
       )
       push_node(node)
@@ -757,7 +757,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption,
+        caption: parse_caption(caption),
         column_type: 'world'
       )
       push_node(node)
@@ -772,7 +772,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption,
+        caption: parse_caption(caption),
         column_type: 'hood'
       )
       push_node(node)
@@ -787,7 +787,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption,
+        caption: parse_caption(caption),
         column_type: 'edition'
       )
       push_node(node)
@@ -802,7 +802,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption,
+        caption: parse_caption(caption),
         column_type: 'insideout'
       )
       push_node(node)
@@ -817,7 +817,7 @@ module ReVIEW
         location: location,
         level: level,
         label: label,
-        caption: caption,
+        caption: parse_caption(caption),
         column_type: 'notoc'
       )
       push_node(node)
@@ -932,6 +932,59 @@ module ReVIEW
 
     def inline_comment(str)
       create_inline_node('comment', str)
+    end
+
+    private
+
+    # Parse caption string that may contain inline elements
+    def parse_caption(caption_str)
+      return [] if caption_str.nil? || caption_str.empty?
+
+      caption_nodes = []
+
+      # Simple parsing for now - split by inline elements
+      words = caption_str.split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
+      words.each do |word|
+        if word.match?(/\A@<\w+>\{.*?\}\z/)
+          # This is an inline element
+          create_inline_caption_node(word, caption_nodes)
+        else
+          # This is plain text
+          unless word.empty?
+            text_node = AST::TextNode.new(
+              location: @location,
+              content: word
+            )
+            caption_nodes << text_node
+          end
+        end
+      end
+
+      caption_nodes
+    end
+
+    # Create inline node for captions
+    def create_inline_caption_node(str, caption_nodes)
+      match = /\A@<(\w+)>\{(.*?)\}\z/.match(str)
+      return unless match
+
+      op = match[1]
+      arg = match[2]
+
+      inline_node = AST::InlineNode.new(
+        location: @location,
+        inline_type: op,
+        args: [arg]
+      )
+
+      # Add text content to inline node
+      text_node = AST::TextNode.new(
+        location: @location,
+        content: arg
+      )
+      inline_node.add_child(text_node)
+
+      caption_nodes << inline_node
     end
   end
 end

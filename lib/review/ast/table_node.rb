@@ -10,7 +10,7 @@ module ReVIEW
       def initialize(location: nil, id: nil, caption: nil, headers: [], rows: [], **kwargs)
         super(location: location, id: id, **kwargs)
         @id = id
-        @caption = caption
+        @caption = caption || [] # caption is now an array of nodes
         @headers = headers
         @rows = rows
       end
@@ -18,7 +18,7 @@ module ReVIEW
       def to_h
         super.merge(
           id: id,
-          caption: caption,
+          caption: caption.is_a?(Array) ? caption.map(&:to_h) : caption,
           headers: headers,
           rows: rows
         )
@@ -26,9 +26,9 @@ module ReVIEW
 
       protected
 
-      def serialize_properties(hash, _options)
+      def serialize_properties(hash, options)
         hash[:id] = id
-        hash[:caption] = caption
+        hash[:caption] = caption.is_a?(Array) ? caption.map { |child| child.serialize_to_hash(options) } : caption
         hash[:headers] = headers
         hash[:rows] = rows
         hash

@@ -90,22 +90,22 @@ module ReVIEW
         end
       end
 
-      if type == :table
-        node = AST::TableNode.new(
-          location: @ast_compiler.location,
-          id: args[0],
-          caption: args[1],
-          headers: headers,
-          rows: rows
-        )
-      else
-        node = AST::TableNode.new(
-          location: @ast_compiler.location,
-          caption: args[0],
-          headers: headers,
-          rows: rows
-        )
-      end
+      node = if type == :table
+               AST::TableNode.new(
+                 location: @ast_compiler.location,
+                 id: args[0],
+                 caption: args[1],
+                 headers: headers,
+                 rows: rows
+               )
+             else
+               AST::TableNode.new(
+                 location: @ast_compiler.location,
+                 caption: args[0],
+                 headers: headers,
+                 rows: rows
+               )
+             end
 
       @ast_compiler.add_child_to_current_node(node)
     end
@@ -375,7 +375,7 @@ module ReVIEW
       node = AST::ParagraphNode.new(
         location: @ast_compiler.location
       )
-      # Note: content is set separately as ParagraphNode doesn't accept content in constructor
+      # NOTE: content is set separately as ParagraphNode doesn't accept content in constructor
       node.content = "#{command_name}: #{args.first || ''}"
 
       # Parse inline elements in minicolumn content
