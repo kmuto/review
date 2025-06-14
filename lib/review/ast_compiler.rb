@@ -45,6 +45,12 @@ module ReVIEW
       @block_processor = BlockASTProcessor.new(self)
 
       @logger = ReVIEW.logger
+
+      # Debug settings for hybrid mode
+      @debug_ast_elements = ENV['REVIEW_DEBUG_AST'] == 'true'
+      @ast_element_stats = Hash.new(0) # Track AST usage statistics
+
+      log_hybrid_mode_status if @debug_ast_elements
     end
 
     attr_reader :builder, :ast_root, :current_ast_node, :ast_renderer
@@ -99,6 +105,9 @@ module ReVIEW
         # Hybrid mode: process specified elements via AST, others directly
         do_compile_hybrid
       end
+
+      # Log statistics after compilation
+      log_ast_element_statistics if @debug_ast_elements
     end
 
     def do_compile_with_ast_building
@@ -117,7 +126,7 @@ module ReVIEW
           f.gets # skip preprocessor directives
         when /\A=+[\[\s\{]/
           compile_headline_to_ast(f.gets)
-        when /\A\s*\z/
+        when /\A\s*\z/ # rubocop:disable Lint/DuplicateBranch
           f.gets # skip blank lines
         when %r{\A//}
           compile_block_command_to_ast(f)
@@ -222,7 +231,16 @@ module ReVIEW
 
     # Check if element should be processed via AST
     def should_use_ast?(element)
-      @ast_elements.empty? || @ast_elements.include?(element)
+      use_ast = @ast_elements.empty? || @ast_elements.include?(element)
+
+      # Debug logging and statistics
+      if @debug_ast_elements
+        mode = use_ast ? 'AST' : 'TRADITIONAL'
+        warn "DEBUG: Element #{element}: #{mode} mode" # Use warn for visibility
+        @ast_element_stats[element] += 1
+      end
+
+      use_ast
     end
 
     # Build headline AST node
@@ -286,6 +304,36 @@ module ReVIEW
       else
         @ast_renderer.send(method_name, node)
       end
+    end
+
+    # Debug and statistics methods
+    def log_hybrid_mode_status
+      if @ast_elements.empty?
+        warn 'DEBUG: ASTCompiler: Full AST mode enabled'
+      else
+        warn "DEBUG: ASTCompiler: Hybrid mode enabled for elements: #{@ast_elements.to_a}"
+      end
+    end
+
+    def log_ast_element_statistics
+      return unless @debug_ast_elements && @ast_element_stats.any?
+
+      warn 'DEBUG: === AST Element Usage Statistics ==='
+      @ast_element_stats.each do |element, count|
+        mode = should_use_ast?(element) ? 'AST' : 'TRADITIONAL'
+        warn "DEBUG:   #{element}: #{count} times (#{mode} mode)"
+      end
+      warn 'DEBUG: ===================================='
+    end
+
+    # Get current hybrid mode configuration
+    def hybrid_mode_config
+      {
+        mode: @ast_elements.empty? ? :full_ast : :hybrid,
+        ast_elements: @ast_elements.to_a,
+        debug_enabled: @debug_ast_elements,
+        statistics: @ast_element_stats.dup
+      }
     end
 
     private

@@ -103,6 +103,27 @@ module ReVIEW
       end
     end
 
+    # Get hybrid mode configuration for debugging
+    def hybrid_mode_config
+      if @ast_mode && @ast_compiler
+        @ast_compiler.hybrid_mode_config
+      else
+        {
+          mode: @ast_mode ? :legacy_ast : :traditional,
+          ast_elements: @ast_elements.to_a,
+          debug_enabled: false,
+          statistics: {}
+        }
+      end
+    end
+
+    # Log AST element usage statistics
+    def log_ast_statistics
+      if @ast_mode && @ast_compiler
+        @ast_compiler.log_ast_element_statistics
+      end
+    end
+
     # Check if element should be processed via AST
     def should_use_ast?(element)
       if @ast_mode && @ast_compiler
