@@ -40,14 +40,41 @@ class ProjectTestHelper
     begin
       Dir.chdir(project_dir)
 
-      # Set environment variables for AST testing
-      ENV['REVIEW_AST_MODE'] = ast_mode.to_s
-      ENV['REVIEW_AST_STAGE'] = ast_stage.to_s
-      ENV['REVIEW_DEBUG_AST'] = debug.to_s
+      # Create temporary config for specific AST mode
+      config_content = File.read('config.yml')
+      
+      # Update AST configuration based on parameters
+      if config_content.include?('ast:')
+        temp_config = config_content.gsub(/^ast:.*?(?=^\S|\z)/m) do |ast_section|
+          <<~AST_CONFIG
+            ast:
+              mode: #{ast_mode}
+              stage: #{ast_stage}
+              debug: #{debug}
+              performance: #{debug}
+          AST_CONFIG
+        end
+      else
+        # Add AST configuration if not present
+        temp_config = config_content + <<~AST_CONFIG
 
-      # Run compilation
-      cmd = "bundle exec #{File.join('..', '..', 'bin', 'review-compile')} --yaml=config.yml --target=#{target_format}"
+          ast:
+            mode: #{ast_mode}
+            stage: #{ast_stage}
+            debug: #{debug}
+            performance: #{debug}
+        AST_CONFIG
+      end
 
+      # Write temporary config
+      temp_config_file = "temp_config_#{target_format}.yml"
+      File.write(temp_config_file, temp_config)
+
+      # Run compilation with absolute paths
+      review_root = File.expand_path('..', File.dirname(__FILE__))
+      cmd = "bundle exec #{File.join(review_root, 'bin', 'review-compile')} --yaml=#{temp_config_file} --target=#{target_format}"
+
+      puts "DEBUG: Running command: #{cmd}" if debug
       result = case target_format
                when 'html'
                  `#{cmd} basic_elements.re 2>&1`
@@ -58,6 +85,13 @@ class ProjectTestHelper
                else
                  `#{cmd} comprehensive_test.re 2>&1`
                end
+      if !$CHILD_STATUS.success?
+        puts "DEBUG: Command failed with exit code: #{$CHILD_STATUS.exitstatus}"
+        puts "DEBUG: Command output: #{result}"
+        puts "DEBUG: Working directory: #{Dir.pwd}"
+        puts "DEBUG: Config file exists: #{File.exist?(temp_config_file)}"
+        puts "DEBUG: Basic elements file exists: #{File.exist?('basic_elements.re')}"
+      end
 
       {
         success: $CHILD_STATUS.success?,
@@ -66,10 +100,9 @@ class ProjectTestHelper
       }
     ensure
       Dir.chdir(old_dir)
-      # Clean up environment variables
-      ENV.delete('REVIEW_AST_MODE')
-      ENV.delete('REVIEW_AST_STAGE')
-      ENV.delete('REVIEW_DEBUG_AST')
+      # Clean up temporary config file
+      temp_config_file = File.join(project_dir, "temp_config_#{target_format}.yml")
+      File.delete(temp_config_file) if File.exist?(temp_config_file)
     end
   end
 
