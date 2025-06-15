@@ -14,7 +14,7 @@
 $LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'review'
-require 'review/ast_config'
+require 'review/ast/compiler_adapter'
 require 'fileutils'
 require 'optparse'
 require 'yaml'
@@ -33,7 +33,7 @@ rescue Errno::EPIPE
   exit 0
 end
 
-def _main # rubocop:disable Metrics/CyclomaticComplexity
+def _main
   @logger = ReVIEW.logger
   @mode = :files
   @basedir = nil
@@ -86,15 +86,8 @@ def _main # rubocop:disable Metrics/CyclomaticComplexity
         chap = book.chapter(chap_name)
         builder = load_builder_class(@target, @check_only)
         # Create compiler with AST configuration
-        ast_config = ReVIEW::ASTConfig.new(@config)
-        compiler_options = ast_config.compiler_options
-
-        # Override for JSON target to ensure proper location tracking
-        if @target == 'json' && compiler_options[:ast_mode] == false
-          compiler_options = { ast_mode: true, ast_elements: [] }
-        end
-
-        compiler = ReVIEW::Compiler.new(builder, **compiler_options)
+        adapter = ReVIEW::AST::CompilerAdapter.new(@config)
+        compiler = adapter.create_compiler(builder, @target)
         result = compiler.compile(chap)
         if @output_filename
           File.write(@output_filename, result)
@@ -106,15 +99,8 @@ def _main # rubocop:disable Metrics/CyclomaticComplexity
       book = @basedir ? ReVIEW::Book::Base.new(@basedir, config: @config) : ReVIEW::Book::Base.new(config: @config)
       builder = load_builder_class(@target, @check_only)
       # Create compiler with AST configuration
-      ast_config = ReVIEW::ASTConfig.new(@config)
-      compiler_options = ast_config.compiler_options
-
-      # Override for JSON target to ensure proper location tracking
-      if @target == 'json' && compiler_options[:ast_mode] == false
-        compiler_options = { ast_mode: true, ast_elements: [] }
-      end
-
-      compiler = ReVIEW::Compiler.new(builder, **compiler_options)
+      adapter = ReVIEW::AST::CompilerAdapter.new(@config)
+      compiler = adapter.create_compiler(builder, @target)
       book.chapters.each do |chap|
         str = compiler.compile(chap)
         File.write("#{chap.name}#{compiler.builder.extname}", str) unless @check_only

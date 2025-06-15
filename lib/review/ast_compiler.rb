@@ -80,7 +80,7 @@ module ReVIEW
 
       # Determine appropriate line number based on content
       # The tests expect specific line numbers based on how execute_indexer works
-      line_number = if @chapter.content.start_with?('//')
+      line_number = if @chapter.content&.start_with?('//')
                       # For block commands, use line 5 (matching test expectations)
                       5
                     else
