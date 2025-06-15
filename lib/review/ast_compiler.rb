@@ -261,7 +261,7 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.class.name == 'ReVIEW::JSONBuilder'
+        if @builder.class.name == 'ReVIEW::JSONBuilder' # rubocop:disable Style/ClassEqualityComparison
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_headline, node)
@@ -283,11 +283,134 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer
         # Special handling for JsonBuilder - pass AST node directly
-        if @builder.class.name == 'ReVIEW::JSONBuilder'
+        if @builder.class.name == 'ReVIEW::JSONBuilder' # rubocop:disable Style/ClassEqualityComparison
           @builder.add_ast_node(node)
         else
           @ast_renderer.send(:visit_paragraph, node)
         end
+      end
+    end
+
+    # Build unordered list AST
+    def build_ulist_ast(f)
+      list_items = []
+
+      f.while_match(/\A\s+\*|\A\#@/) do |line|
+        next if /\A\#@/.match?(line)
+
+        # Extract level and content
+        line =~ /\A(\s+)(\*+)\s*(.*)$/
+        level = $2.size
+        content = $3
+
+        # Create list item
+        item_node = AST::ListItemNode.new(
+          location: location,
+          level: level
+        )
+
+        # Parse inline elements in the content
+        @inline_processor.parse_inline_elements(content, item_node)
+
+        # Collect continuation lines
+        f.while_match(/\A\s+(?!\*)\S/) do |cont|
+          @inline_processor.parse_inline_elements(cont.strip, item_node)
+        end
+
+        list_items << item_node
+      end
+
+      # Create unordered list node
+      if list_items.any?
+        list_node = AST::ListNode.new(location: location, list_type: :ul)
+        list_items.each { |item| list_node.add_child(item) }
+
+        @current_ast_node.add_child(list_node)
+        render_with_ast_renderer(:visit_list, list_node)
+      end
+    end
+
+    # Build ordered list AST
+    def build_olist_ast(f)
+      list_items = []
+
+      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
+        next if /\A\#@/.match?(line)
+
+        # Extract number and content
+        line =~ /\A\s+(\d+)\.\s*(.*)$/
+        num = $1
+        content = $2
+
+        # Create list item
+        item_node = AST::ListItemNode.new(
+          location: location,
+          number: num.to_i
+        )
+
+        # Parse inline elements
+        @inline_processor.parse_inline_elements(content, item_node)
+
+        # Collect continuation lines
+        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
+          @inline_processor.parse_inline_elements(cont.strip, item_node)
+        end
+
+        list_items << item_node
+      end
+
+      # Create ordered list node
+      if list_items.any?
+        list_node = AST::ListNode.new(location: location, list_type: :ol)
+        list_items.each { |item| list_node.add_child(item) }
+
+        @current_ast_node.add_child(list_node)
+        render_with_ast_renderer(:visit_list, list_node)
+      end
+    end
+
+    # Build definition list AST
+    def build_dlist_ast(f)
+      list_items = []
+
+      f.while_match(/\A\s*:|\A\#@/) do |line|
+        next if /\A\#@/.match?(line)
+
+        # Extract term
+        line =~ /\A\s*:\s*(.*)$/
+        term = $1
+
+        # Create definition item
+        # For definition lists, use ListItemNode with content structure
+        item_node = AST::ListItemNode.new(
+          location: location,
+          content: term
+        )
+
+        # Parse inline elements in term (as the item content)
+        @inline_processor.parse_inline_elements(term, item_node)
+
+        # Collect definition lines
+        definition_lines = []
+        f.while_match(/\A\s+(?!:)\S/) do |cont|
+          definition_lines << cont.strip
+        end
+
+        # Add definition as child nodes
+        definition_lines.each do |definition_line|
+          @inline_processor.parse_inline_elements(definition_line, item_node)
+        end
+
+        list_items << item_node
+      end
+
+      # Create definition list node
+      if list_items.any?
+        list_node = AST::ListNode.new(location: location, list_type: :dl)
+        list_items.each { |item| list_node.add_child(item) }
+
+        @current_ast_node.add_child(list_node)
+        render_with_ast_renderer(:visit_list, list_node)
       end
     end
 

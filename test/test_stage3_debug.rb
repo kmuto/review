@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Stage 2 debugging tool
+# Stage 3 debugging tool
 require 'bundler/setup'
 require 'review'
 require 'review/ast_config'
 
-# Set environment for Stage 2
-ENV['REVIEW_AST_STAGE'] = '2'
+# Set environment for Stage 3
+ENV['REVIEW_AST_STAGE'] = '3'
 ENV['REVIEW_DEBUG_AST'] = 'true'
 ENV['REVIEW_AST_PERFORMANCE'] = 'true'
 
@@ -16,7 +16,7 @@ ReVIEW::I18n.setup('ja') # Initialize I18n
 book = ReVIEW::Book::Base.new(config: config)
 
 # Read test file
-content = File.read('test/fixtures/test_stage2.re')
+content = File.read('test/fixtures/test_stage3.re')
 
 # Create AST configuration
 ast_config = ReVIEW::ASTConfig.new(config)
@@ -38,7 +38,7 @@ puts
 compiler = ReVIEW::Compiler.new(builder, **compiler_options)
 
 # Create mock chapter object
-chap = ReVIEW::Book::Chapter.new(book, nil, 'test/fixtures/test_stage2.re', 'test/fixtures/test_stage2.re')
+chap = ReVIEW::Book::Chapter.new(book, nil, 'test/fixtures/test_stage3.re', 'test/fixtures/test_stage3.re')
 chap.instance_variable_set(:@content, content)
 
 puts '=== Compilation ==='
@@ -73,8 +73,8 @@ begin
   end
 
   # Save the output for inspection
-  File.write('stage2_output.html', result)
-  puts "\nOutput saved to: stage2_output.html"
+  File.write('stage3_output.html', result)
+  puts "\nOutput saved to: stage3_output.html"
 rescue StandardError => e
   puts "Error: #{e.message}"
   puts e.backtrace.first(10)

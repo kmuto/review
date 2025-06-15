@@ -58,7 +58,7 @@ puts "\nFound #{paragraphs.length} paragraphs with inline elements:"
 paragraphs.each_with_index do |para, i|
   puts "\n--- Paragraph #{i + 1} ---"
   puts "Children count: #{para['children'].length}"
-  
+
   para['children'].each do |child|
     case child['type']
     when 'TextNode'

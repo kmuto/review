@@ -33,7 +33,7 @@ rescue Errno::EPIPE
   exit 0
 end
 
-def _main
+def _main # rubocop:disable Metrics/CyclomaticComplexity
   @logger = ReVIEW.logger
   @mode = :files
   @basedir = nil

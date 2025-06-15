@@ -1,0 +1,10 @@
+# Stage 3 Test Configuration - Headlines + Paragraphs + Lists via AST
+bookname: "stage3-test"
+booktitle: "Stage 3 AST Test"
+
+# Stage 3: Headlines + Paragraphs + Lists
+ast:
+  mode: "hybrid"
+  stage: 3
+  debug: true
+  performance: true

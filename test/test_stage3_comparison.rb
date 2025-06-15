@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Stage 2 output comparison tool
+# Stage 3 output comparison tool
 require 'bundler/setup'
 require 'review'
 require 'review/ast_config'
@@ -13,14 +13,14 @@ def compile_with_mode(mode_description, ast_mode, ast_elements = [])
   ReVIEW::I18n.setup('ja')
   book = ReVIEW::Book::Base.new(config: config)
 
-  content = File.read('test/fixtures/test_stage2.re')
+  content = File.read('test/fixtures/test_stage3.re')
 
   # Create builder and compiler
   builder = ReVIEW::HTMLBuilder.new
   compiler = ReVIEW::Compiler.new(builder, ast_mode: ast_mode, ast_elements: ast_elements)
 
   # Create mock chapter object
-  chap = ReVIEW::Book::Chapter.new(book, nil, 'test/fixtures/test_stage2.re', 'test/fixtures/test_stage2.re')
+  chap = ReVIEW::Book::Chapter.new(book, nil, 'test/fixtures/test_stage3.re', 'test/fixtures/test_stage3.re')
   chap.instance_variable_set(:@content, content)
 
   start_time = Time.now
@@ -29,9 +29,6 @@ def compile_with_mode(mode_description, ast_mode, ast_elements = [])
 
   puts "Compilation time: #{(compilation_time * 1000).round(2)}ms"
   puts "Output size: #{result.length} characters"
-  puts 'First 200 characters:'
-  puts result[0..200]
-  puts '...' if result.length > 200
   puts
 
   result
@@ -40,52 +37,54 @@ end
 # Test traditional mode
 traditional_result = compile_with_mode('Traditional Mode', false)
 
-# Test Stage 1 (headline only)
-stage1_result = compile_with_mode('Stage 1 (Headline AST)', true, [:headline])
-
 # Test Stage 2 (headline + paragraph)
 stage2_result = compile_with_mode('Stage 2 (Headline + Paragraph AST)', true, %i[headline paragraph])
 
+# Test Stage 3 (headline + paragraph + lists)
+stage3_result = compile_with_mode('Stage 3 (Headline + Paragraph + Lists AST)', true, %i[headline paragraph ulist olist dlist])
+
 # Compare results
 puts '=== Comparison ==='
-puts "\n--- Stage 1 vs Traditional ---"
-if traditional_result == stage1_result
-  puts '✅ Stage 1 output is IDENTICAL to traditional mode'
-else
-  puts '❌ Stage 1 output differs from traditional mode'
-  File.write('traditional_s2.html', traditional_result)
-  File.write('stage1_s2.html', stage1_result)
-end
 
 puts "\n--- Stage 2 vs Traditional ---"
 if traditional_result == stage2_result
   puts '✅ Stage 2 output is IDENTICAL to traditional mode'
 else
   puts '❌ Stage 2 output differs from traditional mode'
-  File.write('traditional_s2.html', traditional_result)
-  File.write('stage2_s2.html', stage2_result)
+end
 
-  # Show size difference
-  size_diff = stage2_result.length - traditional_result.length
-  puts "Size difference: #{size_diff} characters"
+puts "\n--- Stage 3 vs Traditional ---"
+if traditional_result == stage3_result
+  puts '✅ Stage 3 output is IDENTICAL to traditional mode!'
+else
+  puts '❌ Stage 3 output differs from traditional mode'
+  File.write('traditional_s3.html', traditional_result)
+  File.write('stage3_s3.html', stage3_result)
 
   # Find first difference
   traditional_lines = traditional_result.lines
-  stage2_lines = stage2_result.lines
+  stage3_lines = stage3_result.lines
 
-  traditional_lines.each_with_index do |line, i|
-    next unless stage2_lines[i] != line
+  min_lines = [traditional_lines.length, stage3_lines.length].min
+  (0...min_lines).each do |i|
+    next unless traditional_lines[i] != stage3_lines[i]
 
     puts "\nFirst difference at line #{i + 1}:"
-    puts "Traditional: #{line.strip}"
-    puts "Stage 2:     #{stage2_lines[i]&.strip || '(missing)'}"
+    puts "Traditional: #{traditional_lines[i].strip}"
+    puts "Stage 3:     #{stage3_lines[i].strip}"
     break
+  end
+
+  if traditional_lines.length != stage3_lines.length
+    puts "\nLine count differs:"
+    puts "Traditional: #{traditional_lines.length} lines"
+    puts "Stage 3:     #{stage3_lines.length} lines"
   end
 end
 
-puts "\n--- Stage 2 vs Stage 1 ---"
-if stage1_result == stage2_result
-  puts '✅ Stage 2 output is IDENTICAL to Stage 1'
+puts "\n--- Stage 3 vs Stage 2 ---"
+if stage2_result == stage3_result
+  puts '✅ Stage 3 output is IDENTICAL to Stage 2'
 else
-  puts '⚠️  Stage 2 output differs from Stage 1 (expected - paragraphs now use AST)'
+  puts '⚠️  Stage 3 output differs from Stage 2 (expected - lists now use AST)'
 end

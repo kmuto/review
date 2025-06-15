@@ -186,6 +186,21 @@ module ReVIEW
       end
     end
 
+    # Build unordered list AST
+    def build_ulist_ast(f)
+      @ast_compiler.build_ulist_ast(f) if @ast_compiler
+    end
+
+    # Build ordered list AST
+    def build_olist_ast(f)
+      @ast_compiler.build_olist_ast(f) if @ast_compiler
+    end
+
+    # Build definition list AST
+    def build_dlist_ast(f)
+      @ast_compiler.build_dlist_ast(f) if @ast_compiler
+    end
+
     # Parse inline elements and create AST nodes
     def parse_inline_elements(str, parent_node)
       return if str.empty?
@@ -715,135 +730,6 @@ module ReVIEW
       # Render immediately in hybrid mode
       if @ast_renderer && args&.any?
         @builder.raw(args.first)
-      end
-    end
-
-    # Build unordered list AST node
-    def build_ulist_ast(f)
-      node = AST::ListNode.new(
-        location: location,
-        list_type: :ul
-      )
-
-      level = 0
-      f.while_match(/\A\s+\*|\A\#@/) do |line|
-        next if /\A\#@/.match?(line)
-
-        # Collect raw lines without processing inline elements for AST
-        raw_lines = [line.sub(/\*+/, '').strip]
-        f.while_match(/\A\s+(?!\*)\S/) do |cont|
-          raw_lines.push(cont.strip)
-        end
-
-        line =~ /\A\s+(\*+)/
-        current_level = $1.size
-
-        item_node = AST::ListItemNode.new(
-          location: location,
-          level: current_level
-        )
-
-        # Parse inline elements in item content
-        raw_lines.each do |raw_line|
-          parse_inline_elements(raw_line, item_node)
-        end
-
-        node.children << item_node
-        level = current_level
-      end
-
-      @current_ast_node.add_child(node)
-
-      # Render immediately in hybrid mode
-      if @ast_renderer
-        @ast_renderer.send(:visit_list, node)
-      end
-    end
-
-    # Build ordered list AST node
-    def build_olist_ast(f)
-      node = AST::ListNode.new(
-        location: location,
-        list_type: :ol
-      )
-
-      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
-        next if /\A\#@/.match?(line)
-
-        num = line.match(/(\d+)\./)[1]
-        raw_lines = [line.sub(/\d+\./, '').strip]
-        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-          raw_lines.push(cont.strip)
-        end
-
-        item_node = AST::ListItemNode.new(
-          location: location,
-          level: 1,
-          content: num # Store original number for reference
-        )
-
-        # Parse inline elements in item content
-        raw_lines.each do |raw_line|
-          parse_inline_elements(raw_line, item_node)
-        end
-
-        node.children << item_node
-      end
-
-      @current_ast_node.add_child(node)
-
-      # Render immediately in hybrid mode
-      if @ast_renderer
-        @ast_renderer.send(:visit_list, node)
-      end
-    end
-
-    # Build definition list AST node
-    def build_dlist_ast(f)
-      node = AST::ListNode.new(
-        location: location,
-        list_type: :dl
-      )
-
-      while /\A\s*:/ =~ f.peek
-        # Get definition term
-        dt_line = f.gets.sub(/\A\s*:/, '').strip
-        dt_node = AST::ListItemNode.new(
-          location: location,
-          level: 1
-        )
-        parse_inline_elements(dt_line, dt_node)
-
-        # Get definition description
-        desc_lines = []
-        f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
-          desc_lines << line.strip
-        end
-
-        # Create a container node for the dt/dd pair
-        item_node = AST::ListItemNode.new(
-          location: location,
-          level: 1
-        )
-
-        # Add dt as first child
-        item_node.add_child(dt_node)
-
-        # Add dd content as additional children
-        desc_lines.each do |desc_line|
-          parse_inline_elements(desc_line, item_node)
-        end
-
-        node.children << item_node
-        f.skip_blank_lines
-        f.skip_comment_lines
-      end
-
-      @current_ast_node.add_child(node)
-
-      # Render immediately in hybrid mode
-      if @ast_renderer
-        @ast_renderer.send(:visit_list, node)
       end
     end
 
