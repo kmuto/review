@@ -298,10 +298,14 @@ module ReVIEW
       f.while_match(/\A\s+\*|\A\#@/) do |line|
         next if /\A\#@/.match?(line)
 
-        # Extract level and content
-        line =~ /\A(\s+)(\*+)\s*(.*)$/
-        level = $2.size
+        # Extract level and content - Re:VIEW uses space indentation + * for nesting
+        line =~ /\A(\s*)(\*+)\s*(.*)$/
+        indent_spaces = $1.length
+        stars = $2.size
         content = $3
+
+        # Calculate nesting level based on stars (*, **, ***, etc.)
+        level = stars
 
         # Create list item
         item_node = AST::ListItemNode.new(
@@ -312,7 +316,7 @@ module ReVIEW
         # Parse inline elements in the content
         @inline_processor.parse_inline_elements(content, item_node)
 
-        # Collect continuation lines
+        # Collect continuation lines (indented but not starting with *)
         f.while_match(/\A\s+(?!\*)\S/) do |cont|
           @inline_processor.parse_inline_elements(cont.strip, item_node)
         end
@@ -320,9 +324,10 @@ module ReVIEW
         list_items << item_node
       end
 
-      # Create nested list structure
+      # Create list structure
       if list_items.any?
-        root_list = build_nested_list_structure(list_items, :ul)
+        root_list = AST::ListNode.new(location: location, list_type: :ul)
+        list_items.each { |item| root_list.add_child(item) }
         @current_ast_node.add_child(root_list)
         render_with_ast_renderer(:visit_list, root_list)
       end
@@ -347,6 +352,7 @@ module ReVIEW
         # Create list item
         item_node = AST::ListItemNode.new(
           location: location,
+          content: num,
           number: num.to_i,
           level: level
         )
@@ -362,9 +368,10 @@ module ReVIEW
         list_items << item_node
       end
 
-      # Create nested list structure
+      # Create list structure
       if list_items.any?
-        root_list = build_nested_list_structure(list_items, :ol)
+        root_list = AST::ListNode.new(location: location, list_type: :ol)
+        list_items.each { |item| root_list.add_child(item) }
         @current_ast_node.add_child(root_list)
         render_with_ast_renderer(:visit_list, root_list)
       end
@@ -387,14 +394,11 @@ module ReVIEW
           content: term
         )
 
-        # Create term node (dt equivalent)
-        term_node = AST::TextNode.new(location: location, content: term)
-        # Parse inline elements in the term
+        # Create term node (dt equivalent) - must be first child
         if term.include?('@<')
-          # Clear the term node and re-parse with inline elements
-          item_node.children.clear
           @inline_processor.parse_inline_elements(term, item_node)
         else
+          term_node = AST::TextNode.new(location: location, content: term)
           item_node.add_child(term_node)
         end
 
@@ -404,13 +408,16 @@ module ReVIEW
           definition_lines << cont.strip
         end
 
-        # Create definition content nodes (dd equivalent)
+        # Create definition content nodes (dd equivalent) - additional children
         unless definition_lines.empty?
-          # Create a definition content container
           definition_content = definition_lines.join(' ')
           if definition_content.include?('@<')
-            @inline_processor.parse_inline_elements(definition_content, item_node)
+            # Create a paragraph node to hold the definition with inline elements
+            definition_paragraph = AST::ParagraphNode.new(location: location)
+            @inline_processor.parse_inline_elements(definition_content, definition_paragraph)
+            item_node.add_child(definition_paragraph)
           else
+            # Create a simple text node for the definition
             definition_node = AST::TextNode.new(location: location, content: definition_content)
             item_node.add_child(definition_node)
           end
@@ -447,7 +454,7 @@ module ReVIEW
       return unless @ast_renderer
 
       # Special handling for JsonBuilder - pass AST node directly
-      if @builder.instance_of?(::ReVIEW::JSONBuilder)
+      if @builder.class.name == 'ReVIEW::JSONBuilder'
         @builder.add_ast_node(node)
       else
         @ast_renderer.send(method_name, node)
