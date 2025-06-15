@@ -121,7 +121,11 @@ module ReVIEW
         if @ast_elements.empty?
           # Full AST mode: build complete AST without rendering
           do_compile_with_ast_building
-          # Don't render in full AST mode - just return the AST
+          # In full AST mode, render the AST using the builder
+          # (unless it's JSONBuilder which handles AST differently)
+          unless @builder.class.name == 'ReVIEW::JSONBuilder'
+            @ast_renderer.render(@ast_root)
+          end
         else
           # Hybrid mode: process specified elements via AST, others directly
           do_compile_hybrid
@@ -155,6 +159,12 @@ module ReVIEW
             f.gets # skip blank lines
           when %r{\A//}
             compile_block_command_to_ast(f)
+          when /\A\s+\*\s/ # unordered list (must start with space)
+            compile_ul_to_ast(f)
+          when /\A\s+\d+\.\s/ # ordered list (must start with space)
+            compile_ol_to_ast(f)
+          when /\A\s+:\s/ # definition list (must start with space)
+            compile_dl_to_ast(f)
           else
             compile_paragraph_to_ast(f)
           end
@@ -252,6 +262,87 @@ module ReVIEW
 
       def ast_result
         @ast_root
+      end
+
+      def compile_ul_to_ast(f)
+        lines = []
+        f.while_match(/\A(\s+)\*\s(.*)/) do |line|
+          m = /\A(\s+)\*\s(.*)/.match(line)
+          indent = m[1].size
+          content = m[2]
+          lines << { indent: indent, content: content }
+        end
+
+        node = AST::ListNode.new(location: location, list_type: :ul)
+        build_list_items(node, lines)
+        @current_ast_node.add_child(node)
+      end
+
+      def compile_ol_to_ast(f)
+        lines = []
+        f.while_match(/\A(\s+)\d+\.\s(.*)/) do |line|
+          m = /\A(\s+)\d+\.\s(.*)/.match(line)
+          indent = m[1].size
+          content = m[2]
+          lines << { indent: indent, content: content }
+        end
+
+        node = AST::ListNode.new(location: location, list_type: :ol)
+        build_list_items(node, lines)
+        @current_ast_node.add_child(node)
+      end
+
+      def compile_dl_to_ast(f)
+        lines = []
+        f.while_match(/\A(\s+):(.*)/) do |line|
+          m = /\A(\s+):(.*)/.match(line)
+          lines << line.sub(/\A(\s+):/, '')
+        end
+
+        node = AST::ListNode.new(location: location, list_type: :dl)
+        # For definition lists, process dt/dd pairs
+        lines.each_slice(2) do |dt_line, dd_line|
+          item_node = AST::ListItemNode.new(location: location)
+
+          # DT (term)
+          dt_node = AST::TextNode.new(location: location, content: dt_line.strip)
+          item_node.add_child(dt_node)
+
+          # DD (definition) - might be nil
+          if dd_line && !dd_line.strip.empty?
+            dd_node = AST::TextNode.new(location: location, content: dd_line.strip)
+            item_node.add_child(dd_node)
+          end
+
+          node.add_child(item_node)
+        end
+        @current_ast_node.add_child(node)
+      end
+
+      def build_list_items(list_node, lines)
+        # Group lines by indent level to handle nested lists
+        current_items = []
+        current_indent = 0
+
+        lines.each do |line_info|
+          indent = line_info[:indent]
+          content = line_info[:content]
+
+          if indent == current_indent || current_items.empty?
+            # Same level or first item
+            item_node = AST::ListItemNode.new(location: location)
+            inline_processor.parse_inline_elements(content, item_node)
+            list_node.add_child(item_node)
+            current_items << item_node
+          else
+            # Nested list - for now, treat as same level
+            # TODO: Implement proper nested list support
+            item_node = AST::ListItemNode.new(location: location)
+            inline_processor.parse_inline_elements(content, item_node)
+            list_node.add_child(item_node)
+            current_items << item_node
+          end
+        end
       end
 
       # Check if element should be processed via AST
