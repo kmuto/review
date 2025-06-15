@@ -1274,7 +1274,9 @@ module ReVIEW
         f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
           desc << text(line.strip)
         end
-        @builder.dd(desc)
+        # Only output dd if there's actual content
+        desc_content = desc.reject(&:empty?)
+        @builder.dd(desc_content) if desc_content.any?
         f.skip_blank_lines
         f.skip_comment_lines
       end

@@ -283,7 +283,7 @@ EOS
     actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
 
     expected = <<-EOS.chomp
-<dl><dt>foo<footnote>bar</footnote>[]&lt;&gt;&amp;<replace idref="texinline-1"><pre>\\alpha[]</pre></replace></dt><dd></dd></dl>
+<dl><dt>foo<footnote>bar</footnote>[]&lt;&gt;&amp;<replace idref="texinline-1"><pre>\\alpha[]</pre></replace></dt></dl>
 EOS
     assert_equal expected, actual
   end
