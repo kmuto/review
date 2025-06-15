@@ -20,10 +20,10 @@ module ReVIEW
       1 => [:headline],
       2 => %i[headline paragraph],
       3 => %i[headline paragraph ulist olist dlist],
-      4 => %i[headline paragraph ulist olist dlist table],
-      5 => %i[headline paragraph ulist olist dlist table image indepimage numberlessimage],
-      6 => %i[headline paragraph ulist olist dlist table image indepimage numberlessimage list listnum emlist emlistnum cmd source],
-      7 => %i[headline paragraph ulist olist dlist table image list emlist cmd source inline]
+      4 => %i[headline paragraph ulist olist dlist table emtable imgtable],
+      5 => %i[headline paragraph ulist olist dlist table emtable imgtable image indepimage numberlessimage],
+      6 => %i[headline paragraph ulist olist dlist table emtable imgtable image indepimage numberlessimage list listnum emlist emlistnum cmd source],
+      7 => %i[headline paragraph ulist olist dlist table emtable imgtable image list emlist cmd source inline]
     }.freeze
 
     def initialize(config = nil)

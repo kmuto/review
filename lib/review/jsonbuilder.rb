@@ -160,7 +160,8 @@ module ReVIEW
           id: id,
           caption: parse_caption(caption),
           headers: [],
-          rows: []
+          rows: [],
+          table_type: :table
         )
         add_node(node)
         return
@@ -181,14 +182,48 @@ module ReVIEW
         id: id,
         caption: parse_caption(caption),
         headers: headers,
-        rows: table_rows
+        rows: table_rows,
+        table_type: :table
       )
 
       add_node(node)
     end
 
     def emtable(lines, caption = nil)
-      table(lines, nil, caption)
+      # Parse table data similar to table method
+      if lines.nil? || lines.empty?
+        node = AST::TableNode.new(
+          location: location,
+          id: nil,
+          caption: parse_caption(caption),
+          headers: [],
+          rows: [],
+          table_type: :emtable
+        )
+        add_node(node)
+        return
+      end
+
+      sepidx, rows = parse_table_rows(lines)
+
+      if sepidx
+        headers = rows[0...sepidx]
+        table_rows = rows[sepidx..-1]
+      else
+        headers = []
+        table_rows = rows
+      end
+
+      node = AST::TableNode.new(
+        location: location,
+        id: nil,
+        caption: parse_caption(caption),
+        headers: headers,
+        rows: table_rows,
+        table_type: :emtable
+      )
+
+      add_node(node)
     end
 
     def ul_begin(&_block)
@@ -654,13 +689,21 @@ module ReVIEW
       @current_node.add_child(node)
     end
 
+    # AST integration support
+    def add_ast_node(node)
+      add_node(node)
+    end
+
     # Additional block commands
-    def imgtable(_lines, id = nil, caption = nil, metric = nil)
-      # For JSON, treat as image with table type
-      node = AST::ImageNode.new(
+    def imgtable(lines, id = nil, caption = nil, metric = nil)
+      # For JSON, create TableNode with imgtable type
+      node = AST::TableNode.new(
         location: location,
         id: id,
         caption: caption,
+        headers: [],
+        rows: lines || [],
+        table_type: :imgtable,
         metric: metric
       )
       add_node(node)

@@ -629,13 +629,47 @@ module ReVIEW
         end
       end
 
-      node = AST::TableNode.new(
-        location: location,
-        id: args&.any? ? args[0] : nil,
-        caption: args && args.size > 1 ? args[1] : nil,
-        headers: headers,
-        rows: rows
-      )
+      # Create TableNode with appropriate table_type and arguments based on command
+      node = case _command_name
+             when :table
+               AST::TableNode.new(
+                 location: location,
+                 id: args&.any? ? args[0] : nil,
+                 caption: args && args.size > 1 ? args[1] : nil,
+                 headers: headers,
+                 rows: rows,
+                 table_type: :table
+               )
+             when :emtable
+               AST::TableNode.new(
+                 location: location,
+                 id: nil,
+                 caption: args&.any? ? args[0] : nil,
+                 headers: headers,
+                 rows: rows,
+                 table_type: :emtable
+               )
+             when :imgtable
+               AST::TableNode.new(
+                 location: location,
+                 id: args&.any? ? args[0] : nil,
+                 caption: args && args.size > 1 ? args[1] : nil,
+                 headers: headers,
+                 rows: rows,
+                 table_type: :imgtable,
+                 metric: args && args.size > 2 ? args[2] : nil
+               )
+             else
+               # Fallback for unknown table types
+               AST::TableNode.new(
+                 location: location,
+                 id: args&.any? ? args[0] : nil,
+                 caption: args && args.size > 1 ? args[1] : nil,
+                 headers: headers,
+                 rows: rows,
+                 table_type: _command_name
+               )
+             end
 
       @current_ast_node.add_child(node)
 

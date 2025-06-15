@@ -141,7 +141,15 @@ module ReVIEW
       end
       lines.concat(node.rows) if node.rows.any?
 
-      @builder.table(lines, node.id, node.caption)
+      # Call appropriate builder method based on table type
+      case node.table_type
+      when :emtable
+        @builder.emtable(lines, node.caption)
+      when :imgtable
+        @builder.imgtable(lines, node.id, node.caption, node.metric)
+      else
+        @builder.table(lines, node.id, node.caption)
+      end
     end
 
     def visit_image(node)

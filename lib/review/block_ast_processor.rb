@@ -90,20 +90,44 @@ module ReVIEW
         end
       end
 
-      node = if type == :table
+      node = case type
+             when :table
                AST::TableNode.new(
                  location: @ast_compiler.location,
                  id: args[0],
                  caption: args[1],
                  headers: headers,
-                 rows: rows
+                 rows: rows,
+                 table_type: :table
                )
-             else
+             when :emtable
                AST::TableNode.new(
                  location: @ast_compiler.location,
+                 id: nil, # emtable has no ID
                  caption: args[0],
                  headers: headers,
-                 rows: rows
+                 rows: rows,
+                 table_type: :emtable
+               )
+             when :imgtable
+               AST::TableNode.new(
+                 location: @ast_compiler.location,
+                 id: args[0],
+                 caption: args[1],
+                 headers: headers,
+                 rows: rows,
+                 table_type: :imgtable,
+                 metric: args[2]
+               )
+             else
+               # Fallback for unknown table types
+               AST::TableNode.new(
+                 location: @ast_compiler.location,
+                 id: args[0],
+                 caption: args[1],
+                 headers: headers,
+                 rows: rows,
+                 table_type: type
                )
              end
 
