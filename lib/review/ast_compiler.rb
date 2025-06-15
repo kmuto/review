@@ -300,7 +300,7 @@ module ReVIEW
 
         # Extract level and content - Re:VIEW uses space indentation + * for nesting
         line =~ /\A(\s*)(\*+)\s*(.*)$/
-        indent_spaces = $1.length
+        _indent_spaces = $1.length
         stars = $2.size
         content = $3
 
@@ -454,7 +454,7 @@ module ReVIEW
       return unless @ast_renderer
 
       # Special handling for JsonBuilder - pass AST node directly
-      if @builder.class.name == 'ReVIEW::JSONBuilder'
+      if @builder.class.name == 'ReVIEW::JSONBuilder' # rubocop:disable Style/ClassEqualityComparison
         @builder.add_ast_node(node)
       else
         @ast_renderer.send(method_name, node)
