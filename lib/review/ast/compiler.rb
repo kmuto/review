@@ -264,85 +264,19 @@ module ReVIEW
         @ast_root
       end
 
+      # Compile unordered list to AST (delegates to list processor)
       def compile_ul_to_ast(f)
-        lines = []
-        f.while_match(/\A(\s+)\*\s(.*)/) do |line|
-          m = /\A(\s+)\*\s(.*)/.match(line)
-          indent = m[1].size
-          content = m[2]
-          lines << { indent: indent, content: content }
-        end
-
-        node = AST::ListNode.new(location: location, list_type: :ul)
-        build_list_items(node, lines)
-        @current_ast_node.add_child(node)
+        list_processor.process_unordered_list(f)
       end
 
+      # Compile ordered list to AST (delegates to list processor)
       def compile_ol_to_ast(f)
-        lines = []
-        f.while_match(/\A(\s+)\d+\.\s(.*)/) do |line|
-          m = /\A(\s+)\d+\.\s(.*)/.match(line)
-          indent = m[1].size
-          content = m[2]
-          lines << { indent: indent, content: content }
-        end
-
-        node = AST::ListNode.new(location: location, list_type: :ol)
-        build_list_items(node, lines)
-        @current_ast_node.add_child(node)
+        list_processor.process_ordered_list(f)
       end
 
+      # Compile definition list to AST (delegates to list processor)
       def compile_dl_to_ast(f)
-        lines = []
-        f.while_match(/\A(\s+):(.*)/) do |line|
-          m = /\A(\s+):(.*)/.match(line)
-          lines << line.sub(/\A(\s+):/, '')
-        end
-
-        node = AST::ListNode.new(location: location, list_type: :dl)
-        # For definition lists, process dt/dd pairs
-        lines.each_slice(2) do |dt_line, dd_line|
-          item_node = AST::ListItemNode.new(location: location)
-
-          # DT (term)
-          dt_node = AST::TextNode.new(location: location, content: dt_line.strip)
-          item_node.add_child(dt_node)
-
-          # DD (definition) - might be nil
-          if dd_line && !dd_line.strip.empty?
-            dd_node = AST::TextNode.new(location: location, content: dd_line.strip)
-            item_node.add_child(dd_node)
-          end
-
-          node.add_child(item_node)
-        end
-        @current_ast_node.add_child(node)
-      end
-
-      def build_list_items(list_node, lines)
-        # Group lines by indent level to handle nested lists
-        current_items = []
-        current_indent = 0
-
-        lines.each do |line_info|
-          indent = line_info[:indent]
-          content = line_info[:content]
-
-          if indent == current_indent || current_items.empty?
-            # Same level or first item
-            item_node = AST::ListItemNode.new(location: location)
-            inline_processor.parse_inline_elements(content, item_node)
-            list_node.add_child(item_node)
-            current_items << item_node
-          else
-            # Nested list - for now, treat as same level
-            # TODO: Implement proper nested list support
-            item_node = AST::ListItemNode.new(location: location)
-            inline_processor.parse_inline_elements(content, item_node)
-            list_node.add_child(item_node)
-            current_items << item_node
-          end
-        end
+        list_processor.process_definition_list(f)
       end
 
       # Check if element should be processed via AST
@@ -472,56 +406,6 @@ module ReVIEW
       # Expose performance tracker for external access
       attr_reader :performance_tracker
 
-      # Build nested list structure from flat list items
-      def build_nested_list_structure(items, list_type)
-        return AST::ListNode.new(location: location, list_type: list_type) if items.empty?
-
-        root_list = AST::ListNode.new(location: location, list_type: list_type)
-        stack = [{ list: root_list, level: 0 }]
-
-        items.each do |item|
-          current_level = item.level || 1
-
-          # Pop from stack until we find the appropriate parent level
-          while stack.size > 1 && stack.last[:level] >= current_level
-            stack.pop
-          end
-
-          current_context = stack.last
-          target_list = current_context[:list]
-
-          if current_context[:level] < current_level
-            # Need to create a deeper nested structure
-            # The nested list should be a child of the last item in the current list
-            if target_list.children.any? && target_list.children.last.is_a?(AST::ListItemNode)
-              last_item = target_list.children.last
-
-              # Check if the last item already has a nested list of the same type
-              nested_list = last_item.children.find { |child| child.is_a?(AST::ListNode) && child.list_type == list_type }
-
-              unless nested_list
-                # Create new nested list
-                nested_list = AST::ListNode.new(location: item.location, list_type: list_type)
-                last_item.add_child(nested_list)
-              end
-
-              # Add the item to the nested list
-              nested_list.add_child(item)
-
-              # Update stack to point to the nested list
-              stack.push({ list: nested_list, level: current_level })
-            else
-              # No previous item to nest under, add to current level
-              target_list.add_child(item)
-            end
-          else
-            # Same level or going back up, add to current list
-            target_list.add_child(item)
-          end
-        end
-
-        root_list
-      end
 
       private
 
