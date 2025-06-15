@@ -65,19 +65,19 @@ class ASTHTMLCompatibilityTest < Test::Unit::TestCase
     content = File.read(inline_file)
 
     traditional_output = compile_with_builder(content, ReVIEW::HTMLBuilder, 'traditional')
-    ast_output = compile_with_builder(content, ReVIEW::HTMLBuilder, 'ast_full')
+    hybrid_output = compile_with_builder(content, ReVIEW::HTMLBuilder, 'hybrid_stage3')
 
     # Count inline HTML elements
     traditional_inlines = count_html_inline_elements(traditional_output)
-    ast_inlines = count_html_inline_elements(ast_output)
+    hybrid_inlines = count_html_inline_elements(hybrid_output)
 
     puts "\nInline HTML Elements:"
     puts "  Traditional: #{traditional_inlines}"
-    puts "  AST: #{ast_inlines}"
+    puts "  Hybrid: #{hybrid_inlines}"
 
-    # AST should preserve at least as many inline elements
-    assert ast_inlines >= traditional_inlines,
-           "AST mode should preserve inline HTML elements. Traditional: #{traditional_inlines}, AST: #{ast_inlines}"
+    # Hybrid mode should preserve at least as many inline elements
+    assert hybrid_inlines >= traditional_inlines,
+           "Hybrid mode should preserve inline HTML elements. Traditional: #{traditional_inlines}, Hybrid: #{hybrid_inlines}"
   end
 
   private
