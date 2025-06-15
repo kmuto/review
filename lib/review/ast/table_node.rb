@@ -8,17 +8,17 @@ module ReVIEW
       attr_accessor :id, :caption, :headers, :rows
 
       def initialize(location: nil, id: nil, caption: nil, headers: [], rows: [], **kwargs)
-        super(location: location, id: id, **kwargs)
+        super(location: location, **kwargs)
         @id = id
-        @caption = caption || [] # caption is now an array of nodes
-        @headers = headers
-        @rows = rows
+        @caption = caption || []
+        @headers = headers || []
+        @rows = rows || []
       end
 
       def to_h
         super.merge(
           id: id,
-          caption: caption.is_a?(Array) ? caption.map(&:to_h) : caption,
+          caption: caption,
           headers: headers,
           rows: rows
         )
@@ -26,11 +26,11 @@ module ReVIEW
 
       protected
 
-      def serialize_properties(hash, options)
-        hash[:id] = id
-        hash[:caption] = caption.is_a?(Array) ? caption.map { |child| child.serialize_to_hash(options) } : caption
-        hash[:headers] = headers
-        hash[:rows] = rows
+      def serialize_properties(hash, _options)
+        hash[:id] = id if id
+        hash[:caption] = caption if caption
+        hash[:headers] = headers if headers && headers.any?
+        hash[:rows] = rows if rows && rows.any?
         hash
       end
     end

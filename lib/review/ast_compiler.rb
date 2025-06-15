@@ -320,13 +320,11 @@ module ReVIEW
         list_items << item_node
       end
 
-      # Create unordered list node
+      # Create nested list structure
       if list_items.any?
-        list_node = AST::ListNode.new(location: location, list_type: :ul)
-        list_items.each { |item| list_node.add_child(item) }
-
-        @current_ast_node.add_child(list_node)
-        render_with_ast_renderer(:visit_list, list_node)
+        root_list = build_nested_list_structure(list_items, :ul)
+        @current_ast_node.add_child(root_list)
+        render_with_ast_renderer(:visit_list, root_list)
       end
     end
 
@@ -342,10 +340,15 @@ module ReVIEW
         num = $1
         content = $2
 
+        # Determine nesting level based on number format
+        # 1. = level 1, 11. = level 2, 111. = level 3, etc.
+        level = num.to_s.size
+
         # Create list item
         item_node = AST::ListItemNode.new(
           location: location,
-          number: num.to_i
+          number: num.to_i,
+          level: level
         )
 
         # Parse inline elements
@@ -359,13 +362,11 @@ module ReVIEW
         list_items << item_node
       end
 
-      # Create ordered list node
+      # Create nested list structure
       if list_items.any?
-        list_node = AST::ListNode.new(location: location, list_type: :ol)
-        list_items.each { |item| list_node.add_child(item) }
-
-        @current_ast_node.add_child(list_node)
-        render_with_ast_renderer(:visit_list, list_node)
+        root_list = build_nested_list_structure(list_items, :ol)
+        @current_ast_node.add_child(root_list)
+        render_with_ast_renderer(:visit_list, root_list)
       end
     end
 
@@ -380,15 +381,22 @@ module ReVIEW
         line =~ /\A\s*:\s*(.*)$/
         term = $1
 
-        # Create definition item
-        # For definition lists, use ListItemNode with content structure
+        # Create definition item with proper structure
         item_node = AST::ListItemNode.new(
           location: location,
           content: term
         )
 
-        # Parse inline elements in term (as the item content)
-        @inline_processor.parse_inline_elements(term, item_node)
+        # Create term node (dt equivalent)
+        term_node = AST::TextNode.new(location: location, content: term)
+        # Parse inline elements in the term
+        if term.include?('@<')
+          # Clear the term node and re-parse with inline elements
+          item_node.children.clear
+          @inline_processor.parse_inline_elements(term, item_node)
+        else
+          item_node.add_child(term_node)
+        end
 
         # Collect definition lines
         definition_lines = []
@@ -396,9 +404,16 @@ module ReVIEW
           definition_lines << cont.strip
         end
 
-        # Add definition as child nodes
-        definition_lines.each do |definition_line|
-          @inline_processor.parse_inline_elements(definition_line, item_node)
+        # Create definition content nodes (dd equivalent)
+        unless definition_lines.empty?
+          # Create a definition content container
+          definition_content = definition_lines.join(' ')
+          if definition_content.include?('@<')
+            @inline_processor.parse_inline_elements(definition_content, item_node)
+          else
+            definition_node = AST::TextNode.new(location: location, content: definition_content)
+            item_node.add_child(definition_node)
+          end
         end
 
         list_items << item_node
@@ -473,6 +488,57 @@ module ReVIEW
 
     # Expose performance tracker for external access
     attr_reader :performance_tracker
+
+    # Build nested list structure from flat list items
+    def build_nested_list_structure(items, list_type)
+      return AST::ListNode.new(location: location, list_type: list_type) if items.empty?
+
+      root_list = AST::ListNode.new(location: location, list_type: list_type)
+      stack = [{ list: root_list, level: 0 }]
+
+      items.each do |item|
+        current_level = item.level || 1
+
+        # Pop from stack until we find the appropriate parent level
+        while stack.size > 1 && stack.last[:level] >= current_level
+          stack.pop
+        end
+
+        current_context = stack.last
+        target_list = current_context[:list]
+
+        if current_context[:level] < current_level
+          # Need to create a deeper nested structure
+          # The nested list should be a child of the last item in the current list
+          if target_list.children.any? && target_list.children.last.is_a?(AST::ListItemNode)
+            last_item = target_list.children.last
+
+            # Check if the last item already has a nested list of the same type
+            nested_list = last_item.children.find { |child| child.is_a?(AST::ListNode) && child.list_type == list_type }
+
+            unless nested_list
+              # Create new nested list
+              nested_list = AST::ListNode.new(location: item.location, list_type: list_type)
+              last_item.add_child(nested_list)
+            end
+
+            # Add the item to the nested list
+            nested_list.add_child(item)
+
+            # Update stack to point to the nested list
+            stack.push({ list: nested_list, level: current_level })
+          else
+            # No previous item to nest under, add to current level
+            target_list.add_child(item)
+          end
+        else
+          # Same level or going back up, add to current list
+          target_list.add_child(item)
+        end
+      end
+
+      root_list
+    end
 
     private
 
