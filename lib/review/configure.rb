@@ -156,9 +156,9 @@ module ReVIEW
         },
         # AST mode configuration
         'ast' => {
-          'mode' => 'auto', # 'auto', 'full', 'hybrid', 'off'
+          'mode' => 'hybrid', # 'auto', 'full', 'hybrid', 'off'
           'elements' => [], # Array of element symbols for hybrid mode
-          'stage' => nil, # Migration stage (1-7)
+          'stage' => 3, # Migration stage (1-7) - Default to Stage 3 for gradual adoption
           'debug' => false, # Debug logging
           'performance' => false # Performance measurement
         }

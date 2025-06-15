@@ -177,6 +177,27 @@ EOS
         content.gsub!(/^#\s*texdocumentclass:.*$/, %Q(texdocumentclass: ["#{@template}", "#{@tex_documentclass_opts[@template]}"]))
       end
 
+      # Add AST configuration section for new projects
+      ast_config = <<-EOF
+
+# AST (Abstract Syntax Tree) 設定 - Phase 3以降のデフォルト設定
+# AST化により性能向上と新機能が利用可能
+ast:
+  # モード設定: hybrid (段階的), full (完全), auto (自動), off (無効)
+  mode: hybrid
+  # ステージ設定 (1-7): 段階的移行のレベル
+  # Stage 3: headline, paragraph, list系要素をAST化
+  stage: 3
+  # 要素指定 (ステージ設定より優先): ["headline", "paragraph", "ulist"] など
+  # elements: []
+  # デバッグログ出力
+  # debug: false
+  # パフォーマンス測定
+  # performance: false
+EOF
+
+      content += ast_config
+
       if @without_config_comment
         content = content.split("\n").delete_if { |l| l.strip.start_with?('#') || l.strip.empty? }.join("\n")
       end
