@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/ast_renderer'
+require 'review/ast/renderer'
 require 'review/compiler'
 require 'review/htmlbuilder'
 require 'review/book'

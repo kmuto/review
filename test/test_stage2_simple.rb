@@ -4,7 +4,7 @@
 # Stage 2 simple inline test
 require 'bundler/setup'
 require 'review'
-require 'review/ast_config'
+require 'review/ast/config'
 
 # Set environment for Stage 2
 ENV['REVIEW_AST_STAGE'] = '2'
@@ -23,7 +23,7 @@ Another paragraph with @<tt>{teletype} text.
 REVIEW
 
 # Create AST configuration
-ast_config = ReVIEW::ASTConfig.new(config)
+ast_config = ReVIEW::AST::Config.new(config)
 compiler_options = ast_config.compiler_options
 
 # Test with HTML builder

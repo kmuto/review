@@ -689,11 +689,6 @@ module ReVIEW
       @current_node.add_child(node)
     end
 
-    # AST integration support
-    def add_ast_node(node)
-      add_node(node)
-    end
-
     # Additional block commands
     def imgtable(lines, id = nil, caption = nil, metric = nil)
       # For JSON, create TableNode with imgtable type

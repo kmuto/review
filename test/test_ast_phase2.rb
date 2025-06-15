@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/ast_renderer'
+require 'review/ast/renderer'
 require 'review/compiler'
 require 'review/htmlbuilder'
 require 'review/book'
@@ -29,7 +29,7 @@ class TestASTPhase2 < Test::Unit::TestCase
     # Initialize builder properly
     builder.bind(compiler, chapter, location)
 
-    renderer = ReVIEW::ASTRenderer.new(builder)
+    renderer = ReVIEW::AST::Renderer.new(builder)
 
     # Create simple AST structure
     root = ReVIEW::AST::DocumentNode.new

@@ -4,7 +4,7 @@
 # Stage 2 debugging tool
 require 'bundler/setup'
 require 'review'
-require 'review/ast_config'
+require 'review/ast/config'
 
 # Set environment for Stage 2
 ENV['REVIEW_AST_STAGE'] = '2'
@@ -19,7 +19,7 @@ book = ReVIEW::Book::Base.new(config: config)
 content = File.read('test/fixtures/test_stage2.re')
 
 # Create AST configuration
-ast_config = ReVIEW::ASTConfig.new(config)
+ast_config = ReVIEW::AST::Config.new(config)
 puts '=== AST Configuration ==='
 puts "Mode: #{ast_config.ast_mode}"
 puts "Elements: #{ast_config.ast_elements}"

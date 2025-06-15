@@ -4,7 +4,7 @@
 # Stage 1 output comparison tool
 require 'bundler/setup'
 require 'review'
-require 'review/ast_config'
+require 'review/ast/config'
 
 def compile_with_mode(mode_description, ast_mode, ast_elements = [])
   puts "=== #{mode_description} ==="

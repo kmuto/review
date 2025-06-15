@@ -6,6 +6,7 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
+# AST Node classes
 require 'review/ast/node'
 require 'review/ast/document_node'
 require 'review/ast/headline_node'
@@ -18,8 +19,23 @@ require 'review/ast/inline_node'
 require 'review/ast/text_node'
 require 'review/ast/embed_node'
 
+# AST Processing classes
+require 'review/ast/compiler'
+require 'review/ast/config'
+require 'review/ast/performance_tracker'
+require 'review/ast/renderer'
+require 'review/ast/block_processor'
+require 'review/ast/inline_processor'
+
+# AST Utility classes
+require 'review/ast/compiler_adapter'
+require 'review/ast/json_serializer'
+require 'review/ast/list_ast_processor'
+require 'review/ast/list_parser'
+require 'review/ast/nested_list_builder'
+
 module ReVIEW
   module AST
-    # AST module namespace
+    # AST module namespace for all AST-related functionality
   end
 end

@@ -14,8 +14,8 @@ require 'review/exception'
 require 'review/location'
 require 'review/loggable'
 require 'review/ast'
-require 'review/ast_renderer'
-require 'review/ast_compiler'
+require 'review/ast/renderer'
+require 'review/ast/compiler'
 require 'strscan'
 require 'set'
 
@@ -44,9 +44,9 @@ module ReVIEW
 
       @compile_errors = nil
 
-      ## AST related - delegate to ASTCompiler when in AST mode
+      ## AST related - delegate to AST::Compiler when in AST mode
       if @ast_mode
-        @ast_compiler = ASTCompiler.new(builder, ast_elements, self)
+        @ast_compiler = AST::Compiler.new(builder, ast_elements, self)
       end
 
       # Legacy AST fields for backward compatibility
@@ -1274,9 +1274,10 @@ module ReVIEW
         f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
           desc << text(line.strip)
         end
-        # Only output dd if there's actual content
+        # Only output dd if there's actual content, or if beginchild follows
         desc_content = desc.reject(&:empty?)
-        @builder.dd(desc_content) if desc_content.any?
+        has_beginchild = f.next? && %r{\A//beginchild}.match?(f.peek)
+        @builder.dd(desc_content) if desc_content.any? || has_beginchild
         f.skip_blank_lines
         f.skip_comment_lines
       end

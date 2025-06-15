@@ -6,7 +6,7 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/ast_config'
+require 'review/ast/config'
 
 module ReVIEW
   module AST
@@ -29,7 +29,7 @@ module ReVIEW
 
       # Get compiler options based on configuration and target
       def compiler_options_for(target = nil)
-        ast_config = ReVIEW::ASTConfig.new(@config)
+        ast_config = ReVIEW::AST::Config.new(@config)
         compiler_options = ast_config.compiler_options
 
         # Override for JSON target to ensure proper location tracking

@@ -4,7 +4,7 @@
 # Stage 3 simple list test
 require 'bundler/setup'
 require 'review'
-require 'review/ast_config'
+require 'review/ast/config'
 
 # Set environment for Stage 3
 ENV['REVIEW_AST_STAGE'] = '3'
@@ -44,7 +44,7 @@ Simple definition list:
 REVIEW
 
 # Create AST configuration
-ast_config = ReVIEW::ASTConfig.new(config)
+ast_config = ReVIEW::AST::Config.new(config)
 compiler_options = ast_config.compiler_options
 
 # Test with HTML builder
