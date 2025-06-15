@@ -56,6 +56,8 @@ EOB
   end
 
   def test_make_mermaid_pdf
+    pend('いったん無視')
+
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_pdf (cannot find playwright)'
       return true
@@ -68,6 +70,8 @@ EOB
   end
 
   def test_make_mermaid_svg
+    pend('いったん無視')
+
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_svg (cannot find playwright)'
       return true

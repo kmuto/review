@@ -615,7 +615,7 @@ module ReVIEW
     end
 
     # Build table AST node
-    def build_table_ast(_command_name, args, lines)
+    def build_table_ast(command_name, args, lines)
       # Parse table content
       headers = []
       rows = []
@@ -630,7 +630,7 @@ module ReVIEW
       end
 
       # Create TableNode with appropriate table_type and arguments based on command
-      node = case _command_name
+      node = case command_name
              when :table
                AST::TableNode.new(
                  location: location,
@@ -667,7 +667,7 @@ module ReVIEW
                  caption: args && args.size > 1 ? args[1] : nil,
                  headers: headers,
                  rows: rows,
-                 table_type: _command_name
+                 table_type: command_name
                )
              end
 

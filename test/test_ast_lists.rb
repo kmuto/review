@@ -47,8 +47,8 @@ class TestASTLists < Test::Unit::TestCase
     assert_not_nil(list_node, 'Should have list node')
     assert_equal :ul, list_node.list_type
 
-    # Check list items
-    assert_equal 4, list_node.children.size # 3 main items + 1 nested
+    # Check list items - proper nested structure
+    assert_equal 3, list_node.children.size # 3 main items at level 1
 
     first_item = list_node.children[0]
     assert_equal 1, first_item.level
@@ -59,10 +59,16 @@ class TestASTLists < Test::Unit::TestCase
     bold_node = second_item.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'b' }
     assert_not_nil(bold_node)
 
-    nested_item = list_node.children[2]
+    # Check for nested list under second item
+    nested_list = second_item.children.find { |n| n.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(nested_list, 'Second item should have nested list')
+    assert_equal :ul, nested_list.list_type
+    assert_equal 1, nested_list.children.size
+
+    nested_item = nested_list.children[0]
     assert_equal 2, nested_item.level
 
-    third_item = list_node.children[3]
+    third_item = list_node.children[2]
     assert_equal 1, third_item.level
   end
 

@@ -14,6 +14,7 @@ require 'review/lineinput'
 require 'review/inline_ast_processor'
 require 'review/block_ast_processor'
 require 'review/snapshot_location'
+require 'review/ast/list_ast_processor'
 require 'stringio'
 require 'set'
 
@@ -44,6 +45,7 @@ module ReVIEW
       # Processors for specialized AST handling
       @inline_processor = InlineASTProcessor.new(self)
       @block_processor = BlockASTProcessor.new(self)
+      @list_processor = AST::ListASTProcessor.new(self)
 
       @logger = ReVIEW.logger
 
@@ -291,149 +293,19 @@ module ReVIEW
       end
     end
 
-    # Build unordered list AST
+    # Build unordered list AST - now using dedicated ListASTProcessor
     def build_ulist_ast(f)
-      list_items = []
-
-      f.while_match(/\A\s+\*|\A\#@/) do |line|
-        next if /\A\#@/.match?(line)
-
-        # Extract level and content - Re:VIEW uses space indentation + * for nesting
-        line =~ /\A(\s*)(\*+)\s*(.*)$/
-        _indent_spaces = $1.length
-        stars = $2.size
-        content = $3
-
-        # Calculate nesting level based on stars (*, **, ***, etc.)
-        level = stars
-
-        # Create list item
-        item_node = AST::ListItemNode.new(
-          location: location,
-          level: level
-        )
-
-        # Parse inline elements in the content
-        @inline_processor.parse_inline_elements(content, item_node)
-
-        # Collect continuation lines (indented but not starting with *)
-        f.while_match(/\A\s+(?!\*)\S/) do |cont|
-          @inline_processor.parse_inline_elements(cont.strip, item_node)
-        end
-
-        list_items << item_node
-      end
-
-      # Create list structure
-      if list_items.any?
-        root_list = AST::ListNode.new(location: location, list_type: :ul)
-        list_items.each { |item| root_list.add_child(item) }
-        @current_ast_node.add_child(root_list)
-        render_with_ast_renderer(:visit_list, root_list)
-      end
+      @list_processor.process_unordered_list(f)
     end
 
-    # Build ordered list AST
+    # Build ordered list AST - now using dedicated ListASTProcessor
     def build_olist_ast(f)
-      list_items = []
-
-      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
-        next if /\A\#@/.match?(line)
-
-        # Extract number and content
-        line =~ /\A\s+(\d+)\.\s*(.*)$/
-        num = $1
-        content = $2
-
-        # Determine nesting level based on number format
-        # 1. = level 1, 11. = level 2, 111. = level 3, etc.
-        level = num.to_s.size
-
-        # Create list item
-        item_node = AST::ListItemNode.new(
-          location: location,
-          content: num,
-          number: num.to_i,
-          level: level
-        )
-
-        # Parse inline elements
-        @inline_processor.parse_inline_elements(content, item_node)
-
-        # Collect continuation lines
-        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-          @inline_processor.parse_inline_elements(cont.strip, item_node)
-        end
-
-        list_items << item_node
-      end
-
-      # Create list structure
-      if list_items.any?
-        root_list = AST::ListNode.new(location: location, list_type: :ol)
-        list_items.each { |item| root_list.add_child(item) }
-        @current_ast_node.add_child(root_list)
-        render_with_ast_renderer(:visit_list, root_list)
-      end
+      @list_processor.process_ordered_list(f)
     end
 
-    # Build definition list AST
+    # Build definition list AST - now using dedicated ListASTProcessor
     def build_dlist_ast(f)
-      list_items = []
-
-      f.while_match(/\A\s*:|\A\#@/) do |line|
-        next if /\A\#@/.match?(line)
-
-        # Extract term
-        line =~ /\A\s*:\s*(.*)$/
-        term = $1
-
-        # Create definition item with proper structure
-        item_node = AST::ListItemNode.new(
-          location: location,
-          content: term
-        )
-
-        # Create term node (dt equivalent) - must be first child
-        if term.include?('@<')
-          @inline_processor.parse_inline_elements(term, item_node)
-        else
-          term_node = AST::TextNode.new(location: location, content: term)
-          item_node.add_child(term_node)
-        end
-
-        # Collect definition lines
-        definition_lines = []
-        f.while_match(/\A\s+(?!:)\S/) do |cont|
-          definition_lines << cont.strip
-        end
-
-        # Create definition content nodes (dd equivalent) - additional children
-        unless definition_lines.empty?
-          definition_content = definition_lines.join(' ')
-          if definition_content.include?('@<')
-            # Create a paragraph node to hold the definition with inline elements
-            definition_paragraph = AST::ParagraphNode.new(location: location)
-            @inline_processor.parse_inline_elements(definition_content, definition_paragraph)
-            item_node.add_child(definition_paragraph)
-          else
-            # Create a simple text node for the definition
-            definition_node = AST::TextNode.new(location: location, content: definition_content)
-            item_node.add_child(definition_node)
-          end
-        end
-
-        list_items << item_node
-      end
-
-      # Create definition list node
-      if list_items.any?
-        list_node = AST::ListNode.new(location: location, list_type: :dl)
-        list_items.each { |item| list_node.add_child(item) }
-
-        @current_ast_node.add_child(list_node)
-        render_with_ast_renderer(:visit_list, list_node)
-      end
+      @list_processor.process_definition_list(f)
     end
 
     # Delegate to block processor for block command AST building

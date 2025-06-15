@@ -114,7 +114,7 @@ module ReVIEW
         else
           { ast_mode: false } # Default, can be overridden by specific builders
         end
-      else
+      else # rubocop:disable Lint/DuplicateBranch
         { ast_mode: false }
       end
     end
@@ -142,7 +142,7 @@ module ReVIEW
         :off
       when 'auto'
         :auto
-      else
+      else # rubocop:disable Lint/DuplicateBranch
         :auto
       end
     end
