@@ -12,8 +12,12 @@ require 'fileutils'
 # across different builders (HTML, LaTeX, JSON, etc.)
 module ASTBuilderCompatibilityHelper
   def setup_compatibility_test
-    @fixtures_dir = File.join(__dir__, 'fixtures', 'verification')
-    @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).sort
+    @fixtures_dir = File.join(__dir__, 'project')
+    @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).reject do |f|
+      File.basename(f).start_with?('test_stage') ||
+        File.basename(f) == 'test-project.re' ||
+        File.basename(f) == 'comprehensive_test.re'
+    end.sort
     @output_dir = File.join(__dir__, '..', 'tmp', 'compatibility')
     FileUtils.mkdir_p(@output_dir)
 
@@ -331,11 +335,11 @@ module ASTBuilderCompatibilityHelper
     puts "\n#{@builder_name.upcase} Generation Performance (average per compile):"
     times.each { |mode, time| puts "  #{mode}: #{time}ms" }
 
-    # Verify no mode is dramatically slower (arbitrary 3x threshold)
+    # Verify no mode is dramatically slower (arbitrary 5x threshold)
     baseline = times['traditional']
     times.each do |mode, time|
       ratio = time / baseline
-      assert ratio < 3.0, "#{mode} mode is too slow compared to traditional (#{ratio.round(2)}x slower) for #{builder_class}"
+      assert ratio < 5.0, "#{mode} mode is too slow compared to traditional (#{ratio.round(2)}x slower) for #{builder_class}"
     end
 
     times

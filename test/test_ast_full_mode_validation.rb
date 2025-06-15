@@ -13,7 +13,7 @@ require 'json'
 # Test to validate AST full mode compatibility more thoroughly
 class ASTFullModeValidationTest < Test::Unit::TestCase
   def setup
-    @fixtures_dir = File.join(__dir__, 'fixtures', 'verification')
+    @fixtures_dir = File.join(__dir__, 'project')
     @output_dir = File.join(__dir__, '..', 'tmp', 'ast_validation')
     FileUtils.makedirs(@output_dir)
   end

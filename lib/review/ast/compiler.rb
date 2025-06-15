@@ -406,7 +406,6 @@ module ReVIEW
       # Expose performance tracker for external access
       attr_reader :performance_tracker
 
-
       private
 
       def read_command(f)

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require 'English'
+require_relative 'test_helper'
 require 'fileutils'
 
 class ProjectTestHelper
@@ -34,11 +35,11 @@ class ProjectTestHelper
 
   def self.compile_with_mode(target_format, ast_mode: 'auto', ast_stage: 7, debug: true)
     setup_test_environment
-    
+
     old_dir = Dir.pwd
     begin
       Dir.chdir(project_dir)
-      
+
       # Set environment variables for AST testing
       ENV['REVIEW_AST_MODE'] = ast_mode.to_s
       ENV['REVIEW_AST_STAGE'] = ast_stage.to_s
@@ -46,28 +47,28 @@ class ProjectTestHelper
 
       # Run compilation
       cmd = "bundle exec #{File.join('..', '..', 'bin', 'review-compile')} --yaml=config.yml --target=#{target_format}"
-      
-      case target_format
-      when 'html'
-        result = `#{cmd} basic_elements.re 2>&1`
-      when 'latex'
-        result = `#{cmd} basic_elements.re 2>&1`
-      when 'json'
-        result = `#{cmd} basic_elements.re 2>&1`
-      else
-        result = `#{cmd} comprehensive_test.re 2>&1`
-      end
-      
+
+      result = case target_format
+               when 'html'
+                 `#{cmd} basic_elements.re 2>&1`
+               when 'latex'
+                 `#{cmd} basic_elements.re 2>&1`
+               when 'json'
+                 `#{cmd} basic_elements.re 2>&1`
+               else
+                 `#{cmd} comprehensive_test.re 2>&1`
+               end
+
       {
-        success: $?.success?,
+        success: $CHILD_STATUS.success?,
         output: result,
-        exit_code: $?.exitstatus
+        exit_code: $CHILD_STATUS.exitstatus
       }
     ensure
       Dir.chdir(old_dir)
       # Clean up environment variables
       ENV.delete('REVIEW_AST_MODE')
-      ENV.delete('REVIEW_AST_STAGE') 
+      ENV.delete('REVIEW_AST_STAGE')
       ENV.delete('REVIEW_DEBUG_AST')
     end
   end
@@ -90,7 +91,7 @@ class ProjectTestHelper
 
   def self.verify_project_structure
     setup_test_environment
-    
+
     structure = {
       config_exists: File.exist?(config_file),
       catalog_exists: File.exist?(catalog_file),
@@ -99,14 +100,14 @@ class ProjectTestHelper
       sty_dir: Dir.exist?(File.join(project_dir, 'sty'))
     }
 
-    puts "=== Test Project Structure ==="
+    puts '=== Test Project Structure ==='
     puts "Config file: #{structure[:config_exists] ? '✅' : '❌'}"
     puts "Catalog file: #{structure[:catalog_exists] ? '✅' : '❌'}"
     puts "Images directory: #{structure[:images_dir] ? '✅' : '❌'}"
     puts "Style directory: #{structure[:sty_dir] ? '✅' : '❌'}"
     puts "Re:VIEW files: #{structure[:re_files].size}"
     structure[:re_files].each { |f| puts "  - #{f}" }
-    puts "============================"
+    puts '============================'
 
     structure
   end

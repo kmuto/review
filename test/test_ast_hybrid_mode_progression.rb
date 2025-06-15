@@ -10,7 +10,7 @@ require 'fileutils'
 # Test to validate hybrid mode progression for AST migration
 class ASTHybridModeProgressionTest < Test::Unit::TestCase
   def setup
-    @fixtures_dir = File.join(__dir__, 'fixtures', 'verification')
+    @fixtures_dir = File.join(__dir__, 'project')
     @output_dir = File.join(__dir__, '..', 'tmp', 'hybrid_progression')
     FileUtils.makedirs(@output_dir)
   end
