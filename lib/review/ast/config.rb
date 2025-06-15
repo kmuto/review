@@ -16,6 +16,9 @@ module ReVIEW
     # - Stage-based element configuration
     # - Performance measurement settings
     class Config
+      # Cache for frequently accessed configurations
+      @config_cache = {}
+      @cache_mutex = Mutex.new
       # Predefined migration stages with their corresponding elements
       MIGRATION_STAGES = {
         1 => [:headline],
@@ -30,6 +33,29 @@ module ReVIEW
       def initialize(config = nil)
         @config = config || ReVIEW::Configure.values
         @ast_config = @config['ast'] || {}
+
+        # Create cache key for this configuration
+        @cache_key = create_cache_key
+
+        # Try to get cached compiler options
+        cached = self.class.get_cached_options(@cache_key)
+        if cached
+          @cached_compiler_options = cached
+        end
+      end
+
+      class << self
+        def get_cached_options(cache_key)
+          @cache_mutex.synchronize { @config_cache[cache_key] }
+        end
+
+        def set_cached_options(cache_key, options)
+          @cache_mutex.synchronize { @config_cache[cache_key] = options }
+        end
+
+        def clear_cache
+          @cache_mutex.synchronize { @config_cache.clear }
+        end
       end
 
       # Get AST mode based on configuration and environment
@@ -100,24 +126,33 @@ module ReVIEW
 
       # Create compiler options based on configuration
       def compiler_options
+        # Return cached options if available
+        return @cached_compiler_options if @cached_compiler_options
+
         mode = ast_mode
-        case mode
-        when :off
-          { ast_mode: false }
-        when :full
-          { ast_mode: true, ast_elements: [] }
-        when :hybrid
-          { ast_mode: true, ast_elements: ast_elements }
-        when :auto
-          # Auto mode: enable AST if stage/elements are specified, otherwise off
-          if ast_stage || ast_elements.any?
-            { ast_mode: true, ast_elements: ast_elements }
-          else
-            { ast_mode: false } # Default, can be overridden by specific builders
-          end
-        else # rubocop:disable Lint/DuplicateBranch
-          { ast_mode: false }
-        end
+        options = case mode
+                  when :off
+                    { ast_mode: false }
+                  when :full
+                    { ast_mode: true, ast_elements: [] }
+                  when :hybrid
+                    { ast_mode: true, ast_elements: ast_elements }
+                  when :auto
+                    # Auto mode: enable AST if stage/elements are specified, otherwise off
+                    if ast_stage || ast_elements.any?
+                      { ast_mode: true, ast_elements: ast_elements }
+                    else
+                      { ast_mode: false } # Default, can be overridden by specific builders
+                    end
+                  else # rubocop:disable Lint/DuplicateBranch
+                    { ast_mode: false }
+                  end
+
+        # Cache the options
+        self.class.set_cached_options(@cache_key, options)
+        @cached_compiler_options = options
+
+        options
       end
 
       # Get stage description for logging
@@ -132,6 +167,21 @@ module ReVIEW
       end
 
       private
+
+      # Create a cache key based on current configuration
+      def create_cache_key
+        # Include relevant configuration that affects compiler options
+        # Use raw config values to avoid circular dependencies
+        key_data = {
+          config_mode: @ast_config['mode'],
+          config_stage: @ast_config['stage'],
+          config_elements: @ast_config['elements'],
+          env_mode: ENV['REVIEW_AST_MODE'],
+          env_stage: ENV['REVIEW_AST_STAGE'],
+          env_elements: ENV['REVIEW_AST_ELEMENTS']
+        }
+        key_data.hash
+      end
 
       def parse_ast_mode(mode_str)
         case mode_str.to_s.downcase

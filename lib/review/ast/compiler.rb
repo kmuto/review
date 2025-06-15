@@ -43,10 +43,10 @@ module ReVIEW
         @current_ast_node = nil
         @ast_renderer = nil
 
-        # Processors for specialized AST handling
-        @inline_processor = InlineProcessor.new(self)
-        @block_processor = BlockProcessor.new(self)
-        @list_processor = ListASTProcessor.new(self)
+        # Processors for specialized AST handling - lazy initialization
+        @inline_processor = nil
+        @block_processor = nil
+        @list_processor = nil
 
         @logger = ReVIEW.logger
 
@@ -61,7 +61,19 @@ module ReVIEW
       end
 
       attr_reader :builder, :ast_root, :current_ast_node, :ast_renderer
-      attr_reader :inline_processor, :block_processor
+
+      # Lazy-loaded processors
+      def inline_processor
+        @inline_processor ||= InlineProcessor.new(self)
+      end
+
+      def block_processor
+        @block_processor ||= BlockProcessor.new(self)
+      end
+
+      def list_processor
+        @list_processor ||= ListASTProcessor.new(self)
+      end
 
       def compile_to_ast(chapter)
         @chapter = chapter
@@ -204,7 +216,7 @@ module ReVIEW
 
         node = AST::ParagraphNode.new(location: location)
         # Process inline elements within paragraph
-        raw_lines.each { |line| @inline_processor.parse_inline_elements(line, node) }
+        raw_lines.each { |line| inline_processor.parse_inline_elements(line, node) }
 
         @current_ast_node.add_child(node)
       end
@@ -214,21 +226,21 @@ module ReVIEW
 
         case name
         when :list, :listnum, :emlist, :emlistnum, :cmd, :source
-          @block_processor.compile_code_block_to_ast(name, args, lines)
+          block_processor.compile_code_block_to_ast(name, args, lines)
         when :image, :indepimage, :numberlessimage
-          @block_processor.compile_image_to_ast(name, args)
+          block_processor.compile_image_to_ast(name, args)
         when :table, :emtable, :imgtable
-          @block_processor.compile_table_to_ast(name, args, lines)
+          block_processor.compile_table_to_ast(name, args, lines)
         when :ul, :ol, :dl
-          @block_processor.compile_list_to_ast(name, lines)
+          block_processor.compile_list_to_ast(name, lines)
         when :quote
-          @block_processor.compile_quote_to_ast(lines)
+          block_processor.compile_quote_to_ast(lines)
         when :note, :memo, :tip, :info, :warning, :important, :caution, :notice
-          @block_processor.compile_minicolumn_to_ast(name, args, lines)
+          block_processor.compile_minicolumn_to_ast(name, args, lines)
         when :embed
-          @block_processor.compile_embed_to_ast(args, lines)
+          block_processor.compile_embed_to_ast(args, lines)
         when :read
-          @block_processor.compile_read_to_ast(lines)
+          block_processor.compile_read_to_ast(lines)
         else
           # Fallback to original processing for unknown commands
           # This would need access to the original compiler's syntax_descriptor method
@@ -278,7 +290,7 @@ module ReVIEW
 
         # Parse inline elements in each line and create child nodes
         lines.each do |line|
-          @inline_processor.parse_inline_elements(line, node)
+          inline_processor.parse_inline_elements(line, node)
         end
 
         @current_ast_node.add_child(node)
@@ -296,22 +308,22 @@ module ReVIEW
 
       # Build unordered list AST - now using dedicated ListASTProcessor
       def build_ulist_ast(f)
-        @list_processor.process_unordered_list(f)
+        list_processor.process_unordered_list(f)
       end
 
       # Build ordered list AST - now using dedicated ListASTProcessor
       def build_olist_ast(f)
-        @list_processor.process_ordered_list(f)
+        list_processor.process_ordered_list(f)
       end
 
       # Build definition list AST - now using dedicated ListASTProcessor
       def build_dlist_ast(f)
-        @list_processor.process_definition_list(f)
+        list_processor.process_definition_list(f)
       end
 
       # Delegate to block processor for block command AST building
       def build_block_command_ast(command_name, args, lines)
-        @block_processor.build_block_command_ast(command_name, args, lines)
+        block_processor.build_block_command_ast(command_name, args, lines)
       end
 
       # Helper methods that need to be accessible from processors

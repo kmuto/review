@@ -45,9 +45,8 @@ module ReVIEW
       @compile_errors = nil
 
       ## AST related - delegate to AST::Compiler when in AST mode
-      if @ast_mode
-        @ast_compiler = AST::Compiler.new(builder, ast_elements, self)
-      end
+      # Initialize lazily to reduce startup overhead
+      @ast_compiler = nil
 
       # Legacy AST fields for backward compatibility
       @ast_root = nil
@@ -78,11 +77,11 @@ module ReVIEW
         f = LineInput.new(StringIO.new(@chapter.content))
         @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
 
-        @ast_compiler.compile_to_ast(chap)
+        ast_compiler.compile_to_ast(chap)
         # Update legacy fields for backward compatibility
-        @ast_root = @ast_compiler.ast_root
-        @current_ast_node = @ast_compiler.current_ast_node
-        @ast_renderer = @ast_compiler.ast_renderer
+        @ast_root = ast_compiler.ast_root
+        @current_ast_node = ast_compiler.current_ast_node
+        @ast_renderer = ast_compiler.ast_renderer
       else
         do_compile
       end
@@ -96,17 +95,24 @@ module ReVIEW
 
     # Public AST interface - delegate to ASTCompiler when in AST mode
     def ast_result
-      if @ast_mode && @ast_compiler
-        @ast_compiler.ast_result
+      if @ast_mode && ast_compiler
+        ast_compiler.ast_result
       else
         @ast_root
       end
     end
 
+    # Lazy-loaded AST compiler
+    def ast_compiler
+      return nil unless @ast_mode
+
+      @ast_compiler ||= AST::Compiler.new(@builder, @ast_elements, self)
+    end
+
     # Get hybrid mode configuration for debugging
     def hybrid_mode_config
-      if @ast_mode && @ast_compiler
-        @ast_compiler.hybrid_mode_config
+      if @ast_mode && ast_compiler
+        ast_compiler.hybrid_mode_config
       else
         {
           mode: @ast_mode ? :legacy_ast : :traditional,
@@ -119,15 +125,15 @@ module ReVIEW
 
     # Log AST element usage statistics
     def log_ast_statistics
-      if @ast_mode && @ast_compiler
-        @ast_compiler.log_ast_element_statistics
+      if @ast_mode && ast_compiler
+        ast_compiler.log_ast_element_statistics
       end
     end
 
     # Check if element should be processed via AST
     def should_use_ast?(element)
-      if @ast_mode && @ast_compiler
-        @ast_compiler.should_use_ast?(element)
+      if @ast_mode && ast_compiler
+        ast_compiler.should_use_ast?(element)
       else
         @ast_mode && (@ast_elements.empty? || @ast_elements.include?(element))
       end
@@ -135,8 +141,8 @@ module ReVIEW
 
     # Build headline AST node - delegate to ASTCompiler when in AST mode
     def build_headline_ast(level, label, caption)
-      if @ast_mode && @ast_compiler
-        @ast_compiler.build_headline_ast(level, label, caption)
+      if @ast_mode && ast_compiler
+        ast_compiler.build_headline_ast(level, label, caption)
       else
         # Legacy implementation for non-AST mode
         node = AST::HeadlineNode.new(
@@ -161,8 +167,8 @@ module ReVIEW
 
     # Build paragraph AST node - delegate to ASTCompiler when in AST mode
     def build_paragraph_ast(lines)
-      if @ast_mode && @ast_compiler
-        @ast_compiler.build_paragraph_ast(lines)
+      if @ast_mode && ast_compiler
+        ast_compiler.build_paragraph_ast(lines)
       else
         # Legacy implementation for non-AST mode
         node = AST::ParagraphNode.new(location: location)
@@ -188,17 +194,17 @@ module ReVIEW
 
     # Build unordered list AST
     def build_ulist_ast(f)
-      @ast_compiler.build_ulist_ast(f) if @ast_compiler
+      ast_compiler.build_ulist_ast(f) if ast_compiler
     end
 
     # Build ordered list AST
     def build_olist_ast(f)
-      @ast_compiler.build_olist_ast(f) if @ast_compiler
+      ast_compiler.build_olist_ast(f) if ast_compiler
     end
 
     # Build definition list AST
     def build_dlist_ast(f)
-      @ast_compiler.build_dlist_ast(f) if @ast_compiler
+      ast_compiler.build_dlist_ast(f) if ast_compiler
     end
 
     # Parse inline elements and create AST nodes
@@ -1276,7 +1282,7 @@ module ReVIEW
         end
         # Only output dd if there's actual content, or if beginchild follows
         desc_content = desc.reject(&:empty?)
-        has_beginchild = f.next? && %r{\A//beginchild}.match?(f.peek)
+        has_beginchild = f.next? && f.peek.start_with?('//beginchild')
         @builder.dd(desc_content) if desc_content.any? || has_beginchild
         f.skip_blank_lines
         f.skip_comment_lines

@@ -115,7 +115,11 @@ module ReVIEW
           next unless item.children.any?
 
           dt_node = item.children[0]
-          dt_content = render_inline_content(dt_node)
+          dt_content = if dt_node.is_a?(AST::TextNode)
+                         dt_node.content
+                       else
+                         render_inline_content(dt_node)
+                       end
           @builder.dt(dt_content)
 
           # Remaining children are dd content
