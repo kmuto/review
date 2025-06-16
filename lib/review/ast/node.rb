@@ -64,8 +64,8 @@ module ReVIEW
         }
 
         # Include location information
-        if options.include_location && location
-          hash[:location] = serialize_location(location)
+        if options.include_location
+          hash[:location] = location_to_h
         end
 
         # Call node-specific serialization
@@ -98,28 +98,13 @@ module ReVIEW
 
       private
 
-      # Serialize location information
-      def serialize_location(location)
-        {
-          filename: location.respond_to?(:filename) ? location.filename : nil,
-          lineno: location.respond_to?(:lineno) ? location.lineno : nil
-        }
-      end
-
       def location_to_h
         return nil unless location
 
-        begin
-          {
-            filename: location.filename,
-            lineno: location.lineno
-          }
-        rescue StandardError
-          {
-            filename: location.filename,
-            lineno: nil
-          }
-        end
+        {
+          filename: location.filename,
+          lineno: location.lineno
+        }
       end
     end
   end
