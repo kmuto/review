@@ -43,7 +43,6 @@ module ReVIEW
       ## AST related - delegate to AST::Compiler when in AST mode
       # Initialize lazily to reduce startup overhead
       @ast_compiler = nil
-
     end
 
     attr_reader :builder, :previous_list_type
@@ -85,8 +84,6 @@ module ReVIEW
     def ast_result
       if @ast_mode && ast_compiler
         ast_compiler.ast_result
-      else
-        nil
       end
     end
 
@@ -96,7 +93,6 @@ module ReVIEW
 
       @ast_compiler ||= AST::Compiler.new(@builder)
     end
-
 
     class SyntaxElement
       def initialize(name, type, argc, &block)
@@ -509,82 +505,94 @@ module ReVIEW
     end
 
     def compile_ulist(f)
-      level = 0
-      f.while_match(/\A\s+\*|\A\#@/) do |line|
-        next if /\A\#@/.match?(line)
+      if @ast_mode
+        ast_compiler.compile_ul_to_ast(f)
+      else
+        level = 0
+        f.while_match(/\A\s+\*|\A\#@/) do |line|
+          next if /\A\#@/.match?(line)
 
-        buf = [text(line.sub(/\*+/, '').strip)]
-        f.while_match(/\A\s+(?!\*)\S/) do |cont|
-          buf.push(text(cont.strip))
-        end
-
-        line =~ /\A\s+(\*+)/
-        current_level = $1.size
-        if level == current_level
-          @builder.ul_item_end
-          # body
-          @builder.ul_item_begin(buf)
-        elsif level < current_level # down
-          level_diff = current_level - level
-          if level_diff != 1
-            error 'too many *.', location: location
+          buf = [text(line.sub(/\*+/, '').strip)]
+          f.while_match(/\A\s+(?!\*)\S/) do |cont|
+            buf.push(text(cont.strip))
           end
-          level = current_level
-          @builder.ul_begin { level }
-          @builder.ul_item_begin(buf)
-        elsif level > current_level # up
-          level_diff = level - current_level
-          level = current_level
-          (1..level_diff).to_a.reverse_each do |i|
+
+          line =~ /\A\s+(\*+)/
+          current_level = $1.size
+          if level == current_level
             @builder.ul_item_end
-            @builder.ul_end { level + i }
+            # body
+            @builder.ul_item_begin(buf)
+          elsif level < current_level # down
+            level_diff = current_level - level
+            if level_diff != 1
+              error 'too many *.', location: location
+            end
+            level = current_level
+            @builder.ul_begin { level }
+            @builder.ul_item_begin(buf)
+          elsif level > current_level # up
+            level_diff = level - current_level
+            level = current_level
+            (1..level_diff).to_a.reverse_each do |i|
+              @builder.ul_item_end
+              @builder.ul_end { level + i }
+            end
+            @builder.ul_item_end
+            # body
+            @builder.ul_item_begin(buf)
           end
-          @builder.ul_item_end
-          # body
-          @builder.ul_item_begin(buf)
         end
-      end
 
-      (1..level).to_a.reverse_each do |i|
-        @builder.ul_item_end
-        @builder.ul_end { i }
+        (1..level).to_a.reverse_each do |i|
+          @builder.ul_item_end
+          @builder.ul_end { i }
+        end
       end
     end
 
     def compile_olist(f)
-      @builder.ol_begin
-      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
-        next if /\A\#@/.match?(line)
+      if @ast_mode
+        ast_compiler.compile_ol_to_ast(f)
+      else
+        @builder.ol_begin
+        f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
+          next if /\A\#@/.match?(line)
 
-        num = line.match(/(\d+)\./)[1]
-        buf = [text(line.sub(/\d+\./, '').strip)]
-        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-          buf.push(text(cont.strip))
+          num = line.match(/(\d+)\./)[1]
+          buf = [text(line.sub(/\d+\./, '').strip)]
+          f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
+            buf.push(text(cont.strip))
+          end
+          @builder.ol_item(buf, num)
         end
-        @builder.ol_item(buf, num)
+        @builder.ol_end
       end
-      @builder.ol_end
     end
 
     def compile_dlist(f)
-      @builder.dl_begin
-      while /\A\s*:/ =~ f.peek
-        # defer compile_inline to handle footnotes
-        @builder.doc_status[:dt] = true
-        @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
-        @builder.doc_status[:dt] = nil
-        desc = []
-        f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
-          desc << text(line.strip)
+      if @ast_mode
+        ast_compiler.compile_dl_to_ast(f)
+      else
+        @builder.dl_begin
+        while /\A\s*:/ =~ f.peek
+          # defer compile_inline to handle footnotes
+          @builder.doc_status[:dt] = true
+          @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
+          @builder.doc_status[:dt] = nil
+          desc = []
+          f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
+            desc << text(line.strip)
+          end
+          # Only output dd if there's actual content, or if beginchild follows
+          desc_content = desc.reject(&:empty?)
+          has_beginchild = f.next? && f.peek.start_with?('//beginchild')
+          @builder.dd(desc_content) if desc_content.any? || has_beginchild
+          f.skip_blank_lines
+          f.skip_comment_lines
         end
-        # Only output dd if there's actual content, or if beginchild follows
-        desc_content = desc.reject(&:empty?)
-        has_beginchild = f.next? && f.peek.start_with?('//beginchild')
-        @builder.dd(desc_content) if desc_content.any? || has_beginchild
-        f.skip_blank_lines
-        f.skip_comment_lines
+        @builder.dl_end
       end
-      @builder.dl_end
     end
 
     def compile_paragraph(f)
