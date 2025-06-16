@@ -266,7 +266,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 'HeadlineNode', parsed['type']
   end
 
-
   def test_json_schema_structure
     schema = AST::JSONSerializer.json_schema
 
