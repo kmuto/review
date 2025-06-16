@@ -44,10 +44,6 @@ module ReVIEW
       # Initialize lazily to reduce startup overhead
       @ast_compiler = nil
 
-      # Legacy AST fields for backward compatibility
-      @ast_root = nil
-      @current_ast_node = nil
-      @ast_renderer = nil
     end
 
     attr_reader :builder, :previous_list_type
@@ -74,10 +70,6 @@ module ReVIEW
         @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
 
         ast_compiler.compile_to_ast(chap)
-        # Update legacy fields for backward compatibility
-        @ast_root = ast_compiler.ast_root
-        @current_ast_node = ast_compiler.current_ast_node
-        @ast_renderer = ast_compiler.ast_renderer
       else
         do_compile
       end
@@ -94,7 +86,7 @@ module ReVIEW
       if @ast_mode && ast_compiler
         ast_compiler.ast_result
       else
-        @ast_root
+        nil
       end
     end
 
@@ -105,61 +97,6 @@ module ReVIEW
       @ast_compiler ||= AST::Compiler.new(@builder)
     end
 
-    # Get compilation mode configuration for debugging
-    def compilation_mode_config
-      {
-        mode: @ast_mode ? :full_ast : :traditional,
-        debug_enabled: false,
-        statistics: {}
-      }
-    end
-
-    # Log AST statistics
-    def log_ast_statistics
-      # Simple logging for AST mode
-      @logger.debug('AST compilation completed') if @ast_mode
-    end
-
-    # Build headline AST node - delegate to ASTCompiler when in AST mode
-    def build_headline_ast(level, label, caption)
-      ast_compiler.build_headline_ast(level, label, caption) if @ast_mode && ast_compiler
-    end
-
-    # Build paragraph AST node - delegate to ASTCompiler when in AST mode
-    def build_paragraph_ast(lines)
-      ast_compiler.build_paragraph_ast(lines) if @ast_mode && ast_compiler
-    end
-
-    # Build unordered list AST
-    def build_ulist_ast(f)
-      ast_compiler.build_ulist_ast(f) if ast_compiler
-    end
-
-    # Build ordered list AST
-    def build_olist_ast(f)
-      ast_compiler.build_olist_ast(f) if ast_compiler
-    end
-
-    # Build definition list AST
-    def build_dlist_ast(f)
-      ast_compiler.build_dlist_ast(f) if ast_compiler
-    end
-
-    # Build block command AST node - delegate to ASTCompiler
-    def build_block_command_ast(command_name, args, lines)
-      # In AST mode, delegate to AST::Compiler block processor
-      if @ast_mode && ast_compiler
-        ast_compiler.build_block_command_ast(command_name, args, lines)
-      else
-        # Fallback to traditional processing
-        syntax = syntax_descriptor(command_name)
-        if syntax&.block_allowed?
-          @builder.__send__(command_name, lines || [], *args)
-        else
-          @builder.__send__(command_name, *args)
-        end
-      end
-    end
 
     class SyntaxElement
       def initialize(name, type, argc, &block)
@@ -527,11 +464,7 @@ module ReVIEW
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
 
-        if @ast_mode
-          build_headline_ast(level, label, caption)
-        else
-          @builder.headline(level, label, caption)
-        end
+        @builder.headline(level, label, caption)
       end
     end
 
@@ -576,14 +509,6 @@ module ReVIEW
     end
 
     def compile_ulist(f)
-      if @ast_mode
-        build_ulist_ast(f)
-      else
-        compile_ulist_traditional(f)
-      end
-    end
-
-    def compile_ulist_traditional(f)
       level = 0
       f.while_match(/\A\s+\*|\A\#@/) do |line|
         next if /\A\#@/.match?(line)
@@ -627,14 +552,6 @@ module ReVIEW
     end
 
     def compile_olist(f)
-      if @ast_mode
-        build_olist_ast(f)
-      else
-        compile_olist_traditional(f)
-      end
-    end
-
-    def compile_olist_traditional(f)
       @builder.ol_begin
       f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
         next if /\A\#@/.match?(line)
@@ -650,14 +567,6 @@ module ReVIEW
     end
 
     def compile_dlist(f)
-      if @ast_mode
-        build_dlist_ast(f)
-      else
-        compile_dlist_traditional(f)
-      end
-    end
-
-    def compile_dlist_traditional(f)
       @builder.dl_begin
       while /\A\s*:/ =~ f.peek
         # defer compile_inline to handle footnotes
@@ -679,25 +588,14 @@ module ReVIEW
     end
 
     def compile_paragraph(f)
-      if @ast_mode
-        # For AST processing, collect raw lines without processing inline elements
-        raw_lines = []
-        f.until_match(%r{\A//|\A\#@}) do |line|
-          break if line.strip.empty?
+      # Traditional processing with inline elements processed immediately
+      buf = []
+      f.until_match(%r{\A//|\A\#@}) do |line|
+        break if line.strip.empty?
 
-          raw_lines.push(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t"))
-        end
-        build_paragraph_ast(raw_lines)
-      else
-        # Traditional processing with inline elements processed immediately
-        buf = []
-        f.until_match(%r{\A//|\A\#@}) do |line|
-          break if line.strip.empty?
-
-          buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
-        end
-        @builder.paragraph(buf)
+        buf.push(text(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")))
       end
+      @builder.paragraph(buf)
     end
 
     def read_command(f)
@@ -765,10 +663,7 @@ module ReVIEW
         args = ['(NoArgument)'] * syntax.min_argc
       end
 
-      # Check if this command should be processed via AST
-      if @ast_mode
-        build_block_command_ast(syntax.name, args, lines)
-      elsif syntax.block_allowed?
+      if syntax.block_allowed?
         compile_block(syntax, args, lines)
       else
         if lines
