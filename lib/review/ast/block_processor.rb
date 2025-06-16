@@ -30,14 +30,10 @@ module ReVIEW
       end
 
       def compile_image_to_ast(_type, args)
-        node = AST::ImageNode.new(
-          location: @ast_compiler.location,
-          id: args[0],
-          caption: args[1],
-          metric: args[2]
-        )
-
-        @ast_compiler.add_child_to_current_node(node)
+        create_and_add_node(AST::ImageNode,
+                            id: args[0],
+                            caption: args[1],
+                            metric: args[2])
       end
 
       def compile_table_to_ast(type, args, lines)
@@ -58,46 +54,38 @@ module ReVIEW
 
         node = case type
                when :table
-                 AST::TableNode.new(
-                   location: @ast_compiler.location,
-                   id: args[0],
-                   caption: args[1],
-                   headers: headers,
-                   rows: rows,
-                   table_type: :table
-                 )
+                 create_node(AST::TableNode,
+                             id: args[0],
+                             caption: args[1],
+                             headers: headers,
+                             rows: rows,
+                             table_type: :table)
                when :emtable
-                 AST::TableNode.new(
-                   location: @ast_compiler.location,
-                   id: nil, # emtable has no ID
-                   caption: args[0],
-                   headers: headers,
-                   rows: rows,
-                   table_type: :emtable
-                 )
+                 create_node(AST::TableNode,
+                             id: nil, # emtable has no ID
+                             caption: args[0],
+                             headers: headers,
+                             rows: rows,
+                             table_type: :emtable)
                when :imgtable
-                 AST::TableNode.new(
-                   location: @ast_compiler.location,
-                   id: args[0],
-                   caption: args[1],
-                   headers: headers,
-                   rows: rows,
-                   table_type: :imgtable,
-                   metric: args[2]
-                 )
+                 create_node(AST::TableNode,
+                             id: args[0],
+                             caption: args[1],
+                             headers: headers,
+                             rows: rows,
+                             table_type: :imgtable,
+                             metric: args[2])
                else
                  # Fallback for unknown table types
-                 AST::TableNode.new(
-                   location: @ast_compiler.location,
-                   id: args[0],
-                   caption: args[1],
-                   headers: headers,
-                   rows: rows,
-                   table_type: type
-                 )
+                 create_node(AST::TableNode,
+                             id: args[0],
+                             caption: args[1],
+                             headers: headers,
+                             rows: rows,
+                             table_type: type)
                end
 
-        @ast_compiler.add_child_to_current_node(node)
+        add_node_to_ast(node)
       end
 
       def compile_list_to_ast(type, lines)
@@ -105,31 +93,24 @@ module ReVIEW
         items = []
         if lines
           lines.each do |line|
-            item_node = AST::ListItemNode.new(
-              location: @ast_compiler.location,
-              content: line,
-              level: 1
-            )
-            items << item_node
+            items << create_node(AST::ListItemNode,
+                                 content: line,
+                                 level: 1)
           end
         end
 
-        node = AST::ListNode.new(
-          location: @ast_compiler.location,
-          list_type: type,
-          items: items
-        )
-
-        @ast_compiler.add_child_to_current_node(node)
+        create_and_add_node(AST::ListNode,
+                            list_type: type,
+                            items: items)
       end
 
       def compile_quote_to_ast(lines)
-        node = AST::ParagraphNode.new(location: @ast_compiler.location)
+        node = create_node(AST::ParagraphNode)
         if lines
           lines.each { |line| @ast_compiler.inline_processor.parse_inline_elements(line, node) }
         end
 
-        @ast_compiler.add_child_to_current_node(node)
+        add_node_to_ast(node)
 
         # Also render immediately to produce <blockquote> output
         if @ast_compiler.ast_renderer
@@ -274,38 +255,31 @@ module ReVIEW
           end
         end
 
-        node = AST::TableNode.new(
-          location: @ast_compiler.location,
-          id: args&.any? ? args[0] : nil,
-          caption: args && args.size > 1 ? args[1] : nil,
-          headers: headers,
-          rows: rows
-        )
-
-        @ast_compiler.add_child_to_current_node(node)
+        create_and_add_node(AST::TableNode,
+                            id: safe_arg(args, 0),
+                            caption: safe_arg(args, 1),
+                            headers: headers,
+                            rows: rows)
       end
 
       # Build image AST node
       def build_image_ast(_command_name, args, _lines)
-        node = AST::ImageNode.new(
-          location: @ast_compiler.location,
-          id: args&.any? ? args[0] : nil,
-          caption: args && args.size > 1 ? args[1] : nil,
-          metric: args && args.size > 2 ? args[2] : nil
-        )
-        @ast_compiler.add_child_to_current_node(node)
+        create_and_add_node(AST::ImageNode,
+                            id: safe_arg(args, 0),
+                            caption: safe_arg(args, 1),
+                            metric: safe_arg(args, 2))
       end
 
       # Build quote AST node
       def build_quote_ast(command_name, _args, lines)
-        node = AST::ParagraphNode.new(location: @ast_compiler.location)
+        node = create_node(AST::ParagraphNode)
 
         # Parse inline elements in quote content
         (lines || []).each do |line|
           @ast_compiler.inline_processor.parse_inline_elements(line, node)
         end
 
-        @ast_compiler.add_child_to_current_node(node)
+        add_node_to_ast(node)
 
         # Render immediately in hybrid mode - use quote-specific method
         if @ast_compiler.ast_renderer
@@ -355,13 +329,10 @@ module ReVIEW
 
       # Build raw AST node
       def build_raw_ast(args, lines)
-        node = AST::EmbedNode.new(
-          location: @ast_compiler.location,
-          embed_type: :raw,
-          lines: lines || [],
-          arg: args&.any? ? args.first : nil
-        )
-        @ast_compiler.add_child_to_current_node(node)
+        node = create_and_add_node(AST::EmbedNode,
+                                   embed_type: :raw,
+                                   lines: lines || [],
+                                   arg: safe_arg(args, 0))
 
         # Render immediately in hybrid mode
         if @ast_compiler.ast_renderer && args&.any?
@@ -371,10 +342,8 @@ module ReVIEW
 
       # Build unordered list AST node
       def build_ulist_ast(f)
-        node = AST::ListNode.new(
-          location: @ast_compiler.location,
-          list_type: :ul
-        )
+        node = create_node(AST::ListNode,
+                           list_type: :ul)
 
         level = 0
         f.while_match(/\A\s+\*|\A\#@/) do |line|
@@ -389,10 +358,8 @@ module ReVIEW
           line =~ /\A\s+(\*+)/
           current_level = $1.size
 
-          item_node = AST::ListItemNode.new(
-            location: @ast_compiler.location,
-            level: current_level
-          )
+          item_node = create_node(AST::ListItemNode,
+                                  level: current_level)
 
           # Parse inline elements in item content
           raw_lines.each do |raw_line|
@@ -403,15 +370,13 @@ module ReVIEW
           level = current_level
         end
 
-        @ast_compiler.add_child_to_current_node(node)
+        add_node_to_ast(node)
       end
 
       # Build ordered list AST node
       def build_olist_ast(f)
-        node = AST::ListNode.new(
-          location: @ast_compiler.location,
-          list_type: :ol
-        )
+        node = create_node(AST::ListNode,
+                           list_type: :ol)
 
         f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
           next if /\A\#@/.match?(line)
@@ -485,28 +450,48 @@ module ReVIEW
 
       private
 
+      # Common AST node creation helpers
+
+      # Create any AST node with location automatically set
+      def create_node(node_class, **attributes)
+        node_class.new(location: @ast_compiler.location, **attributes)
+      end
+
+      # Create AST node and add to current node in one step
+      def create_and_add_node(node_class, **attributes)
+        node = create_node(node_class, **attributes)
+        add_node_to_ast(node)
+        node
+      end
+
+      # Add node to current AST node
+      def add_node_to_ast(node)
+        @ast_compiler.add_child_to_current_node(node)
+      end
+
+      # Create text node with content
+      def create_text_node(content)
+        create_node(AST::TextNode, content: content)
+      end
+
       # Unified factory method for creating code block nodes
       def create_code_block_node(command_type, args, lines)
         config = CODE_BLOCK_CONFIGS[command_type]
         raise ArgumentError, "Unknown code block type: #{command_type}" unless config
 
-        node = AST::CodeBlockNode.new(
-          location: @ast_compiler.location,
-          id: safe_arg(args, config[:id_index]),
-          caption: safe_arg(args, config[:caption_index]),
-          lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
-          lines: lines || [],
-          line_numbers: config[:line_numbers] || false,
-          code_type: command_type
-        )
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        create_and_add_node(AST::CodeBlockNode,
+                            id: safe_arg(args, config[:id_index]),
+                            caption: safe_arg(args, config[:caption_index]),
+                            lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
+                            lines: lines || [],
+                            line_numbers: config[:line_numbers] || false,
+                            code_type: command_type)
       end
 
       # Extract argument safely with bounds checking
       def safe_arg(args, index, default = nil)
         return default unless args && index && args.size > index
+
         args[index]
       end
 
