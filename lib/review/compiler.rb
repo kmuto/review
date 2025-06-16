@@ -66,7 +66,7 @@ module ReVIEW
 
       if @ast_mode
         # Ensure builder is bound even in AST mode
-        f = LineInput.new(StringIO.new(@chapter.content))
+        f = LineInput.from_string(@chapter.content)
         @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
 
         ast_compiler.compile_to_ast(chap)

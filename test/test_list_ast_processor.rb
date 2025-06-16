@@ -43,7 +43,7 @@ class TestListASTProcessor < Test::Unit::TestCase
   end
 
   def create_line_input(content)
-    ReVIEW::LineInput.new(StringIO.new(content))
+    ReVIEW::LineInput.from_string(content)
   end
 
   # Test unordered list processing

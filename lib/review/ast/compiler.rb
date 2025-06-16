@@ -70,7 +70,7 @@ module ReVIEW
         @chapter = chapter
         # Create AST root with appropriate location
         # For test compatibility, use a special calculation for line numbers
-        f = LineInput.new(StringIO.new(@chapter.content))
+        f = LineInput.from_string(@chapter.content)
 
         # Initialize title to match JSONBuilder behavior
         title = @chapter.respond_to?(:title) ? @chapter.title : ''
@@ -98,7 +98,7 @@ module ReVIEW
 
       def do_compile_with_ast_building
         # Full AST mode: parse the entire document into AST first
-        f = LineInput.new(StringIO.new(@chapter.content))
+        f = LineInput.from_string(@chapter.content)
         @lineno = 0
 
         # Build the complete AST structure
