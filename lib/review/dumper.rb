@@ -52,8 +52,8 @@ module ReVIEW
 
       # Create builder and compiler with full AST mode enabled
       builder = ReVIEW::JSONBuilder.new
-      # Full AST mode: empty ast_elements array means process everything via AST
-      compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [])
+      # Full AST mode: process everything via AST
+      compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
 
       # Create mock chapter object
       basename = File.basename(path)

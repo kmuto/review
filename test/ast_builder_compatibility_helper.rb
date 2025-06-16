@@ -14,8 +14,7 @@ module ASTBuilderCompatibilityHelper
   def setup_compatibility_test
     @fixtures_dir = File.join(__dir__, 'project')
     @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).reject do |f|
-      File.basename(f).start_with?('test_stage') ||
-        File.basename(f) == 'test-project.re' ||
+      File.basename(f) == 'test-project.re' ||
         File.basename(f) == 'comprehensive_test.re'
     end.sort
     @output_dir = File.join(__dir__, '..', 'tmp', 'compatibility')

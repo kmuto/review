@@ -12,9 +12,6 @@ CHAPS:
   - comprehensive_test.re
 
 APPENDIX:
-  - test_stage1.re
-  - test_stage2.re 
-  - test_stage3.re
   - test-project.re
 
 POSTDEF:

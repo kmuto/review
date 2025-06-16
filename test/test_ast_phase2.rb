@@ -63,7 +63,7 @@ class TestASTPhase2 < Test::Unit::TestCase
 
     # Test with headline-only AST processing
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [:headline])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -88,7 +88,7 @@ class TestASTPhase2 < Test::Unit::TestCase
 
     # Test with paragraph-only AST processing
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [:paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -113,7 +113,7 @@ class TestASTPhase2 < Test::Unit::TestCase
 
     # Test with both headline and paragraph AST processing
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -143,7 +143,7 @@ class TestASTPhase2 < Test::Unit::TestCase
 
     # Test AST mode with no specific elements (should work the same)
     builder2 = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder2, ast_mode: true, ast_elements: [])
+    compiler_ast = ReVIEW::Compiler.new(builder2, ast_mode: true)
     chapter2 = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter2.content = content
 
@@ -165,7 +165,7 @@ class TestASTPhase2 < Test::Unit::TestCase
 
     # Test that AST nodes preserve location information
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [:headline])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 

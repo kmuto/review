@@ -123,11 +123,10 @@ module ReVIEW
 
       private
 
-      # Add list node to AST and render if needed
-      # @param list_node [ListNode] List node to add and render
+      # Add list node to AST
+      # @param list_node [ListNode] List node to add
       def add_to_ast_and_render(list_node)
         @ast_compiler.add_child_to_current_node(list_node)
-        @ast_compiler.render_with_ast_renderer(:visit_list, list_node)
       end
 
       # Validate that required dependencies are available

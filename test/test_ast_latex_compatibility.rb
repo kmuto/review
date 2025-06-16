@@ -101,7 +101,7 @@ class ASTLaTeXCompatibilityTest < Test::Unit::TestCase
       # Allow up to 10% difference in special character counts for AST mode variations
       backslash_diff = (traditional_specials[:backslashes] - hybrid_specials[:backslashes]).abs
       backslash_tolerance = [traditional_specials[:backslashes] * 0.1, 5].max
-      
+
       brace_diff = (traditional_specials[:braces] - hybrid_specials[:braces]).abs
       brace_tolerance = [traditional_specials[:braces] * 0.1, 5].max
 

@@ -55,7 +55,7 @@ class TestASTComprehensive < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph list listnum emlist emlistnum cmd])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -109,7 +109,7 @@ class TestASTComprehensive < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph table])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -118,7 +118,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     # Check table nodes
     table_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::TableNode) }
-    assert_equal 1, table_nodes.size # Only main table is processed via AST
+    assert_equal 2, table_nodes.size # Both table and emtable are processed via AST
 
     # Check first table with headers
     main_table = table_nodes.find { |n| n.id == 'envvars' }
@@ -144,7 +144,7 @@ class TestASTComprehensive < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph image indepimage])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -183,7 +183,7 @@ class TestASTComprehensive < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -258,7 +258,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     # Test with AST mode
     builder_ast = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true, ast_elements: %i[headline paragraph ulist olist list table quote])
+    compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true)
     chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter_ast.content = content
     result_ast = compiler_ast.compile(chapter_ast)

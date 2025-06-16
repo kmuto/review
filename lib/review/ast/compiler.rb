@@ -16,7 +16,6 @@ require 'review/ast/block_processor'
 require 'review/snapshot_location'
 require 'review/ast/list_ast_processor'
 require 'stringio'
-require 'set'
 
 module ReVIEW
   module AST
@@ -33,10 +32,8 @@ module ReVIEW
     class Compiler
       include Loggable
 
-      def initialize(builder, ast_elements = [], compiler = nil)
+      def initialize(builder)
         @builder = builder
-        @ast_elements = Set.new(ast_elements) # Elements to process via AST
-        @compiler = compiler # Reference to main compiler for accessing its methods
 
         # AST related
         @ast_root = nil
@@ -50,14 +47,8 @@ module ReVIEW
 
         @logger = ReVIEW.logger
 
-        # Debug settings for hybrid mode
-        @debug_ast_elements = ENV['REVIEW_DEBUG_AST'] == 'true'
-        @ast_element_stats = Hash.new(0) # Track AST usage statistics
-
         # Performance measurement
         @performance_tracker = PerformanceTracker.new(logger: @logger)
-
-        log_hybrid_mode_status if @debug_ast_elements
       end
 
       attr_reader :builder, :ast_root, :current_ast_node, :ast_renderer
@@ -81,36 +72,10 @@ module ReVIEW
         # For test compatibility, use a special calculation for line numbers
         f = LineInput.new(StringIO.new(@chapter.content))
 
-        # Count empty lines at the beginning
-        empty_line_count = 0
-        while f.next?
-          line = f.peek
-          if line.strip.empty?
-            empty_line_count += 1
-            f.gets
-          else
-            break
-          end
-        end
-
-        # Determine appropriate line number based on content
-        # The tests expect specific line numbers based on how execute_indexer works
-        line_number = if @chapter.content&.start_with?('//')
-                        # For block commands, use line 5 (matching test expectations)
-                        5
-                      else
-                        # For regular content, use line 2
-                        2
-                      end
-
-        # Create a mock file object that returns the appropriate line number
-        mock_file = Object.new
-        mock_file.define_singleton_method(:lineno) { line_number }
-
         # Initialize title to match JSONBuilder behavior
         title = @chapter.respond_to?(:title) ? @chapter.title : ''
         @ast_root = AST::DocumentNode.new(
-          location: Location.new(@chapter.basename, mock_file),
+          location: SnapshotLocation.new(@chapter.basename, f.lineno + 1),
           title: title
         )
         @current_ast_node = @ast_root
@@ -118,25 +83,17 @@ module ReVIEW
 
         @performance_tracker.start_timing(:total_compilation_time)
 
-        if @ast_elements.empty?
-          # Full AST mode: build complete AST without rendering
-          do_compile_with_ast_building
-          # In full AST mode, render the AST using the builder
-          # (unless it's JSONBuilder which handles AST differently)
-          unless @builder.class.name == 'ReVIEW::JSONBuilder'
-            @ast_renderer.render(@ast_root)
-          end
-        else
-          # Hybrid mode: process specified elements via AST, others directly
-          do_compile_hybrid
+        # Full AST mode: build complete AST without rendering
+        do_compile_with_ast_building
+        # In full AST mode, render the AST using the builder
+        # (unless it's JSONBuilder which handles AST differently)
+        unless @builder.class.name == 'ReVIEW::JSONBuilder'
+          @ast_renderer.render(@ast_root)
         end
 
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
         @performance_tracker.log_statistics
-
-        # Log statistics after compilation
-        log_ast_element_statistics if @debug_ast_elements
       end
 
       def do_compile_with_ast_building
@@ -168,21 +125,6 @@ module ReVIEW
           else
             compile_paragraph_to_ast(f)
           end
-        end
-      end
-
-      def do_compile_hybrid
-        # Hybrid mode: delegate to the main compiler's do_compile method
-        # but with AST processing enabled for specified elements
-        if @compiler
-          # Set up AST context in the main compiler before delegating
-          @compiler.instance_variable_set(:@ast_root, @ast_root)
-          @compiler.instance_variable_set(:@current_ast_node, @current_ast_node)
-          @compiler.instance_variable_set(:@ast_renderer, @ast_renderer)
-          @compiler.send(:do_compile)
-        else
-          # Fallback to full AST mode if no main compiler available
-          do_compile_with_ast_building
         end
       end
 
@@ -279,34 +221,10 @@ module ReVIEW
         list_processor.process_definition_list(f)
       end
 
-      # Check if element should be processed via AST
-      def should_use_ast?(element)
-        use_ast = @ast_elements.empty? || @ast_elements.include?(element)
-
-        # Debug logging and statistics
-        if @debug_ast_elements
-          mode = use_ast ? 'AST' : 'TRADITIONAL'
-          @logger.debug "DEBUG: Element #{element}: #{mode} mode" # Use warn for visibility
-          @ast_element_stats[element] += 1
-        end
-
-        use_ast
-      end
-
       # Build headline AST node
       def build_headline_ast(level, label, caption)
         node = AST::HeadlineNode.new(location: location, level: level, label: label, caption: caption)
         @current_ast_node.add_child(node)
-
-        # Render immediately in hybrid mode
-        if @ast_renderer
-          # Special handling for JsonBuilder - pass AST node directly
-          if @builder.class.name == 'ReVIEW::JSONBuilder' # rubocop:disable Style/ClassEqualityComparison
-            @builder.add_ast_node(node)
-          else
-            @ast_renderer.send(:visit_headline, node)
-          end
-        end
       end
 
       # Build paragraph AST node
@@ -319,16 +237,6 @@ module ReVIEW
         end
 
         @current_ast_node.add_child(node)
-
-        # Render immediately in hybrid mode
-        if @ast_renderer
-          # Special handling for JsonBuilder - pass AST node directly
-          if @builder.class.name == 'ReVIEW::JSONBuilder' # rubocop:disable Style/ClassEqualityComparison
-            @builder.add_ast_node(node)
-          else
-            @ast_renderer.send(:visit_paragraph, node)
-          end
-        end
       end
 
       # Build unordered list AST - now using dedicated ListASTProcessor
@@ -360,66 +268,18 @@ module ReVIEW
         @current_ast_node.add_child(node)
       end
 
-      def render_with_ast_renderer(method_name, node)
-        return unless @ast_renderer
-
-        # Special handling for JsonBuilder - pass AST node directly
-        if @builder.class.name == 'ReVIEW::JSONBuilder' # rubocop:disable Style/ClassEqualityComparison
-          @builder.add_ast_node(node)
-        else
-          @ast_renderer.send(method_name, node)
-        end
-      end
-
-      # Debug and statistics methods
-      def log_hybrid_mode_status
-        if @ast_elements.empty?
-          @logger.debug 'DEBUG: ASTCompiler: Full AST mode enabled'
-        else
-          @logger.debug "DEBUG: ASTCompiler: Hybrid mode enabled for elements: #{@ast_elements.to_a}"
-        end
-      end
-
-      def log_ast_element_statistics
-        return unless @debug_ast_elements && @ast_element_stats.any?
-
-        @logger.debug 'DEBUG: === AST Element Usage Statistics ==='
-        @ast_element_stats.each do |element, count|
-          mode = should_use_ast?(element) ? 'AST' : 'TRADITIONAL'
-          @logger.debug "DEBUG:   #{element}: #{count} times (#{mode} mode)"
-        end
-        @logger.debug 'DEBUG: ===================================='
-      end
-
-      # Get current hybrid mode configuration
-      def hybrid_mode_config
-        {
-          mode: @ast_elements.empty? ? :full_ast : :hybrid,
-          ast_elements: @ast_elements.to_a,
-          debug_enabled: @debug_ast_elements,
-          performance_enabled: @performance_tracker.enabled?,
-          statistics: @ast_element_stats.dup,
-          performance: @performance_tracker.all_stats
-        }
-      end
-
       # Expose performance tracker for external access
       attr_reader :performance_tracker
 
       private
 
       def read_command(f)
-        # Delegate to main compiler if available, otherwise use simplified version
-        if @compiler
-          @compiler.send(:read_command, f)
-        else
-          # Fallback implementation with proper arg parsing
-          line = f.gets
-          name = line.slice(/[a-z]+/).to_sym
-          args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
-          lines = block_open?(line) ? read_block(f) : nil
-          [name, args, lines]
-        end
+        # Simplified implementation with proper arg parsing
+        line = f.gets
+        name = line.slice(/[a-z]+/).to_sym
+        args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
+        lines = block_open?(line) ? read_block(f) : nil
+        [name, args, lines]
       end
 
       def block_open?(line)

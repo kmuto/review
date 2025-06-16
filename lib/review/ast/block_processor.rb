@@ -165,6 +165,11 @@ module ReVIEW
         end
 
         @ast_compiler.add_child_to_current_node(node)
+
+        # Also render immediately to produce <blockquote> output
+        if @ast_compiler.ast_renderer
+          @ast_compiler.builder.quote(lines || [])
+        end
       end
 
       def compile_minicolumn_to_ast(type, args, lines)
@@ -267,9 +272,6 @@ module ReVIEW
           arg: args&.any? ? args.first : nil
         )
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_embed, node)
       end
 
       # Build list/listnum AST node
@@ -283,9 +285,6 @@ module ReVIEW
           line_numbers: (command_name == :listnum)
         )
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_code_block, node)
       end
 
       # Build emlist/emlistnum AST node
@@ -298,9 +297,6 @@ module ReVIEW
           line_numbers: (command_name == :emlistnum)
         )
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_code_block, node)
       end
 
       # Build source AST node
@@ -312,9 +308,6 @@ module ReVIEW
           lines: lines || []
         )
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_code_block, node)
       end
 
       # Build cmd AST node
@@ -326,9 +319,6 @@ module ReVIEW
           lines: lines || []
         )
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_code_block, node)
       end
 
       # Build table AST node
@@ -355,9 +345,6 @@ module ReVIEW
         )
 
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_table, node)
       end
 
       # Build image AST node
@@ -369,9 +356,6 @@ module ReVIEW
           metric: args && args.size > 2 ? args[2] : nil
         )
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_image, node)
       end
 
       # Build quote AST node
@@ -482,9 +466,6 @@ module ReVIEW
         end
 
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_list, node)
       end
 
       # Build ordered list AST node
@@ -518,9 +499,6 @@ module ReVIEW
         end
 
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_list, node)
       end
 
       # Build definition list AST node
@@ -565,9 +543,6 @@ module ReVIEW
         end
 
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode
-        @ast_compiler.render_with_ast_renderer(:visit_list, node)
       end
     end
   end

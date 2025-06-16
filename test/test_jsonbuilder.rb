@@ -184,7 +184,7 @@ class JSONBuilderTest < Test::Unit::TestCase
   end
 
   def test_ast_mode_paragraph_with_inline_elements
-    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[paragraph])
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true)
     @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
 
     actual = compile_block("This has @<b>{bold} and @<i>{italic} text.\n")
@@ -193,21 +193,21 @@ class JSONBuilderTest < Test::Unit::TestCase
         "type": "DocumentNode",
         "location": {
           "filename": null,
-          "lineno": 2
+          "lineno": 1
         },
         "children": [
           {
             "type": "ParagraphNode",
             "location": {
               "filename": null,
-              "lineno": 2
+              "lineno": 1
             },
             "children": [
               {
                 "type": "TextNode",
                 "location": {
                   "filename": null,
-                  "lineno": 2
+                  "lineno": 1
                 },
                 "children": [],
                 "content": "This has "
@@ -216,14 +216,14 @@ class JSONBuilderTest < Test::Unit::TestCase
                 "type": "InlineNode",
                 "location": {
                   "filename": null,
-                  "lineno": 2
+                  "lineno": 1
                 },
                 "children": [
                   {
                     "type": "TextNode",
                     "location": {
                       "filename": null,
-                      "lineno": 2
+                      "lineno": 1
                     },
                     "children": [],
                     "content": "bold"
@@ -238,7 +238,7 @@ class JSONBuilderTest < Test::Unit::TestCase
                 "type": "TextNode",
                 "location": {
                   "filename": null,
-                  "lineno": 2
+                  "lineno": 1
                 },
                 "children": [],
                 "content": " and "
@@ -247,14 +247,14 @@ class JSONBuilderTest < Test::Unit::TestCase
                 "type": "InlineNode",
                 "location": {
                   "filename": null,
-                  "lineno": 2
+                  "lineno": 1
                 },
                 "children": [
                   {
                     "type": "TextNode",
                     "location": {
                       "filename": null,
-                      "lineno": 2
+                      "lineno": 1
                     },
                     "children": [],
                     "content": "italic"
@@ -269,7 +269,7 @@ class JSONBuilderTest < Test::Unit::TestCase
                 "type": "TextNode",
                 "location": {
                   "filename": null,
-                  "lineno": 2
+                  "lineno": 1
                 },
                 "children": [],
                 "content": " text."
@@ -285,7 +285,7 @@ class JSONBuilderTest < Test::Unit::TestCase
   end
 
   def test_ast_mode_headline_and_paragraph
-    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true)
     @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
 
     content = <<~EOB
@@ -441,7 +441,7 @@ class JSONBuilderTest < Test::Unit::TestCase
   end
 
   def test_embed_block
-    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[embed])
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true)
     @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
 
     actual = compile_block("//embed[html]{\n<div>HTML content</div>\n<p>Paragraph</p>\n//}\n")
@@ -550,7 +550,7 @@ class JSONBuilderTest < Test::Unit::TestCase
       See @<table>{data} for details.
     EOB
 
-    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[headline paragraph list table])
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true)
     @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
 
     actual = compile_block(content)
@@ -604,7 +604,7 @@ class JSONBuilderTest < Test::Unit::TestCase
 
   def test_add_ast_node_method
     # Test the special add_ast_node method for direct AST handling
-    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[headline])
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true)
     @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
 
     actual = compile_block("= Direct AST Test\n")
@@ -649,7 +649,7 @@ class JSONBuilderTest < Test::Unit::TestCase
   # Helper method to compile inline elements and return AST structure
   def compile_inline_ast(text)
     # Create a minimal paragraph with inline element to get AST structure
-    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true, ast_elements: %i[paragraph])
+    @compiler = ReVIEW::Compiler.new(@builder, ast_mode: true)
     @builder.bind(@compiler, @chapter, @builder.instance_variable_get(:@location))
 
     # Compile a paragraph containing the inline element

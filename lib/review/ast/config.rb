@@ -19,16 +19,6 @@ module ReVIEW
       # Cache for frequently accessed configurations
       @config_cache = {}
       @cache_mutex = Mutex.new
-      # Predefined migration stages with their corresponding elements
-      MIGRATION_STAGES = {
-        1 => [:headline],
-        2 => %i[headline paragraph],
-        3 => %i[headline paragraph ulist olist dlist],
-        4 => %i[headline paragraph ulist olist dlist table emtable imgtable],
-        5 => %i[headline paragraph ulist olist dlist table emtable imgtable image indepimage numberlessimage],
-        6 => %i[headline paragraph ulist olist dlist table emtable imgtable image indepimage numberlessimage list listnum emlist emlistnum cmd source],
-        7 => %i[headline paragraph ulist olist dlist table emtable imgtable image list emlist cmd source inline]
-      }.freeze
 
       def initialize(config = nil)
         @config = config || ReVIEW::Configure.values
@@ -69,32 +59,6 @@ module ReVIEW
         parse_ast_mode(mode)
       end
 
-      # Get AST elements for hybrid mode
-      def ast_elements
-        # Environment variable override
-        env_elements = ENV['REVIEW_AST_ELEMENTS']
-        return parse_elements(env_elements) if env_elements
-
-        # Stage-based configuration
-        stage = ast_stage
-        return MIGRATION_STAGES[stage] || [] if stage
-
-        # Explicit elements configuration
-        elements = @ast_config['elements'] || []
-        elements.map(&:to_sym)
-      end
-
-      # Get migration stage
-      def ast_stage
-        # Environment variable override
-        env_stage = ENV['REVIEW_AST_STAGE']
-        return env_stage.to_i if env_stage&.match?(/^\d+$/)
-
-        # Configuration file setting
-        stage = @ast_config['stage']
-        stage.to_i if stage.is_a?(Integer) && stage > 0
-      end
-
       # Check if debug mode is enabled
       def debug_enabled?
         # Environment variable override (already handled in ASTCompiler)
@@ -117,10 +81,7 @@ module ReVIEW
       def to_h
         {
           mode: ast_mode,
-          elements: ast_elements,
-          stage: ast_stage,
-          debug: debug_enabled?,
-          performance: performance_enabled?
+          debug: debug_enabled?
         }
       end
 
@@ -134,17 +95,11 @@ module ReVIEW
                   when :off
                     { ast_mode: false }
                   when :full
-                    { ast_mode: true, ast_elements: [] }
-                  when :hybrid
-                    { ast_mode: true, ast_elements: ast_elements }
+                    { ast_mode: true }
                   when :auto
-                    # Auto mode: enable AST if stage/elements are specified, otherwise off
-                    if ast_stage || ast_elements.any?
-                      { ast_mode: true, ast_elements: ast_elements }
-                    else
-                      { ast_mode: false } # Default, can be overridden by specific builders
-                    end
-                  else # rubocop:disable Lint/DuplicateBranch
+                    # Auto mode: default to traditional mode
+                    { ast_mode: false }
+                  else
                     { ast_mode: false }
                   end
 
@@ -155,17 +110,6 @@ module ReVIEW
         options
       end
 
-      # Get stage description for logging
-      def stage_description
-        stage = ast_stage
-        return 'No stage specified' unless stage
-
-        elements = MIGRATION_STAGES[stage]
-        return 'Invalid stage' unless elements
-
-        "Stage #{stage}: #{elements.join(', ')}"
-      end
-
       private
 
       # Create a cache key based on current configuration
@@ -174,11 +118,7 @@ module ReVIEW
         # Use raw config values to avoid circular dependencies
         key_data = {
           config_mode: @ast_config['mode'],
-          config_stage: @ast_config['stage'],
-          config_elements: @ast_config['elements'],
-          env_mode: ENV['REVIEW_AST_MODE'],
-          env_stage: ENV['REVIEW_AST_STAGE'],
-          env_elements: ENV['REVIEW_AST_ELEMENTS']
+          env_mode: ENV['REVIEW_AST_MODE']
         }
         key_data.hash
       end
@@ -187,19 +127,13 @@ module ReVIEW
         case mode_str.to_s.downcase
         when 'full', 'true', '1'
           :full
-        when 'hybrid'
-          :hybrid
         when 'off', 'false', '0'
           :off
         when 'auto'
           :auto
-        else # rubocop:disable Lint/DuplicateBranch
+        else
           :auto
         end
-      end
-
-      def parse_elements(elements_str)
-        elements_str.split(',').map { |e| e.strip.to_sym }.reject(&:empty?)
       end
     end
   end

@@ -34,15 +34,10 @@ module ReVIEW
 
         # Override for JSON target to ensure proper location tracking
         if target == 'json' && compiler_options[:ast_mode] == false
-          compiler_options = { ast_mode: true, ast_elements: [] }
+          compiler_options = { ast_mode: true }
         end
 
         compiler_options
-      end
-
-      # Create a compiler with specific AST elements
-      def create_compiler_with_elements(builder, ast_elements)
-        ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: ast_elements)
       end
 
       # Create a traditional (non-AST) compiler
@@ -52,7 +47,7 @@ module ReVIEW
 
       # Create a full AST mode compiler
       def create_ast_compiler(builder)
-        ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [])
+        ReVIEW::Compiler.new(builder, ast_mode: true)
       end
     end
   end

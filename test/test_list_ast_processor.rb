@@ -7,11 +7,10 @@ require 'stringio'
 
 class TestListASTProcessor < Test::Unit::TestCase
   class MockASTCompiler
-    attr_reader :added_nodes, :rendered_calls
+    attr_reader :added_nodes
 
     def initialize
       @added_nodes = []
-      @rendered_calls = []
       @current_location = nil
     end
 
@@ -19,9 +18,7 @@ class TestListASTProcessor < Test::Unit::TestCase
       @added_nodes << node
     end
 
-    def render_with_ast_renderer(method_name, node)
-      @rendered_calls << { method: method_name, node: node }
-    end
+    # NOTE: render_with_ast_renderer removed with hybrid mode elimination
 
     def inline_processor
       @inline_processor ||= MockInlineProcessor.new
@@ -65,10 +62,7 @@ class TestListASTProcessor < Test::Unit::TestCase
     assert_equal :ul, list_node.list_type
     assert_equal 3, list_node.children.size
 
-    assert_equal 1, @mock_compiler.rendered_calls.size
-    render_call = @mock_compiler.rendered_calls[0]
-    assert_equal :visit_list, render_call[:method]
-    assert_equal list_node, render_call[:node]
+    # NOTE: render call testing removed with hybrid mode elimination
   end
 
   def test_process_unordered_list_nested
@@ -96,7 +90,6 @@ class TestListASTProcessor < Test::Unit::TestCase
     @processor.process_unordered_list(input)
 
     assert_equal 0, @mock_compiler.added_nodes.size
-    assert_equal 0, @mock_compiler.rendered_calls.size
   end
 
   # Test ordered list processing

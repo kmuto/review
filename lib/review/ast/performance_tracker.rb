@@ -69,15 +69,15 @@ module ReVIEW
       def log_statistics
         return unless @enabled && @stats.any?
 
-        @logger.debug 'DEBUG: === Performance Statistics ==='
+        @logger.debug('DEBUG: === Performance Statistics ===')
         @stats.each do |metric, value|
           if metric.to_s.include?('time')
-            @logger.debug "DEBUG:   #{metric}: #{(value * 1000).round(2)}ms"
+            @logger.debug("DEBUG:   #{metric}: #{(value * 1000).round(2)}ms")
           else
-            @logger.debug "DEBUG:   #{metric}: #{value}"
+            @logger.debug("DEBUG:   #{metric}: #{value}")
           end
         end
-        @logger.debug 'DEBUG: ================================'
+        @logger.debug('DEBUG: ================================')
       end
 
       # Clear all statistics

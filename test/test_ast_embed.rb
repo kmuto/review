@@ -49,7 +49,7 @@ class TestASTEmbed < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph embed])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -73,7 +73,7 @@ class TestASTEmbed < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [:embed])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -93,7 +93,7 @@ class TestASTEmbed < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [:paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -117,7 +117,7 @@ class TestASTEmbed < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: [:paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -143,7 +143,7 @@ class TestASTEmbed < Test::Unit::TestCase
 
     # Test with AST mode
     builder_ast = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true, ast_elements: %i[paragraph embed])
+    compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true)
     chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter_ast.content = content
     result_ast = compiler_ast.compile(chapter_ast)
@@ -178,7 +178,7 @@ class TestASTEmbed < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph embed])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 

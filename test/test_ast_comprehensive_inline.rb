@@ -45,7 +45,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Use JsonBuilder to get JSON output and verify AST structure
     builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -139,7 +139,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -193,7 +193,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -248,7 +248,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph embed])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -311,7 +311,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     EOB
 
     builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true, ast_elements: %i[headline paragraph])
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -365,7 +365,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Test AST structure with JsonBuilder
     builder_ast = ReVIEW::JSONBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true, ast_elements: %i[headline paragraph])
+    compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true)
     chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter_ast.content = content
 
