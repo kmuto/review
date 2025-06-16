@@ -42,21 +42,21 @@ class ProjectTestHelper
 
       # Create temporary config for specific AST mode
       config_content = File.read('config.yml')
-      
+
       # Update AST configuration based on parameters
-      if config_content.include?('ast:')
-        temp_config = config_content.gsub(/^ast:.*?(?=^\S|\z)/m) do |ast_section|
-          <<~AST_CONFIG
+      temp_config = if config_content.include?('ast:')
+                      config_content.gsub(/^ast:.*?(?=^\S|\z)/m) do |_ast_section|
+                        <<~AST_CONFIG
             ast:
               mode: #{ast_mode}
               stage: #{ast_stage}
               debug: #{debug}
               performance: #{debug}
           AST_CONFIG
-        end
-      else
-        # Add AST configuration if not present
-        temp_config = config_content + <<~AST_CONFIG
+                      end
+                    else
+                      # Add AST configuration if not present
+                      config_content + <<~AST_CONFIG
 
           ast:
             mode: #{ast_mode}
@@ -64,7 +64,7 @@ class ProjectTestHelper
             debug: #{debug}
             performance: #{debug}
         AST_CONFIG
-      end
+                    end
 
       # Write temporary config
       temp_config_file = "temp_config_#{target_format}.yml"
@@ -85,7 +85,7 @@ class ProjectTestHelper
                else
                  `#{cmd} comprehensive_test.re 2>&1`
                end
-      if !$CHILD_STATUS.success?
+      unless $CHILD_STATUS.success?
         puts "DEBUG: Command failed with exit code: #{$CHILD_STATUS.exitstatus}"
         puts "DEBUG: Command output: #{result}"
         puts "DEBUG: Working directory: #{Dir.pwd}"
