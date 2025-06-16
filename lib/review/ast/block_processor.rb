@@ -26,42 +26,7 @@ module ReVIEW
       end
 
       def compile_code_block_to_ast(type, args, lines)
-        case type
-        when :list, :listnum
-          node = AST::CodeBlockNode.new(
-            location: @ast_compiler.location,
-            id: args[0],
-            caption: args[1],
-            lang: args[2],
-            lines: lines || [],
-            line_numbers: (type == :listnum)
-          )
-        when :emlist, :emlistnum
-          node = AST::CodeBlockNode.new(
-            location: @ast_compiler.location,
-            caption: args[0],
-            lang: args[1],
-            lines: lines || [],
-            line_numbers: (type == :emlistnum)
-          )
-        when :cmd
-          node = AST::CodeBlockNode.new(
-            location: @ast_compiler.location,
-            caption: args[0],
-            lang: 'shell',
-            lines: lines || [],
-            line_numbers: false
-          )
-        when :source
-          node = AST::CodeBlockNode.new(
-            location: @ast_compiler.location,
-            caption: args[0],
-            lang: args[1],
-            lines: lines || [],
-            line_numbers: false
-          )
-        end
-        @ast_compiler.add_child_to_current_node(node)
+        create_code_block_node(type, args, lines)
       end
 
       def compile_image_to_ast(_type, args)
@@ -276,49 +241,22 @@ module ReVIEW
 
       # Build list/listnum AST node
       def build_list_ast(command_name, args, lines)
-        node = AST::CodeBlockNode.new(
-          location: @ast_compiler.location,
-          id: args&.any? ? args[0] : nil,
-          caption: args && args.size > 1 ? args[1] : nil,
-          lang: args && args.size > 2 ? args[2] : nil,
-          lines: lines || [],
-          line_numbers: (command_name == :listnum)
-        )
-        @ast_compiler.add_child_to_current_node(node)
+        create_code_block_node(command_name, args, lines)
       end
 
       # Build emlist/emlistnum AST node
       def build_emlist_ast(command_name, args, lines)
-        node = AST::CodeBlockNode.new(
-          location: @ast_compiler.location,
-          caption: args&.any? ? args[0] : nil,
-          lang: args && args.size > 1 ? args[1] : nil,
-          lines: lines || [],
-          line_numbers: (command_name == :emlistnum)
-        )
-        @ast_compiler.add_child_to_current_node(node)
+        create_code_block_node(command_name, args, lines)
       end
 
       # Build source AST node
       def build_source_ast(args, lines)
-        node = AST::CodeBlockNode.new(
-          location: @ast_compiler.location,
-          caption: args&.any? ? args[0] : nil,
-          lang: args && args.size > 1 ? args[1] : nil,
-          lines: lines || []
-        )
-        @ast_compiler.add_child_to_current_node(node)
+        create_code_block_node(:source, args, lines)
       end
 
       # Build cmd AST node
       def build_cmd_ast(args, lines)
-        node = AST::CodeBlockNode.new(
-          location: @ast_compiler.location,
-          caption: args&.any? ? args[0] : nil,
-          lang: 'shell',
-          lines: lines || []
-        )
-        @ast_compiler.add_child_to_current_node(node)
+        create_code_block_node(:cmd, args, lines)
       end
 
       # Build table AST node
@@ -544,6 +482,43 @@ module ReVIEW
 
         @ast_compiler.add_child_to_current_node(node)
       end
+
+      private
+
+      # Unified factory method for creating code block nodes
+      def create_code_block_node(command_type, args, lines)
+        config = CODE_BLOCK_CONFIGS[command_type]
+        raise ArgumentError, "Unknown code block type: #{command_type}" unless config
+
+        node = AST::CodeBlockNode.new(
+          location: @ast_compiler.location,
+          id: safe_arg(args, config[:id_index]),
+          caption: safe_arg(args, config[:caption_index]),
+          lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
+          lines: lines || [],
+          line_numbers: config[:line_numbers] || false,
+          code_type: command_type
+        )
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Extract argument safely with bounds checking
+      def safe_arg(args, index, default = nil)
+        return default unless args && index && args.size > index
+        args[index]
+      end
+
+      # Configuration for different code block types
+      CODE_BLOCK_CONFIGS = {
+        list: { id_index: 0, caption_index: 1, lang_index: 2 },
+        listnum: { id_index: 0, caption_index: 1, lang_index: 2, line_numbers: true },
+        emlist: { caption_index: 0, lang_index: 1 },
+        emlistnum: { caption_index: 0, lang_index: 1, line_numbers: true },
+        cmd: { caption_index: 0, default_lang: 'shell' },
+        source: { caption_index: 0, lang_index: 1 }
+      }.freeze
     end
   end
 end
