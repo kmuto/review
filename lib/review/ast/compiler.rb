@@ -55,7 +55,7 @@ module ReVIEW
         @ast_element_stats = Hash.new(0) # Track AST usage statistics
 
         # Performance measurement
-        @performance_tracker = PerformanceTracker.new
+        @performance_tracker = PerformanceTracker.new(logger: @logger)
 
         log_hybrid_mode_status if @debug_ast_elements
       end
@@ -286,7 +286,7 @@ module ReVIEW
         # Debug logging and statistics
         if @debug_ast_elements
           mode = use_ast ? 'AST' : 'TRADITIONAL'
-          warn "DEBUG: Element #{element}: #{mode} mode" # Use warn for visibility
+          @logger.debug "DEBUG: Element #{element}: #{mode} mode" # Use warn for visibility
           @ast_element_stats[element] += 1
         end
 
@@ -374,21 +374,21 @@ module ReVIEW
       # Debug and statistics methods
       def log_hybrid_mode_status
         if @ast_elements.empty?
-          warn 'DEBUG: ASTCompiler: Full AST mode enabled'
+          @logger.debug 'DEBUG: ASTCompiler: Full AST mode enabled'
         else
-          warn "DEBUG: ASTCompiler: Hybrid mode enabled for elements: #{@ast_elements.to_a}"
+          @logger.debug "DEBUG: ASTCompiler: Hybrid mode enabled for elements: #{@ast_elements.to_a}"
         end
       end
 
       def log_ast_element_statistics
         return unless @debug_ast_elements && @ast_element_stats.any?
 
-        warn 'DEBUG: === AST Element Usage Statistics ==='
+        @logger.debug 'DEBUG: === AST Element Usage Statistics ==='
         @ast_element_stats.each do |element, count|
           mode = should_use_ast?(element) ? 'AST' : 'TRADITIONAL'
-          warn "DEBUG:   #{element}: #{count} times (#{mode} mode)"
+          @logger.debug "DEBUG:   #{element}: #{count} times (#{mode} mode)"
         end
-        warn 'DEBUG: ===================================='
+        @logger.debug 'DEBUG: ===================================='
       end
 
       # Get current hybrid mode configuration

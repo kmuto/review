@@ -16,10 +16,11 @@ module ReVIEW
     # - Debug logging for performance metrics
     # - Statistics aggregation and reporting
     class PerformanceTracker
-      def initialize(enabled: false)
+      def initialize(enabled: false, logger: nil)
         @enabled = enabled || ENV['REVIEW_AST_PERFORMANCE'] == 'true'
         @stats = {}
         @start_times = {}
+        @logger = logger || ReVIEW.logger
       end
 
       attr_reader :stats
@@ -68,15 +69,15 @@ module ReVIEW
       def log_statistics
         return unless @enabled && @stats.any?
 
-        warn 'DEBUG: === Performance Statistics ==='
+        @logger.debug 'DEBUG: === Performance Statistics ==='
         @stats.each do |metric, value|
           if metric.to_s.include?('time')
-            warn "DEBUG:   #{metric}: #{(value * 1000).round(2)}ms"
+            @logger.debug "DEBUG:   #{metric}: #{(value * 1000).round(2)}ms"
           else
-            warn "DEBUG:   #{metric}: #{value}"
+            @logger.debug "DEBUG:   #{metric}: #{value}"
           end
         end
-        warn 'DEBUG: ================================'
+        @logger.debug 'DEBUG: ================================'
       end
 
       # Clear all statistics
