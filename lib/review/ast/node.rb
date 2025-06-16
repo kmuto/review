@@ -37,7 +37,7 @@ module ReVIEW
         @children.delete(child)
       end
 
-      # For JSON output
+      # Basic JSON serialization for compatibility
       def to_h
         result = {
           type: self.class.name.split('::').last,
@@ -54,7 +54,7 @@ module ReVIEW
         to_h.to_json(*args)
       end
 
-      # Serialize node to hash with options
+      # Enhanced JSON serialization with options (using JSONSerializer)
       def serialize_to_hash(options = nil)
         options ||= JSONSerializer::Options.new
 
@@ -79,33 +79,6 @@ module ReVIEW
         hash
       end
 
-      # Custom JSON serialization with options
-      def to_json_with_options(options = nil)
-        options ||= JSONSerializer::Options.new
-        hash = serialize_to_hash(options)
-        if options.pretty
-          JSON.pretty_generate(hash, indent: options.indent)
-        else
-          JSON.generate(hash)
-        end
-      end
-
-      # JSON serialization preserving hierarchical structure
-      def to_pretty_json(indent: '  ')
-        options = JSONSerializer::Options.new
-        options.indent = indent
-        to_json_with_options(options)
-      end
-
-      # Compact JSON serialization (without location information)
-      def to_compact_json
-        options = JSONSerializer::Options.new
-        options.include_location = false
-        options.include_empty_arrays = false
-        options.pretty = false
-        to_json_with_options(options)
-      end
-
       protected
 
       # Override this method in subclasses to add node-specific properties
@@ -123,6 +96,8 @@ module ReVIEW
         hash
       end
 
+      private
+
       # Serialize location information
       def serialize_location(location)
         {
@@ -130,8 +105,6 @@ module ReVIEW
           lineno: location.respond_to?(:lineno) ? location.lineno : nil
         }
       end
-
-      private
 
       def location_to_h
         return nil unless location

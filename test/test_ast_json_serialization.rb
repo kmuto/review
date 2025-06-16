@@ -266,53 +266,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 'HeadlineNode', parsed['type']
   end
 
-  def test_pretty_json_method
-    node = AST::HeadlineNode.new(
-      location: @location,
-      level: 1,
-      caption: 'Test'
-    )
-
-    pretty_json = node.to_pretty_json
-
-    assert_include(pretty_json, "\n")
-    assert_include(pretty_json, '  ')
-
-    parsed = JSON.parse(pretty_json)
-    assert_equal 'HeadlineNode', parsed['type']
-  end
-
-  def test_compact_json_method
-    node = AST::HeadlineNode.new(
-      location: @location,
-      level: 1,
-      caption: 'Test'
-    )
-
-    compact_json = node.to_compact_json
-
-    # Should not include location info
-    parsed = JSON.parse(compact_json)
-    assert_nil(parsed['location'])
-    assert_equal 'HeadlineNode', parsed['type']
-  end
-
-  def test_json_with_options_method
-    node = AST::HeadlineNode.new(
-      location: @location,
-      level: 1,
-      caption: 'Test'
-    )
-    options = AST::JSONSerializer::Options.new
-    options.include_location = false
-    options.pretty = false
-
-    json = node.to_json_with_options(options)
-    parsed = JSON.parse(json)
-
-    assert_nil(parsed['location'])
-    assert_equal 'HeadlineNode', parsed['type']
-  end
 
   def test_json_schema_structure
     schema = AST::JSONSerializer.json_schema
