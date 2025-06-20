@@ -146,23 +146,23 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       content: 'First item',
       level: 1
     )
-    list.items << item1
+    list.add_child(item1)
 
     item2 = AST::ListItemNode.new(
       location: @location,
       content: 'Second item',
       level: 1
     )
-    list.items << item2
+    list.add_child(item2)
 
     json = list.to_json
     parsed = JSON.parse(json)
 
     assert_equal 'ListNode', parsed['type']
     assert_equal 'ul', parsed['list_type']
-    assert_equal 2, parsed['items'].size
-    assert_equal 'First item', parsed['items'][0]['content']
-    assert_equal 'Second item', parsed['items'][1]['content']
+    assert_equal 2, parsed['children'].size
+    assert_equal 'First item', parsed['children'][0]['content']
+    assert_equal 'Second item', parsed['children'][1]['content']
   end
 
   def test_embed_node_serialization

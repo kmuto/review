@@ -56,14 +56,12 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 2
                 },
-                "children": [],
                 "content": "Test Chapter"
               }
             ]
           }
         ],
-        "title": "",
-        "chapters": []
+        "title": ""
       }
     JSON
     assert_equal expected, actual
@@ -95,14 +93,12 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 2
                 },
-                "children": [],
                 "content": "this is test."
               }
             ]
           }
         ],
-        "title": "",
-        "chapters": []
+        "title": ""
       }
     JSON
     assert_equal expected, actual
@@ -134,14 +130,12 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 2
                 },
-                "children": [],
                 "content": "this is test."
               }
             ]
           }
         ],
-        "title": "",
-        "chapters": []
+        "title": ""
       }
     JSON
     assert_equal expected, actual
@@ -170,14 +164,12 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 2
                 },
-                "children": [],
                 "content": "This is a simple paragraph."
               }
             ]
           }
         ],
-        "title": "",
-        "chapters": []
+        "title": ""
       }
     JSON
     assert_equal expected, actual
@@ -209,7 +201,6 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 1
                 },
-                "children": [],
                 "content": "This has "
               },
               {
@@ -225,7 +216,6 @@ class JSONBuilderTest < Test::Unit::TestCase
                       "filename": null,
                       "lineno": 1
                     },
-                    "children": [],
                     "content": "bold"
                   }
                 ],
@@ -240,7 +230,6 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 1
                 },
-                "children": [],
                 "content": " and "
               },
               {
@@ -256,7 +245,6 @@ class JSONBuilderTest < Test::Unit::TestCase
                       "filename": null,
                       "lineno": 1
                     },
-                    "children": [],
                     "content": "italic"
                   }
                 ],
@@ -271,14 +259,12 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 1
                 },
-                "children": [],
                 "content": " text."
               }
             ]
           }
         ],
-        "title": "",
-        "chapters": []
+        "title": ""
       }
     JSON
     assert_json_equal(expected, actual)
@@ -336,7 +322,6 @@ class JSONBuilderTest < Test::Unit::TestCase
                   "filename": null,
                   "lineno": 5
                 },
-                "children": [],
                 "content": "Sample List"
               }
             ],
@@ -347,8 +332,7 @@ class JSONBuilderTest < Test::Unit::TestCase
             "line_numbers": false
           }
         ],
-        "title": "",
-        "chapters": []
+        "title": ""
       }
     JSON
     assert_json_equal(expected, actual)
@@ -361,7 +345,7 @@ class JSONBuilderTest < Test::Unit::TestCase
     list_block = json['children'].find { |child| child['type'] == 'CodeBlockNode' }
     assert_not_nil(list_block)
     assert_equal 'sample', list_block['id']
-    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample List', 'children' => [], 'location' => { 'filename' => nil, 'lineno' => 5 } }]
+    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample List', 'location' => { 'filename' => nil, 'lineno' => 5 } }]
     assert_equal expected_caption, list_block['caption']
     assert_equal ['line 1', 'line 2'], list_block['lines']
     assert_equal true, list_block['line_numbers']
@@ -373,7 +357,7 @@ class JSONBuilderTest < Test::Unit::TestCase
 
     code_block = json['children'].find { |child| child['type'] == 'CodeBlockNode' }
     assert_not_nil(code_block)
-    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Code', 'children' => [], 'location' => { 'filename' => nil, 'lineno' => 5 } }]
+    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Code', 'location' => { 'filename' => nil, 'lineno' => 5 } }]
     assert_equal expected_caption, code_block['caption']
     assert_equal ['code line 1', 'code line 2'], code_block['lines']
     assert_equal false, code_block['line_numbers']
@@ -385,7 +369,7 @@ class JSONBuilderTest < Test::Unit::TestCase
 
     code_block = json['children'].find { |child| child['type'] == 'CodeBlockNode' }
     assert_not_nil(code_block)
-    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Code', 'children' => [], 'location' => { 'filename' => nil, 'lineno' => 5 } }]
+    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Code', 'location' => { 'filename' => nil, 'lineno' => 5 } }]
     assert_equal expected_caption, code_block['caption']
     assert_equal ['code line 1', 'code line 2'], code_block['lines']
     assert_equal true, code_block['line_numbers']
@@ -397,7 +381,7 @@ class JSONBuilderTest < Test::Unit::TestCase
 
     cmd_block = json['children'].find { |child| child['type'] == 'CodeBlockNode' }
     assert_not_nil(cmd_block)
-    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Shell Commands', 'children' => [], 'location' => { 'filename' => nil, 'lineno' => 5 } }]
+    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Shell Commands', 'location' => { 'filename' => nil, 'lineno' => 5 } }]
     assert_equal expected_caption, cmd_block['caption']
     assert_equal 'shell', cmd_block['lang']
     assert_equal ['ls -la', 'grep pattern file'], cmd_block['lines']
@@ -409,7 +393,7 @@ class JSONBuilderTest < Test::Unit::TestCase
 
     source_block = json['children'].find { |child| child['type'] == 'CodeBlockNode' }
     assert_not_nil(source_block)
-    expected_caption = [{ 'type' => 'TextNode', 'content' => 'ruby', 'children' => [], 'location' => { 'filename' => nil, 'lineno' => 6 } }]
+    expected_caption = [{ 'type' => 'TextNode', 'content' => 'ruby', 'location' => { 'filename' => nil, 'lineno' => 6 } }]
     assert_equal expected_caption, source_block['caption'] # JsonBuilder treats first arg as caption
     assert_equal 'Ruby Code', source_block['lang']
     assert_equal ['def hello', '  puts \'world\'', 'end'], source_block['lines']
@@ -422,7 +406,7 @@ class JSONBuilderTest < Test::Unit::TestCase
     image = json['children'].find { |child| child['type'] == 'ImageNode' }
     assert_not_nil(image)
     assert_equal 'figure1', image['id']
-    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Figure', 'children' => [], 'location' => { 'filename' => nil, 'lineno' => 3 } }]
+    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Figure', 'location' => { 'filename' => nil, 'lineno' => 3 } }]
     assert_equal expected_caption, image['caption']
   end
 
@@ -434,7 +418,7 @@ class JSONBuilderTest < Test::Unit::TestCase
     assert_not_nil(table)
     assert_equal 'sample', table['id']
     # Caption is now an array of nodes
-    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Table', 'children' => [], 'location' => { 'filename' => nil, 'lineno' => 7 } }]
+    expected_caption = [{ 'type' => 'TextNode', 'content' => 'Sample Table', 'location' => { 'filename' => nil, 'lineno' => 7 } }]
     assert_equal expected_caption, table['caption']
     assert_equal [['Header1', 'Header2']], table['headers']
     assert_equal [['Data1', 'Data2'], ['Data3', 'Data4']], table['rows']
@@ -595,8 +579,7 @@ class JSONBuilderTest < Test::Unit::TestCase
           "lineno": 1
         },
         "children": [],
-        "title": "",
-        "chapters": []
+        "title": ""
       }
     JSON
     assert_equal expected, actual

@@ -5,29 +5,24 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class DocumentNode < Node
-      attr_accessor :title, :chapters
+      attr_accessor :title
 
-      def initialize(location: nil, title: nil, chapters: [], **kwargs)
+      def initialize(location: nil, title: nil, **kwargs)
         super(location: location, **kwargs)
         @title = title
-        @chapters = chapters
       end
 
       def to_h
         super.merge(
-          title: title,
-          chapters: chapters&.map(&:to_h)
+          title: title
         )
       end
 
       protected
 
       def serialize_properties(hash, options)
-        hash[:children] = children.map { |child| child.serialize_to_hash(options) }
+        hash[:children] = children.map { |child| child.serialize_to_hash(options) } if children.any?
         hash[:title] = title
-        if options.include_empty_arrays || (chapters && chapters.any?)
-          hash[:chapters] = chapters&.map { |chapter| chapter.serialize_to_hash(options) } || []
-        end
         hash
       end
     end

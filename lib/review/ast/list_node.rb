@@ -30,18 +30,16 @@ module ReVIEW
     end
 
     class ListItemNode < Node
-      attr_accessor :content, :level, :number
+      attr_accessor :level, :number
 
       def initialize(location: nil, content: nil, level: 1, number: nil, **kwargs)
         super(location: location, content: content, **kwargs)
-        @content = content
         @level = level
         @number = number
       end
 
       def to_h
         result = super.merge(
-          content: content,
           level: level
         )
         result[:number] = number if number
@@ -50,8 +48,8 @@ module ReVIEW
 
       protected
 
-      def serialize_properties(hash, _options)
-        hash[:content] = content
+      def serialize_properties(hash, options)
+        hash[:children] = children.map { |child| child.serialize_to_hash(options) } if children.any?
         hash[:level] = level
         hash[:number] = number if number
         hash
