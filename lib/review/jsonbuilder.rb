@@ -9,6 +9,7 @@
 require 'review/builder'
 require 'review/ast'
 require 'review/ast/column_node'
+require 'review/ast/json_serializer'
 
 module ReVIEW
   class JSONBuilder < Builder
@@ -28,11 +29,9 @@ module ReVIEW
 
     def result
       # In AST mode, check if compiler has provided an AST result
-      if @compiler.respond_to?(:ast_result) && @compiler.ast_result
+      if @compiler.ast_result
         # Use the AST from the compiler
-        require 'review/ast/json_serializer'
-        options = ReVIEW::AST::JSONSerializer::Options.new
-        options.include_empty_arrays = true
+        options = ReVIEW::AST::JSONSerializer::Options.new(include_empty_arrays: true)
         ReVIEW::AST::JSONSerializer.serialize(@compiler.ast_result, options)
       else
         # Use our internal document node

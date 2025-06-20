@@ -9,10 +9,10 @@ module ReVIEW
       class Options
         attr_accessor :pretty, :include_location, :include_empty_arrays, :indent
 
-        def initialize
-          @pretty = true
+        def initialize(include_empty_arrays: false, pretty: true)
+          @pretty = pretty
+          @include_empty_arrays = include_empty_arrays
           @include_location = true
-          @include_empty_arrays = false
           @indent = '  '
         end
 
