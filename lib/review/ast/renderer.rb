@@ -38,6 +38,8 @@ module ReVIEW
           visit_image(node)
         when AST::CodeBlockNode
           visit_code_block(node)
+        when AST::ColumnNode
+          visit_column(node)
         when AST::InlineNode
           visit_inline(node)
         when AST::TextNode
@@ -252,6 +254,28 @@ module ReVIEW
           # Raw content
           @builder.raw(node.arg) if node.arg
         end
+      end
+
+      def visit_column(node)
+        # Render column caption if it contains inline elements
+        caption = if node.caption.is_a?(Array) && node.caption.any?
+                    # Caption is an array of nodes (inline elements)
+                    result = +''
+                    node.caption.each do |caption_node|
+                      result << visit_node(caption_node).to_s
+                    end
+                    result
+                  elsif node.caption.is_a?(String)
+                    # Caption is a simple string
+                    node.caption
+                  else
+                    # No caption
+                    ''
+                  end
+
+        @builder.column_begin(node.level, node.label, caption)
+        visit_children(node)
+        @builder.column_end(node.level)
       end
     end
   end
