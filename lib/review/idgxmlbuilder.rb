@@ -1339,5 +1339,10 @@ module ReVIEW
     def image_ext
       'eps'
     end
+
+    # Override: IDGXMLBuilder interprets inline markup in code blocks
+    def interprets_inline_in_code?
+      true
+    end
   end
 end # module ReVIEW

@@ -814,5 +814,28 @@ EOTGNUPLOT
       end
       @book.config['caption_position'][type] != 'bottom'
     end
+
+    # Whether this builder interprets inline markup in code blocks
+    # Override in subclasses that need different behavior
+    def interprets_inline_in_code?
+      false  # Default: preserve inline markup as plain text
+    end
+
+    # Render AST node as plain text (for builders that don't interpret inline markup)
+    def render_ast_node_as_plain_text(ast_node)
+      case ast_node
+      when ReVIEW::AST::TextNode
+        ast_node.content
+      when ReVIEW::AST::InlineNode
+        # Convert back to Re:VIEW markup
+        args = ast_node.args || []
+        content = ast_node.children.map { |child| render_ast_node_as_plain_text(child) }.join
+        "@<#{ast_node.inline_type}>{#{content}}"
+      when ReVIEW::AST::ParagraphNode
+        ast_node.children.map { |child| render_ast_node_as_plain_text(child) }.join
+      else
+        ast_node.respond_to?(:content) ? ast_node.content.to_s : ''
+      end
+    end
   end
 end # module ReVIEW

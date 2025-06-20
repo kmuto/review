@@ -479,13 +479,28 @@ module ReVIEW
         config = CODE_BLOCK_CONFIGS[command_type]
         raise ArgumentError, "Unknown code block type: #{command_type}" unless config
 
+        # Preserve original text
+        original_text = lines ? lines.join("\n") : ''
+
+        # Process lines for inline elements if needed
+        processed_lines = nil
+        if builder_needs_inline_processing? && lines
+          processed_lines = lines.map do |line|
+            paragraph_node = AST::ParagraphNode.new(location: @ast_compiler.location)
+            @ast_compiler.inline_processor.parse_inline_elements(line, paragraph_node)
+            paragraph_node
+          end
+        end
+
         create_and_add_node(AST::CodeBlockNode,
                             id: safe_arg(args, config[:id_index]),
                             caption: safe_arg(args, config[:caption_index]),
                             lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
                             lines: lines || [],
                             line_numbers: config[:line_numbers] || false,
-                            code_type: command_type)
+                            code_type: command_type,
+                            original_text: original_text,
+                            processed_lines: processed_lines)
       end
 
       # Extract argument safely with bounds checking
@@ -493,6 +508,13 @@ module ReVIEW
         return default unless args && index && args.size > index
 
         args[index]
+      end
+
+      # Check if the current builder needs inline processing in code blocks
+      def builder_needs_inline_processing?
+        # Always process inline elements to generate unified AST structure
+        # Individual builders will decide how to interpret them
+        true
       end
 
       # Configuration for different code block types

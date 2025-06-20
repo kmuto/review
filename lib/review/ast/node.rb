@@ -12,15 +12,16 @@ require_relative 'json_serializer'
 module ReVIEW
   module AST
     class Node
-      attr_accessor :location, :parent, :children, :type, :id, :content
+      attr_accessor :location, :parent, :children, :type, :id, :content, :original_text
 
-      def initialize(location: nil, type: nil, id: nil, content: nil, **_kwargs)
+      def initialize(location: nil, type: nil, id: nil, content: nil, original_text: nil, **_kwargs)
         @location = location
         @children = []
         @parent = nil
         @type = type
         @id = id
         @content = content
+        @original_text = original_text
       end
 
       def accept(visitor)
