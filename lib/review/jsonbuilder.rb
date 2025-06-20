@@ -238,7 +238,7 @@ module ReVIEW
         location: location,
         content: lines.join("\n")
       )
-      @current_node.items << item_node
+      @current_node.add_child(item_node)
     end
 
     def ul_item_end
@@ -263,7 +263,7 @@ module ReVIEW
         content: lines.join("\n"),
         level: num.to_i
       )
-      @current_node.items << item_node
+      @current_node.add_child(item_node)
     end
 
     def ol_end
@@ -283,15 +283,15 @@ module ReVIEW
         location: location,
         content: str
       )
-      @current_node.items << item_node
+      @current_node.add_child(item_node)
     end
 
     def dd(lines)
       # Associate dd with the previous dt by adding to the last item
-      if @current_node.items.last
-        @current_node.items.last.children << AST::ParagraphNode.new(location: location).tap do |para|
+      if @current_node.children.last
+        @current_node.children.last.add_child(AST::ParagraphNode.new(location: location).tap do |para|
           para.content = lines.join("\n")
-        end
+        end)
       end
     end
 

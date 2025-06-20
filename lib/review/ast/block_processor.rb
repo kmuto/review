@@ -89,19 +89,19 @@ module ReVIEW
       end
 
       def compile_list_to_ast(type, lines)
-        # Create list items
-        items = []
+        # Create list node and add items as children
+        list_node = create_and_add_node(AST::ListNode, list_type: type)
+
         if lines
           lines.each do |line|
-            items << create_node(AST::ListItemNode,
-                                 content: line,
-                                 level: 1)
+            item_node = create_node(AST::ListItemNode,
+                                    content: line,
+                                    level: 1)
+            list_node.add_child(item_node)
           end
         end
 
-        create_and_add_node(AST::ListNode,
-                            list_type: type,
-                            items: items)
+        list_node
       end
 
       def compile_quote_to_ast(lines)
