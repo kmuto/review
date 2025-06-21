@@ -14,7 +14,6 @@ require 'review/exception'
 require 'review/location'
 require 'review/loggable'
 require 'review/ast'
-require 'review/ast/renderer'
 require 'review/ast/compiler'
 require 'strscan'
 

@@ -7,7 +7,6 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
-require 'review/ast/renderer'
 require 'review/ast/performance_tracker'
 require 'review/loggable'
 require 'review/lineinput'
@@ -79,14 +78,16 @@ module ReVIEW
           title: title
         )
         @current_ast_node = @ast_root
-        @ast_renderer = Renderer.new(@builder)
 
         @performance_tracker.start_timing(:total_compilation_time)
 
-        # Full AST mode: build complete AST without rendering
+        # Full AST mode: build complete AST
         do_compile_with_ast_building
-        # In full AST mode, render the AST using the builder
-        @ast_renderer.render(@ast_root)
+
+        # If builder is provided, render AST to builder for compatibility
+        if @builder
+          render_ast_to_builder(@ast_root)
+        end
 
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
@@ -122,6 +123,99 @@ module ReVIEW
           else
             compile_paragraph_to_ast(f)
           end
+        end
+      end
+
+      # Render AST to builder for compatibility with existing tests
+      def render_ast_to_builder(node)
+        case node
+        when AST::DocumentNode
+          node.children.each { |child| render_ast_to_builder(child) }
+        when AST::HeadlineNode
+          @builder.headline(node.level, node.label, node.caption_markup_text)
+        when AST::ParagraphNode
+          lines = []
+          node.children.each do |child|
+            lines << render_ast_node_to_text(child)
+          end
+          @builder.paragraph(lines)
+        when AST::CodeBlockNode
+          @builder.list(node.lines, node.id, node.caption_markup_text || '', node.lang)
+        when AST::TableNode
+          @builder.table(node.headers || [], node.id, node.caption_markup_text || '')
+        when AST::ImageNode
+          @builder.image([], node.id, node.caption_markup_text || '')
+        when AST::ListNode
+          render_list_to_builder(node)
+        when AST::EmbedNode
+          render_embed_to_builder(node)
+        end
+      end
+
+      def render_ast_node_to_text(node)
+        case node
+        when AST::TextNode
+          node.content
+        when AST::InlineNode
+          content = render_children_to_text(node)
+          case node.inline_type
+          when 'b'
+            @builder.respond_to?(:inline_b) ? @builder.inline_b(content) : content
+          when 'i'
+            @builder.respond_to?(:inline_i) ? @builder.inline_i(content) : content
+          when 'code'
+            @builder.respond_to?(:inline_code) ? @builder.inline_code(content) : content
+          when 'href'
+            @builder.respond_to?(:inline_href) ? @builder.inline_href(content, node.arg) : content
+          else
+            content
+          end
+        else
+          render_children_to_text(node)
+        end
+      end
+
+      def render_children_to_text(node)
+        return '' unless node.respond_to?(:children) && node.children
+
+        node.children.map { |child| render_ast_node_to_text(child) }.join
+      end
+
+      def render_list_to_builder(node)
+        case node.list_type.to_s
+        when 'ul', 'unordered'
+          @builder.ul_begin
+          node.children.each do |item|
+            @builder.ul_item_begin([render_children_to_text(item)])
+            @builder.ul_item_end
+          end
+          @builder.ul_end
+        when 'ol', 'ordered'
+          @builder.ol_begin
+          node.children.each_with_index do |item, index|
+            @builder.ol_item([render_children_to_text(item)], index + 1)
+          end
+          @builder.ol_end
+        when 'dl', 'definition'
+          @builder.dl_begin
+          node.children.each do |item|
+            next unless item.respond_to?(:children) && item.children.any?
+
+            @builder.dt(render_ast_node_to_text(item.children[0]))
+            if item.children.size > 1
+              @builder.dd([item.children[1..-1].map { |child| render_ast_node_to_text(child) }.join])
+            end
+          end
+          @builder.dl_end
+        end
+      end
+
+      def render_embed_to_builder(node)
+        case node.embed_type
+        when :inline
+          @builder.nofunc_text(node.arg.to_s)
+        when :raw
+          @builder.nofunc_text(node.arg.to_s)
         end
       end
 

@@ -23,7 +23,6 @@ require 'review/ast/embed_node'
 require 'review/ast/compiler'
 require 'review/ast/config'
 require 'review/ast/performance_tracker'
-require 'review/ast/renderer'
 require 'review/ast/block_processor'
 require 'review/ast/inline_processor'
 
