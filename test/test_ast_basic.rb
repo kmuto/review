@@ -10,8 +10,12 @@ require 'review/book/chapter'
 class TestASTBasic < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
+    @config['language'] = 'ja'
     @book = ReVIEW::Book::Base.new
     @book.config = @config
+    @log_io = StringIO.new
+    ReVIEW.logger = ReVIEW::Logger.new(@log_io)
+    ReVIEW::I18n.setup(@config['language'])
   end
 
   def test_ast_node_creation
@@ -43,9 +47,9 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 'This is a test paragraph.', hash[:content]
   end
 
-  def test_json_builder_basic
+  def test_pure_ast_mode_basic
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
 
     chapter_content = <<~EOB
       = Test Chapter
@@ -60,14 +64,24 @@ class TestASTBasic < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = chapter_content
 
-    # Execute compilation
-    result = compiler.compile(chapter)
+    # Execute compilation (returns HTML, but AST is also built)
+    html_result = compiler.compile(chapter)
+    ast_result = compiler.ast_result
 
-    # Verify that JSON format result is obtained
-    assert result.is_a?(String)
+    # Verify that HTML result is obtained
+    assert html_result.is_a?(String)
+    assert html_result.include?('<h1>')
 
-    # Verify that it can be parsed as JSON
-    parsed = JSON.parse(result)
+    # Verify that AST result is obtained
+    assert_not_nil ast_result
+    assert_equal ReVIEW::AST::DocumentNode, ast_result.class
+    assert ast_result.children.any?
+
+    # Convert AST to JSON for verification
+    options = ReVIEW::AST::JSONSerializer::Options.new(pretty: true)
+    json_result = ReVIEW::AST::JSONSerializer.serialize(ast_result, options)
+    
+    parsed = JSON.parse(json_result)
     assert parsed.is_a?(Hash)
     assert_equal 'DocumentNode', parsed['type']
     assert parsed.key?('children')

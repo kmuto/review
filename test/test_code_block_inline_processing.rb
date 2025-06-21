@@ -227,11 +227,12 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
 
     # Check that basic properties are included
     assert_equal 'test', hash[:id]
-    # Caption is now serialized as CaptionNode structure
-    assert_instance_of(Array, hash[:caption])
-    assert_equal 1, hash[:caption].size
-    assert_equal 'TextNode', hash[:caption][0][:type]
-    assert_equal 'Test Caption', hash[:caption][0][:content]
+    # Caption is now serialized as CaptionNode structure (Hash instead of Array)
+    assert_instance_of(Hash, hash[:caption])
+    assert_equal 'CaptionNode', hash[:caption][:type]
+    assert_equal 1, hash[:caption][:children].size
+    assert_equal 'TextNode', hash[:caption][:children][0][:type]
+    assert_equal 'Test Caption', hash[:caption][:children][0][:content]
     assert_equal ['puts hello'], hash[:lines]
   end
 
