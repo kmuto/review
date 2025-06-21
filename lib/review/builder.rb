@@ -818,7 +818,7 @@ EOTGNUPLOT
     # Whether this builder interprets inline markup in code blocks
     # Override in subclasses that need different behavior
     def interprets_inline_in_code?
-      false  # Default: preserve inline markup as plain text
+      false # Default: preserve inline markup as plain text
     end
 
     # Render AST node as plain text (for builders that don't interpret inline markup)

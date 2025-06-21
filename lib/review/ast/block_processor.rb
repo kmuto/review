@@ -255,18 +255,22 @@ module ReVIEW
           end
         end
 
+        processed_caption = process_caption(args, 1)
+
         create_and_add_node(AST::TableNode,
                             id: safe_arg(args, 0),
-                            caption: safe_arg(args, 1),
+                            caption: processed_caption,
                             headers: headers,
                             rows: rows)
       end
 
       # Build image AST node
       def build_image_ast(_command_name, args, _lines)
+        processed_caption = process_caption(args, 1)
+
         create_and_add_node(AST::ImageNode,
                             id: safe_arg(args, 0),
-                            caption: safe_arg(args, 1),
+                            caption: processed_caption,
                             metric: safe_arg(args, 2))
       end
 
@@ -492,9 +496,12 @@ module ReVIEW
           end
         end
 
+        # Process caption
+        processed_caption = process_caption(args, config[:caption_index])
+
         create_and_add_node(AST::CodeBlockNode,
                             id: safe_arg(args, config[:id_index]),
-                            caption: safe_arg(args, config[:caption_index]),
+                            caption: processed_caption,
                             lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
                             lines: lines || [],
                             line_numbers: config[:line_numbers] || false,
@@ -503,9 +510,20 @@ module ReVIEW
                             processed_lines: processed_lines)
       end
 
-      # Extract argument safely with bounds checking
-      def safe_arg(args, index, default = nil)
-        return default unless args && index && args.size > index
+      def process_caption(args, caption_index)
+        caption_text = safe_arg(args, caption_index)
+        return nil if caption_text.nil?
+
+        AST::CaptionNode.parse(
+          caption_text,
+          location: @ast_compiler.location,
+          inline_processor: @ast_compiler.inline_processor
+        )
+      end
+
+      # Extract argument safely
+      def safe_arg(args, index)
+        return nil unless args
 
         args[index]
       end
